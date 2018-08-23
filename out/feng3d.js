@@ -4119,15 +4119,22 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * Base class for all objects feng3d can reference.
-     *
-     * Any variable you make that derives from Feng3dObject gets shown in the inspector as a drop target, allowing you to set the value from the GUI.
+     * 所有feng3d对象的基类
      */
     var Feng3dObject = /** @class */ (function (_super) {
         __extends(Feng3dObject, _super);
         function Feng3dObject() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * 隐藏标记，用于控制是否在层级面板、检查器显示，是否保存
+             */
+            _this.hideFlags = feng3d.HideFlags.None;
+            return _this;
         }
+        /**
+         * 设置对象值
+         * @param v 对象对于的Object值
+         */
         Feng3dObject.prototype.value = function (v) {
             feng3d.serialization.setValue(this, v);
             return this;
@@ -4961,6 +4968,24 @@ var feng3d;
         return Feng3dAssets;
     }(feng3d.Feng3dObject));
     feng3d.Feng3dAssets = Feng3dAssets;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 资源
+     */
+    var Resources = /** @class */ (function () {
+        function Resources() {
+        }
+        /**
+         * 卸载没有被使用的资源
+         */
+        Resources.prototype.unloadUnusedAssets = function () {
+        };
+        return Resources;
+    }());
+    feng3d.Resources = Resources;
+    feng3d.resources = new Resources();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -14733,6 +14758,51 @@ var feng3d;
         return FXAAEffect;
     }());
     feng3d.FXAAEffect = FXAAEffect;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 在检查器中控制对象销毁、保存和可见性的位掩码。
+     */
+    var HideFlags;
+    (function (HideFlags) {
+        /**
+         * 一个正常的,可见对象。这是默认的。
+         */
+        HideFlags[HideFlags["None"] = 0] = "None";
+        /**
+         * 不会出现在层次面板中。
+         */
+        HideFlags[HideFlags["HideInHierarchy"] = 1] = "HideInHierarchy";
+        /**
+         * 不会出现在检查器面板中。
+         */
+        HideFlags[HideFlags["HideInInspector"] = 2] = "HideInInspector";
+        /**
+         * 不会保存到编辑器中的场景中。
+         */
+        HideFlags[HideFlags["DontSaveInEditor"] = 4] = "DontSaveInEditor";
+        /**
+         * 在检查器中不可编辑。
+         */
+        HideFlags[HideFlags["NotEditable"] = 8] = "NotEditable";
+        /**
+         * 在构建播放器时对象不会被保存。
+         */
+        HideFlags[HideFlags["DontSaveInBuild"] = 16] = "DontSaveInBuild";
+        /**
+         * 对象不会被Resources.UnloadUnusedAssets卸载。
+         */
+        HideFlags[HideFlags["DontUnloadUnusedAsset"] = 32] = "DontUnloadUnusedAsset";
+        /**
+         * 对象不会保存到场景中。加载新场景时不会被销毁。相当于DontSaveInBuild | HideFlags。DontSaveInEditor | HideFlags.DontUnloadUnusedAsset
+         */
+        HideFlags[HideFlags["DontSave"] = 52] = "DontSave";
+        /**
+         * 不显示在层次面板中，不保存到场景中，加载新场景时不会被销毁。
+         */
+        HideFlags[HideFlags["HideAndDontSave"] = 61] = "HideAndDontSave";
+    })(HideFlags = feng3d.HideFlags || (feng3d.HideFlags = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

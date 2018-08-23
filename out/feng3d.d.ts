@@ -1990,11 +1990,17 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * Base class for all objects feng3d can reference.
-     *
-     * Any variable you make that derives from Feng3dObject gets shown in the inspector as a drop target, allowing you to set the value from the GUI.
+     * 所有feng3d对象的基类
      */
     class Feng3dObject extends EventDispatcher {
+        /**
+         * 隐藏标记，用于控制是否在层级面板、检查器显示，是否保存
+         */
+        hideFlags: HideFlags;
+        /**
+         * 设置对象值
+         * @param v 对象对于的Object值
+         */
         value(v: gPartial<this>): this;
     }
 }
@@ -2454,6 +2460,21 @@ declare namespace feng3d {
          */
         extension: AssetExtension;
         private pathChanged;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 资源
+     */
+    var resources: Resources;
+    /**
+     * 资源
+     */
+    class Resources {
+        /**
+         * 卸载没有被使用的资源
+         */
+        unloadUnusedAssets(): void;
     }
 }
 declare namespace feng3d {
@@ -8749,6 +8770,49 @@ declare namespace feng3d {
      * https://github.com/playcanvas/engine/blob/master/extras/posteffects/posteffect-fxaa.js
      */
     class FXAAEffect {
+    }
+}
+declare namespace feng3d {
+    /**
+     * 在检查器中控制对象销毁、保存和可见性的位掩码。
+     */
+    enum HideFlags {
+        /**
+         * 一个正常的,可见对象。这是默认的。
+         */
+        None = 0,
+        /**
+         * 不会出现在层次面板中。
+         */
+        HideInHierarchy = 1,
+        /**
+         * 不会出现在检查器面板中。
+         */
+        HideInInspector = 2,
+        /**
+         * 不会保存到编辑器中的场景中。
+         */
+        DontSaveInEditor = 4,
+        /**
+         * 在检查器中不可编辑。
+         */
+        NotEditable = 8,
+        /**
+         * 在构建播放器时对象不会被保存。
+         */
+        DontSaveInBuild = 16,
+        /**
+         * 对象不会被Resources.UnloadUnusedAssets卸载。
+         */
+        DontUnloadUnusedAsset = 32,
+        /**
+         * 对象不会保存到场景中。加载新场景时不会被销毁。相当于DontSaveInBuild | HideFlags。DontSaveInEditor | HideFlags.DontUnloadUnusedAsset
+         */
+        DontSave = 52,
+        /**
+         * 不显示在层次面板中，不保存到场景中，加载新场景时不会被销毁。
+         */
+        HideAndDontSave = 61
     }
 }
 declare namespace feng3d {

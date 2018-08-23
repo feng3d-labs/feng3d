@@ -51,6 +51,7 @@
         "src/assets/Assets.ts",
         "src/assets/AssetExtension.ts",
         "src/assets/Feng3dAssets.ts",
+        "src/assets/Resources.ts",
         //几何运算
         "src/geom/Math.ts",
         "src/geom/Vector2.ts",
@@ -140,6 +141,7 @@
         "src/render/postEffect/PostEffect.ts",
         "src/render/postEffect/FXAAEffect.ts",
         //
+        "src/core/HideFlags.ts",
         "src/core/Transform.ts",
         "src/core/GameObject.ts",
         "src/core/Engine.ts",
