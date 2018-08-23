@@ -62,7 +62,7 @@ namespace feng3d
         {
             super.init(gameObject);
             gameObject["_scene"] = this;
-            this.transform.showInInspector = false;
+            this.transform.hideFlags = HideFlags.Hide;
 
             ticker.onframe(this.onEnterFrame, this)
 

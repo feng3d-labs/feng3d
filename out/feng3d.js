@@ -13667,16 +13667,7 @@ var feng3d;
          * 创建一个组件容器
          */
         function Component() {
-            var _this = _super.call(this) || this;
-            /**
-             * 是否序列化
-             */
-            _this.serializable = true;
-            /**
-             * 是否显示在检查器中
-             */
-            _this.showInInspector = true;
-            return _this;
+            return _super.call(this) || this;
         }
         Object.defineProperty(Component.prototype, "gameObject", {
             //------------------------------------------
@@ -14795,9 +14786,13 @@ var feng3d;
          */
         HideFlags[HideFlags["DontUnloadUnusedAsset"] = 32] = "DontUnloadUnusedAsset";
         /**
+         * 隐藏
+         */
+        HideFlags[HideFlags["Hide"] = 3] = "Hide";
+        /**
          * 对象不会保存到场景中。加载新场景时不会被销毁。相当于DontSaveInBuild | HideFlags。DontSaveInEditor | HideFlags.DontUnloadUnusedAsset
          */
-        HideFlags[HideFlags["DontSave"] = 52] = "DontSave";
+        HideFlags[HideFlags["DontSave"] = 20] = "DontSave";
         /**
          * 不显示在层次面板中，不保存到场景中，加载新场景时不会被销毁。
          */
@@ -15563,14 +15558,6 @@ var feng3d;
             _this.__class__ = "feng3d.GameObject";
             _this.renderAtomic = new feng3d.RenderAtomic();
             /**
-             * 是否可序列化
-             */
-            _this.serializable = true;
-            /**
-             * 是否显示在层级界面
-             */
-            _this.showinHierarchy = true;
-            /**
              * 是否显示
              */
             _this.visible = true;
@@ -16077,9 +16064,6 @@ var feng3d;
          * 游戏对象池
          */
         GameObject.pool = new Map();
-        __decorate([
-            feng3d.serialize
-        ], GameObject.prototype, "serializable", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ component: "OAVGameObjectName" })
@@ -16775,7 +16759,7 @@ var feng3d;
         Scene3D.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
             gameObject["_scene"] = this;
-            this.transform.showInInspector = false;
+            this.transform.hideFlags = feng3d.HideFlags.Hide;
             feng3d.ticker.onframe(this.onEnterFrame, this);
             this.initCollectComponents();
         };
@@ -21080,8 +21064,7 @@ var feng3d;
             var gameObject = this.debugShadowMapObject;
             if (!gameObject) {
                 gameObject = this.debugShadowMapObject = feng3d.gameObjectFactory.createPlane("debugShadowMapObject");
-                gameObject.showinHierarchy = false;
-                gameObject.serializable = false;
+                gameObject.hideFlags = feng3d.HideFlags.Hide | feng3d.HideFlags.DontSave;
                 gameObject.mouseEnabled = false;
                 gameObject.addComponent(feng3d.BillboardComponent);
                 //材质
@@ -23933,7 +23916,7 @@ var feng3d;
                 }
                 var jointGameobject = parentGameobject.find(skeletonJoint.name);
                 if (!jointGameobject) {
-                    jointGameobject = new feng3d.GameObject().value({ name: skeletonJoint.name, serializable: false });
+                    jointGameobject = new feng3d.GameObject().value({ name: skeletonJoint.name, hideFlags: feng3d.HideFlags.DontSave });
                     parentGameobject.addChild(jointGameobject);
                 }
                 var transform = jointGameobject.transform;

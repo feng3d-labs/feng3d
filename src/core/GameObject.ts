@@ -70,17 +70,6 @@ namespace feng3d
         public static pool = new Map<string, GameObject>();
 
         /**
-         * 是否可序列化
-         */
-        @serialize
-        serializable = true;
-
-        /**
-         * 是否显示在层级界面
-         */
-        showinHierarchy = true;
-
-        /**
          * The name of the Feng3dObject.
          * Components share the same name with the game object and all attached components.
          */

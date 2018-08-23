@@ -120,8 +120,7 @@ namespace feng3d
             if (!gameObject)
             {
                 gameObject = this.debugShadowMapObject = gameObjectFactory.createPlane("debugShadowMapObject");
-                gameObject.showinHierarchy = false;
-                gameObject.serializable = false;
+                gameObject.hideFlags = feng3d.HideFlags.Hide | feng3d.HideFlags.DontSave;
                 gameObject.mouseEnabled = false;
                 gameObject.addComponent(BillboardComponent);
 

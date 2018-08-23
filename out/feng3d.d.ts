@@ -8440,14 +8440,6 @@ declare namespace feng3d {
          */
         readonly single: boolean;
         /**
-         * 是否序列化
-         */
-        serializable: boolean;
-        /**
-         * 是否显示在检查器中
-         */
-        showInInspector: boolean;
-        /**
          * 创建一个组件容器
          */
         constructor();
@@ -8806,9 +8798,13 @@ declare namespace feng3d {
          */
         DontUnloadUnusedAsset = 32,
         /**
+         * 隐藏
+         */
+        Hide = 3,
+        /**
          * 对象不会保存到场景中。加载新场景时不会被销毁。相当于DontSaveInBuild | HideFlags。DontSaveInEditor | HideFlags.DontUnloadUnusedAsset
          */
-        DontSave = 52,
+        DontSave = 20,
         /**
          * 不显示在层次面板中，不保存到场景中，加载新场景时不会被销毁。
          */
@@ -9025,14 +9021,6 @@ declare namespace feng3d {
          * 游戏对象池
          */
         static pool: Map<string, GameObject>;
-        /**
-         * 是否可序列化
-         */
-        serializable: boolean;
-        /**
-         * 是否显示在层级界面
-         */
-        showinHierarchy: boolean;
         /**
          * The name of the Feng3dObject.
          * Components share the same name with the game object and all attached components.

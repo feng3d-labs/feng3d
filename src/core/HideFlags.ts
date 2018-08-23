@@ -34,9 +34,13 @@ namespace feng3d
          */
         DontUnloadUnusedAsset = 32,
         /**
+         * 隐藏
+         */
+        Hide = HideInHierarchy | HideInInspector,
+        /**
          * 对象不会保存到场景中。加载新场景时不会被销毁。相当于DontSaveInBuild | HideFlags。DontSaveInEditor | HideFlags.DontUnloadUnusedAsset
          */
-        DontSave = 52,
+        DontSave = DontSaveInEditor | DontSaveInBuild,
         /**
          * 不显示在层次面板中，不保存到场景中，加载新场景时不会被销毁。
          */
