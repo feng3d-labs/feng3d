@@ -26,7 +26,6 @@ namespace feng3d
 	 * 摄像机可视区域：由近、远，上，下，左，右组成的四棱柱
 	 * GPU空间可视区域：立方体 [(-1, -1, -1), (1, 1, 1)]
 	 * 
-
 	 */
 	export abstract class LensBase extends EventDispatcher
 	{
@@ -65,7 +64,7 @@ namespace feng3d
 		/**
 		 * 创建一个摄像机镜头
 		 */
-		constructor(aspectRatio = 1, near = 0.3, far = 2000)
+		constructor(aspectRatio = 1, near = 0.3, far = 1000)
 		{
 			super();
 			this.aspect = aspectRatio;

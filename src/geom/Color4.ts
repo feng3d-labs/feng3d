@@ -2,14 +2,14 @@ namespace feng3d
 {
     /**
      * 颜色（包含透明度）
-
      */
     export class Color4
     {
-        static WHITE = new Color4();
-        static BLACK = new Color4(0, 0, 0);
 
         __class__: "feng3d.Color4" = "feng3d.Color4";
+
+        static WHITE = new Color4();
+        static BLACK = new Color4(0, 0, 0);
 
         /**
          * 红[0,1]

@@ -9,7 +9,6 @@ namespace feng3d
 
 	/**
 	 * 摄像机
-
 	 */
     export class Camera extends Component
     {

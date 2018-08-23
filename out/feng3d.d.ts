@@ -5073,9 +5073,9 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 颜色
-
      */
     class Color3 {
+        __class__: "feng3d.Color3";
         static WHITE: Color3;
         static BLACK: Color3;
         /**
@@ -5284,12 +5284,11 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 颜色（包含透明度）
-
      */
     class Color4 {
+        __class__: "feng3d.Color4";
         static WHITE: Color4;
         static BLACK: Color4;
-        __class__: "feng3d.Color4";
         /**
          * 红[0,1]
          */
@@ -8408,6 +8407,7 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     interface ComponentMap {
+        Component: Component;
     }
     type Components = ComponentMap[keyof ComponentMap];
     interface Component {
@@ -8449,13 +8449,13 @@ declare namespace feng3d {
          * @param type				The type of Component to retrieve.
          * @return                  返回指定类型组件
          */
-        getComponent<T extends Components>(type: Constructor<T>): any;
+        getComponent<T extends Components>(type: Constructor<T>): T;
         /**
          * Returns all components of Type type in the GameObject.
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
-        getComponents<T extends Components>(type?: Constructor<T>): any;
+        getComponents<T extends Components>(type?: Constructor<T>): T[];
         /**
          * Returns all components of Type type in the GameObject.
          * @param type		类定义
@@ -8464,7 +8464,7 @@ declare namespace feng3d {
         getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
             findchildren: boolean;
             value: boolean;
-        }, result?: T[]): any;
+        }, result?: T[]): T[];
         /**
          * 派发事件
          * @param event   事件对象
@@ -9506,26 +9506,26 @@ declare namespace feng3d {
         /**
          * 所有 Model
          */
-        readonly models: any;
+        readonly models: Model[];
         /**
          * 所有 可见且开启的 Model
          */
-        readonly visibleAndEnabledModels: any;
+        readonly visibleAndEnabledModels: Model[];
         /**
          * 所有 SkyBox
          */
-        readonly skyBoxs: any;
-        readonly activeSkyBoxs: any;
-        readonly directionalLights: any;
-        readonly activeDirectionalLights: any;
-        readonly pointLights: any;
-        readonly activePointLights: any;
-        readonly spotLights: any;
-        readonly activeSpotLights: any;
-        readonly animations: any;
-        readonly activeAnimations: any;
-        readonly behaviours: any;
-        readonly activeBehaviours: any;
+        readonly skyBoxs: SkyBox[];
+        readonly activeSkyBoxs: SkyBox[];
+        readonly directionalLights: DirectionalLight[];
+        readonly activeDirectionalLights: DirectionalLight[];
+        readonly pointLights: PointLight[];
+        readonly activePointLights: PointLight[];
+        readonly spotLights: SpotLight[];
+        readonly activeSpotLights: SpotLight[];
+        readonly animations: Animation[];
+        readonly activeAnimations: Animation[];
+        readonly behaviours: Behaviour[];
+        readonly activeBehaviours: Behaviour[];
         readonly mouseCheckObjects: GameObject[];
         _addGameObject(gameobject: GameObject): void;
         _removeGameObject(gameobject: GameObject): void;
@@ -9546,7 +9546,7 @@ declare namespace feng3d {
          * 获取 可被摄像机看见的 Model 列表
          * @param camera
          */
-        getModelsByCamera(camera: Camera): any;
+        getModelsByCamera(camera: Camera): Model[];
     }
 }
 declare namespace feng3d {
@@ -9889,7 +9889,6 @@ declare namespace feng3d {
      * 摄像机可视区域：由近、远，上，下，左，右组成的四棱柱
      * GPU空间可视区域：立方体 [(-1, -1, -1), (1, 1, 1)]
      *
-
      */
     abstract class LensBase extends EventDispatcher {
         /**
@@ -10081,7 +10080,6 @@ declare namespace feng3d {
     }
     /**
      * 摄像机
-
      */
     class Camera extends Component {
         __class__: "feng3d.Camera";

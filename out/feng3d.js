@@ -10282,7 +10282,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 颜色
-
      */
     var Color3 = /** @class */ (function () {
         /**
@@ -10295,6 +10294,7 @@ var feng3d;
             if (r === void 0) { r = 1; }
             if (g === void 0) { g = 1; }
             if (b === void 0) { b = 1; }
+            this.__class__ = "feng3d.Color3";
             /**
              * 红[0,1]
              */
@@ -10440,7 +10440,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 颜色（包含透明度）
-
      */
     var Color4 = /** @class */ (function () {
         /**
@@ -18121,7 +18120,6 @@ var feng3d;
      * 摄像机可视区域：由近、远，上，下，左，右组成的四棱柱
      * GPU空间可视区域：立方体 [(-1, -1, -1), (1, 1, 1)]
      *
-
      */
     var LensBase = /** @class */ (function (_super) {
         __extends(LensBase, _super);
@@ -18131,7 +18129,7 @@ var feng3d;
         function LensBase(aspectRatio, near, far) {
             if (aspectRatio === void 0) { aspectRatio = 1; }
             if (near === void 0) { near = 0.3; }
-            if (far === void 0) { far = 2000; }
+            if (far === void 0) { far = 1000; }
             var _this = _super.call(this) || this;
             //
             _this._matrix = new feng3d.Matrix4x4();
@@ -18480,7 +18478,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 摄像机
-
      */
     var Camera = /** @class */ (function (_super) {
         __extends(Camera, _super);

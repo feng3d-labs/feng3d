@@ -2,10 +2,12 @@ namespace feng3d
 {
     /**
      * 颜色
-
      */
     export class Color3
     {
+
+        __class__: "feng3d.Color3" = "feng3d.Color3";
+
         static WHITE = new Color3();
         static BLACK = new Color3(0, 0, 0);
 
