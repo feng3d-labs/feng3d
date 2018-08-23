@@ -9,7 +9,7 @@ namespace feng3d
             return new GameObject().value({ name: name });
         }
 
-        createCube(name: string = "cube")
+        createCube(name = "cube")
         {
             return new GameObject().value({
                 name: name, components: [
@@ -18,7 +18,7 @@ namespace feng3d
             });
         }
 
-        createPlane(name: string = "plane")
+        createPlane(name = "plane")
         {
             return new GameObject().value({
                 name: name,
@@ -26,7 +26,7 @@ namespace feng3d
             });
         }
 
-        createCylinder(name: string = "cylinder")
+        createCylinder(name = "cylinder")
         {
             return new GameObject().value({
                 name: name,
@@ -34,7 +34,7 @@ namespace feng3d
             });
         }
 
-        createCone(name: string = "Cone")
+        createCone(name = "Cone")
         {
             return new GameObject().value({
                 name: name,
@@ -42,7 +42,7 @@ namespace feng3d
             });
         }
 
-        createTorus(name: string = "Torus")
+        createTorus(name = "Torus")
         {
             return new GameObject().value({
                 name: name,
@@ -50,7 +50,7 @@ namespace feng3d
             });
         }
 
-        createSphere(name: string = "sphere")
+        createSphere(name = "sphere")
         {
             return new GameObject().value({
                 name: name,
@@ -58,7 +58,7 @@ namespace feng3d
             });
         }
 
-        createCapsule(name: string = "capsule")
+        createCapsule(name = "capsule")
         {
             return new GameObject().value({
                 name: name,
@@ -66,7 +66,7 @@ namespace feng3d
             });
         }
 
-        createTerrain(name: string = "Terrain")
+        createTerrain(name = "Terrain")
         {
             return new GameObject().value({
                 name: name,
@@ -74,7 +74,7 @@ namespace feng3d
             });
         }
 
-        createCamera(name: string = "Camera")
+        createCamera(name = "Camera")
         {
             return new GameObject().value({
                 name: name,
@@ -82,7 +82,7 @@ namespace feng3d
             });
         }
 
-        createPointLight(name: string = "PointLight")
+        createPointLight(name = "PointLight")
         {
             return new GameObject().value({
                 name: name,
@@ -112,7 +112,7 @@ namespace feng3d
             // particleSystem.cycle = 10;
         }
 
-        createWater(name: string = "water")
+        createWater(name = "water")
         {
             return new GameObject().value({
                 name: name,

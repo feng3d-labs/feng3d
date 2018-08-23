@@ -37,7 +37,7 @@ function watchProject(project)
     childProcess.stdout.on('data', function (data)
     {
         data = data.trim();
-        console.log(data);
+        if(data.length > 10) console.log(data);
         if (data.indexOf("Compilation complete") != -1)
         {
             //在编译完成后处理 模块导出

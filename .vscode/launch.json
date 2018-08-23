@@ -7,6 +7,12 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "build",
+            "program": "${workspaceFolder}/build.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "tssort",
             "program": "${workspaceFolder}/tssort.js"
         },
