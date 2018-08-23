@@ -12992,7 +12992,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 纹理信息
-
      */
     var TextureInfo = /** @class */ (function (_super) {
         __extends(TextureInfo, _super);

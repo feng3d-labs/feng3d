@@ -8084,7 +8084,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 纹理信息
-
      */
     abstract class TextureInfo extends Feng3dObject {
         /**
