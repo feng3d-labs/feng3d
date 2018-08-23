@@ -2710,6 +2710,7 @@ declare namespace feng3d {
 
      */
     class Vector3 {
+        __class__: "feng3d.Vector3";
         /**
         * 定义为 Vector3 对象的 x 轴，坐标为 (1,0,0)。
         */
@@ -5288,6 +5289,7 @@ declare namespace feng3d {
     class Color4 {
         static WHITE: Color4;
         static BLACK: Color4;
+        __class__: "feng3d.Color4";
         /**
          * 红[0,1]
          */
@@ -8084,7 +8086,7 @@ declare namespace feng3d {
      * 纹理信息
 
      */
-    abstract class TextureInfo {
+    abstract class TextureInfo extends Feng3dObject {
         /**
          * 纹理类型
          */
@@ -9749,6 +9751,7 @@ declare namespace feng3d {
         CustomGeometry: CustomGeometry;
     }
     class CustomGeometry extends Geometry {
+        __class__: "feng3d.CustomGeometry";
         /**
          * 顶点索引缓冲
          */
@@ -9784,6 +9787,7 @@ declare namespace feng3d {
      * 点几何体
      */
     class PointGeometry extends Geometry {
+        __class__: "feng3d.PointGeometry";
         /**
          * 点数据列表
          * 修改数组内数据时需要手动调用 invalidateGeometry();
@@ -9806,9 +9810,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface SegmentGeometryRaw {
-        __class__: "feng3d.SegmentGeometry";
-    }
     interface GeometryMap {
         SegmentGeometry: SegmentGeometry;
     }
@@ -9816,6 +9817,7 @@ declare namespace feng3d {
      * 线段组件
      */
     class SegmentGeometry extends Geometry {
+        __class__: "feng3d.SegmentGeometry";
         /**
          * 线段列表
          * 修改数组内数据时需要手动调用 invalidateGeometry();
@@ -10600,15 +10602,19 @@ declare namespace feng3d {
      * 2D纹理
      */
     class ImageTexture2D extends Texture2D {
+        __class__: "feng3d.ImageTexture2D";
         image: HTMLImageElement;
         constructor(raw?: gPartial<ImageTexture2D>);
         private imageChanged;
     }
 }
 declare namespace feng3d {
-    class UrlImageTexture2D extends ImageTexture2D {
+    class UrlImageTexture2D extends Texture2D {
+        __class__: "feng3d.UrlImageTexture2D";
         url: string;
+        private image;
         constructor(raw?: gPartial<UrlImageTexture2D>);
+        private imageChanged;
         private urlChanged;
         private onImageAssetsChanged;
     }

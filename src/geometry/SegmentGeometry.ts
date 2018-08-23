@@ -1,10 +1,5 @@
 namespace feng3d
 {
-    export interface SegmentGeometryRaw
-    {
-        __class__: "feng3d.SegmentGeometry"
-    }
-
     export interface GeometryMap { SegmentGeometry: SegmentGeometry }
 
     /**
@@ -12,6 +7,9 @@ namespace feng3d
      */
     export class SegmentGeometry extends Geometry
     {
+        
+        __class__: "feng3d.SegmentGeometry" = "feng3d.SegmentGeometry";
+        
 		/**
 		 * 线段列表
          * 修改数组内数据时需要手动调用 invalidateGeometry();

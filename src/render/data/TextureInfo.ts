@@ -4,7 +4,7 @@ namespace feng3d
      * 纹理信息
 
      */
-    export abstract class TextureInfo
+    export abstract class TextureInfo extends Feng3dObject
     {
         /**
          * 纹理类型

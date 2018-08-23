@@ -9,6 +9,8 @@ namespace feng3d
         static WHITE = new Color4();
         static BLACK = new Color4(0, 0, 0);
 
+        __class__: "feng3d.Color4" = "feng3d.Color4";
+
         /**
          * 红[0,1]
          */

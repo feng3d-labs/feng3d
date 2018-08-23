@@ -5,6 +5,8 @@ namespace feng3d
      */
     export class ImageTexture2D extends Texture2D
     {
+        __class__: "feng3d.ImageTexture2D" = "feng3d.ImageTexture2D";
+
         @watch("imageChanged")
         image: HTMLImageElement;
 

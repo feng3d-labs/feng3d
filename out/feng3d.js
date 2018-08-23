@@ -5370,6 +5370,7 @@ var feng3d;
             if (x === void 0) { x = 0; }
             if (y === void 0) { y = 0; }
             if (z === void 0) { z = 0; }
+            this.__class__ = "feng3d.Vector3";
             /**
             * Vector3 对象中的第一个元素，例如，三维空间中某个点的 x 坐标。默认值为 0
             */
@@ -10454,6 +10455,7 @@ var feng3d;
             if (g === void 0) { g = 1; }
             if (b === void 0) { b = 1; }
             if (a === void 0) { a = 1; }
+            this.__class__ = "feng3d.Color4";
             /**
              * 红[0,1]
              */
@@ -12992,58 +12994,61 @@ var feng3d;
      * 纹理信息
 
      */
-    var TextureInfo = /** @class */ (function () {
+    var TextureInfo = /** @class */ (function (_super) {
+        __extends(TextureInfo, _super);
         function TextureInfo(raw) {
+            var _this = this;
             /**
              * 格式
              */
-            this.format = feng3d.TextureFormat.RGB;
+            _this.format = feng3d.TextureFormat.RGB;
             /**
              * 数据类型
              */
-            this.type = feng3d.TextureDataType.UNSIGNED_BYTE;
+            _this.type = feng3d.TextureDataType.UNSIGNED_BYTE;
             /**
              * 是否生成mipmap
              */
-            this.generateMipmap = false;
+            _this.generateMipmap = false;
             /**
              * 对图像进行Y轴反转。默认值为false
              */
-            this.flipY = false;
+            _this.flipY = false;
             /**
              * 将图像RGB颜色值得每一个分量乘以A。默认为false
              */
-            this.premulAlpha = false;
-            this.minFilter = feng3d.TextureMinFilter.LINEAR;
-            this.magFilter = feng3d.TextureMagFilter.LINEAR;
+            _this.premulAlpha = false;
+            _this.minFilter = feng3d.TextureMinFilter.LINEAR;
+            _this.magFilter = feng3d.TextureMagFilter.LINEAR;
             /**
              * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
              */
-            this.wrapS = feng3d.TextureWrap.REPEAT;
+            _this.wrapS = feng3d.TextureWrap.REPEAT;
             /**
              * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式，这是OpenGL的基本概念，我将在下面讲一下，目前你不用担心它的使用。当您不设置的时候，它会取默认值，所以，我们这里暂时不理睬他。
              */
-            this.wrapT = feng3d.TextureWrap.REPEAT;
+            _this.wrapT = feng3d.TextureWrap.REPEAT;
             /**
              * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
              */
-            this.anisotropy = 0;
+            _this.anisotropy = 0;
             /**
              * 是否为渲染目标纹理
              */
-            this._isRenderTarget = false;
-            this.OFFSCREEN_WIDTH = 1024;
-            this.OFFSCREEN_HEIGHT = 1024;
+            _this._isRenderTarget = false;
+            _this.OFFSCREEN_WIDTH = 1024;
+            _this.OFFSCREEN_HEIGHT = 1024;
             /**
              * 纹理缓冲
              */
-            this._textureMap = new Map();
+            _this._textureMap = new Map();
             /**
              * 是否失效
              */
-            this._invalid = true;
-            this._isPowerOfTwo = false;
-            feng3d.serialization.setValue(this, raw);
+            _this._invalid = true;
+            _this._isPowerOfTwo = false;
+            feng3d.serialization.setValue(_this, raw);
+            return _this;
         }
         /**
          * 是否为2的幂贴图
@@ -13276,7 +13281,7 @@ var feng3d;
             feng3d.watch("invalidate")
         ], TextureInfo.prototype, "OFFSCREEN_HEIGHT", void 0);
         return TextureInfo;
-    }());
+    }(feng3d.Feng3dObject));
     feng3d.TextureInfo = TextureInfo;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -17681,7 +17686,9 @@ var feng3d;
     var CustomGeometry = /** @class */ (function (_super) {
         __extends(CustomGeometry, _super);
         function CustomGeometry() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.CustomGeometry";
+            return _this;
         }
         Object.defineProperty(CustomGeometry.prototype, "indicesBase", {
             /**
@@ -17977,6 +17984,7 @@ var feng3d;
         __extends(PointGeometry, _super);
         function PointGeometry() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.PointGeometry";
             /**
              * 点数据列表
              * 修改数组内数据时需要手动调用 invalidateGeometry();
@@ -18030,6 +18038,7 @@ var feng3d;
         __extends(SegmentGeometry, _super);
         function SegmentGeometry() {
             var _this = _super.call(this) || this;
+            _this.__class__ = "feng3d.SegmentGeometry";
             /**
              * 线段列表
              * 修改数组内数据时需要手动调用 invalidateGeometry();
@@ -20310,7 +20319,9 @@ var feng3d;
     var ImageTexture2D = /** @class */ (function (_super) {
         __extends(ImageTexture2D, _super);
         function ImageTexture2D(raw) {
-            return _super.call(this, raw) || this;
+            var _this = _super.call(this, raw) || this;
+            _this.__class__ = "feng3d.ImageTexture2D";
+            return _this;
         }
         ImageTexture2D.prototype.imageChanged = function () {
             this._pixels = this.image;
@@ -20329,12 +20340,17 @@ var feng3d;
         __extends(UrlImageTexture2D, _super);
         function UrlImageTexture2D(raw) {
             var _this = _super.call(this, raw) || this;
+            _this.__class__ = "feng3d.UrlImageTexture2D";
             _this.url = "";
             //
             feng3d.feng3dDispatcher.on("assets.imageAssetsChanged", _this.onImageAssetsChanged, _this);
             _this.urlChanged();
             return _this;
         }
+        UrlImageTexture2D.prototype.imageChanged = function () {
+            this._pixels = this.image;
+            this.invalidate();
+        };
         UrlImageTexture2D.prototype.urlChanged = function () {
             var _this = this;
             var url = this.url;
@@ -20364,8 +20380,11 @@ var feng3d;
             feng3d.watch("urlChanged"),
             feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         ], UrlImageTexture2D.prototype, "url", void 0);
+        __decorate([
+            feng3d.watch("imageChanged")
+        ], UrlImageTexture2D.prototype, "image", void 0);
         return UrlImageTexture2D;
-    }(feng3d.ImageTexture2D));
+    }(feng3d.Texture2D));
     feng3d.UrlImageTexture2D = UrlImageTexture2D;
 })(feng3d || (feng3d = {}));
 var feng3d;

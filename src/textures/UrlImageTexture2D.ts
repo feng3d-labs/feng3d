@@ -1,11 +1,16 @@
 namespace feng3d
 {
-    export class UrlImageTexture2D extends ImageTexture2D
+    export class UrlImageTexture2D extends Texture2D
     {
+        __class__: "feng3d.UrlImageTexture2D" = "feng3d.UrlImageTexture2D";
+
         @serialize
         @watch("urlChanged")
         @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         url = "";
+
+        @watch("imageChanged")
+        private image: HTMLImageElement;
 
         constructor(raw?: gPartial<UrlImageTexture2D>)
         {
@@ -13,6 +18,12 @@ namespace feng3d
             //
             feng3dDispatcher.on("assets.imageAssetsChanged", this.onImageAssetsChanged, this);
             this.urlChanged();
+        }
+
+        private imageChanged()
+        {
+            this._pixels = this.image;
+            this.invalidate();
         }
 
         private urlChanged()
