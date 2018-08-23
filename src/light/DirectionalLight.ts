@@ -2,7 +2,7 @@ namespace feng3d
 {
 
     export interface ComponentMap { DirectionalLight: DirectionalLight; }
-    
+
     /**
      * 方向光源
      */
@@ -11,6 +11,8 @@ namespace feng3d
         __class__: "feng3d.DirectionalLight" = "feng3d.DirectionalLight";
 
         lightType = LightType.Directional;
+
+        private orthographicLens: OrthographicLens;
 
         /**
          * 光源位置
@@ -47,7 +49,13 @@ namespace feng3d
             this.shadowCamera.transform.position = center.addTo(this.direction.scaleTo(radius + this.shadowCameraNear).negate());
             this.shadowCamera.transform.lookAt(center, this.shadowCamera.transform.upVector);
             //
-            this.shadowCamera.lens = new OrthographicLens(-radius, radius, radius, - radius, this.shadowCameraNear, this.shadowCameraNear + radius * 2);
+            if (!this.orthographicLens)
+            {
+                this.shadowCamera.lens = this.orthographicLens = new OrthographicLens(-radius, radius, radius, - radius, this.shadowCameraNear, this.shadowCameraNear + radius * 2);
+            } else
+            {
+                this.orthographicLens.value({ left: -radius, right: radius, top: radius, bottom: - radius, near: this.shadowCameraNear, far: this.shadowCameraNear + radius * 2 });
+            }
         }
     }
 }

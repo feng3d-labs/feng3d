@@ -55,7 +55,7 @@ namespace feng3d
 		/**
 		 * 处理镜头变化事件
 		 */
-        private onLensMatrixChanged(event: Event<any>)
+        private onLensChanged(event: Event<any>)
         {
             this._viewProjectionInvalid = true;
             this._frustumInvalid = true;
@@ -82,12 +82,12 @@ namespace feng3d
                 throw new Error("Lens cannot be null!");
 
             if (this._lens)
-                this._lens.off("matrixChanged", this.onLensMatrixChanged, this);
+                this._lens.off("lensChanged", this.onLensChanged, this);
 
             this._lens = value;
 
             if (this._lens)
-                this._lens.on("matrixChanged", this.onLensMatrixChanged, this);
+                this._lens.on("lensChanged", this.onLensChanged, this);
 
             this.dispatch("lensChanged", this);
         }

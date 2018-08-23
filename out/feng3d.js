@@ -18255,7 +18255,7 @@ var feng3d;
             this._matrixInvalid = true;
             this._invertMatrixInvalid = true;
             this._viewBoxInvalid = true;
-            this.dispatch("matrixChanged", this);
+            this.dispatch("lensChanged", this);
         };
         __decorate([
             feng3d.serialize,
@@ -18268,7 +18268,7 @@ var feng3d;
             feng3d.watch("invalidate")
         ], LensBase.prototype, "far", void 0);
         return LensBase;
-    }(feng3d.EventDispatcher));
+    }(feng3d.Feng3dObject));
     feng3d.LensBase = LensBase;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -18524,7 +18524,7 @@ var feng3d;
         /**
          * 处理镜头变化事件
          */
-        Camera.prototype.onLensMatrixChanged = function (event) {
+        Camera.prototype.onLensChanged = function (event) {
             this._viewProjectionInvalid = true;
             this._frustumInvalid = true;
             this.dispatch(event.type, event.data);
@@ -18542,10 +18542,10 @@ var feng3d;
                 if (!value)
                     throw new Error("Lens cannot be null!");
                 if (this._lens)
-                    this._lens.off("matrixChanged", this.onLensMatrixChanged, this);
+                    this._lens.off("lensChanged", this.onLensChanged, this);
                 this._lens = value;
                 if (this._lens)
-                    this._lens.on("matrixChanged", this.onLensMatrixChanged, this);
+                    this._lens.on("lensChanged", this.onLensChanged, this);
                 this.dispatch("lensChanged", this);
             },
             enumerable: true,
@@ -21173,7 +21173,12 @@ var feng3d;
             this.shadowCamera.transform.position = center.addTo(this.direction.scaleTo(radius + this.shadowCameraNear).negate());
             this.shadowCamera.transform.lookAt(center, this.shadowCamera.transform.upVector);
             //
-            this.shadowCamera.lens = new feng3d.OrthographicLens(-radius, radius, radius, -radius, this.shadowCameraNear, this.shadowCameraNear + radius * 2);
+            if (!this.orthographicLens) {
+                this.shadowCamera.lens = this.orthographicLens = new feng3d.OrthographicLens(-radius, radius, radius, -radius, this.shadowCameraNear, this.shadowCameraNear + radius * 2);
+            }
+            else {
+                this.orthographicLens.value({ left: -radius, right: radius, top: radius, bottom: -radius, near: this.shadowCameraNear, far: this.shadowCameraNear + radius * 2 });
+            }
         };
         return DirectionalLight;
     }(feng3d.Light));

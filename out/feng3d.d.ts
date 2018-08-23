@@ -9868,19 +9868,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 镜头事件
-     */
-    interface LensEventMap {
-        matrixChanged: any;
-    }
-    interface LensBase {
-        once<K extends keyof LensEventMap>(type: K, listener: (event: Event<LensEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof LensEventMap>(type: K, data?: LensEventMap[K], bubbles?: boolean): Event<LensEventMap[K]>;
-        has<K extends keyof LensEventMap>(type: K): boolean;
-        on<K extends keyof LensEventMap>(type: K, listener: (event: Event<LensEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof LensEventMap>(type?: K, listener?: (event: Event<LensEventMap[K]>) => any, thisObject?: any): any;
-    }
-    /**
      * 摄像机镜头
      *
      * 镜头主要作用是投影以及逆投影。
@@ -9890,7 +9877,7 @@ declare namespace feng3d {
      * GPU空间可视区域：立方体 [(-1, -1, -1), (1, 1, 1)]
      *
      */
-    abstract class LensBase extends EventDispatcher {
+    abstract class LensBase extends Feng3dObject {
         /**
          * 最近距离
          */
@@ -10103,7 +10090,7 @@ declare namespace feng3d {
         /**
          * 处理镜头变化事件
          */
-        private onLensMatrixChanged;
+        private onLensChanged;
         /**
          * 镜头
          */
@@ -10995,6 +10982,7 @@ declare namespace feng3d {
     class DirectionalLight extends Light {
         __class__: "feng3d.DirectionalLight";
         lightType: LightType;
+        private orthographicLens;
         /**
          * 光源位置
          */

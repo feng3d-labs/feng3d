@@ -1,23 +1,6 @@
 namespace feng3d
 {
 	/**
-	 * 镜头事件
-	 */
-	export interface LensEventMap
-	{
-		matrixChanged;
-	}
-
-	export interface LensBase
-	{
-		once<K extends keyof LensEventMap>(type: K, listener: (event: Event<LensEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-		dispatch<K extends keyof LensEventMap>(type: K, data?: LensEventMap[K], bubbles?: boolean): Event<LensEventMap[K]>;
-		has<K extends keyof LensEventMap>(type: K): boolean;
-		on<K extends keyof LensEventMap>(type: K, listener: (event: Event<LensEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
-		off<K extends keyof LensEventMap>(type?: K, listener?: (event: Event<LensEventMap[K]>) => any, thisObject?: any);
-	}
-
-	/**
 	 * 摄像机镜头
 	 * 
 	 * 镜头主要作用是投影以及逆投影。
@@ -27,7 +10,7 @@ namespace feng3d
 	 * GPU空间可视区域：立方体 [(-1, -1, -1), (1, 1, 1)]
 	 * 
 	 */
-	export abstract class LensBase extends EventDispatcher
+	export abstract class LensBase extends Feng3dObject
 	{
 		/**
 		 * 最近距离
@@ -184,7 +167,7 @@ namespace feng3d
 			this._matrixInvalid = true;
 			this._invertMatrixInvalid = true;
 			this._viewBoxInvalid = true;
-			this.dispatch("matrixChanged", this);
+			this.dispatch("lensChanged", this);
 		}
 
 		/**
