@@ -2890,27 +2890,6 @@ var feng3d;
 //         return new (<any>(this.constructor))(object.value);
 //     }
 // });
-// interface Object
-// {
-//     /**
-//      * 给对象设置值
-//      * @param target 被修改的对象
-//      * @param object 修改数据
-//      */
-//     __setValue<T>(target: T, object: Object): T;
-// }
-// Object.defineProperty(Object.prototype, "__setValue", {
-//     /**
-//      * uv数据
-//      */
-//     value: function <T>(target: T, object: Object): T
-//     {
-//         feng3d.serialization.setValue(target, object);
-//         return target;
-//     },
-//     enumerable: false,
-//     configurable: true
-// });
 var feng3d;
 (function (feng3d) {
     /**
