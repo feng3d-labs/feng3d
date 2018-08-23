@@ -5,11 +5,6 @@ namespace feng3d
         @watch("videoChanged")
         video: HTMLVideoElement;
 
-        constructor(raw?: gPartial<VideoTexture2D>)
-        {
-            super(raw);
-        }
-
         private videoChanged()
         {
             this._pixels = this.video;

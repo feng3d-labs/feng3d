@@ -62,7 +62,7 @@ namespace feng3d
          */
         @serialize
         @oav({ block: "normalMethod" })
-        s_normal = new UrlImageTexture2D({ noPixels: imageDatas.defaultNormal });
+        s_normal = new UrlImageTexture2D().value({ noPixels: ImageDatas.defaultNormal });
 
         /**
          * 镜面反射光泽图

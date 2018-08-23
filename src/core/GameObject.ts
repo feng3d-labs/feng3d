@@ -59,9 +59,9 @@ namespace feng3d
      */
     export class GameObject extends Feng3dObject
     {
-        
+
         __class__: "feng3d.GameObject" = "feng3d.GameObject";
-        
+
         readonly renderAtomic = new RenderAtomic();
 
         /**
@@ -171,7 +171,7 @@ namespace feng3d
 
         @serialize
         @oav({ component: "OAVComponentList" })
-        get components()
+        get components(): Components[]
         {
             return this._components.concat();
         }

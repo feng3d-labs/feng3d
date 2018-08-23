@@ -1,5 +1,15 @@
 namespace feng3d
 {
+    export enum ImageDatas
+    {
+        black = "black",
+        white = "white",
+        red = "red",
+        green = "green",
+        blue = "blue",
+        defaultNormal = "defaultNormal",
+    }
+
     export var imageDatas = {
         black: imageUtil.createImageData(1, 1, ColorKeywords.black),
         white: imageUtil.createImageData(1, 1, ColorKeywords.white),
@@ -17,13 +27,11 @@ namespace feng3d
         /**
          * 当贴图数据未加载好等情况时代替使用
          */
-        noPixels: ImageData;
+        noPixels = ImageDatas.white;
 
-        constructor(raw?: gPartial<Texture2D>)
-        {
-            super(raw);
-            this.noPixels = this.noPixels || imageDatas.white;
-            this._textureType = TextureType.TEXTURE_2D;
-        }
+        /**
+         * 纹理类型
+         */
+        protected _textureType = TextureType.TEXTURE_2D;
     }
 }

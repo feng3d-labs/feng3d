@@ -5,11 +5,6 @@ namespace feng3d
         @watch("imageDataChanged")
         imageData: ImageData;
 
-        constructor(raw?: gPartial<ImageDataTexture2D>)
-        {
-            super(raw);
-        }
-
         private imageDataChanged()
         {
             this._pixels = this.imageData;

@@ -10,7 +10,7 @@ namespace feng3d
 
         blendTexture = new UrlImageTexture2D();
 
-        splatRepeats = new Vector4(1, 1, 1, 1)
+        splatRepeats = new Vector4(1, 1, 1, 1);
 
         /**
          * 构建材质

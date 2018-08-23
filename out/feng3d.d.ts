@@ -8132,7 +8132,7 @@ declare namespace feng3d {
         /**
          * 当贴图数据未加载好等情况时代替使用
          */
-        protected noPixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[];
+        noPixels: string | string[];
         /**
          * 当前使用的贴图数据
          */
@@ -8160,7 +8160,6 @@ declare namespace feng3d {
          * 纹理尺寸
          */
         getSize(): Vector2;
-        constructor(raw?: gPartial<TextureInfo>);
         /**
          * 判断数据是否满足渲染需求
          */
@@ -9064,7 +9063,7 @@ declare namespace feng3d {
          */
         readonly globalVisible: any;
         readonly scene: Scene3D;
-        components: (PointLight | SpotLight | DirectionalLight | Behaviour | OutLineComponent | CartoonComponent | SkyBox | Transform | HoldSizeComponent | BillboardComponent | WireframeComponent | Model | ScriptComponent | Scene3D | Camera | FPSController | AudioListener | AudioSource | SkeletonComponent | Animation)[];
+        components: Components[];
         /**
          * 构建3D对象
          */
@@ -10578,6 +10577,14 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    enum ImageDatas {
+        black = "black",
+        white = "white",
+        red = "red",
+        green = "green",
+        blue = "blue",
+        defaultNormal = "defaultNormal"
+    }
     var imageDatas: {
         black: ImageData;
         white: ImageData;
@@ -10593,8 +10600,11 @@ declare namespace feng3d {
         /**
          * 当贴图数据未加载好等情况时代替使用
          */
-        noPixels: ImageData;
-        constructor(raw?: gPartial<Texture2D>);
+        noPixels: ImageDatas;
+        /**
+         * 纹理类型
+         */
+        protected _textureType: TextureType;
     }
 }
 declare namespace feng3d {
@@ -10604,7 +10614,6 @@ declare namespace feng3d {
     class ImageTexture2D extends Texture2D {
         __class__: "feng3d.ImageTexture2D";
         image: HTMLImageElement;
-        constructor(raw?: gPartial<ImageTexture2D>);
         private imageChanged;
     }
 }
@@ -10613,7 +10622,7 @@ declare namespace feng3d {
         __class__: "feng3d.UrlImageTexture2D";
         url: string;
         private image;
-        constructor(raw?: gPartial<UrlImageTexture2D>);
+        constructor();
         private imageChanged;
         private urlChanged;
         private onImageAssetsChanged;
@@ -10622,21 +10631,18 @@ declare namespace feng3d {
 declare namespace feng3d {
     class ImageDataTexture2D extends Texture2D {
         imageData: ImageData;
-        constructor(raw?: gPartial<ImageDataTexture2D>);
         private imageDataChanged;
     }
 }
 declare namespace feng3d {
     class CanvasTexture2D extends Texture2D {
         canvas: HTMLCanvasElement;
-        constructor(raw?: gPartial<CanvasTexture2D>);
         private canvasChanged;
     }
 }
 declare namespace feng3d {
     class VideoTexture2D extends Texture2D {
         video: HTMLVideoElement;
-        constructor(raw?: gPartial<VideoTexture2D>);
         private videoChanged;
     }
 }
@@ -10647,7 +10653,10 @@ declare namespace feng3d {
     class RenderTargetTexture2D extends Texture2D {
         OFFSCREEN_WIDTH: number;
         OFFSCREEN_HEIGHT: number;
-        constructor(raw?: gPartial<RenderTargetTexture2D>);
+        format: TextureFormat;
+        minFilter: TextureMinFilter;
+        magFilter: TextureMagFilter;
+        protected _isRenderTarget: boolean;
     }
 }
 declare namespace feng3d {
@@ -10661,7 +10670,9 @@ declare namespace feng3d {
         negative_x_url: string;
         negative_y_url: string;
         negative_z_url: string;
-        constructor(raw?: gPartial<TextureCube>);
+        noPixels: ImageDatas[];
+        protected _pixels: any[];
+        protected _textureType: TextureType;
         private urlChanged;
     }
 }

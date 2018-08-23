@@ -5,11 +5,6 @@ namespace feng3d
         @watch("canvasChanged")
         canvas: HTMLCanvasElement;
 
-        constructor(raw?: gPartial<CanvasTexture2D>)
-        {
-            super(raw);
-        }
-
         private canvasChanged()
         {
             this._pixels = this.canvas;

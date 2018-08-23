@@ -85,7 +85,7 @@ namespace feng3d
         /**
          * 当贴图数据未加载好等情况时代替使用
          */
-        protected noPixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[];
+        noPixels: string | string[];
 
         /**
          * 当前使用的贴图数据
@@ -160,11 +160,6 @@ namespace feng3d
             return new Vector2(pixel.width, pixel.height);
         }
 
-        constructor(raw?: gPartial<TextureInfo>)
-        {
-            serialization.setValue(this, raw);
-        }
-
         /**
          * 判断数据是否满足渲染需求
          */
@@ -205,7 +200,20 @@ namespace feng3d
             {
                 this.clear();
                 this._invalid = false;
-                this._activePixels = this.checkRenderData(this._pixels) ? this._pixels : this.noPixels;
+                if (this.checkRenderData(this._pixels))
+                {
+                    this._activePixels = this._pixels;
+                } else
+                {
+                    if (this.noPixels instanceof Array)
+                    {
+                        this._activePixels = this.noPixels.map(v => imageDatas[v]);
+                    } else
+                    {
+                        this._activePixels = imageDatas[this.noPixels];
+                    }
+                }
+
                 this._isPowerOfTwo = this.isPowerOfTwo(this._activePixels);
             }
 

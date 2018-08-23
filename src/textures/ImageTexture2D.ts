@@ -10,11 +10,6 @@ namespace feng3d
         @watch("imageChanged")
         image: HTMLImageElement;
 
-        constructor(raw?: gPartial<ImageTexture2D>)
-        {
-            super(raw);
-        }
-
         private imageChanged()
         {
             this._pixels = this.image;

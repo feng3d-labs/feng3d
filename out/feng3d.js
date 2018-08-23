@@ -12996,8 +12996,8 @@ var feng3d;
      */
     var TextureInfo = /** @class */ (function (_super) {
         __extends(TextureInfo, _super);
-        function TextureInfo(raw) {
-            var _this = this;
+        function TextureInfo() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             /**
              * 格式
              */
@@ -13047,7 +13047,6 @@ var feng3d;
              */
             _this._invalid = true;
             _this._isPowerOfTwo = false;
-            feng3d.serialization.setValue(_this, raw);
             return _this;
         }
         /**
@@ -13126,7 +13125,17 @@ var feng3d;
             if (this._invalid) {
                 this.clear();
                 this._invalid = false;
-                this._activePixels = this.checkRenderData(this._pixels) ? this._pixels : this.noPixels;
+                if (this.checkRenderData(this._pixels)) {
+                    this._activePixels = this._pixels;
+                }
+                else {
+                    if (this.noPixels instanceof Array) {
+                        this._activePixels = this.noPixels.map(function (v) { return feng3d.imageDatas[v]; });
+                    }
+                    else {
+                        this._activePixels = feng3d.imageDatas[this.noPixels];
+                    }
+                }
                 this._isPowerOfTwo = this.isPowerOfTwo(this._activePixels);
             }
             var texture = this.getTexture(gl);
@@ -16275,7 +16284,8 @@ var feng3d;
             this.transform.on("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
         };
         HoldSizeComponent.prototype.invalidateSceneTransform = function () {
-            this.transform["invalidateSceneTransform"]();
+            if (this._gameObject)
+                this.transform["invalidateSceneTransform"]();
         };
         HoldSizeComponent.prototype.updateLocalToWorldMatrix = function () {
             var _localToWorldMatrix = this.transform["_localToWorldMatrix"];
@@ -20288,6 +20298,15 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var ImageDatas;
+    (function (ImageDatas) {
+        ImageDatas["black"] = "black";
+        ImageDatas["white"] = "white";
+        ImageDatas["red"] = "red";
+        ImageDatas["green"] = "green";
+        ImageDatas["blue"] = "blue";
+        ImageDatas["defaultNormal"] = "defaultNormal";
+    })(ImageDatas = feng3d.ImageDatas || (feng3d.ImageDatas = {}));
     feng3d.imageDatas = {
         black: feng3d.imageUtil.createImageData(1, 1, feng3d.ColorKeywords.black),
         white: feng3d.imageUtil.createImageData(1, 1, feng3d.ColorKeywords.white),
@@ -20301,9 +20320,15 @@ var feng3d;
      */
     var Texture2D = /** @class */ (function (_super) {
         __extends(Texture2D, _super);
-        function Texture2D(raw) {
-            var _this = _super.call(this, raw) || this;
-            _this.noPixels = _this.noPixels || feng3d.imageDatas.white;
+        function Texture2D() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * 当贴图数据未加载好等情况时代替使用
+             */
+            _this.noPixels = ImageDatas.white;
+            /**
+             * 纹理类型
+             */
             _this._textureType = feng3d.TextureType.TEXTURE_2D;
             return _this;
         }
@@ -20318,8 +20343,8 @@ var feng3d;
      */
     var ImageTexture2D = /** @class */ (function (_super) {
         __extends(ImageTexture2D, _super);
-        function ImageTexture2D(raw) {
-            var _this = _super.call(this, raw) || this;
+        function ImageTexture2D() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.ImageTexture2D";
             return _this;
         }
@@ -20338,8 +20363,8 @@ var feng3d;
 (function (feng3d) {
     var UrlImageTexture2D = /** @class */ (function (_super) {
         __extends(UrlImageTexture2D, _super);
-        function UrlImageTexture2D(raw) {
-            var _this = _super.call(this, raw) || this;
+        function UrlImageTexture2D() {
+            var _this = _super.call(this) || this;
             _this.__class__ = "feng3d.UrlImageTexture2D";
             _this.url = "";
             //
@@ -20391,8 +20416,8 @@ var feng3d;
 (function (feng3d) {
     var ImageDataTexture2D = /** @class */ (function (_super) {
         __extends(ImageDataTexture2D, _super);
-        function ImageDataTexture2D(raw) {
-            return _super.call(this, raw) || this;
+        function ImageDataTexture2D() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         ImageDataTexture2D.prototype.imageDataChanged = function () {
             this._pixels = this.imageData;
@@ -20409,8 +20434,8 @@ var feng3d;
 (function (feng3d) {
     var CanvasTexture2D = /** @class */ (function (_super) {
         __extends(CanvasTexture2D, _super);
-        function CanvasTexture2D(raw) {
-            return _super.call(this, raw) || this;
+        function CanvasTexture2D() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         CanvasTexture2D.prototype.canvasChanged = function () {
             this._pixels = this.canvas;
@@ -20427,8 +20452,8 @@ var feng3d;
 (function (feng3d) {
     var VideoTexture2D = /** @class */ (function (_super) {
         __extends(VideoTexture2D, _super);
-        function VideoTexture2D(raw) {
-            return _super.call(this, raw) || this;
+        function VideoTexture2D() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         VideoTexture2D.prototype.videoChanged = function () {
             this._pixels = this.video;
@@ -20448,14 +20473,14 @@ var feng3d;
      */
     var RenderTargetTexture2D = /** @class */ (function (_super) {
         __extends(RenderTargetTexture2D, _super);
-        function RenderTargetTexture2D(raw) {
-            var _this = _super.call(this, raw) || this;
+        function RenderTargetTexture2D() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.OFFSCREEN_WIDTH = 1024;
             _this.OFFSCREEN_HEIGHT = 1024;
-            _this._isRenderTarget = true;
             _this.format = feng3d.TextureFormat.RGBA;
             _this.minFilter = feng3d.TextureMinFilter.NEAREST;
             _this.magFilter = feng3d.TextureMagFilter.NEAREST;
+            _this._isRenderTarget = true;
             return _this;
         }
         __decorate([
@@ -20475,11 +20500,11 @@ var feng3d;
      */
     var TextureCube = /** @class */ (function (_super) {
         __extends(TextureCube, _super);
-        function TextureCube(raw) {
-            var _this = _super.call(this, raw) || this;
-            _this.noPixels = _this.noPixels || [feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white, feng3d.imageDatas.white];
-            _this._textureType = feng3d.TextureType.TEXTURE_CUBE_MAP;
+        function TextureCube() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.noPixels = [feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white];
             _this._pixels = [null, null, null, null, null, null];
+            _this._textureType = feng3d.TextureType.TEXTURE_CUBE_MAP;
             return _this;
         }
         TextureCube.prototype.urlChanged = function (property, oldValue, newValue) {
@@ -20793,7 +20818,7 @@ var feng3d;
             /**
              * 漫反射纹理
              */
-            this.s_normal = new feng3d.UrlImageTexture2D({ noPixels: feng3d.imageDatas.defaultNormal });
+            this.s_normal = new feng3d.UrlImageTexture2D().value({ noPixels: feng3d.ImageDatas.defaultNormal });
             /**
              * 镜面反射光泽图
              */
@@ -22815,15 +22840,15 @@ var feng3d;
         __extends(TerrainUniforms, _super);
         function TerrainUniforms() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.s_splatTexture1 = new feng3d.UrlImageTexture2D({
+            _this.s_splatTexture1 = new feng3d.UrlImageTexture2D().value({
                 generateMipmap: true,
                 minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
             });
-            _this.s_splatTexture2 = new feng3d.UrlImageTexture2D({
+            _this.s_splatTexture2 = new feng3d.UrlImageTexture2D().value({
                 generateMipmap: true,
                 minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
             });
-            _this.s_splatTexture3 = new feng3d.UrlImageTexture2D({
+            _this.s_splatTexture3 = new feng3d.UrlImageTexture2D().value({
                 generateMipmap: true,
                 minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
             });

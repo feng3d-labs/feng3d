@@ -12,9 +12,9 @@ namespace feng3d
         @watch("imageChanged")
         private image: HTMLImageElement;
 
-        constructor(raw?: gPartial<UrlImageTexture2D>)
+        constructor()
         {
-            super(raw);
+            super();
             //
             feng3dDispatcher.on("assets.imageAssetsChanged", this.onImageAssetsChanged, this);
             this.urlChanged();

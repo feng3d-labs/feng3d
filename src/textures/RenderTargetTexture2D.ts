@@ -11,13 +11,12 @@ namespace feng3d
         @watch("invalidate")
         OFFSCREEN_HEIGHT = 1024;
 
-        constructor(raw?: gPartial<RenderTargetTexture2D>)
-        {
-            super(raw);
-            this._isRenderTarget = true;
-            this.format = TextureFormat.RGBA;
-            this.minFilter = TextureMinFilter.NEAREST;
-            this.magFilter = TextureMagFilter.NEAREST;
-        }
+        format = TextureFormat.RGBA;
+
+        minFilter = TextureMinFilter.NEAREST;
+
+        magFilter = TextureMagFilter.NEAREST;
+
+        protected _isRenderTarget = true;
     }
 }
