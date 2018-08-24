@@ -16422,27 +16422,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Model.prototype, "geometry", {
-            /**
-             * Returns the instantiated Mesh assigned to the mesh filter.
-             */
-            get: function () {
-                return this._geometry;
-            },
-            set: function (value) {
-                if (this._geometry == value)
-                    return;
-                if (this._geometry) {
-                    this._geometry.off("boundsInvalid", this.onBoundsInvalid, this);
-                }
-                this._geometry = value;
-                if (this._geometry) {
-                    this._geometry.on("boundsInvalid", this.onBoundsInvalid, this);
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Model.prototype, "selfLocalBounds", {
             /**
              * 自身局部包围盒
@@ -16499,7 +16478,7 @@ var feng3d;
             renderAtomic.uniforms.u_mvMatrix = function () { return feng3d.lazy.getvalue(renderAtomic.uniforms.u_modelMatrix).clone().append(feng3d.lazy.getvalue(renderAtomic.uniforms.u_viewMatrix)); };
             renderAtomic.uniforms.u_ITMVMatrix = function () { return feng3d.lazy.getvalue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose(); };
             //
-            this._geometry.beforeRender(renderAtomic);
+            this.geometry.beforeRender(renderAtomic);
             this.material.beforeRender(renderAtomic);
             this.lightPicker.beforeRender(renderAtomic);
         };
@@ -16542,6 +16521,14 @@ var feng3d;
             this.material = null;
             _super.prototype.dispose.call(this);
         };
+        Model.prototype.onGeometryChanged = function (property, oldValue, value) {
+            if (oldValue) {
+                oldValue.off("boundsInvalid", this.onBoundsInvalid, this);
+            }
+            if (value) {
+                value.on("boundsInvalid", this.onBoundsInvalid, this);
+            }
+        };
         Model.prototype.onScenetransformChanged = function () {
             this._selfWorldBounds = null;
         };
@@ -16570,8 +16557,9 @@ var feng3d;
         };
         __decorate([
             feng3d.oav({ component: "OAVPick", componentParam: { tooltip: "几何体，提供模型以形状", accepttype: "geometry", datatype: "geometry" } }),
-            feng3d.serialize
-        ], Model.prototype, "geometry", null);
+            feng3d.serialize,
+            feng3d.watch("onGeometryChanged")
+        ], Model.prototype, "geometry", void 0);
         __decorate([
             feng3d.oav({ component: "OAVPick", componentParam: { tooltip: "材质，提供模型以皮肤", accepttype: "material", datatype: "material" } }),
             feng3d.serialize

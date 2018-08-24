@@ -9329,8 +9329,7 @@ declare namespace feng3d {
         /**
          * Returns the instantiated Mesh assigned to the mesh filter.
          */
-        geometry: CustomGeometry | PointGeometry | SegmentGeometry | PlaneGeometry | CubeGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | TerrainGeometry;
-        private _geometry;
+        geometry: Geometrys;
         /**
          * 材质
          * Returns the first instantiated Material assigned to the renderer.
@@ -9372,6 +9371,7 @@ declare namespace feng3d {
          * 销毁
          */
         dispose(): void;
+        private onGeometryChanged;
         private onScenetransformChanged;
         /**
          * 更新世界边界

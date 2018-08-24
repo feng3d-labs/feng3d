@@ -13,25 +13,8 @@ namespace feng3d
          */
         @oav({ component: "OAVPick", componentParam: { tooltip: "几何体，提供模型以形状", accepttype: "geometry", datatype: "geometry" } })
         @serialize
-        get geometry()
-        {
-            return this._geometry;
-        }
-        set geometry(value)
-        {
-            if (this._geometry == value)
-                return;
-            if (this._geometry)
-            {
-                this._geometry.off("boundsInvalid", this.onBoundsInvalid, this);
-            }
-            this._geometry = value;
-            if (this._geometry)
-            {
-                this._geometry.on("boundsInvalid", this.onBoundsInvalid, this);
-            }
-        }
-        private _geometry: Geometrys;
+        @watch("onGeometryChanged")
+        geometry: Geometrys;
 
         /**
          * 材质
@@ -124,7 +107,7 @@ namespace feng3d
             renderAtomic.uniforms.u_ITMVMatrix = () => lazy.getvalue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose();
 
             //
-            this._geometry.beforeRender(renderAtomic);
+            this.geometry.beforeRender(renderAtomic);
             this.material.beforeRender(renderAtomic);
             this.lightPicker.beforeRender(renderAtomic);
         }
@@ -177,6 +160,18 @@ namespace feng3d
             this.geometry = <any>null;
             this.material = <any>null;
             super.dispose();
+        }
+
+        private onGeometryChanged(property: string, oldValue: Geometrys, value: Geometrys)
+        {
+            if (oldValue)
+            {
+                oldValue.off("boundsInvalid", this.onBoundsInvalid, this);
+            }
+            if (value)
+            {
+                value.on("boundsInvalid", this.onBoundsInvalid, this);
+            }
         }
 
         private onScenetransformChanged()
