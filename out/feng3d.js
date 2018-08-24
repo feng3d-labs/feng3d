@@ -18266,6 +18266,9 @@ var feng3d;
             feng3d.oav(),
             feng3d.watch("invalidate")
         ], LensBase.prototype, "far", void 0);
+        __decorate([
+            feng3d.watch("invalidate")
+        ], LensBase.prototype, "aspect", void 0);
         return LensBase;
     }(feng3d.Feng3dObject));
     feng3d.LensBase = LensBase;
@@ -18356,7 +18359,6 @@ var feng3d;
         ], OrthographicLens.prototype, "bottom", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
             feng3d.watch("aspectRatioChanged")
         ], OrthographicLens.prototype, "aspect", void 0);
         return OrthographicLens;
@@ -18380,7 +18382,7 @@ var feng3d;
             if (fov === void 0) { fov = 60; }
             if (aspect === void 0) { aspect = 1; }
             if (near === void 0) { near = 0.3; }
-            if (far === void 0) { far = 2000; }
+            if (far === void 0) { far = 1000; }
             var _this = _super.call(this, aspect, near, far) || this;
             _this.fov = fov;
             return _this;
@@ -18469,8 +18471,6 @@ var feng3d;
             feng3d.oav()
         ], PerspectiveLens.prototype, "fov", void 0);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav(),
             feng3d.watch("invalidate")
         ], PerspectiveLens.prototype, "aspect", void 0);
         return PerspectiveLens;

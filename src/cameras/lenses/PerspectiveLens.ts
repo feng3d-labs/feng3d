@@ -18,8 +18,6 @@ namespace feng3d
 		/**
 		 * 视窗缩放比例(width/height)，在渲染器中设置
 		 */
-        @serialize
-        @oav()
         @watch("invalidate")
         aspect: number;
 
@@ -28,7 +26,7 @@ namespace feng3d
 		 * @param fov 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
          * 
 		 */
-        constructor(fov = 60, aspect = 1, near = 0.3, far = 2000)
+        constructor(fov = 60, aspect = 1, near = 0.3, far = 1000)
         {
             super(aspect, near, far);
             this.fov = fov;
