@@ -14,28 +14,20 @@ namespace feng3d
     {
         __class__: "feng3d.Camera" = "feng3d.Camera";
 
-        private _lens: LensBase;
-        private _viewProjection: Matrix4x4 = new Matrix4x4();
-        private _viewProjectionInvalid = true;
-        private _frustum: Frustum;
-        private _frustumInvalid = true;
-        private _viewBox = new Box();
-        private _viewBoxInvalid = true;
-        private _viewRect: Rectangle = new Rectangle(0, 0, 1, 1);
+        get single() { return true; }
 
         /**
          * 视窗矩形
          */
-        get viewRect()
-        {
-            return this._viewRect;
-        }
-        set viewRect(value)
-        {
-            this._viewRect = value;
-        }
+        viewRect = new Rectangle(0, 0, 1, 1);
 
-        get single() { return true; }
+        /**
+		 * 镜头
+		 */
+        @serialize
+        @oav()
+        @watch("onLensChanged")
+        lens: LensBase
 
 		/**
 		 * 创建一个摄像机
@@ -50,46 +42,6 @@ namespace feng3d
             this._frustumInvalid = true;
 
             this._frustum = new Frustum();
-        }
-
-		/**
-		 * 处理镜头变化事件
-		 */
-        private onLensChanged(event: Event<any>)
-        {
-            this._viewProjectionInvalid = true;
-            this._frustumInvalid = true;
-
-            this.dispatch(<any>event.type, event.data);
-        }
-
-        /**
-		 * 镜头
-		 */
-        @serialize
-        @oav()
-        get lens(): LensBase
-        {
-            return this._lens;
-        }
-
-        set lens(value: LensBase)
-        {
-            if (this._lens == value)
-                return;
-
-            if (!value)
-                throw new Error("Lens cannot be null!");
-
-            if (this._lens)
-                this._lens.off("lensChanged", this.onLensChanged, this);
-
-            this._lens = value;
-
-            if (this._lens)
-                this._lens.on("lensChanged", this.onLensChanged, this);
-
-            this.dispatch("lensChanged", this);
         }
 
 		/**
@@ -123,7 +75,7 @@ namespace feng3d
 		 */
         getMouseRay3D(): Ray3D
         {
-            return this.getRay3D(windowEventProxy.clientX - this._viewRect.x, windowEventProxy.clientY - this._viewRect.y);
+            return this.getRay3D(windowEventProxy.clientX - this.viewRect.x, windowEventProxy.clientY - this.viewRect.y);
         }
 
         /**
@@ -147,15 +99,8 @@ namespace feng3d
         {
             var v: Vector3 = this.lens.project(this.transform.worldToLocalMatrix.transformVector(point3d));
 
-            // var w = this._viewRect.width;
-            // var h = this._viewRect.height;
-            // var mat = new Matrix(2 / w, 0, 0, -2 / h, -1, 1);
-            // mat.invert();
-            // var p = mat.transformPoint(new Vector2(v.x,v.y));
-
-            v.x = (v.x + 1.0) * this._viewRect.width / 2.0;
-            v.y = (1.0 - v.y) * this._viewRect.height / 2.0;
-
+            v.x = (v.x + 1.0) * this.viewRect.width / 2.0;
+            v.y = (1.0 - v.y) * this.viewRect.height / 2.0;
 
             return v;
         }
@@ -182,14 +127,9 @@ namespace feng3d
         screenToGpuPosition(screenPos: Vector2): Vector2
         {
             var gpuPos: Vector2 = new Vector2();
-            gpuPos.x = (screenPos.x * 2 - this._viewRect.width) / this._viewRect.width;
+            gpuPos.x = (screenPos.x * 2 - this.viewRect.width) / this.viewRect.width;
             // 屏幕坐标与gpu中使用的坐标Y轴方向相反
-            gpuPos.y = - (screenPos.y * 2 - this._viewRect.height) / this._viewRect.height;
-
-            // var w = this._viewRect.width;
-            // var h = this._viewRect.height;
-            // var mat = new Matrix(2 / w, 0, 0, -2 / h, -1, 1);
-            // var p = mat.transformPoint(screenPos);
+            gpuPos.y = - (screenPos.y * 2 - this.viewRect.height) / this.viewRect.height;
 
             return gpuPos;
         }
@@ -200,8 +140,8 @@ namespace feng3d
          */
         getScaleByDepth(depth: number)
         {
-            var centerX = this._viewRect.width / 2;
-            var centerY = this._viewRect.height / 2;
+            var centerX = this.viewRect.width / 2;
+            var centerY = this.viewRect.height / 2;
             var lt = this.unproject(centerX - 0.5, centerY - 0.5, depth);
             var rb = this.unproject(centerX + 0.5, centerY + 0.5, depth);
             var scale = lt.subTo(rb).length;
@@ -234,6 +174,15 @@ namespace feng3d
             return this._viewBox;
         }
 
+        //
+        private _lens: LensBase;
+        private _viewProjection: Matrix4x4 = new Matrix4x4();
+        private _viewProjectionInvalid = true;
+        private _frustum: Frustum;
+        private _frustumInvalid = true;
+        private _viewBox = new Box();
+        private _viewBoxInvalid = true;
+
         /**
          * 更新可视区域顶点
          */
@@ -241,6 +190,20 @@ namespace feng3d
         {
             this._viewBox.copy(this.lens.viewBox);
             this._viewBox.applyMatrix3D(this.transform.localToWorldMatrix);
+        }
+
+		/**
+		 * 处理镜头变化事件
+		 */
+        private onLensChanged(property: string, oldValue: LensBase, value: LensBase)
+        {
+            this._viewProjectionInvalid = true;
+            this._frustumInvalid = true;
+
+            if (oldValue) oldValue.off("lensChanged", <any>this.onLensChanged, this);
+            if (value) value.on("lensChanged", <any>this.onLensChanged, this);
+
+            this.dispatch("lensChanged");
         }
     }
 }

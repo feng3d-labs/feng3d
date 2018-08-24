@@ -18484,27 +18484,17 @@ var feng3d;
         function Camera() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.Camera";
+            /**
+             * 视窗矩形
+             */
+            _this.viewRect = new feng3d.Rectangle(0, 0, 1, 1);
             _this._viewProjection = new feng3d.Matrix4x4();
             _this._viewProjectionInvalid = true;
             _this._frustumInvalid = true;
             _this._viewBox = new feng3d.Box();
             _this._viewBoxInvalid = true;
-            _this._viewRect = new feng3d.Rectangle(0, 0, 1, 1);
             return _this;
         }
-        Object.defineProperty(Camera.prototype, "viewRect", {
-            /**
-             * 视窗矩形
-             */
-            get: function () {
-                return this._viewRect;
-            },
-            set: function (value) {
-                this._viewRect = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Camera.prototype, "single", {
             get: function () { return true; },
             enumerable: true,
@@ -18521,36 +18511,6 @@ var feng3d;
             this._frustumInvalid = true;
             this._frustum = new feng3d.Frustum();
         };
-        /**
-         * 处理镜头变化事件
-         */
-        Camera.prototype.onLensChanged = function (event) {
-            this._viewProjectionInvalid = true;
-            this._frustumInvalid = true;
-            this.dispatch(event.type, event.data);
-        };
-        Object.defineProperty(Camera.prototype, "lens", {
-            /**
-             * 镜头
-             */
-            get: function () {
-                return this._lens;
-            },
-            set: function (value) {
-                if (this._lens == value)
-                    return;
-                if (!value)
-                    throw new Error("Lens cannot be null!");
-                if (this._lens)
-                    this._lens.off("lensChanged", this.onLensChanged, this);
-                this._lens = value;
-                if (this._lens)
-                    this._lens.on("lensChanged", this.onLensChanged, this);
-                this.dispatch("lensChanged", this);
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Camera.prototype, "viewProjection", {
             /**
              * 场景投影矩阵，世界空间转投影空间
@@ -18579,7 +18539,7 @@ var feng3d;
          * 获取鼠标射线（与鼠标重叠的摄像机射线）
          */
         Camera.prototype.getMouseRay3D = function () {
-            return this.getRay3D(feng3d.windowEventProxy.clientX - this._viewRect.x, feng3d.windowEventProxy.clientY - this._viewRect.y);
+            return this.getRay3D(feng3d.windowEventProxy.clientX - this.viewRect.x, feng3d.windowEventProxy.clientY - this.viewRect.y);
         };
         /**
          * 获取与坐标重叠的射线
@@ -18599,13 +18559,8 @@ var feng3d;
          */
         Camera.prototype.project = function (point3d) {
             var v = this.lens.project(this.transform.worldToLocalMatrix.transformVector(point3d));
-            // var w = this._viewRect.width;
-            // var h = this._viewRect.height;
-            // var mat = new Matrix(2 / w, 0, 0, -2 / h, -1, 1);
-            // mat.invert();
-            // var p = mat.transformPoint(new Vector2(v.x,v.y));
-            v.x = (v.x + 1.0) * this._viewRect.width / 2.0;
-            v.y = (1.0 - v.y) * this._viewRect.height / 2.0;
+            v.x = (v.x + 1.0) * this.viewRect.width / 2.0;
+            v.y = (1.0 - v.y) * this.viewRect.height / 2.0;
             return v;
         };
         /**
@@ -18628,13 +18583,9 @@ var feng3d;
          */
         Camera.prototype.screenToGpuPosition = function (screenPos) {
             var gpuPos = new feng3d.Vector2();
-            gpuPos.x = (screenPos.x * 2 - this._viewRect.width) / this._viewRect.width;
+            gpuPos.x = (screenPos.x * 2 - this.viewRect.width) / this.viewRect.width;
             // 屏幕坐标与gpu中使用的坐标Y轴方向相反
-            gpuPos.y = -(screenPos.y * 2 - this._viewRect.height) / this._viewRect.height;
-            // var w = this._viewRect.width;
-            // var h = this._viewRect.height;
-            // var mat = new Matrix(2 / w, 0, 0, -2 / h, -1, 1);
-            // var p = mat.transformPoint(screenPos);
+            gpuPos.y = -(screenPos.y * 2 - this.viewRect.height) / this.viewRect.height;
             return gpuPos;
         };
         /**
@@ -18642,8 +18593,8 @@ var feng3d;
          * @param   depth   深度
          */
         Camera.prototype.getScaleByDepth = function (depth) {
-            var centerX = this._viewRect.width / 2;
-            var centerY = this._viewRect.height / 2;
+            var centerX = this.viewRect.width / 2;
+            var centerY = this.viewRect.height / 2;
             var lt = this.unproject(centerX - 0.5, centerY - 0.5, depth);
             var rb = this.unproject(centerX + 0.5, centerY + 0.5, depth);
             var scale = lt.subTo(rb).length;
@@ -18684,10 +18635,23 @@ var feng3d;
             this._viewBox.copy(this.lens.viewBox);
             this._viewBox.applyMatrix3D(this.transform.localToWorldMatrix);
         };
+        /**
+         * 处理镜头变化事件
+         */
+        Camera.prototype.onLensChanged = function (property, oldValue, value) {
+            this._viewProjectionInvalid = true;
+            this._frustumInvalid = true;
+            if (oldValue)
+                oldValue.off("lensChanged", this.onLensChanged, this);
+            if (value)
+                value.on("lensChanged", this.onLensChanged, this);
+            this.dispatch("lensChanged");
+        };
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
-        ], Camera.prototype, "lens", null);
+            feng3d.oav(),
+            feng3d.watch("onLensChanged")
+        ], Camera.prototype, "lens", void 0);
         return Camera;
     }(feng3d.Component));
     feng3d.Camera = Camera;

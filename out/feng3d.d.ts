@@ -10078,31 +10078,19 @@ declare namespace feng3d {
      */
     class Camera extends Component {
         __class__: "feng3d.Camera";
-        private _lens;
-        private _viewProjection;
-        private _viewProjectionInvalid;
-        private _frustum;
-        private _frustumInvalid;
-        private _viewBox;
-        private _viewBoxInvalid;
-        private _viewRect;
+        readonly single: boolean;
         /**
          * 视窗矩形
          */
         viewRect: Rectangle;
-        readonly single: boolean;
-        /**
-         * 创建一个摄像机
-         */
-        init(gameObject: GameObject): void;
-        /**
-         * 处理镜头变化事件
-         */
-        private onLensChanged;
         /**
          * 镜头
          */
         lens: LensBase;
+        /**
+         * 创建一个摄像机
+         */
+        init(gameObject: GameObject): void;
         /**
          * 场景投影矩阵，世界空间转投影空间
          */
@@ -10156,10 +10144,21 @@ declare namespace feng3d {
          * 可视包围盒
          */
         readonly viewBox: Box;
+        private _lens;
+        private _viewProjection;
+        private _viewProjectionInvalid;
+        private _frustum;
+        private _frustumInvalid;
+        private _viewBox;
+        private _viewBoxInvalid;
         /**
          * 更新可视区域顶点
          */
         private updateViewBox;
+        /**
+         * 处理镜头变化事件
+         */
+        private onLensChanged;
     }
 }
 declare namespace feng3d {
