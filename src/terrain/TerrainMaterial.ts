@@ -6,9 +6,14 @@ namespace feng3d
     {
         __class__: "feng3d.TerrainMaterial" = "feng3d.TerrainMaterial";
 
-        shaderName: "terrain" = "terrain";
+        uniforms: TerrainUniforms;
 
-        uniforms = new TerrainUniforms();
+        constructor()
+        {
+            super();
+            this.shaderName = "terrain";
+            this.uniforms = new TerrainUniforms();
+        }
     }
 
     export class TerrainUniforms extends StandardUniforms

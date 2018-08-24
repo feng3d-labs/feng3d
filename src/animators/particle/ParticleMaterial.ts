@@ -7,9 +7,14 @@ namespace feng3d
     {
         __class__: "feng3d.ParticleMaterial" = "feng3d.ParticleMaterial";
 
-        shaderName: "particle" = "particle";
+        uniforms: ParticleUniforms;
 
-        uniforms = new ParticleUniforms();
+        constructor()
+        {
+            super();
+            this.shaderName = "particle";
+            this.uniforms = new ParticleUniforms();
+        }
     }
 
     export class ParticleUniforms extends StandardUniforms

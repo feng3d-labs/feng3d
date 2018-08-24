@@ -10,9 +10,14 @@ namespace feng3d
     {
         __class__: "feng3d.SegmentMaterial" = "feng3d.SegmentMaterial";
 
-        shaderName: "segment" = "segment";
+        uniforms: SegmentUniforms;
 
-        uniforms = new SegmentUniforms();
+        constructor()
+        {
+            super();
+            this.shaderName = "segment";
+            this.uniforms = new SegmentUniforms();
+        }
     }
 
     export class SegmentUniforms

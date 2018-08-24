@@ -10,9 +10,14 @@ namespace feng3d
     {
         __class__: "feng3d.TextureMaterial" = "feng3d.TextureMaterial";
 
-        shaderName: "texture" = "texture";
+        uniforms: TextureUniforms;
 
-        uniforms = new TextureUniforms();
+        constructor()
+        {
+            super();
+            this.shaderName = "texture";
+            this.uniforms = new TextureUniforms();
+        }
     }
 
     export class TextureUniforms

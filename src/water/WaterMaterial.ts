@@ -6,9 +6,14 @@ namespace feng3d
     {
         __class__: "feng3d.WaterMaterial" = "feng3d.WaterMaterial";
 
-        shaderName: "water" = "water";
+        uniforms: WaterUniforms;
 
-        uniforms = new WaterUniforms();
+        constructor()
+        {
+            super();
+            this.shaderName = "water";
+            this.uniforms = new WaterUniforms();
+        }
     }
 
     export class WaterUniforms

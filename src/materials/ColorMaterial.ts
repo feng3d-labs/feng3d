@@ -9,9 +9,14 @@ namespace feng3d
     {
         __class__: "feng3d.ColorMaterial" = "feng3d.ColorMaterial";
 
-        shaderName: "color" = "color";
+        uniforms: ColorUniforms;
 
-        uniforms = new ColorUniforms();
+        constructor()
+        {
+            super();
+            this.shaderName = "color";
+            this.uniforms = new ColorUniforms();
+        }
     }
 
     export class ColorUniforms

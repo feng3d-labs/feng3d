@@ -33,17 +33,6 @@ namespace feng3d
 		 */
 		aspect: number;
 
-		//
-		protected _matrix = new Matrix4x4();
-
-		//
-		private _matrixInvalid = true;
-		private _invertMatrixInvalid = true;
-		private _inverseMatrix = new Matrix4x4();
-		//
-		protected _viewBox = new Box();
-		private _viewBoxInvalid = true;
-
 		/**
 		 * 创建一个摄像机镜头
 		 */
@@ -158,6 +147,15 @@ namespace feng3d
 		{
 			return this.unprojectRay(nX, nY).getPointWithZ(sZ, v);
 		}
+
+		//
+		private _matrixInvalid = true;
+		private _invertMatrixInvalid = true;
+		private _inverseMatrix = new Matrix4x4();
+		private _viewBoxInvalid = true;
+		//
+		protected _viewBox = new Box();
+		protected _matrix = new Matrix4x4();
 
 		/**
 		 * 投影矩阵失效

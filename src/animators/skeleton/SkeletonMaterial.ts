@@ -6,9 +6,14 @@ namespace feng3d
     {
         __class__: "feng3d.SkeletonMaterial" = "feng3d.SkeletonMaterial";
 
-        shaderName: "skeleton" = "skeleton";
+        uniforms: SkeletonUniforms;
 
-        uniforms = new SkeletonUniforms();
+        constructor()
+        {
+            super();
+            this.shaderName = "skeleton";
+            this.uniforms = new SkeletonUniforms();
+        }
     }
 
     export class SkeletonUniforms extends StandardUniforms

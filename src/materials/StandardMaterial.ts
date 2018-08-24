@@ -17,14 +17,14 @@ namespace feng3d
     {
         __class__: "feng3d.StandardMaterial" = "feng3d.StandardMaterial";
 
-        shaderName: "standard" = "standard";
+        uniforms: StandardUniforms;
 
-        /**
-         * Uniform数据
-         */
-        @serialize
-        @oav({ component: "OAVObjectView" })
-        uniforms = new StandardUniforms();
+        constructor()
+        {
+            super();
+            this.shaderName = "standard";
+            this.uniforms = new StandardUniforms();
+        }
     }
 
     export class StandardUniforms

@@ -9898,12 +9898,6 @@ declare namespace feng3d {
          * 视窗缩放比例(width/height)，在渲染器中设置
          */
         aspect: number;
-        protected _matrix: Matrix4x4;
-        private _matrixInvalid;
-        private _invertMatrixInvalid;
-        private _inverseMatrix;
-        protected _viewBox: Box;
-        private _viewBoxInvalid;
         /**
          * 创建一个摄像机镜头
          */
@@ -9957,6 +9951,12 @@ declare namespace feng3d {
          * @return 摄像机空间坐标
          */
         unprojectWithDepth(nX: number, nY: number, sZ: number, v?: Vector3): Vector3;
+        private _matrixInvalid;
+        private _invertMatrixInvalid;
+        private _inverseMatrix;
+        private _viewBoxInvalid;
+        protected _viewBox: Box;
+        protected _matrix: Matrix4x4;
         /**
          * 投影矩阵失效
          */
@@ -10705,8 +10705,8 @@ declare namespace feng3d {
      */
     class PointMaterial extends Material {
         __class__: "feng3d.PointMaterial";
-        shaderName: "point";
         uniforms: PointUniforms;
+        constructor();
     }
     class PointUniforms {
         /**
@@ -10728,8 +10728,8 @@ declare namespace feng3d {
      */
     class ColorMaterial extends Material {
         __class__: "feng3d.ColorMaterial";
-        shaderName: "color";
         uniforms: ColorUniforms;
+        constructor();
     }
     class ColorUniforms {
         /**
@@ -10748,8 +10748,8 @@ declare namespace feng3d {
      */
     class SegmentMaterial extends Material {
         __class__: "feng3d.SegmentMaterial";
-        shaderName: "segment";
         uniforms: SegmentUniforms;
+        constructor();
     }
     class SegmentUniforms {
         /**
@@ -10767,8 +10767,8 @@ declare namespace feng3d {
      */
     class TextureMaterial extends Material {
         __class__: "feng3d.TextureMaterial";
-        shaderName: "texture";
         uniforms: TextureUniforms;
+        constructor();
     }
     class TextureUniforms {
         /**
@@ -10796,11 +10796,8 @@ declare namespace feng3d {
     }
     class StandardMaterial extends Material {
         __class__: "feng3d.StandardMaterial";
-        shaderName: "standard";
-        /**
-         * Uniform数据
-         */
         uniforms: StandardUniforms;
+        constructor();
     }
     class StandardUniforms {
         /**
@@ -11410,8 +11407,8 @@ declare namespace feng3d {
     }
     class WaterMaterial extends Material {
         __class__: "feng3d.WaterMaterial";
-        shaderName: "water";
         uniforms: WaterUniforms;
+        constructor();
     }
     class WaterUniforms {
         u_alpha: number;
@@ -11505,8 +11502,8 @@ declare namespace feng3d {
     }
     class TerrainMaterial extends Material {
         __class__: "feng3d.TerrainMaterial";
-        shaderName: "terrain";
         uniforms: TerrainUniforms;
+        constructor();
     }
     class TerrainUniforms extends StandardUniforms {
         s_splatTexture1: UrlImageTexture2D;
@@ -11880,8 +11877,8 @@ declare namespace feng3d {
     }
     class ParticleMaterial extends Material {
         __class__: "feng3d.ParticleMaterial";
-        shaderName: "particle";
         uniforms: ParticleUniforms;
+        constructor();
     }
     class ParticleUniforms extends StandardUniforms {
     }
@@ -12028,8 +12025,8 @@ declare namespace feng3d {
     }
     class SkeletonMaterial extends Material {
         __class__: "feng3d.SkeletonMaterial";
-        shaderName: "skeleton";
         uniforms: SkeletonUniforms;
+        constructor();
     }
     class SkeletonUniforms extends StandardUniforms {
     }

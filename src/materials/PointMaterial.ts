@@ -10,9 +10,14 @@ namespace feng3d
     {
         __class__: "feng3d.PointMaterial" = "feng3d.PointMaterial";
 
-        shaderName: "point" = "point";
+        uniforms: PointUniforms;
 
-        uniforms = new PointUniforms();
+        constructor()
+        {
+            super();
+            this.shaderName = "point";
+            this.uniforms = new PointUniforms();
+        }
     }
 
     export class PointUniforms

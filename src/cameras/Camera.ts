@@ -10,6 +10,7 @@ namespace feng3d
 	/**
 	 * 摄像机
 	 */
+    // @ov({ component: "OVCamera" })
     export class Camera extends Component
     {
         __class__: "feng3d.Camera" = "feng3d.Camera";
