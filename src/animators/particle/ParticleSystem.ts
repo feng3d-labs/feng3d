@@ -1,9 +1,9 @@
 namespace feng3d
 {
 
+    export interface ComponentMap { ParticleSystem: ParticleSystem }
     /**
      * 粒子系统
-
      */
     export class ParticleSystem extends Model
     {

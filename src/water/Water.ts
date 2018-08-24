@@ -1,5 +1,8 @@
 namespace feng3d
 {
+
+    export interface ComponentMap { Water: Water }
+
     /**
      * The Water component renders the terrain.
      */

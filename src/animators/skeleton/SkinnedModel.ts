@@ -2,8 +2,12 @@ namespace feng3d
 {
     var supportNUM_SKELETONJOINT = 150;
 
+    export interface ComponentMap { SkinnedModel: SkinnedModel }
+
     export class SkinnedModel extends Model
     {
+        __class__: "feng3d.SkinnedModel" = "feng3d.SkinnedModel";
+
         get single() { return true; }
 
         @serialize

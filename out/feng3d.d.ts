@@ -9324,7 +9324,7 @@ declare namespace feng3d {
         Model: Model;
     }
     class Model extends Behaviour {
-        __class__: "feng3d.Model" | "feng3d.Terrain" | "feng3d.Water" | "feng3d.ParticleSystem";
+        __class__: "feng3d.Model" | "feng3d.Terrain" | "feng3d.Water" | "feng3d.ParticleSystem" | "feng3d.SkinnedModel";
         readonly single: boolean;
         /**
          * Returns the instantiated Mesh assigned to the mesh filter.
@@ -11380,6 +11380,9 @@ declare namespace feng3d {
 }
 declare function createPanner(): PannerNode;
 declare namespace feng3d {
+    interface ComponentMap {
+        Water: Water;
+    }
     /**
      * The Water component renders the terrain.
      */
@@ -11551,6 +11554,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentMap {
+        Terrain: Terrain;
+    }
     /**
      * The Terrain component renders the terrain.
      */
@@ -11769,9 +11775,11 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentMap {
+        ParticleSystem: ParticleSystem;
+    }
     /**
      * 粒子系统
-
      */
     class ParticleSystem extends Model {
         __class__: "feng3d.ParticleSystem";
@@ -11960,7 +11968,11 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface ComponentMap {
+        SkinnedModel: SkinnedModel;
+    }
     class SkinnedModel extends Model {
+        __class__: "feng3d.SkinnedModel";
         readonly single: boolean;
         skinSkeleton: SkinSkeleton;
         material: SkeletonMaterial;

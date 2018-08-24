@@ -23470,7 +23470,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 粒子系统
-
      */
     var ParticleSystem = /** @class */ (function (_super) {
         __extends(ParticleSystem, _super);
@@ -23972,6 +23971,7 @@ var feng3d;
         __extends(SkinnedModel, _super);
         function SkinnedModel() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.SkinnedModel";
             _this.material = new feng3d.SkeletonMaterial();
             _this.skeletonGlobalMatriices = (function () { var v = [new feng3d.Matrix4x4()]; var i = supportNUM_SKELETONJOINT; while (i-- > 1)
                 v.push(v[0]); return v; })();

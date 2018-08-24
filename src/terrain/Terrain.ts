@@ -1,5 +1,8 @@
 namespace feng3d
 {
+
+    export interface ComponentMap { Terrain: Terrain }
+
     /**
      * The Terrain component renders the terrain.
      */
