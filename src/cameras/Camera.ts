@@ -229,13 +229,13 @@ namespace feng3d
             {
                 if (!(this.lens instanceof PerspectiveLens))
                 {
-                    this.lens = new PerspectiveLens();
+                    this.lens = new PerspectiveLens(60, this.lens.aspect, this.lens.near, this.lens.far);
                 }
             } else if (this.projection == Projection.Orthographic)
             {
                 if (!(this.lens instanceof OrthographicLens))
                 {
-                    this.lens = new OrthographicLens();
+                    this.lens = new OrthographicLens(1, this.lens.aspect, this.lens.near, this.lens.far);
                 }
             }
         }

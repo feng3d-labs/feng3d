@@ -9984,40 +9984,17 @@ declare namespace feng3d {
      * 正射投影镜头
      */
     class OrthographicLens extends LensBase {
-        isOrthographicCamera: boolean;
         /**
-         * 可视空间左边界
+         * 尺寸
          */
-        left: number;
-        /**
-         * 可视空间右边界
-         */
-        right: number;
-        /**
-         * 可视空间上边界
-         */
-        top: number;
-        /**
-         * 可视空间下边界
-         */
-        bottom: number;
-        /**
-         * 视窗缩放比例(width/height)，在渲染器中设置
-         */
-        aspect: number;
+        size: number;
         /**
          * 构建正射投影镜头
-         * @param left 可视空间左边界
-         * @param right 可视空间右边界
-         * @param top 可视空间上边界
-         * @param bottom 可视空间下边界
-         * @param near 可视空间近边界
-         * @param far 可视空间远边界
+         * @param size 尺寸
          */
-        constructor(left?: number, right?: number, top?: number, bottom?: number, near?: number, far?: number);
+        constructor(size?: number, aspect?: number, near?: number, far?: number);
         protected updateMatrix(): void;
         protected updateViewBox(): void;
-        private aspectRatioChanged;
         clone(): OrthographicLens;
     }
 }

@@ -51,10 +51,10 @@ namespace feng3d
             //
             if (!this.orthographicLens)
             {
-                this.shadowCamera.lens = this.orthographicLens = new OrthographicLens(-radius, radius, radius, - radius, this.shadowCameraNear, this.shadowCameraNear + radius * 2);
+                this.shadowCamera.lens = this.orthographicLens = new OrthographicLens(radius, 1, this.shadowCameraNear, this.shadowCameraNear + radius * 2);
             } else
             {
-                this.orthographicLens.value({ left: -radius, right: radius, top: radius, bottom: - radius, near: this.shadowCameraNear, far: this.shadowCameraNear + radius * 2 });
+                this.orthographicLens.value({ size: radius, near: this.shadowCameraNear, far: this.shadowCameraNear + radius * 2 });
             }
         }
     }

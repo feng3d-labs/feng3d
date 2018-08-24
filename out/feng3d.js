@@ -18282,85 +18282,46 @@ var feng3d;
         __extends(OrthographicLens, _super);
         /**
          * 构建正射投影镜头
-         * @param left 可视空间左边界
-         * @param right 可视空间右边界
-         * @param top 可视空间上边界
-         * @param bottom 可视空间下边界
-         * @param near 可视空间近边界
-         * @param far 可视空间远边界
+         * @param size 尺寸
          */
-        function OrthographicLens(left, right, top, bottom, near, far) {
-            if (left === void 0) { left = -1; }
-            if (right === void 0) { right = 1; }
-            if (top === void 0) { top = 1; }
-            if (bottom === void 0) { bottom = -1; }
-            if (near === void 0) { near = 0.1; }
-            if (far === void 0) { far = 2000; }
-            var _this = _super.call(this) || this;
-            _this.isOrthographicCamera = true;
-            _this.left = left;
-            _this.right = right;
-            _this.top = top;
-            _this.bottom = bottom;
-            _this.near = near;
-            _this.far = far;
+        function OrthographicLens(size, aspect, near, far) {
+            if (size === void 0) { size = 1; }
+            if (aspect === void 0) { aspect = 1; }
+            if (near === void 0) { near = 0.3; }
+            if (far === void 0) { far = 1000; }
+            var _this = _super.call(this, aspect, near, far) || this;
+            _this.size = size;
             return _this;
         }
         OrthographicLens.prototype.updateMatrix = function () {
-            this._matrix.setOrtho(this.left, this.right, this.top, this.bottom, this.near, this.far);
+            this._matrix.setOrtho(-this.size, this.size, this.size, -this.size, this.near, this.far);
         };
         OrthographicLens.prototype.updateViewBox = function () {
-            var left = this.left;
-            var right = this.right;
-            var top = this.top;
-            var bottom = this.bottom;
+            var left = -this.size * this.aspect;
+            var right = this.size * this.aspect;
+            var top = this.size;
+            var bottom = -this.size;
             var near = this.near;
             var far = this.far;
             this._viewBox.fromPoints([
-                new feng3d.Vector3(this.left, this.bottom, this.near),
-                new feng3d.Vector3(this.left, this.bottom, this.far),
-                new feng3d.Vector3(this.left, this.top, this.near),
-                new feng3d.Vector3(this.left, this.top, this.far),
-                new feng3d.Vector3(this.right, this.bottom, this.near),
-                new feng3d.Vector3(this.right, this.bottom, this.far),
-                new feng3d.Vector3(this.right, this.top, this.near),
-                new feng3d.Vector3(this.right, this.top, this.far),
+                new feng3d.Vector3(left, bottom, near),
+                new feng3d.Vector3(left, bottom, far),
+                new feng3d.Vector3(left, top, near),
+                new feng3d.Vector3(left, top, far),
+                new feng3d.Vector3(right, bottom, near),
+                new feng3d.Vector3(right, bottom, far),
+                new feng3d.Vector3(right, top, near),
+                new feng3d.Vector3(right, top, far),
             ]);
         };
-        OrthographicLens.prototype.aspectRatioChanged = function () {
-            var h = Math.abs(this.top - this.bottom);
-            var center = (this.left + this.right) / 2;
-            var w = h * this.aspect;
-            this.left = center + 0.5 * w * (this.left - center) / Math.abs(this.left - center);
-            this.right = center + 0.5 * w * (this.right - center) / Math.abs(this.right - center);
-        };
         OrthographicLens.prototype.clone = function () {
-            return new OrthographicLens(this.left, this.right, this.top, this.bottom, this.near, this.far);
+            return new OrthographicLens(this.size, this.aspect, this.near, this.far);
         };
         __decorate([
             feng3d.serialize,
             feng3d.oav(),
             feng3d.watch("invalidate")
-        ], OrthographicLens.prototype, "left", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidate")
-        ], OrthographicLens.prototype, "right", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidate")
-        ], OrthographicLens.prototype, "top", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidate")
-        ], OrthographicLens.prototype, "bottom", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.watch("aspectRatioChanged")
-        ], OrthographicLens.prototype, "aspect", void 0);
+        ], OrthographicLens.prototype, "size", void 0);
         return OrthographicLens;
     }(feng3d.LensBase));
     feng3d.OrthographicLens = OrthographicLens;
@@ -18680,12 +18641,12 @@ var feng3d;
         Camera.prototype.onProjectionChanged = function (property, oldValue, value) {
             if (this.projection == feng3d.Projection.Perspective) {
                 if (!(this.lens instanceof feng3d.PerspectiveLens)) {
-                    this.lens = new feng3d.PerspectiveLens();
+                    this.lens = new feng3d.PerspectiveLens(60, this.lens.aspect, this.lens.near, this.lens.far);
                 }
             }
             else if (this.projection == feng3d.Projection.Orthographic) {
                 if (!(this.lens instanceof feng3d.OrthographicLens)) {
-                    this.lens = new feng3d.OrthographicLens();
+                    this.lens = new feng3d.OrthographicLens(1, this.lens.aspect, this.lens.near, this.lens.far);
                 }
             }
         };
@@ -21177,10 +21138,10 @@ var feng3d;
             this.shadowCamera.transform.lookAt(center, this.shadowCamera.transform.upVector);
             //
             if (!this.orthographicLens) {
-                this.shadowCamera.lens = this.orthographicLens = new feng3d.OrthographicLens(-radius, radius, radius, -radius, this.shadowCameraNear, this.shadowCameraNear + radius * 2);
+                this.shadowCamera.lens = this.orthographicLens = new feng3d.OrthographicLens(radius, 1, this.shadowCameraNear, this.shadowCameraNear + radius * 2);
             }
             else {
-                this.orthographicLens.value({ left: -radius, right: radius, top: radius, bottom: -radius, near: this.shadowCameraNear, far: this.shadowCameraNear + radius * 2 });
+                this.orthographicLens.value({ size: radius, near: this.shadowCameraNear, far: this.shadowCameraNear + radius * 2 });
             }
         };
         return DirectionalLight;

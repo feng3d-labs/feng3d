@@ -5,105 +5,53 @@ namespace feng3d
      */
     export class OrthographicLens extends LensBase
     {
-        isOrthographicCamera = true;
-
         /**
-         * 可视空间左边界
+         * 尺寸
          */
         @serialize
         @oav()
         @watch("invalidate")
-        left: number;
-
-        /**
-         * 可视空间右边界
-         */
-        @serialize
-        @oav()
-        @watch("invalidate")
-        right: number;
-
-        /**
-         * 可视空间上边界
-         */
-        @serialize
-        @oav()
-        @watch("invalidate")
-        top: number;
-
-        /**
-         * 可视空间下边界
-         */
-        @serialize
-        @oav()
-        @watch("invalidate")
-        bottom: number;
-
-		/**
-		 * 视窗缩放比例(width/height)，在渲染器中设置
-		 */
-        @serialize
-        @watch("aspectRatioChanged")
-        aspect: number;
+        size: number;
 
         /**
          * 构建正射投影镜头
-         * @param left 可视空间左边界
-         * @param right 可视空间右边界
-         * @param top 可视空间上边界
-         * @param bottom 可视空间下边界
-         * @param near 可视空间近边界
-         * @param far 可视空间远边界
+         * @param size 尺寸
          */
-        constructor(left = -1, right = 1, top = 1, bottom = -1, near = 0.1, far = 2000)
+        constructor(size = 1, aspect = 1, near = 0.3, far = 1000)
         {
-            super();
-            this.left = left;
-            this.right = right;
-            this.top = top;
-            this.bottom = bottom;
-            this.near = near;
-            this.far = far;
+            super(aspect, near, far);
+            this.size = size;
         }
 
         protected updateMatrix()
         {
-            this._matrix.setOrtho(this.left, this.right, this.top, this.bottom, this.near, this.far);
+            this._matrix.setOrtho(-this.size, this.size, this.size, -this.size, this.near, this.far);
         }
 
         protected updateViewBox()
         {
-            var left = this.left;
-            var right = this.right;
-            var top = this.top;
-            var bottom = this.bottom;
+            var left = -this.size * this.aspect;
+            var right = this.size * this.aspect;
+            var top = this.size;
+            var bottom = -this.size;
             var near = this.near;
             var far = this.far;
 
             this._viewBox.fromPoints([
-                new Vector3(this.left, this.bottom, this.near),
-                new Vector3(this.left, this.bottom, this.far),
-                new Vector3(this.left, this.top, this.near),
-                new Vector3(this.left, this.top, this.far),
-                new Vector3(this.right, this.bottom, this.near),
-                new Vector3(this.right, this.bottom, this.far),
-                new Vector3(this.right, this.top, this.near),
-                new Vector3(this.right, this.top, this.far),
+                new Vector3(left, bottom, near),
+                new Vector3(left, bottom, far),
+                new Vector3(left, top, near),
+                new Vector3(left, top, far),
+                new Vector3(right, bottom, near),
+                new Vector3(right, bottom, far),
+                new Vector3(right, top, near),
+                new Vector3(right, top, far),
             ]);
-        }
-
-        private aspectRatioChanged()
-        {
-            var h = Math.abs(this.top - this.bottom);
-            var center = (this.left + this.right) / 2;
-            var w = h * this.aspect;
-            this.left = center + 0.5 * w * (this.left - center) / Math.abs(this.left - center);
-            this.right = center + 0.5 * w * (this.right - center) / Math.abs(this.right - center);
         }
 
         clone()
         {
-            return new OrthographicLens(this.left, this.right, this.top, this.bottom, this.near, this.far);
+            return new OrthographicLens(this.size, this.aspect, this.near, this.far);
         }
     }
 }
