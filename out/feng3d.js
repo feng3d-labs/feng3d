@@ -18287,6 +18287,10 @@ var feng3d;
          * @param far 可视空间远边界
          */
         function OrthographicLens(left, right, top, bottom, near, far) {
+            if (left === void 0) { left = -1; }
+            if (right === void 0) { right = 1; }
+            if (top === void 0) { top = 1; }
+            if (bottom === void 0) { bottom = -1; }
             if (near === void 0) { near = 0.1; }
             if (far === void 0) { far = 2000; }
             var _this = _super.call(this) || this;
@@ -18476,14 +18480,31 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 摄像机投影类型
+     */
+    var Projection;
+    (function (Projection) {
+        /**
+         * 透视投影
+         */
+        Projection[Projection["Perspective"] = 0] = "Perspective";
+        /**
+         * 正交投影
+         */
+        Projection[Projection["Orthographic"] = 1] = "Orthographic";
+    })(Projection = feng3d.Projection || (feng3d.Projection = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 摄像机
      */
-    // @ov({ component: "OVCamera" })
     var Camera = /** @class */ (function (_super) {
         __extends(Camera, _super);
         function Camera() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.Camera";
+            _this.projection = feng3d.Projection.Perspective;
             /**
              * 视窗矩形
              */
@@ -18645,11 +18666,36 @@ var feng3d;
                 oldValue.off("lensChanged", this.onLensChanged, this);
             if (value)
                 value.on("lensChanged", this.onLensChanged, this);
+            if (this.lens instanceof feng3d.PerspectiveLens) {
+                this.projection = feng3d.Projection.Perspective;
+            }
+            else if (this.lens instanceof feng3d.OrthographicLens) {
+                this.projection = feng3d.Projection.Orthographic;
+            }
+            if (oldValue != value) {
+                this.dispatch("refreshView");
+            }
             this.dispatch("lensChanged");
         };
+        Camera.prototype.onProjectionChanged = function (property, oldValue, value) {
+            if (this.projection == feng3d.Projection.Perspective) {
+                if (!(this.lens instanceof feng3d.PerspectiveLens)) {
+                    this.lens = new feng3d.PerspectiveLens();
+                }
+            }
+            else if (this.projection == feng3d.Projection.Orthographic) {
+                if (!(this.lens instanceof feng3d.OrthographicLens)) {
+                    this.lens = new feng3d.OrthographicLens();
+                }
+            }
+        };
+        __decorate([
+            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.Projection } }),
+            feng3d.watch("onProjectionChanged")
+        ], Camera.prototype, "projection", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
+            feng3d.oav({ component: "OAVObjectView" }),
             feng3d.watch("onLensChanged")
         ], Camera.prototype, "lens", void 0);
         return Camera;

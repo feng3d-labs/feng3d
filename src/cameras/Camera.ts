@@ -10,12 +10,15 @@ namespace feng3d
 	/**
 	 * 摄像机
 	 */
-    // @ov({ component: "OVCamera" })
     export class Camera extends Component
     {
         __class__: "feng3d.Camera" = "feng3d.Camera";
 
         get single() { return true; }
+
+        @oav({ component: "OAVEnum", componentParam: { enumClass: Projection } })
+        @watch("onProjectionChanged")
+        projection = Projection.Perspective;
 
         /**
          * 视窗矩形
@@ -26,7 +29,7 @@ namespace feng3d
 		 * 镜头
 		 */
         @serialize
-        @oav()
+        @oav({ component: "OAVObjectView" })
         @watch("onLensChanged")
         lens: LensBase
 
@@ -204,7 +207,37 @@ namespace feng3d
             if (oldValue) oldValue.off("lensChanged", <any>this.onLensChanged, this);
             if (value) value.on("lensChanged", <any>this.onLensChanged, this);
 
+            if (this.lens instanceof PerspectiveLens)
+            {
+                this.projection = Projection.Perspective;
+            } else if (this.lens instanceof OrthographicLens)
+            {
+                this.projection = Projection.Orthographic;
+            }
+
+            if (oldValue != value)
+            {
+                this.dispatch("refreshView");
+            }
+
             this.dispatch("lensChanged");
+        }
+
+        private onProjectionChanged(property: string, oldValue: Projection, value: Projection)
+        {
+            if (this.projection == Projection.Perspective)
+            {
+                if (!(this.lens instanceof PerspectiveLens))
+                {
+                    this.lens = new PerspectiveLens();
+                }
+            } else if (this.projection == Projection.Orthographic)
+            {
+                if (!(this.lens instanceof OrthographicLens))
+                {
+                    this.lens = new OrthographicLens();
+                }
+            }
         }
     }
 }

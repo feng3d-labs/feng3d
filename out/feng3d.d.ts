@@ -9001,6 +9001,10 @@ declare namespace feng3d {
          * 包围盒失效
          */
         boundsInvalid: Geometry;
+        /**
+         * 刷新界面
+         */
+        refreshView: any;
     }
     interface GameObject {
         once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
@@ -10010,7 +10014,7 @@ declare namespace feng3d {
          * @param near 可视空间近边界
          * @param far 可视空间远边界
          */
-        constructor(left: number, right: number, top: number, bottom: number, near?: number, far?: number);
+        constructor(left?: number, right?: number, top?: number, bottom?: number, near?: number, far?: number);
         protected updateMatrix(): void;
         protected updateViewBox(): void;
         private aspectRatioChanged;
@@ -10067,6 +10071,21 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * 摄像机投影类型
+     */
+    enum Projection {
+        /**
+         * 透视投影
+         */
+        Perspective = 0,
+        /**
+         * 正交投影
+         */
+        Orthographic = 1
+    }
+}
+declare namespace feng3d {
     interface GameObjectEventMap {
         lensChanged: any;
     }
@@ -10079,6 +10098,7 @@ declare namespace feng3d {
     class Camera extends Component {
         __class__: "feng3d.Camera";
         readonly single: boolean;
+        projection: Projection;
         /**
          * 视窗矩形
          */
@@ -10159,6 +10179,7 @@ declare namespace feng3d {
          * 处理镜头变化事件
          */
         private onLensChanged;
+        private onProjectionChanged;
     }
 }
 declare namespace feng3d {

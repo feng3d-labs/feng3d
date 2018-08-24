@@ -56,7 +56,7 @@ namespace feng3d
          * @param near 可视空间近边界
          * @param far 可视空间远边界
          */
-        constructor(left: number, right: number, top: number, bottom: number, near = 0.1, far = 2000)
+        constructor(left = -1, right = 1, top = 1, bottom = -1, near = 0.1, far = 2000)
         {
             super();
             this.left = left;

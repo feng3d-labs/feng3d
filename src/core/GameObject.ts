@@ -38,6 +38,11 @@ namespace feng3d
 		 * 包围盒失效
 		 */
         boundsInvalid: Geometry;
+
+        /**
+         * 刷新界面
+         */
+        refreshView
     }
 
     export interface GameObject
