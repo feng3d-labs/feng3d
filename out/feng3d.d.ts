@@ -9324,7 +9324,7 @@ declare namespace feng3d {
         Model: Model;
     }
     class Model extends Behaviour {
-        __class__: "feng3d.Model" | "feng3d.Terrain" | "feng3d.Water" | "feng3d.ParticleSystem" | "feng3d.SkinnedModel";
+        __class__: string;
         readonly single: boolean;
         /**
          * Returns the instantiated Mesh assigned to the mesh filter.
@@ -9385,6 +9385,14 @@ declare namespace feng3d {
          * @inheritDoc
          */
         private updateBounds;
+    }
+}
+declare namespace feng3d {
+    interface ComponentMap {
+        MeshModel: MeshModel;
+    }
+    class MeshModel extends Model {
+        __class__: "feng3d.MeshModel";
     }
 }
 declare namespace feng3d {

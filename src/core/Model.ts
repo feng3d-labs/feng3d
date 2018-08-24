@@ -4,7 +4,7 @@ namespace feng3d
 
     export class Model extends Behaviour
     {
-        __class__: "feng3d.Model" | "feng3d.Terrain" | "feng3d.Water" | "feng3d.ParticleSystem" | "feng3d.SkinnedModel" = "feng3d.Model";
+        __class__: string;
 
         get single() { return true; }
 

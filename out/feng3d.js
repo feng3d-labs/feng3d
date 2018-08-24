@@ -16405,7 +16405,6 @@ var feng3d;
         __extends(Model, _super);
         function Model() {
             var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.Model";
             /**
              * 是否投射阴影
              */
@@ -16575,6 +16574,19 @@ var feng3d;
         return Model;
     }(feng3d.Behaviour));
     feng3d.Model = Model;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var MeshModel = /** @class */ (function (_super) {
+        __extends(MeshModel, _super);
+        function MeshModel() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.MeshModel";
+            return _this;
+        }
+        return MeshModel;
+    }(feng3d.Model));
+    feng3d.MeshModel = MeshModel;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -27138,7 +27150,7 @@ var feng3d;
             if (name === void 0) { name = "cube"; }
             return new feng3d.GameObject().value({
                 name: name, components: [
-                    { __class__: "feng3d.Model", geometry: { __class__: "feng3d.CubeGeometry" } },
+                    { __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.CubeGeometry" } },
                 ]
             });
         };
@@ -27146,42 +27158,42 @@ var feng3d;
             if (name === void 0) { name = "plane"; }
             return new feng3d.GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.Model", geometry: { __class__: "feng3d.PlaneGeometry", width: 10, height: 10 } },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.PlaneGeometry", width: 10, height: 10 } },]
             });
         };
         GameObjectFactory.prototype.createCylinder = function (name) {
             if (name === void 0) { name = "cylinder"; }
             return new feng3d.GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.Model", geometry: { __class__: "feng3d.CylinderGeometry" } },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.CylinderGeometry" } },]
             });
         };
         GameObjectFactory.prototype.createCone = function (name) {
             if (name === void 0) { name = "Cone"; }
             return new feng3d.GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.Model", geometry: { __class__: "feng3d.ConeGeometry" } },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.ConeGeometry" } },]
             });
         };
         GameObjectFactory.prototype.createTorus = function (name) {
             if (name === void 0) { name = "Torus"; }
             return new feng3d.GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.Model", geometry: { __class__: "feng3d.TorusGeometry" } },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.TorusGeometry" } },]
             });
         };
         GameObjectFactory.prototype.createSphere = function (name) {
             if (name === void 0) { name = "sphere"; }
             return new feng3d.GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.Model", geometry: { __class__: "feng3d.SphereGeometry" } },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.SphereGeometry" } },]
             });
         };
         GameObjectFactory.prototype.createCapsule = function (name) {
             if (name === void 0) { name = "capsule"; }
             return new feng3d.GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.Model", geometry: { __class__: "feng3d.CapsuleGeometry" } },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.CapsuleGeometry" } },]
             });
         };
         GameObjectFactory.prototype.createTerrain = function (name) {

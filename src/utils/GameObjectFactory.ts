@@ -13,7 +13,7 @@ namespace feng3d
         {
             return new GameObject().value({
                 name: name, components: [
-                    { __class__: "feng3d.Model", geometry: { __class__: "feng3d.CubeGeometry" } },
+                    { __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.CubeGeometry" } },
                 ]
             });
         }
@@ -22,7 +22,7 @@ namespace feng3d
         {
             return new GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.Model", geometry: { __class__: "feng3d.PlaneGeometry", width: 10, height: 10 } },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.PlaneGeometry", width: 10, height: 10 } },]
             });
         }
 
@@ -30,7 +30,7 @@ namespace feng3d
         {
             return new GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.Model", geometry: { __class__: "feng3d.CylinderGeometry" } },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.CylinderGeometry" } },]
             });
         }
 
@@ -38,7 +38,7 @@ namespace feng3d
         {
             return new GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.Model", geometry: { __class__: "feng3d.ConeGeometry" } },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.ConeGeometry" } },]
             });
         }
 
@@ -46,7 +46,7 @@ namespace feng3d
         {
             return new GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.Model", geometry: { __class__: "feng3d.TorusGeometry" } },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.TorusGeometry" } },]
             });
         }
 
@@ -54,7 +54,7 @@ namespace feng3d
         {
             return new GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.Model", geometry: { __class__: "feng3d.SphereGeometry" } },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.SphereGeometry" } },]
             });
         }
 
@@ -62,7 +62,7 @@ namespace feng3d
         {
             return new GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.Model", geometry: { __class__: "feng3d.CapsuleGeometry" } },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.CapsuleGeometry" } },]
             });
         }
 
