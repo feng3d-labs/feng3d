@@ -10148,6 +10148,7 @@ declare namespace feng3d {
         private _frustumInvalid;
         private _viewBox;
         private _viewBoxInvalid;
+        private _backups;
         /**
          * 更新可视区域顶点
          */

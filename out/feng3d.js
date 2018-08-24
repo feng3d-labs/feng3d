@@ -18475,6 +18475,7 @@ var feng3d;
             _this._frustumInvalid = true;
             _this._viewBox = new feng3d.Box();
             _this._viewBoxInvalid = true;
+            _this._backups = { fov: 60, size: 1 };
             return _this;
         }
         Object.defineProperty(Camera.prototype, "single", {
@@ -18639,14 +18640,25 @@ var feng3d;
             this.dispatch("lensChanged");
         };
         Camera.prototype.onProjectionChanged = function (property, oldValue, value) {
+            var aspect = 1;
+            var near = 0.3;
+            var far = 1000;
+            if (this.lens) {
+                aspect = this.lens.aspect;
+                near = this.lens.near;
+                far = this.lens.far;
+                feng3d.serialization.setValue(this._backups, this.lens);
+            }
+            var fov = this._backups ? this._backups.fov : 60;
+            var size = this._backups ? this._backups.size : 1;
             if (this.projection == feng3d.Projection.Perspective) {
                 if (!(this.lens instanceof feng3d.PerspectiveLens)) {
-                    this.lens = new feng3d.PerspectiveLens(60, this.lens.aspect, this.lens.near, this.lens.far);
+                    this.lens = new feng3d.PerspectiveLens(fov, aspect, near, far);
                 }
             }
             else if (this.projection == feng3d.Projection.Orthographic) {
                 if (!(this.lens instanceof feng3d.OrthographicLens)) {
-                    this.lens = new feng3d.OrthographicLens(1, this.lens.aspect, this.lens.near, this.lens.far);
+                    this.lens = new feng3d.OrthographicLens(size, aspect, near, far);
                 }
             }
         };

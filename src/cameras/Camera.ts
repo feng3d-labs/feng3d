@@ -186,6 +186,7 @@ namespace feng3d
         private _frustumInvalid = true;
         private _viewBox = new Box();
         private _viewBoxInvalid = true;
+        private _backups = { fov: 60, size: 1 };
 
         /**
          * 更新可视区域顶点
@@ -225,17 +226,29 @@ namespace feng3d
 
         private onProjectionChanged(property: string, oldValue: Projection, value: Projection)
         {
+            var aspect = 1;
+            var near = 0.3;
+            var far = 1000;
+            if (this.lens)
+            {
+                aspect = this.lens.aspect;
+                near = this.lens.near;
+                far = this.lens.far;
+                serialization.setValue(this._backups, <any>this.lens);
+            }
+            var fov = this._backups ? this._backups.fov : 60;
+            var size = this._backups ? this._backups.size : 1;
             if (this.projection == Projection.Perspective)
             {
                 if (!(this.lens instanceof PerspectiveLens))
                 {
-                    this.lens = new PerspectiveLens(60, this.lens.aspect, this.lens.near, this.lens.far);
+                    this.lens = new PerspectiveLens(fov, aspect, near, far);
                 }
             } else if (this.projection == Projection.Orthographic)
             {
                 if (!(this.lens instanceof OrthographicLens))
                 {
-                    this.lens = new OrthographicLens(1, this.lens.aspect, this.lens.near, this.lens.far);
+                    this.lens = new OrthographicLens(size, aspect, near, far);
                 }
             }
         }

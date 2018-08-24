@@ -14,19 +14,19 @@ namespace feng3d
             var orthographicLens = new OrthographicLens(size, 1, near, far);
 
             // 测试可视空间的8个顶点是否被正确投影
-            var lbn = new Vector3(size, -size, near);
+            var lbn = new Vector3(-size, -size, near);
             var tv = orthographicLens.project(lbn);
             assert.ok(new Vector3(-1, -1, -1).equals(tv));
 
-            var lbf = new Vector3(size, -size, far);
+            var lbf = new Vector3(-size, -size, far);
             var tv = orthographicLens.project(lbf);
             assert.ok(new Vector3(-1, -1, 1).equals(tv));
 
-            var ltn = new Vector3(size, size, near);
+            var ltn = new Vector3(-size, size, near);
             var tv = orthographicLens.project(ltn);
             assert.ok(new Vector3(-1, 1, -1).equals(tv));
 
-            var ltf = new Vector3(size, size, far)
+            var ltf = new Vector3(-size, size, far)
             var tv = orthographicLens.project(ltf);
             assert.ok(new Vector3(-1, 1, 1).equals(tv));
 
@@ -59,19 +59,19 @@ namespace feng3d
             // 测试可视空间的8个顶点是否被正确投影
             var lbn = new Vector3(-1, -1, -1);
             var tv = orthographicLens.unproject(lbn);
-            assert.ok(new Vector3(size, -size, near).equals(tv));
+            assert.ok(new Vector3(-size, -size, near).equals(tv));
 
             var lbf = new Vector3(-1, -1, 1);
             var tv = orthographicLens.unproject(lbf);
-            assert.ok(new Vector3(size, -size, far).equals(tv));
+            assert.ok(new Vector3(-size, -size, far).equals(tv));
 
             var ltn = new Vector3(-1, 1, -1);
             var tv = orthographicLens.unproject(ltn);
-            assert.ok(new Vector3(size, size, near).equals(tv));
+            assert.ok(new Vector3(-size, size, near).equals(tv));
 
             var ltf = new Vector3(-1, 1, 1)
             var tv = orthographicLens.unproject(ltf);
-            assert.ok(new Vector3(size, size, far).equals(tv));
+            assert.ok(new Vector3(-size, size, far).equals(tv));
 
             var rbn = new Vector3(1, -1, -1);
             var tv = orthographicLens.unproject(rbn);
