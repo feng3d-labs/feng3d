@@ -8513,7 +8513,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 深度渲染器
-     * @author  feng    2017-03-25
      */
     class DepthRenderer {
         /**
@@ -8552,7 +8551,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 阴影图渲染器
-     * @author  feng    2017-03-25
      */
     var shadowRenderer: ShadowRenderer;
     class ShadowRenderer {
@@ -12260,14 +12258,12 @@ declare namespace feng3d {
 declare namespace feng3d.war3 {
     /**
      * 透明度动画
-     * @author warden_feng 2014-6-26
      */
     class AnimAlpha {
         constructor();
     }
     /**
      * 全局动作信息
-     * @author warden_feng 2014-6-26
      */
     class AnimInfo {
         /** 动作名称 */
@@ -12289,7 +12285,6 @@ declare namespace feng3d.war3 {
     }
     /**
      * 几何体动作信息
-     * @author warden_feng 2014-6-26
      */
     class AnimInfo1 {
         /** 最小范围 */
@@ -12313,7 +12308,6 @@ declare namespace feng3d.war3 {
     }
     /**
      * 骨骼信息(包含骨骼，helper等其他对象)
-     * @author warden_feng 2014-6-26
      */
     class BoneObject {
         /** 骨骼类型 */
@@ -12361,7 +12355,6 @@ declare namespace feng3d.war3 {
     }
     /**
      * 骨骼的位移信息
-     * @author warden_feng 2014-6-26
      */
     class BoneTranslation {
         /** 类型 */
@@ -12373,7 +12366,6 @@ declare namespace feng3d.war3 {
     }
     /**
      * 纹理
-     * @author warden_feng 2014-6-26
      */
     class FBitmap {
         /** 图片地址 */
@@ -12383,7 +12375,6 @@ declare namespace feng3d.war3 {
     }
     /**
      * 几何设置
-     * @author warden_feng 2014-6-26
      */
     class Geoset {
         /** 顶点 */
@@ -12419,14 +12410,12 @@ declare namespace feng3d.war3 {
     }
     /**
      * 几何体动画
-     * @author warden_feng 2014-6-26
      */
     class GeosetAnim {
         constructor();
     }
     /**
      * 全局序列
-     * @author warden_feng 2014-6-26
      */
     class Globalsequences {
         /** 全局序列编号 */
@@ -12436,7 +12425,6 @@ declare namespace feng3d.war3 {
     }
     /**
      * 动作间隔
-     * @author warden_feng 2014-6-26
      */
     class Interval {
         /** 开始时间 */
@@ -12446,7 +12434,6 @@ declare namespace feng3d.war3 {
     }
     /**
      * 材质层
-     * @author warden_feng 2014-6-26
      */
     class Layer {
         /** 过滤模式 */
@@ -12470,7 +12457,6 @@ declare namespace feng3d.war3 {
     }
     /**
      * 材质
-     * @author warden_feng 2014-6-26
      */
     class Material {
         /** 材质层列表 */
@@ -12478,7 +12464,6 @@ declare namespace feng3d.war3 {
     }
     /**
      * 模型信息
-     * @author warden_feng 2014-6-26
      */
     class Model {
         /** 模型名称 */
@@ -12492,7 +12477,6 @@ declare namespace feng3d.war3 {
     }
     /**
      *
-     * @author warden_feng 2014-6-26
      */
     class Rotation {
         /** 时间 */
@@ -12503,9 +12487,8 @@ declare namespace feng3d.war3 {
         OutTan: Quaternion;
     }
     /**
- *
- * @author warden_feng 2014-6-26
- */
+     *
+     */
     class Scaling {
         /** 时间 */
         time: number;
@@ -12516,7 +12499,6 @@ declare namespace feng3d.war3 {
     }
     /**
      *
-     * @author warden_feng 2014-6-26
      */
     class Translation {
         /** 时间 */
@@ -12530,7 +12512,6 @@ declare namespace feng3d.war3 {
 declare namespace feng3d.war3 {
     /**
      * war3模型数据
-     * @author warden_feng 2014-6-28
      */
     class War3Model {
         /** 版本号 */
@@ -12565,7 +12546,6 @@ declare namespace feng3d.war3 {
 declare namespace feng3d.war3 {
     /**
      * war3的mdl文件解析
-     * @author warden_feng 2014-6-14
      */
     var MdlParser: {
         parse: typeof parse;

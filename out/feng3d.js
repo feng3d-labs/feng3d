@@ -14011,7 +14011,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 深度渲染器
-     * @author  feng    2017-03-25
      */
     var DepthRenderer = /** @class */ (function () {
         function DepthRenderer() {
@@ -14267,7 +14266,6 @@ var feng3d;
         ShadowRenderer.prototype.drawGameObject = function (gl, gameObject, scene3d, camera) {
             var renderAtomic = gameObject.renderAtomic;
             gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
-            var model = gameObject.getComponent(feng3d.Model);
             this.renderAtomic.next = renderAtomic;
             this.renderAtomic.renderParams.cullFace = renderAtomic.renderParams.cullFace;
             gl.renderer.draw(this.renderAtomic);
@@ -24678,7 +24676,6 @@ var feng3d;
     (function (war3) {
         /**
          * 透明度动画
-         * @author warden_feng 2014-6-26
          */
         var AnimAlpha = /** @class */ (function () {
             function AnimAlpha() {
@@ -24688,7 +24685,6 @@ var feng3d;
         war3.AnimAlpha = AnimAlpha;
         /**
          * 全局动作信息
-         * @author warden_feng 2014-6-26
          */
         var AnimInfo = /** @class */ (function () {
             function AnimInfo() {
@@ -24700,7 +24696,6 @@ var feng3d;
         war3.AnimInfo = AnimInfo;
         /**
          * 几何体动作信息
-         * @author warden_feng 2014-6-26
          */
         var AnimInfo1 = /** @class */ (function () {
             function AnimInfo1() {
@@ -24777,7 +24772,6 @@ var feng3d;
         war3.BoneRotation = BoneRotation;
         /**
          * 骨骼信息(包含骨骼，helper等其他对象)
-         * @author warden_feng 2014-6-26
          */
         var BoneObject = /** @class */ (function () {
             function BoneObject() {
@@ -24964,7 +24958,6 @@ var feng3d;
         war3.BoneScaling = BoneScaling;
         /**
          * 骨骼的位移信息
-         * @author warden_feng 2014-6-26
          */
         var BoneTranslation = /** @class */ (function () {
             function BoneTranslation() {
@@ -25055,7 +25048,6 @@ var feng3d;
         war3.BoneTranslation = BoneTranslation;
         /**
          * 纹理
-         * @author warden_feng 2014-6-26
          */
         var FBitmap = /** @class */ (function () {
             function FBitmap() {
@@ -25065,7 +25057,6 @@ var feng3d;
         war3.FBitmap = FBitmap;
         /**
          * 几何设置
-         * @author warden_feng 2014-6-26
          */
         var Geoset = /** @class */ (function () {
             function Geoset() {
@@ -25077,7 +25068,6 @@ var feng3d;
         war3.Geoset = Geoset;
         /**
          * 几何体动画
-         * @author warden_feng 2014-6-26
          */
         var GeosetAnim = /** @class */ (function () {
             function GeosetAnim() {
@@ -25087,7 +25077,6 @@ var feng3d;
         war3.GeosetAnim = GeosetAnim;
         /**
          * 全局序列
-         * @author warden_feng 2014-6-26
          */
         var Globalsequences = /** @class */ (function () {
             function Globalsequences() {
@@ -25099,7 +25088,6 @@ var feng3d;
         war3.Globalsequences = Globalsequences;
         /**
          * 动作间隔
-         * @author warden_feng 2014-6-26
          */
         var Interval = /** @class */ (function () {
             function Interval() {
@@ -25109,7 +25097,6 @@ var feng3d;
         war3.Interval = Interval;
         /**
          * 材质层
-         * @author warden_feng 2014-6-26
          */
         var Layer = /** @class */ (function () {
             function Layer() {
@@ -25119,7 +25106,6 @@ var feng3d;
         war3.Layer = Layer;
         /**
          * 材质
-         * @author warden_feng 2014-6-26
          */
         var Material = /** @class */ (function () {
             function Material() {
@@ -25131,7 +25117,6 @@ var feng3d;
         war3.Material = Material;
         /**
          * 模型信息
-         * @author warden_feng 2014-6-26
          */
         var Model = /** @class */ (function () {
             function Model() {
@@ -25141,7 +25126,6 @@ var feng3d;
         war3.Model = Model;
         /**
          *
-         * @author warden_feng 2014-6-26
          */
         var Rotation = /** @class */ (function () {
             function Rotation() {
@@ -25150,9 +25134,8 @@ var feng3d;
         }());
         war3.Rotation = Rotation;
         /**
-     *
-     * @author warden_feng 2014-6-26
-     */
+         *
+         */
         var Scaling = /** @class */ (function () {
             function Scaling() {
             }
@@ -25161,7 +25144,6 @@ var feng3d;
         war3.Scaling = Scaling;
         /**
          *
-         * @author warden_feng 2014-6-26
          */
         var Translation = /** @class */ (function () {
             function Translation() {
@@ -25177,7 +25159,6 @@ var feng3d;
     (function (war3) {
         /**
          * war3模型数据
-         * @author warden_feng 2014-6-28
          */
         var War3Model = /** @class */ (function () {
             function War3Model() {
@@ -25342,7 +25323,6 @@ var feng3d;
     (function (war3) {
         /**
          * war3的mdl文件解析
-         * @author warden_feng 2014-6-14
          */
         war3.MdlParser = {
             parse: parse

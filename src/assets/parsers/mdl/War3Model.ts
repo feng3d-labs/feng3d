@@ -3,7 +3,6 @@ namespace feng3d.war3
 
 	/**
 	 * war3模型数据
-	 * @author warden_feng 2014-6-28
 	 */
 	export class War3Model
 	{

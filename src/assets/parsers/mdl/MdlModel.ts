@@ -2,7 +2,6 @@ namespace feng3d.war3
 {
 	/**
 	 * 透明度动画
-	 * @author warden_feng 2014-6-26
 	 */
 	export class AnimAlpha
 	{
@@ -13,7 +12,6 @@ namespace feng3d.war3
 
 	/**
 	 * 全局动作信息
-	 * @author warden_feng 2014-6-26
 	 */
 	export class AnimInfo
 	{
@@ -37,7 +35,6 @@ namespace feng3d.war3
 
 	/**
 	 * 几何体动作信息
-	 * @author warden_feng 2014-6-26
 	 */
 	export class AnimInfo1
 	{
@@ -140,7 +137,6 @@ namespace feng3d.war3
 
 	/**
 	 * 骨骼信息(包含骨骼，helper等其他对象)
-	 * @author warden_feng 2014-6-26
 	 */
 	export class BoneObject
 	{
@@ -396,7 +392,6 @@ namespace feng3d.war3
 
 	/**
 	 * 骨骼的位移信息
-	 * @author warden_feng 2014-6-26
 	 */
 	export class BoneTranslation
 	{
@@ -515,7 +510,6 @@ namespace feng3d.war3
 
 	/**
 	 * 纹理
-	 * @author warden_feng 2014-6-26
 	 */
 	export class FBitmap
 	{
@@ -528,7 +522,6 @@ namespace feng3d.war3
 
 	/**
 	 * 几何设置
-	 * @author warden_feng 2014-6-26
 	 */
 	export class Geoset
 	{
@@ -567,7 +560,6 @@ namespace feng3d.war3
 
 	/**
 	 * 几何体动画
-	 * @author warden_feng 2014-6-26
 	 */
 	export class GeosetAnim
 	{
@@ -578,7 +570,6 @@ namespace feng3d.war3
 
 	/**
 	 * 全局序列
-	 * @author warden_feng 2014-6-26
 	 */
 	export class Globalsequences
 	{
@@ -590,7 +581,6 @@ namespace feng3d.war3
 
 	/**
 	 * 动作间隔
-	 * @author warden_feng 2014-6-26
 	 */
 	export class Interval
 	{
@@ -602,7 +592,6 @@ namespace feng3d.war3
 
 	/**
 	 * 材质层
-	 * @author warden_feng 2014-6-26
 	 */
 	export class Layer
 	{
@@ -628,7 +617,6 @@ namespace feng3d.war3
 
 	/**
 	 * 材质
-	 * @author warden_feng 2014-6-26
 	 */
 	export class Material
 	{
@@ -638,7 +626,6 @@ namespace feng3d.war3
 
 	/**
 	 * 模型信息
-	 * @author warden_feng 2014-6-26
 	 */
 	export class Model
 	{
@@ -654,7 +641,6 @@ namespace feng3d.war3
 
 	/**
 	 *
-	 * @author warden_feng 2014-6-26
 	 */
 	export class Rotation
 	{
@@ -669,9 +655,8 @@ namespace feng3d.war3
 	}
 
 	/**
- *
- * @author warden_feng 2014-6-26
- */
+	 *
+	 */
 	export class Scaling
 	{
 		/** 时间 */
@@ -686,7 +671,6 @@ namespace feng3d.war3
 
 	/**
 	 * 
-	 * @author warden_feng 2014-6-26
 	 */
 	export class Translation
 	{

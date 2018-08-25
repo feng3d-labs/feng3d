@@ -3,7 +3,6 @@ namespace feng3d
 
     /**
      * 阴影图渲染器
-     * @author  feng    2017-03-25
      */
     export var shadowRenderer: ShadowRenderer;
 
@@ -220,7 +219,6 @@ namespace feng3d
         {
             var renderAtomic = gameObject.renderAtomic;
             gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
-            var model = gameObject.getComponent(Model);
 
             this.renderAtomic.next = renderAtomic;
             this.renderAtomic.renderParams.cullFace = renderAtomic.renderParams.cullFace;

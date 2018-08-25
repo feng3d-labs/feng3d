@@ -2,7 +2,6 @@ namespace feng3d.war3
 {
 	/**
 	 * war3的mdl文件解析
-	 * @author warden_feng 2014-6-14
 	 */
 	export var MdlParser = {
 		parse: parse
