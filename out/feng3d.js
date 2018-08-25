@@ -14108,7 +14108,6 @@ var feng3d;
         ShadowRenderer.prototype.init = function () {
             if (!this.renderAtomic) {
                 this.renderAtomic = new feng3d.RenderAtomic();
-                this.renderAtomic.shader = new feng3d.Shader("shadow");
             }
         };
         /**
@@ -14266,9 +14265,15 @@ var feng3d;
         ShadowRenderer.prototype.drawGameObject = function (gl, gameObject, scene3d, camera) {
             var renderAtomic = gameObject.renderAtomic;
             gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
+            renderAtomic.shadowShader = renderAtomic.shadowShader || new feng3d.Shader("shadow");
+            //
             this.renderAtomic.next = renderAtomic;
             this.renderAtomic.renderParams.cullFace = renderAtomic.renderParams.cullFace;
+            // 使用shadowShader
+            var backShader = renderAtomic.shader;
+            renderAtomic.shader = renderAtomic.shadowShader;
             gl.renderer.draw(this.renderAtomic);
+            renderAtomic.shader = backShader;
         };
         return ShadowRenderer;
     }());

@@ -15,7 +15,6 @@ namespace feng3d
             if (!this.renderAtomic)
             {
                 this.renderAtomic = new RenderAtomic();
-                this.renderAtomic.shader = new Shader("shadow");
             }
         }
 
@@ -219,11 +218,17 @@ namespace feng3d
         {
             var renderAtomic = gameObject.renderAtomic;
             gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
+            renderAtomic.shadowShader = renderAtomic.shadowShader || new Shader("shadow");
 
+            //
             this.renderAtomic.next = renderAtomic;
             this.renderAtomic.renderParams.cullFace = renderAtomic.renderParams.cullFace;
 
+            // 使用shadowShader
+            var backShader = renderAtomic.shader;
+            renderAtomic.shader = renderAtomic.shadowShader;
             gl.renderer.draw(this.renderAtomic);
+            renderAtomic.shader = backShader;
         }
     }
     shadowRenderer = new ShadowRenderer();
@@ -240,4 +245,9 @@ namespace feng3d
         new Vector3(1, 0, 0), new Vector3(- 1, 0, 0), new Vector3(0, 0, 1),
         new Vector3(0, 0, - 1), new Vector3(0, 1, 0), new Vector3(0, - 1, 0)
     ];
+
+    export interface RenderAtomic
+    {
+        shadowShader: Shader;
+    }
 }

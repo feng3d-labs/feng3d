@@ -8568,6 +8568,9 @@ declare namespace feng3d {
          */
         drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera): void;
     }
+    interface RenderAtomic {
+        shadowShader: Shader;
+    }
 }
 declare namespace feng3d {
     /**
