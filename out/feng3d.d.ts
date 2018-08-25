@@ -8566,7 +8566,7 @@ declare namespace feng3d {
         /**
          * 绘制3D对象
          */
-        drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera): void;
+        private drawGameObject;
     }
     interface RenderAtomic {
         shadowShader: Shader;
@@ -8627,7 +8627,7 @@ declare namespace feng3d {
         /**
          * 绘制3D对象
          */
-        private drawGameObject;
+        drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera, wireframeColor?: Color4): void;
     }
     interface RenderAtomic {
         /**

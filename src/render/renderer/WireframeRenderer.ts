@@ -41,7 +41,7 @@ namespace feng3d
         /**
          * 绘制3D对象
          */
-        private drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera, wireframeColor = new Color4())
+        drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera, wireframeColor = new Color4())
         {
             var renderAtomic = gameObject.renderAtomic;
             gameObject.beforeRender(gl, renderAtomic, scene3d, camera);

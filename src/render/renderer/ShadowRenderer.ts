@@ -214,7 +214,7 @@ namespace feng3d
         /**
          * 绘制3D对象
          */
-        drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera)
+        private drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera)
         {
             var renderAtomic = gameObject.renderAtomic;
             gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
