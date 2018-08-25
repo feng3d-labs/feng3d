@@ -7,7 +7,7 @@ namespace feng3d
 
     export class WireframeRenderer
     {
-        renderAtomic: RenderAtomic;
+        private renderAtomic: RenderAtomic;
 
         init()
         {
@@ -17,8 +17,6 @@ namespace feng3d
                 var renderParams = this.renderAtomic.renderParams;
                 renderParams.renderMode = RenderMode.LINES;
                 // renderParams.depthMask = false;
-
-                this.renderAtomic.shader = new Shader("wireframe");
             }
         }
 
@@ -43,11 +41,10 @@ namespace feng3d
         /**
          * 绘制3D对象
          */
-        drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera, wireframeColor = new Color4())
+        private drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera, wireframeColor = new Color4())
         {
             var renderAtomic = gameObject.renderAtomic;
             gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
-            var model = gameObject.getComponent(Model);
 
             var renderMode = lazy.getvalue(renderAtomic.renderParams.renderMode);
             if (renderMode == RenderMode.POINTS
@@ -59,6 +56,16 @@ namespace feng3d
 
             this.init();
 
+            var uniforms = this.renderAtomic.uniforms;
+            //
+            uniforms.u_projectionMatrix = () => camera.lens.matrix;
+            uniforms.u_viewProjection = () => camera.viewProjection;
+            uniforms.u_viewMatrix = () => camera.transform.worldToLocalMatrix;
+            uniforms.u_cameraMatrix = () => camera.transform.localToWorldMatrix;
+            uniforms.u_skyBoxSize = () => camera.lens.far / Math.sqrt(3);
+            uniforms.u_scaleByDepth = () => camera.getScaleByDepth(1);
+
+            //
             this.renderAtomic.next = renderAtomic;
 
             //
@@ -78,11 +85,15 @@ namespace feng3d
                 renderAtomic.wireframeindexBuffer = new Index();
                 renderAtomic.wireframeindexBuffer.indices = wireframeindices;
             }
+            renderAtomic.wireframeShader = renderAtomic.wireframeShader || new Shader("wireframe");
             this.renderAtomic.indexBuffer = renderAtomic.wireframeindexBuffer;
 
             this.renderAtomic.uniforms.u_wireframeColor = wireframeColor;
 
+            //
+            this.renderAtomic.shader = renderAtomic.wireframeShader;
             gl.renderer.draw(this.renderAtomic);
+            this.renderAtomic.shader = null;
             //
         }
     }
@@ -95,5 +106,7 @@ namespace feng3d
          * 顶点索引缓冲
          */
         wireframeindexBuffer: Index;
+
+        wireframeShader: Shader;
     }
 }

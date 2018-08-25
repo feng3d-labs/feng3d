@@ -14270,10 +14270,9 @@ var feng3d;
             this.renderAtomic.next = renderAtomic;
             this.renderAtomic.renderParams.cullFace = renderAtomic.renderParams.cullFace;
             // 使用shadowShader
-            var backShader = renderAtomic.shader;
-            renderAtomic.shader = renderAtomic.shadowShader;
+            this.renderAtomic.shader = renderAtomic.shadowShader;
             gl.renderer.draw(this.renderAtomic);
-            renderAtomic.shader = backShader;
+            this.renderAtomic.shader = null;
         };
         return ShadowRenderer;
     }());
@@ -14372,7 +14371,6 @@ var feng3d;
                 var renderParams = this.renderAtomic.renderParams;
                 renderParams.renderMode = feng3d.RenderMode.LINES;
                 // renderParams.depthMask = false;
-                this.renderAtomic.shader = new feng3d.Shader("wireframe");
             }
         };
         /**
@@ -14396,7 +14394,6 @@ var feng3d;
             if (wireframeColor === void 0) { wireframeColor = new feng3d.Color4(); }
             var renderAtomic = gameObject.renderAtomic;
             gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
-            var model = gameObject.getComponent(feng3d.Model);
             var renderMode = feng3d.lazy.getvalue(renderAtomic.renderParams.renderMode);
             if (renderMode == feng3d.RenderMode.POINTS
                 || renderMode == feng3d.RenderMode.LINES
@@ -14404,6 +14401,15 @@ var feng3d;
                 || renderMode == feng3d.RenderMode.LINE_STRIP)
                 return;
             this.init();
+            var uniforms = this.renderAtomic.uniforms;
+            //
+            uniforms.u_projectionMatrix = function () { return camera.lens.matrix; };
+            uniforms.u_viewProjection = function () { return camera.viewProjection; };
+            uniforms.u_viewMatrix = function () { return camera.transform.worldToLocalMatrix; };
+            uniforms.u_cameraMatrix = function () { return camera.transform.localToWorldMatrix; };
+            uniforms.u_skyBoxSize = function () { return camera.lens.far / Math.sqrt(3); };
+            uniforms.u_scaleByDepth = function () { return camera.getScaleByDepth(1); };
+            //
             this.renderAtomic.next = renderAtomic;
             //
             var oldIndexBuffer = renderAtomic.indexBuffer;
@@ -14416,9 +14422,13 @@ var feng3d;
                 renderAtomic.wireframeindexBuffer = new feng3d.Index();
                 renderAtomic.wireframeindexBuffer.indices = wireframeindices;
             }
+            renderAtomic.wireframeShader = renderAtomic.wireframeShader || new feng3d.Shader("wireframe");
             this.renderAtomic.indexBuffer = renderAtomic.wireframeindexBuffer;
             this.renderAtomic.uniforms.u_wireframeColor = wireframeColor;
+            //
+            this.renderAtomic.shader = renderAtomic.wireframeShader;
             gl.renderer.draw(this.renderAtomic);
+            this.renderAtomic.shader = null;
             //
         };
         return WireframeRenderer;

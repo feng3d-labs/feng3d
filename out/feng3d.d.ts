@@ -8618,7 +8618,7 @@ declare namespace feng3d {
      */
     var wireframeRenderer: WireframeRenderer;
     class WireframeRenderer {
-        renderAtomic: RenderAtomic;
+        private renderAtomic;
         init(): void;
         /**
          * 渲染
@@ -8627,13 +8627,14 @@ declare namespace feng3d {
         /**
          * 绘制3D对象
          */
-        drawGameObject(gl: GL, gameObject: GameObject, scene3d: Scene3D, camera: Camera, wireframeColor?: Color4): void;
+        private drawGameObject;
     }
     interface RenderAtomic {
         /**
          * 顶点索引缓冲
          */
         wireframeindexBuffer: Index;
+        wireframeShader: Shader;
     }
 }
 declare namespace feng3d {

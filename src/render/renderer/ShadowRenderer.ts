@@ -225,10 +225,9 @@ namespace feng3d
             this.renderAtomic.renderParams.cullFace = renderAtomic.renderParams.cullFace;
 
             // 使用shadowShader
-            var backShader = renderAtomic.shader;
-            renderAtomic.shader = renderAtomic.shadowShader;
+            this.renderAtomic.shader = renderAtomic.shadowShader;
             gl.renderer.draw(this.renderAtomic);
-            renderAtomic.shader = backShader;
+            this.renderAtomic.shader = null;
         }
     }
     shadowRenderer = new ShadowRenderer();
