@@ -269,8 +269,6 @@ namespace feng3d
          */
         intersection(box: Box)
         {
-            if (!this.intersects(box))
-                return new Box();
             this.min.clamp(box.min, box.max);
             this.max.clamp(box.min, box.max);
             return this;
@@ -290,7 +288,8 @@ namespace feng3d
          */
         intersects(box: Box)
         {
-            return (this.max.x > box.min.x && this.min.x < box.max.x && this.max.y > box.min.y && this.min.y < box.max.y && this.max.z > box.min.z && this.min.z < box.max.z);
+            var b = this.intersectionTo(box);
+            return b.getSize().length > 0;
         }
 
         /**

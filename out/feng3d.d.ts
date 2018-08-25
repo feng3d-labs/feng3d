@@ -4716,7 +4716,7 @@ declare namespace feng3d {
          * 与盒子相交
          * @param box 盒子
          */
-        intersection(box: Box): Box;
+        intersection(box: Box): this;
         /**
          * 与盒子相交
          * @param box 盒子
@@ -10050,17 +10050,17 @@ declare namespace feng3d {
          */
         lens: LensBase;
         /**
-         * 创建一个摄像机
-         */
-        init(gameObject: GameObject): void;
-        /**
          * 场景投影矩阵，世界空间转投影空间
          */
         readonly viewProjection: Matrix4x4;
         /**
-         * 处理场景变换改变事件
+         * 可视包围盒
          */
-        protected onScenetransformChanged(): void;
+        readonly viewBox: Box;
+        /**
+         * 创建一个摄像机
+         */
+        init(gameObject: GameObject): void;
         /**
          * 获取鼠标射线（与鼠标重叠的摄像机射线）
          */
@@ -10104,9 +10104,9 @@ declare namespace feng3d {
          */
         intersectsBox(box: Box): boolean;
         /**
-         * 可视包围盒
+         * 处理场景变换改变事件
          */
-        readonly viewBox: Box;
+        protected onScenetransformChanged(): void;
         private _lens;
         private _viewProjection;
         private _viewProjectionInvalid;

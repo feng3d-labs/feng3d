@@ -9479,8 +9479,6 @@ var feng3d;
          * @param box 盒子
          */
         Box.prototype.intersection = function (box) {
-            if (!this.intersects(box))
-                return new Box();
             this.min.clamp(box.min, box.max);
             this.max.clamp(box.min, box.max);
             return this;
@@ -9498,7 +9496,8 @@ var feng3d;
          * @param box 盒子
          */
         Box.prototype.intersects = function (box) {
-            return (this.max.x > box.min.x && this.min.x < box.max.x && this.max.y > box.min.y && this.min.y < box.max.y && this.max.z > box.min.z && this.min.z < box.max.z);
+            var b = this.intersectionTo(box);
+            return b.getSize().length > 0;
         };
         /**
          * 与射线相交
@@ -18379,15 +18378,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        /**
-         * 创建一个摄像机
-         */
-        Camera.prototype.init = function (gameObject) {
-            _super.prototype.init.call(this, gameObject);
-            this.lens = this.lens || new feng3d.PerspectiveLens();
-            this.on("scenetransformChanged", this.onScenetransformChanged, this);
-            this._viewProjectionInvalid = true;
-        };
         Object.defineProperty(Camera.prototype, "viewProjection", {
             /**
              * 场景投影矩阵，世界空间转投影空间
@@ -18405,10 +18395,28 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Camera.prototype, "viewBox", {
+            /**
+             * 可视包围盒
+             */
+            get: function () {
+                if (this._viewBoxInvalid) {
+                    this.updateViewBox();
+                    this._viewBoxInvalid = false;
+                }
+                return this._viewBox;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
-         * 处理场景变换改变事件
+         * 创建一个摄像机
          */
-        Camera.prototype.onScenetransformChanged = function () {
+        Camera.prototype.init = function (gameObject) {
+            _super.prototype.init.call(this, gameObject);
+            this.lens = this.lens || new feng3d.PerspectiveLens();
+            //
+            this.on("scenetransformChanged", this.onScenetransformChanged, this);
             this._viewProjectionInvalid = true;
         };
         /**
@@ -18484,23 +18492,15 @@ var feng3d;
             var _this = this;
             // 投影后的包围盒
             var box0 = feng3d.Box.fromPoints(box.toPoints().map(function (v) { return _this.lens.project(_this.transform.worldToLocalMatrix.transformVector(v)); }));
-            var intersects = box0.intersects(new feng3d.Box(new feng3d.Vector3(-1, -1, -1), new feng3d.Vector3(1, 1, 1)));
+            var intersects = box0.intersects(visibleBox);
             return intersects;
         };
-        Object.defineProperty(Camera.prototype, "viewBox", {
-            /**
-             * 可视包围盒
-             */
-            get: function () {
-                if (this._viewBoxInvalid) {
-                    this.updateViewBox();
-                    this._viewBoxInvalid = false;
-                }
-                return this._viewBox;
-            },
-            enumerable: true,
-            configurable: true
-        });
+        /**
+         * 处理场景变换改变事件
+         */
+        Camera.prototype.onScenetransformChanged = function () {
+            this._viewProjectionInvalid = true;
+        };
         /**
          * 更新可视区域顶点
          */
@@ -18563,6 +18563,8 @@ var feng3d;
         return Camera;
     }(feng3d.Component));
     feng3d.Camera = Camera;
+    // 投影后可视区域
+    var visibleBox = new feng3d.Box(new feng3d.Vector3(-1, -1, -1), new feng3d.Vector3(1, 1, 1));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

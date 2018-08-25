@@ -34,18 +34,6 @@ namespace feng3d
         lens: LensBase
 
 		/**
-		 * 创建一个摄像机
-		 */
-        init(gameObject: GameObject)
-        {
-            super.init(gameObject);
-            this.lens = this.lens || new PerspectiveLens();
-
-            this.on("scenetransformChanged", this.onScenetransformChanged, this);
-            this._viewProjectionInvalid = true;
-        }
-
-		/**
 		 * 场景投影矩阵，世界空间转投影空间
 		 */
         get viewProjection(): Matrix4x4
@@ -63,10 +51,27 @@ namespace feng3d
         }
 
         /**
-         * 处理场景变换改变事件
+         * 可视包围盒
          */
-        protected onScenetransformChanged()
+        get viewBox()
         {
+            if (this._viewBoxInvalid)
+            {
+                this.updateViewBox();
+                this._viewBoxInvalid = false;
+            }
+            return this._viewBox;
+        }
+
+		/**
+		 * 创建一个摄像机
+		 */
+        init(gameObject: GameObject)
+        {
+            super.init(gameObject);
+            this.lens = this.lens || new PerspectiveLens();
+            //
+            this.on("scenetransformChanged", this.onScenetransformChanged, this);
             this._viewProjectionInvalid = true;
         }
 
@@ -98,10 +103,8 @@ namespace feng3d
         project(point3d: Vector3): Vector3
         {
             var v: Vector3 = this.lens.project(this.transform.worldToLocalMatrix.transformVector(point3d));
-
             v.x = (v.x + 1.0) * this.viewRect.width / 2.0;
             v.y = (1.0 - v.y) * this.viewRect.height / 2.0;
-
             return v;
         }
 
@@ -130,7 +133,6 @@ namespace feng3d
             gpuPos.x = (screenPos.x * 2 - this.viewRect.width) / this.viewRect.width;
             // 屏幕坐标与gpu中使用的坐标Y轴方向相反
             gpuPos.y = - (screenPos.y * 2 - this.viewRect.height) / this.viewRect.height;
-
             return gpuPos;
         }
 
@@ -156,21 +158,16 @@ namespace feng3d
         {
             // 投影后的包围盒
             var box0 = Box.fromPoints(box.toPoints().map(v => this.lens.project(this.transform.worldToLocalMatrix.transformVector(v))));
-            var intersects = box0.intersects(new Box(new Vector3(-1, -1, -1), new Vector3(1, 1, 1)));
+            var intersects = box0.intersects(visibleBox);
             return intersects;
         }
 
         /**
-         * 可视包围盒
+         * 处理场景变换改变事件
          */
-        get viewBox()
+        protected onScenetransformChanged()
         {
-            if (this._viewBoxInvalid)
-            {
-                this.updateViewBox();
-                this._viewBoxInvalid = false;
-            }
-            return this._viewBox;
+            this._viewProjectionInvalid = true;
         }
 
         //
@@ -245,4 +242,6 @@ namespace feng3d
             }
         }
     }
+    // 投影后可视区域
+    var visibleBox = new Box(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
 }
