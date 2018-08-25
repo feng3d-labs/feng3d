@@ -308,7 +308,7 @@ namespace feng3d
                 var model = i.getComponent(Model);
                 if (model.selfWorldBounds)
                 {
-                    if (camera.frustum.intersectsBox(model.selfWorldBounds))
+                    if (camera.intersectsBox(model.selfWorldBounds))
                         return true;
                 }
                 return false;

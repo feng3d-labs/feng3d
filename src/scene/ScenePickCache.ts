@@ -44,12 +44,12 @@ namespace feng3d
 
                 if (!gameObject.visible)
                     continue;
-                var model: Model = gameObject.getComponent(Model);
+                var model = gameObject.getComponent(Model);
                 if (model && model.enabled)
                 {
                     if (model.selfWorldBounds)
                     {
-                        if (this.camera.frustum.intersectsBox(model.selfWorldBounds))
+                        if (this.camera.intersectsBox(model.selfWorldBounds))
                             models.push(model);
                     }
                 }

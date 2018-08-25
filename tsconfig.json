@@ -73,7 +73,6 @@
         "src/geom/PlaneClassification.ts",
         "src/geom/Color3.ts",
         "src/geom/Color4.ts",
-        "src/geom/Frustum.ts",
         "src/geom/TriangleGeometry.ts",
         //快捷键模块
         "src/shortcut/Keyboard.ts",

@@ -5344,41 +5344,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 截头锥体,平截头体,视锥体
-     */
-    class Frustum {
-        planes: Plane3D[];
-        constructor(p0?: Plane3D, p1?: Plane3D, p2?: Plane3D, p3?: Plane3D, p4?: Plane3D, p5?: Plane3D);
-        /**
-         * 更新视锥体6个面，平面均朝向视锥体内部
-         * @see http://www.linuxgraphics.cn/graphics/opengl_view_frustum_culling.html
-         */
-        fromMatrix3D(matrix3D: Matrix4x4): void;
-        /**
-         * 是否与盒子相交
-         * @param box 盒子
-         */
-        intersectsBox(box: Box): boolean;
-        /**
-         * 是否与球相交
-         */
-        intersectsSphere(sphere: Sphere): boolean;
-        /**
-         * 是否包含指定点
-         */
-        containsPoint(point: any): boolean;
-        /**
-         * 复制
-         */
-        copy(frustum: Frustum): this;
-        /**
-         * 克隆
-         */
-        clone(): Frustum;
-    }
-}
-declare namespace feng3d {
-    /**
      * 由三角形构成的几何体
      * ### 限定：
      *  * 只包含三角形，不存在四边形等其他多边形
@@ -10134,9 +10099,10 @@ declare namespace feng3d {
          */
         getScaleByDepth(depth: number): number;
         /**
-         * 视锥体
+         * 是否与盒子相交
+         * @param box 盒子
          */
-        readonly frustum: Frustum;
+        intersectsBox(box: Box): boolean;
         /**
          * 可视包围盒
          */
@@ -10144,8 +10110,6 @@ declare namespace feng3d {
         private _lens;
         private _viewProjection;
         private _viewProjectionInvalid;
-        private _frustum;
-        private _frustumInvalid;
         private _viewBox;
         private _viewBoxInvalid;
         private _backups;

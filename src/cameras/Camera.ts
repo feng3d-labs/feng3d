@@ -43,9 +43,6 @@ namespace feng3d
 
             this.on("scenetransformChanged", this.onScenetransformChanged, this);
             this._viewProjectionInvalid = true;
-            this._frustumInvalid = true;
-
-            this._frustum = new Frustum();
         }
 
 		/**
@@ -71,7 +68,6 @@ namespace feng3d
         protected onScenetransformChanged()
         {
             this._viewProjectionInvalid = true;
-            this._frustumInvalid = true;
         }
 
         /**
@@ -152,17 +148,16 @@ namespace feng3d
             return scale;
         }
 
-		/**
-		 * 视锥体
-		 */
-        get frustum()
+        /**
+         * 是否与盒子相交
+         * @param box 盒子
+         */
+        intersectsBox(box: Box)
         {
-            if (this._frustumInvalid)
-            {
-                this._frustum.fromMatrix3D(this.viewProjection);
-                this._frustumInvalid = false;
-            }
-            return this._frustum;
+            // 投影后的包围盒
+            var box0 = Box.fromPoints(box.toPoints().map(v => this.lens.project(this.transform.worldToLocalMatrix.transformVector(v))));
+            var intersects = box0.intersects(new Box(new Vector3(-1, -1, -1), new Vector3(1, 1, 1)));
+            return intersects;
         }
 
         /**
@@ -182,8 +177,6 @@ namespace feng3d
         private _lens: LensBase;
         private _viewProjection: Matrix4x4 = new Matrix4x4();
         private _viewProjectionInvalid = true;
-        private _frustum: Frustum;
-        private _frustumInvalid = true;
         private _viewBox = new Box();
         private _viewBoxInvalid = true;
         private _backups = { fov: 60, size: 1 };
@@ -203,7 +196,6 @@ namespace feng3d
         private onLensChanged(property: string, oldValue: LensBase, value: LensBase)
         {
             this._viewProjectionInvalid = true;
-            this._frustumInvalid = true;
 
             if (oldValue) oldValue.off("lensChanged", <any>this.onLensChanged, this);
             if (value) value.on("lensChanged", <any>this.onLensChanged, this);

@@ -10578,109 +10578,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 截头锥体,平截头体,视锥体
-     */
-    var Frustum = /** @class */ (function () {
-        function Frustum(p0, p1, p2, p3, p4, p5) {
-            if (p0 === void 0) { p0 = new feng3d.Plane3D(); }
-            if (p1 === void 0) { p1 = new feng3d.Plane3D(); }
-            if (p2 === void 0) { p2 = new feng3d.Plane3D(); }
-            if (p3 === void 0) { p3 = new feng3d.Plane3D(); }
-            if (p4 === void 0) { p4 = new feng3d.Plane3D(); }
-            if (p5 === void 0) { p5 = new feng3d.Plane3D(); }
-            this.planes = [p0, p1, p2, p3, p4, p5];
-        }
-        /**
-         * 更新视锥体6个面，平面均朝向视锥体内部
-         * @see http://www.linuxgraphics.cn/graphics/opengl_view_frustum_culling.html
-         */
-        Frustum.prototype.fromMatrix3D = function (matrix3D) {
-            var raw = matrix3D.rawData;
-            var c11 = raw[0], c12 = raw[4], c13 = raw[8], c14 = raw[12], c21 = raw[1], c22 = raw[5], c23 = raw[9], c24 = raw[13], c31 = raw[2], c32 = raw[6], c33 = raw[10], c34 = raw[14], c41 = raw[3], c42 = raw[7], c43 = raw[11], c44 = raw[15];
-            // left plane
-            this.planes[0] = new feng3d.Plane3D(c41 + c11, c42 + c12, c43 + c13, (c44 + c14));
-            // right plane
-            this.planes[1] = new feng3d.Plane3D(c41 - c11, c42 - c12, c43 - c13, -(c14 - c44));
-            // bottom
-            this.planes[2] = new feng3d.Plane3D(c41 + c21, c42 + c22, c43 + c23, (c44 + c24));
-            // top
-            this.planes[3] = new feng3d.Plane3D(c41 - c21, c42 - c22, c43 - c23, -(c24 - c44));
-            // near
-            this.planes[4] = new feng3d.Plane3D(c31, c32, c33, c34);
-            // far
-            this.planes[5] = new feng3d.Plane3D(c41 - c31, c42 - c32, c43 - c33, -(c34 - c44));
-        };
-        /**
-         * 是否与盒子相交
-         * @param box 盒子
-         */
-        Frustum.prototype.intersectsBox = function (box) {
-            var center = box.min.addTo(box.max).scale(0.5);
-            var halfExtents = box.max.subTo(box.min).scale(0.5);
-            var planes = this.planes;
-            var p = new feng3d.Vector3();
-            var n = new feng3d.Vector3();
-            for (var i = 0, numPlanes = planes.length; i < numPlanes; ++i) {
-                var plane = planes[i];
-                //最可能出现在平面内的点，即距离最可能大于0的点 (如果这个点都不在平面内的话，其他的点肯定会不在平面内)
-                plane.getNormal(n);
-                p.init(n.x < 0 ? -halfExtents.x : halfExtents.x, n.y < 0 ? -halfExtents.y : halfExtents.y, n.z < 0 ? -halfExtents.z : halfExtents.z)
-                    .add(center);
-                //小于0表示包围盒8个点都在平面内，同时就表面不存在点在视锥体内。注：视锥体6个平面朝内
-                if (plane.distanceWithPoint(p) < 0)
-                    return false;
-            }
-            return true;
-        };
-        /**
-         * 是否与球相交
-         */
-        Frustum.prototype.intersectsSphere = function (sphere) {
-            var planes = this.planes;
-            var center = sphere.center;
-            var negRadius = -sphere.radius;
-            for (var i = 0; i < 6; i++) {
-                var distance = planes[i].distanceWithPoint(center);
-                if (distance < negRadius) {
-                    return false;
-                }
-            }
-            return true;
-        };
-        /**
-         * 是否包含指定点
-         */
-        Frustum.prototype.containsPoint = function (point) {
-            var planes = this.planes;
-            for (var i = 0; i < 6; i++) {
-                if (planes[i].distanceWithPoint(point) < 0) {
-                    return false;
-                }
-            }
-            return true;
-        };
-        /**
-         * 复制
-         */
-        Frustum.prototype.copy = function (frustum) {
-            for (var i = 0, planes = frustum.planes, n = planes.length; i < n; i++) {
-                this.planes[i].copy(planes[i]);
-            }
-            return this;
-        };
-        /**
-         * 克隆
-         */
-        Frustum.prototype.clone = function () {
-            return new Frustum().copy(this);
-        };
-        return Frustum;
-    }());
-    feng3d.Frustum = Frustum;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 由三角形构成的几何体
      * ### 限定：
      *  * 只包含三角形，不存在四边形等其他多边形
@@ -16987,7 +16884,7 @@ var feng3d;
             var results = this.visibleAndEnabledModels.filter(function (i) {
                 var model = i.getComponent(feng3d.Model);
                 if (model.selfWorldBounds) {
-                    if (camera.frustum.intersectsBox(model.selfWorldBounds))
+                    if (camera.intersectsBox(model.selfWorldBounds))
                         return true;
                 }
                 return false;
@@ -17040,7 +16937,7 @@ var feng3d;
                     var model = gameObject.getComponent(feng3d.Model);
                     if (model && model.enabled) {
                         if (model.selfWorldBounds) {
-                            if (this.camera.frustum.intersectsBox(model.selfWorldBounds))
+                            if (this.camera.intersectsBox(model.selfWorldBounds))
                                 models.push(model);
                         }
                     }
@@ -18472,7 +18369,6 @@ var feng3d;
             _this.viewRect = new feng3d.Rectangle(0, 0, 1, 1);
             _this._viewProjection = new feng3d.Matrix4x4();
             _this._viewProjectionInvalid = true;
-            _this._frustumInvalid = true;
             _this._viewBox = new feng3d.Box();
             _this._viewBoxInvalid = true;
             _this._backups = { fov: 60, size: 1 };
@@ -18491,8 +18387,6 @@ var feng3d;
             this.lens = this.lens || new feng3d.PerspectiveLens();
             this.on("scenetransformChanged", this.onScenetransformChanged, this);
             this._viewProjectionInvalid = true;
-            this._frustumInvalid = true;
-            this._frustum = new feng3d.Frustum();
         };
         Object.defineProperty(Camera.prototype, "viewProjection", {
             /**
@@ -18516,7 +18410,6 @@ var feng3d;
          */
         Camera.prototype.onScenetransformChanged = function () {
             this._viewProjectionInvalid = true;
-            this._frustumInvalid = true;
         };
         /**
          * 获取鼠标射线（与鼠标重叠的摄像机射线）
@@ -18583,20 +18476,17 @@ var feng3d;
             var scale = lt.subTo(rb).length;
             return scale;
         };
-        Object.defineProperty(Camera.prototype, "frustum", {
-            /**
-             * 视锥体
-             */
-            get: function () {
-                if (this._frustumInvalid) {
-                    this._frustum.fromMatrix3D(this.viewProjection);
-                    this._frustumInvalid = false;
-                }
-                return this._frustum;
-            },
-            enumerable: true,
-            configurable: true
-        });
+        /**
+         * 是否与盒子相交
+         * @param box 盒子
+         */
+        Camera.prototype.intersectsBox = function (box) {
+            var _this = this;
+            // 投影后的包围盒
+            var box0 = feng3d.Box.fromPoints(box.toPoints().map(function (v) { return _this.lens.project(_this.transform.worldToLocalMatrix.transformVector(v)); }));
+            var intersects = box0.intersects(new feng3d.Box(new feng3d.Vector3(-1, -1, -1), new feng3d.Vector3(1, 1, 1)));
+            return intersects;
+        };
         Object.defineProperty(Camera.prototype, "viewBox", {
             /**
              * 可视包围盒
@@ -18623,7 +18513,6 @@ var feng3d;
          */
         Camera.prototype.onLensChanged = function (property, oldValue, value) {
             this._viewProjectionInvalid = true;
-            this._frustumInvalid = true;
             if (oldValue)
                 oldValue.off("lensChanged", this.onLensChanged, this);
             if (value)
