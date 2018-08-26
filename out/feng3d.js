@@ -23714,6 +23714,7 @@ var feng3d;
             _this.__class__ = "feng3d.SkeletonComponent";
             /** 骨骼关节数据列表 */
             _this.joints = [];
+            //
             _this.isInitJoints = false;
             return _this;
         }
@@ -23868,6 +23869,23 @@ var feng3d;
         SkinnedModel.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
         };
+        SkinnedModel.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
+            var _this = this;
+            _super.prototype.beforeRender.call(this, gl, renderAtomic, scene3d, camera);
+            renderAtomic.uniforms.u_modelMatrix = function () { return _this.u_modelMatrix; };
+            renderAtomic.uniforms.u_ITModelMatrix = function () { return _this.u_ITModelMatrix; };
+            //
+            renderAtomic.uniforms.u_skeletonGlobalMatriices = function () { return _this.u_skeletonGlobalMatriices; };
+            renderAtomic.shaderMacro.HAS_SKELETON_ANIMATION = true;
+            renderAtomic.shaderMacro.NUM_SKELETONJOINT = this.skinSkeleton.joints.length;
+        };
+        /**
+         * 销毁
+         */
+        SkinnedModel.prototype.dispose = function () {
+            this.cacheSkeletonComponent = null;
+            _super.prototype.dispose.call(this);
+        };
         Object.defineProperty(SkinnedModel.prototype, "u_modelMatrix", {
             get: function () {
                 if (this.cacheSkeletonComponent)
@@ -23913,22 +23931,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        SkinnedModel.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
-            var _this = this;
-            _super.prototype.beforeRender.call(this, gl, renderAtomic, scene3d, camera);
-            renderAtomic.uniforms.u_modelMatrix = function () { return _this.u_modelMatrix; };
-            renderAtomic.uniforms.u_ITModelMatrix = function () { return _this.u_ITModelMatrix; };
-            //
-            renderAtomic.uniforms.u_skeletonGlobalMatriices = function () { return _this.u_skeletonGlobalMatriices; };
-            renderAtomic.shaderMacro.HAS_SKELETON_ANIMATION = true;
-            renderAtomic.shaderMacro.NUM_SKELETONJOINT = this.skinSkeleton.joints.length;
-        };
-        /**
-         * 销毁
-         */
-        SkinnedModel.prototype.dispose = function () {
-            _super.prototype.dispose.call(this);
-        };
         __decorate([
             feng3d.serialize,
             feng3d.oav()
@@ -24022,7 +24024,10 @@ var feng3d;
         function Animation() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.animations = [];
-            _this._time = 0;
+            /**
+             * 动画事件，单位为ms
+             */
+            _this.time = 0;
             _this.isplaying = false;
             /**
              * 播放速度
@@ -24032,35 +24037,6 @@ var feng3d;
             _this._objectCache = new Map();
             return _this;
         }
-        Object.defineProperty(Animation.prototype, "animation", {
-            get: function () {
-                return this._animation;
-            },
-            set: function (value) {
-                if (this._animation == value)
-                    return;
-                this._animation = value;
-                this.time = 0;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Animation.prototype, "time", {
-            /**
-             * 动画事件，单位为ms
-             */
-            get: function () {
-                return this._time;
-            },
-            set: function (value) {
-                if (this._time == value)
-                    return;
-                this._time = value;
-                this.updateAni();
-            },
-            enumerable: true,
-            configurable: true
-        });
         Animation.prototype.update = function (interval) {
             if (this.isplaying)
                 this.time += interval * this.playspeed;
@@ -24081,18 +24057,7 @@ var feng3d;
                 var propertyHost = this.getPropertyHost(propertyClip);
                 if (!propertyHost)
                     continue;
-                var propertyValue = getValue(propertyClip.type, propertyValues[0][1]);
-                if (cliptime <= propertyValues[0][0]) { }
-                else if (cliptime >= propertyValues[propertyValues.length - 1][0])
-                    propertyValue = getValue(propertyClip.type, propertyValues[propertyValues.length - 1][1]);
-                else {
-                    for (var j = 0; j < propertyValues.length - 1; j++) {
-                        if (propertyValues[j][0] <= cliptime && cliptime < propertyValues[j + 1][0]) {
-                            propertyValue = interpolation(getValue(propertyClip.type, propertyValues[j][1]), getValue(propertyClip.type, propertyValues[j + 1][1]), (cliptime - propertyValues[j][0]) / (propertyValues[j + 1][0] - propertyValues[j][0]));
-                            break;
-                        }
-                    }
-                }
+                var propertyValue = propertyClip.getValue(cliptime);
                 propertyHost[propertyClip.propertyName] = propertyValue;
             }
         };
@@ -24122,6 +24087,12 @@ var feng3d;
             this._objectCache[propertyClip.cacheIndex] = propertyHost;
             return propertyHost;
         };
+        Animation.prototype.onAnimationChanged = function () {
+            this.time = 0;
+        };
+        Animation.prototype.onTimeChanged = function () {
+            this.updateAni();
+        };
         Animation.prototype.dispose = function () {
             this.animation = null;
             this.animations = null;
@@ -24129,15 +24100,17 @@ var feng3d;
         };
         __decorate([
             feng3d.oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" } } }),
-            feng3d.serialize
-        ], Animation.prototype, "animation", null);
+            feng3d.serialize,
+            feng3d.watch("onAnimationChanged")
+        ], Animation.prototype, "animation", void 0);
         __decorate([
             feng3d.oav({ component: "OAVArray", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" }, defaultItem: function () { return new AnimationClip(); } } }),
             feng3d.serialize
         ], Animation.prototype, "animations", void 0);
         __decorate([
-            feng3d.oav()
-        ], Animation.prototype, "time", null);
+            feng3d.oav(),
+            feng3d.watch("onTimeChanged")
+        ], Animation.prototype, "time", void 0);
         __decorate([
             feng3d.oav(),
             feng3d.serialize
@@ -24150,30 +24123,6 @@ var feng3d;
     }(feng3d.Behaviour));
     feng3d.Animation = Animation;
     var autoobjectCacheID = 1;
-    function getValue(type, value) {
-        if (type == "Number")
-            return value[0];
-        if (type == "Vector3")
-            return feng3d.Vector3.fromArray(value);
-        if (type == "Quaternion")
-            return feng3d.Quaternion.fromArray(value);
-        feng3d.error("\u672A\u5904\u7406 \u52A8\u753B\u6570\u636E\u7C7B\u578B " + type);
-        throw "";
-    }
-    function interpolation(prevalue, nextValue, factor) {
-        var propertyValue;
-        if (prevalue instanceof feng3d.Quaternion) {
-            propertyValue = prevalue.clone();
-            propertyValue.lerp(prevalue, nextValue, factor);
-        }
-        else if (prevalue instanceof feng3d.Vector3) {
-            propertyValue = new feng3d.Vector3(prevalue.x * (1 - factor) + nextValue.x * factor, prevalue.y * (1 - factor) + nextValue.y * factor, prevalue.z * (1 - factor) + nextValue.z * factor);
-        }
-        else {
-            propertyValue = prevalue * (1 - factor) + nextValue * factor;
-        }
-        return propertyValue;
-    }
     var AnimationClip = /** @class */ (function () {
         function AnimationClip() {
             this.loop = true;
@@ -24196,6 +24145,46 @@ var feng3d;
     var PropertyClip = /** @class */ (function () {
         function PropertyClip() {
         }
+        PropertyClip.prototype.getValue = function (cliptime) {
+            var propertyValues = this.propertyValues;
+            var propertyValue = this.getpropertyValue(propertyValues[0][1]);
+            if (cliptime <= propertyValues[0][0]) { }
+            else if (cliptime >= propertyValues[propertyValues.length - 1][0])
+                propertyValue = this.getpropertyValue(propertyValues[propertyValues.length - 1][1]);
+            else {
+                for (var j = 0; j < propertyValues.length - 1; j++) {
+                    if (propertyValues[j][0] <= cliptime && cliptime < propertyValues[j + 1][0]) {
+                        propertyValue = this.interpolation(this.getpropertyValue(propertyValues[j][1]), this.getpropertyValue(propertyValues[j + 1][1]), (cliptime - propertyValues[j][0]) / (propertyValues[j + 1][0] - propertyValues[j][0]));
+                        break;
+                    }
+                }
+            }
+            return propertyValue;
+        };
+        PropertyClip.prototype.interpolation = function (prevalue, nextValue, factor) {
+            var propertyValue;
+            if (prevalue instanceof feng3d.Quaternion) {
+                propertyValue = prevalue.clone();
+                propertyValue.lerp(prevalue, nextValue, factor);
+            }
+            else if (prevalue instanceof feng3d.Vector3) {
+                propertyValue = new feng3d.Vector3(prevalue.x * (1 - factor) + nextValue.x * factor, prevalue.y * (1 - factor) + nextValue.y * factor, prevalue.z * (1 - factor) + nextValue.z * factor);
+            }
+            else {
+                propertyValue = prevalue * (1 - factor) + nextValue * factor;
+            }
+            return propertyValue;
+        };
+        PropertyClip.prototype.getpropertyValue = function (value) {
+            if (this.type == "Number")
+                return value[0];
+            if (this.type == "Vector3")
+                return feng3d.Vector3.fromArray(value);
+            if (this.type == "Quaternion")
+                return feng3d.Quaternion.fromArray(value);
+            feng3d.error("\u672A\u5904\u7406 \u52A8\u753B\u6570\u636E\u7C7B\u578B " + this.type);
+            throw "";
+        };
         __decorate([
             feng3d.serialize
         ], PropertyClip.prototype, "path", void 0);

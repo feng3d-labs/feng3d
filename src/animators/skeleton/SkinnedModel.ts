@@ -23,7 +23,7 @@ namespace feng3d
         /**
          * 缓存，通过寻找父节点获得
          */
-        private cacheSkeletonComponent: SkeletonComponent | null;
+        private cacheSkeletonComponent: SkeletonComponent;
 
         @serialize
         initMatrix3d: Matrix4x4;
@@ -34,6 +34,28 @@ namespace feng3d
         init(gameObject: GameObject)
         {
             super.init(gameObject);
+        }
+
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
+        {
+            super.beforeRender(gl, renderAtomic, scene3d, camera);
+
+            renderAtomic.uniforms.u_modelMatrix = () => this.u_modelMatrix;
+            renderAtomic.uniforms.u_ITModelMatrix = () => this.u_ITModelMatrix;
+            //
+            renderAtomic.uniforms.u_skeletonGlobalMatriices = () => this.u_skeletonGlobalMatriices;
+
+            renderAtomic.shaderMacro.HAS_SKELETON_ANIMATION = true;
+            renderAtomic.shaderMacro.NUM_SKELETONJOINT = this.skinSkeleton.joints.length;
+        }
+
+        /**
+         * 销毁
+         */
+        dispose()
+        {
+            this.cacheSkeletonComponent = null;
+            super.dispose();
         }
 
         private get u_modelMatrix()
@@ -54,8 +76,8 @@ namespace feng3d
         {
             if (!this.cacheSkeletonComponent)
             {
-                var gameObject: GameObject | null = this.gameObject;
-                var skeletonComponent: SkeletonComponent | null = null;
+                var gameObject: GameObject = this.gameObject;
+                var skeletonComponent: SkeletonComponent = null;
                 while (gameObject && !skeletonComponent)
                 {
                     skeletonComponent = gameObject.getComponent(SkeletonComponent)
@@ -78,27 +100,6 @@ namespace feng3d
                 }
             }
             return this.skeletonGlobalMatriices;
-        }
-
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
-        {
-            super.beforeRender(gl, renderAtomic, scene3d, camera);
-
-            renderAtomic.uniforms.u_modelMatrix = () => this.u_modelMatrix;
-            renderAtomic.uniforms.u_ITModelMatrix = () => this.u_ITModelMatrix;
-            //
-            renderAtomic.uniforms.u_skeletonGlobalMatriices = () => this.u_skeletonGlobalMatriices;
-
-            renderAtomic.shaderMacro.HAS_SKELETON_ANIMATION = true;
-            renderAtomic.shaderMacro.NUM_SKELETONJOINT = this.skinSkeleton.joints.length;
-        }
-
-        /**
-         * 销毁
-         */
-        dispose()
-        {
-            super.dispose();
         }
     }
 

@@ -12,8 +12,6 @@ namespace feng3d
         @oav()
         joints: SkeletonJoint[] = [];
 
-        private isInitJoints = false;
-
         /**
          * 当前骨骼姿势的全局矩阵
          * @see #globalPose
@@ -35,6 +33,7 @@ namespace feng3d
         }
 
         //
+        private isInitJoints = false;
         private jointGameobjects: Transform[];
         private jointGameObjectMap: { [jointname: string]: Transform };
         private _globalPropertiesInvalid: boolean;

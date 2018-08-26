@@ -11914,12 +11914,12 @@ declare namespace feng3d {
         __class__: "feng3d.SkeletonComponent";
         /** 骨骼关节数据列表 */
         joints: SkeletonJoint[];
-        private isInitJoints;
         /**
          * 当前骨骼姿势的全局矩阵
          * @see #globalPose
          */
         readonly globalMatrices: Matrix4x4[];
+        private isInitJoints;
         private jointGameobjects;
         private jointGameObjectMap;
         private _globalPropertiesInvalid;
@@ -11955,14 +11955,14 @@ declare namespace feng3d {
          * 创建一个骨骼动画类
          */
         init(gameObject: GameObject): void;
-        private readonly u_modelMatrix;
-        private readonly u_ITModelMatrix;
-        private readonly u_skeletonGlobalMatriices;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
         /**
          * 销毁
          */
         dispose(): void;
+        private readonly u_modelMatrix;
+        private readonly u_ITModelMatrix;
+        private readonly u_skeletonGlobalMatriices;
     }
     class SkinSkeleton {
         /**
@@ -12002,13 +12002,11 @@ declare namespace feng3d {
     }
     class Animation extends Behaviour {
         animation: AnimationClip;
-        private _animation;
         animations: AnimationClip[];
         /**
          * 动画事件，单位为ms
          */
         time: number;
-        private _time;
         isplaying: boolean;
         /**
          * 播放速度
@@ -12019,6 +12017,8 @@ declare namespace feng3d {
         private updateAni;
         private _objectCache;
         private getPropertyHost;
+        private onAnimationChanged;
+        private onTimeChanged;
         dispose(): void;
     }
     class AnimationClip {
@@ -12038,6 +12038,9 @@ declare namespace feng3d {
         propertyName: string;
         type: "Number" | "Vector3" | "Quaternion";
         propertyValues: [number, number[]][];
+        getValue(cliptime: number): number | Vector3 | Quaternion;
+        private interpolation;
+        private getpropertyValue;
         cacheIndex: number;
     }
     /**

@@ -7,18 +7,8 @@ namespace feng3d
     {
         @oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" } } })
         @serialize
-        get animation()
-        {
-            return this._animation;
-        }
-        set animation(value)
-        {
-            if (this._animation == value)
-                return;
-            this._animation = value;
-            this.time = 0;
-        }
-        private _animation: AnimationClip
+        @watch("onAnimationChanged")
+        animation: AnimationClip
 
         @oav({ component: "OAVArray", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" }, defaultItem: () => new AnimationClip() } })
         @serialize
@@ -28,18 +18,8 @@ namespace feng3d
          * 动画事件，单位为ms
          */
         @oav()
-        get time()
-        {
-            return this._time;
-        }
-        set time(value)
-        {
-            if (this._time == value)
-                return;
-            this._time = value;
-            this.updateAni();
-        }
-        private _time = 0;
+        @watch("onTimeChanged")
+        time = 0;
 
         @oav()
         @serialize
@@ -57,6 +37,7 @@ namespace feng3d
             if (this.isplaying)
                 this.time += interval * this.playspeed;
         }
+
         private num = 0;
         private updateAni()
         {
@@ -80,25 +61,7 @@ namespace feng3d
                 var propertyHost = this.getPropertyHost(propertyClip);
                 if (!propertyHost)
                     continue;
-                var propertyValue = getValue(propertyClip.type, propertyValues[0][1]);
-                if (cliptime <= propertyValues[0][0]) { }
-                else if (cliptime >= propertyValues[propertyValues.length - 1][0])
-                    propertyValue = getValue(propertyClip.type, propertyValues[propertyValues.length - 1][1]);
-                else
-                {
-                    for (var j = 0; j < propertyValues.length - 1; j++)
-                    {
-                        if (propertyValues[j][0] <= cliptime && cliptime < propertyValues[j + 1][0])
-                        {
-                            propertyValue = interpolation(
-                                getValue(propertyClip.type, propertyValues[j][1]),
-                                getValue(propertyClip.type, propertyValues[j + 1][1]),
-                                (cliptime - propertyValues[j][0]) / (propertyValues[j + 1][0] - propertyValues[j][0])
-                            );
-                            break;
-                        }
-                    }
-                }
+                var propertyValue = propertyClip.getValue(cliptime);
                 propertyHost[propertyClip.propertyName] = propertyValue;
             }
         }
@@ -138,6 +101,16 @@ namespace feng3d
             return propertyHost;
         }
 
+        private onAnimationChanged()
+        {
+            this.time = 0;
+        }
+
+        private onTimeChanged()
+        {
+            this.updateAni();
+        }
+
         dispose()
         {
             this.animation = <any>null;
@@ -146,40 +119,6 @@ namespace feng3d
         }
     }
     var autoobjectCacheID = 1;
-
-    function getValue(type: "Number" | "Vector3" | "Quaternion", value: number[])
-    {
-        if (type == "Number")
-            return value[0]
-        if (type == "Vector3")
-            return Vector3.fromArray(value);
-        if (type == "Quaternion")
-            return Quaternion.fromArray(value);
-
-        error(`未处理 动画数据类型 ${type}`);
-        throw ``;
-    }
-
-    function interpolation(prevalue: ClipPropertyType, nextValue: ClipPropertyType, factor: number)
-    {
-        var propertyValue: ClipPropertyType;
-        if (prevalue instanceof Quaternion)
-        {
-            propertyValue = prevalue.clone();
-            propertyValue.lerp(prevalue, <Quaternion>nextValue, factor);
-        } else if (prevalue instanceof Vector3)
-        {
-            propertyValue = new Vector3(
-                prevalue.x * (1 - factor) + (<Vector3>nextValue).x * factor,
-                prevalue.y * (1 - factor) + (<Vector3>nextValue).y * factor,
-                prevalue.z * (1 - factor) + (<Vector3>nextValue).z * factor,
-            );
-        } else
-        {
-            propertyValue = prevalue * (1 - factor) + <number>nextValue * factor;
-        }
-        return propertyValue;
-    }
 
     export class AnimationClip
     {
@@ -212,6 +151,65 @@ namespace feng3d
 
         @serialize
         propertyValues: [number, number[]][];
+
+        getValue(cliptime: number)
+        {
+            var propertyValues = this.propertyValues;
+            var propertyValue = this.getpropertyValue(propertyValues[0][1]);
+            if (cliptime <= propertyValues[0][0]) { }
+            else if (cliptime >= propertyValues[propertyValues.length - 1][0])
+                propertyValue = this.getpropertyValue(propertyValues[propertyValues.length - 1][1]);
+            else
+            {
+                for (var j = 0; j < propertyValues.length - 1; j++)
+                {
+                    if (propertyValues[j][0] <= cliptime && cliptime < propertyValues[j + 1][0])
+                    {
+                        propertyValue = this.interpolation(
+                            this.getpropertyValue(propertyValues[j][1]),
+                            this.getpropertyValue(propertyValues[j + 1][1]),
+                            (cliptime - propertyValues[j][0]) / (propertyValues[j + 1][0] - propertyValues[j][0])
+                        );
+                        break;
+                    }
+                }
+            }
+            return propertyValue;
+        }
+
+        private interpolation(prevalue: ClipPropertyType, nextValue: ClipPropertyType, factor: number)
+        {
+            var propertyValue: ClipPropertyType;
+            if (prevalue instanceof Quaternion)
+            {
+                propertyValue = prevalue.clone();
+                propertyValue.lerp(prevalue, <Quaternion>nextValue, factor);
+            } else if (prevalue instanceof Vector3)
+            {
+                propertyValue = new Vector3(
+                    prevalue.x * (1 - factor) + (<Vector3>nextValue).x * factor,
+                    prevalue.y * (1 - factor) + (<Vector3>nextValue).y * factor,
+                    prevalue.z * (1 - factor) + (<Vector3>nextValue).z * factor,
+                );
+            } else
+            {
+                propertyValue = prevalue * (1 - factor) + <number>nextValue * factor;
+            }
+            return propertyValue;
+        }
+
+        private getpropertyValue(value: number[])
+        {
+            if (this.type == "Number")
+                return value[0]
+            if (this.type == "Vector3")
+                return Vector3.fromArray(value);
+            if (this.type == "Quaternion")
+                return Quaternion.fromArray(value);
+
+            error(`未处理 动画数据类型 ${this.type}`);
+            throw ``;
+        }
 
         cacheIndex: number;
     }
