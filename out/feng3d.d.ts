@@ -12581,22 +12581,37 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * MD5模型加载类
-
      */
-    var MD5Loader: {
-        load: typeof load;
-        loadAnim: typeof loadAnim;
-        parseMD5Mesh: typeof parseMD5Mesh;
-        parseMD5Anim: typeof parseMD5Anim;
-    };
+    var md5Loader: MD5Loader;
     /**
-     * 加载资源
-     * @param url   路径
+     * MD5模型加载类
      */
-    function load(url: string, completed?: (gameObject: GameObject) => void): void;
-    function parseMD5Mesh(content: string, completed?: (gameObject: GameObject) => void): void;
-    function loadAnim(url: string, completed?: (animationClip: AnimationClip) => void): void;
-    function parseMD5Anim(content: string, completed?: (animationClip: AnimationClip) => void): void;
+    class MD5Loader {
+        /**
+         * 加载资源
+         * @param url   路径
+         */
+        load(url: string, completed?: (gameObject: GameObject) => void): void;
+        loadAnim(url: string, completed?: (animationClip: AnimationClip) => void): void;
+        parseMD5Mesh(content: string, completed?: (gameObject: GameObject) => void): void;
+        parseMD5Anim(content: string, completed?: (animationClip: AnimationClip) => void): void;
+        private createMD5Mesh;
+        /**
+         * 计算最大关节数量
+         */
+        private calculateMaxJointCount;
+        /**
+         * 计算0权重关节数量
+         * @param vertex 顶点数据
+         * @param weights 关节权重数组
+         * @return
+         */
+        private countZeroWeightJoints;
+        private createSkeleton;
+        private createSkeletonJoint;
+        private createGeometry;
+        private createAnimator;
+    }
 }
 declare namespace feng3d {
     var mdlLoader: {
