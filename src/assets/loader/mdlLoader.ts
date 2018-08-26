@@ -1,21 +1,24 @@
 namespace feng3d
 {
-    export var mdlLoader = {
-        load: load,
-    };
+    export var mdlLoader: MDLLoader;
 
-    function load(mdlurl: string, callback: (gameObject: GameObject) => void)
+    export class MDLLoader
     {
-        Loader.loadText(mdlurl, (content) =>
+        load(mdlurl: string, callback: (gameObject: GameObject) => void)
         {
-            war3.MdlParser.parse(content, (war3Model) =>
+            Loader.loadText(mdlurl, (content) =>
             {
-                war3Model.root = mdlurl.substring(0, mdlurl.lastIndexOf("/") + 1);
+                war3.MdlParser.parse(content, (war3Model) =>
+                {
+                    war3Model.root = mdlurl.substring(0, mdlurl.lastIndexOf("/") + 1);
 
-                var showMesh = war3Model.getMesh();
+                    var showMesh = war3Model.getMesh();
 
-                callback(showMesh);
+                    callback(showMesh);
+                });
             });
-        });
+        }
     }
+
+    mdlLoader = new MDLLoader();
 }

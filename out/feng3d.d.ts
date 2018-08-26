@@ -12614,10 +12614,10 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    var mdlLoader: {
-        load: typeof load;
-    };
-    function load(mdlurl: string, callback: (gameObject: GameObject) => void): void;
+    var mdlLoader: MDLLoader;
+    class MDLLoader {
+        load(mdlurl: string, callback: (gameObject: GameObject) => void): void;
+    }
 }
 declare namespace feng3d {
     var gameObjectFactory: GameObjectFactory;

@@ -26977,18 +26977,22 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    feng3d.mdlLoader = {
-        load: load,
-    };
-    function load(mdlurl, callback) {
-        feng3d.Loader.loadText(mdlurl, function (content) {
-            feng3d.war3.MdlParser.parse(content, function (war3Model) {
-                war3Model.root = mdlurl.substring(0, mdlurl.lastIndexOf("/") + 1);
-                var showMesh = war3Model.getMesh();
-                callback(showMesh);
+    var MDLLoader = /** @class */ (function () {
+        function MDLLoader() {
+        }
+        MDLLoader.prototype.load = function (mdlurl, callback) {
+            feng3d.Loader.loadText(mdlurl, function (content) {
+                feng3d.war3.MdlParser.parse(content, function (war3Model) {
+                    war3Model.root = mdlurl.substring(0, mdlurl.lastIndexOf("/") + 1);
+                    var showMesh = war3Model.getMesh();
+                    callback(showMesh);
+                });
             });
-        });
-    }
+        };
+        return MDLLoader;
+    }());
+    feng3d.MDLLoader = MDLLoader;
+    feng3d.mdlLoader = new MDLLoader();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

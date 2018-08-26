@@ -253,7 +253,7 @@
         //
         "src/assets/loader/ObjLoader.ts",
         "src/assets/loader/MD5Loader.ts",
-        "src/assets/loader/mdlLoader.ts",
+        "src/assets/loader/MDLLoader.ts",
         //
         "src/utils/GameObjectFactory.ts",
         //
