@@ -152,13 +152,25 @@ namespace feng3d
         @serialize
         propertyValues: [number, number[]][];
 
+        private _fps = 24;
+        private _cacheValues = {};
+        private _propertyValues: [number, number | Vector3 | Quaternion][];
+
         getValue(cliptime: number)
         {
-            var propertyValues = this.propertyValues;
-            var propertyValue = this.getpropertyValue(propertyValues[0][1]);
+            var frame = Math.round(this._fps * cliptime / 1000);
+            if (this._cacheValues[frame] != undefined)
+                return this._cacheValues[frame];
+
+            this._propertyValues = this._propertyValues || <any>this.propertyValues.map(v =>
+            {
+                return [v[0], this.getpropertyValue(v[1])];
+            });
+            var propertyValues = this._propertyValues;
+            var propertyValue = propertyValues[0][1];
             if (cliptime <= propertyValues[0][0]) { }
             else if (cliptime >= propertyValues[propertyValues.length - 1][0])
-                propertyValue = this.getpropertyValue(propertyValues[propertyValues.length - 1][1]);
+                propertyValue = propertyValues[propertyValues.length - 1][1];
             else
             {
                 for (var j = 0; j < propertyValues.length - 1; j++)
@@ -166,14 +178,15 @@ namespace feng3d
                     if (propertyValues[j][0] <= cliptime && cliptime < propertyValues[j + 1][0])
                     {
                         propertyValue = this.interpolation(
-                            this.getpropertyValue(propertyValues[j][1]),
-                            this.getpropertyValue(propertyValues[j + 1][1]),
+                            propertyValues[j][1],
+                            propertyValues[j + 1][1],
                             (cliptime - propertyValues[j][0]) / (propertyValues[j + 1][0] - propertyValues[j][0])
                         );
                         break;
                     }
                 }
             }
+            this._cacheValues[frame] = propertyValue;
             return propertyValue;
         }
 

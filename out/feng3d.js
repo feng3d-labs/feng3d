@@ -24144,21 +24144,31 @@ var feng3d;
     feng3d.AnimationClip = AnimationClip;
     var PropertyClip = /** @class */ (function () {
         function PropertyClip() {
+            this._fps = 24;
+            this._cacheValues = {};
         }
         PropertyClip.prototype.getValue = function (cliptime) {
-            var propertyValues = this.propertyValues;
-            var propertyValue = this.getpropertyValue(propertyValues[0][1]);
+            var _this = this;
+            var frame = Math.round(this._fps * cliptime / 1000);
+            if (this._cacheValues[frame] != undefined)
+                return this._cacheValues[frame];
+            this._propertyValues = this._propertyValues || this.propertyValues.map(function (v) {
+                return [v[0], _this.getpropertyValue(v[1])];
+            });
+            var propertyValues = this._propertyValues;
+            var propertyValue = propertyValues[0][1];
             if (cliptime <= propertyValues[0][0]) { }
             else if (cliptime >= propertyValues[propertyValues.length - 1][0])
-                propertyValue = this.getpropertyValue(propertyValues[propertyValues.length - 1][1]);
+                propertyValue = propertyValues[propertyValues.length - 1][1];
             else {
                 for (var j = 0; j < propertyValues.length - 1; j++) {
                     if (propertyValues[j][0] <= cliptime && cliptime < propertyValues[j + 1][0]) {
-                        propertyValue = this.interpolation(this.getpropertyValue(propertyValues[j][1]), this.getpropertyValue(propertyValues[j + 1][1]), (cliptime - propertyValues[j][0]) / (propertyValues[j + 1][0] - propertyValues[j][0]));
+                        propertyValue = this.interpolation(propertyValues[j][1], propertyValues[j + 1][1], (cliptime - propertyValues[j][0]) / (propertyValues[j + 1][0] - propertyValues[j][0]));
                         break;
                     }
                 }
             }
+            this._cacheValues[frame] = propertyValue;
             return propertyValue;
         };
         PropertyClip.prototype.interpolation = function (prevalue, nextValue, factor) {

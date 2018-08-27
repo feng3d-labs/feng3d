@@ -12038,7 +12038,10 @@ declare namespace feng3d {
         propertyName: string;
         type: "Number" | "Vector3" | "Quaternion";
         propertyValues: [number, number[]][];
-        getValue(cliptime: number): number | Vector3 | Quaternion;
+        private _fps;
+        private _cacheValues;
+        private _propertyValues;
+        getValue(cliptime: number): any;
         private interpolation;
         private getpropertyValue;
         cacheIndex: number;
