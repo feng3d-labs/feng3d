@@ -8,26 +8,18 @@ namespace feng3d
         __class__: "feng3d.BillboardComponent" = "feng3d.BillboardComponent";
 
         /**
-         * 相对
+         * 相机
          */
         @oav()
-        get camera()
+        @watch("onCameraChanged")
+        camera: Camera;
+
+        private onCameraChanged(property: string, oldValue: Camera, value: Camera)
         {
-            return this._camera;
-        }
-        set camera(value)
-        {
-            if (this._camera == value)
-                return;
-            if (this._camera)
-                this._camera.off("scenetransformChanged", this.invalidHoldSizeMatrix, this);
-            this._camera = value;
-            if (this._camera)
-                this._camera.on("scenetransformChanged", this.invalidHoldSizeMatrix, this);
+            if (oldValue) oldValue.off("scenetransformChanged", this.invalidHoldSizeMatrix, this);
+            if (value) value.on("scenetransformChanged", this.invalidHoldSizeMatrix, this);
             this.invalidHoldSizeMatrix();
         }
-
-        private _camera: Camera;
 
         init(gameobject: GameObject)
         {
@@ -38,16 +30,15 @@ namespace feng3d
 
         private invalidHoldSizeMatrix()
         {
-            if (this._gameObject)
-                this.transform["invalidateSceneTransform"]();
+            if (this._gameObject) this.transform["invalidateSceneTransform"]();
         }
 
         private updateLocalToWorldMatrix()
         {
             var _localToWorldMatrix = this.transform["_localToWorldMatrix"];
-            if (_localToWorldMatrix && this._camera)
+            if (_localToWorldMatrix && this.camera)
             {
-                var camera = this._camera;
+                var camera = this.camera;
                 var cameraPos = camera.transform.scenePosition;
                 var yAxis = camera.transform.localToWorldMatrix.up;
                 _localToWorldMatrix.lookAt(cameraPos, yAxis);

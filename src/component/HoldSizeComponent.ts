@@ -12,45 +12,39 @@ namespace feng3d
          * 保持缩放尺寸
          */
         @oav()
-        get holdSize()
-        {
-            return this._holdSize;
-        }
-        set holdSize(value)
-        {
-            if (this._holdSize == value)
-                return;
-            this._holdSize = value;
-            this.invalidateSceneTransform();
-        }
+        @watch("onHoldSizeChanged")
+        holdSize = 1;
 
         /**
-         * 相对
+         * 相机
          */
         @oav()
-        get camera()
-        {
-            return this._camera;
-        }
-        set camera(value)
-        {
-            if (this._camera == value)
-                return;
-            if (this._camera)
-                this._camera.off("scenetransformChanged", this.invalidateSceneTransform, this);
-            this._camera = value;
-            if (this._camera)
-                this._camera.on("scenetransformChanged", this.invalidateSceneTransform, this);
-            this.invalidateSceneTransform();
-        }
-
-        private _holdSize = 1;
-        private _camera: Camera | null;
+        @watch("onCameraChanged")
+        camera: Camera;
 
         init(gameobject: GameObject)
         {
             super.init(gameobject);
             this.transform.on("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
+        }
+
+        dispose()
+        {
+            this.camera = null;
+            this.transform.off("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
+            super.dispose();
+        }
+
+        private onHoldSizeChanged()
+        {
+            this.invalidateSceneTransform();
+        }
+
+        private onCameraChanged(property: string, oldValue: Camera, value: Camera)
+        {
+            if (oldValue) oldValue.off("scenetransformChanged", this.invalidateSceneTransform, this);
+            if (value) value.on("scenetransformChanged", this.invalidateSceneTransform, this);
+            this.invalidateSceneTransform();
         }
 
         private invalidateSceneTransform()
@@ -61,9 +55,9 @@ namespace feng3d
         private updateLocalToWorldMatrix()
         {
             var _localToWorldMatrix = this.transform["_localToWorldMatrix"];
-            if (this.holdSize && this._camera && _localToWorldMatrix)
+            if (this.holdSize && this.camera && _localToWorldMatrix)
             {
-                var depthScale = this.getDepthScale(this._camera);
+                var depthScale = this.getDepthScale(this.camera);
                 var vec = _localToWorldMatrix.decompose();
                 vec[2].scale(depthScale);
                 _localToWorldMatrix.recompose(vec);
@@ -81,13 +75,6 @@ namespace feng3d
             //限制在放大缩小100倍之间，否则容易出现矩阵不可逆问题
             scale = Math.max(Math.min(100, scale), 0.01);
             return scale;
-        }
-
-        dispose()
-        {
-            this.camera = null;
-            this.transform.off("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
-            super.dispose();
         }
     }
 }

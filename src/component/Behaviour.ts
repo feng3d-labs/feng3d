@@ -10,8 +10,6 @@ namespace feng3d
     export interface ComponentMap { Behaviour: Behaviour; }
 
     /**
-     * Behaviours are Components that can be enabled or disabled.
-     * 
      * 行为
      * 
      * 可以控制开关的组件
@@ -20,7 +18,7 @@ namespace feng3d
     {
 
         /**
-         * Enabled Behaviours are Updated, disabled Behaviours are not.
+         * 是否启用update方法
          */
         @oav()
         @serialize
