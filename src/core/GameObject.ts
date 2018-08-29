@@ -371,7 +371,7 @@ namespace feng3d
         }
 
         /**
-         * Returns the component of Type type in the GameObject or any of its children using depth first search.
+         * 从子对象中获取组件
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
@@ -407,6 +407,23 @@ namespace feng3d
                 }
             }
             return <T[]>result;
+        }
+
+        /**
+         * 从父类中获取组件
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[]
+        {
+            result = result || [];
+            var parent = this.parent;
+            while (parent)
+            {
+                var compnent = parent.getComponent(type);
+                compnent && result.push(compnent);
+            }
+            return result;
         }
 
         /**

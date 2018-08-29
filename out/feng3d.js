@@ -15717,7 +15717,7 @@ var feng3d;
             return filterResult;
         };
         /**
-         * Returns the component of Type type in the GameObject or any of its children using depth first search.
+         * 从子对象中获取组件
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
@@ -15744,6 +15744,20 @@ var feng3d;
                 for (var i = 0, n = this.numChildren; i < n; i++) {
                     this.getChildAt(i).getComponentsInChildren(type, filter, result);
                 }
+            }
+            return result;
+        };
+        /**
+         * 从父类中获取组件
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        GameObject.prototype.getComponentsInParents = function (type, result) {
+            result = result || [];
+            var parent = this.parent;
+            while (parent) {
+                var compnent = parent.getComponent(type);
+                compnent && result.push(compnent);
             }
             return result;
         };
@@ -15990,7 +16004,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 3D视图
-
      */
     var Engine = /** @class */ (function () {
         /**
@@ -16616,7 +16629,7 @@ var feng3d;
              * 指定更新脚本标记，用于过滤需要调用update的脚本
              */
             _this_1.updateScriptFlag = feng3d.ScriptFlag.feng3d;
-            _this_1.pickMap = new Map();
+            _this_1._pickMap = new Map();
             return _this_1;
         }
         /**
@@ -16643,15 +16656,6 @@ var feng3d;
                     collect(element);
                 });
             }
-        };
-        Scene3D.prototype.onEnterFrame = function (interval) {
-            var _this_1 = this;
-            // 每帧清理拾取缓存
-            this.pickMap.forEach(function (item) { return item.clear(); });
-            this.behaviours.forEach(function (element) {
-                if (element.isVisibleAndEnabled && (_this_1.updateScriptFlag & element.flag))
-                    element.update(interval);
-            });
         };
         Scene3D.prototype.update = function () {
             this._mouseCheckObjects = null;
@@ -16824,10 +16828,10 @@ var feng3d;
          * @param camera
          */
         Scene3D.prototype.getPickCache = function (camera) {
-            if (this.pickMap.get(camera))
-                return this.pickMap.get(camera);
+            if (this._pickMap.get(camera))
+                return this._pickMap.get(camera);
             var pick = new feng3d.ScenePickCache(this, camera);
-            this.pickMap.set(camera, pick);
+            this._pickMap.set(camera, pick);
             return pick;
         };
         /**
@@ -16867,6 +16871,15 @@ var feng3d;
                 return false;
             });
             return results;
+        };
+        Scene3D.prototype.onEnterFrame = function (interval) {
+            var _this_1 = this;
+            // 每帧清理拾取缓存
+            this._pickMap.forEach(function (item) { return item.clear(); });
+            this.behaviours.forEach(function (element) {
+                if (element.isVisibleAndEnabled && (_this_1.updateScriptFlag & element.flag))
+                    element.update(interval);
+            });
         };
         __decorate([
             feng3d.serialize,

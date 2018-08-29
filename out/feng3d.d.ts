@@ -9081,7 +9081,7 @@ declare namespace feng3d {
          */
         getComponents<T extends Components>(type?: Constructor<T>): T[];
         /**
-         * Returns the component of Type type in the GameObject or any of its children using depth first search.
+         * 从子对象中获取组件
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
@@ -9089,6 +9089,12 @@ declare namespace feng3d {
             findchildren: boolean;
             value: boolean;
         }, result?: T[]): T[];
+        /**
+         * 从父类中获取组件
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
         /**
          * 设置子组件的位置
          * @param component				子组件
@@ -9185,7 +9191,6 @@ interface HTMLCanvasElement {
 declare namespace feng3d {
     /**
      * 3D视图
-
      */
     class Engine {
         canvas: HTMLCanvasElement;
@@ -9204,16 +9209,15 @@ declare namespace feng3d {
         readonly root: GameObject;
         readonly gl: GL;
         /**
-         * 鼠标事件管理
-         */
-        mouse3DManager: Mouse3DManager;
-        protected selectedObject: GameObject;
-        /**
          * 鼠标在3D视图中的位置
          */
         readonly mousePos: Vector2;
         readonly mouseinview: boolean;
         readonly viewRect: Rectangle;
+        /**
+         * 鼠标事件管理
+         */
+        mouse3DManager: Mouse3DManager;
         /**
          * 构建3D视图
          * @param canvas    画布
@@ -9234,6 +9238,7 @@ declare namespace feng3d {
          * 绘制场景
          */
         render(): void;
+        protected selectedObject: GameObject;
     }
 }
 declare namespace feng3d {
@@ -9457,28 +9462,12 @@ declare namespace feng3d {
          * 指定更新脚本标记，用于过滤需要调用update的脚本
          */
         updateScriptFlag: ScriptFlag;
-        private _mouseCheckObjects;
-        private _models;
-        private _visibleAndEnabledModels;
-        private _skyBoxs;
-        private _activeSkyBoxs;
-        private _directionalLights;
-        private _activeDirectionalLights;
-        private _pointLights;
-        private _activePointLights;
-        private _spotLights;
-        private _activeSpotLights;
-        private _animations;
-        private _activeAnimations;
-        private _behaviours;
-        private _activeBehaviours;
         /**
          * 构造3D场景
          */
         init(gameObject: GameObject): void;
         dispose(): void;
         initCollectComponents(): void;
-        private onEnterFrame;
         update(): void;
         /**
          * 所有 Model
@@ -9508,7 +9497,6 @@ declare namespace feng3d {
         _removeGameObject(gameobject: GameObject): void;
         _addComponent(component: Component): void;
         _removeComponent(component: Component): void;
-        private pickMap;
         /**
          * 获取拾取缓存
          * @param camera
@@ -9524,6 +9512,23 @@ declare namespace feng3d {
          * @param camera
          */
         getModelsByCamera(camera: Camera): Model[];
+        private _mouseCheckObjects;
+        private _models;
+        private _visibleAndEnabledModels;
+        private _skyBoxs;
+        private _activeSkyBoxs;
+        private _directionalLights;
+        private _activeDirectionalLights;
+        private _pointLights;
+        private _activePointLights;
+        private _spotLights;
+        private _activeSpotLights;
+        private _animations;
+        private _activeAnimations;
+        private _behaviours;
+        private _activeBehaviours;
+        private _pickMap;
+        private onEnterFrame;
     }
 }
 declare namespace feng3d {

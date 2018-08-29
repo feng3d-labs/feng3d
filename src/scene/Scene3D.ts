@@ -39,22 +39,6 @@ namespace feng3d
          */
         updateScriptFlag = ScriptFlag.feng3d;
 
-        private _mouseCheckObjects: GameObject[];
-        private _models: Model[];
-        private _visibleAndEnabledModels: Model[];
-        private _skyBoxs: SkyBox[];
-        private _activeSkyBoxs: SkyBox[];
-        private _directionalLights: DirectionalLight[];
-        private _activeDirectionalLights: DirectionalLight[];
-        private _pointLights: PointLight[];
-        private _activePointLights: PointLight[];
-        private _spotLights: SpotLight[];
-        private _activeSpotLights: SpotLight[];
-        private _animations: Animation[];
-        private _activeAnimations: Animation[];
-        private _behaviours: Behaviour[];
-        private _activeBehaviours: Behaviour[];
-
         /**
          * 构造3D场景
          */
@@ -90,18 +74,6 @@ namespace feng3d
                     collect(element);
                 });
             }
-        }
-
-        private onEnterFrame(interval: number)
-        {
-            // 每帧清理拾取缓存
-            this.pickMap.forEach(item => item.clear());
-
-            this.behaviours.forEach(element =>
-            {
-                if (element.isVisibleAndEnabled && (this.updateScriptFlag & element.flag))
-                    element.update(interval);
-            });
         }
 
         update()
@@ -255,17 +227,16 @@ namespace feng3d
             this.dispatch("removeComponentFromScene", component);
         }
 
-        private pickMap = new Map<Camera, ScenePickCache>();
         /**
          * 获取拾取缓存
          * @param camera 
          */
         getPickCache(camera: Camera)
         {
-            if (this.pickMap.get(camera))
-                return this.pickMap.get(camera);
+            if (this._pickMap.get(camera))
+                return this._pickMap.get(camera);
             var pick = new ScenePickCache(this, camera);
-            this.pickMap.set(camera, pick);
+            this._pickMap.set(camera, pick);
             return pick;
         }
 
@@ -314,6 +285,36 @@ namespace feng3d
                 return false;
             });
             return results;
+        }
+
+        //
+        private _mouseCheckObjects: GameObject[];
+        private _models: Model[];
+        private _visibleAndEnabledModels: Model[];
+        private _skyBoxs: SkyBox[];
+        private _activeSkyBoxs: SkyBox[];
+        private _directionalLights: DirectionalLight[];
+        private _activeDirectionalLights: DirectionalLight[];
+        private _pointLights: PointLight[];
+        private _activePointLights: PointLight[];
+        private _spotLights: SpotLight[];
+        private _activeSpotLights: SpotLight[];
+        private _animations: Animation[];
+        private _activeAnimations: Animation[];
+        private _behaviours: Behaviour[];
+        private _activeBehaviours: Behaviour[];
+        private _pickMap = new Map<Camera, ScenePickCache>();
+
+        private onEnterFrame(interval: number)
+        {
+            // 每帧清理拾取缓存
+            this._pickMap.forEach(item => item.clear());
+
+            this.behaviours.forEach(element =>
+            {
+                if (element.isVisibleAndEnabled && (this.updateScriptFlag & element.flag))
+                    element.update(interval);
+            });
         }
     }
 }

@@ -8,7 +8,6 @@ namespace feng3d
 
     /**
      * 3D视图
-
      */
     export class Engine
     {
@@ -58,12 +57,6 @@ namespace feng3d
         }
 
         /**
-         * 鼠标事件管理
-         */
-        mouse3DManager: Mouse3DManager;
-        protected selectedObject: GameObject;
-
-        /**
          * 鼠标在3D视图中的位置
          */
         get mousePos()
@@ -82,6 +75,11 @@ namespace feng3d
             var viewRect = new Rectangle(clientRect.left, clientRect.top, clientRect.width, clientRect.height);
             return viewRect;
         }
+
+        /**
+         * 鼠标事件管理
+         */
+        mouse3DManager: Mouse3DManager;
 
         /**
          * 构建3D视图
@@ -175,6 +173,8 @@ namespace feng3d
             outlineRenderer.draw(this.gl, this.scene, this.camera);
             wireframeRenderer.draw(this.gl, this.scene, this.camera);
         }
+
+        protected selectedObject: GameObject;
     }
 }
 
