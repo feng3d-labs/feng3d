@@ -2,7 +2,6 @@ namespace feng3d
 {
     /**
      * 鼠标事件管理
-
      */
     export class Mouse3DManager
     {
@@ -21,10 +20,17 @@ namespace feng3d
         /**
          * 视窗，鼠标在该矩形内时为有效事件
          */
-        viewport: Lazy<Rectangle>
+        viewport: Lazy<Rectangle>;
 
+        /**
+         * 拾取
+         * @param scene3d 场景
+         * @param camera 摄像机
+         */
         pick(scene3d: Scene3D, camera: Camera)
         {
+            if (this._mouseEventTypes.length == 0) return;
+
             //计算得到鼠标射线相交的物体
             var pickingCollisionVO = raycaster.pick(camera.getMouseRay3D(), scene3d.mouseCheckObjects);
 
@@ -40,7 +46,7 @@ namespace feng3d
         }
 
         private _selectedGameObject: GameObject;
-        private mouseEventTypes: string[] = [];
+        private _mouseEventTypes: string[] = [];
 
         /**
          * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
@@ -78,8 +84,8 @@ namespace feng3d
                     return;
             }
 
-            if (this.mouseEventTypes.indexOf(type) == -1)
-                this.mouseEventTypes.push(type);
+            if (this._mouseEventTypes.indexOf(type) == -1)
+                this._mouseEventTypes.push(type);
         }
 
         /**
@@ -105,7 +111,7 @@ namespace feng3d
             this._selectedGameObject = value;
             if (this._selectedGameObject)
             {
-                this.mouseEventTypes.forEach(element =>
+                this._mouseEventTypes.forEach(element =>
                 {
                     switch (element)
                     {
@@ -146,7 +152,7 @@ namespace feng3d
                 this.gameObjectClickNum = 0;
                 this.preMouseDownGameObject = null;
             }
-            this.mouseEventTypes.length = 0;
+            this._mouseEventTypes.length = 0;
         }
     }
 

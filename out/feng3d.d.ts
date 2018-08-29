@@ -12657,7 +12657,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 鼠标事件管理
-
      */
     class Mouse3DManager {
         mouseInput: MouseInput;
@@ -12666,10 +12665,15 @@ declare namespace feng3d {
          * 视窗，鼠标在该矩形内时为有效事件
          */
         viewport: Lazy<Rectangle>;
+        /**
+         * 拾取
+         * @param scene3d 场景
+         * @param camera 摄像机
+         */
         pick(scene3d: Scene3D, camera: Camera): GameObject;
         constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>);
         private _selectedGameObject;
-        private mouseEventTypes;
+        private _mouseEventTypes;
         /**
          * 鼠标按下时的对象，用于与鼠标弹起时对象做对比，如果相同触发click
          */

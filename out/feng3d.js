@@ -27142,11 +27142,10 @@ var feng3d;
 (function (feng3d) {
     /**
      * 鼠标事件管理
-
      */
     var Mouse3DManager = /** @class */ (function () {
         function Mouse3DManager(mouseInput, viewport) {
-            this.mouseEventTypes = [];
+            this._mouseEventTypes = [];
             //
             this.mouseInput = mouseInput;
             this.viewport = viewport;
@@ -27161,7 +27160,14 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        /**
+         * 拾取
+         * @param scene3d 场景
+         * @param camera 摄像机
+         */
         Mouse3DManager.prototype.pick = function (scene3d, camera) {
+            if (this._mouseEventTypes.length == 0)
+                return;
             //计算得到鼠标射线相交的物体
             var pickingCollisionVO = feng3d.raycaster.pick(camera.getMouseRay3D(), scene3d.mouseCheckObjects);
             var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
@@ -27186,8 +27192,8 @@ var feng3d;
                 if (!bound.contains(feng3d.windowEventProxy.clientX, feng3d.windowEventProxy.clientY))
                     return;
             }
-            if (this.mouseEventTypes.indexOf(type) == -1)
-                this.mouseEventTypes.push(type);
+            if (this._mouseEventTypes.indexOf(type) == -1)
+                this._mouseEventTypes.push(type);
         };
         /**
          * 监听鼠标事件收集事件类型
@@ -27208,7 +27214,7 @@ var feng3d;
             }
             this._selectedGameObject = value;
             if (this._selectedGameObject) {
-                this.mouseEventTypes.forEach(function (element) {
+                this._mouseEventTypes.forEach(function (element) {
                     switch (element) {
                         case "mousedown":
                             if (_this.preMouseDownGameObject != _this._selectedGameObject) {
@@ -27245,7 +27251,7 @@ var feng3d;
                 this.gameObjectClickNum = 0;
                 this.preMouseDownGameObject = null;
             }
-            this.mouseEventTypes.length = 0;
+            this._mouseEventTypes.length = 0;
         };
         __decorate([
             feng3d.watch("mouseInputChanged")
