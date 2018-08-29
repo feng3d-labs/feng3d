@@ -8431,6 +8431,12 @@ declare namespace feng3d {
             value: boolean;
         }, result?: T[]): T[];
         /**
+         * 从父类中获取组件
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
+        /**
          * 派发事件
          * @param event   事件对象
          */
@@ -11948,11 +11954,6 @@ declare namespace feng3d {
         readonly single: boolean;
         skinSkeleton: SkinSkeleton;
         material: SkeletonMaterial;
-        private skeletonGlobalMatriices;
-        /**
-         * 缓存，通过寻找父节点获得
-         */
-        private cacheSkeletonComponent;
         initMatrix3d: Matrix4x4;
         /**
          * 创建一个骨骼动画类
@@ -11963,6 +11964,11 @@ declare namespace feng3d {
          * 销毁
          */
         dispose(): void;
+        /**
+         * 缓存，通过寻找父节点获得
+         */
+        private cacheSkeletonComponent;
+        private cacheU_skeletonGlobalMatriices;
         private readonly u_modelMatrix;
         private readonly u_ITModelMatrix;
         private readonly u_skeletonGlobalMatriices;
@@ -12015,10 +12021,16 @@ declare namespace feng3d {
          * 播放速度
          */
         playspeed: number;
+        /**
+         * 动作名称
+         */
+        readonly clipName: string;
+        readonly frame: number;
         update(interval: number): void;
         dispose(): void;
         private num;
         private updateAni;
+        private _fps;
         private _objectCache;
         private getPropertyHost;
         private onAnimationChanged;
@@ -12041,10 +12053,9 @@ declare namespace feng3d {
         propertyName: string;
         type: "Number" | "Vector3" | "Quaternion";
         propertyValues: [number, number[]][];
-        private _fps;
         private _cacheValues;
         private _propertyValues;
-        getValue(cliptime: number): any;
+        getValue(cliptime: number, fps: number): any;
         private interpolation;
         private getpropertyValue;
         cacheIndex: number;
@@ -12651,6 +12662,12 @@ declare namespace feng3d {
     class Mouse3DManager {
         mouseInput: MouseInput;
         selectedGameObject: GameObject;
+        /**
+         * 视窗，鼠标在该矩形内时为有效事件
+         */
+        viewport: Lazy<Rectangle>;
+        pick(scene3d: Scene3D, camera: Camera): GameObject;
+        constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>);
         private _selectedGameObject;
         private mouseEventTypes;
         /**
@@ -12661,12 +12678,6 @@ declare namespace feng3d {
          * 统计处理click次数，判断是否达到dblclick
          */
         private gameObjectClickNum;
-        /**
-         * 视窗，鼠标在该矩形内时为有效事件
-         */
-        viewport: Lazy<Rectangle>;
-        constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>);
-        pick(scene3d: Scene3D, camera: Camera): GameObject;
         private mouseInputChanged;
         private dispatch;
         /**

@@ -106,6 +106,16 @@ namespace feng3d
         }
 
         /**
+         * 从父类中获取组件
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[]
+        {
+            return this.gameObject.getComponentsInParents(type, result);
+        }
+
+        /**
          * 派发事件
          * @param event   事件对象
          */

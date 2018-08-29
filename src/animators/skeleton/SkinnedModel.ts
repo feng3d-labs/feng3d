@@ -1,7 +1,5 @@
 namespace feng3d
 {
-    var supportNUM_SKELETONJOINT = 150;
-
     export interface ComponentMap { SkinnedModel: SkinnedModel }
 
     export class SkinnedModel extends Model
@@ -18,13 +16,6 @@ namespace feng3d
         @oav()
         material = new SkeletonMaterial();
 
-        private skeletonGlobalMatriices: Matrix4x4[] = (() => { var v = [new Matrix4x4()]; var i = supportNUM_SKELETONJOINT; while (i-- > 1) v.push(v[0]); return v; })();
-
-        /**
-         * 缓存，通过寻找父节点获得
-         */
-        private cacheSkeletonComponent: SkeletonComponent;
-
         @serialize
         initMatrix3d: Matrix4x4;
 
@@ -40,10 +31,24 @@ namespace feng3d
         {
             super.beforeRender(gl, renderAtomic, scene3d, camera);
 
+            var frameId: string = null;
+            var animation = this.getComponentsInParents(Animation)[0];
+            if (animation)
+            {
+                var clipName = animation.clipName;
+                var frame = animation.frame;
+                frameId = clipName + "&" + frame;
+            }
+
             renderAtomic.uniforms.u_modelMatrix = () => this.u_modelMatrix;
             renderAtomic.uniforms.u_ITModelMatrix = () => this.u_ITModelMatrix;
             //
-            renderAtomic.uniforms.u_skeletonGlobalMatriices = () => this.u_skeletonGlobalMatriices;
+            var u_skeletonGlobalMatriices = this.cacheU_skeletonGlobalMatriices[frameId];
+            if (!u_skeletonGlobalMatriices)
+            {
+                u_skeletonGlobalMatriices = this.cacheU_skeletonGlobalMatriices[frameId] = this.u_skeletonGlobalMatriices;
+            }
+            renderAtomic.uniforms.u_skeletonGlobalMatriices = () => u_skeletonGlobalMatriices;
 
             renderAtomic.shaderMacro.HAS_SKELETON_ANIMATION = true;
             renderAtomic.shaderMacro.NUM_SKELETONJOINT = this.skinSkeleton.joints.length;
@@ -57,6 +62,13 @@ namespace feng3d
             this.cacheSkeletonComponent = null;
             super.dispose();
         }
+
+        /**
+         * 缓存，通过寻找父节点获得
+         */
+        private cacheSkeletonComponent: SkeletonComponent;
+
+        private cacheU_skeletonGlobalMatriices: { [id: string]: Matrix4x4[] } = {};
 
         private get u_modelMatrix()
         {
@@ -85,23 +97,28 @@ namespace feng3d
                 }
                 this.cacheSkeletonComponent = skeletonComponent;
             }
+            var skeletonGlobalMatriices: Matrix4x4[] = [];
             if (this.skinSkeleton && this.cacheSkeletonComponent)
             {
                 var joints = this.skinSkeleton.joints;
                 var globalMatrices = this.cacheSkeletonComponent.globalMatrices;
                 for (var i = joints.length - 1; i >= 0; i--)
                 {
-                    this.skeletonGlobalMatriices[i] = globalMatrices[joints[i][0]];
+                    skeletonGlobalMatriices[i] = globalMatrices[joints[i][0]].clone();
                     if (this.initMatrix3d)
                     {
-                        this.skeletonGlobalMatriices[i] = this.skeletonGlobalMatriices[i].clone()
-                            .prepend(this.initMatrix3d);
+                        skeletonGlobalMatriices[i].prepend(this.initMatrix3d);
                     }
                 }
+            } else
+            {
+                skeletonGlobalMatriices = defaultSkeletonGlobalMatriices;
             }
-            return this.skeletonGlobalMatriices;
+            return skeletonGlobalMatriices;
         }
     }
+
+    var defaultSkeletonGlobalMatriices: Matrix4x4[] = (() => { var v = [new Matrix4x4()]; var i = 150; while (i-- > 1) v.push(v[0]); return v; })();
 
     export class SkinSkeleton
     {

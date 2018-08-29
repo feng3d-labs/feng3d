@@ -32,6 +32,23 @@ namespace feng3d
         @serialize
         playspeed = 1;
 
+        /**
+         * 动作名称
+         */
+        get clipName()
+        {
+            return this.animation ? this.animation.name : null;
+        }
+
+        get frame()
+        {
+            if (!this.animation) return -1;
+            var cycle = this.animation.length;
+            var cliptime = (this.time % cycle + cycle) % cycle;
+            var _frame = Math.round(this._fps * cliptime / 1000);
+            return _frame;
+        }
+
         update(interval: number)
         {
             if (this.isplaying) this.time += interval * this.playspeed;
@@ -47,13 +64,11 @@ namespace feng3d
         private num = 0;
         private updateAni()
         {
-            if (!this.animation)
-                return;
-            if ((this.num++) % 2 != 0)
-                return;
+            if (!this.animation) return;
+            if ((this.num++) % 2 != 0) return;
 
             var cycle = this.animation.length;
-            var cliptime = (this.time % (cycle) + cycle) % cycle;
+            var cliptime = (this.time % cycle + cycle) % cycle;
 
             var propertyClips = this.animation.propertyClips;
 
@@ -62,16 +77,14 @@ namespace feng3d
                 var propertyClip = propertyClips[i];
 
                 var propertyValues = propertyClip.propertyValues;
-                if (propertyValues.length == 0)
-                    continue;
+                if (propertyValues.length == 0) continue;
                 var propertyHost = this.getPropertyHost(propertyClip);
-                if (!propertyHost)
-                    continue;
-                var propertyValue = propertyClip.getValue(cliptime);
-                propertyHost[propertyClip.propertyName] = propertyValue;
+                if (!propertyHost) continue;
+                propertyHost[propertyClip.propertyName] = propertyClip.getValue(cliptime, this._fps);
             }
         }
 
+        private _fps = 24;
         private _objectCache = new Map();
 
         private getPropertyHost(propertyClip: PropertyClip)
@@ -151,13 +164,12 @@ namespace feng3d
         @serialize
         propertyValues: [number, number[]][];
 
-        private _fps = 24;
         private _cacheValues = {};
         private _propertyValues: [number, number | Vector3 | Quaternion][];
 
-        getValue(cliptime: number)
+        getValue(cliptime: number, fps: number)
         {
-            var frame = Math.round(this._fps * cliptime / 1000);
+            var frame = Math.round(fps * cliptime / 1000);
             if (this._cacheValues[frame] != undefined)
                 return this._cacheValues[frame];
 

@@ -13630,6 +13630,14 @@ var feng3d;
             return this.gameObject.getComponentsInChildren(type, filter, result);
         };
         /**
+         * 从父类中获取组件
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        Component.prototype.getComponentsInParents = function (type, result) {
+            return this.gameObject.getComponentsInParents(type, result);
+        };
+        /**
          * 派发事件
          * @param event   事件对象
          */
@@ -15758,6 +15766,7 @@ var feng3d;
             while (parent) {
                 var compnent = parent.getComponent(type);
                 compnent && result.push(compnent);
+                parent = parent.parent;
             }
             return result;
         };
@@ -23825,15 +23834,13 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var supportNUM_SKELETONJOINT = 150;
     var SkinnedModel = /** @class */ (function (_super) {
         __extends(SkinnedModel, _super);
         function SkinnedModel() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.SkinnedModel";
             _this.material = new feng3d.SkeletonMaterial();
-            _this.skeletonGlobalMatriices = (function () { var v = [new feng3d.Matrix4x4()]; var i = supportNUM_SKELETONJOINT; while (i-- > 1)
-                v.push(v[0]); return v; })();
+            _this.cacheU_skeletonGlobalMatriices = {};
             return _this;
         }
         Object.defineProperty(SkinnedModel.prototype, "single", {
@@ -23850,10 +23857,21 @@ var feng3d;
         SkinnedModel.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
             var _this = this;
             _super.prototype.beforeRender.call(this, gl, renderAtomic, scene3d, camera);
+            var frameId = null;
+            var animation = this.getComponentsInParents(feng3d.Animation)[0];
+            if (animation) {
+                var clipName = animation.clipName;
+                var frame = animation.frame;
+                frameId = clipName + "&" + frame;
+            }
             renderAtomic.uniforms.u_modelMatrix = function () { return _this.u_modelMatrix; };
             renderAtomic.uniforms.u_ITModelMatrix = function () { return _this.u_ITModelMatrix; };
             //
-            renderAtomic.uniforms.u_skeletonGlobalMatriices = function () { return _this.u_skeletonGlobalMatriices; };
+            var u_skeletonGlobalMatriices = this.cacheU_skeletonGlobalMatriices[frameId];
+            if (!u_skeletonGlobalMatriices) {
+                u_skeletonGlobalMatriices = this.cacheU_skeletonGlobalMatriices[frameId] = this.u_skeletonGlobalMatriices;
+            }
+            renderAtomic.uniforms.u_skeletonGlobalMatriices = function () { return u_skeletonGlobalMatriices; };
             renderAtomic.shaderMacro.HAS_SKELETON_ANIMATION = true;
             renderAtomic.shaderMacro.NUM_SKELETONJOINT = this.skinSkeleton.joints.length;
         };
@@ -23893,18 +23911,21 @@ var feng3d;
                     }
                     this.cacheSkeletonComponent = skeletonComponent;
                 }
+                var skeletonGlobalMatriices = [];
                 if (this.skinSkeleton && this.cacheSkeletonComponent) {
                     var joints = this.skinSkeleton.joints;
                     var globalMatrices = this.cacheSkeletonComponent.globalMatrices;
                     for (var i = joints.length - 1; i >= 0; i--) {
-                        this.skeletonGlobalMatriices[i] = globalMatrices[joints[i][0]];
+                        skeletonGlobalMatriices[i] = globalMatrices[joints[i][0]].clone();
                         if (this.initMatrix3d) {
-                            this.skeletonGlobalMatriices[i] = this.skeletonGlobalMatriices[i].clone()
-                                .prepend(this.initMatrix3d);
+                            skeletonGlobalMatriices[i].prepend(this.initMatrix3d);
                         }
                     }
                 }
-                return this.skeletonGlobalMatriices;
+                else {
+                    skeletonGlobalMatriices = defaultSkeletonGlobalMatriices;
+                }
+                return skeletonGlobalMatriices;
             },
             enumerable: true,
             configurable: true
@@ -23923,6 +23944,8 @@ var feng3d;
         return SkinnedModel;
     }(feng3d.Model));
     feng3d.SkinnedModel = SkinnedModel;
+    var defaultSkeletonGlobalMatriices = (function () { var v = [new feng3d.Matrix4x4()]; var i = 150; while (i-- > 1)
+        v.push(v[0]); return v; })();
     var SkinSkeleton = /** @class */ (function () {
         function SkinSkeleton() {
             /**
@@ -24012,9 +24035,32 @@ var feng3d;
              */
             _this.playspeed = 1;
             _this.num = 0;
+            _this._fps = 24;
             _this._objectCache = new Map();
             return _this;
         }
+        Object.defineProperty(Animation.prototype, "clipName", {
+            /**
+             * 动作名称
+             */
+            get: function () {
+                return this.animation ? this.animation.name : null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Animation.prototype, "frame", {
+            get: function () {
+                if (!this.animation)
+                    return -1;
+                var cycle = this.animation.length;
+                var cliptime = (this.time % cycle + cycle) % cycle;
+                var _frame = Math.round(this._fps * cliptime / 1000);
+                return _frame;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Animation.prototype.update = function (interval) {
             if (this.isplaying)
                 this.time += interval * this.playspeed;
@@ -24030,7 +24076,7 @@ var feng3d;
             if ((this.num++) % 2 != 0)
                 return;
             var cycle = this.animation.length;
-            var cliptime = (this.time % (cycle) + cycle) % cycle;
+            var cliptime = (this.time % cycle + cycle) % cycle;
             var propertyClips = this.animation.propertyClips;
             for (var i = 0; i < propertyClips.length; i++) {
                 var propertyClip = propertyClips[i];
@@ -24040,8 +24086,7 @@ var feng3d;
                 var propertyHost = this.getPropertyHost(propertyClip);
                 if (!propertyHost)
                     continue;
-                var propertyValue = propertyClip.getValue(cliptime);
-                propertyHost[propertyClip.propertyName] = propertyValue;
+                propertyHost[propertyClip.propertyName] = propertyClip.getValue(cliptime, this._fps);
             }
         };
         Animation.prototype.getPropertyHost = function (propertyClip) {
@@ -24122,12 +24167,11 @@ var feng3d;
     feng3d.AnimationClip = AnimationClip;
     var PropertyClip = /** @class */ (function () {
         function PropertyClip() {
-            this._fps = 24;
             this._cacheValues = {};
         }
-        PropertyClip.prototype.getValue = function (cliptime) {
+        PropertyClip.prototype.getValue = function (cliptime, fps) {
             var _this = this;
-            var frame = Math.round(this._fps * cliptime / 1000);
+            var frame = Math.round(fps * cliptime / 1000);
             if (this._cacheValues[frame] != undefined)
                 return this._cacheValues[frame];
             this._propertyValues = this._propertyValues || this.propertyValues.map(function (v) {

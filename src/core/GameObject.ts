@@ -422,6 +422,7 @@ namespace feng3d
             {
                 var compnent = parent.getComponent(type);
                 compnent && result.push(compnent);
+                parent = parent.parent;
             }
             return result;
         }

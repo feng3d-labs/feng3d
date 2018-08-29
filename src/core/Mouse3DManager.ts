@@ -17,6 +17,28 @@ namespace feng3d
         {
             this.setSelectedGameObject(v);
         }
+
+        /**
+         * 视窗，鼠标在该矩形内时为有效事件
+         */
+        viewport: Lazy<Rectangle>
+
+        pick(scene3d: Scene3D, camera: Camera)
+        {
+            //计算得到鼠标射线相交的物体
+            var pickingCollisionVO = raycaster.pick(camera.getMouseRay3D(), scene3d.mouseCheckObjects);
+
+            var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
+            return gameobject;
+        }
+
+        constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>)
+        {
+            //
+            this.mouseInput = mouseInput;
+            this.viewport = viewport;
+        }
+
         private _selectedGameObject: GameObject;
         private mouseEventTypes: string[] = [];
 
@@ -28,27 +50,6 @@ namespace feng3d
          * 统计处理click次数，判断是否达到dblclick
          */
         private gameObjectClickNum: number;
-
-        /**
-         * 视窗，鼠标在该矩形内时为有效事件
-         */
-        viewport: Lazy<Rectangle>
-
-        constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>)
-        {
-            //
-            this.mouseInput = mouseInput;
-            this.viewport = viewport;
-        }
-
-        pick(scene3d: Scene3D, camera: Camera)
-        {
-            //计算得到鼠标射线相交的物体
-            var pickingCollisionVO = raycaster.pick(camera.getMouseRay3D(), scene3d.mouseCheckObjects);
-
-            var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
-            return gameobject;
-        }
 
         private mouseInputChanged(property, oldValue: MouseInput, newValue: MouseInput)
         {
