@@ -32,10 +32,16 @@ namespace feng3d
         @serialize
         playspeed = 1;
 
-        public update(interval: number)
+        update(interval: number)
         {
-            if (this.isplaying)
-                this.time += interval * this.playspeed;
+            if (this.isplaying) this.time += interval * this.playspeed;
+        }
+
+        dispose()
+        {
+            this.animation = <any>null;
+            this.animations = <any>null;
+            super.dispose();
         }
 
         private num = 0;
@@ -109,13 +115,6 @@ namespace feng3d
         private onTimeChanged()
         {
             this.updateAni();
-        }
-
-        dispose()
-        {
-            this.animation = <any>null;
-            this.animations = <any>null;
-            super.dispose();
         }
     }
     var autoobjectCacheID = 1;

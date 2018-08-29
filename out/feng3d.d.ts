@@ -8454,15 +8454,13 @@ declare namespace feng3d {
         Behaviour: Behaviour;
     }
     /**
-     * Behaviours are Components that can be enabled or disabled.
-     *
      * 行为
      *
      * 可以控制开关的组件
      */
     class Behaviour extends Component {
         /**
-         * Enabled Behaviours are Updated, disabled Behaviours are not.
+         * 是否启用update方法
          */
         enabled: boolean;
         flag: ScriptFlag;
@@ -9249,16 +9247,16 @@ declare namespace feng3d {
          */
         holdSize: number;
         /**
-         * 相对
+         * 相机
          */
         camera: Camera;
-        private _holdSize;
-        private _camera;
         init(gameobject: GameObject): void;
+        dispose(): void;
+        private onHoldSizeChanged;
+        private onCameraChanged;
         private invalidateSceneTransform;
         private updateLocalToWorldMatrix;
         private getDepthScale;
-        dispose(): void;
     }
 }
 declare namespace feng3d {
@@ -9268,10 +9266,10 @@ declare namespace feng3d {
     class BillboardComponent extends Component {
         __class__: "feng3d.BillboardComponent";
         /**
-         * 相对
+         * 相机
          */
         camera: Camera;
-        private _camera;
+        private onCameraChanged;
         init(gameobject: GameObject): void;
         private invalidHoldSizeMatrix;
         private updateLocalToWorldMatrix;
@@ -12013,13 +12011,13 @@ declare namespace feng3d {
          */
         playspeed: number;
         update(interval: number): void;
+        dispose(): void;
         private num;
         private updateAni;
         private _objectCache;
         private getPropertyHost;
         private onAnimationChanged;
         private onTimeChanged;
-        dispose(): void;
     }
     class AnimationClip {
         name: string;

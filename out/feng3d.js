@@ -13662,8 +13662,6 @@ var feng3d;
         ScriptFlag[ScriptFlag["all"] = 255] = "all";
     })(ScriptFlag = feng3d.ScriptFlag || (feng3d.ScriptFlag = {}));
     /**
-     * Behaviours are Components that can be enabled or disabled.
-     *
      * 行为
      *
      * 可以控制开关的组件
@@ -13673,7 +13671,7 @@ var feng3d;
         function Behaviour() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             /**
-             * Enabled Behaviours are Updated, disabled Behaviours are not.
+             * 是否启用update方法
              */
             _this.enabled = true;
             _this.flag = ScriptFlag.all;
@@ -16147,48 +16145,30 @@ var feng3d;
         function HoldSizeComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.HoldSizeComponent";
-            _this._holdSize = 1;
-            return _this;
-        }
-        Object.defineProperty(HoldSizeComponent.prototype, "holdSize", {
             /**
              * 保持缩放尺寸
              */
-            get: function () {
-                return this._holdSize;
-            },
-            set: function (value) {
-                if (this._holdSize == value)
-                    return;
-                this._holdSize = value;
-                this.invalidateSceneTransform();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(HoldSizeComponent.prototype, "camera", {
-            /**
-             * 相对
-             */
-            get: function () {
-                return this._camera;
-            },
-            set: function (value) {
-                if (this._camera == value)
-                    return;
-                if (this._camera)
-                    this._camera.off("scenetransformChanged", this.invalidateSceneTransform, this);
-                this._camera = value;
-                if (this._camera)
-                    this._camera.on("scenetransformChanged", this.invalidateSceneTransform, this);
-                this.invalidateSceneTransform();
-            },
-            enumerable: true,
-            configurable: true
-        });
+            _this.holdSize = 1;
+            return _this;
+        }
         HoldSizeComponent.prototype.init = function (gameobject) {
             _super.prototype.init.call(this, gameobject);
             this.transform.on("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
+        };
+        HoldSizeComponent.prototype.dispose = function () {
+            this.camera = null;
+            this.transform.off("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
+            _super.prototype.dispose.call(this);
+        };
+        HoldSizeComponent.prototype.onHoldSizeChanged = function () {
+            this.invalidateSceneTransform();
+        };
+        HoldSizeComponent.prototype.onCameraChanged = function (property, oldValue, value) {
+            if (oldValue)
+                oldValue.off("scenetransformChanged", this.invalidateSceneTransform, this);
+            if (value)
+                value.on("scenetransformChanged", this.invalidateSceneTransform, this);
+            this.invalidateSceneTransform();
         };
         HoldSizeComponent.prototype.invalidateSceneTransform = function () {
             if (this._gameObject)
@@ -16196,8 +16176,8 @@ var feng3d;
         };
         HoldSizeComponent.prototype.updateLocalToWorldMatrix = function () {
             var _localToWorldMatrix = this.transform["_localToWorldMatrix"];
-            if (this.holdSize && this._camera && _localToWorldMatrix) {
-                var depthScale = this.getDepthScale(this._camera);
+            if (this.holdSize && this.camera && _localToWorldMatrix) {
+                var depthScale = this.getDepthScale(this.camera);
                 var vec = _localToWorldMatrix.decompose();
                 vec[2].scale(depthScale);
                 _localToWorldMatrix.recompose(vec);
@@ -16214,17 +16194,14 @@ var feng3d;
             scale = Math.max(Math.min(100, scale), 0.01);
             return scale;
         };
-        HoldSizeComponent.prototype.dispose = function () {
-            this.camera = null;
-            this.transform.off("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
-            _super.prototype.dispose.call(this);
-        };
         __decorate([
-            feng3d.oav()
-        ], HoldSizeComponent.prototype, "holdSize", null);
+            feng3d.oav(),
+            feng3d.watch("onHoldSizeChanged")
+        ], HoldSizeComponent.prototype, "holdSize", void 0);
         __decorate([
-            feng3d.oav()
-        ], HoldSizeComponent.prototype, "camera", null);
+            feng3d.oav(),
+            feng3d.watch("onCameraChanged")
+        ], HoldSizeComponent.prototype, "camera", void 0);
         return HoldSizeComponent;
     }(feng3d.Component));
     feng3d.HoldSizeComponent = HoldSizeComponent;
@@ -16238,26 +16215,13 @@ var feng3d;
             _this.__class__ = "feng3d.BillboardComponent";
             return _this;
         }
-        Object.defineProperty(BillboardComponent.prototype, "camera", {
-            /**
-             * 相对
-             */
-            get: function () {
-                return this._camera;
-            },
-            set: function (value) {
-                if (this._camera == value)
-                    return;
-                if (this._camera)
-                    this._camera.off("scenetransformChanged", this.invalidHoldSizeMatrix, this);
-                this._camera = value;
-                if (this._camera)
-                    this._camera.on("scenetransformChanged", this.invalidHoldSizeMatrix, this);
-                this.invalidHoldSizeMatrix();
-            },
-            enumerable: true,
-            configurable: true
-        });
+        BillboardComponent.prototype.onCameraChanged = function (property, oldValue, value) {
+            if (oldValue)
+                oldValue.off("scenetransformChanged", this.invalidHoldSizeMatrix, this);
+            if (value)
+                value.on("scenetransformChanged", this.invalidHoldSizeMatrix, this);
+            this.invalidHoldSizeMatrix();
+        };
         BillboardComponent.prototype.init = function (gameobject) {
             _super.prototype.init.call(this, gameobject);
             this.transform.on("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
@@ -16269,8 +16233,8 @@ var feng3d;
         };
         BillboardComponent.prototype.updateLocalToWorldMatrix = function () {
             var _localToWorldMatrix = this.transform["_localToWorldMatrix"];
-            if (_localToWorldMatrix && this._camera) {
-                var camera = this._camera;
+            if (_localToWorldMatrix && this.camera) {
+                var camera = this.camera;
                 var cameraPos = camera.transform.scenePosition;
                 var yAxis = camera.transform.localToWorldMatrix.up;
                 _localToWorldMatrix.lookAt(cameraPos, yAxis);
@@ -16282,8 +16246,9 @@ var feng3d;
             _super.prototype.dispose.call(this);
         };
         __decorate([
-            feng3d.oav()
-        ], BillboardComponent.prototype, "camera", null);
+            feng3d.oav(),
+            feng3d.watch("onCameraChanged")
+        ], BillboardComponent.prototype, "camera", void 0);
         return BillboardComponent;
     }(feng3d.Component));
     feng3d.BillboardComponent = BillboardComponent;
@@ -24041,6 +24006,11 @@ var feng3d;
             if (this.isplaying)
                 this.time += interval * this.playspeed;
         };
+        Animation.prototype.dispose = function () {
+            this.animation = null;
+            this.animations = null;
+            _super.prototype.dispose.call(this);
+        };
         Animation.prototype.updateAni = function () {
             if (!this.animation)
                 return;
@@ -24092,11 +24062,6 @@ var feng3d;
         };
         Animation.prototype.onTimeChanged = function () {
             this.updateAni();
-        };
-        Animation.prototype.dispose = function () {
-            this.animation = null;
-            this.animations = null;
-            _super.prototype.dispose.call(this);
         };
         __decorate([
             feng3d.oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" } } }),
