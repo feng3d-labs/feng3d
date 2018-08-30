@@ -12646,6 +12646,54 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * MD5模型转换器
+     */
+    var md5MeshConverter: MD5MeshConverter;
+    /**
+     * MD5模型转换器
+     */
+    class MD5MeshConverter {
+        /**
+         * MD5模型数据转换为游戏对象
+         * @param md5MeshData MD5模型数据
+         * @param completed 转换完成回调
+         */
+        convert(md5MeshData: MD5MeshData, completed?: (gameObject: GameObject) => void): void;
+        /**
+         * 计算最大关节数量
+         */
+        private calculateMaxJointCount;
+        /**
+         * 计算0权重关节数量
+         * @param vertex 顶点数据
+         * @param weights 关节权重数组
+         * @return
+         */
+        private countZeroWeightJoints;
+        private createSkeleton;
+        private createSkeletonJoint;
+        private createGeometry;
+    }
+}
+declare namespace feng3d {
+    /**
+     * MD5动画转换器
+     */
+    var md5AnimConverter: MD5AnimConverter;
+    /**
+     * MD5动画转换器
+     */
+    class MD5AnimConverter {
+        /**
+         * MD5动画数据转换为引擎动画数据
+         * @param md5AnimData MD5动画数据
+         * @param completed 转换完成回调
+         */
+        convert(md5AnimData: MD5AnimData, completed?: (animationClip: AnimationClip) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
      * OBJ模型MTL材质加载器
      */
     var mtlLoader: MTLLoader;
@@ -12691,27 +12739,15 @@ declare namespace feng3d {
         /**
          * 加载资源
          * @param url   路径
+         * @param completed 加载完成回调
          */
         load(url: string, completed?: (gameObject: GameObject) => void): void;
+        /**
+         * 加载MD5模型动画
+         * @param url MD5模型动画资源路径
+         * @param completed 加载完成回调
+         */
         loadAnim(url: string, completed?: (animationClip: AnimationClip) => void): void;
-        parseMD5Mesh(content: string, completed?: (gameObject: GameObject) => void): void;
-        parseMD5Anim(content: string, completed?: (animationClip: AnimationClip) => void): void;
-        private createMD5Mesh;
-        /**
-         * 计算最大关节数量
-         */
-        private calculateMaxJointCount;
-        /**
-         * 计算0权重关节数量
-         * @param vertex 顶点数据
-         * @param weights 关节权重数组
-         * @return
-         */
-        private countZeroWeightJoints;
-        private createSkeleton;
-        private createSkeletonJoint;
-        private createGeometry;
-        private createAnimator;
     }
 }
 declare namespace feng3d {

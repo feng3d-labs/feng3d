@@ -26750,99 +26750,17 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * OBJ模型MTL材质加载器
+     * MD5模型转换器
      */
-    var MTLLoader = /** @class */ (function () {
-        function MTLLoader() {
+    var MD5MeshConverter = /** @class */ (function () {
+        function MD5MeshConverter() {
         }
         /**
-         * 加载MTL材质
-         * @param path MTL材质文件路径
-         * @param completed 加载完成回调
+         * MD5模型数据转换为游戏对象
+         * @param md5MeshData MD5模型数据
+         * @param completed 转换完成回调
          */
-        MTLLoader.prototype.load = function (path, completed) {
-            feng3d.assets.readFileAsString(path, function (err, content) {
-                if (err) {
-                    completed(err, null);
-                    return;
-                }
-                var mtlData = feng3d.mtlParser.parser(content);
-                var materials = feng3d.mtlConverter.convert(mtlData);
-                completed(null, materials);
-            });
-        };
-        return MTLLoader;
-    }());
-    feng3d.MTLLoader = MTLLoader;
-    feng3d.mtlLoader = new MTLLoader();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * Obj模型加载类
-     */
-    var ObjLoader = /** @class */ (function () {
-        function ObjLoader() {
-        }
-        /**
-         * 加载资源
-         * @param url   路径
-         */
-        ObjLoader.prototype.load = function (url, completed) {
-            var root = url.substring(0, url.lastIndexOf("/") + 1);
-            feng3d.assets.readFileAsString(url, function (err, content) {
-                var objData = feng3d.objParser.parser(content);
-                var mtl = objData.mtl;
-                if (mtl) {
-                    feng3d.mtlLoader.load(root + mtl, function (err, materials) {
-                        feng3d.objConverter.convert(objData, materials, completed);
-                    });
-                }
-                else {
-                    feng3d.objConverter.convert(objData, null, completed);
-                }
-            });
-        };
-        return ObjLoader;
-    }());
-    feng3d.ObjLoader = ObjLoader;
-    feng3d.objLoader = new ObjLoader();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * MD5模型加载类
-     */
-    var MD5Loader = /** @class */ (function () {
-        function MD5Loader() {
-        }
-        /**
-         * 加载资源
-         * @param url   路径
-         */
-        MD5Loader.prototype.load = function (url, completed) {
-            var _this = this;
-            feng3d.loader.loadText(url, function (content) {
-                var objData = feng3d.md5MeshParser.parse(content);
-                _this.createMD5Mesh(objData, completed);
-            });
-        };
-        MD5Loader.prototype.loadAnim = function (url, completed) {
-            var _this = this;
-            feng3d.loader.loadText(url, function (content) {
-                var objData = feng3d.md5AnimParser.parse(content);
-                _this.createAnimator(objData, completed);
-            });
-        };
-        MD5Loader.prototype.parseMD5Mesh = function (content, completed) {
-            var objData = feng3d.md5MeshParser.parse(content);
-            this.createMD5Mesh(objData, completed);
-        };
-        MD5Loader.prototype.parseMD5Anim = function (content, completed) {
-            var objData = feng3d.md5AnimParser.parse(content);
-            this.createAnimator(objData, completed);
-        };
-        MD5Loader.prototype.createMD5Mesh = function (md5MeshData, completed) {
+        MD5MeshConverter.prototype.convert = function (md5MeshData, completed) {
             var gameObject = new feng3d.GameObject();
             gameObject.addComponent(feng3d.Animation);
             gameObject.transform.rx = -90;
@@ -26866,7 +26784,7 @@ var feng3d;
         /**
          * 计算最大关节数量
          */
-        MD5Loader.prototype.calculateMaxJointCount = function (md5MeshData) {
+        MD5MeshConverter.prototype.calculateMaxJointCount = function (md5MeshData) {
             var _maxJointCount = 0;
             //遍历所有的网格数据
             var numMeshData = md5MeshData.meshs.length;
@@ -26890,7 +26808,7 @@ var feng3d;
          * @param weights 关节权重数组
          * @return
          */
-        MD5Loader.prototype.countZeroWeightJoints = function (vertex, weights) {
+        MD5MeshConverter.prototype.countZeroWeightJoints = function (vertex, weights) {
             var start = vertex.startWeight;
             var end = vertex.startWeight + vertex.countWeight;
             var count = 0;
@@ -26902,7 +26820,7 @@ var feng3d;
             }
             return count;
         };
-        MD5Loader.prototype.createSkeleton = function (joints) {
+        MD5MeshConverter.prototype.createSkeleton = function (joints) {
             var skeletonjoints = [];
             for (var i = 0; i < joints.length; i++) {
                 var skeletonJoint = this.createSkeletonJoint(joints[i]);
@@ -26910,7 +26828,7 @@ var feng3d;
             }
             return skeletonjoints;
         };
-        MD5Loader.prototype.createSkeletonJoint = function (joint) {
+        MD5MeshConverter.prototype.createSkeletonJoint = function (joint) {
             var skeletonJoint = new feng3d.SkeletonJoint();
             skeletonJoint.name = joint.name;
             skeletonJoint.parentIndex = joint.parentIndex;
@@ -26927,7 +26845,7 @@ var feng3d;
             skeletonJoint.matrix3D = matrix3D;
             return skeletonJoint;
         };
-        MD5Loader.prototype.createGeometry = function (md5Mesh, skeleton, skinSkeleton) {
+        MD5MeshConverter.prototype.createGeometry = function (md5Mesh, skeleton, skinSkeleton) {
             var vertexData = md5Mesh.verts;
             var weights = md5Mesh.weights;
             var indices = md5Mesh.tris;
@@ -27015,7 +26933,25 @@ var feng3d;
             geometry.setVAData("a_jointweight1", jointWeights1, 4);
             return geometry;
         };
-        MD5Loader.prototype.createAnimator = function (md5AnimData, completed) {
+        return MD5MeshConverter;
+    }());
+    feng3d.MD5MeshConverter = MD5MeshConverter;
+    feng3d.md5MeshConverter = new MD5MeshConverter();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * MD5动画转换器
+     */
+    var MD5AnimConverter = /** @class */ (function () {
+        function MD5AnimConverter() {
+        }
+        /**
+         * MD5动画数据转换为引擎动画数据
+         * @param md5AnimData MD5动画数据
+         * @param completed 转换完成回调
+         */
+        MD5AnimConverter.prototype.convert = function (md5AnimData, completed) {
             var animationClip = new feng3d.AnimationClip();
             animationClip.length = md5AnimData.numFrames / md5AnimData.frameRate * 1000;
             animationClip.propertyClips = [];
@@ -27102,6 +27038,102 @@ var feng3d;
                     return __chache__[key];
                 }
             }
+        };
+        return MD5AnimConverter;
+    }());
+    feng3d.MD5AnimConverter = MD5AnimConverter;
+    feng3d.md5AnimConverter = new MD5AnimConverter();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * OBJ模型MTL材质加载器
+     */
+    var MTLLoader = /** @class */ (function () {
+        function MTLLoader() {
+        }
+        /**
+         * 加载MTL材质
+         * @param path MTL材质文件路径
+         * @param completed 加载完成回调
+         */
+        MTLLoader.prototype.load = function (path, completed) {
+            feng3d.assets.readFileAsString(path, function (err, content) {
+                if (err) {
+                    completed(err, null);
+                    return;
+                }
+                var mtlData = feng3d.mtlParser.parser(content);
+                var materials = feng3d.mtlConverter.convert(mtlData);
+                completed(null, materials);
+            });
+        };
+        return MTLLoader;
+    }());
+    feng3d.MTLLoader = MTLLoader;
+    feng3d.mtlLoader = new MTLLoader();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Obj模型加载类
+     */
+    var ObjLoader = /** @class */ (function () {
+        function ObjLoader() {
+        }
+        /**
+         * 加载资源
+         * @param url   路径
+         */
+        ObjLoader.prototype.load = function (url, completed) {
+            var root = url.substring(0, url.lastIndexOf("/") + 1);
+            feng3d.assets.readFileAsString(url, function (err, content) {
+                var objData = feng3d.objParser.parser(content);
+                var mtl = objData.mtl;
+                if (mtl) {
+                    feng3d.mtlLoader.load(root + mtl, function (err, materials) {
+                        feng3d.objConverter.convert(objData, materials, completed);
+                    });
+                }
+                else {
+                    feng3d.objConverter.convert(objData, null, completed);
+                }
+            });
+        };
+        return ObjLoader;
+    }());
+    feng3d.ObjLoader = ObjLoader;
+    feng3d.objLoader = new ObjLoader();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * MD5模型加载类
+     */
+    var MD5Loader = /** @class */ (function () {
+        function MD5Loader() {
+        }
+        /**
+         * 加载资源
+         * @param url   路径
+         * @param completed 加载完成回调
+         */
+        MD5Loader.prototype.load = function (url, completed) {
+            feng3d.assets.readFileAsString(url, function (err, content) {
+                var md5MeshData = feng3d.md5MeshParser.parse(content);
+                feng3d.md5MeshConverter.convert(md5MeshData, completed);
+            });
+        };
+        /**
+         * 加载MD5模型动画
+         * @param url MD5模型动画资源路径
+         * @param completed 加载完成回调
+         */
+        MD5Loader.prototype.loadAnim = function (url, completed) {
+            feng3d.assets.readFileAsString(url, function (err, content) {
+                var md5AnimData = feng3d.md5AnimParser.parse(content);
+                feng3d.md5AnimConverter.convert(md5AnimData, completed);
+            });
         };
         return MD5Loader;
     }());
