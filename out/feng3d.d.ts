@@ -12134,7 +12134,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     var mtlParser: MTLParser;
     /**
-     * Obj模型Mtl解析器
+     * OBJ模型MTL材质解析器
      */
     class MTLParser {
         /**
@@ -12592,6 +12592,25 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * OBJ模型MTL材质加载器
+     */
+    var mtlLoader: MTLLoader;
+    /**
+     * OBJ模型MTL材质加载器
+     */
+    class MTLLoader {
+        /**
+         * 加载MTL材质
+         * @param path MTL材质文件路径
+         * @param callback 加载完成回调
+         */
+        load(path: string, callback: (err: Error, materials: {
+            [name: string]: Material;
+        }) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
      * Obj模型加载类
      */
     var objLoader: ObjLoader;
@@ -12832,8 +12851,6 @@ declare namespace feng3d {
             clientY: number;
         };
     }
-}
-declare namespace feng3d {
 }
 declare type gPartial<T> = {
     [P in keyof T]?: gPartial<T[P]>;

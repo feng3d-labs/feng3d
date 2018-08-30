@@ -3,7 +3,7 @@ namespace feng3d
     export var mtlParser: MTLParser;
 
 	/**
-	 * Obj模型Mtl解析器
+	 * OBJ模型MTL材质解析器
 	 */
     export class MTLParser
     {

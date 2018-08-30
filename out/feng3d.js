@@ -24352,7 +24352,7 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * Obj模型Mtl解析器
+     * OBJ模型MTL材质解析器
      */
     var MTLParser = /** @class */ (function () {
         function MTLParser() {
@@ -26605,6 +26605,35 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * OBJ模型MTL材质加载器
+     */
+    var MTLLoader = /** @class */ (function () {
+        function MTLLoader() {
+        }
+        /**
+         * 加载MTL材质
+         * @param path MTL材质文件路径
+         * @param callback 加载完成回调
+         */
+        MTLLoader.prototype.load = function (path, callback) {
+            feng3d.assets.readFileAsString(path, function (err, content) {
+                if (err) {
+                    callback(err, null);
+                    return;
+                }
+                var mtlData = feng3d.mtlParser.parser(content);
+                var materials = feng3d.mtlConverter.convert(mtlData);
+                callback(null, materials);
+            });
+        };
+        return MTLLoader;
+    }());
+    feng3d.MTLLoader = MTLLoader;
+    feng3d.mtlLoader = new MTLLoader();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * Obj模型加载类
      */
     var ObjLoader = /** @class */ (function () {
@@ -26615,14 +26644,12 @@ var feng3d;
          * @param url   路径
          */
         ObjLoader.prototype.load = function (url, completed) {
+            var root = url.substring(0, url.lastIndexOf("/") + 1);
             feng3d.assets.readFileAsString(url, function (err, content) {
                 var objData = feng3d.OBJParser.parser(content);
                 var mtl = objData.mtl;
                 if (mtl) {
-                    var mtlRoot = url.substring(0, url.lastIndexOf("/") + 1);
-                    feng3d.assets.readFileAsString(mtlRoot + mtl, function (err, content) {
-                        var mtlData = feng3d.mtlParser.parser(content);
-                        var materials = feng3d.mtlConverter.convert(mtlData);
+                    feng3d.mtlLoader.load(root + mtl, function (err, materials) {
                         createObj(objData, materials, completed);
                     });
                 }

@@ -1,4 +1,0 @@
-namespace feng3d
-{
-
-}

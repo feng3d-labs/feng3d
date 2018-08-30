@@ -16,17 +16,16 @@ namespace feng3d
          */
         load(url: string, completed?: (gameObject: GameObject) => void)
         {
+            var root = url.substring(0, url.lastIndexOf("/") + 1);
+
             assets.readFileAsString(url, (err, content) =>
             {
                 var objData = OBJParser.parser(content);
                 var mtl = objData.mtl;
                 if (mtl)
                 {
-                    var mtlRoot = url.substring(0, url.lastIndexOf("/") + 1);
-                    assets.readFileAsString(mtlRoot + mtl, (err, content) =>
+                    mtlLoader.load(root + mtl, (err, materials) =>
                     {
-                        var mtlData = mtlParser.parser(content);
-                        var materials = mtlConverter.convert(mtlData);
                         createObj(objData, materials, completed);
                     });
                 } else
