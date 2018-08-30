@@ -26573,6 +26573,38 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * OBJ模型MTL材质转换器
+     */
+    var MTLConverter = /** @class */ (function () {
+        function MTLConverter() {
+        }
+        /**
+         * OBJ模型MTL材质原始数据转换引擎中材质对象
+         * @param mtl MTL材质原始数据
+         */
+        MTLConverter.prototype.convert = function (mtl) {
+            var materials = {};
+            for (var name_5 in mtl) {
+                var materialInfo = mtl[name_5];
+                materials[name_5] = new feng3d.StandardMaterial().value({
+                    name: materialInfo.name,
+                    uniforms: {
+                        u_diffuse: { r: materialInfo.kd[0], g: materialInfo.kd[1], b: materialInfo.kd[2], },
+                        u_specular: { r: materialInfo.ks[0], g: materialInfo.ks[1], b: materialInfo.ks[2], },
+                    },
+                    renderParams: { cullFace: feng3d.CullFace.FRONT },
+                });
+            }
+            return materials;
+        };
+        return MTLConverter;
+    }());
+    feng3d.MTLConverter = MTLConverter;
+    feng3d.mtlConverter = new MTLConverter();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * Obj模型加载类
      */
     var ObjLoader = /** @class */ (function () {
@@ -26584,56 +26616,56 @@ var feng3d;
          */
         ObjLoader.prototype.load = function (url, completed) {
             feng3d.assets.readFileAsString(url, function (err, content) {
-                var material = new feng3d.StandardMaterial();
                 var objData = feng3d.OBJParser.parser(content);
                 var mtl = objData.mtl;
                 if (mtl) {
                     var mtlRoot = url.substring(0, url.lastIndexOf("/") + 1);
                     feng3d.assets.readFileAsString(mtlRoot + mtl, function (err, content) {
                         var mtlData = feng3d.mtlParser.parser(content);
-                        createObj(objData, material, mtlData, completed);
+                        var materials = feng3d.mtlConverter.convert(mtlData);
+                        createObj(objData, materials, completed);
                     });
                 }
                 else {
-                    createObj(objData, material, null, completed);
+                    createObj(objData, null, completed);
                 }
             });
         };
         ObjLoader.prototype.parse = function (content, completed) {
             var material = new feng3d.StandardMaterial();
             var objData = feng3d.OBJParser.parser(content);
-            createObj(objData, material, null, completed);
+            createObj(objData, null, completed);
         };
         return ObjLoader;
     }());
     feng3d.ObjLoader = ObjLoader;
     feng3d.objLoader = new ObjLoader();
-    function createObj(objData, material, mtlData, completed) {
+    function createObj(objData, materials, completed) {
         var object = new feng3d.GameObject();
         var objs = objData.objs;
         for (var i = 0; i < objs.length; i++) {
             var obj = objs[i];
-            var gameObject = createSubObj(objData, obj, material, mtlData);
+            var gameObject = createSubObj(objData, obj, materials);
             object.addChild(gameObject);
         }
         completed && completed(object);
     }
-    function createSubObj(objData, obj, material, mtlData) {
+    function createSubObj(objData, obj, materials) {
         var gameObject = new feng3d.GameObject().value({ name: obj.name });
         var subObjs = obj.subObjs;
         for (var i = 0; i < subObjs.length; i++) {
-            var materialObj = createMaterialObj(objData, subObjs[i], material, mtlData);
+            var materialObj = createMaterialObj(objData, subObjs[i], materials);
             gameObject.addChild(materialObj);
         }
         return gameObject;
     }
     var _realIndices;
     var _vertexIndex;
-    function createMaterialObj(obj, subObj, material, mtlData) {
+    function createMaterialObj(obj, subObj, materials) {
         var gameObject = new feng3d.GameObject();
         var model = gameObject.addComponent(feng3d.Model);
-        model.material = material || new feng3d.StandardMaterial();
-        model.material.renderParams.cullFace = feng3d.CullFace.FRONT;
+        if (materials && materials[subObj.material])
+            model.material = materials[subObj.material];
         var geometry = model.geometry = new feng3d.CustomGeometry();
         var vertices = [];
         var normals = [];
@@ -26657,13 +26689,6 @@ var feng3d;
             geometry.setVAData("a_normal", normals, 3);
         if (uvs.length > 0)
             geometry.setVAData("a_uv", uvs, 2);
-        if (mtlData && subObj.material && mtlData[subObj.material]) {
-            var standardMaterial = new feng3d.StandardMaterial();
-            var materialInfo = mtlData[subObj.material];
-            var kd = materialInfo.kd;
-            standardMaterial.uniforms.u_diffuse = new feng3d.Color4(kd[0], kd[1], kd[2]);
-            model.material = standardMaterial;
-        }
         return gameObject;
         function translateVertexData(face, vertexIndex, vertices, uvs, indices, normals, obj) {
             var index;

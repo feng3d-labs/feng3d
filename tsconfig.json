@@ -251,7 +251,9 @@
         "src/assets/parsers/mdl/War3Model.ts",
         "src/assets/parsers/MdlParser.ts",
         //
-        "src/assets/loader/ObjLoader.ts",
+        "src/assets/converters/MTLConverter.ts",
+        //
+        "src/assets/loader/OBJLoader.ts",
         "src/assets/loader/MD5Loader.ts",
         "src/assets/loader/MDLLoader.ts",
         //

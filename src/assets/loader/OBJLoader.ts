@@ -18,7 +18,6 @@ namespace feng3d
         {
             assets.readFileAsString(url, (err, content) =>
             {
-                var material = new StandardMaterial();
                 var objData = OBJParser.parser(content);
                 var mtl = objData.mtl;
                 if (mtl)
@@ -27,11 +26,12 @@ namespace feng3d
                     assets.readFileAsString(mtlRoot + mtl, (err, content) =>
                     {
                         var mtlData = mtlParser.parser(content);
-                        createObj(objData, material, mtlData, completed);
+                        var materials = mtlConverter.convert(mtlData);
+                        createObj(objData, materials, completed);
                     });
                 } else
                 {
-                    createObj(objData, material, null, completed);
+                    createObj(objData, null, completed);
                 }
             });
         }
@@ -40,33 +40,33 @@ namespace feng3d
         {
             var material = new StandardMaterial();
             var objData = OBJParser.parser(content);
-            createObj(objData, material, null, completed);
+            createObj(objData, null, completed);
         }
     }
 
     objLoader = new ObjLoader();
 
-    function createObj(objData: OBJ_OBJData, material: Materials, mtlData: Mtl_Mtl, completed?: (gameObject: GameObject) => void)
+    function createObj(objData: OBJ_OBJData, materials: { [name: string]: Material; }, completed?: (gameObject: GameObject) => void)
     {
         var object = new GameObject();
         var objs = objData.objs;
         for (var i = 0; i < objs.length; i++)
         {
             var obj = objs[i];
-            var gameObject = createSubObj(objData, obj, material, mtlData);
+            var gameObject = createSubObj(objData, obj, materials);
             object.addChild(gameObject);
         }
         completed && completed(object);
     }
 
-    function createSubObj(objData: OBJ_OBJData, obj: OBJ_OBJ, material: Materials, mtlData: Mtl_Mtl)
+    function createSubObj(objData: OBJ_OBJData, obj: OBJ_OBJ, materials: { [name: string]: Material; })
     {
         var gameObject = new GameObject().value({ name: obj.name });
 
         var subObjs = obj.subObjs;
         for (var i = 0; i < subObjs.length; i++)
         {
-            var materialObj = createMaterialObj(objData, subObjs[i], material, mtlData);
+            var materialObj = createMaterialObj(objData, subObjs[i], materials);
             gameObject.addChild(materialObj);
         }
         return gameObject;
@@ -75,12 +75,12 @@ namespace feng3d
     var _realIndices: string[];
     var _vertexIndex: number;
 
-    function createMaterialObj(obj: OBJ_OBJData, subObj: OBJ_SubOBJ, material: Materials, mtlData: Mtl_Mtl)
+    function createMaterialObj(obj: OBJ_OBJData, subObj: OBJ_SubOBJ, materials: { [name: string]: Material; })
     {
         var gameObject = new GameObject();
         var model = gameObject.addComponent(Model);
-        model.material = material || new StandardMaterial();
-        model.material.renderParams.cullFace = CullFace.FRONT;
+        if (materials && materials[subObj.material])
+            model.material = materials[subObj.material];
 
         var geometry = model.geometry = new CustomGeometry();
         var vertices: number[] = [];
@@ -110,14 +110,6 @@ namespace feng3d
         if (uvs.length > 0)
             geometry.setVAData("a_uv", uvs, 2);
 
-        if (mtlData && subObj.material && mtlData[subObj.material])
-        {
-            var standardMaterial = new StandardMaterial();
-            var materialInfo = mtlData[subObj.material];
-            var kd = materialInfo.kd;
-            standardMaterial.uniforms.u_diffuse = new Color4(kd[0], kd[1], kd[2]);
-            model.material = standardMaterial;
-        }
         return gameObject;
 
         function translateVertexData(face: OBJ_Face, vertexIndex: number, vertices: Array<number>, uvs: Array<number>, indices: Array<number>, normals: Array<number>, obj: OBJ_OBJData)

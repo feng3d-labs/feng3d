@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export interface MaterialMap { }
+    export interface MaterialMap { Material: Material }
 
     export type Materials = MaterialMap[keyof MaterialMap];
 

@@ -10634,6 +10634,7 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     interface MaterialMap {
+        Material: Material;
     }
     type Materials = MaterialMap[keyof MaterialMap];
     /**
@@ -12570,6 +12571,24 @@ declare namespace feng3d.war3 {
         parse: typeof parse;
     };
     function parse(data: string, onParseComplete?: (war3Model: War3Model) => void): void;
+}
+declare namespace feng3d {
+    /**
+     * OBJ模型MTL材质转换器
+     */
+    var mtlConverter: MTLConverter;
+    /**
+     * OBJ模型MTL材质转换器
+     */
+    class MTLConverter {
+        /**
+         * OBJ模型MTL材质原始数据转换引擎中材质对象
+         * @param mtl MTL材质原始数据
+         */
+        convert(mtl: Mtl_Mtl): {
+            [name: string]: Material;
+        };
+    }
 }
 declare namespace feng3d {
     /**
