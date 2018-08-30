@@ -12029,9 +12029,9 @@ declare namespace feng3d {
         update(interval: number): void;
         dispose(): void;
         private num;
-        private updateAni;
         private _fps;
         private _objectCache;
+        private updateAni;
         private getPropertyHost;
         private onAnimationChanged;
         private onTimeChanged;

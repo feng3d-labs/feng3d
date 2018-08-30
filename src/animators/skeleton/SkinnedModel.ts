@@ -35,20 +35,19 @@ namespace feng3d
             var animation = this.getComponentsInParents(Animation)[0];
             if (animation)
             {
-                var clipName = animation.clipName;
-                var frame = animation.frame;
-                frameId = clipName + "&" + frame;
+                frameId = animation.clipName + "&" + animation.frame;
             }
 
             renderAtomic.uniforms.u_modelMatrix = () => this.u_modelMatrix;
             renderAtomic.uniforms.u_ITModelMatrix = () => this.u_ITModelMatrix;
             //
-            var u_skeletonGlobalMatriices = this.cacheU_skeletonGlobalMatriices[frameId];
-            if (!u_skeletonGlobalMatriices)
+            var skeletonGlobalMatriices = this.cacheU_skeletonGlobalMatriices[frameId];
+            if (!skeletonGlobalMatriices)
             {
-                u_skeletonGlobalMatriices = this.cacheU_skeletonGlobalMatriices[frameId] = this.u_skeletonGlobalMatriices;
+                skeletonGlobalMatriices = this.u_skeletonGlobalMatriices;
+                if (frameId) this.cacheU_skeletonGlobalMatriices[frameId] = skeletonGlobalMatriices;
             }
-            renderAtomic.uniforms.u_skeletonGlobalMatriices = () => u_skeletonGlobalMatriices;
+            renderAtomic.uniforms.u_skeletonGlobalMatriices = skeletonGlobalMatriices;
 
             renderAtomic.shaderMacro.HAS_SKELETON_ANIMATION = true;
             renderAtomic.shaderMacro.NUM_SKELETONJOINT = this.skinSkeleton.joints.length;

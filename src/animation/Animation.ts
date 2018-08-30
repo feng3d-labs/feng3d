@@ -8,7 +8,7 @@ namespace feng3d
         @oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" } } })
         @serialize
         @watch("onAnimationChanged")
-        animation: AnimationClip
+        animation: AnimationClip;
 
         @oav({ component: "OAVArray", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" }, defaultItem: () => new AnimationClip() } })
         @serialize
@@ -62,6 +62,9 @@ namespace feng3d
         }
 
         private num = 0;
+        private _fps = 24;
+        private _objectCache = new Map();
+
         private updateAni()
         {
             if (!this.animation) return;
@@ -83,9 +86,6 @@ namespace feng3d
                 propertyHost[propertyClip.propertyName] = propertyClip.getValue(cliptime, this._fps);
             }
         }
-
-        private _fps = 24;
-        private _objectCache = new Map();
 
         private getPropertyHost(propertyClip: PropertyClip)
         {
