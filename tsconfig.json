@@ -252,6 +252,7 @@
         "src/assets/parsers/MDLParser.ts",
         //
         "src/assets/converters/MTLConverter.ts",
+        "src/assets/converters/OBJConverter.ts",
         //
         "src/assets/loader/MTLLoader.ts",
         "src/assets/loader/OBJLoader.ts",

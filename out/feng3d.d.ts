@@ -12626,6 +12626,26 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * OBJ模型转换器
+     */
+    var objConverter: OBJConverter;
+    /**
+     * OBJ模型转换器
+     */
+    class OBJConverter {
+        /**
+         * OBJ模型数据转换为游戏对象
+         * @param objData OBJ模型数据
+         * @param materials 材质列表
+         * @param completed 转换完成回调
+         */
+        convert(objData: OBJ_OBJData, materials: {
+            [name: string]: Material;
+        }, completed: (gameObject: GameObject) => void): any;
+    }
+}
+declare namespace feng3d {
+    /**
      * OBJ模型MTL材质加载器
      */
     var mtlLoader: MTLLoader;
@@ -12695,8 +12715,19 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * MDL模型加载器
+     */
     var mdlLoader: MDLLoader;
+    /**
+     * MDL模型加载器
+     */
     class MDLLoader {
+        /**
+         * 加载MDL模型
+         * @param mdlurl MDL模型路径
+         * @param callback 加载完成回调
+         */
         load(mdlurl: string, callback: (gameObject: GameObject) => void): void;
     }
 }

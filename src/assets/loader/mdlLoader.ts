@@ -1,9 +1,20 @@
 namespace feng3d
 {
+    /**
+     * MDL模型加载器
+     */
     export var mdlLoader: MDLLoader;
 
+    /**
+     * MDL模型加载器
+     */
     export class MDLLoader
     {
+        /**
+         * 加载MDL模型
+         * @param mdlurl MDL模型路径
+         * @param callback 加载完成回调
+         */
         load(mdlurl: string, callback: (gameObject: GameObject) => void)
         {
             loader.loadText(mdlurl, (content) =>

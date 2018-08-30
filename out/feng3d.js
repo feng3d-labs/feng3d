@@ -26643,73 +26643,31 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * OBJ模型MTL材质加载器
+     * OBJ模型转换器
      */
-    var MTLLoader = /** @class */ (function () {
-        function MTLLoader() {
+    var OBJConverter = /** @class */ (function () {
+        function OBJConverter() {
         }
         /**
-         * 加载MTL材质
-         * @param path MTL材质文件路径
-         * @param completed 加载完成回调
+         * OBJ模型数据转换为游戏对象
+         * @param objData OBJ模型数据
+         * @param materials 材质列表
+         * @param completed 转换完成回调
          */
-        MTLLoader.prototype.load = function (path, completed) {
-            feng3d.assets.readFileAsString(path, function (err, content) {
-                if (err) {
-                    completed(err, null);
-                    return;
-                }
-                var mtlData = feng3d.mtlParser.parser(content);
-                var materials = feng3d.mtlConverter.convert(mtlData);
-                completed(null, materials);
-            });
+        OBJConverter.prototype.convert = function (objData, materials, completed) {
+            var object = new feng3d.GameObject();
+            var objs = objData.objs;
+            for (var i = 0; i < objs.length; i++) {
+                var obj = objs[i];
+                var gameObject = createSubObj(objData, obj, materials);
+                object.addChild(gameObject);
+            }
+            completed && completed(object);
         };
-        return MTLLoader;
+        return OBJConverter;
     }());
-    feng3d.MTLLoader = MTLLoader;
-    feng3d.mtlLoader = new MTLLoader();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * Obj模型加载类
-     */
-    var ObjLoader = /** @class */ (function () {
-        function ObjLoader() {
-        }
-        /**
-         * 加载资源
-         * @param url   路径
-         */
-        ObjLoader.prototype.load = function (url, completed) {
-            var root = url.substring(0, url.lastIndexOf("/") + 1);
-            feng3d.assets.readFileAsString(url, function (err, content) {
-                var objData = feng3d.objParser.parser(content);
-                var mtl = objData.mtl;
-                if (mtl) {
-                    feng3d.mtlLoader.load(root + mtl, function (err, materials) {
-                        createObj(objData, materials, completed);
-                    });
-                }
-                else {
-                    createObj(objData, null, completed);
-                }
-            });
-        };
-        return ObjLoader;
-    }());
-    feng3d.ObjLoader = ObjLoader;
-    feng3d.objLoader = new ObjLoader();
-    function createObj(objData, materials, completed) {
-        var object = new feng3d.GameObject();
-        var objs = objData.objs;
-        for (var i = 0; i < objs.length; i++) {
-            var obj = objs[i];
-            var gameObject = createSubObj(objData, obj, materials);
-            object.addChild(gameObject);
-        }
-        completed && completed(object);
-    }
+    feng3d.OBJConverter = OBJConverter;
+    feng3d.objConverter = new OBJConverter();
     function createSubObj(objData, obj, materials) {
         var gameObject = new feng3d.GameObject().value({ name: obj.name });
         var subObjs = obj.subObjs;
@@ -26788,6 +26746,67 @@ var feng3d;
             indices.push(index);
         }
     }
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * OBJ模型MTL材质加载器
+     */
+    var MTLLoader = /** @class */ (function () {
+        function MTLLoader() {
+        }
+        /**
+         * 加载MTL材质
+         * @param path MTL材质文件路径
+         * @param completed 加载完成回调
+         */
+        MTLLoader.prototype.load = function (path, completed) {
+            feng3d.assets.readFileAsString(path, function (err, content) {
+                if (err) {
+                    completed(err, null);
+                    return;
+                }
+                var mtlData = feng3d.mtlParser.parser(content);
+                var materials = feng3d.mtlConverter.convert(mtlData);
+                completed(null, materials);
+            });
+        };
+        return MTLLoader;
+    }());
+    feng3d.MTLLoader = MTLLoader;
+    feng3d.mtlLoader = new MTLLoader();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Obj模型加载类
+     */
+    var ObjLoader = /** @class */ (function () {
+        function ObjLoader() {
+        }
+        /**
+         * 加载资源
+         * @param url   路径
+         */
+        ObjLoader.prototype.load = function (url, completed) {
+            var root = url.substring(0, url.lastIndexOf("/") + 1);
+            feng3d.assets.readFileAsString(url, function (err, content) {
+                var objData = feng3d.objParser.parser(content);
+                var mtl = objData.mtl;
+                if (mtl) {
+                    feng3d.mtlLoader.load(root + mtl, function (err, materials) {
+                        feng3d.objConverter.convert(objData, materials, completed);
+                    });
+                }
+                else {
+                    feng3d.objConverter.convert(objData, null, completed);
+                }
+            });
+        };
+        return ObjLoader;
+    }());
+    feng3d.ObjLoader = ObjLoader;
+    feng3d.objLoader = new ObjLoader();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -27091,9 +27110,17 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * MDL模型加载器
+     */
     var MDLLoader = /** @class */ (function () {
         function MDLLoader() {
         }
+        /**
+         * 加载MDL模型
+         * @param mdlurl MDL模型路径
+         * @param callback 加载完成回调
+         */
         MDLLoader.prototype.load = function (mdlurl, callback) {
             feng3d.loader.loadText(mdlurl, function (content) {
                 feng3d.war3.mdlParser.parse(content, function (war3Model) {
