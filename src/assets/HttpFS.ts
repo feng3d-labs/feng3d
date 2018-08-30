@@ -33,7 +33,7 @@ namespace feng3d
         readFile(path: string, callback: (err: Error, data: ArrayBuffer) => void)
         {
             // rootPath
-            Loader.loadBinary(path,
+            loader.loadBinary(path,
                 (content) =>
                 {
                     callback(null, content);

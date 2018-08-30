@@ -17,7 +17,7 @@ namespace feng3d
          */
         load(url: string, completed?: (gameObject: GameObject) => void)
         {
-            Loader.loadText(url, (content) =>
+            loader.loadText(url, (content) =>
             {
                 var objData = MD5MeshParser.parse(content);
                 this.createMD5Mesh(objData, completed);
@@ -26,7 +26,7 @@ namespace feng3d
 
         loadAnim(url: string, completed?: (animationClip: AnimationClip) => void)
         {
-            Loader.loadText(url, (content) =>
+            loader.loadText(url, (content) =>
             {
                 var objData = MD5AnimParser.parse(content);
                 this.createAnimator(objData, completed);

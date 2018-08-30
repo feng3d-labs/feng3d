@@ -2,49 +2,51 @@ namespace feng3d
 {
     /**
      * Obj模型加载类
+     */
+    export var objLoader: ObjLoader;
 
-     */
-    export var ObjLoader = {
-        /**
-         * 加载Obj模型
-         */
-        load: load,
-        parse: parse,
-    }
     /**
-     * 加载资源
-     * @param url   路径
+     * Obj模型加载类
      */
-    function load(url: string, completed?: (gameObject: GameObject) => void)
+    export class ObjLoader
     {
-        Loader.loadText(url, (content: string) =>
+        /**
+         * 加载资源
+         * @param url   路径
+         */
+        load(url: string, completed?: (gameObject: GameObject) => void)
+        {
+            assets.readFileAsString(url, (err, content) =>
+            {
+                var material = new StandardMaterial();
+                var objData = OBJParser.parser(content);
+                var mtl = objData.mtl;
+                if (mtl)
+                {
+                    var mtlRoot = url.substring(0, url.lastIndexOf("/") + 1);
+                    assets.readFileAsString(mtlRoot + mtl, (err, content) =>
+                    {
+                        var mtlData = mtlParser.parser(content);
+                        createObj(objData, material, mtlData, completed);
+                    });
+                } else
+                {
+                    createObj(objData, material, null, completed);
+                }
+            });
+        }
+
+        parse(content: string, completed?: (gameObject: GameObject) => void)
         {
             var material = new StandardMaterial();
             var objData = OBJParser.parser(content);
-            var mtl = objData.mtl;
-            if (mtl)
-            {
-                var mtlRoot = url.substring(0, url.lastIndexOf("/") + 1);
-                Loader.loadText(mtlRoot + mtl, (content) =>
-                {
-                    var mtlData = MtlParser.parser(content);
-                    createObj(objData, material, mtlData, completed);
-                });
-            } else
-            {
-                createObj(objData, material, null, completed);
-            }
-        });
+            createObj(objData, material, null, completed);
+        }
     }
 
-    function parse(content: string, completed?: (gameObject: GameObject) => void)
-    {
-        var material = new StandardMaterial();
-        var objData = OBJParser.parser(content);
-        createObj(objData, material, null, completed);
-    }
+    objLoader = new ObjLoader();
 
-    function createObj(objData: OBJ_OBJData, material: Materials, mtlData: Mtl_Mtl | null, completed?: (gameObject: GameObject) => void)
+    function createObj(objData: OBJ_OBJData, material: Materials, mtlData: Mtl_Mtl, completed?: (gameObject: GameObject) => void)
     {
         var object = new GameObject();
         var objs = objData.objs;
@@ -57,7 +59,7 @@ namespace feng3d
         completed && completed(object);
     }
 
-    function createSubObj(objData: OBJ_OBJData, obj: OBJ_OBJ, material: Materials, mtlData: Mtl_Mtl | null)
+    function createSubObj(objData: OBJ_OBJData, obj: OBJ_OBJ, material: Materials, mtlData: Mtl_Mtl)
     {
         var gameObject = new GameObject().value({ name: obj.name });
 
@@ -73,7 +75,7 @@ namespace feng3d
     var _realIndices: string[];
     var _vertexIndex: number;
 
-    function createMaterialObj(obj: OBJ_OBJData, subObj: OBJ_SubOBJ, material: Materials, mtlData: Mtl_Mtl | null)
+    function createMaterialObj(obj: OBJ_OBJData, subObj: OBJ_SubOBJ, material: Materials, mtlData: Mtl_Mtl)
     {
         var gameObject = new GameObject();
         var model = gameObject.addComponent(Model);
@@ -110,8 +112,6 @@ namespace feng3d
 
         if (mtlData && subObj.material && mtlData[subObj.material])
         {
-            var materialInfo = mtlData[subObj.material];
-            var kd = materialInfo.kd;
             var standardMaterial = new StandardMaterial();
             var materialInfo = mtlData[subObj.material];
             var kd = materialInfo.kd;

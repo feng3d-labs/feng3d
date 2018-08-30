@@ -1,12 +1,30 @@
 namespace feng3d
 {
+    export var mtlParser: MTLParser;
 
 	/**
 	 * Obj模型Mtl解析器
 	 */
-    export var MtlParser = {
-        parser: parser
+    export class MTLParser
+    {
+        /**
+         * 解析
+         * @param context 
+         */
+        parser(context: string): Mtl_Mtl
+        {
+            var mtl: Mtl_Mtl = {};
+            var lines = context.split("\n");
+            for (var i = 0; i < lines.length; i++)
+            {
+                var element = lines[i];
+                parserLine(lines[i], mtl);
+            }
+            return mtl;
+        }
     }
+
+    mtlParser = new MTLParser();
 
     export type Mtl_Material = {
         name: string;
@@ -23,19 +41,6 @@ namespace feng3d
         map_Ks: string;
     };
     export type Mtl_Mtl = { [name: string]: Mtl_Material }
-
-    function parser(context: string): Mtl_Mtl
-    {
-        var mtl: Mtl_Mtl = {};
-        var lines = context.split("\n");
-        for (var i = 0; i < lines.length; i++)
-        {
-            var element = lines[i];
-            parserLine(lines[i], mtl);
-        }
-        return mtl;
-    }
-
 
     var newmtlReg = /newmtl\s+([\w.]+)/;
     var kaReg = /Ka\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/;

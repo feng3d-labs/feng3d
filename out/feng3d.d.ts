@@ -5777,37 +5777,28 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 declare namespace feng3d {
     /**
      * 加载类
-
      */
-    var Loader: {
+    var loader: Loader;
+    /**
+     * 加载类
+     */
+    class Loader {
         /**
          * 加载文本
+         * @param url   路径
          */
-        loadText: typeof loadText;
+        loadText(url: string, onCompleted?: (content: string) => void, onRequestProgress?: () => void, onError?: (e: any) => void): void;
         /**
          * 加载二进制
+         * @param url   路径
          */
-        loadBinary: typeof loadBinary;
+        loadBinary(url: string, onCompleted?: (content: ArrayBuffer) => void, onRequestProgress?: () => void, onError?: (e: any) => void): void;
         /**
          * 加载图片
+         * @param url   路径
          */
-        loadImage: typeof loadImage;
-    };
-    /**
-     * 加载文本
-     * @param url   路径
-     */
-    function loadText(url: string, onCompleted?: (content: string) => void, onRequestProgress?: () => void, onError?: (e: any) => void): void;
-    /**
-     * 加载二进制
-     * @param url   路径
-     */
-    function loadBinary(url: string, onCompleted?: (content: ArrayBuffer) => void, onRequestProgress?: () => void, onError?: (e: any) => void): void;
-    /**
-     * 加载图片
-     * @param url   路径
-     */
-    function loadImage(url: string, onCompleted?: (content: HTMLImageElement) => void, onRequestProgress?: () => void, onError?: (e: any) => void): void;
+        loadImage(url: string, onCompleted?: (content: HTMLImageElement) => void, onRequestProgress?: () => void, onError?: (e: any) => void): void;
+    }
 }
 declare namespace feng3d {
 }
@@ -12140,12 +12131,17 @@ declare namespace feng3d {
     function parser(context: string): OBJ_OBJData;
 }
 declare namespace feng3d {
+    var mtlParser: MTLParser;
     /**
      * Obj模型Mtl解析器
      */
-    var MtlParser: {
-        parser: typeof parser;
-    };
+    class MTLParser {
+        /**
+         * 解析
+         * @param context
+         */
+        parser(context: string): Mtl_Mtl;
+    }
     type Mtl_Material = {
         name: string;
         ka: number[];
@@ -12163,7 +12159,6 @@ declare namespace feng3d {
     type Mtl_Mtl = {
         [name: string]: Mtl_Material;
     };
-    function parser(context: string): Mtl_Mtl;
 }
 declare namespace feng3d {
     /**
@@ -12579,21 +12574,19 @@ declare namespace feng3d.war3 {
 declare namespace feng3d {
     /**
      * Obj模型加载类
-
      */
-    var ObjLoader: {
-        /**
-         * 加载Obj模型
-         */
-        load: typeof load;
-        parse: typeof parse;
-    };
+    var objLoader: ObjLoader;
     /**
-     * 加载资源
-     * @param url   路径
+     * Obj模型加载类
      */
-    function load(url: string, completed?: (gameObject: GameObject) => void): void;
-    function parse(content: string, completed?: (gameObject: GameObject) => void): void;
+    class ObjLoader {
+        /**
+         * 加载资源
+         * @param url   路径
+         */
+        load(url: string, completed?: (gameObject: GameObject) => void): void;
+        parse(content: string, completed?: (gameObject: GameObject) => void): void;
+    }
 }
 declare namespace feng3d {
     /**

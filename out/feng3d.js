@@ -4452,7 +4452,7 @@ var feng3d;
          */
         HttpFS.prototype.readFile = function (path, callback) {
             // rootPath
-            feng3d.Loader.loadBinary(path, function (content) {
+            feng3d.loader.loadBinary(path, function (content) {
                 callback(null, content);
             }, null, function (e) {
                 callback(e, null);
@@ -11327,56 +11327,48 @@ var feng3d;
 (function (feng3d) {
     /**
      * 加载类
-
      */
-    feng3d.Loader = {
+    var Loader = /** @class */ (function () {
+        function Loader() {
+        }
         /**
          * 加载文本
+         * @param url   路径
          */
-        loadText: loadText,
+        Loader.prototype.loadText = function (url, onCompleted, onRequestProgress, onError) {
+            xmlHttpRequestLoad({ url: url, dataFormat: feng3d.LoaderDataFormat.TEXT, onCompleted: onCompleted, onProgress: onRequestProgress, onError: onError });
+        };
         /**
          * 加载二进制
+         * @param url   路径
          */
-        loadBinary: loadBinary,
+        Loader.prototype.loadBinary = function (url, onCompleted, onRequestProgress, onError) {
+            xmlHttpRequestLoad({ url: url, dataFormat: feng3d.LoaderDataFormat.BINARY, onCompleted: onCompleted, onProgress: onRequestProgress, onError: onError });
+        };
         /**
          * 加载图片
+         * @param url   路径
          */
-        loadImage: loadImage,
-    };
-    /**
-     * 加载文本
-     * @param url   路径
-     */
-    function loadText(url, onCompleted, onRequestProgress, onError) {
-        xmlHttpRequestLoad({ url: url, dataFormat: feng3d.LoaderDataFormat.TEXT, onCompleted: onCompleted, onProgress: onRequestProgress, onError: onError });
-    }
-    /**
-     * 加载二进制
-     * @param url   路径
-     */
-    function loadBinary(url, onCompleted, onRequestProgress, onError) {
-        xmlHttpRequestLoad({ url: url, dataFormat: feng3d.LoaderDataFormat.BINARY, onCompleted: onCompleted, onProgress: onRequestProgress, onError: onError });
-    }
-    /**
-     * 加载图片
-     * @param url   路径
-     */
-    function loadImage(url, onCompleted, onRequestProgress, onError) {
-        var image = new Image();
-        image.crossOrigin = "Anonymous";
-        image.onload = function (event) {
-            onCompleted && onCompleted(image);
+        Loader.prototype.loadImage = function (url, onCompleted, onRequestProgress, onError) {
+            var image = new Image();
+            image.crossOrigin = "Anonymous";
+            image.onload = function (event) {
+                onCompleted && onCompleted(image);
+            };
+            image.onerror = function (event) {
+                feng3d.debuger && feng3d.error("Error while trying to load texture: " + url);
+                //
+                image.src = "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
+                //
+                var err = new Error(url + " 加载失败！");
+                onError && onError(err);
+            };
+            image.src = url;
         };
-        image.onerror = function (event) {
-            feng3d.debuger && feng3d.error("Error while trying to load texture: " + url);
-            //
-            image.src = "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
-            //
-            var err = new Error(url + " 加载失败！");
-            onError && onError(err);
-        };
-        image.src = url;
-    }
+        return Loader;
+    }());
+    feng3d.Loader = Loader;
+    feng3d.loader = new Loader();
     /**
      * 使用XMLHttpRequest加载
      * @param url           加载路径
@@ -24362,18 +24354,26 @@ var feng3d;
     /**
      * Obj模型Mtl解析器
      */
-    feng3d.MtlParser = {
-        parser: parser
-    };
-    function parser(context) {
-        var mtl = {};
-        var lines = context.split("\n");
-        for (var i = 0; i < lines.length; i++) {
-            var element = lines[i];
-            parserLine(lines[i], mtl);
+    var MTLParser = /** @class */ (function () {
+        function MTLParser() {
         }
-        return mtl;
-    }
+        /**
+         * 解析
+         * @param context
+         */
+        MTLParser.prototype.parser = function (context) {
+            var mtl = {};
+            var lines = context.split("\n");
+            for (var i = 0; i < lines.length; i++) {
+                var element = lines[i];
+                parserLine(lines[i], mtl);
+            }
+            return mtl;
+        };
+        return MTLParser;
+    }());
+    feng3d.MTLParser = MTLParser;
+    feng3d.mtlParser = new MTLParser();
     var newmtlReg = /newmtl\s+([\w.]+)/;
     var kaReg = /Ka\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/;
     var kdReg = /Kd\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/;
@@ -26574,41 +26574,40 @@ var feng3d;
 (function (feng3d) {
     /**
      * Obj模型加载类
-
      */
-    feng3d.ObjLoader = {
+    var ObjLoader = /** @class */ (function () {
+        function ObjLoader() {
+        }
         /**
-         * 加载Obj模型
+         * 加载资源
+         * @param url   路径
          */
-        load: load,
-        parse: parse,
-    };
-    /**
-     * 加载资源
-     * @param url   路径
-     */
-    function load(url, completed) {
-        feng3d.Loader.loadText(url, function (content) {
+        ObjLoader.prototype.load = function (url, completed) {
+            feng3d.assets.readFileAsString(url, function (err, content) {
+                var material = new feng3d.StandardMaterial();
+                var objData = feng3d.OBJParser.parser(content);
+                var mtl = objData.mtl;
+                if (mtl) {
+                    var mtlRoot = url.substring(0, url.lastIndexOf("/") + 1);
+                    feng3d.assets.readFileAsString(mtlRoot + mtl, function (err, content) {
+                        var mtlData = feng3d.mtlParser.parser(content);
+                        createObj(objData, material, mtlData, completed);
+                    });
+                }
+                else {
+                    createObj(objData, material, null, completed);
+                }
+            });
+        };
+        ObjLoader.prototype.parse = function (content, completed) {
             var material = new feng3d.StandardMaterial();
             var objData = feng3d.OBJParser.parser(content);
-            var mtl = objData.mtl;
-            if (mtl) {
-                var mtlRoot = url.substring(0, url.lastIndexOf("/") + 1);
-                feng3d.Loader.loadText(mtlRoot + mtl, function (content) {
-                    var mtlData = feng3d.MtlParser.parser(content);
-                    createObj(objData, material, mtlData, completed);
-                });
-            }
-            else {
-                createObj(objData, material, null, completed);
-            }
-        });
-    }
-    function parse(content, completed) {
-        var material = new feng3d.StandardMaterial();
-        var objData = feng3d.OBJParser.parser(content);
-        createObj(objData, material, null, completed);
-    }
+            createObj(objData, material, null, completed);
+        };
+        return ObjLoader;
+    }());
+    feng3d.ObjLoader = ObjLoader;
+    feng3d.objLoader = new ObjLoader();
     function createObj(objData, material, mtlData, completed) {
         var object = new feng3d.GameObject();
         var objs = objData.objs;
@@ -26659,8 +26658,6 @@ var feng3d;
         if (uvs.length > 0)
             geometry.setVAData("a_uv", uvs, 2);
         if (mtlData && subObj.material && mtlData[subObj.material]) {
-            var materialInfo = mtlData[subObj.material];
-            var kd = materialInfo.kd;
             var standardMaterial = new feng3d.StandardMaterial();
             var materialInfo = mtlData[subObj.material];
             var kd = materialInfo.kd;
@@ -26721,14 +26718,14 @@ var feng3d;
          */
         MD5Loader.prototype.load = function (url, completed) {
             var _this = this;
-            feng3d.Loader.loadText(url, function (content) {
+            feng3d.loader.loadText(url, function (content) {
                 var objData = feng3d.MD5MeshParser.parse(content);
                 _this.createMD5Mesh(objData, completed);
             });
         };
         MD5Loader.prototype.loadAnim = function (url, completed) {
             var _this = this;
-            feng3d.Loader.loadText(url, function (content) {
+            feng3d.loader.loadText(url, function (content) {
                 var objData = feng3d.MD5AnimParser.parse(content);
                 _this.createAnimator(objData, completed);
             });
@@ -27013,7 +27010,7 @@ var feng3d;
         function MDLLoader() {
         }
         MDLLoader.prototype.load = function (mdlurl, callback) {
-            feng3d.Loader.loadText(mdlurl, function (content) {
+            feng3d.loader.loadText(mdlurl, function (content) {
                 feng3d.war3.MdlParser.parse(content, function (war3Model) {
                     war3Model.root = mdlurl.substring(0, mdlurl.lastIndexOf("/") + 1);
                     var showMesh = war3Model.getMesh();
