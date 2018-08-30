@@ -1,5 +1,8 @@
 namespace feng3d
 {
+	/**
+	 * OBJ模型MTL材质解析器
+	 */
     export var mtlParser: MTLParser;
 
 	/**

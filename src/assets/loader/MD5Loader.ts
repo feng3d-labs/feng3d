@@ -19,7 +19,7 @@ namespace feng3d
         {
             loader.loadText(url, (content) =>
             {
-                var objData = MD5MeshParser.parse(content);
+                var objData = md5MeshParser.parse(content);
                 this.createMD5Mesh(objData, completed);
             });
         }
@@ -28,20 +28,20 @@ namespace feng3d
         {
             loader.loadText(url, (content) =>
             {
-                var objData = MD5AnimParser.parse(content);
+                var objData = md5AnimParser.parse(content);
                 this.createAnimator(objData, completed);
             });
         }
 
         parseMD5Mesh(content: string, completed?: (gameObject: GameObject) => void)
         {
-            var objData = MD5MeshParser.parse(content);
+            var objData = md5MeshParser.parse(content);
             this.createMD5Mesh(objData, completed);
         }
 
         parseMD5Anim(content: string, completed?: (animationClip: AnimationClip) => void)
         {
-            var objData = MD5AnimParser.parse(content);
+            var objData = md5AnimParser.parse(content);
             this.createAnimator(objData, completed);
         }
 

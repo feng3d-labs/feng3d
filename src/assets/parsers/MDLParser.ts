@@ -1,11 +1,27 @@
 namespace feng3d.war3
 {
 	/**
-	 * war3的mdl文件解析
+	 * war3的mdl文件解析器
 	 */
-	export var MdlParser = {
-		parse: parse
-	};
+	export var mdlParser: MDLParser;
+
+	/**
+	 * war3的mdl文件解析器
+	 */
+	export class MDLParser
+	{
+		/**
+		 * 解析war3的mdl文件
+		 * @param data MDL模型数据
+		 * @param completed 完成回调
+		 */
+		parse(data: string, completed?: (war3Model: War3Model) => void): void
+		{
+			parse(data, completed);
+		}
+	}
+
+	mdlParser = new MDLParser();
 
 	var VERSION_TOKEN: string = "Version";
 	var COMMENT_TOKEN: string = "//";

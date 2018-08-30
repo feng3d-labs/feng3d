@@ -20,7 +20,7 @@ namespace feng3d
 
             assets.readFileAsString(url, (err, content) =>
             {
-                var objData = OBJParser.parser(content);
+                var objData = objParser.parser(content);
                 var mtl = objData.mtl;
                 if (mtl)
                 {
@@ -33,13 +33,6 @@ namespace feng3d
                     createObj(objData, null, completed);
                 }
             });
-        }
-
-        parse(content: string, completed?: (gameObject: GameObject) => void)
-        {
-            var material = new StandardMaterial();
-            var objData = OBJParser.parser(content);
-            createObj(objData, null, completed);
         }
     }
 

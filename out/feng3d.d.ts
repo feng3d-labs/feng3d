@@ -12064,12 +12064,19 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * Obj模型解析器
-
+     * OBJ模型解析器
      */
-    var OBJParser: {
-        parser: typeof parser;
-    };
+    var objParser: OBJParser;
+    /**
+     * OBJ模型解析器
+     */
+    class OBJParser {
+        /**
+         * 解析
+         * @param context
+         */
+        parser(context: string): OBJ_OBJData;
+    }
     /**
      * 面数据
      */
@@ -12129,9 +12136,11 @@ declare namespace feng3d {
         /** 模型列表 */
         objs: OBJ_OBJ[];
     };
-    function parser(context: string): OBJ_OBJData;
 }
 declare namespace feng3d {
+    /**
+     * OBJ模型MTL材质解析器
+     */
     var mtlParser: MTLParser;
     /**
      * OBJ模型MTL材质解析器
@@ -12163,11 +12172,19 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * MD5模型解析
+     * MD5模型解析器
      */
-    var MD5MeshParser: {
-        parse: typeof parse;
-    };
+    var md5MeshParser: MD5MeshParser;
+    /**
+     * MD5模型解析器
+     */
+    class MD5MeshParser {
+        /**
+         * 解析
+         * @param context
+         */
+        parse(context: string): MD5MeshData;
+    }
     /**
      * 关节权重数据
      */
@@ -12217,12 +12234,22 @@ declare namespace feng3d {
         joints: MD5_Joint[];
         meshs: MD5_Mesh[];
     };
-    function parse(context: string): MD5MeshData;
 }
 declare namespace feng3d {
-    var MD5AnimParser: {
-        parse: typeof parse;
-    };
+    /**
+     * MD5动画解析器
+     */
+    var md5AnimParser: MD5AnimParser;
+    /**
+     * MD5动画解析器
+     */
+    class MD5AnimParser {
+        /**
+         * 解析
+         * @param context
+         */
+        parse(context: string): MD5AnimData;
+    }
     /**
      * 帧数据
      */
@@ -12273,7 +12300,6 @@ declare namespace feng3d {
         baseframe: MD5_BaseFrame[];
         frame: MD5_Frame[];
     };
-    function parse(context: string): MD5AnimData;
 }
 declare namespace feng3d.war3 {
     /**
@@ -12565,12 +12591,20 @@ declare namespace feng3d.war3 {
 }
 declare namespace feng3d.war3 {
     /**
-     * war3的mdl文件解析
+     * war3的mdl文件解析器
      */
-    var MdlParser: {
-        parse: typeof parse;
-    };
-    function parse(data: string, onParseComplete?: (war3Model: War3Model) => void): void;
+    var mdlParser: MDLParser;
+    /**
+     * war3的mdl文件解析器
+     */
+    class MDLParser {
+        /**
+         * 解析war3的mdl文件
+         * @param data MDL模型数据
+         * @param completed 完成回调
+         */
+        parse(data: string, completed?: (war3Model: War3Model) => void): void;
+    }
 }
 declare namespace feng3d {
     /**
@@ -12602,9 +12636,9 @@ declare namespace feng3d {
         /**
          * 加载MTL材质
          * @param path MTL材质文件路径
-         * @param callback 加载完成回调
+         * @param completed 加载完成回调
          */
-        load(path: string, callback: (err: Error, materials: {
+        load(path: string, completed: (err: Error, materials: {
             [name: string]: Material;
         }) => void): void;
     }
@@ -12623,7 +12657,6 @@ declare namespace feng3d {
          * @param url   路径
          */
         load(url: string, completed?: (gameObject: GameObject) => void): void;
-        parse(content: string, completed?: (gameObject: GameObject) => void): void;
     }
 }
 declare namespace feng3d {

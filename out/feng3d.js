@@ -24233,21 +24233,28 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * Obj模型解析器
-
+     * OBJ模型解析器
      */
-    feng3d.OBJParser = {
-        parser: parser
-    };
-    function parser(context) {
-        var objData = { mtl: null, objs: [], vertex: [], vn: [], vt: [] };
-        var lines = context.split("\n").reverse();
-        do {
-            var line = lines.pop();
-            line && parserLine(line, objData);
-        } while (lines.length > 0);
-        return objData;
-    }
+    var OBJParser = /** @class */ (function () {
+        function OBJParser() {
+        }
+        /**
+         * 解析
+         * @param context
+         */
+        OBJParser.prototype.parser = function (context) {
+            var objData = { mtl: null, objs: [], vertex: [], vn: [], vt: [] };
+            var lines = context.split("\n").reverse();
+            do {
+                var line = lines.pop();
+                line && parserLine(line, objData);
+            } while (lines.length > 0);
+            return objData;
+        };
+        return OBJParser;
+    }());
+    feng3d.OBJParser = OBJParser;
+    feng3d.objParser = new OBJParser();
     /** mtl正则 */
     var mtlReg = /mtllib\s+([\w\s]+\.mtl)/;
     /** 对象名称正则 */
@@ -24441,20 +24448,28 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * MD5模型解析
+     * MD5模型解析器
      */
-    feng3d.MD5MeshParser = {
-        parse: parse
-    };
-    function parse(context) {
-        //
-        var md5MeshData = {};
-        var lines = context.split("\n");
-        for (var i = 0; i < lines.length; i++) {
-            parserLine(lines[i], md5MeshData);
+    var MD5MeshParser = /** @class */ (function () {
+        function MD5MeshParser() {
         }
-        return md5MeshData;
-    }
+        /**
+         * 解析
+         * @param context
+         */
+        MD5MeshParser.prototype.parse = function (context) {
+            //
+            var md5MeshData = {};
+            var lines = context.split("\n");
+            for (var i = 0; i < lines.length; i++) {
+                parserLine(lines[i], md5MeshData);
+            }
+            return md5MeshData;
+        };
+        return MD5MeshParser;
+    }());
+    feng3d.MD5MeshParser = MD5MeshParser;
+    feng3d.md5MeshParser = new MD5MeshParser();
     var MD5VersionReg = /MD5Version\s+(\d+)/;
     var commandlineReg = /commandline\s+"([\w\s/.-]+)"/;
     var numJointsReg = /numJoints\s+(\d+)/;
@@ -24569,18 +24584,29 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    feng3d.MD5AnimParser = {
-        parse: parse
-    };
-    function parse(context) {
-        var md5AnimData = {};
-        var lines = context.split("\n").reverse();
-        do {
-            var line = lines.pop();
-            line && parserLine(line, md5AnimData);
-        } while (line);
-        return md5AnimData;
-    }
+    /**
+     * MD5动画解析器
+     */
+    var MD5AnimParser = /** @class */ (function () {
+        function MD5AnimParser() {
+        }
+        /**
+         * 解析
+         * @param context
+         */
+        MD5AnimParser.prototype.parse = function (context) {
+            var md5AnimData = {};
+            var lines = context.split("\n").reverse();
+            do {
+                var line = lines.pop();
+                line && parserLine(line, md5AnimData);
+            } while (line);
+            return md5AnimData;
+        };
+        return MD5AnimParser;
+    }());
+    feng3d.MD5AnimParser = MD5AnimParser;
+    feng3d.md5AnimParser = new MD5AnimParser();
     var MD5VersionReg = /MD5Version\s+(\d+)/;
     var commandlineReg = /commandline\s+"([\w\s/.-]+)"/;
     var numFramesReg = /numFrames\s+(\d+)/;
@@ -25358,11 +25384,23 @@ var feng3d;
     var war3;
     (function (war3) {
         /**
-         * war3的mdl文件解析
+         * war3的mdl文件解析器
          */
-        war3.MdlParser = {
-            parse: parse
-        };
+        var MDLParser = /** @class */ (function () {
+            function MDLParser() {
+            }
+            /**
+             * 解析war3的mdl文件
+             * @param data MDL模型数据
+             * @param completed 完成回调
+             */
+            MDLParser.prototype.parse = function (data, completed) {
+                parse(data, completed);
+            };
+            return MDLParser;
+        }());
+        war3.MDLParser = MDLParser;
+        war3.mdlParser = new MDLParser();
         var VERSION_TOKEN = "Version";
         var COMMENT_TOKEN = "//";
         var MODEL = "Model";
@@ -26613,17 +26651,17 @@ var feng3d;
         /**
          * 加载MTL材质
          * @param path MTL材质文件路径
-         * @param callback 加载完成回调
+         * @param completed 加载完成回调
          */
-        MTLLoader.prototype.load = function (path, callback) {
+        MTLLoader.prototype.load = function (path, completed) {
             feng3d.assets.readFileAsString(path, function (err, content) {
                 if (err) {
-                    callback(err, null);
+                    completed(err, null);
                     return;
                 }
                 var mtlData = feng3d.mtlParser.parser(content);
                 var materials = feng3d.mtlConverter.convert(mtlData);
-                callback(null, materials);
+                completed(null, materials);
             });
         };
         return MTLLoader;
@@ -26646,7 +26684,7 @@ var feng3d;
         ObjLoader.prototype.load = function (url, completed) {
             var root = url.substring(0, url.lastIndexOf("/") + 1);
             feng3d.assets.readFileAsString(url, function (err, content) {
-                var objData = feng3d.OBJParser.parser(content);
+                var objData = feng3d.objParser.parser(content);
                 var mtl = objData.mtl;
                 if (mtl) {
                     feng3d.mtlLoader.load(root + mtl, function (err, materials) {
@@ -26657,11 +26695,6 @@ var feng3d;
                     createObj(objData, null, completed);
                 }
             });
-        };
-        ObjLoader.prototype.parse = function (content, completed) {
-            var material = new feng3d.StandardMaterial();
-            var objData = feng3d.OBJParser.parser(content);
-            createObj(objData, null, completed);
         };
         return ObjLoader;
     }());
@@ -26771,23 +26804,23 @@ var feng3d;
         MD5Loader.prototype.load = function (url, completed) {
             var _this = this;
             feng3d.loader.loadText(url, function (content) {
-                var objData = feng3d.MD5MeshParser.parse(content);
+                var objData = feng3d.md5MeshParser.parse(content);
                 _this.createMD5Mesh(objData, completed);
             });
         };
         MD5Loader.prototype.loadAnim = function (url, completed) {
             var _this = this;
             feng3d.loader.loadText(url, function (content) {
-                var objData = feng3d.MD5AnimParser.parse(content);
+                var objData = feng3d.md5AnimParser.parse(content);
                 _this.createAnimator(objData, completed);
             });
         };
         MD5Loader.prototype.parseMD5Mesh = function (content, completed) {
-            var objData = feng3d.MD5MeshParser.parse(content);
+            var objData = feng3d.md5MeshParser.parse(content);
             this.createMD5Mesh(objData, completed);
         };
         MD5Loader.prototype.parseMD5Anim = function (content, completed) {
-            var objData = feng3d.MD5AnimParser.parse(content);
+            var objData = feng3d.md5AnimParser.parse(content);
             this.createAnimator(objData, completed);
         };
         MD5Loader.prototype.createMD5Mesh = function (md5MeshData, completed) {
@@ -27063,7 +27096,7 @@ var feng3d;
         }
         MDLLoader.prototype.load = function (mdlurl, callback) {
             feng3d.loader.loadText(mdlurl, function (content) {
-                feng3d.war3.MdlParser.parse(content, function (war3Model) {
+                feng3d.war3.mdlParser.parse(content, function (war3Model) {
                     war3Model.root = mdlurl.substring(0, mdlurl.lastIndexOf("/") + 1);
                     var showMesh = war3Model.getMesh();
                     callback(showMesh);

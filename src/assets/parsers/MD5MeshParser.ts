@@ -1,12 +1,32 @@
 namespace feng3d
 {
+    /**
+     * MD5模型解析器
+     */
+    export var md5MeshParser: MD5MeshParser;
 
     /**
-     * MD5模型解析
+     * MD5模型解析器
      */
-    export var MD5MeshParser = {
-        parse: parse
+    export class MD5MeshParser
+    {
+        /**
+         * 解析
+         * @param context 
+         */
+        parse(context: string)
+        {
+            //
+            var md5MeshData = <MD5MeshData>{};
+            var lines = context.split("\n");
+            for (var i = 0; i < lines.length; i++)
+            {
+                parserLine(lines[i], md5MeshData);
+            }
+            return md5MeshData;
+        }
     }
+    md5MeshParser = new MD5MeshParser();
 
     /**
      * 关节权重数据
@@ -60,18 +80,6 @@ namespace feng3d
         numMeshes: number;
         joints: MD5_Joint[];
         meshs: MD5_Mesh[];
-    }
-
-    function parse(context: string)
-    {
-        //
-        var md5MeshData = <MD5MeshData>{};
-        var lines = context.split("\n");
-        for (var i = 0; i < lines.length; i++)
-        {
-            parserLine(lines[i], md5MeshData);
-        }
-        return md5MeshData;
     }
 
     var MD5VersionReg = /MD5Version\s+(\d+)/;

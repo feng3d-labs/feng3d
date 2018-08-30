@@ -1,8 +1,32 @@
 namespace feng3d
 {
-    export var MD5AnimParser = {
-        parse: parse
+    /**
+     * MD5动画解析器
+     */
+    export var md5AnimParser: MD5AnimParser;
+
+    /**
+     * MD5动画解析器
+     */
+    export class MD5AnimParser
+    {
+        /**
+         * 解析
+         * @param context 
+         */
+        parse(context: string)
+        {
+            var md5AnimData = <MD5AnimData>{};
+            var lines = context.split("\n").reverse();
+            do
+            {
+                var line = lines.pop();
+                line && parserLine(line, md5AnimData);
+            } while (line);
+            return md5AnimData;
+        }
     }
+    md5AnimParser = new MD5AnimParser();
 
     /**
      * 帧数据
@@ -57,18 +81,6 @@ namespace feng3d
         bounds: MD5_Bounds[];
         baseframe: MD5_BaseFrame[];
         frame: MD5_Frame[];
-    }
-
-    function parse(context: string)
-    {
-        var md5AnimData = <MD5AnimData>{};
-        var lines = context.split("\n").reverse();
-        do
-        {
-            var line = lines.pop();
-            line && parserLine(line, md5AnimData);
-        } while (line);
-        return md5AnimData;
     }
 
     var MD5VersionReg = /MD5Version\s+(\d+)/;

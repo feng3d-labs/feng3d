@@ -8,7 +8,7 @@ namespace feng3d
         {
             loader.loadText(mdlurl, (content) =>
             {
-                war3.MdlParser.parse(content, (war3Model) =>
+                war3.mdlParser.parse(content, (war3Model) =>
                 {
                     war3Model.root = mdlurl.substring(0, mdlurl.lastIndexOf("/") + 1);
 
