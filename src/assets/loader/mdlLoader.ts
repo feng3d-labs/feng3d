@@ -17,13 +17,14 @@ namespace feng3d
          */
         load(mdlurl: string, callback: (gameObject: GameObject) => void)
         {
-            loader.loadText(mdlurl, (content) =>
+            assets.readFileAsString(mdlurl, (err, content) =>
             {
                 war3.mdlParser.parse(content, (war3Model) =>
                 {
                     war3Model.root = mdlurl.substring(0, mdlurl.lastIndexOf("/") + 1);
 
                     var showMesh = war3Model.getMesh();
+                    showMesh.name = feng3d.pathUtils.getName(mdlurl);
 
                     callback(showMesh);
                 });

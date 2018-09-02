@@ -27170,10 +27170,11 @@ var feng3d;
          * @param callback 加载完成回调
          */
         MDLLoader.prototype.load = function (mdlurl, callback) {
-            feng3d.loader.loadText(mdlurl, function (content) {
+            feng3d.assets.readFileAsString(mdlurl, function (err, content) {
                 feng3d.war3.mdlParser.parse(content, function (war3Model) {
                     war3Model.root = mdlurl.substring(0, mdlurl.lastIndexOf("/") + 1);
                     var showMesh = war3Model.getMesh();
+                    showMesh.name = feng3d.pathUtils.getName(mdlurl);
                     callback(showMesh);
                 });
             });
