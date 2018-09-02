@@ -4888,6 +4888,22 @@ var feng3d;
          * json文件
          */
         AssetExtension["json"] = "json";
+        /**
+         * OBJ模型资源附带的材质文件
+         */
+        AssetExtension["mtl"] = "mtl";
+        /**
+         * OBJ模型文件
+         */
+        AssetExtension["obj"] = "obj";
+        /**
+         * MD5模型文件
+         */
+        AssetExtension["md5mesh"] = "md5mesh";
+        /**
+         * MD5动画文件
+         */
+        AssetExtension["md5anim"] = "md5anim";
         // -- feng3d中的类型
         /**
          * 纹理

@@ -2405,6 +2405,22 @@ declare namespace feng3d {
          */
         json = "json",
         /**
+         * OBJ模型资源附带的材质文件
+         */
+        mtl = "mtl",
+        /**
+         * OBJ模型文件
+         */
+        obj = "obj",
+        /**
+         * MD5模型文件
+         */
+        md5mesh = "md5mesh",
+        /**
+         * MD5动画文件
+         */
+        md5anim = "md5anim",
+        /**
          * 纹理
          */
         texture2d = "texture2d.json",
