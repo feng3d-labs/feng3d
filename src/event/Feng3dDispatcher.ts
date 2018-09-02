@@ -19,6 +19,10 @@ namespace feng3d
          * 图片资源发生变化
          */
         "assets.imageAssetsChanged": { url: string }
+        /**
+         * 解析出资源
+         */
+        "assets.parsed"
     }
 
     export interface Feng3dDispatcher

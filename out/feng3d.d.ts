@@ -993,6 +993,10 @@ declare namespace feng3d {
         "assets.imageAssetsChanged": {
             url: string;
         };
+        /**
+         * 解析出资源
+         */
+        "assets.parsed": any;
     }
     interface Feng3dDispatcher {
         once<K extends keyof Feng3dEventMap>(type: K, listener: (event: Event<Feng3dEventMap[K]>) => void, thisObject?: any, priority?: number): void;
@@ -12135,6 +12139,10 @@ declare namespace feng3d {
      * Obj模型数据
      */
     type OBJ_OBJData = {
+        /**
+         * 模型名称
+         */
+        name?: string;
         /** mtl文件路径 */
         mtl: string | null;
         /** 顶点坐标 */
@@ -12641,9 +12649,9 @@ declare namespace feng3d {
          * OBJ模型MTL材质原始数据转换引擎中材质对象
          * @param mtl MTL材质原始数据
          */
-        convert(mtl: Mtl_Mtl): {
+        convert(mtl: Mtl_Mtl, completed?: (err: Error, materials: {
             [name: string]: Material;
-        };
+        }) => void): void;
     }
 }
 declare namespace feng3d {
@@ -12663,7 +12671,7 @@ declare namespace feng3d {
          */
         convert(objData: OBJ_OBJData, materials: {
             [name: string]: Material;
-        }, completed: (gameObject: GameObject) => void): any;
+        }, completed: (gameObject: GameObject) => void): void;
     }
 }
 declare namespace feng3d {
@@ -12728,7 +12736,7 @@ declare namespace feng3d {
          * @param path MTL材质文件路径
          * @param completed 加载完成回调
          */
-        load(path: string, completed: (err: Error, materials: {
+        load(path: string, completed?: (err: Error, materials: {
             [name: string]: Material;
         }) => void): void;
     }

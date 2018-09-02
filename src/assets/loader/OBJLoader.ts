@@ -21,6 +21,7 @@ namespace feng3d
             assets.readFileAsString(url, (err, content) =>
             {
                 var objData = objParser.parser(content);
+                objData.name = feng3d.pathUtils.getName(url);
                 var mtl = objData.mtl;
                 if (mtl)
                 {

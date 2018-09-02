@@ -14,13 +14,13 @@ namespace feng3d
          * OBJ模型MTL材质原始数据转换引擎中材质对象
          * @param mtl MTL材质原始数据
          */
-        convert(mtl: Mtl_Mtl)
+        convert(mtl: Mtl_Mtl, completed?: (err: Error, materials: { [name: string]: Material; }) => void)
         {
             var materials: { [name: string]: Material } = {};
             for (const name in mtl)
             {
                 var materialInfo = mtl[name];
-                materials[name] = new StandardMaterial().value({
+                var material = materials[name] = new StandardMaterial().value({
                     name: materialInfo.name,
                     uniforms: {
                         u_diffuse: { r: materialInfo.kd[0], g: materialInfo.kd[1], b: materialInfo.kd[2], },
@@ -28,8 +28,9 @@ namespace feng3d
                     },
                     renderParams: { cullFace: CullFace.FRONT },
                 });
+                feng3dDispatcher.dispatch("assets.parsed", material);
             }
-            return materials;
+            completed && completed(null, materials);
         }
     }
     mtlConverter = new MTLConverter();

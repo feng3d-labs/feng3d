@@ -16,9 +16,10 @@ namespace feng3d
          * @param materials 材质列表
          * @param completed 转换完成回调
          */
-        convert(objData: OBJ_OBJData, materials: { [name: string]: Material; }, completed: (gameObject: GameObject) => void): any
+        convert(objData: OBJ_OBJData, materials: { [name: string]: Material; }, completed: (gameObject: GameObject) => void)
         {
             var object = new GameObject();
+            object.name = objData.name;
             var objs = objData.objs;
             for (var i = 0; i < objs.length; i++)
             {
@@ -26,6 +27,9 @@ namespace feng3d
                 var gameObject = createSubObj(objData, obj, materials);
                 object.addChild(gameObject);
             }
+
+            feng3dDispatcher.dispatch("assets.parsed", object);
+
             completed && completed(object);
         }
     }

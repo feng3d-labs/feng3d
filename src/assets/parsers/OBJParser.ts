@@ -69,6 +69,10 @@ namespace feng3d
      * Obj模型数据
      */
     export type OBJ_OBJData = {
+        /** 
+         * 模型名称
+         */
+        name?: string;
         /** mtl文件路径 */
         mtl: string | null;
         /** 顶点坐标 */

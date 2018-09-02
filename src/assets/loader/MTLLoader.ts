@@ -15,7 +15,7 @@ namespace feng3d
          * @param path MTL材质文件路径
          * @param completed 加载完成回调
          */
-        load(path: string, completed: (err: Error, materials: { [name: string]: Material; }) => void)
+        load(path: string, completed?: (err: Error, materials: { [name: string]: Material; }) => void)
         {
             assets.readFileAsString(path, (err, content) =>
             {
@@ -25,8 +25,7 @@ namespace feng3d
                     return;
                 }
                 var mtlData = mtlParser.parser(content);
-                var materials = mtlConverter.convert(mtlData);
-                completed(null, materials);
+                mtlConverter.convert(mtlData, completed);
             });
         }
     }

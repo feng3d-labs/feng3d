@@ -26652,11 +26652,11 @@ var feng3d;
          * OBJ模型MTL材质原始数据转换引擎中材质对象
          * @param mtl MTL材质原始数据
          */
-        MTLConverter.prototype.convert = function (mtl) {
+        MTLConverter.prototype.convert = function (mtl, completed) {
             var materials = {};
             for (var name_5 in mtl) {
                 var materialInfo = mtl[name_5];
-                materials[name_5] = new feng3d.StandardMaterial().value({
+                var material = materials[name_5] = new feng3d.StandardMaterial().value({
                     name: materialInfo.name,
                     uniforms: {
                         u_diffuse: { r: materialInfo.kd[0], g: materialInfo.kd[1], b: materialInfo.kd[2], },
@@ -26664,8 +26664,9 @@ var feng3d;
                     },
                     renderParams: { cullFace: feng3d.CullFace.FRONT },
                 });
+                feng3d.feng3dDispatcher.dispatch("assets.parsed", material);
             }
-            return materials;
+            completed && completed(null, materials);
         };
         return MTLConverter;
     }());
@@ -26688,12 +26689,14 @@ var feng3d;
          */
         OBJConverter.prototype.convert = function (objData, materials, completed) {
             var object = new feng3d.GameObject();
+            object.name = objData.name;
             var objs = objData.objs;
             for (var i = 0; i < objs.length; i++) {
                 var obj = objs[i];
                 var gameObject = createSubObj(objData, obj, materials);
                 object.addChild(gameObject);
             }
+            feng3d.feng3dDispatcher.dispatch("assets.parsed", object);
             completed && completed(object);
         };
         return OBJConverter;
@@ -27096,8 +27099,7 @@ var feng3d;
                     return;
                 }
                 var mtlData = feng3d.mtlParser.parser(content);
-                var materials = feng3d.mtlConverter.convert(mtlData);
-                completed(null, materials);
+                feng3d.mtlConverter.convert(mtlData, completed);
             });
         };
         return MTLLoader;
@@ -27121,6 +27123,7 @@ var feng3d;
             var root = url.substring(0, url.lastIndexOf("/") + 1);
             feng3d.assets.readFileAsString(url, function (err, content) {
                 var objData = feng3d.objParser.parser(content);
+                objData.name = feng3d.pathUtils.getName(url);
                 var mtl = objData.mtl;
                 if (mtl) {
                     feng3d.mtlLoader.load(root + mtl, function (err, materials) {
