@@ -35,7 +35,7 @@ namespace feng3d
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readFile(path: string, callback: (err: Error, data: ArrayBuffer) => void)
+        readFileAsArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void)
         {
             storage.get(this.DBname, this.projectname, path, (err, data) =>
             {

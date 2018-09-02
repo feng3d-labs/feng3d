@@ -4340,7 +4340,7 @@ var feng3d;
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        IndexedDBfs.prototype.readFile = function (path, callback) {
+        IndexedDBfs.prototype.readFileAsArrayBuffer = function (path, callback) {
             feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
                 callback(err, data);
             });
@@ -4450,7 +4450,7 @@ var feng3d;
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        HttpFS.prototype.readFile = function (path, callback) {
+        HttpFS.prototype.readFileAsArrayBuffer = function (path, callback) {
             // rootPath
             feng3d.loader.loadBinary(path, function (content) {
                 callback(null, content);
@@ -4501,21 +4501,6 @@ var feng3d;
             configurable: true
         });
         /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        ReadAssets.prototype.readFile = function (path, callback) {
-            var readFS = this.fs;
-            if (path.indexOf("http://") != -1
-                || path.indexOf("https://") != -1)
-                readFS = feng3d.httpFS;
-            if (path.indexOf("file:///") != -1
-                || path.indexOf("file:///") != -1)
-                readFS = feng3d.httpFS;
-            readFS.readFile(path, callback);
-        };
-        /**
          * 获取文件绝对路径
          * @param path （相对）路径
          * @param callback 回调函数
@@ -4524,10 +4509,29 @@ var feng3d;
             this.fs.getAbsolutePath(path, callback);
         };
         /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        ReadAssets.prototype.readFileAsArrayBuffer = function (path, callback) {
+            if (path == "" || path == null) {
+                callback(new Error("无效路径!"), null);
+                return;
+            }
+            var readFS = this.fs;
+            if (path.indexOf("http://") != -1
+                || path.indexOf("https://") != -1)
+                readFS = feng3d.httpFS;
+            if (path.indexOf("file:///") != -1
+                || path.indexOf("file:///") != -1)
+                readFS = feng3d.httpFS;
+            readFS.readFileAsArrayBuffer(path, callback);
+        };
+        /**
          * 读取文件为字符串
          */
         ReadAssets.prototype.readFileAsString = function (path, callback) {
-            this.readFile(path, function (err, data) {
+            this.readFileAsArrayBuffer(path, function (err, data) {
                 if (err) {
                     callback(err, null);
                     return;
@@ -4543,17 +4547,29 @@ var feng3d;
          * @param callback 加载完成回调
          */
         ReadAssets.prototype.readFileAsImage = function (path, callback) {
-            if (path == "" || path == null) {
-                callback(new Error("无效路径!"), null);
-                return;
-            }
-            this.readFile(path, function (err, data) {
+            this.readFileAsArrayBuffer(path, function (err, data) {
                 if (err) {
                     callback(err, null);
                     return;
                 }
                 feng3d.dataTransform.arrayBufferToImage(data, function (img) {
                     callback(null, img);
+                });
+            });
+        };
+        /**
+         * 读取文件为Blob
+         * @param path 资源路径
+         * @param callback 读取完成回调
+         */
+        ReadAssets.prototype.readFileAsBlob = function (path, callback) {
+            feng3d.assets.readFileAsArrayBuffer(path, function (err, data) {
+                if (err) {
+                    callback(err, null);
+                    return;
+                }
+                feng3d.dataTransform.arrayBufferToBlob(data, function (blob) {
+                    callback(null, blob);
                 });
             });
         };
@@ -4677,7 +4693,7 @@ var feng3d;
          */
         ReadWriteAssets.prototype.copyFile = function (src, dest, callback) {
             var _this = this;
-            this.readFile(src, function (err, data) {
+            this.readFileAsArrayBuffer(src, function (err, data) {
                 if (err) {
                     callback && callback(err);
                     return;
@@ -22202,7 +22218,7 @@ var feng3d;
             this.stop();
             if (this.url) {
                 var url = this.url;
-                feng3d.assets.readFile(this.url, function (err, data) {
+                feng3d.assets.readFileAsArrayBuffer(this.url, function (err, data) {
                     if (err) {
                         feng3d.warn(err);
                         return;

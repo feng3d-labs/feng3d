@@ -2057,7 +2057,7 @@ declare namespace feng3d {
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readFile(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
+        readFileAsArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
@@ -2122,7 +2122,7 @@ declare namespace feng3d {
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readFile(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
+        readFileAsArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
@@ -2155,17 +2155,17 @@ declare namespace feng3d {
         fs: ReadFS;
         readonly type: FSType;
         /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        readFile(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
-        /**
          * 获取文件绝对路径
          * @param path （相对）路径
          * @param callback 回调函数
          */
         getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readFileAsArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
         /**
          * 读取文件为字符串
          */
@@ -2176,6 +2176,12 @@ declare namespace feng3d {
          * @param callback 加载完成回调
          */
         readFileAsImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
+        /**
+         * 读取文件为Blob
+         * @param path 资源路径
+         * @param callback 读取完成回调
+         */
+        readFileAsBlob(path: string, callback: (err: Error, blob: Blob) => void): void;
     }
     class ReadWriteAssets extends ReadAssets implements ReadWriteFS {
         /**
@@ -2302,7 +2308,7 @@ declare namespace feng3d {
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readFile(path: string, callback: (err: Error, data: ArrayBuffer) => void): any;
+        readFileAsArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): any;
         /**
          * 获取文件绝对路径
          * @param path （相对）路径

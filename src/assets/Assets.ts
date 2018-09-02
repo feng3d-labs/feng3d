@@ -32,26 +32,6 @@ namespace feng3d
         }
 
         /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        readFile(path: string, callback: (err: Error, data: ArrayBuffer) => void)
-        {
-            var readFS = this.fs;
-            if (path.indexOf("http://") != -1
-                || path.indexOf("https://") != -1
-            )
-                readFS = httpFS;
-            if (path.indexOf("file:///") != -1
-                || path.indexOf("file:///") != -1
-            )
-                readFS = httpFS;
-
-            readFS.readFile(path, callback);
-        }
-
-        /**
          * 获取文件绝对路径
          * @param path （相对）路径
          * @param callback 回调函数
@@ -62,11 +42,36 @@ namespace feng3d
         }
 
         /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readFileAsArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void)
+        {
+            if (path == "" || path == null) 
+            {
+                callback(new Error("无效路径!"), null);
+                return;
+            }
+            var readFS = this.fs;
+            if (path.indexOf("http://") != -1
+                || path.indexOf("https://") != -1
+            )
+                readFS = httpFS;
+            if (path.indexOf("file:///") != -1
+                || path.indexOf("file:///") != -1
+            )
+                readFS = httpFS;
+
+            readFS.readFileAsArrayBuffer(path, callback);
+        }
+
+        /**
          * 读取文件为字符串
          */
         readFileAsString(path: string, callback: (err: Error | null, data: string | null) => void): void
         {
-            this.readFile(path, (err, data) =>
+            this.readFileAsArrayBuffer(path, (err, data) =>
             {
                 if (err)
                 {
@@ -87,12 +92,7 @@ namespace feng3d
          */
         readFileAsImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
         {
-            if (path == "" || path == null) 
-            {
-                callback(new Error("无效路径!"), null);
-                return;
-            }
-            this.readFile(path, (err, data) =>
+            this.readFileAsArrayBuffer(path, (err, data) =>
             {
                 if (err)
                 {
@@ -105,6 +105,28 @@ namespace feng3d
                 });
             });
         }
+
+        /**
+         * 读取文件为Blob
+         * @param path 资源路径
+         * @param callback 读取完成回调 
+         */
+        readFileAsBlob(path: string, callback: (err: Error, blob: Blob) => void)
+        {
+            assets.readFileAsArrayBuffer(path, (err, data) =>
+            {
+                if (err)
+                {
+                    callback(err, null);
+                    return;
+                }
+                feng3d.dataTransform.arrayBufferToBlob(data, (blob) =>
+                {
+                    callback(null, blob);
+                });
+            });
+        }
+
     }
 
     assets = new ReadAssets();
@@ -247,7 +269,7 @@ namespace feng3d
          */
         copyFile(src: string, dest: string, callback: (err: Error) => void)
         {
-            this.readFile(src, (err, data) =>
+            this.readFileAsArrayBuffer(src, (err, data) =>
             {
                 if (err)
                 {
@@ -445,7 +467,7 @@ namespace feng3d
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readFile(path: string, callback: (err: Error, data: ArrayBuffer) => void);
+        readFileAsArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void);
 
         /**
          * 获取文件绝对路径
