@@ -54,6 +54,7 @@ namespace feng3d
     function createMaterialObj(obj: OBJ_OBJData, subObj: OBJ_SubOBJ, materials: { [name: string]: Material; })
     {
         var gameObject = new GameObject();
+        gameObject.name = subObj.g;
         var model = gameObject.addComponent(Model);
         if (materials && materials[subObj.material])
             model.material = materials[subObj.material];
@@ -98,18 +99,18 @@ namespace feng3d
             {
                 index = _vertexIndex;
                 _realIndices[face.indexIds[vertexIndex]] = ++_vertexIndex;
-                vertex = obj.vertex[face.vertexIndices[vertexIndex] - 1];
+                vertex = obj.vertex[parseInt(face.vertexIndices[vertexIndex]) - 1];
                 vertices.push(vertex.x, vertex.y, vertex.z);
                 if (face.normalIndices && face.normalIndices.length > 0)
                 {
-                    vertexNormal = obj.vn[face.normalIndices[vertexIndex] - 1];
+                    vertexNormal = obj.vn[parseInt(face.normalIndices[vertexIndex]) - 1];
                     normals.push(vertexNormal.x, vertexNormal.y, vertexNormal.z);
                 }
                 if (face.uvIndices && face.uvIndices.length > 0)
                 {
                     try 
                     {
-                        uv = obj.vt[face.uvIndices[vertexIndex] - 1];
+                        uv = obj.vt[parseInt(face.uvIndices[vertexIndex]) - 1];
                         uvs.push(uv.u, uv.v);
                     }
                     catch (e)

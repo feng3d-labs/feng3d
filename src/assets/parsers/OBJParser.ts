@@ -34,11 +34,11 @@ namespace feng3d
      */
     export type OBJ_Face = {
         /** 顶点索引 */
-        vertexIndices: number[];
+        vertexIndices: string[];
         /** uv索引 */
-        uvIndices?: number[];
+        uvIndices?: string[];
         /** 法线索引 */
-        normalIndices?: number[];
+        normalIndices?: string[];
         /** 索引数据 */
         indexIds: string[];
     };
@@ -148,11 +148,8 @@ namespace feng3d
             objData.vt.push({ u: parseFloat(result[1]), v: 1 - parseFloat(result[2]), s: parseFloat(result[4]) });
         } else if ((result = gReg.exec(line)) && result[0] == line)
         {
-            if (currentSubObj == null)
-            {
-                currentSubObj = { faces: [] };
-                currentObj.subObjs.push(currentSubObj);
-            }
+            currentSubObj = { faces: [] };
+            currentObj.subObjs.push(currentSubObj);
             currentSubObj.g = result[1];
         } else if ((result = sReg.exec(line)) && result[0] == line)
         {
@@ -166,28 +163,32 @@ namespace feng3d
         {
             currentSubObj.faces.push({
                 indexIds: [result[2], result[1], result[3]],
-                vertexIndices: [parseInt(result[2]), parseInt(result[1]), parseInt(result[3])]
+                vertexIndices: [result[2], result[1], result[3]]
             });
         } else if ((result = faceVN3Reg.exec(line)) && result[0] == line)
         {
             currentSubObj.faces.push({
                 indexIds: [result[3], result[1], result[5]],
-                vertexIndices: [parseInt(result[3]), parseInt(result[1]), parseInt(result[5])],
-                normalIndices: [parseInt(result[4]), parseInt(result[2]), parseInt(result[6])],
+                vertexIndices: [result[3], result[1], result[5]],
+                normalIndices: [result[4], result[2], result[6]],
             });
         } else if ((result = faceVReg.exec(line)) && result[0] == line)
         {
             currentSubObj.faces.push({
-                indexIds: [result[1], result[2], result[3], result[3]],
-                vertexIndices: [parseInt(result[1]), parseInt(result[2]), parseInt(result[3]), parseInt(result[4])]
+                indexIds: [result[2], result[1], result[3]],
+                vertexIndices: [result[2], result[1], result[3]]
+            });
+            currentSubObj.faces.push({
+                indexIds: [result[4], result[3], result[1]],
+                vertexIndices: [result[4], result[3], result[1]]
             });
         } else if ((result = faceVUNReg.exec(line)) && result[0] == line)
         {
             currentSubObj.faces.push({
-                indexIds: [result[1], result[5], result[9]],
-                vertexIndices: [parseInt(result[2]), parseInt(result[6]), parseInt(result[10])],
-                uvIndices: [parseInt(result[3]), parseInt(result[7]), parseInt(result[11])],
-                normalIndices: [parseInt(result[4]), parseInt(result[8]), parseInt(result[12])]
+                indexIds: [result[5], result[1], result[9]],
+                vertexIndices: [result[6], result[2], result[10]],
+                uvIndices: [result[7], result[3], result[11]],
+                normalIndices: [result[8], result[4], result[12]]
             });
         } else
         {

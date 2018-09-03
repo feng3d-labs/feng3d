@@ -4519,11 +4519,7 @@ var feng3d;
                 return;
             }
             var readFS = this.fs;
-            if (path.indexOf("http://") != -1
-                || path.indexOf("https://") != -1)
-                readFS = feng3d.httpFS;
-            if (path.indexOf("file:///") != -1
-                || path.indexOf("file:///") != -1)
+            if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1)
                 readFS = feng3d.httpFS;
             readFS.readFileAsArrayBuffer(path, callback);
         };
@@ -4547,15 +4543,24 @@ var feng3d;
          * @param callback 加载完成回调
          */
         ReadAssets.prototype.readFileAsImage = function (path, callback) {
-            this.readFileAsArrayBuffer(path, function (err, data) {
-                if (err) {
-                    callback(err, null);
-                    return;
-                }
-                feng3d.dataTransform.arrayBufferToImage(data, function (img) {
+            if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1) {
+                var img = new Image();
+                img.onload = function () {
                     callback(null, img);
+                };
+                img.src = path;
+            }
+            else {
+                this.readFileAsArrayBuffer(path, function (err, data) {
+                    if (err) {
+                        callback(err, null);
+                        return;
+                    }
+                    feng3d.dataTransform.arrayBufferToImage(data, function (img) {
+                        callback(null, img);
+                    });
                 });
-            });
+            }
         };
         /**
          * 读取文件为Blob
@@ -24343,10 +24348,8 @@ var feng3d;
             objData.vt.push({ u: parseFloat(result[1]), v: 1 - parseFloat(result[2]), s: parseFloat(result[4]) });
         }
         else if ((result = gReg.exec(line)) && result[0] == line) {
-            if (currentSubObj == null) {
-                currentSubObj = { faces: [] };
-                currentObj.subObjs.push(currentSubObj);
-            }
+            currentSubObj = { faces: [] };
+            currentObj.subObjs.push(currentSubObj);
             currentSubObj.g = result[1];
         }
         else if ((result = sReg.exec(line)) && result[0] == line) {
@@ -24359,28 +24362,32 @@ var feng3d;
         else if ((result = faceV3Reg.exec(line)) && result[0] == line) {
             currentSubObj.faces.push({
                 indexIds: [result[2], result[1], result[3]],
-                vertexIndices: [parseInt(result[2]), parseInt(result[1]), parseInt(result[3])]
+                vertexIndices: [result[2], result[1], result[3]]
             });
         }
         else if ((result = faceVN3Reg.exec(line)) && result[0] == line) {
             currentSubObj.faces.push({
                 indexIds: [result[3], result[1], result[5]],
-                vertexIndices: [parseInt(result[3]), parseInt(result[1]), parseInt(result[5])],
-                normalIndices: [parseInt(result[4]), parseInt(result[2]), parseInt(result[6])],
+                vertexIndices: [result[3], result[1], result[5]],
+                normalIndices: [result[4], result[2], result[6]],
             });
         }
         else if ((result = faceVReg.exec(line)) && result[0] == line) {
             currentSubObj.faces.push({
-                indexIds: [result[1], result[2], result[3], result[3]],
-                vertexIndices: [parseInt(result[1]), parseInt(result[2]), parseInt(result[3]), parseInt(result[4])]
+                indexIds: [result[2], result[1], result[3]],
+                vertexIndices: [result[2], result[1], result[3]]
+            });
+            currentSubObj.faces.push({
+                indexIds: [result[4], result[3], result[1]],
+                vertexIndices: [result[4], result[3], result[1]]
             });
         }
         else if ((result = faceVUNReg.exec(line)) && result[0] == line) {
             currentSubObj.faces.push({
-                indexIds: [result[1], result[5], result[9]],
-                vertexIndices: [parseInt(result[2]), parseInt(result[6]), parseInt(result[10])],
-                uvIndices: [parseInt(result[3]), parseInt(result[7]), parseInt(result[11])],
-                normalIndices: [parseInt(result[4]), parseInt(result[8]), parseInt(result[12])]
+                indexIds: [result[5], result[1], result[9]],
+                vertexIndices: [result[6], result[2], result[10]],
+                uvIndices: [result[7], result[3], result[11]],
+                normalIndices: [result[8], result[4], result[12]]
             });
         }
         else {
@@ -26662,7 +26669,6 @@ var feng3d;
                         u_diffuse: { r: materialInfo.kd[0], g: materialInfo.kd[1], b: materialInfo.kd[2], },
                         u_specular: { r: materialInfo.ks[0], g: materialInfo.ks[1], b: materialInfo.ks[2], },
                     },
-                    renderParams: { cullFace: feng3d.CullFace.FRONT },
                 });
                 feng3d.feng3dDispatcher.dispatch("assets.parsed", material);
             }
@@ -26716,6 +26722,7 @@ var feng3d;
     var _vertexIndex;
     function createMaterialObj(obj, subObj, materials) {
         var gameObject = new feng3d.GameObject();
+        gameObject.name = subObj.g;
         var model = gameObject.addComponent(feng3d.Model);
         if (materials && materials[subObj.material])
             model.material = materials[subObj.material];
@@ -26751,15 +26758,15 @@ var feng3d;
             if (!_realIndices[face.indexIds[vertexIndex]]) {
                 index = _vertexIndex;
                 _realIndices[face.indexIds[vertexIndex]] = ++_vertexIndex;
-                vertex = obj.vertex[face.vertexIndices[vertexIndex] - 1];
+                vertex = obj.vertex[parseInt(face.vertexIndices[vertexIndex]) - 1];
                 vertices.push(vertex.x, vertex.y, vertex.z);
                 if (face.normalIndices && face.normalIndices.length > 0) {
-                    vertexNormal = obj.vn[face.normalIndices[vertexIndex] - 1];
+                    vertexNormal = obj.vn[parseInt(face.normalIndices[vertexIndex]) - 1];
                     normals.push(vertexNormal.x, vertexNormal.y, vertexNormal.z);
                 }
                 if (face.uvIndices && face.uvIndices.length > 0) {
                     try {
-                        uv = obj.vt[face.uvIndices[vertexIndex] - 1];
+                        uv = obj.vt[parseInt(face.uvIndices[vertexIndex]) - 1];
                         uvs.push(uv.u, uv.v);
                     }
                     catch (e) {

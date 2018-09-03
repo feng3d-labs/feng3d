@@ -54,13 +54,7 @@ namespace feng3d
                 return;
             }
             var readFS = this.fs;
-            if (path.indexOf("http://") != -1
-                || path.indexOf("https://") != -1
-            )
-                readFS = httpFS;
-            if (path.indexOf("file:///") != -1
-                || path.indexOf("file:///") != -1
-            )
+            if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1)
                 readFS = httpFS;
 
             readFS.readFileAsArrayBuffer(path, callback);
@@ -92,18 +86,29 @@ namespace feng3d
          */
         readFileAsImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
         {
-            this.readFileAsArrayBuffer(path, (err, data) =>
+            if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1)
             {
-                if (err)
-                {
-                    callback(err, null);
-                    return;
-                }
-                dataTransform.arrayBufferToImage(data, (img) =>
+                var img = new Image();
+                img.onload = function ()
                 {
                     callback(null, img);
+                };
+                img.src = path;
+            } else
+            {
+                this.readFileAsArrayBuffer(path, (err, data) =>
+                {
+                    if (err)
+                    {
+                        callback(err, null);
+                        return;
+                    }
+                    dataTransform.arrayBufferToImage(data, (img) =>
+                    {
+                        callback(null, img);
+                    });
                 });
-            });
+            }
         }
 
         /**

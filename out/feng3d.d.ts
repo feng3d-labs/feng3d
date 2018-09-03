@@ -12108,11 +12108,11 @@ declare namespace feng3d {
      */
     type OBJ_Face = {
         /** 顶点索引 */
-        vertexIndices: number[];
+        vertexIndices: string[];
         /** uv索引 */
-        uvIndices?: number[];
+        uvIndices?: string[];
         /** 法线索引 */
-        normalIndices?: number[];
+        normalIndices?: string[];
         /** 索引数据 */
         indexIds: string[];
     };

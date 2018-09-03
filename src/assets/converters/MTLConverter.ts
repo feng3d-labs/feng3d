@@ -26,7 +26,6 @@ namespace feng3d
                         u_diffuse: { r: materialInfo.kd[0], g: materialInfo.kd[1], b: materialInfo.kd[2], },
                         u_specular: { r: materialInfo.ks[0], g: materialInfo.ks[1], b: materialInfo.ks[2], },
                     },
-                    renderParams: { cullFace: CullFace.FRONT },
                 });
                 feng3dDispatcher.dispatch("assets.parsed", material);
             }
