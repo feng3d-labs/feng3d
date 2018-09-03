@@ -65,21 +65,6 @@ namespace feng3d
             return this._selfWorldBounds;
         }
 
-        /**
-         * 世界包围盒
-         */
-        get worldBounds()
-        {
-            var box = this.selfWorldBounds;
-            if (!box) box = new Box(this.transform.scenePosition, this.transform.scenePosition);
-            this.gameObject.children.forEach(element =>
-            {
-                var ebox = element.getComponent(Model).worldBounds;
-                box.union(ebox);
-            });
-            return box;
-        }
-
         constructor()
         {
             super();

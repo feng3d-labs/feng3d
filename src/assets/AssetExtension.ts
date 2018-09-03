@@ -69,6 +69,10 @@ namespace feng3d
          * MD5动画文件
          */
         md5anim = "md5anim",
+        /**
+         * 魔兽MDL模型文件
+         */
+        mdl = "mdl",
         // -- feng3d中的类型
         /**
          * 纹理

@@ -542,6 +542,21 @@ namespace feng3d
         }
 
         /**
+         * 世界包围盒
+         */
+        get worldBounds()
+        {
+            var model = this.getComponent(Model);
+            var box = model ? model.selfWorldBounds : new Box(this.transform.scenePosition, this.transform.scenePosition);
+            this.children.forEach(element =>
+            {
+                var ebox = element.worldBounds;
+                box.union(ebox);
+            });
+            return box;
+        }
+
+        /**
          * 派发事件
          * 
          * 当事件重复流向一个对象时将不会被处理。

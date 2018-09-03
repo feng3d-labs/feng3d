@@ -35,7 +35,7 @@ namespace feng3d
         {
             var worldBounds: Box = models.reduce((pre: Box, i) =>
             {
-                var box = i.getComponent(Model).worldBounds;
+                var box = i.gameObject.worldBounds;
                 if (!pre)
                     return box.clone();
                 pre.union(box);

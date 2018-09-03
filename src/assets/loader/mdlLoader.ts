@@ -15,7 +15,7 @@ namespace feng3d
          * @param mdlurl MDL模型路径
          * @param callback 加载完成回调
          */
-        load(mdlurl: string, callback: (gameObject: GameObject) => void)
+        load(mdlurl: string, callback?: (gameObject: GameObject) => void)
         {
             assets.readFileAsString(mdlurl, (err, content) =>
             {
@@ -24,9 +24,11 @@ namespace feng3d
                     war3Model.root = mdlurl.substring(0, mdlurl.lastIndexOf("/") + 1);
 
                     var showMesh = war3Model.getMesh();
-                    showMesh.name = feng3d.pathUtils.getName(mdlurl);
 
-                    callback(showMesh);
+                    var gameObject = new GameObject().value({ name: pathUtils.getName(mdlurl), children: [showMesh] })
+
+                    feng3dDispatcher.dispatch("assets.parsed", gameObject);
+                    callback && callback(gameObject);
                 });
             });
         }

@@ -103,7 +103,9 @@ namespace feng3d.war3
 
 			//
 			container.transform.rx = 90;
-			container.transform.sz = -1;
+			container.transform.sx = 0.01;
+			container.transform.sy = 0.01;
+			container.transform.sz = -0.01;
 			return container;
 		}
 

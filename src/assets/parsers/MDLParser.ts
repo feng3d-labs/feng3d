@@ -984,6 +984,7 @@ namespace feng3d.war3
 						break;
 					case "Image":
 						bitmap.image = parseLiteralString();
+						bitmap.image = bitmap.image.replace(/\\/g, "/");
 						break;
 					case "ReplaceableId":
 						bitmap.ReplaceableId = getNextInt();

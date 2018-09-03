@@ -4925,6 +4925,10 @@ var feng3d;
          * MD5动画文件
          */
         AssetExtension["md5anim"] = "md5anim";
+        /**
+         * 魔兽MDL模型文件
+         */
+        AssetExtension["mdl"] = "mdl";
         // -- feng3d中的类型
         /**
          * 纹理
@@ -15888,6 +15892,22 @@ var feng3d;
             }
             return removeComponents;
         };
+        Object.defineProperty(GameObject.prototype, "worldBounds", {
+            /**
+             * 世界包围盒
+             */
+            get: function () {
+                var model = this.getComponent(feng3d.Model);
+                var box = model ? model.selfWorldBounds : new feng3d.Box(this.transform.scenePosition, this.transform.scenePosition);
+                this.children.forEach(function (element) {
+                    var ebox = element.worldBounds;
+                    box.union(ebox);
+                });
+                return box;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 派发事件
          *
@@ -16366,23 +16386,6 @@ var feng3d;
                 if (!this._selfWorldBounds)
                     this.updateWorldBounds();
                 return this._selfWorldBounds;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Model.prototype, "worldBounds", {
-            /**
-             * 世界包围盒
-             */
-            get: function () {
-                var box = this.selfWorldBounds;
-                if (!box)
-                    box = new feng3d.Box(this.transform.scenePosition, this.transform.scenePosition);
-                this.gameObject.children.forEach(function (element) {
-                    var ebox = element.getComponent(Model).worldBounds;
-                    box.union(ebox);
-                });
-                return box;
             },
             enumerable: true,
             configurable: true
@@ -21056,7 +21059,7 @@ var feng3d;
          */
         DirectionalLight.prototype.updateShadowByCamera = function (scene3d, viewCamera, models) {
             var worldBounds = models.reduce(function (pre, i) {
-                var box = i.getComponent(feng3d.Model).worldBounds;
+                var box = i.gameObject.worldBounds;
                 if (!pre)
                     return box.clone();
                 pre.union(box);
@@ -25313,7 +25316,9 @@ var feng3d;
                 animation.animations = animationclips;
                 //
                 container.transform.rx = 90;
-                container.transform.sz = -1;
+                container.transform.sx = 0.01;
+                container.transform.sy = 0.01;
+                container.transform.sz = -0.01;
                 return container;
             };
             War3Model.prototype.getFBitmap = function (material) {
@@ -26225,6 +26230,7 @@ var feng3d;
                             break;
                         case "Image":
                             bitmap.image = parseLiteralString();
+                            bitmap.image = bitmap.image.replace(/\\/g, "/");
                             break;
                         case "ReplaceableId":
                             bitmap.ReplaceableId = getNextInt();
@@ -27200,8 +27206,9 @@ var feng3d;
                 feng3d.war3.mdlParser.parse(content, function (war3Model) {
                     war3Model.root = mdlurl.substring(0, mdlurl.lastIndexOf("/") + 1);
                     var showMesh = war3Model.getMesh();
-                    showMesh.name = feng3d.pathUtils.getName(mdlurl);
-                    callback(showMesh);
+                    var gameObject = new feng3d.GameObject().value({ name: feng3d.pathUtils.getName(mdlurl), children: [showMesh] });
+                    feng3d.feng3dDispatcher.dispatch("assets.parsed", gameObject);
+                    callback && callback(gameObject);
                 });
             });
         };

@@ -2431,6 +2431,10 @@ declare namespace feng3d {
          */
         md5anim = "md5anim",
         /**
+         * 魔兽MDL模型文件
+         */
+        mdl = "mdl",
+        /**
          * 纹理
          */
         texture2d = "texture2d.json",
@@ -9164,6 +9168,10 @@ declare namespace feng3d {
          */
         removeComponentsByType<T extends Components>(type: Constructor<T>): T[];
         /**
+         * 世界包围盒
+         */
+        readonly worldBounds: Box;
+        /**
          * 派发事件
          *
          * 当事件重复流向一个对象时将不会被处理。
@@ -9351,10 +9359,6 @@ declare namespace feng3d {
          * 自身世界包围盒
          */
         readonly selfWorldBounds: Box;
-        /**
-         * 世界包围盒
-         */
-        readonly worldBounds: Box;
         constructor();
         init(gameObject: GameObject): void;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
@@ -12794,7 +12798,7 @@ declare namespace feng3d {
          * @param mdlurl MDL模型路径
          * @param callback 加载完成回调
          */
-        load(mdlurl: string, callback: (gameObject: GameObject) => void): void;
+        load(mdlurl: string, callback?: (gameObject: GameObject) => void): void;
     }
 }
 declare namespace feng3d {
