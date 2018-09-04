@@ -240,6 +240,8 @@
         "src/animators/skeleton/SkinnedModel.ts",
         "src/animators/skeleton/SkeletonMaterial.ts",
         //
+        "src/animation/PropertyClip.ts",
+        "src/animation/AnimationClip.ts",
         "src/animation/Animation.ts",
         //解析
         "src/assets/parsers/OBJParser.ts",

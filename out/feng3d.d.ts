@@ -12028,6 +12028,43 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    class PropertyClip {
+        /**
+         * 属性路径
+         */
+        path: PropertyClipPath;
+        propertyName: string;
+        type: "Number" | "Vector3" | "Quaternion";
+        propertyValues: [number, number[]][];
+        private _cacheValues;
+        private _propertyValues;
+        getValue(cliptime: number, fps: number): any;
+        private interpolation;
+        private getpropertyValue;
+        cacheIndex: number;
+    }
+    /**
+     * [time:number,value:number | Vector3 | Quaternion]
+     */
+    type ClipPropertyType = number | Vector3 | Quaternion;
+    type PropertyClipPath = [PropertyClipPathItemType, string][];
+    enum PropertyClipPathItemType {
+        GameObject = 0,
+        Component = 1
+    }
+}
+declare namespace feng3d {
+    class AnimationClip {
+        name: string;
+        /**
+         * 动画时长，单位ms
+         */
+        length: number;
+        loop: boolean;
+        propertyClips: PropertyClip[];
+    }
+}
+declare namespace feng3d {
     interface ComponentMap {
         Animation: Animation;
     }
@@ -12057,39 +12094,6 @@ declare namespace feng3d {
         private getPropertyHost;
         private onAnimationChanged;
         private onTimeChanged;
-    }
-    class AnimationClip {
-        name: string;
-        /**
-         * 动画时长，单位ms
-         */
-        length: number;
-        loop: boolean;
-        propertyClips: PropertyClip[];
-    }
-    class PropertyClip {
-        /**
-         * 属性路径
-         */
-        path: PropertyClipPath;
-        propertyName: string;
-        type: "Number" | "Vector3" | "Quaternion";
-        propertyValues: [number, number[]][];
-        private _cacheValues;
-        private _propertyValues;
-        getValue(cliptime: number, fps: number): any;
-        private interpolation;
-        private getpropertyValue;
-        cacheIndex: number;
-    }
-    /**
-     * [time:number,value:number | Vector3 | Quaternion]
-     */
-    type ClipPropertyType = number | Vector3 | Quaternion;
-    type PropertyClipPath = [PropertyClipPathItemType, string][];
-    enum PropertyClipPathItemType {
-        GameObject = 0,
-        Component = 1
     }
 }
 declare namespace feng3d {

@@ -24052,6 +24052,103 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var PropertyClip = /** @class */ (function () {
+        function PropertyClip() {
+            this._cacheValues = {};
+        }
+        PropertyClip.prototype.getValue = function (cliptime, fps) {
+            var _this = this;
+            var frame = Math.round(fps * cliptime / 1000);
+            if (this._cacheValues[frame] != undefined)
+                return this._cacheValues[frame];
+            this._propertyValues = this._propertyValues || this.propertyValues.map(function (v) {
+                return [v[0], _this.getpropertyValue(v[1])];
+            });
+            var propertyValues = this._propertyValues;
+            var propertyValue = propertyValues[0][1];
+            if (cliptime <= propertyValues[0][0]) { }
+            else if (cliptime >= propertyValues[propertyValues.length - 1][0])
+                propertyValue = propertyValues[propertyValues.length - 1][1];
+            else {
+                for (var j = 0; j < propertyValues.length - 1; j++) {
+                    if (propertyValues[j][0] <= cliptime && cliptime < propertyValues[j + 1][0]) {
+                        propertyValue = this.interpolation(propertyValues[j][1], propertyValues[j + 1][1], (cliptime - propertyValues[j][0]) / (propertyValues[j + 1][0] - propertyValues[j][0]));
+                        break;
+                    }
+                }
+            }
+            this._cacheValues[frame] = propertyValue;
+            return propertyValue;
+        };
+        PropertyClip.prototype.interpolation = function (prevalue, nextValue, factor) {
+            var propertyValue;
+            if (prevalue instanceof feng3d.Quaternion) {
+                propertyValue = prevalue.clone();
+                propertyValue.lerp(prevalue, nextValue, factor);
+            }
+            else if (prevalue instanceof feng3d.Vector3) {
+                propertyValue = new feng3d.Vector3(prevalue.x * (1 - factor) + nextValue.x * factor, prevalue.y * (1 - factor) + nextValue.y * factor, prevalue.z * (1 - factor) + nextValue.z * factor);
+            }
+            else {
+                propertyValue = prevalue * (1 - factor) + nextValue * factor;
+            }
+            return propertyValue;
+        };
+        PropertyClip.prototype.getpropertyValue = function (value) {
+            if (this.type == "Number")
+                return value[0];
+            if (this.type == "Vector3")
+                return feng3d.Vector3.fromArray(value);
+            if (this.type == "Quaternion")
+                return feng3d.Quaternion.fromArray(value);
+            feng3d.error("\u672A\u5904\u7406 \u52A8\u753B\u6570\u636E\u7C7B\u578B " + this.type);
+            throw "";
+        };
+        __decorate([
+            feng3d.serialize
+        ], PropertyClip.prototype, "path", void 0);
+        __decorate([
+            feng3d.serialize
+        ], PropertyClip.prototype, "propertyName", void 0);
+        __decorate([
+            feng3d.serialize
+        ], PropertyClip.prototype, "type", void 0);
+        __decorate([
+            feng3d.serialize
+        ], PropertyClip.prototype, "propertyValues", void 0);
+        return PropertyClip;
+    }());
+    feng3d.PropertyClip = PropertyClip;
+    var PropertyClipPathItemType;
+    (function (PropertyClipPathItemType) {
+        PropertyClipPathItemType[PropertyClipPathItemType["GameObject"] = 0] = "GameObject";
+        PropertyClipPathItemType[PropertyClipPathItemType["Component"] = 1] = "Component";
+    })(PropertyClipPathItemType = feng3d.PropertyClipPathItemType || (feng3d.PropertyClipPathItemType = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var AnimationClip = /** @class */ (function () {
+        function AnimationClip() {
+            this.loop = true;
+        }
+        __decorate([
+            feng3d.serialize
+        ], AnimationClip.prototype, "name", void 0);
+        __decorate([
+            feng3d.serialize
+        ], AnimationClip.prototype, "length", void 0);
+        __decorate([
+            feng3d.serialize
+        ], AnimationClip.prototype, "loop", void 0);
+        __decorate([
+            feng3d.serialize
+        ], AnimationClip.prototype, "propertyClips", void 0);
+        return AnimationClip;
+    }());
+    feng3d.AnimationClip = AnimationClip;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     var Animation = /** @class */ (function (_super) {
         __extends(Animation, _super);
         function Animation() {
@@ -24131,10 +24228,10 @@ var feng3d;
             for (var i = 0; i < path.length; i++) {
                 var element = path[i];
                 switch (element[0]) {
-                    case PropertyClipPathItemType.GameObject:
+                    case feng3d.PropertyClipPathItemType.GameObject:
                         propertyHost = propertyHost.find(element[1]);
                         break;
-                    case PropertyClipPathItemType.Component:
+                    case feng3d.PropertyClipPathItemType.Component:
                         var componentType = feng3d.classUtils.getDefinitionByName(element[1]);
                         propertyHost = propertyHost.getComponent(componentType);
                         break;
@@ -24159,7 +24256,7 @@ var feng3d;
             feng3d.watch("onAnimationChanged")
         ], Animation.prototype, "animation", void 0);
         __decorate([
-            feng3d.oav({ component: "OAVArray", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" }, defaultItem: function () { return new AnimationClip(); } } }),
+            feng3d.oav({ component: "OAVArray", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" }, defaultItem: function () { return new feng3d.AnimationClip(); } } }),
             feng3d.serialize
         ], Animation.prototype, "animations", void 0);
         __decorate([
@@ -24178,97 +24275,6 @@ var feng3d;
     }(feng3d.Behaviour));
     feng3d.Animation = Animation;
     var autoobjectCacheID = 1;
-    var AnimationClip = /** @class */ (function () {
-        function AnimationClip() {
-            this.loop = true;
-        }
-        __decorate([
-            feng3d.serialize
-        ], AnimationClip.prototype, "name", void 0);
-        __decorate([
-            feng3d.serialize
-        ], AnimationClip.prototype, "length", void 0);
-        __decorate([
-            feng3d.serialize
-        ], AnimationClip.prototype, "loop", void 0);
-        __decorate([
-            feng3d.serialize
-        ], AnimationClip.prototype, "propertyClips", void 0);
-        return AnimationClip;
-    }());
-    feng3d.AnimationClip = AnimationClip;
-    var PropertyClip = /** @class */ (function () {
-        function PropertyClip() {
-            this._cacheValues = {};
-        }
-        PropertyClip.prototype.getValue = function (cliptime, fps) {
-            var _this = this;
-            var frame = Math.round(fps * cliptime / 1000);
-            if (this._cacheValues[frame] != undefined)
-                return this._cacheValues[frame];
-            this._propertyValues = this._propertyValues || this.propertyValues.map(function (v) {
-                return [v[0], _this.getpropertyValue(v[1])];
-            });
-            var propertyValues = this._propertyValues;
-            var propertyValue = propertyValues[0][1];
-            if (cliptime <= propertyValues[0][0]) { }
-            else if (cliptime >= propertyValues[propertyValues.length - 1][0])
-                propertyValue = propertyValues[propertyValues.length - 1][1];
-            else {
-                for (var j = 0; j < propertyValues.length - 1; j++) {
-                    if (propertyValues[j][0] <= cliptime && cliptime < propertyValues[j + 1][0]) {
-                        propertyValue = this.interpolation(propertyValues[j][1], propertyValues[j + 1][1], (cliptime - propertyValues[j][0]) / (propertyValues[j + 1][0] - propertyValues[j][0]));
-                        break;
-                    }
-                }
-            }
-            this._cacheValues[frame] = propertyValue;
-            return propertyValue;
-        };
-        PropertyClip.prototype.interpolation = function (prevalue, nextValue, factor) {
-            var propertyValue;
-            if (prevalue instanceof feng3d.Quaternion) {
-                propertyValue = prevalue.clone();
-                propertyValue.lerp(prevalue, nextValue, factor);
-            }
-            else if (prevalue instanceof feng3d.Vector3) {
-                propertyValue = new feng3d.Vector3(prevalue.x * (1 - factor) + nextValue.x * factor, prevalue.y * (1 - factor) + nextValue.y * factor, prevalue.z * (1 - factor) + nextValue.z * factor);
-            }
-            else {
-                propertyValue = prevalue * (1 - factor) + nextValue * factor;
-            }
-            return propertyValue;
-        };
-        PropertyClip.prototype.getpropertyValue = function (value) {
-            if (this.type == "Number")
-                return value[0];
-            if (this.type == "Vector3")
-                return feng3d.Vector3.fromArray(value);
-            if (this.type == "Quaternion")
-                return feng3d.Quaternion.fromArray(value);
-            feng3d.error("\u672A\u5904\u7406 \u52A8\u753B\u6570\u636E\u7C7B\u578B " + this.type);
-            throw "";
-        };
-        __decorate([
-            feng3d.serialize
-        ], PropertyClip.prototype, "path", void 0);
-        __decorate([
-            feng3d.serialize
-        ], PropertyClip.prototype, "propertyName", void 0);
-        __decorate([
-            feng3d.serialize
-        ], PropertyClip.prototype, "type", void 0);
-        __decorate([
-            feng3d.serialize
-        ], PropertyClip.prototype, "propertyValues", void 0);
-        return PropertyClip;
-    }());
-    feng3d.PropertyClip = PropertyClip;
-    var PropertyClipPathItemType;
-    (function (PropertyClipPathItemType) {
-        PropertyClipPathItemType[PropertyClipPathItemType["GameObject"] = 0] = "GameObject";
-        PropertyClipPathItemType[PropertyClipPathItemType["Component"] = 1] = "Component";
-    })(PropertyClipPathItemType = feng3d.PropertyClipPathItemType || (feng3d.PropertyClipPathItemType = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
