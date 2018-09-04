@@ -71,6 +71,7 @@ namespace feng3d
     }
 
     export type MD5AnimData = {
+        name?: string;
         MD5Version: number;
         commandline: string;
         numFrames: number;

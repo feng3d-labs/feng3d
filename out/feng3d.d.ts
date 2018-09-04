@@ -12261,6 +12261,7 @@ declare namespace feng3d {
         rotation: number[];
     };
     type MD5MeshData = {
+        name?: string;
         MD5Version: number;
         commandline: string;
         numJoints: number;
@@ -12323,6 +12324,7 @@ declare namespace feng3d {
         startIndex: number;
     };
     type MD5AnimData = {
+        name?: string;
         MD5Version: number;
         commandline: string;
         numFrames: number;
@@ -12614,8 +12616,6 @@ declare namespace feng3d.war3 {
         bones: BoneObject[];
         /** 骨骼轴心坐标 */
         pivotPoints: Vector3[];
-        /** 顶点最大关节关联数 */
-        _maxJointCount: number;
         root: string;
         private meshs;
         private skeletonComponent;

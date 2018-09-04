@@ -19,6 +19,7 @@ namespace feng3d
         convert(md5AnimData: MD5AnimData, completed?: (animationClip: AnimationClip) => void)
         {
             var animationClip = new AnimationClip();
+            animationClip.name = md5AnimData.name;
             animationClip.length = md5AnimData.numFrames / md5AnimData.frameRate * 1000;
             animationClip.propertyClips = [];
 
@@ -28,6 +29,8 @@ namespace feng3d
             {
                 translatePose(md5AnimData, md5AnimData.frame[i], animationClip);
             }
+
+            feng3dDispatcher.dispatch("assets.parsed", animationClip);
 
             completed && completed(animationClip);
 

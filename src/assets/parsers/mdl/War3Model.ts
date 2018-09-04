@@ -33,9 +33,6 @@ namespace feng3d.war3
 		//
 		//---------------------------------------
 
-		/** 顶点最大关节关联数 */
-		_maxJointCount: number;
-
 		root: string = "";
 
 		private meshs: GameObject[];
@@ -228,6 +225,8 @@ namespace feng3d.war3
 			{
 				bone.buildAnimationclip(animationclip, __chache__, sequence.interval.start, sequence.interval.end);
 			});
+
+			feng3dDispatcher.dispatch("assets.parsed", animationclip);
 
 			animationclips.push(animationclip);
 		}

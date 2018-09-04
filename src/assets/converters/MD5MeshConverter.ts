@@ -19,6 +19,7 @@ namespace feng3d
         convert(md5MeshData: MD5MeshData, completed?: (gameObject: GameObject) => void)
         {
             var gameObject = new GameObject();
+            gameObject.name = md5MeshData.name;
             gameObject.addComponent(Animation);
             gameObject.transform.rx = -90;
 
@@ -45,6 +46,7 @@ namespace feng3d
                 gameObject.addChild(skeletonGameObject);
             }
 
+            feng3dDispatcher.dispatch("assets.parsed", gameObject);
             completed && completed(gameObject);
         }
 

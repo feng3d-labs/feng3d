@@ -74,6 +74,7 @@ namespace feng3d
     }
 
     export type MD5MeshData = {
+        name?: string;
         MD5Version: number;
         commandline: string;
         numJoints: number;

@@ -25270,6 +25270,11 @@ var feng3d;
                 this.geosets = [];
                 /** 骨骼动画列表 */
                 this.bones = [];
+                //-------------------------------------
+                //
+                //	以下数据计算得出
+                //
+                //---------------------------------------
                 this.root = "";
             }
             War3Model.prototype.getMesh = function () {
@@ -25417,6 +25422,7 @@ var feng3d;
                 war3Model.bones.forEach(function (bone) {
                     bone.buildAnimationclip(animationclip, __chache__, sequence.interval.start, sequence.interval.end);
                 });
+                feng3d.feng3dDispatcher.dispatch("assets.parsed", animationclip);
                 animationclips.push(animationclip);
             }
             return animationclips;
@@ -26810,6 +26816,7 @@ var feng3d;
          */
         MD5MeshConverter.prototype.convert = function (md5MeshData, completed) {
             var gameObject = new feng3d.GameObject();
+            gameObject.name = md5MeshData.name;
             gameObject.addComponent(feng3d.Animation);
             gameObject.transform.rx = -90;
             //顶点最大关节关联数
@@ -26827,6 +26834,7 @@ var feng3d;
                 skinnedModel.skinSkeleton = skinSkeleton;
                 gameObject.addChild(skeletonGameObject);
             }
+            feng3d.feng3dDispatcher.dispatch("assets.parsed", gameObject);
             completed && completed(gameObject);
         };
         /**
@@ -27001,12 +27009,14 @@ var feng3d;
          */
         MD5AnimConverter.prototype.convert = function (md5AnimData, completed) {
             var animationClip = new feng3d.AnimationClip();
+            animationClip.name = md5AnimData.name;
             animationClip.length = md5AnimData.numFrames / md5AnimData.frameRate * 1000;
             animationClip.propertyClips = [];
             var __chache__ = {};
             for (var i = 0; i < md5AnimData.numFrames; ++i) {
                 translatePose(md5AnimData, md5AnimData.frame[i], animationClip);
             }
+            feng3d.feng3dDispatcher.dispatch("assets.parsed", animationClip);
             completed && completed(animationClip);
             /**
              * 将一个关键帧数据转换为SkeletonPose
@@ -27169,6 +27179,7 @@ var feng3d;
         MD5Loader.prototype.load = function (url, completed) {
             feng3d.assets.readFileAsString(url, function (err, content) {
                 var md5MeshData = feng3d.md5MeshParser.parse(content);
+                md5MeshData.name = feng3d.pathUtils.getName(url);
                 feng3d.md5MeshConverter.convert(md5MeshData, completed);
             });
         };
@@ -27180,6 +27191,7 @@ var feng3d;
         MD5Loader.prototype.loadAnim = function (url, completed) {
             feng3d.assets.readFileAsString(url, function (err, content) {
                 var md5AnimData = feng3d.md5AnimParser.parse(content);
+                md5AnimData.name = feng3d.pathUtils.getName(url);
                 feng3d.md5AnimConverter.convert(md5AnimData, completed);
             });
         };
