@@ -1,23 +1,11 @@
 namespace feng3d
 {
-    export interface MaterialMap { TerrainMaterial: TerrainMaterial }
-
-    export class TerrainMaterial extends Material
-    {
-        __class__: "feng3d.TerrainMaterial" = "feng3d.TerrainMaterial";
-
-        uniforms: TerrainUniforms;
-
-        constructor()
-        {
-            super();
-            this.shaderName = "terrain";
-            this.uniforms = new TerrainUniforms();
-        }
-    }
+    export interface UniformsMap { terrain: TerrainUniforms }
 
     export class TerrainUniforms extends StandardUniforms
     {
+        __class__: "feng3d.TerrainUniforms" = "feng3d.TerrainUniforms";
+
         @serialize
         @oav({ block: "terrain" })
         s_splatTexture1 = new UrlImageTexture2D().value({

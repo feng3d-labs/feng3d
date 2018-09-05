@@ -127,11 +127,10 @@ namespace feng3d
                 //材质
                 var model = gameObject.getComponent(Model);
                 model.geometry = new feng3d.PlaneGeometry().value({ width: this.lightType == LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
-                var textureMaterial = model.material = new TextureMaterial();
+                var textureMaterial = model.material = new Material().value({ shaderName: "texture", uniforms: { s_texture: this.frameBufferObject.texture } });
                 //
                 // textureMaterial.uniforms.s_texture.url = 'Assets/pz.jpg';
                 // textureMaterial.uniforms.u_color.setTo(1.0, 0.0, 0.0, 1.0);
-                textureMaterial.uniforms.s_texture = <any>this.frameBufferObject.texture;
                 textureMaterial.renderParams.enableBlend = true;
                 textureMaterial.renderParams.sfactor = BlendFactor.ONE;
                 textureMaterial.renderParams.dfactor = BlendFactor.ZERO;

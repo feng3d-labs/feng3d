@@ -16391,7 +16391,7 @@ var feng3d;
             if (!this.geometry)
                 this.geometry = new feng3d.CubeGeometry();
             if (!this.material)
-                this.material = new feng3d.StandardMaterial();
+                this.material = new feng3d.Material();
             this.on("scenetransformChanged", this.onScenetransformChanged, this);
         };
         Model.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
@@ -20469,7 +20469,7 @@ var feng3d;
             /**
              * Uniform数据
              */
-            _this.uniforms = {};
+            _this.uniforms = new feng3d.StandardUniforms();
             /**
              * 渲染参数
              */
@@ -20489,6 +20489,7 @@ var feng3d;
         };
         Material.prototype.onShaderChanged = function () {
             var cls = feng3d.shaderConfig.shaders[this.shaderName].cls;
+            cls = cls || feng3d.StandardUniforms;
             if (cls) {
                 if (!(this.uniforms instanceof cls)) {
                     var newuniforms = new cls();
@@ -20517,23 +20518,9 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 颜色材质
-     */
-    var PointMaterial = /** @class */ (function (_super) {
-        __extends(PointMaterial, _super);
-        function PointMaterial() {
-            var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.PointMaterial";
-            _this.shaderName = "point";
-            _this.uniforms = new PointUniforms();
-            return _this;
-        }
-        return PointMaterial;
-    }(feng3d.Material));
-    feng3d.PointMaterial = PointMaterial;
     var PointUniforms = /** @class */ (function () {
         function PointUniforms() {
+            this.__class__ = "feng3d.PointUniforms";
             /**
              * 颜色
              */
@@ -20558,23 +20545,9 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 颜色材质
-     */
-    var ColorMaterial = /** @class */ (function (_super) {
-        __extends(ColorMaterial, _super);
-        function ColorMaterial() {
-            var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.ColorMaterial";
-            _this.shaderName = "color";
-            _this.uniforms = new ColorUniforms();
-            return _this;
-        }
-        return ColorMaterial;
-    }(feng3d.Material));
-    feng3d.ColorMaterial = ColorMaterial;
     var ColorUniforms = /** @class */ (function () {
         function ColorUniforms() {
+            this.__class__ = "feng3d.ColorUniforms";
             /**
              * 颜色
              */
@@ -20595,20 +20568,9 @@ var feng3d;
      * 线段材质
      * 目前webgl不支持修改线条宽度，参考：https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
      */
-    var SegmentMaterial = /** @class */ (function (_super) {
-        __extends(SegmentMaterial, _super);
-        function SegmentMaterial() {
-            var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.SegmentMaterial";
-            _this.shaderName = "segment";
-            _this.uniforms = new SegmentUniforms();
-            return _this;
-        }
-        return SegmentMaterial;
-    }(feng3d.Material));
-    feng3d.SegmentMaterial = SegmentMaterial;
     var SegmentUniforms = /** @class */ (function () {
         function SegmentUniforms() {
+            this.__class__ = "feng3d.SegmentUniforms";
             /**
              * 颜色
              */
@@ -20625,23 +20587,9 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 纹理材质
-     */
-    var TextureMaterial = /** @class */ (function (_super) {
-        __extends(TextureMaterial, _super);
-        function TextureMaterial() {
-            var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.TextureMaterial";
-            _this.shaderName = "texture";
-            _this.uniforms = new TextureUniforms();
-            return _this;
-        }
-        return TextureMaterial;
-    }(feng3d.Material));
-    feng3d.TextureMaterial = TextureMaterial;
     var TextureUniforms = /** @class */ (function () {
         function TextureUniforms() {
+            this.__class__ = "feng3d.TextureUniforms";
             /**
              * 颜色
              */
@@ -20676,20 +20624,9 @@ var feng3d;
         FogMode[FogMode["EXP2"] = 2] = "EXP2";
         FogMode[FogMode["LINEAR"] = 3] = "LINEAR";
     })(FogMode = feng3d.FogMode || (feng3d.FogMode = {}));
-    var StandardMaterial = /** @class */ (function (_super) {
-        __extends(StandardMaterial, _super);
-        function StandardMaterial() {
-            var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.StandardMaterial";
-            _this.shaderName = "standard";
-            _this.uniforms = new StandardUniforms();
-            return _this;
-        }
-        return StandardMaterial;
-    }(feng3d.Material));
-    feng3d.StandardMaterial = StandardMaterial;
     var StandardUniforms = /** @class */ (function () {
         function StandardUniforms() {
+            this.__class__ = "feng3d.StandardUniforms";
             /**
              * 点绘制时点的尺寸
              */
@@ -20984,11 +20921,10 @@ var feng3d;
                 //材质
                 var model = gameObject.getComponent(feng3d.Model);
                 model.geometry = new feng3d.PlaneGeometry().value({ width: this.lightType == feng3d.LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
-                var textureMaterial = model.material = new feng3d.TextureMaterial();
+                var textureMaterial = model.material = new feng3d.Material().value({ shaderName: "texture", uniforms: { s_texture: this.frameBufferObject.texture } });
                 //
                 // textureMaterial.uniforms.s_texture.url = 'Assets/pz.jpg';
                 // textureMaterial.uniforms.u_color.setTo(1.0, 0.0, 0.0, 1.0);
-                textureMaterial.uniforms.s_texture = this.frameBufferObject.texture;
                 textureMaterial.renderParams.enableBlend = true;
                 textureMaterial.renderParams.sfactor = feng3d.BlendFactor.ONE;
                 textureMaterial.renderParams.dfactor = feng3d.BlendFactor.ZERO;
@@ -22355,7 +22291,7 @@ var feng3d;
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.Water";
             _this.geometry = new feng3d.PlaneGeometry().value({ width: 10, height: 10 });
-            _this.material = new feng3d.WaterMaterial();
+            _this.material = new feng3d.Material().value({ shaderName: "water" });
             /**
              * 帧缓冲对象，用于处理水面反射
              */
@@ -22363,13 +22299,14 @@ var feng3d;
             return _this;
         }
         Water.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
+            var uniforms = this.material.uniforms;
             var sun = this.gameObject.scene.activeDirectionalLights[0];
             if (sun) {
-                this.material.uniforms.u_sunColor = sun.color;
-                this.material.uniforms.u_sunDirection = sun.transform.localToWorldMatrix.forward.clone().negate();
+                uniforms.u_sunColor = sun.color;
+                uniforms.u_sunDirection = sun.transform.localToWorldMatrix.forward.clone().negate();
             }
             var clipBias = 0;
-            this.material.uniforms.u_time += 1.0 / 60.0;
+            uniforms.u_time += 1.0 / 60.0;
             // this.material.uniforms.s_mirrorSampler.url = "Assets/floor_diffuse.jpg";
             _super.prototype.beforeRender.call(this, gl, renderAtomic, scene3d, camera);
             if (1)
@@ -22429,7 +22366,7 @@ var feng3d;
             frameBufferObject.deactive(gl);
             //
             // this.material.uniforms.s_mirrorSampler = frameBufferObject.texture;
-            this.material.uniforms.u_textureMatrix = textureMatrix;
+            uniforms.u_textureMatrix = textureMatrix;
         };
         return Water;
     }(feng3d.Model));
@@ -22437,20 +22374,9 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var WaterMaterial = /** @class */ (function (_super) {
-        __extends(WaterMaterial, _super);
-        function WaterMaterial() {
-            var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.WaterMaterial";
-            _this.shaderName = "water";
-            _this.uniforms = new WaterUniforms();
-            return _this;
-        }
-        return WaterMaterial;
-    }(feng3d.Material));
-    feng3d.WaterMaterial = WaterMaterial;
     var WaterUniforms = /** @class */ (function () {
         function WaterUniforms() {
+            this.__class__ = "feng3d.WaterUniforms";
             this.u_alpha = 1.0;
             // @serialize
             // @oav({ componentParam: { tooltip: "水体运动时间，默认自动递增" } })
@@ -22720,22 +22646,11 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var TerrainMaterial = /** @class */ (function (_super) {
-        __extends(TerrainMaterial, _super);
-        function TerrainMaterial() {
-            var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.TerrainMaterial";
-            _this.shaderName = "terrain";
-            _this.uniforms = new TerrainUniforms();
-            return _this;
-        }
-        return TerrainMaterial;
-    }(feng3d.Material));
-    feng3d.TerrainMaterial = TerrainMaterial;
     var TerrainUniforms = /** @class */ (function (_super) {
         __extends(TerrainUniforms, _super);
         function TerrainUniforms() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.TerrainUniforms";
             _this.s_splatTexture1 = new feng3d.UrlImageTexture2D().value({
                 generateMipmap: true,
                 minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
@@ -22963,7 +22878,7 @@ var feng3d;
              * 地形几何体数据
              */
             _this.geometry = new feng3d.TerrainGeometry();
-            _this.material = new feng3d.TerrainMaterial();
+            _this.material = new feng3d.Material().value({ shaderName: "terrain" });
             return _this;
         }
         return Terrain;
@@ -23392,7 +23307,7 @@ var feng3d;
              */
             _this.numParticles = 1000;
             _this.geometry = new feng3d.PointGeometry();
-            _this.material = new feng3d.ParticleMaterial().value({ renderParams: { renderMode: feng3d.RenderMode.POINTS } });
+            _this.material = new feng3d.Material().value({ shaderName: "particle", renderParams: { renderMode: feng3d.RenderMode.POINTS } });
             /**
              * 粒子全局属性
              */
@@ -23615,22 +23530,12 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var ParticleMaterial = /** @class */ (function (_super) {
-        __extends(ParticleMaterial, _super);
-        function ParticleMaterial() {
-            var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.ParticleMaterial";
-            _this.shaderName = "particle";
-            _this.uniforms = new ParticleUniforms();
-            return _this;
-        }
-        return ParticleMaterial;
-    }(feng3d.Material));
-    feng3d.ParticleMaterial = ParticleMaterial;
     var ParticleUniforms = /** @class */ (function (_super) {
         __extends(ParticleUniforms, _super);
         function ParticleUniforms() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.ParticleUniforms";
+            return _this;
         }
         return ParticleUniforms;
     }(feng3d.StandardUniforms));
@@ -25281,7 +25186,7 @@ var feng3d;
                         image = image.substring(0, image.indexOf("."));
                         image += ".JPG";
                         image = this.root + image;
-                        model.material = new feng3d.StandardMaterial().value({ uniforms: { s_diffuse: { url: image } }, renderParams: { cullFace: feng3d.CullFace.FRONT } });
+                        model.material = new feng3d.Material().value({ uniforms: { s_diffuse: { url: image } }, renderParams: { cullFace: feng3d.CullFace.FRONT } });
                     }
                     model.geometry = geometry;
                     model.skinSkeleton = skinSkeleton;
@@ -26647,7 +26552,7 @@ var feng3d;
             var materials = {};
             for (var name_5 in mtl) {
                 var materialInfo = mtl[name_5];
-                var material = materials[name_5] = new feng3d.StandardMaterial().value({
+                var material = materials[name_5] = new feng3d.Material().value({
                     name: materialInfo.name,
                     uniforms: {
                         u_diffuse: { r: materialInfo.kd[0], g: materialInfo.kd[1], b: materialInfo.kd[2], },

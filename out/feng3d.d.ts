@@ -9335,7 +9335,7 @@ declare namespace feng3d {
          * 材质
          * Returns the first instantiated Material assigned to the renderer.
          */
-        material: Materials;
+        material: Material;
         /**
          * 是否投射阴影
          */
@@ -10659,10 +10659,10 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface MaterialMap {
-        Material: Material;
+    interface UniformsMap {
     }
-    type Materials = MaterialMap[keyof MaterialMap];
+    type ShaderNames = keyof UniformsMap;
+    type UniformsData = UniformsMap[keyof UniformsMap];
     /**
      * 材质
      */
@@ -10670,11 +10670,11 @@ declare namespace feng3d {
         /**
          * shader名称
          */
-        shaderName: string;
+        shaderName: ShaderNames;
         /**
          * Uniform数据
          */
-        uniforms: {};
+        uniforms: UniformsData;
         /**
          * 渲染参数
          */
@@ -10689,18 +10689,11 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface MaterialMap {
-        PointMaterial: PointMaterial;
-    }
-    /**
-     * 颜色材质
-     */
-    class PointMaterial extends Material {
-        __class__: "feng3d.PointMaterial";
-        uniforms: PointUniforms;
-        constructor();
+    interface UniformsMap {
+        point: PointUniforms;
     }
     class PointUniforms {
+        __class__: "feng3d.PointUniforms";
         /**
          * 颜色
          */
@@ -10712,18 +10705,11 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface MaterialMap {
-        ColorMaterial: ColorMaterial;
-    }
-    /**
-     * 颜色材质
-     */
-    class ColorMaterial extends Material {
-        __class__: "feng3d.ColorMaterial";
-        uniforms: ColorUniforms;
-        constructor();
+    interface UniformsMap {
+        color: ColorUniforms;
     }
     class ColorUniforms {
+        __class__: "feng3d.ColorUniforms";
         /**
          * 颜色
          */
@@ -10731,19 +10717,15 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface MaterialMap {
-        SegmentMaterial: SegmentMaterial;
+    interface UniformsMap {
+        segment: SegmentUniforms;
     }
     /**
      * 线段材质
      * 目前webgl不支持修改线条宽度，参考：https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
      */
-    class SegmentMaterial extends Material {
-        __class__: "feng3d.SegmentMaterial";
-        uniforms: SegmentUniforms;
-        constructor();
-    }
     class SegmentUniforms {
+        __class__: "feng3d.SegmentUniforms";
         /**
          * 颜色
          */
@@ -10751,18 +10733,11 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface MaterialMap {
-        TextureMaterial: TextureMaterial;
-    }
-    /**
-     * 纹理材质
-     */
-    class TextureMaterial extends Material {
-        __class__: "feng3d.TextureMaterial";
-        uniforms: TextureUniforms;
-        constructor();
+    interface UniformsMap {
+        texture: TextureUniforms;
     }
     class TextureUniforms {
+        __class__: "feng3d.TextureUniforms";
         /**
          * 颜色
          */
@@ -10783,15 +10758,11 @@ declare namespace feng3d {
         EXP2 = 2,
         LINEAR = 3
     }
-    interface MaterialMap {
-        StandardMaterial: StandardMaterial;
-    }
-    class StandardMaterial extends Material {
-        __class__: "feng3d.StandardMaterial";
-        uniforms: StandardUniforms;
-        constructor();
+    interface UniformsMap {
+        standard: StandardUniforms;
     }
     class StandardUniforms {
+        __class__: "feng3d.StandardUniforms" | "feng3d.TerrainUniforms" | "feng3d.ParticleUniforms";
         /**
          * 点绘制时点的尺寸
          */
@@ -11385,7 +11356,7 @@ declare namespace feng3d {
     class Water extends Model {
         __class__: "feng3d.Water";
         geometry: PlaneGeometry;
-        material: WaterMaterial;
+        material: Material;
         /**
          * 帧缓冲对象，用于处理水面反射
          */
@@ -11394,15 +11365,11 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface MaterialMap {
-        WaterMaterial: WaterMaterial;
-    }
-    class WaterMaterial extends Material {
-        __class__: "feng3d.WaterMaterial";
-        uniforms: WaterUniforms;
-        constructor();
+    interface UniformsMap {
+        water: WaterUniforms;
     }
     class WaterUniforms {
+        __class__: "feng3d.WaterUniforms";
         u_alpha: number;
         u_time: number;
         u_size: number;
@@ -11489,15 +11456,11 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface MaterialMap {
-        TerrainMaterial: TerrainMaterial;
-    }
-    class TerrainMaterial extends Material {
-        __class__: "feng3d.TerrainMaterial";
-        uniforms: TerrainUniforms;
-        constructor();
+    interface UniformsMap {
+        terrain: TerrainUniforms;
     }
     class TerrainUniforms extends StandardUniforms {
+        __class__: "feng3d.TerrainUniforms";
         s_splatTexture1: UrlImageTexture2D;
         s_splatTexture2: UrlImageTexture2D;
         s_splatTexture3: UrlImageTexture2D;
@@ -11566,7 +11529,7 @@ declare namespace feng3d {
          * 地形几何体数据
          */
         geometry: TerrainGeometry;
-        material: TerrainMaterial;
+        material: Material;
     }
 }
 declare namespace feng3d {
@@ -11800,7 +11763,7 @@ declare namespace feng3d {
          */
         numParticles: number;
         geometry: PointGeometry;
-        material: ParticleMaterial;
+        material: Material;
         /**
          * 粒子全局属性
          */
@@ -11864,15 +11827,11 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface MaterialMap {
-        ParticleMaterial: ParticleMaterial;
-    }
-    class ParticleMaterial extends Material {
-        __class__: "feng3d.ParticleMaterial";
-        uniforms: ParticleUniforms;
-        constructor();
+    interface UniformsMap {
+        particle: ParticleUniforms;
     }
     class ParticleUniforms extends StandardUniforms {
+        __class__: "feng3d.ParticleUniforms";
     }
 }
 declare namespace feng3d {

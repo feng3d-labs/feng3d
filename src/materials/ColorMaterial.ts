@@ -1,26 +1,10 @@
 namespace feng3d
 {
-    export interface MaterialMap { ColorMaterial: ColorMaterial }
-
-    /**
-     * 颜色材质
-     */
-    export class ColorMaterial extends Material
-    {
-        __class__: "feng3d.ColorMaterial" = "feng3d.ColorMaterial";
-
-        uniforms: ColorUniforms;
-
-        constructor()
-        {
-            super();
-            this.shaderName = "color";
-            this.uniforms = new ColorUniforms();
-        }
-    }
+    export interface UniformsMap { color: ColorUniforms }
 
     export class ColorUniforms
     {
+        __class__: "feng3d.ColorUniforms" = "feng3d.ColorUniforms";
         /** 
          * 颜色
          */

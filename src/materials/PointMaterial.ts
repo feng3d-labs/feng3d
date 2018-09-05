@@ -1,27 +1,10 @@
 namespace feng3d
 {
 
-    export interface MaterialMap { PointMaterial: PointMaterial }
-
-    /**
-     * 颜色材质
-     */
-    export class PointMaterial extends Material
-    {
-        __class__: "feng3d.PointMaterial" = "feng3d.PointMaterial";
-
-        uniforms: PointUniforms;
-
-        constructor()
-        {
-            super();
-            this.shaderName = "point";
-            this.uniforms = new PointUniforms();
-        }
-    }
-
+    export interface UniformsMap { point: PointUniforms }
     export class PointUniforms
     {
+        __class__: "feng3d.PointUniforms" = "feng3d.PointUniforms";
         /** 
          * 颜色
          */

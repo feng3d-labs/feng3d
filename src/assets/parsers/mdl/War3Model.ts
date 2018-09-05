@@ -83,7 +83,7 @@ namespace feng3d.war3
 					image += ".JPG";
 					image = this.root + image;
 
-					model.material = new StandardMaterial().value({ uniforms: { s_diffuse: { url: image } }, renderParams: { cullFace: CullFace.FRONT } });
+					model.material = new feng3d.Material().value({ uniforms: { s_diffuse: { url: image } }, renderParams: { cullFace: CullFace.FRONT } });
 				}
 
 				model.geometry = geometry;

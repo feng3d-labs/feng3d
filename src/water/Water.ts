@@ -12,7 +12,7 @@ namespace feng3d
 
         geometry = new PlaneGeometry().value({ width: 10, height: 10 });
 
-        material = new WaterMaterial();
+        material = new Material().value({ shaderName: "water" });
 
         /**
          * 帧缓冲对象，用于处理水面反射
@@ -21,16 +21,17 @@ namespace feng3d
 
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
+            var uniforms = <feng3d.WaterUniforms>this.material.uniforms;
             var sun = this.gameObject.scene.activeDirectionalLights[0];
             if (sun)
             {
-                this.material.uniforms.u_sunColor = sun.color;
-                this.material.uniforms.u_sunDirection = sun.transform.localToWorldMatrix.forward.clone().negate();
+                uniforms.u_sunColor = sun.color;
+                uniforms.u_sunDirection = sun.transform.localToWorldMatrix.forward.clone().negate();
             }
 
             var clipBias = 0;
 
-            this.material.uniforms.u_time += 1.0 / 60.0;
+            uniforms.u_time += 1.0 / 60.0;
 
             // this.material.uniforms.s_mirrorSampler.url = "Assets/floor_diffuse.jpg";
 
@@ -115,7 +116,7 @@ namespace feng3d
             //
             // this.material.uniforms.s_mirrorSampler = frameBufferObject.texture;
 
-            this.material.uniforms.u_textureMatrix = textureMatrix;
+            uniforms.u_textureMatrix = textureMatrix;
         }
     }
 }

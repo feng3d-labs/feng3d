@@ -20,6 +20,6 @@ namespace feng3d
          */
         geometry = new TerrainGeometry();
 
-        material = new TerrainMaterial();
+        material = new Material().value({ shaderName: "terrain" });
     }
 }

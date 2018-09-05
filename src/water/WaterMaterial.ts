@@ -1,23 +1,11 @@
 namespace feng3d
 {
-    export interface MaterialMap { WaterMaterial: WaterMaterial }
-
-    export class WaterMaterial extends Material
-    {
-        __class__: "feng3d.WaterMaterial" = "feng3d.WaterMaterial";
-
-        uniforms: WaterUniforms;
-
-        constructor()
-        {
-            super();
-            this.shaderName = "water";
-            this.uniforms = new WaterUniforms();
-        }
-    }
+    export interface UniformsMap { water: WaterUniforms }
 
     export class WaterUniforms
     {
+        __class__: "feng3d.WaterUniforms" = "feng3d.WaterUniforms";
+
         @serialize
         @oav({ componentParam: { tooltip: "透明度" } })
         u_alpha = 1.0;

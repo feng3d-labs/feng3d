@@ -1,8 +1,8 @@
 namespace feng3d
 {
-    export interface MaterialMap { Material: Material }
-
-    export type Materials = MaterialMap[keyof MaterialMap];
+    export interface UniformsMap { }
+    export type ShaderNames = keyof UniformsMap;
+    export type UniformsData = UniformsMap[keyof UniformsMap];
 
     /**
      * 材质
@@ -15,14 +15,14 @@ namespace feng3d
         @oav({ component: "OAVMaterialName" })
         @serialize
         @watch("onShaderChanged")
-        shaderName = "standard";
+        shaderName: ShaderNames = "standard";
 
         /**
          * Uniform数据
          */
         @serialize
         @oav({ component: "OAVObjectView" })
-        uniforms = {};
+        uniforms: UniformsData = new StandardUniforms();
 
         /**
          * 渲染参数
@@ -60,6 +60,7 @@ namespace feng3d
         private onShaderChanged()
         {
             var cls = shaderConfig.shaders[this.shaderName].cls;
+            cls = cls || StandardUniforms;
             if (cls)
             {
                 if (!(this.uniforms instanceof cls))
@@ -71,5 +72,10 @@ namespace feng3d
             }
             this.shader = new Shader(this.shaderName);
         }
+
+        // setShader<T extends keyof UniformsMap>(shaderName: T, uniforms: UniformsMap[T])
+        // {
+
+        // }
     }
 }

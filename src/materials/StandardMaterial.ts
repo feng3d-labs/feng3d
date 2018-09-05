@@ -11,24 +11,11 @@ namespace feng3d
         LINEAR = 3
     }
 
-    export interface MaterialMap { StandardMaterial: StandardMaterial }
-
-    export class StandardMaterial extends Material
-    {
-        __class__: "feng3d.StandardMaterial" = "feng3d.StandardMaterial";
-
-        uniforms: StandardUniforms;
-
-        constructor()
-        {
-            super();
-            this.shaderName = "standard";
-            this.uniforms = new StandardUniforms();
-        }
-    }
+    export interface UniformsMap { standard: StandardUniforms }
 
     export class StandardUniforms
     {
+        __class__: "feng3d.StandardUniforms" | "feng3d.TerrainUniforms" | "feng3d.ParticleUniforms" = "feng3d.StandardUniforms";
         /**
          * 点绘制时点的尺寸
          */

@@ -22,7 +22,7 @@ namespace feng3d
          */
         @oav({ component: "OAVPick", componentParam: { tooltip: "材质，提供模型以皮肤", accepttype: "material", datatype: "material" } })
         @serialize
-        material: Materials;
+        material: Material;
 
         /**
          * 是否投射阴影
@@ -79,7 +79,7 @@ namespace feng3d
                 this.geometry = new CubeGeometry();
 
             if (!this.material)
-                this.material = new StandardMaterial();
+                this.material = new Material();
 
             this.on("scenetransformChanged", this.onScenetransformChanged, this);
         }
