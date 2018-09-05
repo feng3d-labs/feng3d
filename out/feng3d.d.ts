@@ -10667,6 +10667,7 @@ declare namespace feng3d {
      * 材质
      */
     class Material extends Feng3dAssets {
+        __class__: "feng3d.Material";
         /**
          * shader名称
          */

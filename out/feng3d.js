@@ -20462,6 +20462,7 @@ var feng3d;
         __extends(Material, _super);
         function Material() {
             var _this = _super.call(this) || this;
+            _this.__class__ = "feng3d.Material";
             /**
              * shader名称
              */
