@@ -84,10 +84,6 @@ namespace feng3d
          */
         USE_TERRAIN_MERGE: boolean;
         /**
-         * 雾函数
-         */
-        HAS_FOG_METHOD: boolean;
-        /**
          * 环境映射函数
          */
         HAS_ENV_METHOD: boolean;

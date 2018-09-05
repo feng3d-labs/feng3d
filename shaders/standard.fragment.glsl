@@ -47,8 +47,6 @@ void main()
     vec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;
     normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);
 
-    // vec3 normal = v_normal;
-
     //获取漫反射基本颜色
     vec4 diffuseColor = u_diffuse;
     diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);
@@ -86,18 +84,4 @@ void main()
     finalColor = fogMethod(finalColor);
 
     gl_FragColor = finalColor;
-
-    // #if NUM_DIRECTIONALLIGHT_CASTSHADOW > 0
-    //     // debug
-    //     vec4 shadowCoord = v_directionalShadowCoord[ 0 ];
-    //     shadowCoord.xyz /= shadowCoord.w;
-    //     shadowCoord.xyz = (shadowCoord.xyz + 1.0) / 2.0;
-    //     // shadowCoord.z = (shadowCoord.z + 1.0) / 2.0;
-
-    //     vec4 tvec = texture2D( u_directionalShadowMaps[0], shadowCoord.xy );
-    //     gl_FragColor = tvec;
-
-    //     // gl_FragColor = packDepthToRGBA( shadowCoord.z );
-    // #endif
-    
 }

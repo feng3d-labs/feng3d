@@ -238,7 +238,6 @@
         "src/animators/skeleton/Skeleton.ts",
         "src/animators/skeleton/SkeletonComponent.ts",
         "src/animators/skeleton/SkinnedModel.ts",
-        "src/animators/skeleton/SkeletonMaterial.ts",
         //
         "src/animation/PropertyClip.ts",
         "src/animation/AnimationClip.ts",

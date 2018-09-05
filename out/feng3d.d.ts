@@ -8311,10 +8311,6 @@ declare namespace feng3d {
          */
         USE_TERRAIN_MERGE: boolean;
         /**
-         * 雾函数
-         */
-        HAS_FOG_METHOD: boolean;
-        /**
          * 环境映射函数
          */
         HAS_ENV_METHOD: boolean;
@@ -11975,7 +11971,6 @@ declare namespace feng3d {
         __class__: "feng3d.SkinnedModel";
         readonly single: boolean;
         skinSkeleton: SkinSkeleton;
-        material: SkeletonMaterial;
         initMatrix3d: Matrix4x4;
         /**
          * 创建一个骨骼动画类
@@ -12013,18 +12008,6 @@ declare namespace feng3d {
             [oldjointid: number]: number;
         };
         resetJointIndices(jointIndices: number[], skeleton: SkeletonComponent): void;
-    }
-}
-declare namespace feng3d {
-    interface MaterialMap {
-        SkeletonMaterial: SkeletonMaterial;
-    }
-    class SkeletonMaterial extends Material {
-        __class__: "feng3d.SkeletonMaterial";
-        uniforms: SkeletonUniforms;
-        constructor();
-    }
-    class SkeletonUniforms extends StandardUniforms {
     }
 }
 declare namespace feng3d {

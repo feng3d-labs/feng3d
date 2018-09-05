@@ -13,10 +13,6 @@ namespace feng3d
         skinSkeleton: SkinSkeleton;
 
         @serialize
-        @oav()
-        material = new SkeletonMaterial();
-
-        @serialize
         initMatrix3d: Matrix4x4;
 
         /**

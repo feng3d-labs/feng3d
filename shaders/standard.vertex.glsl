@@ -4,6 +4,7 @@ precision mediump float;
 attribute vec3 a_position;
 attribute vec2 a_uv;
 attribute vec3 a_normal;
+attribute vec3 a_tangent;
 
 uniform mat4 u_modelMatrix;
 uniform mat4 u_ITModelMatrix;
@@ -14,18 +15,28 @@ varying vec2 v_uv;
 varying vec3 v_worldPosition;
 varying vec3 v_normal;
 
-attribute vec3 a_tangent;
-
 varying vec3 v_tangent;
 varying vec3 v_bitangent;
 
-uniform float u_PointSize;
+#ifdef HAS_SKELETON_ANIMATION
+    #include<skeleton.vertex>
+#endif
 
-#include<lights_declare.vertex>
+#if NUM_DIRECTIONALLIGHT_CASTSHADOW > 0 || NUM_DIRECTIONALLIGHT_CASTSHADOW > 0
+    #include<lights_declare.vertex>
+#endif
+
+#ifdef IS_POINTS_MODE
+    uniform float u_PointSize;
+#endif
 
 void main() {
 
     vec4 position = vec4(a_position,1.0);
+    
+    #ifdef HAS_SKELETON_ANIMATION
+        position = skeletonAnimation(position);
+    #endif
     
     vec3 normal = a_normal;
 
@@ -42,8 +53,12 @@ void main() {
     v_normal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);
     v_tangent = normalize((u_modelMatrix * vec4(a_tangent,0.0)).xyz);
     v_bitangent = cross(v_normal,v_tangent);
+        
+    #if NUM_DIRECTIONALLIGHT_CASTSHADOW > 0 || NUM_DIRECTIONALLIGHT_CASTSHADOW > 0
+        #include<lights.vertex>
+    #endif
 
-    #include<lights.vertex>
-
-    gl_PointSize = u_PointSize;
+    #ifdef IS_POINTS_MODE
+        gl_PointSize = u_PointSize;
+    #endif
 }
