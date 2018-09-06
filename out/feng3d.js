@@ -16354,7 +16354,7 @@ var feng3d;
              * 是否接受阴影
              */
             _this.receiveShadows = true;
-            _this.lightPicker = new feng3d.LightPicker(_this);
+            _this._lightPicker = new feng3d.LightPicker(_this);
             return _this;
         }
         Object.defineProperty(Model.prototype, "single", {
@@ -16403,7 +16403,7 @@ var feng3d;
             //
             this.geometry.beforeRender(renderAtomic);
             this.material.beforeRender(renderAtomic);
-            this.lightPicker.beforeRender(renderAtomic);
+            this._lightPicker.beforeRender(renderAtomic);
         };
         /**
           * 判断射线是否穿过对象
@@ -20484,7 +20484,7 @@ var feng3d;
                     renderAtomic.uniforms[key] = this.uniforms[key];
                 }
             }
-            renderAtomic.shader = this.shader;
+            renderAtomic.shader = this._shader;
             renderAtomic.renderParams = this.renderParams;
             renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode == feng3d.RenderMode.POINTS;
         };
@@ -20498,8 +20498,18 @@ var feng3d;
                     this.uniforms = newuniforms;
                 }
             }
-            this.shader = new feng3d.Shader(this.shaderName);
+            this._shader = new feng3d.Shader(this.shaderName);
         };
+        Object.defineProperty(Material, "default", {
+            /**
+             * 默认材质
+             */
+            get: function () {
+                return Material._default = Material._default || new Material().value({ name: "Default-Material", hideFlags: feng3d.HideFlags.NotEditable });
+            },
+            enumerable: true,
+            configurable: true
+        });
         __decorate([
             feng3d.oav({ component: "OAVMaterialName" }),
             feng3d.serialize,

@@ -33,11 +33,6 @@ namespace feng3d
         @oav({ block: "渲染参数", component: "OAVObjectView" })
         renderParams = new RenderParams();
 
-        /**
-         * 渲染程序
-         */
-        shader: Shader;
-
         constructor()
         {
             super();
@@ -53,11 +48,16 @@ namespace feng3d
                     renderAtomic.uniforms[<any>key] = this.uniforms[key];
                 }
             }
-            renderAtomic.shader = this.shader;
+            renderAtomic.shader = this._shader;
             renderAtomic.renderParams = this.renderParams;
 
             renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode == RenderMode.POINTS;
         }
+
+        /**
+         * 渲染程序
+         */
+        private _shader: Shader;
 
         private onShaderChanged()
         {
@@ -72,12 +72,16 @@ namespace feng3d
                     this.uniforms = newuniforms;
                 }
             }
-            this.shader = new Shader(this.shaderName);
+            this._shader = new Shader(this.shaderName);
         }
 
-        // setShader<T extends keyof UniformsMap>(shaderName: T, uniforms: UniformsMap[T])
-        // {
-
-        // }
+        /**
+         * 默认材质
+         */
+        static get default()
+        {
+            return Material._default = Material._default || new Material().value({ name: "Default-Material", hideFlags: HideFlags.NotEditable });
+        }
+        private static _default: Material;
     }
 }

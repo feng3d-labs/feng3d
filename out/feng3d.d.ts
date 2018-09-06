@@ -9344,9 +9344,6 @@ declare namespace feng3d {
          * 是否接受阴影
          */
         receiveShadows: boolean;
-        lightPicker: LightPicker;
-        private _selfLocalBounds;
-        private _selfWorldBounds;
         /**
          * 自身局部包围盒
          */
@@ -9368,6 +9365,9 @@ declare namespace feng3d {
          * 销毁
          */
         dispose(): void;
+        private _lightPicker;
+        private _selfLocalBounds;
+        private _selfWorldBounds;
         private onGeometryChanged;
         private onScenetransformChanged;
         /**
@@ -10680,13 +10680,18 @@ declare namespace feng3d {
          * 渲染参数
          */
         renderParams: RenderParams;
+        constructor();
+        beforeRender(renderAtomic: RenderAtomic): void;
         /**
          * 渲染程序
          */
-        shader: Shader;
-        constructor();
-        beforeRender(renderAtomic: RenderAtomic): void;
+        private _shader;
         private onShaderChanged;
+        /**
+         * 默认材质
+         */
+        static readonly default: Material;
+        private static _default;
     }
 }
 declare namespace feng3d {

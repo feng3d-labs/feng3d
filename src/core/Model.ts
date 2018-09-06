@@ -38,11 +38,6 @@ namespace feng3d
         @serialize
         receiveShadows = true;
 
-        lightPicker: LightPicker;
-
-        private _selfLocalBounds: Box | null;
-        private _selfWorldBounds: Box | null;
-
 		/**
 		 * 自身局部包围盒
 		 */
@@ -68,7 +63,7 @@ namespace feng3d
         constructor()
         {
             super();
-            this.lightPicker = new LightPicker(this);
+            this._lightPicker = new LightPicker(this);
         }
 
         init(gameObject: GameObject)
@@ -94,7 +89,7 @@ namespace feng3d
             //
             this.geometry.beforeRender(renderAtomic);
             this.material.beforeRender(renderAtomic);
-            this.lightPicker.beforeRender(renderAtomic);
+            this._lightPicker.beforeRender(renderAtomic);
         }
 
         /**
@@ -146,6 +141,11 @@ namespace feng3d
             this.material = <any>null;
             super.dispose();
         }
+
+        //
+        private _lightPicker: LightPicker;
+        private _selfLocalBounds: Box | null;
+        private _selfWorldBounds: Box | null;
 
         private onGeometryChanged(property: string, oldValue: Geometrys, value: Geometrys)
         {
