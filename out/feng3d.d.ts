@@ -2478,6 +2478,10 @@ declare namespace feng3d {
      */
     class Feng3dAssets extends Feng3dObject {
         /**
+         * 资源编号
+         */
+        assetsId: string;
+        /**
          * 路径
          */
         path: string;
@@ -2489,7 +2493,14 @@ declare namespace feng3d {
          * 扩展名
          */
         extension: AssetExtension;
+        constructor();
         private pathChanged;
+        /**
+         * 获取资源
+         * @param assetsId 资源编号
+         */
+        static getAssets(assetsId: string): Feng3dAssets;
+        private static _lib;
     }
 }
 declare namespace feng3d {
@@ -2524,7 +2535,7 @@ declare namespace feng3d {
         /**
          * http://www.broofa.com/Tools/Math.uuid.htm
          */
-        generateUUID: () => string;
+        uuid: () => string;
         clamp: (value: any, min: any, max: any) => number;
         /**
          * compute euclidian modulo of m % n
@@ -9607,7 +9618,6 @@ declare namespace feng3d {
     }
     /**
      * 几何体
-
      */
     abstract class Geometry extends Feng3dObject {
         /**
@@ -9747,6 +9757,11 @@ declare namespace feng3d {
          */
         cloneFrom(geometry: Geometry): void;
         beforeRender(renderAtomic: RenderAtomic): void;
+        /**
+         * 立方体几何体
+         */
+        static readonly cube: CubeGeometry;
+        private static _cube;
     }
 }
 declare namespace feng3d {

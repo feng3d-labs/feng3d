@@ -204,7 +204,7 @@ namespace feng3d
             super();
             this.name = "GameObject";
             this.addComponent(Transform);
-            this.guid = FMath.generateUUID();
+            this.guid = FMath.uuid();
             //
             GameObject.pool.set(this.guid, this);
         }

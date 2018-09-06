@@ -23,7 +23,6 @@ namespace feng3d
 
     /**
      * 几何体
-
      */
     export abstract class Geometry extends Feng3dObject
     {
@@ -715,5 +714,14 @@ namespace feng3d
                 }
             }
         }
+
+        /**
+         * 立方体几何体
+         */
+        static get cube()
+        {
+            return this._cube = this._cube || new CubeGeometry();
+        }
+        private static _cube: CubeGeometry;
     }
 }

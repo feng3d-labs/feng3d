@@ -14,7 +14,7 @@ namespace feng3d
         @oav({ component: "OAVPick", componentParam: { tooltip: "几何体，提供模型以形状", accepttype: "geometry", datatype: "geometry" } })
         @serialize
         @watch("onGeometryChanged")
-        geometry: Geometrys;
+        geometry: Geometrys = Geometry.cube;
 
         /**
          * 材质
@@ -22,7 +22,7 @@ namespace feng3d
          */
         @oav({ component: "OAVPick", componentParam: { tooltip: "材质，提供模型以皮肤", accepttype: "material", datatype: "material" } })
         @serialize
-        material: Material;
+        material: Material = Material.default;
 
         /**
          * 是否投射阴影
@@ -70,11 +70,8 @@ namespace feng3d
         {
             super.init(gameObject);
 
-            if (!this.geometry)
-                this.geometry = new CubeGeometry();
-
-            if (!this.material)
-                this.material = new Material();
+            if (!this.geometry) this.geometry = new CubeGeometry();
+            if (!this.material) this.material = new Material();
 
             this.on("scenetransformChanged", this.onScenetransformChanged, this);
         }

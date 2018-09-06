@@ -4976,12 +4976,23 @@ var feng3d;
     var Feng3dAssets = /** @class */ (function (_super) {
         __extends(Feng3dAssets, _super);
         function Feng3dAssets() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.call(this) || this;
+            _this.assetsId = feng3d.FMath.uuid();
+            Feng3dAssets._lib.set(_this.assetsId, _this);
+            return _this;
         }
         Feng3dAssets.prototype.pathChanged = function () {
             // 更新名字
             this.name = feng3d.pathUtils.getName(this.path);
         };
+        /**
+         * 获取资源
+         * @param assetsId 资源编号
+         */
+        Feng3dAssets.getAssets = function (assetsId) {
+            return this._lib.get(assetsId);
+        };
+        Feng3dAssets._lib = new Map();
         __decorate([
             feng3d.watch("pathChanged")
         ], Feng3dAssets.prototype, "path", void 0);
@@ -5025,28 +5036,28 @@ var feng3d;
         /**
          * http://www.broofa.com/Tools/Math.uuid.htm
          */
-        generateUUID: function () {
+        uuid: function () {
             // http://www.broofa.com/Tools/Math.uuid.htm
             var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
-            var uuid = new Array(36);
+            var id = new Array(36);
             var rnd = 0, r;
             return function generateUUID() {
                 for (var i = 0; i < 36; i++) {
                     if (i === 8 || i === 13 || i === 18 || i === 23) {
-                        uuid[i] = '-';
+                        id[i] = '-';
                     }
                     else if (i === 14) {
-                        uuid[i] = '4';
+                        id[i] = '4';
                     }
                     else {
                         if (rnd <= 0x02)
                             rnd = 0x2000000 + (Math.random() * 0x1000000) | 0;
                         r = rnd & 0xf;
                         rnd = rnd >> 4;
-                        uuid[i] = chars[(i === 19) ? (r & 0x3) | 0x8 : r];
+                        id[i] = chars[(i === 19) ? (r & 0x3) | 0x8 : r];
                     }
                 }
-                return uuid.join('');
+                return id.join('');
             };
         }(),
         clamp: function (value, min, max) {
@@ -15518,7 +15529,7 @@ var feng3d;
             _this._children = [];
             _this.name = "GameObject";
             _this.addComponent(feng3d.Transform);
-            _this.guid = feng3d.FMath.generateUUID();
+            _this.guid = feng3d.FMath.uuid();
             //
             GameObject.pool.set(_this.guid, _this);
             return _this;
@@ -16347,6 +16358,15 @@ var feng3d;
         function Model() {
             var _this = _super.call(this) || this;
             /**
+             * Returns the instantiated Mesh assigned to the mesh filter.
+             */
+            _this.geometry = feng3d.Geometry.cube;
+            /**
+             * 材质
+             * Returns the first instantiated Material assigned to the renderer.
+             */
+            _this.material = feng3d.Material.default;
+            /**
              * 是否投射阴影
              */
             _this.castShadows = true;
@@ -17022,7 +17042,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 几何体
-
      */
     var Geometry = /** @class */ (function (_super) {
         __extends(Geometry, _super);
@@ -17606,6 +17625,16 @@ var feng3d;
                 }
             }
         };
+        Object.defineProperty(Geometry, "cube", {
+            /**
+             * 立方体几何体
+             */
+            get: function () {
+                return this._cube = this._cube || new feng3d.CubeGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
         __decorate([
             feng3d.oav()
         ], Geometry.prototype, "invalidateGeometry", null);
