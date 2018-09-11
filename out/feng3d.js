@@ -16358,15 +16358,6 @@ var feng3d;
         function Model() {
             var _this = _super.call(this) || this;
             /**
-             * Returns the instantiated Mesh assigned to the mesh filter.
-             */
-            _this.geometry = feng3d.Geometry.cube;
-            /**
-             * 材质
-             * Returns the first instantiated Material assigned to the renderer.
-             */
-            _this.material = feng3d.Material.default;
-            /**
              * 是否投射阴影
              */
             _this.castShadows = true;
@@ -16374,11 +16365,26 @@ var feng3d;
              * 是否接受阴影
              */
             _this.receiveShadows = true;
+            /**
+             * 启用的几何体
+             */
+            _this._activeGeometry = feng3d.Geometry.cube;
+            _this._activeMaterial = feng3d.Material.default;
             _this._lightPicker = new feng3d.LightPicker(_this);
             return _this;
         }
         Object.defineProperty(Model.prototype, "single", {
             get: function () { return true; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Model.prototype, "activeMaterial", {
+            /**
+             * 启用的材质
+             */
+            get: function () {
+                return this._activeMaterial;
+            },
             enumerable: true,
             configurable: true
         });
@@ -16408,10 +16414,6 @@ var feng3d;
         });
         Model.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
-            if (!this.geometry)
-                this.geometry = new feng3d.CubeGeometry();
-            if (!this.material)
-                this.material = new feng3d.Material();
             this.on("scenetransformChanged", this.onScenetransformChanged, this);
         };
         Model.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
@@ -16421,8 +16423,8 @@ var feng3d;
             renderAtomic.uniforms.u_mvMatrix = function () { return feng3d.lazy.getvalue(renderAtomic.uniforms.u_modelMatrix).clone().append(feng3d.lazy.getvalue(renderAtomic.uniforms.u_viewMatrix)); };
             renderAtomic.uniforms.u_ITMVMatrix = function () { return feng3d.lazy.getvalue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose(); };
             //
-            this.geometry.beforeRender(renderAtomic);
-            this.material.beforeRender(renderAtomic);
+            this._activeGeometry.beforeRender(renderAtomic);
+            this._activeMaterial.beforeRender(renderAtomic);
             this._lightPicker.beforeRender(renderAtomic);
         };
         /**
@@ -16464,7 +16466,13 @@ var feng3d;
             this.material = null;
             _super.prototype.dispose.call(this);
         };
-        Model.prototype.onGeometryChanged = function (property, oldValue, value) {
+        Model.prototype.onGeometryChanged = function () {
+            this._activeGeometry = this.geometry || feng3d.Geometry.cube;
+        };
+        Model.prototype.onMaterialChanged = function () {
+            this._activeMaterial = this.material || feng3d.Material.default;
+        };
+        Model.prototype.onActiveGeometryChanged = function (property, oldValue, value) {
             if (oldValue) {
                 oldValue.off("boundsInvalid", this.onBoundsInvalid, this);
             }
@@ -16505,7 +16513,8 @@ var feng3d;
         ], Model.prototype, "geometry", void 0);
         __decorate([
             feng3d.oav({ component: "OAVPick", componentParam: { tooltip: "材质，提供模型以皮肤", accepttype: "material", datatype: "material" } }),
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.watch("onMaterialChanged")
         ], Model.prototype, "material", void 0);
         __decorate([
             feng3d.oav(),
@@ -16515,6 +16524,9 @@ var feng3d;
             feng3d.oav(),
             feng3d.serialize
         ], Model.prototype, "receiveShadows", void 0);
+        __decorate([
+            feng3d.watch("onActiveGeometryChanged")
+        ], Model.prototype, "_activeGeometry", void 0);
         return Model;
     }(feng3d.Behaviour));
     feng3d.Model = Model;
@@ -16904,8 +16916,8 @@ var feng3d;
                     continue;
                 var model = item.getComponent(feng3d.Model);
                 if (model && (model.castShadows || model.receiveShadows)
-                    && !model.material.renderParams.enableBlend
-                    && model.material.renderParams.renderMode == feng3d.RenderMode.TRIANGLES) {
+                    && !model.activeMaterial.renderParams.enableBlend
+                    && model.activeMaterial.renderParams.renderMode == feng3d.RenderMode.TRIANGLES) {
                     targets.push(model);
                 }
                 item.children.forEach(function (element) {
@@ -17005,7 +17017,7 @@ var feng3d;
                 var models = this.activeModels;
                 var camerapos = this.camera.transform.scenePosition;
                 var blenditems = this._blenditems = models.filter(function (item) {
-                    return item.material.renderParams.enableBlend;
+                    return item.activeMaterial.renderParams.enableBlend;
                 }).sort(function (b, a) { return a.transform.scenePosition.subTo(camerapos).lengthSquared - b.transform.scenePosition.subTo(camerapos).lengthSquared; });
                 return blenditems;
             },
@@ -17022,7 +17034,7 @@ var feng3d;
                 var models = this.activeModels;
                 var camerapos = this.camera.transform.scenePosition;
                 var unblenditems = this._unblenditems = models.filter(function (item) {
-                    return !item.material.renderParams.enableBlend;
+                    return !item.activeMaterial.renderParams.enableBlend;
                 }).sort(function (a, b) { return a.transform.scenePosition.subTo(camerapos).lengthSquared - b.transform.scenePosition.subTo(camerapos).lengthSquared; });
                 return unblenditems;
             },

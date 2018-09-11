@@ -9356,6 +9356,10 @@ declare namespace feng3d {
          */
         receiveShadows: boolean;
         /**
+         * 启用的材质
+         */
+        readonly activeMaterial: Material;
+        /**
          * 自身局部包围盒
          */
         readonly selfLocalBounds: Box;
@@ -9379,7 +9383,14 @@ declare namespace feng3d {
         private _lightPicker;
         private _selfLocalBounds;
         private _selfWorldBounds;
+        /**
+         * 启用的几何体
+         */
+        private _activeGeometry;
+        private _activeMaterial;
         private onGeometryChanged;
+        private onMaterialChanged;
+        private onActiveGeometryChanged;
         private onScenetransformChanged;
         /**
          * 更新世界边界

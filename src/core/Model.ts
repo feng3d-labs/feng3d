@@ -14,7 +14,7 @@ namespace feng3d
         @oav({ component: "OAVPick", componentParam: { tooltip: "几何体，提供模型以形状", accepttype: "geometry", datatype: "geometry" } })
         @serialize
         @watch("onGeometryChanged")
-        geometry: Geometrys = Geometry.cube;
+        geometry: Geometrys;
 
         /**
          * 材质
@@ -22,7 +22,8 @@ namespace feng3d
          */
         @oav({ component: "OAVPick", componentParam: { tooltip: "材质，提供模型以皮肤", accepttype: "material", datatype: "material" } })
         @serialize
-        material: Material = Material.default;
+        @watch("onMaterialChanged")
+        material: Material;
 
         /**
          * 是否投射阴影
@@ -37,6 +38,14 @@ namespace feng3d
         @oav()
         @serialize
         receiveShadows = true;
+
+        /**
+         * 启用的材质
+         */
+        get activeMaterial()
+        {
+            return this._activeMaterial;
+        }
 
 		/**
 		 * 自身局部包围盒
@@ -69,10 +78,6 @@ namespace feng3d
         init(gameObject: GameObject)
         {
             super.init(gameObject);
-
-            if (!this.geometry) this.geometry = new CubeGeometry();
-            if (!this.material) this.material = new Material();
-
             this.on("scenetransformChanged", this.onScenetransformChanged, this);
         }
 
@@ -84,8 +89,8 @@ namespace feng3d
             renderAtomic.uniforms.u_ITMVMatrix = () => lazy.getvalue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose();
 
             //
-            this.geometry.beforeRender(renderAtomic);
-            this.material.beforeRender(renderAtomic);
+            this._activeGeometry.beforeRender(renderAtomic);
+            this._activeMaterial.beforeRender(renderAtomic);
             this._lightPicker.beforeRender(renderAtomic);
         }
 
@@ -143,8 +148,24 @@ namespace feng3d
         private _lightPicker: LightPicker;
         private _selfLocalBounds: Box | null;
         private _selfWorldBounds: Box | null;
+        /**
+         * 启用的几何体
+         */
+        @watch("onActiveGeometryChanged")
+        private _activeGeometry: Geometrys = Geometry.cube;
+        private _activeMaterial = Material.default;
 
-        private onGeometryChanged(property: string, oldValue: Geometrys, value: Geometrys)
+        private onGeometryChanged()
+        {
+            this._activeGeometry = this.geometry || Geometry.cube;
+        }
+
+        private onMaterialChanged()
+        {
+            this._activeMaterial = this.material || Material.default;
+        }
+
+        private onActiveGeometryChanged(property: string, oldValue: Geometrys, value: Geometrys)
         {
             if (oldValue)
             {

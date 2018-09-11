@@ -254,8 +254,8 @@ namespace feng3d
                 if (!item.visible) continue;
                 var model = item.getComponent(Model);
                 if (model && (model.castShadows || model.receiveShadows)
-                    && !model.material.renderParams.enableBlend
-                    && model.material.renderParams.renderMode == RenderMode.TRIANGLES
+                    && !model.activeMaterial.renderParams.enableBlend
+                    && model.activeMaterial.renderParams.renderMode == RenderMode.TRIANGLES
                 )
                 {
                     targets.push(model);
