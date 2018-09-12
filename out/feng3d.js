@@ -4000,9 +4000,7 @@ var feng3d;
          */
         PathUtils.prototype.getExtension = function (path) {
             var name = this.getNameWithExtension(path);
-            var names = name.split(".");
-            names.shift();
-            var extension = names.join(".");
+            var extension = name.split(".").slice(1).join(".");
             return extension;
         };
         /**
@@ -4981,10 +4979,26 @@ var feng3d;
             Feng3dAssets._lib.set(_this.assetsId, _this);
             return _this;
         }
-        Feng3dAssets.prototype.pathChanged = function () {
-            // 更新名字
-            this.name = feng3d.pathUtils.getName(this.path);
-        };
+        Object.defineProperty(Feng3dAssets.prototype, "name", {
+            /**
+             * 文件(夹)名称
+             */
+            get: function () {
+                return this.path && feng3d.pathUtils.getName(this.path);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Feng3dAssets.prototype, "extension", {
+            /**
+             * 扩展名
+             */
+            get: function () {
+                return (this.path && feng3d.pathUtils.getExtension(this.path));
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 获取资源
          * @param assetsId 资源编号
@@ -4993,9 +5007,6 @@ var feng3d;
             return this._lib.get(assetsId);
         };
         Feng3dAssets._lib = new Map();
-        __decorate([
-            feng3d.watch("pathChanged")
-        ], Feng3dAssets.prototype, "path", void 0);
         return Feng3dAssets;
     }(feng3d.Feng3dObject));
     feng3d.Feng3dAssets = Feng3dAssets;
@@ -12305,7 +12316,7 @@ var feng3d;
                 this.map.set(gl, result);
             }
             catch (error) {
-                feng3d.error(this.shaderName + " \u7F16\u8BD1\u5931\u8D25\uFF01");
+                feng3d.error(this.shaderName + " \u7F16\u8BD1\u5931\u8D25\uFF01\n" + error);
                 return null;
             }
             return result;
@@ -12347,8 +12358,7 @@ var feng3d;
         Shader.prototype.compileShaderCode = function (gl, type, code) {
             var shader = gl.createShader(type);
             if (shader == null) {
-                feng3d.debuger && alert('unable to create shader');
-                return null;
+                throw 'unable to create shader';
             }
             gl.shaderSource(shader, code);
             gl.compileShader(shader);
@@ -12356,9 +12366,8 @@ var feng3d;
             var compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
             if (!compiled) {
                 var error = gl.getShaderInfoLog(shader);
-                feng3d.debuger && alert('Failed to compile shader: ' + error);
                 gl.deleteShader(shader);
-                return null;
+                throw 'Failed to compile shader: ' + error;
             }
             return shader;
         };
@@ -12366,7 +12375,7 @@ var feng3d;
             // 创建程序对象
             var program = gl.createProgram();
             if (!program) {
-                return null;
+                throw "创建 WebGLProgram 失败！";
             }
             // 添加着色器
             gl.attachShader(program, vertexShader);
@@ -12377,11 +12386,10 @@ var feng3d;
             var linked = gl.getProgramParameter(program, gl.LINK_STATUS);
             if (!linked) {
                 var error = gl.getProgramInfoLog(program);
-                feng3d.debuger && alert('Failed to link program: ' + error);
                 gl.deleteProgram(program);
                 gl.deleteShader(fragmentShader);
                 gl.deleteShader(vertexShader);
-                return null;
+                throw 'Failed to link program: ' + error;
             }
             return program;
         };
@@ -12395,12 +12403,8 @@ var feng3d;
         Shader.prototype.createProgram = function (gl, vshader, fshader) {
             // 编译顶点着色器
             var vertexShader = this.compileShaderCode(gl, gl.VERTEX_SHADER, vshader);
-            if (!vertexShader)
-                return null;
             // 编译片段着色器
             var fragmentShader = this.compileShaderCode(gl, gl.FRAGMENT_SHADER, fshader);
-            if (!vertexShader)
-                return null;
             // 创建着色器程序
             var shaderProgram = this.createLinkProgram(gl, vertexShader, fragmentShader);
             return shaderProgram;
@@ -12409,16 +12413,10 @@ var feng3d;
             // 创建着色器程序
             // 编译顶点着色器
             var vertexShader = this.compileShaderCode(gl, gl.VERTEX_SHADER, vshader);
-            if (!vertexShader)
-                return null;
             // 编译片段着色器
             var fragmentShader = this.compileShaderCode(gl, gl.FRAGMENT_SHADER, fshader);
-            if (!vertexShader)
-                return null;
             // 创建着色器程序
             var shaderProgram = this.createLinkProgram(gl, vertexShader, fragmentShader);
-            if (!shaderProgram)
-                return null;
             //获取属性信息
             var numAttributes = gl.getProgramParameter(shaderProgram, gl.ACTIVE_ATTRIBUTES);
             var attributes = {};
@@ -13541,7 +13539,7 @@ var feng3d;
             },
             "standard": {
                 "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_worldPosition;\r\nvarying vec3 v_normal;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform mat4 u_cameraMatrix;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\n//法线贴图\r\nuniform sampler2D s_normal;\r\n\r\n//镜面反射\r\nuniform vec3 u_specular;\r\nuniform float u_glossiness;\r\nuniform sampler2D s_specular;\r\n\r\nuniform vec4 u_sceneAmbientColor;\r\n\r\n//环境\r\nuniform vec4 u_ambient;\r\nuniform sampler2D s_ambient;\r\n\r\n#include<packing>\r\n#include<lightShading.fragment>\r\n\r\n#include<fog.fragment>\r\n\r\n#include<envmap.fragment>\r\n\r\n#ifdef HAS_PARTICLE_ANIMATOR\r\n    #include<particle.fragment>\r\n#endif\r\n\r\nvoid main()\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    //获取法线\r\n    vec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;\r\n    normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse;\r\n    diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    //环境光\r\n    vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;\r\n    ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    //渲染灯光\r\n    #if NUM_LIGHT > 0\r\n        //获取高光值\r\n        float glossiness = u_glossiness;\r\n        //获取镜面反射基本颜色\r\n        vec3 specularColor = u_specular;\r\n        vec4 specularMapColor = texture2D(s_specular, v_uv);\r\n        specularColor.xyz = specularMapColor.xyz;\r\n        glossiness = glossiness * specularMapColor.w;\r\n        \r\n        finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);\r\n    #endif\r\n\r\n    finalColor = envmapMethod(finalColor);\r\n\r\n    #ifdef HAS_PARTICLE_ANIMATOR\r\n        finalColor = particleAnimation(finalColor);\r\n    #endif\r\n\r\n    finalColor = fogMethod(finalColor);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
-                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\nattribute vec3 a_tangent;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\nuniform float u_scaleByDepth;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_worldPosition;\r\nvarying vec3 v_normal;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\n#ifdef HAS_SKELETON_ANIMATION\r\n    #include<skeleton.vertex>\r\n#endif\r\n\r\n#if NUM_DIRECTIONALLIGHT_CASTSHADOW > 0 || NUM_DIRECTIONALLIGHT_CASTSHADOW > 0\r\n    #include<lights_declare.vertex>\r\n#endif\r\n\r\n#ifdef IS_POINTS_MODE\r\n    uniform float u_PointSize;\r\n#endif\r\n\r\nvoid main() {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n    \r\n    #ifdef HAS_SKELETON_ANIMATION\r\n        position = skeletonAnimation(position);\r\n    #endif\r\n    \r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n    //输出全局坐标\r\n    v_worldPosition = worldPosition.xyz;\r\n    //输出uv\r\n    v_uv = a_uv;\r\n\r\n    //计算法线\r\n    v_normal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);\r\n    v_tangent = normalize((u_modelMatrix * vec4(a_tangent,0.0)).xyz);\r\n    v_bitangent = cross(v_normal,v_tangent);\r\n        \r\n    #if NUM_DIRECTIONALLIGHT_CASTSHADOW > 0 || NUM_DIRECTIONALLIGHT_CASTSHADOW > 0\r\n        #include<lights.vertex>\r\n    #endif\r\n\r\n    #ifdef IS_POINTS_MODE\r\n        gl_PointSize = u_PointSize;\r\n    #endif\r\n}"
+                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\nattribute vec3 a_tangent;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\nuniform float u_scaleByDepth;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_worldPosition;\r\nvarying vec3 v_normal;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\n#ifdef HAS_SKELETON_ANIMATION\r\n    #include<skeleton.vertex>\r\n#endif\r\n\r\n#include<lights_declare.vertex>\r\n\r\n#ifdef IS_POINTS_MODE\r\n    uniform float u_PointSize;\r\n#endif\r\n\r\nvoid main() {\r\n\r\n    vec4 position = vec4(a_position,1.0);\r\n    \r\n    #ifdef HAS_SKELETON_ANIMATION\r\n        position = skeletonAnimation(position);\r\n    #endif\r\n    \r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n    //输出全局坐标\r\n    v_worldPosition = worldPosition.xyz;\r\n    //输出uv\r\n    v_uv = a_uv;\r\n\r\n    //计算法线\r\n    v_normal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);\r\n    v_tangent = normalize((u_modelMatrix * vec4(a_tangent,0.0)).xyz);\r\n    v_bitangent = cross(v_normal,v_tangent);\r\n\r\n    #include<lights.vertex>\r\n\r\n    #ifdef IS_POINTS_MODE\r\n        gl_PointSize = u_PointSize;\r\n    #endif\r\n}"
             },
             "terrain": {
                 "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\nvarying vec3 v_worldPosition;\r\nvarying vec3 v_normal;\r\n\r\nvarying vec3 v_tangent;\r\nvarying vec3 v_bitangent;\r\n\r\nuniform mat4 u_cameraMatrix;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\n//法线贴图\r\nuniform sampler2D s_normal;\r\n\r\n//镜面反射\r\nuniform vec3 u_specular;\r\nuniform float u_glossiness;\r\nuniform sampler2D s_specular;\r\n\r\nuniform vec4 u_sceneAmbientColor;\r\n\r\n//环境\r\nuniform vec4 u_ambient;\r\nuniform sampler2D s_ambient;\r\n\r\n#include<packing>\r\n#include<terrain.fragment>\r\n\r\n#include<lightShading.fragment>\r\n\r\n#include<fog.fragment>\r\n\r\n#include<envmap.fragment>\r\n\r\nvoid main()\r\n{\r\n    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);\r\n\r\n    //获取法线\r\n    vec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;\r\n    normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);\r\n\r\n    // vec3 normal = v_normal;\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse;\r\n    diffuseColor = diffuseColor * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    diffuseColor = terrainMethod(diffuseColor, v_uv);\r\n\r\n    //环境光\r\n    vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;\r\n    ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    //渲染灯光\r\n    //获取高光值\r\n    float glossiness = u_glossiness;\r\n    //获取镜面反射基本颜色\r\n    vec3 specularColor = u_specular;\r\n    #ifdef HAS_SPECULAR_SAMPLER\r\n        vec4 specularMapColor = texture2D(s_specular, v_uv);\r\n        specularColor.xyz = specularMapColor.xyz;\r\n        glossiness = glossiness * specularMapColor.w;\r\n    #endif\r\n    \r\n    finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);\r\n\r\n    finalColor = envmapMethod(finalColor);\r\n\r\n    finalColor = fogMethod(finalColor);\r\n\r\n    gl_FragColor = finalColor;\r\n}",
@@ -16444,7 +16442,6 @@ var feng3d;
             var rayEntryDistance = this.selfLocalBounds.rayIntersection(localRay.position, localRay.direction, localNormal);
             if (rayEntryDistance < 0)
                 return null;
-            var model = this.getComponent(Model);
             //保存碰撞数据
             var pickingCollisionVO = {
                 gameObject: this.gameObject,
@@ -16453,8 +16450,8 @@ var feng3d;
                 rayEntryDistance: rayEntryDistance,
                 ray3D: ray3D,
                 rayOriginIsInsideBounds: rayEntryDistance == 0,
-                geometry: model.geometry,
-                cullFace: model.material.renderParams.cullFace,
+                geometry: this._activeGeometry,
+                cullFace: this._activeMaterial.renderParams.cullFace,
             };
             return pickingCollisionVO;
         };

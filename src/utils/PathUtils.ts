@@ -42,9 +42,7 @@ namespace feng3d
         getExtension(path: string)
         {
             var name = this.getNameWithExtension(path);
-            var names = name.split(".");
-            names.shift();
-            var extension = names.join(".");
+            var extension = name.split(".").slice(1).join(".");
             return extension;
         }
 

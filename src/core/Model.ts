@@ -117,8 +117,6 @@ namespace feng3d
             if (rayEntryDistance < 0)
                 return null;
 
-            var model = this.getComponent(Model);
-
             //保存碰撞数据
             var pickingCollisionVO: PickingCollisionVO = {
                 gameObject: this.gameObject,
@@ -127,8 +125,8 @@ namespace feng3d
                 rayEntryDistance: rayEntryDistance,
                 ray3D: ray3D,
                 rayOriginIsInsideBounds: rayEntryDistance == 0,
-                geometry: model.geometry,
-                cullFace: model.material.renderParams.cullFace,
+                geometry: this._activeGeometry,
+                cullFace: this._activeMaterial.renderParams.cullFace,
             };
 
             return pickingCollisionVO;

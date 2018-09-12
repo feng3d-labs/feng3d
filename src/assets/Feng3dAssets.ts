@@ -13,30 +13,29 @@ namespace feng3d
         /**
          * 路径
          */
-        @watch("pathChanged")
         path: string;
 
         /**
          * 文件(夹)名称
          */
-        name: string;
+        get name()
+        {
+            return this.path && pathUtils.getName(this.path);
+        }
 
         /**
          * 扩展名
          */
-        extension: AssetExtension;
+        get extension(): AssetExtension
+        {
+            return <any>(this.path && pathUtils.getExtension(this.path));
+        }
 
         constructor()
         {
             super();
             this.assetsId = FMath.uuid();
             Feng3dAssets._lib.set(this.assetsId, this);
-        }
-
-        private pathChanged()
-        {
-            // 更新名字
-            this.name = pathUtils.getName(this.path);
         }
 
         /**

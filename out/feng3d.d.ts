@@ -2488,13 +2488,12 @@ declare namespace feng3d {
         /**
          * 文件(夹)名称
          */
-        name: string;
+        readonly name: string;
         /**
          * 扩展名
          */
-        extension: AssetExtension;
+        readonly extension: AssetExtension;
         constructor();
-        private pathChanged;
         /**
          * 获取资源
          * @param assetsId 资源编号

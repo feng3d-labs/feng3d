@@ -34,7 +34,7 @@ namespace feng3d
                 this.map.set(gl, result);
             } catch (error)
             {
-                feng3d.error(`${this.shaderName} 编译失败！`)
+                feng3d.error(`${this.shaderName} 编译失败！\n${error}`)
                 return null;
             }
             return result;
@@ -105,8 +105,7 @@ namespace feng3d
             var shader = gl.createShader(type);
             if (shader == null)
             {
-                debuger && alert('unable to create shader');
-                return null;
+                throw 'unable to create shader';
             }
 
             gl.shaderSource(shader, code);
@@ -117,9 +116,8 @@ namespace feng3d
             if (!compiled)
             {
                 var error = gl.getShaderInfoLog(shader);
-                debuger && alert('Failed to compile shader: ' + error);
                 gl.deleteShader(shader);
-                return null;
+                throw 'Failed to compile shader: ' + error;
             }
 
             return shader;
@@ -131,7 +129,7 @@ namespace feng3d
             var program = gl.createProgram();
             if (!program)
             {
-                return null;
+                throw "创建 WebGLProgram 失败！"
             }
 
             // 添加着色器
@@ -146,11 +144,10 @@ namespace feng3d
             if (!linked)
             {
                 var error = gl.getProgramInfoLog(program);
-                debuger && alert('Failed to link program: ' + error);
                 gl.deleteProgram(program);
                 gl.deleteShader(fragmentShader);
                 gl.deleteShader(vertexShader);
-                return null;
+                throw 'Failed to link program: ' + error;
             }
             return program;
         }
@@ -166,11 +163,9 @@ namespace feng3d
         {
             // 编译顶点着色器
             var vertexShader = this.compileShaderCode(gl, gl.VERTEX_SHADER, vshader);
-            if (!vertexShader) return null;
 
             // 编译片段着色器
             var fragmentShader = this.compileShaderCode(gl, gl.FRAGMENT_SHADER, fshader);
-            if (!vertexShader) return null;
 
             // 创建着色器程序
             var shaderProgram = this.createLinkProgram(gl, vertexShader, fragmentShader);
@@ -182,15 +177,12 @@ namespace feng3d
             // 创建着色器程序
             // 编译顶点着色器
             var vertexShader = this.compileShaderCode(gl, gl.VERTEX_SHADER, vshader);
-            if (!vertexShader) return null;
 
             // 编译片段着色器
             var fragmentShader = this.compileShaderCode(gl, gl.FRAGMENT_SHADER, fshader);
-            if (!vertexShader) return null;
 
             // 创建着色器程序
             var shaderProgram = this.createLinkProgram(gl, vertexShader, fragmentShader);
-            if (!shaderProgram) return null;
 
             //获取属性信息
             var numAttributes = gl.getProgramParameter(shaderProgram, gl.ACTIVE_ATTRIBUTES);

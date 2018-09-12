@@ -22,9 +22,7 @@ varying vec3 v_bitangent;
     #include<skeleton.vertex>
 #endif
 
-#if NUM_DIRECTIONALLIGHT_CASTSHADOW > 0 || NUM_DIRECTIONALLIGHT_CASTSHADOW > 0
-    #include<lights_declare.vertex>
-#endif
+#include<lights_declare.vertex>
 
 #ifdef IS_POINTS_MODE
     uniform float u_PointSize;
@@ -53,10 +51,8 @@ void main() {
     v_normal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);
     v_tangent = normalize((u_modelMatrix * vec4(a_tangent,0.0)).xyz);
     v_bitangent = cross(v_normal,v_tangent);
-        
-    #if NUM_DIRECTIONALLIGHT_CASTSHADOW > 0 || NUM_DIRECTIONALLIGHT_CASTSHADOW > 0
-        #include<lights.vertex>
-    #endif
+
+    #include<lights.vertex>
 
     #ifdef IS_POINTS_MODE
         gl_PointSize = u_PointSize;
