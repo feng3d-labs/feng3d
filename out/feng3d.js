@@ -2618,6 +2618,9 @@ var feng3d;
         serializeInfo.propertys.push(propertyKey);
     }
     feng3d.serialize = serialize;
+    /**
+     * 序列化
+     */
     var Serialization = /** @class */ (function () {
         function Serialization() {
         }
@@ -2763,6 +2766,11 @@ var feng3d;
             this.setValue(target, object);
             return target;
         };
+        /**
+         * 从数据对象中提取数据给目标对象赋值
+         * @param target 目标对象
+         * @param object 数据对象
+         */
         Serialization.prototype.setValue = function (target, object) {
             if (!object)
                 return;
@@ -2781,6 +2789,12 @@ var feng3d;
             //     }
             // }
         };
+        /**
+         * 给目标对象的指定属性赋值
+         * @param target 目标对象
+         * @param object 数据对象
+         * @param property 属性名称
+         */
         Serialization.prototype.setPropertyValue = function (target, object, property) {
             if (target[property] == object[property])
                 return;

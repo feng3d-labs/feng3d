@@ -1173,6 +1173,9 @@ getset平均耗时比 17.3
     }
 }
 declare namespace feng3d {
+    /**
+     * 序列化
+     */
     var serialization: Serialization;
     /**
      * 序列化装饰器，被装饰属性将被序列化
@@ -1180,6 +1183,9 @@ declare namespace feng3d {
      * @param {string} propertyKey      序列化属性
      */
     function serialize(target: any, propertyKey: string): void;
+    /**
+     * 序列化
+     */
     class Serialization {
         /**
          * 序列化对象
@@ -1201,8 +1207,19 @@ declare namespace feng3d {
          * @returns 反序列化后的数据
          */
         deserialize(object: any): any;
+        /**
+         * 从数据对象中提取数据给目标对象赋值
+         * @param target 目标对象
+         * @param object 数据对象
+         */
         setValue<T>(target: T, object: gPartial<T>): void;
-        setPropertyValue<T>(target: T, object: gPartial<T>, property: string): void;
+        /**
+         * 给目标对象的指定属性赋值
+         * @param target 目标对象
+         * @param object 数据对象
+         * @param property 属性名称
+         */
+        private setPropertyValue;
         clone<T>(target: T): T;
     }
 }

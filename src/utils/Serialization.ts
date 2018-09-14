@@ -1,5 +1,8 @@
 namespace feng3d
 {
+    /**
+     * 序列化
+     */
     export var serialization: Serialization;
 
     /**
@@ -24,6 +27,9 @@ namespace feng3d
         serializeInfo.propertys.push(propertyKey);
     }
 
+    /**
+     * 序列化
+     */
     export class Serialization
     {
         /**
@@ -204,6 +210,11 @@ namespace feng3d
             return target;
         }
 
+        /**
+         * 从数据对象中提取数据给目标对象赋值
+         * @param target 目标对象
+         * @param object 数据对象
+         */
         setValue<T>(target: T, object: gPartial<T>)
         {
             if (!object) return;
@@ -227,7 +238,14 @@ namespace feng3d
             //     }
             // }
         }
-        setPropertyValue<T>(target: T, object: gPartial<T>, property: string)
+
+        /**
+         * 给目标对象的指定属性赋值
+         * @param target 目标对象
+         * @param object 数据对象
+         * @param property 属性名称
+         */
+        private setPropertyValue<T>(target: T, object: gPartial<T>, property: string)
         {
             if (target[property] == object[property])
                 return;
