@@ -290,6 +290,11 @@ namespace feng3d
                 target[property] = this.deserialize(objvalue);
             }
         }
+
+        /**
+         * 克隆
+         * @param target 被克隆对象
+         */
         clone<T>(target: T): T
         {
             return this.deserialize(this.serialize(target));

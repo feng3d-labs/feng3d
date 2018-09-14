@@ -2832,6 +2832,10 @@ var feng3d;
                 target[property] = this.deserialize(objvalue);
             }
         };
+        /**
+         * 克隆
+         * @param target 被克隆对象
+         */
         Serialization.prototype.clone = function (target) {
             return this.deserialize(this.serialize(target));
         };

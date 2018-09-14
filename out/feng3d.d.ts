@@ -1220,6 +1220,10 @@ declare namespace feng3d {
          * @param property 属性名称
          */
         private setPropertyValue;
+        /**
+         * 克隆
+         * @param target 被克隆对象
+         */
         clone<T>(target: T): T;
     }
 }
