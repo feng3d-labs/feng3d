@@ -5,34 +5,29 @@ namespace feng3d
      */
     export class TextureCube extends TextureInfo
     {
+        @oav({ component: "OAVCubeMap" })
         @serialize
         @watch("urlChanged")
-        @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         positive_x_url: string;
 
         @serialize
         @watch("urlChanged")
-        @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         positive_y_url: string;
 
         @serialize
         @watch("urlChanged")
-        @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         positive_z_url: string;
 
         @serialize
         @watch("urlChanged")
-        @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         negative_x_url: string;
 
         @serialize
         @watch("urlChanged")
-        @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         negative_y_url: string;
 
         @serialize
         @watch("urlChanged")
-        @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
         negative_z_url: string;
 
         noPixels = [ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white];

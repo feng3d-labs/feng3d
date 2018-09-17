@@ -20517,34 +20517,29 @@ var feng3d;
             });
         };
         __decorate([
+            feng3d.oav({ component: "OAVCubeMap" }),
             feng3d.serialize,
-            feng3d.watch("urlChanged"),
-            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
+            feng3d.watch("urlChanged")
         ], TextureCube.prototype, "positive_x_url", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.watch("urlChanged"),
-            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
+            feng3d.watch("urlChanged")
         ], TextureCube.prototype, "positive_y_url", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.watch("urlChanged"),
-            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
+            feng3d.watch("urlChanged")
         ], TextureCube.prototype, "positive_z_url", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.watch("urlChanged"),
-            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
+            feng3d.watch("urlChanged")
         ], TextureCube.prototype, "negative_x_url", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.watch("urlChanged"),
-            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
+            feng3d.watch("urlChanged")
         ], TextureCube.prototype, "negative_y_url", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.watch("urlChanged"),
-            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
+            feng3d.watch("urlChanged")
         ], TextureCube.prototype, "negative_z_url", void 0);
         return TextureCube;
     }(feng3d.TextureInfo));
