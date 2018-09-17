@@ -2689,9 +2689,7 @@ var feng3d;
                 var assets = serializableMembers[i].assets;
                 if (assets && target[property] instanceof feng3d.Feng3dAssets) {
                     var assetsId0 = target[property] && target[property].path;
-                    var assetsId1 = defaultInstance[property] && target[property].path;
-                    // var assetsId0 = target[property] && (<Feng3dAssets>target[property]).assetsId;
-                    // var assetsId1 = defaultInstance[property] && (<Feng3dAssets>target[property]).assetsId;
+                    var assetsId1 = defaultInstance[property] && defaultInstance[property].path;
                     if (assetsId0 != assetsId1)
                         different[property] = assetsId0;
                     continue;
@@ -13287,7 +13285,7 @@ var feng3d;
             feng3d.watch("invalidate")
         ], TextureInfo.prototype, "OFFSCREEN_HEIGHT", void 0);
         return TextureInfo;
-    }(feng3d.Feng3dObject));
+    }(feng3d.Feng3dAssets));
     feng3d.TextureInfo = TextureInfo;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -20808,7 +20806,7 @@ var feng3d;
             feng3d.oav()
         ], StandardUniforms.prototype, "u_PointSize", void 0);
         __decorate([
-            feng3d.serialize,
+            feng3d.serializeAssets,
             feng3d.oav({ block: "diffuse" })
         ], StandardUniforms.prototype, "s_diffuse", void 0);
         __decorate([

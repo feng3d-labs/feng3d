@@ -26,7 +26,7 @@ namespace feng3d
         /**
          * 漫反射纹理
          */
-        @serialize
+        @serializeAssets
         @oav({ block: "diffuse" })
         s_diffuse = new UrlImageTexture2D();
 

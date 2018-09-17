@@ -116,9 +116,7 @@ namespace feng3d
                 if (assets && target[property] instanceof Feng3dAssets)
                 {
                     var assetsId0 = target[property] && (<Feng3dAssets>target[property]).path;
-                    var assetsId1 = defaultInstance[property] && (<Feng3dAssets>target[property]).path;
-                    // var assetsId0 = target[property] && (<Feng3dAssets>target[property]).assetsId;
-                    // var assetsId1 = defaultInstance[property] && (<Feng3dAssets>target[property]).assetsId;
+                    var assetsId1 = defaultInstance[property] && (<Feng3dAssets>defaultInstance[property]).path;
                     if (assetsId0 != assetsId1) different[property] = assetsId0;
                     continue;
                 }
