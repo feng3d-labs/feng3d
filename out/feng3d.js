@@ -4974,7 +4974,7 @@ var feng3d;
         /**
          * 纹理
          */
-        AssetExtension["texture2d"] = "texture2d.json";
+        AssetExtension["texture2d"] = "texture.json";
         /**
          * 立方体纹理
          */

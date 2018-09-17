@@ -2464,7 +2464,7 @@ declare namespace feng3d {
         /**
          * 纹理
          */
-        texture2d = "texture2d.json",
+        texture2d = "texture.json",
         /**
          * 立方体纹理
          */
