@@ -2604,20 +2604,21 @@ var feng3d;
      * @param {string} propertyKey      序列化属性
      */
     function serialize(target, propertyKey) {
-        if (!Object.getOwnPropertyDescriptor(target, SERIALIZE_KEY)) {
-            Object.defineProperty(target, SERIALIZE_KEY, {
-                /**
-                 * uv数据
-                 */
-                value: { propertys: [] },
-                enumerable: false,
-                configurable: true
-            });
-        }
-        var serializeInfo = target[SERIALIZE_KEY];
+        var serializeInfo = getSerializeInfo(target);
         serializeInfo.propertys.push(propertyKey);
     }
     feng3d.serialize = serialize;
+    /**
+     * 序列化资源装饰器，被装饰属性将被序列化为资源编号
+     * @param {*} target                序列化原型
+     * @param {string} propertyKey      序列化属性
+     */
+    function serializeAssets(target, propertyKey) {
+        var serializeInfo = getSerializeInfo(target);
+        serializeInfo.propertys.push(propertyKey);
+        serializeInfo.assets.push(propertyKey);
+    }
+    feng3d.serializeAssets = serializeAssets;
     /**
      * 序列化
      */
@@ -2860,19 +2861,27 @@ var feng3d;
      * 获取默认实例
      */
     function getDefaultInstance(object) {
+        var serializeInfo = getSerializeInfo(object);
+        serializeInfo.default = serializeInfo.default || new object.constructor();
+        return serializeInfo.default;
+    }
+    /**
+     * 获取序列号信息
+     * @param object 对象
+     */
+    function getSerializeInfo(object) {
         if (!Object.getOwnPropertyDescriptor(object, SERIALIZE_KEY)) {
             Object.defineProperty(object, SERIALIZE_KEY, {
                 /**
                  * uv数据
                  */
-                value: { propertys: [] },
+                value: { propertys: [], assets: [] },
                 enumerable: false,
                 configurable: true
             });
         }
         var serializeInfo = object[SERIALIZE_KEY];
-        serializeInfo.default = serializeInfo.default || new object.constructor();
-        return serializeInfo.default;
+        return serializeInfo;
     }
     /**
      * 获取序列化属性列表
@@ -2882,14 +2891,12 @@ var feng3d;
         if (object["__proto__"]) {
             getSerializableMembers(object["__proto__"], serializableMembers);
         }
-        if (Object.getOwnPropertyDescriptor(object, SERIALIZE_KEY)) {
-            var serializeInfo = object[SERIALIZE_KEY];
-            if (serializeInfo && serializeInfo.propertys) {
-                var propertys = serializeInfo.propertys;
-                for (var i = 0, n = propertys.length; i < n; i++) {
-                    var element = propertys[i];
-                    serializableMembers.push(propertys[i]);
-                }
+        var serializeInfo = getSerializeInfo(object);
+        if (serializeInfo) {
+            var propertys = serializeInfo.propertys;
+            for (var i = 0, n = propertys.length; i < n; i++) {
+                var element = propertys[i];
+                serializableMembers.push(propertys[i]);
             }
         }
         return serializableMembers;

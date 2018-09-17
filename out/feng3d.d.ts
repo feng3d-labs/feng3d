@@ -1184,6 +1184,12 @@ declare namespace feng3d {
      */
     function serialize(target: any, propertyKey: string): void;
     /**
+     * 序列化资源装饰器，被装饰属性将被序列化为资源编号
+     * @param {*} target                序列化原型
+     * @param {string} propertyKey      序列化属性
+     */
+    function serializeAssets(target: any, propertyKey: string): void;
+    /**
      * 序列化
      */
     class Serialization {
@@ -1219,7 +1225,7 @@ declare namespace feng3d {
          * @param object 数据对象
          * @param property 属性名称
          */
-        private setPropertyValue;
+        setPropertyValue<T>(target: T, object: gPartial<T>, property: string): void;
         /**
          * 克隆
          * @param target 被克隆对象
