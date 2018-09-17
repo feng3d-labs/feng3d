@@ -1195,8 +1195,8 @@ declare namespace feng3d {
     class Serialization {
         /**
          * 序列化对象
-         * @param target 被序列化的数据
-         * @returns 序列化后可以转换为Json的对象
+         * @param target 被序列化的对象
+         * @returns 序列化后可以转换为Json的数据对象
          */
         serialize(target: any): any;
         /**
@@ -9365,12 +9365,11 @@ declare namespace feng3d {
         __class__: string;
         readonly single: boolean;
         /**
-         * Returns the instantiated Mesh assigned to the mesh filter.
+         * 几何体
          */
         geometry: Geometrys;
         /**
          * 材质
-         * Returns the first instantiated Material assigned to the renderer.
          */
         material: Material;
         /**

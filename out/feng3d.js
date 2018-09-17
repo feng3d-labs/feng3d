@@ -2605,7 +2605,7 @@ var feng3d;
      */
     function serialize(target, propertyKey) {
         var serializeInfo = getSerializeInfo(target);
-        serializeInfo.propertys.push(propertyKey);
+        serializeInfo.propertys.push({ property: propertyKey });
     }
     feng3d.serialize = serialize;
     /**
@@ -2615,8 +2615,7 @@ var feng3d;
      */
     function serializeAssets(target, propertyKey) {
         var serializeInfo = getSerializeInfo(target);
-        serializeInfo.propertys.push(propertyKey);
-        serializeInfo.assets.push(propertyKey);
+        serializeInfo.propertys.push({ property: propertyKey, assets: true });
     }
     feng3d.serializeAssets = serializeAssets;
     /**
@@ -2627,8 +2626,8 @@ var feng3d;
         }
         /**
          * 序列化对象
-         * @param target 被序列化的数据
-         * @returns 序列化后可以转换为Json的对象
+         * @param target 被序列化的对象
+         * @returns 序列化后可以转换为Json的数据对象
          */
         Serialization.prototype.serialize = function (target) {
             //基础类型
@@ -2684,9 +2683,19 @@ var feng3d;
             different = different || {};
             var serializableMembers = getSerializableMembers(target);
             if (target.constructor == Object)
-                serializableMembers = Object.keys(target);
+                serializableMembers = Object.keys(target).map(function (v) { return { property: v }; });
             for (var i = 0; i < serializableMembers.length; i++) {
-                var property = serializableMembers[i];
+                var property = serializableMembers[i].property;
+                var assets = serializableMembers[i].assets;
+                if (assets && target[property] instanceof feng3d.Feng3dAssets) {
+                    var assetsId0 = target[property] && target[property].path;
+                    var assetsId1 = defaultInstance[property] && target[property].path;
+                    // var assetsId0 = target[property] && (<Feng3dAssets>target[property]).assetsId;
+                    // var assetsId1 = defaultInstance[property] && (<Feng3dAssets>target[property]).assetsId;
+                    if (assetsId0 != assetsId1)
+                        different[property] = assetsId0;
+                    continue;
+                }
                 if (target[property] === defaultInstance[property])
                     continue;
                 if (isBaseType(target[property])) {
@@ -16530,12 +16539,12 @@ var feng3d;
         };
         __decorate([
             feng3d.oav({ component: "OAVPick", componentParam: { tooltip: "几何体，提供模型以形状", accepttype: "geometry", datatype: "geometry" } }),
-            feng3d.serialize,
+            feng3d.serializeAssets,
             feng3d.watch("onGeometryChanged")
         ], Model.prototype, "geometry", void 0);
         __decorate([
             feng3d.oav({ component: "OAVPick", componentParam: { tooltip: "材质，提供模型以皮肤", accepttype: "material", datatype: "material" } }),
-            feng3d.serialize,
+            feng3d.serializeAssets,
             feng3d.watch("onMaterialChanged")
         ], Model.prototype, "material", void 0);
         __decorate([

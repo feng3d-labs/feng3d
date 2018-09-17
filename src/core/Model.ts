@@ -9,19 +9,18 @@ namespace feng3d
         get single() { return true; }
 
         /**
-         * Returns the instantiated Mesh assigned to the mesh filter.
+         * 几何体
          */
         @oav({ component: "OAVPick", componentParam: { tooltip: "几何体，提供模型以形状", accepttype: "geometry", datatype: "geometry" } })
-        @serialize
+        @serializeAssets
         @watch("onGeometryChanged")
         geometry: Geometrys;
 
         /**
          * 材质
-         * Returns the first instantiated Material assigned to the renderer.
          */
         @oav({ component: "OAVPick", componentParam: { tooltip: "材质，提供模型以皮肤", accepttype: "material", datatype: "material" } })
-        @serialize
+        @serializeAssets
         @watch("onMaterialChanged")
         material: Material;
 

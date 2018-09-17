@@ -13,7 +13,7 @@ namespace feng3d
     export function serialize(target: any, propertyKey: string)
     {
         var serializeInfo = getSerializeInfo(target);
-        serializeInfo.propertys.push(propertyKey);
+        serializeInfo.propertys.push({ property: propertyKey });
     }
 
     /**
@@ -24,8 +24,7 @@ namespace feng3d
     export function serializeAssets(target: any, propertyKey: string)
     {
         var serializeInfo = getSerializeInfo(target);
-        serializeInfo.propertys.push(propertyKey);
-        serializeInfo.assets.push(propertyKey);
+        serializeInfo.propertys.push({ property: propertyKey, assets: true });
     }
 
     /**
@@ -35,8 +34,8 @@ namespace feng3d
     {
         /**
          * 序列化对象
-         * @param target 被序列化的数据
-         * @returns 序列化后可以转换为Json的对象 
+         * @param target 被序列化的对象
+         * @returns 序列化后可以转换为Json的数据对象 
          */
         serialize(target)
         {
@@ -109,10 +108,20 @@ namespace feng3d
             different = different || {};
             var serializableMembers = getSerializableMembers(target);
             if (target.constructor == Object)
-                serializableMembers = Object.keys(target);
+                serializableMembers = Object.keys(target).map(v => { return { property: v } });
             for (var i = 0; i < serializableMembers.length; i++)
             {
-                var property = serializableMembers[i];
+                var property = serializableMembers[i].property;
+                var assets = serializableMembers[i].assets;
+                if (assets && target[property] instanceof Feng3dAssets)
+                {
+                    var assetsId0 = target[property] && (<Feng3dAssets>target[property]).path;
+                    var assetsId1 = defaultInstance[property] && (<Feng3dAssets>target[property]).path;
+                    // var assetsId0 = target[property] && (<Feng3dAssets>target[property]).assetsId;
+                    // var assetsId1 = defaultInstance[property] && (<Feng3dAssets>target[property]).assetsId;
+                    if (assetsId0 != assetsId1) different[property] = assetsId0;
+                    continue;
+                }
 
                 if (target[property] === defaultInstance[property])
                     continue;
@@ -308,8 +317,7 @@ namespace feng3d
 
     interface SerializeInfo
     {
-        propertys: string[];
-        assets: string[];
+        propertys: { property: string, assets?: boolean }[];
         default: Object;
     }
 
@@ -363,7 +371,7 @@ namespace feng3d
     /**
      * 获取序列化属性列表
      */
-    function getSerializableMembers(object: Object, serializableMembers?: string[])
+    function getSerializableMembers(object: Object, serializableMembers?: { property: string; assets?: boolean; }[])
     {
         serializableMembers = serializableMembers || [];
         if (object["__proto__"])
