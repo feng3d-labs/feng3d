@@ -20398,7 +20398,7 @@ var feng3d;
         __decorate([
             feng3d.serialize,
             feng3d.watch("urlChanged"),
-            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
+            feng3d.oav({ component: "OAVImage" })
         ], UrlImageTexture2D.prototype, "url", void 0);
         __decorate([
             feng3d.watch("imageChanged")

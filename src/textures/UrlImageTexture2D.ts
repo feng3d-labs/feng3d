@@ -6,7 +6,7 @@ namespace feng3d
 
         @serialize
         @watch("urlChanged")
-        @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
+        @oav({ component: "OAVImage" })
         url = "";
 
         @watch("imageChanged")
