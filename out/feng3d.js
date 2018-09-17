@@ -2737,11 +2737,8 @@ var feng3d;
             if (isBaseType(object))
                 return object;
             //处理数组
-            if (object.constructor == Array) {
-                var arr = [];
-                object.forEach(function (element) {
-                    arr.push(_this.deserialize(element));
-                });
+            if (object instanceof Array) {
+                var arr = object.map(function (v) { return _this.deserialize(v); });
                 return arr;
             }
             if (object.constructor != Object) {
@@ -2784,10 +2781,23 @@ var feng3d;
         Serialization.prototype.setValue = function (target, object) {
             if (!object)
                 return;
-            for (var property in object) {
+            var serializeAssets = getSerializableMembers(target).reduce(function (pv, cv) { if (cv.assets)
+                pv.push(cv.property); return pv; }, []);
+            var _loop_1 = function (property) {
                 if (object.hasOwnProperty(property)) {
-                    this.setPropertyValue(target, object, property);
+                    if (serializeAssets.indexOf(property) != -1 && typeof object[property] == "string") {
+                        feng3d.Feng3dAssets.getAssetsByPath(object[property], function (assets) {
+                            target[property] = assets;
+                        });
+                    }
+                    else {
+                        this_1.setPropertyValue(target, object, property);
+                    }
                 }
+            };
+            var this_1 = this;
+            for (var property in object) {
+                _loop_1(property);
             }
             // var serializableMembers = getSerializableMembers(target);
             // for (var i = 0; i < serializableMembers.length; i++)
@@ -2884,7 +2894,7 @@ var feng3d;
                 /**
                  * uv数据
                  */
-                value: { propertys: [], assets: [] },
+                value: { propertys: [] },
                 enumerable: false,
                 configurable: true
             });
@@ -2904,7 +2914,6 @@ var feng3d;
         if (serializeInfo) {
             var propertys = serializeInfo.propertys;
             for (var i = 0, n = propertys.length; i < n; i++) {
-                var element = propertys[i];
                 serializableMembers.push(propertys[i]);
             }
         }
@@ -5039,6 +5048,24 @@ var feng3d;
          */
         Feng3dAssets.getAssets = function (assetsId) {
             return this._lib.get(assetsId);
+        };
+        /**
+         * 根据路径获取资源
+         * @param path 资源路径
+         */
+        Feng3dAssets.getAssetsByPath = function (path, callback) {
+            var assetsObj = this._lib.getValues().reduce(function (pv, cv) { if (cv.path == path)
+                pv = cv; return pv; }, null);
+            if (assetsObj)
+                callback(assetsObj);
+            else {
+                feng3d.assets.readFileAsString(path, function (err, content) {
+                    var json = JSON.parse(content);
+                    assetsObj = feng3d.serialization.deserialize(json);
+                    assetsObj.path = path;
+                    callback(assetsObj);
+                });
+            }
         };
         Feng3dAssets._lib = new Map();
         return Feng3dAssets;

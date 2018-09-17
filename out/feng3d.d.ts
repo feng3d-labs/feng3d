@@ -1225,7 +1225,7 @@ declare namespace feng3d {
          * @param object 数据对象
          * @param property 属性名称
          */
-        setPropertyValue<T>(target: T, object: gPartial<T>, property: string): void;
+        private setPropertyValue;
         /**
          * 克隆
          * @param target 被克隆对象
@@ -2526,6 +2526,11 @@ declare namespace feng3d {
          * @param assetsId 资源编号
          */
         static getAssets(assetsId: string): Feng3dAssets;
+        /**
+         * 根据路径获取资源
+         * @param path 资源路径
+         */
+        static getAssetsByPath(path: string, callback: (assets: any) => void): void;
         private static _lib;
     }
 }

@@ -170,13 +170,9 @@ namespace feng3d
             if (isBaseType(object)) return object;
 
             //处理数组
-            if (object.constructor == Array)
+            if (object instanceof Array)
             {
-                var arr: any[] = [];
-                object.forEach(element =>
-                {
-                    arr.push(this.deserialize(element));
-                });
+                var arr = object.map(v => this.deserialize(v));
                 return arr;
             }
             if (object.constructor != Object)
@@ -229,11 +225,22 @@ namespace feng3d
         {
             if (!object) return;
 
+            var serializeAssets = getSerializableMembers(target).reduce((pv: string[], cv) => { if (cv.assets) pv.push(cv.property); return pv; }, []);
             for (const property in object)
             {
                 if (object.hasOwnProperty(property))
                 {
-                    this.setPropertyValue(target, object, property);
+                    if (serializeAssets.indexOf(property) != -1 && typeof object[property] == "string")
+                    {
+                        Feng3dAssets.getAssetsByPath(<any>object[property], assets =>
+                        {
+                            target[property] = assets;
+                        });
+                    }
+                    else
+                    {
+                        this.setPropertyValue(target, object, property);
+                    }
                 }
             }
 
@@ -255,7 +262,7 @@ namespace feng3d
          * @param object 数据对象
          * @param property 属性名称
          */
-        setPropertyValue<T>(target: T, object: gPartial<T>, property: string)
+        private setPropertyValue<T>(target: T, object: gPartial<T>, property: string)
         {
             if (target[property] == object[property])
                 return;
@@ -359,7 +366,7 @@ namespace feng3d
                 /**
                  * uv数据
                  */
-                value: { propertys: [], assets: [] },
+                value: { propertys: [] },
                 enumerable: false,
                 configurable: true
             });
@@ -384,7 +391,6 @@ namespace feng3d
             var propertys = serializeInfo.propertys;
             for (let i = 0, n = propertys.length; i < n; i++)
             {
-                const element = propertys[i];
                 serializableMembers.push(propertys[i]);
             }
         }
