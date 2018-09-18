@@ -14641,7 +14641,7 @@ var feng3d;
             renderAtomic.uniforms.s_skyboxTexture = function () { return _this.s_skyboxTexture; };
         };
         __decorate([
-            feng3d.serialize,
+            feng3d.serializeAssets,
             feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "texturecube", datatype: "texturecube" } })
         ], SkyBox.prototype, "s_skyboxTexture", void 0);
         return SkyBox;
