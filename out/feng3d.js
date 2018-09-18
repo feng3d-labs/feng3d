@@ -4521,6 +4521,9 @@ var feng3d;
         FSType["native"] = "native";
         FSType["indexedDB"] = "indexedDB";
     })(FSType = feng3d.FSType || (feng3d.FSType = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 资源
      * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
@@ -4621,6 +4624,9 @@ var feng3d;
     }());
     feng3d.ReadAssets = ReadAssets;
     feng3d.assets = new ReadAssets();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     var ReadWriteAssets = /** @class */ (function (_super) {
         __extends(ReadWriteAssets, _super);
         function ReadWriteAssets(readWriteFS) {
@@ -4890,7 +4896,7 @@ var feng3d;
             return path.charAt(path.length - 1) == "/";
         };
         return ReadWriteAssets;
-    }(ReadAssets));
+    }(feng3d.ReadAssets));
     feng3d.ReadWriteAssets = ReadWriteAssets;
 })(feng3d || (feng3d = {}));
 var feng3d;
