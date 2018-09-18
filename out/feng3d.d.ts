@@ -2112,7 +2112,7 @@ declare namespace feng3d {
          * @param path 文件夹路径
          * @param callback 回调函数
          */
-        mkdir(path: string, callback: (err: Error) => void): void;
+        mkdir(path: string, callback?: (err: Error) => void): void;
         /**
          * 删除文件
          * @param path 文件路径
@@ -2125,7 +2125,7 @@ declare namespace feng3d {
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeArrayBuffer(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
+        writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
         /**
          * 获取所有文件路径
          * @param callback 回调函数
@@ -2217,7 +2217,7 @@ declare namespace feng3d {
          * @param path 文件夹路径
          * @param callback 回调函数
          */
-        mkdir(path: string, callback: (err: Error) => void): void;
+        mkdir(path: string, callback?: (err: Error) => void): void;
         /**
          * 删除文件
          * @param path 文件路径
@@ -2230,7 +2230,7 @@ declare namespace feng3d {
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeArrayBuffer(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
+        writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
@@ -2282,6 +2282,12 @@ declare namespace feng3d {
          * @param callback 读取完成回调
          */
         readObject(path: string, callback: (err: Error, object: Object) => void): void;
+        /**
+         * 读取文件为资源对象
+         * @param id 资源编号
+         * @param callback 读取完成回调
+         */
+        readAssets(id: string, callback: (err: Error, assets: Feng3dAssets) => void): void;
     }
 }
 declare namespace feng3d {
@@ -2322,14 +2328,20 @@ declare namespace feng3d {
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeArrayBuffer(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
+        writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
         /**
          * 保存对象到文件
          * @param path 文件路径
          * @param object 保存的对象
          * @param callback 完成回调
          */
-        saveObject(path: string, object: Object, callback: (err: Error) => void): void;
+        saveObject(path: string, object: Object, callback?: (err: Error) => void): void;
+        /**
+         * 保存资源
+         * @param assets 资源
+         * @param callback 保存资源完成回调
+         */
+        saveAssets(assets: Feng3dAssets, callback?: (err: Error) => void): void;
         /**
          * 获取所有文件路径
          * @param callback 回调函数

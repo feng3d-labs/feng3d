@@ -73,7 +73,7 @@ namespace feng3d
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeArrayBuffer(path: string, data: ArrayBuffer, callback: (err: Error) => void)
+        writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void)
         {
             if (this.isDir(path))
             {
@@ -92,7 +92,7 @@ namespace feng3d
          * @param object 保存的对象
          * @param callback 完成回调
          */
-        saveObject(path: string, object: Object, callback: (err: Error) => void)
+        saveObject(path: string, object: Object, callback?: (err: Error) => void)
         {
             var obj = feng3d.serialization.serialize(object);
             var str = JSON.stringify(obj, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
@@ -100,6 +100,16 @@ namespace feng3d
             {
                 this.writeArrayBuffer(path, arrayBuffer, callback);
             });
+        }
+
+        /**
+         * 保存资源
+         * @param assets 资源
+         * @param callback 保存资源完成回调
+         */
+        saveAssets(assets: Feng3dAssets, callback?: (err: Error) => void)
+        {
+            this.saveObject("Library/" + assets.assetsId + "/.json", assets, callback);
         }
 
         /**

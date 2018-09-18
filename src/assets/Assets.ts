@@ -64,7 +64,7 @@ namespace feng3d
          * @param path 文件夹路径
          * @param callback 回调函数
          */
-        mkdir(path: string, callback: (err: Error) => void): void;
+        mkdir(path: string, callback?: (err: Error) => void): void;
 
         /**
          * 删除文件
@@ -79,6 +79,6 @@ namespace feng3d
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeArrayBuffer(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
+        writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
     }
 }

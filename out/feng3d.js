@@ -4631,9 +4631,22 @@ var feng3d;
                     callback(err, null);
                     return;
                 }
-                var object = feng3d.serialization.deserialize(str);
+                var object = feng3d.serialization.deserialize(JSON.parse(str));
                 callback(null, object);
             });
+        };
+        /**
+         * 读取文件为资源对象
+         * @param id 资源编号
+         * @param callback 读取完成回调
+         */
+        ReadAssets.prototype.readAssets = function (id, callback) {
+            var assets = feng3d.Feng3dAssets.getAssets(id);
+            if (assets) {
+                callback(null, assets);
+                return;
+            }
+            this.readObject("Library/" + id + "/.json", callback);
         };
         return ReadAssets;
     }());
@@ -4727,6 +4740,14 @@ var feng3d;
             feng3d.dataTransform.stringToArrayBuffer(str, function (arrayBuffer) {
                 _this.writeArrayBuffer(path, arrayBuffer, callback);
             });
+        };
+        /**
+         * 保存资源
+         * @param assets 资源
+         * @param callback 保存资源完成回调
+         */
+        ReadWriteAssets.prototype.saveAssets = function (assets, callback) {
+            this.saveObject("Library/" + assets.assetsId + "/.json", assets, callback);
         };
         /**
          * 获取所有文件路径

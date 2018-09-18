@@ -102,7 +102,7 @@ namespace feng3d
          * @param path 文件夹路径
          * @param callback 回调函数
          */
-        mkdir(path: string, callback: (err: Error) => void): void
+        mkdir(path: string, callback?: (err: Error) => void): void
         {
             storage.set(this.DBname, this.projectname, path, new ArrayBuffer(0), callback);
         }
@@ -123,7 +123,7 @@ namespace feng3d
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeArrayBuffer(path: string, data: ArrayBuffer, callback: (err: Error) => void)
+        writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void)
         {
             storage.set(this.DBname, this.projectname, path, data, callback);
         }

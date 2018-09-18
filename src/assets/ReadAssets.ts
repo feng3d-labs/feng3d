@@ -137,11 +137,26 @@ namespace feng3d
                     callback(err, null);
                     return;
                 }
-                var object = serialization.deserialize(str);
+                var object = serialization.deserialize(JSON.parse(str));
                 callback(null, object);
             });
         }
 
+        /**
+         * 读取文件为资源对象
+         * @param id 资源编号
+         * @param callback 读取完成回调
+         */
+        readAssets(id: string, callback: (err: Error, assets: Feng3dAssets) => void)
+        {
+            var assets = Feng3dAssets.getAssets(id);
+            if (assets)
+            {
+                callback(null, assets);
+                return;
+            }
+            this.readObject("Library/" + id + "/.json", callback);
+        }
     }
 
     assets = new ReadAssets();
