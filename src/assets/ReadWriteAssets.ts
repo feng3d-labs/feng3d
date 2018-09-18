@@ -109,6 +109,11 @@ namespace feng3d
          */
         saveAssets(assets: Feng3dAssets, callback?: (err: Error) => void)
         {
+            if (!assets.assetsId)
+            {
+                assets.assetsId = FMath.uuid();
+                Feng3dAssets.setAssets(assets);
+            }
             this.saveObject("Library/" + assets.assetsId + "/.json", assets, callback);
         }
 

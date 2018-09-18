@@ -4646,7 +4646,11 @@ var feng3d;
                 callback(null, assets);
                 return;
             }
-            this.readObject("Library/" + id + "/.json", callback);
+            this.readObject("Library/" + id + "/.json", function (err, assets) {
+                if (assets)
+                    feng3d.Feng3dAssets.setAssets(assets);
+                callback(err, assets);
+            });
         };
         return ReadAssets;
     }());
@@ -4747,6 +4751,10 @@ var feng3d;
          * @param callback 保存资源完成回调
          */
         ReadWriteAssets.prototype.saveAssets = function (assets, callback) {
+            if (!assets.assetsId) {
+                assets.assetsId = feng3d.FMath.uuid();
+                feng3d.Feng3dAssets.setAssets(assets);
+            }
             this.saveObject("Library/" + assets.assetsId + "/.json", assets, callback);
         };
         /**
@@ -5076,8 +5084,6 @@ var feng3d;
              * 文件(夹)名称
              */
             _this.name = "";
-            _this.assetsId = feng3d.FMath.uuid();
-            Feng3dAssets._lib.set(_this.assetsId, _this);
             return _this;
         }
         Object.defineProperty(Feng3dAssets.prototype, "extension", {
@@ -5090,6 +5096,9 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Feng3dAssets.setAssets = function (assets) {
+            this._lib.set(assets.assetsId, assets);
+        };
         /**
          * 获取资源
          * @param assetsId 资源编号
@@ -5116,6 +5125,9 @@ var feng3d;
             }
         };
         Feng3dAssets._lib = new Map();
+        __decorate([
+            feng3d.serialize
+        ], Feng3dAssets.prototype, "assetsId", void 0);
         __decorate([
             feng3d.serialize
         ], Feng3dAssets.prototype, "name", void 0);

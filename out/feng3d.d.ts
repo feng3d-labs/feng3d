@@ -2550,6 +2550,7 @@ declare namespace feng3d {
          */
         readonly extension: AssetExtension;
         constructor();
+        static setAssets(assets: Feng3dAssets): void;
         /**
          * 获取资源
          * @param assetsId 资源编号

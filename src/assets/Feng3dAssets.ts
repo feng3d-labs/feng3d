@@ -8,6 +8,7 @@ namespace feng3d
         /**
          * 资源编号
          */
+        @serialize
         assetsId: string;
 
         /**
@@ -32,8 +33,11 @@ namespace feng3d
         constructor()
         {
             super();
-            this.assetsId = FMath.uuid();
-            Feng3dAssets._lib.set(this.assetsId, this);
+        }
+
+        static setAssets(assets: Feng3dAssets)
+        {
+            this._lib.set(assets.assetsId, assets);
         }
 
         /**
