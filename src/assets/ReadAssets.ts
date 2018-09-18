@@ -37,7 +37,7 @@ namespace feng3d
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readFileAsArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void)
+        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void)
         {
             if (path == "" || path == null) 
             {
@@ -48,15 +48,15 @@ namespace feng3d
             if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1)
                 readFS = httpFS;
 
-            readFS.readFileAsArrayBuffer(path, callback);
+            readFS.readArrayBuffer(path, callback);
         }
 
         /**
          * 读取文件为字符串
          */
-        readFileAsString(path: string, callback: (err: Error | null, data: string | null) => void): void
+        readString(path: string, callback: (err: Error | null, data: string | null) => void): void
         {
-            this.readFileAsArrayBuffer(path, (err, data) =>
+            this.readArrayBuffer(path, (err, data) =>
             {
                 if (err)
                 {
@@ -75,7 +75,7 @@ namespace feng3d
          * @param path 图片路径
          * @param callback 加载完成回调
          */
-        readFileAsImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
+        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
         {
             if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1)
             {
@@ -87,7 +87,7 @@ namespace feng3d
                 img.src = path;
             } else
             {
-                this.readFileAsArrayBuffer(path, (err, data) =>
+                this.readArrayBuffer(path, (err, data) =>
                 {
                     if (err)
                     {
@@ -107,9 +107,9 @@ namespace feng3d
          * @param path 资源路径
          * @param callback 读取完成回调 
          */
-        readFileAsBlob(path: string, callback: (err: Error, blob: Blob) => void)
+        readBlob(path: string, callback: (err: Error, blob: Blob) => void)
         {
-            assets.readFileAsArrayBuffer(path, (err, data) =>
+            assets.readArrayBuffer(path, (err, data) =>
             {
                 if (err)
                 {
@@ -123,8 +123,26 @@ namespace feng3d
             });
         }
 
+        /**
+         * 读取文件为对象
+         * @param path 资源路径
+         * @param callback 读取完成回调
+         */
+        readObject(path: string, callback: (err: Error, object: Object) => void)
+        {
+            this.readString(path, (err, str) =>
+            {
+                if (err)
+                {
+                    callback(err, null);
+                    return;
+                }
+                var object = serialization.deserialize(str);
+                callback(null, object);
+            });
+        }
+
     }
 
     assets = new ReadAssets();
-
 }

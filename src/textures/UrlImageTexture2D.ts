@@ -35,7 +35,7 @@ namespace feng3d
                 this.invalidate();
                 return;
             }
-            assets.readFileAsImage(url, (err, img) =>
+            assets.readImage(url, (err, img) =>
             {
                 if (url == this.url)
                 {

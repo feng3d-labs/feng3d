@@ -35,7 +35,7 @@ namespace feng3d
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readFileAsArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void)
+        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void)
         {
             storage.get(this.DBname, this.projectname, path, (err, data) =>
             {
@@ -123,7 +123,7 @@ namespace feng3d
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeFile(path: string, data: ArrayBuffer, callback: (err: Error) => void)
+        writeArrayBuffer(path: string, data: ArrayBuffer, callback: (err: Error) => void)
         {
             storage.set(this.DBname, this.projectname, path, data, callback);
         }

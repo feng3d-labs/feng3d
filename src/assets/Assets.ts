@@ -19,12 +19,13 @@ namespace feng3d
          * 文件系统类型
          */
         readonly type: FSType;
+
         /**
          * 读取文件
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readFileAsArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void);
+        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void);
 
         /**
          * 获取文件绝对路径
@@ -78,6 +79,6 @@ namespace feng3d
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeFile(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
+        writeArrayBuffer(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
     }
 }

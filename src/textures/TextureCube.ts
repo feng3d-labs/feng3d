@@ -40,7 +40,7 @@ namespace feng3d
         {
             var index = ["positive_x_url", "positive_y_url", "positive_z_url", "negative_x_url", "negative_y_url", "negative_z_url"].indexOf(property);
             assert(index != -1);
-            assets.readFileAsImage(newValue, (err, img) =>
+            assets.readImage(newValue, (err, img) =>
             {
                 if (err)
                 {

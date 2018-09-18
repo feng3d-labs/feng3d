@@ -73,18 +73,34 @@ namespace feng3d
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeFile(path: string, data: ArrayBuffer, callback: (err: Error) => void)
+        writeArrayBuffer(path: string, data: ArrayBuffer, callback: (err: Error) => void)
         {
             if (this.isDir(path))
             {
                 this.fs.mkdir(path, callback);
             } else
             {
-                this.fs.writeFile(path, data, callback);
+                this.fs.writeArrayBuffer(path, data, callback);
             }
         }
 
         ///--------------------------
+
+        /**
+         * 保存对象到文件
+         * @param path 文件路径
+         * @param object 保存的对象
+         * @param callback 完成回调
+         */
+        saveObject(path: string, object: Object, callback: (err: Error) => void)
+        {
+            var obj = feng3d.serialization.serialize(object);
+            var str = JSON.stringify(obj, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
+            feng3d.dataTransform.stringToArrayBuffer(str, (arrayBuffer) =>
+            {
+                this.writeArrayBuffer(path, arrayBuffer, callback);
+            });
+        }
 
         /**
          * 获取所有文件路径
@@ -139,14 +155,14 @@ namespace feng3d
          */
         copyFile(src: string, dest: string, callback: (err: Error) => void)
         {
-            this.readFileAsArrayBuffer(src, (err, data) =>
+            this.readArrayBuffer(src, (err, data) =>
             {
                 if (err)
                 {
                     callback && callback(err);
                     return;
                 }
-                this.writeFile(dest, data, callback);
+                this.writeArrayBuffer(dest, data, callback);
             });
         }
 

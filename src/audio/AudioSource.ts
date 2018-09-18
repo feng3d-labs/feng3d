@@ -267,7 +267,7 @@ namespace feng3d
             if (this.url)
             {
                 var url = this.url;
-                assets.readFileAsArrayBuffer(this.url, (err, data) =>
+                assets.readArrayBuffer(this.url, (err, data) =>
                 {
                     if (err)
                     {

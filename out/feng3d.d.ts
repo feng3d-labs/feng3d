@@ -2088,7 +2088,7 @@ declare namespace feng3d {
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readFileAsArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
+        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
@@ -2125,7 +2125,7 @@ declare namespace feng3d {
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeFile(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
+        writeArrayBuffer(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
         /**
          * 获取所有文件路径
          * @param callback 回调函数
@@ -2153,7 +2153,7 @@ declare namespace feng3d {
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readFileAsArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
+        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
@@ -2184,7 +2184,7 @@ declare namespace feng3d {
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readFileAsArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): any;
+        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): any;
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
@@ -2230,7 +2230,7 @@ declare namespace feng3d {
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeFile(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
+        writeArrayBuffer(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
@@ -2259,23 +2259,29 @@ declare namespace feng3d {
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readFileAsArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
+        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
         /**
          * 读取文件为字符串
          */
-        readFileAsString(path: string, callback: (err: Error | null, data: string | null) => void): void;
+        readString(path: string, callback: (err: Error | null, data: string | null) => void): void;
         /**
          * 加载图片
          * @param path 图片路径
          * @param callback 加载完成回调
          */
-        readFileAsImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
+        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
         /**
          * 读取文件为Blob
          * @param path 资源路径
          * @param callback 读取完成回调
          */
-        readFileAsBlob(path: string, callback: (err: Error, blob: Blob) => void): void;
+        readBlob(path: string, callback: (err: Error, blob: Blob) => void): void;
+        /**
+         * 读取文件为对象
+         * @param path 资源路径
+         * @param callback 读取完成回调
+         */
+        readObject(path: string, callback: (err: Error, object: Object) => void): void;
     }
 }
 declare namespace feng3d {
@@ -2316,7 +2322,14 @@ declare namespace feng3d {
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeFile(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
+        writeArrayBuffer(path: string, data: ArrayBuffer, callback: (err: Error) => void): void;
+        /**
+         * 保存对象到文件
+         * @param path 文件路径
+         * @param object 保存的对象
+         * @param callback 完成回调
+         */
+        saveObject(path: string, object: Object, callback: (err: Error) => void): void;
         /**
          * 获取所有文件路径
          * @param callback 回调函数
@@ -2519,7 +2532,7 @@ declare namespace feng3d {
         /**
          * 文件(夹)名称
          */
-        readonly name: string;
+        name: string;
         /**
          * 扩展名
          */

@@ -3834,7 +3834,7 @@ var feng3d;
          * @param callback 加载完成回调
          */
         ImageUtil.prototype.loadImage = function (url, callback) {
-            feng3d.assets.readFileAsImage(url, callback);
+            feng3d.assets.readImage(url, callback);
         };
         /**
          * 获取图片数据
@@ -4379,7 +4379,7 @@ var feng3d;
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        IndexedDBfs.prototype.readFileAsArrayBuffer = function (path, callback) {
+        IndexedDBfs.prototype.readArrayBuffer = function (path, callback) {
             feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
                 callback(err, data);
             });
@@ -4449,7 +4449,7 @@ var feng3d;
          * @param data 文件数据
          * @param callback 回调函数
          */
-        IndexedDBfs.prototype.writeFile = function (path, data, callback) {
+        IndexedDBfs.prototype.writeArrayBuffer = function (path, data, callback) {
             feng3d.storage.set(this.DBname, this.projectname, path, data, callback);
         };
         /**
@@ -4489,7 +4489,7 @@ var feng3d;
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        HttpFS.prototype.readFileAsArrayBuffer = function (path, callback) {
+        HttpFS.prototype.readArrayBuffer = function (path, callback) {
             // rootPath
             feng3d.loader.loadBinary(path, function (content) {
                 callback(null, content);
@@ -4555,7 +4555,7 @@ var feng3d;
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        ReadAssets.prototype.readFileAsArrayBuffer = function (path, callback) {
+        ReadAssets.prototype.readArrayBuffer = function (path, callback) {
             if (path == "" || path == null) {
                 callback(new Error("无效路径!"), null);
                 return;
@@ -4563,13 +4563,13 @@ var feng3d;
             var readFS = this.fs;
             if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1)
                 readFS = feng3d.httpFS;
-            readFS.readFileAsArrayBuffer(path, callback);
+            readFS.readArrayBuffer(path, callback);
         };
         /**
          * 读取文件为字符串
          */
-        ReadAssets.prototype.readFileAsString = function (path, callback) {
-            this.readFileAsArrayBuffer(path, function (err, data) {
+        ReadAssets.prototype.readString = function (path, callback) {
+            this.readArrayBuffer(path, function (err, data) {
                 if (err) {
                     callback(err, null);
                     return;
@@ -4584,7 +4584,7 @@ var feng3d;
          * @param path 图片路径
          * @param callback 加载完成回调
          */
-        ReadAssets.prototype.readFileAsImage = function (path, callback) {
+        ReadAssets.prototype.readImage = function (path, callback) {
             if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1) {
                 var img = new Image();
                 img.onload = function () {
@@ -4593,7 +4593,7 @@ var feng3d;
                 img.src = path;
             }
             else {
-                this.readFileAsArrayBuffer(path, function (err, data) {
+                this.readArrayBuffer(path, function (err, data) {
                     if (err) {
                         callback(err, null);
                         return;
@@ -4609,8 +4609,8 @@ var feng3d;
          * @param path 资源路径
          * @param callback 读取完成回调
          */
-        ReadAssets.prototype.readFileAsBlob = function (path, callback) {
-            feng3d.assets.readFileAsArrayBuffer(path, function (err, data) {
+        ReadAssets.prototype.readBlob = function (path, callback) {
+            feng3d.assets.readArrayBuffer(path, function (err, data) {
                 if (err) {
                     callback(err, null);
                     return;
@@ -4618,6 +4618,21 @@ var feng3d;
                 feng3d.dataTransform.arrayBufferToBlob(data, function (blob) {
                     callback(null, blob);
                 });
+            });
+        };
+        /**
+         * 读取文件为对象
+         * @param path 资源路径
+         * @param callback 读取完成回调
+         */
+        ReadAssets.prototype.readObject = function (path, callback) {
+            this.readString(path, function (err, str) {
+                if (err) {
+                    callback(err, null);
+                    return;
+                }
+                var object = feng3d.serialization.deserialize(str);
+                callback(null, object);
             });
         };
         return ReadAssets;
@@ -4690,15 +4705,29 @@ var feng3d;
          * @param data 文件数据
          * @param callback 回调函数
          */
-        ReadWriteAssets.prototype.writeFile = function (path, data, callback) {
+        ReadWriteAssets.prototype.writeArrayBuffer = function (path, data, callback) {
             if (this.isDir(path)) {
                 this.fs.mkdir(path, callback);
             }
             else {
-                this.fs.writeFile(path, data, callback);
+                this.fs.writeArrayBuffer(path, data, callback);
             }
         };
         ///--------------------------
+        /**
+         * 保存对象到文件
+         * @param path 文件路径
+         * @param object 保存的对象
+         * @param callback 完成回调
+         */
+        ReadWriteAssets.prototype.saveObject = function (path, object, callback) {
+            var _this = this;
+            var obj = feng3d.serialization.serialize(object);
+            var str = JSON.stringify(obj, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
+            feng3d.dataTransform.stringToArrayBuffer(str, function (arrayBuffer) {
+                _this.writeArrayBuffer(path, arrayBuffer, callback);
+            });
+        };
         /**
          * 获取所有文件路径
          * @param callback 回调函数
@@ -4743,12 +4772,12 @@ var feng3d;
          */
         ReadWriteAssets.prototype.copyFile = function (src, dest, callback) {
             var _this = this;
-            this.readFileAsArrayBuffer(src, function (err, data) {
+            this.readArrayBuffer(src, function (err, data) {
                 if (err) {
                     callback && callback(err);
                     return;
                 }
-                _this.writeFile(dest, data, callback);
+                _this.writeArrayBuffer(dest, data, callback);
             });
         };
         /**
@@ -5022,20 +5051,14 @@ var feng3d;
         __extends(Feng3dAssets, _super);
         function Feng3dAssets() {
             var _this = _super.call(this) || this;
+            /**
+             * 文件(夹)名称
+             */
+            _this.name = "";
             _this.assetsId = feng3d.FMath.uuid();
             Feng3dAssets._lib.set(_this.assetsId, _this);
             return _this;
         }
-        Object.defineProperty(Feng3dAssets.prototype, "name", {
-            /**
-             * 文件(夹)名称
-             */
-            get: function () {
-                return this.path && feng3d.pathUtils.getName(this.path);
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Feng3dAssets.prototype, "extension", {
             /**
              * 扩展名
@@ -5063,7 +5086,7 @@ var feng3d;
             if (assetsObj)
                 callback(assetsObj);
             else {
-                feng3d.assets.readFileAsString(path, function (err, content) {
+                feng3d.assets.readString(path, function (err, content) {
                     var json = JSON.parse(content);
                     assetsObj = feng3d.serialization.deserialize(json);
                     assetsObj.path = path;
@@ -5072,6 +5095,9 @@ var feng3d;
             }
         };
         Feng3dAssets._lib = new Map();
+        __decorate([
+            feng3d.serialize
+        ], Feng3dAssets.prototype, "name", void 0);
         return Feng3dAssets;
     }(feng3d.Feng3dObject));
     feng3d.Feng3dAssets = Feng3dAssets;
@@ -20385,7 +20411,7 @@ var feng3d;
                 this.invalidate();
                 return;
             }
-            feng3d.assets.readFileAsImage(url, function (err, img) {
+            feng3d.assets.readImage(url, function (err, img) {
                 if (url == _this.url) {
                     if (err) {
                         feng3d.error(err);
@@ -20512,7 +20538,7 @@ var feng3d;
             var _this = this;
             var index = ["positive_x_url", "positive_y_url", "positive_z_url", "negative_x_url", "negative_y_url", "negative_z_url"].indexOf(property);
             feng3d.assert(index != -1);
-            feng3d.assets.readFileAsImage(newValue, function (err, img) {
+            feng3d.assets.readImage(newValue, function (err, img) {
                 if (err) {
                     // error(err);
                     _this._pixels[index] = null;
@@ -22267,7 +22293,7 @@ var feng3d;
             this.stop();
             if (this.url) {
                 var url = this.url;
-                feng3d.assets.readFileAsArrayBuffer(this.url, function (err, data) {
+                feng3d.assets.readArrayBuffer(this.url, function (err, data) {
                     if (err) {
                         feng3d.warn(err);
                         return;
@@ -27102,7 +27128,7 @@ var feng3d;
          * @param completed 加载完成回调
          */
         MTLLoader.prototype.load = function (path, completed) {
-            feng3d.assets.readFileAsString(path, function (err, content) {
+            feng3d.assets.readString(path, function (err, content) {
                 if (err) {
                     completed(err, null);
                     return;
@@ -27130,7 +27156,7 @@ var feng3d;
          */
         ObjLoader.prototype.load = function (url, completed) {
             var root = url.substring(0, url.lastIndexOf("/") + 1);
-            feng3d.assets.readFileAsString(url, function (err, content) {
+            feng3d.assets.readString(url, function (err, content) {
                 var objData = feng3d.objParser.parser(content);
                 objData.name = feng3d.pathUtils.getName(url);
                 var mtl = objData.mtl;
@@ -27163,7 +27189,7 @@ var feng3d;
          * @param completed 加载完成回调
          */
         MD5Loader.prototype.load = function (url, completed) {
-            feng3d.assets.readFileAsString(url, function (err, content) {
+            feng3d.assets.readString(url, function (err, content) {
                 var md5MeshData = feng3d.md5MeshParser.parse(content);
                 md5MeshData.name = feng3d.pathUtils.getName(url);
                 feng3d.md5MeshConverter.convert(md5MeshData, completed);
@@ -27175,7 +27201,7 @@ var feng3d;
          * @param completed 加载完成回调
          */
         MD5Loader.prototype.loadAnim = function (url, completed) {
-            feng3d.assets.readFileAsString(url, function (err, content) {
+            feng3d.assets.readString(url, function (err, content) {
                 var md5AnimData = feng3d.md5AnimParser.parse(content);
                 md5AnimData.name = feng3d.pathUtils.getName(url);
                 feng3d.md5AnimConverter.convert(md5AnimData, completed);
@@ -27200,7 +27226,7 @@ var feng3d;
          * @param callback 加载完成回调
          */
         MDLLoader.prototype.load = function (mdlurl, callback) {
-            feng3d.assets.readFileAsString(mdlurl, function (err, content) {
+            feng3d.assets.readString(mdlurl, function (err, content) {
                 feng3d.war3.mdlParser.parse(content, function (war3Model) {
                     war3Model.root = mdlurl.substring(0, mdlurl.lastIndexOf("/") + 1);
                     var showMesh = war3Model.getMesh();

@@ -18,10 +18,8 @@ namespace feng3d
         /**
          * 文件(夹)名称
          */
-        get name()
-        {
-            return this.path && pathUtils.getName(this.path);
-        }
+        @serialize
+        name = "";
 
         /**
          * 扩展名
@@ -58,7 +56,7 @@ namespace feng3d
                 callback(assetsObj);
             else
             {
-                assets.readFileAsString(path, (err, content: string) =>
+                assets.readString(path, (err, content: string) =>
                 {
                     var json = JSON.parse(content);
                     assetsObj = feng3d.serialization.deserialize(json);
