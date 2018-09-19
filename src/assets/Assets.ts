@@ -71,7 +71,7 @@ namespace feng3d
          * @param path 文件路径
          * @param callback 回调函数
          */
-        deleteFile(path: string, callback: (err: Error) => void): void;
+        deleteFile(path: string, callback?: (err: Error) => void): void;
 
         /**
          * 写(新建)文件

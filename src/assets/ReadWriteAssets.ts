@@ -51,7 +51,7 @@ namespace feng3d
          * @param path 文件夹路径
          * @param callback 回调函数
          */
-        mkdir(path: string, callback: (err: Error) => void): void
+        mkdir(path: string, callback?: (err: Error) => void): void
         {
             assert(this.isDir(path), `文件夹路径必须以 / 结尾！`)
             this.fs.mkdir(path, callback);
@@ -62,7 +62,7 @@ namespace feng3d
          * @param path 文件路径
          * @param callback 回调函数
          */
-        deleteFile(path: string, callback: (err: Error) => void)
+        deleteFile(path: string, callback?: (err: Error) => void)
         {
             this.fs.deleteFile(path, callback);
         }
@@ -168,7 +168,7 @@ namespace feng3d
          * @param dest    目标路径
          * @param callback 回调函数
          */
-        copyFile(src: string, dest: string, callback: (err: Error) => void)
+        copyFile(src: string, dest: string, callback?: (err: Error) => void)
         {
             this.readArrayBuffer(src, (err, data) =>
             {
@@ -187,7 +187,7 @@ namespace feng3d
          * @param dest 目标路径
          * @param callback 回调函数
          */
-        moveFile(src: string, dest: string, callback: (err: Error) => void)
+        moveFile(src: string, dest: string, callback?: (err: Error) => void)
         {
             this.copyFile(src, dest, (err) =>
             {
@@ -206,7 +206,7 @@ namespace feng3d
          * @param newPath 新路径
          * @param callback 回调函数
          */
-        renameFile(oldPath: string, newPath: string, callback: (err: Error) => void): void
+        renameFile(oldPath: string, newPath: string, callback?: (err: Error) => void): void
         {
             this.moveFile(oldPath, newPath, callback);
         }
@@ -216,13 +216,13 @@ namespace feng3d
          * @param movelists 移动列表
          * @param callback 回调函数
          */
-        moveFiles(movelists: [string, string][], callback: (err: Error) => void)
+        moveFiles(movelists: [string, string][], callback?: (err: Error) => void)
         {
             this.copyFiles(movelists.concat(), (err) =>
             {
                 if (err)
                 {
-                    callback(err);
+                    callback && callback(err);
                     return;
                 }
                 var deletelists = movelists.reduce((value: string[], current) => { value.push(current[0]); return value; }, [])
@@ -235,7 +235,7 @@ namespace feng3d
          * @param copylists 复制列表
          * @param callback 回调函数
          */
-        copyFiles(copylists: [string, string][], callback: (err: Error) => void)
+        copyFiles(copylists: [string, string][], callback?: (err: Error) => void)
         {
             if (copylists.length > 0)
             {
@@ -244,14 +244,14 @@ namespace feng3d
                 {
                     if (err)
                     {
-                        callback(err);
+                        callback && callback(err);
                         return;
                     }
                     this.copyFiles(copylists, callback);
                 });
                 return;
             }
-            callback(null);
+            callback && callback(null);
         }
 
         /**
@@ -259,7 +259,7 @@ namespace feng3d
          * @param deletelists 删除列表
          * @param callback 回调函数
          */
-        deleteFiles(deletelists: string[], callback: (err: Error) => void)
+        deleteFiles(deletelists: string[], callback?: (err: Error) => void)
         {
             if (deletelists.length > 0)
             {
@@ -267,14 +267,14 @@ namespace feng3d
                 {
                     if (err)
                     {
-                        callback(err);
+                        callback && callback(err);
                         return;
                     }
                     this.deleteFiles(deletelists, callback);
                 });
                 return;
             }
-            callback(null);
+            callback && callback(null);
         }
 
         /**
@@ -283,7 +283,7 @@ namespace feng3d
          * @param newPath 新路径
          * @param callback 回调函数
          */
-        rename(oldPath: string, newPath: string, callback: (err: Error) => void): void
+        rename(oldPath: string, newPath: string, callback?: (err: Error) => void): void
         {
             if (this.isDir(oldPath))
             {
@@ -291,7 +291,7 @@ namespace feng3d
                 {
                     if (err)
                     {
-                        callback(err);
+                        callback && callback(err);
                         return;
                     }
                     var renamelists: [string, string][] = [[oldPath, newPath]];
@@ -313,7 +313,7 @@ namespace feng3d
          * @param dest 目标路径
          * @param callback 回调函数
          */
-        move(src: string, dest: string, callback: (err: Error) => void): void
+        move(src: string, dest: string, callback?: (err: Error) => void): void
         {
             this.rename(src, dest, callback);
         }
@@ -323,7 +323,7 @@ namespace feng3d
          * @param path 路径
          * @param callback 回调函数
          */
-        delete(path: string, callback: (err: Error) => void): void
+        delete(path: string, callback?: (err: Error) => void): void
         {
             if (this.isDir(path))
             {
@@ -341,6 +341,16 @@ namespace feng3d
             {
                 this.deleteFile(path, callback);
             }
+        }
+
+        /**
+         * 删除资源
+         * @param assetsId 资源编号
+         * @param callback 回调函数
+         */
+        deleteAssets(assetsId: string, callback?: (err: Error) => void)
+        {
+            this.delete("Library/" + assetsId + "/", callback);
         }
 
         /**

@@ -2223,7 +2223,7 @@ declare namespace feng3d {
          * @param path 文件路径
          * @param callback 回调函数
          */
-        deleteFile(path: string, callback: (err: Error) => void): void;
+        deleteFile(path: string, callback?: (err: Error) => void): void;
         /**
          * 写(新建)文件
          * @param path 文件路径
@@ -2315,13 +2315,13 @@ declare namespace feng3d {
          * @param path 文件夹路径
          * @param callback 回调函数
          */
-        mkdir(path: string, callback: (err: Error) => void): void;
+        mkdir(path: string, callback?: (err: Error) => void): void;
         /**
          * 删除文件
          * @param path 文件路径
          * @param callback 回调函数
          */
-        deleteFile(path: string, callback: (err: Error) => void): void;
+        deleteFile(path: string, callback?: (err: Error) => void): void;
         /**
          * 写文件
          * @param path 文件路径
@@ -2357,59 +2357,65 @@ declare namespace feng3d {
          * @param dest    目标路径
          * @param callback 回调函数
          */
-        copyFile(src: string, dest: string, callback: (err: Error) => void): void;
+        copyFile(src: string, dest: string, callback?: (err: Error) => void): void;
         /**
          * 移动文件
          * @param src 源路径
          * @param dest 目标路径
          * @param callback 回调函数
          */
-        moveFile(src: string, dest: string, callback: (err: Error) => void): void;
+        moveFile(src: string, dest: string, callback?: (err: Error) => void): void;
         /**
          * 重命名文件
          * @param oldPath 老路径
          * @param newPath 新路径
          * @param callback 回调函数
          */
-        renameFile(oldPath: string, newPath: string, callback: (err: Error) => void): void;
+        renameFile(oldPath: string, newPath: string, callback?: (err: Error) => void): void;
         /**
          * 移动一组文件
          * @param movelists 移动列表
          * @param callback 回调函数
          */
-        moveFiles(movelists: [string, string][], callback: (err: Error) => void): void;
+        moveFiles(movelists: [string, string][], callback?: (err: Error) => void): void;
         /**
          * 复制一组文件
          * @param copylists 复制列表
          * @param callback 回调函数
          */
-        copyFiles(copylists: [string, string][], callback: (err: Error) => void): void;
+        copyFiles(copylists: [string, string][], callback?: (err: Error) => void): void;
         /**
          * 删除一组文件
          * @param deletelists 删除列表
          * @param callback 回调函数
          */
-        deleteFiles(deletelists: string[], callback: (err: Error) => void): void;
+        deleteFiles(deletelists: string[], callback?: (err: Error) => void): void;
         /**
          * 重命名文件(夹)
          * @param oldPath 老路径
          * @param newPath 新路径
          * @param callback 回调函数
          */
-        rename(oldPath: string, newPath: string, callback: (err: Error) => void): void;
+        rename(oldPath: string, newPath: string, callback?: (err: Error) => void): void;
         /**
          * 移动文件(夹)
          * @param src 源路径
          * @param dest 目标路径
          * @param callback 回调函数
          */
-        move(src: string, dest: string, callback: (err: Error) => void): void;
+        move(src: string, dest: string, callback?: (err: Error) => void): void;
         /**
          * 删除文件(夹)
          * @param path 路径
          * @param callback 回调函数
          */
-        delete(path: string, callback: (err: Error) => void): void;
+        delete(path: string, callback?: (err: Error) => void): void;
+        /**
+         * 删除资源
+         * @param assetsId 资源编号
+         * @param callback 回调函数
+         */
+        deleteAssets(assetsId: string, callback?: (err: Error) => void): void;
         /**
          * 是否为文件夹
          * @param path 文件路径

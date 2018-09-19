@@ -4843,7 +4843,7 @@ var feng3d;
             var _this = this;
             this.copyFiles(movelists.concat(), function (err) {
                 if (err) {
-                    callback(err);
+                    callback && callback(err);
                     return;
                 }
                 var deletelists = movelists.reduce(function (value, current) { value.push(current[0]); return value; }, []);
@@ -4861,14 +4861,14 @@ var feng3d;
                 var copyitem = copylists.shift();
                 this.copyFile(copyitem[0], copyitem[1], function (err) {
                     if (err) {
-                        callback(err);
+                        callback && callback(err);
                         return;
                     }
                     _this.copyFiles(copylists, callback);
                 });
                 return;
             }
-            callback(null);
+            callback && callback(null);
         };
         /**
          * 删除一组文件
@@ -4880,14 +4880,14 @@ var feng3d;
             if (deletelists.length > 0) {
                 this.deleteFile(deletelists.shift(), function (err) {
                     if (err) {
-                        callback(err);
+                        callback && callback(err);
                         return;
                     }
                     _this.deleteFiles(deletelists, callback);
                 });
                 return;
             }
-            callback(null);
+            callback && callback(null);
         };
         /**
          * 重命名文件(夹)
@@ -4900,7 +4900,7 @@ var feng3d;
             if (this.isDir(oldPath)) {
                 this.getAllfilepathInFolder(oldPath, function (err, filepaths) {
                     if (err) {
-                        callback(err);
+                        callback && callback(err);
                         return;
                     }
                     var renamelists = [[oldPath, newPath]];
@@ -4943,6 +4943,14 @@ var feng3d;
             else {
                 this.deleteFile(path, callback);
             }
+        };
+        /**
+         * 删除资源
+         * @param assetsId 资源编号
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.deleteAssets = function (assetsId, callback) {
+            this.delete("Library/" + assetsId + "/", callback);
         };
         /**
          * 是否为文件夹
