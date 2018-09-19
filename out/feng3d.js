@@ -27469,44 +27469,40 @@ var feng3d;
                     value.dispatch("mouseover", null, true);
             }
             this._selectedGameObject = value;
-            if (this._selectedGameObject) {
-                this._mouseEventTypes.forEach(function (element) {
-                    switch (element) {
-                        case "mousedown":
-                            if (_this.preMouseDownGameObject != _this._selectedGameObject) {
-                                _this.gameObjectClickNum = 0;
-                                _this.preMouseDownGameObject = _this._selectedGameObject;
-                            }
-                            _this._selectedGameObject.dispatch(element, null, true);
-                            break;
-                        case "mouseup":
-                            if (_this._selectedGameObject == _this.preMouseDownGameObject) {
-                                _this.gameObjectClickNum++;
-                            }
-                            else {
-                                _this.gameObjectClickNum = 0;
-                                _this.preMouseDownGameObject = null;
-                            }
-                            _this._selectedGameObject.dispatch(element, null, true);
-                            break;
-                        case "mousemove":
-                            _this._selectedGameObject.dispatch(element, null, true);
-                            break;
-                        case "click":
-                            if (_this.gameObjectClickNum > 0)
-                                _this._selectedGameObject.dispatch(element, null, true);
-                            break;
-                        case "dblclick":
-                            if (_this.gameObjectClickNum > 1)
-                                _this._selectedGameObject.dispatch(element, null, true);
-                            break;
-                    }
-                });
-            }
-            else {
-                this.gameObjectClickNum = 0;
-                this.preMouseDownGameObject = null;
-            }
+            this._mouseEventTypes.forEach(function (element) {
+                switch (element) {
+                    case "mousedown":
+                        if (_this.preMouseDownGameObject != _this._selectedGameObject) {
+                            _this.gameObjectClickNum = 0;
+                            _this.preMouseDownGameObject = _this._selectedGameObject;
+                        }
+                        _this._selectedGameObject && _this._selectedGameObject.dispatch(element, null, true);
+                        break;
+                    case "mouseup":
+                        if (_this._selectedGameObject == _this.preMouseDownGameObject) {
+                            _this.gameObjectClickNum++;
+                        }
+                        else {
+                            _this.gameObjectClickNum = 0;
+                            _this.preMouseDownGameObject = null;
+                        }
+                        _this._selectedGameObject && _this._selectedGameObject.dispatch(element, null, true);
+                        break;
+                    case "mousemove":
+                        _this._selectedGameObject && _this._selectedGameObject.dispatch(element, null, true);
+                        break;
+                    case "click":
+                        if (_this.gameObjectClickNum > 0)
+                            _this._selectedGameObject && _this._selectedGameObject.dispatch(element, null, true);
+                        break;
+                    case "dblclick":
+                        if (_this.gameObjectClickNum > 1) {
+                            _this._selectedGameObject && _this._selectedGameObject.dispatch(element, null, true);
+                            _this.gameObjectClickNum = 0;
+                        }
+                        break;
+                }
+            });
             this._mouseEventTypes.length = 0;
         };
         __decorate([

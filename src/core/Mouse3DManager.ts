@@ -109,49 +109,45 @@ namespace feng3d
                     value.dispatch("mouseover", null, true);
             }
             this._selectedGameObject = value;
-            if (this._selectedGameObject)
+            this._mouseEventTypes.forEach(element =>
             {
-                this._mouseEventTypes.forEach(element =>
+                switch (element)
                 {
-                    switch (element)
-                    {
-                        case "mousedown":
-                            if (this.preMouseDownGameObject != this._selectedGameObject)
-                            {
-                                this.gameObjectClickNum = 0;
-                                this.preMouseDownGameObject = this._selectedGameObject;
-                            }
-                            this._selectedGameObject.dispatch(element, null, true);
-                            break;
-                        case "mouseup":
-                            if (this._selectedGameObject == this.preMouseDownGameObject)
-                            {
-                                this.gameObjectClickNum++;
-                            } else
-                            {
-                                this.gameObjectClickNum = 0;
-                                this.preMouseDownGameObject = null;
-                            }
-                            this._selectedGameObject.dispatch(element, null, true);
-                            break;
-                        case "mousemove":
-                            this._selectedGameObject.dispatch(element, null, true);
-                            break;
-                        case "click":
-                            if (this.gameObjectClickNum > 0)
-                                this._selectedGameObject.dispatch(element, null, true);
-                            break;
-                        case "dblclick":
-                            if (this.gameObjectClickNum > 1)
-                                this._selectedGameObject.dispatch(element, null, true);
-                            break;
-                    }
-                });
-            } else
-            {
-                this.gameObjectClickNum = 0;
-                this.preMouseDownGameObject = null;
-            }
+                    case "mousedown":
+                        if (this.preMouseDownGameObject != this._selectedGameObject)
+                        {
+                            this.gameObjectClickNum = 0;
+                            this.preMouseDownGameObject = this._selectedGameObject;
+                        }
+                        this._selectedGameObject && this._selectedGameObject.dispatch(element, null, true);
+                        break;
+                    case "mouseup":
+                        if (this._selectedGameObject == this.preMouseDownGameObject)
+                        {
+                            this.gameObjectClickNum++;
+                        } else
+                        {
+                            this.gameObjectClickNum = 0;
+                            this.preMouseDownGameObject = null;
+                        }
+                        this._selectedGameObject && this._selectedGameObject.dispatch(element, null, true);
+                        break;
+                    case "mousemove":
+                        this._selectedGameObject && this._selectedGameObject.dispatch(element, null, true);
+                        break;
+                    case "click":
+                        if (this.gameObjectClickNum > 0)
+                            this._selectedGameObject && this._selectedGameObject.dispatch(element, null, true);
+                        break;
+                    case "dblclick":
+                        if (this.gameObjectClickNum > 1)
+                        {
+                            this._selectedGameObject && this._selectedGameObject.dispatch(element, null, true);
+                            this.gameObjectClickNum = 0;
+                        }
+                        break;
+                }
+            });
             this._mouseEventTypes.length = 0;
         }
     }
