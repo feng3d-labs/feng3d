@@ -204,9 +204,7 @@ namespace feng3d
 		 */
         private updateBounds()
         {
-            var model = this.gameObject.getComponent(Model);
-            if (model && model.geometry)
-                this._selfLocalBounds = model.geometry.bounding;
+            this._selfLocalBounds = this._activeGeometry.bounding;
         }
     }
 }

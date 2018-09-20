@@ -15,11 +15,6 @@ namespace feng3d
 	export interface OAVDefaultParam extends OAVComponentParamBase
 	{
 		/**
-		 * 文本是否可编辑
-		 */
-		textEnabled?: boolean;
-
-		/**
 		 * 拾取参数
 		 */
 		dragparam?: {

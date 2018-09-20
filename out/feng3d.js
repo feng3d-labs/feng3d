@@ -2687,9 +2687,9 @@ var feng3d;
             for (var i = 0; i < serializableMembers.length; i++) {
                 var property = serializableMembers[i].property;
                 var assets = serializableMembers[i].assets;
-                if (assets && target[property] instanceof feng3d.Feng3dAssets) {
-                    var assetsId0 = target[property] && target[property].path;
-                    var assetsId1 = defaultInstance[property] && defaultInstance[property].path;
+                if (assets && target[property] instanceof feng3d.Feng3dAssets && target[property].assetsId) {
+                    var assetsId0 = target[property] && target[property].assetsId;
+                    var assetsId1 = defaultInstance[property] && defaultInstance[property].assetsId;
                     if (assetsId0 != assetsId1)
                         different[property] = assetsId0;
                     continue;
@@ -2784,7 +2784,7 @@ var feng3d;
             var _loop_1 = function (property) {
                 if (object.hasOwnProperty(property)) {
                     if (serializeAssets.indexOf(property) != -1 && typeof object[property] == "string") {
-                        feng3d.Feng3dAssets.getAssetsByPath(object[property], function (assets) {
+                        feng3d.assets.readAssets(object[property], function (err, assets) {
                             target[property] = assets;
                         });
                     }
@@ -5094,16 +5094,8 @@ var feng3d;
             _this.name = "";
             return _this;
         }
-        Object.defineProperty(Feng3dAssets.prototype, "extension", {
-            /**
-             * 扩展名
-             */
-            get: function () {
-                return (this.path && feng3d.pathUtils.getExtension(this.path));
-            },
-            enumerable: true,
-            configurable: true
-        });
+        Feng3dAssets.prototype.assetsIdChanged = function () {
+        };
         Feng3dAssets.setAssets = function (assets) {
             this._lib.set(assets.assetsId, assets);
         };
@@ -5115,29 +5107,21 @@ var feng3d;
             return this._lib.get(assetsId);
         };
         /**
-         * 根据路径获取资源
-         * @param path 资源路径
+         * 获取指定类型资源
+         * @param type 资源类型
          */
-        Feng3dAssets.getAssetsByPath = function (path, callback) {
-            var assetsObj = this._lib.getValues().reduce(function (pv, cv) { if (cv.path == path)
-                pv = cv; return pv; }, null);
-            if (assetsObj)
-                callback(assetsObj);
-            else {
-                feng3d.assets.readString(path, function (err, content) {
-                    var json = JSON.parse(content);
-                    assetsObj = feng3d.serialization.deserialize(json);
-                    assetsObj.path = path;
-                    callback(assetsObj);
-                });
-            }
+        Feng3dAssets.getAssetsByType = function (type) {
+            return this._lib.getValues().filter(function (v) { return v instanceof type; });
         };
         Feng3dAssets._lib = new Map();
         __decorate([
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.watch("assetsIdChanged"),
+            feng3d.oav({ componentParam: { editable: false } })
         ], Feng3dAssets.prototype, "assetsId", void 0);
         __decorate([
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.oav()
         ], Feng3dAssets.prototype, "name", void 0);
         return Feng3dAssets;
     }(feng3d.Feng3dObject));
@@ -16631,9 +16615,7 @@ var feng3d;
          * @inheritDoc
          */
         Model.prototype.updateBounds = function () {
-            var model = this.gameObject.getComponent(Model);
-            if (model && model.geometry)
-                this._selfLocalBounds = model.geometry.bounding;
+            this._selfLocalBounds = this._activeGeometry.bounding;
         };
         __decorate([
             feng3d.oav({ component: "OAVPick", componentParam: { tooltip: "几何体，提供模型以形状", accepttype: "geometry", datatype: "geometry" } }),
@@ -17771,7 +17753,11 @@ var feng3d;
              * 立方体几何体
              */
             get: function () {
-                return this._cube = this._cube || new feng3d.CubeGeometry();
+                if (!this._cube) {
+                    this._cube = new feng3d.CubeGeometry().value({ name: "Cube", assetsId: "Cube" });
+                    feng3d.Feng3dAssets.setAssets(this._cube);
+                }
+                return this._cube;
             },
             enumerable: true,
             configurable: true
@@ -27298,7 +27284,7 @@ var feng3d;
             if (name === void 0) { name = "cube"; }
             return new feng3d.GameObject().value({
                 name: name, components: [
-                    { __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.CubeGeometry" } },
+                    { __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.cube },
                 ]
             });
         };

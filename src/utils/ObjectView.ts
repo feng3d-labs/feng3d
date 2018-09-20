@@ -480,6 +480,10 @@ namespace feng3d
 		 * 提示信息
 		 */
 		tooltip?: string;
+		/**
+		 * 是否可编辑
+		 */
+		editable?: boolean;
 	}
 
 	/**

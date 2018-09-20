@@ -1352,6 +1352,10 @@ declare namespace feng3d {
          * 提示信息
          */
         tooltip?: string;
+        /**
+         * 是否可编辑
+         */
+        editable?: boolean;
     }
     /**
      * OAV 组件参数映射
@@ -1613,10 +1617,6 @@ declare namespace feng3d {
      * OAVDefault 组件参数
      */
     interface OAVDefaultParam extends OAVComponentParamBase {
-        /**
-         * 文本是否可编辑
-         */
-        textEnabled?: boolean;
         /**
          * 拾取参数
          */
@@ -2544,18 +2544,11 @@ declare namespace feng3d {
          */
         assetsId: string;
         /**
-         * 路径
-         */
-        path: string;
-        /**
          * 文件(夹)名称
          */
         name: string;
-        /**
-         * 扩展名
-         */
-        readonly extension: AssetExtension;
         constructor();
+        protected assetsIdChanged(): void;
         static setAssets(assets: Feng3dAssets): void;
         /**
          * 获取资源
@@ -2563,10 +2556,10 @@ declare namespace feng3d {
          */
         static getAssets(assetsId: string): Feng3dAssets;
         /**
-         * 根据路径获取资源
-         * @param path 资源路径
+         * 获取指定类型资源
+         * @param type 资源类型
          */
-        static getAssetsByPath(path: string, callback: (assets: any) => void): void;
+        static getAssetsByType<T extends Feng3dAssets>(type: Constructor<T>): Feng3dAssets[];
         private static _lib;
     }
 }

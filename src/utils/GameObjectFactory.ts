@@ -13,7 +13,7 @@ namespace feng3d
         {
             return new GameObject().value({
                 name: name, components: [
-                    { __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.CubeGeometry" } },
+                    { __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.cube },
                 ]
             });
         }

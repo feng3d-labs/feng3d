@@ -720,7 +720,12 @@ namespace feng3d
          */
         static get cube()
         {
-            return this._cube = this._cube || new CubeGeometry();
+            if (!this._cube)
+            {
+                this._cube = new CubeGeometry().value({ name: "Cube", assetsId: "Cube" });
+                Feng3dAssets.setAssets(this._cube);
+            }
+            return this._cube;
         }
         private static _cube: CubeGeometry;
     }

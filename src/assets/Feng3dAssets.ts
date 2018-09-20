@@ -9,30 +9,25 @@ namespace feng3d
          * 资源编号
          */
         @serialize
+        @watch("assetsIdChanged")
+        @oav({ componentParam: { editable: false } })
         assetsId: string;
-
-        /**
-         * 路径
-         */
-        path: string;
 
         /**
          * 文件(夹)名称
          */
         @serialize
+        @oav()
         name = "";
-
-        /**
-         * 扩展名
-         */
-        get extension(): AssetExtension
-        {
-            return <any>(this.path && pathUtils.getExtension(this.path));
-        }
 
         constructor()
         {
             super();
+        }
+
+        protected assetsIdChanged()
+        {
+
         }
 
         static setAssets(assets: Feng3dAssets)
@@ -50,24 +45,12 @@ namespace feng3d
         }
 
         /**
-         * 根据路径获取资源
-         * @param path 资源路径
+         * 获取指定类型资源
+         * @param type 资源类型
          */
-        static getAssetsByPath(path: string, callback: (assets: any) => void)
+        static getAssetsByType<T extends Feng3dAssets>(type: Constructor<T>)
         {
-            var assetsObj = this._lib.getValues().reduce((pv, cv) => { if (cv.path == path) pv = cv; return pv; }, null);
-            if (assetsObj)
-                callback(assetsObj);
-            else
-            {
-                assets.readString(path, (err, content: string) =>
-                {
-                    var json = JSON.parse(content);
-                    assetsObj = feng3d.serialization.deserialize(json);
-                    assetsObj.path = path;
-                    callback(assetsObj);
-                });
-            }
+            return this._lib.getValues().filter(v => v instanceof type);
         }
 
         private static _lib = new Map<string, Feng3dAssets>();

@@ -113,10 +113,10 @@ namespace feng3d
             {
                 var property = serializableMembers[i].property;
                 var assets = serializableMembers[i].assets;
-                if (assets && target[property] instanceof Feng3dAssets)
+                if (assets && target[property] instanceof Feng3dAssets && target[property].assetsId)
                 {
-                    var assetsId0 = target[property] && (<Feng3dAssets>target[property]).path;
-                    var assetsId1 = defaultInstance[property] && (<Feng3dAssets>defaultInstance[property]).path;
+                    var assetsId0 = target[property] && (<Feng3dAssets>target[property]).assetsId;
+                    var assetsId1 = defaultInstance[property] && (<Feng3dAssets>defaultInstance[property]).assetsId;
                     if (assetsId0 != assetsId1) different[property] = assetsId0;
                     continue;
                 }
@@ -230,9 +230,9 @@ namespace feng3d
                 {
                     if (serializeAssets.indexOf(property) != -1 && typeof object[property] == "string")
                     {
-                        Feng3dAssets.getAssetsByPath(<any>object[property], assets =>
+                        assets.readAssets(<any>object[property], (err, assets) =>
                         {
-                            target[property] = assets;
+                            target[property] = <any>assets;
                         });
                     }
                     else
