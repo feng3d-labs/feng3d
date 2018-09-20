@@ -16192,7 +16192,7 @@ var feng3d;
             feng3d.oav({ component: "OAVComponentList" })
         ], GameObject.prototype, "components", null);
         return GameObject;
-    }(feng3d.Feng3dObject));
+    }(feng3d.Feng3dAssets));
     feng3d.GameObject = GameObject;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -17780,7 +17780,7 @@ var feng3d;
             feng3d.oav()
         ], Geometry.prototype, "invalidateGeometry", null);
         return Geometry;
-    }(feng3d.Feng3dObject));
+    }(feng3d.Feng3dAssets));
     feng3d.Geometry = Geometry;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -24175,9 +24175,12 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var AnimationClip = /** @class */ (function () {
+    var AnimationClip = /** @class */ (function (_super) {
+        __extends(AnimationClip, _super);
         function AnimationClip() {
-            this.loop = true;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.loop = true;
+            return _this;
         }
         __decorate([
             feng3d.serialize
@@ -24192,7 +24195,7 @@ var feng3d;
             feng3d.serialize
         ], AnimationClip.prototype, "propertyClips", void 0);
         return AnimationClip;
-    }());
+    }(feng3d.Feng3dAssets));
     feng3d.AnimationClip = AnimationClip;
 })(feng3d || (feng3d = {}));
 var feng3d;

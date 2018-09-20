@@ -9084,7 +9084,7 @@ declare namespace feng3d {
     /**
      * 游戏对象，场景唯一存在的对象类型
      */
-    class GameObject extends Feng3dObject {
+    class GameObject extends Feng3dAssets {
         __class__: "feng3d.GameObject";
         readonly renderAtomic: RenderAtomic;
         /**
@@ -9696,7 +9696,7 @@ declare namespace feng3d {
     /**
      * 几何体
      */
-    abstract class Geometry extends Feng3dObject {
+    abstract class Geometry extends Feng3dAssets {
         /**
          * 网格名称
          */
@@ -12094,7 +12094,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class AnimationClip {
+    class AnimationClip extends Feng3dAssets {
         name: string;
         /**
          * 动画时长，单位ms

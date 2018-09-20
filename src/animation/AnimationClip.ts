@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export class AnimationClip
+    export class AnimationClip extends Feng3dAssets
     {
         @serialize
         name: string;
