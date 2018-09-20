@@ -16544,8 +16544,6 @@ var feng3d;
           * @return
           */
         Model.prototype.isIntersectingRay = function (ray3D) {
-            if (!this.selfLocalBounds)
-                return null;
             var localNormal = new feng3d.Vector3();
             //转换到当前实体坐标系空间
             var localRay = new feng3d.Ray3D();
@@ -16578,6 +16576,7 @@ var feng3d;
         };
         Model.prototype.onGeometryChanged = function () {
             this._activeGeometry = this.geometry || feng3d.Geometry.cube;
+            this.onBoundsInvalid();
         };
         Model.prototype.onMaterialChanged = function () {
             this._activeMaterial = this.material || feng3d.Material.default;
@@ -16597,9 +16596,7 @@ var feng3d;
          * 更新世界边界
          */
         Model.prototype.updateWorldBounds = function () {
-            if (this.selfLocalBounds && this.transform.localToWorldMatrix) {
-                this._selfWorldBounds = this.selfLocalBounds.applyMatrix3DTo(this.transform.localToWorldMatrix);
-            }
+            this._selfWorldBounds = this.selfLocalBounds.applyMatrix3DTo(this.transform.localToWorldMatrix);
         };
         /**
          * 处理包围盒变换事件
@@ -17521,7 +17518,7 @@ var feng3d;
                 if (!this._bounding) {
                     var positions = this.positions;
                     if (!positions || positions.length == 0)
-                        return null;
+                        return new feng3d.Box();
                     this._bounding = feng3d.Box.formPositions(this.positions);
                 }
                 return this._bounding;
@@ -26777,11 +26774,12 @@ var feng3d;
     var _vertexIndex;
     function createMaterialObj(obj, subObj, materials) {
         var gameObject = new feng3d.GameObject();
-        gameObject.name = subObj.g;
+        gameObject.name = subObj.g || gameObject.name;
         var model = gameObject.addComponent(feng3d.Model);
         if (materials && materials[subObj.material])
             model.material = materials[subObj.material];
         var geometry = model.geometry = new feng3d.CustomGeometry();
+        geometry.name = subObj.g || geometry.name;
         var vertices = [];
         var normals = [];
         var uvs = [];
@@ -26804,6 +26802,7 @@ var feng3d;
             geometry.setVAData("a_normal", normals, 3);
         if (uvs.length > 0)
             geometry.setVAData("a_uv", uvs, 2);
+        feng3d.feng3dDispatcher.dispatch("assets.parsed", geometry);
         return gameObject;
         function translateVertexData(face, vertexIndex, vertices, uvs, indices, normals, obj) {
             var index;

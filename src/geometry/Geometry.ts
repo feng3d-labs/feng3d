@@ -452,7 +452,7 @@ namespace feng3d
             {
                 var positions = this.positions;
                 if (!positions || positions.length == 0)
-                    return null;
+                    return new Box();
                 this._bounding = Box.formPositions(this.positions);
             }
             return this._bounding;

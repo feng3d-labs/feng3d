@@ -46,7 +46,7 @@ namespace feng3d
             return this._activeMaterial;
         }
 
-		/**
+        /**
 		 * 自身局部包围盒
 		 */
         get selfLocalBounds()
@@ -100,9 +100,6 @@ namespace feng3d
           */
         isIntersectingRay(ray3D: Ray3D)
         {
-            if (!this.selfLocalBounds)
-                return null;
-
             var localNormal = new Vector3();
 
             //转换到当前实体坐标系空间
@@ -143,8 +140,8 @@ namespace feng3d
 
         //
         private _lightPicker: LightPicker;
-        private _selfLocalBounds: Box | null;
-        private _selfWorldBounds: Box | null;
+        private _selfLocalBounds: Box;
+        private _selfWorldBounds: Box;
         /**
          * 启用的几何体
          */
@@ -155,6 +152,7 @@ namespace feng3d
         private onGeometryChanged()
         {
             this._activeGeometry = this.geometry || Geometry.cube;
+            this.onBoundsInvalid();
         }
 
         private onMaterialChanged()
@@ -184,10 +182,7 @@ namespace feng3d
 		 */
         private updateWorldBounds()
         {
-            if (this.selfLocalBounds && this.transform.localToWorldMatrix)
-            {
-                this._selfWorldBounds = this.selfLocalBounds.applyMatrix3DTo(this.transform.localToWorldMatrix);
-            }
+            this._selfWorldBounds = this.selfLocalBounds.applyMatrix3DTo(this.transform.localToWorldMatrix);
         }
 
         /**
@@ -198,7 +193,7 @@ namespace feng3d
             this._selfLocalBounds = null;
             this._selfWorldBounds = null;
         }
-
+        
         /**
 		 * @inheritDoc
 		 */

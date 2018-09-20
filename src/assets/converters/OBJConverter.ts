@@ -54,12 +54,13 @@ namespace feng3d
     function createMaterialObj(obj: OBJ_OBJData, subObj: OBJ_SubOBJ, materials: { [name: string]: Material; })
     {
         var gameObject = new GameObject();
-        gameObject.name = subObj.g;
+        gameObject.name = subObj.g || gameObject.name;
         var model = gameObject.addComponent(Model);
         if (materials && materials[subObj.material])
             model.material = materials[subObj.material];
 
         var geometry = model.geometry = new CustomGeometry();
+        geometry.name = subObj.g || geometry.name;
         var vertices: number[] = [];
         var normals: number[] = [];
         var uvs: number[] = [];
@@ -86,6 +87,8 @@ namespace feng3d
 
         if (uvs.length > 0)
             geometry.setVAData("a_uv", uvs, 2);
+
+        feng3dDispatcher.dispatch("assets.parsed", geometry);
 
         return gameObject;
 
