@@ -4658,7 +4658,7 @@ var feng3d;
                 callback(null, assets);
                 return;
             }
-            this.readObject("Library/" + id + "/.json", function (err, assets) {
+            this.readObject(feng3d.Feng3dAssets.getPath(id), function (err, assets) {
                 if (assets)
                     feng3d.Feng3dAssets.setAssets(assets);
                 callback(err, assets);
@@ -4767,7 +4767,7 @@ var feng3d;
                 assets.assetsId = feng3d.FMath.uuid();
                 feng3d.Feng3dAssets.setAssets(assets);
             }
-            this.saveObject("Library/" + assets.assetsId + "/.json", assets, callback);
+            this.saveObject(feng3d.Feng3dAssets.getPath(assets.assetsId), assets, callback);
         };
         /**
          * 获取所有文件路径
@@ -4962,7 +4962,7 @@ var feng3d;
          * @param callback 回调函数
          */
         ReadWriteAssets.prototype.deleteAssets = function (assetsId, callback) {
-            this.delete("Library/" + assetsId + "/", callback);
+            this.delete(feng3d.Feng3dAssets.getPath(assetsId), callback);
         };
         /**
          * 是否为文件夹
@@ -4989,33 +4989,9 @@ var feng3d;
          */
         AssetExtension["folder"] = "folder";
         /**
-         * png 图片
+         * 音频
          */
-        AssetExtension["png"] = "png";
-        /**
-         * jpg图片
-         */
-        AssetExtension["jpg"] = "jpg";
-        /**
-         * jpeg图片
-         */
-        AssetExtension["jpeg"] = "jpeg";
-        /**
-         * gif图片
-         */
-        AssetExtension["gif"] = "gif";
-        /**
-         * mp3声音
-         */
-        AssetExtension["mp3"] = "mp3";
-        /**
-         * ogg声音
-         */
-        AssetExtension["ogg"] = "ogg";
-        /**
-         * wav声音
-         */
-        AssetExtension["wav"] = "wav";
+        AssetExtension["audio"] = "audio";
         /**
          * ts文件
          */
@@ -5107,6 +5083,14 @@ var feng3d;
             return _this;
         }
         Feng3dAssets.prototype.assetsIdChanged = function () {
+            this.path = Feng3dAssets.getPath(this.assetsId);
+        };
+        /**
+         * 获取资源路径
+         * @param assetsId 资源编号
+         */
+        Feng3dAssets.getPath = function (assetsId) {
+            return "Library/" + assetsId + "/.json";
         };
         Feng3dAssets.setAssets = function (assets) {
             this._lib.set(assets.assetsId, assets);
@@ -15628,7 +15612,7 @@ var feng3d;
         function GameObject() {
             var _this = _super.call(this) || this;
             _this.__class__ = "feng3d.GameObject";
-            _this.type = feng3d.AssetExtension.gameobject;
+            _this.assetType = feng3d.AssetExtension.gameobject;
             _this.renderAtomic = new feng3d.RenderAtomic();
             /**
              * 是否显示
@@ -24181,7 +24165,7 @@ var feng3d;
         __extends(AnimationClip, _super);
         function AnimationClip() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.type = feng3d.AssetExtension.anim;
+            _this.assetType = feng3d.AssetExtension.anim;
             _this.loop = true;
             return _this;
         }

@@ -21,9 +21,14 @@ namespace feng3d
         name = "";
 
         /**
-         * 资源类型
+         * 资源类型，由具体对象类型决定
          */
         assetType: AssetExtension;
+
+        /**
+         * 资源路径，由资源编号决定
+         */
+        path: string;
 
         constructor()
         {
@@ -32,7 +37,16 @@ namespace feng3d
 
         protected assetsIdChanged()
         {
+            this.path = Feng3dAssets.getPath(this.assetsId);
+        }
 
+        /**
+         * 获取资源路径
+         * @param assetsId 资源编号
+         */
+        static getPath(assetsId: string): any
+        {
+            return "Library/" + assetsId + "/.json";
         }
 
         static setAssets(assets: Feng3dAssets)

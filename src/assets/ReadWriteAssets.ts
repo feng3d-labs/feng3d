@@ -114,7 +114,7 @@ namespace feng3d
                 assets.assetsId = FMath.uuid();
                 Feng3dAssets.setAssets(assets);
             }
-            this.saveObject("Library/" + assets.assetsId + "/.json", assets, callback);
+            this.saveObject(Feng3dAssets.getPath(assets.assetsId), assets, callback);
         }
 
         /**
@@ -350,7 +350,7 @@ namespace feng3d
          */
         deleteAssets(assetsId: string, callback?: (err: Error) => void)
         {
-            this.delete("Library/" + assetsId + "/", callback);
+            this.delete(Feng3dAssets.getPath(assetsId), callback);
         }
 
         /**

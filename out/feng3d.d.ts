@@ -2439,33 +2439,9 @@ declare namespace feng3d {
          */
         folder = "folder",
         /**
-         * png 图片
+         * 音频
          */
-        png = "png",
-        /**
-         * jpg图片
-         */
-        jpg = "jpg",
-        /**
-         * jpeg图片
-         */
-        jpeg = "jpeg",
-        /**
-         * gif图片
-         */
-        gif = "gif",
-        /**
-         * mp3声音
-         */
-        mp3 = "mp3",
-        /**
-         * ogg声音
-         */
-        ogg = "ogg",
-        /**
-         * wav声音
-         */
-        wav = "wav",
+        audio = "audio",
         /**
          * ts文件
          */
@@ -2554,11 +2530,20 @@ declare namespace feng3d {
          */
         name: string;
         /**
-         * 资源类型
+         * 资源类型，由具体对象类型决定
          */
         assetType: AssetExtension;
+        /**
+         * 资源路径，由资源编号决定
+         */
+        path: string;
         constructor();
         protected assetsIdChanged(): void;
+        /**
+         * 获取资源路径
+         * @param assetsId 资源编号
+         */
+        static getPath(assetsId: string): any;
         static setAssets(assets: Feng3dAssets): void;
         /**
          * 获取资源
@@ -9089,7 +9074,7 @@ declare namespace feng3d {
      */
     class GameObject extends Feng3dAssets {
         __class__: "feng3d.GameObject";
-        type: AssetExtension;
+        assetType: AssetExtension;
         readonly renderAtomic: RenderAtomic;
         /**
          * 游戏对象池
@@ -12098,7 +12083,7 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     class AnimationClip extends Feng3dAssets {
-        type: AssetExtension;
+        assetType: AssetExtension;
         name: string;
         /**
          * 动画时长，单位ms

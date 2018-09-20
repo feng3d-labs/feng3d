@@ -9,34 +9,12 @@ namespace feng3d
          * 文件夹
          */
         folder = "folder",
+
         /**
-         * png 图片
+         * 音频
          */
-        png = "png",
-        /**
-         * jpg图片
-         */
-        jpg = "jpg",
-        /**
-         * jpeg图片
-         */
-        jpeg = "jpeg",
-        /**
-         * gif图片
-         */
-        gif = "gif",
-        /**
-         * mp3声音
-         */
-        mp3 = "mp3",
-        /**
-         * ogg声音
-         */
-        ogg = "ogg",
-        /**
-         * wav声音
-         */
-        wav = "wav",
+        audio = "audio",
+
         /**
          * ts文件
          */
