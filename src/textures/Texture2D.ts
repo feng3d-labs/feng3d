@@ -22,8 +22,10 @@ namespace feng3d
     /**
      * 2D纹理
      */
-    export abstract class Texture2D extends TextureInfo
+    export class Texture2D extends TextureInfo
     {
+        assetType = feng3d.AssetExtension.texture2d;
+
         /**
          * 当贴图数据未加载好等情况时代替使用
          */

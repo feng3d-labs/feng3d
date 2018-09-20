@@ -67,6 +67,8 @@ namespace feng3d
 
         __class__: "feng3d.GameObject" = "feng3d.GameObject";
 
+        type = feng3d.AssetExtension.gameobject;
+
         readonly renderAtomic = new RenderAtomic();
 
         /**

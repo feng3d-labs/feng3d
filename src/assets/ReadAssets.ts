@@ -103,6 +103,22 @@ namespace feng3d
         }
 
         /**
+         * 读取文件为DataURL
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readDataURL(path: string, callback: (err: Error, dataurl: string) => void)
+        {
+            this.readArrayBuffer(path, (err, data) =>
+            {
+                feng3d.dataTransform.arrayBufferToDataURL(data, (dataurl) =>
+                {
+                    callback(null, dataurl);
+                });
+            });
+        }
+
+        /**
          * 读取文件为Blob
          * @param path 资源路径
          * @param callback 读取完成回调 

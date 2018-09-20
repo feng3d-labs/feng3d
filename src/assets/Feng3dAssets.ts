@@ -20,6 +20,11 @@ namespace feng3d
         @oav()
         name = "";
 
+        /**
+         * 资源类型
+         */
+        assetType: AssetExtension;
+
         constructor()
         {
             super();
@@ -48,9 +53,9 @@ namespace feng3d
          * 获取指定类型资源
          * @param type 资源类型
          */
-        static getAssetsByType<T extends Feng3dAssets>(type: Constructor<T>)
+        static getAssetsByType<T extends Feng3dAssets>(type: Constructor<T>): T[]
         {
-            return this._lib.getValues().filter(v => v instanceof type);
+            return <any>this._lib.getValues().filter(v => v instanceof type);
         }
 
         private static _lib = new Map<string, Feng3dAssets>();

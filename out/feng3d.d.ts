@@ -2271,6 +2271,12 @@ declare namespace feng3d {
          */
         readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
         /**
+         * 读取文件为DataURL
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readDataURL(path: string, callback: (err: Error, dataurl: string) => void): void;
+        /**
          * 读取文件为Blob
          * @param path 资源路径
          * @param callback 读取完成回调
@@ -2547,6 +2553,10 @@ declare namespace feng3d {
          * 名称
          */
         name: string;
+        /**
+         * 资源类型
+         */
+        assetType: AssetExtension;
         constructor();
         protected assetsIdChanged(): void;
         static setAssets(assets: Feng3dAssets): void;
@@ -2559,7 +2569,7 @@ declare namespace feng3d {
          * 获取指定类型资源
          * @param type 资源类型
          */
-        static getAssetsByType<T extends Feng3dAssets>(type: Constructor<T>): Feng3dAssets[];
+        static getAssetsByType<T extends Feng3dAssets>(type: Constructor<T>): T[];
         private static _lib;
     }
 }
@@ -9079,6 +9089,7 @@ declare namespace feng3d {
      */
     class GameObject extends Feng3dAssets {
         __class__: "feng3d.GameObject";
+        type: AssetExtension;
         readonly renderAtomic: RenderAtomic;
         /**
          * 游戏对象池
@@ -10659,7 +10670,8 @@ declare namespace feng3d {
     /**
      * 2D纹理
      */
-    abstract class Texture2D extends TextureInfo {
+    class Texture2D extends TextureInfo {
+        assetType: AssetExtension;
         /**
          * 当贴图数据未加载好等情况时代替使用
          */
@@ -10727,6 +10739,7 @@ declare namespace feng3d {
      * 立方体纹理
      */
     class TextureCube extends TextureInfo {
+        assetType: AssetExtension;
         positive_x_url: string;
         positive_y_url: string;
         positive_z_url: string;
@@ -10749,6 +10762,7 @@ declare namespace feng3d {
      */
     class Material extends Feng3dAssets {
         __class__: "feng3d.Material";
+        type: AssetExtension;
         /**
          * shader名称
          */
@@ -12084,6 +12098,7 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     class AnimationClip extends Feng3dAssets {
+        type: AssetExtension;
         name: string;
         /**
          * 动画时长，单位ms

@@ -11,6 +11,8 @@ namespace feng3d
     {
         __class__: "feng3d.Material" = "feng3d.Material";
 
+        type = feng3d.AssetExtension.material;
+
         /**
          * shader名称
          */

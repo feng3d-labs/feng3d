@@ -4605,6 +4605,18 @@ var feng3d;
             }
         };
         /**
+         * 读取文件为DataURL
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        ReadAssets.prototype.readDataURL = function (path, callback) {
+            this.readArrayBuffer(path, function (err, data) {
+                feng3d.dataTransform.arrayBufferToDataURL(data, function (dataurl) {
+                    callback(null, dataurl);
+                });
+            });
+        };
+        /**
          * 读取文件为Blob
          * @param path 资源路径
          * @param callback 读取完成回调
@@ -15616,6 +15628,7 @@ var feng3d;
         function GameObject() {
             var _this = _super.call(this) || this;
             _this.__class__ = "feng3d.GameObject";
+            _this.type = feng3d.AssetExtension.gameobject;
             _this.renderAtomic = new feng3d.RenderAtomic();
             /**
              * 是否显示
@@ -20376,6 +20389,7 @@ var feng3d;
         __extends(Texture2D, _super);
         function Texture2D() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.assetType = feng3d.AssetExtension.texture2d;
             /**
              * 当贴图数据未加载好等情况时代替使用
              */
@@ -20556,6 +20570,7 @@ var feng3d;
         __extends(TextureCube, _super);
         function TextureCube() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.assetType = feng3d.AssetExtension.texturecube;
             _this.noPixels = [feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white];
             _this._pixels = [null, null, null, null, null, null];
             _this._textureType = feng3d.TextureType.TEXTURE_CUBE_MAP;
@@ -20614,6 +20629,7 @@ var feng3d;
         function Material() {
             var _this = _super.call(this) || this;
             _this.__class__ = "feng3d.Material";
+            _this.type = feng3d.AssetExtension.material;
             /**
              * shader名称
              */
@@ -24165,6 +24181,7 @@ var feng3d;
         __extends(AnimationClip, _super);
         function AnimationClip() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.type = feng3d.AssetExtension.anim;
             _this.loop = true;
             return _this;
         }
