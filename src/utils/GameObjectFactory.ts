@@ -12,9 +12,8 @@ namespace feng3d
         createCube(name = "cube")
         {
             return new GameObject().value({
-                name: name, components: [
-                    { __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.cube },
-                ]
+                name: name,
+                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.cube },]
             });
         }
 

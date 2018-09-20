@@ -24,13 +24,8 @@ namespace feng3d
     /**
      * 几何体
      */
-    export abstract class Geometry extends Feng3dAssets
+    export class Geometry extends Feng3dAssets
     {
-        /**
-         * 网格名称
-         */
-        name: string;
-
         /**
          * 顶点索引缓冲
          */

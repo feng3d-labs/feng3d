@@ -5089,7 +5089,7 @@ var feng3d;
         function Feng3dAssets() {
             var _this = _super.call(this) || this;
             /**
-             * 文件(夹)名称
+             * 名称
              */
             _this.name = "";
             return _this;
@@ -5116,8 +5116,8 @@ var feng3d;
         Feng3dAssets._lib = new Map();
         __decorate([
             feng3d.serialize,
-            feng3d.watch("assetsIdChanged"),
-            feng3d.oav({ componentParam: { editable: false } })
+            feng3d.watch("assetsIdChanged")
+            // @oav({ componentParam: { editable: false } })
         ], Feng3dAssets.prototype, "assetsId", void 0);
         __decorate([
             feng3d.serialize,
@@ -27283,9 +27283,8 @@ var feng3d;
         GameObjectFactory.prototype.createCube = function (name) {
             if (name === void 0) { name = "cube"; }
             return new feng3d.GameObject().value({
-                name: name, components: [
-                    { __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.cube },
-                ]
+                name: name,
+                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.cube },]
             });
         };
         GameObjectFactory.prototype.createPlane = function (name) {

@@ -2544,7 +2544,7 @@ declare namespace feng3d {
          */
         assetsId: string;
         /**
-         * 文件(夹)名称
+         * 名称
          */
         name: string;
         constructor();
@@ -9689,11 +9689,7 @@ declare namespace feng3d {
     /**
      * 几何体
      */
-    abstract class Geometry extends Feng3dAssets {
-        /**
-         * 网格名称
-         */
-        name: string;
+    class Geometry extends Feng3dAssets {
         /**
          * 顶点索引缓冲
          */
