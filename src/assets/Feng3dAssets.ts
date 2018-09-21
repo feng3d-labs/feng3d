@@ -35,6 +35,21 @@ namespace feng3d
             super();
         }
 
+        /**
+         * 保存资源
+         * @param readWriteAssets 
+         * @param callback  完成回调 
+         */
+        save(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any
+        {
+            if (!this.assetsId)
+            {
+                this.assetsId = FMath.uuid();
+                Feng3dAssets.setAssets(this);
+            }
+            readWriteAssets.writeObject(this.path, this, callback);
+        }
+
         protected assetsIdChanged()
         {
             this.path = Feng3dAssets.getPath(this.assetsId);

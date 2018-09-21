@@ -2336,18 +2336,25 @@ declare namespace feng3d {
          */
         writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
         /**
+         * 保存字符串到文件
+         * @param path 文件路径
+         * @param string 保存的字符串
+         * @param callback 完成回调
+         */
+        writeString(path: string, string: string, callback?: (err: Error) => void): void;
+        /**
          * 保存对象到文件
          * @param path 文件路径
          * @param object 保存的对象
          * @param callback 完成回调
          */
-        saveObject(path: string, object: Object, callback?: (err: Error) => void): void;
+        writeObject(path: string, object: Object, callback?: (err: Error) => void): void;
         /**
          * 保存资源
          * @param assets 资源
          * @param callback 保存资源完成回调
          */
-        saveAssets(assets: Feng3dAssets, callback?: (err: Error) => void): void;
+        writeAssets(assets: Feng3dAssets, callback?: (err: Error) => void): void;
         /**
          * 获取所有文件路径
          * @param callback 回调函数
@@ -2538,6 +2545,12 @@ declare namespace feng3d {
          */
         path: string;
         constructor();
+        /**
+         * 保存资源
+         * @param readWriteAssets
+         * @param callback  完成回调
+         */
+        save(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any;
         protected assetsIdChanged(): void;
         /**
          * 获取资源路径

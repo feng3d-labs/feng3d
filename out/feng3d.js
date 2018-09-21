@@ -4744,30 +4744,35 @@ var feng3d;
         };
         ///--------------------------
         /**
+         * 保存字符串到文件
+         * @param path 文件路径
+         * @param string 保存的字符串
+         * @param callback 完成回调
+         */
+        ReadWriteAssets.prototype.writeString = function (path, string, callback) {
+            var _this = this;
+            feng3d.dataTransform.stringToArrayBuffer(string, function (arrayBuffer) {
+                _this.writeArrayBuffer(path, arrayBuffer, callback);
+            });
+        };
+        /**
          * 保存对象到文件
          * @param path 文件路径
          * @param object 保存的对象
          * @param callback 完成回调
          */
-        ReadWriteAssets.prototype.saveObject = function (path, object, callback) {
-            var _this = this;
+        ReadWriteAssets.prototype.writeObject = function (path, object, callback) {
             var obj = feng3d.serialization.serialize(object);
             var str = JSON.stringify(obj, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
-            feng3d.dataTransform.stringToArrayBuffer(str, function (arrayBuffer) {
-                _this.writeArrayBuffer(path, arrayBuffer, callback);
-            });
+            this.writeString(path, str, callback);
         };
         /**
          * 保存资源
          * @param assets 资源
          * @param callback 保存资源完成回调
          */
-        ReadWriteAssets.prototype.saveAssets = function (assets, callback) {
-            if (!assets.assetsId) {
-                assets.assetsId = feng3d.FMath.uuid();
-                feng3d.Feng3dAssets.setAssets(assets);
-            }
-            this.saveObject(feng3d.Feng3dAssets.getPath(assets.assetsId), assets, callback);
+        ReadWriteAssets.prototype.writeAssets = function (assets, callback) {
+            assets.save(this, callback);
         };
         /**
          * 获取所有文件路径
@@ -5082,6 +5087,18 @@ var feng3d;
             _this.name = "";
             return _this;
         }
+        /**
+         * 保存资源
+         * @param readWriteAssets
+         * @param callback  完成回调
+         */
+        Feng3dAssets.prototype.save = function (readWriteAssets, callback) {
+            if (!this.assetsId) {
+                this.assetsId = feng3d.FMath.uuid();
+                Feng3dAssets.setAssets(this);
+            }
+            readWriteAssets.writeObject(this.path, this, callback);
+        };
         Feng3dAssets.prototype.assetsIdChanged = function () {
             this.path = Feng3dAssets.getPath(this.assetsId);
         };

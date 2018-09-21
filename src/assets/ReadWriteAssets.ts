@@ -87,19 +87,30 @@ namespace feng3d
         ///--------------------------
 
         /**
+         * 保存字符串到文件
+         * @param path 文件路径
+         * @param string 保存的字符串
+         * @param callback 完成回调
+         */
+        writeString(path: string, string: string, callback?: (err: Error) => void)
+        {
+            feng3d.dataTransform.stringToArrayBuffer(string, (arrayBuffer) =>
+            {
+                this.writeArrayBuffer(path, arrayBuffer, callback);
+            });
+        }
+
+        /**
          * 保存对象到文件
          * @param path 文件路径
          * @param object 保存的对象
          * @param callback 完成回调
          */
-        saveObject(path: string, object: Object, callback?: (err: Error) => void)
+        writeObject(path: string, object: Object, callback?: (err: Error) => void)
         {
             var obj = feng3d.serialization.serialize(object);
             var str = JSON.stringify(obj, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
-            feng3d.dataTransform.stringToArrayBuffer(str, (arrayBuffer) =>
-            {
-                this.writeArrayBuffer(path, arrayBuffer, callback);
-            });
+            this.writeString(path, str, callback);
         }
 
         /**
@@ -107,14 +118,9 @@ namespace feng3d
          * @param assets 资源
          * @param callback 保存资源完成回调
          */
-        saveAssets(assets: Feng3dAssets, callback?: (err: Error) => void)
+        writeAssets(assets: Feng3dAssets, callback?: (err: Error) => void)
         {
-            if (!assets.assetsId)
-            {
-                assets.assetsId = FMath.uuid();
-                Feng3dAssets.setAssets(assets);
-            }
-            this.saveObject(Feng3dAssets.getPath(assets.assetsId), assets, callback);
+            assets.save(this, callback);
         }
 
         /**
