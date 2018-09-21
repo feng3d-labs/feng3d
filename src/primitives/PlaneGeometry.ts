@@ -9,7 +9,7 @@ namespace feng3d
     {
 
         __class__: "feng3d.PlaneGeometry" = "feng3d.PlaneGeometry";
-        
+
         /**
          * 宽度
          */
@@ -51,7 +51,7 @@ namespace feng3d
         yUp = true;
 
         name = "Plane";
-        
+
         /**
          * 构建几何体数据
          */
@@ -248,4 +248,6 @@ namespace feng3d
             return data;
         }
     }
+
+    Feng3dAssets.setAssets(Geometry.plane = new PlaneGeometry().value({ name: "Plane", assetsId: "Plane", width: 10, height: 10 }));
 }

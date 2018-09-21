@@ -9687,29 +9687,33 @@ declare namespace feng3d {
      */
     class Geometry extends Feng3dAssets {
         /**
-         * 顶点索引缓冲
+         * 立（长）方体几何体
          */
-        protected _indices: number[];
+        static cube: CubeGeometry;
         /**
-         * 自动生成的顶点索引
+         * 胶囊体几何体
          */
-        protected _autoIndices: number[];
+        static capsule: CapsuleGeometry;
         /**
-         * 属性数据列表
+         * 圆锥体
          */
-        protected _attributes: {
-            [name: string]: {
-                data: number[];
-                size: number;
-            };
-        };
-        private _geometryInvalid;
-        private _useFaceWeights;
-        private _scaleU;
-        private _scaleV;
-        private _bounding;
-        private _autoAttributeDatas;
-        private _invalids;
+        static cone: ConeGeometry;
+        /**
+         * 圆柱体几何体
+         */
+        static cylinder: CylinderGeometry;
+        /**
+         * 平面几何体
+         */
+        static plane: PlaneGeometry;
+        /**
+         * 球体几何体
+         */
+        static sphere: SphereGeometry;
+        /**
+         * 圆环几何体
+         */
+        static torus: TorusGeometry;
         /**
          * 索引数据
          */
@@ -9820,10 +9824,29 @@ declare namespace feng3d {
         cloneFrom(geometry: Geometry): void;
         beforeRender(renderAtomic: RenderAtomic): void;
         /**
-         * 立方体几何体
+         * 顶点索引缓冲
          */
-        static readonly cube: CubeGeometry;
-        private static _cube;
+        protected _indices: number[];
+        /**
+         * 自动生成的顶点索引
+         */
+        protected _autoIndices: number[];
+        /**
+         * 属性数据列表
+         */
+        protected _attributes: {
+            [name: string]: {
+                data: number[];
+                size: number;
+            };
+        };
+        private _geometryInvalid;
+        private _useFaceWeights;
+        private _scaleU;
+        private _scaleV;
+        private _bounding;
+        private _autoAttributeDatas;
+        private _invalids;
     }
 }
 declare namespace feng3d {

@@ -26,30 +26,41 @@ namespace feng3d
      */
     export class Geometry extends Feng3dAssets
     {
+
         /**
-         * 顶点索引缓冲
+         * 立（长）方体几何体
          */
-        protected _indices: number[];
+        static cube: CubeGeometry;
+
         /**
-         * 自动生成的顶点索引
+         * 胶囊体几何体
          */
-        protected _autoIndices: number[];
+        static capsule: CapsuleGeometry;
+
         /**
-         * 属性数据列表
+         * 圆锥体
          */
-        protected _attributes: { [name: string]: { data: number[], size: number } } = {};
+        static cone: ConeGeometry;
 
-        private _geometryInvalid = true;
-        private _useFaceWeights = false;
+        /**
+         * 圆柱体几何体
+         */
+        static cylinder: CylinderGeometry;
 
-        private _scaleU = 1;
-        private _scaleV = 1;
+        /**
+         * 平面几何体
+         */
+        static plane: PlaneGeometry;
 
-        private _bounding: Box;
+        /**
+         * 球体几何体
+         */
+        static sphere: SphereGeometry;
 
-        private _autoAttributeDatas: { [name: string]: { data: number[], size: number } } = {};
-
-        private _invalids = { index: true, a_uv: true, a_normal: true, a_tangent: true };
+        /**
+         * 圆环几何体
+         */
+        static torus: TorusGeometry;
 
         /**
          * 索引数据
@@ -711,17 +722,28 @@ namespace feng3d
         }
 
         /**
-         * 立方体几何体
+         * 顶点索引缓冲
          */
-        static get cube()
-        {
-            if (!this._cube)
-            {
-                this._cube = new CubeGeometry().value({ name: "Cube", assetsId: "Cube" });
-                Feng3dAssets.setAssets(this._cube);
-            }
-            return this._cube;
-        }
-        private static _cube: CubeGeometry;
+        protected _indices: number[];
+        /**
+         * 自动生成的顶点索引
+         */
+        protected _autoIndices: number[];
+        /**
+         * 属性数据列表
+         */
+        protected _attributes: { [name: string]: { data: number[], size: number } } = {};
+
+        private _geometryInvalid = true;
+        private _useFaceWeights = false;
+
+        private _scaleU = 1;
+        private _scaleV = 1;
+
+        private _bounding: Box;
+
+        private _autoAttributeDatas: { [name: string]: { data: number[], size: number } } = {};
+
+        private _invalids = { index: true, a_uv: true, a_normal: true, a_tangent: true };
     }
 }

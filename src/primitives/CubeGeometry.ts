@@ -519,4 +519,6 @@ namespace feng3d
             return data;
         }
     }
+
+    Feng3dAssets.setAssets(Geometry.cube = new CubeGeometry().value({ name: "Cube", assetsId: "Cube" }));
 }

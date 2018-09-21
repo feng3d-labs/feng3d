@@ -25,4 +25,6 @@ namespace feng3d
          */
 		surfaceClosed = true;
 	}
+
+	Feng3dAssets.setAssets(Geometry.cone = new ConeGeometry().value({ name: "Cone", assetsId: "Cone" }));
 }

@@ -17742,20 +17742,6 @@ var feng3d;
                 }
             }
         };
-        Object.defineProperty(Geometry, "cube", {
-            /**
-             * 立方体几何体
-             */
-            get: function () {
-                if (!this._cube) {
-                    this._cube = new feng3d.CubeGeometry().value({ name: "Cube", assetsId: "Cube" });
-                    feng3d.Feng3dAssets.setAssets(this._cube);
-                }
-                return this._cube;
-            },
-            enumerable: true,
-            configurable: true
-        });
         __decorate([
             feng3d.oav()
         ], Geometry.prototype, "invalidateGeometry", null);
@@ -18959,6 +18945,7 @@ var feng3d;
         return PlaneGeometry;
     }(feng3d.Geometry));
     feng3d.PlaneGeometry = PlaneGeometry;
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.plane = new PlaneGeometry().value({ name: "Plane", assetsId: "Plane", width: 10, height: 10 }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -19384,6 +19371,7 @@ var feng3d;
         return CubeGeometry;
     }(feng3d.Geometry));
     feng3d.CubeGeometry = CubeGeometry;
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.cube = new CubeGeometry().value({ name: "Cube", assetsId: "Cube" }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -19570,6 +19558,7 @@ var feng3d;
         return SphereGeometry;
     }(feng3d.Geometry));
     feng3d.SphereGeometry = SphereGeometry;
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.sphere = new SphereGeometry().value({ name: "Sphere", assetsId: "Sphere" }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -19765,6 +19754,7 @@ var feng3d;
         return CapsuleGeometry;
     }(feng3d.Geometry));
     feng3d.CapsuleGeometry = CapsuleGeometry;
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.capsule = new CapsuleGeometry().value({ name: "Capsule", assetsId: "Capsule" }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -20119,6 +20109,7 @@ var feng3d;
         return CylinderGeometry;
     }(feng3d.Geometry));
     feng3d.CylinderGeometry = CylinderGeometry;
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.cylinder = new CylinderGeometry().value({ name: "Cylinder", assetsId: "Cylinder" }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -20149,6 +20140,7 @@ var feng3d;
         return ConeGeometry;
     }(feng3d.CylinderGeometry));
     feng3d.ConeGeometry = ConeGeometry;
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.cone = new ConeGeometry().value({ name: "Cone", assetsId: "Cone" }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -20343,6 +20335,7 @@ var feng3d;
         return TorusGeometry;
     }(feng3d.Geometry));
     feng3d.TorusGeometry = TorusGeometry;
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.torus = new TorusGeometry().value({ name: "Torus", assetsId: "Torus" }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -27291,42 +27284,42 @@ var feng3d;
             if (name === void 0) { name = "plane"; }
             return new feng3d.GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.PlaneGeometry", width: 10, height: 10 } },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.plane },]
             });
         };
         GameObjectFactory.prototype.createCylinder = function (name) {
             if (name === void 0) { name = "cylinder"; }
             return new feng3d.GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.CylinderGeometry" } },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.cylinder },]
             });
         };
         GameObjectFactory.prototype.createCone = function (name) {
             if (name === void 0) { name = "Cone"; }
             return new feng3d.GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.ConeGeometry" } },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.cone },]
             });
         };
         GameObjectFactory.prototype.createTorus = function (name) {
             if (name === void 0) { name = "Torus"; }
             return new feng3d.GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.TorusGeometry" } },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.torus },]
             });
         };
         GameObjectFactory.prototype.createSphere = function (name) {
             if (name === void 0) { name = "sphere"; }
             return new feng3d.GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.SphereGeometry" } },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.sphere },]
             });
         };
         GameObjectFactory.prototype.createCapsule = function (name) {
             if (name === void 0) { name = "capsule"; }
             return new feng3d.GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: { __class__: "feng3d.CapsuleGeometry" } },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.capsule },]
             });
         };
         GameObjectFactory.prototype.createTerrain = function (name) {

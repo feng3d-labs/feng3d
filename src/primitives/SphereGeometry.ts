@@ -1,7 +1,7 @@
 namespace feng3d
 {
     export interface GeometryMap { SphereGeometry: SphereGeometry }
-    
+
     /**
      * 球体几何体
      * @author DawnKing 2016-09-12
@@ -10,7 +10,7 @@ namespace feng3d
     {
 
         __class__: "feng3d.SphereGeometry" = "feng3d.SphereGeometry";
-        
+
         /**
          * 球体半径
          */
@@ -219,4 +219,6 @@ namespace feng3d
             return data;
         }
     }
+
+    Feng3dAssets.setAssets(Geometry.sphere = new SphereGeometry().value({ name: "Sphere", assetsId: "Sphere" }));
 }

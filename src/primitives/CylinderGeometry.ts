@@ -432,4 +432,6 @@ namespace feng3d
             return data;
         }
     }
+    
+    Feng3dAssets.setAssets(Geometry.cylinder = new CylinderGeometry().value({ name: "Cylinder", assetsId: "Cylinder" }));
 }
