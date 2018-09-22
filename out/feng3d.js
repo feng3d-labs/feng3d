@@ -4137,6 +4137,43 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 常用正则表示式
+     */
+    var RegExps = /** @class */ (function () {
+        function RegExps() {
+            /**
+             * json文件
+             */
+            this.json = /(\.json)\b/i;
+            /**
+             * 图片
+             */
+            this.image = /(\.jpg|\.png|\.jpeg|\.gif)\b/i;
+            /**
+             * 声音
+             */
+            this.audio = /(\.ogg|\.mp3|\.wav)\b/i;
+            /**
+             * 命名空间
+             */
+            this.namespace = /namespace\s+([\w$_\d\.]+)/;
+            /**
+             * 导出类
+             */
+            this.exportClass = /export\s+(abstract\s+)?class\s+([\w$_\d]+)(\s+extends\s+([\w$_\d]+))?/;
+            /**
+             * 脚本中的类
+             */
+            this.scriptClass = /(export\s+)?class\s+([\w$_\d]+)\s+extends\s+(([\w$_\d\.]+))/;
+        }
+        return RegExps;
+    }());
+    feng3d.RegExps = RegExps;
+    feng3d.regExps = new RegExps();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 所有feng3d对象的基类
      */
     var Feng3dObject = /** @class */ (function (_super) {
@@ -24320,6 +24357,170 @@ var feng3d;
     }(feng3d.Behaviour));
     feng3d.Animation = Animation;
     var autoobjectCacheID = 1;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var Feng3dFile = /** @class */ (function (_super) {
+        __extends(Feng3dFile, _super);
+        function Feng3dFile() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        /**
+         * 保存资源
+         * @param readWriteAssets
+         * @param callback  完成回调
+         */
+        Feng3dFile.prototype.save = function (readWriteAssets, callback) {
+            var _this = this;
+            _super.prototype.save.call(this, readWriteAssets, function (err) {
+                if (err) {
+                    callback(err);
+                    return;
+                }
+                _this.saveFile(readWriteAssets, callback);
+            });
+        };
+        Feng3dFile.prototype.saveFile = function (readWriteAssets, callback) {
+            readWriteAssets.writeArrayBuffer(this.filePath, this.arraybuffer, callback);
+        };
+        Feng3dFile.prototype.fileNameChanged = function () {
+            this.filePath = "Library/" + this.assetsId + "/file/" + this.filename;
+        };
+        Feng3dFile.prototype.assetsIdChanged = function () {
+            _super.prototype.assetsIdChanged.call(this);
+            this.filePath = "Library/" + this.assetsId + "/file/" + this.filename;
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.watch("fileNameChanged")
+        ], Feng3dFile.prototype, "filename", void 0);
+        return Feng3dFile;
+    }(feng3d.Feng3dAssets));
+    feng3d.Feng3dFile = Feng3dFile;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var Feng3dFolder = /** @class */ (function (_super) {
+        __extends(Feng3dFolder, _super);
+        function Feng3dFolder() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.assetType = feng3d.AssetExtension.folder;
+            return _this;
+        }
+        return Feng3dFolder;
+    }(feng3d.Feng3dAssets));
+    feng3d.Feng3dFolder = Feng3dFolder;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var ScriptFile = /** @class */ (function (_super) {
+        __extends(ScriptFile, _super);
+        function ScriptFile() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.type = feng3d.AssetExtension.script;
+            return _this;
+        }
+        ScriptFile.prototype.saveFile = function (readWriteAssets, callback) {
+            readWriteAssets.writeString(this.filePath, this.scriptContent, callback);
+        };
+        /**
+         * 获取脚本类名称
+         * @param callback 回调函数
+         */
+        ScriptFile.prototype.getScriptClassName = function (callback) {
+            var code = this.scriptContent;
+            // 获取脚本类名称
+            var result = feng3d.regExps.scriptClass.exec(code);
+            feng3d.assert(result != null, "\u5728\u811A\u672C " + this.filePath + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
+            var script = result[2];
+            // 获取导出类命名空间
+            if (result[1]) {
+                result = feng3d.regExps.namespace.exec(code);
+                feng3d.assert(result != null, "\u83B7\u53D6\u811A\u672C " + this.filePath + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
+                script = result[1] + "." + script;
+            }
+            callback(script);
+        };
+        return ScriptFile;
+    }(feng3d.Feng3dFile));
+    feng3d.ScriptFile = ScriptFile;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var ShaderFile = /** @class */ (function (_super) {
+        __extends(ShaderFile, _super);
+        function ShaderFile() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.assetType = feng3d.AssetExtension.shader;
+            return _this;
+        }
+        ShaderFile.prototype.saveFile = function (readWriteAssets, callback) {
+            readWriteAssets.writeString(this.filePath, this.shaderContent, callback);
+        };
+        return ShaderFile;
+    }(feng3d.Feng3dFile));
+    feng3d.ShaderFile = ShaderFile;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var JSFile = /** @class */ (function (_super) {
+        __extends(JSFile, _super);
+        function JSFile() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.assetType = feng3d.AssetExtension.js;
+            return _this;
+        }
+        JSFile.prototype.saveFile = function (readWriteAssets, callback) {
+            readWriteAssets.writeString(this.filePath, this.jsContent, callback);
+        };
+        return JSFile;
+    }(feng3d.Feng3dFile));
+    feng3d.JSFile = JSFile;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var JsonFile = /** @class */ (function (_super) {
+        __extends(JsonFile, _super);
+        function JsonFile() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.assetType = feng3d.AssetExtension.json;
+            return _this;
+        }
+        JsonFile.prototype.saveFile = function (readWriteAssets, callback) {
+            readWriteAssets.writeString(this.filePath, this.jsonContent, callback);
+        };
+        return JsonFile;
+    }(feng3d.Feng3dFile));
+    feng3d.JsonFile = JsonFile;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var TextFile = /** @class */ (function (_super) {
+        __extends(TextFile, _super);
+        function TextFile() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.assetType = feng3d.AssetExtension.txt;
+            return _this;
+        }
+        TextFile.prototype.saveFile = function (readWriteAssets, callback) {
+            readWriteAssets.writeString(this.filePath, this.textContent, callback);
+        };
+        return TextFile;
+    }(feng3d.Feng3dFile));
+    feng3d.TextFile = TextFile;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var AudioFile = /** @class */ (function (_super) {
+        __extends(AudioFile, _super);
+        function AudioFile() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.assetType = feng3d.AssetExtension.audio;
+            return _this;
+        }
+        return AudioFile;
+    }(feng3d.Feng3dFile));
+    feng3d.AudioFile = AudioFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

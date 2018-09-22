@@ -2021,6 +2021,41 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 常用正则表示式
+     */
+    var regExps: RegExps;
+    /**
+     * 常用正则表示式
+     */
+    class RegExps {
+        /**
+         * json文件
+         */
+        json: RegExp;
+        /**
+         * 图片
+         */
+        image: RegExp;
+        /**
+         * 声音
+         */
+        audio: RegExp;
+        /**
+         * 命名空间
+         */
+        namespace: RegExp;
+        /**
+         * 导出类
+         */
+        exportClass: RegExp;
+        /**
+         * 脚本中的类
+         */
+        scriptClass: RegExp;
+    }
+}
+declare namespace feng3d {
+    /**
      * 所有feng3d对象的基类
      */
     class Feng3dObject extends EventDispatcher {
@@ -12159,6 +12194,81 @@ declare namespace feng3d {
         private getPropertyHost;
         private onAnimationChanged;
         private onTimeChanged;
+    }
+}
+declare namespace feng3d {
+    class Feng3dFile extends Feng3dAssets {
+        /**
+         * 文件名称
+         */
+        filename: string;
+        /**
+         * 文件数据
+         */
+        arraybuffer: ArrayBuffer;
+        /**
+         * 文件路径
+         */
+        filePath: string;
+        /**
+         * 保存资源
+         * @param readWriteAssets
+         * @param callback  完成回调
+         */
+        save(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any;
+        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
+        protected fileNameChanged(): void;
+        protected assetsIdChanged(): void;
+    }
+}
+declare namespace feng3d {
+    class Feng3dFolder extends Feng3dAssets {
+        assetType: AssetExtension;
+    }
+}
+declare namespace feng3d {
+    class ScriptFile extends Feng3dFile {
+        type: AssetExtension;
+        scriptContent: string;
+        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
+        /**
+         * 获取脚本类名称
+         * @param callback 回调函数
+         */
+        getScriptClassName(callback: (scriptClassName: string) => void): void;
+    }
+}
+declare namespace feng3d {
+    class ShaderFile extends Feng3dFile {
+        assetType: AssetExtension;
+        shaderContent: string;
+        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
+    }
+}
+declare namespace feng3d {
+    class JSFile extends Feng3dFile {
+        assetType: AssetExtension;
+        jsContent: string;
+        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
+    }
+}
+declare namespace feng3d {
+    class JsonFile extends Feng3dFile {
+        assetType: AssetExtension;
+        jsonContent: string;
+        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
+    }
+}
+declare namespace feng3d {
+    class TextFile extends Feng3dFile {
+        assetType: AssetExtension;
+        textContent: string;
+        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
+    }
+}
+declare namespace feng3d {
+    class AudioFile extends Feng3dFile {
+        assetType: AssetExtension;
     }
 }
 declare namespace feng3d {

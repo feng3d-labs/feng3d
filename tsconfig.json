@@ -42,6 +42,7 @@
         "src/utils/PathUtils.ts",
         "src/utils/ShaderMacroUtils.ts",
         "src/utils/Lazy.ts",
+        "src/utils/RegExps.ts",
         //
         "src/core/Feng3dObject.ts",
         //
@@ -244,6 +245,15 @@
         "src/animation/PropertyClip.ts",
         "src/animation/AnimationClip.ts",
         "src/animation/Animation.ts",
+        //
+        "src/resources/Feng3dFile.ts",
+        "src/resources/Feng3dFolder.ts",
+        "src/resources/ScriptFile.ts",
+        "src/resources/ShaderFile.ts",
+        "src/resources/JSFile.ts",
+        "src/resources/JsonFile.ts",
+        "src/resources/TextFile.ts",
+        "src/resources/AudioFile.ts",
         //解析
         "src/assets/parsers/OBJParser.ts",
         "src/assets/parsers/MTLParser.ts",
