@@ -1,15 +1,8 @@
 namespace feng3d
 {
-    export class ScriptFile extends Feng3dFile
+    export class ScriptFile extends StringFile
     {
         assetType = AssetExtension.script
-
-        scriptContent: string;
-
-        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void)
-        {
-            readWriteAssets.writeString(this.filePath, this.scriptContent, callback);
-        }
 
         /**
          * 获取脚本类名称
@@ -17,7 +10,7 @@ namespace feng3d
          */
         getScriptClassName(callback: (scriptClassName: string) => void)
         {
-            var code = this.scriptContent;
+            var code = this.textContent;
 
             // 获取脚本类名称
             var result = regExps.scriptClass.exec(code);

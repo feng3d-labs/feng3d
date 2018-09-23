@@ -12197,15 +12197,16 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    class Feng3dFolder extends Feng3dAssets {
+        assetType: AssetExtension;
+    }
+}
+declare namespace feng3d {
     class Feng3dFile extends Feng3dAssets {
         /**
          * 文件名称
          */
         filename: string;
-        /**
-         * 文件数据
-         */
-        arraybuffer: ArrayBuffer;
         /**
          * 文件路径
          */
@@ -12233,15 +12234,46 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class Feng3dFolder extends Feng3dAssets {
-        assetType: AssetExtension;
+    /**
+     * 二进制文件
+     */
+    class ArrayBufferFile extends Feng3dFile {
+        /**
+         * 文件数据
+         */
+        arraybuffer: ArrayBuffer;
+        /**
+         * 保存文件
+         * @param readWriteAssets 可读写资源管理系统
+         * @param callback 完成回调
+         */
+        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
+        /**
+         * 读取文件
+         * @param readAssets 刻度资源管理系统
+         * @param callback 完成回调
+         */
+        protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
-    class ScriptFile extends Feng3dFile {
-        assetType: AssetExtension;
-        scriptContent: string;
+    /**
+     * 字符串文件
+     */
+    class StringFile extends Feng3dFile {
+        textContent: string;
         protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
+        /**
+         * 读取文件
+         * @param readAssets 刻度资源管理系统
+         * @param callback 完成回调
+         */
+        protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void): void;
+    }
+}
+declare namespace feng3d {
+    class ScriptFile extends StringFile {
+        assetType: AssetExtension;
         /**
          * 获取脚本类名称
          * @param callback 回调函数
@@ -12250,31 +12282,23 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class ShaderFile extends Feng3dFile {
+    class ShaderFile extends StringFile {
         assetType: AssetExtension;
-        shaderContent: string;
-        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
-    class JSFile extends Feng3dFile {
+    class JSFile extends StringFile {
         assetType: AssetExtension;
-        jsContent: string;
-        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
-    class JsonFile extends Feng3dFile {
+    class JsonFile extends StringFile {
         assetType: AssetExtension;
-        jsonContent: string;
-        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
-    class TextFile extends Feng3dFile {
+    class TextFile extends StringFile {
         assetType: AssetExtension;
-        textContent: string;
-        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {

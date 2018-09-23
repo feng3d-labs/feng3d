@@ -246,8 +246,10 @@
         "src/animation/AnimationClip.ts",
         "src/animation/Animation.ts",
         //
-        "src/resources/Feng3dFile.ts",
         "src/resources/Feng3dFolder.ts",
+        "src/resources/Feng3dFile.ts",
+        "src/resources/ArrayBufferFile.ts",
+        "src/resources/StringFile.ts",
         "src/resources/ScriptFile.ts",
         "src/resources/ShaderFile.ts",
         "src/resources/JSFile.ts",

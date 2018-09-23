@@ -10,11 +10,6 @@ namespace feng3d
         filename: string;
 
         /**
-         * 文件数据
-         */
-        arraybuffer: ArrayBuffer;
-
-        /**
          * 文件路径
          */
         filePath: string;
@@ -44,7 +39,7 @@ namespace feng3d
          */
         protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void)
         {
-            readWriteAssets.writeArrayBuffer(this.filePath, this.arraybuffer, callback);
+            callback && callback(null);
         }
 
         /**
@@ -54,11 +49,7 @@ namespace feng3d
          */
         protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void)
         {
-            readAssets.readArrayBuffer(this.filename, (err, data) =>
-            {
-                this.arraybuffer = data;
-                callback && callback(err);
-            })
+            callback && callback(null);
         }
 
         protected fileNameChanged()

@@ -24368,6 +24368,19 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var Feng3dFolder = /** @class */ (function (_super) {
+        __extends(Feng3dFolder, _super);
+        function Feng3dFolder() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.assetType = feng3d.AssetExtension.folder;
+            return _this;
+        }
+        return Feng3dFolder;
+    }(feng3d.Feng3dAssets));
+    feng3d.Feng3dFolder = Feng3dFolder;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     var Feng3dFile = /** @class */ (function (_super) {
         __extends(Feng3dFile, _super);
         function Feng3dFile() {
@@ -24394,7 +24407,7 @@ var feng3d;
          * @param callback 完成回调
          */
         Feng3dFile.prototype.saveFile = function (readWriteAssets, callback) {
-            readWriteAssets.writeArrayBuffer(this.filePath, this.arraybuffer, callback);
+            callback && callback(null);
         };
         /**
          * 读取文件
@@ -24402,11 +24415,7 @@ var feng3d;
          * @param callback 完成回调
          */
         Feng3dFile.prototype.readFile = function (readAssets, callback) {
-            var _this = this;
-            readAssets.readArrayBuffer(this.filename, function (err, data) {
-                _this.arraybuffer = data;
-                callback && callback(err);
-            });
+            callback && callback(null);
         };
         Feng3dFile.prototype.fileNameChanged = function () {
             this.filePath = "Library/" + this.assetsId + "/file/" + this.filename;
@@ -24425,16 +24434,66 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var Feng3dFolder = /** @class */ (function (_super) {
-        __extends(Feng3dFolder, _super);
-        function Feng3dFolder() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.assetType = feng3d.AssetExtension.folder;
-            return _this;
+    /**
+     * 二进制文件
+     */
+    var ArrayBufferFile = /** @class */ (function (_super) {
+        __extends(ArrayBufferFile, _super);
+        function ArrayBufferFile() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
-        return Feng3dFolder;
-    }(feng3d.Feng3dAssets));
-    feng3d.Feng3dFolder = Feng3dFolder;
+        /**
+         * 保存文件
+         * @param readWriteAssets 可读写资源管理系统
+         * @param callback 完成回调
+         */
+        ArrayBufferFile.prototype.saveFile = function (readWriteAssets, callback) {
+            readWriteAssets.writeArrayBuffer(this.filePath, this.arraybuffer, callback);
+        };
+        /**
+         * 读取文件
+         * @param readAssets 刻度资源管理系统
+         * @param callback 完成回调
+         */
+        ArrayBufferFile.prototype.readFile = function (readAssets, callback) {
+            var _this = this;
+            readAssets.readArrayBuffer(this.filePath, function (err, data) {
+                _this.arraybuffer = data;
+                callback && callback(err);
+            });
+        };
+        return ArrayBufferFile;
+    }(feng3d.Feng3dFile));
+    feng3d.ArrayBufferFile = ArrayBufferFile;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 字符串文件
+     */
+    var StringFile = /** @class */ (function (_super) {
+        __extends(StringFile, _super);
+        function StringFile() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        StringFile.prototype.saveFile = function (readWriteAssets, callback) {
+            readWriteAssets.writeString(this.filePath, this.textContent, callback);
+        };
+        /**
+         * 读取文件
+         * @param readAssets 刻度资源管理系统
+         * @param callback 完成回调
+         */
+        StringFile.prototype.readFile = function (readAssets, callback) {
+            var _this = this;
+            readAssets.readString(this.filePath, function (err, data) {
+                _this.textContent = data;
+                callback && callback(err);
+            });
+        };
+        return StringFile;
+    }(feng3d.Feng3dFile));
+    feng3d.StringFile = StringFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -24445,15 +24504,12 @@ var feng3d;
             _this.assetType = feng3d.AssetExtension.script;
             return _this;
         }
-        ScriptFile.prototype.saveFile = function (readWriteAssets, callback) {
-            readWriteAssets.writeString(this.filePath, this.scriptContent, callback);
-        };
         /**
          * 获取脚本类名称
          * @param callback 回调函数
          */
         ScriptFile.prototype.getScriptClassName = function (callback) {
-            var code = this.scriptContent;
+            var code = this.textContent;
             // 获取脚本类名称
             var result = feng3d.regExps.scriptClass.exec(code);
             feng3d.assert(result != null, "\u5728\u811A\u672C " + this.filePath + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
@@ -24467,7 +24523,7 @@ var feng3d;
             callback(script);
         };
         return ScriptFile;
-    }(feng3d.Feng3dFile));
+    }(feng3d.StringFile));
     feng3d.ScriptFile = ScriptFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -24479,11 +24535,8 @@ var feng3d;
             _this.assetType = feng3d.AssetExtension.shader;
             return _this;
         }
-        ShaderFile.prototype.saveFile = function (readWriteAssets, callback) {
-            readWriteAssets.writeString(this.filePath, this.shaderContent, callback);
-        };
         return ShaderFile;
-    }(feng3d.Feng3dFile));
+    }(feng3d.StringFile));
     feng3d.ShaderFile = ShaderFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -24495,11 +24548,8 @@ var feng3d;
             _this.assetType = feng3d.AssetExtension.js;
             return _this;
         }
-        JSFile.prototype.saveFile = function (readWriteAssets, callback) {
-            readWriteAssets.writeString(this.filePath, this.jsContent, callback);
-        };
         return JSFile;
-    }(feng3d.Feng3dFile));
+    }(feng3d.StringFile));
     feng3d.JSFile = JSFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -24511,11 +24561,8 @@ var feng3d;
             _this.assetType = feng3d.AssetExtension.json;
             return _this;
         }
-        JsonFile.prototype.saveFile = function (readWriteAssets, callback) {
-            readWriteAssets.writeString(this.filePath, this.jsonContent, callback);
-        };
         return JsonFile;
-    }(feng3d.Feng3dFile));
+    }(feng3d.StringFile));
     feng3d.JsonFile = JsonFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -24527,11 +24574,8 @@ var feng3d;
             _this.assetType = feng3d.AssetExtension.txt;
             return _this;
         }
-        TextFile.prototype.saveFile = function (readWriteAssets, callback) {
-            readWriteAssets.writeString(this.filePath, this.textContent, callback);
-        };
         return TextFile;
-    }(feng3d.Feng3dFile));
+    }(feng3d.StringFile));
     feng3d.TextFile = TextFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
