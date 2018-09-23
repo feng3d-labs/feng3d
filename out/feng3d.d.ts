@@ -10818,7 +10818,7 @@ declare namespace feng3d {
      */
     class Material extends Feng3dAssets {
         __class__: "feng3d.Material";
-        type: AssetExtension;
+        assetType: AssetExtension;
         /**
          * shader名称
          */
@@ -12216,7 +12216,18 @@ declare namespace feng3d {
          * @param callback  完成回调
          */
         save(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any;
+        /**
+         * 保存文件
+         * @param readWriteAssets 可读写资源管理系统
+         * @param callback 完成回调
+         */
         protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
+        /**
+         * 读取文件
+         * @param readAssets 刻度资源管理系统
+         * @param callback 完成回调
+         */
+        protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void): void;
         protected fileNameChanged(): void;
         protected assetsIdChanged(): void;
     }
@@ -12228,7 +12239,7 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     class ScriptFile extends Feng3dFile {
-        type: AssetExtension;
+        assetType: AssetExtension;
         scriptContent: string;
         protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
         /**

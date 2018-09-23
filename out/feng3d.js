@@ -2451,7 +2451,7 @@ getset平均耗时比 17.3
                     };
                 }
                 else {
-                    throw "watch 失败！";
+                    feng3d.error("watch " + host + " . " + property + " \u5931\u8D25\uFF01");
                 }
                 Object.defineProperty(host, property1, data);
             }
@@ -4690,6 +4690,7 @@ var feng3d;
          * @param callback 读取完成回调
          */
         ReadAssets.prototype.readAssets = function (id, callback) {
+            var _this = this;
             var assets = feng3d.Feng3dAssets.getAssets(id);
             if (assets) {
                 callback(null, assets);
@@ -4698,7 +4699,14 @@ var feng3d;
             this.readObject(feng3d.Feng3dAssets.getPath(id), function (err, assets) {
                 if (assets)
                     feng3d.Feng3dAssets.setAssets(assets);
-                callback(err, assets);
+                if (assets instanceof feng3d.Feng3dFile) {
+                    assets["readFile"](_this, function (err) {
+                        callback(err, assets);
+                    });
+                }
+                else {
+                    callback(err, assets);
+                }
             });
         };
         return ReadAssets;
@@ -20657,7 +20665,7 @@ var feng3d;
         function Material() {
             var _this = _super.call(this) || this;
             _this.__class__ = "feng3d.Material";
-            _this.type = feng3d.AssetExtension.material;
+            _this.assetType = feng3d.AssetExtension.material;
             /**
              * shader名称
              */
@@ -24380,8 +24388,25 @@ var feng3d;
                 _this.saveFile(readWriteAssets, callback);
             });
         };
+        /**
+         * 保存文件
+         * @param readWriteAssets 可读写资源管理系统
+         * @param callback 完成回调
+         */
         Feng3dFile.prototype.saveFile = function (readWriteAssets, callback) {
             readWriteAssets.writeArrayBuffer(this.filePath, this.arraybuffer, callback);
+        };
+        /**
+         * 读取文件
+         * @param readAssets 刻度资源管理系统
+         * @param callback 完成回调
+         */
+        Feng3dFile.prototype.readFile = function (readAssets, callback) {
+            var _this = this;
+            readAssets.readArrayBuffer(this.filename, function (err, data) {
+                _this.arraybuffer = data;
+                callback && callback(err);
+            });
         };
         Feng3dFile.prototype.fileNameChanged = function () {
             this.filePath = "Library/" + this.assetsId + "/file/" + this.filename;
@@ -24417,7 +24442,7 @@ var feng3d;
         __extends(ScriptFile, _super);
         function ScriptFile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.type = feng3d.AssetExtension.script;
+            _this.assetType = feng3d.AssetExtension.script;
             return _this;
         }
         ScriptFile.prototype.saveFile = function (readWriteAssets, callback) {

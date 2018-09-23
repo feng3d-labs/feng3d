@@ -174,7 +174,16 @@ namespace feng3d
             this.readObject(Feng3dAssets.getPath(id), (err, assets: Feng3dAssets) =>
             {
                 if (assets) Feng3dAssets.setAssets(assets);
-                callback(err, assets);
+                if (assets instanceof Feng3dFile)
+                {
+                    assets["readFile"](this, err =>
+                    {
+                        callback(err, assets);
+                    });
+                } else
+                {
+                    callback(err, assets);
+                }
             });
         }
     }

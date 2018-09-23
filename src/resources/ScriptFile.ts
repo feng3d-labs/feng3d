@@ -2,7 +2,7 @@ namespace feng3d
 {
     export class ScriptFile extends Feng3dFile
     {
-        type = AssetExtension.script
+        assetType = AssetExtension.script
 
         scriptContent: string;
 
