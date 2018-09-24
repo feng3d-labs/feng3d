@@ -12282,7 +12282,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class ShaderFile extends StringFile {
+    class ShaderFile extends ScriptFile {
         assetType: AssetExtension;
     }
 }

@@ -24536,7 +24536,7 @@ var feng3d;
             return _this;
         }
         return ShaderFile;
-    }(feng3d.StringFile));
+    }(feng3d.ScriptFile));
     feng3d.ShaderFile = ShaderFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
