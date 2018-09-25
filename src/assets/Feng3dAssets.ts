@@ -50,18 +50,37 @@ namespace feng3d
             readWriteAssets.writeObject(this.path, this, callback);
         }
 
+        /**
+         * 删除资源
+         * @param readWriteAssets 可读写资源管理器
+         * @param callback 完成回调
+         */
+        delete(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any
+        {
+            readWriteAssets.deleteAssets(this.assetsId, callback);
+        }
+
         protected assetsIdChanged()
         {
             this.path = Feng3dAssets.getPath(this.assetsId);
         }
 
         /**
+         * 获取资源所在文件夹
+         * @param assetsId 资源编号
+         */
+        static getAssetDir(assetsId: string)
+        {
+            return "Library/" + assetsId + "/";
+        }
+
+        /**
          * 获取资源路径
          * @param assetsId 资源编号
          */
-        static getPath(assetsId: string): any
+        static getPath(assetsId: string)
         {
-            return "Library/" + assetsId + "/.json";
+            return this.getAssetDir(assetsId) + ".json";
         }
 
         static setAssets(assets: Feng3dAssets)

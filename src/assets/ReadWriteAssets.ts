@@ -356,7 +356,14 @@ namespace feng3d
          */
         deleteAssets(assetsId: string, callback?: (err: Error) => void)
         {
-            this.delete(Feng3dAssets.getPath(assetsId), callback);
+            if (assetsId)
+            {
+                Feng3dAssets["_lib"].delete(assetsId);
+                this.delete(Feng3dAssets.getAssetDir(assetsId), callback);
+            } else
+            {
+                callback && callback(null);
+            }
         }
 
         /**

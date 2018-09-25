@@ -2586,12 +2586,23 @@ declare namespace feng3d {
          * @param callback  完成回调
          */
         save(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any;
+        /**
+         * 删除资源
+         * @param readWriteAssets 可读写资源管理器
+         * @param callback 完成回调
+         */
+        delete(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any;
         protected assetsIdChanged(): void;
+        /**
+         * 获取资源所在文件夹
+         * @param assetsId 资源编号
+         */
+        static getAssetDir(assetsId: string): string;
         /**
          * 获取资源路径
          * @param assetsId 资源编号
          */
-        static getPath(assetsId: string): any;
+        static getPath(assetsId: string): string;
         static setAssets(assets: Feng3dAssets): void;
         /**
          * 获取资源

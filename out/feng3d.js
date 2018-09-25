@@ -5012,7 +5012,13 @@ var feng3d;
          * @param callback 回调函数
          */
         ReadWriteAssets.prototype.deleteAssets = function (assetsId, callback) {
-            this.delete(feng3d.Feng3dAssets.getPath(assetsId), callback);
+            if (assetsId) {
+                feng3d.Feng3dAssets["_lib"].delete(assetsId);
+                this.delete(feng3d.Feng3dAssets.getAssetDir(assetsId), callback);
+            }
+            else {
+                callback && callback(null);
+            }
         };
         /**
          * 是否为文件夹
@@ -5144,15 +5150,30 @@ var feng3d;
             }
             readWriteAssets.writeObject(this.path, this, callback);
         };
+        /**
+         * 删除资源
+         * @param readWriteAssets 可读写资源管理器
+         * @param callback 完成回调
+         */
+        Feng3dAssets.prototype.delete = function (readWriteAssets, callback) {
+            readWriteAssets.deleteAssets(this.assetsId, callback);
+        };
         Feng3dAssets.prototype.assetsIdChanged = function () {
             this.path = Feng3dAssets.getPath(this.assetsId);
+        };
+        /**
+         * 获取资源所在文件夹
+         * @param assetsId 资源编号
+         */
+        Feng3dAssets.getAssetDir = function (assetsId) {
+            return "Library/" + assetsId + "/";
         };
         /**
          * 获取资源路径
          * @param assetsId 资源编号
          */
         Feng3dAssets.getPath = function (assetsId) {
-            return "Library/" + assetsId + "/.json";
+            return this.getAssetDir(assetsId) + ".json";
         };
         Feng3dAssets.setAssets = function (assets) {
             this._lib.set(assets.assetsId, assets);
