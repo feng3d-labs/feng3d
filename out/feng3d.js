@@ -24604,6 +24604,9 @@ var feng3d;
          * @param context
          */
         OBJParser.prototype.parser = function (context) {
+            currentObj = null;
+            currentSubObj = null;
+            //
             var objData = { mtl: null, objs: [], vertex: [], vn: [], vt: [] };
             var lines = context.split("\n").reverse();
             do {

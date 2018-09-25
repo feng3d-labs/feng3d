@@ -17,6 +17,9 @@ namespace feng3d
          */
         parser(context: string)
         {
+            currentObj = null;
+            currentSubObj = null;
+            //
             var objData: OBJ_OBJData = { mtl: null, objs: [], vertex: [], vn: [], vt: [] };
             var lines = context.split("\n").reverse();
             do
