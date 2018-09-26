@@ -10834,6 +10834,7 @@ declare namespace feng3d {
          * shader名称
          */
         shaderName: ShaderNames;
+        name: string;
         /**
          * Uniform数据
          */

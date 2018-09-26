@@ -21,6 +21,9 @@ namespace feng3d
         @watch("onShaderChanged")
         shaderName: ShaderNames = "standard";
 
+        @oav()
+        name = "";
+
         /**
          * Uniform数据
          */

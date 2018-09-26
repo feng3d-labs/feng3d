@@ -5199,8 +5199,7 @@ var feng3d;
             // @oav({ componentParam: { editable: false } })
         ], Feng3dAssets.prototype, "assetsId", void 0);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav()
+            feng3d.serialize
         ], Feng3dAssets.prototype, "name", void 0);
         return Feng3dAssets;
     }(feng3d.Feng3dObject));
@@ -20691,6 +20690,7 @@ var feng3d;
              * shader名称
              */
             _this.shaderName = "standard";
+            _this.name = "";
             /**
              * Uniform数据
              */
@@ -20739,6 +20739,9 @@ var feng3d;
             feng3d.serialize,
             feng3d.watch("onShaderChanged")
         ], Material.prototype, "shaderName", void 0);
+        __decorate([
+            feng3d.oav()
+        ], Material.prototype, "name", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ component: "OAVObjectView" })
