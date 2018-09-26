@@ -10821,44 +10821,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     interface UniformsMap {
-    }
-    type ShaderNames = keyof UniformsMap;
-    type UniformsData = UniformsMap[keyof UniformsMap];
-    /**
-     * 材质
-     */
-    class Material extends Feng3dAssets {
-        __class__: "feng3d.Material";
-        assetType: AssetExtension;
-        /**
-         * shader名称
-         */
-        shaderName: ShaderNames;
-        name: string;
-        /**
-         * Uniform数据
-         */
-        uniforms: UniformsData;
-        /**
-         * 渲染参数
-         */
-        renderParams: RenderParams;
-        constructor();
-        beforeRender(renderAtomic: RenderAtomic): void;
-        /**
-         * 渲染程序
-         */
-        private _shader;
-        private onShaderChanged;
-        /**
-         * 默认材质
-         */
-        static readonly default: Material;
-        private static _default;
-    }
-}
-declare namespace feng3d {
-    interface UniformsMap {
         point: PointUniforms;
     }
     class PointUniforms {
@@ -10997,6 +10959,47 @@ declare namespace feng3d {
          * 雾模式
          */
         u_fogMode: FogMode;
+    }
+}
+declare namespace feng3d {
+    interface UniformsMap {
+    }
+    type ShaderNames = keyof UniformsMap;
+    type UniformsData = UniformsMap[keyof UniformsMap];
+    /**
+     * 材质
+     */
+    class Material extends Feng3dAssets {
+        __class__: "feng3d.Material";
+        assetType: AssetExtension;
+        /**
+         * shader名称
+         */
+        shaderName: ShaderNames;
+        name: string;
+        /**
+         * Uniform数据
+         */
+        uniforms: UniformsData;
+        /**
+         * 渲染参数
+         */
+        renderParams: RenderParams;
+        constructor();
+        beforeRender(renderAtomic: RenderAtomic): void;
+        /**
+         * 渲染程序
+         */
+        private _shader;
+        private onShaderChanged;
+        /**
+         * 默认材质
+         */
+        static default: Material;
+        /**
+         * 默认水材质
+         */
+        static defaultWater: Material;
     }
 }
 declare namespace feng3d {
@@ -11529,7 +11532,7 @@ declare namespace feng3d {
         /**
          * 帧缓冲对象，用于处理水面反射
          */
-        frameBufferObject: FrameBufferObject;
+        private frameBufferObject;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
     }
 }

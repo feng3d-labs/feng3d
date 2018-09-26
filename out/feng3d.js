@@ -20677,85 +20677,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 材质
-     */
-    var Material = /** @class */ (function (_super) {
-        __extends(Material, _super);
-        function Material() {
-            var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.Material";
-            _this.assetType = feng3d.AssetExtension.material;
-            /**
-             * shader名称
-             */
-            _this.shaderName = "standard";
-            _this.name = "";
-            /**
-             * Uniform数据
-             */
-            _this.uniforms = new feng3d.StandardUniforms();
-            /**
-             * 渲染参数
-             */
-            _this.renderParams = new feng3d.RenderParams();
-            feng3d.feng3dDispatcher.on("assets.shaderChanged", _this.onShaderChanged, _this);
-            return _this;
-        }
-        Material.prototype.beforeRender = function (renderAtomic) {
-            for (var key in this.uniforms) {
-                if (this.uniforms.hasOwnProperty(key)) {
-                    renderAtomic.uniforms[key] = this.uniforms[key];
-                }
-            }
-            renderAtomic.shader = this._shader;
-            renderAtomic.renderParams = this.renderParams;
-            renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode == feng3d.RenderMode.POINTS;
-        };
-        Material.prototype.onShaderChanged = function () {
-            var cls = feng3d.shaderConfig.shaders[this.shaderName].cls;
-            cls = cls || feng3d.StandardUniforms;
-            if (cls) {
-                if (!(this.uniforms instanceof cls)) {
-                    var newuniforms = new cls();
-                    feng3d.serialization.setValue(newuniforms, this.uniforms);
-                    this.uniforms = newuniforms;
-                }
-            }
-            this._shader = new feng3d.Shader(this.shaderName);
-        };
-        Object.defineProperty(Material, "default", {
-            /**
-             * 默认材质
-             */
-            get: function () {
-                return Material._default = Material._default || new Material().value({ name: "Default-Material", hideFlags: feng3d.HideFlags.NotEditable });
-            },
-            enumerable: true,
-            configurable: true
-        });
-        __decorate([
-            feng3d.oav({ component: "OAVMaterialName" }),
-            feng3d.serialize,
-            feng3d.watch("onShaderChanged")
-        ], Material.prototype, "shaderName", void 0);
-        __decorate([
-            feng3d.oav()
-        ], Material.prototype, "name", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ component: "OAVObjectView" })
-        ], Material.prototype, "uniforms", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ block: "渲染参数", component: "OAVObjectView" })
-        ], Material.prototype, "renderParams", void 0);
-        return Material;
-    }(feng3d.Feng3dAssets));
-    feng3d.Material = Material;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     var PointUniforms = /** @class */ (function () {
         function PointUniforms() {
             this.__class__ = "feng3d.PointUniforms";
@@ -21003,6 +20924,76 @@ var feng3d;
     }());
     feng3d.StandardUniforms = StandardUniforms;
     feng3d.shaderConfig.shaders["standard"].cls = StandardUniforms;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 材质
+     */
+    var Material = /** @class */ (function (_super) {
+        __extends(Material, _super);
+        function Material() {
+            var _this = _super.call(this) || this;
+            _this.__class__ = "feng3d.Material";
+            _this.assetType = feng3d.AssetExtension.material;
+            /**
+             * shader名称
+             */
+            _this.shaderName = "standard";
+            _this.name = "";
+            /**
+             * Uniform数据
+             */
+            _this.uniforms = new feng3d.StandardUniforms();
+            /**
+             * 渲染参数
+             */
+            _this.renderParams = new feng3d.RenderParams();
+            feng3d.feng3dDispatcher.on("assets.shaderChanged", _this.onShaderChanged, _this);
+            return _this;
+        }
+        Material.prototype.beforeRender = function (renderAtomic) {
+            for (var key in this.uniforms) {
+                if (this.uniforms.hasOwnProperty(key)) {
+                    renderAtomic.uniforms[key] = this.uniforms[key];
+                }
+            }
+            renderAtomic.shader = this._shader;
+            renderAtomic.renderParams = this.renderParams;
+            renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode == feng3d.RenderMode.POINTS;
+        };
+        Material.prototype.onShaderChanged = function () {
+            var cls = feng3d.shaderConfig.shaders[this.shaderName].cls;
+            cls = cls || feng3d.StandardUniforms;
+            if (cls) {
+                if (!(this.uniforms instanceof cls)) {
+                    var newuniforms = new cls();
+                    feng3d.serialization.setValue(newuniforms, this.uniforms);
+                    this.uniforms = newuniforms;
+                }
+            }
+            this._shader = new feng3d.Shader(this.shaderName);
+        };
+        __decorate([
+            feng3d.oav({ component: "OAVMaterialName" }),
+            feng3d.serialize,
+            feng3d.watch("onShaderChanged")
+        ], Material.prototype, "shaderName", void 0);
+        __decorate([
+            feng3d.oav()
+        ], Material.prototype, "name", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVObjectView" })
+        ], Material.prototype, "uniforms", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "渲染参数", component: "OAVObjectView" })
+        ], Material.prototype, "renderParams", void 0);
+        return Material;
+    }(feng3d.Feng3dAssets));
+    feng3d.Material = Material;
+    feng3d.Feng3dAssets.setAssets(Material.default = new Material().value({ name: "Default-Material", assetsId: "Default-Material", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -22528,8 +22519,8 @@ var feng3d;
         function Water() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.Water";
-            _this.geometry = new feng3d.PlaneGeometry().value({ width: 10, height: 10 });
-            _this.material = new feng3d.Material().value({ shaderName: "water" });
+            _this.geometry = feng3d.Geometry.plane;
+            _this.material = feng3d.Material.defaultWater;
             /**
              * 帧缓冲对象，用于处理水面反射
              */
@@ -22661,6 +22652,7 @@ var feng3d;
     }());
     feng3d.WaterUniforms = WaterUniforms;
     feng3d.shaderConfig.shaders["water"].cls = WaterUniforms;
+    feng3d.Feng3dAssets.setAssets(feng3d.Material.defaultWater = new feng3d.Material().value({ name: "Default-Water", assetsId: "Default-Water", shaderName: "water", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

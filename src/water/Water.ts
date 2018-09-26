@@ -10,14 +10,14 @@ namespace feng3d
     {
         __class__: "feng3d.Water" = "feng3d.Water";
 
-        geometry = new PlaneGeometry().value({ width: 10, height: 10 });
+        geometry = Geometry.plane;
 
-        material = new Material().value({ shaderName: "water" });
+        material = Material.defaultWater;
 
         /**
          * 帧缓冲对象，用于处理水面反射
          */
-        frameBufferObject = new FrameBufferObject();
+        private frameBufferObject = new FrameBufferObject();
 
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {

@@ -26,7 +26,6 @@ namespace feng3d
         @oav({ componentParam: { tooltip: "水体颜色" } })
         u_waterColor = new Color3().fromUnit(0x555555);
 
-
         @oav()
         @serialize
         @oav({ componentParam: { tooltip: "水体法线图" } })
@@ -45,4 +44,6 @@ namespace feng3d
     }
 
     shaderConfig.shaders["water"].cls = WaterUniforms;
+
+    Feng3dAssets.setAssets(Material.defaultWater = new Material().value({ name: "Default-Water", assetsId: "Default-Water", shaderName: "water", hideFlags: HideFlags.NotEditable }));
 }
