@@ -63,6 +63,11 @@ namespace feng3d
         static torus: TorusGeometry;
 
         /**
+         * 点几何体
+         */
+        static point: PointGeometry
+
+        /**
          * 索引数据
          */
         get indices()

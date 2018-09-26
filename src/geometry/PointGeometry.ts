@@ -8,9 +8,9 @@ namespace feng3d
      */
     export class PointGeometry extends Geometry
     {
-        
+
         __class__: "feng3d.PointGeometry" = "feng3d.PointGeometry";
-        
+
         /**
          * 点数据列表
          * 修改数组内数据时需要手动调用 invalidateGeometry();
@@ -18,7 +18,7 @@ namespace feng3d
         @serialize
         @oav()
         @watch("invalidateGeometry")
-        points: PointInfo[] = [{}];
+        points: PointInfo[] = [];
 
         /**
          * 构建几何体
@@ -32,13 +32,15 @@ namespace feng3d
             var uvData: number[] = [];
             var colors: number[] = [];
 
+            numPoints = Math.max(1, numPoints);
+
             for (var i = 0; i < numPoints; i++)
             {
                 var element = this.points[i];
-                var position = element.position || Vector3.ZERO;
-                var color = element.color || Color4.WHITE;
-                var normal = element.normal || Vector3.ZERO;
-                var uv = element.uv || Vector2.ZERO;
+                var position = (element && element.position) || Vector3.ZERO;
+                var color = (element && element.color) || Color4.WHITE;
+                var normal = (element && element.normal) || Vector3.ZERO;
+                var uv = (element && element.uv) || Vector2.ZERO;
                 indices[i] = i;
                 positionData.push(position.x, position.y, position.z);
                 normalData.push(normal.x, normal.y, normal.z);
@@ -55,7 +57,6 @@ namespace feng3d
 
     /**
      * 点信息
-
      */
     export interface PointInfo
     {
@@ -64,4 +65,6 @@ namespace feng3d
         normal?: Vector3;
         uv?: Vector2;
     }
+
+    Feng3dAssets.setAssets(Geometry.point = new PointGeometry().value({ name: "PointGeometry", assetsId: "PointGeometry", points: [] }));
 }

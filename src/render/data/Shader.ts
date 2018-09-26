@@ -105,6 +105,7 @@ namespace feng3d
             var shader = gl.createShader(type);
             if (shader == null)
             {
+                debugger;
                 throw 'unable to create shader';
             }
 
@@ -117,6 +118,7 @@ namespace feng3d
             {
                 var error = gl.getShaderInfoLog(shader);
                 gl.deleteShader(shader);
+                debugger;
                 throw 'Failed to compile shader: ' + error;
             }
 
@@ -129,6 +131,7 @@ namespace feng3d
             var program = gl.createProgram();
             if (!program)
             {
+                debugger;
                 throw "创建 WebGLProgram 失败！"
             }
 
@@ -147,29 +150,10 @@ namespace feng3d
                 gl.deleteProgram(program);
                 gl.deleteShader(fragmentShader);
                 gl.deleteShader(vertexShader);
+                debugger;
                 throw 'Failed to link program: ' + error;
             }
             return program;
-        }
-
-        /**
-         * Create the linked program object
-         * @param gl GL context
-         * @param vshader a vertex shader program (string)
-         * @param fshader a fragment shader program (string)
-         * @return created program object, or null if the creation has failed
-         */
-        private createProgram(gl: GL, vshader: string, fshader: string)
-        {
-            // 编译顶点着色器
-            var vertexShader = this.compileShaderCode(gl, gl.VERTEX_SHADER, vshader);
-
-            // 编译片段着色器
-            var fragmentShader = this.compileShaderCode(gl, gl.FRAGMENT_SHADER, fshader);
-
-            // 创建着色器程序
-            var shaderProgram = this.createLinkProgram(gl, vertexShader, fragmentShader);
-            return shaderProgram;
         }
 
         private compileShaderProgram(gl: GL, vshader: string, fshader: string)

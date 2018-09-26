@@ -7877,14 +7877,6 @@ declare namespace feng3d {
          */
         private compileShaderCode;
         private createLinkProgram;
-        /**
-         * Create the linked program object
-         * @param gl GL context
-         * @param vshader a vertex shader program (string)
-         * @param fshader a fragment shader program (string)
-         * @return created program object, or null if the creation has failed
-         */
-        private createProgram;
         private compileShaderProgram;
         private map;
         private getMacroCode;
@@ -9774,6 +9766,10 @@ declare namespace feng3d {
          */
         static torus: TorusGeometry;
         /**
+         * 点几何体
+         */
+        static point: PointGeometry;
+        /**
          * 索引数据
          */
         /**
@@ -9962,7 +9958,6 @@ declare namespace feng3d {
     }
     /**
      * 点信息
-
      */
     interface PointInfo {
         position?: Vector3;

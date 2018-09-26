@@ -12552,6 +12552,7 @@ var feng3d;
         Shader.prototype.compileShaderCode = function (gl, type, code) {
             var shader = gl.createShader(type);
             if (shader == null) {
+                debugger;
                 throw 'unable to create shader';
             }
             gl.shaderSource(shader, code);
@@ -12561,6 +12562,7 @@ var feng3d;
             if (!compiled) {
                 var error = gl.getShaderInfoLog(shader);
                 gl.deleteShader(shader);
+                debugger;
                 throw 'Failed to compile shader: ' + error;
             }
             return shader;
@@ -12569,6 +12571,7 @@ var feng3d;
             // 创建程序对象
             var program = gl.createProgram();
             if (!program) {
+                debugger;
                 throw "创建 WebGLProgram 失败！";
             }
             // 添加着色器
@@ -12583,25 +12586,10 @@ var feng3d;
                 gl.deleteProgram(program);
                 gl.deleteShader(fragmentShader);
                 gl.deleteShader(vertexShader);
+                debugger;
                 throw 'Failed to link program: ' + error;
             }
             return program;
-        };
-        /**
-         * Create the linked program object
-         * @param gl GL context
-         * @param vshader a vertex shader program (string)
-         * @param fshader a fragment shader program (string)
-         * @return created program object, or null if the creation has failed
-         */
-        Shader.prototype.createProgram = function (gl, vshader, fshader) {
-            // 编译顶点着色器
-            var vertexShader = this.compileShaderCode(gl, gl.VERTEX_SHADER, vshader);
-            // 编译片段着色器
-            var fragmentShader = this.compileShaderCode(gl, gl.FRAGMENT_SHADER, fshader);
-            // 创建着色器程序
-            var shaderProgram = this.createLinkProgram(gl, vertexShader, fragmentShader);
-            return shaderProgram;
         };
         Shader.prototype.compileShaderProgram = function (gl, vshader, fshader) {
             // 创建着色器程序
@@ -18139,7 +18127,7 @@ var feng3d;
              * 点数据列表
              * 修改数组内数据时需要手动调用 invalidateGeometry();
              */
-            _this.points = [{}];
+            _this.points = [];
             return _this;
         }
         /**
@@ -18152,12 +18140,13 @@ var feng3d;
             var normalData = [];
             var uvData = [];
             var colors = [];
+            numPoints = Math.max(1, numPoints);
             for (var i = 0; i < numPoints; i++) {
                 var element = this.points[i];
-                var position = element.position || feng3d.Vector3.ZERO;
-                var color = element.color || feng3d.Color4.WHITE;
-                var normal = element.normal || feng3d.Vector3.ZERO;
-                var uv = element.uv || feng3d.Vector2.ZERO;
+                var position = (element && element.position) || feng3d.Vector3.ZERO;
+                var color = (element && element.color) || feng3d.Color4.WHITE;
+                var normal = (element && element.normal) || feng3d.Vector3.ZERO;
+                var uv = (element && element.uv) || feng3d.Vector2.ZERO;
                 indices[i] = i;
                 positionData.push(position.x, position.y, position.z);
                 normalData.push(normal.x, normal.y, normal.z);
@@ -18178,6 +18167,7 @@ var feng3d;
         return PointGeometry;
     }(feng3d.Geometry));
     feng3d.PointGeometry = PointGeometry;
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.point = new PointGeometry().value({ name: "PointGeometry", assetsId: "PointGeometry", points: [] }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -23731,11 +23721,11 @@ var feng3d;
             feng3d.serialize
         ], ParticleSystem.prototype, "numParticles", void 0);
         __decorate([
-            feng3d.oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "geometry", datatype: "geometry" } } }),
+            feng3d.oav({ component: "OAVPick", componentParam: { tooltip: "几何体，提供模型以形状", accepttype: "geometry", datatype: "geometry" } }),
             feng3d.serialize
         ], ParticleSystem.prototype, "geometry", void 0);
         __decorate([
-            feng3d.oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "material", datatype: "material" } } }),
+            feng3d.oav({ component: "OAVPick", componentParam: { tooltip: "材质，提供模型以皮肤", accepttype: "material", datatype: "material" } }),
             feng3d.serialize
         ], ParticleSystem.prototype, "material", void 0);
         __decorate([
