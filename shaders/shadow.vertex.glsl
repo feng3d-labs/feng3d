@@ -6,14 +6,18 @@ uniform mat4 u_modelMatrix;
 uniform mat4 u_viewProjection;
 
 #ifdef HAS_SKELETON_ANIMATION
-    #include<skeleton.vertex>
+    #include<skeleton_declare.vertex>
+#endif
+
+#ifdef HAS_PARTICLE_ANIMATOR
+    #include<particle_declare.vertex>
 #endif
 
 varying vec3 v_worldPosition;
 
-void main() {
-
-    vec4 position = vec4(a_position,1.0);
+void main() 
+{
+    vec4 position = vec4(a_position, 1.0);
     #ifdef HAS_SKELETON_ANIMATION
         position = skeletonAnimation(position);
     #endif

@@ -19,7 +19,11 @@ varying vec3 v_tangent;
 varying vec3 v_bitangent;
 
 #ifdef HAS_SKELETON_ANIMATION
-    #include<skeleton.vertex>
+    #include<skeleton_declare.vertex>
+#endif
+
+#ifdef HAS_PARTICLE_ANIMATOR
+    #include<particle_declare.vertex>
 #endif
 
 #include<lights_declare.vertex>
@@ -34,6 +38,10 @@ void main() {
     
     #ifdef HAS_SKELETON_ANIMATION
         position = skeletonAnimation(position);
+    #endif
+
+    #ifdef HAS_PARTICLE_ANIMATOR
+        position = particleAnimation(position);
     #endif
     
     vec3 normal = a_normal;

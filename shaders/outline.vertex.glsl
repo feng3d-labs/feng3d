@@ -12,7 +12,11 @@ uniform float u_scaleByDepth;
 uniform float u_outlineMorphFactor;
 
 #ifdef HAS_SKELETON_ANIMATION
-    #include<skeleton.vertex>
+    #include<skeleton_declare.vertex>
+#endif
+
+#ifdef HAS_PARTICLE_ANIMATOR
+    #include<particle_declare.vertex>
 #endif
 
 uniform float u_outlineSize;
@@ -23,6 +27,10 @@ void main() {
 
     #ifdef HAS_SKELETON_ANIMATION
         position = skeletonAnimation(position);
+    #endif
+
+    #ifdef HAS_PARTICLE_ANIMATOR
+        position = particleAnimation(position);
     #endif
     
     vec3 normal = a_normal;

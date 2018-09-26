@@ -1,4 +1,3 @@
-
 attribute vec4 a_jointindex0;
 attribute vec4 a_jointweight0;
 

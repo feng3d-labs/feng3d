@@ -36,7 +36,7 @@ uniform sampler2D s_ambient;
 #include<envmap.fragment>
 
 #ifdef HAS_PARTICLE_ANIMATOR
-    #include<particle.fragment>
+    #include<particle_declare.fragment>
 #endif
 
 void main()

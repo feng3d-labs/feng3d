@@ -7,33 +7,41 @@ uniform vec4 u_diffuseSegmentValue;
 uniform float u_specularSegment;
 
 //漫反射
-float cartoonLightDiffuse(vec3 normal,vec3 lightDir){
-
+float cartoonLightDiffuse(vec3 normal,vec3 lightDir)
+{
     float diff = dot(normal, lightDir);
     diff = diff * 0.5 + 0.5;
 
     #ifdef cartoon_Anti_aliasing
         float w = fwidth(diff) * 2.0;
-        if (diff < u_diffuseSegment.x + w) {
+        if (diff < u_diffuseSegment.x + w) 
+        {
             diff = mix(u_diffuseSegment.x, u_diffuseSegment.y, smoothstep(u_diffuseSegment.x - w, u_diffuseSegment.x + w, diff));
         //  diff = mix(u_diffuseSegment.x, u_diffuseSegment.y, clamp(0.5 * (diff - u_diffuseSegment.x) / w, 0, 1));
-        } else if (diff < u_diffuseSegment.y + w) {
+        } else if (diff < u_diffuseSegment.y + w) 
+        {
             diff = mix(u_diffuseSegment.y, u_diffuseSegment.z, smoothstep(u_diffuseSegment.y - w, u_diffuseSegment.y + w, diff));
         //  diff = mix(u_diffuseSegment.y, u_diffuseSegment.z, clamp(0.5 * (diff - u_diffuseSegment.y) / w, 0, 1));
-        } else if (diff < u_diffuseSegment.z + w) {
+        } else if (diff < u_diffuseSegment.z + w) 
+        {
             diff = mix(u_diffuseSegment.z, u_diffuseSegment.w, smoothstep(u_diffuseSegment.z - w, u_diffuseSegment.z + w, diff));
         //  diff = mix(u_diffuseSegment.z, u_diffuseSegment.w, clamp(0.5 * (diff - u_diffuseSegment.z) / w, 0, 1));
-        } else {
+        } else 
+        {
             diff = u_diffuseSegment.w;
         }
     #else
-        if (diff < u_diffuseSegment.x) {
+        if (diff < u_diffuseSegment.x) 
+        {
             diff = u_diffuseSegmentValue.x;
-        } else if (diff < u_diffuseSegment.y) {
+        } else if (diff < u_diffuseSegment.y) 
+        {
             diff = u_diffuseSegmentValue.y;
-        } else if (diff < u_diffuseSegment.z) {
+        } else if (diff < u_diffuseSegment.z) 
+        {
             diff = u_diffuseSegmentValue.z;
-        } else {
+        } else 
+        {
             diff = u_diffuseSegmentValue.w;
         }
     #endif
@@ -42,18 +50,20 @@ float cartoonLightDiffuse(vec3 normal,vec3 lightDir){
 }
 
 //镜面反射漫反射
-float cartoonLightSpecular(vec3 normal,vec3 lightDir,vec3 cameraDir,float glossiness){
-
+float cartoonLightSpecular(vec3 normal,vec3 lightDir,vec3 cameraDir,float glossiness)
+{
     vec3 halfVec = normalize(lightDir + cameraDir);
     float specComp = max(dot(normal,halfVec),0.0);
     specComp = pow(specComp, glossiness);
 
     #ifdef cartoon_Anti_aliasing
         float w = fwidth(specComp);
-        if (specComp < u_specularSegment + w) {
+        if (specComp < u_specularSegment + w) 
+        {
             specComp = mix(0.0, 1.0, smoothstep(u_specularSegment - w, u_specularSegment + w, specComp));
             // specComp = smoothstep(u_specularSegment - w, u_specularSegment + w, specComp);
-        } else {
+        } else 
+        {
             specComp = 1.0;
         }
     #else
