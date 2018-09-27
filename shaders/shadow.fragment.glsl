@@ -1,6 +1,6 @@
 precision mediump float;
 
-#include<packing>
+#include<packing_declare>
 
 varying vec3 v_worldPosition;
 

@@ -19,13 +19,15 @@ attribute vec3 a_tangent;
 varying vec3 v_tangent;
 varying vec3 v_bitangent;
 
-uniform float u_PointSize;
-
 #include<lights_declare.vertex>
 
-void main() {
+#ifdef IS_POINTS_MODE
+    uniform float u_PointSize;
+#endif
 
-    vec4 position = vec4(a_position,1.0);
+void main() 
+{
+    vec4 position = vec4(a_position, 1.0);
 
     vec3 normal = a_normal;
 
@@ -39,11 +41,13 @@ void main() {
     v_uv = a_uv;
 
     //计算法线
-    v_normal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);
-    v_tangent = normalize((u_modelMatrix * vec4(a_tangent,0.0)).xyz);
-    v_bitangent = cross(v_normal,v_tangent);
+    v_normal = normalize((u_ITModelMatrix * vec4(normal, 0.0)).xyz);
+    v_tangent = normalize((u_modelMatrix * vec4(a_tangent, 0.0)).xyz);
+    v_bitangent = cross(v_normal, v_tangent);
     
-    gl_PointSize = u_PointSize;
+    lightsVertex(worldPosition);
 
-    #include<lights.vertex>
+    #ifdef IS_POINTS_MODE
+        gl_PointSize = u_PointSize;
+    #endif
 }

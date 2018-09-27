@@ -32,9 +32,9 @@ varying vec3 v_bitangent;
     uniform float u_PointSize;
 #endif
 
-void main() {
-
-    vec4 position = vec4(a_position,1.0);
+void main() 
+{
+    vec4 position = vec4(a_position, 1.0);
     
     #ifdef HAS_SKELETON_ANIMATION
         position = skeletonAnimation(position);
@@ -56,11 +56,11 @@ void main() {
     v_uv = a_uv;
 
     //计算法线
-    v_normal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);
-    v_tangent = normalize((u_modelMatrix * vec4(a_tangent,0.0)).xyz);
-    v_bitangent = cross(v_normal,v_tangent);
+    v_normal = normalize((u_ITModelMatrix * vec4(normal, 0.0)).xyz);
+    v_tangent = normalize((u_modelMatrix * vec4(a_tangent, 0.0)).xyz);
+    v_bitangent = cross(v_normal, v_tangent);
 
-    #include<lights.vertex>
+    lightsVertex(worldPosition);
 
     #ifdef IS_POINTS_MODE
         gl_PointSize = u_PointSize;

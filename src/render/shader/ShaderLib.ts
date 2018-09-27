@@ -88,6 +88,11 @@ namespace feng3d
             while (match != null)
             {
                 var moduleshader = this.shaderConfig.modules[match[1]];
+                if (!moduleshader)
+                {
+                    debugger;
+                    throw `无法找到着色器 ${match[1]}`;
+                }
                 moduleshader = this.uninclude(moduleshader);
                 shaderCode = shaderCode.replace(match[0], moduleshader);
                 match = includeRegExp.exec(shaderCode);

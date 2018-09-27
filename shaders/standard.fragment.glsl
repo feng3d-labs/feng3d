@@ -28,10 +28,10 @@ uniform vec4 u_sceneAmbientColor;
 uniform vec4 u_ambient;
 uniform sampler2D s_ambient;
 
-#include<packing>
+#include<packing_declare>
 #include<lightShading.fragment>
 
-#include<fog.fragment>
+#include<fog_declare.fragment>
 
 #include<envmap.fragment>
 

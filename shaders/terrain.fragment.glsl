@@ -28,12 +28,13 @@ uniform vec4 u_sceneAmbientColor;
 uniform vec4 u_ambient;
 uniform sampler2D s_ambient;
 
-#include<packing>
+#include<packing_declare>
+
 #include<terrain.fragment>
 
 #include<lightShading.fragment>
 
-#include<fog.fragment>
+#include<fog_declare.fragment>
 
 #include<envmap.fragment>
 
@@ -44,8 +45,6 @@ void main()
     //获取法线
     vec3 normal = texture2D(s_normal,v_uv).xyz * 2.0 - 1.0;
     normal = normalize(normal.x * v_tangent + normal.y * v_bitangent + normal.z * v_normal);
-
-    // vec3 normal = v_normal;
 
     //获取漫反射基本颜色
     vec4 diffuseColor = u_diffuse;
