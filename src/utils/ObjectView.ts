@@ -74,7 +74,7 @@ namespace feng3d
 	 * objectview属性装饰器
 	 * @param param 参数
 	 */
-	export function oav<K extends keyof OAVComponentParamMap>(param?: { block?: string; component?: K; componentParam?: OAVComponentParamMap[K]; })
+	export function oav<K extends keyof OAVComponentParamMap>(param?: { block?: string, tooltip?: string, component?: K; componentParam?: OAVComponentParamMap[K]; })
 	{
 		return (target: any, propertyKey: string) =>
 		{
@@ -207,7 +207,7 @@ namespace feng3d
 			var view = new cls(blockViewInfo);
 			return view;
 		}
-		addOAV<K extends keyof OAVComponentParamMap>(target: any, propertyKey: string, param?: { block?: string; component?: K; componentParam?: OAVComponentParamMap[K]; })
+		addOAV<K extends keyof OAVComponentParamMap>(target: any, propertyKey: string, param?: { block?: string, component?: K; tooltip?: string, componentParam?: OAVComponentParamMap[K]; })
 		{
 			if (!Object.getOwnPropertyDescriptor(target, OBJECTVIEW_KEY))
 				target[OBJECTVIEW_KEY] = {};
@@ -251,6 +251,8 @@ namespace feng3d
 			{
 				if (excludeAttrs.indexOf(attributeDefinition.name) == -1)
 				{
+					var writable = attributeDefinition.writable == undefined ? true : attributeDefinition.writable;
+					writable = writable && Object.propertyIsWritable(object, attributeDefinition.name);
 					objectAttributeInfos.push(
 						{
 							name: attributeDefinition.name,
@@ -258,7 +260,8 @@ namespace feng3d
 							component: attributeDefinition.component,
 							componentParam: attributeDefinition.componentParam,
 							owner: object,
-							writable: true,
+							writable: writable,
+							tooltip: attributeDefinition.tooltip,
 							type: getAttributeType(object[attributeDefinition.name])
 						}
 					);
@@ -476,14 +479,6 @@ namespace feng3d
 		 * 标签
 		 */
 		label?: string;
-		/**
-		 * 提示信息
-		 */
-		tooltip?: string;
-		/**
-		 * 是否可编辑
-		 */
-		editable?: boolean;
 	}
 
 	/**
@@ -518,9 +513,19 @@ namespace feng3d
 		name: string;
 
 		/**
+		 * 是否可写
+		 */
+		writable?: boolean;
+
+		/**
 		 * 所属块名称
 		 */
 		block?: string;
+
+		/**
+		 * 提示信息
+		 */
+		tooltip?: string;
 
 		/**
 		 * 组件
@@ -715,6 +720,11 @@ namespace feng3d
 		 * 所属块名称
 		 */
 		block?: string;
+
+		/**
+		 * 提示信息
+		 */
+		tooltip?: string;
 
 		/**
 		 * 组件

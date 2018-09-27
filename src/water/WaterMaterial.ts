@@ -7,15 +7,18 @@ namespace feng3d
         __class__: "feng3d.WaterUniforms" = "feng3d.WaterUniforms";
 
         @serialize
-        @oav({ componentParam: { tooltip: "透明度" } })
+        @oav({ tooltip: "透明度" })
         u_alpha = 1.0;
 
+        /**
+         * 水体运动时间，默认自动递增
+         */
         // @serialize
-        // @oav({ componentParam: { tooltip: "水体运动时间，默认自动递增" } })
+        // @oav({ tooltip: "水体运动时间，默认自动递增" })
         u_time = 0.0;
 
         @serialize
-        @oav({ componentParam: { tooltip: "水体展现的尺寸" } })
+        @oav({ tooltip: "水体展现的尺寸" })
         u_size = 10.0;
 
         @oav()
@@ -23,12 +26,12 @@ namespace feng3d
         u_distortionScale = 20.0;
 
         @serialize
-        @oav({ componentParam: { tooltip: "水体颜色" } })
+        @oav({ tooltip: "水体颜色" })
         u_waterColor = new Color3().fromUnit(0x555555);
 
         @oav()
         @serialize
-        @oav({ componentParam: { tooltip: "水体法线图" } })
+        @oav({ tooltip: "水体法线图" })
         s_normalSampler = new UrlImageTexture2D();
 
         /**

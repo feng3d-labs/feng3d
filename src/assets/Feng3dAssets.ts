@@ -10,7 +10,6 @@ namespace feng3d
          */
         @serialize
         @watch("assetsIdChanged")
-        // @oav({ componentParam: { editable: false } })
         assetsId: string;
 
         /**

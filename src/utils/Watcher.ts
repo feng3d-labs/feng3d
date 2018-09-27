@@ -127,7 +127,7 @@ getset平均耗时比 17.3
                 var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(host, property1);
                 watchs[property1] = { value: host[property1], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
                 //
-                var data: PropertyDescriptor = getPropertyDescriptor(host, property1);
+                var data: PropertyDescriptor = Object.getPropertyDescriptor(host, property1);
                 if (data && data.set && data.get)
                 {
                     data = <any>{ enumerable: true, configurable: true, get: data.get, set: data.set };
@@ -322,21 +322,6 @@ getset平均耗时比 17.3
 
     const bindables = "__watchs__";
     const bindablechains = "__watchchains__";
-
-    function getPropertyDescriptor(host: any, property: string): any
-    {
-        var data = Object.getOwnPropertyDescriptor(host, property);
-        if (data)
-        {
-            return data;
-        }
-        var prototype = Object.getPrototypeOf(host);
-        if (prototype)
-        {
-            return getPropertyDescriptor(prototype, property);
-        }
-        return null;
-    }
 
     function notifyListener(host: any, property: string, oldview: any): void
     {

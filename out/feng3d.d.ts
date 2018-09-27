@@ -30,6 +30,18 @@ interface ObjectConstructor {
      * @param sources One or more source objects from which to copy properties
      */
     assign(target: object, ...sources: any[]): any;
+    /**
+     * 从对象以及对象的原型中获取属性描述
+     * @param obj 对象
+     * @param property 属性名称
+     */
+    getPropertyDescriptor(obj: Object, property: string): PropertyDescriptor;
+    /**
+     * 属性是否可写
+     * @param obj 对象
+     * @param property 属性名称
+     */
+    propertyIsWritable(obj: Object, property: string): boolean;
 }
 interface Map<K, V> {
     clear(): void;
@@ -1259,6 +1271,7 @@ declare namespace feng3d {
      */
     function oav<K extends keyof OAVComponentParamMap>(param?: {
         block?: string;
+        tooltip?: string;
         component?: K;
         componentParam?: OAVComponentParamMap[K];
     }): (target: any, propertyKey: string) => void;
@@ -1329,6 +1342,7 @@ declare namespace feng3d {
         addOAV<K extends keyof OAVComponentParamMap>(target: any, propertyKey: string, param?: {
             block?: string;
             component?: K;
+            tooltip?: string;
             componentParam?: OAVComponentParamMap[K];
         }): void;
         /**
@@ -1348,14 +1362,6 @@ declare namespace feng3d {
          * 标签
          */
         label?: string;
-        /**
-         * 提示信息
-         */
-        tooltip?: string;
-        /**
-         * 是否可编辑
-         */
-        editable?: boolean;
     }
     /**
      * OAV 组件参数映射
@@ -1381,9 +1387,17 @@ declare namespace feng3d {
          */
         name: string;
         /**
+         * 是否可写
+         */
+        writable?: boolean;
+        /**
          * 所属块名称
          */
         block?: string;
+        /**
+         * 提示信息
+         */
+        tooltip?: string;
         /**
          * 组件
          */
@@ -1542,6 +1556,10 @@ declare namespace feng3d {
          * 所属块名称
          */
         block?: string;
+        /**
+         * 提示信息
+         */
+        tooltip?: string;
         /**
          * 组件
          */
@@ -11538,6 +11556,9 @@ declare namespace feng3d {
     class WaterUniforms {
         __class__: "feng3d.WaterUniforms";
         u_alpha: number;
+        /**
+         * 水体运动时间，默认自动递增
+         */
         u_time: number;
         u_size: number;
         u_distortionScale: number;

@@ -67,7 +67,6 @@ namespace feng3d
         private onShaderChanged()
         {
             var cls = shaderConfig.shaders[this.shaderName].cls;
-            cls = cls || StandardUniforms;
             if (cls)
             {
                 if (!(this.uniforms instanceof cls))
@@ -76,6 +75,9 @@ namespace feng3d
                     serialization.setValue(newuniforms, <any>this.uniforms);
                     this.uniforms = newuniforms;
                 }
+            } else
+            {
+                this.uniforms = <any>{};
             }
             this._shader = new Shader(this.shaderName);
         }

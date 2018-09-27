@@ -34,6 +34,20 @@ interface ObjectConstructor
      * @param sources One or more source objects from which to copy properties
      */
     assign(target: object, ...sources: any[]): any;
+
+    /**
+     * 从对象以及对象的原型中获取属性描述
+     * @param obj 对象
+     * @param property 属性名称
+     */
+    getPropertyDescriptor(obj: Object, property: string): PropertyDescriptor;
+
+    /**
+     * 属性是否可写
+     * @param obj 对象
+     * @param property 属性名称
+     */
+    propertyIsWritable(obj: Object, property: string): boolean;
 }
 
 if (typeof Object.assign != 'function')
@@ -71,4 +85,27 @@ if (typeof Object.assign != 'function')
         writable: true,
         configurable: true
     });
+}
+
+Object.getPropertyDescriptor = function (host: any, property: string): PropertyDescriptor
+{
+    var data = Object.getOwnPropertyDescriptor(host, property);
+    if (data)
+    {
+        return data;
+    }
+    var prototype = Object.getPrototypeOf(host);
+    if (prototype)
+    {
+        return Object.getPropertyDescriptor(prototype, property);
+    }
+    return null;
+}
+
+Object.propertyIsWritable = function (host: any, property: string): boolean
+{
+    var data = Object.getPropertyDescriptor(host, property);
+    if (!data) return false;
+    if (data.get && !data.set) return false;
+    return true;
 }

@@ -98,7 +98,7 @@ namespace feng3d
          */
         frameBufferObject = new FrameBufferObject();
 
-        @oav({ componentParam: { tooltip: "是否调试阴影图" } })
+        @oav({ tooltip: "是否调试阴影图" })
         debugShadowMap = false;
 
         private debugShadowMapObject: GameObject;

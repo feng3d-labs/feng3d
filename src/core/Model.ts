@@ -11,7 +11,7 @@ namespace feng3d
         /**
          * 几何体
          */
-        @oav({ component: "OAVPick", componentParam: { tooltip: "几何体，提供模型以形状", accepttype: "geometry", datatype: "geometry" } })
+        @oav({ component: "OAVPick", tooltip: "几何体，提供模型以形状", componentParam: { accepttype: "geometry", datatype: "geometry" } })
         @serializeAssets
         @watch("onGeometryChanged")
         geometry: Geometrys;
@@ -19,7 +19,7 @@ namespace feng3d
         /**
          * 材质
          */
-        @oav({ component: "OAVPick", componentParam: { tooltip: "材质，提供模型以皮肤", accepttype: "material", datatype: "material" } })
+        @oav({ component: "OAVPick", tooltip: "材质，提供模型以皮肤", componentParam: { accepttype: "material", datatype: "material" } })
         @serializeAssets
         @watch("onMaterialChanged")
         material: Material;
@@ -193,7 +193,7 @@ namespace feng3d
             this._selfLocalBounds = null;
             this._selfWorldBounds = null;
         }
-        
+
         /**
 		 * @inheritDoc
 		 */

@@ -12,27 +12,27 @@ namespace feng3d
         /**
          * 是否正在播放
          */
-        @oav({ componentParam: { tooltip: "是否播放中" } })
+        @oav({ tooltip: "是否播放中" })
         @serialize
         isPlaying = true;
 
         /**
          * 粒子时间
          */
-        @oav({ componentParam: { tooltip: "当前粒子时间" } })
+        @oav({ tooltip: "当前粒子时间" })
         time = 0;
 
         /**
          * 播放速度
          */
-        @oav({ componentParam: { tooltip: "播放速度，可以为负值，-1表示反方向一倍速度播放" } })
+        @oav({ tooltip: "播放速度，可以为负值，-1表示反方向一倍速度播放" })
         @serialize
         playspeed = 1;
 
         /**
          * 周期
          */
-        @oav({ componentParam: { tooltip: "粒子系统周期，time=0与time=10000有相同效果" } })
+        @oav({ tooltip: "粒子系统周期，time=0与time=10000有相同效果" })
         @serialize
         cycle = 10000;
 
@@ -40,15 +40,15 @@ namespace feng3d
          * 粒子数量
          */
         @watch("invalidate")
-        @oav({ componentParam: { tooltip: "粒子系统拥有粒子的数量" } })
+        @oav({ tooltip: "粒子系统拥有粒子的数量" })
         @serialize
         numParticles = 1000;
 
-        @oav({ component: "OAVPick", componentParam: { tooltip: "几何体，提供模型以形状", accepttype: "geometry", datatype: "geometry" } })
+        @oav({ component: "OAVPick", tooltip: "几何体，提供模型以形状", componentParam: { accepttype: "geometry", datatype: "geometry" } })
         @serialize
         geometry = new PointGeometry();
 
-        @oav({ component: "OAVPick", componentParam: { tooltip: "材质，提供模型以皮肤", accepttype: "material", datatype: "material" } })
+        @oav({ component: "OAVPick", tooltip: "材质，提供模型以皮肤", componentParam: { accepttype: "material", datatype: "material" } })
         @serialize
         material = new Material().value({ shaderName: "particle", renderParams: { renderMode: RenderMode.POINTS } });
 
@@ -56,14 +56,14 @@ namespace feng3d
          * 粒子全局属性
          */
         @serialize
-        @oav({ block: "全局属性", component: "OAVObjectView", componentParam: { tooltip: "粒子全局属性，作用与所有粒子。" } })
+        @oav({ block: "全局属性", component: "OAVObjectView", tooltip: "粒子全局属性，作用与所有粒子。" })
         readonly particleGlobal = new ParticleGlobal();
 
         /**
          * 粒子最大数量
          */
         @watch("numParticlesChanged")
-        @oav({ componentParam: { tooltip: "粒子系统拥有粒子的数量" } })
+        @oav({ tooltip: "粒子系统拥有粒子的数量" })
         @serialize
         maxParticles = 1000;
 
@@ -126,7 +126,7 @@ namespace feng3d
             this.particleEmission.emit(this.time, this.deathParticles, this.survivalParticles, this.changedParticles);
         }
 
-        @oav({ componentParam: { tooltip: "修改粒子组件内数据后，可能需要调用该函数标记变化。" } })
+        @oav({ tooltip: "修改粒子组件内数据后，可能需要调用该函数标记变化。" })
         public invalidate()
         {
             this._isInvalid = true;

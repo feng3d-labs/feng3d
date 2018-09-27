@@ -43,6 +43,25 @@ if (typeof Object.assign != 'function') {
         configurable: true
     });
 }
+Object.getPropertyDescriptor = function (host, property) {
+    var data = Object.getOwnPropertyDescriptor(host, property);
+    if (data) {
+        return data;
+    }
+    var prototype = Object.getPrototypeOf(host);
+    if (prototype) {
+        return Object.getPropertyDescriptor(prototype, property);
+    }
+    return null;
+};
+Object.propertyIsWritable = function (host, property) {
+    var data = Object.getPropertyDescriptor(host, property);
+    if (!data)
+        return false;
+    if (data.get && !data.set)
+        return false;
+    return true;
+};
 //参考 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
 Map.prototype.getKeys = function () {
     var keys = [];
@@ -2425,7 +2444,7 @@ getset平均耗时比 17.3
                 var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(host, property1);
                 watchs[property1] = { value: host[property1], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
                 //
-                var data = getPropertyDescriptor(host, property1);
+                var data = Object.getPropertyDescriptor(host, property1);
                 if (data && data.set && data.get) {
                     data = { enumerable: true, configurable: true, get: data.get, set: data.set };
                     var orgSet = data.set;
@@ -2577,17 +2596,6 @@ getset平均耗时比 17.3
     feng3d.watcher = new Watcher();
     var bindables = "__watchs__";
     var bindablechains = "__watchchains__";
-    function getPropertyDescriptor(host, property) {
-        var data = Object.getOwnPropertyDescriptor(host, property);
-        if (data) {
-            return data;
-        }
-        var prototype = Object.getPrototypeOf(host);
-        if (prototype) {
-            return getPropertyDescriptor(prototype, property);
-        }
-        return null;
-    }
     function notifyListener(host, property, oldview) {
         var watchs = host[bindables];
         var handlers = watchs[property].handlers;
@@ -3150,13 +3158,16 @@ var feng3d;
             var objectAttributeInfos = [];
             classConfig.attributeDefinitionVec.forEach(function (attributeDefinition) {
                 if (excludeAttrs.indexOf(attributeDefinition.name) == -1) {
+                    var writable = attributeDefinition.writable == undefined ? true : attributeDefinition.writable;
+                    writable = writable && Object.propertyIsWritable(object, attributeDefinition.name);
                     objectAttributeInfos.push({
                         name: attributeDefinition.name,
                         block: attributeDefinition.block,
                         component: attributeDefinition.component,
                         componentParam: attributeDefinition.componentParam,
                         owner: object,
-                        writable: true,
+                        writable: writable,
+                        tooltip: attributeDefinition.tooltip,
                         type: getAttributeType(object[attributeDefinition.name])
                     });
                 }
@@ -5196,7 +5207,6 @@ var feng3d;
         __decorate([
             feng3d.serialize,
             feng3d.watch("assetsIdChanged")
-            // @oav({ componentParam: { editable: false } })
         ], Feng3dAssets.prototype, "assetsId", void 0);
         __decorate([
             feng3d.serialize
@@ -16686,12 +16696,12 @@ var feng3d;
             this._selfLocalBounds = this._activeGeometry.bounding;
         };
         __decorate([
-            feng3d.oav({ component: "OAVPick", componentParam: { tooltip: "几何体，提供模型以形状", accepttype: "geometry", datatype: "geometry" } }),
+            feng3d.oav({ component: "OAVPick", tooltip: "几何体，提供模型以形状", componentParam: { accepttype: "geometry", datatype: "geometry" } }),
             feng3d.serializeAssets,
             feng3d.watch("onGeometryChanged")
         ], Model.prototype, "geometry", void 0);
         __decorate([
-            feng3d.oav({ component: "OAVPick", componentParam: { tooltip: "材质，提供模型以皮肤", accepttype: "material", datatype: "material" } }),
+            feng3d.oav({ component: "OAVPick", tooltip: "材质，提供模型以皮肤", componentParam: { accepttype: "material", datatype: "material" } }),
             feng3d.serializeAssets,
             feng3d.watch("onMaterialChanged")
         ], Model.prototype, "material", void 0);
@@ -20958,13 +20968,15 @@ var feng3d;
         };
         Material.prototype.onShaderChanged = function () {
             var cls = feng3d.shaderConfig.shaders[this.shaderName].cls;
-            cls = cls || feng3d.StandardUniforms;
             if (cls) {
                 if (!(this.uniforms instanceof cls)) {
                     var newuniforms = new cls();
                     feng3d.serialization.setValue(newuniforms, this.uniforms);
                     this.uniforms = newuniforms;
                 }
+            }
+            else {
+                this.uniforms = {};
             }
             this._shader = new feng3d.Shader(this.shaderName);
         };
@@ -21179,7 +21191,7 @@ var feng3d;
             feng3d.serialize
         ], Light.prototype, "shadowType", void 0);
         __decorate([
-            feng3d.oav({ componentParam: { tooltip: "是否调试阴影图" } })
+            feng3d.oav({ tooltip: "是否调试阴影图" })
         ], Light.prototype, "debugShadowMap", void 0);
         return Light;
     }(feng3d.Behaviour));
@@ -22113,7 +22125,7 @@ var feng3d;
         ], AudioListener.prototype, "enabled", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ componentParam: { tooltip: "音量" } })
+            feng3d.oav({ tooltip: "音量" })
         ], AudioListener.prototype, "volume", null);
         return AudioListener;
     }(feng3d.Behaviour));
@@ -22450,36 +22462,36 @@ var feng3d;
         ], AudioSource.prototype, "enabled", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "audio", tooltip: "声音文件路径" } }),
+            feng3d.oav({ component: "OAVPick", tooltip: "声音文件路径", componentParam: { accepttype: "audio" } }),
             feng3d.watch("onUrlChanged")
         ], AudioSource.prototype, "url", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ componentParam: { tooltip: "是否循环播放" } })
+            feng3d.oav({ tooltip: "是否循环播放" })
         ], AudioSource.prototype, "loop", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ componentParam: { tooltip: "音量" } })
+            feng3d.oav({ tooltip: "音量" })
         ], AudioSource.prototype, "volume", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ componentParam: { tooltip: "是否启用位置影响声音" } })
+            feng3d.oav({ tooltip: "是否启用位置影响声音" })
         ], AudioSource.prototype, "enablePosition", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ component: "OAVEnum", componentParam: { tooltip: "距离模式，距离影响声音的方式", enumClass: DistanceModelType } })
+            feng3d.oav({ component: "OAVEnum", tooltip: "距离模式，距离影响声音的方式", componentParam: { enumClass: DistanceModelType } })
         ], AudioSource.prototype, "distanceModel", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ componentParam: { tooltip: "表示音频源和收听者之间的最大距离，之后音量不会再降低。该值仅由linear距离模型使用。默认值是10000。" } })
+            feng3d.oav({ tooltip: "表示音频源和收听者之间的最大距离，之后音量不会再降低。该值仅由linear距离模型使用。默认值是10000。" })
         ], AudioSource.prototype, "maxDistance", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ componentParam: { tooltip: "表示随着音频源远离收听者而减小音量的参考距离。此值由所有距离模型使用。默认值是1。" } })
+            feng3d.oav({ tooltip: "表示随着音频源远离收听者而减小音量的参考距离。此值由所有距离模型使用。默认值是1。" })
         ], AudioSource.prototype, "refDistance", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ componentParam: { tooltip: "描述了音源离开收听者音量降低的速度。此值由所有距离模型使用。默认值是1。" } })
+            feng3d.oav({ tooltip: "描述了音源离开收听者音量降低的速度。此值由所有距离模型使用。默认值是1。" })
         ], AudioSource.prototype, "rolloffFactor", null);
         __decorate([
             feng3d.oav()
@@ -22601,8 +22613,11 @@ var feng3d;
         function WaterUniforms() {
             this.__class__ = "feng3d.WaterUniforms";
             this.u_alpha = 1.0;
+            /**
+             * 水体运动时间，默认自动递增
+             */
             // @serialize
-            // @oav({ componentParam: { tooltip: "水体运动时间，默认自动递增" } })
+            // @oav({ tooltip: "水体运动时间，默认自动递增" })
             this.u_time = 0.0;
             this.u_size = 10.0;
             this.u_distortionScale = 20.0;
@@ -22619,11 +22634,11 @@ var feng3d;
         }
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ componentParam: { tooltip: "透明度" } })
+            feng3d.oav({ tooltip: "透明度" })
         ], WaterUniforms.prototype, "u_alpha", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ componentParam: { tooltip: "水体展现的尺寸" } })
+            feng3d.oav({ tooltip: "水体展现的尺寸" })
         ], WaterUniforms.prototype, "u_size", void 0);
         __decorate([
             feng3d.oav(),
@@ -22631,12 +22646,12 @@ var feng3d;
         ], WaterUniforms.prototype, "u_distortionScale", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ componentParam: { tooltip: "水体颜色" } })
+            feng3d.oav({ tooltip: "水体颜色" })
         ], WaterUniforms.prototype, "u_waterColor", void 0);
         __decorate([
             feng3d.oav(),
             feng3d.serialize,
-            feng3d.oav({ componentParam: { tooltip: "水体法线图" } })
+            feng3d.oav({ tooltip: "水体法线图" })
         ], WaterUniforms.prototype, "s_normalSampler", void 0);
         __decorate([
             feng3d.oav()
@@ -23369,11 +23384,11 @@ var feng3d;
             return this._birthTimes;
         };
         __decorate([
-            feng3d.oav({ componentParam: { tooltip: "每秒发射粒子数量" } }),
+            feng3d.oav({ tooltip: "每秒发射粒子数量" }),
             feng3d.serialize
         ], ParticleEmission.prototype, "rate", void 0);
         __decorate([
-            feng3d.oav({ component: "OAVArray", componentParam: { tooltip: "在指定时间进行额外发射指定数量的粒子", defaultItem: function () { return { time: 0, num: 30 }; } } }),
+            feng3d.oav({ component: "OAVArray", tooltip: "在指定时间进行额外发射指定数量的粒子", componentParam: { defaultItem: function () { return { time: 0, num: 30 }; } } }),
             feng3d.serialize
         ], ParticleEmission.prototype, "bursts", void 0);
         return ParticleEmission;
@@ -23705,40 +23720,40 @@ var feng3d;
             }
         };
         __decorate([
-            feng3d.oav({ componentParam: { tooltip: "是否播放中" } }),
+            feng3d.oav({ tooltip: "是否播放中" }),
             feng3d.serialize
         ], ParticleSystem.prototype, "isPlaying", void 0);
         __decorate([
-            feng3d.oav({ componentParam: { tooltip: "当前粒子时间" } })
+            feng3d.oav({ tooltip: "当前粒子时间" })
         ], ParticleSystem.prototype, "time", void 0);
         __decorate([
-            feng3d.oav({ componentParam: { tooltip: "播放速度，可以为负值，-1表示反方向一倍速度播放" } }),
+            feng3d.oav({ tooltip: "播放速度，可以为负值，-1表示反方向一倍速度播放" }),
             feng3d.serialize
         ], ParticleSystem.prototype, "playspeed", void 0);
         __decorate([
-            feng3d.oav({ componentParam: { tooltip: "粒子系统周期，time=0与time=10000有相同效果" } }),
+            feng3d.oav({ tooltip: "粒子系统周期，time=0与time=10000有相同效果" }),
             feng3d.serialize
         ], ParticleSystem.prototype, "cycle", void 0);
         __decorate([
             feng3d.watch("invalidate"),
-            feng3d.oav({ componentParam: { tooltip: "粒子系统拥有粒子的数量" } }),
+            feng3d.oav({ tooltip: "粒子系统拥有粒子的数量" }),
             feng3d.serialize
         ], ParticleSystem.prototype, "numParticles", void 0);
         __decorate([
-            feng3d.oav({ component: "OAVPick", componentParam: { tooltip: "几何体，提供模型以形状", accepttype: "geometry", datatype: "geometry" } }),
+            feng3d.oav({ component: "OAVPick", tooltip: "几何体，提供模型以形状", componentParam: { accepttype: "geometry", datatype: "geometry" } }),
             feng3d.serialize
         ], ParticleSystem.prototype, "geometry", void 0);
         __decorate([
-            feng3d.oav({ component: "OAVPick", componentParam: { tooltip: "材质，提供模型以皮肤", accepttype: "material", datatype: "material" } }),
+            feng3d.oav({ component: "OAVPick", tooltip: "材质，提供模型以皮肤", componentParam: { accepttype: "material", datatype: "material" } }),
             feng3d.serialize
         ], ParticleSystem.prototype, "material", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ block: "全局属性", component: "OAVObjectView", componentParam: { tooltip: "粒子全局属性，作用与所有粒子。" } })
+            feng3d.oav({ block: "全局属性", component: "OAVObjectView", tooltip: "粒子全局属性，作用与所有粒子。" })
         ], ParticleSystem.prototype, "particleGlobal", void 0);
         __decorate([
             feng3d.watch("numParticlesChanged"),
-            feng3d.oav({ componentParam: { tooltip: "粒子系统拥有粒子的数量" } }),
+            feng3d.oav({ tooltip: "粒子系统拥有粒子的数量" }),
             feng3d.serialize
         ], ParticleSystem.prototype, "maxParticles", void 0);
         __decorate([
@@ -23746,7 +23761,7 @@ var feng3d;
             feng3d.oav({ block: "粒子模块", component: "OAVParticleComponentList" })
         ], ParticleSystem.prototype, "components", void 0);
         __decorate([
-            feng3d.oav({ componentParam: { tooltip: "修改粒子组件内数据后，可能需要调用该函数标记变化。" } })
+            feng3d.oav({ tooltip: "修改粒子组件内数据后，可能需要调用该函数标记变化。" })
         ], ParticleSystem.prototype, "invalidate", null);
         return ParticleSystem;
     }(feng3d.Model));
