@@ -1368,7 +1368,6 @@ declare namespace feng3d {
      * {key: OAV组件名称,value：组件参数类定义}
      */
     interface OAVComponentParamMap {
-        [component: string]: OAVComponentParamBase;
     }
     interface OBVComponentParamMap {
         块组件名称: "块组件参数";

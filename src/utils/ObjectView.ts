@@ -487,7 +487,6 @@ namespace feng3d
 	 */
 	export interface OAVComponentParamMap
 	{
-		[component: string]: OAVComponentParamBase;
 	}
 
 	export interface OBVComponentParamMap
