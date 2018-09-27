@@ -33,7 +33,7 @@
         "src/utils/Watcher.ts",
         "src/utils/Serialization.ts",
         "src/utils/ObjectView.ts",
-        "src/utils/ObjectView.Extend.ts",
+        "src/utils/ObjectViewDefinitions.ts",
         "src/utils/Ticker.ts",
         "src/utils/DataTransform.ts",
         "src/utils/ClassUtils.ts",

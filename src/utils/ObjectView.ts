@@ -70,11 +70,13 @@ namespace feng3d
 	// 	}
 	// }
 
+	export type OAVComponentParams = Partial<OAVComponentParamMap[keyof OAVComponentParamMap]> & { block?: string, tooltip?: string };
+
 	/**
 	 * objectview属性装饰器
 	 * @param param 参数
 	 */
-	export function oav<K extends keyof OAVComponentParamMap>(param?: { block?: string, tooltip?: string, component?: K; componentParam?: OAVComponentParamMap[K]; })
+	export function oav(param?: OAVComponentParams)
 	{
 		return (target: any, propertyKey: string) =>
 		{
@@ -207,7 +209,7 @@ namespace feng3d
 			var view = new cls(blockViewInfo);
 			return view;
 		}
-		addOAV<K extends keyof OAVComponentParamMap>(target: any, propertyKey: string, param?: { block?: string, component?: K; tooltip?: string, componentParam?: OAVComponentParamMap[K]; })
+		addOAV(target: any, propertyKey: string, param?: OAVComponentParams)
 		{
 			if (!Object.getOwnPropertyDescriptor(target, OBJECTVIEW_KEY))
 				target[OBJECTVIEW_KEY] = {};
@@ -471,17 +473,6 @@ namespace feng3d
 	}
 
 	/**
-	 * OAV 组件基本参数
-	 */
-	export interface OAVComponentParamBase
-	{
-		/**
-		 * 标签
-		 */
-		label?: string;
-	}
-
-	/**
 	 * OAV 组件参数映射
 	 * {key: OAV组件名称,value：组件参数类定义}
 	 */
@@ -733,7 +724,7 @@ namespace feng3d
 		/**
 		 * 组件参数
 		 */
-		componentParam?: OAVComponentParamBase;
+		componentParam?: Object;
 
 		/**
 		 * 属性所属对象

@@ -1265,16 +1265,15 @@ declare namespace feng3d {
         component?: K;
         componentParam?: OVComponentParamMap[K];
     }): (constructor: Function) => void;
+    type OAVComponentParams = Partial<OAVComponentParamMap[keyof OAVComponentParamMap]> & {
+        block?: string;
+        tooltip?: string;
+    };
     /**
      * objectview属性装饰器
      * @param param 参数
      */
-    function oav<K extends keyof OAVComponentParamMap>(param?: {
-        block?: string;
-        tooltip?: string;
-        component?: K;
-        componentParam?: OAVComponentParamMap[K];
-    }): (target: any, propertyKey: string) => void;
+    function oav(param?: OAVComponentParams): (target: any, propertyKey: string) => void;
     /**
      * 对象界面
      */
@@ -1339,12 +1338,7 @@ declare namespace feng3d {
          * @memberOf ObjectView
          */
         getBlockView(blockViewInfo: BlockViewInfo): IObjectBlockView;
-        addOAV<K extends keyof OAVComponentParamMap>(target: any, propertyKey: string, param?: {
-            block?: string;
-            component?: K;
-            tooltip?: string;
-            componentParam?: OAVComponentParamMap[K];
-        }): void;
+        addOAV(target: any, propertyKey: string, param?: OAVComponentParams): void;
         /**
          * 获取对象信息
          * @param object				对象
@@ -1353,15 +1347,6 @@ declare namespace feng3d {
          * @return
          */
         getObjectInfo(object: Object, autocreate?: boolean, excludeAttrs?: string[]): ObjectViewInfo;
-    }
-    /**
-     * OAV 组件基本参数
-     */
-    interface OAVComponentParamBase {
-        /**
-         * 标签
-         */
-        label?: string;
     }
     /**
      * OAV 组件参数映射
@@ -1566,7 +1551,7 @@ declare namespace feng3d {
         /**
          * 组件参数
          */
-        componentParam?: OAVComponentParamBase;
+        componentParam?: Object;
         /**
          * 属性所属对象
          */
@@ -1629,33 +1614,87 @@ declare namespace feng3d {
         OAVArray: OAVArrayParam;
         OAVPick: OAVPickParam;
         OAVEnum: OAVEnumParam;
+        OAVCubeMap: {
+            component: "OAVCubeMap";
+            componentParam: Object;
+        };
+        OAVImage: {
+            component: "OAVImage";
+            componentParam: Object;
+        };
+        OAVObjectView: {
+            component: "OAVObjectView";
+            componentParam: Object;
+        };
+        OAVParticleComponentList: {
+            component: "OAVParticleComponentList";
+            componentParam: Object;
+        };
+        OAVComponentList: {
+            component: "OAVComponentList";
+            componentParam: Object;
+        };
+        OAVGameObjectName: {
+            component: "OAVGameObjectName";
+            componentParam: Object;
+        };
+        OAVMaterialName: {
+            component: "OAVMaterialName";
+            componentParam: Object;
+        };
     }
     /**
      * OAVDefault 组件参数
      */
-    interface OAVDefaultParam extends OAVComponentParamBase {
-        /**
-         * 拾取参数
-         */
-        dragparam?: {
+    interface OAVDefaultParam {
+        component: "OAVDefault";
+        componentParam: {
             /**
-             * 可接受数据类型
+             * 拾取参数
              */
-            accepttype: string;
-            /**
-             * 提供数据类型
-             */
-            datatype?: string;
+            dragparam?: {
+                /**
+                 * 可接受数据类型
+                 */
+                accepttype: string;
+                /**
+                 * 提供数据类型
+                 */
+                datatype?: string;
+            };
         };
     }
     /**
      * OAVArray 组件参数
      */
-    interface OAVArrayParam extends OAVComponentParamBase {
-        /**
-         * 拾取参数
-         */
-        dragparam?: {
+    interface OAVArrayParam {
+        component: "OAVArray";
+        componentParam: {
+            /**
+             * 拾取参数
+             */
+            dragparam?: {
+                /**
+                 * 可接受数据类型
+                 */
+                accepttype: string;
+                /**
+                 * 提供数据类型
+                 */
+                datatype?: string;
+            };
+            /**
+             * 添加item时默认数据，赋值 ()=>any
+             */
+            defaultItem: any;
+        };
+    }
+    /**
+     * OAVPick 组件参数
+     */
+    interface OAVPickParam {
+        component: "OAVPick";
+        componentParam: {
             /**
              * 可接受数据类型
              */
@@ -1665,32 +1704,18 @@ declare namespace feng3d {
              */
             datatype?: string;
         };
-        /**
-         * 添加item时默认数据，赋值 ()=>any
-         */
-        defaultItem: any;
-    }
-    /**
-     * OAVPick 组件参数
-     */
-    interface OAVPickParam extends OAVComponentParamBase {
-        /**
-         * 可接受数据类型
-         */
-        accepttype: string;
-        /**
-         * 提供数据类型
-         */
-        datatype?: string;
     }
     /**
      * OAVEnum 组件参数
      */
-    interface OAVEnumParam extends OAVComponentParamBase {
-        /**
-         * 枚举类型
-         */
-        enumClass: any;
+    interface OAVEnumParam {
+        component: "OAVEnum";
+        componentParam: {
+            /**
+             * 枚举类型
+             */
+            enumClass: any;
+        };
     }
 }
 declare namespace feng3d {

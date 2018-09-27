@@ -2984,24 +2984,6 @@ var feng3d;
         };
     }
     feng3d.ov = ov;
-    // /**
-    //  * objectview类装饰器
-    //  */
-    // export function obv<K extends keyof OBVComponentParam>(param: { name: string; component?: K; componentParam?: OBVComponentParam[K]; })
-    // {
-    // 	return (constructor: Function) =>
-    // 	{
-    // 		if (!Object.getOwnPropertyDescriptor(constructor["prototype"], OBJECTVIEW_KEY))
-    // 			constructor["prototype"][OBJECTVIEW_KEY] = {};
-    // 		var objectview: ClassDefinition = constructor["prototype"][OBJECTVIEW_KEY];
-    // 		var blockDefinitionVec: BlockDefinition[] = objectview.blockDefinitionVec = objectview.blockDefinitionVec || [];
-    // 		blockDefinitionVec.push({
-    // 			name: param.name,
-    // 			component: param.component,
-    // 			componentParam: param.componentParam,
-    // 		});
-    // 	}
-    // }
     /**
      * objectview属性装饰器
      * @param param 参数
