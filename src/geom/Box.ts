@@ -273,6 +273,7 @@ namespace feng3d
             this.max.clamp(box.min, box.max);
             return this;
         }
+
         /**
          * 与盒子相交
          * @param box 盒子
@@ -289,7 +290,8 @@ namespace feng3d
         intersects(box: Box)
         {
             var b = this.intersectionTo(box);
-            return b.getSize().length > 0;
+            var c = b.getCenter();
+            return this.containsPoint(c) && box.containsPoint(c);
         }
 
         /**

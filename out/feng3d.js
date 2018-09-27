@@ -9754,7 +9754,8 @@ var feng3d;
          */
         Box.prototype.intersects = function (box) {
             var b = this.intersectionTo(box);
-            return b.getSize().length > 0;
+            var c = b.getCenter();
+            return this.containsPoint(c) && box.containsPoint(c);
         };
         /**
          * 与射线相交
