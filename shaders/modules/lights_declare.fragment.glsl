@@ -56,7 +56,7 @@
 
 //卡通
 #ifdef IS_CARTOON
-    #include<cartoon.fragment>
+    #include<cartoon_declare.fragment>
 #endif
 
 #include<shadowmap_declare.fragment>

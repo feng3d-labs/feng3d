@@ -30,13 +30,13 @@ uniform sampler2D s_ambient;
 
 #include<packing_declare>
 
-#include<terrain.fragment>
+#include<terrain_declare.fragment>
 
-#include<lightShading.fragment>
+#include<lights_declare.fragment>
 
 #include<fog_declare.fragment>
 
-#include<envmap.fragment>
+#include<envmap_declare.fragment>
 
 void main()
 {

@@ -29,11 +29,11 @@ uniform vec4 u_ambient;
 uniform sampler2D s_ambient;
 
 #include<packing_declare>
-#include<lightShading.fragment>
+#include<lights_declare.fragment>
 
 #include<fog_declare.fragment>
 
-#include<envmap.fragment>
+#include<envmap_declare.fragment>
 
 #ifdef HAS_PARTICLE_ANIMATOR
     #include<particle_declare.fragment>
