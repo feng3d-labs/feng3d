@@ -18186,8 +18186,6 @@ var feng3d;
          * 更新几何体
          */
         SegmentGeometry.prototype.buildGeometry = function () {
-            var segmentPositionStep = 6;
-            var segmentColorStep = 8;
             var numSegments = this.segments.length;
             var indices = [];
             var positionData = [];

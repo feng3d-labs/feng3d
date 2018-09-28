@@ -29,8 +29,6 @@ namespace feng3d
          */
         protected buildGeometry()
         {
-            var segmentPositionStep = 6;
-            var segmentColorStep = 8;
             var numSegments = this.segments.length;
             var indices: number[] = [];
             var positionData: number[] = [];
