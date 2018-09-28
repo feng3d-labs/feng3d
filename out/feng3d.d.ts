@@ -2891,6 +2891,28 @@ declare namespace feng3d {
          */
         lerpNumberTo(v: Vector2, alpha: number, vout?: Vector2): Vector2;
         /**
+         * 夹紧？
+         * @param min 最小值
+         * @param max 最大值
+         */
+        clamp(min: Vector2, max: Vector2): this;
+        /**
+         * 夹紧？
+         * @param min 最小值
+         * @param max 最大值
+         */
+        clampTo(min: Vector2, max: Vector2, vout?: Vector2): Vector2;
+        /**
+         * 取最小元素
+         * @param v 向量
+         */
+        min(v: Vector2): this;
+        /**
+         * 取最大元素
+         * @param v 向量
+         */
+        max(v: Vector2): this;
+        /**
          * 返回包含 x 和 y 坐标的值的字符串。该字符串的格式为 "(x=x, y=y)"，因此为点 23,17 调用 toString() 方法将返回 "(x=23, y=17)"。
          * @returns 坐标的字符串表示形式。
          */
@@ -3165,13 +3187,13 @@ declare namespace feng3d {
          */
         greaterequal(p: Vector3): boolean;
         /**
-         * 加紧？
+         * 夹紧？
          * @param min 最小值
          * @param max 最大值
          */
         clamp(min: Vector3, max: Vector3): this;
         /**
-         * 加紧？
+         * 夹紧？
          * @param min 最小值
          * @param max 最大值
          */
@@ -3456,7 +3478,6 @@ declare namespace feng3d {
      * Rectangle 类的 x、y、width 和 height 属性相互独立；更改一个属性的值不会影响其他属性。
      * 但是，right 和 bottom 属性与这四个属性是整体相关的。例如，如果更改 right 属性的值，则 width
      * 属性的值将发生变化；如果更改 bottom 属性，则 height 属性的值将发生变化。
-
      */
     class Rectangle {
         /**
@@ -3616,6 +3637,12 @@ declare namespace feng3d {
          * @returns 充当两个矩形的联合的新 Rectangle 对象。
          */
         union(toUnion: Rectangle): Rectangle;
+        /**
+         *
+         * @param point 点
+         * @param pout 输出点
+         */
+        clampPoint(point: Vector2, pout?: Vector2): Vector2;
         /**
          * The size of the Rectangle object, expressed as a Point object with the
          * values of the <code>width</code> and <code>height</code> properties.
@@ -9425,6 +9452,12 @@ declare namespace feng3d {
          * 绘制场景
          */
         render(): void;
+        /**
+         * 获取屏幕区域内所有游戏对象
+         * @param start 起点
+         * @param end 终点
+         */
+        getObjectsInGlobalArea(start: feng3d.Vector2, end: feng3d.Vector2): GameObject[];
         protected selectedObject: GameObject;
     }
 }

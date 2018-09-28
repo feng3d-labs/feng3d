@@ -525,7 +525,7 @@ namespace feng3d
         }
 
         /**
-         * 加紧？
+         * 夹紧？
          * @param min 最小值
          * @param max 最大值
          */
@@ -538,7 +538,7 @@ namespace feng3d
         }
 
         /**
-         * 加紧？
+         * 夹紧？
          * @param min 最小值
          * @param max 最大值
          */

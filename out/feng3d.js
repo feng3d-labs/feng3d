@@ -5574,6 +5574,43 @@ var feng3d;
             return vout.copy(this).lerpNumber(v, alpha);
         };
         /**
+         * 夹紧？
+         * @param min 最小值
+         * @param max 最大值
+         */
+        Vector2.prototype.clamp = function (min, max) {
+            this.x = feng3d.FMath.clamp(this.x, min.x, max.x);
+            this.y = feng3d.FMath.clamp(this.y, min.y, max.y);
+            return this;
+        };
+        /**
+         * 夹紧？
+         * @param min 最小值
+         * @param max 最大值
+         */
+        Vector2.prototype.clampTo = function (min, max, vout) {
+            if (vout === void 0) { vout = new Vector2(); }
+            return vout.copy(this).clamp(min, max);
+        };
+        /**
+         * 取最小元素
+         * @param v 向量
+         */
+        Vector2.prototype.min = function (v) {
+            this.x = Math.min(this.x, v.x);
+            this.y = Math.min(this.y, v.y);
+            return this;
+        };
+        /**
+         * 取最大元素
+         * @param v 向量
+         */
+        Vector2.prototype.max = function (v) {
+            this.x = Math.max(this.x, v.x);
+            this.y = Math.max(this.y, v.y);
+            return this;
+        };
+        /**
          * 返回包含 x 和 y 坐标的值的字符串。该字符串的格式为 "(x=x, y=y)"，因此为点 23,17 调用 toString() 方法将返回 "(x=23, y=17)"。
          * @returns 坐标的字符串表示形式。
          */
@@ -6037,7 +6074,7 @@ var feng3d;
             return this.x >= p.x && this.y >= p.y && this.z >= p.z;
         };
         /**
-         * 加紧？
+         * 夹紧？
          * @param min 最小值
          * @param max 最大值
          */
@@ -6048,7 +6085,7 @@ var feng3d;
             return this;
         };
         /**
-         * 加紧？
+         * 夹紧？
          * @param min 最小值
          * @param max 最大值
          */
@@ -6580,7 +6617,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var rectanglePool = [];
     /**
      * 矩形
      *
@@ -6588,7 +6624,6 @@ var feng3d;
      * Rectangle 类的 x、y、width 和 height 属性相互独立；更改一个属性的值不会影响其他属性。
      * 但是，right 和 bottom 属性与这四个属性是整体相关的。例如，如果更改 right 属性的值，则 width
      * 属性的值将发生变化；如果更改 bottom 属性，则 height 属性的值将发生变化。
-
      */
     var Rectangle = /** @class */ (function () {
         /**
@@ -6899,6 +6934,15 @@ var feng3d;
             var t = Math.min(result.y, toUnion.y);
             result.init(l, t, Math.max(result.right, toUnion.right) - l, Math.max(result.bottom, toUnion.bottom) - t);
             return result;
+        };
+        /**
+         *
+         * @param point 点
+         * @param pout 输出点
+         */
+        Rectangle.prototype.clampPoint = function (point, pout) {
+            if (pout === void 0) { pout = new feng3d.Vector2(); }
+            return pout.copy(point).clamp(this.topLeft, this.bottomRight);
         };
         Object.defineProperty(Rectangle.prototype, "size", {
             /**
@@ -16387,6 +16431,37 @@ var feng3d;
             feng3d.forwardRenderer.draw(this.gl, this.scene, this.camera);
             feng3d.outlineRenderer.draw(this.gl, this.scene, this.camera);
             feng3d.wireframeRenderer.draw(this.gl, this.scene, this.camera);
+        };
+        /**
+         * 获取屏幕区域内所有游戏对象
+         * @param start 起点
+         * @param end 终点
+         */
+        Engine.prototype.getObjectsInGlobalArea = function (start, end) {
+            var _this = this;
+            var s = this.viewRect.clampPoint(start);
+            var e = this.viewRect.clampPoint(end);
+            s.sub(this.viewRect.topLeft);
+            e.sub(this.viewRect.topLeft);
+            var min = s.clone().min(e);
+            var max = s.clone().max(e);
+            var rect = new feng3d.Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
+            //
+            var gs = this.scene.getComponentsInChildren(feng3d.Transform).filter(function (t) {
+                if (t == _this.scene.transform)
+                    return false;
+                var m = t.getComponent(feng3d.Model);
+                if (m) {
+                    var include = m.selfWorldBounds.toPoints().every(function (pos) {
+                        var p = _this.camera.project(pos);
+                        return rect.contains(p.x, p.y);
+                    });
+                    return include;
+                }
+                var p = _this.camera.project(t.position);
+                return rect.contains(p.x, p.y);
+            }).map(function (t) { return t.gameObject; });
+            return gs;
         };
         return Engine;
     }());

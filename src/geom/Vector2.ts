@@ -258,6 +258,51 @@ namespace feng3d
             return vout.copy(this).lerpNumber(v, alpha);
         }
 
+
+        /**
+         * 夹紧？
+         * @param min 最小值
+         * @param max 最大值
+         */
+        clamp(min: Vector2, max: Vector2)
+        {
+            this.x = FMath.clamp(this.x, min.x, max.x);
+            this.y = FMath.clamp(this.y, min.y, max.y);
+            return this;
+        }
+
+        /**
+         * 夹紧？
+         * @param min 最小值
+         * @param max 最大值
+         */
+        clampTo(min: Vector2, max: Vector2, vout = new Vector2())
+        {
+            return vout.copy(this).clamp(min, max);
+        }
+
+        /**
+         * 取最小元素
+         * @param v 向量
+         */
+        min(v: Vector2)
+        {
+            this.x = Math.min(this.x, v.x);
+            this.y = Math.min(this.y, v.y);
+            return this;
+        }
+
+        /**
+         * 取最大元素
+         * @param v 向量
+         */
+        max(v: Vector2)
+        {
+            this.x = Math.max(this.x, v.x);
+            this.y = Math.max(this.y, v.y);
+            return this;
+        }
+
         /**
          * 返回包含 x 和 y 坐标的值的字符串。该字符串的格式为 "(x=x, y=y)"，因此为点 23,17 调用 toString() 方法将返回 "(x=23, y=17)"。
          * @returns 坐标的字符串表示形式。

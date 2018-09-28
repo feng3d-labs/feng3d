@@ -174,6 +174,40 @@ namespace feng3d
             wireframeRenderer.draw(this.gl, this.scene, this.camera);
         }
 
+        /**
+         * 获取屏幕区域内所有游戏对象
+         * @param start 起点
+         * @param end 终点
+         */
+        getObjectsInGlobalArea(start: feng3d.Vector2, end: feng3d.Vector2)
+        {
+            var s = this.viewRect.clampPoint(start);
+            var e = this.viewRect.clampPoint(end);
+            s.sub(this.viewRect.topLeft);
+            e.sub(this.viewRect.topLeft);
+            var min = s.clone().min(e);
+            var max = s.clone().max(e);
+            var rect = new Rectangle(min.x, min.y, max.x - min.x, max.y - min.y);
+            //
+            var gs = this.scene.getComponentsInChildren(Transform).filter(t =>
+            {
+                if (t == this.scene.transform) return false;
+                var m = t.getComponent(Model);
+                if (m)
+                {
+                    var include = m.selfWorldBounds.toPoints().every(pos =>
+                    {
+                        var p = this.camera.project(pos);
+                        return rect.contains(p.x, p.y);
+                    })
+                    return include;
+                }
+                var p = this.camera.project(t.position);
+                return rect.contains(p.x, p.y);
+            }).map(t => t.gameObject);
+            return gs;
+        }
+
         protected selectedObject: GameObject;
     }
 }

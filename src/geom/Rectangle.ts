@@ -1,8 +1,6 @@
 namespace feng3d
 {
 
-    let rectanglePool: Rectangle[] = [];
-
     /**
      * 矩形
      * 
@@ -10,7 +8,6 @@ namespace feng3d
      * Rectangle 类的 x、y、width 和 height 属性相互独立；更改一个属性的值不会影响其他属性。
      * 但是，right 和 bottom 属性与这四个属性是整体相关的。例如，如果更改 right 属性的值，则 width
      * 属性的值将发生变化；如果更改 bottom 属性，则 height 属性的值将发生变化。
-
      */
     export class Rectangle
     {
@@ -24,7 +21,6 @@ namespace feng3d
          */
         constructor(x = 0, y = 0, width = 0, height = 0)
         {
-
             this.x = x;
             this.y = y;
             this.width = width;
@@ -228,8 +224,6 @@ namespace feng3d
             }
 
             return i;
-
-
         }
 
         /**
@@ -396,6 +390,16 @@ namespace feng3d
                 Math.max(result.right, toUnion.right) - l,
                 Math.max(result.bottom, toUnion.bottom) - t);
             return result;
+        }
+
+        /**
+         * 
+         * @param point 点
+         * @param pout 输出点
+         */
+        clampPoint(point: Vector2, pout = new Vector2())
+        {
+            return pout.copy(point).clamp(this.topLeft, this.bottomRight);
         }
 
         /**
