@@ -13117,6 +13117,8 @@ declare namespace feng3d {
         createTerrain(name?: string): GameObject;
         createCamera(name?: string): GameObject;
         createPointLight(name?: string): GameObject;
+        createDirectionalLight(name?: string): GameObject;
+        createSpotLight(name?: string): GameObject;
         createParticle(name?: string): GameObject;
         createWater(name?: string): GameObject;
     }

@@ -27713,6 +27713,20 @@ var feng3d;
                 components: [{ __class__: "feng3d.PointLight" },]
             });
         };
+        GameObjectFactory.prototype.createDirectionalLight = function (name) {
+            if (name === void 0) { name = "DirectionalLight"; }
+            return new feng3d.GameObject().value({
+                name: name,
+                components: [{ __class__: "feng3d.DirectionalLight" },]
+            });
+        };
+        GameObjectFactory.prototype.createSpotLight = function (name) {
+            if (name === void 0) { name = "SpotLight"; }
+            return new feng3d.GameObject().value({
+                name: name,
+                components: [{ __class__: "feng3d.SpotLight" },]
+            });
+        };
         GameObjectFactory.prototype.createParticle = function (name) {
             if (name === void 0) { name = "Particle"; }
             return new feng3d.GameObject().value({

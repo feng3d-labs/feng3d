@@ -89,6 +89,22 @@ namespace feng3d
             });
         }
 
+        createDirectionalLight(name = "DirectionalLight")
+        {
+            return new GameObject().value({
+                name: name,
+                components: [{ __class__: "feng3d.DirectionalLight" },]
+            });
+        }
+
+        createSpotLight(name = "SpotLight")
+        {
+            return new GameObject().value({
+                name: name,
+                components: [{ __class__: "feng3d.SpotLight" },]
+            });
+        }
+
         createParticle(name = "Particle")
         {
             return new GameObject().value({
