@@ -14,6 +14,7 @@ namespace feng3d
 		OAVComponentList: { component: "OAVComponentList", componentParam: Object };
 		OAVGameObjectName: { component: "OAVGameObjectName", componentParam: Object };
 		OAVMaterialName: { component: "OAVMaterialName", componentParam: Object };
+		OAVMultiText: { component: "OAVMultiText", componentParam: Object };
 	}
 
 	/**

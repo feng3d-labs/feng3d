@@ -1642,6 +1642,10 @@ declare namespace feng3d {
             component: "OAVMaterialName";
             componentParam: Object;
         };
+        OAVMultiText: {
+            component: "OAVMultiText";
+            componentParam: Object;
+        };
     }
     /**
      * OAVDefault 组件参数
@@ -9844,6 +9848,11 @@ declare namespace feng3d {
          * 点几何体
          */
         static point: PointGeometry;
+        name: string;
+        /**
+         * 几何体信息
+         */
+        readonly geometryInfo: string;
         /**
          * 索引数据
          */
@@ -9901,6 +9910,10 @@ declare namespace feng3d {
          * 顶点数量
          */
         readonly numVertex: number;
+        /**
+         * 三角形数量
+         */
+        readonly numTriangles: number;
         /**
          * 添加几何体
          * @param geometry          被添加的几何体

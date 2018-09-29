@@ -17320,6 +17320,22 @@ var feng3d;
             _this._invalids = { index: true, a_uv: true, a_normal: true, a_tangent: true };
             return _this;
         }
+        Object.defineProperty(Geometry.prototype, "geometryInfo", {
+            /**
+             * 几何体信息
+             */
+            get: function () {
+                var str = [
+                    "Geometry Info",
+                    "  Vertices    " + this.numVertex,
+                    "  Triangles    " + this.numTriangles,
+                    "  Attributes    " + Object.keys(this._attributes).join(","),
+                ].join("\n");
+                return str;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Geometry.prototype, "indices", {
             /**
              * 索引数据
@@ -17487,6 +17503,16 @@ var feng3d;
                     break;
                 }
                 return numVertex;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Geometry.prototype, "numTriangles", {
+            /**
+             * 三角形数量
+             */
+            get: function () {
+                return this.indices.length / 3;
             },
             enumerable: true,
             configurable: true
@@ -17885,7 +17911,10 @@ var feng3d;
         };
         __decorate([
             feng3d.oav()
-        ], Geometry.prototype, "invalidateGeometry", null);
+        ], Geometry.prototype, "name", void 0);
+        __decorate([
+            feng3d.oav({ component: "OAVMultiText" })
+        ], Geometry.prototype, "geometryInfo", null);
         return Geometry;
     }(feng3d.Feng3dAssets));
     feng3d.Geometry = Geometry;

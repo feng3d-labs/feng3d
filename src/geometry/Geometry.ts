@@ -67,6 +67,24 @@ namespace feng3d
          */
         static point: PointGeometry
 
+        @oav()
+        name: string;
+
+        /**
+         * 几何体信息
+         */
+        @oav({ component: "OAVMultiText" })
+        get geometryInfo()
+        {
+            var str = [
+                `Geometry Info`,
+                `  Vertices    ${this.numVertex}`,
+                `  Triangles    ${this.numTriangles}`,
+                `  Attributes    ${Object.keys(this._attributes).join(",")}`,
+            ].join("\n");
+            return str;
+        }
+
         /**
          * 索引数据
          */
@@ -168,7 +186,6 @@ namespace feng3d
         /**
          * 几何体变脏
          */
-        @oav()
         invalidateGeometry()
         {
             this._geometryInvalid = true;
@@ -269,6 +286,14 @@ namespace feng3d
                 break;
             }
             return numVertex;
+        }
+
+        /**
+         * 三角形数量
+         */
+        get numTriangles()
+        {
+            return this.indices.length / 3;
         }
 
         /**
