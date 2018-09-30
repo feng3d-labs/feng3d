@@ -20,10 +20,7 @@ varying vec3 v_tangent;
 varying vec3 v_bitangent;
 
 #include<lights_pars_vert>
-
-#ifdef IS_POINTS_MODE
-    uniform float u_PointSize;
-#endif
+#include<pointsize_pars_vert>
 
 void main() 
 {
@@ -45,9 +42,6 @@ void main()
     v_tangent = normalize((u_modelMatrix * vec4(a_tangent, 0.0)).xyz);
     v_bitangent = cross(v_normal, v_tangent);
     
-    lightsVertex(worldPosition);
-
-    #ifdef IS_POINTS_MODE
-        gl_PointSize = u_PointSize;
-    #endif
+    #include<lights_vert>
+    #include<pointsize_vert>
 }
