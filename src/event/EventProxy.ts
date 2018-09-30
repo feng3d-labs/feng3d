@@ -146,7 +146,7 @@ namespace feng3d
                             var position = new feng3d.Vector2(event.clientX, event.clientY);
                             if (position.equals(this.mousedownposition))
                             {
-                                console.log(`由于系统原因，触发mousedown同时触发了mousemove，此处屏蔽mousemove事件派发！`);
+                                // console.log(`由于系统原因，触发mousedown同时触发了mousemove，此处屏蔽mousemove事件派发！`);
                                 return;
                             }
                         }
@@ -174,8 +174,6 @@ namespace feng3d
             event.clientY = this.clientY;
             event.pageX = this.pageX;
             event.pageY = this.pageY;
-
-            console.log(event.type);
 
             this.dispatchEvent(<any>event);
         }

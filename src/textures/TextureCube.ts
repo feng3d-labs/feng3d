@@ -38,10 +38,13 @@ namespace feng3d
 
         protected _textureType = TextureType.TEXTURE_CUBE_MAP;
 
+        private loadingNum = 0;
+
         private urlChanged(property: string, oldValue: string, newValue: string)
         {
             var index = ["positive_x_url", "positive_y_url", "positive_z_url", "negative_x_url", "negative_y_url", "negative_z_url"].indexOf(property);
             assert(index != -1);
+            this.loadingNum++;
             assets.readImage(newValue, (err, img) =>
             {
                 if (err)
@@ -51,8 +54,23 @@ namespace feng3d
                 }
                 else
                     this._pixels[index] = img;
+                this.loadingNum--;
+                if (this.loadingNum == 0)
+                {
+                    this.dispatch("loadCompleted");
+                }
                 this.invalidate();
             });
+        }
+
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        onLoadCompleted(callback: () => void)
+        {
+            if (this.loadingNum == 0) callback();
+            else this.once("loadCompleted", callback);
         }
     }
 }

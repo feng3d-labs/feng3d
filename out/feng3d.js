@@ -1755,7 +1755,7 @@ var feng3d;
                             if (_this.mousedownposition) {
                                 var position = new feng3d.Vector2(event.clientX, event.clientY);
                                 if (position.equals(_this.mousedownposition)) {
-                                    console.log("\u7531\u4E8E\u7CFB\u7EDF\u539F\u56E0\uFF0C\u89E6\u53D1mousedown\u540C\u65F6\u89E6\u53D1\u4E86mousemove\uFF0C\u6B64\u5904\u5C4F\u853Dmousemove\u4E8B\u4EF6\u6D3E\u53D1\uFF01");
+                                    // console.log(`由于系统原因，触发mousedown同时触发了mousemove，此处屏蔽mousemove事件派发！`);
                                     return;
                                 }
                             }
@@ -1777,7 +1777,6 @@ var feng3d;
                 event.clientY = _this.clientY;
                 event.pageX = _this.pageX;
                 event.pageY = _this.pageY;
-                console.log(event.type);
                 _this.dispatchEvent(event);
             };
             _this.target = target;
@@ -20739,12 +20738,14 @@ var feng3d;
             _this.noPixels = [feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white];
             _this._pixels = [null, null, null, null, null, null];
             _this._textureType = feng3d.TextureType.TEXTURE_CUBE_MAP;
+            _this.loadingNum = 0;
             return _this;
         }
         TextureCube.prototype.urlChanged = function (property, oldValue, newValue) {
             var _this = this;
             var index = ["positive_x_url", "positive_y_url", "positive_z_url", "negative_x_url", "negative_y_url", "negative_z_url"].indexOf(property);
             feng3d.assert(index != -1);
+            this.loadingNum++;
             feng3d.assets.readImage(newValue, function (err, img) {
                 if (err) {
                     // error(err);
@@ -20752,8 +20753,22 @@ var feng3d;
                 }
                 else
                     _this._pixels[index] = img;
+                _this.loadingNum--;
+                if (_this.loadingNum == 0) {
+                    _this.dispatch("loadCompleted");
+                }
                 _this.invalidate();
             });
+        };
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        TextureCube.prototype.onLoadCompleted = function (callback) {
+            if (this.loadingNum == 0)
+                callback();
+            else
+                this.once("loadCompleted", callback);
         };
         __decorate([
             feng3d.oav({ component: "OAVCubeMap" }),

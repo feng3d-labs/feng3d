@@ -10925,7 +10925,13 @@ declare namespace feng3d {
         noPixels: ImageDatas[];
         protected _pixels: any[];
         protected _textureType: TextureType;
+        private loadingNum;
         private urlChanged;
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        onLoadCompleted(callback: () => void): void;
     }
 }
 declare namespace feng3d {
