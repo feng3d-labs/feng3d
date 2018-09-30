@@ -34,10 +34,7 @@ uniform sampler2D s_ambient;
 #include<fog_declare.fragment>
 
 #include<envmap_declare.fragment>
-
-#ifdef HAS_PARTICLE_ANIMATOR
-    #include<particle_declare.fragment>
-#endif
+#include<particle_pars_frag>
 
 void main()
 {
@@ -77,9 +74,7 @@ void main()
 
     finalColor = envmapMethod(finalColor);
 
-    #ifdef HAS_PARTICLE_ANIMATOR
-        finalColor = particleAnimation(finalColor);
-    #endif
+    #include<particle_frag>
 
     finalColor = fogMethod(finalColor);
 

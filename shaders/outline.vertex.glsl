@@ -11,13 +11,9 @@ uniform mat4 u_viewProjection;
 uniform float u_scaleByDepth;
 uniform float u_outlineMorphFactor;
 
-#ifdef HAS_SKELETON_ANIMATION
-    #include<skeleton_declare.vertex>
-#endif
+#include<skeleton_pars_vert>
 
-#ifdef HAS_PARTICLE_ANIMATOR
-    #include<particle_declare.vertex>
-#endif
+#include<particle_pars_vert>
 
 uniform float u_outlineSize;
 
@@ -25,13 +21,8 @@ void main() {
 
     vec4 position = vec4(a_position,1.0);
 
-    #ifdef HAS_SKELETON_ANIMATION
-        position = skeletonAnimation(position);
-    #endif
-
-    #ifdef HAS_PARTICLE_ANIMATOR
-        position = particleAnimation(position);
-    #endif
+    #include<skeleton_vert>
+    #include<particle_vert>
     
     vec3 normal = a_normal;
 

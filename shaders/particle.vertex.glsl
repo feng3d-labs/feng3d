@@ -13,17 +13,13 @@ varying vec2 v_uv;
 
 uniform float u_PointSize;
 
-#ifdef HAS_PARTICLE_ANIMATOR
-    #include<particle_declare.vertex>
-#endif
+#include<particle_pars_vert>
 
 void main() 
 {
     vec4 position = vec4(a_position,1.0);
     
-    #ifdef HAS_PARTICLE_ANIMATOR
-        position = particleAnimation(position);
-    #endif
+    #include<particle_vert>
 
     vec3 normal = a_normal;
 

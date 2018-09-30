@@ -7,9 +7,7 @@ uniform float u_alphaThreshold;
 uniform vec4 u_diffuse;
 uniform sampler2D s_diffuse;
 
-#ifdef HAS_PARTICLE_ANIMATOR
-    #include<particle_declare.fragment>
-#endif
+#include<particle_pars_frag>
 
 void main()
 {
@@ -25,9 +23,7 @@ void main()
 
     finalColor = diffuseColor;
 
-    #ifdef HAS_PARTICLE_ANIMATOR
-        finalColor = particleAnimation(finalColor);
-    #endif
+    #include<particle_frag>
 
     gl_FragColor = finalColor;
 }
