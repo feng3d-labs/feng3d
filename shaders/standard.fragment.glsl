@@ -28,12 +28,10 @@ uniform vec4 u_sceneAmbientColor;
 uniform vec4 u_ambient;
 uniform sampler2D s_ambient;
 
-#include<packing_declare>
-#include<lights_declare.fragment>
-
-#include<fog_declare.fragment>
-
-#include<envmap_declare.fragment>
+#include<packing_pars>
+#include<lights_pars_frag>
+#include<fog_pars_frag>
+#include<envmap_pars_frag>
 #include<particle_pars_frag>
 
 void main()
@@ -72,11 +70,10 @@ void main()
         finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);
     #endif
 
-    finalColor = envmapMethod(finalColor);
 
+    #include<envmap_frag>
     #include<particle_frag>
-
-    finalColor = fogMethod(finalColor);
+    #include<fog_frag>
 
     gl_FragColor = finalColor;
 }

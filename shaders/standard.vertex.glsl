@@ -20,8 +20,7 @@ varying vec3 v_bitangent;
 
 #include<skeleton_pars_vert>
 #include<particle_pars_vert>
-
-#include<lights_declare.vertex>
+#include<lights_pars_vert>
 
 #ifdef IS_POINTS_MODE
     uniform float u_PointSize;

@@ -28,15 +28,11 @@ uniform vec4 u_sceneAmbientColor;
 uniform vec4 u_ambient;
 uniform sampler2D s_ambient;
 
-#include<packing_declare>
-
-#include<terrain_declare.fragment>
-
-#include<lights_declare.fragment>
-
-#include<fog_declare.fragment>
-
-#include<envmap_declare.fragment>
+#include<packing_pars>
+#include<terrain_pars_frag>
+#include<lights_pars_frag>
+#include<fog_pars_frag>
+#include<envmap_pars_frag>
 
 void main()
 {
@@ -55,7 +51,7 @@ void main()
         discard;
     }
 
-    diffuseColor = terrainMethod(diffuseColor, v_uv);
+    #include<terrain_frag>
 
     //环境光
     vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;
@@ -76,9 +72,9 @@ void main()
     
     finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);
 
-    finalColor = envmapMethod(finalColor);
-
-    finalColor = fogMethod(finalColor);
+    #include<envmap_frag>
+    #include<fog_frag>
+    #include<fog_frag>
 
     gl_FragColor = finalColor;
 }

@@ -53,16 +53,14 @@
     uniform DirectionalLight u_directionalLights[ NUM_DIRECTIONALLIGHT ];
 #endif
 
-
 //卡通
-#ifdef IS_CARTOON
-    #include<cartoon_declare.fragment>
-#endif
+#include<cartoon_pars_frag>
 
-#include<shadowmap_declare.fragment>
+#include<shadowmap_pars_frag>
 
 //计算光照漫反射系数
-float calculateLightDiffuse(vec3 normal,vec3 lightDir){
+float calculateLightDiffuse(vec3 normal,vec3 lightDir)
+{
     #ifdef IS_CARTOON
         return cartoonLightDiffuse(normal,lightDir);
     #else
@@ -71,8 +69,8 @@ float calculateLightDiffuse(vec3 normal,vec3 lightDir){
 }
 
 //计算光照镜面反射系数
-float calculateLightSpecular(vec3 normal,vec3 lightDir,vec3 viewDir,float glossiness){
-
+float calculateLightSpecular(vec3 normal,vec3 lightDir,vec3 viewDir,float glossiness)
+{
     #ifdef IS_CARTOON
         return cartoonLightSpecular(normal,lightDir,viewDir,glossiness);
     #else
