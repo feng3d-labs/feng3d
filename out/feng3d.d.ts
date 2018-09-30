@@ -2564,49 +2564,49 @@ declare namespace feng3d {
          */
         md5mesh = "md5mesh",
         /**
-         * MD5动画文件
+         * MD5动画
          */
         md5anim = "md5anim",
         /**
-         * 魔兽MDL模型文件
+         * 魔兽MDL模型
          */
         mdl = "mdl",
         /**
          * 纹理
          */
-        texture2d = "texture.json",
+        texture2d = "texture",
         /**
          * 立方体纹理
          */
-        texturecube = "texturecube.json",
+        texturecube = "texturecube",
         /**
          * 材质
          */
-        material = "material.json",
+        material = "material",
         /**
          * 几何体
          */
-        geometry = "geometry.json",
+        geometry = "geometry",
         /**
          * 游戏对象
          */
-        gameobject = "gameobject.json",
+        gameobject = "gameobject",
         /**
-         * 场景文件
+         * 场景
          */
-        scene = "scene.json",
+        scene = "scene",
         /**
-         * 动画文件
+         * 动画
          */
-        anim = "anim.json",
+        anim = "anim",
         /**
-         * 着色器文件
+         * 着色器
          */
-        shader = "shader.ts",
+        shader = "shader",
         /**
-         * 脚本文件
+         * 脚本
          */
-        script = "script.ts"
+        script = "script"
     }
 }
 declare namespace feng3d {

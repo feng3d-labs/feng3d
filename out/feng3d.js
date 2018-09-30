@@ -5095,50 +5095,50 @@ var feng3d;
          */
         AssetExtension["md5mesh"] = "md5mesh";
         /**
-         * MD5动画文件
+         * MD5动画
          */
         AssetExtension["md5anim"] = "md5anim";
         /**
-         * 魔兽MDL模型文件
+         * 魔兽MDL模型
          */
         AssetExtension["mdl"] = "mdl";
         // -- feng3d中的类型
         /**
          * 纹理
          */
-        AssetExtension["texture2d"] = "texture.json";
+        AssetExtension["texture2d"] = "texture";
         /**
          * 立方体纹理
          */
-        AssetExtension["texturecube"] = "texturecube.json";
+        AssetExtension["texturecube"] = "texturecube";
         /**
          * 材质
          */
-        AssetExtension["material"] = "material.json";
+        AssetExtension["material"] = "material";
         /**
          * 几何体
          */
-        AssetExtension["geometry"] = "geometry.json";
+        AssetExtension["geometry"] = "geometry";
         /**
          * 游戏对象
          */
-        AssetExtension["gameobject"] = "gameobject.json";
+        AssetExtension["gameobject"] = "gameobject";
         /**
-         * 场景文件
+         * 场景
          */
-        AssetExtension["scene"] = "scene.json";
+        AssetExtension["scene"] = "scene";
         /**
-         * 动画文件
+         * 动画
          */
-        AssetExtension["anim"] = "anim.json";
+        AssetExtension["anim"] = "anim";
         /**
-         * 着色器文件
+         * 着色器
          */
-        AssetExtension["shader"] = "shader.ts";
+        AssetExtension["shader"] = "shader";
         /**
-         * 脚本文件
+         * 脚本
          */
-        AssetExtension["script"] = "script.ts";
+        AssetExtension["script"] = "script";
     })(AssetExtension = feng3d.AssetExtension || (feng3d.AssetExtension = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
