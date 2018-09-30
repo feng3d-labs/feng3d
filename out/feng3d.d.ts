@@ -961,6 +961,11 @@ declare namespace feng3d {
          */
         off(type?: string, listener?: (event: any) => any, thisObject?: any): void;
         /**
+         * 处理鼠标按下时同时出发 "mousemove" 事件bug
+         */
+        private handleMouseMoveBug;
+        private mousedownposition;
+        /**
          * 键盘按下事件
          */
         private onMouseKey;

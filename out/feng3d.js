@@ -1729,6 +1729,10 @@ var feng3d;
             _this.wheelDelta = 0;
             _this.listentypes = [];
             /**
+             * 处理鼠标按下时同时出发 "mousemove" 事件bug
+             */
+            _this.handleMouseMoveBug = true;
+            /**
              * 键盘按下事件
              */
             _this.onMouseKey = function (event) {
@@ -1742,6 +1746,24 @@ var feng3d;
                 }
                 if (event instanceof MouseEvent) {
                     _this.rightmouse = event.button == 2;
+                    // 处理鼠标按下时同时出发 "mousemove" 事件bug
+                    if (_this.handleMouseMoveBug) {
+                        if (event.type == "mousedown") {
+                            _this.mousedownposition = new feng3d.Vector2(event.clientX, event.clientY);
+                        }
+                        if (event.type == "mousemove") {
+                            if (_this.mousedownposition) {
+                                var position = new feng3d.Vector2(event.clientX, event.clientY);
+                                if (position.equals(_this.mousedownposition)) {
+                                    console.log("\u7531\u4E8E\u7CFB\u7EDF\u539F\u56E0\uFF0C\u89E6\u53D1mousedown\u540C\u65F6\u89E6\u53D1\u4E86mousemove\uFF0C\u6B64\u5904\u5C4F\u853Dmousemove\u4E8B\u4EF6\u6D3E\u53D1\uFF01");
+                                    return;
+                                }
+                            }
+                        }
+                        if (event.type == "mouseup") {
+                            _this.mousedownposition = null;
+                        }
+                    }
                 }
                 if (event instanceof KeyboardEvent) {
                     _this.keyCode = event.keyCode;
@@ -1755,6 +1777,7 @@ var feng3d;
                 event.clientY = _this.clientY;
                 event.pageX = _this.pageX;
                 event.pageY = _this.pageY;
+                console.log(event.type);
                 _this.dispatchEvent(event);
             };
             _this.target = target;
@@ -4273,7 +4296,7 @@ var feng3d;
                     var newdatabase = event.target["result"];
                     databases[newdatabase.name] = newdatabase;
                     request.onsuccess = null;
-                    callback && callback(event);
+                    callback && callback(null);
                 };
                 request.onerror = function (event) {
                     request.onerror = null;

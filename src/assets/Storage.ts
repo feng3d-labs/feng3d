@@ -109,7 +109,7 @@ namespace feng3d
                     var newdatabase: IDBDatabase = event.target["result"];
                     databases[newdatabase.name] = newdatabase;
                     request.onsuccess = null;
-                    callback && callback(event);
+                    callback && callback(null);
                 }
                 request.onerror = function (event)
                 {

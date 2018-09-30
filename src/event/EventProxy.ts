@@ -108,6 +108,11 @@ namespace feng3d
         }
 
         /**
+         * 处理鼠标按下时同时出发 "mousemove" 事件bug
+         */
+        private handleMouseMoveBug = true;
+        private mousedownposition: feng3d.Vector2;
+        /**
 		 * 键盘按下事件
 		 */
         private onMouseKey = (event) =>
@@ -126,6 +131,31 @@ namespace feng3d
             if (event instanceof MouseEvent)
             {
                 this.rightmouse = event.button == 2;
+
+                // 处理鼠标按下时同时出发 "mousemove" 事件bug
+                if (this.handleMouseMoveBug)
+                {
+                    if (event.type == "mousedown")
+                    {
+                        this.mousedownposition = new feng3d.Vector2(event.clientX, event.clientY);
+                    }
+                    if (event.type == "mousemove")
+                    {
+                        if (this.mousedownposition)
+                        {
+                            var position = new feng3d.Vector2(event.clientX, event.clientY);
+                            if (position.equals(this.mousedownposition))
+                            {
+                                console.log(`由于系统原因，触发mousedown同时触发了mousemove，此处屏蔽mousemove事件派发！`);
+                                return;
+                            }
+                        }
+                    }
+                    if (event.type == "mouseup")
+                    {
+                        this.mousedownposition = null;
+                    }
+                }
             }
 
             if (event instanceof KeyboardEvent)
@@ -144,6 +174,8 @@ namespace feng3d
             event.clientY = this.clientY;
             event.pageX = this.pageX;
             event.pageY = this.pageY;
+
+            console.log(event.type);
 
             this.dispatchEvent(<any>event);
         }
