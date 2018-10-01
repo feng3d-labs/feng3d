@@ -10878,7 +10878,7 @@ declare namespace feng3d {
         __class__: "feng3d.UrlImageTexture2D";
         url: string;
         name: string;
-        private image;
+        protected image: HTMLImageElement;
         constructor();
         /**
          * 已加载完成或者加载完成时立即调用

@@ -13,7 +13,7 @@ namespace feng3d
         name: string;
 
         @watch("imageChanged")
-        private image: HTMLImageElement;
+        protected image: HTMLImageElement;
 
         constructor()
         {
@@ -29,7 +29,7 @@ namespace feng3d
          */
         onLoadCompleted(callback: () => void)
         {
-            if (this.url == "" || !this.image) callback();
+            if (this.url == "" || this.image) callback();
             else this.once("loadCompleted", callback);
         }
 

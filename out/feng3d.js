@@ -20652,7 +20652,7 @@ var feng3d;
          * @param callback 完成回调
          */
         UrlImageTexture2D.prototype.onLoadCompleted = function (callback) {
-            if (this.url == "" || !this.image)
+            if (this.url == "" || this.image)
                 callback();
             else
                 this.once("loadCompleted", callback);
