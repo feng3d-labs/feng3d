@@ -2,14 +2,13 @@ precision mediump float;
 
 varying vec2 v_uv;
 varying vec3 v_worldPosition;
-
 uniform vec3 u_cameraPos;
 
 #include<normal_pars_frag>
 #include<diffuse_pars_frag>
 #include<alphatest_pars_frag>
 
-#include<ambient_frag_pars_frag>
+#include<ambient_pars_frag>
 #include<specular_pars_frag>
 #include<lights_pars_frag>
 
