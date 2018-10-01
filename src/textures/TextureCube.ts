@@ -32,6 +32,9 @@ namespace feng3d
         @watch("urlChanged")
         negative_z_url: string;
 
+        @oav()
+        name: string;
+
         noPixels = [ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white];
 
         protected _pixels = [null, null, null, null, null, null];

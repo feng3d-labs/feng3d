@@ -17368,6 +17368,7 @@ var feng3d;
          */
         function Geometry() {
             var _this = _super.call(this) || this;
+            _this.assetType = feng3d.AssetExtension.geometry;
             /**
              * 属性数据列表
              */
@@ -20680,6 +20681,9 @@ var feng3d;
             feng3d.oav({ component: "OAVImage" })
         ], UrlImageTexture2D.prototype, "url", void 0);
         __decorate([
+            feng3d.oav()
+        ], UrlImageTexture2D.prototype, "name", void 0);
+        __decorate([
             feng3d.watch("imageChanged")
         ], UrlImageTexture2D.prototype, "image", void 0);
         return UrlImageTexture2D;
@@ -20837,6 +20841,9 @@ var feng3d;
             feng3d.serialize,
             feng3d.watch("urlChanged")
         ], TextureCube.prototype, "negative_z_url", void 0);
+        __decorate([
+            feng3d.oav()
+        ], TextureCube.prototype, "name", void 0);
         return TextureCube;
     }(feng3d.TextureInfo));
     feng3d.TextureCube = TextureCube;
@@ -24562,6 +24569,9 @@ var feng3d;
             _this.assetType = feng3d.AssetExtension.folder;
             return _this;
         }
+        __decorate([
+            feng3d.oav()
+        ], Feng3dFolder.prototype, "name", void 0);
         return Feng3dFolder;
     }(feng3d.Feng3dAssets));
     feng3d.Feng3dFolder = Feng3dFolder;
@@ -24678,6 +24688,12 @@ var feng3d;
                 callback && callback(err);
             });
         };
+        __decorate([
+            feng3d.oav()
+        ], StringFile.prototype, "name", void 0);
+        __decorate([
+            feng3d.oav()
+        ], StringFile.prototype, "textContent", void 0);
         return StringFile;
     }(feng3d.Feng3dFile));
     feng3d.StringFile = StringFile;

@@ -70,6 +70,8 @@ namespace feng3d
         @oav()
         name: string;
 
+        assetType = AssetExtension.geometry;
+
         /**
          * 几何体信息
          */

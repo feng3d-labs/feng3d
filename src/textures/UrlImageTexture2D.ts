@@ -9,6 +9,9 @@ namespace feng3d
         @oav({ component: "OAVImage" })
         url = "";
 
+        @oav()
+        name: string;
+
         @watch("imageChanged")
         private image: HTMLImageElement;
 

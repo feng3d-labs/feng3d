@@ -5,6 +5,10 @@ namespace feng3d
      */
     export class StringFile extends Feng3dFile
     {
+        @oav()
+        name: string;
+
+        @oav()
         textContent: string;
 
         protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void)

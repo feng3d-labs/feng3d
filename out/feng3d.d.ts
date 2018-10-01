@@ -9879,6 +9879,7 @@ declare namespace feng3d {
          */
         static point: PointGeometry;
         name: string;
+        assetType: AssetExtension;
         /**
          * 几何体信息
          */
@@ -10876,6 +10877,7 @@ declare namespace feng3d {
     class UrlImageTexture2D extends Texture2D {
         __class__: "feng3d.UrlImageTexture2D";
         url: string;
+        name: string;
         private image;
         constructor();
         private imageChanged;
@@ -10926,6 +10928,7 @@ declare namespace feng3d {
         negative_x_url: string;
         negative_y_url: string;
         negative_z_url: string;
+        name: string;
         noPixels: ImageDatas[];
         protected _pixels: any[];
         protected _textureType: TextureType;
@@ -12335,6 +12338,7 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     class Feng3dFolder extends Feng3dAssets {
+        name: string;
         assetType: AssetExtension;
     }
 }
@@ -12398,6 +12402,7 @@ declare namespace feng3d {
      * 字符串文件
      */
     class StringFile extends Feng3dFile {
+        name: string;
         textContent: string;
         protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
         /**
