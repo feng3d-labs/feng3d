@@ -23,6 +23,16 @@ namespace feng3d
             this.urlChanged();
         }
 
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        onLoadCompleted(callback: () => void)
+        {
+            if (this.url == "" || !this.image) callback();
+            else this.once("loadCompleted", callback);
+        }
+
         private imageChanged()
         {
             this._pixels = this.image;
@@ -49,6 +59,7 @@ namespace feng3d
                     } else
                         this.image = img;
                     this.invalidate();
+                    this.dispatch("loadCompleted");
                 }
             });
         }

@@ -20647,6 +20647,16 @@ var feng3d;
             _this.urlChanged();
             return _this;
         }
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        UrlImageTexture2D.prototype.onLoadCompleted = function (callback) {
+            if (this.url == "" || !this.image)
+                callback();
+            else
+                this.once("loadCompleted", callback);
+        };
         UrlImageTexture2D.prototype.imageChanged = function () {
             this._pixels = this.image;
             this.invalidate();
@@ -20668,6 +20678,7 @@ var feng3d;
                     else
                         _this.image = img;
                     _this.invalidate();
+                    _this.dispatch("loadCompleted");
                 }
             });
         };
@@ -20800,10 +20811,10 @@ var feng3d;
                 else
                     _this._pixels[index] = img;
                 _this.loadingNum--;
+                _this.invalidate();
                 if (_this.loadingNum == 0) {
                     _this.dispatch("loadCompleted");
                 }
-                _this.invalidate();
             });
         };
         /**

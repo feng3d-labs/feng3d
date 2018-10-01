@@ -58,11 +58,11 @@ namespace feng3d
                 else
                     this._pixels[index] = img;
                 this.loadingNum--;
+                this.invalidate();
                 if (this.loadingNum == 0)
                 {
                     this.dispatch("loadCompleted");
                 }
-                this.invalidate();
             });
         }
 
