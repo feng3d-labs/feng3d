@@ -28,7 +28,6 @@ uniform vec4 u_sceneAmbientColor;
 uniform vec4 u_ambient;
 uniform sampler2D s_ambient;
 
-#include<packing_pars>
 #include<terrain_pars_frag>
 #include<lights_pars_frag>
 #include<fog_pars_frag>

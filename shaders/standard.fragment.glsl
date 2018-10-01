@@ -5,8 +5,6 @@ varying vec3 v_worldPosition;
 
 uniform mat4 u_cameraMatrix;
 
-#include<packing_pars>
-
 #include<normal_pars_frag>
 #include<diffuse_pars_frag>
 #include<alphatest_pars_frag>

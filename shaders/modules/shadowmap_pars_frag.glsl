@@ -97,6 +97,14 @@
         varying vec4 v_directionalShadowCoord[ NUM_DIRECTIONALLIGHT_CASTSHADOW ];
     #endif
 
+    // @see https://github.com/mrdoob/three.js/blob/dev/src/renderers/shaders/ShaderChunk/packing.glsl
+    const float UnpackDownscale = 255. / 256.; // 0..1 -> fraction (excluding 1)
+    const vec3 PackFactors = vec3( 256. * 256. * 256., 256. * 256.,  256. );
+    const vec4 UnpackFactors = UnpackDownscale / vec4( PackFactors, 1. );
+    float unpackRGBAToDepth( const in vec4 v ) 
+    {
+        return dot( v, UnpackFactors );
+    }
 
     float texture2DCompare( sampler2D depths, vec2 uv, float compare ) 
     {
