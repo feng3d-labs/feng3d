@@ -98,7 +98,7 @@ float computeDistanceLightFalloff(float lightDistance, float range)
 vec3 lightShading(vec3 normal, vec3 diffuseColor, vec3 specularColor, vec3 ambientColor, float glossiness)
 {
     //视线方向
-    vec3 viewDir = normalize(u_cameraMatrix[3].xyz - v_worldPosition);
+    vec3 viewDir = normalize(u_cameraPos - v_worldPosition);
 
     vec3 resultColor = vec3(0.0,0.0,0.0);
     

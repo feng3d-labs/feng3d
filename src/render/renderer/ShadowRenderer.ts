@@ -75,6 +75,7 @@ namespace feng3d
             renderAtomic.uniforms.u_viewProjection = () => shadowCamera.viewProjection;
             renderAtomic.uniforms.u_viewMatrix = () => shadowCamera.transform.worldToLocalMatrix;
             renderAtomic.uniforms.u_cameraMatrix = () => shadowCamera.transform.localToWorldMatrix;
+            renderAtomic.uniforms.u_cameraPos = () => shadowCamera.transform.scenePosition;
             //
             renderAtomic.uniforms.u_lightType = light.lightType;
             renderAtomic.uniforms.u_lightPosition = light.position;
@@ -153,6 +154,7 @@ namespace feng3d
                 renderAtomic.uniforms.u_viewProjection = () => shadowCamera.viewProjection;
                 renderAtomic.uniforms.u_viewMatrix = () => shadowCamera.transform.worldToLocalMatrix;
                 renderAtomic.uniforms.u_cameraMatrix = () => shadowCamera.transform.localToWorldMatrix;
+                renderAtomic.uniforms.u_cameraPos = () => shadowCamera.transform.scenePosition;
                 //
                 renderAtomic.uniforms.u_lightType = light.lightType;
                 renderAtomic.uniforms.u_lightPosition = light.position;
@@ -197,6 +199,7 @@ namespace feng3d
             renderAtomic.uniforms.u_viewProjection = () => shadowCamera.viewProjection;
             renderAtomic.uniforms.u_viewMatrix = () => shadowCamera.transform.worldToLocalMatrix;
             renderAtomic.uniforms.u_cameraMatrix = () => shadowCamera.transform.localToWorldMatrix;
+            renderAtomic.uniforms.u_cameraPos = () => shadowCamera.transform.scenePosition;
             //
             renderAtomic.uniforms.u_lightType = light.lightType;
             renderAtomic.uniforms.u_lightPosition = shadowCamera.transform.scenePosition;

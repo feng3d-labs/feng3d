@@ -31,7 +31,7 @@ float CalcFogFactor(float fogDistance)
 
 vec4 fogMethod(vec4 color)
 {
-    vec3 fogDistance = u_cameraMatrix[3].xyz - v_worldPosition.xyz;
+    vec3 fogDistance = u_cameraPos - v_worldPosition.xyz;
 	float fog = CalcFogFactor(length(fogDistance));
 	color.rgb = fog * color.rgb + (1.0 - fog) * u_fogColor;
     return color;

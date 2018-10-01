@@ -1,6 +1,6 @@
 precision mediump float;  
 
-uniform mat4 u_cameraMatrix;
+uniform vec3 u_cameraPos;
 
 varying vec4 v_mirrorCoord;
 varying vec4 v_worldPosition;
@@ -43,7 +43,7 @@ void main()
 	vec3 surfaceNormal = normalize( noise.xzy * vec3( 1.5, 1.0, 1.5 ) );
 	vec3 diffuseLight = vec3(0.0);
 	vec3 specularLight = vec3(0.0);
-	vec3 worldToEye = u_cameraMatrix[3].xyz-v_worldPosition.xyz;
+	vec3 worldToEye = u_cameraPos-v_worldPosition.xyz;
 	vec3 eyeDirection = normalize( worldToEye );
 	sunLight( surfaceNormal, eyeDirection, 100.0, 2.0, 0.5, diffuseLight, specularLight );
 	float distance = length(worldToEye);

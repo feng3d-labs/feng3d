@@ -7,7 +7,7 @@ varying vec3 v_normal;
 varying vec3 v_tangent;
 varying vec3 v_bitangent;
 
-uniform mat4 u_cameraMatrix;
+uniform vec3 u_cameraPos;
 
 uniform float u_alphaThreshold;
 //漫反射

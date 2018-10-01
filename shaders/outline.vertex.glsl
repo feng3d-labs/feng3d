@@ -6,7 +6,7 @@ attribute vec3 a_normal;
 
 uniform mat4 u_modelMatrix;
 uniform mat4 u_ITModelMatrix;
-uniform mat4 u_cameraMatrix;
+uniform vec3 u_cameraPos;
 uniform mat4 u_viewProjection;
 uniform float u_scaleByDepth;
 uniform float u_outlineMorphFactor;
@@ -31,7 +31,7 @@ void main() {
     //全局法线
     vec3 globalNormal = normalize((u_ITModelMatrix * vec4(normal,0.0)).xyz);
 
-    float depth = distance(worldPosition.xyz , u_cameraMatrix[3].xyz);
+    float depth = distance(worldPosition.xyz , u_cameraPos.xyz);
     
     vec3 offsetDir = mix(globalNormal,normalize(worldPosition.xyz),u_outlineMorphFactor);
     //摄像机远近保持粗细一致

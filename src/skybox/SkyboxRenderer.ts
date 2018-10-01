@@ -80,6 +80,7 @@ namespace feng3d
             this.renderAtomic.uniforms.u_viewProjection = camera.viewProjection;
             this.renderAtomic.uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix
             this.renderAtomic.uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
+            this.renderAtomic.uniforms.u_cameraPos = camera.transform.scenePosition;
             this.renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
 
             gl.renderer.draw(this.renderAtomic);

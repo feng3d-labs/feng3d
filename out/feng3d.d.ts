@@ -7686,6 +7686,10 @@ declare namespace feng3d {
          */
         u_cameraMatrix: Matrix4x4;
         /**
+         * 摄像机位置
+         */
+        u_cameraPos: Vector3;
+        /**
          * 模型-摄像机 矩阵
          */
         u_mvMatrix: Matrix4x4;
