@@ -95,6 +95,7 @@ namespace feng3d
                 }
                 moduleshader = this.uninclude(moduleshader);
                 shaderCode = shaderCode.replace(match[0], moduleshader);
+                includeRegExp.lastIndex = 0;
                 match = includeRegExp.exec(shaderCode);
             }
             return shaderCode;

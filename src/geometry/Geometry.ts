@@ -731,6 +731,8 @@ namespace feng3d
                         attributeRenderData.data = element.data;
                     attributeRenderData.size = element.size;
                     attributeRenderData.divisor = 0;
+                    //
+                    renderAtomic.shaderMacro["HSA_" + vaId] = true;
                 }
             }
 
