@@ -20961,7 +20961,7 @@ var feng3d;
             /**
              * 纹理数据
              */
-            this.s_texture = new feng3d.UrlImageTexture2D();
+            this.s_texture = feng3d.UrlImageTexture2D.default;
         }
         __decorate([
             feng3d.serialize,
@@ -20969,7 +20969,7 @@ var feng3d;
         ], TextureUniforms.prototype, "u_color", void 0);
         __decorate([
             feng3d.oav(),
-            feng3d.serialize
+            feng3d.serializeAssets
         ], TextureUniforms.prototype, "s_texture", void 0);
         return TextureUniforms;
     }());
@@ -22823,12 +22823,12 @@ var feng3d;
             this.u_size = 10.0;
             this.u_distortionScale = 20.0;
             this.u_waterColor = new feng3d.Color3().fromUnit(0x555555);
-            this.s_normalSampler = new feng3d.UrlImageTexture2D();
+            this.s_normalSampler = feng3d.UrlImageTexture2D.default;
             /**
              * 镜面反射贴图
              */
             // s_mirrorSampler = new RenderTargetTexture2D();
-            this.s_mirrorSampler = new feng3d.UrlImageTexture2D();
+            this.s_mirrorSampler = feng3d.UrlImageTexture2D.default;
             this.u_textureMatrix = new feng3d.Matrix4x4();
             this.u_sunColor = new feng3d.Color3().fromUnit(0x7F7F7F);
             this.u_sunDirection = new feng3d.Vector3(0.70707, 0.70707, 0);
@@ -22851,7 +22851,7 @@ var feng3d;
         ], WaterUniforms.prototype, "u_waterColor", void 0);
         __decorate([
             feng3d.oav(),
-            feng3d.serialize,
+            feng3d.serializeAssets,
             feng3d.oav({ tooltip: "水体法线图" })
         ], WaterUniforms.prototype, "s_normalSampler", void 0);
         __decorate([
@@ -23091,36 +23091,27 @@ var feng3d;
         function TerrainUniforms() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.TerrainUniforms";
-            _this.s_splatTexture1 = new feng3d.UrlImageTexture2D().value({
-                generateMipmap: true,
-                minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
-            });
-            _this.s_splatTexture2 = new feng3d.UrlImageTexture2D().value({
-                generateMipmap: true,
-                minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
-            });
-            _this.s_splatTexture3 = new feng3d.UrlImageTexture2D().value({
-                generateMipmap: true,
-                minFilter: feng3d.TextureMinFilter.LINEAR_MIPMAP_LINEAR,
-            });
-            _this.s_blendTexture = new feng3d.UrlImageTexture2D();
+            _this.s_splatTexture1 = feng3d.UrlImageTexture2D.default;
+            _this.s_splatTexture2 = feng3d.UrlImageTexture2D.default;
+            _this.s_splatTexture3 = feng3d.UrlImageTexture2D.default;
+            _this.s_blendTexture = feng3d.UrlImageTexture2D.default;
             _this.u_splatRepeats = new feng3d.Vector4(1, 1, 1, 1);
             return _this;
         }
         __decorate([
-            feng3d.serialize,
+            feng3d.serializeAssets,
             feng3d.oav({ block: "terrain" })
         ], TerrainUniforms.prototype, "s_splatTexture1", void 0);
         __decorate([
-            feng3d.serialize,
+            feng3d.serializeAssets,
             feng3d.oav({ block: "terrain" })
         ], TerrainUniforms.prototype, "s_splatTexture2", void 0);
         __decorate([
-            feng3d.serialize,
+            feng3d.serializeAssets,
             feng3d.oav({ block: "terrain" })
         ], TerrainUniforms.prototype, "s_splatTexture3", void 0);
         __decorate([
-            feng3d.serialize,
+            feng3d.serializeAssets,
             feng3d.oav({ block: "terrain" })
         ], TerrainUniforms.prototype, "s_blendTexture", void 0);
         __decorate([
@@ -23144,8 +23135,8 @@ var feng3d;
          */
         function TerrainMergeMethod() {
             var _this = _super.call(this) || this;
-            _this.splatMergeTexture = new feng3d.UrlImageTexture2D();
-            _this.blendTexture = new feng3d.UrlImageTexture2D();
+            _this.splatMergeTexture = feng3d.UrlImageTexture2D.default;
+            _this.blendTexture = feng3d.UrlImageTexture2D.default;
             _this.splatRepeats = new feng3d.Vector4(1, 1, 1, 1);
             _this.splatMergeTexture.minFilter = feng3d.TextureMinFilter.NEAREST;
             _this.splatMergeTexture.magFilter = feng3d.TextureMagFilter.NEAREST;

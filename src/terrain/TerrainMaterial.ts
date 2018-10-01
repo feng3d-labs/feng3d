@@ -6,30 +6,21 @@ namespace feng3d
     {
         __class__: "feng3d.TerrainUniforms" = "feng3d.TerrainUniforms";
 
-        @serialize
+        @serializeAssets
         @oav({ block: "terrain" })
-        s_splatTexture1 = new UrlImageTexture2D().value({
-            generateMipmap: true,
-            minFilter: TextureMinFilter.LINEAR_MIPMAP_LINEAR,
-        });
+        s_splatTexture1 = UrlImageTexture2D.default;
 
-        @serialize
+        @serializeAssets
         @oav({ block: "terrain" })
-        s_splatTexture2 = new UrlImageTexture2D().value({
-            generateMipmap: true,
-            minFilter: TextureMinFilter.LINEAR_MIPMAP_LINEAR,
-        });
+        s_splatTexture2 = UrlImageTexture2D.default;
 
-        @serialize
+        @serializeAssets
         @oav({ block: "terrain" })
-        s_splatTexture3 = new UrlImageTexture2D().value({
-            generateMipmap: true,
-            minFilter: TextureMinFilter.LINEAR_MIPMAP_LINEAR,
-        });
+        s_splatTexture3 = UrlImageTexture2D.default;
 
-        @serialize
+        @serializeAssets
         @oav({ block: "terrain" })
-        s_blendTexture = new UrlImageTexture2D();
+        s_blendTexture = UrlImageTexture2D.default;
 
         @serialize
         @oav({ block: "terrain" })

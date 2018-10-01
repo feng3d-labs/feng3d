@@ -16,8 +16,8 @@ namespace feng3d
          * 纹理数据
          */
         @oav()
-        @serialize
-        s_texture = new UrlImageTexture2D();
+        @serializeAssets
+        s_texture = UrlImageTexture2D.default;
     }
 
     shaderConfig.shaders["texture"].cls = TextureUniforms;

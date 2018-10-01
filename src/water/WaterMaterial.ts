@@ -30,16 +30,16 @@ namespace feng3d
         u_waterColor = new Color3().fromUnit(0x555555);
 
         @oav()
-        @serialize
+        @serializeAssets
         @oav({ tooltip: "水体法线图" })
-        s_normalSampler = new UrlImageTexture2D();
+        s_normalSampler = UrlImageTexture2D.default;
 
         /**
          * 镜面反射贴图
          */
         @oav()
         // s_mirrorSampler = new RenderTargetTexture2D();
-        s_mirrorSampler = new UrlImageTexture2D();
+        s_mirrorSampler = UrlImageTexture2D.default;
 
         u_textureMatrix = new Matrix4x4();
         u_sunColor = new Color3().fromUnit(0x7F7F7F);
