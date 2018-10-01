@@ -1,1 +1,1 @@
-v_uv = uv;
+v_uv = a_uv;

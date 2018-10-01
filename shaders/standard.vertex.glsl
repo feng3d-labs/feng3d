@@ -1,6 +1,8 @@
 precision mediump float;  
 
-#include<attribute_pars_vert>
+#include<position_pars_vert>
+#include<normal_pars_vert>
+#include<tangent_pars_vert>
 //
 #include<skeleton_pars_vert>
 #include<particle_pars_vert>
@@ -17,7 +19,9 @@ precision mediump float;
 void main()
 {
     // 初始化
-    #include<attribute_vert>
+    #include<position_vert>
+    #include<normal_vert>
+    #include<tangent_vert>
     // 动画
     #include<skeleton_vert>
     #include<particle_vert>

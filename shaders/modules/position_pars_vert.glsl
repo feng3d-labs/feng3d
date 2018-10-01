@@ -1,0 +1,1 @@
+attribute vec3 a_position;
