@@ -99,28 +99,28 @@ float mipmapLevel1(vec2 uv)
     return log2(value);
 }
 
-vec4 terrainTexture2D(sampler2D s_splatMergeTexture,vec2 t_uv,float lod,vec4 offset){
+vec4 terrainTexture2D(sampler2D s_splatMergeTexture, vec2 t_uv, float lod, vec4 offset){
  
     #ifdef LOD_LINEAR
-        vec4 tColor = mix(terrainTexture2DLod(s_splatMergeTexture,t_uv,floor(lod),offset),terrainTexture2DLod(s_splatMergeTexture,t_uv,ceil(lod),offset),fract(lod));
+        vec4 tColor = mix(terrainTexture2DLod(s_splatMergeTexture, t_uv, floor(lod), offset),terrainTexture2DLod(s_splatMergeTexture, t_uv, ceil(lod), offset), fract(lod));
     #else
-        vec4 tColor = terrainTexture2DLod(s_splatMergeTexture,t_uv,ceil(lod),offset);
+        vec4 tColor = terrainTexture2DLod(s_splatMergeTexture, t_uv, ceil(lod), offset);
     #endif
 
     return tColor;
 }
 
-vec4 terrainMethod(vec4 diffuseColor,vec2 v_uv) {
-    
+vec4 terrainMethod(vec4 diffuseColor, vec2 v_uv) 
+{
     float lod = 0.0;
-    vec4 blend = texture2D(s_blendTexture,v_uv);
+    vec4 blend = texture2D(s_blendTexture, v_uv);
     for(int i = 0; i < 3; i++)
     {
         vec2 t_uv = v_uv * u_splatRepeats[i];
         // lod = mipmapLevel(v_uv) + log2(u_tileSize.x * u_splatRepeats[i]);
         lod = mipmapLevel1(v_uv) + log2(u_tileSize.x * u_splatRepeats[i]);
-        lod = clamp(lod,0.0,u_maxLod);
-        vec4 tColor = terrainTexture2D(s_splatMergeTexture,t_uv,lod,u_tileOffset[i]);
+        lod = clamp(lod, 0.0, u_maxLod);
+        vec4 tColor = terrainTexture2D(s_splatMergeTexture, t_uv, lod, u_tileOffset[i]);
         diffuseColor = (tColor - diffuseColor) * blend[i] + diffuseColor;
     }
 

@@ -18,8 +18,8 @@ vec4 packDepthToRGBA( const in float v )
 	return r * PackUpscale;
 }
 
-void main() {
-
+void main() 
+{
     vec3 lightToPosition = (v_worldPosition - u_lightPosition);
     float dp = ( length( lightToPosition ) - u_shadowCameraNear ) / ( u_shadowCameraFar - u_shadowCameraNear ); // need to clamp?
     gl_FragColor = packDepthToRGBA( dp );

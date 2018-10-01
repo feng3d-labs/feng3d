@@ -9,9 +9,9 @@ uniform mat4 u_viewProjection;
 #include<skeleton_pars_vert>
 #include<particle_pars_vert>
 
-void main() {
-
-    vec4 position = vec4(a_position,1.0);
+void main() 
+{
+    vec4 position = vec4(a_position, 1.0);
 
     #include<skeleton_vert>
     #include<particle_vert>

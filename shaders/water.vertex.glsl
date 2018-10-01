@@ -10,7 +10,7 @@ varying vec4 v_worldPosition;
 
 void main() 
 {
-	vec4 position = vec4(a_position,1.0);
+	vec4 position = vec4(a_position, 1.0);
 	//获取全局坐标
     vec4 worldPosition = u_modelMatrix * position;
     //计算投影坐标

@@ -17,7 +17,7 @@ uniform float u_PointSize;
 
 void main() 
 {
-    vec4 position = vec4(a_position,1.0);
+    vec4 position = vec4(a_position, 1.0);
     
     #include<particle_vert>
 

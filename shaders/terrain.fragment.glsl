@@ -19,7 +19,7 @@ uniform vec3 u_cameraPos;
 
 void main()
 {
-    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);
+    vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);
 
     #include<normal_frag>
     #include<diffuse_frag>

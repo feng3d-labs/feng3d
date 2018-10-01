@@ -11,7 +11,7 @@ uniform sampler2D s_diffuse;
 
 void main()
 {
-    vec4 finalColor = vec4(1.0,1.0,1.0,1.0);
+    vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);
 
     //获取漫反射基本颜色
     vec4 diffuseColor = u_diffuse * texture2D(s_diffuse, v_uv);

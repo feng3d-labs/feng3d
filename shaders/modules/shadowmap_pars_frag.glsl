@@ -111,8 +111,8 @@
         return step( compare, unpackRGBAToDepth( texture2D( depths, uv ) ) );
     }
 
-    float texture2DShadowLerp( sampler2D depths, vec2 size, vec2 uv, float compare ) {
-
+    float texture2DShadowLerp( sampler2D depths, vec2 size, vec2 uv, float compare ) 
+    {
         const vec2 offset = vec2( 0.0, 1.0 );
 
         vec2 texelSize = vec2( 1.0 ) / size;
@@ -155,8 +155,8 @@
 
         bool frustumTest = all( frustumTestVec );
 
-        if ( frustumTest ) {
-
+        if ( frustumTest ) 
+        {
             if (shadowType == 2)
             {
                 // PCF
@@ -227,14 +227,12 @@
     // Source and test bed:
     // https://gist.github.com/tschw/da10c43c467ce8afd0c4
 
-    vec2 cubeToUV( vec3 v, float texelSizeY ) {
-
+    vec2 cubeToUV( vec3 v, float texelSizeY ) 
+    {
         // Number of texels to avoid at the edge of each square
-
         vec3 absV = abs( v );
 
         // Intersect unit cube
-
         float scaleToCube = 1.0 / max( absV.x, max( absV.y, absV.z ) );
         absV *= scaleToCube;
 
@@ -249,13 +247,10 @@
         //
         // #X##		dim    := ( 1/4 , 1/2 )
         //  # #		center := ( 1/2 , 1/2 )
-
         vec2 planar;
-
         float almostOne = 1.0 - 1.5 * texelSizeY;
-
-        if ( absV.z >= almostOne ) {
-
+        if ( absV.z >= almostOne ) 
+        {
             if ( v.z > 0.0 )
             {
                 planar.x = (0.5 + v.x * 0.5) * 0.25 + 0.75;
@@ -265,8 +260,8 @@
                 planar.x = (0.5 - v.x * 0.5) * 0.25 + 0.25;
                 planar.y = (0.5 + v.y * 0.5) * 0.5 + 0.5;
             }
-        } else if ( absV.x >= almostOne ) {
-
+        } else if ( absV.x >= almostOne ) 
+        {
             if( v.x > 0.0)
             {
                 planar.x = (0.5 - v.z * 0.5) * 0.25 + 0.5;
@@ -276,8 +271,8 @@
                 planar.x = (0.5 + v.z * 0.5) * 0.25 + 0.0;
                 planar.y = (0.5 + v.y * 0.5) * 0.5 + 0.5;
             }
-        } else if ( absV.y >= almostOne ) {
-
+        } else if ( absV.y >= almostOne ) 
+        {
             if( v.y > 0.0)
             {
                 planar.x = (0.5 - v.x * 0.5) * 0.25 + 0.75;
@@ -291,8 +286,8 @@
         return planar;
     }
 
-    float getPointShadow( sampler2D shadowMap, int shadowType, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec3 lightToPosition, float shadowCameraNear, float shadowCameraFar ) {
-
+    float getPointShadow( sampler2D shadowMap, int shadowType, vec2 shadowMapSize, float shadowBias, float shadowRadius, vec3 lightToPosition, float shadowCameraNear, float shadowCameraFar ) 
+    {
         vec2 texelSize = vec2( 1.0 ) / ( shadowMapSize * vec2( 4.0, 2.0 ) );
 
         // for point lights, the uniform @vShadowCoord is re-purposed to hold
