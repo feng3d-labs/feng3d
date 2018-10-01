@@ -3,29 +3,21 @@ precision mediump float;
 varying vec2 v_uv;
 varying vec3 v_worldPosition;
 
+uniform mat4 u_cameraMatrix;
+
+#include<packing_pars>
+
 #include<normal_pars_frag>
 #include<diffuse_pars_frag>
 #include<alphatest_pars_frag>
 
-
-uniform mat4 u_cameraMatrix;
-
-//镜面反射
-uniform vec3 u_specular;
-uniform float u_glossiness;
-uniform sampler2D s_specular;
-
-uniform vec4 u_sceneAmbientColor;
-
-//环境
-uniform vec4 u_ambient;
-uniform sampler2D s_ambient;
-
-#include<packing_pars>
+#include<ambient_frag_pars_frag>
+#include<specular_pars_frag>
 #include<lights_pars_frag>
-#include<fog_pars_frag>
+
 #include<envmap_pars_frag>
 #include<particle_pars_frag>
+#include<fog_pars_frag>
 
 void main()
 {
@@ -35,25 +27,9 @@ void main()
     #include<diffuse_frag>
     #include<alphatest_frag>
 
-    //环境光
-    vec3 ambientColor = u_ambient.w * u_ambient.xyz * u_sceneAmbientColor.xyz * u_sceneAmbientColor.w;
-    ambientColor = ambientColor * texture2D(s_ambient, v_uv).xyz;
-
-    finalColor = diffuseColor;
-
-    //渲染灯光
-    #if NUM_LIGHT > 0
-        //获取高光值
-        float glossiness = u_glossiness;
-        //获取镜面反射基本颜色
-        vec3 specularColor = u_specular;
-        vec4 specularMapColor = texture2D(s_specular, v_uv);
-        specularColor.xyz = specularMapColor.xyz;
-        glossiness = glossiness * specularMapColor.w;
-        
-        finalColor.xyz = lightShading(normal, diffuseColor.xyz, specularColor, ambientColor, glossiness);
-    #endif
-
+    #include<ambient_frag>
+    #include<specular_frag>
+    #include<lights_frag>
 
     #include<envmap_frag>
     #include<particle_frag>
