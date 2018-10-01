@@ -71,7 +71,7 @@ namespace feng3d
 
             var blenditems = this._blenditems = models.filter((item) =>
             {
-                return item.activeMaterial.renderParams.enableBlend;
+                return item.material.renderParams.enableBlend;
             }).sort((b, a) => a.transform.scenePosition.subTo(camerapos).lengthSquared - b.transform.scenePosition.subTo(camerapos).lengthSquared);
 
             return blenditems;
@@ -90,7 +90,7 @@ namespace feng3d
 
             var unblenditems = this._unblenditems = models.filter((item) =>
             {
-                return !item.activeMaterial.renderParams.enableBlend;
+                return !item.material.renderParams.enableBlend;
             }).sort((a, b) => a.transform.scenePosition.subTo(camerapos).lengthSquared - b.transform.scenePosition.subTo(camerapos).lengthSquared);
 
             return unblenditems;

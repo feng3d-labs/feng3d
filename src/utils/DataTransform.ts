@@ -42,6 +42,7 @@ namespace feng3d
             };
             reader.readAsArrayBuffer(blob);
         }
+
         /**
          * ArrayBuffer to Blob
          */
@@ -50,6 +51,7 @@ namespace feng3d
             var blob = new Blob([arrayBuffer]);       // 注意必须包裹[]
             callback(blob);
         }
+
         /**
          * ArrayBuffer to Uint8
          * Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
@@ -60,6 +62,7 @@ namespace feng3d
             var u8 = new Uint8Array(arrayBuffer);
             callback(u8);
         }
+
         /**
          * Uint8 to ArrayBuffer
          * 我们Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
@@ -69,6 +72,7 @@ namespace feng3d
             var buffer = uint8Array.buffer;
             callback(buffer);
         }
+
         /**
          * Array to ArrayBuffer
          * @param array 例如：[0x15, 0xFF, 0x01, 0x00, 0x34, 0xAB, 0x11];
@@ -79,6 +83,7 @@ namespace feng3d
             var buffer = uint8.buffer;
             callback(buffer);
         }
+
         /**
          * TypeArray to Array
          */
@@ -91,6 +96,7 @@ namespace feng3d
             }
             return arr;
         }
+
         /**
          * canvas转换为dataURL
          */
@@ -106,6 +112,7 @@ namespace feng3d
                 callback(jpg);
             }
         }
+
         /**
          * File、Blob对象转换为dataURL
          * File对象也是一个Blob对象，二者的处理相同。
@@ -119,6 +126,7 @@ namespace feng3d
             };
             a.readAsDataURL(blob);
         }
+
         /**
          * dataURL转换为Blob对象
          */
@@ -133,6 +141,7 @@ namespace feng3d
             var blob = new Blob([u8arr], { type: mime });
             callback(blob);
         }
+
         /**
          * dataURL图片数据转换为HTMLImageElement
          * dataURL图片数据绘制到canvas
@@ -146,6 +155,7 @@ namespace feng3d
                 callback(img);
             });
         }
+
         dataURLToArrayBuffer(dataurl: string, callback: (arraybuffer: ArrayBuffer) => void)
         {
             this.dataURLtoBlob(dataurl, (blob) =>
@@ -153,6 +163,7 @@ namespace feng3d
                 this.blobToArrayBuffer(blob, callback)
             });
         }
+
         arrayBufferToDataURL(arrayBuffer: ArrayBuffer, callback: (dataurl: string) => void)
         {
             this.arrayBufferToBlob(arrayBuffer, (blob) =>
@@ -160,6 +171,7 @@ namespace feng3d
                 this.blobToDataURL(blob, callback);
             });
         }
+
         dataURLToImage(dataurl: string, callback: (img: HTMLImageElement) => void)
         {
             var img = new Image();
@@ -169,6 +181,43 @@ namespace feng3d
             };
             img.src = dataurl;
         }
+
+        imageToDataURL(img: HTMLImageElement, callback: (dataurl: string) => void)
+        {
+            this.imageToCanvas(img, canvas =>
+            {
+                this.canvasToDataURL(canvas, "png", callback);
+            });
+        }
+
+        imageToCanvas(img: HTMLImageElement, callback: (canvas: HTMLCanvasElement) => void)
+        {
+            var canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            var ctxt = canvas.getContext('2d');
+            ctxt.drawImage(img, 0, 0);
+            callback(canvas);
+        }
+
+        imageDataToDataURL(imageData: ImageData, callback: (dataurl: string) => void)
+        {
+            this.imageDataToCanvas(imageData, canvas =>
+            {
+                this.canvasToDataURL(canvas, "png", callback);
+            });
+        }
+
+        imageDataToCanvas(imageData: ImageData, callback: (canvas: HTMLCanvasElement) => void)
+        {
+            var canvas = document.createElement("canvas");
+            canvas.width = imageData.width;
+            canvas.height = imageData.height;
+            var ctxt = canvas.getContext('2d');
+            ctxt.putImageData(imageData, 0, 0);
+            callback(canvas);
+        }
+
         arrayBufferToImage(arrayBuffer: ArrayBuffer, callback: (img: HTMLImageElement) => void)
         {
             this.arrayBufferToDataURL(arrayBuffer, (dataurl) =>
@@ -176,12 +225,14 @@ namespace feng3d
                 this.dataURLToImage(dataurl, callback);
             });
         }
+
         blobToText(blob: Blob, callback: (content: string) => void)
         {
             var a = new FileReader();
             a.onload = function (e) { callback(e.target["result"]); };
             a.readAsText(blob);
         }
+
         stringToArrayBuffer(str: string, callback: (arrayBuffer: ArrayBuffer) => void)
         {
             this.stringToUint8Array(str, (unit8Array) =>
@@ -190,6 +241,7 @@ namespace feng3d
             });
 
         }
+
         arrayBufferToString(arrayBuffer: ArrayBuffer, callback: (content: string) => void)
         {
             this.arrayBufferToBlob(arrayBuffer, (blob) =>
@@ -197,6 +249,7 @@ namespace feng3d
                 this.blobToText(blob, callback);
             });
         }
+
         stringToUint8Array(str: string, callback: (uint8Array: Uint8Array) => void)
         {
             var utf8 = unescape(encodeURIComponent(str));
@@ -206,6 +259,7 @@ namespace feng3d
             }));
             callback(uint8Array);
         }
+
         uint8ArrayToString(arr: Uint8Array, callback: (str: string) => void)
         {
             // or [].slice.apply(arr)

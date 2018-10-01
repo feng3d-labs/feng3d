@@ -3703,6 +3703,34 @@ var feng3d;
             };
             img.src = dataurl;
         };
+        DataTransform.prototype.imageToDataURL = function (img, callback) {
+            var _this = this;
+            this.imageToCanvas(img, function (canvas) {
+                _this.canvasToDataURL(canvas, "png", callback);
+            });
+        };
+        DataTransform.prototype.imageToCanvas = function (img, callback) {
+            var canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            var ctxt = canvas.getContext('2d');
+            ctxt.drawImage(img, 0, 0);
+            callback(canvas);
+        };
+        DataTransform.prototype.imageDataToDataURL = function (imageData, callback) {
+            var _this = this;
+            this.imageDataToCanvas(imageData, function (canvas) {
+                _this.canvasToDataURL(canvas, "png", callback);
+            });
+        };
+        DataTransform.prototype.imageDataToCanvas = function (imageData, callback) {
+            var canvas = document.createElement("canvas");
+            canvas.width = imageData.width;
+            canvas.height = imageData.height;
+            var ctxt = canvas.getContext('2d');
+            ctxt.putImageData(imageData, 0, 0);
+            callback(canvas);
+        };
         DataTransform.prototype.arrayBufferToImage = function (arrayBuffer, callback) {
             var _this = this;
             this.arrayBufferToDataURL(arrayBuffer, function (dataurl) {
@@ -16671,6 +16699,14 @@ var feng3d;
         function Model() {
             var _this = _super.call(this) || this;
             /**
+             * 几何体
+             */
+            _this.geometry = feng3d.Geometry.cube;
+            /**
+             * 材质
+             */
+            _this.material = feng3d.Material.default;
+            /**
              * 是否投射阴影
              */
             _this.castShadows = true;
@@ -16678,26 +16714,11 @@ var feng3d;
              * 是否接受阴影
              */
             _this.receiveShadows = true;
-            /**
-             * 启用的几何体
-             */
-            _this._activeGeometry = feng3d.Geometry.cube;
-            _this._activeMaterial = feng3d.Material.default;
             _this._lightPicker = new feng3d.LightPicker(_this);
             return _this;
         }
         Object.defineProperty(Model.prototype, "single", {
             get: function () { return true; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Model.prototype, "activeMaterial", {
-            /**
-             * 启用的材质
-             */
-            get: function () {
-                return this._activeMaterial;
-            },
             enumerable: true,
             configurable: true
         });
@@ -16736,8 +16757,8 @@ var feng3d;
             renderAtomic.uniforms.u_mvMatrix = function () { return feng3d.lazy.getvalue(renderAtomic.uniforms.u_modelMatrix).clone().append(feng3d.lazy.getvalue(renderAtomic.uniforms.u_viewMatrix)); };
             renderAtomic.uniforms.u_ITMVMatrix = function () { return feng3d.lazy.getvalue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose(); };
             //
-            this._activeGeometry.beforeRender(renderAtomic);
-            this._activeMaterial.beforeRender(renderAtomic);
+            this.geometry.beforeRender(renderAtomic);
+            this.material.beforeRender(renderAtomic);
             this._lightPicker.beforeRender(renderAtomic);
         };
         /**
@@ -16763,8 +16784,8 @@ var feng3d;
                 rayEntryDistance: rayEntryDistance,
                 ray3D: ray3D,
                 rayOriginIsInsideBounds: rayEntryDistance == 0,
-                geometry: this._activeGeometry,
-                cullFace: this._activeMaterial.renderParams.cullFace,
+                geometry: this.geometry,
+                cullFace: this.material.renderParams.cullFace,
             };
             return pickingCollisionVO;
         };
@@ -16776,20 +16797,18 @@ var feng3d;
             this.material = null;
             _super.prototype.dispose.call(this);
         };
-        Model.prototype.onGeometryChanged = function () {
-            this._activeGeometry = this.geometry || feng3d.Geometry.cube;
-            this.onBoundsInvalid();
-        };
-        Model.prototype.onMaterialChanged = function () {
-            this._activeMaterial = this.material || feng3d.Material.default;
-        };
-        Model.prototype.onActiveGeometryChanged = function (property, oldValue, value) {
+        Model.prototype.onGeometryChanged = function (property, oldValue, value) {
             if (oldValue) {
                 oldValue.off("boundsInvalid", this.onBoundsInvalid, this);
             }
             if (value) {
                 value.on("boundsInvalid", this.onBoundsInvalid, this);
             }
+            this.geometry = this.geometry || feng3d.Geometry.cube;
+            this.onBoundsInvalid();
+        };
+        Model.prototype.onMaterialChanged = function () {
+            this.material = this.material || feng3d.Material.default;
         };
         Model.prototype.onScenetransformChanged = function () {
             this._selfWorldBounds = null;
@@ -16811,7 +16830,7 @@ var feng3d;
          * @inheritDoc
          */
         Model.prototype.updateBounds = function () {
-            this._selfLocalBounds = this._activeGeometry.bounding;
+            this._selfLocalBounds = this.geometry.bounding;
         };
         __decorate([
             feng3d.oav({ component: "OAVPick", tooltip: "几何体，提供模型以形状", componentParam: { accepttype: "geometry", datatype: "geometry" } }),
@@ -16831,9 +16850,6 @@ var feng3d;
             feng3d.oav(),
             feng3d.serialize
         ], Model.prototype, "receiveShadows", void 0);
-        __decorate([
-            feng3d.watch("onActiveGeometryChanged")
-        ], Model.prototype, "_activeGeometry", void 0);
         return Model;
     }(feng3d.Behaviour));
     feng3d.Model = Model;
@@ -17223,8 +17239,8 @@ var feng3d;
                     continue;
                 var model = item.getComponent(feng3d.Model);
                 if (model && (model.castShadows || model.receiveShadows)
-                    && !model.activeMaterial.renderParams.enableBlend
-                    && model.activeMaterial.renderParams.renderMode == feng3d.RenderMode.TRIANGLES) {
+                    && !model.material.renderParams.enableBlend
+                    && model.material.renderParams.renderMode == feng3d.RenderMode.TRIANGLES) {
                     targets.push(model);
                 }
                 item.children.forEach(function (element) {
@@ -17324,7 +17340,7 @@ var feng3d;
                 var models = this.activeModels;
                 var camerapos = this.camera.transform.scenePosition;
                 var blenditems = this._blenditems = models.filter(function (item) {
-                    return item.activeMaterial.renderParams.enableBlend;
+                    return item.material.renderParams.enableBlend;
                 }).sort(function (b, a) { return a.transform.scenePosition.subTo(camerapos).lengthSquared - b.transform.scenePosition.subTo(camerapos).lengthSquared; });
                 return blenditems;
             },
@@ -17341,7 +17357,7 @@ var feng3d;
                 var models = this.activeModels;
                 var camerapos = this.camera.transform.scenePosition;
                 var unblenditems = this._unblenditems = models.filter(function (item) {
-                    return !item.activeMaterial.renderParams.enableBlend;
+                    return !item.material.renderParams.enableBlend;
                 }).sort(function (a, b) { return a.transform.scenePosition.subTo(camerapos).lengthSquared - b.transform.scenePosition.subTo(camerapos).lengthSquared; });
                 return unblenditems;
             },
@@ -20701,6 +20717,8 @@ var feng3d;
         return UrlImageTexture2D;
     }(feng3d.Texture2D));
     feng3d.UrlImageTexture2D = UrlImageTexture2D;
+    feng3d.Feng3dAssets.setAssets(UrlImageTexture2D.default = new UrlImageTexture2D().value({ name: "Default-Texture", assetsId: "Default-Texture", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.Feng3dAssets.setAssets(UrlImageTexture2D.defaultNormal = new UrlImageTexture2D().value({ name: "Default-NormalTexture", assetsId: "Default-NormalTexture", noPixels: feng3d.ImageDatas.defaultNormal, hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -20980,7 +20998,7 @@ var feng3d;
             /**
              * 漫反射纹理
              */
-            this.s_diffuse = new feng3d.UrlImageTexture2D();
+            this.s_diffuse = feng3d.UrlImageTexture2D.default;
             /**
              * 基本颜色
              */
@@ -20992,11 +21010,11 @@ var feng3d;
             /**
              * 漫反射纹理
              */
-            this.s_normal = new feng3d.UrlImageTexture2D().value({ noPixels: feng3d.ImageDatas.defaultNormal });
+            this.s_normal = feng3d.UrlImageTexture2D.defaultNormal;
             /**
              * 镜面反射光泽图
              */
-            this.s_specular = new feng3d.UrlImageTexture2D();
+            this.s_specular = feng3d.UrlImageTexture2D.default;
             /**
              * 镜面反射颜色
              */
@@ -21008,7 +21026,7 @@ var feng3d;
             /**
              * 环境纹理
              */
-            this.s_ambient = new feng3d.UrlImageTexture2D();
+            this.s_ambient = feng3d.UrlImageTexture2D.default;
             /**
              * 颜色
              */
@@ -21056,11 +21074,11 @@ var feng3d;
             feng3d.oav({ block: "diffuse" })
         ], StandardUniforms.prototype, "u_alphaThreshold", void 0);
         __decorate([
-            feng3d.serialize,
+            feng3d.serializeAssets,
             feng3d.oav({ block: "normalMethod" })
         ], StandardUniforms.prototype, "s_normal", void 0);
         __decorate([
-            feng3d.serialize,
+            feng3d.serializeAssets,
             feng3d.oav({ block: "specular" })
         ], StandardUniforms.prototype, "s_specular", void 0);
         __decorate([
@@ -21072,7 +21090,7 @@ var feng3d;
             feng3d.oav({ block: "specular" })
         ], StandardUniforms.prototype, "u_glossiness", void 0);
         __decorate([
-            feng3d.serialize,
+            feng3d.serializeAssets,
             feng3d.oav({ block: "ambient" })
         ], StandardUniforms.prototype, "s_ambient", void 0);
         __decorate([

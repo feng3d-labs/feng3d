@@ -14,7 +14,7 @@ namespace feng3d
         @oav({ component: "OAVPick", tooltip: "几何体，提供模型以形状", componentParam: { accepttype: "geometry", datatype: "geometry" } })
         @serializeAssets
         @watch("onGeometryChanged")
-        geometry: Geometrys;
+        geometry: Geometrys = Geometry.cube;
 
         /**
          * 材质
@@ -22,7 +22,7 @@ namespace feng3d
         @oav({ component: "OAVPick", tooltip: "材质，提供模型以皮肤", componentParam: { accepttype: "material", datatype: "material" } })
         @serializeAssets
         @watch("onMaterialChanged")
-        material: Material;
+        material: Material = Material.default;
 
         /**
          * 是否投射阴影
@@ -37,14 +37,6 @@ namespace feng3d
         @oav()
         @serialize
         receiveShadows = true;
-
-        /**
-         * 启用的材质
-         */
-        get activeMaterial()
-        {
-            return this._activeMaterial;
-        }
 
         /**
 		 * 自身局部包围盒
@@ -88,8 +80,8 @@ namespace feng3d
             renderAtomic.uniforms.u_ITMVMatrix = () => lazy.getvalue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose();
 
             //
-            this._activeGeometry.beforeRender(renderAtomic);
-            this._activeMaterial.beforeRender(renderAtomic);
+            this.geometry.beforeRender(renderAtomic);
+            this.material.beforeRender(renderAtomic);
             this._lightPicker.beforeRender(renderAtomic);
         }
 
@@ -121,8 +113,8 @@ namespace feng3d
                 rayEntryDistance: rayEntryDistance,
                 ray3D: ray3D,
                 rayOriginIsInsideBounds: rayEntryDistance == 0,
-                geometry: this._activeGeometry,
-                cullFace: this._activeMaterial.renderParams.cullFace,
+                geometry: this.geometry,
+                cullFace: this.material.renderParams.cullFace,
             };
 
             return pickingCollisionVO;
@@ -142,25 +134,8 @@ namespace feng3d
         private _lightPicker: LightPicker;
         private _selfLocalBounds: Box;
         private _selfWorldBounds: Box;
-        /**
-         * 启用的几何体
-         */
-        @watch("onActiveGeometryChanged")
-        private _activeGeometry: Geometrys = Geometry.cube;
-        private _activeMaterial = Material.default;
 
-        private onGeometryChanged()
-        {
-            this._activeGeometry = this.geometry || Geometry.cube;
-            this.onBoundsInvalid();
-        }
-
-        private onMaterialChanged()
-        {
-            this._activeMaterial = this.material || Material.default;
-        }
-
-        private onActiveGeometryChanged(property: string, oldValue: Geometrys, value: Geometrys)
+        private onGeometryChanged(property: string, oldValue: Geometrys, value: Geometrys)
         {
             if (oldValue)
             {
@@ -170,6 +145,13 @@ namespace feng3d
             {
                 value.on("boundsInvalid", this.onBoundsInvalid, this);
             }
+            this.geometry = this.geometry || Geometry.cube;
+            this.onBoundsInvalid();
+        }
+
+        private onMaterialChanged()
+        {
+            this.material = this.material || Material.default;
         }
 
         private onScenetransformChanged()
@@ -199,7 +181,7 @@ namespace feng3d
 		 */
         private updateBounds()
         {
-            this._selfLocalBounds = this._activeGeometry.bounding;
+            this._selfLocalBounds = this.geometry.bounding;
         }
     }
 }

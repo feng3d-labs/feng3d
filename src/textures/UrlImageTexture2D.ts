@@ -69,5 +69,17 @@ namespace feng3d
             if (this.url == e.data.url)
                 this.urlChanged();
         }
+
+        /**
+         * 默认贴图
+         */
+        static default: UrlImageTexture2D;
+        /**
+         * 默认法线贴图
+         */
+        static defaultNormal: UrlImageTexture2D;
     }
+
+    Feng3dAssets.setAssets(UrlImageTexture2D.default = new UrlImageTexture2D().value({ name: "Default-Texture", assetsId: "Default-Texture", hideFlags: HideFlags.NotEditable }));
+    Feng3dAssets.setAssets(UrlImageTexture2D.defaultNormal = new UrlImageTexture2D().value({ name: "Default-NormalTexture", assetsId: "Default-NormalTexture", noPixels: ImageDatas.defaultNormal, hideFlags: HideFlags.NotEditable }));
 }

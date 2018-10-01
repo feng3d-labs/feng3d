@@ -1904,6 +1904,10 @@ declare namespace feng3d {
         dataURLToArrayBuffer(dataurl: string, callback: (arraybuffer: ArrayBuffer) => void): void;
         arrayBufferToDataURL(arrayBuffer: ArrayBuffer, callback: (dataurl: string) => void): void;
         dataURLToImage(dataurl: string, callback: (img: HTMLImageElement) => void): void;
+        imageToDataURL(img: HTMLImageElement, callback: (dataurl: string) => void): void;
+        imageToCanvas(img: HTMLImageElement, callback: (canvas: HTMLCanvasElement) => void): void;
+        imageDataToDataURL(imageData: ImageData, callback: (dataurl: string) => void): void;
+        imageDataToCanvas(imageData: ImageData, callback: (canvas: HTMLCanvasElement) => void): void;
         arrayBufferToImage(arrayBuffer: ArrayBuffer, callback: (img: HTMLImageElement) => void): void;
         blobToText(blob: Blob, callback: (content: string) => void): void;
         stringToArrayBuffer(str: string, callback: (arrayBuffer: ArrayBuffer) => void): void;
@@ -9569,10 +9573,6 @@ declare namespace feng3d {
          */
         receiveShadows: boolean;
         /**
-         * 启用的材质
-         */
-        readonly activeMaterial: Material;
-        /**
          * 自身局部包围盒
          */
         readonly selfLocalBounds: Box;
@@ -9596,14 +9596,8 @@ declare namespace feng3d {
         private _lightPicker;
         private _selfLocalBounds;
         private _selfWorldBounds;
-        /**
-         * 启用的几何体
-         */
-        private _activeGeometry;
-        private _activeMaterial;
         private onGeometryChanged;
         private onMaterialChanged;
-        private onActiveGeometryChanged;
         private onScenetransformChanged;
         /**
          * 更新世界边界
@@ -10886,6 +10880,14 @@ declare namespace feng3d {
         private imageChanged;
         private urlChanged;
         private onImageAssetsChanged;
+        /**
+         * 默认贴图
+         */
+        static default: UrlImageTexture2D;
+        /**
+         * 默认法线贴图
+         */
+        static defaultNormal: UrlImageTexture2D;
     }
 }
 declare namespace feng3d {
