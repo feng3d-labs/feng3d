@@ -2813,10 +2813,15 @@ var feng3d;
                 pv.push(cv.property); return pv; }, []);
             var _loop_1 = function (property) {
                 if (object.hasOwnProperty(property)) {
-                    if (serializeAssets.indexOf(property) != -1 && typeof object[property] == "string") {
-                        feng3d.assets.readAssets(object[property], function (err, assets) {
-                            target[property] = assets;
-                        });
+                    if (serializeAssets.indexOf(property) != -1) {
+                        if (typeof object[property] == "string") {
+                            feng3d.assets.readAssets(object[property], function (err, assets) {
+                                target[property] = assets;
+                            });
+                        }
+                        else {
+                            target[property] = this_1.deserialize(object[property]);
+                        }
                     }
                     else {
                         this_1.setPropertyValue(target, object, property);
@@ -20787,6 +20792,7 @@ var feng3d;
         __extends(TextureCube, _super);
         function TextureCube() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.TextureCube";
             _this.assetType = feng3d.AssetExtension.texturecube;
             _this.noPixels = [feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white];
             _this._pixels = [null, null, null, null, null, null];
@@ -21074,7 +21080,7 @@ var feng3d;
             feng3d.oav({ block: "ambient" })
         ], StandardUniforms.prototype, "u_ambient", void 0);
         __decorate([
-            feng3d.serialize,
+            feng3d.serializeAssets,
             feng3d.oav({ component: "OAVPick", block: "envMap", componentParam: { accepttype: "texturecube", datatype: "texturecube" } })
         ], StandardUniforms.prototype, "s_envMap", void 0);
         __decorate([

@@ -228,12 +228,18 @@ namespace feng3d
             {
                 if (object.hasOwnProperty(property))
                 {
-                    if (serializeAssets.indexOf(property) != -1 && typeof object[property] == "string")
+                    if (serializeAssets.indexOf(property) != -1)
                     {
-                        assets.readAssets(<any>object[property], (err, assets) =>
+                        if (typeof object[property] == "string")
                         {
-                            target[property] = <any>assets;
-                        });
+                            assets.readAssets(<any>object[property], (err, assets) =>
+                            {
+                                target[property] = <any>assets;
+                            });
+                        } else
+                        {
+                            target[property] = this.deserialize(object[property]);
+                        }
                     }
                     else
                     {

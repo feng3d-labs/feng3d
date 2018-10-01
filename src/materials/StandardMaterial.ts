@@ -89,7 +89,7 @@ namespace feng3d
         /**
          * 环境映射贴图
          */
-        @serialize
+        @serializeAssets
         @oav({ component: "OAVPick", block: "envMap", componentParam: { accepttype: "texturecube", datatype: "texturecube" } })
         s_envMap = TextureCube.default;
 

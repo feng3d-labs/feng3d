@@ -10924,6 +10924,7 @@ declare namespace feng3d {
      * 立方体纹理
      */
     class TextureCube extends TextureInfo {
+        __class__: "feng3d.TextureCube";
         assetType: AssetExtension;
         positive_x_url: string;
         positive_y_url: string;

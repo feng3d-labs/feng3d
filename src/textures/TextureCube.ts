@@ -5,6 +5,8 @@ namespace feng3d
      */
     export class TextureCube extends TextureInfo
     {
+        __class__: "feng3d.TextureCube" = "feng3d.TextureCube";
+        
         assetType = AssetExtension.texturecube;
 
         @oav({ component: "OAVCubeMap" })
