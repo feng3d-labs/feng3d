@@ -75,5 +75,9 @@ namespace feng3d
             if (this.loadingNum == 0) callback();
             else this.once("loadCompleted", callback);
         }
+
+        static default: TextureCube;
     }
+
+    Feng3dAssets.setAssets(TextureCube.default = new TextureCube().value({ name: "Default-TextureCube", assetsId: "Default-TextureCube", hideFlags: HideFlags.NotEditable }));
 }

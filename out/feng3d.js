@@ -14849,15 +14849,11 @@ var feng3d;
     var SkyBox = /** @class */ (function (_super) {
         __extends(SkyBox, _super);
         function SkyBox() {
-            var _this = _super.call(this) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.SkyBox";
-            _this.s_skyboxTexture = new feng3d.TextureCube();
+            _this.s_skyboxTexture = feng3d.TextureCube.default;
             return _this;
-            //
         }
-        SkyBox.prototype.init = function (gameObject) {
-            _super.prototype.init.call(this, gameObject);
-        };
         SkyBox.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
             var _this = this;
             renderAtomic.uniforms.s_skyboxTexture = function () { return _this.s_skyboxTexture; };
@@ -20858,6 +20854,7 @@ var feng3d;
         return TextureCube;
     }(feng3d.TextureInfo));
     feng3d.TextureCube = TextureCube;
+    feng3d.Feng3dAssets.setAssets(TextureCube.default = new TextureCube().value({ name: "Default-TextureCube", assetsId: "Default-TextureCube", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -21013,7 +21010,7 @@ var feng3d;
             /**
              * 环境映射贴图
              */
-            this.s_envMap = new feng3d.TextureCube();
+            this.s_envMap = feng3d.TextureCube.default;
             /**
              * 反射率
              */

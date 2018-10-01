@@ -27,6 +27,7 @@ namespace feng3d
         @serialize
         @oav()
         background = new Color4(0, 0, 0, 1);
+
         /**
          * 环境光强度
          */

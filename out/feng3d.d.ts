@@ -8920,8 +8920,6 @@ declare namespace feng3d {
     class SkyBox extends Component {
         __class__: "feng3d.SkyBox";
         s_skyboxTexture: TextureCube;
-        constructor();
-        init(gameObject: GameObject): void;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
     }
 }
@@ -10944,6 +10942,7 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         onLoadCompleted(callback: () => void): void;
+        static default: TextureCube;
     }
 }
 declare namespace feng3d {

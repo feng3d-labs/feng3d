@@ -91,7 +91,7 @@ namespace feng3d
          */
         @serialize
         @oav({ component: "OAVPick", block: "envMap", componentParam: { accepttype: "texturecube", datatype: "texturecube" } })
-        s_envMap = new TextureCube();
+        s_envMap = TextureCube.default;
 
         /**
          * 反射率
