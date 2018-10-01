@@ -1,42 +1,33 @@
 precision mediump float;  
 
 #include<attribute_pars_vert>
-#include<worldposition_pars_vert>
-#include<project_pars_vert>
-
-uniform mat4 u_ITModelMatrix;
-uniform float u_scaleByDepth;
-
-varying vec2 v_uv;
-varying vec3 v_worldPosition;
-
-varying vec3 v_normal;
-varying vec3 v_tangent;
-varying vec3 v_bitangent;
-
+//
 #include<skeleton_pars_vert>
 #include<particle_pars_vert>
+//
+#include<worldposition_pars_vert>
+#include<project_pars_vert>
+//
+#include<uv_pars_vert>
+#include<normalmap_pars_vert>
+//
 #include<lights_pars_vert>
 #include<pointsize_pars_vert>
 
 void main()
 {
+    // 初始化
     #include<attribute_vert>
-    //
+    // 动画
     #include<skeleton_vert>
     #include<particle_vert>
-
+    // 投影
     #include<worldposition_vert>
     #include<project_vert>
-
-    //输出uv
-    v_uv = uv;
-
-    //计算法线
-    v_normal = normalize((u_ITModelMatrix * vec4(normal, 0.0)).xyz);
-    v_tangent = normalize((u_modelMatrix * vec4(tangent, 0.0)).xyz);
-    v_bitangent = cross(v_normal, v_tangent);
-
+    // 
+    #include<uv_vert>
+    #include<normalmap_vert>
+    //
     #include<lights_vert>
     #include<pointsize_vert>
 }

@@ -8,7 +8,6 @@ attribute vec3 a_normal;
 uniform mat4 u_modelMatrix;
 uniform mat4 u_ITModelMatrix;
 uniform mat4 u_viewProjection;
-uniform float u_scaleByDepth;
 
 varying vec2 v_uv;
 varying vec3 v_worldPosition;
