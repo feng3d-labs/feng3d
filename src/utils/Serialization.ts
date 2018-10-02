@@ -162,15 +162,17 @@ namespace feng3d
          * @param object 换为Json的对象
          * @returns 反序列化后的数据
          */
-        deserialize(object)
+        deserialize(object, tempInfo?: SerializationTempInfo)
         {
+            tempInfo = initTempInfo(tempInfo);
+
             //基础类型
             if (isBaseType(object)) return object;
 
             //处理数组
             if (object instanceof Array)
             {
-                var arr = object.map(v => this.deserialize(v));
+                var arr = object.map(v => this.deserialize(v, tempInfo));
                 return arr;
             }
             if (object.constructor != Object)
@@ -185,7 +187,7 @@ namespace feng3d
                 var target = {};
                 for (var key in object)
                 {
-                    target[key] = this.deserialize(object[key]);
+                    target[key] = this.deserialize(object[key], tempInfo);
                 }
                 return target;
             }
@@ -210,7 +212,7 @@ namespace feng3d
                 return target["deserialize"](object);
 
             //默认反序列
-            this.setValue(target, object);
+            this.setValue(target, object, tempInfo);
             return target;
         }
 
@@ -219,9 +221,11 @@ namespace feng3d
          * @param target 目标对象
          * @param object 数据对象
          */
-        setValue<T>(target: T, object: gPartial<T>)
+        setValue<T>(target: T, object: gPartial<T>, tempInfo?: SerializationTempInfo)
         {
             if (!object) return;
+
+            tempInfo = initTempInfo(tempInfo);
 
             var serializeAssets = getSerializableMembers(target).reduce((pv: string[], cv) => { if (cv.assets) pv.push(cv.property); return pv; }, []);
             for (const property in object)
@@ -232,18 +236,24 @@ namespace feng3d
                     {
                         if (typeof object[property] == "string")
                         {
-                            assets.readAssets(<any>object[property], (err, assets) =>
+                            tempInfo.loadingNum++;
+                            assets.readAssets(<any>object[property], (err, feng3dAssets) =>
                             {
-                                target[property] = <any>assets;
+                                target[property] = <any>feng3dAssets;
+                                tempInfo.loadingNum--;
+                                if (tempInfo.loadingNum == 0)
+                                {
+                                    tempInfo.onLoaded && tempInfo.onLoaded();
+                                }
                             });
                         } else
                         {
-                            target[property] = this.deserialize(object[property]);
+                            target[property] = this.deserialize(object[property], tempInfo);
                         }
                     }
                     else
                     {
-                        this.setPropertyValue(target, object, property);
+                        this.setPropertyValue(target, object, property, tempInfo);
                     }
                 }
             }
@@ -266,15 +276,17 @@ namespace feng3d
          * @param object 数据对象
          * @param property 属性名称
          */
-        private setPropertyValue<T>(target: T, object: gPartial<T>, property: string)
+        private setPropertyValue<T>(target: T, object: gPartial<T>, property: string, tempInfo?: SerializationTempInfo)
         {
             if (target[property] == object[property])
                 return;
+            tempInfo = initTempInfo(tempInfo);
+
             var objvalue = object[property];
             // 当原值等于null时直接反序列化赋值
             if (target[property] == null)
             {
-                target[property] = this.deserialize(objvalue);
+                target[property] = this.deserialize(objvalue, tempInfo);
                 return;
             }
             if (isBaseType(objvalue))
@@ -284,7 +296,7 @@ namespace feng3d
             }
             if (objvalue.constructor == Array)
             {
-                target[property] = this.deserialize(objvalue);
+                target[property] = this.deserialize(objvalue, tempInfo);
                 return;
             }
             // 处理同为Object类型
@@ -294,21 +306,21 @@ namespace feng3d
                 {
                     for (const key in objvalue)
                     {
-                        this.setPropertyValue(target[property], objvalue, key);
+                        this.setPropertyValue(target[property], objvalue, key, tempInfo);
                     }
                 } else
                 {
-                    this.setValue(target[property], objvalue);
+                    this.setValue(target[property], objvalue, tempInfo);
                 }
                 return;
             }
             var targetClassName = classUtils.getQualifiedClassName(target[property]);
             if (targetClassName == objvalue[CLASS_KEY])
             {
-                this.setValue(target[property], objvalue);
+                this.setValue(target[property], objvalue, tempInfo);
             } else
             {
-                target[property] = this.deserialize(objvalue);
+                target[property] = this.deserialize(objvalue, tempInfo);
             }
         }
 
@@ -399,6 +411,19 @@ namespace feng3d
             }
         }
         return serializableMembers;
+    }
+
+    export interface SerializationTempInfo
+    {
+        loadingNum?: number;
+        onLoaded?: () => void;
+    }
+
+    function initTempInfo(tempInfo?: SerializationTempInfo)
+    {
+        tempInfo = tempInfo || { loadingNum: 0, onLoaded: () => { } };
+        tempInfo.loadingNum = tempInfo.loadingNum || 0;
+        return tempInfo;
     }
 
     serialization = new Serialization();

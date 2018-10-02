@@ -63,27 +63,39 @@ namespace feng3d
         }
 
         /**
-         * 已加载完成或者加载完成时立即调用
-         * @param callback 完成回调
+         * 是否加载完成
          */
-        onLoadCompleted(callback: () => void)
+        get isLoaded()
         {
             var uniforms = this.uniforms;
-            var loadingNum = 0;
             for (const key in uniforms)
             {
                 var texture = uniforms[key];
                 if (texture instanceof UrlImageTexture2D || texture instanceof TextureCube)
                 {
-                    var loaded = false;
-                    texture.onLoadCompleted(() =>
-                    {
-                        loaded = true;
-                    });
-                    if (!loaded)
+                    if (!texture.isLoaded) return false;
+                }
+            }
+            return true;
+        }
+
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        onLoadCompleted(callback: () => void)
+        {
+            var loadingNum = 0;
+            var uniforms = this.uniforms;
+            for (const key in uniforms)
+            {
+                var texture = uniforms[key];
+                if (texture instanceof UrlImageTexture2D || texture instanceof TextureCube)
+                {
+                    if (!texture.isLoaded)
                     {
                         loadingNum++;
-                        texture.once("loadCompleted", () =>
+                        texture.onLoadCompleted(() =>
                         {
                             loadingNum--;
                             if (loadingNum == 0) callback();

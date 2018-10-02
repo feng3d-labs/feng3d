@@ -2759,14 +2759,15 @@ var feng3d;
          * @param object 换为Json的对象
          * @returns 反序列化后的数据
          */
-        Serialization.prototype.deserialize = function (object) {
+        Serialization.prototype.deserialize = function (object, tempInfo) {
             var _this = this;
+            tempInfo = initTempInfo(tempInfo);
             //基础类型
             if (isBaseType(object))
                 return object;
             //处理数组
             if (object instanceof Array) {
-                var arr = object.map(function (v) { return _this.deserialize(v); });
+                var arr = object.map(function (v) { return _this.deserialize(v, tempInfo); });
                 return arr;
             }
             if (object.constructor != Object) {
@@ -2778,7 +2779,7 @@ var feng3d;
             if (className == "Object" || className == null) {
                 var target = {};
                 for (var key in object) {
-                    target[key] = this.deserialize(object[key]);
+                    target[key] = this.deserialize(object[key], tempInfo);
                 }
                 return target;
             }
@@ -2798,7 +2799,7 @@ var feng3d;
             if (target["deserialize"])
                 return target["deserialize"](object);
             //默认反序列
-            this.setValue(target, object);
+            this.setValue(target, object, tempInfo);
             return target;
         };
         /**
@@ -2806,25 +2807,31 @@ var feng3d;
          * @param target 目标对象
          * @param object 数据对象
          */
-        Serialization.prototype.setValue = function (target, object) {
+        Serialization.prototype.setValue = function (target, object, tempInfo) {
             if (!object)
                 return;
+            tempInfo = initTempInfo(tempInfo);
             var serializeAssets = getSerializableMembers(target).reduce(function (pv, cv) { if (cv.assets)
                 pv.push(cv.property); return pv; }, []);
             var _loop_1 = function (property) {
                 if (object.hasOwnProperty(property)) {
                     if (serializeAssets.indexOf(property) != -1) {
                         if (typeof object[property] == "string") {
-                            feng3d.assets.readAssets(object[property], function (err, assets) {
-                                target[property] = assets;
+                            tempInfo.loadingNum++;
+                            feng3d.assets.readAssets(object[property], function (err, feng3dAssets) {
+                                target[property] = feng3dAssets;
+                                tempInfo.loadingNum--;
+                                if (tempInfo.loadingNum == 0) {
+                                    tempInfo.onLoaded && tempInfo.onLoaded();
+                                }
                             });
                         }
                         else {
-                            target[property] = this_1.deserialize(object[property]);
+                            target[property] = this_1.deserialize(object[property], tempInfo);
                         }
                     }
                     else {
-                        this_1.setPropertyValue(target, object, property);
+                        this_1.setPropertyValue(target, object, property, tempInfo);
                     }
                 }
             };
@@ -2848,13 +2855,14 @@ var feng3d;
          * @param object 数据对象
          * @param property 属性名称
          */
-        Serialization.prototype.setPropertyValue = function (target, object, property) {
+        Serialization.prototype.setPropertyValue = function (target, object, property, tempInfo) {
             if (target[property] == object[property])
                 return;
+            tempInfo = initTempInfo(tempInfo);
             var objvalue = object[property];
             // 当原值等于null时直接反序列化赋值
             if (target[property] == null) {
-                target[property] = this.deserialize(objvalue);
+                target[property] = this.deserialize(objvalue, tempInfo);
                 return;
             }
             if (isBaseType(objvalue)) {
@@ -2862,27 +2870,27 @@ var feng3d;
                 return;
             }
             if (objvalue.constructor == Array) {
-                target[property] = this.deserialize(objvalue);
+                target[property] = this.deserialize(objvalue, tempInfo);
                 return;
             }
             // 处理同为Object类型
             if (objvalue[CLASS_KEY] == undefined) {
                 if (target[property].constructor == Object) {
                     for (var key in objvalue) {
-                        this.setPropertyValue(target[property], objvalue, key);
+                        this.setPropertyValue(target[property], objvalue, key, tempInfo);
                     }
                 }
                 else {
-                    this.setValue(target[property], objvalue);
+                    this.setValue(target[property], objvalue, tempInfo);
                 }
                 return;
             }
             var targetClassName = feng3d.classUtils.getQualifiedClassName(target[property]);
             if (targetClassName == objvalue[CLASS_KEY]) {
-                this.setValue(target[property], objvalue);
+                this.setValue(target[property], objvalue, tempInfo);
             }
             else {
-                target[property] = this.deserialize(objvalue);
+                target[property] = this.deserialize(objvalue, tempInfo);
             }
         };
         /**
@@ -2951,6 +2959,11 @@ var feng3d;
             }
         }
         return serializableMembers;
+    }
+    function initTempInfo(tempInfo) {
+        tempInfo = tempInfo || { loadingNum: 0, onLoaded: function () { } };
+        tempInfo.loadingNum = tempInfo.loadingNum || 0;
+        return tempInfo;
     }
     feng3d.serialization = new Serialization();
 })(feng3d || (feng3d = {}));
@@ -16264,15 +16277,78 @@ var feng3d;
             while (this.numChildren > 0)
                 this.getChildAt(0).dispose();
         };
+        Object.defineProperty(GameObject.prototype, "isSelfLoaded", {
+            /**
+             * 是否加载完成
+             */
+            get: function () {
+                var model = this.getComponent(feng3d.Model);
+                if (model)
+                    return model.isLoaded;
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        GameObject.prototype.onSelfLoadCompleted = function (callback) {
+            if (this.isSelfLoaded) {
+                callback();
+                return;
+            }
+            var model = this.getComponent(feng3d.Model);
+            if (model) {
+                model.onLoadCompleted(callback);
+            }
+            else
+                callback();
+        };
+        Object.defineProperty(GameObject.prototype, "isLoaded", {
+            /**
+             * 是否加载完成
+             */
+            get: function () {
+                if (!this.isSelfLoaded)
+                    return false;
+                for (var i = 0; i < this.children.length; i++) {
+                    var element = this.children[i];
+                    if (!element.isLoaded)
+                        return false;
+                }
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调
          */
         GameObject.prototype.onLoadCompleted = function (callback) {
-            var model = this.getComponent(feng3d.Model);
-            if (model)
-                model.onLoadCompleted(callback);
-            else
+            var loadingNum = 0;
+            if (!this.isSelfLoaded) {
+                loadingNum++;
+                this.onSelfLoadCompleted(function () {
+                    loadingNum--;
+                    if (loadingNum == 0)
+                        callback();
+                });
+            }
+            for (var i = 0; i < this.children.length; i++) {
+                var element = this.children[i];
+                if (!element.isLoaded) {
+                    loadingNum++;
+                    element.onLoadCompleted(function () {
+                        loadingNum--;
+                        if (loadingNum == 0)
+                            callback();
+                    });
+                }
+            }
+            if (loadingNum == 0)
                 callback();
         };
         GameObject.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
@@ -16800,11 +16876,23 @@ var feng3d;
             };
             return pickingCollisionVO;
         };
+        Object.defineProperty(Model.prototype, "isLoaded", {
+            /**
+             * 是否加载完成
+             */
+            get: function () {
+                return this.material.isLoaded;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调
          */
         Model.prototype.onLoadCompleted = function (callback) {
+            if (this.isLoaded)
+                callback();
             this.material.onLoadCompleted(callback);
         };
         /**
@@ -20682,13 +20770,27 @@ var feng3d;
             _this.urlChanged();
             return _this;
         }
+        Object.defineProperty(UrlImageTexture2D.prototype, "isLoaded", {
+            /**
+             * 是否加载完成
+             */
+            get: function () {
+                if (this.url == "" || this.image)
+                    return true;
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调
          */
         UrlImageTexture2D.prototype.onLoadCompleted = function (callback) {
-            if (this.url == "" || this.image)
+            if (this.isLoaded) {
                 callback();
+                return;
+            }
             else
                 this.once("loadCompleted", callback);
         };
@@ -20855,13 +20957,27 @@ var feng3d;
                 }
             });
         };
+        Object.defineProperty(TextureCube.prototype, "isLoaded", {
+            /**
+             * 是否加载完成
+             */
+            get: function () {
+                if (this.loadingNum == 0)
+                    return true;
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调
          */
         TextureCube.prototype.onLoadCompleted = function (callback) {
-            if (this.loadingNum == 0)
+            if (this.loadingNum == 0) {
                 callback();
+                return;
+            }
             else
                 this.once("loadCompleted", callback);
         };
@@ -21187,23 +21303,37 @@ var feng3d;
             renderAtomic.renderParams = this.renderParams;
             renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode == feng3d.RenderMode.POINTS;
         };
+        Object.defineProperty(Material.prototype, "isLoaded", {
+            /**
+             * 是否加载完成
+             */
+            get: function () {
+                var uniforms = this.uniforms;
+                for (var key in uniforms) {
+                    var texture = uniforms[key];
+                    if (texture instanceof feng3d.UrlImageTexture2D || texture instanceof feng3d.TextureCube) {
+                        if (!texture.isLoaded)
+                            return false;
+                    }
+                }
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调
          */
         Material.prototype.onLoadCompleted = function (callback) {
-            var uniforms = this.uniforms;
             var loadingNum = 0;
+            var uniforms = this.uniforms;
             for (var key in uniforms) {
                 var texture = uniforms[key];
                 if (texture instanceof feng3d.UrlImageTexture2D || texture instanceof feng3d.TextureCube) {
-                    var loaded = false;
-                    texture.onLoadCompleted(function () {
-                        loaded = true;
-                    });
-                    if (!loaded) {
+                    if (!texture.isLoaded) {
                         loadingNum++;
-                        texture.once("loadCompleted", function () {
+                        texture.onLoadCompleted(function () {
                             loadingNum--;
                             if (loadingNum == 0)
                                 callback();

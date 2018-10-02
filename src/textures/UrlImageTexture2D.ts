@@ -24,12 +24,25 @@ namespace feng3d
         }
 
         /**
+         * 是否加载完成
+         */
+        get isLoaded()
+        {
+            if (this.url == "" || this.image) return true;
+            return false;
+        }
+
+        /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调
          */
         onLoadCompleted(callback: () => void)
         {
-            if (this.url == "" || this.image) callback();
+            if (this.isLoaded)
+            {
+                callback();
+                return;
+            }
             else this.once("loadCompleted", callback);
         }
 

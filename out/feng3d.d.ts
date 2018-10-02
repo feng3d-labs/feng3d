@@ -1229,13 +1229,13 @@ declare namespace feng3d {
          * @param object 换为Json的对象
          * @returns 反序列化后的数据
          */
-        deserialize(object: any): any;
+        deserialize(object: any, tempInfo?: SerializationTempInfo): any;
         /**
          * 从数据对象中提取数据给目标对象赋值
          * @param target 目标对象
          * @param object 数据对象
          */
-        setValue<T>(target: T, object: gPartial<T>): void;
+        setValue<T>(target: T, object: gPartial<T>, tempInfo?: SerializationTempInfo): void;
         /**
          * 给目标对象的指定属性赋值
          * @param target 目标对象
@@ -1248,6 +1248,10 @@ declare namespace feng3d {
          * @param target 被克隆对象
          */
         clone<T>(target: T): T;
+    }
+    interface SerializationTempInfo {
+        loadingNum?: number;
+        onLoaded?: () => void;
     }
 }
 declare namespace feng3d {
@@ -9405,6 +9409,19 @@ declare namespace feng3d {
         dispose(): void;
         disposeWithChildren(): void;
         /**
+         * 是否加载完成
+         */
+        readonly isSelfLoaded: boolean;
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        onSelfLoadCompleted(callback: () => void): void;
+        /**
+         * 是否加载完成
+         */
+        readonly isLoaded: boolean;
+        /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调
          */
@@ -9594,6 +9611,10 @@ declare namespace feng3d {
           * @return
           */
         isIntersectingRay(ray3D: Ray3D): PickingCollisionVO;
+        /**
+         * 是否加载完成
+         */
+        readonly isLoaded: boolean;
         /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调
@@ -10883,6 +10904,10 @@ declare namespace feng3d {
         protected image: HTMLImageElement;
         constructor();
         /**
+         * 是否加载完成
+         */
+        readonly isLoaded: boolean;
+        /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调
          */
@@ -10950,6 +10975,10 @@ declare namespace feng3d {
         protected _textureType: TextureType;
         private loadingNum;
         private urlChanged;
+        /**
+         * 是否加载完成
+         */
+        readonly isLoaded: boolean;
         /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调
@@ -11126,6 +11155,10 @@ declare namespace feng3d {
         renderParams: RenderParams;
         constructor();
         beforeRender(renderAtomic: RenderAtomic): void;
+        /**
+         * 是否加载完成
+         */
+        readonly isLoaded: boolean;
         /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调

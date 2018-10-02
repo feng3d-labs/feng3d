@@ -611,14 +611,78 @@ namespace feng3d
         }
 
         /**
+         * 是否加载完成
+         */
+        get isSelfLoaded()
+        {
+            var model = this.getComponent(Model);
+            if (model) return model.isLoaded
+            return true;
+        }
+
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        onSelfLoadCompleted(callback: () => void)
+        {
+            if (this.isSelfLoaded)
+            {
+                callback();
+                return;
+            }
+            var model = this.getComponent(Model);
+            if (model)
+            {
+                model.onLoadCompleted(callback);
+            }
+            else callback();
+        }
+
+        /**
+         * 是否加载完成
+         */
+        get isLoaded()
+        {
+            if (!this.isSelfLoaded) return false;
+            for (let i = 0; i < this.children.length; i++)
+            {
+                const element = this.children[i];
+                if (!element.isLoaded) return false;
+            }
+            return true;
+        }
+
+        /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调
          */
         onLoadCompleted(callback: () => void)
         {
-            var model = this.getComponent(Model);
-            if (model) model.onLoadCompleted(callback);
-            else callback();
+            var loadingNum = 0;
+            if (!this.isSelfLoaded) 
+            {
+                loadingNum++;
+                this.onSelfLoadCompleted(() =>
+                {
+                    loadingNum--;
+                    if (loadingNum == 0) callback();
+                });
+            }
+            for (let i = 0; i < this.children.length; i++)
+            {
+                const element = this.children[i];
+                if (!element.isLoaded) 
+                {
+                    loadingNum++;
+                    element.onLoadCompleted(() =>
+                    {
+                        loadingNum--;
+                        if (loadingNum == 0) callback();
+                    });
+                }
+            }
+            if (loadingNum == 0) callback();
         }
 
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)

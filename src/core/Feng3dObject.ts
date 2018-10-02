@@ -16,7 +16,7 @@ namespace feng3d
          */
         value(v: gPartial<this>)
         {
-            feng3d.serialization.setValue(this, <any>v);
+            serialization.setValue(this, <any>v);
             return this;
         }
     }

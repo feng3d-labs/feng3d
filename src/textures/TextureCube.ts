@@ -6,7 +6,7 @@ namespace feng3d
     export class TextureCube extends TextureInfo
     {
         __class__: "feng3d.TextureCube" = "feng3d.TextureCube";
-        
+
         assetType = AssetExtension.texturecube;
 
         @oav({ component: "OAVCubeMap" })
@@ -69,12 +69,25 @@ namespace feng3d
         }
 
         /**
+         * 是否加载完成
+         */
+        get isLoaded()
+        {
+            if (this.loadingNum == 0) return true;
+            return false;
+        }
+
+        /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调
          */
         onLoadCompleted(callback: () => void)
         {
-            if (this.loadingNum == 0) callback();
+            if (this.loadingNum == 0)
+            {
+                callback();
+                return;
+            }
             else this.once("loadCompleted", callback);
         }
 
