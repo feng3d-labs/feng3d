@@ -610,6 +610,17 @@ namespace feng3d
                 this.getChildAt(0).dispose();
         }
 
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        onLoadCompleted(callback: () => void)
+        {
+            var model = this.getComponent(Model);
+            if (model) model.onLoadCompleted(callback);
+            else callback();
+        }
+
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
             this._components.forEach(element =>

@@ -9404,6 +9404,11 @@ declare namespace feng3d {
          */
         dispose(): void;
         disposeWithChildren(): void;
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        onLoadCompleted(callback: () => void): void;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
         /**
          * Finds a game object by name and returns it.
@@ -9589,6 +9594,11 @@ declare namespace feng3d {
           * @return
           */
         isIntersectingRay(ray3D: Ray3D): PickingCollisionVO;
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        onLoadCompleted(callback: () => void): void;
         /**
          * 销毁
          */
@@ -11116,6 +11126,11 @@ declare namespace feng3d {
         renderParams: RenderParams;
         constructor();
         beforeRender(renderAtomic: RenderAtomic): void;
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        onLoadCompleted(callback: () => void): void;
         /**
          * 渲染程序
          */

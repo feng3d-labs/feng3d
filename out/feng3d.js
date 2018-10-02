@@ -16264,6 +16264,17 @@ var feng3d;
             while (this.numChildren > 0)
                 this.getChildAt(0).dispose();
         };
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        GameObject.prototype.onLoadCompleted = function (callback) {
+            var model = this.getComponent(feng3d.Model);
+            if (model)
+                model.onLoadCompleted(callback);
+            else
+                callback();
+        };
         GameObject.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
             this._components.forEach(function (element) {
                 element.beforeRender(gl, renderAtomic, scene3d, camera);
@@ -16788,6 +16799,13 @@ var feng3d;
                 cullFace: this.material.renderParams.cullFace,
             };
             return pickingCollisionVO;
+        };
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        Model.prototype.onLoadCompleted = function (callback) {
+            this.material.onLoadCompleted(callback);
         };
         /**
          * 销毁
@@ -21166,6 +21184,33 @@ var feng3d;
             renderAtomic.shader = this._shader;
             renderAtomic.renderParams = this.renderParams;
             renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode == feng3d.RenderMode.POINTS;
+        };
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        Material.prototype.onLoadCompleted = function (callback) {
+            var uniforms = this.uniforms;
+            var loadingNum = 0;
+            for (var key in uniforms) {
+                var texture = uniforms[key];
+                if (texture instanceof feng3d.UrlImageTexture2D || texture instanceof feng3d.TextureCube) {
+                    var loaded = false;
+                    texture.onLoadCompleted(function () {
+                        loaded = true;
+                    });
+                    if (!loaded) {
+                        loadingNum++;
+                        texture.once("loadCompleted", function () {
+                            loadingNum--;
+                            if (loadingNum == 0)
+                                callback();
+                        });
+                    }
+                }
+            }
+            if (loadingNum == 0)
+                callback();
         };
         Material.prototype.onShaderChanged = function () {
             var cls = feng3d.shaderConfig.shaders[this.shaderName].cls;

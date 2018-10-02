@@ -121,6 +121,15 @@ namespace feng3d
         }
 
         /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        onLoadCompleted(callback: () => void)
+        {
+            this.material.onLoadCompleted(callback);
+        }
+
+        /**
          * 销毁
          */
         dispose()
