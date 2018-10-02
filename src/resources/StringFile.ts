@@ -8,7 +8,7 @@ namespace feng3d
         @oav()
         name: string;
 
-        @oav()
+        @oav({ component: "OAVMultiText" })
         textContent: string;
 
         protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void)

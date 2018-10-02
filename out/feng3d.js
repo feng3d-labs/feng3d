@@ -24860,6 +24860,9 @@ var feng3d;
                 callback && callback(err);
             });
         };
+        __decorate([
+            feng3d.oav()
+        ], ArrayBufferFile.prototype, "name", void 0);
         return ArrayBufferFile;
     }(feng3d.Feng3dFile));
     feng3d.ArrayBufferFile = ArrayBufferFile;
@@ -24893,7 +24896,7 @@ var feng3d;
             feng3d.oav()
         ], StringFile.prototype, "name", void 0);
         __decorate([
-            feng3d.oav()
+            feng3d.oav({ component: "OAVMultiText" })
         ], StringFile.prototype, "textContent", void 0);
         return StringFile;
     }(feng3d.Feng3dFile));

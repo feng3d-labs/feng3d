@@ -12430,6 +12430,7 @@ declare namespace feng3d {
      * 二进制文件
      */
     class ArrayBufferFile extends Feng3dFile {
+        name: string;
         /**
          * 文件数据
          */

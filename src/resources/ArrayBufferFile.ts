@@ -5,6 +5,9 @@ namespace feng3d
      */
     export class ArrayBufferFile extends Feng3dFile
     {
+        @oav()
+        name: string;
+
         /**
          * 文件数据
          */
