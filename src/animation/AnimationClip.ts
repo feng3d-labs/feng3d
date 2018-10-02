@@ -4,6 +4,7 @@ namespace feng3d
     {
         assetType = AssetExtension.anim;
 
+        @oav()
         @serialize
         name: string;
         /**
@@ -11,8 +12,11 @@ namespace feng3d
          */
         @serialize
         length: number;
+
+        @oav()
         @serialize
         loop = true;
+
         @serialize
         propertyClips: PropertyClip[];
     }

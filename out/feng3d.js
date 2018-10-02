@@ -24615,12 +24615,14 @@ var feng3d;
             return _this;
         }
         __decorate([
+            feng3d.oav(),
             feng3d.serialize
         ], AnimationClip.prototype, "name", void 0);
         __decorate([
             feng3d.serialize
         ], AnimationClip.prototype, "length", void 0);
         __decorate([
+            feng3d.oav(),
             feng3d.serialize
         ], AnimationClip.prototype, "loop", void 0);
         __decorate([
