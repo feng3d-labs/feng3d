@@ -67,6 +67,11 @@ namespace feng3d
          */
         static point: PointGeometry
 
+        /**
+         * 默认地形几何体
+         */
+        static terrain: TerrainGeometry;
+
         @oav()
         name: string;
 

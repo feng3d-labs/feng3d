@@ -23043,10 +23043,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 默认高度图
-     */
-    var defaultHeightMap = feng3d.imageUtil.createImageData();
-    /**
      * 地形几何体
      */
     var TerrainGeometry = /** @class */ (function (_super) {
@@ -23056,6 +23052,10 @@ var feng3d;
          */
         function TerrainGeometry(raw) {
             var _this = _super.call(this) || this;
+            /**
+             * 高度图路径
+             */
+            _this.heightMap = feng3d.UrlImageTexture2D.default;
             /**
              * 地形宽度
              */
@@ -23084,33 +23084,30 @@ var feng3d;
              * 最小地形高度
              */
             _this.minElevation = 0;
-            _this._heightMap = defaultHeightMap;
+            _this._heightImageData = defaultHeightMap;
             _this.name = "terrain";
             feng3d.serialization.setValue(_this, raw);
             return _this;
         }
-        /**
-         * 几何体变脏
-         */
-        TerrainGeometry.prototype.invalidateGeometry = function (propertyKey, oldValue, newValue) {
+        TerrainGeometry.prototype.onHeightMapChanged = function () {
             var _this = this;
-            if (propertyKey == "heightMapUrl") {
-                feng3d.imageUtil.getImageDataFromUrl(newValue, function (imageData) {
-                    if (imageData) {
-                        _this._heightMap = imageData;
-                        _super.prototype.invalidateGeometry.call(_this);
-                    }
-                });
+            if (!this.heightMap.url) {
+                this._heightImageData = defaultHeightMap;
+                this.invalidateGeometry();
+                return;
             }
-            else {
-                _super.prototype.invalidateGeometry.call(this);
-            }
+            feng3d.imageUtil.getImageDataFromUrl(this.heightMap.url, function (imageData) {
+                if (imageData) {
+                    _this._heightImageData = imageData;
+                    _this.invalidateGeometry();
+                }
+            });
         };
         /**
          * 创建顶点坐标
          */
         TerrainGeometry.prototype.buildGeometry = function () {
-            if (!this._heightMap)
+            if (!this._heightImageData)
                 return;
             var x, z;
             var numInds = 0;
@@ -23120,9 +23117,9 @@ var feng3d;
             //总顶点数量
             var numVerts = (this.segmentsH + 1) * tw;
             //一个格子所占高度图X轴像素数
-            var uDiv = (this._heightMap.width - 1) / this.segmentsW;
+            var uDiv = (this._heightImageData.width - 1) / this.segmentsW;
             //一个格子所占高度图Y轴像素数
-            var vDiv = (this._heightMap.height - 1) / this.segmentsH;
+            var vDiv = (this._heightImageData.height - 1) / this.segmentsH;
             var u, v;
             var y;
             var vertices = [];
@@ -23138,7 +23135,7 @@ var feng3d;
                     u = xi * uDiv;
                     v = (this.segmentsH - zi) * vDiv;
                     //获取颜色值
-                    col = this.getPixel(this._heightMap, u, v) & 0xff;
+                    col = this.getPixel(this._heightImageData, u, v) & 0xff;
                     //计算高度值
                     y = (col > this.maxElevation) ? (this.maxElevation / 0xff) * this.height : ((col < this.minElevation) ? (this.minElevation / 0xff) * this.height : (col / 0xff) * this.height);
                     //保存顶点坐标
@@ -23186,9 +23183,9 @@ var feng3d;
          */
         TerrainGeometry.prototype.getHeightAt = function (x, z) {
             //得到高度图中的值
-            var u = (x / this.width + .5) * (this._heightMap.width - 1);
-            var v = (-z / this.depth + .5) * (this._heightMap.height - 1);
-            var col = this.getPixel(this._heightMap, u, v) & 0xff;
+            var u = (x / this.width + .5) * (this._heightImageData.width - 1);
+            var v = (-z / this.depth + .5) * (this._heightImageData.height - 1);
+            var col = this.getPixel(this._heightImageData, u, v) & 0xff;
             var h;
             if (col > this.maxElevation) {
                 h = (this.maxElevation / 0xff) * this.height;
@@ -23217,10 +23214,10 @@ var feng3d;
             return blue;
         };
         __decorate([
-            feng3d.serialize,
-            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "image" } }),
-            feng3d.watch("invalidateGeometry")
-        ], TerrainGeometry.prototype, "heightMapUrl", void 0);
+            feng3d.serializeAssets,
+            feng3d.oav(),
+            feng3d.watch("onHeightMapChanged")
+        ], TerrainGeometry.prototype, "heightMap", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav(),
@@ -23259,6 +23256,11 @@ var feng3d;
         return TerrainGeometry;
     }(feng3d.Geometry));
     feng3d.TerrainGeometry = TerrainGeometry;
+    /**
+     * 默认高度图
+     */
+    var defaultHeightMap = feng3d.imageUtil.createImageData();
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.terrain = new TerrainGeometry().value({ name: "default-Terrain", assetsId: "default-Terrain" }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -23481,16 +23483,14 @@ var feng3d;
         function Terrain() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.Terrain";
-            /**
-             * 地形几何体数据
-             */
-            _this.geometry = new feng3d.TerrainGeometry();
-            _this.material = new feng3d.Material().value({ shaderName: "terrain" });
+            _this.geometry = feng3d.Geometry.terrain;
+            _this.material = feng3d.Material.terrain;
             return _this;
         }
         return Terrain;
     }(feng3d.Model));
     feng3d.Terrain = Terrain;
+    feng3d.Feng3dAssets.setAssets(feng3d.Material.terrain = new feng3d.Material().value({ name: "Default-Terrain", assetsId: "Default-Terrain", shaderName: "terrain", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

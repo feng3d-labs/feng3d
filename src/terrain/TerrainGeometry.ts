@@ -1,11 +1,5 @@
 namespace feng3d
 {
-
-    /**
-     * 默认高度图
-     */
-    var defaultHeightMap = imageUtil.createImageData();
-
     export interface GeometryMap { TerrainGeometry: TerrainGeometry }
 
     /**
@@ -16,10 +10,10 @@ namespace feng3d
         /**
          * 高度图路径
          */
-        @serialize
-        @oav({ component: "OAVPick", componentParam: { accepttype: "image" } })
-        @watch("invalidateGeometry")
-        heightMapUrl: string;
+        @serializeAssets
+        @oav()
+        @watch("onHeightMapChanged")
+        heightMap = UrlImageTexture2D.default;
 
         /**
          * 地形宽度
@@ -77,7 +71,7 @@ namespace feng3d
         @watch("invalidateGeometry")
         minElevation = 0;
 
-        private _heightMap = defaultHeightMap;
+        private _heightImageData = defaultHeightMap;
 
 		/**
 		 * 创建高度地形 拥有segmentsW*segmentsH个顶点
@@ -89,25 +83,22 @@ namespace feng3d
             serialization.setValue(this, raw);
         }
 
-        /**
-         * 几何体变脏
-         */
-        invalidateGeometry(propertyKey?: string, oldValue?, newValue?)
+        private onHeightMapChanged()
         {
-            if (propertyKey == "heightMapUrl")
+            if (!this.heightMap.url) 
             {
-                imageUtil.getImageDataFromUrl(newValue, (imageData) =>
-                {
-                    if (imageData)
-                    {
-                        this._heightMap = imageData;
-                        super.invalidateGeometry();
-                    }
-                });
-            } else
-            {
-                super.invalidateGeometry();
+                this._heightImageData = defaultHeightMap;
+                this.invalidateGeometry();
+                return;
             }
+            imageUtil.getImageDataFromUrl(this.heightMap.url, (imageData) =>
+            {
+                if (imageData)
+                {
+                    this._heightImageData = imageData;
+                    this.invalidateGeometry();
+                }
+            });
         }
 
 		/**
@@ -115,7 +106,7 @@ namespace feng3d
 		 */
         protected buildGeometry()
         {
-            if (!this._heightMap)
+            if (!this._heightImageData)
                 return;
             var x: number, z: number;
             var numInds = 0;
@@ -125,9 +116,9 @@ namespace feng3d
             //总顶点数量
             var numVerts = (this.segmentsH + 1) * tw;
             //一个格子所占高度图X轴像素数
-            var uDiv = (this._heightMap.width - 1) / this.segmentsW;
+            var uDiv = (this._heightImageData.width - 1) / this.segmentsW;
             //一个格子所占高度图Y轴像素数
-            var vDiv = (this._heightMap.height - 1) / this.segmentsH;
+            var vDiv = (this._heightImageData.height - 1) / this.segmentsH;
             var u: number, v: number;
             var y: number;
 
@@ -148,7 +139,7 @@ namespace feng3d
                     v = (this.segmentsH - zi) * vDiv;
 
                     //获取颜色值
-                    col = this.getPixel(this._heightMap, u, v) & 0xff;
+                    col = this.getPixel(this._heightImageData, u, v) & 0xff;
                     //计算高度值
                     y = (col > this.maxElevation) ? (this.maxElevation / 0xff) * this.height : ((col < this.minElevation) ? (this.minElevation / 0xff) * this.height : (col / 0xff) * this.height);
 
@@ -208,10 +199,10 @@ namespace feng3d
         {
 
             //得到高度图中的值
-            var u = (x / this.width + .5) * (this._heightMap.width - 1);
-            var v = (-z / this.depth + .5) * (this._heightMap.height - 1);
+            var u = (x / this.width + .5) * (this._heightImageData.width - 1);
+            var v = (-z / this.depth + .5) * (this._heightImageData.height - 1);
 
-            var col = this.getPixel(this._heightMap, u, v) & 0xff;
+            var col = this.getPixel(this._heightImageData, u, v) & 0xff;
 
             var h: number;
             if (col > this.maxElevation)
@@ -249,4 +240,11 @@ namespace feng3d
             return blue;
         }
     }
+
+    /**
+     * 默认高度图
+     */
+    var defaultHeightMap = imageUtil.createImageData();
+
+    Feng3dAssets.setAssets(Geometry.terrain = new TerrainGeometry().value({ name: "default-Terrain", assetsId: "default-Terrain" }));
 }

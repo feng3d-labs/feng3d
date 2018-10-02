@@ -15,11 +15,10 @@ namespace feng3d
          */
         assign: TerrainData;
 
-        /**
-         * 地形几何体数据
-         */
-        geometry = new TerrainGeometry();
+        geometry = Geometry.terrain;
 
-        material = new Material().value({ shaderName: "terrain" });
+        material = Material.terrain;
     }
+
+    Feng3dAssets.setAssets(Material.terrain = new Material().value({ name: "Default-Terrain", assetsId: "Default-Terrain", shaderName: "terrain", hideFlags: HideFlags.NotEditable }));
 }

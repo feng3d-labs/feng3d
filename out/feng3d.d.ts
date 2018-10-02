@@ -9901,6 +9901,10 @@ declare namespace feng3d {
          * 点几何体
          */
         static point: PointGeometry;
+        /**
+         * 默认地形几何体
+         */
+        static terrain: TerrainGeometry;
         name: string;
         assetType: AssetExtension;
         /**
@@ -11173,6 +11177,10 @@ declare namespace feng3d {
          * 默认水材质
          */
         static defaultWater: Material;
+        /**
+         * 默认地形材质
+         */
+        static terrain: Material;
     }
 }
 declare namespace feng3d {
@@ -11744,7 +11752,7 @@ declare namespace feng3d {
         /**
          * 高度图路径
          */
-        heightMapUrl: string;
+        heightMap: UrlImageTexture2D;
         /**
          * 地形宽度
          */
@@ -11773,15 +11781,12 @@ declare namespace feng3d {
          * 最小地形高度
          */
         minElevation: number;
-        private _heightMap;
+        private _heightImageData;
         /**
          * 创建高度地形 拥有segmentsW*segmentsH个顶点
          */
         constructor(raw?: gPartial<TerrainGeometry>);
-        /**
-         * 几何体变脏
-         */
-        invalidateGeometry(propertyKey?: string, oldValue?: any, newValue?: any): void;
+        private onHeightMapChanged;
         /**
          * 创建顶点坐标
          */
@@ -11873,9 +11878,6 @@ declare namespace feng3d {
          * 地形资源
          */
         assign: TerrainData;
-        /**
-         * 地形几何体数据
-         */
         geometry: TerrainGeometry;
         material: Material;
     }

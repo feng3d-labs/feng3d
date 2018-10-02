@@ -132,6 +132,11 @@ namespace feng3d
          * 默认水材质
          */
         static defaultWater: Material;
+
+        /**
+         * 默认地形材质
+         */
+        static terrain: Material;
     }
 
     Feng3dAssets.setAssets(Material.default = new Material().value({ name: "Default-Material", assetsId: "Default-Material", hideFlags: HideFlags.NotEditable }));
