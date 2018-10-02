@@ -622,6 +622,10 @@ namespace feng3d.war3
 	{
 		/** 材质层列表 */
 		layers: Layer[] = [];
+		/**
+		 * created 材质
+		 */
+		material: feng3d.Material
 	}
 
 	/**

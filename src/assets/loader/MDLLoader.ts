@@ -21,8 +21,6 @@ namespace feng3d
             {
                 war3.mdlParser.parse(content, (war3Model) =>
                 {
-                    war3Model.root = mdlurl.substring(0, mdlurl.lastIndexOf("/") + 1);
-
                     var showMesh = war3Model.getMesh();
 
                     var gameObject = new GameObject().value({ name: pathUtils.getName(mdlurl), children: [showMesh] })

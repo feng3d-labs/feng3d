@@ -53,7 +53,10 @@ namespace feng3d
                     renderAtomic.uniforms[<any>key] = this.uniforms[key];
                 }
             }
-            renderAtomic.shader = this._shader;
+            if (!renderAtomic.shader || renderAtomic.shader["shaderName"] != this.shaderName)
+            {
+                renderAtomic.shader = new Shader(this.shaderName);
+            }
             renderAtomic.renderParams = this.renderParams;
 
             renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode == RenderMode.POINTS;
@@ -91,11 +94,6 @@ namespace feng3d
             if (loadingNum == 0) callback();
         }
 
-        /**
-         * 渲染程序
-         */
-        private _shader: Shader;
-
         private onShaderChanged()
         {
             var cls = shaderConfig.shaders[this.shaderName].cls;
@@ -111,7 +109,6 @@ namespace feng3d
             {
                 this.uniforms = <any>{};
             }
-            this._shader = new Shader(this.shaderName);
         }
 
         /**

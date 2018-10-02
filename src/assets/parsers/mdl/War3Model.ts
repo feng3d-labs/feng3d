@@ -33,8 +33,6 @@ namespace feng3d.war3
 		//
 		//---------------------------------------
 
-		root: string = "";
-
 		private meshs: GameObject[];
 		private skeletonComponent: SkeletonComponent;
 
@@ -74,17 +72,21 @@ namespace feng3d.war3
 				geometry.setVAData("a_jointweight0", skins.jointWeights0, 4);
 
 				var material: Material = this.materials[geoset.MaterialID];
-				var fBitmap: FBitmap = this.getFBitmap(material);
-
-				var image: string = fBitmap.image;
-				if (image && image.length > 0)
+				if (!material.material)
 				{
-					image = image.substring(0, image.indexOf("."));
-					image += ".JPG";
-					image = this.root + image;
+					var fBitmap: FBitmap = this.getFBitmap(material);
+					var image: string = fBitmap.image;
+					// if (image && image.length > 0)
+					// {
+					// image = image.substring(0, image.indexOf("."));
+					// image += ".JPG";
+					material.material = model.material = new feng3d.Material().value({ name: image, renderParams: { cullFace: CullFace.FRONT } });
+					// }
 
-					model.material = new feng3d.Material().value({ uniforms: { s_diffuse: { url: image } }, renderParams: { cullFace: CullFace.FRONT } });
+					feng3dDispatcher.dispatch("assets.parsed", material.material);
 				}
+
+				feng3dDispatcher.dispatch("assets.parsed", geometry);
 
 				model.geometry = geometry;
 				model.skinSkeleton = skinSkeleton;

@@ -16558,7 +16558,7 @@ var feng3d;
                     });
                     return include;
                 }
-                var p = _this.camera.project(t.position);
+                var p = _this.camera.project(t.scenePosition);
                 return rect.contains(p.x, p.y);
             }).map(function (t) { return t.gameObject; });
             return gs;
@@ -21181,7 +21181,9 @@ var feng3d;
                     renderAtomic.uniforms[key] = this.uniforms[key];
                 }
             }
-            renderAtomic.shader = this._shader;
+            if (!renderAtomic.shader || renderAtomic.shader["shaderName"] != this.shaderName) {
+                renderAtomic.shader = new feng3d.Shader(this.shaderName);
+            }
             renderAtomic.renderParams = this.renderParams;
             renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode == feng3d.RenderMode.POINTS;
         };
@@ -21224,7 +21226,6 @@ var feng3d;
             else {
                 this.uniforms = {};
             }
-            this._shader = new feng3d.Shader(this.shaderName);
         };
         __decorate([
             feng3d.oav({ component: "OAVMaterialName" }),
@@ -25865,12 +25866,6 @@ var feng3d;
                 this.geosets = [];
                 /** 骨骼动画列表 */
                 this.bones = [];
-                //-------------------------------------
-                //
-                //	以下数据计算得出
-                //
-                //---------------------------------------
-                this.root = "";
             }
             War3Model.prototype.getMesh = function () {
                 this.meshs = [];
@@ -25897,14 +25892,18 @@ var feng3d;
                     geometry.setVAData("a_jointindex0", skins.jointIndices0, 4);
                     geometry.setVAData("a_jointweight0", skins.jointWeights0, 4);
                     var material = this.materials[geoset.MaterialID];
-                    var fBitmap = this.getFBitmap(material);
-                    var image = fBitmap.image;
-                    if (image && image.length > 0) {
-                        image = image.substring(0, image.indexOf("."));
-                        image += ".JPG";
-                        image = this.root + image;
-                        model.material = new feng3d.Material().value({ uniforms: { s_diffuse: { url: image } }, renderParams: { cullFace: feng3d.CullFace.FRONT } });
+                    if (!material.material) {
+                        var fBitmap = this.getFBitmap(material);
+                        var image = fBitmap.image;
+                        // if (image && image.length > 0)
+                        // {
+                        // image = image.substring(0, image.indexOf("."));
+                        // image += ".JPG";
+                        material.material = model.material = new feng3d.Material().value({ name: image, renderParams: { cullFace: feng3d.CullFace.FRONT } });
+                        // }
+                        feng3d.feng3dDispatcher.dispatch("assets.parsed", material.material);
                     }
+                    feng3d.feng3dDispatcher.dispatch("assets.parsed", geometry);
                     model.geometry = geometry;
                     model.skinSkeleton = skinSkeleton;
                     container.addChild(mesh);
@@ -27812,7 +27811,6 @@ var feng3d;
         MDLLoader.prototype.load = function (mdlurl, callback) {
             feng3d.assets.readString(mdlurl, function (err, content) {
                 feng3d.war3.mdlParser.parse(content, function (war3Model) {
-                    war3Model.root = mdlurl.substring(0, mdlurl.lastIndexOf("/") + 1);
                     var showMesh = war3Model.getMesh();
                     var gameObject = new feng3d.GameObject().value({ name: feng3d.pathUtils.getName(mdlurl), children: [showMesh] });
                     feng3d.feng3dDispatcher.dispatch("assets.parsed", gameObject);

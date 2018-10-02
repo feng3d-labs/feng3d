@@ -11131,10 +11131,6 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         onLoadCompleted(callback: () => void): void;
-        /**
-         * 渲染程序
-         */
-        private _shader;
         private onShaderChanged;
         /**
          * 默认材质
@@ -12921,6 +12917,10 @@ declare namespace feng3d.war3 {
     class Material {
         /** 材质层列表 */
         layers: Layer[];
+        /**
+         * created 材质
+         */
+        material: feng3d.Material;
     }
     /**
      * 模型信息
@@ -12994,7 +12994,6 @@ declare namespace feng3d.war3 {
         bones: BoneObject[];
         /** 骨骼轴心坐标 */
         pivotPoints: Vector3[];
-        root: string;
         private meshs;
         private skeletonComponent;
         getMesh(): GameObject;
