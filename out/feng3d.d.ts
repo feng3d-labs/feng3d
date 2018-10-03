@@ -5418,6 +5418,7 @@ declare namespace feng3d {
          * 拷贝
          */
         copy(color: Color3): this;
+        clone(): Color3;
         toVector3(vector3?: Vector3): Vector3;
         toColor4(color4?: Color4): Color4;
         /**

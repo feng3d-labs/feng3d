@@ -148,6 +148,11 @@ namespace feng3d
             return this;
         }
 
+        clone()
+        {
+            return new Color3(this.r, this.g, this.b);
+        }
+
         toVector3(vector3 = new Vector3())
         {
             vector3.x = this.r;

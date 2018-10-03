@@ -10937,6 +10937,9 @@ var feng3d;
             this.b = color.b;
             return this;
         };
+        Color3.prototype.clone = function () {
+            return new Color3(this.r, this.g, this.b);
+        };
         Color3.prototype.toVector3 = function (vector3) {
             if (vector3 === void 0) { vector3 = new feng3d.Vector3(); }
             vector3.x = this.r;
