@@ -86,7 +86,7 @@ namespace feng3d
          * @param color 混入的颜色
          * @param rate  混入比例
          */
-        mix(color: Color3, rate = 0.5)
+        mix(color: Color3, rate: number)
         {
             this.r = this.r * (1 - rate) + color.r * rate;
             this.g = this.g * (1 - rate) + color.g * rate;
@@ -95,9 +95,52 @@ namespace feng3d
         }
 
         /**
+         * 混合颜色
+         * @param color 混入的颜色
+         * @param rate  混入比例
+         */
+        mixTo(color: Color3, rate: number, vout = new Color3())
+        {
+            return vout.copy(this).mix(color, rate);
+        }
+
+        /**
+         * 按标量（大小）缩放当前的 Color3 对象。
+         */
+        scale(s: number)
+        {
+            this.r *= s;
+            this.g *= s;
+            this.b *= s;
+            return this;
+        }
+
+        /**
+         * 按标量（大小）缩放当前的 Color3 对象。
+         */
+        scaleTo(s: number, vout = new Color3())
+        {
+            return vout.copy(this).scale(s);
+        }
+
+        /**
+         * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
+         */
+        equals(object: Color3, precision = FMath.PRECISION)
+        {
+            if (!FMath.equals(this.r - object.r, 0, precision))
+                return false;
+            if (!FMath.equals(this.g - object.g, 0, precision))
+                return false;
+            if (!FMath.equals(this.b - object.b, 0, precision))
+                return false;
+            return true;
+        }
+
+        /**
          * 拷贝
          */
-        copyFrom(color: Color3)
+        copy(color: Color3)
         {
             this.r = color.r;
             this.g = color.g;

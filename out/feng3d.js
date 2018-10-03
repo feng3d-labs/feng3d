@@ -3968,6 +3968,157 @@ var feng3d;
             var imageData = ctx.getImageData(0, 0, size, size);
             return imageData;
         };
+        /**
+         * 创建颜色拾取矩形
+         * @param color 基色
+         * @param width 宽度
+         * @param height 高度
+         */
+        ImageUtil.prototype.createColorPickerRect = function (color, width, height) {
+            if (width === void 0) { width = 64; }
+            if (height === void 0) { height = 64; }
+            var leftTop = new feng3d.Color3(1, 1, 1);
+            var rightTop = new feng3d.Color3().fromUnit(color);
+            var leftBottom = new feng3d.Color3(0, 0, 0);
+            var rightBottom = new feng3d.Color3(0, 0, 0);
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext('2d');
+            //
+            for (var i = 0; i < width; i++) {
+                for (var j = 0; j < height; j++) {
+                    var top = leftTop.mixTo(rightTop, i / width);
+                    var bottom = leftBottom.mixTo(rightBottom, i / width);
+                    var v = top.mixTo(bottom, j / height);
+                    //
+                    ctx.fillStyle = v.toHexString();
+                    ctx.fillRect(i, j, 1, 1);
+                }
+            }
+            var imageData = ctx.getImageData(0, 0, width, height);
+            return imageData;
+        };
+        /**
+         * 获取颜色的基色以及颜色拾取矩形所在位置
+         * @param color 查找颜色
+         */
+        ImageUtil.prototype.getColorPickerRectPosition = function (color) {
+            var black = new feng3d.Color3(0, 0, 0);
+            var white = new feng3d.Color3(1, 1, 1);
+            var c = new feng3d.Color3().fromUnit(color);
+            var max = Math.max(c.r, c.g, c.b);
+            c = black.mix(c, 1 / max);
+            var min = Math.min(c.r, c.g, c.b);
+            c = white.mix(c, 1 / (1 - min));
+            var ratioH = 1 - max;
+            var ratioW = 1 - min;
+            return {
+                /**
+                 * 基色
+                 */
+                color: c,
+                /**
+                 * 横向位置
+                 */
+                ratioW: ratioW,
+                /**
+                 * 纵向位置
+                 */
+                ratioH: ratioH
+            };
+        };
+        /**
+         * 创建颜色条带
+         * @param colors
+         * @param ratios [0,1]
+         * @param width
+         * @param height
+         * @param dirw true为横向条带，否则纵向条带
+         */
+        ImageUtil.prototype.createColorPickerStripe = function (width, height, colors, ratios, dirw) {
+            if (dirw === void 0) { dirw = true; }
+            if (!ratios) {
+                ratios = [];
+                for (var i = 0; i < colors.length; i++) {
+                    ratios[i] = i / (colors.length - 1);
+                }
+            }
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext('2d');
+            //
+            for (var i = 0; i < width; i++) {
+                for (var j = 0; j < height; j++) {
+                    var v = this.getMixColor(colors, ratios, dirw ? i / (width - 1) : j / (height - 1));
+                    //
+                    ctx.fillStyle = v.toHexString();
+                    ctx.fillRect(i, j, 1, 1);
+                }
+            }
+            var imageData = ctx.getImageData(0, 0, width, height);
+            return imageData;
+        };
+        ImageUtil.prototype.getMixColor = function (colors, ratios, ratio) {
+            if (!ratios) {
+                ratios = [];
+                for (var i_1 = 0; i_1 < colors.length; i_1++) {
+                    ratios[i_1] = i_1 / (colors.length - 1);
+                }
+            }
+            var colors1 = colors.map(function (v) { return new feng3d.Color3().fromUnit(v); });
+            for (var i = 0; i < colors1.length - 1; i++) {
+                if (ratios[i] <= ratio && ratio <= ratios[i + 1]) {
+                    var v = feng3d.FMath.mapLinear(ratio, ratios[i], ratios[i + 1], 0, 1);
+                    var c = colors1[i].mixTo(colors1[i + 1], v);
+                    return c;
+                }
+            }
+            return colors1[0];
+        };
+        ImageUtil.prototype.getMixColorRatio = function (color, colors, ratios) {
+            if (!ratios) {
+                ratios = [];
+                for (var i_2 = 0; i_2 < colors.length; i_2++) {
+                    ratios[i_2] = i_2 / (colors.length - 1);
+                }
+            }
+            var colors1 = colors.map(function (v) { return new feng3d.Color3().fromUnit(v); });
+            var c = new feng3d.Color3().fromUnit(color);
+            var r = c.r;
+            var g = c.g;
+            var b = c.b;
+            for (var i = 0; i < colors1.length - 1; i++) {
+                var c0 = colors1[i];
+                var c1 = colors1[i + 1];
+                //
+                if (c.equals(c0))
+                    return ratios[i];
+                if (c.equals(c1))
+                    return ratios[i + 1];
+                //
+                var r1 = c0.r + c1.r;
+                var g1 = c0.g + c1.g;
+                var b1 = c0.b + c1.b;
+                //
+                var v = r * r1 + g * g1 + b * b1;
+                if (v > 2) {
+                    var result = 0;
+                    if (r1 == 1) {
+                        result = feng3d.FMath.mapLinear(r, c0.r, c1.r, ratios[i], ratios[i + 1]);
+                    }
+                    else if (g1 == 1) {
+                        result = feng3d.FMath.mapLinear(g, c0.g, c1.g, ratios[i], ratios[i + 1]);
+                    }
+                    else if (b1 == 1) {
+                        result = feng3d.FMath.mapLinear(b, c0.b, c1.b, ratios[i], ratios[i + 1]);
+                    }
+                    return result;
+                }
+            }
+            return 0;
+        };
         return ImageUtil;
     }());
     feng3d.ImageUtil = ImageUtil;
@@ -10734,16 +10885,53 @@ var feng3d;
          * @param rate  混入比例
          */
         Color3.prototype.mix = function (color, rate) {
-            if (rate === void 0) { rate = 0.5; }
             this.r = this.r * (1 - rate) + color.r * rate;
             this.g = this.g * (1 - rate) + color.g * rate;
             this.b = this.b * (1 - rate) + color.b * rate;
             return this;
         };
         /**
+         * 混合颜色
+         * @param color 混入的颜色
+         * @param rate  混入比例
+         */
+        Color3.prototype.mixTo = function (color, rate, vout) {
+            if (vout === void 0) { vout = new Color3(); }
+            return vout.copy(this).mix(color, rate);
+        };
+        /**
+         * 按标量（大小）缩放当前的 Color3 对象。
+         */
+        Color3.prototype.scale = function (s) {
+            this.r *= s;
+            this.g *= s;
+            this.b *= s;
+            return this;
+        };
+        /**
+         * 按标量（大小）缩放当前的 Color3 对象。
+         */
+        Color3.prototype.scaleTo = function (s, vout) {
+            if (vout === void 0) { vout = new Color3(); }
+            return vout.copy(this).scale(s);
+        };
+        /**
+         * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
+         */
+        Color3.prototype.equals = function (object, precision) {
+            if (precision === void 0) { precision = feng3d.FMath.PRECISION; }
+            if (!feng3d.FMath.equals(this.r - object.r, 0, precision))
+                return false;
+            if (!feng3d.FMath.equals(this.g - object.g, 0, precision))
+                return false;
+            if (!feng3d.FMath.equals(this.b - object.b, 0, precision))
+                return false;
+            return true;
+        };
+        /**
          * 拷贝
          */
-        Color3.prototype.copyFrom = function (color) {
+        Color3.prototype.copy = function (color) {
             this.r = color.r;
             this.g = color.g;
             this.b = color.b;
@@ -23700,10 +23888,10 @@ var feng3d;
             var bursts = this.bursts.filter(function (a) { return (_this.pretime <= a.time && a.time < time); });
             //
             emits = emits.concat(bursts).sort(function (a, b) { return b.time - a.time; });
-            for (var i_1 = 0; i_1 < emits.length; i_1++) {
+            for (var i_3 = 0; i_3 < emits.length; i_3++) {
                 if (deathParticles.length == 0)
                     return;
-                var element = emits[i_1];
+                var element = emits[i_3];
                 for (var j = 0; j < element.num; j++) {
                     if (deathParticles.length == 0)
                         return;

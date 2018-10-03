@@ -1985,6 +1985,42 @@ declare namespace feng3d {
          * @param size 尺寸
          */
         createDefaultParticle(size?: number): ImageData;
+        /**
+         * 创建颜色拾取矩形
+         * @param color 基色
+         * @param width 宽度
+         * @param height 高度
+         */
+        createColorPickerRect(color: number, width?: number, height?: number): ImageData;
+        /**
+         * 获取颜色的基色以及颜色拾取矩形所在位置
+         * @param color 查找颜色
+         */
+        getColorPickerRectPosition(color: number): {
+            /**
+             * 基色
+             */
+            color: Color3;
+            /**
+             * 横向位置
+             */
+            ratioW: number;
+            /**
+             * 纵向位置
+             */
+            ratioH: number;
+        };
+        /**
+         * 创建颜色条带
+         * @param colors
+         * @param ratios [0,1]
+         * @param width
+         * @param height
+         * @param dirw true为横向条带，否则纵向条带
+         */
+        createColorPickerStripe(width: number, height: number, colors: number[], ratios?: number[], dirw?: boolean): ImageData;
+        getMixColor(colors: number[], ratios: number[], ratio: number): Color3;
+        getMixColorRatio(color: number, colors: number[], ratios?: number[]): number;
     }
 }
 /**
@@ -5359,11 +5395,29 @@ declare namespace feng3d {
          * @param color 混入的颜色
          * @param rate  混入比例
          */
-        mix(color: Color3, rate?: number): this;
+        mix(color: Color3, rate: number): this;
+        /**
+         * 混合颜色
+         * @param color 混入的颜色
+         * @param rate  混入比例
+         */
+        mixTo(color: Color3, rate: number, vout?: Color3): Color3;
+        /**
+         * 按标量（大小）缩放当前的 Color3 对象。
+         */
+        scale(s: number): this;
+        /**
+         * 按标量（大小）缩放当前的 Color3 对象。
+         */
+        scaleTo(s: number, vout?: Color3): Color3;
+        /**
+         * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
+         */
+        equals(object: Color3, precision?: number): boolean;
         /**
          * 拷贝
          */
-        copyFrom(color: Color3): this;
+        copy(color: Color3): this;
         toVector3(vector3?: Vector3): Vector3;
         toColor4(color4?: Color4): Color4;
         /**
