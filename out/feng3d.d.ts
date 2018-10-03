@@ -1996,6 +1996,11 @@ declare namespace feng3d {
          * 获取颜色的基色以及颜色拾取矩形所在位置
          * @param color 查找颜色
          */
+        getColorPickerRectAtPosition(color: number, rw: number, rh: number): Color3;
+        /**
+         * 获取颜色的基色以及颜色拾取矩形所在位置
+         * @param color 查找颜色
+         */
         getColorPickerRectPosition(color: number): {
             /**
              * 基色
@@ -2021,6 +2026,7 @@ declare namespace feng3d {
         createColorPickerStripe(width: number, height: number, colors: number[], ratios?: number[], dirw?: boolean): ImageData;
         getMixColor(colors: number[], ratios: number[], ratio: number): Color3;
         getMixColorRatio(color: number, colors: number[], ratios?: number[]): number;
+        getMixColorAtRatio(ratio: number, colors: number[], ratios?: number[]): Color3;
     }
 }
 /**

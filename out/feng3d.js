@@ -4003,14 +4003,30 @@ var feng3d;
          * 获取颜色的基色以及颜色拾取矩形所在位置
          * @param color 查找颜色
          */
+        ImageUtil.prototype.getColorPickerRectAtPosition = function (color, rw, rh) {
+            var leftTop = new feng3d.Color3(1, 1, 1);
+            var rightTop = new feng3d.Color3().fromUnit(color);
+            var leftBottom = new feng3d.Color3(0, 0, 0);
+            var rightBottom = new feng3d.Color3(0, 0, 0);
+            var top = leftTop.mixTo(rightTop, rw);
+            var bottom = leftBottom.mixTo(rightBottom, rw);
+            var v = top.mixTo(bottom, rh);
+            return v;
+        };
+        /**
+         * 获取颜色的基色以及颜色拾取矩形所在位置
+         * @param color 查找颜色
+         */
         ImageUtil.prototype.getColorPickerRectPosition = function (color) {
             var black = new feng3d.Color3(0, 0, 0);
             var white = new feng3d.Color3(1, 1, 1);
             var c = new feng3d.Color3().fromUnit(color);
             var max = Math.max(c.r, c.g, c.b);
-            c = black.mix(c, 1 / max);
+            if (max != 0)
+                c = black.mix(c, 1 / max);
             var min = Math.min(c.r, c.g, c.b);
-            c = white.mix(c, 1 / (1 - min));
+            if (min != 1)
+                c = white.mix(c, 1 / (1 - min));
             var ratioH = 1 - max;
             var ratioW = 1 - min;
             return {
@@ -4118,6 +4134,23 @@ var feng3d;
                 }
             }
             return 0;
+        };
+        ImageUtil.prototype.getMixColorAtRatio = function (ratio, colors, ratios) {
+            if (!ratios) {
+                ratios = [];
+                for (var i_3 = 0; i_3 < colors.length; i_3++) {
+                    ratios[i_3] = i_3 / (colors.length - 1);
+                }
+            }
+            var colors1 = colors.map(function (v) { return new feng3d.Color3().fromUnit(v); });
+            for (var i = 0; i < colors1.length - 1; i++) {
+                if (ratios[i] <= ratio && ratio <= ratios[i + 1]) {
+                    var mix = feng3d.FMath.mapLinear(ratio, ratios[i], ratios[i + 1], 0, 1);
+                    var c = colors1[i].mixTo(colors1[i + 1], mix);
+                    return c;
+                }
+            }
+            return colors1[0];
         };
         return ImageUtil;
     }());
@@ -23891,10 +23924,10 @@ var feng3d;
             var bursts = this.bursts.filter(function (a) { return (_this.pretime <= a.time && a.time < time); });
             //
             emits = emits.concat(bursts).sort(function (a, b) { return b.time - a.time; });
-            for (var i_3 = 0; i_3 < emits.length; i_3++) {
+            for (var i_4 = 0; i_4 < emits.length; i_4++) {
                 if (deathParticles.length == 0)
                     return;
-                var element = emits[i_3];
+                var element = emits[i_4];
                 for (var j = 0; j < element.num; j++) {
                     if (deathParticles.length == 0)
                         return;

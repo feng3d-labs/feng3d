@@ -141,6 +141,23 @@ namespace feng3d
          * 获取颜色的基色以及颜色拾取矩形所在位置
          * @param color 查找颜色
          */
+        getColorPickerRectAtPosition(color: number, rw: number, rh: number)
+        {
+            var leftTop = new Color3(1, 1, 1);
+            var rightTop = new Color3().fromUnit(color);
+            var leftBottom = new Color3(0, 0, 0);
+            var rightBottom = new Color3(0, 0, 0);
+
+            var top = leftTop.mixTo(rightTop, rw);
+            var bottom = leftBottom.mixTo(rightBottom, rw);
+            var v = top.mixTo(bottom, rh);
+            return v;
+        }
+
+        /**
+         * 获取颜色的基色以及颜色拾取矩形所在位置
+         * @param color 查找颜色
+         */
         getColorPickerRectPosition(color: number)
         {
             var black = new Color3(0, 0, 0);
@@ -148,9 +165,11 @@ namespace feng3d
 
             var c = new Color3().fromUnit(color);
             var max = Math.max(c.r, c.g, c.b);
-            c = black.mix(c, 1 / max);
+            if (max != 0)
+                c = black.mix(c, 1 / max);
             var min = Math.min(c.r, c.g, c.b);
-            c = white.mix(c, 1 / (1 - min));
+            if (min != 1)
+                c = white.mix(c, 1 / (1 - min));
             var ratioH = 1 - max;
             var ratioW = 1 - min;
             return {
@@ -281,6 +300,31 @@ namespace feng3d
                 }
             }
             return 0;
+        }
+
+        getMixColorAtRatio(ratio: number, colors: number[], ratios?: number[])
+        {
+            if (!ratios)
+            {
+                ratios = [];
+                for (let i = 0; i < colors.length; i++)
+                {
+                    ratios[i] = i / (colors.length - 1);
+                }
+            }
+
+            var colors1 = colors.map(v => new Color3().fromUnit(v));
+
+            for (var i = 0; i < colors1.length - 1; i++)
+            {
+                if (ratios[i] <= ratio && ratio <= ratios[i + 1])
+                {
+                    var mix = FMath.mapLinear(ratio, ratios[i], ratios[i + 1], 0, 1);
+                    var c = colors1[i].mixTo(colors1[i + 1], mix);
+                    return c;
+                }
+            }
+            return colors1[0];
         }
     }
 
