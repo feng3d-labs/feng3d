@@ -3944,6 +3944,30 @@ var feng3d;
             var imageData = ctx.getImageData(0, 0, width, height);
             return imageData;
         };
+        /**
+         * 创建默认粒子贴图
+         * @param size 尺寸
+         */
+        ImageUtil.prototype.createDefaultParticle = function (size) {
+            if (size === void 0) { size = 64; }
+            var canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = new feng3d.Color3().fromUnit(0).toHexString();
+            ctx.fillRect(0, 0, size, size);
+            var half = size / 2;
+            for (var i = 0; i < size; i++) {
+                for (var j = 0; j < size; j++) {
+                    var vec = new feng3d.Vector2(i - half, j - half);
+                    var f = 1 - feng3d.FMath.clamp(vec.length, 0, half) / half;
+                    ctx.fillStyle = new feng3d.Color3(f, f, f).toHexString();
+                    ctx.fillRect(i, j, 1, 1);
+                }
+            }
+            var imageData = ctx.getImageData(0, 0, size, size);
+            return imageData;
+        };
         return ImageUtil;
     }());
     feng3d.ImageUtil = ImageUtil;
@@ -20703,6 +20727,7 @@ var feng3d;
         ImageDatas["green"] = "green";
         ImageDatas["blue"] = "blue";
         ImageDatas["defaultNormal"] = "defaultNormal";
+        ImageDatas["defaultParticle"] = "defaultParticle";
     })(ImageDatas = feng3d.ImageDatas || (feng3d.ImageDatas = {}));
     feng3d.imageDatas = {
         black: feng3d.imageUtil.createImageData(1, 1, feng3d.ColorKeywords.black),
@@ -20711,6 +20736,7 @@ var feng3d;
         green: feng3d.imageUtil.createImageData(1, 1, feng3d.ColorKeywords.green),
         blue: feng3d.imageUtil.createImageData(1, 1, feng3d.ColorKeywords.blue),
         defaultNormal: feng3d.imageUtil.createImageData(1, 1, 0x8080ff),
+        defaultParticle: feng3d.imageUtil.createDefaultParticle(),
     };
     /**
      * 2D纹理
@@ -20839,6 +20865,7 @@ var feng3d;
     feng3d.UrlImageTexture2D = UrlImageTexture2D;
     feng3d.Feng3dAssets.setAssets(UrlImageTexture2D.default = new UrlImageTexture2D().value({ name: "Default-Texture", assetsId: "Default-Texture", hideFlags: feng3d.HideFlags.NotEditable }));
     feng3d.Feng3dAssets.setAssets(UrlImageTexture2D.defaultNormal = new UrlImageTexture2D().value({ name: "Default-NormalTexture", assetsId: "Default-NormalTexture", noPixels: feng3d.ImageDatas.defaultNormal, hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.Feng3dAssets.setAssets(UrlImageTexture2D.defaultParticle = new UrlImageTexture2D().value({ name: "Default-ParticleTexture", assetsId: "Default-ParticleTexture", noPixels: feng3d.ImageDatas.defaultParticle, hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -23890,13 +23917,18 @@ var feng3d;
         function ParticleUniforms() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.ParticleUniforms";
+            _this.s_diffuse = feng3d.UrlImageTexture2D.defaultParticle;
             return _this;
         }
         return ParticleUniforms;
     }(feng3d.StandardUniforms));
     feng3d.ParticleUniforms = ParticleUniforms;
     feng3d.shaderConfig.shaders["particle"].cls = ParticleUniforms;
-    feng3d.Feng3dAssets.setAssets(feng3d.Material.particle = new feng3d.Material().value({ name: "Particle-Material", assetsId: "Particle-Material", shaderName: "particle", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.Feng3dAssets.setAssets(feng3d.Material.particle = new feng3d.Material().value({
+        name: "Particle-Material", assetsId: "Particle-Material", shaderName: "particle",
+        renderParams: { enableBlend: true, sfactor: feng3d.BlendFactor.SRC_COLOR, dfactor: feng3d.BlendFactor.ONE_MINUS_SRC_COLOR },
+        hideFlags: feng3d.HideFlags.NotEditable,
+    }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -24123,14 +24155,6 @@ var feng3d;
             feng3d.serialize
         ], ParticleSystem.prototype, "numParticles", void 0);
         __decorate([
-            feng3d.oav({ component: "OAVPick", tooltip: "几何体，提供模型以形状", componentParam: { accepttype: "geometry", datatype: "geometry" } }),
-            feng3d.serialize
-        ], ParticleSystem.prototype, "geometry", void 0);
-        __decorate([
-            feng3d.oav({ component: "OAVPick", tooltip: "材质，提供模型以皮肤", componentParam: { accepttype: "material", datatype: "material" } }),
-            feng3d.serialize
-        ], ParticleSystem.prototype, "material", void 0);
-        __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "全局属性", component: "OAVObjectView", tooltip: "粒子全局属性，作用与所有粒子。" })
         ], ParticleSystem.prototype, "particleGlobal", void 0);
@@ -24143,9 +24167,6 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ block: "粒子模块", component: "OAVParticleComponentList" })
         ], ParticleSystem.prototype, "components", void 0);
-        __decorate([
-            feng3d.oav({ tooltip: "修改粒子组件内数据后，可能需要调用该函数标记变化。" })
-        ], ParticleSystem.prototype, "invalidate", null);
         return ParticleSystem;
     }(feng3d.Model));
     feng3d.ParticleSystem = ParticleSystem;

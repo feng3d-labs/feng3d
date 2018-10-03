@@ -1980,6 +1980,11 @@ declare namespace feng3d {
          * @param fillcolor 填充颜色
          */
         createImageData(width?: number, height?: number, fillcolor?: number): ImageData;
+        /**
+         * 创建默认粒子贴图
+         * @param size 尺寸
+         */
+        createDefaultParticle(size?: number): ImageData;
     }
 }
 /**
@@ -10869,7 +10874,8 @@ declare namespace feng3d {
         red = "red",
         green = "green",
         blue = "blue",
-        defaultNormal = "defaultNormal"
+        defaultNormal = "defaultNormal",
+        defaultParticle = "defaultParticle"
     }
     var imageDatas: {
         black: ImageData;
@@ -10878,6 +10884,7 @@ declare namespace feng3d {
         green: ImageData;
         blue: ImageData;
         defaultNormal: ImageData;
+        defaultParticle: ImageData;
     };
     /**
      * 2D纹理
@@ -10931,6 +10938,10 @@ declare namespace feng3d {
          * 默认法线贴图
          */
         static defaultNormal: UrlImageTexture2D;
+        /**
+         * 默认粒子贴图
+         */
+        static defaultParticle: UrlImageTexture2D;
     }
 }
 declare namespace feng3d {
@@ -12097,6 +12108,7 @@ declare namespace feng3d {
     }
     class ParticleUniforms extends StandardUniforms {
         __class__: "feng3d.ParticleUniforms";
+        s_diffuse: UrlImageTexture2D;
     }
 }
 declare namespace feng3d {

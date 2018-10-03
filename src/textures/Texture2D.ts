@@ -8,6 +8,7 @@ namespace feng3d
         green = "green",
         blue = "blue",
         defaultNormal = "defaultNormal",
+        defaultParticle = "defaultParticle",
     }
 
     export var imageDatas = {
@@ -17,6 +18,7 @@ namespace feng3d
         green: imageUtil.createImageData(1, 1, ColorKeywords.green),
         blue: imageUtil.createImageData(1, 1, ColorKeywords.blue),
         defaultNormal: imageUtil.createImageData(1, 1, 0x8080ff),
+        defaultParticle: imageUtil.createDefaultParticle(),
     }
 
     /**

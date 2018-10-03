@@ -44,12 +44,8 @@ namespace feng3d
         @serialize
         numParticles = 1000;
 
-        @oav({ component: "OAVPick", tooltip: "几何体，提供模型以形状", componentParam: { accepttype: "geometry", datatype: "geometry" } })
-        @serialize
         geometry = Geometry.billboard;
 
-        @oav({ component: "OAVPick", tooltip: "材质，提供模型以皮肤", componentParam: { accepttype: "material", datatype: "material" } })
-        @serialize
         material = Material.particle;
 
         /**
@@ -126,7 +122,6 @@ namespace feng3d
             this.particleEmission.emit(this.time, this.deathParticles, this.survivalParticles, this.changedParticles);
         }
 
-        @oav({ tooltip: "修改粒子组件内数据后，可能需要调用该函数标记变化。" })
         public invalidate()
         {
             this._isInvalid = true;

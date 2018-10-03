@@ -19,6 +19,7 @@ namespace feng3d
         {
             assets.readImage(url, callback);
         }
+
         /**
          * 获取图片数据
          * @param image 加载完成的图片元素
@@ -36,6 +37,7 @@ namespace feng3d
             var imageData = ctxt.getImageData(0, 0, image.width, image.height);//读取整张图片的像素。
             return imageData;
         }
+
         /**
          * 从url获取图片数据
          * @param url 图片路径
@@ -49,6 +51,7 @@ namespace feng3d
                 callback(imageData);
             });
         }
+
         /**
          * 创建ImageData
          * @param width 数据宽度
@@ -67,6 +70,35 @@ namespace feng3d
 
             var imageData = ctx.getImageData(0, 0, width, height);
 
+            return imageData;
+        }
+
+        /**
+         * 创建默认粒子贴图
+         * @param size 尺寸
+         */
+        createDefaultParticle(size = 64)
+        {
+            var canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = new Color3().fromUnit(0).toHexString();
+            ctx.fillRect(0, 0, size, size);
+
+            var half = size / 2;
+            for (let i = 0; i < size; i++)
+            {
+                for (let j = 0; j < size; j++)
+                {
+                    var vec = new Vector2(i - half, j - half);
+                    var f = 1 - FMath.clamp(vec.length, 0, half) / half;
+                    ctx.fillStyle = new Color3(f, f, f).toHexString();
+                    ctx.fillRect(i, j, 1, 1);
+                }
+            }
+            var imageData = ctx.getImageData(0, 0, size, size);
             return imageData;
         }
     }
