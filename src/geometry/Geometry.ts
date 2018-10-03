@@ -72,6 +72,11 @@ namespace feng3d
          */
         static terrain: TerrainGeometry;
 
+        /**
+         * 公告牌
+         */
+        static billboard: PlaneGeometry;
+
         @oav()
         name: string;
 

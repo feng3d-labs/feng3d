@@ -190,12 +190,12 @@
         "src/textures/RenderTargetTexture2D.ts",
         "src/textures/TextureCube.ts",
         //材质
+        "src/materials/Material.ts",
         "src/materials/PointMaterial.ts",
         "src/materials/ColorMaterial.ts",
         "src/materials/SegmentMaterial.ts",
         "src/materials/TextureMaterial.ts",
         "src/materials/StandardMaterial.ts",
-        "src/materials/Material.ts",
         //灯光
         "src/light/shadow/ShadowType.ts",
         //
@@ -234,8 +234,8 @@
         "src/animators/particle/ParticleVelocity.ts",
         "src/animators/particle/ParticleColor.ts",
         "src/animators/particle/ParticleBillboard.ts",
-        "src/animators/particle/ParticleSystem.ts",
         "src/animators/particle/ParticleMaterial.ts",
+        "src/animators/particle/ParticleSystem.ts",
         "src/animators/particle/tools/ParticleNumber.ts",
         //骨骼动画
         "src/animators/skeleton/Skeleton.ts",

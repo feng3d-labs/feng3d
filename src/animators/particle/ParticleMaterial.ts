@@ -9,4 +9,6 @@ namespace feng3d
     }
 
     shaderConfig.shaders["particle"].cls = ParticleUniforms;
+
+    Feng3dAssets.setAssets(Material.particle = new Material().value({ name: "Particle-Material", assetsId: "Particle-Material", shaderName: "particle", hideFlags: HideFlags.NotEditable }));
 }

@@ -9905,6 +9905,10 @@ declare namespace feng3d {
          * 默认地形几何体
          */
         static terrain: TerrainGeometry;
+        /**
+         * 公告牌
+         */
+        static billboard: PlaneGeometry;
         name: string;
         assetType: AssetExtension;
         /**
@@ -10993,6 +10997,60 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     interface UniformsMap {
+    }
+    type ShaderNames = keyof UniformsMap;
+    type UniformsData = UniformsMap[keyof UniformsMap];
+    /**
+     * 材质
+     */
+    class Material extends Feng3dAssets {
+        __class__: "feng3d.Material";
+        assetType: AssetExtension;
+        /**
+         * shader名称
+         */
+        shaderName: ShaderNames;
+        name: string;
+        /**
+         * Uniform数据
+         */
+        uniforms: UniformsData;
+        /**
+         * 渲染参数
+         */
+        renderParams: RenderParams;
+        constructor();
+        beforeRender(renderAtomic: RenderAtomic): void;
+        /**
+         * 是否加载完成
+         */
+        readonly isLoaded: boolean;
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        onLoadCompleted(callback: () => void): void;
+        private onShaderChanged;
+        /**
+         * 默认材质
+         */
+        static default: Material;
+        /**
+         * 默认水材质
+         */
+        static water: Material;
+        /**
+         * 默认地形材质
+         */
+        static terrain: Material;
+        /**
+         * 粒子材质
+         */
+        static particle: Material;
+    }
+}
+declare namespace feng3d {
+    interface UniformsMap {
         point: PointUniforms;
     }
     class PointUniforms {
@@ -11131,56 +11189,6 @@ declare namespace feng3d {
          * 雾模式
          */
         u_fogMode: FogMode;
-    }
-}
-declare namespace feng3d {
-    interface UniformsMap {
-    }
-    type ShaderNames = keyof UniformsMap;
-    type UniformsData = UniformsMap[keyof UniformsMap];
-    /**
-     * 材质
-     */
-    class Material extends Feng3dAssets {
-        __class__: "feng3d.Material";
-        assetType: AssetExtension;
-        /**
-         * shader名称
-         */
-        shaderName: ShaderNames;
-        name: string;
-        /**
-         * Uniform数据
-         */
-        uniforms: UniformsData;
-        /**
-         * 渲染参数
-         */
-        renderParams: RenderParams;
-        constructor();
-        beforeRender(renderAtomic: RenderAtomic): void;
-        /**
-         * 是否加载完成
-         */
-        readonly isLoaded: boolean;
-        /**
-         * 已加载完成或者加载完成时立即调用
-         * @param callback 完成回调
-         */
-        onLoadCompleted(callback: () => void): void;
-        private onShaderChanged;
-        /**
-         * 默认材质
-         */
-        static default: Material;
-        /**
-         * 默认水材质
-         */
-        static defaultWater: Material;
-        /**
-         * 默认地形材质
-         */
-        static terrain: Material;
     }
 }
 declare namespace feng3d {
@@ -12084,6 +12092,14 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface UniformsMap {
+        particle: ParticleUniforms;
+    }
+    class ParticleUniforms extends StandardUniforms {
+        __class__: "feng3d.ParticleUniforms";
+    }
+}
+declare namespace feng3d {
     interface ComponentMap {
         ParticleSystem: ParticleSystem;
     }
@@ -12112,7 +12128,7 @@ declare namespace feng3d {
          * 粒子数量
          */
         numParticles: number;
-        geometry: PointGeometry;
+        geometry: PlaneGeometry;
         material: Material;
         /**
          * 粒子全局属性
@@ -12174,14 +12190,6 @@ declare namespace feng3d {
          */
         private collectionParticleAttribute;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
-    }
-}
-declare namespace feng3d {
-    interface UniformsMap {
-        particle: ParticleUniforms;
-    }
-    class ParticleUniforms extends StandardUniforms {
-        __class__: "feng3d.ParticleUniforms";
     }
 }
 declare namespace feng3d {

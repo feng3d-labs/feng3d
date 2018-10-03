@@ -134,4 +134,6 @@ namespace feng3d
     }
 
     shaderConfig.shaders["standard"].cls = StandardUniforms;
+
+    Feng3dAssets.setAssets(Material.default = new Material().value({ name: "Default-Material", assetsId: "Default-Material", hideFlags: HideFlags.NotEditable }));
 }

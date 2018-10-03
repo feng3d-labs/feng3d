@@ -48,5 +48,5 @@ namespace feng3d
 
     shaderConfig.shaders["water"].cls = WaterUniforms;
 
-    Feng3dAssets.setAssets(Material.defaultWater = new Material().value({ name: "Default-Water", assetsId: "Default-Water", shaderName: "water", hideFlags: HideFlags.NotEditable }));
+    Feng3dAssets.setAssets(Material.water = new Material().value({ name: "Water-Material", assetsId: "Water-Material", shaderName: "water", hideFlags: HideFlags.NotEditable }));
 }

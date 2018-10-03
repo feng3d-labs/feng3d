@@ -46,11 +46,11 @@ namespace feng3d
 
         @oav({ component: "OAVPick", tooltip: "几何体，提供模型以形状", componentParam: { accepttype: "geometry", datatype: "geometry" } })
         @serialize
-        geometry = new PointGeometry();
+        geometry = Geometry.billboard;
 
         @oav({ component: "OAVPick", tooltip: "材质，提供模型以皮肤", componentParam: { accepttype: "material", datatype: "material" } })
         @serialize
-        material = new Material().value({ shaderName: "particle", renderParams: { renderMode: RenderMode.POINTS } });
+        material = Material.particle;
 
         /**
          * 粒子全局属性
@@ -268,4 +268,6 @@ namespace feng3d
             }
         }
     }
+
+    Feng3dAssets.setAssets(Geometry.billboard = new PlaneGeometry().value({ name: "Billboard", assetsId: "Billboard-Geometry", yUp: false }));
 }
