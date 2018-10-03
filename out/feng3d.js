@@ -21124,9 +21124,9 @@ var feng3d;
         Material.prototype.onShaderChanged = function () {
             var cls = feng3d.shaderConfig.shaders[this.shaderName].cls;
             if (cls) {
-                if (!(this.uniforms instanceof cls)) {
+                if (this.uniforms == null || this.uniforms.constructor != cls) {
                     var newuniforms = new cls();
-                    feng3d.serialization.setValue(newuniforms, this.uniforms);
+                    // serialization.setValue(newuniforms, <any>this.uniforms);
                     this.uniforms = newuniforms;
                 }
             }

@@ -111,10 +111,10 @@ namespace feng3d
             var cls = shaderConfig.shaders[this.shaderName].cls;
             if (cls)
             {
-                if (!(this.uniforms instanceof cls))
+                if (this.uniforms == null || this.uniforms.constructor != cls)
                 {
                     var newuniforms = new cls();
-                    serialization.setValue(newuniforms, <any>this.uniforms);
+                    // serialization.setValue(newuniforms, <any>this.uniforms);
                     this.uniforms = newuniforms;
                 }
             } else
