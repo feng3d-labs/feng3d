@@ -14366,30 +14366,30 @@ var feng3d;
      */
     var ForwardRenderer = /** @class */ (function () {
         function ForwardRenderer() {
-            this.renderAtomic = new feng3d.RenderAtomic();
         }
         /**
          * 渲染
          */
         ForwardRenderer.prototype.draw = function (gl, scene3d, camera) {
-            var _this = this;
             var blenditems = scene3d.getPickCache(camera).blenditems;
             var unblenditems = scene3d.getPickCache(camera).unblenditems;
-            var uniforms = this.renderAtomic.uniforms;
+            var uniforms = {};
             //
-            uniforms.u_projectionMatrix = function () { return camera.lens.matrix; };
-            uniforms.u_viewProjection = function () { return camera.viewProjection; };
-            uniforms.u_viewMatrix = function () { return camera.transform.worldToLocalMatrix; };
-            uniforms.u_cameraMatrix = function () { return camera.transform.localToWorldMatrix; };
-            uniforms.u_cameraPos = function () { return camera.transform.scenePosition; };
-            uniforms.u_skyBoxSize = function () { return camera.lens.far / Math.sqrt(3); };
-            uniforms.u_scaleByDepth = function () { return camera.getScaleByDepth(1); };
+            uniforms.u_projectionMatrix = camera.lens.matrix;
+            uniforms.u_viewProjection = camera.viewProjection;
+            uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix;
+            uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
+            uniforms.u_cameraPos = camera.transform.scenePosition;
+            uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
+            uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
             uniforms.u_sceneAmbientColor = scene3d.ambientColor;
             unblenditems.concat(blenditems).forEach(function (model) {
                 //绘制
                 var renderAtomic = model.gameObject.renderAtomic;
+                for (var key in uniforms) {
+                    renderAtomic.uniforms[key] = uniforms[key];
+                }
                 model.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
-                renderAtomic.next = _this.renderAtomic;
                 gl.renderer.draw(renderAtomic);
             });
         };
@@ -14480,27 +14480,10 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 后处理渲染器
-
-     */
-    var PostProcessRenderer = /** @class */ (function () {
-        function PostProcessRenderer() {
-        }
-        return PostProcessRenderer;
-    }());
-    feng3d.PostProcessRenderer = PostProcessRenderer;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     var ShadowRenderer = /** @class */ (function () {
         function ShadowRenderer() {
+            this.renderAtomic = new feng3d.RenderAtomic();
         }
-        ShadowRenderer.prototype.init = function () {
-            if (!this.renderAtomic) {
-                this.renderAtomic = new feng3d.RenderAtomic();
-            }
-        };
         /**
          * 渲染
          */
@@ -14523,7 +14506,6 @@ var feng3d;
         };
         ShadowRenderer.prototype.drawForSpotLight = function (gl, light, scene3d, camera) {
             var _this = this;
-            this.init();
             light.frameBufferObject.active(gl);
             //
             gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
@@ -14540,11 +14522,11 @@ var feng3d;
             renderAtomic.renderParams.useViewRect = true;
             renderAtomic.renderParams.viewRect = new feng3d.Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
             //
-            renderAtomic.uniforms.u_projectionMatrix = function () { return shadowCamera.lens.matrix; };
-            renderAtomic.uniforms.u_viewProjection = function () { return shadowCamera.viewProjection; };
-            renderAtomic.uniforms.u_viewMatrix = function () { return shadowCamera.transform.worldToLocalMatrix; };
-            renderAtomic.uniforms.u_cameraMatrix = function () { return shadowCamera.transform.localToWorldMatrix; };
-            renderAtomic.uniforms.u_cameraPos = function () { return shadowCamera.transform.scenePosition; };
+            renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
+            renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
+            renderAtomic.uniforms.u_viewMatrix = shadowCamera.transform.worldToLocalMatrix;
+            renderAtomic.uniforms.u_cameraMatrix = shadowCamera.transform.localToWorldMatrix;
+            renderAtomic.uniforms.u_cameraPos = shadowCamera.transform.scenePosition;
             //
             renderAtomic.uniforms.u_lightType = light.lightType;
             renderAtomic.uniforms.u_lightPosition = light.position;
@@ -14557,7 +14539,6 @@ var feng3d;
         };
         ShadowRenderer.prototype.drawForPointLight = function (gl, light, scene3d, camera) {
             var _this = this;
-            this.init();
             light.frameBufferObject.active(gl);
             //
             gl.viewport(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
@@ -14602,11 +14583,11 @@ var feng3d;
                 renderAtomic.renderParams.useViewRect = true;
                 renderAtomic.renderParams.viewRect = cube2DViewPorts[face];
                 //
-                renderAtomic.uniforms.u_projectionMatrix = function () { return shadowCamera.lens.matrix; };
-                renderAtomic.uniforms.u_viewProjection = function () { return shadowCamera.viewProjection; };
-                renderAtomic.uniforms.u_viewMatrix = function () { return shadowCamera.transform.worldToLocalMatrix; };
-                renderAtomic.uniforms.u_cameraMatrix = function () { return shadowCamera.transform.localToWorldMatrix; };
-                renderAtomic.uniforms.u_cameraPos = function () { return shadowCamera.transform.scenePosition; };
+                renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
+                renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
+                renderAtomic.uniforms.u_viewMatrix = shadowCamera.transform.worldToLocalMatrix;
+                renderAtomic.uniforms.u_cameraMatrix = shadowCamera.transform.localToWorldMatrix;
+                renderAtomic.uniforms.u_cameraPos = shadowCamera.transform.scenePosition;
                 //
                 renderAtomic.uniforms.u_lightType = light.lightType;
                 renderAtomic.uniforms.u_lightPosition = light.position;
@@ -14620,7 +14601,6 @@ var feng3d;
         };
         ShadowRenderer.prototype.drawForDirectionalLight = function (gl, light, scene3d, camera) {
             var _this = this;
-            this.init();
             // 获取影响阴影图的渲染对象
             var models = scene3d.getPickByDirectionalLight(light);
             // 筛选投射阴影的渲染对象
@@ -14637,11 +14617,11 @@ var feng3d;
             renderAtomic.renderParams.useViewRect = true;
             renderAtomic.renderParams.viewRect = new feng3d.Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
             //
-            renderAtomic.uniforms.u_projectionMatrix = function () { return shadowCamera.lens.matrix; };
-            renderAtomic.uniforms.u_viewProjection = function () { return shadowCamera.viewProjection; };
-            renderAtomic.uniforms.u_viewMatrix = function () { return shadowCamera.transform.worldToLocalMatrix; };
-            renderAtomic.uniforms.u_cameraMatrix = function () { return shadowCamera.transform.localToWorldMatrix; };
-            renderAtomic.uniforms.u_cameraPos = function () { return shadowCamera.transform.scenePosition; };
+            renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
+            renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
+            renderAtomic.uniforms.u_viewMatrix = shadowCamera.transform.worldToLocalMatrix;
+            renderAtomic.uniforms.u_cameraMatrix = shadowCamera.transform.localToWorldMatrix;
+            renderAtomic.uniforms.u_cameraPos = shadowCamera.transform.scenePosition;
             //
             renderAtomic.uniforms.u_lightType = light.lightType;
             renderAtomic.uniforms.u_lightPosition = shadowCamera.transform.scenePosition;
@@ -14733,10 +14713,9 @@ var feng3d;
             _super.prototype.init.call(this, gameobject);
         };
         OutLineComponent.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
-            var _this = this;
-            renderAtomic.uniforms.u_outlineSize = function () { return _this.size; };
-            renderAtomic.uniforms.u_outlineColor = function () { return _this.color; };
-            renderAtomic.uniforms.u_outlineMorphFactor = function () { return _this.outlineMorphFactor; };
+            renderAtomic.uniforms.u_outlineSize = this.size;
+            renderAtomic.uniforms.u_outlineColor = this.color;
+            renderAtomic.uniforms.u_outlineMorphFactor = this.outlineMorphFactor;
         };
         __decorate([
             feng3d.oav(),
@@ -14797,13 +14776,13 @@ var feng3d;
             this.init();
             var uniforms = this.renderAtomic.uniforms;
             //
-            uniforms.u_projectionMatrix = function () { return camera.lens.matrix; };
-            uniforms.u_viewProjection = function () { return camera.viewProjection; };
-            uniforms.u_viewMatrix = function () { return camera.transform.worldToLocalMatrix; };
-            uniforms.u_cameraMatrix = function () { return camera.transform.localToWorldMatrix; };
-            uniforms.u_cameraPos = function () { return camera.transform.scenePosition; };
-            uniforms.u_skyBoxSize = function () { return camera.lens.far / Math.sqrt(3); };
-            uniforms.u_scaleByDepth = function () { return camera.getScaleByDepth(1); };
+            uniforms.u_projectionMatrix = camera.lens.matrix;
+            uniforms.u_viewProjection = camera.viewProjection;
+            uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix;
+            uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
+            uniforms.u_cameraPos = camera.transform.scenePosition;
+            uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
+            uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
             //
             this.renderAtomic.next = renderAtomic;
             //
@@ -14870,14 +14849,13 @@ var feng3d;
             _super.prototype.init.call(this, gameObject);
         };
         CartoonComponent.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
-            var _this = this;
-            renderAtomic.uniforms.u_diffuseSegment = function () { return _this.diffuseSegment; };
-            renderAtomic.uniforms.u_diffuseSegmentValue = function () { return _this.diffuseSegmentValue; };
-            renderAtomic.uniforms.u_specularSegment = function () { return _this.specularSegment; };
+            renderAtomic.uniforms.u_diffuseSegment = this.diffuseSegment;
+            renderAtomic.uniforms.u_diffuseSegmentValue = this.diffuseSegmentValue;
+            renderAtomic.uniforms.u_specularSegment = this.specularSegment;
             //
-            renderAtomic.uniforms.u_outlineSize = function () { return _this.outlineSize; };
-            renderAtomic.uniforms.u_outlineColor = function () { return _this.outlineColor; };
-            renderAtomic.uniforms.u_outlineMorphFactor = function () { return _this.outlineMorphFactor; };
+            renderAtomic.uniforms.u_outlineSize = this.outlineSize;
+            renderAtomic.uniforms.u_outlineColor = this.outlineColor;
+            renderAtomic.uniforms.u_outlineMorphFactor = this.outlineMorphFactor;
         };
         __decorate([
             feng3d.oav(),

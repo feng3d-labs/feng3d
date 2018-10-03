@@ -13,8 +13,6 @@ namespace feng3d
      */
     export class ForwardRenderer
     {
-        renderAtomic = new RenderAtomic();
-
         /**
          * 渲染
          */
@@ -23,16 +21,15 @@ namespace feng3d
             var blenditems = scene3d.getPickCache(camera).blenditems;
             var unblenditems = scene3d.getPickCache(camera).unblenditems;
 
-            var uniforms = this.renderAtomic.uniforms;
+            var uniforms: LazyObject<Uniforms> = <any>{};
             //
-            uniforms.u_projectionMatrix = () => camera.lens.matrix;
-            uniforms.u_viewProjection = () => camera.viewProjection;
-            uniforms.u_viewMatrix = () => camera.transform.worldToLocalMatrix;
-            uniforms.u_cameraMatrix = () => camera.transform.localToWorldMatrix;
-            uniforms.u_cameraPos = () => camera.transform.scenePosition;
-            uniforms.u_skyBoxSize = () => camera.lens.far / Math.sqrt(3);
-            uniforms.u_scaleByDepth = () => camera.getScaleByDepth(1);
-
+            uniforms.u_projectionMatrix = camera.lens.matrix;
+            uniforms.u_viewProjection = camera.viewProjection;
+            uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix;
+            uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
+            uniforms.u_cameraPos = camera.transform.scenePosition;
+            uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
+            uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
             uniforms.u_sceneAmbientColor = scene3d.ambientColor;
 
             unblenditems.concat(blenditems).forEach(model =>
@@ -40,9 +37,12 @@ namespace feng3d
                 //绘制
                 var renderAtomic = model.gameObject.renderAtomic;
 
-                model.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
+                for (const key in uniforms)
+                {
+                    renderAtomic.uniforms[key] = uniforms[key];
+                }
 
-                renderAtomic.next = this.renderAtomic;
+                model.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
 
                 gl.renderer.draw(renderAtomic);
             });

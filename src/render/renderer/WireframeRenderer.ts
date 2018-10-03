@@ -58,13 +58,13 @@ namespace feng3d
 
             var uniforms = this.renderAtomic.uniforms;
             //
-            uniforms.u_projectionMatrix = () => camera.lens.matrix;
-            uniforms.u_viewProjection = () => camera.viewProjection;
-            uniforms.u_viewMatrix = () => camera.transform.worldToLocalMatrix;
-            uniforms.u_cameraMatrix = () => camera.transform.localToWorldMatrix;
-            uniforms.u_cameraPos = () => camera.transform.scenePosition;
-            uniforms.u_skyBoxSize = () => camera.lens.far / Math.sqrt(3);
-            uniforms.u_scaleByDepth = () => camera.getScaleByDepth(1);
+            uniforms.u_projectionMatrix = camera.lens.matrix;
+            uniforms.u_viewProjection = camera.viewProjection;
+            uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix;
+            uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
+            uniforms.u_cameraPos = camera.transform.scenePosition;
+            uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
+            uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
 
             //
             this.renderAtomic.next = renderAtomic;

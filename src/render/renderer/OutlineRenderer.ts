@@ -53,9 +53,9 @@ namespace feng3d
 
     export class OutLineComponent extends Component
     {
-        
+
         __class__: "feng3d.OutLineComponent" = "feng3d.OutLineComponent";
-        
+
         @oav()
         @serialize
         size = 1;
@@ -75,9 +75,9 @@ namespace feng3d
 
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
-            renderAtomic.uniforms.u_outlineSize = () => this.size;
-            renderAtomic.uniforms.u_outlineColor = () => this.color;
-            renderAtomic.uniforms.u_outlineMorphFactor = () => this.outlineMorphFactor;
+            renderAtomic.uniforms.u_outlineSize = this.size;
+            renderAtomic.uniforms.u_outlineColor = this.color;
+            renderAtomic.uniforms.u_outlineMorphFactor = this.outlineMorphFactor;
         }
     }
 

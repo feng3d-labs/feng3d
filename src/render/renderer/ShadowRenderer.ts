@@ -8,15 +8,7 @@ namespace feng3d
 
     export class ShadowRenderer
     {
-        private renderAtomic: RenderAtomic;
-
-        private init()
-        {
-            if (!this.renderAtomic)
-            {
-                this.renderAtomic = new RenderAtomic();
-            }
-        }
+        private renderAtomic = new RenderAtomic();
 
         /**
          * 渲染
@@ -47,8 +39,6 @@ namespace feng3d
 
         private drawForSpotLight(gl: GL, light: SpotLight, scene3d: Scene3D, camera: Camera): any
         {
-            this.init();
-
             light.frameBufferObject.active(gl);
 
             //
@@ -71,11 +61,11 @@ namespace feng3d
             renderAtomic.renderParams.viewRect = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
 
             //
-            renderAtomic.uniforms.u_projectionMatrix = () => shadowCamera.lens.matrix;
-            renderAtomic.uniforms.u_viewProjection = () => shadowCamera.viewProjection;
-            renderAtomic.uniforms.u_viewMatrix = () => shadowCamera.transform.worldToLocalMatrix;
-            renderAtomic.uniforms.u_cameraMatrix = () => shadowCamera.transform.localToWorldMatrix;
-            renderAtomic.uniforms.u_cameraPos = () => shadowCamera.transform.scenePosition;
+            renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
+            renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
+            renderAtomic.uniforms.u_viewMatrix = shadowCamera.transform.worldToLocalMatrix;
+            renderAtomic.uniforms.u_cameraMatrix = shadowCamera.transform.localToWorldMatrix;
+            renderAtomic.uniforms.u_cameraPos = shadowCamera.transform.scenePosition;
             //
             renderAtomic.uniforms.u_lightType = light.lightType;
             renderAtomic.uniforms.u_lightPosition = light.position;
@@ -92,8 +82,6 @@ namespace feng3d
 
         private drawForPointLight(gl: GL, light: PointLight, scene3d: Scene3D, camera: Camera): any
         {
-            this.init();
-
             light.frameBufferObject.active(gl);
 
             //
@@ -150,11 +138,11 @@ namespace feng3d
                 renderAtomic.renderParams.viewRect = cube2DViewPorts[face];
 
                 //
-                renderAtomic.uniforms.u_projectionMatrix = () => shadowCamera.lens.matrix;
-                renderAtomic.uniforms.u_viewProjection = () => shadowCamera.viewProjection;
-                renderAtomic.uniforms.u_viewMatrix = () => shadowCamera.transform.worldToLocalMatrix;
-                renderAtomic.uniforms.u_cameraMatrix = () => shadowCamera.transform.localToWorldMatrix;
-                renderAtomic.uniforms.u_cameraPos = () => shadowCamera.transform.scenePosition;
+                renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
+                renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
+                renderAtomic.uniforms.u_viewMatrix = shadowCamera.transform.worldToLocalMatrix;
+                renderAtomic.uniforms.u_cameraMatrix = shadowCamera.transform.localToWorldMatrix;
+                renderAtomic.uniforms.u_cameraPos = shadowCamera.transform.scenePosition;
                 //
                 renderAtomic.uniforms.u_lightType = light.lightType;
                 renderAtomic.uniforms.u_lightPosition = light.position;
@@ -172,8 +160,6 @@ namespace feng3d
 
         private drawForDirectionalLight(gl: GL, light: DirectionalLight, scene3d: Scene3D, camera: Camera): any
         {
-            this.init();
-
             // 获取影响阴影图的渲染对象
             var models = scene3d.getPickByDirectionalLight(light);
             // 筛选投射阴影的渲染对象
@@ -195,11 +181,11 @@ namespace feng3d
             renderAtomic.renderParams.useViewRect = true;
             renderAtomic.renderParams.viewRect = new Rectangle(0, 0, light.frameBufferObject.OFFSCREEN_WIDTH, light.frameBufferObject.OFFSCREEN_HEIGHT);
             //
-            renderAtomic.uniforms.u_projectionMatrix = () => shadowCamera.lens.matrix;
-            renderAtomic.uniforms.u_viewProjection = () => shadowCamera.viewProjection;
-            renderAtomic.uniforms.u_viewMatrix = () => shadowCamera.transform.worldToLocalMatrix;
-            renderAtomic.uniforms.u_cameraMatrix = () => shadowCamera.transform.localToWorldMatrix;
-            renderAtomic.uniforms.u_cameraPos = () => shadowCamera.transform.scenePosition;
+            renderAtomic.uniforms.u_projectionMatrix = shadowCamera.lens.matrix;
+            renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
+            renderAtomic.uniforms.u_viewMatrix = shadowCamera.transform.worldToLocalMatrix;
+            renderAtomic.uniforms.u_cameraMatrix = shadowCamera.transform.localToWorldMatrix;
+            renderAtomic.uniforms.u_cameraPos = shadowCamera.transform.scenePosition;
             //
             renderAtomic.uniforms.u_lightType = light.lightType;
             renderAtomic.uniforms.u_lightPosition = shadowCamera.transform.scenePosition;

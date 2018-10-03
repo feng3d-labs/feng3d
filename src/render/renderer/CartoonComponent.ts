@@ -1,8 +1,8 @@
 namespace feng3d
 {
-    
+
     export interface ComponentMap { CartoonComponent: CartoonComponent; }
-    
+
     /**
      * 参考
      */
@@ -59,13 +59,13 @@ namespace feng3d
 
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
-            renderAtomic.uniforms.u_diffuseSegment = () => this.diffuseSegment;
-            renderAtomic.uniforms.u_diffuseSegmentValue = () => this.diffuseSegmentValue;
-            renderAtomic.uniforms.u_specularSegment = () => this.specularSegment;
+            renderAtomic.uniforms.u_diffuseSegment = this.diffuseSegment;
+            renderAtomic.uniforms.u_diffuseSegmentValue = this.diffuseSegmentValue;
+            renderAtomic.uniforms.u_specularSegment = this.specularSegment;
             //
-            renderAtomic.uniforms.u_outlineSize = () => this.outlineSize;
-            renderAtomic.uniforms.u_outlineColor = () => this.outlineColor;
-            renderAtomic.uniforms.u_outlineMorphFactor = () => this.outlineMorphFactor;
+            renderAtomic.uniforms.u_outlineSize = this.outlineSize;
+            renderAtomic.uniforms.u_outlineColor = this.outlineColor;
+            renderAtomic.uniforms.u_outlineMorphFactor = this.outlineMorphFactor;
         }
 
     }

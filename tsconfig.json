@@ -131,7 +131,6 @@
         "src/render/renderer/ForwardRenderer.ts",
         "src/render/renderer/DepthRenderer.ts",
         "src/render/renderer/MouseRenderer.ts",
-        "src/render/renderer/PostProcessRenderer.ts",
         "src/render/renderer/ShadowRenderer.ts",
         "src/render/renderer/OutlineRenderer.ts",
         "src/render/renderer/WireframeRenderer.ts",

@@ -8757,7 +8757,6 @@ declare namespace feng3d {
 
      */
     class ForwardRenderer {
-        renderAtomic: RenderAtomic;
         /**
          * 渲染
          */
@@ -8796,20 +8795,11 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 后处理渲染器
-
-     */
-    class PostProcessRenderer {
-    }
-}
-declare namespace feng3d {
-    /**
      * 阴影图渲染器
      */
     var shadowRenderer: ShadowRenderer;
     class ShadowRenderer {
         private renderAtomic;
-        private init;
         /**
          * 渲染
          */
