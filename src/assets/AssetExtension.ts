@@ -55,7 +55,7 @@ namespace feng3d
         /**
          * 纹理
          */
-        texture2d = "texture",
+        texture = "texture",
         /**
          * 立方体纹理
          */

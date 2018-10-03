@@ -246,5 +246,5 @@ namespace feng3d
      */
     var defaultHeightMap = imageUtil.createImageData();
 
-    Feng3dAssets.setAssets(Geometry.terrain = new TerrainGeometry().value({ name: "default-Terrain", assetsId: "default-Terrain" }));
+    Feng3dAssets.setAssets(Geometry.terrain = new TerrainGeometry().value({ name: "Terrain-Geometry", assetsId: "Terrain-Geometry" }));
 }

@@ -4,6 +4,8 @@ namespace feng3d
     {
         __class__: "feng3d.UrlImageTexture2D" = "feng3d.UrlImageTexture2D";
 
+        assetType = AssetExtension.texture;
+
         @serialize
         @watch("urlChanged")
         @oav({ component: "OAVImage" })

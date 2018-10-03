@@ -5152,7 +5152,7 @@ var feng3d;
         /**
          * 纹理
          */
-        AssetExtension["texture2d"] = "texture";
+        AssetExtension["texture"] = "texture";
         /**
          * 立方体纹理
          */
@@ -20719,7 +20719,6 @@ var feng3d;
         __extends(Texture2D, _super);
         function Texture2D() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.assetType = feng3d.AssetExtension.texture2d;
             /**
              * 当贴图数据未加载好等情况时代替使用
              */
@@ -20764,6 +20763,7 @@ var feng3d;
         function UrlImageTexture2D() {
             var _this = _super.call(this) || this;
             _this.__class__ = "feng3d.UrlImageTexture2D";
+            _this.assetType = feng3d.AssetExtension.texture;
             _this.url = "";
             //
             feng3d.feng3dDispatcher.on("assets.imageAssetsChanged", _this.onImageAssetsChanged, _this);
@@ -23260,7 +23260,7 @@ var feng3d;
      * 默认高度图
      */
     var defaultHeightMap = feng3d.imageUtil.createImageData();
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.terrain = new TerrainGeometry().value({ name: "default-Terrain", assetsId: "default-Terrain" }));
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.terrain = new TerrainGeometry().value({ name: "Terrain-Geometry", assetsId: "Terrain-Geometry" }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -23300,6 +23300,7 @@ var feng3d;
     }(feng3d.StandardUniforms));
     feng3d.TerrainUniforms = TerrainUniforms;
     feng3d.shaderConfig.shaders["terrain"].cls = TerrainUniforms;
+    feng3d.Feng3dAssets.setAssets(feng3d.Material.terrain = new feng3d.Material().value({ name: "Terrain-Material", assetsId: "Terrain-Material", shaderName: "terrain", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -23490,7 +23491,6 @@ var feng3d;
         return Terrain;
     }(feng3d.Model));
     feng3d.Terrain = Terrain;
-    feng3d.Feng3dAssets.setAssets(feng3d.Material.terrain = new feng3d.Material().value({ name: "Default-Terrain", assetsId: "Default-Terrain", shaderName: "terrain", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

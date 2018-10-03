@@ -2582,7 +2582,7 @@ declare namespace feng3d {
         /**
          * 纹理
          */
-        texture2d = "texture",
+        texture = "texture",
         /**
          * 立方体纹理
          */
@@ -10883,7 +10883,6 @@ declare namespace feng3d {
      * 2D纹理
      */
     class Texture2D extends TextureInfo {
-        assetType: AssetExtension;
         /**
          * 当贴图数据未加载好等情况时代替使用
          */
@@ -10907,6 +10906,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     class UrlImageTexture2D extends Texture2D {
         __class__: "feng3d.UrlImageTexture2D";
+        assetType: AssetExtension;
         url: string;
         name: string;
         protected image: HTMLImageElement;

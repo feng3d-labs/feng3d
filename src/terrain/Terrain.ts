@@ -19,6 +19,4 @@ namespace feng3d
 
         material = Material.terrain;
     }
-
-    Feng3dAssets.setAssets(Material.terrain = new Material().value({ name: "Default-Terrain", assetsId: "Default-Terrain", shaderName: "terrain", hideFlags: HideFlags.NotEditable }));
 }

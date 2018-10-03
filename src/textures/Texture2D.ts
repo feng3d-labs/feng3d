@@ -24,8 +24,6 @@ namespace feng3d
      */
     export class Texture2D extends TextureInfo
     {
-        assetType = AssetExtension.texture2d;
-
         /**
          * 当贴图数据未加载好等情况时代替使用
          */
