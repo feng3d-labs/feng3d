@@ -1655,6 +1655,10 @@ declare namespace feng3d {
             component: "OAVMultiText";
             componentParam: Object;
         };
+        OAVFeng3dPreView: {
+            component: "OAVFeng3dPreView";
+            componentParam: Object;
+        };
     }
     /**
      * OAVDefault 组件参数
@@ -11068,6 +11072,7 @@ declare namespace feng3d {
     class Material extends Feng3dAssets {
         __class__: "feng3d.Material";
         assetType: AssetExtension;
+        private preview;
         /**
          * shader名称
          */

@@ -21254,6 +21254,7 @@ var feng3d;
             var _this = _super.call(this) || this;
             _this.__class__ = "feng3d.Material";
             _this.assetType = feng3d.AssetExtension.material;
+            _this.preview = "";
             /**
              * shader名称
              */
@@ -21336,6 +21337,9 @@ var feng3d;
                 this.uniforms = {};
             }
         };
+        __decorate([
+            feng3d.oav({ component: "OAVFeng3dPreView" })
+        ], Material.prototype, "preview", void 0);
         __decorate([
             feng3d.oav({ component: "OAVMaterialName" }),
             feng3d.serialize,

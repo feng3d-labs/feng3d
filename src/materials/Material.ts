@@ -13,6 +13,9 @@ namespace feng3d
 
         assetType = AssetExtension.material;
 
+        @oav({ component: "OAVFeng3dPreView" })
+        private preview = "";
+
         /**
          * shader名称
          */
