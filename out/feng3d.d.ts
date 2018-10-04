@@ -7670,6 +7670,7 @@ declare namespace feng3d {
          * 纹理各向异性过滤最大值
          */
         maxAnisotropy: number;
+        capabilities: WebGLCapabilities;
     }
     class GL {
         static glList: GL[];
@@ -7726,9 +7727,6 @@ declare namespace feng3d {
      * WEBGL 功能
      */
     class WebGLCapabilities {
-        getMaxAnisotropy: () => any;
-        getMaxPrecision: (precision: any) => "highp" | "mediump" | "lowp";
-        precision: any;
         logarithmicDepthBuffer: boolean;
         maxTextures: any;
         maxVertexTextures: any;
@@ -7741,7 +7739,7 @@ declare namespace feng3d {
         vertexTextures: boolean;
         floatFragmentTextures: boolean;
         floatVertexTextures: boolean;
-        constructor(gl: any, extensions: any, parameters: any);
+        constructor(gl: GL);
     }
 }
 declare namespace feng3d {

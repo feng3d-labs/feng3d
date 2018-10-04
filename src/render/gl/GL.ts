@@ -31,6 +31,8 @@ namespace feng3d
          * 纹理各向异性过滤最大值
          */
         maxAnisotropy: number;
+
+        capabilities: WebGLCapabilities;
     }
 
     export class GL
@@ -62,6 +64,8 @@ namespace feng3d
             //
             if (typeof WebGL2RenderingContext !== "undefined" && gl instanceof WebGL2RenderingContext)
                 gl.webgl2 = true;
+            //
+            gl.capabilities = new WebGLCapabilities(gl);
             //
             new GLExtension(gl);
             new Renderer(gl);

@@ -12665,6 +12665,8 @@ var feng3d;
             if (typeof WebGL2RenderingContext !== "undefined" && gl instanceof WebGL2RenderingContext)
                 gl.webgl2 = true;
             //
+            gl.capabilities = new feng3d.WebGLCapabilities(gl);
+            //
             new feng3d.GLExtension(gl);
             new feng3d.Renderer(gl);
             gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
@@ -12763,12 +12765,12 @@ var feng3d;
      * WEBGL 功能
      */
     var WebGLCapabilities = /** @class */ (function () {
-        function WebGLCapabilities(gl, extensions, parameters) {
+        function WebGLCapabilities(gl) {
             var maxAnisotropy;
             function getMaxAnisotropy() {
                 if (maxAnisotropy !== undefined)
                     return maxAnisotropy;
-                var extension = extensions.get('EXT_texture_filter_anisotropic');
+                var extension = gl.getExtension('EXT_texture_filter_anisotropic');
                 if (extension !== null) {
                     maxAnisotropy = gl.getParameter(extension.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
                 }
@@ -12793,13 +12795,7 @@ var feng3d;
                 }
                 return 'lowp';
             }
-            var precision = parameters.precision !== undefined ? parameters.precision : 'highp';
-            var maxPrecision = getMaxPrecision(precision);
-            if (maxPrecision !== precision) {
-                feng3d.warn('THREE.WebGLRenderer:', precision, 'not supported, using', maxPrecision, 'instead.');
-                precision = maxPrecision;
-            }
-            var logarithmicDepthBuffer = parameters.logarithmicDepthBuffer === true;
+            var maxPrecision = getMaxPrecision('highp');
             var maxTextures = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
             var maxVertexTextures = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
             var maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
@@ -12809,12 +12805,8 @@ var feng3d;
             var maxVaryings = gl.getParameter(gl.MAX_VARYING_VECTORS);
             var maxFragmentUniforms = gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS);
             var vertexTextures = maxVertexTextures > 0;
-            var floatFragmentTextures = !!extensions.get('OES_texture_float');
+            var floatFragmentTextures = !!gl.getExtension('OES_texture_float');
             var floatVertexTextures = vertexTextures && floatFragmentTextures;
-            this.getMaxAnisotropy = getMaxAnisotropy;
-            this.getMaxPrecision = getMaxPrecision;
-            this.precision = precision;
-            this.logarithmicDepthBuffer = logarithmicDepthBuffer;
             this.maxTextures = maxTextures;
             this.maxVertexTextures = maxVertexTextures;
             this.maxTextureSize = maxTextureSize;

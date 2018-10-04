@@ -1,14 +1,10 @@
 namespace feng3d
 {
-
     /**
      * WEBGL 功能
      */
     export class WebGLCapabilities
     {
-        getMaxAnisotropy: () => any;
-        getMaxPrecision: (precision: any) => "highp" | "mediump" | "lowp";
-        precision: any;
         logarithmicDepthBuffer: boolean;
         maxTextures: any;
         maxVertexTextures: any;
@@ -22,7 +18,7 @@ namespace feng3d
         floatFragmentTextures: boolean;
         floatVertexTextures: boolean;
 
-        constructor(gl, extensions, parameters)
+        constructor(gl: GL)
         {
             var maxAnisotropy;
 
@@ -31,7 +27,7 @@ namespace feng3d
 
                 if (maxAnisotropy !== undefined) return maxAnisotropy;
 
-                var extension = extensions.get('EXT_texture_filter_anisotropic');
+                var extension = gl.getExtension('EXT_texture_filter_anisotropic');
 
                 if (extension !== null)
                 {
@@ -84,18 +80,7 @@ namespace feng3d
 
             }
 
-            var precision = parameters.precision !== undefined ? parameters.precision : 'highp';
-            var maxPrecision = getMaxPrecision(precision);
-
-            if (maxPrecision !== precision)
-            {
-
-                warn('THREE.WebGLRenderer:', precision, 'not supported, using', maxPrecision, 'instead.');
-                precision = maxPrecision;
-
-            }
-
-            var logarithmicDepthBuffer = parameters.logarithmicDepthBuffer === true;
+            var maxPrecision = getMaxPrecision('highp');
 
             var maxTextures = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
             var maxVertexTextures = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
@@ -108,14 +93,8 @@ namespace feng3d
             var maxFragmentUniforms = gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS);
 
             var vertexTextures = maxVertexTextures > 0;
-            var floatFragmentTextures = !!extensions.get('OES_texture_float');
+            var floatFragmentTextures = !!gl.getExtension('OES_texture_float');
             var floatVertexTextures = vertexTextures && floatFragmentTextures;
-
-            this.getMaxAnisotropy = getMaxAnisotropy;
-            this.getMaxPrecision = getMaxPrecision;
-
-            this.precision = precision;
-            this.logarithmicDepthBuffer = logarithmicDepthBuffer;
 
             this.maxTextures = maxTextures;
             this.maxVertexTextures = maxVertexTextures;
