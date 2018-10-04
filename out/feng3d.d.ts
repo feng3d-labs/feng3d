@@ -12262,43 +12262,17 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 粒子数字类型
+     * 粒子模块
      */
-    enum ParticleNumberType {
-        /**
-         * 常数
-         */
-        constant = 0,
-        /**
-         * 两个常量之间进行随机
-         */
-        randomBetweenTwoConstants = 1,
-        /**
-         * 曲线
-         */
-        curve = 2,
-        /**
-         * 两个曲线之间进行随机
-         */
-        randomBetweenTwoCurves = 3
+    class ParticleModule {
     }
+}
+declare namespace feng3d {
     /**
-     * 粒子数字，被用与生成粒子起始寿命等
+     * 粒子主模块
      */
-    class ParticleNumber {
-        /**
-         * 类型
-         */
-        type: ParticleNumberType;
-        /**
-         * 常量，type 为 ParticleNumberType.constant 与 ParticleNumberType.randomBetweenTwoConstants 时有效。
-         */
-        constant: number;
-        /**
-         * 第二个常量，type 为 ParticleNumberType.randomBetweenTwoConstants 时有效，将与 constant 属性配合使用。
-         */
-        constant1: number;
-        curvedata: any;
+    class ParticleMainModule extends ParticleModule {
+        duration: number;
     }
 }
 declare namespace feng3d {

@@ -24378,44 +24378,31 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 粒子数字类型
+     * 粒子模块
      */
-    var ParticleNumberType;
-    (function (ParticleNumberType) {
-        /**
-         * 常数
-         */
-        ParticleNumberType[ParticleNumberType["constant"] = 0] = "constant";
-        /**
-         * 两个常量之间进行随机
-         */
-        ParticleNumberType[ParticleNumberType["randomBetweenTwoConstants"] = 1] = "randomBetweenTwoConstants";
-        /**
-         * 曲线
-         */
-        ParticleNumberType[ParticleNumberType["curve"] = 2] = "curve";
-        /**
-         * 两个曲线之间进行随机
-         */
-        ParticleNumberType[ParticleNumberType["randomBetweenTwoCurves"] = 3] = "randomBetweenTwoCurves";
-    })(ParticleNumberType = feng3d.ParticleNumberType || (feng3d.ParticleNumberType = {}));
-    /**
-     * 粒子数字，被用与生成粒子起始寿命等
-     */
-    var ParticleNumber = /** @class */ (function () {
-        function ParticleNumber() {
-            /**
-             * 常量，type 为 ParticleNumberType.constant 与 ParticleNumberType.randomBetweenTwoConstants 时有效。
-             */
-            this.constant = 0;
-            /**
-             * 第二个常量，type 为 ParticleNumberType.randomBetweenTwoConstants 时有效，将与 constant 属性配合使用。
-             */
-            this.constant1 = 0;
+    var ParticleModule = /** @class */ (function () {
+        function ParticleModule() {
         }
-        return ParticleNumber;
+        return ParticleModule;
     }());
-    feng3d.ParticleNumber = ParticleNumber;
+    feng3d.ParticleModule = ParticleModule;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 粒子主模块
+     */
+    var ParticleMainModule = /** @class */ (function (_super) {
+        __extends(ParticleMainModule, _super);
+        function ParticleMainModule() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        __decorate([
+            feng3d.oav({ tooltip: "The length of time the Particle System is emitting particles. If the system is looping, this indicates the length of one cycle." })
+        ], ParticleMainModule.prototype, "duration", void 0);
+        return ParticleMainModule;
+    }(feng3d.ParticleModule));
+    feng3d.ParticleMainModule = ParticleMainModule;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
