@@ -1659,6 +1659,10 @@ declare namespace feng3d {
             component: "OAVFeng3dPreView";
             componentParam: Object;
         };
+        OAVAccordionObjectView: {
+            component: "OAVAccordionObjectView";
+            componentParam: Object;
+        };
     }
     /**
      * OAVDefault 组件参数
@@ -12040,7 +12044,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 粒子动画组件
-
      */
     class ParticleComponent {
         /**
@@ -12196,16 +12199,7 @@ declare namespace feng3d {
          * 粒子数量
          */
         numParticles: number;
-        geometry: PlaneGeometry;
-        material: Material;
-        /**
-         * 粒子最大数量
-         */
-        maxParticles: number;
-        /**
-         * 开始寿命，粒子发射器发射时赋予粒子寿命以s为单位，粒子的寿命将会随时间而流逝，等于0时将会消失
-         */
-        startLifetime: number;
+        main: ParticleMainModule;
         /**
          * 粒子全局属性
          */
@@ -12236,6 +12230,8 @@ declare namespace feng3d {
          * 粒子状态控制模块列表
          */
         readonly components: (ParticleEmission | ParticlePosition | ParticleVelocity | ParticleColor | ParticleBillboard)[];
+        geometry: PlaneGeometry;
+        material: Material;
         readonly single: boolean;
         init(gameObject: GameObject): void;
         update(interval: number): void;
@@ -12262,9 +12258,31 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 粒子模拟空间
+     */
+    enum ParticleSimulationSpace {
+        Local = 0,
+        World = 1,
+        Custom = 2
+    }
+}
+declare namespace feng3d {
+    /**
+     * 粒子缩放模式
+     */
+    enum ParticleScalingMode {
+        Hierarchy = 0,
+        Local = 1,
+        Shape = 2
+    }
+}
+declare namespace feng3d {
+    /**
      * 粒子模块
      */
     class ParticleModule {
+        protected _particleSystem: ParticleSystem;
+        constructor(particleSystem: ParticleSystem);
     }
 }
 declare namespace feng3d {
@@ -12273,6 +12291,24 @@ declare namespace feng3d {
      */
     class ParticleMainModule extends ParticleModule {
         duration: number;
+        loop: boolean;
+        prewarm: boolean;
+        startDelay: number;
+        startLifetime: number;
+        startSpeed: number;
+        startSize: Vector3;
+        startRotation: Vector3;
+        randomizeRotationDirection: number;
+        startColor: Color4;
+        gravityModifier: number;
+        simulationSpace: ParticleSimulationSpace;
+        customSimulationSpace: Transform;
+        simulationSpeed: number;
+        scalingMode: ParticleScalingMode;
+        playOnAwake: boolean;
+        maxParticles: number;
+        autoRandomSeed: boolean;
+        private numParticlesChanged;
     }
 }
 declare namespace feng3d {

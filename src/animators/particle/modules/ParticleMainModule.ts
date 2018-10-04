@@ -71,10 +71,16 @@ namespace feng3d
 
         // @oav({ tooltip: "The number of particles in the system will be limited by this number. Emission will be temporarily halted if this is reached." })
         @oav({ tooltip: "系统中粒子的数量将被这个数限制。如果达到这个目标，排放将暂时发射。" })
+        @watch("numParticlesChanged")
         maxParticles = 1000;
 
         // @oav({ tooltip: "Simulate differently each time the effect is played." })
         @oav({ tooltip: "每次播放效果时以不同的方式进行模拟。" })
         autoRandomSeed = true;
+
+        private numParticlesChanged()
+        {
+            this._particleSystem["numParticlesChanged"](this.maxParticles);
+        }
     }
 }

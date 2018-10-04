@@ -23844,7 +23844,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 粒子动画组件
-
      */
     var ParticleComponent = /** @class */ (function () {
         function ParticleComponent() {
@@ -24163,16 +24162,7 @@ var feng3d;
              * 粒子数量
              */
             _this.numParticles = 1000;
-            _this.geometry = feng3d.Geometry.billboard;
-            _this.material = feng3d.Material.particle;
-            /**
-             * 粒子最大数量
-             */
-            _this.maxParticles = 1000;
-            /**
-             * 开始寿命，粒子发射器发射时赋予粒子寿命以s为单位，粒子的寿命将会随时间而流逝，等于0时将会消失
-             */
-            _this.startLifetime = 5;
+            _this.main = new feng3d.ParticleMainModule(_this);
             /**
              * 粒子全局属性
              */
@@ -24209,6 +24199,8 @@ var feng3d;
                 new feng3d.ParticleColor(),
                 new feng3d.ParticleBillboard(),
             ];
+            _this.geometry = feng3d.Geometry.billboard;
+            _this.material = feng3d.Material.particle;
             return _this;
         }
         Object.defineProperty(ParticleSystem.prototype, "single", {
@@ -24228,10 +24220,10 @@ var feng3d;
         ParticleSystem.prototype.invalidate = function () {
             this._isInvalid = true;
         };
-        ParticleSystem.prototype.numParticlesChanged = function () {
+        ParticleSystem.prototype.numParticlesChanged = function (maxParticles) {
             this.particles = [];
             //
-            for (var i = 0; i < this.maxParticles; i++) {
+            for (var i = 0; i < maxParticles; i++) {
                 this.particles.push(new feng3d.Particle(i));
             }
             if (this.particleEmission)
@@ -24358,10 +24350,9 @@ var feng3d;
             feng3d.serialize
         ], ParticleSystem.prototype, "numParticles", void 0);
         __decorate([
-            feng3d.watch("numParticlesChanged"),
-            feng3d.oav({ tooltip: "粒子系统拥有粒子的数量" }),
+            feng3d.oav({ block: "main", component: "OAVObjectView" }),
             feng3d.serialize
-        ], ParticleSystem.prototype, "maxParticles", void 0);
+        ], ParticleSystem.prototype, "main", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "全局属性", component: "OAVObjectView", tooltip: "粒子全局属性，作用与所有粒子。" })
@@ -24370,6 +24361,12 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ block: "粒子模块", component: "OAVParticleComponentList" })
         ], ParticleSystem.prototype, "components", void 0);
+        __decorate([
+            feng3d.oav({ block: "Renderer", component: "OAVPick", tooltip: "几何体，提供模型以形状", componentParam: { accepttype: "geometry", datatype: "geometry" } })
+        ], ParticleSystem.prototype, "geometry", void 0);
+        __decorate([
+            feng3d.oav({ block: "Renderer", component: "OAVPick", tooltip: "材质，提供模型以皮肤", componentParam: { accepttype: "material", datatype: "material" } })
+        ], ParticleSystem.prototype, "material", void 0);
         return ParticleSystem;
     }(feng3d.Model));
     feng3d.ParticleSystem = ParticleSystem;
@@ -24378,10 +24375,35 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 粒子模拟空间
+     */
+    var ParticleSimulationSpace;
+    (function (ParticleSimulationSpace) {
+        ParticleSimulationSpace[ParticleSimulationSpace["Local"] = 0] = "Local";
+        ParticleSimulationSpace[ParticleSimulationSpace["World"] = 1] = "World";
+        ParticleSimulationSpace[ParticleSimulationSpace["Custom"] = 2] = "Custom";
+    })(ParticleSimulationSpace = feng3d.ParticleSimulationSpace || (feng3d.ParticleSimulationSpace = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 粒子缩放模式
+     */
+    var ParticleScalingMode;
+    (function (ParticleScalingMode) {
+        ParticleScalingMode[ParticleScalingMode["Hierarchy"] = 0] = "Hierarchy";
+        ParticleScalingMode[ParticleScalingMode["Local"] = 1] = "Local";
+        ParticleScalingMode[ParticleScalingMode["Shape"] = 2] = "Shape";
+    })(ParticleScalingMode = feng3d.ParticleScalingMode || (feng3d.ParticleScalingMode = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 粒子模块
      */
     var ParticleModule = /** @class */ (function () {
-        function ParticleModule() {
+        function ParticleModule(particleSystem) {
+            this._particleSystem = particleSystem;
         }
         return ParticleModule;
     }());
@@ -24395,11 +24417,101 @@ var feng3d;
     var ParticleMainModule = /** @class */ (function (_super) {
         __extends(ParticleMainModule, _super);
         function ParticleMainModule() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            // @oav({ tooltip: "The length of time the Particle System is emitting particles. If the system is looping, this indicates the length of one cycle." })
+            _this.duration = 5;
+            // @oav({ tooltip: "If true, the emission cycle will repeat after the duration." })
+            _this.loop = true;
+            // @oav({ tooltip: "When played a prewarmed system will be in a state as if it bad emitted one loop cycle. Can only be used if the system is looping." })
+            _this.prewarm = false;
+            // @oav({ tooltip: "Delay in seconds that this Particle System will wait before emitting particles. Cannot be used together with a prewarmed looping system." })
+            _this.startDelay = 0;
+            // @oav({ tooltip: "Start lifetime is seconds, particle will die when its lifetime reaches 0." })
+            _this.startLifetime = 5;
+            // @oav({ tooltip: "The start speed of particles, applied in the starting direction." })
+            _this.startSpeed = 5;
+            // @oav({ tooltip: "The start size of particles." })
+            _this.startSize = new feng3d.Vector3(1, 1, 1);
+            // @oav({ tooltip: "The start rotation of particles in degress." })
+            _this.startRotation = new feng3d.Vector3();
+            // @oav({ tooltip: "Cause some particles to spin in the opposite direction. (Set between 0 and 1, where a higher value causes more to flip)" })
+            _this.randomizeRotationDirection = 0;
+            // @oav({ tooltip: "The start color of particles." })
+            _this.startColor = new feng3d.Color4();
+            // @oav({ tooltip: "Scales the gravity defined in Physics Manager." })
+            _this.gravityModifier = 0;
+            // @oav({ tooltip: "Makes particle positions simulate in world, local or custom space. In local space they stay relative to their own Transform, and in custom space they are relative to the custom Transform." })
+            _this.simulationSpace = feng3d.ParticleSimulationSpace.Local;
+            // @oav({ tooltip: "Scale the playback speed of the Particle System." })
+            _this.simulationSpeed = 1;
+            // @oav({ tooltip: "Should we use the combined scale from our entire hierachy, just this particle node, or just apply scale to the shape module?" })
+            _this.scalingMode = feng3d.ParticleScalingMode.Local;
+            // @oav({ tooltip: "If enabled, the system will start palying automatically. Note that this setting is shared between all Particle Systems in the current particle effect." })
+            _this.playOnAwake = true;
+            // @oav({ tooltip: "The number of particles in the system will be limited by this number. Emission will be temporarily halted if this is reached." })
+            _this.maxParticles = 1000;
+            // @oav({ tooltip: "Simulate differently each time the effect is played." })
+            _this.autoRandomSeed = true;
+            return _this;
         }
+        ParticleMainModule.prototype.numParticlesChanged = function () {
+            this._particleSystem["numParticlesChanged"](this.maxParticles);
+        };
         __decorate([
-            feng3d.oav({ tooltip: "The length of time the Particle System is emitting particles. If the system is looping, this indicates the length of one cycle." })
+            feng3d.oav({ tooltip: "粒子系统发射粒子的时间长度。如果系统是循环的，这表示一个循环的长度。" })
         ], ParticleMainModule.prototype, "duration", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "如果为真，发射周期将在持续时间后重复。" })
+        ], ParticleMainModule.prototype, "loop", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "当播放预暖系统时，将处于一种状态，就好像它坏了发出一个循环。只能在系统循环时使用。" })
+        ], ParticleMainModule.prototype, "prewarm", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "这个粒子系统在发射粒子之前会等待几秒。不能与预加热循环系统一起使用。" })
+        ], ParticleMainModule.prototype, "startDelay", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "起始寿命为秒，粒子寿命为0时死亡。" })
+        ], ParticleMainModule.prototype, "startLifetime", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "粒子的起始速度，应用于起始方向。" })
+        ], ParticleMainModule.prototype, "startSpeed", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "粒子的起始大小。" })
+        ], ParticleMainModule.prototype, "startSize", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "粒子的起始旋转角度。" })
+        ], ParticleMainModule.prototype, "startRotation", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "使一些粒子朝相反的方向旋转。(设置在0和1之间，值越大，翻转越多)" })
+        ], ParticleMainModule.prototype, "randomizeRotationDirection", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "粒子的起始颜色。" })
+        ], ParticleMainModule.prototype, "startColor", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "按物理管理器中定义的重力进行缩放。" })
+        ], ParticleMainModule.prototype, "gravityModifier", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。" })
+        ], ParticleMainModule.prototype, "simulationSpace", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "使粒子位置模拟相对于自定义转换组件。" })
+        ], ParticleMainModule.prototype, "customSimulationSpace", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "缩放粒子系统的播放速度。" })
+        ], ParticleMainModule.prototype, "simulationSpeed", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度?" })
+        ], ParticleMainModule.prototype, "scalingMode", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "如果启用，系统将自动开始运行。注意，此设置在当前粒子效应中的所有粒子系统之间共享。" })
+        ], ParticleMainModule.prototype, "playOnAwake", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "系统中粒子的数量将被这个数限制。如果达到这个目标，排放将暂时发射。" }),
+            feng3d.watch("numParticlesChanged")
+        ], ParticleMainModule.prototype, "maxParticles", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "每次播放效果时以不同的方式进行模拟。" })
+        ], ParticleMainModule.prototype, "autoRandomSeed", void 0);
         return ParticleMainModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleMainModule = ParticleMainModule;

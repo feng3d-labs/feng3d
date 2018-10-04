@@ -3,7 +3,6 @@ namespace feng3d
 
     /**
      * 粒子动画组件
-
      */
     export class ParticleComponent
     {

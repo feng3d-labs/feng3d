@@ -16,6 +16,7 @@ namespace feng3d
 		OAVMaterialName: { component: "OAVMaterialName", componentParam: Object };
 		OAVMultiText: { component: "OAVMultiText", componentParam: Object };
 		OAVFeng3dPreView: { component: "OAVFeng3dPreView", componentParam: Object };
+		OAVAccordionObjectView: { component: "OAVAccordionObjectView", componentParam: Object };
 	}
 
 	/**

@@ -44,22 +44,9 @@ namespace feng3d
         @serialize
         numParticles = 1000;
 
-        geometry = Geometry.billboard;
-
-        material = Material.particle;
-
-        /**
-         * 粒子最大数量
-         */
-        @watch("numParticlesChanged")
-        @oav({ tooltip: "粒子系统拥有粒子的数量" })
+        @oav({ block: "main", component: "OAVObjectView" })
         @serialize
-        maxParticles = 1000;
-
-        /**
-         * 开始寿命，粒子发射器发射时赋予粒子寿命以s为单位，粒子的寿命将会随时间而流逝，等于0时将会消失
-         */
-        startLifetime = 5;
+        main = new ParticleMainModule(this);
 
         /**
          * 粒子全局属性
@@ -106,6 +93,12 @@ namespace feng3d
             new ParticleBillboard(),
         ];
 
+        @oav({ block: "Renderer", component: "OAVPick", tooltip: "几何体，提供模型以形状", componentParam: { accepttype: "geometry", datatype: "geometry" } })
+        geometry = Geometry.billboard;
+
+        @oav({ block: "Renderer", component: "OAVPick", tooltip: "材质，提供模型以皮肤", componentParam: { accepttype: "material", datatype: "material" } })
+        material = Material.particle;
+
         get single() { return true; }
 
         init(gameObject: GameObject)
@@ -127,11 +120,11 @@ namespace feng3d
             this._isInvalid = true;
         }
 
-        private numParticlesChanged()
+        private numParticlesChanged(maxParticles: number)
         {
             this.particles = [];
             //
-            for (var i = 0; i < this.maxParticles; i++)
+            for (var i = 0; i < maxParticles; i++)
             {
                 this.particles.push(new Particle(i));
             }
