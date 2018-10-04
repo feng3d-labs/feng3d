@@ -49,13 +49,6 @@ namespace feng3d
         material = Material.particle;
 
         /**
-         * 粒子全局属性
-         */
-        @serialize
-        @oav({ block: "全局属性", component: "OAVObjectView", tooltip: "粒子全局属性，作用与所有粒子。" })
-        readonly particleGlobal = new ParticleGlobal();
-
-        /**
          * 粒子最大数量
          */
         @watch("numParticlesChanged")
@@ -67,6 +60,13 @@ namespace feng3d
          * 开始寿命，粒子发射器发射时赋予粒子寿命以s为单位，粒子的寿命将会随时间而流逝，等于0时将会消失
          */
         startLifetime = 5;
+
+        /**
+         * 粒子全局属性
+         */
+        @serialize
+        @oav({ block: "全局属性", component: "OAVObjectView", tooltip: "粒子全局属性，作用与所有粒子。" })
+        readonly particleGlobal = new ParticleGlobal();
 
         /**
          * 粒子列表
@@ -85,7 +85,13 @@ namespace feng3d
          */
         private changedParticles: Particle[] = [];
 
-        private particleEmission = new ParticleEmission();
+        private particleEmission = new ParticleEmission(this);
+
+        /**
+         * 属性数据列表
+         */
+        private _attributes: { [name: string]: number[] } = {};
+        private _isInvalid = true;
 
         /**
          * 粒子状态控制模块列表
@@ -99,12 +105,6 @@ namespace feng3d
             new ParticleColor(),
             new ParticleBillboard(),
         ];
-
-        /**
-         * 属性数据列表
-         */
-        private _attributes: { [name: string]: number[] } = {};
-        private _isInvalid = true;
 
         get single() { return true; }
 

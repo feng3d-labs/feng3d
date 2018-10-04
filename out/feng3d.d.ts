@@ -12084,7 +12084,8 @@ declare namespace feng3d {
          * 上次发射时间
          */
         pretime: number;
-        constructor();
+        private particleSystem;
+        constructor(particleSystem: ParticleSystem);
         /**
          * 发射粒子
          * @param time 当前粒子时间
@@ -12198,10 +12199,6 @@ declare namespace feng3d {
         geometry: PlaneGeometry;
         material: Material;
         /**
-         * 粒子全局属性
-         */
-        readonly particleGlobal: ParticleGlobal;
-        /**
          * 粒子最大数量
          */
         maxParticles: number;
@@ -12209,6 +12206,10 @@ declare namespace feng3d {
          * 开始寿命，粒子发射器发射时赋予粒子寿命以s为单位，粒子的寿命将会随时间而流逝，等于0时将会消失
          */
         startLifetime: number;
+        /**
+         * 粒子全局属性
+         */
+        readonly particleGlobal: ParticleGlobal;
         /**
          * 粒子列表
          */
@@ -12227,14 +12228,14 @@ declare namespace feng3d {
         private changedParticles;
         private particleEmission;
         /**
-         * 粒子状态控制模块列表
-         */
-        readonly components: (ParticleEmission | ParticlePosition | ParticleVelocity | ParticleColor | ParticleBillboard)[];
-        /**
          * 属性数据列表
          */
         private _attributes;
         private _isInvalid;
+        /**
+         * 粒子状态控制模块列表
+         */
+        readonly components: (ParticleEmission | ParticlePosition | ParticleVelocity | ParticleColor | ParticleBillboard)[];
         readonly single: boolean;
         init(gameObject: GameObject): void;
         update(interval: number): void;

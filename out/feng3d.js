@@ -23889,7 +23889,7 @@ var feng3d;
      */
     var ParticleEmission = /** @class */ (function (_super) {
         __extends(ParticleEmission, _super);
-        function ParticleEmission() {
+        function ParticleEmission(particleSystem) {
             var _this = _super.call(this) || this;
             /**
              * 发射率，每秒发射粒子数量
@@ -23904,6 +23904,7 @@ var feng3d;
              * 上次发射时间
              */
             _this.pretime = 0;
+            _this.particleSystem = particleSystem;
             return _this;
         }
         /**
@@ -24165,10 +24166,6 @@ var feng3d;
             _this.geometry = feng3d.Geometry.billboard;
             _this.material = feng3d.Material.particle;
             /**
-             * 粒子全局属性
-             */
-            _this.particleGlobal = new feng3d.ParticleGlobal();
-            /**
              * 粒子最大数量
              */
             _this.maxParticles = 1000;
@@ -24176,6 +24173,10 @@ var feng3d;
              * 开始寿命，粒子发射器发射时赋予粒子寿命以s为单位，粒子的寿命将会随时间而流逝，等于0时将会消失
              */
             _this.startLifetime = 5;
+            /**
+             * 粒子全局属性
+             */
+            _this.particleGlobal = new feng3d.ParticleGlobal();
             /**
              * 粒子列表
              */
@@ -24192,7 +24193,12 @@ var feng3d;
              * 被修改过的粒子列表，这些粒子将会在渲染前进行更新渲染va数据
              */
             _this.changedParticles = [];
-            _this.particleEmission = new feng3d.ParticleEmission();
+            _this.particleEmission = new feng3d.ParticleEmission(_this);
+            /**
+             * 属性数据列表
+             */
+            _this._attributes = {};
+            _this._isInvalid = true;
             /**
              * 粒子状态控制模块列表
              */
@@ -24203,11 +24209,6 @@ var feng3d;
                 new feng3d.ParticleColor(),
                 new feng3d.ParticleBillboard(),
             ];
-            /**
-             * 属性数据列表
-             */
-            _this._attributes = {};
-            _this._isInvalid = true;
             return _this;
         }
         Object.defineProperty(ParticleSystem.prototype, "single", {
@@ -24357,14 +24358,14 @@ var feng3d;
             feng3d.serialize
         ], ParticleSystem.prototype, "numParticles", void 0);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav({ block: "全局属性", component: "OAVObjectView", tooltip: "粒子全局属性，作用与所有粒子。" })
-        ], ParticleSystem.prototype, "particleGlobal", void 0);
-        __decorate([
             feng3d.watch("numParticlesChanged"),
             feng3d.oav({ tooltip: "粒子系统拥有粒子的数量" }),
             feng3d.serialize
         ], ParticleSystem.prototype, "maxParticles", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "全局属性", component: "OAVObjectView", tooltip: "粒子全局属性，作用与所有粒子。" })
+        ], ParticleSystem.prototype, "particleGlobal", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "粒子模块", component: "OAVParticleComponentList" })
