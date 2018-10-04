@@ -14,7 +14,7 @@ namespace feng3d
 
     Feng3dAssets.setAssets(Material.particle = new Material().value({
         name: "Particle-Material", assetsId: "Particle-Material", shaderName: "particle",
-        renderParams: { enableBlend: true, sfactor: BlendFactor.SRC_COLOR, dfactor: BlendFactor.ONE_MINUS_SRC_COLOR },
+        renderParams: { enableBlend: true, sfactor: BlendFactor.ONE, dfactor: BlendFactor.ONE_MINUS_SRC_COLOR, depthtest: false },
         hideFlags: HideFlags.NotEditable,
     }));
 }

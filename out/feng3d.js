@@ -3961,6 +3961,7 @@ var feng3d;
                 for (var j = 0; j < size; j++) {
                     var vec = new feng3d.Vector2(i - half, j - half);
                     var f = 1 - feng3d.FMath.clamp(vec.length, 0, half) / half;
+                    f = f * f;
                     ctx.fillStyle = new feng3d.Color3(f, f, f).toHexString();
                     ctx.fillRect(i, j, 1, 1);
                 }
@@ -23894,7 +23895,7 @@ var feng3d;
             /**
              * 发射率，每秒发射粒子数量
              */
-            _this.rate = 100;
+            _this.rate = 10;
             /**
              * 爆发，在time时刻额外喷射particles粒子
              */
@@ -24128,7 +24129,7 @@ var feng3d;
     feng3d.shaderConfig.shaders["particle"].cls = ParticleUniforms;
     feng3d.Feng3dAssets.setAssets(feng3d.Material.particle = new feng3d.Material().value({
         name: "Particle-Material", assetsId: "Particle-Material", shaderName: "particle",
-        renderParams: { enableBlend: true, sfactor: feng3d.BlendFactor.SRC_COLOR, dfactor: feng3d.BlendFactor.ONE_MINUS_SRC_COLOR },
+        renderParams: { enableBlend: true, sfactor: feng3d.BlendFactor.ONE, dfactor: feng3d.BlendFactor.ONE_MINUS_SRC_COLOR, depthtest: false },
         hideFlags: feng3d.HideFlags.NotEditable,
     }));
 })(feng3d || (feng3d = {}));

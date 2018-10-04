@@ -94,6 +94,7 @@ namespace feng3d
                 {
                     var vec = new Vector2(i - half, j - half);
                     var f = 1 - FMath.clamp(vec.length, 0, half) / half;
+                    f = f * f;
                     ctx.fillStyle = new Color3(f, f, f).toHexString();
                     ctx.fillRect(i, j, 1, 1);
                 }

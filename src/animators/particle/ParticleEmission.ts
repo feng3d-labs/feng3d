@@ -11,7 +11,7 @@ namespace feng3d
          */
         @oav({ tooltip: "每秒发射粒子数量" })
         @serialize
-        rate = 100;
+        rate = 10;
 
         /**
          * 爆发，在time时刻额外喷射particles粒子
