@@ -17717,6 +17717,7 @@ var feng3d;
          */
         function Geometry() {
             var _this = _super.call(this) || this;
+            _this.preview = "";
             _this.assetType = feng3d.AssetExtension.geometry;
             /**
              * 属性数据列表
@@ -18321,6 +18322,9 @@ var feng3d;
                 }
             }
         };
+        __decorate([
+            feng3d.oav({ component: "OAVFeng3dPreView" })
+        ], Geometry.prototype, "preview", void 0);
         __decorate([
             feng3d.oav()
         ], Geometry.prototype, "name", void 0);

@@ -77,6 +77,9 @@ namespace feng3d
          */
         static billboard: PlaneGeometry;
 
+        @oav({ component: "OAVFeng3dPreView" })
+        private preview = "";
+
         @oav()
         name: string;
 

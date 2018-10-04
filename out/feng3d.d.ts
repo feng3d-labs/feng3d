@@ -9969,6 +9969,7 @@ declare namespace feng3d {
          * 公告牌
          */
         static billboard: PlaneGeometry;
+        private preview;
         name: string;
         assetType: AssetExtension;
         /**
