@@ -3147,9 +3147,8 @@ var feng3d;
                 target[OBJECTVIEW_KEY] = {};
             var objectview = target[OBJECTVIEW_KEY] || {};
             var attributeDefinitionVec = objectview.attributeDefinitionVec = objectview.attributeDefinitionVec || [];
-            attributeDefinitionVec.push({
-                name: propertyKey, block: param && param.block, component: param && param.component, componentParam: param && param.componentParam
-            });
+            var attributeDefinition = Object.assign({ name: propertyKey }, param);
+            attributeDefinitionVec.push(attributeDefinition);
         };
         /**
          * 获取对象信息

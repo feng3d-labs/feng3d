@@ -209,16 +209,18 @@ namespace feng3d
 			var view = new cls(blockViewInfo);
 			return view;
 		}
+
 		addOAV(target: any, propertyKey: string, param?: OAVComponentParams)
 		{
 			if (!Object.getOwnPropertyDescriptor(target, OBJECTVIEW_KEY))
 				target[OBJECTVIEW_KEY] = {};
 			var objectview: ClassDefinition = target[OBJECTVIEW_KEY] || {};
 			var attributeDefinitionVec: AttributeDefinition[] = objectview.attributeDefinitionVec = objectview.attributeDefinitionVec || [];
-			attributeDefinitionVec.push({
-				name: propertyKey, block: param && param.block, component: param && <string>param.component, componentParam: param && param.componentParam
-			});
+
+			var attributeDefinition = Object.assign({ name: propertyKey }, param);
+			attributeDefinitionVec.push(attributeDefinition);
 		}
+
 		/**
 		 * 获取对象信息
 		 * @param object				对象
