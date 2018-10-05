@@ -73,11 +73,6 @@ namespace feng3d
 
                 }
             }
-
-            this.rate
-            this.pretime
-            time
-            ds.utils
         }
 
         /**
@@ -96,7 +91,7 @@ namespace feng3d
         /**
          * 获取出生时间数组
          */
-        private getBirthTimeArray(numParticles)
+        private getBirthTimeArray(numParticles: number)
         {
             if (this.isInvalid)
             {

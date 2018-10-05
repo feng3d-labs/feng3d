@@ -12104,19 +12104,6 @@ declare namespace feng3d {
      * 粒子速度组件
 
      */
-    class ParticlePosition extends ParticleComponent {
-        /**
-         * 创建粒子属性
-         * @param particle                  粒子
-         */
-        generateParticle(particle: Particle, particleSystem: ParticleSystem): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 粒子速度组件
-
-     */
     class ParticleVelocity extends ParticleComponent {
         /**
          * 创建粒子属性
@@ -12161,10 +12148,6 @@ declare namespace feng3d {
          */
         time: number;
         /**
-         * 播放速度
-         */
-        playspeed: number;
-        /**
          * 周期
          */
         cycle: number;
@@ -12202,7 +12185,7 @@ declare namespace feng3d {
         /**
          * 粒子状态控制模块列表
          */
-        readonly components: (ParticlePosition | ParticleVelocity | ParticleBillboard)[];
+        readonly components: (ParticleVelocity | ParticleBillboard)[];
         geometry: PlaneGeometry;
         material: Material;
         castShadows: boolean;
@@ -12265,24 +12248,79 @@ declare namespace feng3d {
      * 粒子主模块
      */
     class ParticleMainModule extends ParticleModule {
+        /**
+         * 粒子系统发射粒子的时间长度。如果系统是循环的，这表示一个循环的长度。
+         */
         duration: number;
+        /**
+         * 如果为真，发射周期将在持续时间后重复。
+         */
         loop: boolean;
+        /**
+         * 当播放预暖系统时，将处于一种状态，就好像它坏了发出一个循环。只能在系统循环时使用。
+         */
         prewarm: boolean;
+        /**
+         * 这个粒子系统在发射粒子之前会等待几秒。不能与预加热循环系统一起使用。
+         */
         startDelay: number;
+        /**
+         * 起始寿命为秒，粒子寿命为0时死亡。
+         */
         startLifetime: number;
+        /**
+         * 粒子的起始速度，应用于起始方向。
+         */
         startSpeed: number;
+        /**
+         * 粒子的起始大小。
+         */
         startSize: Vector3;
+        /**
+         * 粒子的起始旋转角度。
+         */
         startRotation: Vector3;
+        /**
+         * 使一些粒子朝相反的方向旋转。(设置在0和1之间，值越大，翻转越多)
+         */
         randomizeRotationDirection: number;
+        /**
+         * 粒子的起始颜色。
+         */
         startColor: Color4;
+        /**
+         * 按物理管理器中定义的重力进行缩放。
+         */
         gravityModifier: number;
+        /**
+         * 使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。
+         */
         simulationSpace: ParticleSimulationSpace;
+        /**
+         * 使粒子位置模拟相对于自定义转换组件。
+         */
         customSimulationSpace: Transform;
+        /**
+         * 缩放粒子系统的播放速度。
+         */
         simulationSpeed: number;
+        /**
+         * 我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度
+         */
         scalingMode: ParticleScalingMode;
+        /**
+         * 如果启用，系统将自动开始运行。注意，此设置在当前粒子效应中的所有粒子系统之间共享。
+         */
         playOnAwake: boolean;
+        /**
+         * 系统中粒子的数量将被这个数限制。如果达到这个目标，排放将暂时发射。
+         */
         maxParticles: number;
+        /**
+         * 每次播放效果时以不同的方式进行模拟。
+         */
         autoRandomSeed: boolean;
+        constructor(particleSystem: ParticleSystem);
         /**
          * 创建粒子属性
          * @param particle                  粒子

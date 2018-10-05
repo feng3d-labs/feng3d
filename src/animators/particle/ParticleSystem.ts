@@ -23,13 +23,6 @@ namespace feng3d
         time = 0;
 
         /**
-         * 播放速度
-         */
-        @oav({ tooltip: "播放速度，可以为负值，-1表示反方向一倍速度播放" })
-        @serialize
-        playspeed = 1;
-
-        /**
          * 周期
          */
         @oav({ tooltip: "粒子系统周期，time=0与time=10000有相同效果" })
@@ -86,7 +79,6 @@ namespace feng3d
         @serialize
         @oav({ block: "粒子模块", component: "OAVParticleComponentList" })
         readonly components = [
-            new ParticlePosition(),
             new ParticleVelocity(),
             new ParticleBillboard(),
         ];
@@ -116,9 +108,11 @@ namespace feng3d
         {
             if (!this.isPlaying) return;
 
-            this.time = (this.time + (interval * this.playspeed / 1000) + this.cycle) % this.cycle;
+            this.time = (this.time + (interval / 1000) + this.cycle) % this.cycle;
 
-            this.particleEmission.emit(this.time, this.deathParticles, this.survivalParticles, this.changedParticles);
+            var t = this.time * this.main.simulationSpeed;
+
+            this.particleEmission.emit(t, this.deathParticles, this.survivalParticles, this.changedParticles);
         }
 
         invalidate()
@@ -228,9 +222,9 @@ namespace feng3d
                 this._isInvalid = false;
             }
 
-            renderAtomic.instanceCount = () => this.numParticles;
+            renderAtomic.instanceCount = this.numParticles;
             //
-            renderAtomic.uniforms.u_particleTime = () => this.time;
+            renderAtomic.uniforms.u_particleTime = this.time;
 
             //
             renderAtomic.shaderMacro.HAS_PARTICLE_ANIMATOR = true;
