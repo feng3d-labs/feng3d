@@ -12148,10 +12148,6 @@ declare namespace feng3d {
          */
         time: number;
         /**
-         * 周期
-         */
-        cycle: number;
-        /**
          * 粒子数量
          */
         numParticles: number;

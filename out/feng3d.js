@@ -24078,10 +24078,6 @@ var feng3d;
              */
             _this.time = 0;
             /**
-             * 周期
-             */
-            _this.cycle = 10000;
-            /**
              * 粒子数量
              */
             _this.numParticles = 1000;
@@ -24136,8 +24132,8 @@ var feng3d;
         ParticleSystem.prototype.update = function (interval) {
             if (!this.isPlaying)
                 return;
-            this.time = (this.time + (interval / 1000) + this.cycle) % this.cycle;
-            var t = this.time * this.main.simulationSpeed;
+            this.time = this.time + interval / 1000;
+            var t = (this.time * this.main.simulationSpeed + this.main.duration) % this.main.duration;
             this.particleEmission.emit(t, this.deathParticles, this.survivalParticles, this.changedParticles);
         };
         ParticleSystem.prototype.invalidate = function () {
@@ -24263,10 +24259,6 @@ var feng3d;
         __decorate([
             feng3d.oav({ tooltip: "当前粒子时间" })
         ], ParticleSystem.prototype, "time", void 0);
-        __decorate([
-            feng3d.oav({ tooltip: "粒子系统周期，time=0与time=10000有相同效果" }),
-            feng3d.serialize
-        ], ParticleSystem.prototype, "cycle", void 0);
         __decorate([
             feng3d.watch("invalidate"),
             feng3d.oav({ tooltip: "粒子系统拥有粒子的数量" }),

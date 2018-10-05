@@ -23,13 +23,6 @@ namespace feng3d
         time = 0;
 
         /**
-         * 周期
-         */
-        @oav({ tooltip: "粒子系统周期，time=0与time=10000有相同效果" })
-        @serialize
-        cycle = 10000;
-
-        /**
          * 粒子数量
          */
         @watch("invalidate")
@@ -108,9 +101,9 @@ namespace feng3d
         {
             if (!this.isPlaying) return;
 
-            this.time = (this.time + (interval / 1000) + this.cycle) % this.cycle;
+            this.time = this.time + interval / 1000;
 
-            var t = this.time * this.main.simulationSpeed;
+            var t = (this.time * this.main.simulationSpeed + this.main.duration) % this.main.duration;
 
             this.particleEmission.emit(t, this.deathParticles, this.survivalParticles, this.changedParticles);
         }
