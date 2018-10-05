@@ -9,7 +9,7 @@ namespace feng3d
 
         assetType = AssetExtension.texturecube;
 
-        @oav({ component: "OAVCubeMap" })
+        @oav({ component: "OAVCubeMap", priority: -1 })
         @serialize
         @watch("urlChanged")
         positive_x_url: string;
@@ -33,9 +33,6 @@ namespace feng3d
         @serialize
         @watch("urlChanged")
         negative_z_url: string;
-
-        @oav()
-        name: string;
 
         noPixels = [ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white];
 

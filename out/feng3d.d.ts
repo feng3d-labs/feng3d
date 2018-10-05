@@ -1277,6 +1277,7 @@ declare namespace feng3d {
     type OAVComponentParams = Partial<OAVComponentParamMap[keyof OAVComponentParamMap]> & {
         block?: string;
         tooltip?: string;
+        priority?: number;
     };
     /**
      * objectview属性装饰器
@@ -1399,6 +1400,10 @@ declare namespace feng3d {
          * 组件参数
          */
         componentParam?: Object;
+        /**
+         * 优先级，数字越小，显示越靠前，默认为0
+         */
+        priority?: number;
     }
     /**
      * 定义特定属性类型默认界面
@@ -1565,6 +1570,10 @@ declare namespace feng3d {
          * 属性所属对象
          */
         owner: Object;
+        /**
+         * 优先级，数字越小，显示越靠前，默认为0
+         */
+        priority?: number;
     }
     /**
      * 对象属性块
@@ -10967,7 +10976,6 @@ declare namespace feng3d {
         __class__: "feng3d.UrlImageTexture2D";
         assetType: AssetExtension;
         url: string;
-        name: string;
         protected image: HTMLImageElement;
         constructor();
         /**
@@ -11040,7 +11048,6 @@ declare namespace feng3d {
         negative_x_url: string;
         negative_y_url: string;
         negative_z_url: string;
-        name: string;
         noPixels: ImageDatas[];
         protected _pixels: any[];
         protected _textureType: TextureType;

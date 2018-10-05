@@ -3181,16 +3181,10 @@ var feng3d;
                 if (excludeAttrs.indexOf(attributeDefinition.name) == -1) {
                     var writable = attributeDefinition.writable == undefined ? true : attributeDefinition.writable;
                     writable = writable && Object.propertyIsWritable(object, attributeDefinition.name);
-                    objectAttributeInfos.push({
-                        name: attributeDefinition.name,
-                        block: attributeDefinition.block,
-                        component: attributeDefinition.component,
-                        componentParam: attributeDefinition.componentParam,
-                        owner: object,
-                        writable: writable,
-                        tooltip: attributeDefinition.tooltip,
-                        type: getAttributeType(object[attributeDefinition.name])
-                    });
+                    var obj = { owner: object, type: getAttributeType(object[attributeDefinition.name]) };
+                    Object.assign(obj, attributeDefinition);
+                    obj.writable = writable;
+                    objectAttributeInfos.push(obj);
                 }
             });
             function getAttributeType(attribute) {
@@ -3200,6 +3194,9 @@ var feng3d;
                     return "number";
                 return attribute.constructor.name;
             }
+            objectAttributeInfos.sort(function (a, b) {
+                return (a.priority || 0) - (b.priority || 0);
+            });
             var objectInfo = {
                 objectAttributeInfos: objectAttributeInfos,
                 objectBlockInfos: getObjectBlockInfos(object, objectAttributeInfos, classConfig.blockDefinitionVec),
@@ -3236,7 +3233,9 @@ var feng3d;
                     }
                 });
                 if (!isfound) {
-                    oldClassDefinition.attributeDefinitionVec.push(newAttributeDefinition);
+                    var attributeDefinition = {};
+                    Object.assign(attributeDefinition, newAttributeDefinition);
+                    oldClassDefinition.attributeDefinitionVec.push(attributeDefinition);
                 }
             });
         }
@@ -3252,7 +3251,9 @@ var feng3d;
                     }
                 });
                 if (!isfound) {
-                    oldClassDefinition.blockDefinitionVec.push(newBlockDefinition);
+                    var blockDefinition = {};
+                    Object.assign(blockDefinition, newBlockDefinition);
+                    oldClassDefinition.blockDefinitionVec.push(blockDefinition);
                 }
             });
         }
@@ -5472,6 +5473,7 @@ var feng3d;
             feng3d.watch("assetsIdChanged")
         ], Feng3dAssets.prototype, "assetsId", void 0);
         __decorate([
+            feng3d.oav(),
             feng3d.serialize
         ], Feng3dAssets.prototype, "name", void 0);
         return Feng3dAssets;
@@ -21046,11 +21048,8 @@ var feng3d;
         __decorate([
             feng3d.serialize,
             feng3d.watch("urlChanged"),
-            feng3d.oav({ component: "OAVImage" })
+            feng3d.oav({ component: "OAVImage", priority: -1 })
         ], UrlImageTexture2D.prototype, "url", void 0);
-        __decorate([
-            feng3d.oav()
-        ], UrlImageTexture2D.prototype, "name", void 0);
         __decorate([
             feng3d.watch("imageChanged")
         ], UrlImageTexture2D.prototype, "image", void 0);
@@ -21203,7 +21202,7 @@ var feng3d;
                 this.once("loadCompleted", callback);
         };
         __decorate([
-            feng3d.oav({ component: "OAVCubeMap" }),
+            feng3d.oav({ component: "OAVCubeMap", priority: -1 }),
             feng3d.serialize,
             feng3d.watch("urlChanged")
         ], TextureCube.prototype, "positive_x_url", void 0);
@@ -21227,9 +21226,6 @@ var feng3d;
             feng3d.serialize,
             feng3d.watch("urlChanged")
         ], TextureCube.prototype, "negative_z_url", void 0);
-        __decorate([
-            feng3d.oav()
-        ], TextureCube.prototype, "name", void 0);
         return TextureCube;
     }(feng3d.TextureInfo));
     feng3d.TextureCube = TextureCube;

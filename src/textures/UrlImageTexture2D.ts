@@ -8,11 +8,8 @@ namespace feng3d
 
         @serialize
         @watch("urlChanged")
-        @oav({ component: "OAVImage" })
+        @oav({ component: "OAVImage", priority: -1 })
         url = "";
-
-        @oav()
-        name: string;
 
         @watch("imageChanged")
         protected image: HTMLImageElement;

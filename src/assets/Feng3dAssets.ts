@@ -15,6 +15,7 @@ namespace feng3d
         /**
          * 名称
          */
+        @oav()
         @serialize
         name = "";
 

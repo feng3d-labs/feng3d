@@ -70,7 +70,7 @@ namespace feng3d
 	// 	}
 	// }
 
-	export type OAVComponentParams = Partial<OAVComponentParamMap[keyof OAVComponentParamMap]> & { block?: string, tooltip?: string };
+	export type OAVComponentParams = Partial<OAVComponentParamMap[keyof OAVComponentParamMap]> & { block?: string, tooltip?: string, priority?: number };
 
 	/**
 	 * objectview属性装饰器
@@ -257,18 +257,11 @@ namespace feng3d
 				{
 					var writable = attributeDefinition.writable == undefined ? true : attributeDefinition.writable;
 					writable = writable && Object.propertyIsWritable(object, attributeDefinition.name);
-					objectAttributeInfos.push(
-						{
-							name: attributeDefinition.name,
-							block: attributeDefinition.block,
-							component: attributeDefinition.component,
-							componentParam: attributeDefinition.componentParam,
-							owner: object,
-							writable: writable,
-							tooltip: attributeDefinition.tooltip,
-							type: getAttributeType(object[attributeDefinition.name])
-						}
-					);
+
+					var obj: AttributeViewInfo = <any>{ owner: object, type: getAttributeType(object[attributeDefinition.name]) };
+					Object.assign(obj, attributeDefinition);
+					obj.writable = writable;
+					objectAttributeInfos.push(obj);
 				}
 
 			});
@@ -281,6 +274,11 @@ namespace feng3d
 					return "number";
 				return attribute.constructor.name;
 			}
+
+			objectAttributeInfos.sort((a, b) =>
+			{
+				return (a.priority || 0) - (b.priority || 0);
+			});
 
 			var objectInfo: ObjectViewInfo = {
 				objectAttributeInfos: objectAttributeInfos,
@@ -326,7 +324,9 @@ namespace feng3d
 				});
 				if (!isfound)
 				{
-					oldClassDefinition.attributeDefinitionVec.push(newAttributeDefinition);
+					var attributeDefinition: AttributeDefinition = <any>{};
+					Object.assign(attributeDefinition, newAttributeDefinition);
+					oldClassDefinition.attributeDefinitionVec.push(attributeDefinition);
 				}
 			});
 		}
@@ -347,7 +347,9 @@ namespace feng3d
 				});
 				if (!isfound)
 				{
-					oldClassDefinition.blockDefinitionVec.push(newBlockDefinition);
+					var blockDefinition: BlockDefinition = <any>{};
+					Object.assign(blockDefinition, newBlockDefinition);
+					oldClassDefinition.blockDefinitionVec.push(blockDefinition);
 				}
 			});
 		}
@@ -530,6 +532,11 @@ namespace feng3d
 		 * 组件参数
 		 */
 		componentParam?: Object;
+
+		/**
+		 * 优先级，数字越小，显示越靠前，默认为0
+		 */
+		priority?: number;
 	}
 
 	/**
@@ -734,6 +741,11 @@ namespace feng3d
 		 * 属性所属对象
 		 */
 		owner: Object;
+
+		/**
+		 * 优先级，数字越小，显示越靠前，默认为0
+		 */
+		priority?: number;
 	}
 
 	/**
