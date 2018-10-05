@@ -3194,9 +3194,11 @@ var feng3d;
                     return "number";
                 return attribute.constructor.name;
             }
+            objectAttributeInfos.forEach(function (v, i) { v["___tempI"] = i; });
             objectAttributeInfos.sort(function (a, b) {
-                return (a.priority || 0) - (b.priority || 0);
+                return ((a.priority || 0) - (b.priority || 0)) || (a["___tempI"] - b["___tempI"]);
             });
+            objectAttributeInfos.forEach(function (v, i) { delete v["___tempI"]; });
             var objectInfo = {
                 objectAttributeInfos: objectAttributeInfos,
                 objectBlockInfos: getObjectBlockInfos(object, objectAttributeInfos, classConfig.blockDefinitionVec),

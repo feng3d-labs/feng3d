@@ -275,10 +275,12 @@ namespace feng3d
 				return attribute.constructor.name;
 			}
 
+			objectAttributeInfos.forEach((v, i) => { v["___tempI"] = i });
 			objectAttributeInfos.sort((a, b) =>
 			{
-				return (a.priority || 0) - (b.priority || 0);
+				return ((a.priority || 0) - (b.priority || 0)) || (a["___tempI"] - b["___tempI"]);
 			});
+			objectAttributeInfos.forEach((v, i) => { delete v["___tempI"] });
 
 			var objectInfo: ObjectViewInfo = {
 				objectAttributeInfos: objectAttributeInfos,
