@@ -43,6 +43,7 @@ namespace feng3d
 
         // @oav({ tooltip: "The start color of particles." })
         @oav({ tooltip: "粒子的起始颜色。" })
+        @watch("onStartColorChanged")
         startColor = new Color4();
 
         // @oav({ tooltip: "Scales the gravity defined in Physics Manager." })
@@ -78,9 +79,23 @@ namespace feng3d
         @oav({ tooltip: "每次播放效果时以不同的方式进行模拟。" })
         autoRandomSeed = true;
 
+        /**
+		 * 创建粒子属性
+         * @param particle                  粒子
+		 */
+        generateParticle(particle: Particle, particleSystem: ParticleSystem)
+        {
+            particle.color.copyFrom(this.startColor);
+        }
+
         private numParticlesChanged()
         {
             this._particleSystem["numParticlesChanged"](this.maxParticles);
+        }
+
+        private onStartColorChanged()
+        {
+            this._particleSystem.invalidate();
         }
     }
 }

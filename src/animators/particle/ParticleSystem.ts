@@ -86,10 +86,8 @@ namespace feng3d
         @serialize
         @oav({ block: "粒子模块", component: "OAVParticleComponentList" })
         readonly components = [
-            this.particleEmission,
             new ParticlePosition(),
             new ParticleVelocity(),
-            new ParticleColor(),
             new ParticleBillboard(),
         ];
 
@@ -123,7 +121,7 @@ namespace feng3d
             this.particleEmission.emit(this.time, this.deathParticles, this.survivalParticles, this.changedParticles);
         }
 
-        public invalidate()
+        invalidate()
         {
             this._isInvalid = true;
         }
@@ -154,6 +152,8 @@ namespace feng3d
             for (var i = 0; i < this.numParticles; i++)
             {
                 var particle = new Particle(i);
+                this.particleEmission.generateParticle(particle, this);
+                this.main.generateParticle(particle, this);
                 this.components.forEach(element =>
                 {
                     if (element.enabled)
@@ -215,6 +215,8 @@ namespace feng3d
         {
             super.beforeRender(gl, renderAtomic, scene3d, camera);
 
+            this.particleEmission.setRenderState(this, renderAtomic);
+            this.main.setRenderState(this, renderAtomic);
             this.components.forEach(element =>
             {
                 element.setRenderState(this, renderAtomic);

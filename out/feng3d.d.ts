@@ -12127,27 +12127,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 粒子颜色组件
-
-     */
-    class ParticleColor extends ParticleComponent {
-        /**
-         * 起始颜色
-         */
-        startColor: Color4;
-        /**
-         * 结束颜色
-         */
-        endColor: Color4;
-        /**
-         * 创建粒子属性
-         * @param particle                  粒子
-         */
-        generateParticle(particle: Particle, particleSystem: ParticleSystem): void;
-    }
-}
-declare namespace feng3d {
-    /**
      * 公告牌粒子组件
      * 开启后粒子将不会收到受到旋转控制，始终面向摄像机
      */
@@ -12223,7 +12202,7 @@ declare namespace feng3d {
         /**
          * 粒子状态控制模块列表
          */
-        readonly components: (ParticleEmission | ParticlePosition | ParticleVelocity | ParticleColor | ParticleBillboard)[];
+        readonly components: (ParticlePosition | ParticleVelocity | ParticleBillboard)[];
         geometry: PlaneGeometry;
         material: Material;
         castShadows: boolean;
@@ -12276,7 +12255,7 @@ declare namespace feng3d {
     /**
      * 粒子模块
      */
-    class ParticleModule {
+    class ParticleModule extends ParticleComponent {
         protected _particleSystem: ParticleSystem;
         constructor(particleSystem: ParticleSystem);
     }
@@ -12304,7 +12283,13 @@ declare namespace feng3d {
         playOnAwake: boolean;
         maxParticles: number;
         autoRandomSeed: boolean;
+        /**
+         * 创建粒子属性
+         * @param particle                  粒子
+         */
+        generateParticle(particle: Particle, particleSystem: ParticleSystem): void;
         private numParticlesChanged;
+        private onStartColorChanged;
     }
 }
 declare namespace feng3d {

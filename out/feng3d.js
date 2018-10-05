@@ -24043,45 +24043,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 粒子颜色组件
-
-     */
-    var ParticleColor = /** @class */ (function (_super) {
-        __extends(ParticleColor, _super);
-        function ParticleColor() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            /**
-             * 起始颜色
-             */
-            _this.startColor = new feng3d.Color4(1, 0, 0, 1);
-            /**
-             * 结束颜色
-             */
-            _this.endColor = new feng3d.Color4(0, 1, 0, 1);
-            return _this;
-        }
-        /**
-         * 创建粒子属性
-         * @param particle                  粒子
-         */
-        ParticleColor.prototype.generateParticle = function (particle, particleSystem) {
-            particle.color.copyFrom(this.startColor).mix(this.endColor, particle.index / particleSystem.numParticles);
-        };
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], ParticleColor.prototype, "startColor", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], ParticleColor.prototype, "endColor", void 0);
-        return ParticleColor;
-    }(feng3d.ParticleComponent));
-    feng3d.ParticleColor = ParticleColor;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 公告牌粒子组件
      * 开启后粒子将不会收到受到旋转控制，始终面向摄像机
      */
@@ -24189,10 +24150,8 @@ var feng3d;
              * 粒子状态控制模块列表
              */
             _this.components = [
-                _this.particleEmission,
                 new feng3d.ParticlePosition(),
                 new feng3d.ParticleVelocity(),
-                new feng3d.ParticleColor(),
                 new feng3d.ParticleBillboard(),
             ];
             _this.geometry = feng3d.Geometry.billboard;
@@ -24240,6 +24199,8 @@ var feng3d;
             //
             for (var i = 0; i < this.numParticles; i++) {
                 var particle = new feng3d.Particle(i);
+                this.particleEmission.generateParticle(particle, this);
+                this.main.generateParticle(particle, this);
                 this.components.forEach(function (element) {
                     if (element.enabled)
                         element.generateParticle(particle, _this);
@@ -24292,6 +24253,8 @@ var feng3d;
         ParticleSystem.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
             var _this = this;
             _super.prototype.beforeRender.call(this, gl, renderAtomic, scene3d, camera);
+            this.particleEmission.setRenderState(this, renderAtomic);
+            this.main.setRenderState(this, renderAtomic);
             this.components.forEach(function (element) {
                 element.setRenderState(_this, renderAtomic);
             });
@@ -24407,12 +24370,15 @@ var feng3d;
     /**
      * 粒子模块
      */
-    var ParticleModule = /** @class */ (function () {
+    var ParticleModule = /** @class */ (function (_super) {
+        __extends(ParticleModule, _super);
         function ParticleModule(particleSystem) {
-            this._particleSystem = particleSystem;
+            var _this = _super.call(this) || this;
+            _this._particleSystem = particleSystem;
+            return _this;
         }
         return ParticleModule;
-    }());
+    }(feng3d.ParticleComponent));
     feng3d.ParticleModule = ParticleModule;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -24460,8 +24426,18 @@ var feng3d;
             _this.autoRandomSeed = true;
             return _this;
         }
+        /**
+         * 创建粒子属性
+         * @param particle                  粒子
+         */
+        ParticleMainModule.prototype.generateParticle = function (particle, particleSystem) {
+            particle.color.copyFrom(this.startColor);
+        };
         ParticleMainModule.prototype.numParticlesChanged = function () {
             this._particleSystem["numParticlesChanged"](this.maxParticles);
+        };
+        ParticleMainModule.prototype.onStartColorChanged = function () {
+            this._particleSystem.invalidate();
         };
         __decorate([
             feng3d.oav({ tooltip: "粒子系统发射粒子的时间长度。如果系统是循环的，这表示一个循环的长度。" })
@@ -24491,7 +24467,8 @@ var feng3d;
             feng3d.oav({ tooltip: "使一些粒子朝相反的方向旋转。(设置在0和1之间，值越大，翻转越多)" })
         ], ParticleMainModule.prototype, "randomizeRotationDirection", void 0);
         __decorate([
-            feng3d.oav({ tooltip: "粒子的起始颜色。" })
+            feng3d.oav({ tooltip: "粒子的起始颜色。" }),
+            feng3d.watch("onStartColorChanged")
         ], ParticleMainModule.prototype, "startColor", void 0);
         __decorate([
             feng3d.oav({ tooltip: "按物理管理器中定义的重力进行缩放。" })
