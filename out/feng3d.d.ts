@@ -9648,13 +9648,7 @@ declare namespace feng3d {
          * 材质
          */
         material: Material;
-        /**
-         * 是否投射阴影
-         */
         castShadows: boolean;
-        /**
-         * 是否接受阴影
-         */
         receiveShadows: boolean;
         /**
          * 自身局部包围盒

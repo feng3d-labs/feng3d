@@ -24,17 +24,11 @@ namespace feng3d
         @watch("onMaterialChanged")
         material: Material = Material.default;
 
-        /**
-         * 是否投射阴影
-         */
-        @oav()
+        @oav({ tooltip: "是否投射阴影" })
         @serialize
         castShadows = true;
 
-        /**
-         * 是否接受阴影
-         */
-        @oav()
+        @oav({ tooltip: "是否接受阴影" })
         @serialize
         receiveShadows = true;
 

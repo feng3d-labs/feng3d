@@ -17011,13 +17011,7 @@ var feng3d;
              * 材质
              */
             _this.material = feng3d.Material.default;
-            /**
-             * 是否投射阴影
-             */
             _this.castShadows = true;
-            /**
-             * 是否接受阴影
-             */
             _this.receiveShadows = true;
             _this._lightPicker = new feng3d.LightPicker(_this);
             return _this;
@@ -17167,11 +17161,11 @@ var feng3d;
             feng3d.watch("onMaterialChanged")
         ], Model.prototype, "material", void 0);
         __decorate([
-            feng3d.oav(),
+            feng3d.oav({ tooltip: "是否投射阴影" }),
             feng3d.serialize
         ], Model.prototype, "castShadows", void 0);
         __decorate([
-            feng3d.oav(),
+            feng3d.oav({ tooltip: "是否接受阴影" }),
             feng3d.serialize
         ], Model.prototype, "receiveShadows", void 0);
         return Model;
