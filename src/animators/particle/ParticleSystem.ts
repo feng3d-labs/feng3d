@@ -22,14 +22,6 @@ namespace feng3d
         @oav({ tooltip: "当前粒子时间" })
         time = 0;
 
-        /**
-         * 粒子数量
-         */
-        @watch("invalidate")
-        @oav({ tooltip: "粒子系统拥有粒子的数量" })
-        @serialize
-        numParticles = 1000;
-
         @oav({ block: "main", component: "OAVObjectView" })
         @serialize
         main = new ParticleMainModule(this);
@@ -136,7 +128,7 @@ namespace feng3d
             this._attributes = {};
 
             //
-            for (var i = 0; i < this.numParticles; i++)
+            for (var i = 0; i < this.main.maxParticles; i++)
             {
                 var particle = new Particle(i);
                 this.particleEmission.generateParticle(particle, this);
@@ -215,7 +207,7 @@ namespace feng3d
                 this._isInvalid = false;
             }
 
-            renderAtomic.instanceCount = this.numParticles;
+            renderAtomic.instanceCount = this.main.maxParticles;
             //
             renderAtomic.uniforms.u_particleTime = this.time;
 
@@ -246,7 +238,7 @@ namespace feng3d
 
                 var attributeRenderData = renderAtomic.attributes[attribute] = renderAtomic.attributes[attribute] || new Attribute(attribute, vector3DData);
                 attributeRenderData.data = vector3DData;
-                attributeRenderData.size = vector3DData.length / this.numParticles;
+                attributeRenderData.size = vector3DData.length / this.main.maxParticles;
                 attributeRenderData.divisor = 1;
 
                 renderAtomic.shaderMacro["D_" + attribute] = true;

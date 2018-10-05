@@ -150,6 +150,7 @@ namespace feng3d
         private numParticlesChanged()
         {
             this._particleSystem["numParticlesChanged"](this.maxParticles);
+            this._particleSystem.invalidate();
         }
 
         private onStartColorChanged()

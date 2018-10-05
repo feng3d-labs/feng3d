@@ -81,11 +81,11 @@ namespace feng3d
 		 */
         generateParticle(particle: Particle, particleSystem: ParticleSystem)
         {
-            if (this._numParticles != particleSystem.numParticles)
+            if (this._numParticles != particleSystem.main.maxParticles)
                 this.isInvalid = true;
-            this._numParticles = particleSystem.numParticles;
+            this._numParticles = particleSystem.main.maxParticles;
 
-            particle.birthTime = this.getBirthTimeArray(particleSystem.numParticles)[particle.index];
+            particle.birthTime = this.getBirthTimeArray(particleSystem.main.maxParticles)[particle.index];
         }
 
         /**

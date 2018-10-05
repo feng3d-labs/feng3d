@@ -12147,10 +12147,6 @@ declare namespace feng3d {
          * 粒子时间
          */
         time: number;
-        /**
-         * 粒子数量
-         */
-        numParticles: number;
         main: ParticleMainModule;
         /**
          * 粒子全局属性

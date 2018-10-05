@@ -23937,10 +23937,10 @@ var feng3d;
          * @param particle                  粒子
          */
         ParticleEmission.prototype.generateParticle = function (particle, particleSystem) {
-            if (this._numParticles != particleSystem.numParticles)
+            if (this._numParticles != particleSystem.main.maxParticles)
                 this.isInvalid = true;
-            this._numParticles = particleSystem.numParticles;
-            particle.birthTime = this.getBirthTimeArray(particleSystem.numParticles)[particle.index];
+            this._numParticles = particleSystem.main.maxParticles;
+            particle.birthTime = this.getBirthTimeArray(particleSystem.main.maxParticles)[particle.index];
         };
         /**
          * 获取出生时间数组
@@ -24077,10 +24077,6 @@ var feng3d;
              * 粒子时间
              */
             _this.time = 0;
-            /**
-             * 粒子数量
-             */
-            _this.numParticles = 1000;
             _this.main = new feng3d.ParticleMainModule(_this);
             /**
              * 粒子全局属性
@@ -24159,7 +24155,7 @@ var feng3d;
             var _this = this;
             this._attributes = {};
             //
-            for (var i = 0; i < this.numParticles; i++) {
+            for (var i = 0; i < this.main.maxParticles; i++) {
                 var particle = new feng3d.Particle(i);
                 this.particleEmission.generateParticle(particle, this);
                 this.main.generateParticle(particle, this);
@@ -24224,7 +24220,7 @@ var feng3d;
                 this.generateParticles();
                 this._isInvalid = false;
             }
-            renderAtomic.instanceCount = this.numParticles;
+            renderAtomic.instanceCount = this.main.maxParticles;
             //
             renderAtomic.uniforms.u_particleTime = this.time;
             //
@@ -24247,7 +24243,7 @@ var feng3d;
                 var vector3DData = this._attributes[attribute];
                 var attributeRenderData = renderAtomic.attributes[attribute] = renderAtomic.attributes[attribute] || new feng3d.Attribute(attribute, vector3DData);
                 attributeRenderData.data = vector3DData;
-                attributeRenderData.size = vector3DData.length / this.numParticles;
+                attributeRenderData.size = vector3DData.length / this.main.maxParticles;
                 attributeRenderData.divisor = 1;
                 renderAtomic.shaderMacro["D_" + attribute] = true;
             }
@@ -24259,11 +24255,6 @@ var feng3d;
         __decorate([
             feng3d.oav({ tooltip: "当前粒子时间" })
         ], ParticleSystem.prototype, "time", void 0);
-        __decorate([
-            feng3d.watch("invalidate"),
-            feng3d.oav({ tooltip: "粒子系统拥有粒子的数量" }),
-            feng3d.serialize
-        ], ParticleSystem.prototype, "numParticles", void 0);
         __decorate([
             feng3d.oav({ block: "main", component: "OAVObjectView" }),
             feng3d.serialize
@@ -24440,6 +24431,7 @@ var feng3d;
         };
         ParticleMainModule.prototype.numParticlesChanged = function () {
             this._particleSystem["numParticlesChanged"](this.maxParticles);
+            this._particleSystem.invalidate();
         };
         ParticleMainModule.prototype.onStartColorChanged = function () {
             this._particleSystem.invalidate();
