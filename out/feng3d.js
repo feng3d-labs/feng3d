@@ -3068,19 +3068,14 @@ var feng3d;
         };
         /**
          * 获取对象界面
-         *
-         * @static
-         * @param {Object} object				用于生成界面的对象
-         * @param autocreate					当对象没有注册属性时是否自动创建属性信息
-         * @param excludeAttrs					排除属性列表
-         * @returns 							对象界面
-         *
-         * @memberOf ObjectView
+         * @param object 用于生成界面的对象
+         * @param param 参数
          */
-        ObjectView.prototype.getObjectView = function (object, autocreate, excludeAttrs) {
-            if (autocreate === void 0) { autocreate = true; }
-            if (excludeAttrs === void 0) { excludeAttrs = []; }
-            var classConfig = this.getObjectInfo(object, autocreate, excludeAttrs);
+        ObjectView.prototype.getObjectView = function (object, param) {
+            var p = { autocreate: true, excludeAttrs: [] };
+            Object.assign(p, param);
+            var classConfig = this.getObjectInfo(object, p.autocreate, p.excludeAttrs);
+            Object.assign(classConfig, param);
             if (classConfig.component == null || classConfig.component == "") {
                 //返回基础类型界面类定义
                 if (!(classConfig.owner instanceof Object)) {
@@ -3179,11 +3174,11 @@ var feng3d;
             var objectAttributeInfos = [];
             classConfig.attributeDefinitionVec.forEach(function (attributeDefinition) {
                 if (excludeAttrs.indexOf(attributeDefinition.name) == -1) {
-                    var writable = attributeDefinition.writable == undefined ? true : attributeDefinition.writable;
-                    writable = writable && Object.propertyIsWritable(object, attributeDefinition.name);
+                    var editable = attributeDefinition.editable == undefined ? true : attributeDefinition.editable;
+                    editable = editable && Object.propertyIsWritable(object, attributeDefinition.name);
                     var obj = { owner: object, type: getAttributeType(object[attributeDefinition.name]) };
                     Object.assign(obj, attributeDefinition);
-                    obj.writable = writable;
+                    obj.editable = editable;
                     objectAttributeInfos.push(obj);
                 }
             });

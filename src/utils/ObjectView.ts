@@ -121,20 +121,20 @@ namespace feng3d
 		{
 			this.defaultTypeAttributeView[type] = component;
 		}
+
 		/**
 		 * 获取对象界面
-		 * 
-		 * @static
-		 * @param {Object} object				用于生成界面的对象
-		 * @param autocreate					当对象没有注册属性时是否自动创建属性信息
-		 * @param excludeAttrs					排除属性列表
-		 * @returns 							对象界面
-		 * 
-		 * @memberOf ObjectView
+		 * @param object 用于生成界面的对象
+		 * @param param 参数
 		 */
-		getObjectView(object: Object, autocreate = true, excludeAttrs: string[] = []): IObjectView
+		getObjectView(object: Object, param?: GetObjectViewParam): IObjectView
 		{
-			var classConfig = this.getObjectInfo(object, autocreate, excludeAttrs);
+			var p: GetObjectViewParam = { autocreate: true, excludeAttrs: [] };
+			Object.assign(p, param);
+
+			var classConfig = this.getObjectInfo(object, p.autocreate, p.excludeAttrs);
+
+			Object.assign(classConfig, param);
 
 			if (classConfig.component == null || classConfig.component == "")
 			{
@@ -255,12 +255,12 @@ namespace feng3d
 			{
 				if (excludeAttrs.indexOf(attributeDefinition.name) == -1)
 				{
-					var writable = attributeDefinition.writable == undefined ? true : attributeDefinition.writable;
-					writable = writable && Object.propertyIsWritable(object, attributeDefinition.name);
+					var editable = attributeDefinition.editable == undefined ? true : attributeDefinition.editable;
+					editable = editable && Object.propertyIsWritable(object, attributeDefinition.name);
 
 					var obj: AttributeViewInfo = <any>{ owner: object, type: getAttributeType(object[attributeDefinition.name]) };
 					Object.assign(obj, attributeDefinition);
-					obj.writable = writable;
+					obj.editable = editable;
 					objectAttributeInfos.push(obj);
 				}
 
@@ -511,9 +511,9 @@ namespace feng3d
 		name: string;
 
 		/**
-		 * 是否可写
+		 * 是否可编辑
 		 */
-		writable?: boolean;
+		editable?: boolean;
 
 		/**
 		 * 所属块名称
@@ -717,7 +717,7 @@ namespace feng3d
 		/**
 		 * 是否可写
 		 */
-		writable: boolean;
+		editable: boolean;
 
 		/**
 		 * 所属块名称
@@ -810,5 +810,25 @@ namespace feng3d
 		 * 保存类的一个实例，为了能够获取动态属性信息
 		 */
 		owner: Object;
+
+		/**
+		 * 是否可编辑
+		 */
+		editable?: boolean;
 	}
+
+	export type GetObjectViewParam = {
+		/**
+		 * 当对象没有注册属性时是否自动创建属性信息
+		 */
+		autocreate?: boolean,
+		/**
+		 * 排除属性列表
+		 */
+		excludeAttrs?: string[]
+		/**
+		 * 是否可编辑
+		 */
+		editable?: boolean;
+	};
 }

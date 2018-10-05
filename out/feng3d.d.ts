@@ -1318,16 +1318,10 @@ declare namespace feng3d {
         setDefaultTypeAttributeView(type: string, component: AttributeTypeDefinition): void;
         /**
          * 获取对象界面
-         *
-         * @static
-         * @param {Object} object				用于生成界面的对象
-         * @param autocreate					当对象没有注册属性时是否自动创建属性信息
-         * @param excludeAttrs					排除属性列表
-         * @returns 							对象界面
-         *
-         * @memberOf ObjectView
+         * @param object 用于生成界面的对象
+         * @param param 参数
          */
-        getObjectView(object: Object, autocreate?: boolean, excludeAttrs?: string[]): IObjectView;
+        getObjectView(object: Object, param?: GetObjectViewParam): IObjectView;
         /**
          * 获取属性界面
          *
@@ -1381,9 +1375,9 @@ declare namespace feng3d {
          */
         name: string;
         /**
-         * 是否可写
+         * 是否可编辑
          */
-        writable?: boolean;
+        editable?: boolean;
         /**
          * 所属块名称
          */
@@ -1549,7 +1543,7 @@ declare namespace feng3d {
         /**
          * 是否可写
          */
-        writable: boolean;
+        editable: boolean;
         /**
          * 所属块名称
          */
@@ -1624,7 +1618,25 @@ declare namespace feng3d {
          * 保存类的一个实例，为了能够获取动态属性信息
          */
         owner: Object;
+        /**
+         * 是否可编辑
+         */
+        editable?: boolean;
     }
+    type GetObjectViewParam = {
+        /**
+         * 当对象没有注册属性时是否自动创建属性信息
+         */
+        autocreate?: boolean;
+        /**
+         * 排除属性列表
+         */
+        excludeAttrs?: string[];
+        /**
+         * 是否可编辑
+         */
+        editable?: boolean;
+    };
 }
 declare namespace feng3d {
     interface OAVComponentParamMap {
