@@ -12,7 +12,11 @@ namespace feng3d
         /**
          * 是否正在播放
          */
-        isPlaying = true;
+        get isPlaying()
+        {
+            return this._isPlaying;
+        }
+        private _isPlaying = false;
 
         /**
          * 粒子时间
@@ -95,6 +99,40 @@ namespace feng3d
             var t = (this.time * this.main.simulationSpeed + this.main.duration) % this.main.duration;
 
             this.particleEmission.emit(t, this.deathParticles, this.survivalParticles, this.changedParticles);
+        }
+
+        /**
+         * 停止
+         */
+        stop()
+        {
+            this._isPlaying = false;
+            this.time = 0;
+        }
+
+        /**
+         * 播放
+         */
+        play()
+        {
+            this._isPlaying = true;
+            this.time = 0;
+        }
+
+        /**
+         * 暂停
+         */
+        pause()
+        {
+            this._isPlaying = false;
+        }
+
+        /**
+         * 继续
+         */
+        continue()
+        {
+            this._isPlaying = true;
         }
 
         invalidate()

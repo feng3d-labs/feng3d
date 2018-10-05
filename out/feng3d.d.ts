@@ -12150,7 +12150,8 @@ declare namespace feng3d {
         /**
          * 是否正在播放
          */
-        isPlaying: boolean;
+        readonly isPlaying: boolean;
+        private _isPlaying;
         /**
          * 粒子时间
          */
@@ -12193,6 +12194,22 @@ declare namespace feng3d {
         readonly single: boolean;
         init(gameObject: GameObject): void;
         update(interval: number): void;
+        /**
+         * 停止
+         */
+        stop(): void;
+        /**
+         * 播放
+         */
+        play(): void;
+        /**
+         * 暂停
+         */
+        pause(): void;
+        /**
+         * 继续
+         */
+        continue(): void;
         invalidate(): void;
         private numParticlesChanged;
         /**

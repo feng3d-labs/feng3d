@@ -24081,10 +24081,7 @@ var feng3d;
         function ParticleSystem() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.ParticleSystem";
-            /**
-             * 是否正在播放
-             */
-            _this.isPlaying = true;
+            _this._isPlaying = false;
             /**
              * 粒子时间
              */
@@ -24129,6 +24126,16 @@ var feng3d;
             _this.receiveShadows = true;
             return _this;
         }
+        Object.defineProperty(ParticleSystem.prototype, "isPlaying", {
+            /**
+             * 是否正在播放
+             */
+            get: function () {
+                return this._isPlaying;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ParticleSystem.prototype, "single", {
             get: function () { return true; },
             enumerable: true,
@@ -24143,6 +24150,32 @@ var feng3d;
             this.time = this.time + interval / 1000;
             var t = (this.time * this.main.simulationSpeed + this.main.duration) % this.main.duration;
             this.particleEmission.emit(t, this.deathParticles, this.survivalParticles, this.changedParticles);
+        };
+        /**
+         * 停止
+         */
+        ParticleSystem.prototype.stop = function () {
+            this._isPlaying = false;
+            this.time = 0;
+        };
+        /**
+         * 播放
+         */
+        ParticleSystem.prototype.play = function () {
+            this._isPlaying = true;
+            this.time = 0;
+        };
+        /**
+         * 暂停
+         */
+        ParticleSystem.prototype.pause = function () {
+            this._isPlaying = false;
+        };
+        /**
+         * 继续
+         */
+        ParticleSystem.prototype.continue = function () {
+            this._isPlaying = true;
         };
         ParticleSystem.prototype.invalidate = function () {
             this._isInvalid = true;
