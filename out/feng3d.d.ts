@@ -8460,6 +8460,8 @@ declare namespace feng3d {
          * 使纹理失效
          */
         protected invalidate(): void;
+        readonly activePixels: HTMLCanvasElement | ImageData | HTMLImageElement | HTMLVideoElement | ImageBitmap | (HTMLCanvasElement | ImageData | HTMLImageElement | HTMLVideoElement | ImageBitmap)[];
+        private updateActivePixels;
         /**
          * 激活纹理
          * @param gl

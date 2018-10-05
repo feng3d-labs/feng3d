@@ -13587,6 +13587,27 @@ var feng3d;
         TextureInfo.prototype.invalidate = function () {
             this._invalid = true;
         };
+        Object.defineProperty(TextureInfo.prototype, "activePixels", {
+            get: function () {
+                this.updateActivePixels();
+                return this._activePixels;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        TextureInfo.prototype.updateActivePixels = function () {
+            if (this.checkRenderData(this._pixels)) {
+                this._activePixels = this._pixels;
+            }
+            else {
+                if (this.noPixels instanceof Array) {
+                    this._activePixels = this.noPixels.map(function (v) { return feng3d.imageDatas[v]; });
+                }
+                else {
+                    this._activePixels = feng3d.imageDatas[this.noPixels];
+                }
+            }
+        };
         /**
          * 激活纹理
          * @param gl
@@ -13595,17 +13616,7 @@ var feng3d;
             if (this._invalid) {
                 this.clear();
                 this._invalid = false;
-                if (this.checkRenderData(this._pixels)) {
-                    this._activePixels = this._pixels;
-                }
-                else {
-                    if (this.noPixels instanceof Array) {
-                        this._activePixels = this.noPixels.map(function (v) { return feng3d.imageDatas[v]; });
-                    }
-                    else {
-                        this._activePixels = feng3d.imageDatas[this.noPixels];
-                    }
-                }
+                this.updateActivePixels();
                 this._isPowerOfTwo = this.isPowerOfTwo(this._activePixels);
             }
             var texture = this.getTexture(gl);

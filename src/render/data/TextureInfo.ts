@@ -189,6 +189,29 @@ namespace feng3d
             this._invalid = true;
         }
 
+        get activePixels()
+        {
+            this.updateActivePixels();
+            return this._activePixels;
+        }
+
+        private updateActivePixels()
+        {
+            if (this.checkRenderData(this._pixels))
+            {
+                this._activePixels = this._pixels;
+            } else
+            {
+                if (this.noPixels instanceof Array)
+                {
+                    this._activePixels = this.noPixels.map(v => imageDatas[v]);
+                } else
+                {
+                    this._activePixels = imageDatas[this.noPixels];
+                }
+            }
+        }
+
         /**
          * 激活纹理
          * @param gl 
@@ -199,19 +222,7 @@ namespace feng3d
             {
                 this.clear();
                 this._invalid = false;
-                if (this.checkRenderData(this._pixels))
-                {
-                    this._activePixels = this._pixels;
-                } else
-                {
-                    if (this.noPixels instanceof Array)
-                    {
-                        this._activePixels = this.noPixels.map(v => imageDatas[v]);
-                    } else
-                    {
-                        this._activePixels = imageDatas[this.noPixels];
-                    }
-                }
+                this.updateActivePixels();
 
                 this._isPowerOfTwo = this.isPowerOfTwo(this._activePixels);
             }
