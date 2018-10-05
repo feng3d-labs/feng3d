@@ -520,5 +520,5 @@ namespace feng3d
         }
     }
 
-    Feng3dAssets.setAssets(Geometry.cube = new CubeGeometry().value({ name: "Cube", assetsId: "Cube" }));
+    Feng3dAssets.setAssets(Geometry.cube = new CubeGeometry().value({ name: "Cube", assetsId: "Cube", hideFlags: HideFlags.NotEditable }));
 }

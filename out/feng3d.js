@@ -18332,7 +18332,7 @@ var feng3d;
             feng3d.oav()
         ], Geometry.prototype, "name", void 0);
         __decorate([
-            feng3d.oav({ component: "OAVMultiText" })
+            feng3d.oav({ component: "OAVMultiText", priority: 10 })
         ], Geometry.prototype, "geometryInfo", null);
         return Geometry;
     }(feng3d.Feng3dAssets));
@@ -18686,7 +18686,7 @@ var feng3d;
         return PointGeometry;
     }(feng3d.Geometry));
     feng3d.PointGeometry = PointGeometry;
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.point = new PointGeometry().value({ name: "PointGeometry", assetsId: "PointGeometry", points: [] }));
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.point = new PointGeometry().value({ name: "PointGeometry", assetsId: "PointGeometry", points: [], hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -19534,7 +19534,7 @@ var feng3d;
         return PlaneGeometry;
     }(feng3d.Geometry));
     feng3d.PlaneGeometry = PlaneGeometry;
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.plane = new PlaneGeometry().value({ name: "Plane", assetsId: "Plane", width: 10, height: 10 }));
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.plane = new PlaneGeometry().value({ name: "Plane", assetsId: "Plane", width: 10, height: 10, hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -19960,7 +19960,7 @@ var feng3d;
         return CubeGeometry;
     }(feng3d.Geometry));
     feng3d.CubeGeometry = CubeGeometry;
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.cube = new CubeGeometry().value({ name: "Cube", assetsId: "Cube" }));
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.cube = new CubeGeometry().value({ name: "Cube", assetsId: "Cube", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -20147,7 +20147,7 @@ var feng3d;
         return SphereGeometry;
     }(feng3d.Geometry));
     feng3d.SphereGeometry = SphereGeometry;
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.sphere = new SphereGeometry().value({ name: "Sphere", assetsId: "Sphere" }));
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.sphere = new SphereGeometry().value({ name: "Sphere", assetsId: "Sphere", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -20343,7 +20343,7 @@ var feng3d;
         return CapsuleGeometry;
     }(feng3d.Geometry));
     feng3d.CapsuleGeometry = CapsuleGeometry;
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.capsule = new CapsuleGeometry().value({ name: "Capsule", assetsId: "Capsule" }));
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.capsule = new CapsuleGeometry().value({ name: "Capsule", assetsId: "Capsule", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -20698,7 +20698,7 @@ var feng3d;
         return CylinderGeometry;
     }(feng3d.Geometry));
     feng3d.CylinderGeometry = CylinderGeometry;
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.cylinder = new CylinderGeometry().value({ name: "Cylinder", assetsId: "Cylinder" }));
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.cylinder = new CylinderGeometry().value({ name: "Cylinder", assetsId: "Cylinder", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -20729,7 +20729,7 @@ var feng3d;
         return ConeGeometry;
     }(feng3d.CylinderGeometry));
     feng3d.ConeGeometry = ConeGeometry;
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.cone = new ConeGeometry().value({ name: "Cone", assetsId: "Cone" }));
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.cone = new ConeGeometry().value({ name: "Cone", assetsId: "Cone", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -20924,7 +20924,7 @@ var feng3d;
         return TorusGeometry;
     }(feng3d.Geometry));
     feng3d.TorusGeometry = TorusGeometry;
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.torus = new TorusGeometry().value({ name: "Torus", assetsId: "Torus" }));
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.torus = new TorusGeometry().value({ name: "Torus", assetsId: "Torus", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -23494,7 +23494,7 @@ var feng3d;
      * 默认高度图
      */
     var defaultHeightMap = feng3d.imageUtil.createImageData();
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.terrain = new TerrainGeometry().value({ name: "Terrain-Geometry", assetsId: "Terrain-Geometry" }));
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.terrain = new TerrainGeometry().value({ name: "Terrain-Geometry", assetsId: "Terrain-Geometry", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -24319,7 +24319,7 @@ var feng3d;
         return ParticleSystem;
     }(feng3d.Model));
     feng3d.ParticleSystem = ParticleSystem;
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.billboard = new feng3d.PlaneGeometry().value({ name: "Billboard", assetsId: "Billboard-Geometry", yUp: false }));
+    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.billboard = new feng3d.PlaneGeometry().value({ name: "Billboard", assetsId: "Billboard-Geometry", yUp: false, hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

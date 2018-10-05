@@ -233,5 +233,5 @@ namespace feng3d
 		}
 	}
 
-	Feng3dAssets.setAssets(Geometry.torus = new TorusGeometry().value({ name: "Torus", assetsId: "Torus" }));
+	Feng3dAssets.setAssets(Geometry.torus = new TorusGeometry().value({ name: "Torus", assetsId: "Torus", hideFlags: HideFlags.NotEditable }));
 }

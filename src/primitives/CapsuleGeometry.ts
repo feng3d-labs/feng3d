@@ -51,7 +51,7 @@ namespace feng3d
         yUp = true;
 
         name = "Capsule";
-        
+
         /**
          * 构建几何体数据
          * @param radius 胶囊体半径
@@ -225,5 +225,5 @@ namespace feng3d
         }
 
     }
-    Feng3dAssets.setAssets(Geometry.capsule = new CapsuleGeometry().value({ name: "Capsule", assetsId: "Capsule" }));
+    Feng3dAssets.setAssets(Geometry.capsule = new CapsuleGeometry().value({ name: "Capsule", assetsId: "Capsule", hideFlags: HideFlags.NotEditable }));
 }

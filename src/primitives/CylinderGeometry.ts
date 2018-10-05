@@ -84,7 +84,7 @@ namespace feng3d
         yUp = true;
 
         name = "Cylinder";
-        
+
         /**
          * 构建几何体数据
          */
@@ -432,6 +432,6 @@ namespace feng3d
             return data;
         }
     }
-    
-    Feng3dAssets.setAssets(Geometry.cylinder = new CylinderGeometry().value({ name: "Cylinder", assetsId: "Cylinder" }));
+
+    Feng3dAssets.setAssets(Geometry.cylinder = new CylinderGeometry().value({ name: "Cylinder", assetsId: "Cylinder", hideFlags: HideFlags.NotEditable }));
 }
