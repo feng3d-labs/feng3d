@@ -195,8 +195,28 @@ namespace feng3d
             return this._activePixels;
         }
 
+        /**
+         * 
+         */
+        get dataURL()
+        {
+            this.updateActivePixels();
+            if (!this._dataURL)
+            {
+                if (this._activePixels instanceof ImageData)
+                    this._dataURL = dataTransform.imageDataToDataURL(this._activePixels)
+                else if (this._activePixels instanceof HTMLImageElement)
+                    this._dataURL = dataTransform.imageToDataURL(this._activePixels);
+                else if (this._activePixels instanceof HTMLCanvasElement)
+                    this._dataURL = dataTransform.canvasToDataURL(this._activePixels);
+            }
+            return this._dataURL;
+        }
+        private _dataURL: string;
+
         private updateActivePixels()
         {
+            var old = this._activePixels;
             if (this.checkRenderData(this._pixels))
             {
                 this._activePixels = this._pixels;
@@ -210,6 +230,7 @@ namespace feng3d
                     this._activePixels = imageDatas[this.noPixels];
                 }
             }
+            if (old != this._activePixels) this._dataURL = null;
         }
 
         /**

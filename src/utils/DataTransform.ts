@@ -100,17 +100,10 @@ namespace feng3d
         /**
          * canvas转换为dataURL
          */
-        canvasToDataURL(canvas: HTMLCanvasElement, type: "png" | "jpeg", callback: (dataurl: string) => void)
+        canvasToDataURL(canvas: HTMLCanvasElement, type: "png" | "jpeg" = "png")
         {
-            if (type == "png")
-            {
-                var png = canvas.toDataURL("image/png");
-                callback(png);
-            } else
-            {
-                var jpg = canvas.toDataURL("image/jpeg", 0.8);
-                callback(jpg);
-            }
+            if (type == "png") return canvas.toDataURL("image/png");
+            return canvas.toDataURL("image/jpeg", 0.8);
         }
 
         /**
@@ -182,40 +175,38 @@ namespace feng3d
             img.src = dataurl;
         }
 
-        imageToDataURL(img: HTMLImageElement, callback: (dataurl: string) => void)
+        imageToDataURL(img: HTMLImageElement)
         {
-            this.imageToCanvas(img, canvas =>
-            {
-                this.canvasToDataURL(canvas, "png", callback);
-            });
+            var canvas = this.imageToCanvas(img);
+            var dataurl = this.canvasToDataURL(canvas, "png");
+            return dataurl;
         }
 
-        imageToCanvas(img: HTMLImageElement, callback: (canvas: HTMLCanvasElement) => void)
+        imageToCanvas(img: HTMLImageElement)
         {
             var canvas = document.createElement("canvas");
             canvas.width = img.width;
             canvas.height = img.height;
             var ctxt = canvas.getContext('2d');
             ctxt.drawImage(img, 0, 0);
-            callback(canvas);
+            return canvas;
         }
 
-        imageDataToDataURL(imageData: ImageData, callback: (dataurl: string) => void)
+        imageDataToDataURL(imageData: ImageData)
         {
-            this.imageDataToCanvas(imageData, canvas =>
-            {
-                this.canvasToDataURL(canvas, "png", callback);
-            });
+            var canvas = this.imageDataToCanvas(imageData);
+            var dataurl = this.canvasToDataURL(canvas, "png");
+            return dataurl;
         }
 
-        imageDataToCanvas(imageData: ImageData, callback: (canvas: HTMLCanvasElement) => void)
+        imageDataToCanvas(imageData: ImageData)
         {
             var canvas = document.createElement("canvas");
             canvas.width = imageData.width;
             canvas.height = imageData.height;
             var ctxt = canvas.getContext('2d');
             ctxt.putImageData(imageData, 0, 0);
-            callback(canvas);
+            return canvas;
         }
 
         arrayBufferToImage(arrayBuffer: ArrayBuffer, callback: (img: HTMLImageElement) => void)

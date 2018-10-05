@@ -3655,15 +3655,11 @@ var feng3d;
         /**
          * canvas转换为dataURL
          */
-        DataTransform.prototype.canvasToDataURL = function (canvas, type, callback) {
-            if (type == "png") {
-                var png = canvas.toDataURL("image/png");
-                callback(png);
-            }
-            else {
-                var jpg = canvas.toDataURL("image/jpeg", 0.8);
-                callback(jpg);
-            }
+        DataTransform.prototype.canvasToDataURL = function (canvas, type) {
+            if (type === void 0) { type = "png"; }
+            if (type == "png")
+                return canvas.toDataURL("image/png");
+            return canvas.toDataURL("image/jpeg", 0.8);
         };
         /**
          * File、Blob对象转换为dataURL
@@ -3717,33 +3713,31 @@ var feng3d;
             };
             img.src = dataurl;
         };
-        DataTransform.prototype.imageToDataURL = function (img, callback) {
-            var _this = this;
-            this.imageToCanvas(img, function (canvas) {
-                _this.canvasToDataURL(canvas, "png", callback);
-            });
+        DataTransform.prototype.imageToDataURL = function (img) {
+            var canvas = this.imageToCanvas(img);
+            var dataurl = this.canvasToDataURL(canvas, "png");
+            return dataurl;
         };
-        DataTransform.prototype.imageToCanvas = function (img, callback) {
+        DataTransform.prototype.imageToCanvas = function (img) {
             var canvas = document.createElement("canvas");
             canvas.width = img.width;
             canvas.height = img.height;
             var ctxt = canvas.getContext('2d');
             ctxt.drawImage(img, 0, 0);
-            callback(canvas);
+            return canvas;
         };
-        DataTransform.prototype.imageDataToDataURL = function (imageData, callback) {
-            var _this = this;
-            this.imageDataToCanvas(imageData, function (canvas) {
-                _this.canvasToDataURL(canvas, "png", callback);
-            });
+        DataTransform.prototype.imageDataToDataURL = function (imageData) {
+            var canvas = this.imageDataToCanvas(imageData);
+            var dataurl = this.canvasToDataURL(canvas, "png");
+            return dataurl;
         };
-        DataTransform.prototype.imageDataToCanvas = function (imageData, callback) {
+        DataTransform.prototype.imageDataToCanvas = function (imageData) {
             var canvas = document.createElement("canvas");
             canvas.width = imageData.width;
             canvas.height = imageData.height;
             var ctxt = canvas.getContext('2d');
             ctxt.putImageData(imageData, 0, 0);
-            callback(canvas);
+            return canvas;
         };
         DataTransform.prototype.arrayBufferToImage = function (arrayBuffer, callback) {
             var _this = this;
@@ -13592,7 +13586,27 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(TextureInfo.prototype, "dataURL", {
+            /**
+             *
+             */
+            get: function () {
+                this.updateActivePixels();
+                if (!this._dataURL) {
+                    if (this._activePixels instanceof ImageData)
+                        this._dataURL = feng3d.dataTransform.imageDataToDataURL(this._activePixels);
+                    else if (this._activePixels instanceof HTMLImageElement)
+                        this._dataURL = feng3d.dataTransform.imageToDataURL(this._activePixels);
+                    else if (this._activePixels instanceof HTMLCanvasElement)
+                        this._dataURL = feng3d.dataTransform.canvasToDataURL(this._activePixels);
+                }
+                return this._dataURL;
+            },
+            enumerable: true,
+            configurable: true
+        });
         TextureInfo.prototype.updateActivePixels = function () {
+            var old = this._activePixels;
             if (this.checkRenderData(this._pixels)) {
                 this._activePixels = this._pixels;
             }
@@ -13604,6 +13618,8 @@ var feng3d;
                     this._activePixels = feng3d.imageDatas[this.noPixels];
                 }
             }
+            if (old != this._activePixels)
+                this._dataURL = null;
         };
         /**
          * 激活纹理

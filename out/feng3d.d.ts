@@ -1918,7 +1918,7 @@ declare namespace feng3d {
         /**
          * canvas转换为dataURL
          */
-        canvasToDataURL(canvas: HTMLCanvasElement, type: "png" | "jpeg", callback: (dataurl: string) => void): void;
+        canvasToDataURL(canvas: HTMLCanvasElement, type?: "png" | "jpeg"): string;
         /**
          * File、Blob对象转换为dataURL
          * File对象也是一个Blob对象，二者的处理相同。
@@ -1937,10 +1937,10 @@ declare namespace feng3d {
         dataURLToArrayBuffer(dataurl: string, callback: (arraybuffer: ArrayBuffer) => void): void;
         arrayBufferToDataURL(arrayBuffer: ArrayBuffer, callback: (dataurl: string) => void): void;
         dataURLToImage(dataurl: string, callback: (img: HTMLImageElement) => void): void;
-        imageToDataURL(img: HTMLImageElement, callback: (dataurl: string) => void): void;
-        imageToCanvas(img: HTMLImageElement, callback: (canvas: HTMLCanvasElement) => void): void;
-        imageDataToDataURL(imageData: ImageData, callback: (dataurl: string) => void): void;
-        imageDataToCanvas(imageData: ImageData, callback: (canvas: HTMLCanvasElement) => void): void;
+        imageToDataURL(img: HTMLImageElement): string;
+        imageToCanvas(img: HTMLImageElement): HTMLCanvasElement;
+        imageDataToDataURL(imageData: ImageData): string;
+        imageDataToCanvas(imageData: ImageData): HTMLCanvasElement;
         arrayBufferToImage(arrayBuffer: ArrayBuffer, callback: (img: HTMLImageElement) => void): void;
         blobToText(blob: Blob, callback: (content: string) => void): void;
         stringToArrayBuffer(str: string, callback: (arrayBuffer: ArrayBuffer) => void): void;
@@ -8473,6 +8473,11 @@ declare namespace feng3d {
          */
         protected invalidate(): void;
         readonly activePixels: HTMLCanvasElement | ImageData | HTMLImageElement | HTMLVideoElement | ImageBitmap | (HTMLCanvasElement | ImageData | HTMLImageElement | HTMLVideoElement | ImageBitmap)[];
+        /**
+         *
+         */
+        readonly dataURL: string;
+        private _dataURL;
         private updateActivePixels;
         /**
          * 激活纹理
