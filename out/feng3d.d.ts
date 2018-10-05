@@ -12226,6 +12226,8 @@ declare namespace feng3d {
         readonly components: (ParticleEmission | ParticlePosition | ParticleVelocity | ParticleColor | ParticleBillboard)[];
         geometry: PlaneGeometry;
         material: Material;
+        castShadows: boolean;
+        receiveShadows: boolean;
         readonly single: boolean;
         init(gameObject: GameObject): void;
         update(interval: number): void;

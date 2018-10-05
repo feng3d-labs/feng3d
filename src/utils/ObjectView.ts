@@ -315,9 +315,12 @@ namespace feng3d
 				{
 					if (newAttributeDefinition && oldAttributeDefinition.name == newAttributeDefinition.name)
 					{
-						oldAttributeDefinition.block = newAttributeDefinition.block;
-						oldAttributeDefinition.component = newAttributeDefinition.component;
-						oldAttributeDefinition.componentParam = newAttributeDefinition.componentParam;
+						Object.assign(oldAttributeDefinition, newAttributeDefinition);
+						//
+						var oldIndex = oldClassDefinition.attributeDefinitionVec.indexOf(oldAttributeDefinition);
+						oldClassDefinition.attributeDefinitionVec.splice(oldIndex, 1);
+						//
+						oldClassDefinition.attributeDefinitionVec.push(oldAttributeDefinition);
 						isfound = true;
 					}
 				});
@@ -338,8 +341,7 @@ namespace feng3d
 				{
 					if (newBlockDefinition && newBlockDefinition.name == oldBlockDefinition.name)
 					{
-						oldBlockDefinition.component = newBlockDefinition.component;
-						oldBlockDefinition.componentParam = newBlockDefinition.componentParam;
+						Object.assign(oldBlockDefinition, newBlockDefinition);
 						isfound = true;
 					}
 				});
@@ -366,7 +368,7 @@ namespace feng3d
 		if (classConfigVec.length > 0)
 		{
 			resultclassConfig = <any>{};
-			for (var i = 0; i < classConfigVec.length; i++)
+			for (var i = classConfigVec.length - 1; i >= 0; i--)
 			{
 				mergeClassDefinition(resultclassConfig, classConfigVec[i]);
 			}

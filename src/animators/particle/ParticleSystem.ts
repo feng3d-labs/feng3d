@@ -93,11 +93,19 @@ namespace feng3d
             new ParticleBillboard(),
         ];
 
-        @oav({ block: "Renderer", component: "OAVPick", tooltip: "几何体，提供模型以形状", componentParam: { accepttype: "geometry", datatype: "geometry" } })
+        @oav({ block: "Renderer" })
         geometry = Geometry.billboard;
 
-        @oav({ block: "Renderer", component: "OAVPick", tooltip: "材质，提供模型以皮肤", componentParam: { accepttype: "material", datatype: "material" } })
+        @oav({ block: "Renderer" })
         material = Material.particle;
+
+        @oav({ block: "Renderer" })
+        @serialize
+        castShadows = true;
+
+        @oav({ block: "Renderer" })
+        @serialize
+        receiveShadows = true;
 
         get single() { return true; }
 

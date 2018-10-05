@@ -3226,9 +3226,12 @@ var feng3d;
                 var isfound = false;
                 oldClassDefinition.attributeDefinitionVec.forEach(function (oldAttributeDefinition) {
                     if (newAttributeDefinition && oldAttributeDefinition.name == newAttributeDefinition.name) {
-                        oldAttributeDefinition.block = newAttributeDefinition.block;
-                        oldAttributeDefinition.component = newAttributeDefinition.component;
-                        oldAttributeDefinition.componentParam = newAttributeDefinition.componentParam;
+                        Object.assign(oldAttributeDefinition, newAttributeDefinition);
+                        //
+                        var oldIndex = oldClassDefinition.attributeDefinitionVec.indexOf(oldAttributeDefinition);
+                        oldClassDefinition.attributeDefinitionVec.splice(oldIndex, 1);
+                        //
+                        oldClassDefinition.attributeDefinitionVec.push(oldAttributeDefinition);
                         isfound = true;
                     }
                 });
@@ -3244,8 +3247,7 @@ var feng3d;
                 var isfound = false;
                 oldClassDefinition.blockDefinitionVec.forEach(function (oldBlockDefinition) {
                     if (newBlockDefinition && newBlockDefinition.name == oldBlockDefinition.name) {
-                        oldBlockDefinition.component = newBlockDefinition.component;
-                        oldBlockDefinition.componentParam = newBlockDefinition.componentParam;
+                        Object.assign(oldBlockDefinition, newBlockDefinition);
                         isfound = true;
                     }
                 });
@@ -3268,7 +3270,7 @@ var feng3d;
         var resultclassConfig;
         if (classConfigVec.length > 0) {
             resultclassConfig = {};
-            for (var i = 0; i < classConfigVec.length; i++) {
+            for (var i = classConfigVec.length - 1; i >= 0; i--) {
                 mergeClassDefinition(resultclassConfig, classConfigVec[i]);
             }
         }
@@ -24195,6 +24197,8 @@ var feng3d;
             ];
             _this.geometry = feng3d.Geometry.billboard;
             _this.material = feng3d.Material.particle;
+            _this.castShadows = true;
+            _this.receiveShadows = true;
             return _this;
         }
         Object.defineProperty(ParticleSystem.prototype, "single", {
@@ -24356,11 +24360,19 @@ var feng3d;
             feng3d.oav({ block: "粒子模块", component: "OAVParticleComponentList" })
         ], ParticleSystem.prototype, "components", void 0);
         __decorate([
-            feng3d.oav({ block: "Renderer", component: "OAVPick", tooltip: "几何体，提供模型以形状", componentParam: { accepttype: "geometry", datatype: "geometry" } })
+            feng3d.oav({ block: "Renderer" })
         ], ParticleSystem.prototype, "geometry", void 0);
         __decorate([
-            feng3d.oav({ block: "Renderer", component: "OAVPick", tooltip: "材质，提供模型以皮肤", componentParam: { accepttype: "material", datatype: "material" } })
+            feng3d.oav({ block: "Renderer" })
         ], ParticleSystem.prototype, "material", void 0);
+        __decorate([
+            feng3d.oav({ block: "Renderer" }),
+            feng3d.serialize
+        ], ParticleSystem.prototype, "castShadows", void 0);
+        __decorate([
+            feng3d.oav({ block: "Renderer" }),
+            feng3d.serialize
+        ], ParticleSystem.prototype, "receiveShadows", void 0);
         return ParticleSystem;
     }(feng3d.Model));
     feng3d.ParticleSystem = ParticleSystem;
