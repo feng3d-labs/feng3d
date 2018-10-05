@@ -3,7 +3,6 @@ namespace feng3d
 
     /**
      * 渲染参数
-
      */
     export class RenderParams
     {
@@ -11,7 +10,7 @@ namespace feng3d
         * 渲染模式，默认RenderMode.TRIANGLES
         */
         @serialize
-        @oav({ component: "OAVEnum", componentParam: { enumClass: RenderMode } })
+        @oav({ component: "OAVEnum", tooltip: "渲染模式，默认RenderMode.TRIANGLES", componentParam: { enumClass: RenderMode } })
         renderMode = RenderMode.TRIANGLES;
 
         /**
@@ -21,11 +20,11 @@ namespace feng3d
          * 使用gl.frontFace(gl.CW);调整顺时针为正面
          */
         @serialize
-        @oav({ component: "OAVEnum", componentParam: { enumClass: CullFace } })
+        @oav({ component: "OAVEnum", tooltip: "剔除面", componentParam: { enumClass: CullFace } })
         cullFace = CullFace.BACK;
 
         @serialize
-        @oav({ component: "OAVEnum", componentParam: { enumClass: FrontFace } })
+        @oav({ component: "OAVEnum",tooltip:"正面方向，默认FrontFace.CW 顺时针为正面", componentParam: { enumClass: FrontFace } })
         frontFace = FrontFace.CW;
 
         /**
@@ -33,56 +32,58 @@ namespace feng3d
          * <混合后的颜色> = <源颜色>*sfactor + <目标颜色>*dfactor
          */
         @serialize
-        @oav()
+        @oav({ tooltip: "是否开启混合" })
         enableBlend = false;
 
         /**
-         * 混合方程，默认BlendEquation.FUNC_ADD
+         * 混合方式，默认BlendEquation.FUNC_ADD
          */
         @serialize
-        @oav({ component: "OAVEnum", componentParam: { enumClass: BlendEquation } })
+        @oav({ component: "OAVEnum", tooltip: "混合方式，默认BlendEquation.FUNC_ADD", componentParam: { enumClass: BlendEquation } })
         blendEquation = BlendEquation.FUNC_ADD;
 
         /**
          * 源混合因子，默认BlendFactor.SRC_ALPHA
          */
         @serialize
-        @oav({ component: "OAVEnum", componentParam: { enumClass: BlendFactor } })
+        @oav({ component: "OAVEnum", tooltip: "源混合因子，默认BlendFactor.SRC_ALPHA", componentParam: { enumClass: BlendFactor } })
         sfactor = BlendFactor.SRC_ALPHA;
 
         /**
          * 目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA
          */
         @serialize
-        @oav({ component: "OAVEnum", componentParam: { enumClass: BlendFactor } })
+        @oav({ component: "OAVEnum", tooltip: "目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA", componentParam: { enumClass: BlendFactor } })
         dfactor = BlendFactor.ONE_MINUS_SRC_ALPHA;
 
         /**
          * 是否开启深度检查
          */
         @serialize
-        @oav()
+        @oav({ tooltip: "是否开启深度检查" })
         depthtest = true;
+        
+        @serialize
+        @oav({ component: "OAVEnum", tooltip: "深度检测方法", componentParam: { enumClass: DepthFunc } })
+        depthFunc = DepthFunc.LESS;
 
         /**
          * 是否开启深度标记
          */
         @serialize
-        @oav()
+        @oav({ tooltip: "是否开启深度标记" })
         depthMask = true;
-
-        depthFunc = DepthFunc.LESS;
 
         /**
          * 绘制在画布上的区域
          */
-        @oav()
+        @oav({ tooltip: "绘制在画布上的区域" })
         viewRect = new Rectangle(0, 0, 100, 100);
 
         /**
          * 是否使用 viewRect
          */
-        @oav()
+        @oav({ tooltip: "是否使用 viewRect" })
         useViewRect = false;
 
         constructor(raw?: gPartial<RenderParams>)

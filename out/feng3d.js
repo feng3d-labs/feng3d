@@ -13017,7 +13017,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 渲染参数
-
      */
     var RenderParams = /** @class */ (function () {
         function RenderParams(raw) {
@@ -13039,7 +13038,7 @@ var feng3d;
              */
             this.enableBlend = false;
             /**
-             * 混合方程，默认BlendEquation.FUNC_ADD
+             * 混合方式，默认BlendEquation.FUNC_ADD
              */
             this.blendEquation = feng3d.BlendEquation.FUNC_ADD;
             /**
@@ -13054,11 +13053,11 @@ var feng3d;
              * 是否开启深度检查
              */
             this.depthtest = true;
+            this.depthFunc = feng3d.DepthFunc.LESS;
             /**
              * 是否开启深度标记
              */
             this.depthMask = true;
-            this.depthFunc = feng3d.DepthFunc.LESS;
             /**
              * 绘制在画布上的区域
              */
@@ -13072,45 +13071,49 @@ var feng3d;
         }
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.RenderMode } })
+            feng3d.oav({ component: "OAVEnum", tooltip: "渲染模式，默认RenderMode.TRIANGLES", componentParam: { enumClass: feng3d.RenderMode } })
         ], RenderParams.prototype, "renderMode", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.CullFace } })
+            feng3d.oav({ component: "OAVEnum", tooltip: "剔除面", componentParam: { enumClass: feng3d.CullFace } })
         ], RenderParams.prototype, "cullFace", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.FrontFace } })
+            feng3d.oav({ component: "OAVEnum", tooltip: "正面方向，默认FrontFace.CW 顺时针为正面", componentParam: { enumClass: feng3d.FrontFace } })
         ], RenderParams.prototype, "frontFace", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
+            feng3d.oav({ tooltip: "是否开启混合" })
         ], RenderParams.prototype, "enableBlend", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.BlendEquation } })
+            feng3d.oav({ component: "OAVEnum", tooltip: "混合方式，默认BlendEquation.FUNC_ADD", componentParam: { enumClass: feng3d.BlendEquation } })
         ], RenderParams.prototype, "blendEquation", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.BlendFactor } })
+            feng3d.oav({ component: "OAVEnum", tooltip: "源混合因子，默认BlendFactor.SRC_ALPHA", componentParam: { enumClass: feng3d.BlendFactor } })
         ], RenderParams.prototype, "sfactor", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.BlendFactor } })
+            feng3d.oav({ component: "OAVEnum", tooltip: "目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA", componentParam: { enumClass: feng3d.BlendFactor } })
         ], RenderParams.prototype, "dfactor", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
+            feng3d.oav({ tooltip: "是否开启深度检查" })
         ], RenderParams.prototype, "depthtest", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
+            feng3d.oav({ component: "OAVEnum", tooltip: "深度检测方法", componentParam: { enumClass: feng3d.DepthFunc } })
+        ], RenderParams.prototype, "depthFunc", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "是否开启深度标记" })
         ], RenderParams.prototype, "depthMask", void 0);
         __decorate([
-            feng3d.oav()
+            feng3d.oav({ tooltip: "绘制在画布上的区域" })
         ], RenderParams.prototype, "viewRect", void 0);
         __decorate([
-            feng3d.oav()
+            feng3d.oav({ tooltip: "是否使用 viewRect" })
         ], RenderParams.prototype, "useViewRect", void 0);
         return RenderParams;
     }());
@@ -19563,7 +19566,7 @@ var feng3d;
             /**
              * 是否为6块贴图，默认true。
              */
-            _this.tile6 = true;
+            _this.tile6 = false;
             return _this;
         }
         CubeGeometry.prototype.buildGeometry = function () {
@@ -24053,7 +24056,7 @@ var feng3d;
     feng3d.shaderConfig.shaders["particle"].cls = ParticleUniforms;
     feng3d.Feng3dAssets.setAssets(feng3d.Material.particle = new feng3d.Material().value({
         name: "Particle-Material", assetsId: "Particle-Material", shaderName: "particle",
-        renderParams: { enableBlend: true, sfactor: feng3d.BlendFactor.ONE, dfactor: feng3d.BlendFactor.ONE_MINUS_SRC_COLOR, depthtest: false },
+        renderParams: { enableBlend: true, sfactor: feng3d.BlendFactor.ONE, dfactor: feng3d.BlendFactor.ONE_MINUS_SRC_COLOR, depthMask: false },
         hideFlags: feng3d.HideFlags.NotEditable,
     }));
 })(feng3d || (feng3d = {}));

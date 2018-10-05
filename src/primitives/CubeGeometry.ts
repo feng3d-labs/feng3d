@@ -67,7 +67,7 @@ namespace feng3d
         @serialize
         @oav()
         @watch("invalidateGeometry")
-        tile6 = true;
+        tile6 = false;
 
         protected buildGeometry()
         {

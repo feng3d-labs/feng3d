@@ -8113,7 +8113,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 渲染参数
-
      */
     class RenderParams {
         /**
@@ -8134,7 +8133,7 @@ declare namespace feng3d {
          */
         enableBlend: boolean;
         /**
-         * 混合方程，默认BlendEquation.FUNC_ADD
+         * 混合方式，默认BlendEquation.FUNC_ADD
          */
         blendEquation: BlendEquation;
         /**
@@ -8149,11 +8148,11 @@ declare namespace feng3d {
          * 是否开启深度检查
          */
         depthtest: boolean;
+        depthFunc: DepthFunc;
         /**
          * 是否开启深度标记
          */
         depthMask: boolean;
-        depthFunc: DepthFunc;
         /**
          * 绘制在画布上的区域
          */
