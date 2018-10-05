@@ -12,14 +12,11 @@ namespace feng3d
         /**
          * 是否正在播放
          */
-        @oav({ tooltip: "是否播放中" })
-        @serialize
         isPlaying = true;
 
         /**
          * 粒子时间
          */
-        @oav({ tooltip: "当前粒子时间" })
         time = 0;
 
         @oav({ block: "main", component: "OAVObjectView" })
@@ -30,7 +27,7 @@ namespace feng3d
          * 粒子全局属性
          */
         @serialize
-        @oav({ block: "全局属性", component: "OAVObjectView", tooltip: "粒子全局属性，作用与所有粒子。" })
+        // @oav({ block: "全局属性", component: "OAVObjectView", tooltip: "粒子全局属性，作用与所有粒子。" })
         readonly particleGlobal = new ParticleGlobal();
 
         /**

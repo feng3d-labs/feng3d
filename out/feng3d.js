@@ -24249,19 +24249,12 @@ var feng3d;
             }
         };
         __decorate([
-            feng3d.oav({ tooltip: "是否播放中" }),
-            feng3d.serialize
-        ], ParticleSystem.prototype, "isPlaying", void 0);
-        __decorate([
-            feng3d.oav({ tooltip: "当前粒子时间" })
-        ], ParticleSystem.prototype, "time", void 0);
-        __decorate([
             feng3d.oav({ block: "main", component: "OAVObjectView" }),
             feng3d.serialize
         ], ParticleSystem.prototype, "main", void 0);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav({ block: "全局属性", component: "OAVObjectView", tooltip: "粒子全局属性，作用与所有粒子。" })
+            feng3d.serialize
+            // @oav({ block: "全局属性", component: "OAVObjectView", tooltip: "粒子全局属性，作用与所有粒子。" })
         ], ParticleSystem.prototype, "particleGlobal", void 0);
         __decorate([
             feng3d.serialize,
