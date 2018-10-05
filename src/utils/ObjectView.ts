@@ -133,8 +133,11 @@ namespace feng3d
 			Object.assign(p, param);
 
 			var classConfig = this.getObjectInfo(object, p.autocreate, p.excludeAttrs);
+			classConfig.editable = classConfig.editable == undefined ? true : classConfig.editable;
 
 			Object.assign(classConfig, param);
+
+			classConfig.objectAttributeInfos.forEach(v => { v.editable = v.editable && classConfig.editable; });
 
 			if (classConfig.component == null || classConfig.component == "")
 			{

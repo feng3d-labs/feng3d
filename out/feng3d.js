@@ -3075,7 +3075,9 @@ var feng3d;
             var p = { autocreate: true, excludeAttrs: [] };
             Object.assign(p, param);
             var classConfig = this.getObjectInfo(object, p.autocreate, p.excludeAttrs);
+            classConfig.editable = classConfig.editable == undefined ? true : classConfig.editable;
             Object.assign(classConfig, param);
+            classConfig.objectAttributeInfos.forEach(function (v) { v.editable = v.editable && classConfig.editable; });
             if (classConfig.component == null || classConfig.component == "") {
                 //返回基础类型界面类定义
                 if (!(classConfig.owner instanceof Object)) {
