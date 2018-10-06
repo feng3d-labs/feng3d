@@ -4423,13 +4423,9 @@ var feng3d;
              */
             this.namespace = /namespace\s+([\w$_\d\.]+)/;
             /**
-             * 导出类
+             * 类
              */
-            this.exportClass = /export\s+(abstract\s+)?class\s+([\w$_\d]+)(\s+extends\s+([\w$_\d]+))?/;
-            /**
-             * 脚本中的类
-             */
-            this.scriptClass = /(export\s+)?class\s+([\w$_\d]+)\s+extends\s+(([\w$_\d\.]+))/;
+            this.classReg = /(export\s+)?(abstract\s+)?class\s+([\w$_\d]+)(\s+extends\s+([\w$_\d\.]+))?/;
         }
         return RegExps;
     }());
@@ -25277,9 +25273,12 @@ var feng3d;
             _super.prototype.readFile.call(this, readAssets, function (err) {
                 var code = _this.textContent;
                 // 获取脚本类名称
-                var result = feng3d.regExps.scriptClass.exec(code);
+                var result = feng3d.regExps.classReg.exec(code);
                 feng3d.assert(result != null, "\u5728\u811A\u672C " + _this.filePath + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
-                var script = result[2];
+                var script = result[3];
+                if (result[5]) {
+                    _this.parentScriptName = result[5].split(".").pop();
+                }
                 // 获取导出类命名空间
                 if (result[1]) {
                     result = feng3d.regExps.namespace.exec(code);

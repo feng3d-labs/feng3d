@@ -31,14 +31,9 @@ namespace feng3d
         namespace = /namespace\s+([\w$_\d\.]+)/;
 
         /**
-         * 导出类
+         * 类
          */
-        exportClass = /export\s+(abstract\s+)?class\s+([\w$_\d]+)(\s+extends\s+([\w$_\d]+))?/;
-
-        /**
-         * 脚本中的类
-         */
-        scriptClass = /(export\s+)?class\s+([\w$_\d]+)\s+extends\s+(([\w$_\d\.]+))/;
+        classReg = /(export\s+)?(abstract\s+)?class\s+([\w$_\d]+)(\s+extends\s+([\w$_\d\.]+))?/;
     }
 
     regExps = new RegExps();

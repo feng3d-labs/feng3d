@@ -2180,13 +2180,9 @@ declare namespace feng3d {
          */
         namespace: RegExp;
         /**
-         * 导出类
+         * 类
          */
-        exportClass: RegExp;
-        /**
-         * 脚本中的类
-         */
-        scriptClass: RegExp;
+        classReg: RegExp;
     }
 }
 declare namespace feng3d {
@@ -12631,6 +12627,10 @@ declare namespace feng3d {
 declare namespace feng3d {
     class ScriptFile extends StringFile {
         assetType: AssetExtension;
+        /**
+         * 脚本父类名称
+         */
+        parentScriptName: string;
         /**
          * 脚本类定义
          */
