@@ -9426,7 +9426,7 @@ declare namespace feng3d {
          * 添加脚本
          * @param script   脚本路径
          */
-        addScript(script: string): ScriptComponent;
+        addScript(script: Constructor<Script>): ScriptComponent;
         /**
          * Returns the component of Type type if the game object has one attached, null if it doesn't.
          * @param type				类定义
@@ -9764,14 +9764,12 @@ declare namespace feng3d {
 
      */
     class ScriptComponent extends Behaviour {
-        /**
-         * 脚本路径
-         */
-        script: string;
+        runEnvironment: RunEnvironment;
         /**
          * 脚本对象
          */
         scriptInstance: Script;
+        private scriptInit;
         init(gameObject: GameObject): void;
         private scriptChanged;
         /**
@@ -12634,10 +12632,15 @@ declare namespace feng3d {
     class ScriptFile extends StringFile {
         assetType: AssetExtension;
         /**
-         * 获取脚本类名称
-         * @param callback 回调函数
+         * 脚本类定义
          */
-        getScriptClassName(callback: (scriptClassName: string) => void): void;
+        classDefinition: Constructor<Script>;
+        /**
+         * 读取文件
+         * @param readAssets 刻度资源管理系统
+         * @param callback 完成回调
+         */
+        protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
@@ -13576,8 +13579,4 @@ declare namespace feng3d {
      * 是否开启调试(主要用于断言)
      */
     var debuger: boolean;
-    /**
-     * 运行环境
-     */
-    var runEnvironment: RunEnvironment;
 }

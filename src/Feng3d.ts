@@ -14,10 +14,5 @@ namespace feng3d
      */
     export var debuger = true;
 
-    /**
-     * 运行环境
-     */
-    export var runEnvironment = RunEnvironment.feng3d;
-
     log(`feng3d version ${revision}`)
 }

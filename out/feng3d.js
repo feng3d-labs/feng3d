@@ -16326,7 +16326,7 @@ var feng3d;
          */
         GameObject.prototype.addScript = function (script) {
             var scriptComponent = new feng3d.ScriptComponent();
-            scriptComponent.script = script;
+            scriptComponent.scriptInstance = new script();
             this.addComponentAt(scriptComponent, this._components.length);
             return scriptComponent;
         };
@@ -17246,60 +17246,41 @@ var feng3d;
         __extends(ScriptComponent, _super);
         function ScriptComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            /**
-             * 脚本路径
-             */
-            _this.script = "";
+            _this.runEnvironment = feng3d.RunEnvironment.feng3d;
+            _this.scriptInit = false;
             return _this;
         }
         ScriptComponent.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
-            if (feng3d.runEnvironment == feng3d.RunEnvironment.feng3d) {
-                this.scriptInstance && this.scriptInstance.init();
-            }
         };
-        ScriptComponent.prototype.scriptChanged = function () {
-            if (this.scriptInstance) {
-                if (feng3d.runEnvironment == feng3d.RunEnvironment.feng3d) {
-                    this.scriptInstance.dispose();
-                }
-                this.scriptInstance = null;
-            }
-            if (this.script) {
-                var cls = feng3d.classUtils.getDefinitionByName(this.script);
-                this.scriptInstance = new cls(this);
-                if (feng3d.runEnvironment == feng3d.RunEnvironment.feng3d) {
-                    if (this.gameObject)
-                        this.scriptInstance.init();
-                }
-            }
+        ScriptComponent.prototype.scriptChanged = function (property, oldValue, newValue) {
+            if (oldValue)
+                oldValue.dispose();
+            this.scriptInit = false;
         };
         /**
          * 每帧执行
          */
         ScriptComponent.prototype.update = function () {
-            if (feng3d.runEnvironment == feng3d.RunEnvironment.feng3d) {
-                this.scriptInstance && this.scriptInstance.update();
+            if (this.scriptInstance && !this.scriptInit) {
+                this.scriptInstance.init();
+                this.scriptInit = true;
             }
+            this.scriptInstance && this.scriptInstance.update();
         };
         /**
          * 销毁
          */
         ScriptComponent.prototype.dispose = function () {
             this.enabled = false;
-            if (feng3d.runEnvironment == feng3d.RunEnvironment.feng3d) {
-                this.scriptInstance && this.scriptInstance.dispose();
-            }
+            this.scriptInstance && this.scriptInstance.dispose();
             this.scriptInstance = null;
             _super.prototype.dispose.call(this);
         };
         __decorate([
-            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "file_script" } }),
             feng3d.serialize,
-            feng3d.watch("scriptChanged")
-        ], ScriptComponent.prototype, "script", void 0);
-        __decorate([
-            feng3d.serialize
+            feng3d.watch("scriptChanged"),
+            feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "file_script" } })
         ], ScriptComponent.prototype, "scriptInstance", void 0);
         return ScriptComponent;
     }(feng3d.Behaviour));
@@ -25290,22 +25271,27 @@ var feng3d;
             return _this;
         }
         /**
-         * 获取脚本类名称
-         * @param callback 回调函数
+         * 读取文件
+         * @param readAssets 刻度资源管理系统
+         * @param callback 完成回调
          */
-        ScriptFile.prototype.getScriptClassName = function (callback) {
-            var code = this.textContent;
-            // 获取脚本类名称
-            var result = feng3d.regExps.scriptClass.exec(code);
-            feng3d.assert(result != null, "\u5728\u811A\u672C " + this.filePath + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
-            var script = result[2];
-            // 获取导出类命名空间
-            if (result[1]) {
-                result = feng3d.regExps.namespace.exec(code);
-                feng3d.assert(result != null, "\u83B7\u53D6\u811A\u672C " + this.filePath + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
-                script = result[1] + "." + script;
-            }
-            callback(script);
+        ScriptFile.prototype.readFile = function (readAssets, callback) {
+            var _this = this;
+            _super.prototype.readFile.call(this, readAssets, function (err) {
+                var code = _this.textContent;
+                // 获取脚本类名称
+                var result = feng3d.regExps.scriptClass.exec(code);
+                feng3d.assert(result != null, "\u5728\u811A\u672C " + _this.filePath + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
+                var script = result[2];
+                // 获取导出类命名空间
+                if (result[1]) {
+                    result = feng3d.regExps.namespace.exec(code);
+                    feng3d.assert(result != null, "\u83B7\u53D6\u811A\u672C " + _this.filePath + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
+                    script = result[1] + "." + script;
+                }
+                _this.classDefinition = feng3d.classUtils.getDefinitionByName(script);
+                callback && callback(err);
+            });
         };
         return ScriptFile;
     }(feng3d.StringFile));
@@ -28668,10 +28654,6 @@ var feng3d;
      * 是否开启调试(主要用于断言)
      */
     feng3d.debuger = true;
-    /**
-     * 运行环境
-     */
-    feng3d.runEnvironment = feng3d.RunEnvironment.feng3d;
     feng3d.log("feng3d version " + feng3d.revision);
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map

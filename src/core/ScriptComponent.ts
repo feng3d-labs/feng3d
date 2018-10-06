@@ -2,56 +2,35 @@ namespace feng3d
 {
 
     export interface ComponentMap { ScriptComponent: ScriptComponent; }
-    
+
     /**
      * 3d对象脚本
 
      */
     export class ScriptComponent extends Behaviour
     {
-        /**
-         * 脚本路径
-         */
-        @oav({ component: "OAVPick", componentParam: { accepttype: "file_script" } })
-        @serialize
-        @watch("scriptChanged")
-        script = "";
+
+        runEnvironment = RunEnvironment.feng3d;
 
         /**
          * 脚本对象
          */
         @serialize
+        @watch("scriptChanged")
+        @oav({ component: "OAVPick", componentParam: { accepttype: "file_script" } })
         scriptInstance: Script;
+
+        private scriptInit = false;
 
         init(gameObject: GameObject)
         {
             super.init(gameObject);
-            if (runEnvironment == RunEnvironment.feng3d)
-            {
-                this.scriptInstance && this.scriptInstance.init();
-            }
         }
 
-        private scriptChanged()
+        private scriptChanged(property, oldValue: Script, newValue: Script)
         {
-            if (this.scriptInstance)
-            {
-                if (runEnvironment == RunEnvironment.feng3d)
-                {
-                    this.scriptInstance.dispose();
-                }
-                this.scriptInstance = null;
-            }
-            if (this.script)
-            {
-                var cls = classUtils.getDefinitionByName(this.script);
-                this.scriptInstance = new cls(this);
-                if (runEnvironment == RunEnvironment.feng3d)
-                {
-                    if (this.gameObject)
-                        this.scriptInstance.init();
-                }
-            }
+            if (oldValue) oldValue.dispose();
+            this.scriptInit = false;
         }
 
         /**
@@ -59,10 +38,12 @@ namespace feng3d
          */
         update()
         {
-            if (runEnvironment == RunEnvironment.feng3d)
+            if (this.scriptInstance && !this.scriptInit)
             {
-                this.scriptInstance && this.scriptInstance.update();
+                this.scriptInstance.init();
+                this.scriptInit = true;
             }
+            this.scriptInstance && this.scriptInstance.update();
         }
 
         /**
@@ -72,10 +53,7 @@ namespace feng3d
         {
             this.enabled = false;
 
-            if (runEnvironment == RunEnvironment.feng3d)
-            {
-                this.scriptInstance && this.scriptInstance.dispose();
-            }
+            this.scriptInstance && this.scriptInstance.dispose();
             this.scriptInstance = null;
             super.dispose();
         }
