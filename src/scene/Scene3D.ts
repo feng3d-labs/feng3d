@@ -36,9 +36,13 @@ namespace feng3d
         ambientColor = new Color4();
 
         /**
-         * 指定更新脚本标记，用于过滤需要调用update的脚本
+         * 指定所运行环境
+         * 
+         * 控制运行符合指定环境场景中所有 Behaviour.update 方法
+         * 
+         * 用于处理某些脚本只在在feng3d引擎或者编辑器中运行的问题。例如 FPSController 默认只在feng3d中运行，在编辑器模式下不会运行。
          */
-        updateScriptFlag = ScriptFlag.feng3d;
+        runEnvironment = RunEnvironment.feng3d;
 
         /**
          * 构造3D场景
@@ -313,7 +317,7 @@ namespace feng3d
 
             this.behaviours.forEach(element =>
             {
-                if (element.isVisibleAndEnabled && (this.updateScriptFlag & element.flag))
+                if (element.isVisibleAndEnabled && (this.runEnvironment & element.runEnvironment))
                     element.update(interval);
             });
         }

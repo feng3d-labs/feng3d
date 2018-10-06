@@ -1,12 +1,5 @@
 namespace feng3d
 {
-    export enum ScriptFlag
-    {
-        feng3d = 1 << 0,
-        editor = 1 << 1,
-        all = (1 << 8) - 1,
-    }
-
     export interface ComponentMap { Behaviour: Behaviour; }
 
     /**
@@ -24,7 +17,10 @@ namespace feng3d
         @serialize
         enabled = true;
 
-        flag = ScriptFlag.all;
+        /**
+         * 可运行环境
+         */
+        runEnvironment = RunEnvironment.all;
 
         /**
          * Has the Behaviour had enabled called.

@@ -14,7 +14,7 @@ namespace feng3d
         @oav()
         public acceleration = 0.001;
 
-        flag = ScriptFlag.feng3d;
+        runEnvironment = RunEnvironment.feng3d;
 
         /**
          * 按键记录

@@ -6017,8 +6017,11 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 快捷键
+     */
+    var shortcut: ShortCut;
+    /**
      * 初始化快捷键模块
-
      *
      * <pre>
 var shortcuts:Array = [ //
@@ -8795,11 +8798,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    enum ScriptFlag {
-        feng3d = 1,
-        editor = 2,
-        all = 255
-    }
     interface ComponentMap {
         Behaviour: Behaviour;
     }
@@ -8813,7 +8811,10 @@ declare namespace feng3d {
          * 是否启用update方法
          */
         enabled: boolean;
-        flag: ScriptFlag;
+        /**
+         * 可运行环境
+         */
+        runEnvironment: RunEnvironment;
         /**
          * Has the Behaviour had enabled called.
          * 是否所在GameObject显示且该行为已启动。
@@ -9112,6 +9113,25 @@ declare namespace feng3d {
          * 不显示在层次面板中，不保存到场景中，加载新场景时不会被销毁。
          */
         HideAndDontSave = 61
+    }
+}
+declare namespace feng3d {
+    /**
+     * 运行环境枚举
+     */
+    enum RunEnvironment {
+        /**
+         * 在feng3d模式下运行
+         */
+        feng3d = 1,
+        /**
+         * 运行在编辑器中
+         */
+        editor = 2,
+        /**
+         * 在所有环境中运行
+         */
+        all = 255
     }
 }
 declare namespace feng3d {
@@ -9825,9 +9845,13 @@ declare namespace feng3d {
          */
         ambientColor: Color4;
         /**
-         * 指定更新脚本标记，用于过滤需要调用update的脚本
+         * 指定所运行环境
+         *
+         * 控制运行符合指定环境场景中所有 Behaviour.update 方法
+         *
+         * 用于处理某些脚本只在在feng3d引擎或者编辑器中运行的问题。例如 FPSController 默认只在feng3d中运行，在编辑器模式下不会运行。
          */
-        updateScriptFlag: ScriptFlag;
+        runEnvironment: RunEnvironment;
         /**
          * 构造3D场景
          */
@@ -11544,7 +11568,7 @@ declare namespace feng3d {
          * 加速度
          */
         acceleration: number;
-        flag: ScriptFlag;
+        runEnvironment: RunEnvironment;
         /**
          * 按键记录
          */
@@ -13545,18 +13569,7 @@ declare type gPartial<T> = {
 };
 declare namespace feng3d {
     /**
-     * 运行环境枚举
-     */
-    enum RunEnvironment {
-        feng3d = 0,
-        /**
-         * 运行在编辑器中
-         */
-        editor = 1
-    }
-    /**
      * feng3d的版本号
-
      */
     var revision: string;
     /**
@@ -13564,18 +13577,7 @@ declare namespace feng3d {
      */
     var debuger: boolean;
     /**
-     * 快捷键
-     */
-    var shortcut: ShortCut;
-    /**
      * 运行环境
      */
     var runEnvironment: RunEnvironment;
-    /**
-     * 资源路径
-     */
-    var assetsRoot: string;
-    var componentMap: {
-        Transform: typeof Transform;
-    };
 }

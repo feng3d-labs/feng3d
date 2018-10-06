@@ -11822,7 +11822,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 初始化快捷键模块
-
      *
      * <pre>
 var shortcuts:Array = [ //
@@ -11932,6 +11931,7 @@ Event.on(shortCut,<any>"run", function(e:Event):void
         return ShortCut;
     }(feng3d.EventDispatcher));
     feng3d.ShortCut = ShortCut;
+    feng3d.shortcut = new ShortCut();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -14296,12 +14296,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var ScriptFlag;
-    (function (ScriptFlag) {
-        ScriptFlag[ScriptFlag["feng3d"] = 1] = "feng3d";
-        ScriptFlag[ScriptFlag["editor"] = 2] = "editor";
-        ScriptFlag[ScriptFlag["all"] = 255] = "all";
-    })(ScriptFlag = feng3d.ScriptFlag || (feng3d.ScriptFlag = {}));
     /**
      * 行为
      *
@@ -14315,7 +14309,10 @@ var feng3d;
              * 是否启用update方法
              */
             _this.enabled = true;
-            _this.flag = ScriptFlag.all;
+            /**
+             * 可运行环境
+             */
+            _this.runEnvironment = feng3d.RunEnvironment.all;
             return _this;
         }
         Object.defineProperty(Behaviour.prototype, "isVisibleAndEnabled", {
@@ -15317,6 +15314,27 @@ var feng3d;
          */
         HideFlags[HideFlags["HideAndDontSave"] = 61] = "HideAndDontSave";
     })(HideFlags = feng3d.HideFlags || (feng3d.HideFlags = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 运行环境枚举
+     */
+    var RunEnvironment;
+    (function (RunEnvironment) {
+        /**
+         * 在feng3d模式下运行
+         */
+        RunEnvironment[RunEnvironment["feng3d"] = 1] = "feng3d";
+        /**
+         * 运行在编辑器中
+         */
+        RunEnvironment[RunEnvironment["editor"] = 2] = "editor";
+        /**
+         * 在所有环境中运行
+         */
+        RunEnvironment[RunEnvironment["all"] = 255] = "all";
+    })(RunEnvironment = feng3d.RunEnvironment || (feng3d.RunEnvironment = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -17369,9 +17387,13 @@ var feng3d;
              */
             _this_1.ambientColor = new feng3d.Color4();
             /**
-             * 指定更新脚本标记，用于过滤需要调用update的脚本
+             * 指定所运行环境
+             *
+             * 控制运行符合指定环境场景中所有 Behaviour.update 方法
+             *
+             * 用于处理某些脚本只在在feng3d引擎或者编辑器中运行的问题。例如 FPSController 默认只在feng3d中运行，在编辑器模式下不会运行。
              */
-            _this_1.updateScriptFlag = feng3d.ScriptFlag.feng3d;
+            _this_1.runEnvironment = feng3d.RunEnvironment.feng3d;
             _this_1._pickMap = new Map();
             return _this_1;
         }
@@ -17620,7 +17642,7 @@ var feng3d;
             // 每帧清理拾取缓存
             this._pickMap.forEach(function (item) { return item.clear(); });
             this.behaviours.forEach(function (element) {
-                if (element.isVisibleAndEnabled && (_this_1.updateScriptFlag & element.flag))
+                if (element.isVisibleAndEnabled && (_this_1.runEnvironment & element.runEnvironment))
                     element.update(interval);
             });
         };
@@ -22431,7 +22453,7 @@ var feng3d;
              * 加速度
              */
             _this.acceleration = 0.001;
-            _this.flag = feng3d.ScriptFlag.feng3d;
+            _this.runEnvironment = feng3d.RunEnvironment.feng3d;
             _this.ischange = false;
             return _this;
         }
@@ -28639,19 +28661,7 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 运行环境枚举
-     */
-    var RunEnvironment;
-    (function (RunEnvironment) {
-        RunEnvironment[RunEnvironment["feng3d"] = 0] = "feng3d";
-        /**
-         * 运行在编辑器中
-         */
-        RunEnvironment[RunEnvironment["editor"] = 1] = "editor";
-    })(RunEnvironment = feng3d.RunEnvironment || (feng3d.RunEnvironment = {}));
-    /**
      * feng3d的版本号
-
      */
     feng3d.revision = "2018.08.22";
     /**
@@ -28659,20 +28669,9 @@ var feng3d;
      */
     feng3d.debuger = true;
     /**
-     * 快捷键
-     */
-    feng3d.shortcut = new feng3d.ShortCut();
-    /**
      * 运行环境
      */
-    feng3d.runEnvironment = RunEnvironment.feng3d;
-    /**
-     * 资源路径
-     */
-    feng3d.assetsRoot = "";
-    feng3d.componentMap = {
-        Transform: feng3d.Transform,
-    };
+    feng3d.runEnvironment = feng3d.RunEnvironment.feng3d;
     feng3d.log("feng3d version " + feng3d.revision);
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map

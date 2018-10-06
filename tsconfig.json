@@ -143,6 +143,7 @@
         "src/render/postEffect/FXAAEffect.ts",
         //
         "src/core/HideFlags.ts",
+        "src/core/RunEnvironment.ts",
         "src/core/Transform.ts",
         "src/core/GameObject.ts",
         "src/core/Engine.ts",

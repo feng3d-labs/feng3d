@@ -1,8 +1,12 @@
 namespace feng3d
 {
 	/**
-	 * 初始化快捷键模块
+     * 快捷键
+     */
+	export var shortcut: ShortCut;
 
+	/**
+	 * 初始化快捷键模块
 	 *
 	 * <pre>
 var shortcuts:Array = [ //
@@ -151,4 +155,5 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 			return shortcut.key + "," + shortcut.command + "," + shortcut.stateCommand + "," + shortcut.when;
 		}
 	}
+	shortcut = new ShortCut();
 }
