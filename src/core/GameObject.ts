@@ -332,10 +332,10 @@ namespace feng3d
          * 添加脚本
          * @param script   脚本路径
          */
-        addScript(script: Constructor<Script>)
+        addScript(scriptName: string)
         {
             var scriptComponent = new ScriptComponent();
-            scriptComponent.scriptInstance = new script();
+            scriptComponent.scriptName = scriptName;
             this.addComponentAt(scriptComponent, this._components.length);
             return scriptComponent;
         }

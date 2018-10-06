@@ -12,12 +12,15 @@ namespace feng3d
 
         runEnvironment = RunEnvironment.feng3d;
 
+        @serialize
+        @watch("scriptChanged")
+        @oav({ component: "OAVPick", componentParam: { accepttype: "file_script" } })
+        scriptName: string;
+
         /**
          * 脚本对象
          */
         @serialize
-        @watch("scriptChanged")
-        @oav({ component: "OAVPick", componentParam: { accepttype: "file_script" } })
         scriptInstance: Script;
 
         private scriptInit = false;
@@ -29,7 +32,16 @@ namespace feng3d
 
         private scriptChanged(property, oldValue: Script, newValue: Script)
         {
-            if (oldValue) oldValue.dispose();
+            if (this.scriptInstance)
+            {
+                this.scriptInstance.component = null;
+                this.scriptInstance.dispose();
+                this.scriptInstance = null;
+            }
+
+            var cls = classUtils.getDefinitionByName(this.scriptName, false);
+            cls && (this.scriptInstance = new cls());
+
             this.scriptInit = false;
         }
 
@@ -40,6 +52,7 @@ namespace feng3d
         {
             if (this.scriptInstance && !this.scriptInit)
             {
+                this.scriptInstance.component = this;
                 this.scriptInstance.init();
                 this.scriptInit = true;
             }
@@ -53,8 +66,12 @@ namespace feng3d
         {
             this.enabled = false;
 
-            this.scriptInstance && this.scriptInstance.dispose();
-            this.scriptInstance = null;
+            if (this.scriptInstance)
+            {
+                this.scriptInstance.component = null;
+                this.scriptInstance.dispose();
+                this.scriptInstance = null;
+            }
             super.dispose();
         }
     }

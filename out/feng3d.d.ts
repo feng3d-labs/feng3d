@@ -9426,7 +9426,7 @@ declare namespace feng3d {
          * 添加脚本
          * @param script   脚本路径
          */
-        addScript(script: Constructor<Script>): ScriptComponent;
+        addScript(scriptName: string): ScriptComponent;
         /**
          * Returns the component of Type type if the game object has one attached, null if it doesn't.
          * @param type				类定义
@@ -9765,6 +9765,7 @@ declare namespace feng3d {
      */
     class ScriptComponent extends Behaviour {
         runEnvironment: RunEnvironment;
+        scriptName: string;
         /**
          * 脚本对象
          */
@@ -9798,9 +9799,8 @@ declare namespace feng3d {
         /**
          * 宿主组件
          */
-        readonly component: ScriptComponent;
-        private _component;
-        constructor(component?: ScriptComponent);
+        component: ScriptComponent;
+        constructor();
         /**
          * Use this for initialization
          */
@@ -12634,7 +12634,7 @@ declare namespace feng3d {
         /**
          * 脚本类定义
          */
-        classDefinition: Constructor<Script>;
+        scriptName: string;
         /**
          * 读取文件
          * @param readAssets 刻度资源管理系统

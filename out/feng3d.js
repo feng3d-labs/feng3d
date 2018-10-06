@@ -16324,9 +16324,9 @@ var feng3d;
          * 添加脚本
          * @param script   脚本路径
          */
-        GameObject.prototype.addScript = function (script) {
+        GameObject.prototype.addScript = function (scriptName) {
             var scriptComponent = new feng3d.ScriptComponent();
-            scriptComponent.scriptInstance = new script();
+            scriptComponent.scriptName = scriptName;
             this.addComponentAt(scriptComponent, this._components.length);
             return scriptComponent;
         };
@@ -17254,8 +17254,13 @@ var feng3d;
             _super.prototype.init.call(this, gameObject);
         };
         ScriptComponent.prototype.scriptChanged = function (property, oldValue, newValue) {
-            if (oldValue)
-                oldValue.dispose();
+            if (this.scriptInstance) {
+                this.scriptInstance.component = null;
+                this.scriptInstance.dispose();
+                this.scriptInstance = null;
+            }
+            var cls = feng3d.classUtils.getDefinitionByName(this.scriptName, false);
+            cls && (this.scriptInstance = new cls());
             this.scriptInit = false;
         };
         /**
@@ -17263,6 +17268,7 @@ var feng3d;
          */
         ScriptComponent.prototype.update = function () {
             if (this.scriptInstance && !this.scriptInit) {
+                this.scriptInstance.component = this;
                 this.scriptInstance.init();
                 this.scriptInit = true;
             }
@@ -17273,14 +17279,20 @@ var feng3d;
          */
         ScriptComponent.prototype.dispose = function () {
             this.enabled = false;
-            this.scriptInstance && this.scriptInstance.dispose();
-            this.scriptInstance = null;
+            if (this.scriptInstance) {
+                this.scriptInstance.component = null;
+                this.scriptInstance.dispose();
+                this.scriptInstance = null;
+            }
             _super.prototype.dispose.call(this);
         };
         __decorate([
             feng3d.serialize,
             feng3d.watch("scriptChanged"),
             feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "file_script" } })
+        ], ScriptComponent.prototype, "scriptName", void 0);
+        __decorate([
+            feng3d.serialize
         ], ScriptComponent.prototype, "scriptInstance", void 0);
         return ScriptComponent;
     }(feng3d.Behaviour));
@@ -17292,17 +17304,14 @@ var feng3d;
      * 3d对象脚本
      */
     var Script = /** @class */ (function () {
-        function Script(component) {
-            this._component = component;
+        function Script() {
         }
         Object.defineProperty(Script.prototype, "gameObject", {
             /**
              * The game object this component is attached to. A component is always attached to a game object.
              */
             get: function () {
-                if (!this._component)
-                    return null;
-                return this._component.gameObject;
+                return this.component.gameObject;
             },
             enumerable: true,
             configurable: true
@@ -17312,19 +17321,7 @@ var feng3d;
              * The Transform attached to this GameObject (null if there is none attached).
              */
             get: function () {
-                if (!this._component)
-                    return null;
                 return this.gameObject.transform;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Script.prototype, "component", {
-            /**
-             * 宿主组件
-             */
-            get: function () {
-                return this._component;
             },
             enumerable: true,
             configurable: true
@@ -25289,7 +25286,7 @@ var feng3d;
                     feng3d.assert(result != null, "\u83B7\u53D6\u811A\u672C " + _this.filePath + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
                     script = result[1] + "." + script;
                 }
-                _this.classDefinition = feng3d.classUtils.getDefinitionByName(script);
+                _this.scriptName = script;
                 callback && callback(err);
             });
         };

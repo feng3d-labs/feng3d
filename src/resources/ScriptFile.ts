@@ -7,7 +7,7 @@ namespace feng3d
         /**
          * 脚本类定义
          */
-        classDefinition: Constructor<Script>;
+        scriptName: string;
 
         /**
          * 读取文件
@@ -32,10 +32,12 @@ namespace feng3d
                     script = result[1] + "." + script;
                 }
 
-                this.classDefinition = classUtils.getDefinitionByName(script);
+                this.scriptName = script;
 
                 callback && callback(err);
             });
         }
+
+
     }
 }
