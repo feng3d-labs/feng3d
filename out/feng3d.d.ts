@@ -9560,6 +9560,7 @@ declare namespace feng3d {
         private guid;
         private _setParent;
         private updateScene;
+        private updateChildrenScene;
         private removeChildInternal;
         /**
          * 判断是否拥有组件

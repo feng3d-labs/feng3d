@@ -16657,10 +16657,13 @@ var feng3d;
                 this.dispatch("addedToScene", this);
                 this._scene._addGameObject(this);
             }
+            this.updateChildrenScene();
+            this.dispatch("sceneChanged", this);
+        };
+        GameObject.prototype.updateChildrenScene = function () {
             for (var i = 0, n = this._children.length; i < n; i++) {
                 this._children[i].updateScene();
             }
-            this.dispatch("sceneChanged", this);
         };
         GameObject.prototype.removeChildInternal = function (childIndex, child) {
             childIndex = childIndex;
@@ -17378,7 +17381,7 @@ var feng3d;
             _super.prototype.init.call(this, gameObject);
             this.transform.hideFlags = feng3d.HideFlags.Hide;
             gameObject["_scene"] = this;
-            this.gameObject["updateScene"]();
+            this.gameObject["updateChildrenScene"]();
         };
         Scene3D.prototype.update = function (interval) {
             var _this = this;

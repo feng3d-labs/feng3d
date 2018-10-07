@@ -758,11 +758,16 @@ namespace feng3d
                 this.dispatch("addedToScene", this);
                 this._scene._addGameObject(this);
             }
+            this.updateChildrenScene();
+            this.dispatch("sceneChanged", this);
+        }
+
+        private updateChildrenScene()
+        {
             for (let i = 0, n = this._children.length; i < n; i++)
             {
                 this._children[i].updateScene();
             }
-            this.dispatch("sceneChanged", this);
         }
 
         private removeChildInternal(childIndex: number, child: GameObject)

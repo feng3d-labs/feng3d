@@ -53,7 +53,7 @@ namespace feng3d
             this.transform.hideFlags = HideFlags.Hide;
 
             gameObject["_scene"] = this;
-            this.gameObject["updateScene"]();
+            this.gameObject["updateChildrenScene"]();
         }
 
         update(interval?: number)
