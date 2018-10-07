@@ -9304,19 +9304,19 @@ declare namespace feng3d {
         /**
          * 添加子组件事件
          */
-        addedComponent: Component;
+        addComponent: Component;
         /**
          * 移除子组件事件
          */
-        removedComponent: Component;
+        removeComponent: Component;
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
          */
-        added: GameObject;
+        addChild: GameObject;
         /**
          * 删除了子对象，当child被parent移除时派发冒泡事件
          */
-        removed: GameObject;
+        removeChild: GameObject;
         /**
          * 当GameObject的scene属性被设置是由Scene3D派发
          */
@@ -9325,10 +9325,6 @@ declare namespace feng3d {
          * 当GameObject的scene属性被清空时由Scene3D派发
          */
         removedFromScene: GameObject;
-        /**
-         * 场景变化
-         */
-        sceneChanged: GameObject;
         /**
          * 包围盒失效
          */
@@ -9834,7 +9830,6 @@ declare namespace feng3d {
         addToScene: GameObject;
         removeFromScene: GameObject;
         addComponentToScene: Component;
-        removeComponentFromScene: Component;
     }
     interface ComponentMap {
         Scene3D: Scene3D;
@@ -9864,6 +9859,10 @@ declare namespace feng3d {
          * 构造3D场景
          */
         init(gameObject: GameObject): void;
+        private onAddComponent;
+        private onRemovedComponent;
+        private onAddChild;
+        private onRemoveChild;
         update(interval?: number): void;
         /**
          * 所有 Model
@@ -9889,10 +9888,6 @@ declare namespace feng3d {
         readonly behaviours: Behaviour[];
         readonly activeBehaviours: Behaviour[];
         readonly mouseCheckObjects: GameObject[];
-        _addGameObject(gameobject: GameObject): void;
-        _removeGameObject(gameobject: GameObject): void;
-        _addComponent(component: Component): void;
-        _removeComponent(component: Component): void;
         /**
          * 获取拾取缓存
          * @param camera

@@ -8,7 +8,6 @@ namespace feng3d
         addToScene: GameObject;
         removeFromScene: GameObject;
         addComponentToScene: Component;
-        removeComponentFromScene: Component;
     }
 
     export interface ComponentMap { Scene3D: Scene3D; }
@@ -52,8 +51,35 @@ namespace feng3d
             super.init(gameObject);
             this.transform.hideFlags = HideFlags.Hide;
 
+            //
             gameObject["_scene"] = this;
             this.gameObject["updateChildrenScene"]();
+
+            //
+            this.on("addChild", this.onAddChild, this);
+            this.on("removeChild", this.onRemoveChild, this);
+            this.on("addComponent", this.onAddComponent, this);
+            this.on("removeComponent", this.onRemovedComponent, this);
+        }
+
+        private onAddComponent(e: Event<Component>)
+        {
+
+        }
+
+        private onRemovedComponent(e: Event<Component>)
+        {
+
+        }
+
+        private onAddChild(e: Event<GameObject>)
+        {
+
+        }
+
+        private onRemoveChild(e: Event<GameObject>)
+        {
+
         }
 
         update(interval?: number)
@@ -185,35 +211,6 @@ namespace feng3d
                 }
             }
             return this._mouseCheckObjects;
-        }
-
-        _addGameObject(gameobject: GameObject)
-        {
-            gameobject.components.forEach(element =>
-            {
-                this._addComponent(element);
-            });
-            this.dispatch("addToScene", gameobject);
-        }
-
-        _removeGameObject(gameobject: GameObject)
-        {
-            gameobject.components.forEach(element =>
-            {
-                this._removeComponent(element);
-            });
-
-            this.dispatch("removeFromScene", gameobject);
-        }
-
-        _addComponent(component: Component)
-        {
-            this.dispatch("addComponentToScene", component);
-        }
-
-        _removeComponent(component: Component)
-        {
-            this.dispatch("removeComponentFromScene", component);
         }
 
         /**

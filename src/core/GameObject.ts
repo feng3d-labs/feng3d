@@ -7,19 +7,19 @@ namespace feng3d
         /**
 		 * 添加子组件事件
 		 */
-        addedComponent: Component;
+        addComponent: Component;
 		/**
 		 * 移除子组件事件
 		 */
-        removedComponent: Component;
+        removeComponent: Component;
         /**
          * 添加了子对象，当child被添加到parent中时派发冒泡事件
          */
-        added: GameObject
+        addChild: GameObject
         /**
          * 删除了子对象，当child被parent移除时派发冒泡事件
          */
-        removed: GameObject;
+        removeChild: GameObject;
         /**
          * 当GameObject的scene属性被设置是由Scene3D派发
          */
@@ -29,10 +29,6 @@ namespace feng3d
          * 当GameObject的scene属性被清空时由Scene3D派发
          */
         removedFromScene: GameObject;
-        /**
-         * 场景变化
-         */
-        sceneChanged: GameObject
 
         /**
 		 * 包围盒失效
@@ -246,7 +242,7 @@ namespace feng3d
                 child._parent.removeChild(child);
             child._setParent(this);
             this._children.push(child);
-            this.dispatch("added", child, true);
+            this.dispatch("addChild", child, true);
             return child;
         }
 
@@ -364,10 +360,7 @@ namespace feng3d
                 filterResult = this._components.concat();
             } else
             {
-                filterResult = this._components.filter(function (value: Component, index: number, array: Component[]): boolean
-                {
-                    return value instanceof type;
-                });
+                filterResult = this._components.filter(v => v instanceof type);
             }
             return <T[]>filterResult;
         }
@@ -494,8 +487,7 @@ namespace feng3d
 
             var component: Component = this._components.splice(index, 1)[0];
             //派发移除组件事件
-            this.dispatch("removedComponent", component);
-            this._scene && this._scene._removeComponent(component);
+            this.dispatch("removeComponent", component, true);
             component.dispose();
             return component;
         }
@@ -750,16 +742,13 @@ namespace feng3d
             if (this._scene)
             {
                 this.dispatch("removedFromScene", this);
-                this._scene._removeGameObject(this);
             }
             this._scene = newScene;
             if (this._scene)
             {
                 this.dispatch("addedToScene", this);
-                this._scene._addGameObject(this);
             }
             this.updateChildrenScene();
-            this.dispatch("sceneChanged", this);
         }
 
         private updateChildrenScene()
@@ -776,7 +765,7 @@ namespace feng3d
             this._children.splice(childIndex, 1);
             child._setParent(null);
 
-            this.dispatch("removed", child, true);
+            this.dispatch("removeChild", child, true);
         }
 
         /**
@@ -813,8 +802,7 @@ namespace feng3d
             this._components.splice(index, 0, component);
             component.init(this);
             //派发添加组件事件
-            this.dispatch("addedComponent", component);
-            this._scene && this._scene._addComponent(component);
+            this.dispatch("addComponent", component, true);
         }
     }
 }

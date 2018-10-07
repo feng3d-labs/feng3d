@@ -16248,7 +16248,7 @@ var feng3d;
                 child._parent.removeChild(child);
             child._setParent(this);
             this._children.push(child);
-            this.dispatch("added", child, true);
+            this.dispatch("addChild", child, true);
             return child;
         };
         GameObject.prototype.addChildren = function () {
@@ -16346,9 +16346,7 @@ var feng3d;
                 filterResult = this._components.concat();
             }
             else {
-                filterResult = this._components.filter(function (value, index, array) {
-                    return value instanceof type;
-                });
+                filterResult = this._components.filter(function (v) { return v instanceof type; });
             }
             return filterResult;
         };
@@ -16448,8 +16446,7 @@ var feng3d;
             feng3d.debuger && feng3d.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
             var component = this._components.splice(index, 1)[0];
             //派发移除组件事件
-            this.dispatch("removedComponent", component);
-            this._scene && this._scene._removeComponent(component);
+            this.dispatch("removeComponent", component, true);
             component.dispose();
             return component;
         };
@@ -16650,15 +16647,12 @@ var feng3d;
                 return;
             if (this._scene) {
                 this.dispatch("removedFromScene", this);
-                this._scene._removeGameObject(this);
             }
             this._scene = newScene;
             if (this._scene) {
                 this.dispatch("addedToScene", this);
-                this._scene._addGameObject(this);
             }
             this.updateChildrenScene();
-            this.dispatch("sceneChanged", this);
         };
         GameObject.prototype.updateChildrenScene = function () {
             for (var i = 0, n = this._children.length; i < n; i++) {
@@ -16669,7 +16663,7 @@ var feng3d;
             childIndex = childIndex;
             this._children.splice(childIndex, 1);
             child._setParent(null);
-            this.dispatch("removed", child, true);
+            this.dispatch("removeChild", child, true);
         };
         /**
          * 判断是否拥有组件
@@ -16699,8 +16693,7 @@ var feng3d;
             this._components.splice(index, 0, component);
             component.init(this);
             //派发添加组件事件
-            this.dispatch("addedComponent", component);
-            this._scene && this._scene._addComponent(component);
+            this.dispatch("addComponent", component, true);
         };
         /**
          * 游戏对象池
@@ -17380,8 +17373,22 @@ var feng3d;
         Scene3D.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
             this.transform.hideFlags = feng3d.HideFlags.Hide;
+            //
             gameObject["_scene"] = this;
             this.gameObject["updateChildrenScene"]();
+            //
+            this.on("addChild", this.onAddChild, this);
+            this.on("removeChild", this.onRemoveChild, this);
+            this.on("addComponent", this.onAddComponent, this);
+            this.on("removeComponent", this.onRemovedComponent, this);
+        };
+        Scene3D.prototype.onAddComponent = function (e) {
+        };
+        Scene3D.prototype.onRemovedComponent = function (e) {
+        };
+        Scene3D.prototype.onAddChild = function (e) {
+        };
+        Scene3D.prototype.onRemoveChild = function (e) {
         };
         Scene3D.prototype.update = function (interval) {
             var _this = this;
@@ -17536,26 +17543,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Scene3D.prototype._addGameObject = function (gameobject) {
-            var _this = this;
-            gameobject.components.forEach(function (element) {
-                _this._addComponent(element);
-            });
-            this.dispatch("addToScene", gameobject);
-        };
-        Scene3D.prototype._removeGameObject = function (gameobject) {
-            var _this = this;
-            gameobject.components.forEach(function (element) {
-                _this._removeComponent(element);
-            });
-            this.dispatch("removeFromScene", gameobject);
-        };
-        Scene3D.prototype._addComponent = function (component) {
-            this.dispatch("addComponentToScene", component);
-        };
-        Scene3D.prototype._removeComponent = function (component) {
-            this.dispatch("removeComponentFromScene", component);
-        };
         /**
          * 获取拾取缓存
          * @param camera
