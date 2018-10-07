@@ -17350,16 +17350,16 @@ var feng3d;
     var Scene3D = /** @class */ (function (_super) {
         __extends(Scene3D, _super);
         function Scene3D() {
-            var _this_1 = _super !== null && _super.apply(this, arguments) || this;
-            _this_1.__class__ = "feng3d.Scene3D";
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.Scene3D";
             /**
              * 背景颜色
              */
-            _this_1.background = new feng3d.Color4(0, 0, 0, 1);
+            _this.background = new feng3d.Color4(0, 0, 0, 1);
             /**
              * 环境光强度
              */
-            _this_1.ambientColor = new feng3d.Color4();
+            _this.ambientColor = new feng3d.Color4();
             /**
              * 指定所运行环境
              *
@@ -17367,32 +17367,21 @@ var feng3d;
              *
              * 用于处理某些脚本只在在feng3d引擎或者编辑器中运行的问题。例如 FPSController 默认只在feng3d中运行，在编辑器模式下不会运行。
              */
-            _this_1.runEnvironment = feng3d.RunEnvironment.feng3d;
-            _this_1._pickMap = new Map();
-            return _this_1;
+            _this.runEnvironment = feng3d.RunEnvironment.feng3d;
+            _this._pickMap = new Map();
+            return _this;
         }
         /**
          * 构造3D场景
          */
         Scene3D.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
-            gameObject["_scene"] = this;
             this.transform.hideFlags = feng3d.HideFlags.Hide;
-            this.initCollectComponents();
-        };
-        Scene3D.prototype.initCollectComponents = function () {
-            var _this = this;
-            collect(this.gameObject);
-            function collect(gameobject) {
-                gameobject["_scene"] = _this;
-                _this._addGameObject(gameobject);
-                gameobject.children.forEach(function (element) {
-                    collect(element);
-                });
-            }
+            gameObject["_scene"] = this;
+            this.gameObject["updateScene"]();
         };
         Scene3D.prototype.update = function (interval) {
-            var _this_1 = this;
+            var _this = this;
             this._mouseCheckObjects = null;
             this._models = null;
             this._visibleAndEnabledModels = null;
@@ -17411,7 +17400,7 @@ var feng3d;
             // 每帧清理拾取缓存
             this._pickMap.forEach(function (item) { return item.clear(); });
             this.behaviours.forEach(function (element) {
-                if (element.isVisibleAndEnabled && Boolean(_this_1.runEnvironment & element.runEnvironment))
+                if (element.isVisibleAndEnabled && Boolean(_this.runEnvironment & element.runEnvironment))
                     element.update(interval || (1000 / feng3d.ticker.frameRate));
             });
         };
@@ -17545,16 +17534,16 @@ var feng3d;
             configurable: true
         });
         Scene3D.prototype._addGameObject = function (gameobject) {
-            var _this_1 = this;
+            var _this = this;
             gameobject.components.forEach(function (element) {
-                _this_1._addComponent(element);
+                _this._addComponent(element);
             });
             this.dispatch("addToScene", gameobject);
         };
         Scene3D.prototype._removeGameObject = function (gameobject) {
-            var _this_1 = this;
+            var _this = this;
             gameobject.components.forEach(function (element) {
-                _this_1._removeComponent(element);
+                _this._removeComponent(element);
             });
             this.dispatch("removeFromScene", gameobject);
         };
@@ -24151,8 +24140,8 @@ var feng3d;
         ParticleSystem.prototype.update = function (interval) {
             if (!this.isPlaying)
                 return;
-            this.time = this.time + interval / 1000;
-            var t = (this.time * this.main.simulationSpeed - this.main.startDelay + this.main.duration) % this.main.duration;
+            this.time = this.time + this.main.simulationSpeed * interval / 1000;
+            var t = (this.time - this.main.startDelay) % this.main.duration;
             this.particleEmission.emit(t, this.deathParticles, this.survivalParticles, this.changedParticles);
         };
         /**
@@ -24276,7 +24265,7 @@ var feng3d;
             }
             renderAtomic.instanceCount = this.main.maxParticles;
             //
-            renderAtomic.uniforms.u_particleTime = this.time;
+            renderAtomic.uniforms.u_particleTime = this.time - this.main.startDelay;
             //
             renderAtomic.shaderMacro.HAS_PARTICLE_ANIMATOR = true;
             //

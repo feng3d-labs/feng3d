@@ -102,9 +102,10 @@ namespace feng3d
         {
             if (!this.isPlaying) return;
 
-            this.time = this.time + interval / 1000;
+            this.time = this.time + this.main.simulationSpeed * interval / 1000;
 
-            var t = (this.time * this.main.simulationSpeed - this.main.startDelay + this.main.duration) % this.main.duration;
+            var t = (this.time - this.main.startDelay) % this.main.duration;
+
 
             this.particleEmission.emit(t, this.deathParticles, this.survivalParticles, this.changedParticles);
         }
@@ -261,7 +262,7 @@ namespace feng3d
 
             renderAtomic.instanceCount = this.main.maxParticles;
             //
-            renderAtomic.uniforms.u_particleTime = this.time;
+            renderAtomic.uniforms.u_particleTime = this.time - this.main.startDelay;
 
             //
             renderAtomic.shaderMacro.HAS_PARTICLE_ANIMATOR = true;

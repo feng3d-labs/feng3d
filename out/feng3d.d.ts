@@ -9863,7 +9863,6 @@ declare namespace feng3d {
          * 构造3D场景
          */
         init(gameObject: GameObject): void;
-        initCollectComponents(): void;
         update(interval?: number): void;
         /**
          * 所有 Model

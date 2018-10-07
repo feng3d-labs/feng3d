@@ -50,27 +50,10 @@ namespace feng3d
         init(gameObject: GameObject)
         {
             super.init(gameObject);
-            gameObject["_scene"] = this;
             this.transform.hideFlags = HideFlags.Hide;
 
-            this.initCollectComponents();
-        }
-
-        initCollectComponents()
-        {
-            var _this = this;
-            collect(this.gameObject);
-
-            function collect(gameobject: GameObject)
-            {
-                gameobject["_scene"] = _this;
-                _this._addGameObject(gameobject);
-
-                gameobject.children.forEach(element =>
-                {
-                    collect(element);
-                });
-            }
+            gameObject["_scene"] = this;
+            this.gameObject["updateScene"]();
         }
 
         update(interval?: number)
