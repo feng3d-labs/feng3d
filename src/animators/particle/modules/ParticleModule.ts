@@ -5,12 +5,6 @@ namespace feng3d
      */
     export class ParticleModule extends ParticleComponent
     {
-        protected _particleSystem: ParticleSystem
-
-        constructor(particleSystem: ParticleSystem)
-        {
-            super();
-            this._particleSystem = particleSystem;
-        }
+        particleSystem: ParticleSystem
     }
 }

@@ -31,13 +31,7 @@ namespace feng3d
          */
         pretime = 0;
 
-        private particleSystem: ParticleSystem;
-
-        constructor(particleSystem: ParticleSystem)
-        {
-            super();
-            this.particleSystem = particleSystem;
-        }
+        particleSystem: ParticleSystem;
 
         /**
          * 发射粒子

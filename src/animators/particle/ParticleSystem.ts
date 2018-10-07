@@ -16,16 +16,20 @@ namespace feng3d
         {
             return this._isPlaying;
         }
-        private _isPlaying = false;
+        private _isPlaying = true;
 
         /**
          * 粒子时间
          */
         time = 0;
 
-        @oav({ block: "main", component: "OAVObjectView" })
         @serialize
-        main = new ParticleMainModule(this);
+        @oav({ block: "main", component: "OAVObjectView" })
+        main: ParticleMainModule;
+
+        @serialize
+        @oav({ block: "emission", component: "OAVObjectView" })
+        particleEmission: ParticleEmission;
 
         /**
          * 粒子全局属性
@@ -50,8 +54,6 @@ namespace feng3d
          * 被修改过的粒子列表，这些粒子将会在渲染前进行更新渲染va数据
          */
         private changedParticles: Particle[] = [];
-
-        private particleEmission = new ParticleEmission(this);
 
         /**
          * 属性数据列表
@@ -88,6 +90,12 @@ namespace feng3d
         init(gameObject: GameObject)
         {
             super.init(gameObject);
+
+            this.main = this.main || new ParticleMainModule()
+            this.main.particleSystem = this;
+
+            this.particleEmission = this.particleEmission || new ParticleEmission();
+            this.particleEmission.particleSystem = this;
         }
 
         update(interval: number)

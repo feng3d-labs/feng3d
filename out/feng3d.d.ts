@@ -12137,8 +12137,7 @@ declare namespace feng3d {
          * 上次发射时间
          */
         pretime: number;
-        private particleSystem;
-        constructor(particleSystem: ParticleSystem);
+        particleSystem: ParticleSystem;
         /**
          * 发射粒子
          * @param time 当前粒子时间
@@ -12205,6 +12204,7 @@ declare namespace feng3d {
          */
         time: number;
         main: ParticleMainModule;
+        particleEmission: ParticleEmission;
         /**
          * 粒子全局属性
          */
@@ -12225,7 +12225,6 @@ declare namespace feng3d {
          * 被修改过的粒子列表，这些粒子将会在渲染前进行更新渲染va数据
          */
         private changedParticles;
-        private particleEmission;
         /**
          * 属性数据列表
          */
@@ -12304,8 +12303,7 @@ declare namespace feng3d {
      * 粒子模块
      */
     class ParticleModule extends ParticleComponent {
-        protected _particleSystem: ParticleSystem;
-        constructor(particleSystem: ParticleSystem);
+        particleSystem: ParticleSystem;
     }
 }
 declare namespace feng3d {
@@ -12385,7 +12383,6 @@ declare namespace feng3d {
          * 每次播放效果时以不同的方式进行模拟。
          */
         autoRandomSeed: boolean;
-        constructor(particleSystem: ParticleSystem);
         /**
          * 创建粒子属性
          * @param particle                  粒子
