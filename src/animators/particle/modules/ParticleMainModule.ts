@@ -127,11 +127,11 @@ namespace feng3d
         scalingMode = ParticleScalingMode.Local;
 
         /**
-         * 如果启用，系统将自动开始运行。注意，此设置在当前粒子效应中的所有粒子系统之间共享。
+         * 如果启用，系统将自动开始运行。
          */
         @serialize
         // @oav({ tooltip: "If enabled, the system will start palying automatically. Note that this setting is shared between all Particle Systems in the current particle effect." })
-        @oav({ tooltip: "如果启用，系统将自动开始运行。注意，此设置在当前粒子效应中的所有粒子系统之间共享。" })
+        @oav({ tooltip: "如果启用，系统将自动开始运行。" })
         playOnAwake = true;
 
         /**

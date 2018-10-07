@@ -53,15 +53,7 @@ namespace feng3d
             gameObject["_scene"] = this;
             this.transform.hideFlags = HideFlags.Hide;
 
-            ticker.onframe(this.onEnterFrame, this)
-
             this.initCollectComponents();
-        }
-
-        dispose()
-        {
-            ticker.offframe(this.onEnterFrame, this)
-            super.dispose();
         }
 
         initCollectComponents()
@@ -81,7 +73,7 @@ namespace feng3d
             }
         }
 
-        update()
+        update(interval?: number)
         {
             this._mouseCheckObjects = <any>null;
             this._models = null;
@@ -98,6 +90,15 @@ namespace feng3d
             this._activeAnimations = null;
             this._behaviours = null;
             this._activeBehaviours = null;
+
+            // 每帧清理拾取缓存
+            this._pickMap.forEach(item => item.clear());
+
+            this.behaviours.forEach(element =>
+            {
+                if (element.isVisibleAndEnabled && Boolean(this.runEnvironment & element.runEnvironment))
+                    element.update(interval || (1000 / feng3d.ticker.frameRate));
+            });
         }
 
         /**
@@ -309,17 +310,5 @@ namespace feng3d
         private _behaviours: Behaviour[];
         private _activeBehaviours: Behaviour[];
         private _pickMap = new Map<Camera, ScenePickCache>();
-
-        private onEnterFrame(interval: number)
-        {
-            // 每帧清理拾取缓存
-            this._pickMap.forEach(item => item.clear());
-
-            this.behaviours.forEach(element =>
-            {
-                if (element.isVisibleAndEnabled && (this.runEnvironment & element.runEnvironment))
-                    element.update(interval);
-            });
-        }
     }
 }

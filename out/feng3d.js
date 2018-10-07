@@ -16843,17 +16843,17 @@ var feng3d;
         Engine.prototype.stop = function () {
             feng3d.ticker.offframe(this.update, this);
         };
-        Engine.prototype.update = function () {
-            this.render();
+        Engine.prototype.update = function (interval) {
+            this.render(interval);
             this.mouse3DManager.selectedGameObject = this.selectedObject;
         };
         /**
          * 绘制场景
          */
-        Engine.prototype.render = function () {
+        Engine.prototype.render = function (interval) {
             if (!this.scene)
                 return;
-            this.scene.update();
+            this.scene.update(interval);
             this.canvas.width = this.canvas.clientWidth;
             this.canvas.height = this.canvas.clientHeight;
             var viewRect = this.viewRect;
@@ -17378,12 +17378,7 @@ var feng3d;
             _super.prototype.init.call(this, gameObject);
             gameObject["_scene"] = this;
             this.transform.hideFlags = feng3d.HideFlags.Hide;
-            feng3d.ticker.onframe(this.onEnterFrame, this);
             this.initCollectComponents();
-        };
-        Scene3D.prototype.dispose = function () {
-            feng3d.ticker.offframe(this.onEnterFrame, this);
-            _super.prototype.dispose.call(this);
         };
         Scene3D.prototype.initCollectComponents = function () {
             var _this = this;
@@ -17396,7 +17391,8 @@ var feng3d;
                 });
             }
         };
-        Scene3D.prototype.update = function () {
+        Scene3D.prototype.update = function (interval) {
+            var _this_1 = this;
             this._mouseCheckObjects = null;
             this._models = null;
             this._visibleAndEnabledModels = null;
@@ -17412,6 +17408,12 @@ var feng3d;
             this._activeAnimations = null;
             this._behaviours = null;
             this._activeBehaviours = null;
+            // 每帧清理拾取缓存
+            this._pickMap.forEach(function (item) { return item.clear(); });
+            this.behaviours.forEach(function (element) {
+                if (element.isVisibleAndEnabled && Boolean(_this_1.runEnvironment & element.runEnvironment))
+                    element.update(interval || (1000 / feng3d.ticker.frameRate));
+            });
         };
         Object.defineProperty(Scene3D.prototype, "models", {
             /**
@@ -17610,15 +17612,6 @@ var feng3d;
                 return false;
             });
             return results;
-        };
-        Scene3D.prototype.onEnterFrame = function (interval) {
-            var _this_1 = this;
-            // 每帧清理拾取缓存
-            this._pickMap.forEach(function (item) { return item.clear(); });
-            this.behaviours.forEach(function (element) {
-                if (element.isVisibleAndEnabled && (_this_1.runEnvironment & element.runEnvironment))
-                    element.update(interval);
-            });
         };
         __decorate([
             feng3d.serialize,
@@ -24089,7 +24082,7 @@ var feng3d;
         function ParticleSystem() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.ParticleSystem";
-            _this._isPlaying = true;
+            _this._isPlaying = false;
             /**
              * 粒子时间
              */
@@ -24130,6 +24123,7 @@ var feng3d;
             _this.material = feng3d.Material.particle;
             _this.castShadows = true;
             _this.receiveShadows = true;
+            _this._awaked = false;
             return _this;
         }
         Object.defineProperty(ParticleSystem.prototype, "isPlaying", {
@@ -24158,7 +24152,7 @@ var feng3d;
             if (!this.isPlaying)
                 return;
             this.time = this.time + interval / 1000;
-            var t = (this.time * this.main.simulationSpeed + this.main.duration) % this.main.duration;
+            var t = (this.time * this.main.simulationSpeed - this.main.startDelay + this.main.duration) % this.main.duration;
             this.particleEmission.emit(t, this.deathParticles, this.survivalParticles, this.changedParticles);
         };
         /**
@@ -24266,6 +24260,11 @@ var feng3d;
         ParticleSystem.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
             var _this = this;
             _super.prototype.beforeRender.call(this, gl, renderAtomic, scene3d, camera);
+            if (Boolean(scene3d.runEnvironment & feng3d.RunEnvironment.feng3d) && !this._awaked) {
+                this._isPlaying = this.main.playOnAwake;
+                this._awaked = true;
+            }
+            //
             this.particleEmission.setRenderState(this, renderAtomic);
             this.main.setRenderState(this, renderAtomic);
             this.components.forEach(function (element) {
@@ -24443,7 +24442,7 @@ var feng3d;
              */
             _this.scalingMode = feng3d.ParticleScalingMode.Local;
             /**
-             * 如果启用，系统将自动开始运行。注意，此设置在当前粒子效应中的所有粒子系统之间共享。
+             * 如果启用，系统将自动开始运行。
              */
             _this.playOnAwake = true;
             /**
@@ -24567,7 +24566,7 @@ var feng3d;
             feng3d.serialize
             // @oav({ tooltip: "If enabled, the system will start palying automatically. Note that this setting is shared between all Particle Systems in the current particle effect." })
             ,
-            feng3d.oav({ tooltip: "如果启用，系统将自动开始运行。注意，此设置在当前粒子效应中的所有粒子系统之间共享。" })
+            feng3d.oav({ tooltip: "如果启用，系统将自动开始运行。" })
         ], ParticleMainModule.prototype, "playOnAwake", void 0);
         __decorate([
             feng3d.serialize

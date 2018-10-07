@@ -9623,11 +9623,11 @@ declare namespace feng3d {
         setSize(width: number, height: number): void;
         start(): void;
         stop(): void;
-        update(): void;
+        update(interval?: number): void;
         /**
          * 绘制场景
          */
-        render(): void;
+        render(interval?: number): void;
         /**
          * 获取屏幕区域内所有游戏对象
          * @param start 起点
@@ -9863,9 +9863,8 @@ declare namespace feng3d {
          * 构造3D场景
          */
         init(gameObject: GameObject): void;
-        dispose(): void;
         initCollectComponents(): void;
-        update(): void;
+        update(interval?: number): void;
         /**
          * 所有 Model
          */
@@ -9925,7 +9924,6 @@ declare namespace feng3d {
         private _behaviours;
         private _activeBehaviours;
         private _pickMap;
-        private onEnterFrame;
     }
 }
 declare namespace feng3d {
@@ -12275,6 +12273,7 @@ declare namespace feng3d {
          * @param data              属性数据
          */
         private collectionParticleAttribute;
+        private _awaked;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
     }
 }
@@ -12372,7 +12371,7 @@ declare namespace feng3d {
          */
         scalingMode: ParticleScalingMode;
         /**
-         * 如果启用，系统将自动开始运行。注意，此设置在当前粒子效应中的所有粒子系统之间共享。
+         * 如果启用，系统将自动开始运行。
          */
         playOnAwake: boolean;
         /**

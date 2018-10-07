@@ -135,20 +135,20 @@ namespace feng3d
             ticker.offframe(this.update, this);
         }
 
-        update()
+        update(interval?: number)
         {
-            this.render();
+            this.render(interval);
             this.mouse3DManager.selectedGameObject = this.selectedObject;
         }
 
         /**
          * 绘制场景
          */
-        render()
+        render(interval?: number)
         {
             if (!this.scene)
                 return;
-            this.scene.update();
+            this.scene.update(interval);
 
             this.canvas.width = this.canvas.clientWidth;
             this.canvas.height = this.canvas.clientHeight;

@@ -16,7 +16,7 @@ namespace feng3d
         {
             return this._isPlaying;
         }
-        private _isPlaying = true;
+        private _isPlaying = false;
 
         /**
          * 粒子时间
@@ -104,7 +104,7 @@ namespace feng3d
 
             this.time = this.time + interval / 1000;
 
-            var t = (this.time * this.main.simulationSpeed + this.main.duration) % this.main.duration;
+            var t = (this.time * this.main.simulationSpeed - this.main.startDelay + this.main.duration) % this.main.duration;
 
             this.particleEmission.emit(t, this.deathParticles, this.survivalParticles, this.changedParticles);
         }
@@ -233,10 +233,19 @@ namespace feng3d
             }
         }
 
+        private _awaked = false;
+
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
             super.beforeRender(gl, renderAtomic, scene3d, camera);
 
+            if (Boolean(scene3d.runEnvironment & RunEnvironment.feng3d) && !this._awaked)
+            {
+                this._isPlaying = this.main.playOnAwake;
+                this._awaked = true;
+            }
+
+            //
             this.particleEmission.setRenderState(this, renderAtomic);
             this.main.setRenderState(this, renderAtomic);
             this.components.forEach(element =>
