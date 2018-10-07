@@ -25263,32 +25263,29 @@ var feng3d;
             _this.assetType = feng3d.AssetExtension.script;
             return _this;
         }
-        /**
-         * 读取文件
-         * @param readAssets 刻度资源管理系统
-         * @param callback 完成回调
-         */
-        ScriptFile.prototype.readFile = function (readAssets, callback) {
-            var _this = this;
-            _super.prototype.readFile.call(this, readAssets, function (err) {
-                var code = _this.textContent;
-                // 获取脚本类名称
-                var result = feng3d.regExps.classReg.exec(code);
-                feng3d.assert(result != null, "\u5728\u811A\u672C " + _this.filePath + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
-                var script = result[3];
-                if (result[5]) {
-                    _this.parentScriptName = result[5].split(".").pop();
-                }
-                // 获取导出类命名空间
-                if (result[1]) {
-                    result = feng3d.regExps.namespace.exec(code);
-                    feng3d.assert(result != null, "\u83B7\u53D6\u811A\u672C " + _this.filePath + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
-                    script = result[1] + "." + script;
-                }
-                _this.scriptName = script;
-                callback && callback(err);
-            });
+        ScriptFile.prototype.onTextContentChanged = function () {
+            // 获取脚本类名称
+            var result = feng3d.regExps.classReg.exec(this.textContent);
+            feng3d.assert(result != null, "\u5728\u811A\u672C " + this.filePath + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
+            var script = result[3];
+            if (result[5]) {
+                this.parentScriptName = result[5].split(".").pop();
+            }
+            // 获取导出类命名空间
+            if (result[1]) {
+                result = feng3d.regExps.namespace.exec(this.textContent);
+                feng3d.assert(result != null, "\u83B7\u53D6\u811A\u672C " + this.filePath + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
+                script = result[1] + "." + script;
+            }
+            this.scriptName = script;
+            this.name = script;
         };
+        __decorate([
+            feng3d.oav({ editable: false, priority: -1 })
+        ], ScriptFile.prototype, "name", void 0);
+        __decorate([
+            feng3d.watch("onTextContentChanged")
+        ], ScriptFile.prototype, "textContent", void 0);
         return ScriptFile;
     }(feng3d.StringFile));
     feng3d.ScriptFile = ScriptFile;

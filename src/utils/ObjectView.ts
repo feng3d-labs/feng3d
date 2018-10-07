@@ -70,7 +70,28 @@ namespace feng3d
 	// 	}
 	// }
 
-	export type OAVComponentParams = Partial<OAVComponentParamMap[keyof OAVComponentParamMap]> & { block?: string, tooltip?: string, priority?: number };
+	export type OAVComponentParams = Partial<OAVComponentParamMap[keyof OAVComponentParamMap]> & {
+
+		/**
+		 * 是否可编辑
+		 */
+		editable?: boolean;
+
+		/**
+		 * 所属块名称
+		 */
+		block?: string;
+
+		/**
+		 * 提示信息
+		 */
+		tooltip?: string;
+
+		/**
+		 * 优先级，数字越小，显示越靠前，默认为0
+		 */
+		priority?: number;
+	};
 
 	/**
 	 * objectview属性装饰器

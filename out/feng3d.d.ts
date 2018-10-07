@@ -1275,8 +1275,21 @@ declare namespace feng3d {
         componentParam?: OVComponentParamMap[K];
     }): (constructor: Function) => void;
     type OAVComponentParams = Partial<OAVComponentParamMap[keyof OAVComponentParamMap]> & {
+        /**
+         * 是否可编辑
+         */
+        editable?: boolean;
+        /**
+         * 所属块名称
+         */
         block?: string;
+        /**
+         * 提示信息
+         */
         tooltip?: string;
+        /**
+         * 优先级，数字越小，显示越靠前，默认为0
+         */
         priority?: number;
     };
     /**
@@ -12627,6 +12640,8 @@ declare namespace feng3d {
 declare namespace feng3d {
     class ScriptFile extends StringFile {
         assetType: AssetExtension;
+        name: string;
+        textContent: string;
         /**
          * 脚本父类名称
          */
@@ -12635,12 +12650,7 @@ declare namespace feng3d {
          * 脚本类定义
          */
         scriptName: string;
-        /**
-         * 读取文件
-         * @param readAssets 刻度资源管理系统
-         * @param callback 完成回调
-         */
-        protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void): void;
+        private onTextContentChanged;
     }
 }
 declare namespace feng3d {
