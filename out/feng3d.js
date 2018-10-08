@@ -23926,6 +23926,7 @@ var feng3d;
             _super.prototype.init.call(this, gameObject);
             this.main = this.main || new feng3d.ParticleMainModule();
             this.emission = this.emission || new feng3d.ParticleEmissionModule();
+            this.shape = this.shape || new feng3d.ParticleShapeModule();
             this.velocity = this.velocity || new feng3d.ParticleVelocityModule();
             this._modules = [this.main, this.emission, this.velocity];
         };
@@ -24148,6 +24149,10 @@ var feng3d;
         ], ParticleSystem.prototype, "emission", void 0);
         __decorate([
             feng3d.serialize,
+            feng3d.oav({ block: "shape", component: "OAVObjectView" })
+        ], ParticleSystem.prototype, "shape", void 0);
+        __decorate([
+            feng3d.serialize,
             feng3d.oav({ block: "velocity", component: "OAVObjectView" })
         ], ParticleSystem.prototype, "velocity", void 0);
         __decorate([
@@ -24178,36 +24183,98 @@ var feng3d;
     /**
      * 粒子模拟空间
      */
-    var ParticleSimulationSpace;
-    (function (ParticleSimulationSpace) {
-        ParticleSimulationSpace[ParticleSimulationSpace["Local"] = 0] = "Local";
-        ParticleSimulationSpace[ParticleSimulationSpace["World"] = 1] = "World";
-        ParticleSimulationSpace[ParticleSimulationSpace["Custom"] = 2] = "Custom";
-    })(ParticleSimulationSpace = feng3d.ParticleSimulationSpace || (feng3d.ParticleSimulationSpace = {}));
+    var ParticleSystemSimulationSpace;
+    (function (ParticleSystemSimulationSpace) {
+        ParticleSystemSimulationSpace[ParticleSystemSimulationSpace["Local"] = 0] = "Local";
+        ParticleSystemSimulationSpace[ParticleSystemSimulationSpace["World"] = 1] = "World";
+        ParticleSystemSimulationSpace[ParticleSystemSimulationSpace["Custom"] = 2] = "Custom";
+    })(ParticleSystemSimulationSpace = feng3d.ParticleSystemSimulationSpace || (feng3d.ParticleSystemSimulationSpace = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
     /**
      * 粒子缩放模式
      */
-    var ParticleScalingMode;
-    (function (ParticleScalingMode) {
-        ParticleScalingMode[ParticleScalingMode["Hierarchy"] = 0] = "Hierarchy";
-        ParticleScalingMode[ParticleScalingMode["Local"] = 1] = "Local";
-        ParticleScalingMode[ParticleScalingMode["Shape"] = 2] = "Shape";
-    })(ParticleScalingMode = feng3d.ParticleScalingMode || (feng3d.ParticleScalingMode = {}));
+    var ParticleSystemScalingMode;
+    (function (ParticleSystemScalingMode) {
+        ParticleSystemScalingMode[ParticleSystemScalingMode["Hierarchy"] = 0] = "Hierarchy";
+        ParticleSystemScalingMode[ParticleSystemScalingMode["Local"] = 1] = "Local";
+        ParticleSystemScalingMode[ParticleSystemScalingMode["Shape"] = 2] = "Shape";
+    })(ParticleSystemScalingMode = feng3d.ParticleSystemScalingMode || (feng3d.ParticleSystemScalingMode = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var ParticleSystemShapeType;
+    (function (ParticleSystemShapeType) {
+        ParticleSystemShapeType[ParticleSystemShapeType["Cone"] = 0] = "Cone";
+        ParticleSystemShapeType[ParticleSystemShapeType["Sphere"] = 1] = "Sphere";
+    })(ParticleSystemShapeType = feng3d.ParticleSystemShapeType || (feng3d.ParticleSystemShapeType = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 粒子系统 发射圆锥体
+     */
+    var ParticleSystemShapeCone = /** @class */ (function () {
+        function ParticleSystemShapeCone() {
+            // @oav({ tooltip: "Angle of the cone." })
+            this.angle = 25;
+            this.radius = 1;
+            // @oav({ tooltip: "New particles are spawned around the arc." })
+            this.arc = 360;
+            // arcMode;
+            // spread = 0;
+            // length = 5;
+            // emitFrom;
+            // alignToDirection = false;
+            // @oav({ tooltip: "随机化发射方向。" })
+            // randomizeDirection = 0;
+            // @oav({ tooltip: "球化发射方向。" })
+            // spherizeDirection = 0;
+        }
+        __decorate([
+            feng3d.oav({ tooltip: "圆锥体开口角度。" })
+        ], ParticleSystemShapeCone.prototype, "angle", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "圆锥体底部半径。" })
+        ], ParticleSystemShapeCone.prototype, "radius", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "在弧线周围产生了新的粒子。" })
+        ], ParticleSystemShapeCone.prototype, "arc", void 0);
+        return ParticleSystemShapeCone;
+    }());
+    feng3d.ParticleSystemShapeCone = ParticleSystemShapeCone;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 粒子系统 发射球体
+     */
+    var ParticleSystemShapeSphere = /** @class */ (function () {
+        function ParticleSystemShapeSphere() {
+            this.radius = 1;
+        }
+        __decorate([
+            feng3d.oav({ tooltip: "球体半径" })
+        ], ParticleSystemShapeSphere.prototype, "radius", void 0);
+        return ParticleSystemShapeSphere;
+    }());
+    feng3d.ParticleSystemShapeSphere = ParticleSystemShapeSphere;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
     /**
      * 粒子模块
      */
-    var ParticleModule = /** @class */ (function () {
+    var ParticleModule = /** @class */ (function (_super) {
+        __extends(ParticleModule, _super);
         function ParticleModule() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             /**
              * 是否开启
              */
-            this.enabled = true;
+            _this.enabled = true;
+            return _this;
         }
         /**
          * 初始化粒子状态
@@ -24222,7 +24289,7 @@ var feng3d;
         ParticleModule.prototype.updateParticleState = function (particle) {
         };
         return ParticleModule;
-    }());
+    }(feng3d.EventDispatcher));
     feng3d.ParticleModule = ParticleModule;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -24282,7 +24349,7 @@ var feng3d;
             /**
              * 使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。
              */
-            _this.simulationSpace = feng3d.ParticleSimulationSpace.Local;
+            _this.simulationSpace = feng3d.ParticleSystemSimulationSpace.Local;
             /**
              * 缩放粒子系统的播放速度。
              */
@@ -24290,7 +24357,7 @@ var feng3d;
             /**
              * 我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度
              */
-            _this.scalingMode = feng3d.ParticleScalingMode.Local;
+            _this.scalingMode = feng3d.ParticleSystemScalingMode.Local;
             /**
              * 如果启用，系统将自动开始运行。
              */
@@ -24453,6 +24520,49 @@ var feng3d;
         return ParticleEmissionModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleEmissionModule = ParticleEmissionModule;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Shape of the emitter volume, which controls where particles are emitted and their initial direction.
+     * 发射体体积的形状，它控制粒子发射的位置和初始方向。
+     */
+    var ParticleShapeModule = /** @class */ (function (_super) {
+        __extends(ParticleShapeModule, _super);
+        function ParticleShapeModule() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * 发射形状类型
+             */
+            _this.type = feng3d.ParticleSystemShapeType.Cone;
+            return _this;
+        }
+        ParticleShapeModule.prototype._onTypeChanged = function () {
+            var preValue = this.shape;
+            switch (this.type) {
+                case feng3d.ParticleSystemShapeType.Cone:
+                    this.shape = new feng3d.ParticleSystemShapeCone();
+                    feng3d.serialization.setValue(this.shape, preValue);
+                    break;
+                case feng3d.ParticleSystemShapeType.Sphere:
+                    this.shape = new feng3d.ParticleSystemShapeSphere();
+                    feng3d.serialization.setValue(this.shape, preValue);
+                    break;
+            }
+            this.dispatch("refreshView");
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.watch("_onTypeChanged"),
+            feng3d.oav({ tooltip: "发射形状类型", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemShapeType } })
+        ], ParticleShapeModule.prototype, "type", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVObjectView" })
+        ], ParticleShapeModule.prototype, "shape", void 0);
+        return ParticleShapeModule;
+    }(feng3d.ParticleModule));
+    feng3d.ParticleShapeModule = ParticleShapeModule;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 粒子模块
      */
-    export class ParticleModule
+    export class ParticleModule extends EventDispatcher
     {
         /**
          * 是否开启

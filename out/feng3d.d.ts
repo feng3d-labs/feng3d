@@ -12122,6 +12122,7 @@ declare namespace feng3d {
         time: number;
         main: ParticleMainModule;
         emission: ParticleEmissionModule;
+        shape: ParticleShapeModule;
         /**
          * 粒子状态控制模块列表
          */
@@ -12208,7 +12209,7 @@ declare namespace feng3d {
     /**
      * 粒子模拟空间
      */
-    enum ParticleSimulationSpace {
+    enum ParticleSystemSimulationSpace {
         Local = 0,
         World = 1,
         Custom = 2
@@ -12218,17 +12219,41 @@ declare namespace feng3d {
     /**
      * 粒子缩放模式
      */
-    enum ParticleScalingMode {
+    enum ParticleSystemScalingMode {
         Hierarchy = 0,
         Local = 1,
         Shape = 2
     }
 }
 declare namespace feng3d {
+    enum ParticleSystemShapeType {
+        Cone = 0,
+        Sphere = 1
+    }
+}
+declare namespace feng3d {
+    /**
+     * 粒子系统 发射圆锥体
+     */
+    class ParticleSystemShapeCone {
+        angle: number;
+        radius: number;
+        arc: number;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 粒子系统 发射球体
+     */
+    class ParticleSystemShapeSphere {
+        radius: number;
+    }
+}
+declare namespace feng3d {
     /**
      * 粒子模块
      */
-    class ParticleModule {
+    class ParticleModule extends EventDispatcher {
         /**
          * 是否开启
          */
@@ -12297,7 +12322,7 @@ declare namespace feng3d {
         /**
          * 使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。
          */
-        simulationSpace: ParticleSimulationSpace;
+        simulationSpace: ParticleSystemSimulationSpace;
         /**
          * 使粒子位置模拟相对于自定义转换组件。
          */
@@ -12309,7 +12334,7 @@ declare namespace feng3d {
         /**
          * 我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度
          */
-        scalingMode: ParticleScalingMode;
+        scalingMode: ParticleSystemScalingMode;
         /**
          * 如果启用，系统将自动开始运行。
          */
@@ -12346,6 +12371,23 @@ declare namespace feng3d {
             time: number;
             num: number;
         }[];
+    }
+}
+declare namespace feng3d {
+    /**
+     * Shape of the emitter volume, which controls where particles are emitted and their initial direction.
+     * 发射体体积的形状，它控制粒子发射的位置和初始方向。
+     */
+    class ParticleShapeModule extends ParticleModule {
+        /**
+         * 发射形状类型
+         */
+        type: ParticleSystemShapeType;
+        /**
+         * 发射形状
+         */
+        shape: Object;
+        private _onTypeChanged;
     }
 }
 declare namespace feng3d {

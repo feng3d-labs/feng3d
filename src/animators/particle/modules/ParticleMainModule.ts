@@ -99,7 +99,7 @@ namespace feng3d
         @serialize
         // @oav({ tooltip: "Makes particle positions simulate in world, local or custom space. In local space they stay relative to their own Transform, and in custom space they are relative to the custom Transform." })
         @oav({ tooltip: "使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。" })
-        simulationSpace = ParticleSimulationSpace.Local;
+        simulationSpace = ParticleSystemSimulationSpace.Local;
 
         /**
          * 使粒子位置模拟相对于自定义转换组件。
@@ -123,7 +123,7 @@ namespace feng3d
         @serialize
         // @oav({ tooltip: "Should we use the combined scale from our entire hierachy, just this particle node, or just apply scale to the shape module?" })
         @oav({ tooltip: "我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度?" })
-        scalingMode = ParticleScalingMode.Local;
+        scalingMode = ParticleSystemScalingMode.Local;
 
         /**
          * 如果启用，系统将自动开始运行。

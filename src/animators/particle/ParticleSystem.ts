@@ -39,6 +39,10 @@ namespace feng3d
         @oav({ block: "emission", component: "OAVObjectView" })
         emission: ParticleEmissionModule;
 
+        @serialize
+        @oav({ block: "shape", component: "OAVObjectView" })
+        shape: ParticleShapeModule;
+
         /**
          * 粒子状态控制模块列表
          */
@@ -83,6 +87,7 @@ namespace feng3d
 
             this.main = this.main || new ParticleMainModule()
             this.emission = this.emission || new ParticleEmissionModule();
+            this.shape = this.shape || new ParticleShapeModule();
             this.velocity = this.velocity || new ParticleVelocityModule();
 
             this._modules = [this.main, this.emission, this.velocity];
