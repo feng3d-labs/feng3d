@@ -43,13 +43,6 @@ namespace feng3d
         @oav({ block: "shape", component: "OAVObjectView" })
         shape: ParticleShapeModule;
 
-        /**
-         * 粒子全局属性
-         */
-        @serialize
-        // @oav({ block: "全局属性", component: "OAVObjectView", tooltip: "粒子全局属性，作用与所有粒子。" })
-        readonly particleGlobal = new ParticleGlobal();
-
         @oav({ block: "Renderer" })
         geometry = Geometry.billboard;
 
@@ -163,13 +156,13 @@ namespace feng3d
             if (this.geometry == Geometry.billboard && cameraMatrix)
             {
                 var gameObject = this.gameObject;
-                var matrix = this.particleGlobal.billboardMatrix;
+                var matrix = this.billboardMatrix;
                 matrix.copyFrom(gameObject.transform.localToWorldMatrix);
                 matrix.lookAt(cameraMatrix.position, cameraMatrix.up);
                 matrix.position = Vector3.ZERO;
             } else
             {
-                this.particleGlobal.billboardMatrix.identity();
+                this.billboardMatrix.identity();
             }
 
             renderAtomic.instanceCount = this._activeParticles.length;
@@ -209,11 +202,7 @@ namespace feng3d
 
             //
             renderAtomic.uniforms.u_particleTime = this.time - this.main.startDelay;
-            renderAtomic.uniforms.u_particle_position = this.particleGlobal.position;
-            renderAtomic.uniforms.u_particle_velocity = this.particleGlobal.velocity;
-            renderAtomic.uniforms.u_particle_acceleration = this.particleGlobal.acceleration;
-            renderAtomic.uniforms.u_particle_color = this.particleGlobal.color;
-            renderAtomic.uniforms.u_particle_billboardMatrix = this.particleGlobal.billboardMatrix;
+            renderAtomic.uniforms.u_particle_billboardMatrix = this.billboardMatrix;
 
             for (const key in this._attributes)
             {
@@ -251,6 +240,11 @@ namespace feng3d
         };
 
         private _modules: ParticleModule[];
+
+        /**
+         * 公告牌矩阵
+         */
+        private billboardMatrix = new Matrix4x4();
 
         /**
          * 发射粒子

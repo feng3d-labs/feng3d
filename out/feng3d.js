@@ -14144,7 +14144,7 @@ var feng3d;
             "normal_vert": "vec3 normal = a_normal;",
             "particle_frag": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    finalColor = particleAnimation(finalColor);\r\n#endif",
             "particle_pars_frag": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    varying vec4 v_particle_color;\r\n\r\n    vec4 particleAnimation(vec4 color) {\r\n\r\n        return color * v_particle_color;\r\n    }\r\n#endif",
-            "particle_pars_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    //\r\n    attribute float a_particle_birthTime;\r\n    attribute vec3 a_particle_position;\r\n    attribute vec3 a_particle_velocity;\r\n    attribute vec3 a_particle_acceleration;\r\n    attribute float a_particle_lifetime;\r\n    attribute vec4 a_particle_color;\r\n\r\n    uniform float u_particleTime;\r\n    uniform vec3 u_particle_position;\r\n    uniform vec3 u_particle_velocity;\r\n    uniform vec3 u_particle_acceleration;\r\n    uniform vec4 u_particle_color;\r\n    uniform mat4 u_particle_billboardMatrix;\r\n\r\n    varying vec4 v_particle_color;\r\n\r\n    vec4 particleAnimation(vec4 position) \r\n    {\r\n        float pTime = u_particleTime - a_particle_birthTime;\r\n        if(pTime > 0.0)\r\n        {\r\n            // 当前时间\r\n            pTime = mod(pTime,a_particle_lifetime);\r\n\r\n            // 加速度\r\n            vec3 acceleration = a_particle_acceleration + u_particle_acceleration;\r\n\r\n            // 速度\r\n            vec3 pVelocity = a_particle_velocity + u_particle_velocity;\r\n            pVelocity = pVelocity + acceleration * pTime;\r\n\r\n            // 位移\r\n            position = u_particle_billboardMatrix * position;\r\n            position.xyz = position.xyz + a_particle_position + u_particle_position;\r\n            position.xyz = position.xyz + pVelocity * pTime;\r\n\r\n            // 颜色\r\n            v_particle_color = a_particle_color * u_particle_color;\r\n        }\r\n        \r\n        return position;\r\n    }\r\n#endif",
+            "particle_pars_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    //\r\n    attribute float a_particle_birthTime;\r\n    attribute vec3 a_particle_position;\r\n    attribute vec3 a_particle_velocity;\r\n    attribute vec3 a_particle_acceleration;\r\n    attribute float a_particle_lifetime;\r\n    attribute vec4 a_particle_color;\r\n\r\n    uniform float u_particleTime;\r\n    uniform mat4 u_particle_billboardMatrix;\r\n\r\n    varying vec4 v_particle_color;\r\n\r\n    vec4 particleAnimation(vec4 position) \r\n    {\r\n        float pTime = u_particleTime - a_particle_birthTime;\r\n\r\n        // 当前时间\r\n        pTime = mod(pTime,a_particle_lifetime);\r\n\r\n        // 加速度\r\n        vec3 acceleration = a_particle_acceleration;\r\n\r\n        // 速度\r\n        vec3 pVelocity = a_particle_velocity;\r\n        pVelocity = pVelocity + acceleration * pTime;\r\n\r\n        // 位移\r\n        position = u_particle_billboardMatrix * position;\r\n        position.xyz = position.xyz + a_particle_position;\r\n        position.xyz = position.xyz + pVelocity * pTime;\r\n\r\n        // 颜色\r\n        v_particle_color = a_particle_color;\r\n        \r\n        return position;\r\n    }\r\n#endif",
             "particle_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    position = particleAnimation(position);\r\n#endif",
             "pointsize_pars_vert": "#ifdef IS_POINTS_MODE\r\n    uniform float u_PointSize;\r\n#endif",
             "pointsize_vert": "#ifdef IS_POINTS_MODE\r\n    gl_PointSize = u_PointSize;\r\n#endif",
@@ -23776,73 +23776,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 粒子全局属性，作用于所有粒子
-     * 粒子系统会自动在shader中匹配一个"u_particle_${attribute}"uniform数据
-     * 例如：position 对应 u_particle_position
-
-     */
-    var ParticleGlobal = /** @class */ (function () {
-        function ParticleGlobal() {
-            /**
-             * 位移
-             */
-            this.position = new feng3d.Vector3();
-            /**
-             * 旋转
-             */
-            // @oav()
-            // @serialize
-            // rotation = new Vector3();
-            /**
-             * 缩放
-             */
-            // @oav()
-            // @serialize
-            // scale = new Vector3(1, 1, 1);
-            /**
-             * 速度
-             */
-            this.velocity = new feng3d.Vector3();
-            /**
-             * 加速度
-             */
-            this.acceleration = new feng3d.Vector3();
-            /**
-             * 颜色
-             */
-            this.color = new feng3d.Color4();
-            /**
-             * 公告牌矩阵
-             */
-            // @oav()
-            this.billboardMatrix = new feng3d.Matrix4x4();
-        }
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], ParticleGlobal.prototype, "position", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], ParticleGlobal.prototype, "velocity", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], ParticleGlobal.prototype, "acceleration", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], ParticleGlobal.prototype, "color", void 0);
-        __decorate([
-            feng3d.serialize
-        ], ParticleGlobal.prototype, "billboardMatrix", void 0);
-        return ParticleGlobal;
-    }());
-    feng3d.ParticleGlobal = ParticleGlobal;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     var ParticleUniforms = /** @class */ (function (_super) {
         __extends(ParticleUniforms, _super);
         function ParticleUniforms() {
@@ -23876,10 +23809,6 @@ var feng3d;
              * 粒子时间
              */
             _this.time = 0;
-            /**
-             * 粒子全局属性
-             */
-            _this.particleGlobal = new feng3d.ParticleGlobal();
             _this.geometry = feng3d.Geometry.billboard;
             _this.material = feng3d.Material.particle;
             _this.castShadows = true;
@@ -23909,6 +23838,10 @@ var feng3d;
                 a_particle_lifetime: new feng3d.Attribute("a_particle_lifetime", [], 1, 1),
                 a_particle_color: new feng3d.Attribute("a_particle_color", [], 4, 1),
             };
+            /**
+             * 公告牌矩阵
+             */
+            _this.billboardMatrix = new feng3d.Matrix4x4();
             return _this;
         }
         Object.defineProperty(ParticleSystem.prototype, "isPlaying", {
@@ -23998,13 +23931,13 @@ var feng3d;
             var cameraMatrix = feng3d.lazy.getvalue(renderAtomic.uniforms.u_cameraMatrix);
             if (this.geometry == feng3d.Geometry.billboard && cameraMatrix) {
                 var gameObject = this.gameObject;
-                var matrix = this.particleGlobal.billboardMatrix;
+                var matrix = this.billboardMatrix;
                 matrix.copyFrom(gameObject.transform.localToWorldMatrix);
                 matrix.lookAt(cameraMatrix.position, cameraMatrix.up);
                 matrix.position = feng3d.Vector3.ZERO;
             }
             else {
-                this.particleGlobal.billboardMatrix.identity();
+                this.billboardMatrix.identity();
             }
             renderAtomic.instanceCount = this._activeParticles.length;
             //
@@ -24037,11 +23970,7 @@ var feng3d;
             }
             //
             renderAtomic.uniforms.u_particleTime = this.time - this.main.startDelay;
-            renderAtomic.uniforms.u_particle_position = this.particleGlobal.position;
-            renderAtomic.uniforms.u_particle_velocity = this.particleGlobal.velocity;
-            renderAtomic.uniforms.u_particle_acceleration = this.particleGlobal.acceleration;
-            renderAtomic.uniforms.u_particle_color = this.particleGlobal.color;
-            renderAtomic.uniforms.u_particle_billboardMatrix = this.particleGlobal.billboardMatrix;
+            renderAtomic.uniforms.u_particle_billboardMatrix = this.billboardMatrix;
             for (var key in this._attributes) {
                 renderAtomic.attributes[key] = this._attributes[key];
             }
@@ -24165,10 +24094,6 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ block: "shape", component: "OAVObjectView" })
         ], ParticleSystem.prototype, "shape", void 0);
-        __decorate([
-            feng3d.serialize
-            // @oav({ block: "全局属性", component: "OAVObjectView", tooltip: "粒子全局属性，作用与所有粒子。" })
-        ], ParticleSystem.prototype, "particleGlobal", void 0);
         __decorate([
             feng3d.oav({ block: "Renderer" })
         ], ParticleSystem.prototype, "geometry", void 0);

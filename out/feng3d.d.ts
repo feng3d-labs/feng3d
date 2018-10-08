@@ -7985,12 +7985,8 @@ declare namespace feng3d {
          */
         u_particleTime: number;
         /**
-         * 位移
+         * 粒子 公告牌矩阵
          */
-        u_particle_position: Vector3;
-        u_particle_velocity: Vector3;
-        u_particle_acceleration: Vector3;
-        u_particle_color: Color4;
         u_particle_billboardMatrix: Matrix4x4;
         /**
          * 点大小
@@ -12063,42 +12059,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * 粒子全局属性，作用于所有粒子
-     * 粒子系统会自动在shader中匹配一个"u_particle_${attribute}"uniform数据
-     * 例如：position 对应 u_particle_position
-
-     */
-    class ParticleGlobal {
-        /**
-         * 位移
-         */
-        position: Vector3;
-        /**
-         * 旋转
-         */
-        /**
-         * 缩放
-         */
-        /**
-         * 速度
-         */
-        velocity: Vector3;
-        /**
-         * 加速度
-         */
-        acceleration: Vector3;
-        /**
-         * 颜色
-         */
-        color: Color4;
-        /**
-         * 公告牌矩阵
-         */
-        billboardMatrix: Matrix4x4;
-    }
-}
-declare namespace feng3d {
     interface UniformsMap {
         particle: ParticleUniforms;
     }
@@ -12134,10 +12094,6 @@ declare namespace feng3d {
         main: ParticleMainModule;
         emission: ParticleEmissionModule;
         shape: ParticleShapeModule;
-        /**
-         * 粒子全局属性
-         */
-        readonly particleGlobal: ParticleGlobal;
         geometry: PlaneGeometry;
         material: Material;
         castShadows: boolean;
@@ -12185,6 +12141,10 @@ declare namespace feng3d {
          */
         private _attributes;
         private _modules;
+        /**
+         * 公告牌矩阵
+         */
+        private billboardMatrix;
         /**
          * 发射粒子
          * @param time 当前粒子时间
