@@ -47,35 +47,12 @@ namespace feng3d
         readonly particleGlobal = new ParticleGlobal();
 
         /**
-         * 粒子池，用于存放未发射或者死亡粒子
-         */
-        private particlePool: Particle[] = [];
-        /**
-         * 活跃的粒子列表
-         */
-        private activeParticles: Particle[] = [];
-
-        /**
-         * 属性数据列表
-         */
-        private _attributes = {
-            a_particle_birthTime: new Attribute("a_particle_birthTime", [], 1, 1),
-            a_particle_position: new Attribute("a_particle_position", [], 3, 1),
-            a_particle_velocity: new Attribute("a_particle_velocity", [], 3, 1),
-            a_particle_acceleration: new Attribute("a_particle_acceleration", [], 3, 1),
-            a_particle_lifetime: new Attribute("a_particle_lifetime", [], 1, 1),
-            a_particle_color: new Attribute("a_particle_color", [], 4, 1),
-        };
-        private _isInvalid = true;
-
-        /**
          * 粒子状态控制模块列表
          */
         @serialize
         @oav({ block: "粒子模块", component: "OAVParticleComponentList" })
         readonly components = [
             new ParticleVelocity(),
-            new ParticleBillboard(),
         ];
 
         @oav({ block: "Renderer" })
@@ -163,11 +140,6 @@ namespace feng3d
         }
 
         /**
-         * 上次发射时间
-         */
-        private _preEmitTime = 0;
-
-        /**
          * 发射粒子
          * @param time 当前粒子时间
          */
@@ -234,86 +206,6 @@ namespace feng3d
                 this.emitParticles(v.time, v.num);
             });
         }
-
-        /**
-         * 发射粒子
-         * @param realTime 真实时间，减去startDelay的时间
-         * @param num 发射数量
-         */
-        private emitParticles(realTime: number, num: number)
-        {
-            for (let i = 0; i < num; i++)
-            {
-                if (this.activeParticles.length >= this.main.maxParticles) return;
-                var startLifetime = this.main.startLifetime;
-                if (startLifetime + realTime + this.main.startDelay > this.time)
-                {
-                    var particle = this.particlePool.pop() || new Particle(0);
-                    particle.birthTime = realTime;
-                    particle.lifetime = startLifetime;
-                    particle.color = this.main.startColor;
-                    this.activeParticles.push(particle);
-                    this.initParticleState(particle);
-                    this.updateParticleState(particle);
-                }
-            }
-        }
-
-        invalidate()
-        {
-            this._isInvalid = true;
-        }
-
-        /**
-         * 更新活跃粒子状态
-         */
-        private updateActiveParticlesState()
-        {
-            for (let i = this.activeParticles.length - 1; i >= 0; i--)
-            {
-                var particle = this.activeParticles[i];
-                if (particle.birthTime + particle.lifetime + this.main.startDelay < this.time)
-                {
-                    this.activeParticles.splice(i, 1);
-                    this.particlePool.push(particle);
-                } else
-                {
-                    this.updateParticleState(particle);
-                }
-            }
-        }
-
-        /**
-         * 初始化粒子状态
-         * @param particle 粒子
-         */
-        private initParticleState(particle: Particle)
-        {
-            this.main.initParticleState(particle);
-            this.emission.initParticleState(particle);
-            this.components.forEach(element =>
-            {
-                if (element.enabled)
-                    element.initParticleState(particle);
-            });
-        }
-
-        /**
-         * 更新粒子状态
-         * @param particle 粒子
-         */
-        private updateParticleState(particle: Particle)
-        {
-            this.main.updateParticleState(particle);
-            this.emission.updateParticleState(particle);
-            this.components.forEach(element =>
-            {
-                if (element.enabled)
-                    element.updateParticleState(particle);
-            });
-        }
-
-        private _awaked = false;
 
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
@@ -385,6 +277,108 @@ namespace feng3d
             {
                 renderAtomic.attributes[key] = this._attributes[key];
             }
+        }
+
+        private _awaked = false;
+        private _isInvalid = true;
+
+        /**
+         * 上次发射时间
+         */
+        private _preEmitTime = 0;
+
+        /**
+         * 粒子池，用于存放未发射或者死亡粒子
+         */
+        private particlePool: Particle[] = [];
+        /**
+         * 活跃的粒子列表
+         */
+        private activeParticles: Particle[] = [];
+
+        /**
+         * 属性数据列表
+         */
+        private _attributes = {
+            a_particle_birthTime: new Attribute("a_particle_birthTime", [], 1, 1),
+            a_particle_position: new Attribute("a_particle_position", [], 3, 1),
+            a_particle_velocity: new Attribute("a_particle_velocity", [], 3, 1),
+            a_particle_acceleration: new Attribute("a_particle_acceleration", [], 3, 1),
+            a_particle_lifetime: new Attribute("a_particle_lifetime", [], 1, 1),
+            a_particle_color: new Attribute("a_particle_color", [], 4, 1),
+        };
+
+        /**
+         * 发射粒子
+         * @param realTime 真实时间，减去startDelay的时间
+         * @param num 发射数量
+         */
+        private emitParticles(realTime: number, num: number)
+        {
+            for (let i = 0; i < num; i++)
+            {
+                if (this.activeParticles.length >= this.main.maxParticles) return;
+                var startLifetime = this.main.startLifetime;
+                if (startLifetime + realTime + this.main.startDelay > this.time)
+                {
+                    var particle = this.particlePool.pop() || new Particle();
+                    particle.birthTime = realTime;
+                    particle.lifetime = startLifetime;
+                    particle.color = this.main.startColor;
+                    this.activeParticles.push(particle);
+                    this.initParticleState(particle);
+                    this.updateParticleState(particle);
+                }
+            }
+        }
+
+        /**
+         * 更新活跃粒子状态
+         */
+        private updateActiveParticlesState()
+        {
+            for (let i = this.activeParticles.length - 1; i >= 0; i--)
+            {
+                var particle = this.activeParticles[i];
+                if (particle.birthTime + particle.lifetime + this.main.startDelay < this.time)
+                {
+                    this.activeParticles.splice(i, 1);
+                    this.particlePool.push(particle);
+                } else
+                {
+                    this.updateParticleState(particle);
+                }
+            }
+        }
+
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        private initParticleState(particle: Particle)
+        {
+            this.main.initParticleState(particle);
+            this.emission.initParticleState(particle);
+            this.components.forEach(element =>
+            {
+                if (element.enabled)
+                    element.initParticleState(particle);
+            });
+        }
+
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        private updateParticleState(particle: Particle)
+        {
+            this.main.updateParticleState(particle);
+            this.emission.updateParticleState(particle);
+            this.components.forEach(element =>
+            {
+                if (element.enabled)
+                    element.updateParticleState(particle);
+            });
         }
     }
 

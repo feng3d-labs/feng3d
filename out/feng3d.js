@@ -23722,11 +23722,7 @@ var feng3d;
 
      */
     var Particle = /** @class */ (function () {
-        function Particle(index) {
-            /**
-             * 索引
-             */
-            this.index = 0;
+        function Particle() {
             /**
              * 出生时间
              */
@@ -23759,7 +23755,6 @@ var feng3d;
              * 颜色
              */
             this.color = new feng3d.Color4();
-            this.index = index;
         }
         return Particle;
     }());
@@ -23939,27 +23934,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 公告牌粒子组件
-     * 开启后粒子将不会收到受到旋转控制，始终面向摄像机
-     */
-    var ParticleBillboard = /** @class */ (function (_super) {
-        __extends(ParticleBillboard, _super);
-        function ParticleBillboard() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        /**
-         * 更新粒子状态
-         * @param particle 粒子
-         */
-        ParticleBillboard.prototype.updateParticleState = function (particle) {
-        };
-        return ParticleBillboard;
-    }(feng3d.ParticleComponent));
-    feng3d.ParticleBillboard = ParticleBillboard;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     var ParticleUniforms = /** @class */ (function (_super) {
         __extends(ParticleUniforms, _super);
         function ParticleUniforms() {
@@ -23998,6 +23972,22 @@ var feng3d;
              */
             _this.particleGlobal = new feng3d.ParticleGlobal();
             /**
+             * 粒子状态控制模块列表
+             */
+            _this.components = [
+                new feng3d.ParticleVelocity(),
+            ];
+            _this.geometry = feng3d.Geometry.billboard;
+            _this.material = feng3d.Material.particle;
+            _this.castShadows = true;
+            _this.receiveShadows = true;
+            _this._awaked = false;
+            _this._isInvalid = true;
+            /**
+             * 上次发射时间
+             */
+            _this._preEmitTime = 0;
+            /**
              * 粒子池，用于存放未发射或者死亡粒子
              */
             _this.particlePool = [];
@@ -24016,23 +24006,6 @@ var feng3d;
                 a_particle_lifetime: new feng3d.Attribute("a_particle_lifetime", [], 1, 1),
                 a_particle_color: new feng3d.Attribute("a_particle_color", [], 4, 1),
             };
-            _this._isInvalid = true;
-            /**
-             * 粒子状态控制模块列表
-             */
-            _this.components = [
-                new feng3d.ParticleVelocity(),
-                new feng3d.ParticleBillboard(),
-            ];
-            _this.geometry = feng3d.Geometry.billboard;
-            _this.material = feng3d.Material.particle;
-            _this.castShadows = true;
-            _this.receiveShadows = true;
-            /**
-             * 上次发射时间
-             */
-            _this._preEmitTime = 0;
-            _this._awaked = false;
             return _this;
         }
         Object.defineProperty(ParticleSystem.prototype, "isPlaying", {
@@ -24164,69 +24137,6 @@ var feng3d;
                 _this.emitParticles(v.time, v.num);
             });
         };
-        /**
-         * 发射粒子
-         * @param realTime 真实时间，减去startDelay的时间
-         * @param num 发射数量
-         */
-        ParticleSystem.prototype.emitParticles = function (realTime, num) {
-            for (var i = 0; i < num; i++) {
-                if (this.activeParticles.length >= this.main.maxParticles)
-                    return;
-                var startLifetime = this.main.startLifetime;
-                if (startLifetime + realTime + this.main.startDelay > this.time) {
-                    var particle = this.particlePool.pop() || new feng3d.Particle(0);
-                    particle.birthTime = realTime;
-                    particle.lifetime = startLifetime;
-                    particle.color = this.main.startColor;
-                    this.activeParticles.push(particle);
-                    this.initParticleState(particle);
-                    this.updateParticleState(particle);
-                }
-            }
-        };
-        ParticleSystem.prototype.invalidate = function () {
-            this._isInvalid = true;
-        };
-        /**
-         * 更新活跃粒子状态
-         */
-        ParticleSystem.prototype.updateActiveParticlesState = function () {
-            for (var i = this.activeParticles.length - 1; i >= 0; i--) {
-                var particle = this.activeParticles[i];
-                if (particle.birthTime + particle.lifetime + this.main.startDelay < this.time) {
-                    this.activeParticles.splice(i, 1);
-                    this.particlePool.push(particle);
-                }
-                else {
-                    this.updateParticleState(particle);
-                }
-            }
-        };
-        /**
-         * 初始化粒子状态
-         * @param particle 粒子
-         */
-        ParticleSystem.prototype.initParticleState = function (particle) {
-            this.main.initParticleState(particle);
-            this.emission.initParticleState(particle);
-            this.components.forEach(function (element) {
-                if (element.enabled)
-                    element.initParticleState(particle);
-            });
-        };
-        /**
-         * 更新粒子状态
-         * @param particle 粒子
-         */
-        ParticleSystem.prototype.updateParticleState = function (particle) {
-            this.main.updateParticleState(particle);
-            this.emission.updateParticleState(particle);
-            this.components.forEach(function (element) {
-                if (element.enabled)
-                    element.updateParticleState(particle);
-            });
-        };
         ParticleSystem.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
             _super.prototype.beforeRender.call(this, gl, renderAtomic, scene3d, camera);
             if (Boolean(scene3d.runEnvironment & feng3d.RunEnvironment.feng3d) && !this._awaked) {
@@ -24283,6 +24193,66 @@ var feng3d;
             for (var key in this._attributes) {
                 renderAtomic.attributes[key] = this._attributes[key];
             }
+        };
+        /**
+         * 发射粒子
+         * @param realTime 真实时间，减去startDelay的时间
+         * @param num 发射数量
+         */
+        ParticleSystem.prototype.emitParticles = function (realTime, num) {
+            for (var i = 0; i < num; i++) {
+                if (this.activeParticles.length >= this.main.maxParticles)
+                    return;
+                var startLifetime = this.main.startLifetime;
+                if (startLifetime + realTime + this.main.startDelay > this.time) {
+                    var particle = this.particlePool.pop() || new feng3d.Particle();
+                    particle.birthTime = realTime;
+                    particle.lifetime = startLifetime;
+                    particle.color = this.main.startColor;
+                    this.activeParticles.push(particle);
+                    this.initParticleState(particle);
+                    this.updateParticleState(particle);
+                }
+            }
+        };
+        /**
+         * 更新活跃粒子状态
+         */
+        ParticleSystem.prototype.updateActiveParticlesState = function () {
+            for (var i = this.activeParticles.length - 1; i >= 0; i--) {
+                var particle = this.activeParticles[i];
+                if (particle.birthTime + particle.lifetime + this.main.startDelay < this.time) {
+                    this.activeParticles.splice(i, 1);
+                    this.particlePool.push(particle);
+                }
+                else {
+                    this.updateParticleState(particle);
+                }
+            }
+        };
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        ParticleSystem.prototype.initParticleState = function (particle) {
+            this.main.initParticleState(particle);
+            this.emission.initParticleState(particle);
+            this.components.forEach(function (element) {
+                if (element.enabled)
+                    element.initParticleState(particle);
+            });
+        };
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticleSystem.prototype.updateParticleState = function (particle) {
+            this.main.updateParticleState(particle);
+            this.emission.updateParticleState(particle);
+            this.components.forEach(function (element) {
+                if (element.enabled)
+                    element.updateParticleState(particle);
+            });
         };
         __decorate([
             feng3d.serialize,

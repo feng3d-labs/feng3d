@@ -11,11 +11,6 @@ namespace feng3d
 	{
 
 		/**
-		 * 索引
-		 */
-		index = 0;
-
-		/**
 		 * 出生时间
 		 */
 		birthTime = 0;
@@ -54,10 +49,5 @@ namespace feng3d
 		 * 颜色
 		 */
 		color = new Color4();
-
-		constructor(index: number)
-		{
-			this.index = index;
-		}
 	}
 }

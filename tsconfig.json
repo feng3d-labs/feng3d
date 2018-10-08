@@ -231,7 +231,6 @@
         "src/animators/particle/ParticleComponent.ts",
         "src/animators/particle/ParticleEmission.ts",
         "src/animators/particle/ParticleVelocity.ts",
-        "src/animators/particle/ParticleBillboard.ts",
         "src/animators/particle/ParticleMaterial.ts",
         "src/animators/particle/ParticleSystem.ts",
         //

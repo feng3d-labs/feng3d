@@ -12020,10 +12020,6 @@ declare namespace feng3d {
      */
     class Particle {
         /**
-         * 索引
-         */
-        index: number;
-        /**
          * 出生时间
          */
         birthTime: number;
@@ -12053,7 +12049,6 @@ declare namespace feng3d {
          * 颜色
          */
         color: Color4;
-        constructor(index: number);
     }
 }
 declare namespace feng3d {
@@ -12160,19 +12155,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * 公告牌粒子组件
-     * 开启后粒子将不会收到受到旋转控制，始终面向摄像机
-     */
-    class ParticleBillboard extends ParticleComponent {
-        /**
-         * 更新粒子状态
-         * @param particle 粒子
-         */
-        updateParticleState(particle: Particle): void;
-    }
-}
-declare namespace feng3d {
     interface UniformsMap {
         particle: ParticleUniforms;
     }
@@ -12210,22 +12192,9 @@ declare namespace feng3d {
          */
         readonly particleGlobal: ParticleGlobal;
         /**
-         * 粒子池，用于存放未发射或者死亡粒子
-         */
-        private particlePool;
-        /**
-         * 活跃的粒子列表
-         */
-        private activeParticles;
-        /**
-         * 属性数据列表
-         */
-        private _attributes;
-        private _isInvalid;
-        /**
          * 粒子状态控制模块列表
          */
-        readonly components: (ParticleVelocity | ParticleBillboard)[];
+        readonly components: ParticleVelocity[];
         geometry: PlaneGeometry;
         material: Material;
         castShadows: boolean;
@@ -12250,21 +12219,35 @@ declare namespace feng3d {
          */
         continue(): void;
         /**
-         * 上次发射时间
-         */
-        private _preEmitTime;
-        /**
          * 发射粒子
          * @param time 当前粒子时间
          */
         emit(): void;
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
+        private _awaked;
+        private _isInvalid;
+        /**
+         * 上次发射时间
+         */
+        private _preEmitTime;
+        /**
+         * 粒子池，用于存放未发射或者死亡粒子
+         */
+        private particlePool;
+        /**
+         * 活跃的粒子列表
+         */
+        private activeParticles;
+        /**
+         * 属性数据列表
+         */
+        private _attributes;
         /**
          * 发射粒子
          * @param realTime 真实时间，减去startDelay的时间
          * @param num 发射数量
          */
         private emitParticles;
-        invalidate(): void;
         /**
          * 更新活跃粒子状态
          */
@@ -12279,8 +12262,6 @@ declare namespace feng3d {
          * @param particle 粒子
          */
         private updateParticleState;
-        private _awaked;
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
     }
 }
 declare namespace feng3d {
