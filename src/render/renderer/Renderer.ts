@@ -20,12 +20,14 @@ namespace feng3d
 
             this.draw = (renderAtomic1: RenderAtomic) =>
             {
+                var instanceCount = renderAtomic1.getInstanceCount();
+                if (instanceCount == 0) return;
                 var shaderMacro = renderAtomic1.getShaderMacro();
                 var shader = renderAtomic1.getShader();
                 shader.shaderMacro = shaderMacro;
                 var shaderResult = shader.activeShaderProgram(gl);
-                if (!shaderResult)
-                    return;
+                if (!shaderResult) return;
+
                 var renderAtomic = checkRenderData(renderAtomic1);
                 if (!renderAtomic) return;
                 //

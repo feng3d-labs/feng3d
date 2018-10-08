@@ -32,6 +32,14 @@ namespace feng3d
         emission: ParticleEmission;
 
         /**
+         * 活跃粒子数量
+         */
+        get numActiveParticles()
+        {
+            return this.activeParticles.length;
+        }
+
+        /**
          * 粒子全局属性
          */
         @serialize
@@ -119,6 +127,10 @@ namespace feng3d
         {
             this._isPlaying = false;
             this.time = 0;
+            this._preEmitTime = 0;
+
+            this.particlePool = this.particlePool.concat(this.activeParticles);
+            this.activeParticles.length = 0;
         }
 
         /**
@@ -128,6 +140,10 @@ namespace feng3d
         {
             this._isPlaying = true;
             this.time = 0;
+            this._preEmitTime = 0;
+
+            this.particlePool = this.particlePool.concat(this.activeParticles);
+            this.activeParticles.length = 0;
         }
 
         /**
@@ -193,8 +209,7 @@ namespace feng3d
 
                 // 处理稳定发射
                 var singleStart = Math.ceil(startTime / step) * step;
-                var singleEnd = Math.ceil(endTime / step) * step;
-                for (var i = singleStart; i < singleEnd; i += step)
+                for (var i = singleStart; i < endTime; i += step)
                 {
                     emits.push({ time: i, num: 1 });
                 }
@@ -231,7 +246,7 @@ namespace feng3d
             {
                 if (this.activeParticles.length >= this.main.maxParticles) return;
                 var startLifetime = this.main.startLifetime;
-                if (particle.birthTime + particle.lifetime + this.main.startDelay < this.time)
+                if (startLifetime + realTime + this.main.startDelay > this.time)
                 {
                     var particle = this.particlePool.pop() || new Particle(0);
                     particle.birthTime = realTime;
@@ -257,7 +272,7 @@ namespace feng3d
             for (let i = this.activeParticles.length - 1; i >= 0; i--)
             {
                 var particle = this.activeParticles[i];
-                if (particle.birthTime + particle.lifetime + this.main.startDelay >= this.time)
+                if (particle.birthTime + particle.lifetime + this.main.startDelay < this.time)
                 {
                     this.activeParticles.splice(i, 1);
                     this.particlePool.push(particle);
@@ -296,19 +311,6 @@ namespace feng3d
                 if (element.enabled)
                     element.updateParticleState(particle);
             });
-        }
-
-        private numParticlesChanged(maxParticles: number)
-        {
-            this.particlePool = [];
-            //
-            for (var i = 0; i < maxParticles; i++)
-            {
-                this.particlePool.push(new Particle(i));
-            }
-            this._preEmitTime = 0;
-            this.activeParticles = this.particlePool.concat();
-            this.invalidate();
         }
 
         private _awaked = false;
@@ -356,7 +358,7 @@ namespace feng3d
                     velocitys.push(particle.velocity.x, particle.velocity.y, particle.velocity.z)
                     accelerations.push(particle.acceleration.x, particle.acceleration.y, particle.acceleration.z)
                     lifetimes.push(particle.lifetime);
-                    colors.push(particle.color.r, particle.color.g, particle.color.b);
+                    colors.push(particle.color.r, particle.color.g, particle.color.b, particle.color.a);
                 }
 
                 //
@@ -378,6 +380,11 @@ namespace feng3d
             renderAtomic.uniforms.u_particle_acceleration = this.particleGlobal.acceleration;
             renderAtomic.uniforms.u_particle_color = this.particleGlobal.color;
             renderAtomic.uniforms.u_particle_billboardMatrix = this.particleGlobal.billboardMatrix;
+
+            for (const key in this._attributes)
+            {
+                renderAtomic.attributes[key] = this._attributes[key];
+            }
         }
     }
 

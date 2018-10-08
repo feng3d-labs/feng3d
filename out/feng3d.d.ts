@@ -7982,6 +7982,14 @@ declare namespace feng3d {
          */
         u_particleTime: number;
         /**
+         * 位移
+         */
+        u_particle_position: Vector3;
+        u_particle_velocity: Vector3;
+        u_particle_acceleration: Vector3;
+        u_particle_color: Color4;
+        u_particle_billboardMatrix: Matrix4x4;
+        /**
          * 点大小
          */
         u_PointSize: number;
@@ -12194,6 +12202,10 @@ declare namespace feng3d {
         main: ParticleMainModule;
         emission: ParticleEmission;
         /**
+         * 活跃粒子数量
+         */
+        readonly numActiveParticles: number;
+        /**
          * 粒子全局属性
          */
         readonly particleGlobal: ParticleGlobal;
@@ -12267,23 +12279,6 @@ declare namespace feng3d {
          * @param particle 粒子
          */
         private updateParticleState;
-        private numParticlesChanged;
-        /**
-         * 生成粒子
-         */
-        private generateParticles;
-        /**
-         * 收集粒子数据
-         * @param particle      粒子
-         */
-        private collectionParticle;
-        /**
-         * 收集粒子属性数据
-         * @param attributeID       属性编号
-         * @param index             粒子编号
-         * @param data              属性数据
-         */
-        private collectionParticleAttribute;
         private _awaked;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
     }
@@ -12398,8 +12393,6 @@ declare namespace feng3d {
          * @param particle 粒子
          */
         initParticleState(particle: Particle): void;
-        private numParticlesChanged;
-        private onStartColorChanged;
     }
 }
 declare namespace feng3d {

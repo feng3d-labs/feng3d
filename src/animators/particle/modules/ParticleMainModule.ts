@@ -83,7 +83,6 @@ namespace feng3d
         @serialize
         // @oav({ tooltip: "The start color of particles." })
         @oav({ tooltip: "粒子的起始颜色。" })
-        @watch("onStartColorChanged")
         startColor = new Color4();
 
         /**
@@ -140,7 +139,6 @@ namespace feng3d
         @serialize
         // @oav({ tooltip: "The number of particles in the system will be limited by this number. Emission will be temporarily halted if this is reached." })
         @oav({ tooltip: "系统中粒子的数量将被这个数限制。如果达到这个目标，排放将暂时发射。" })
-        @watch("numParticlesChanged")
         maxParticles = 1000;
 
         /**
@@ -158,19 +156,6 @@ namespace feng3d
         initParticleState(particle: Particle)
         {
             particle.color.copyFrom(this.startColor);
-        }
-
-        private numParticlesChanged()
-        {
-            if (!this.particleSystem) return;
-            this.particleSystem["numParticlesChanged"](this.maxParticles);
-            this.particleSystem.invalidate();
-        }
-
-        private onStartColorChanged()
-        {
-            if (!this.particleSystem) return;
-            this.particleSystem.invalidate();
         }
     }
 }
