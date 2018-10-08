@@ -122,7 +122,9 @@ namespace feng3d
             return range * (0.5 - Math.random());
         },
 
-
+        /**
+         * 角度转换为弧度
+         */
         degToRad: function (degrees)
         {
             return degrees * this.DEG2RAD;

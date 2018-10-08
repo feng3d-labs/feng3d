@@ -49,5 +49,10 @@ namespace feng3d
 		 * 颜色
 		 */
 		color = new Color4();
+
+		/**
+		 * 起始速度
+		 */
+		startSpeed = 1;
 	}
 }

@@ -2825,6 +2825,9 @@ declare namespace feng3d {
          * Random float from <-range/2, range/2> interval
          */
         randFloatSpread: (range: any) => number;
+        /**
+         * 角度转换为弧度
+         */
         degToRad: (degrees: any) => number;
         radToDeg: (radians: any) => number;
         isPowerOfTwo: (value: any) => boolean;
@@ -12049,6 +12052,10 @@ declare namespace feng3d {
          * 颜色
          */
         color: Color4;
+        /**
+         * 起始速度
+         */
+        startSpeed: number;
     }
 }
 declare namespace feng3d {
@@ -12233,19 +12240,37 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 粒子系统 发射形状
+     */
+    class ParticleSystemShape {
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle): void;
+    }
+}
+declare namespace feng3d {
+    /**
      * 粒子系统 发射圆锥体
      */
-    class ParticleSystemShapeCone {
+    class ParticleSystemShapeCone extends ParticleSystemShape {
         angle: number;
         radius: number;
+        height: number;
         arc: number;
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {
     /**
      * 粒子系统 发射球体
      */
-    class ParticleSystemShapeSphere {
+    class ParticleSystemShapeSphere extends ParticleSystemShape {
         radius: number;
     }
 }
@@ -12386,7 +12411,12 @@ declare namespace feng3d {
         /**
          * 发射形状
          */
-        shape: Object;
+        shape: ParticleSystemShape;
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle): void;
         private _onTypeChanged;
     }
 }
@@ -12396,10 +12426,10 @@ declare namespace feng3d {
      */
     class ParticleVelocityModule extends ParticleModule {
         /**
-         * 创建粒子属性
-         * @param particle                  粒子
+         * 更新粒子状态
+         * @param particle 粒子
          */
-        initParticleState(particle: Particle): void;
+        updateParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {

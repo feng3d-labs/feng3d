@@ -5588,6 +5588,9 @@ var feng3d;
         randFloatSpread: function (range) {
             return range * (0.5 - Math.random());
         },
+        /**
+         * 角度转换为弧度
+         */
         degToRad: function (degrees) {
             return degrees * this.DEG2RAD;
         },
@@ -23755,6 +23758,10 @@ var feng3d;
              * 颜色
              */
             this.color = new feng3d.Color4();
+            /**
+             * 起始速度
+             */
+            this.startSpeed = 1;
         }
         return Particle;
     }());
@@ -24213,25 +24220,49 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 粒子系统 发射形状
+     */
+    var ParticleSystemShape = /** @class */ (function () {
+        function ParticleSystemShape() {
+        }
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticleSystemShape.prototype.updateParticleState = function (particle) {
+        };
+        return ParticleSystemShape;
+    }());
+    feng3d.ParticleSystemShape = ParticleSystemShape;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 粒子系统 发射圆锥体
      */
-    var ParticleSystemShapeCone = /** @class */ (function () {
+    var ParticleSystemShapeCone = /** @class */ (function (_super) {
+        __extends(ParticleSystemShapeCone, _super);
         function ParticleSystemShapeCone() {
-            // @oav({ tooltip: "Angle of the cone." })
-            this.angle = 25;
-            this.radius = 1;
-            // @oav({ tooltip: "New particles are spawned around the arc." })
-            this.arc = 360;
-            // arcMode;
-            // spread = 0;
-            // length = 5;
-            // emitFrom;
-            // alignToDirection = false;
-            // @oav({ tooltip: "随机化发射方向。" })
-            // randomizeDirection = 0;
-            // @oav({ tooltip: "球化发射方向。" })
-            // spherizeDirection = 0;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.angle = 25;
+            _this.radius = 1;
+            _this.height = 5;
+            _this.arc = 360;
+            return _this;
         }
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticleSystemShapeCone.prototype.updateParticleState = function (particle) {
+            // 计算位置
+            var angle = Math.random() * feng3d.FMath.degToRad(this.arc);
+            var p = new feng3d.Vector3(Math.sin(angle) * this.radius, 0, Math.cos(angle) * this.radius);
+            particle.position.copy(p).scale(this.radius);
+            // 计算速度
+            var dir = p.scale(this.radius + this.height * Math.tan(feng3d.FMath.degToRad(this.angle))).sub(particle.position).normalize();
+            particle.velocity.copy(dir).scale(particle.startSpeed);
+        };
         __decorate([
             feng3d.oav({ tooltip: "圆锥体开口角度。" })
         ], ParticleSystemShapeCone.prototype, "angle", void 0);
@@ -24239,10 +24270,13 @@ var feng3d;
             feng3d.oav({ tooltip: "圆锥体底部半径。" })
         ], ParticleSystemShapeCone.prototype, "radius", void 0);
         __decorate([
+            feng3d.oav({ tooltip: "圆锥体高度" })
+        ], ParticleSystemShapeCone.prototype, "height", void 0);
+        __decorate([
             feng3d.oav({ tooltip: "在弧线周围产生了新的粒子。" })
         ], ParticleSystemShapeCone.prototype, "arc", void 0);
         return ParticleSystemShapeCone;
-    }());
+    }(feng3d.ParticleSystemShape));
     feng3d.ParticleSystemShapeCone = ParticleSystemShapeCone;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -24250,15 +24284,18 @@ var feng3d;
     /**
      * 粒子系统 发射球体
      */
-    var ParticleSystemShapeSphere = /** @class */ (function () {
+    var ParticleSystemShapeSphere = /** @class */ (function (_super) {
+        __extends(ParticleSystemShapeSphere, _super);
         function ParticleSystemShapeSphere() {
-            this.radius = 1;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.radius = 1;
+            return _this;
         }
         __decorate([
             feng3d.oav({ tooltip: "球体半径" })
         ], ParticleSystemShapeSphere.prototype, "radius", void 0);
         return ParticleSystemShapeSphere;
-    }());
+    }(feng3d.ParticleSystemShape));
     feng3d.ParticleSystemShapeSphere = ParticleSystemShapeSphere;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -24378,6 +24415,7 @@ var feng3d;
          */
         ParticleMainModule.prototype.initParticleState = function (particle) {
             particle.color.copyFrom(this.startColor);
+            particle.startSpeed = this.startSpeed;
         };
         __decorate([
             feng3d.serialize
@@ -24537,6 +24575,13 @@ var feng3d;
             _this.type = feng3d.ParticleSystemShapeType.Cone;
             return _this;
         }
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticleShapeModule.prototype.updateParticleState = function (particle) {
+            this.shape.updateParticleState(particle);
+        };
         ParticleShapeModule.prototype._onTypeChanged = function () {
             var preValue = this.shape;
             switch (this.type) {
@@ -24575,10 +24620,10 @@ var feng3d;
             return _super !== null && _super.apply(this, arguments) || this;
         }
         /**
-         * 创建粒子属性
-         * @param particle                  粒子
+         * 更新粒子状态
+         * @param particle 粒子
          */
-        ParticleVelocityModule.prototype.initParticleState = function (particle) {
+        ParticleVelocityModule.prototype.updateParticleState = function (particle) {
             var baseVelocity = 5;
             var x = (Math.random() - 0.5) * baseVelocity;
             var y = baseVelocity;

@@ -19,7 +19,16 @@ namespace feng3d
          */
         @serialize
         @oav({ component: "OAVObjectView" })
-        shape: Object;
+        shape: ParticleSystemShape;
+
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle)
+        {
+            this.shape.updateParticleState(particle);
+        }
 
         private _onTypeChanged()
         {
