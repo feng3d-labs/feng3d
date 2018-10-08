@@ -12100,6 +12100,12 @@ declare namespace feng3d {
     interface ComponentMap {
         ParticleSystem: ParticleSystem;
     }
+    interface GameObjectEventMap {
+        /**
+         * 粒子效果播放结束
+         */
+        particleCompleted: ParticleSystem;
+    }
     /**
      * 粒子系统
      */
@@ -12151,11 +12157,6 @@ declare namespace feng3d {
          * 继续
          */
         continue(): void;
-        /**
-         * 发射粒子
-         * @param time 当前粒子时间
-         */
-        emit(): void;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
         private _awaked;
         private _isInvalid;
@@ -12176,6 +12177,11 @@ declare namespace feng3d {
          */
         private _attributes;
         private _modules;
+        /**
+         * 发射粒子
+         * @param time 当前粒子时间
+         */
+        private _emit;
         /**
          * 发射粒子
          * @param realTime 真实时间，减去startDelay的时间

@@ -11,7 +11,7 @@ namespace feng3d
 		 */
         initParticleState(particle: Particle)
         {
-            var baseVelocity = 1;
+            var baseVelocity = 5;
 
             var x = (Math.random() - 0.5) * baseVelocity;
             var y = baseVelocity;

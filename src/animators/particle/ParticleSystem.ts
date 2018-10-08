@@ -1,7 +1,15 @@
 namespace feng3d
 {
-
     export interface ComponentMap { ParticleSystem: ParticleSystem }
+
+    export interface GameObjectEventMap
+    {
+        /**
+         * 粒子效果播放结束
+         */
+        particleCompleted: ParticleSystem;
+    }
+
     /**
      * 粒子系统
      */
@@ -88,11 +96,18 @@ namespace feng3d
 
             this.updateActiveParticlesState();
 
-            this.emit();
+            this._emit();
 
             this._preEmitTime = this.time;
 
             this._isInvalid = true;
+
+            // 判断非循环的效果是否播放结束
+            if (!this.main.loop && this._activeParticles.length == 0 && this.time > this.main.startDelay + this.main.duration)
+            {
+                this.stop();
+                this.dispatch("particleCompleted", this);
+            }
         }
 
         /**
@@ -135,74 +150,6 @@ namespace feng3d
         continue()
         {
             this._isPlaying = true;
-        }
-
-        /**
-         * 发射粒子
-         * @param time 当前粒子时间
-         */
-        emit()
-        {
-            // 判断是否达到最大粒子数量
-            if (this._activeParticles.length >= this.main.maxParticles) return;
-
-            // 判断是否开始发射
-            if (this.time <= this.main.startDelay) return;
-
-            var duration = this.main.duration;
-            var preRealEmitTime = this._preEmitTime - this.main.startDelay;
-
-            // 判断是否结束发射
-            if (!this.main.loop && preRealEmitTime >= duration) return;
-
-            // 计算最后发射时间
-            var realEmitTime = this.time - this.main.startDelay;
-            if (!this.main.loop) realEmitTime = Math.min(realEmitTime, duration + this.main.startDelay);
-
-            // 
-            var emits: { time: number, num: number }[] = [];
-            // 单粒子发射周期
-            var step = 1 / this.emission.rate;
-            var bursts = this.emission.bursts;
-
-            // 遍历所有发射周期
-            var cycleEndIndex = Math.ceil(realEmitTime / duration);
-            var cycleStartIndex = Math.floor(preRealEmitTime / duration);
-            for (let k = cycleStartIndex; k < cycleEndIndex; k++)
-            {
-                var cycleStartTime = k * duration;
-                var cycleEndTime = (k + 1) * duration;
-
-                // 单个周期内的起始与结束时间
-                var startTime = Math.max(preRealEmitTime, cycleStartTime);
-                var endTime = Math.min(realEmitTime, cycleEndTime);
-
-                // 处理稳定发射
-                var singleStart = Math.ceil(startTime / step) * step;
-                for (var i = singleStart; i < endTime; i += step)
-                {
-                    emits.push({ time: i, num: 1 });
-                }
-
-                // 处理喷发
-                var inCycleStart = startTime - cycleStartTime;
-                var inCycleEnd = endTime - cycleStartTime;
-                for (let i = 0; i < bursts.length; i++)
-                {
-                    const burst = bursts[i];
-                    if (inCycleStart <= burst.time && burst.time <= inCycleEnd && burst.time <= realEmitTime)
-                    {
-                        emits.push({ time: cycleStartTime + burst.time, num: burst.num });
-                    }
-                }
-            }
-
-            emits.sort((a, b) => { return a.time - b.time });;
-
-            emits.forEach(v =>
-            {
-                this._emitParticles(v.time, v.num);
-            });
         }
 
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
@@ -307,6 +254,74 @@ namespace feng3d
         };
 
         private _modules: ParticleModule[];
+
+        /**
+         * 发射粒子
+         * @param time 当前粒子时间
+         */
+        private _emit()
+        {
+            // 判断是否达到最大粒子数量
+            if (this._activeParticles.length >= this.main.maxParticles) return;
+
+            // 判断是否开始发射
+            if (this.time <= this.main.startDelay) return;
+
+            var duration = this.main.duration;
+            var preRealEmitTime = this._preEmitTime - this.main.startDelay;
+
+            // 判断是否结束发射
+            if (!this.main.loop && preRealEmitTime >= duration) return;
+
+            // 计算最后发射时间
+            var realEmitTime = this.time - this.main.startDelay;
+            if (!this.main.loop) realEmitTime = Math.min(realEmitTime, duration + this.main.startDelay);
+
+            // 
+            var emits: { time: number, num: number }[] = [];
+            // 单粒子发射周期
+            var step = 1 / this.emission.rate;
+            var bursts = this.emission.bursts;
+
+            // 遍历所有发射周期
+            var cycleEndIndex = Math.ceil(realEmitTime / duration);
+            var cycleStartIndex = Math.floor(preRealEmitTime / duration);
+            for (let k = cycleStartIndex; k < cycleEndIndex; k++)
+            {
+                var cycleStartTime = k * duration;
+                var cycleEndTime = (k + 1) * duration;
+
+                // 单个周期内的起始与结束时间
+                var startTime = Math.max(preRealEmitTime, cycleStartTime);
+                var endTime = Math.min(realEmitTime, cycleEndTime);
+
+                // 处理稳定发射
+                var singleStart = Math.ceil(startTime / step) * step;
+                for (var i = singleStart; i < endTime; i += step)
+                {
+                    emits.push({ time: i, num: 1 });
+                }
+
+                // 处理喷发
+                var inCycleStart = startTime - cycleStartTime;
+                var inCycleEnd = endTime - cycleStartTime;
+                for (let i = 0; i < bursts.length; i++)
+                {
+                    const burst = bursts[i];
+                    if (inCycleStart <= burst.time && burst.time <= inCycleEnd && burst.time <= realEmitTime)
+                    {
+                        emits.push({ time: cycleStartTime + burst.time, num: burst.num });
+                    }
+                }
+            }
+
+            emits.sort((a, b) => { return a.time - b.time });;
+
+            emits.forEach(v =>
+            {
+                this._emitParticles(v.time, v.num);
+            });
+        }
 
         /**
          * 发射粒子

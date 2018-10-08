@@ -23934,9 +23934,14 @@ var feng3d;
                 return;
             this.time = this.time + this.main.simulationSpeed * interval / 1000;
             this.updateActiveParticlesState();
-            this.emit();
+            this._emit();
             this._preEmitTime = this.time;
             this._isInvalid = true;
+            // 判断非循环的效果是否播放结束
+            if (!this.main.loop && this._activeParticles.length == 0 && this.time > this.main.startDelay + this.main.duration) {
+                this.stop();
+                this.dispatch("particleCompleted", this);
+            }
         };
         /**
          * 停止
@@ -23969,62 +23974,6 @@ var feng3d;
          */
         ParticleSystem.prototype.continue = function () {
             this._isPlaying = true;
-        };
-        /**
-         * 发射粒子
-         * @param time 当前粒子时间
-         */
-        ParticleSystem.prototype.emit = function () {
-            var _this = this;
-            // 判断是否达到最大粒子数量
-            if (this._activeParticles.length >= this.main.maxParticles)
-                return;
-            // 判断是否开始发射
-            if (this.time <= this.main.startDelay)
-                return;
-            var duration = this.main.duration;
-            var preRealEmitTime = this._preEmitTime - this.main.startDelay;
-            // 判断是否结束发射
-            if (!this.main.loop && preRealEmitTime >= duration)
-                return;
-            // 计算最后发射时间
-            var realEmitTime = this.time - this.main.startDelay;
-            if (!this.main.loop)
-                realEmitTime = Math.min(realEmitTime, duration + this.main.startDelay);
-            // 
-            var emits = [];
-            // 单粒子发射周期
-            var step = 1 / this.emission.rate;
-            var bursts = this.emission.bursts;
-            // 遍历所有发射周期
-            var cycleEndIndex = Math.ceil(realEmitTime / duration);
-            var cycleStartIndex = Math.floor(preRealEmitTime / duration);
-            for (var k = cycleStartIndex; k < cycleEndIndex; k++) {
-                var cycleStartTime = k * duration;
-                var cycleEndTime = (k + 1) * duration;
-                // 单个周期内的起始与结束时间
-                var startTime = Math.max(preRealEmitTime, cycleStartTime);
-                var endTime = Math.min(realEmitTime, cycleEndTime);
-                // 处理稳定发射
-                var singleStart = Math.ceil(startTime / step) * step;
-                for (var i = singleStart; i < endTime; i += step) {
-                    emits.push({ time: i, num: 1 });
-                }
-                // 处理喷发
-                var inCycleStart = startTime - cycleStartTime;
-                var inCycleEnd = endTime - cycleStartTime;
-                for (var i_4 = 0; i_4 < bursts.length; i_4++) {
-                    var burst = bursts[i_4];
-                    if (inCycleStart <= burst.time && burst.time <= inCycleEnd && burst.time <= realEmitTime) {
-                        emits.push({ time: cycleStartTime + burst.time, num: burst.num });
-                    }
-                }
-            }
-            emits.sort(function (a, b) { return a.time - b.time; });
-            ;
-            emits.forEach(function (v) {
-                _this._emitParticles(v.time, v.num);
-            });
         };
         ParticleSystem.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
             _super.prototype.beforeRender.call(this, gl, renderAtomic, scene3d, camera);
@@ -24082,6 +24031,62 @@ var feng3d;
             for (var key in this._attributes) {
                 renderAtomic.attributes[key] = this._attributes[key];
             }
+        };
+        /**
+         * 发射粒子
+         * @param time 当前粒子时间
+         */
+        ParticleSystem.prototype._emit = function () {
+            var _this = this;
+            // 判断是否达到最大粒子数量
+            if (this._activeParticles.length >= this.main.maxParticles)
+                return;
+            // 判断是否开始发射
+            if (this.time <= this.main.startDelay)
+                return;
+            var duration = this.main.duration;
+            var preRealEmitTime = this._preEmitTime - this.main.startDelay;
+            // 判断是否结束发射
+            if (!this.main.loop && preRealEmitTime >= duration)
+                return;
+            // 计算最后发射时间
+            var realEmitTime = this.time - this.main.startDelay;
+            if (!this.main.loop)
+                realEmitTime = Math.min(realEmitTime, duration + this.main.startDelay);
+            // 
+            var emits = [];
+            // 单粒子发射周期
+            var step = 1 / this.emission.rate;
+            var bursts = this.emission.bursts;
+            // 遍历所有发射周期
+            var cycleEndIndex = Math.ceil(realEmitTime / duration);
+            var cycleStartIndex = Math.floor(preRealEmitTime / duration);
+            for (var k = cycleStartIndex; k < cycleEndIndex; k++) {
+                var cycleStartTime = k * duration;
+                var cycleEndTime = (k + 1) * duration;
+                // 单个周期内的起始与结束时间
+                var startTime = Math.max(preRealEmitTime, cycleStartTime);
+                var endTime = Math.min(realEmitTime, cycleEndTime);
+                // 处理稳定发射
+                var singleStart = Math.ceil(startTime / step) * step;
+                for (var i = singleStart; i < endTime; i += step) {
+                    emits.push({ time: i, num: 1 });
+                }
+                // 处理喷发
+                var inCycleStart = startTime - cycleStartTime;
+                var inCycleEnd = endTime - cycleStartTime;
+                for (var i_4 = 0; i_4 < bursts.length; i_4++) {
+                    var burst = bursts[i_4];
+                    if (inCycleStart <= burst.time && burst.time <= inCycleEnd && burst.time <= realEmitTime) {
+                        emits.push({ time: cycleStartTime + burst.time, num: burst.num });
+                    }
+                }
+            }
+            emits.sort(function (a, b) { return a.time - b.time; });
+            ;
+            emits.forEach(function (v) {
+                _this._emitParticles(v.time, v.num);
+            });
         };
         /**
          * 发射粒子
@@ -24464,7 +24469,7 @@ var feng3d;
          * @param particle                  粒子
          */
         ParticleVelocityModule.prototype.initParticleState = function (particle) {
-            var baseVelocity = 1;
+            var baseVelocity = 5;
             var x = (Math.random() - 0.5) * baseVelocity;
             var y = baseVelocity;
             var z = (Math.random() - 0.5) * baseVelocity;
