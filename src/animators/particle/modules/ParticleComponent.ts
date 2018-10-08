@@ -15,16 +15,6 @@ namespace feng3d
         enabled = true;
 
         /**
-         * 数据是否变脏
-         */
-        isInvalid = true;
-
-        invalidate()
-        {
-            this.isInvalid = true;
-        }
-
-        /**
          * 初始化粒子状态
          * @param particle 粒子
          */

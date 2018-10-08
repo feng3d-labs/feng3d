@@ -29,7 +29,7 @@ namespace feng3d
 
         @serialize
         @oav({ block: "emission", component: "OAVObjectView" })
-        emission: ParticleEmission;
+        emission: ParticleEmissionModule;
 
         /**
          * 活跃粒子数量
@@ -78,7 +78,7 @@ namespace feng3d
             this.main = this.main || new ParticleMainModule()
             this.main.particleSystem = this;
 
-            this.emission = this.emission || new ParticleEmission();
+            this.emission = this.emission || new ParticleEmissionModule();
             this.emission.particleSystem = this;
         }
 

@@ -4,7 +4,7 @@ namespace feng3d
      * 粒子发射器
 
      */
-    export class ParticleEmission extends ParticleComponent
+    export class ParticleEmissionModule extends ParticleModule
     {
         /**
          * 发射率，每秒发射粒子数量
@@ -19,22 +19,5 @@ namespace feng3d
         @oav({ component: "OAVArray", tooltip: "在指定时间进行额外发射指定数量的粒子", componentParam: { defaultItem: () => { return { time: 0, num: 30 } } } })
         @serialize
         bursts: { time: number, num: number }[] = [];
-
-        isInvalid = true;
-
-        private _numParticles;
-
-        private _birthTimes: number[];
-
-        particleSystem: ParticleSystem;
-
-        /**
-         * 初始化粒子状态
-         * @param particle 粒子
-         */
-        initParticleState(particle: Particle)
-        {
-
-        }
     }
 }

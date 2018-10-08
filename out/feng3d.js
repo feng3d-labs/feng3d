@@ -23829,111 +23829,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 粒子动画组件
-     */
-    var ParticleComponent = /** @class */ (function () {
-        function ParticleComponent() {
-            /**
-             * 是否开启
-             */
-            this.enabled = true;
-            /**
-             * 数据是否变脏
-             */
-            this.isInvalid = true;
-        }
-        ParticleComponent.prototype.invalidate = function () {
-            this.isInvalid = true;
-        };
-        /**
-         * 初始化粒子状态
-         * @param particle 粒子
-         */
-        ParticleComponent.prototype.initParticleState = function (particle) {
-        };
-        /**
-         * 更新粒子状态
-         * @param particle 粒子
-         */
-        ParticleComponent.prototype.updateParticleState = function (particle) {
-        };
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize,
-            feng3d.watch("invalidate")
-        ], ParticleComponent.prototype, "enabled", void 0);
-        return ParticleComponent;
-    }());
-    feng3d.ParticleComponent = ParticleComponent;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 粒子发射器
-
-     */
-    var ParticleEmission = /** @class */ (function (_super) {
-        __extends(ParticleEmission, _super);
-        function ParticleEmission() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            /**
-             * 发射率，每秒发射粒子数量
-             */
-            _this.rate = 10;
-            /**
-             * 爆发，在time时刻额外喷射particles粒子
-             */
-            _this.bursts = [];
-            _this.isInvalid = true;
-            return _this;
-        }
-        /**
-         * 初始化粒子状态
-         * @param particle 粒子
-         */
-        ParticleEmission.prototype.initParticleState = function (particle) {
-        };
-        __decorate([
-            feng3d.oav({ tooltip: "每秒发射粒子数量" }),
-            feng3d.serialize
-        ], ParticleEmission.prototype, "rate", void 0);
-        __decorate([
-            feng3d.oav({ component: "OAVArray", tooltip: "在指定时间进行额外发射指定数量的粒子", componentParam: { defaultItem: function () { return { time: 0, num: 30 }; } } }),
-            feng3d.serialize
-        ], ParticleEmission.prototype, "bursts", void 0);
-        return ParticleEmission;
-    }(feng3d.ParticleComponent));
-    feng3d.ParticleEmission = ParticleEmission;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 粒子速度组件
-
-     */
-    var ParticleVelocity = /** @class */ (function (_super) {
-        __extends(ParticleVelocity, _super);
-        function ParticleVelocity() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        /**
-         * 创建粒子属性
-         * @param particle                  粒子
-         */
-        ParticleVelocity.prototype.initParticleState = function (particle) {
-            var baseVelocity = 1;
-            var x = (Math.random() - 0.5) * baseVelocity;
-            var y = baseVelocity;
-            var z = (Math.random() - 0.5) * baseVelocity;
-            particle.velocity = new feng3d.Vector3(x, y, z);
-        };
-        return ParticleVelocity;
-    }(feng3d.ParticleComponent));
-    feng3d.ParticleVelocity = ParticleVelocity;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     var ParticleUniforms = /** @class */ (function (_super) {
         __extends(ParticleUniforms, _super);
         function ParticleUniforms() {
@@ -24037,7 +23932,7 @@ var feng3d;
             _super.prototype.init.call(this, gameObject);
             this.main = this.main || new feng3d.ParticleMainModule();
             this.main.particleSystem = this;
-            this.emission = this.emission || new feng3d.ParticleEmission();
+            this.emission = this.emission || new feng3d.ParticleEmissionModule();
             this.emission.particleSystem = this;
         };
         ParticleSystem.prototype.update = function (interval) {
@@ -24316,6 +24211,39 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 粒子动画组件
+     */
+    var ParticleComponent = /** @class */ (function () {
+        function ParticleComponent() {
+            /**
+             * 是否开启
+             */
+            this.enabled = true;
+        }
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        ParticleComponent.prototype.initParticleState = function (particle) {
+        };
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticleComponent.prototype.updateParticleState = function (particle) {
+        };
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize,
+            feng3d.watch("invalidate")
+        ], ParticleComponent.prototype, "enabled", void 0);
+        return ParticleComponent;
+    }());
+    feng3d.ParticleComponent = ParticleComponent;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 粒子模块
      */
     var ParticleModule = /** @class */ (function (_super) {
@@ -24523,6 +24451,64 @@ var feng3d;
         return ParticleMainModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleMainModule = ParticleMainModule;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 粒子发射器
+
+     */
+    var ParticleEmissionModule = /** @class */ (function (_super) {
+        __extends(ParticleEmissionModule, _super);
+        function ParticleEmissionModule() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * 发射率，每秒发射粒子数量
+             */
+            _this.rate = 10;
+            /**
+             * 爆发，在time时刻额外喷射particles粒子
+             */
+            _this.bursts = [];
+            return _this;
+        }
+        __decorate([
+            feng3d.oav({ tooltip: "每秒发射粒子数量" }),
+            feng3d.serialize
+        ], ParticleEmissionModule.prototype, "rate", void 0);
+        __decorate([
+            feng3d.oav({ component: "OAVArray", tooltip: "在指定时间进行额外发射指定数量的粒子", componentParam: { defaultItem: function () { return { time: 0, num: 30 }; } } }),
+            feng3d.serialize
+        ], ParticleEmissionModule.prototype, "bursts", void 0);
+        return ParticleEmissionModule;
+    }(feng3d.ParticleModule));
+    feng3d.ParticleEmissionModule = ParticleEmissionModule;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 粒子速度组件
+
+     */
+    var ParticleVelocity = /** @class */ (function (_super) {
+        __extends(ParticleVelocity, _super);
+        function ParticleVelocity() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        /**
+         * 创建粒子属性
+         * @param particle                  粒子
+         */
+        ParticleVelocity.prototype.initParticleState = function (particle) {
+            var baseVelocity = 1;
+            var x = (Math.random() - 0.5) * baseVelocity;
+            var y = baseVelocity;
+            var z = (Math.random() - 0.5) * baseVelocity;
+            particle.velocity = new feng3d.Vector3(x, y, z);
+        };
+        return ParticleVelocity;
+    }(feng3d.ParticleComponent));
+    feng3d.ParticleVelocity = ParticleVelocity;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

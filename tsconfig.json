@@ -228,17 +228,17 @@
         //粒子动画
         "src/animators/particle/Particle.ts",
         "src/animators/particle/ParticleGlobal.ts",
-        "src/animators/particle/ParticleComponent.ts",
-        "src/animators/particle/ParticleEmission.ts",
-        "src/animators/particle/ParticleVelocity.ts",
         "src/animators/particle/ParticleMaterial.ts",
         "src/animators/particle/ParticleSystem.ts",
         //
         "src/animators/particle/others/ParticleSimulationSpace.ts",
         "src/animators/particle/others/ParticleScalingMode.ts",
         //
+        "src/animators/particle/modules/ParticleComponent.ts",
         "src/animators/particle/modules/ParticleModule.ts",
         "src/animators/particle/modules/ParticleMainModule.ts",
+        "src/animators/particle/modules/ParticleEmissionModule.ts",
+        "src/animators/particle/modules/ParticleVelocity.ts",
         //骨骼动画
         "src/animators/skeleton/Skeleton.ts",
         "src/animators/skeleton/SkeletonComponent.ts",

@@ -12088,73 +12088,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * 粒子动画组件
-     */
-    class ParticleComponent {
-        /**
-         * 是否开启
-         */
-        enabled: boolean;
-        /**
-         * 数据是否变脏
-         */
-        isInvalid: boolean;
-        invalidate(): void;
-        /**
-         * 初始化粒子状态
-         * @param particle 粒子
-         */
-        initParticleState(particle: Particle): void;
-        /**
-         * 更新粒子状态
-         * @param particle 粒子
-         */
-        updateParticleState(particle: Particle): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 粒子发射器
-
-     */
-    class ParticleEmission extends ParticleComponent {
-        /**
-         * 发射率，每秒发射粒子数量
-         */
-        rate: number;
-        /**
-         * 爆发，在time时刻额外喷射particles粒子
-         */
-        bursts: {
-            time: number;
-            num: number;
-        }[];
-        isInvalid: boolean;
-        private _numParticles;
-        private _birthTimes;
-        particleSystem: ParticleSystem;
-        /**
-         * 初始化粒子状态
-         * @param particle 粒子
-         */
-        initParticleState(particle: Particle): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 粒子速度组件
-
-     */
-    class ParticleVelocity extends ParticleComponent {
-        /**
-         * 创建粒子属性
-         * @param particle                  粒子
-         */
-        initParticleState(particle: Particle): void;
-    }
-}
-declare namespace feng3d {
     interface UniformsMap {
         particle: ParticleUniforms;
     }
@@ -12182,7 +12115,7 @@ declare namespace feng3d {
          */
         time: number;
         main: ParticleMainModule;
-        emission: ParticleEmission;
+        emission: ParticleEmissionModule;
         /**
          * 活跃粒子数量
          */
@@ -12286,6 +12219,27 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 粒子动画组件
+     */
+    class ParticleComponent {
+        /**
+         * 是否开启
+         */
+        enabled: boolean;
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle): void;
+    }
+}
+declare namespace feng3d {
+    /**
      * 粒子模块
      */
     class ParticleModule extends ParticleComponent {
@@ -12372,6 +12326,38 @@ declare namespace feng3d {
         /**
          * 初始化粒子状态
          * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 粒子发射器
+
+     */
+    class ParticleEmissionModule extends ParticleModule {
+        /**
+         * 发射率，每秒发射粒子数量
+         */
+        rate: number;
+        /**
+         * 爆发，在time时刻额外喷射particles粒子
+         */
+        bursts: {
+            time: number;
+            num: number;
+        }[];
+    }
+}
+declare namespace feng3d {
+    /**
+     * 粒子速度组件
+
+     */
+    class ParticleVelocity extends ParticleComponent {
+        /**
+         * 创建粒子属性
+         * @param particle                  粒子
          */
         initParticleState(particle: Particle): void;
     }
