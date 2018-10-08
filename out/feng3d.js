@@ -24063,7 +24063,7 @@ var feng3d;
             /**
              * 上次发射时间
              */
-            _this.pretime = 0;
+            _this._preEmitTime = 0;
             _this._awaked = false;
             return _this;
         }
@@ -24095,6 +24095,7 @@ var feng3d;
             this.time = this.time + this.main.simulationSpeed * interval / 1000;
             this.updateActiveParticlesState();
             this.emit();
+            this._preEmitTime = this.time;
         };
         /**
          * 停止
@@ -24127,29 +24128,50 @@ var feng3d;
          * @param time 当前粒子时间
          */
         ParticleSystem.prototype.emit = function () {
-            var _this = this;
-            var time = (this.time - this.main.startDelay) % this.main.duration;
-            if (this.activeParticles.length == 0)
+            // 判断是否达到最大粒子数量
+            if (this.activeParticles.length >= this.main.maxParticles)
                 return;
+            // 判断是否开始发射
+            if (this.time <= this.main.startDelay)
+                return;
+            var duration = this.main.duration;
+            var preRealEmitTime = this._preEmitTime - this.main.startDelay;
+            // 判断是否结束发射
+            if (!this.main.loop && preRealEmitTime >= duration)
+                return;
+            // 计算最后发射时间
+            var realEmitTime = this.time - this.main.startDelay;
+            if (!this.main.loop)
+                realEmitTime = Math.min(realEmitTime, duration + this.main.startDelay);
+            // 
             var emits = [];
-            //计算事件段内正常发射了粒子
+            // 单粒子发射周期
             var step = 1 / this.emission.rate;
-            for (var i = this.pretime; i < time; i += step) {
-                emits.push({ time: i, num: 1 });
-            }
-            //按时间降序排列，获取该事件段内爆发的粒子
-            var bursts = this.emission.bursts.filter(function (a) { return (_this.pretime <= a.time && a.time < time); });
-            //
-            emits = emits.concat(bursts).sort(function (a, b) { return b.time - a.time; });
-            for (var i_4 = 0; i_4 < emits.length; i_4++) {
-                if (this.activeParticles.length == 0)
-                    return;
-                var element = emits[i_4];
-                for (var j = 0; j < element.num; j++) {
-                    if (this.activeParticles.length == 0)
-                        return;
-                    // 获取将要发射粒子的寿命
-                    // getLifetime();
+            var bursts = this.emission.bursts.concat().sort(function (a, b) { return a.time - b.time; });
+            ;
+            // 遍历所有发射周期
+            var cycleEndIndex = Math.ceil(realEmitTime / duration);
+            var cycleStartIndex = Math.floor(preRealEmitTime / duration);
+            for (var k = cycleStartIndex; k < cycleEndIndex; k++) {
+                var cycleStartTime = k * duration;
+                var cycleEndTime = (k + 1) * duration;
+                // 单个周期内的起始与结束时间
+                var startTime = Math.max(preRealEmitTime, cycleStartTime);
+                var endTime = Math.min(realEmitTime, cycleEndTime);
+                // 处理稳定发射
+                var singleStart = Math.ceil(startTime / step) * step;
+                var singleEnd = Math.ceil(endTime / step) * step;
+                for (var i = singleStart; i < singleEnd; i += step) {
+                    emits.push({ time: i, num: 1 });
+                }
+                // 处理喷发
+                var inCycleStart = startTime - cycleStartTime;
+                var inCycleEnd = endTime - cycleStartTime;
+                for (var i_4 = 0; i_4 < bursts.length; i_4++) {
+                    var burst = bursts[i_4];
+                    if (inCycleStart <= burst.time && burst.time <= inCycleEnd && burst.time <= realEmitTime) {
+                        emits.push({ time: cycleStartTime + burst.time, num: burst.num });
+                    }
                 }
             }
         };
@@ -24183,7 +24205,7 @@ var feng3d;
             for (var i = 0; i < maxParticles; i++) {
                 this.particlePool.push(new feng3d.Particle(i));
             }
-            this.pretime = 0;
+            this._preEmitTime = 0;
             this.activeParticles = this.particlePool.concat();
             this.invalidate();
         };

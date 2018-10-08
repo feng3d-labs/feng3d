@@ -12236,7 +12236,7 @@ declare namespace feng3d {
         /**
          * 上次发射时间
          */
-        private pretime;
+        private _preEmitTime;
         /**
          * 发射粒子
          * @param time 当前粒子时间

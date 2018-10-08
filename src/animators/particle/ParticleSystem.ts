@@ -99,6 +99,8 @@ namespace feng3d
             this.updateActiveParticlesState();
 
             this.emit();
+
+            this._preEmitTime = this.time;
         }
 
         /**
@@ -134,10 +136,11 @@ namespace feng3d
         {
             this._isPlaying = true;
         }
+
         /**
          * 上次发射时间
          */
-        private pretime = 0;
+        private _preEmitTime = 0;
 
         /**
          * 发射粒子
@@ -145,36 +148,62 @@ namespace feng3d
          */
         emit()
         {
-            var time = (this.time - this.main.startDelay) % this.main.duration;
+            // 判断是否达到最大粒子数量
+            if (this.activeParticles.length >= this.main.maxParticles) return;
 
-            if (this.activeParticles.length == 0)
-                return;
+            // 判断是否开始发射
+            if (this.time <= this.main.startDelay) return;
+
+            var duration = this.main.duration;
+            var preRealEmitTime = this._preEmitTime - this.main.startDelay;
+
+            // 判断是否结束发射
+            if (!this.main.loop && preRealEmitTime >= duration) return;
+
+            // 计算最后发射时间
+            var realEmitTime = this.time - this.main.startDelay;
+            if (!this.main.loop) realEmitTime = Math.min(realEmitTime, duration + this.main.startDelay);
+
+            // 
             var emits: { time: number, num: number }[] = [];
-            //计算事件段内正常发射了粒子
+            // 单粒子发射周期
             var step = 1 / this.emission.rate;
-            for (var i = this.pretime; i < time; i += step)
+            var bursts = this.emission.bursts.concat().sort((a, b) => { return a.time - b.time });;
+
+            // 遍历所有发射周期
+            var cycleEndIndex = Math.ceil(realEmitTime / duration);
+            var cycleStartIndex = Math.floor(preRealEmitTime / duration);
+            for (let k = cycleStartIndex; k < cycleEndIndex; k++)
             {
-                emits.push({ time: i, num: 1 });
-            }
-            //按时间降序排列，获取该事件段内爆发的粒子
-            var bursts = this.emission.bursts.filter((a) => (this.pretime <= a.time && a.time < time));
-            //
-            emits = emits.concat(bursts).sort((a: { time: number; }, b: { time: number; }) => { return b.time - a.time });
-            for (let i = 0; i < emits.length; i++)
-            {
-                if (this.activeParticles.length == 0)
-                    return;
-                const element = emits[i];
-                for (let j = 0; j < element.num; j++)
+                var cycleStartTime = k * duration;
+                var cycleEndTime = (k + 1) * duration;
+
+                // 单个周期内的起始与结束时间
+                var startTime = Math.max(preRealEmitTime, cycleStartTime);
+                var endTime = Math.min(realEmitTime, cycleEndTime);
+
+                // 处理稳定发射
+                var singleStart = Math.ceil(startTime / step) * step;
+                var singleEnd = Math.ceil(endTime / step) * step;
+                for (var i = singleStart; i < singleEnd; i += step)
                 {
-                    if (this.activeParticles.length == 0)
-                        return;
-                    // 获取将要发射粒子的寿命
+                    emits.push({ time: i, num: 1 });
+                }
 
-                    // getLifetime();
-
+                // 处理喷发
+                var inCycleStart = startTime - cycleStartTime;
+                var inCycleEnd = endTime - cycleStartTime;
+                for (let i = 0; i < bursts.length; i++)
+                {
+                    const burst = bursts[i];
+                    if (inCycleStart <= burst.time && burst.time <= inCycleEnd && burst.time <= realEmitTime)
+                    {
+                        emits.push({ time: cycleStartTime + burst.time, num: burst.num });
+                    }
                 }
             }
+
+
         }
 
         invalidate()
@@ -218,7 +247,7 @@ namespace feng3d
             {
                 this.particlePool.push(new Particle(i));
             }
-            this.pretime = 0;
+            this._preEmitTime = 0;
             this.activeParticles = this.particlePool.concat();
             this.invalidate();
         }
