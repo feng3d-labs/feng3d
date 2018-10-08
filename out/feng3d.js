@@ -24143,7 +24143,7 @@ var feng3d;
         ], ParticleSystem.prototype, "emission", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ block: "emission", component: "OAVObjectView" })
+            feng3d.oav({ block: "velocity", component: "OAVObjectView" })
         ], ParticleSystem.prototype, "velocity", void 0);
         __decorate([
             feng3d.serialize
@@ -24438,12 +24438,12 @@ var feng3d;
             return _this;
         }
         __decorate([
-            feng3d.oav({ tooltip: "每秒发射粒子数量" }),
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "每秒发射粒子数量" })
         ], ParticleEmissionModule.prototype, "rate", void 0);
         __decorate([
-            feng3d.oav({ component: "OAVArray", tooltip: "在指定时间进行额外发射指定数量的粒子", componentParam: { defaultItem: function () { return { time: 0, num: 30 }; } } }),
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVArray", tooltip: "在指定时间进行额外发射指定数量的粒子", componentParam: { defaultItem: function () { return { time: 0, num: 30 }; } } })
         ], ParticleEmissionModule.prototype, "bursts", void 0);
         return ParticleEmissionModule;
     }(feng3d.ParticleModule));
