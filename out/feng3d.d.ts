@@ -12056,6 +12056,10 @@ declare namespace feng3d {
          * 起始速度
          */
         startSpeed: number;
+        /**
+         * 还原起始值
+         */
+        clear(): void;
     }
 }
 declare namespace feng3d {
@@ -12130,10 +12134,6 @@ declare namespace feng3d {
         main: ParticleMainModule;
         emission: ParticleEmissionModule;
         shape: ParticleShapeModule;
-        /**
-         * 粒子状态控制模块列表
-         */
-        velocity: ParticleVelocityModule;
         /**
          * 粒子全局属性
          */
@@ -12243,6 +12243,11 @@ declare namespace feng3d {
      * 粒子系统 发射形状
      */
     class ParticleSystemShape {
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
         /**
          * 更新粒子状态
          * @param particle 粒子
@@ -12418,18 +12423,6 @@ declare namespace feng3d {
          */
         initParticleState(particle: Particle): void;
         private _onTypeChanged;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 粒子速度组件
-     */
-    class ParticleVelocityModule extends ParticleModule {
-        /**
-         * 初始化粒子状态
-         * @param particle 粒子
-         */
-        initParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {

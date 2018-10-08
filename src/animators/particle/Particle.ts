@@ -54,5 +54,14 @@ namespace feng3d
 		 * 起始速度
 		 */
 		startSpeed = 1;
+
+		/**
+		 * 还原起始值
+		 */
+		clear()
+		{
+			serialization.setValue(this, <any>particle);
+		}
 	}
+	var particle = new Particle();
 }

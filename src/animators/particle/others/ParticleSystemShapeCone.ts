@@ -25,11 +25,14 @@ namespace feng3d
         {
             // 计算位置
             var angle = Math.random() * FMath.degToRad(this.arc);
-            var p = new Vector3(Math.sin(angle) * this.radius, 0, Math.cos(angle) * this.radius);
-            particle.position.copy(p).scale(this.radius);
+            var r = Math.random();
+            var p = new Vector3(Math.sin(angle), 0, Math.cos(angle));
+            particle.position.copy(p).scale(this.radius).scale(r);
 
             // 计算速度
-            var dir = p.scale(this.radius + this.height * Math.tan(FMath.degToRad(this.angle))).sub(particle.position).normalize();
+            p.scale(this.radius + this.height * Math.tan(FMath.degToRad(this.angle))).scale(r);
+            p.y = this.height;
+            var dir = p.sub(particle.position).normalize();
             particle.velocity.copy(dir).scale(particle.startSpeed);
         }
     }

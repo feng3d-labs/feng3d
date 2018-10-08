@@ -23763,9 +23763,16 @@ var feng3d;
              */
             this.startSpeed = 1;
         }
+        /**
+         * 还原起始值
+         */
+        Particle.prototype.clear = function () {
+            feng3d.serialization.setValue(this, particle);
+        };
         return Particle;
     }());
     feng3d.Particle = Particle;
+    var particle = new Particle();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -23934,8 +23941,7 @@ var feng3d;
             this.main = this.main || new feng3d.ParticleMainModule();
             this.emission = this.emission || new feng3d.ParticleEmissionModule();
             this.shape = this.shape || new feng3d.ParticleShapeModule();
-            this.velocity = this.velocity || new feng3d.ParticleVelocityModule();
-            this._modules = [this.main, this.emission, this.velocity];
+            this._modules = [this.main, this.emission, this.shape];
         };
         ParticleSystem.prototype.update = function (interval) {
             if (!this.isPlaying)
@@ -24126,6 +24132,7 @@ var feng3d;
                 if (particle.birthTime + particle.lifetime + this.main.startDelay < this.time) {
                     this._activeParticles.splice(i, 1);
                     this._particlePool.push(particle);
+                    particle.clear();
                 }
                 else {
                     this._updateParticleState(particle);
@@ -24158,10 +24165,6 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ block: "shape", component: "OAVObjectView" })
         ], ParticleSystem.prototype, "shape", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ block: "velocity", component: "OAVObjectView" })
-        ], ParticleSystem.prototype, "velocity", void 0);
         __decorate([
             feng3d.serialize
             // @oav({ block: "全局属性", component: "OAVObjectView", tooltip: "粒子全局属性，作用与所有粒子。" })
@@ -24226,6 +24229,12 @@ var feng3d;
         function ParticleSystemShape() {
         }
         /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        ParticleSystemShape.prototype.initParticleState = function (particle) {
+        };
+        /**
          * 更新粒子状态
          * @param particle 粒子
          */
@@ -24257,10 +24266,13 @@ var feng3d;
         ParticleSystemShapeCone.prototype.initParticleState = function (particle) {
             // 计算位置
             var angle = Math.random() * feng3d.FMath.degToRad(this.arc);
-            var p = new feng3d.Vector3(Math.sin(angle) * this.radius, 0, Math.cos(angle) * this.radius);
-            particle.position.copy(p).scale(this.radius);
+            var r = Math.random();
+            var p = new feng3d.Vector3(Math.sin(angle), 0, Math.cos(angle));
+            particle.position.copy(p).scale(this.radius).scale(r);
             // 计算速度
-            var dir = p.scale(this.radius + this.height * Math.tan(feng3d.FMath.degToRad(this.angle))).sub(particle.position).normalize();
+            p.scale(this.radius + this.height * Math.tan(feng3d.FMath.degToRad(this.angle))).scale(r);
+            p.y = this.height;
+            var dir = p.sub(particle.position).normalize();
             particle.velocity.copy(dir).scale(particle.startSpeed);
         };
         __decorate([
@@ -24608,31 +24620,6 @@ var feng3d;
         return ParticleShapeModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleShapeModule = ParticleShapeModule;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 粒子速度组件
-     */
-    var ParticleVelocityModule = /** @class */ (function (_super) {
-        __extends(ParticleVelocityModule, _super);
-        function ParticleVelocityModule() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        /**
-         * 初始化粒子状态
-         * @param particle 粒子
-         */
-        ParticleVelocityModule.prototype.initParticleState = function (particle) {
-            var baseVelocity = 5;
-            var x = (Math.random() - 0.5) * baseVelocity;
-            var y = baseVelocity;
-            var z = (Math.random() - 0.5) * baseVelocity;
-            particle.velocity = new feng3d.Vector3(x, y, z);
-        };
-        return ParticleVelocityModule;
-    }(feng3d.ParticleModule));
-    feng3d.ParticleVelocityModule = ParticleVelocityModule;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

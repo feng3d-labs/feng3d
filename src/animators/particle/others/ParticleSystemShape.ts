@@ -6,6 +6,15 @@ namespace feng3d
     export class ParticleSystemShape
     {
         /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle)
+        {
+
+        }
+
+        /**
          * 更新粒子状态
          * @param particle 粒子
          */

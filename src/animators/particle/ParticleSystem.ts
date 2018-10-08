@@ -44,13 +44,6 @@ namespace feng3d
         shape: ParticleShapeModule;
 
         /**
-         * 粒子状态控制模块列表
-         */
-        @serialize
-        @oav({ block: "velocity", component: "OAVObjectView" })
-        velocity: ParticleVelocityModule;
-
-        /**
          * 粒子全局属性
          */
         @serialize
@@ -88,9 +81,8 @@ namespace feng3d
             this.main = this.main || new ParticleMainModule()
             this.emission = this.emission || new ParticleEmissionModule();
             this.shape = this.shape || new ParticleShapeModule();
-            this.velocity = this.velocity || new ParticleVelocityModule();
 
-            this._modules = [this.main, this.emission, this.velocity];
+            this._modules = [this.main, this.emission, this.shape];
         }
 
         update(interval: number)
@@ -364,6 +356,7 @@ namespace feng3d
                 {
                     this._activeParticles.splice(i, 1);
                     this._particlePool.push(particle);
+                    particle.clear();
                 } else
                 {
                     this._updateParticleState(particle);
