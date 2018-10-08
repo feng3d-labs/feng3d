@@ -2,9 +2,8 @@ namespace feng3d
 {
     /**
      * 粒子速度组件
-
      */
-    export class ParticleVelocity extends ParticleModule
+    export class ParticleVelocityModule extends ParticleModule
     {
         /**
 		 * 创建粒子属性

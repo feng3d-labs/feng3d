@@ -8,13 +8,8 @@ namespace feng3d
         /**
          * 是否开启
          */
-        @oav()
-        @serialize
-        @watch("invalidate")
         enabled = true;
 
-        particleSystem: ParticleSystem
-        
         /**
          * 初始化粒子状态
          * @param particle 粒子

@@ -12117,21 +12117,21 @@ declare namespace feng3d {
         main: ParticleMainModule;
         emission: ParticleEmissionModule;
         /**
-         * 活跃粒子数量
+         * 粒子状态控制模块列表
          */
-        readonly numActiveParticles: number;
+        velocity: ParticleVelocityModule;
         /**
          * 粒子全局属性
          */
         readonly particleGlobal: ParticleGlobal;
-        /**
-         * 粒子状态控制模块列表
-         */
-        readonly components: ParticleVelocity[];
         geometry: PlaneGeometry;
         material: Material;
         castShadows: boolean;
         receiveShadows: boolean;
+        /**
+         * 活跃粒子数量
+         */
+        readonly numActiveParticles: number;
         readonly single: boolean;
         init(gameObject: GameObject): void;
         update(interval: number): void;
@@ -12166,21 +12166,22 @@ declare namespace feng3d {
         /**
          * 粒子池，用于存放未发射或者死亡粒子
          */
-        private particlePool;
+        private _particlePool;
         /**
          * 活跃的粒子列表
          */
-        private activeParticles;
+        private _activeParticles;
         /**
          * 属性数据列表
          */
         private _attributes;
+        private _modules;
         /**
          * 发射粒子
          * @param realTime 真实时间，减去startDelay的时间
          * @param num 发射数量
          */
-        private emitParticles;
+        private _emitParticles;
         /**
          * 更新活跃粒子状态
          */
@@ -12189,12 +12190,12 @@ declare namespace feng3d {
          * 初始化粒子状态
          * @param particle 粒子
          */
-        private initParticleState;
+        private _initParticleState;
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
-        private updateParticleState;
+        private _updateParticleState;
     }
 }
 declare namespace feng3d {
@@ -12226,7 +12227,6 @@ declare namespace feng3d {
          * 是否开启
          */
         enabled: boolean;
-        particleSystem: ParticleSystem;
         /**
          * 初始化粒子状态
          * @param particle 粒子
@@ -12345,9 +12345,8 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 粒子速度组件
-
      */
-    class ParticleVelocity extends ParticleModule {
+    class ParticleVelocityModule extends ParticleModule {
         /**
          * 创建粒子属性
          * @param particle                  粒子
