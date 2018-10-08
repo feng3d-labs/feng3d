@@ -24128,6 +24128,7 @@ var feng3d;
          * @param time 当前粒子时间
          */
         ParticleSystem.prototype.emit = function () {
+            var _this = this;
             // 判断是否达到最大粒子数量
             if (this.activeParticles.length >= this.main.maxParticles)
                 return;
@@ -24147,8 +24148,7 @@ var feng3d;
             var emits = [];
             // 单粒子发射周期
             var step = 1 / this.emission.rate;
-            var bursts = this.emission.bursts.concat().sort(function (a, b) { return a.time - b.time; });
-            ;
+            var bursts = this.emission.bursts;
             // 遍历所有发射周期
             var cycleEndIndex = Math.ceil(realEmitTime / duration);
             var cycleStartIndex = Math.floor(preRealEmitTime / duration);
@@ -24173,6 +24173,28 @@ var feng3d;
                         emits.push({ time: cycleStartTime + burst.time, num: burst.num });
                     }
                 }
+            }
+            emits.sort(function (a, b) { return a.time - b.time; });
+            ;
+            emits.forEach(function (v) {
+                _this.emitParticles(v.time, v.num);
+            });
+        };
+        /**
+         * 发射粒子
+         * @param realTime 真实时间，减去startDelay的时间
+         * @param num 发射数量
+         */
+        ParticleSystem.prototype.emitParticles = function (realTime, num) {
+            for (var i = 0; i < num; i++) {
+                if (this.activeParticles.length >= this.main.maxParticles)
+                    return;
+                var particle = this.particlePool.pop() || new feng3d.Particle(0);
+                particle.birthTime = realTime;
+                particle.lifetime = this.main.startLifetime;
+                particle.color = this.main.startColor;
+                this.activeParticles.push(particle);
+                this.updateParticleState(particle);
             }
         };
         ParticleSystem.prototype.invalidate = function () {

@@ -12242,6 +12242,12 @@ declare namespace feng3d {
          * @param time 当前粒子时间
          */
         emit(): void;
+        /**
+         * 发射粒子
+         * @param realTime 真实时间，减去startDelay的时间
+         * @param num 发射数量
+         */
+        private emitParticles;
         invalidate(): void;
         /**
          * 更新活跃粒子状态

@@ -168,7 +168,7 @@ namespace feng3d
             var emits: { time: number, num: number }[] = [];
             // 单粒子发射周期
             var step = 1 / this.emission.rate;
-            var bursts = this.emission.bursts.concat().sort((a, b) => { return a.time - b.time });;
+            var bursts = this.emission.bursts;
 
             // 遍历所有发射周期
             var cycleEndIndex = Math.ceil(realEmitTime / duration);
@@ -203,7 +203,31 @@ namespace feng3d
                 }
             }
 
+            emits.sort((a, b) => { return a.time - b.time });;
 
+            emits.forEach(v =>
+            {
+                this.emitParticles(v.time, v.num);
+            });
+        }
+
+        /**
+         * 发射粒子
+         * @param realTime 真实时间，减去startDelay的时间
+         * @param num 发射数量
+         */
+        private emitParticles(realTime: number, num: number)
+        {
+            for (let i = 0; i < num; i++)
+            {
+                if (this.activeParticles.length >= this.main.maxParticles) return;
+                var particle = this.particlePool.pop() || new Particle(0);
+                particle.birthTime = realTime;
+                particle.lifetime = this.main.startLifetime;
+                particle.color = this.main.startColor;
+                this.activeParticles.push(particle);
+                this.updateParticleState(particle);
+            }
         }
 
         invalidate()
