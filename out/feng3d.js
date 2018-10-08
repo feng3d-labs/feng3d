@@ -24211,10 +24211,10 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 粒子动画组件
+     * 粒子模块
      */
-    var ParticleComponent = /** @class */ (function () {
-        function ParticleComponent() {
+    var ParticleModule = /** @class */ (function () {
+        function ParticleModule() {
             /**
              * 是否开启
              */
@@ -24224,35 +24224,21 @@ var feng3d;
          * 初始化粒子状态
          * @param particle 粒子
          */
-        ParticleComponent.prototype.initParticleState = function (particle) {
+        ParticleModule.prototype.initParticleState = function (particle) {
         };
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
-        ParticleComponent.prototype.updateParticleState = function (particle) {
+        ParticleModule.prototype.updateParticleState = function (particle) {
         };
         __decorate([
             feng3d.oav(),
             feng3d.serialize,
             feng3d.watch("invalidate")
-        ], ParticleComponent.prototype, "enabled", void 0);
-        return ParticleComponent;
-    }());
-    feng3d.ParticleComponent = ParticleComponent;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 粒子模块
-     */
-    var ParticleModule = /** @class */ (function (_super) {
-        __extends(ParticleModule, _super);
-        function ParticleModule() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
+        ], ParticleModule.prototype, "enabled", void 0);
         return ParticleModule;
-    }(feng3d.ParticleComponent));
+    }());
     feng3d.ParticleModule = ParticleModule;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -24507,7 +24493,7 @@ var feng3d;
             particle.velocity = new feng3d.Vector3(x, y, z);
         };
         return ParticleVelocity;
-    }(feng3d.ParticleComponent));
+    }(feng3d.ParticleModule));
     feng3d.ParticleVelocity = ParticleVelocity;
 })(feng3d || (feng3d = {}));
 var feng3d;

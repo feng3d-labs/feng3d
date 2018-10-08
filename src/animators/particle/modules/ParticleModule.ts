@@ -3,8 +3,34 @@ namespace feng3d
     /**
      * 粒子模块
      */
-    export class ParticleModule extends ParticleComponent
+    export class ParticleModule
     {
+        /**
+         * 是否开启
+         */
+        @oav()
+        @serialize
+        @watch("invalidate")
+        enabled = true;
+
         particleSystem: ParticleSystem
+        
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle)
+        {
+
+        }
+
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle)
+        {
+
+        }
     }
 }
