@@ -24251,10 +24251,10 @@ var feng3d;
             return _this;
         }
         /**
-         * 更新粒子状态
+         * 初始化粒子状态
          * @param particle 粒子
          */
-        ParticleSystemShapeCone.prototype.updateParticleState = function (particle) {
+        ParticleSystemShapeCone.prototype.initParticleState = function (particle) {
             // 计算位置
             var angle = Math.random() * feng3d.FMath.degToRad(this.arc);
             var p = new feng3d.Vector3(Math.sin(angle) * this.radius, 0, Math.cos(angle) * this.radius);
@@ -24576,11 +24576,11 @@ var feng3d;
             return _this;
         }
         /**
-         * 更新粒子状态
+         * 初始化粒子状态
          * @param particle 粒子
          */
-        ParticleShapeModule.prototype.updateParticleState = function (particle) {
-            this.shape.updateParticleState(particle);
+        ParticleShapeModule.prototype.initParticleState = function (particle) {
+            this.shape.initParticleState(particle);
         };
         ParticleShapeModule.prototype._onTypeChanged = function () {
             var preValue = this.shape;
@@ -24620,10 +24620,10 @@ var feng3d;
             return _super !== null && _super.apply(this, arguments) || this;
         }
         /**
-         * 更新粒子状态
+         * 初始化粒子状态
          * @param particle 粒子
          */
-        ParticleVelocityModule.prototype.updateParticleState = function (particle) {
+        ParticleVelocityModule.prototype.initParticleState = function (particle) {
             var baseVelocity = 5;
             var x = (Math.random() - 0.5) * baseVelocity;
             var y = baseVelocity;

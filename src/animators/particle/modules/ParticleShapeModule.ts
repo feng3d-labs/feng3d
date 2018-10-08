@@ -22,12 +22,12 @@ namespace feng3d
         shape: ParticleSystemShape;
 
         /**
-         * 更新粒子状态
+         * 初始化粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle)
+        initParticleState(particle: Particle)
         {
-            this.shape.updateParticleState(particle);
+            this.shape.initParticleState(particle);
         }
 
         private _onTypeChanged()

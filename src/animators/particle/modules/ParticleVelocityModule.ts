@@ -6,10 +6,10 @@ namespace feng3d
     export class ParticleVelocityModule extends ParticleModule
     {
         /**
-         * 更新粒子状态
+         * 初始化粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle)
+        initParticleState(particle: Particle)
         {
             var baseVelocity = 5;
 

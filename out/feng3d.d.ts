@@ -12260,10 +12260,10 @@ declare namespace feng3d {
         height: number;
         arc: number;
         /**
-         * 更新粒子状态
+         * 初始化粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle): void;
+        initParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {
@@ -12413,10 +12413,10 @@ declare namespace feng3d {
          */
         shape: ParticleSystemShape;
         /**
-         * 更新粒子状态
+         * 初始化粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle): void;
+        initParticleState(particle: Particle): void;
         private _onTypeChanged;
     }
 }
@@ -12426,10 +12426,10 @@ declare namespace feng3d {
      */
     class ParticleVelocityModule extends ParticleModule {
         /**
-         * 更新粒子状态
+         * 初始化粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle): void;
+        initParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {

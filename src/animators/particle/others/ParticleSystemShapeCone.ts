@@ -18,10 +18,10 @@ namespace feng3d
         arc = 360;
 
         /**
-         * 更新粒子状态
+         * 初始化粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle)
+        initParticleState(particle: Particle)
         {
             // 计算位置
             var angle = Math.random() * FMath.degToRad(this.arc);
