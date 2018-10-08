@@ -12159,7 +12159,7 @@ declare namespace feng3d {
         /**
          * 更新活跃粒子状态
          */
-        private updateActiveParticlesState;
+        private _updateActiveParticlesState;
         /**
          * 初始化粒子状态
          * @param particle 粒子

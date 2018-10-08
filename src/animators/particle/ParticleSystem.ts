@@ -84,7 +84,7 @@ namespace feng3d
 
             this.time = this.time + this.main.simulationSpeed * interval / 1000;
 
-            this.updateActiveParticlesState();
+            this._updateActiveParticlesState();
 
             this._emit();
 
@@ -341,7 +341,7 @@ namespace feng3d
         /**
          * 更新活跃粒子状态
          */
-        private updateActiveParticlesState()
+        private _updateActiveParticlesState()
         {
             for (let i = this._activeParticles.length - 1; i >= 0; i--)
             {

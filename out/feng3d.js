@@ -23880,7 +23880,7 @@ var feng3d;
             if (!this.isPlaying)
                 return;
             this.time = this.time + this.main.simulationSpeed * interval / 1000;
-            this.updateActiveParticlesState();
+            this._updateActiveParticlesState();
             this._emit();
             this._preEmitTime = this.time;
             this._isInvalid = true;
@@ -24055,7 +24055,7 @@ var feng3d;
         /**
          * 更新活跃粒子状态
          */
-        ParticleSystem.prototype.updateActiveParticlesState = function () {
+        ParticleSystem.prototype._updateActiveParticlesState = function () {
             for (var i = this._activeParticles.length - 1; i >= 0; i--) {
                 var particle = this._activeParticles[i];
                 if (particle.birthTime + particle.lifetime + this.main.startDelay < this.time) {
