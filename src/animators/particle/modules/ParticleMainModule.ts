@@ -152,10 +152,10 @@ namespace feng3d
         autoRandomSeed = true;
 
         /**
-		 * 创建粒子属性
-         * @param particle                  粒子
-		 */
-        generateParticle(particle: Particle, particleSystem: ParticleSystem)
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle)
         {
             particle.color.copyFrom(this.startColor);
         }

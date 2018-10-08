@@ -12099,11 +12099,15 @@ declare namespace feng3d {
         isInvalid: boolean;
         invalidate(): void;
         /**
-         * 创建粒子属性
-         * @param particle                  粒子
+         * 初始化粒子状态
+         * @param particle 粒子
          */
-        generateParticle(particle: Particle, particleSystem: ParticleSystem): void;
-        setRenderState(particleSystem: ParticleSystem, renderAtomic: RenderAtomic): void;
+        initParticleState(particle: Particle): void;
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {
@@ -12128,14 +12132,10 @@ declare namespace feng3d {
         private _birthTimes;
         particleSystem: ParticleSystem;
         /**
-         * 创建粒子属性
-         * @param particle                  粒子
+         * 初始化粒子状态
+         * @param particle 粒子
          */
-        generateParticle(particle: Particle, particleSystem: ParticleSystem): void;
-        /**
-         * 获取出生时间数组
-         */
-        private getBirthTimeArray;
+        initParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {
@@ -12148,7 +12148,7 @@ declare namespace feng3d {
          * 创建粒子属性
          * @param particle                  粒子
          */
-        generateParticle(particle: Particle, particleSystem: ParticleSystem): void;
+        initParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {
@@ -12157,7 +12157,11 @@ declare namespace feng3d {
      * 开启后粒子将不会收到受到旋转控制，始终面向摄像机
      */
     class ParticleBillboard extends ParticleComponent {
-        setRenderState(particleSystem: ParticleSystem, renderAtomic: RenderAtomic): void;
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {
@@ -12253,6 +12257,11 @@ declare namespace feng3d {
          * 更新活跃粒子状态
          */
         private updateActiveParticlesState;
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        private initParticleState;
         /**
          * 更新粒子状态
          * @param particle 粒子
@@ -12385,10 +12394,10 @@ declare namespace feng3d {
          */
         autoRandomSeed: boolean;
         /**
-         * 创建粒子属性
-         * @param particle                  粒子
+         * 初始化粒子状态
+         * @param particle 粒子
          */
-        generateParticle(particle: Particle, particleSystem: ParticleSystem): void;
+        initParticleState(particle: Particle): void;
         private numParticlesChanged;
         private onStartColorChanged;
     }

@@ -25,21 +25,21 @@ namespace feng3d
         }
 
         /**
-		 * 创建粒子属性
-         * @param particle                  粒子
-		 */
-        generateParticle(particle: Particle, particleSystem: ParticleSystem)
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle)
         {
 
         }
 
-        setRenderState(particleSystem: ParticleSystem, renderAtomic: RenderAtomic)
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle)
         {
-            if (this.isInvalid)
-            {
-                particleSystem.invalidate();
-                this.isInvalid = false;
-            }
+
         }
     }
 }

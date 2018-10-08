@@ -29,56 +29,12 @@ namespace feng3d
         particleSystem: ParticleSystem;
 
         /**
-		 * 创建粒子属性
-         * @param particle                  粒子
-		 */
-        generateParticle(particle: Particle, particleSystem: ParticleSystem)
-        {
-            if (this._numParticles != particleSystem.main.maxParticles)
-                this.isInvalid = true;
-            this._numParticles = particleSystem.main.maxParticles;
-
-            particle.birthTime = this.getBirthTimeArray(particleSystem.main.maxParticles)[particle.index];
-        }
-
-        /**
-         * 获取出生时间数组
+         * 初始化粒子状态
+         * @param particle 粒子
          */
-        private getBirthTimeArray(numParticles: number)
+        initParticleState(particle: Particle)
         {
-            if (this.isInvalid)
-            {
-                this.isInvalid = false;
 
-                var birthTimes: number[] = [];
-                var bursts = this.bursts.concat();
-                //按时间降序排列
-                bursts.sort((a: { time: number; }, b: { time: number; }) => { return b.time - a.time });
-                var index = 0;
-                var time = 0;//以秒为单位
-                var i = 0;
-                var timeStep = 1 / this.rate;
-                while (index < numParticles)
-                {
-                    while (bursts.length > 0 && bursts[bursts.length - 1].time <= time)
-                    {
-                        var burst = bursts.pop();
-                        if (burst)
-                        {
-                            for (i = 0; i < burst.num; i++)
-                            {
-                                birthTimes[index++] = burst.time;
-                            }
-                        }
-                    }
-
-                    birthTimes[index++] = time;
-                    time += timeStep;
-                }
-                this._birthTimes = birthTimes;
-            }
-
-            return this._birthTimes;
         }
     }
 }

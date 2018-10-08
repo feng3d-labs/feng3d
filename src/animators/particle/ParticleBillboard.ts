@@ -6,22 +6,13 @@ namespace feng3d
      */
     export class ParticleBillboard extends ParticleComponent
     {
-        setRenderState(particleSystem: ParticleSystem, renderAtomic: RenderAtomic)
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle)
         {
-            super.setRenderState(particleSystem, renderAtomic);
 
-            var cameraMatrix = lazy.getvalue(renderAtomic.uniforms.u_cameraMatrix)
-            if (this.enabled && cameraMatrix)
-            {
-                var gameObject = particleSystem.gameObject;
-                var matrix = particleSystem.particleGlobal.billboardMatrix;
-                matrix.copyFrom(gameObject.transform.localToWorldMatrix);
-                matrix.lookAt(cameraMatrix.position, cameraMatrix.up);
-                matrix.position = Vector3.ZERO;
-            } else
-            {
-                particleSystem.particleGlobal.billboardMatrix.identity();
-            }
         }
     }
 }

@@ -23849,16 +23849,16 @@ var feng3d;
             this.isInvalid = true;
         };
         /**
-         * 创建粒子属性
-         * @param particle                  粒子
+         * 初始化粒子状态
+         * @param particle 粒子
          */
-        ParticleComponent.prototype.generateParticle = function (particle, particleSystem) {
+        ParticleComponent.prototype.initParticleState = function (particle) {
         };
-        ParticleComponent.prototype.setRenderState = function (particleSystem, renderAtomic) {
-            if (this.isInvalid) {
-                particleSystem.invalidate();
-                this.isInvalid = false;
-            }
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticleComponent.prototype.updateParticleState = function (particle) {
         };
         __decorate([
             feng3d.oav(),
@@ -23891,44 +23891,10 @@ var feng3d;
             return _this;
         }
         /**
-         * 创建粒子属性
-         * @param particle                  粒子
+         * 初始化粒子状态
+         * @param particle 粒子
          */
-        ParticleEmission.prototype.generateParticle = function (particle, particleSystem) {
-            if (this._numParticles != particleSystem.main.maxParticles)
-                this.isInvalid = true;
-            this._numParticles = particleSystem.main.maxParticles;
-            particle.birthTime = this.getBirthTimeArray(particleSystem.main.maxParticles)[particle.index];
-        };
-        /**
-         * 获取出生时间数组
-         */
-        ParticleEmission.prototype.getBirthTimeArray = function (numParticles) {
-            if (this.isInvalid) {
-                this.isInvalid = false;
-                var birthTimes = [];
-                var bursts = this.bursts.concat();
-                //按时间降序排列
-                bursts.sort(function (a, b) { return b.time - a.time; });
-                var index = 0;
-                var time = 0; //以秒为单位
-                var i = 0;
-                var timeStep = 1 / this.rate;
-                while (index < numParticles) {
-                    while (bursts.length > 0 && bursts[bursts.length - 1].time <= time) {
-                        var burst = bursts.pop();
-                        if (burst) {
-                            for (i = 0; i < burst.num; i++) {
-                                birthTimes[index++] = burst.time;
-                            }
-                        }
-                    }
-                    birthTimes[index++] = time;
-                    time += timeStep;
-                }
-                this._birthTimes = birthTimes;
-            }
-            return this._birthTimes;
+        ParticleEmission.prototype.initParticleState = function (particle) {
         };
         __decorate([
             feng3d.oav({ tooltip: "每秒发射粒子数量" }),
@@ -23957,7 +23923,7 @@ var feng3d;
          * 创建粒子属性
          * @param particle                  粒子
          */
-        ParticleVelocity.prototype.generateParticle = function (particle, particleSystem) {
+        ParticleVelocity.prototype.initParticleState = function (particle) {
             var baseVelocity = 1;
             var x = (Math.random() - 0.5) * baseVelocity;
             var y = baseVelocity;
@@ -23979,19 +23945,12 @@ var feng3d;
         function ParticleBillboard() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        ParticleBillboard.prototype.setRenderState = function (particleSystem, renderAtomic) {
-            _super.prototype.setRenderState.call(this, particleSystem, renderAtomic);
-            var cameraMatrix = feng3d.lazy.getvalue(renderAtomic.uniforms.u_cameraMatrix);
-            if (this.enabled && cameraMatrix) {
-                var gameObject = particleSystem.gameObject;
-                var matrix = particleSystem.particleGlobal.billboardMatrix;
-                matrix.copyFrom(gameObject.transform.localToWorldMatrix);
-                matrix.lookAt(cameraMatrix.position, cameraMatrix.up);
-                matrix.position = feng3d.Vector3.ZERO;
-            }
-            else {
-                particleSystem.particleGlobal.billboardMatrix.identity();
-            }
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticleBillboard.prototype.updateParticleState = function (particle) {
+            _super.prototype.updateParticleState.call(this, particle);
         };
         return ParticleBillboard;
     }(feng3d.ParticleComponent));
@@ -24194,6 +24153,7 @@ var feng3d;
                 particle.lifetime = this.main.startLifetime;
                 particle.color = this.main.startColor;
                 this.activeParticles.push(particle);
+                this.initParticleState(particle);
                 this.updateParticleState(particle);
             }
         };
@@ -24216,10 +24176,28 @@ var feng3d;
             }
         };
         /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        ParticleSystem.prototype.initParticleState = function (particle) {
+            this.main.initParticleState(particle);
+            this.emission.initParticleState(particle);
+            this.components.forEach(function (element) {
+                if (element.enabled)
+                    element.initParticleState(particle);
+            });
+        };
+        /**
          * 更新粒子状态
          * @param particle 粒子
          */
         ParticleSystem.prototype.updateParticleState = function (particle) {
+            this.main.updateParticleState(particle);
+            this.emission.updateParticleState(particle);
+            this.components.forEach(function (element) {
+                if (element.enabled)
+                    element.updateParticleState(particle);
+            });
         };
         ParticleSystem.prototype.numParticlesChanged = function (maxParticles) {
             this.particlePool = [];
@@ -24240,11 +24218,11 @@ var feng3d;
             //
             for (var i = 0; i < this.main.maxParticles; i++) {
                 var particle = new feng3d.Particle(i);
-                this.emission.generateParticle(particle, this);
-                this.main.generateParticle(particle, this);
+                this.emission.initParticleState(particle, this);
+                this.main.initParticleState(particle, this);
                 this.components.forEach(function (element) {
                     if (element.enabled)
-                        element.generateParticle(particle, _this);
+                        element.initParticleState(particle, _this);
                 });
                 this.collectionParticle(particle);
             }
@@ -24299,10 +24277,10 @@ var feng3d;
                 this._awaked = true;
             }
             //
-            this.emission.setRenderState(this, renderAtomic);
-            this.main.setRenderState(this, renderAtomic);
+            this.emission.updateParticleState(this, renderAtomic);
+            this.main.updateParticleState(this, renderAtomic);
             this.components.forEach(function (element) {
-                element.setRenderState(_this, renderAtomic);
+                element.updateParticleState(_this, renderAtomic);
             });
             if (this._isInvalid) {
                 this.generateParticles();
@@ -24490,10 +24468,10 @@ var feng3d;
             return _this;
         }
         /**
-         * 创建粒子属性
-         * @param particle                  粒子
+         * 初始化粒子状态
+         * @param particle 粒子
          */
-        ParticleMainModule.prototype.generateParticle = function (particle, particleSystem) {
+        ParticleMainModule.prototype.initParticleState = function (particle) {
             particle.color.copyFrom(this.startColor);
         };
         ParticleMainModule.prototype.numParticlesChanged = function () {
