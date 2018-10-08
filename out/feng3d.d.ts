@@ -12126,16 +12126,7 @@ declare namespace feng3d {
         isInvalid: boolean;
         private _numParticles;
         private _birthTimes;
-        /**
-         * 上次发射时间
-         */
-        pretime: number;
         particleSystem: ParticleSystem;
-        /**
-         * 发射粒子
-         * @param time 当前粒子时间
-         */
-        emit(time: number, deathParticles: Particle[], survivalParticles: Particle[], changedParticles: Particle[]): void;
         /**
          * 创建粒子属性
          * @param particle                  粒子
@@ -12197,27 +12188,19 @@ declare namespace feng3d {
          */
         time: number;
         main: ParticleMainModule;
-        particleEmission: ParticleEmission;
+        emission: ParticleEmission;
         /**
          * 粒子全局属性
          */
         readonly particleGlobal: ParticleGlobal;
         /**
-         * 粒子列表
+         * 粒子池，用于存放未发射或者死亡粒子
          */
-        private particles;
+        private particlePool;
         /**
-         * 死亡粒子列表，这些粒子可以被发射器进行发射
+         * 活跃的粒子列表
          */
-        private deathParticles;
-        /**
-         * 存活粒子列表，这些粒子将会在帧刷中进行状态计算，当生命周期结束时将会被移除且加入到死亡粒子列表中
-         */
-        private survivalParticles;
-        /**
-         * 被修改过的粒子列表，这些粒子将会在渲染前进行更新渲染va数据
-         */
-        private changedParticles;
+        private activeParticles;
         /**
          * 属性数据列表
          */
@@ -12250,7 +12233,25 @@ declare namespace feng3d {
          * 继续
          */
         continue(): void;
+        /**
+         * 上次发射时间
+         */
+        private pretime;
+        /**
+         * 发射粒子
+         * @param time 当前粒子时间
+         */
+        emit(): void;
         invalidate(): void;
+        /**
+         * 更新活跃粒子状态
+         */
+        private updateActiveParticlesState;
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        private updateParticleState;
         private numParticlesChanged;
         /**
          * 生成粒子

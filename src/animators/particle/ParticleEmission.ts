@@ -26,48 +26,7 @@ namespace feng3d
 
         private _birthTimes: number[];
 
-        /**
-         * 上次发射时间
-         */
-        pretime = 0;
-
         particleSystem: ParticleSystem;
-
-        /**
-         * 发射粒子
-         * @param time 当前粒子时间
-         */
-        emit(time: number, deathParticles: Particle[], survivalParticles: Particle[], changedParticles: Particle[])
-        {
-            if (deathParticles.length == 0)
-                return;
-            var emits: { time: number, num: number }[] = [];
-            //计算事件段内正常发射了粒子
-            var step = 1 / this.rate;
-            for (var i = this.pretime; i < time; i += step)
-            {
-                emits.push({ time: i, num: 1 });
-            }
-            //按时间降序排列，获取该事件段内爆发的粒子
-            var bursts = this.bursts.filter((a) => (this.pretime <= a.time && a.time < time));
-            //
-            emits = emits.concat(bursts).sort((a: { time: number; }, b: { time: number; }) => { return b.time - a.time });
-            for (let i = 0; i < emits.length; i++)
-            {
-                if (deathParticles.length == 0)
-                    return;
-                const element = emits[i];
-                for (let j = 0; j < element.num; j++)
-                {
-                    if (deathParticles.length == 0)
-                        return;
-                    // 获取将要发射粒子的寿命
-
-                    // getLifetime();
-
-                }
-            }
-        }
 
         /**
 		 * 创建粒子属性
