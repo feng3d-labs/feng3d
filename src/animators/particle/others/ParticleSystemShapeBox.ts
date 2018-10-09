@@ -28,7 +28,7 @@ namespace feng3d
 
             var p = new Vector3(this.boxX, this.boxY, this.boxZ).multiply(Vector3.random().scale(2).subNumber(1));
 
-            particle.position.copy(p);
+            particle.startPosition.copy(p);
 
             // 计算速度
             particle.velocity.copy(dir).scale(particle.startSpeed);

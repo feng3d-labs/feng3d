@@ -25,7 +25,7 @@ namespace feng3d
             var p = dir.scaleTo(this.radius * Math.random());
 
             //
-            particle.position.copy(p);
+            particle.startPosition.copy(p);
 
             // 计算速度
             particle.velocity.copy(dir).scale(particle.startSpeed);

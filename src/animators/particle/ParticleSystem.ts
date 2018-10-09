@@ -176,29 +176,17 @@ namespace feng3d
 
             if (this._isInvalid)
             {
-                var birthTimes: number[] = [];
                 var positions: number[] = [];
-                var velocitys: number[] = [];
-                var accelerations: number[] = [];
-                var lifetimes: number[] = [];
                 var colors: number[] = [];
                 for (let i = 0, n = this._activeParticles.length; i < n; i++)
                 {
                     var particle = this._activeParticles[i];
-                    birthTimes.push(particle.birthTime);
                     positions.push(particle.position.x, particle.position.y, particle.position.z)
-                    velocitys.push(particle.velocity.x, particle.velocity.y, particle.velocity.z)
-                    accelerations.push(particle.acceleration.x, particle.acceleration.y, particle.acceleration.z)
-                    lifetimes.push(particle.lifetime);
                     colors.push(particle.color.r, particle.color.g, particle.color.b, particle.color.a);
                 }
 
                 //
-                this._attributes.a_particle_birthTime.data = birthTimes;
                 this._attributes.a_particle_position.data = positions;
-                this._attributes.a_particle_velocity.data = velocitys;
-                this._attributes.a_particle_acceleration.data = accelerations;
-                this._attributes.a_particle_lifetime.data = lifetimes;
                 this._attributes.a_particle_color.data = colors;
 
                 //
@@ -236,11 +224,7 @@ namespace feng3d
          * 属性数据列表
          */
         private _attributes = {
-            a_particle_birthTime: new Attribute("a_particle_birthTime", [], 1, 1),
             a_particle_position: new Attribute("a_particle_position", [], 3, 1),
-            a_particle_velocity: new Attribute("a_particle_velocity", [], 3, 1),
-            a_particle_acceleration: new Attribute("a_particle_acceleration", [], 3, 1),
-            a_particle_lifetime: new Attribute("a_particle_lifetime", [], 1, 1),
             a_particle_color: new Attribute("a_particle_color", [], 4, 1),
         };
 
@@ -335,7 +319,6 @@ namespace feng3d
                     var particle = this._particlePool.pop() || new Particle();
                     particle.birthTime = realTime;
                     particle.lifetime = startLifetime;
-                    particle.color = this.main.startColor;
                     this._activeParticles.push(particle);
                     this._initParticleState(particle);
                     this._updateParticleState(particle);
@@ -355,7 +338,6 @@ namespace feng3d
                 {
                     this._activeParticles.splice(i, 1);
                     this._particlePool.push(particle);
-                    particle.clear();
                 } else
                 {
                     this._updateParticleState(particle);
@@ -379,6 +361,7 @@ namespace feng3d
         private _updateParticleState(particle: Particle)
         {
             this._modules.forEach(v => { v.enabled && v.updateParticleState(particle) });
+            particle.updateState(this.time - this.main.startDelay);
         }
     }
 

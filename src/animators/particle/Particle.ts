@@ -9,7 +9,6 @@ namespace feng3d
 	 */
 	export class Particle
 	{
-
 		/**
 		 * 出生时间
 		 */
@@ -21,9 +20,29 @@ namespace feng3d
 		lifetime = 5;
 
 		/**
-		 * 位移
+		 * 起始位置
+		 */
+		startPosition = new Vector3();
+
+		/**
+		 * 起始速度
+		 */
+		startSpeed = 1;
+
+		/**
+		 * 起始颜色
+		 */
+		startColor = new Color4();
+
+		/**
+		 * 计算后的位置
 		 */
 		position = new Vector3();
+
+		/**
+		 * 颜色
+		 */
+		color = new Color4();
 
 		/**
 		 * 旋转
@@ -46,22 +65,19 @@ namespace feng3d
 		acceleration = new Vector3();
 
 		/**
-		 * 颜色
+		 * 更新状态
 		 */
-		color = new Color4();
-
-		/**
-		 * 起始速度
-		 */
-		startSpeed = 1;
-
-		/**
-		 * 还原起始值
-		 */
-		clear()
+		updateState(time: number)
 		{
-			serialization.setValue(this, <any>particle);
+			var pTime = time - this.birthTime;
+
+			// 计算位置
+			this.position.x = this.startPosition.x + (this.velocity.x + this.acceleration.x * pTime) * pTime;
+			this.position.y = this.startPosition.y + (this.velocity.y + this.acceleration.y * pTime) * pTime;
+			this.position.z = this.startPosition.z + (this.velocity.z + this.acceleration.z * pTime) * pTime;
+
+			// 计算颜色值
+			this.color.copyFrom(this.startColor);
 		}
 	}
-	var particle = new Particle();
 }
