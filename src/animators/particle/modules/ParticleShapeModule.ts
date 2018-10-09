@@ -47,6 +47,9 @@ namespace feng3d
                 case ParticleSystemShapeType.Circle:
                     this.shape = new ParticleSystemShapeCircle();
                     break;
+                case ParticleSystemShapeType.Edge:
+                    this.shape = new ParticleSystemShapeEdge();
+                    break;
             }
             serialization.setValue(this.shape, preValue);
             this.dispatch("refreshView");

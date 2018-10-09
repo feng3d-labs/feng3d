@@ -238,6 +238,7 @@
         "src/animators/particle/others/ParticleSystemShapeSphere.ts",
         "src/animators/particle/others/ParticleSystemShapeBox.ts",
         "src/animators/particle/others/ParticleSystemShapeCircle.ts",
+        "src/animators/particle/others/ParticleSystemShapeEdge.ts",
         //
         "src/animators/particle/modules/ParticleModule.ts",
         "src/animators/particle/modules/ParticleMainModule.ts",
