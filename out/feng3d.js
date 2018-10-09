@@ -23741,13 +23741,25 @@ var feng3d;
              */
             this.lifetime = 5;
             /**
-             * 起始位置
+             * 位置
+             */
+            this.position = new feng3d.Vector3();
+            /**
+             * 旋转
+             */
+            // rotation = new Vector3();
+            /**
+             * 缩放
+             */
+            // scale = new Vector3(1, 1, 1);
+            /**
+             * 颜色
+             */
+            this.color = new feng3d.Color4();
+            /**
+             * 起始位移
              */
             this.startPosition = new feng3d.Vector3();
-            /**
-             * 起始速度
-             */
-            this.startSpeed = 1;
             /**
              * 起始速度
              */
@@ -23761,35 +23773,27 @@ var feng3d;
              */
             this.startColor = new feng3d.Color4();
             /**
-             * 计算后的位置
+             * 附加位移
              */
-            this.position = new feng3d.Vector3();
+            this.addPosition = new feng3d.Vector3();
             /**
-             * 颜色
-             */
-            this.color = new feng3d.Color4();
-            /**
-             * 附加速度，作用于初始速度
+             * 附加速度
              */
             this.addVelocity = new feng3d.Vector3();
+            /**
+             * 附加加速度
+             */
+            this.addAcceleration = new feng3d.Vector3();
         }
-        /**
-         * 旋转
-         */
-        // rotation = new Vector3();
-        /**
-         * 缩放
-         */
-        // scale = new Vector3(1, 1, 1);
         /**
          * 更新状态
          */
         Particle.prototype.updateState = function (time) {
             var pTime = time - this.birthTime;
             // 计算位置
-            this.position.x = this.startPosition.x + (this.startVelocity.x + this.addVelocity.x + this.startAcceleration.x * pTime) * pTime;
-            this.position.y = this.startPosition.y + (this.startVelocity.y + this.addVelocity.y + this.startAcceleration.y * pTime) * pTime;
-            this.position.z = this.startPosition.z + (this.startVelocity.z + this.addVelocity.z + this.startAcceleration.z * pTime) * pTime;
+            this.position.x = this.startPosition.x + (this.startVelocity.x + this.addVelocity.x + (this.startAcceleration.x + this.addAcceleration.x) * pTime) * pTime;
+            this.position.y = this.startPosition.y + (this.startVelocity.y + this.addVelocity.y + (this.startAcceleration.y + this.addAcceleration.y) * pTime) * pTime;
+            this.position.z = this.startPosition.z + (this.startVelocity.z + this.addVelocity.z + (this.startAcceleration.z + this.addAcceleration.z) * pTime) * pTime;
             // 计算颜色值
             this.color.copyFrom(this.startColor);
         };
@@ -24213,6 +24217,7 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleSystemShapeCone.prototype.initParticleState = function (particle) {
+            var speed = particle.startVelocity.length;
             // 计算位置
             var angle = Math.random() * feng3d.FMath.degToRad(this.arc);
             var r = Math.random();
@@ -24222,7 +24227,7 @@ var feng3d;
             p.scale(this.radius + this.height * Math.tan(feng3d.FMath.degToRad(this.angle))).scale(r);
             p.z = this.height;
             var dir = p.sub(particle.startPosition).normalize();
-            particle.startVelocity.copy(dir).scale(particle.startSpeed);
+            particle.startVelocity.copy(dir).scale(speed);
         };
         __decorate([
             feng3d.serialize,
@@ -24261,12 +24266,13 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleSystemShapeSphere.prototype.initParticleState = function (particle) {
+            var speed = particle.startVelocity.length;
             // 计算位置
             var dir = feng3d.Vector3.random().scale(2).subNumber(1).normalize();
             var p = dir.scaleTo(Math.random() * this.radius);
             particle.startPosition.copy(p);
             // 计算速度
-            particle.startVelocity.copy(dir).scale(particle.startSpeed);
+            particle.startVelocity.copy(dir).scale(speed);
         };
         __decorate([
             feng3d.serialize,
@@ -24295,12 +24301,13 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleSystemShapeBox.prototype.initParticleState = function (particle) {
+            var speed = particle.startVelocity.length;
             // 计算位置
             var dir = new feng3d.Vector3(0, 0, 1);
             var p = new feng3d.Vector3(this.boxX, this.boxY, this.boxZ).multiply(feng3d.Vector3.random().scale(2).subNumber(1));
             particle.startPosition.copy(p);
             // 计算速度
-            particle.startVelocity.copy(dir).scale(particle.startSpeed);
+            particle.startVelocity.copy(dir).scale(speed);
         };
         __decorate([
             feng3d.serialize,
@@ -24336,6 +24343,7 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleSystemShapeCircle.prototype.initParticleState = function (particle) {
+            var speed = particle.startVelocity.length;
             // 计算位置
             var angle = Math.random() * feng3d.FMath.degToRad(this.arc);
             var dir = new feng3d.Vector3(Math.sin(angle), Math.cos(angle), 0);
@@ -24343,7 +24351,7 @@ var feng3d;
             //
             particle.startPosition.copy(p);
             // 计算速度
-            particle.startVelocity.copy(dir).scale(particle.startSpeed);
+            particle.startVelocity.copy(dir).scale(speed);
         };
         __decorate([
             feng3d.serialize,
@@ -24374,13 +24382,14 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleSystemShapeEdge.prototype.initParticleState = function (particle) {
+            var speed = particle.startVelocity.length;
             // 计算位置
             var dir = new feng3d.Vector3(0, 0, 1);
             var p = new feng3d.Vector3(this.length * (Math.random() * 2 - 1), 0, 0);
             //
             particle.startPosition.copy(p);
             // 计算速度
-            particle.startVelocity.copy(dir).scale(particle.startSpeed);
+            particle.startVelocity.copy(dir).scale(speed);
         };
         __decorate([
             feng3d.serialize,
@@ -24507,14 +24516,17 @@ var feng3d;
          */
         ParticleMainModule.prototype.initParticleState = function (particle) {
             particle.startColor.copyFrom(this.startColor);
-            particle.startSpeed = this.startSpeed;
+            particle.startVelocity = new feng3d.Vector3(0, 0, this.startSpeed);
+            particle.startAcceleration.init(0, this.gravityModifier * 9.8, 0);
         };
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
         ParticleMainModule.prototype.updateParticleState = function (particle) {
+            particle.addPosition.init(0, 0, 0);
             particle.addVelocity.init(0, 0, 0);
+            particle.addAcceleration.init(0, 0, 0);
         };
         __decorate([
             feng3d.serialize

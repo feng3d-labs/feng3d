@@ -156,7 +156,8 @@ namespace feng3d
         initParticleState(particle: Particle)
         {
             particle.startColor.copyFrom(this.startColor);
-            particle.startSpeed = this.startSpeed;
+            particle.startVelocity = new Vector3(0, 0, this.startSpeed);
+            particle.startAcceleration.init(0, this.gravityModifier * 9.8, 0);
         }
 
         /**
@@ -165,7 +166,9 @@ namespace feng3d
          */
         updateParticleState(particle: Particle)
         {
+            particle.addPosition.init(0, 0, 0);
             particle.addVelocity.init(0, 0, 0);
+            particle.addAcceleration.init(0, 0, 0);
         }
     }
 }

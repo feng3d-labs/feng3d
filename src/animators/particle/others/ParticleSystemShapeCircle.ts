@@ -19,6 +19,8 @@ namespace feng3d
          */
         initParticleState(particle: Particle)
         {
+            var speed = particle.startVelocity.length;
+
             // 计算位置
             var angle = Math.random() * FMath.degToRad(this.arc);
             var dir = new Vector3(Math.sin(angle), Math.cos(angle), 0);
@@ -28,7 +30,7 @@ namespace feng3d
             particle.startPosition.copy(p);
 
             // 计算速度
-            particle.startVelocity.copy(dir).scale(particle.startSpeed);
+            particle.startVelocity.copy(dir).scale(speed);
         }
     }
 }

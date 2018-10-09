@@ -12025,13 +12025,23 @@ declare namespace feng3d {
          */
         lifetime: number;
         /**
-         * 起始位置
+         * 位置
+         */
+        position: Vector3;
+        /**
+         * 旋转
+         */
+        /**
+         * 缩放
+         */
+        /**
+         * 颜色
+         */
+        color: Color4;
+        /**
+         * 起始位移
          */
         startPosition: Vector3;
-        /**
-         * 起始速度
-         */
-        startSpeed: number;
         /**
          * 起始速度
          */
@@ -12045,23 +12055,17 @@ declare namespace feng3d {
          */
         startColor: Color4;
         /**
-         * 计算后的位置
+         * 附加位移
          */
-        position: Vector3;
+        addPosition: Vector3;
         /**
-         * 颜色
-         */
-        color: Color4;
-        /**
-         * 附加速度，作用于初始速度
+         * 附加速度
          */
         addVelocity: Vector3;
         /**
-         * 旋转
+         * 附加加速度
          */
-        /**
-         * 缩放
-         */
+        addAcceleration: Vector3;
         /**
          * 更新状态
          */

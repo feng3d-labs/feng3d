@@ -17,14 +17,29 @@ namespace feng3d
 		lifetime = 5;
 
 		/**
-		 * 起始位置
+		 * 位置
 		 */
-		startPosition = new Vector3();
+		position = new Vector3();
 
 		/**
-		 * 起始速度
+		 * 旋转
 		 */
-		startSpeed = 1;
+		// rotation = new Vector3();
+
+		/**
+		 * 缩放
+		 */
+		// scale = new Vector3(1, 1, 1);
+
+		/**
+		 * 颜色
+		 */
+		color = new Color4();
+
+		/**
+		 * 起始位移
+		 */
+		startPosition = new Vector3();
 
 		/**
 		 * 起始速度
@@ -42,29 +57,19 @@ namespace feng3d
 		startColor = new Color4();
 
 		/**
-		 * 计算后的位置
+		 * 附加位移
 		 */
-		position = new Vector3();
+		addPosition = new Vector3();
 
 		/**
-		 * 颜色
-		 */
-		color = new Color4();
-
-		/**
-		 * 附加速度，作用于初始速度
+		 * 附加速度
 		 */
 		addVelocity = new Vector3();
 
 		/**
-		 * 旋转
+		 * 附加加速度
 		 */
-		// rotation = new Vector3();
-
-		/**
-		 * 缩放
-		 */
-		// scale = new Vector3(1, 1, 1);
+		addAcceleration = new Vector3();
 
 		/**
 		 * 更新状态
@@ -74,9 +79,9 @@ namespace feng3d
 			var pTime = time - this.birthTime;
 
 			// 计算位置
-			this.position.x = this.startPosition.x + (this.startVelocity.x + this.addVelocity.x + this.startAcceleration.x * pTime) * pTime;
-			this.position.y = this.startPosition.y + (this.startVelocity.y + this.addVelocity.y + this.startAcceleration.y * pTime) * pTime;
-			this.position.z = this.startPosition.z + (this.startVelocity.z + this.addVelocity.z + this.startAcceleration.z * pTime) * pTime;
+			this.position.x = this.startPosition.x + (this.startVelocity.x + this.addVelocity.x + (this.startAcceleration.x + this.addAcceleration.x) * pTime) * pTime;
+			this.position.y = this.startPosition.y + (this.startVelocity.y + this.addVelocity.y + (this.startAcceleration.y + this.addAcceleration.y) * pTime) * pTime;
+			this.position.z = this.startPosition.z + (this.startVelocity.z + this.addVelocity.z + (this.startAcceleration.z + this.addAcceleration.z) * pTime) * pTime;
 
 			// 计算颜色值
 			this.color.copyFrom(this.startColor);
