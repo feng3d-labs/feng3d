@@ -37,7 +37,7 @@ namespace feng3d
             p.scale(this.radius + this.height * Math.tan(FMath.degToRad(this.angle))).scale(r);
             p.z = this.height;
             var dir = p.sub(particle.startPosition).normalize();
-            particle.velocity.copy(dir).scale(particle.startSpeed);
+            particle.startVelocity.copy(dir).scale(particle.startSpeed);
         }
     }
 }

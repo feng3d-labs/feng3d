@@ -158,5 +158,14 @@ namespace feng3d
             particle.startColor.copyFrom(this.startColor);
             particle.startSpeed = this.startSpeed;
         }
+
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle)
+        {
+            particle.addVelocity.init(0, 0, 0);
+        }
     }
 }

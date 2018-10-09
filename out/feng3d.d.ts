@@ -12014,9 +12014,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 粒子
-     * 粒子系统会自动在shader中匹配一个"a_particle_${attribute}"顶点属性"
-     * 例如：position 对应 a_particle_position
-
      */
     class Particle {
         /**
@@ -12036,6 +12033,14 @@ declare namespace feng3d {
          */
         startSpeed: number;
         /**
+         * 起始速度
+         */
+        startVelocity: Vector3;
+        /**
+         * 起始加速度
+         */
+        startAcceleration: Vector3;
+        /**
          * 起始颜色
          */
         startColor: Color4;
@@ -12048,19 +12053,15 @@ declare namespace feng3d {
          */
         color: Color4;
         /**
+         * 附加速度，作用于初始速度
+         */
+        addVelocity: Vector3;
+        /**
          * 旋转
          */
         /**
          * 缩放
          */
-        /**
-         * 速度
-         */
-        velocity: Vector3;
-        /**
-         * 加速度
-         */
-        acceleration: Vector3;
         /**
          * 更新状态
          */
@@ -12236,11 +12237,6 @@ declare namespace feng3d {
          * @param particle 粒子
          */
         initParticleState(particle: Particle): void;
-        /**
-         * 更新粒子状态
-         * @param particle 粒子
-         */
-        updateParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {
@@ -12417,6 +12413,11 @@ declare namespace feng3d {
          * @param particle 粒子
          */
         initParticleState(particle: Particle): void;
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {
@@ -12462,6 +12463,9 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 粒子系统 速度随时间变化模块
+     *
+     * Controls the velocity of each particle during its lifetime.
+     * 控制每个粒子在其生命周期内的速度。
      */
     class ParticleVelocityOverLifetimeModule extends ParticleModule {
         velocity: Vector3;
