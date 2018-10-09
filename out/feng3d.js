@@ -23880,10 +23880,12 @@ var feng3d;
         });
         ParticleSystem.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
-            this.main = this.main || new feng3d.ParticleMainModule();
-            this.emission = this.emission || new feng3d.ParticleEmissionModule();
-            this.shape = this.shape || new feng3d.ParticleShapeModule();
-            this._modules = [this.main, this.emission, this.shape];
+            this._modules = [
+                this.main = this.main || new feng3d.ParticleMainModule(),
+                this.emission = this.emission || new feng3d.ParticleEmissionModule(),
+                this.shape = this.shape || new feng3d.ParticleShapeModule(),
+                this.velocityOverLifetime = this.velocityOverLifetime || new feng3d.ParticleVelocityOverLifetimeModule(),
+            ];
         };
         ParticleSystem.prototype.update = function (interval) {
             if (!this.isPlaying)
@@ -24103,6 +24105,10 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ block: "shape", component: "OAVObjectView" })
         ], ParticleSystem.prototype, "shape", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "velocityOverLifetime", component: "OAVObjectView" })
+        ], ParticleSystem.prototype, "velocityOverLifetime", void 0);
         __decorate([
             feng3d.oav({ block: "Renderer" })
         ], ParticleSystem.prototype, "geometry", void 0);
@@ -24626,7 +24632,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 粒子发射器
-
      */
     var ParticleEmissionModule = /** @class */ (function (_super) {
         __extends(ParticleEmissionModule, _super);
@@ -24711,6 +24716,33 @@ var feng3d;
         return ParticleShapeModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleShapeModule = ParticleShapeModule;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 粒子系统 速度随时间变化模块
+     */
+    var ParticleVelocityOverLifetimeModule = /** @class */ (function (_super) {
+        __extends(ParticleVelocityOverLifetimeModule, _super);
+        function ParticleVelocityOverLifetimeModule() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.velocity = new feng3d.Vector3();
+            return _this;
+        }
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticleVelocityOverLifetimeModule.prototype.updateParticleState = function (particle) {
+            particle.velocity;
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], ParticleVelocityOverLifetimeModule.prototype, "velocity", void 0);
+        return ParticleVelocityOverLifetimeModule;
+    }(feng3d.ParticleModule));
+    feng3d.ParticleVelocityOverLifetimeModule = ParticleVelocityOverLifetimeModule;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

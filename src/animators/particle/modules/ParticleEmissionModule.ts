@@ -2,7 +2,6 @@ namespace feng3d
 {
     /**
      * 粒子发射器
-
      */
     export class ParticleEmissionModule extends ParticleModule
     {

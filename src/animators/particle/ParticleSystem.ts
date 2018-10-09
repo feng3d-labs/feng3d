@@ -43,6 +43,10 @@ namespace feng3d
         @oav({ block: "shape", component: "OAVObjectView" })
         shape: ParticleShapeModule;
 
+        @serialize
+        @oav({ block: "velocityOverLifetime", component: "OAVObjectView" })
+        velocityOverLifetime: ParticleVelocityOverLifetimeModule;
+
         @oav({ block: "Renderer" })
         geometry = Geometry.billboard;
 
@@ -71,11 +75,12 @@ namespace feng3d
         {
             super.init(gameObject);
 
-            this.main = this.main || new ParticleMainModule()
-            this.emission = this.emission || new ParticleEmissionModule();
-            this.shape = this.shape || new ParticleShapeModule();
-
-            this._modules = [this.main, this.emission, this.shape];
+            this._modules = [
+                this.main = this.main || new ParticleMainModule(),
+                this.emission = this.emission || new ParticleEmissionModule(),
+                this.shape = this.shape || new ParticleShapeModule(),
+                this.velocityOverLifetime = this.velocityOverLifetime || new ParticleVelocityOverLifetimeModule(),
+            ];
         }
 
         update(interval: number)
