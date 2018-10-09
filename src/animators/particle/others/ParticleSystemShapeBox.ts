@@ -24,9 +24,9 @@ namespace feng3d
         initParticleState(particle: Particle)
         {
             // 计算位置
-            var dir = new Vector3(0, 1, 0);
+            var dir = new Vector3(0, 0, 1);
 
-            var p = new Vector3(this.boxX, this.boxY, this.boxZ).multiply(Vector3.random());
+            var p = new Vector3(this.boxX, this.boxY, this.boxZ).multiply(Vector3.random().scale(2).subNumber(1));
 
             particle.position.copy(p);
 

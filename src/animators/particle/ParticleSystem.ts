@@ -155,10 +155,10 @@ namespace feng3d
             var cameraMatrix = lazy.getvalue(renderAtomic.uniforms.u_cameraMatrix)
             if (this.geometry == Geometry.billboard && cameraMatrix)
             {
-                var gameObject = this.gameObject;
-                var matrix = this.billboardMatrix;
-                matrix.copyFrom(gameObject.transform.localToWorldMatrix);
+                var matrix = this.billboardMatrix.identity();
+                matrix.position = this.gameObject.transform.scenePosition;
                 matrix.lookAt(cameraMatrix.position, cameraMatrix.up);
+                matrix.append(this.gameObject.transform.worldToLocalRotationMatrix);
                 matrix.position = Vector3.ZERO;
             } else
             {

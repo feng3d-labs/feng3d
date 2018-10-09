@@ -107,6 +107,13 @@ namespace feng3d
             return this._localToWorldRotationMatrix;
         }
 
+        get worldToLocalRotationMatrix()
+        {
+            var mat = this.localToWorldRotationMatrix.clone();
+            mat.invert();
+            return mat;
+        }
+
         /**
          * Transforms direction from local space to world space.
          */

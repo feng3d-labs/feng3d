@@ -15450,6 +15450,15 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Transform.prototype, "worldToLocalRotationMatrix", {
+            get: function () {
+                var mat = this.localToWorldRotationMatrix.clone();
+                mat.invert();
+                return mat;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Transforms direction from local space to world space.
          */
@@ -23930,10 +23939,10 @@ var feng3d;
             }
             var cameraMatrix = feng3d.lazy.getvalue(renderAtomic.uniforms.u_cameraMatrix);
             if (this.geometry == feng3d.Geometry.billboard && cameraMatrix) {
-                var gameObject = this.gameObject;
-                var matrix = this.billboardMatrix;
-                matrix.copyFrom(gameObject.transform.localToWorldMatrix);
+                var matrix = this.billboardMatrix.identity();
+                matrix.position = this.gameObject.transform.scenePosition;
                 matrix.lookAt(cameraMatrix.position, cameraMatrix.up);
+                matrix.append(this.gameObject.transform.worldToLocalRotationMatrix);
                 matrix.position = feng3d.Vector3.ZERO;
             }
             else {
@@ -24193,11 +24202,11 @@ var feng3d;
             // 计算位置
             var angle = Math.random() * feng3d.FMath.degToRad(this.arc);
             var r = Math.random();
-            var p = new feng3d.Vector3(Math.sin(angle), 0, Math.cos(angle));
+            var p = new feng3d.Vector3(Math.sin(angle), Math.cos(angle), 0);
             particle.position.copy(p).scale(this.radius).scale(r);
             // 计算速度
             p.scale(this.radius + this.height * Math.tan(feng3d.FMath.degToRad(this.angle))).scale(r);
-            p.y = this.height;
+            p.z = this.height;
             var dir = p.sub(particle.position).normalize();
             particle.velocity.copy(dir).scale(particle.startSpeed);
         };
@@ -24273,8 +24282,8 @@ var feng3d;
          */
         ParticleSystemShapeBox.prototype.initParticleState = function (particle) {
             // 计算位置
-            var dir = new feng3d.Vector3(0, 1, 0);
-            var p = new feng3d.Vector3(this.boxX, this.boxY, this.boxZ).multiply(feng3d.Vector3.random());
+            var dir = new feng3d.Vector3(0, 0, 1);
+            var p = new feng3d.Vector3(this.boxX, this.boxY, this.boxZ).multiply(feng3d.Vector3.random().scale(2).subNumber(1));
             particle.position.copy(p);
             // 计算速度
             particle.velocity.copy(dir).scale(particle.startSpeed);
@@ -28477,21 +28486,8 @@ var feng3d;
             if (name === void 0) { name = "Particle"; }
             return new feng3d.GameObject().value({
                 name: name,
-                components: [{ __class__: "feng3d.ParticleSystem" },],
+                components: [{ __class__: "feng3d.Transform", rx: -90 }, { __class__: "feng3d.ParticleSystem" },],
             });
-            // particleSystem.numParticles = 1000;
-            // //通过函数来创建粒子初始状态
-            // particleSystem.generateFunctions.push({
-            //     generate: (particle) =>
-            //     {
-            //         particle.birthTime = Math.random() * 5 - 5;
-            //         particle.lifetime = 5;
-            //         var degree2 = Math.random() * Math.PI * 2;
-            //         var r = Math.random() * 1;
-            //         particle.velocity = new Vector3(r * Math.cos(degree2), r * 2, r * Math.sin(degree2));
-            //     }, priority: 0
-            // });
-            // particleSystem.cycle = 10;
         };
         GameObjectFactory.prototype.createWater = function (name) {
             if (name === void 0) { name = "water"; }

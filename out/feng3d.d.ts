@@ -9196,6 +9196,7 @@ declare namespace feng3d {
          */
         readonly worldToLocalMatrix: Matrix4x4;
         readonly localToWorldRotationMatrix: Matrix4x4;
+        readonly worldToLocalRotationMatrix: Matrix4x4;
         /**
          * Transforms direction from local space to world space.
          */
