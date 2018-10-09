@@ -24143,6 +24143,7 @@ var feng3d;
     (function (ParticleSystemShapeType) {
         ParticleSystemShapeType[ParticleSystemShapeType["Cone"] = 0] = "Cone";
         ParticleSystemShapeType[ParticleSystemShapeType["Sphere"] = 1] = "Sphere";
+        ParticleSystemShapeType[ParticleSystemShapeType["Box"] = 2] = "Box";
     })(ParticleSystemShapeType = feng3d.ParticleSystemShapeType || (feng3d.ParticleSystemShapeType = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -24201,15 +24202,19 @@ var feng3d;
             particle.velocity.copy(dir).scale(particle.startSpeed);
         };
         __decorate([
+            feng3d.serialize,
             feng3d.oav({ tooltip: "圆锥体开口角度。" })
         ], ParticleSystemShapeCone.prototype, "angle", void 0);
         __decorate([
+            feng3d.serialize,
             feng3d.oav({ tooltip: "圆锥体底部半径。" })
         ], ParticleSystemShapeCone.prototype, "radius", void 0);
         __decorate([
+            feng3d.serialize,
             feng3d.oav({ tooltip: "圆锥体高度" })
         ], ParticleSystemShapeCone.prototype, "height", void 0);
         __decorate([
+            feng3d.serialize,
             feng3d.oav({ tooltip: "在弧线周围产生了新的粒子。" })
         ], ParticleSystemShapeCone.prototype, "arc", void 0);
         return ParticleSystemShapeCone;
@@ -24241,11 +24246,54 @@ var feng3d;
             particle.velocity.copy(dir).scale(particle.startSpeed);
         };
         __decorate([
+            feng3d.serialize,
             feng3d.oav({ tooltip: "球体半径" })
         ], ParticleSystemShapeSphere.prototype, "radius", void 0);
         return ParticleSystemShapeSphere;
     }(feng3d.ParticleSystemShape));
     feng3d.ParticleSystemShapeSphere = ParticleSystemShapeSphere;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 粒子系统 发射盒子
+     */
+    var ParticleSystemShapeBox = /** @class */ (function (_super) {
+        __extends(ParticleSystemShapeBox, _super);
+        function ParticleSystemShapeBox() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.boxX = 1;
+            _this.boxY = 1;
+            _this.boxZ = 1;
+            return _this;
+        }
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        ParticleSystemShapeBox.prototype.initParticleState = function (particle) {
+            // 计算位置
+            var dir = new feng3d.Vector3(0, 1, 0);
+            var p = new feng3d.Vector3(this.boxX, this.boxY, this.boxZ).multiply(feng3d.Vector3.random());
+            particle.position.copy(p);
+            // 计算速度
+            particle.velocity.copy(dir).scale(particle.startSpeed);
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "盒子X方向宽度。" })
+        ], ParticleSystemShapeBox.prototype, "boxX", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "盒子Y方向宽度。" })
+        ], ParticleSystemShapeBox.prototype, "boxY", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "盒子Z方向宽度。" })
+        ], ParticleSystemShapeBox.prototype, "boxZ", void 0);
+        return ParticleSystemShapeBox;
+    }(feng3d.ParticleSystemShape));
+    feng3d.ParticleSystemShapeBox = ParticleSystemShapeBox;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -24536,13 +24584,15 @@ var feng3d;
             switch (this.type) {
                 case feng3d.ParticleSystemShapeType.Cone:
                     this.shape = new feng3d.ParticleSystemShapeCone();
-                    feng3d.serialization.setValue(this.shape, preValue);
                     break;
                 case feng3d.ParticleSystemShapeType.Sphere:
                     this.shape = new feng3d.ParticleSystemShapeSphere();
-                    feng3d.serialization.setValue(this.shape, preValue);
+                    break;
+                case feng3d.ParticleSystemShapeType.Box:
+                    this.shape = new feng3d.ParticleSystemShapeBox();
                     break;
             }
+            feng3d.serialization.setValue(this.shape, preValue);
             this.dispatch("refreshView");
         };
         __decorate([

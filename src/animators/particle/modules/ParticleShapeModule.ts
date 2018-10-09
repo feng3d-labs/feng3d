@@ -37,14 +37,15 @@ namespace feng3d
             {
                 case ParticleSystemShapeType.Cone:
                     this.shape = new ParticleSystemShapeCone();
-                    serialization.setValue(this.shape, preValue);
                     break;
                 case ParticleSystemShapeType.Sphere:
                     this.shape = new ParticleSystemShapeSphere();
-                    serialization.setValue(this.shape, preValue);
+                    break;
+                case ParticleSystemShapeType.Box:
+                    this.shape = new ParticleSystemShapeBox();
                     break;
             }
-
+            serialization.setValue(this.shape, preValue);
             this.dispatch("refreshView");
         }
     }

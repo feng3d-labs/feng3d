@@ -5,15 +5,19 @@ namespace feng3d
      */
     export class ParticleSystemShapeCone extends ParticleSystemShape
     {
+        @serialize
         @oav({ tooltip: "圆锥体开口角度。" })
         angle = 25;
-
+        
+        @serialize
         @oav({ tooltip: "圆锥体底部半径。" })
         radius = 1;
-
+        
+        @serialize
         @oav({ tooltip: "圆锥体高度" })
         height = 5;
-
+        
+        @serialize
         @oav({ tooltip: "在弧线周围产生了新的粒子。" })
         arc = 360;
 

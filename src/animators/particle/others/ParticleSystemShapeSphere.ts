@@ -5,6 +5,7 @@ namespace feng3d
      */
     export class ParticleSystemShapeSphere extends ParticleSystemShape
     {
+        @serialize
         @oav({ tooltip: "球体半径" })
         radius = 1;
 

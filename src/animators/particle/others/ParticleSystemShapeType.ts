@@ -4,5 +4,6 @@ namespace feng3d
     {
         Cone,
         Sphere,
+        Box,
     }
 }
