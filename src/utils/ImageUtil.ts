@@ -84,18 +84,21 @@ namespace feng3d
             canvas.height = size;
 
             var ctx = canvas.getContext('2d');
-            ctx.fillStyle = new Color3().fromUnit(0).toHexString();
-            ctx.fillRect(0, 0, size, size);
 
             var half = size / 2;
             for (let i = 0; i < size; i++)
             {
                 for (let j = 0; j < size; j++)
                 {
-                    var vec = new Vector2(i - half, j - half);
-                    var f = 1 - FMath.clamp(vec.length, 0, half) / half;
+                    var l = FMath.clamp(new Vector2(i - half, j - half).length, 0, half) / half;
+                    // l = l * l;
+                    var f = 1 - l;
                     f = f * f;
-                    ctx.fillStyle = new Color3(f, f, f).toHexString();
+                    // f = f * f * f;
+                    // f = - 8 / 3 * f * f * f + 4 * f * f - f / 3;
+
+                    ctx.globalAlpha = f;
+                    ctx.fillStyle = new Color3(1, 1, 1).toHexString();
                     ctx.fillRect(i, j, 1, 1);
                 }
             }

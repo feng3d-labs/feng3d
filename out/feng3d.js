@@ -3949,15 +3949,17 @@ var feng3d;
             canvas.width = size;
             canvas.height = size;
             var ctx = canvas.getContext('2d');
-            ctx.fillStyle = new feng3d.Color3().fromUnit(0).toHexString();
-            ctx.fillRect(0, 0, size, size);
             var half = size / 2;
             for (var i = 0; i < size; i++) {
                 for (var j = 0; j < size; j++) {
-                    var vec = new feng3d.Vector2(i - half, j - half);
-                    var f = 1 - feng3d.FMath.clamp(vec.length, 0, half) / half;
+                    var l = feng3d.FMath.clamp(new feng3d.Vector2(i - half, j - half).length, 0, half) / half;
+                    // l = l * l;
+                    var f = 1 - l;
                     f = f * f;
-                    ctx.fillStyle = new feng3d.Color3(f, f, f).toHexString();
+                    // f = f * f * f;
+                    // f = - 8 / 3 * f * f * f + 4 * f * f - f / 3;
+                    ctx.globalAlpha = f;
+                    ctx.fillStyle = new feng3d.Color3(1, 1, 1).toHexString();
                     ctx.fillRect(i, j, 1, 1);
                 }
             }
@@ -21070,7 +21072,7 @@ var feng3d;
     feng3d.UrlImageTexture2D = UrlImageTexture2D;
     feng3d.Feng3dAssets.setAssets(UrlImageTexture2D.default = new UrlImageTexture2D().value({ name: "Default-Texture", assetsId: "Default-Texture", hideFlags: feng3d.HideFlags.NotEditable }));
     feng3d.Feng3dAssets.setAssets(UrlImageTexture2D.defaultNormal = new UrlImageTexture2D().value({ name: "Default-NormalTexture", assetsId: "Default-NormalTexture", noPixels: feng3d.ImageDatas.defaultNormal, hideFlags: feng3d.HideFlags.NotEditable }));
-    feng3d.Feng3dAssets.setAssets(UrlImageTexture2D.defaultParticle = new UrlImageTexture2D().value({ name: "Default-ParticleTexture", assetsId: "Default-ParticleTexture", noPixels: feng3d.ImageDatas.defaultParticle, hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.Feng3dAssets.setAssets(UrlImageTexture2D.defaultParticle = new UrlImageTexture2D().value({ name: "Default-ParticleTexture", assetsId: "Default-ParticleTexture", noPixels: feng3d.ImageDatas.defaultParticle, format: feng3d.TextureFormat.RGBA, hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -23817,7 +23819,7 @@ var feng3d;
     feng3d.shaderConfig.shaders["particle"].cls = ParticleUniforms;
     feng3d.Feng3dAssets.setAssets(feng3d.Material.particle = new feng3d.Material().value({
         name: "Particle-Material", assetsId: "Particle-Material", shaderName: "particle",
-        renderParams: { enableBlend: true, sfactor: feng3d.BlendFactor.ONE, dfactor: feng3d.BlendFactor.ONE_MINUS_SRC_COLOR, depthMask: false },
+        renderParams: { enableBlend: true, depthMask: false },
         hideFlags: feng3d.HideFlags.NotEditable,
     }));
 })(feng3d || (feng3d = {}));

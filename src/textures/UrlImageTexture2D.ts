@@ -100,5 +100,5 @@ namespace feng3d
 
     Feng3dAssets.setAssets(UrlImageTexture2D.default = new UrlImageTexture2D().value({ name: "Default-Texture", assetsId: "Default-Texture", hideFlags: HideFlags.NotEditable }));
     Feng3dAssets.setAssets(UrlImageTexture2D.defaultNormal = new UrlImageTexture2D().value({ name: "Default-NormalTexture", assetsId: "Default-NormalTexture", noPixels: ImageDatas.defaultNormal, hideFlags: HideFlags.NotEditable }));
-    Feng3dAssets.setAssets(UrlImageTexture2D.defaultParticle = new UrlImageTexture2D().value({ name: "Default-ParticleTexture", assetsId: "Default-ParticleTexture", noPixels: ImageDatas.defaultParticle, hideFlags: HideFlags.NotEditable }));
+    Feng3dAssets.setAssets(UrlImageTexture2D.defaultParticle = new UrlImageTexture2D().value({ name: "Default-ParticleTexture", assetsId: "Default-ParticleTexture", noPixels: ImageDatas.defaultParticle, format: TextureFormat.RGBA, hideFlags: HideFlags.NotEditable }));
 }
