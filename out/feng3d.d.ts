@@ -12237,6 +12237,11 @@ declare namespace feng3d {
      */
     class ParticleSystemShapeSphere extends ParticleSystemShape {
         radius: number;
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {

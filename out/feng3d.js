@@ -24228,6 +24228,18 @@ var feng3d;
             _this.radius = 1;
             return _this;
         }
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        ParticleSystemShapeSphere.prototype.initParticleState = function (particle) {
+            // 计算位置
+            var dir = feng3d.Vector3.random().scale(2).subNumber(1).normalize();
+            var p = dir.scaleTo(Math.random() * this.radius);
+            particle.position.copy(p);
+            // 计算速度
+            particle.velocity.copy(dir).scale(particle.startSpeed);
+        };
         __decorate([
             feng3d.oav({ tooltip: "球体半径" })
         ], ParticleSystemShapeSphere.prototype, "radius", void 0);
