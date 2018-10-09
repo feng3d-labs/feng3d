@@ -157,7 +157,7 @@ namespace feng3d
         {
             particle.startColor.copyFrom(this.startColor);
             particle.startVelocity = new Vector3(0, 0, this.startSpeed);
-            particle.startAcceleration.init(0, this.gravityModifier * 9.8, 0);
+            particle.startAcceleration.init(0, -this.gravityModifier * 9.8, 0);
         }
 
         /**

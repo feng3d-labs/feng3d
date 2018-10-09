@@ -23901,6 +23901,7 @@ var feng3d;
                 this.emission = this.emission || new feng3d.ParticleEmissionModule(),
                 this.shape = this.shape || new feng3d.ParticleShapeModule(),
                 this.velocityOverLifetime = this.velocityOverLifetime || new feng3d.ParticleVelocityOverLifetimeModule(),
+                this.accelerationOverLifetime = this.accelerationOverLifetime || new feng3d.ParticleAccelerationOverLifetimeModule(),
             ];
         };
         ParticleSystem.prototype.update = function (interval) {
@@ -24112,6 +24113,10 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ block: "velocityOverLifetime", component: "OAVObjectView" })
         ], ParticleSystem.prototype, "velocityOverLifetime", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "accelerationOverLifetime", component: "OAVObjectView" })
+        ], ParticleSystem.prototype, "accelerationOverLifetime", void 0);
         __decorate([
             feng3d.oav({ block: "Renderer" })
         ], ParticleSystem.prototype, "geometry", void 0);
@@ -24519,7 +24524,7 @@ var feng3d;
         ParticleMainModule.prototype.initParticleState = function (particle) {
             particle.startColor.copyFrom(this.startColor);
             particle.startVelocity = new feng3d.Vector3(0, 0, this.startSpeed);
-            particle.startAcceleration.init(0, this.gravityModifier * 9.8, 0);
+            particle.startAcceleration.init(0, -this.gravityModifier * 9.8, 0);
         };
         /**
          * 更新粒子状态
@@ -24758,6 +24763,35 @@ var feng3d;
         return ParticleVelocityOverLifetimeModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleVelocityOverLifetimeModule = ParticleVelocityOverLifetimeModule;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 粒子系统 加速度随时间变化模块
+     *
+     * 控制每个粒子在其生命周期内的加速度。
+     */
+    var ParticleAccelerationOverLifetimeModule = /** @class */ (function (_super) {
+        __extends(ParticleAccelerationOverLifetimeModule, _super);
+        function ParticleAccelerationOverLifetimeModule() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.acceleration = new feng3d.Vector3();
+            return _this;
+        }
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticleAccelerationOverLifetimeModule.prototype.updateParticleState = function (particle) {
+            particle.addAcceleration.add(this.acceleration);
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], ParticleAccelerationOverLifetimeModule.prototype, "acceleration", void 0);
+        return ParticleAccelerationOverLifetimeModule;
+    }(feng3d.ParticleModule));
+    feng3d.ParticleAccelerationOverLifetimeModule = ParticleAccelerationOverLifetimeModule;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

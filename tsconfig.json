@@ -245,6 +245,7 @@
         "src/animators/particle/modules/ParticleEmissionModule.ts",
         "src/animators/particle/modules/ParticleShapeModule.ts",
         "src/animators/particle/modules/ParticleVelocityOverLifetimeModule.ts",
+        "src/animators/particle/modules/ParticleAccelerationOverLifetimeModule.ts",
         //骨骼动画
         "src/animators/skeleton/Skeleton.ts",
         "src/animators/skeleton/SkeletonComponent.ts",

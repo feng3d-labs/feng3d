@@ -12109,6 +12109,7 @@ declare namespace feng3d {
         emission: ParticleEmissionModule;
         shape: ParticleShapeModule;
         velocityOverLifetime: ParticleVelocityOverLifetimeModule;
+        accelerationOverLifetime: ParticleAccelerationOverLifetimeModule;
         geometry: PlaneGeometry;
         material: Material;
         castShadows: boolean;
@@ -12473,6 +12474,21 @@ declare namespace feng3d {
      */
     class ParticleVelocityOverLifetimeModule extends ParticleModule {
         velocity: Vector3;
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 粒子系统 加速度随时间变化模块
+     *
+     * 控制每个粒子在其生命周期内的加速度。
+     */
+    class ParticleAccelerationOverLifetimeModule extends ParticleModule {
+        acceleration: Vector3;
         /**
          * 更新粒子状态
          * @param particle 粒子

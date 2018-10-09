@@ -47,6 +47,10 @@ namespace feng3d
         @oav({ block: "velocityOverLifetime", component: "OAVObjectView" })
         velocityOverLifetime: ParticleVelocityOverLifetimeModule;
 
+        @serialize
+        @oav({ block: "accelerationOverLifetime", component: "OAVObjectView" })
+        accelerationOverLifetime: ParticleAccelerationOverLifetimeModule;
+
         @oav({ block: "Renderer" })
         geometry = Geometry.billboard;
 
@@ -80,6 +84,7 @@ namespace feng3d
                 this.emission = this.emission || new ParticleEmissionModule(),
                 this.shape = this.shape || new ParticleShapeModule(),
                 this.velocityOverLifetime = this.velocityOverLifetime || new ParticleVelocityOverLifetimeModule(),
+                this.accelerationOverLifetime = this.accelerationOverLifetime || new ParticleAccelerationOverLifetimeModule(),
             ];
         }
 
