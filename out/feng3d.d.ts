@@ -12197,7 +12197,8 @@ declare namespace feng3d {
     enum ParticleSystemShapeType {
         Cone = 0,
         Sphere = 1,
-        Box = 2
+        Box = 2,
+        Circle = 3
     }
 }
 declare namespace feng3d {
@@ -12254,6 +12255,20 @@ declare namespace feng3d {
         boxX: number;
         boxY: number;
         boxZ: number;
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 粒子系统 发射圆盘
+     */
+    class ParticleSystemShapeCircle extends ParticleSystemShape {
+        radius: number;
+        arc: number;
         /**
          * 初始化粒子状态
          * @param particle 粒子

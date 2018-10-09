@@ -24153,6 +24153,7 @@ var feng3d;
         ParticleSystemShapeType[ParticleSystemShapeType["Cone"] = 0] = "Cone";
         ParticleSystemShapeType[ParticleSystemShapeType["Sphere"] = 1] = "Sphere";
         ParticleSystemShapeType[ParticleSystemShapeType["Box"] = 2] = "Box";
+        ParticleSystemShapeType[ParticleSystemShapeType["Circle"] = 3] = "Circle";
     })(ParticleSystemShapeType = feng3d.ParticleSystemShapeType || (feng3d.ParticleSystemShapeType = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -24303,6 +24304,45 @@ var feng3d;
         return ParticleSystemShapeBox;
     }(feng3d.ParticleSystemShape));
     feng3d.ParticleSystemShapeBox = ParticleSystemShapeBox;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 粒子系统 发射圆盘
+     */
+    var ParticleSystemShapeCircle = /** @class */ (function (_super) {
+        __extends(ParticleSystemShapeCircle, _super);
+        function ParticleSystemShapeCircle() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.radius = 1;
+            _this.arc = 360;
+            return _this;
+        }
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        ParticleSystemShapeCircle.prototype.initParticleState = function (particle) {
+            // 计算位置
+            var angle = Math.random() * feng3d.FMath.degToRad(this.arc);
+            var dir = new feng3d.Vector3(Math.sin(angle), Math.cos(angle), 0);
+            var p = dir.scaleTo(this.radius * Math.random());
+            //
+            particle.position.copy(p);
+            // 计算速度
+            particle.velocity.copy(dir).scale(particle.startSpeed);
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "半径" })
+        ], ParticleSystemShapeCircle.prototype, "radius", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "弧度" })
+        ], ParticleSystemShapeCircle.prototype, "arc", void 0);
+        return ParticleSystemShapeCircle;
+    }(feng3d.ParticleSystemShape));
+    feng3d.ParticleSystemShapeCircle = ParticleSystemShapeCircle;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -24599,6 +24639,9 @@ var feng3d;
                     break;
                 case feng3d.ParticleSystemShapeType.Box:
                     this.shape = new feng3d.ParticleSystemShapeBox();
+                    break;
+                case feng3d.ParticleSystemShapeType.Circle:
+                    this.shape = new feng3d.ParticleSystemShapeCircle();
                     break;
             }
             feng3d.serialization.setValue(this.shape, preValue);
