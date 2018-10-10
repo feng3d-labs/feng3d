@@ -14173,7 +14173,7 @@ var feng3d;
             "normal_vert": "vec3 normal = a_normal;",
             "particle_frag": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    finalColor = particleAnimation(finalColor);\r\n#endif",
             "particle_pars_frag": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    varying vec4 v_particle_color;\r\n\r\n    vec4 particleAnimation(vec4 color) {\r\n\r\n        return color * v_particle_color;\r\n    }\r\n#endif",
-            "particle_pars_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    //\r\n    attribute vec3 a_particle_position;\r\n    attribute vec4 a_particle_color;\r\n\r\n    uniform mat4 u_particle_billboardMatrix;\r\n\r\n    varying vec4 v_particle_color;\r\n\r\n    vec4 particleAnimation(vec4 position) \r\n    {\r\n        // 位移\r\n        position = u_particle_billboardMatrix * position;\r\n\r\n        position.xyz = position.xyz + a_particle_position;\r\n\r\n        // 颜色\r\n        v_particle_color = a_particle_color;\r\n        \r\n        return position;\r\n    }\r\n#endif",
+            "particle_pars_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    //\r\n    attribute vec3 a_particle_position;\r\n    attribute vec3 a_particle_scale;\r\n    attribute vec4 a_particle_color;\r\n\r\n    uniform mat4 u_particle_billboardMatrix;\r\n\r\n    varying vec4 v_particle_color;\r\n\r\n    vec4 particleAnimation(vec4 position) \r\n    {\r\n        position.xyz = position.xyz * a_particle_scale;\r\n\r\n        // 位移\r\n        position = u_particle_billboardMatrix * position;\r\n\r\n        position.xyz = position.xyz + a_particle_position;\r\n\r\n        // 颜色\r\n        v_particle_color = a_particle_color;\r\n        \r\n        return position;\r\n    }\r\n#endif",
             "particle_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    position = particleAnimation(position);\r\n#endif",
             "pointsize_pars_vert": "#ifdef IS_POINTS_MODE\r\n    uniform float u_PointSize;\r\n#endif",
             "pointsize_vert": "#ifdef IS_POINTS_MODE\r\n    gl_PointSize = u_PointSize;\r\n#endif",
@@ -23880,6 +23880,7 @@ var feng3d;
              */
             _this._attributes = {
                 a_particle_position: new feng3d.Attribute("a_particle_position", [], 3, 1),
+                a_particle_scale: new feng3d.Attribute("a_particle_scale", [], 3, 1),
                 a_particle_color: new feng3d.Attribute("a_particle_color", [], 4, 1),
             };
             /**
@@ -23997,14 +23998,17 @@ var feng3d;
             renderAtomic.shaderMacro.HAS_PARTICLE_ANIMATOR = true;
             if (this._isInvalid) {
                 var positions = [];
+                var scales = [];
                 var colors = [];
                 for (var i = 0, n = this._activeParticles.length; i < n; i++) {
                     var particle = this._activeParticles[i];
                     positions.push(particle.position.x, particle.position.y, particle.position.z);
+                    scales.push(particle.scale.x, particle.scale.y, particle.scale.z);
                     colors.push(particle.color.r, particle.color.g, particle.color.b, particle.color.a);
                 }
                 //
                 this._attributes.a_particle_position.data = positions;
+                this._attributes.a_particle_scale.data = scales;
                 this._attributes.a_particle_color.data = colors;
                 //
                 this._isInvalid = false;
@@ -24518,10 +24522,6 @@ var feng3d;
              */
             _this.startRotation = new feng3d.Vector3();
             /**
-             * 使一些粒子朝相反的方向旋转。(设置在0和1之间，值越大，翻转越多)
-             */
-            _this.randomizeRotationDirection = 0;
-            /**
              * 粒子的起始颜色。
              */
             _this.startColor = new feng3d.Color4();
@@ -24613,12 +24613,6 @@ var feng3d;
             ,
             feng3d.oav({ tooltip: "粒子的起始旋转角度。" })
         ], ParticleMainModule.prototype, "startRotation", void 0);
-        __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "Cause some particles to spin in the opposite direction. (Set between 0 and 1, where a higher value causes more to flip)" })
-            ,
-            feng3d.oav({ tooltip: "使一些粒子朝相反的方向旋转。(设置在0和1之间，值越大，翻转越多)" })
-        ], ParticleMainModule.prototype, "randomizeRotationDirection", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ tooltip: "粒子的起始颜色。" })

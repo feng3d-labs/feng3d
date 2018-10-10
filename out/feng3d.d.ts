@@ -12393,10 +12393,6 @@ declare namespace feng3d {
          */
         startRotation: Vector3;
         /**
-         * 使一些粒子朝相反的方向旋转。(设置在0和1之间，值越大，翻转越多)
-         */
-        randomizeRotationDirection: number;
-        /**
          * 粒子的起始颜色。
          */
         startColor: Color4;

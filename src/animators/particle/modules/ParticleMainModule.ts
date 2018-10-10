@@ -59,14 +59,6 @@ namespace feng3d
         startRotation = new Vector3();
 
         /**
-         * 使一些粒子朝相反的方向旋转。(设置在0和1之间，值越大，翻转越多)
-         */
-        @serialize
-        // @oav({ tooltip: "Cause some particles to spin in the opposite direction. (Set between 0 and 1, where a higher value causes more to flip)" })
-        @oav({ tooltip: "使一些粒子朝相反的方向旋转。(设置在0和1之间，值越大，翻转越多)" })
-        randomizeRotationDirection = 0;
-
-        /**
          * 粒子的起始颜色。
          */
         @serialize
