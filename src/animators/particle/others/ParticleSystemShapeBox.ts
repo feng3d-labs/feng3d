@@ -23,17 +23,17 @@ namespace feng3d
          */
         initParticleState(particle: Particle)
         {
-            var speed = particle.startVelocity.length;
+            var speed = particle.velocity.length;
 
             // 计算位置
             var dir = new Vector3(0, 0, 1);
 
             var p = new Vector3(this.boxX, this.boxY, this.boxZ).multiply(Vector3.random().scale(2).subNumber(1));
 
-            particle.startPosition.copy(p);
+            particle.position.copy(p);
 
             // 计算速度
-            particle.startVelocity.copy(dir).scale(speed);
+            particle.velocity.copy(dir).scale(speed);
         }
     }
 }

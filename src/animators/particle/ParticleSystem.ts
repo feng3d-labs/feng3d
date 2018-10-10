@@ -375,8 +375,10 @@ namespace feng3d
          */
         private _updateParticleState(particle: Particle)
         {
-            this._modules.forEach(v => { v.enabled && v.updateParticleState(particle, this._preRealEmitTime, this._realEmitTime) });
-            particle.updateState(this._preRealEmitTime, this._realEmitTime);
+            var preTime = this._preRealEmitTime < particle.birthTime ? particle.birthTime : this._preRealEmitTime;
+            //
+            this._modules.forEach(v => { v.enabled && v.updateParticleState(particle, preTime, this._realEmitTime) });
+            particle.updateState(preTime, this._realEmitTime);
         }
     }
 

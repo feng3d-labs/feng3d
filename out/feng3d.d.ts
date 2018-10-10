@@ -12029,6 +12029,10 @@ declare namespace feng3d {
          */
         position: Vector3;
         /**
+         * 速度
+         */
+        velocity: Vector3;
+        /**
          * 旋转
          */
         /**
@@ -12039,33 +12043,9 @@ declare namespace feng3d {
          */
         color: Color4;
         /**
-         * 起始位移
-         */
-        startPosition: Vector3;
-        /**
-         * 起始速度
-         */
-        startVelocity: Vector3;
-        /**
-         * 起始加速度
-         */
-        startAcceleration: Vector3;
-        /**
          * 起始颜色
          */
         startColor: Color4;
-        /**
-         * 附加位移
-         */
-        addPosition: Vector3;
-        /**
-         * 附加速度
-         */
-        addVelocity: Vector3;
-        /**
-         * 附加加速度
-         */
-        addAcceleration: Vector3;
         /**
          * 更新状态
          */
@@ -12497,6 +12477,8 @@ declare namespace feng3d {
      */
     class ParticleAccelerationOverLifetimeModule extends ParticleModule {
         acceleration: Vector3;
+        private _preAcceleration;
+        private _currentAcceleration;
         /**
          * 更新粒子状态
          * @param particle 粒子

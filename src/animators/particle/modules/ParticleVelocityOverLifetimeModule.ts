@@ -18,7 +18,12 @@ namespace feng3d
          */
         updateParticleState(particle: Particle, preTime: number, time: number)
         {
-            particle.addVelocity.add(this.velocity);
+            var velocity = this.velocity;
+
+            //
+            particle.position.x += velocity.x * (time - preTime);
+            particle.position.y += velocity.y * (time - preTime);
+            particle.position.z += velocity.z * (time - preTime);
         }
     }
 }

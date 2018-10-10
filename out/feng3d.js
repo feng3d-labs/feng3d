@@ -23747,6 +23747,10 @@ var feng3d;
              */
             this.position = new feng3d.Vector3();
             /**
+             * 速度
+             */
+            this.velocity = new feng3d.Vector3();
+            /**
              * 旋转
              */
             // rotation = new Vector3();
@@ -23759,43 +23763,21 @@ var feng3d;
              */
             this.color = new feng3d.Color4();
             /**
-             * 起始位移
-             */
-            this.startPosition = new feng3d.Vector3();
-            /**
-             * 起始速度
-             */
-            this.startVelocity = new feng3d.Vector3();
-            /**
-             * 起始加速度
-             */
-            this.startAcceleration = new feng3d.Vector3();
-            /**
              * 起始颜色
              */
             this.startColor = new feng3d.Color4();
-            /**
-             * 附加位移
-             */
-            this.addPosition = new feng3d.Vector3();
-            /**
-             * 附加速度
-             */
-            this.addVelocity = new feng3d.Vector3();
-            /**
-             * 附加加速度
-             */
-            this.addAcceleration = new feng3d.Vector3();
         }
         /**
          * 更新状态
          */
         Particle.prototype.updateState = function (preTime, time) {
-            var pTime = time - this.birthTime;
+            preTime = Math.max(preTime, this.birthTime);
+            time = Math.max(this.birthTime, time);
+            var pTime = time - preTime;
             // 计算位置
-            this.position.x = this.startPosition.x + (this.startVelocity.x + this.addVelocity.x + (this.startAcceleration.x + this.addAcceleration.x) * pTime) * pTime;
-            this.position.y = this.startPosition.y + (this.startVelocity.y + this.addVelocity.y + (this.startAcceleration.y + this.addAcceleration.y) * pTime) * pTime;
-            this.position.z = this.startPosition.z + (this.startVelocity.z + this.addVelocity.z + (this.startAcceleration.z + this.addAcceleration.z) * pTime) * pTime;
+            this.position.x += this.velocity.x * pTime;
+            this.position.y += this.velocity.y * pTime;
+            this.position.z += this.velocity.z * pTime;
             // 计算颜色值
             this.color.copyFrom(this.startColor);
         };
@@ -24105,8 +24087,10 @@ var feng3d;
          */
         ParticleSystem.prototype._updateParticleState = function (particle) {
             var _this = this;
-            this._modules.forEach(function (v) { v.enabled && v.updateParticleState(particle, _this._preRealEmitTime, _this._realEmitTime); });
-            particle.updateState(this._preRealEmitTime, this._realEmitTime);
+            var preTime = this._preRealEmitTime < particle.birthTime ? particle.birthTime : this._preRealEmitTime;
+            //
+            this._modules.forEach(function (v) { v.enabled && v.updateParticleState(particle, preTime, _this._realEmitTime); });
+            particle.updateState(preTime, this._realEmitTime);
         };
         __decorate([
             feng3d.serialize,
@@ -24235,17 +24219,17 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleSystemShapeCone.prototype.initParticleState = function (particle) {
-            var speed = particle.startVelocity.length;
+            var speed = particle.velocity.length;
             // 计算位置
             var angle = Math.random() * feng3d.FMath.degToRad(this.arc);
             var r = Math.random();
             var p = new feng3d.Vector3(Math.sin(angle), Math.cos(angle), 0);
-            particle.startPosition.copy(p).scale(this.radius).scale(r);
+            particle.position.copy(p).scale(this.radius).scale(r);
             // 计算速度
             p.scale(this.radius + this.height * Math.tan(feng3d.FMath.degToRad(this.angle))).scale(r);
             p.z = this.height;
-            var dir = p.sub(particle.startPosition).normalize();
-            particle.startVelocity.copy(dir).scale(speed);
+            var dir = p.sub(particle.position).normalize();
+            particle.velocity.copy(dir).scale(speed);
         };
         __decorate([
             feng3d.serialize,
@@ -24284,13 +24268,13 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleSystemShapeSphere.prototype.initParticleState = function (particle) {
-            var speed = particle.startVelocity.length;
+            var speed = particle.velocity.length;
             // 计算位置
             var dir = feng3d.Vector3.random().scale(2).subNumber(1).normalize();
             var p = dir.scaleTo(Math.random() * this.radius);
-            particle.startPosition.copy(p);
+            particle.position.copy(p);
             // 计算速度
-            particle.startVelocity.copy(dir).scale(speed);
+            particle.velocity.copy(dir).scale(speed);
         };
         __decorate([
             feng3d.serialize,
@@ -24319,13 +24303,13 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleSystemShapeBox.prototype.initParticleState = function (particle) {
-            var speed = particle.startVelocity.length;
+            var speed = particle.velocity.length;
             // 计算位置
             var dir = new feng3d.Vector3(0, 0, 1);
             var p = new feng3d.Vector3(this.boxX, this.boxY, this.boxZ).multiply(feng3d.Vector3.random().scale(2).subNumber(1));
-            particle.startPosition.copy(p);
+            particle.position.copy(p);
             // 计算速度
-            particle.startVelocity.copy(dir).scale(speed);
+            particle.velocity.copy(dir).scale(speed);
         };
         __decorate([
             feng3d.serialize,
@@ -24361,15 +24345,15 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleSystemShapeCircle.prototype.initParticleState = function (particle) {
-            var speed = particle.startVelocity.length;
+            var speed = particle.velocity.length;
             // 计算位置
             var angle = Math.random() * feng3d.FMath.degToRad(this.arc);
             var dir = new feng3d.Vector3(Math.sin(angle), Math.cos(angle), 0);
             var p = dir.scaleTo(this.radius * Math.random());
             //
-            particle.startPosition.copy(p);
+            particle.position.copy(p);
             // 计算速度
-            particle.startVelocity.copy(dir).scale(speed);
+            particle.velocity.copy(dir).scale(speed);
         };
         __decorate([
             feng3d.serialize,
@@ -24400,14 +24384,14 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleSystemShapeEdge.prototype.initParticleState = function (particle) {
-            var speed = particle.startVelocity.length;
+            var speed = particle.velocity.length;
             // 计算位置
             var dir = new feng3d.Vector3(0, 0, 1);
             var p = new feng3d.Vector3(this.length * (Math.random() * 2 - 1), 0, 0);
             //
-            particle.startPosition.copy(p);
+            particle.position.copy(p);
             // 计算速度
-            particle.startVelocity.copy(dir).scale(speed);
+            particle.velocity.copy(dir).scale(speed);
         };
         __decorate([
             feng3d.serialize,
@@ -24534,17 +24518,22 @@ var feng3d;
          */
         ParticleMainModule.prototype.initParticleState = function (particle) {
             particle.startColor.copyFrom(this.startColor);
-            particle.startVelocity = new feng3d.Vector3(0, 0, this.startSpeed);
-            particle.startAcceleration.init(0, -this.gravityModifier * 9.8, 0);
+            particle.position.init(0, 0, 0);
+            particle.velocity.init(0, 0, this.startSpeed);
         };
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
         ParticleMainModule.prototype.updateParticleState = function (particle, preTime, time) {
-            particle.addPosition.init(0, 0, 0);
-            particle.addVelocity.init(0, 0, 0);
-            particle.addAcceleration.init(0, 0, 0);
+            // 计算重力加速度影响速度
+            var globalAcceleration = new feng3d.Vector3(0, -this.gravityModifier * 9.8, 0);
+            // 本地加速度
+            var localAcceleration = globalAcceleration.clone();
+            //
+            particle.velocity.x += localAcceleration.x * (time - preTime);
+            particle.velocity.y += localAcceleration.y * (time - preTime);
+            particle.velocity.z += localAcceleration.z * (time - preTime);
         };
         __decorate([
             feng3d.serialize
@@ -24765,7 +24754,11 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleVelocityOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time) {
-            particle.addVelocity.add(this.velocity);
+            var velocity = this.velocity;
+            //
+            particle.position.x += velocity.x * (time - preTime);
+            particle.position.y += velocity.y * (time - preTime);
+            particle.position.z += velocity.z * (time - preTime);
         };
         __decorate([
             feng3d.serialize,
@@ -24787,6 +24780,8 @@ var feng3d;
         function ParticleAccelerationOverLifetimeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.acceleration = new feng3d.Vector3();
+            _this._preAcceleration = new feng3d.Vector3();
+            _this._currentAcceleration = new feng3d.Vector3();
             return _this;
         }
         /**
@@ -24794,7 +24789,13 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleAccelerationOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time) {
-            particle.addAcceleration.add(this.acceleration);
+            //
+            this._preAcceleration.copy(this.acceleration);
+            this._currentAcceleration.copy(this.acceleration);
+            //
+            particle.velocity.x += (this._currentAcceleration.x + this._preAcceleration.x) * 0.5 * (time - preTime);
+            particle.velocity.y += (this._currentAcceleration.y + this._preAcceleration.y) * 0.5 * (time - preTime);
+            particle.velocity.z += (this._currentAcceleration.z + this._preAcceleration.z) * 0.5 * (time - preTime);
         };
         __decorate([
             feng3d.serialize,

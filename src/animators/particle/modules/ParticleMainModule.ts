@@ -156,8 +156,8 @@ namespace feng3d
         initParticleState(particle: Particle)
         {
             particle.startColor.copyFrom(this.startColor);
-            particle.startVelocity = new Vector3(0, 0, this.startSpeed);
-            particle.startAcceleration.init(0, -this.gravityModifier * 9.8, 0);
+            particle.position.init(0, 0, 0);
+            particle.velocity.init(0, 0, this.startSpeed);
         }
 
         /**
@@ -166,9 +166,16 @@ namespace feng3d
          */
         updateParticleState(particle: Particle, preTime: number, time: number)
         {
-            particle.addPosition.init(0, 0, 0);
-            particle.addVelocity.init(0, 0, 0);
-            particle.addAcceleration.init(0, 0, 0);
+            // 计算重力加速度影响速度
+            var globalAcceleration = new Vector3(0, -this.gravityModifier * 9.8, 0)
+
+            // 本地加速度
+            var localAcceleration = globalAcceleration.clone();
+
+            //
+            particle.velocity.x += localAcceleration.x * (time - preTime);
+            particle.velocity.y += localAcceleration.y * (time - preTime);
+            particle.velocity.z += localAcceleration.z * (time - preTime);
         }
     }
 }
