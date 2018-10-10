@@ -27,9 +27,9 @@ namespace feng3d
 		velocity = new Vector3();
 
 		/**
-		 * 旋转
+		 * 旋转角度
 		 */
-		// rotation = new Vector3();
+		rotation = new Vector3();
 
 		/**
 		 * 缩放

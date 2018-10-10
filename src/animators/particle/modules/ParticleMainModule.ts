@@ -54,7 +54,6 @@ namespace feng3d
          * 粒子的起始旋转角度。
          */
         @serialize
-        // @oav({ tooltip: "The start rotation of particles in degress." })
         @oav({ tooltip: "粒子的起始旋转角度。" })
         startRotation = new Vector3();
 
@@ -126,6 +125,8 @@ namespace feng3d
             particle.position.init(0, 0, 0);
             particle.velocity.init(0, 0, this.startSpeed);
             particle.startScale.copy(this.startScale);
+            //
+            particle.rotation.copy(this.startRotation);
             //
             particle.startColor.copy(this.startColor);
         }

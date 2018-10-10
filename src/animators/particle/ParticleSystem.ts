@@ -196,18 +196,21 @@ namespace feng3d
             {
                 var positions: number[] = [];
                 var scales: number[] = [];
+                var rotations: number[] = [];
                 var colors: number[] = [];
                 for (let i = 0, n = this._activeParticles.length; i < n; i++)
                 {
                     var particle = this._activeParticles[i];
                     positions.push(particle.position.x, particle.position.y, particle.position.z);
                     scales.push(particle.scale.x, particle.scale.y, particle.scale.z);
+                    rotations.push(particle.rotation.x, particle.rotation.y, particle.rotation.z);
                     colors.push(particle.color.r, particle.color.g, particle.color.b, particle.color.a);
                 }
 
                 //
                 this._attributes.a_particle_position.data = positions;
                 this._attributes.a_particle_scale.data = scales;
+                this._attributes.a_particle_rotation.data = rotations;
                 this._attributes.a_particle_color.data = colors;
 
                 //
@@ -255,6 +258,7 @@ namespace feng3d
         private _attributes = {
             a_particle_position: new Attribute("a_particle_position", [], 3, 1),
             a_particle_scale: new Attribute("a_particle_scale", [], 3, 1),
+            a_particle_rotation: new Attribute("a_particle_rotation", [], 3, 1),
             a_particle_color: new Attribute("a_particle_color", [], 4, 1),
         };
 

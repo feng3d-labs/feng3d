@@ -12057,8 +12057,9 @@ declare namespace feng3d {
          */
         velocity: Vector3;
         /**
-         * 旋转
+         * 旋转角度
          */
+        rotation: Vector3;
         /**
          * 缩放
          */
