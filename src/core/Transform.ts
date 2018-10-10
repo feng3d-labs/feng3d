@@ -633,7 +633,7 @@ namespace feng3d
         rotate(axis: Vector3, angle: number, pivotPoint?: Vector3): void
         {
             //转换位移
-            var positionMatrix3d = Matrix4x4.fromPosition(this.position);
+            var positionMatrix3d = Matrix4x4.fromPosition(this.position.x, this.position.y, this.position.z);
             positionMatrix3d.appendRotation(axis, angle, pivotPoint);
             this.position = positionMatrix3d.position;
             //转换旋转

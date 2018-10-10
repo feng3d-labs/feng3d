@@ -8470,13 +8470,17 @@ var feng3d;
          * @param   components      一个由三个 Vector3 对象组成的矢量，这些对象将替代 Matrix4x4 对象的平移、旋转和缩放元素。
          */
         Matrix4x4.prototype.recompose = function (components) {
-            this.identity();
-            this.appendScale(components[2].x, components[2].y, components[2].z);
-            this.appendRotation(feng3d.Vector3.X_AXIS, components[1].x * feng3d.FMath.RAD2DEG);
-            this.appendRotation(feng3d.Vector3.Y_AXIS, components[1].y * feng3d.FMath.RAD2DEG);
-            this.appendRotation(feng3d.Vector3.Z_AXIS, components[1].z * feng3d.FMath.RAD2DEG);
-            this.appendTranslation(components[0].x, components[0].y, components[0].z);
-            return this;
+            var rx = components[1].x;
+            var ry = components[1].y;
+            var rz = components[1].z;
+            var sx = Math.sin(rx), cx = Math.cos(rx), sy = Math.sin(ry), cy = Math.cos(ry), sz = Math.sin(rz), cz = Math.cos(rz);
+            var xS = components[2].x, yS = components[2].y, zS = components[2].z;
+            return new Matrix4x4([
+                cy * cz * xS, cy * sz * xS, -sy * xS, 0,
+                (sx * sy * cz - cx * sz) * yS, (sx * sy * sz + cx * cz) * yS, sx * cy * yS, 0,
+                (cx * sy * cz + sx * sz) * zS, (cx * sy * sz - sx * cz) * zS, cx * cy * zS, 0,
+                components[0].x, components[0].y, components[0].z, 1,
+            ]);
         };
         /**
          * 使用转换矩阵将 Vector3 对象从一个空间坐标转换到另一个空间坐标。
@@ -15943,7 +15947,7 @@ var feng3d;
          */
         Transform.prototype.rotate = function (axis, angle, pivotPoint) {
             //转换位移
-            var positionMatrix3d = feng3d.Matrix4x4.fromPosition(this.position);
+            var positionMatrix3d = feng3d.Matrix4x4.fromPosition(this.position.x, this.position.y, this.position.z);
             positionMatrix3d.appendRotation(axis, angle, pivotPoint);
             this.position = positionMatrix3d.position;
             //转换旋转
