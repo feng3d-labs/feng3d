@@ -4194,24 +4194,14 @@ declare namespace feng3d {
          * @param   yScale      用于沿 y 轴缩放对象的乘数。
          * @param   zScale      用于沿 z 轴缩放对象的乘数。
          */
-        static fromScale(xScale: number, yScale: number, zScale: number): any;
-        /**
-         * 创建缩放矩阵
-         * @param   scale       缩放值
-         */
-        static fromScale(scale: Vector3): any;
+        static fromScale(xScale: number, yScale: number, zScale: number): Matrix4x4;
         /**
          * 创建位移矩阵
          * @param   x   沿 x 轴的增量平移。
          * @param   y   沿 y 轴的增量平移。
          * @param   z   沿 z 轴的增量平移。
          */
-        static fromPosition(x: number, y: number, z: number): any;
-        /**
-         * 创建位移矩阵
-         * @param   position        位置
-         */
-        static fromPosition(position: Vector3): any;
+        static fromPosition(x: number, y: number, z: number): Matrix4x4;
         /**
          * 通过将另一个 Matrix4x4 对象与当前 Matrix4x4 对象相乘来后置一个矩阵。
          */

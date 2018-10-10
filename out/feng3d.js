@@ -7987,18 +7987,13 @@ var feng3d;
                 0, 0, 0, 1,
             ]);
         };
-        Matrix4x4.fromScale = function () {
-            var xScale = 1, yScale = 1, zScale = 1;
-            if (arguments[0] instanceof Object) {
-                xScale = arguments[0].x;
-                yScale = arguments[0].y;
-                zScale = arguments[0].z;
-            }
-            else {
-                xScale = arguments[0];
-                yScale = arguments[1];
-                zScale = arguments[2];
-            }
+        /**
+         * 创建缩放矩阵
+         * @param   xScale      用于沿 x 轴缩放对象的乘数。
+         * @param   yScale      用于沿 y 轴缩放对象的乘数。
+         * @param   zScale      用于沿 z 轴缩放对象的乘数。
+         */
+        Matrix4x4.fromScale = function (xScale, yScale, zScale) {
             var rotationMat = new Matrix4x4([
                 xScale, 0.0000, 0.0000, 0,
                 0.0000, yScale, 0.0000, 0,
@@ -8007,18 +8002,13 @@ var feng3d;
             ]);
             return rotationMat;
         };
-        Matrix4x4.fromPosition = function () {
-            var x = 0, y = 0, z = 0;
-            if (arguments[0] instanceof Object) {
-                x = arguments[0].x;
-                y = arguments[0].y;
-                z = arguments[0].z;
-            }
-            else {
-                x = arguments[0];
-                y = arguments[1];
-                z = arguments[2];
-            }
+        /**
+         * 创建位移矩阵
+         * @param   x   沿 x 轴的增量平移。
+         * @param   y   沿 y 轴的增量平移。
+         * @param   z   沿 z 轴的增量平移。
+         */
+        Matrix4x4.fromPosition = function (x, y, z) {
             var rotationMat = new Matrix4x4([
                 1, 0, 0, 0,
                 0, 1, 0, 0,
