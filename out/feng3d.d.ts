@@ -12103,6 +12103,7 @@ declare namespace feng3d {
         accelerationOverLifetime: ParticleAccelerationOverLifetimeModule;
         colorOverLifetime: ParticleColorOverLifetimeModule;
         scaleOverLifetime: ParticleScaleOverLifetimeModule;
+        palstanceOverLifetime: ParticlePalstanceOverLifetimeModule;
         geometry: PlaneGeometry;
         material: Material;
         castShadows: boolean;
@@ -12512,6 +12513,19 @@ declare namespace feng3d {
      */
     class ParticleColorOverLifetimeModule extends ParticleModule {
         color: Color4;
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle, preTime: number, time: number): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 粒子系统 角速度随时间变化模块
+     */
+    class ParticlePalstanceOverLifetimeModule extends ParticleModule {
+        palstance: Vector3;
         /**
          * 更新粒子状态
          * @param particle 粒子

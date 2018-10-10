@@ -23921,6 +23921,7 @@ var feng3d;
                 this.accelerationOverLifetime = this.accelerationOverLifetime || new feng3d.ParticleAccelerationOverLifetimeModule(),
                 this.colorOverLifetime = this.colorOverLifetime || new feng3d.ParticleColorOverLifetimeModule(),
                 this.scaleOverLifetime = this.scaleOverLifetime || new feng3d.ParticleScaleOverLifetimeModule(),
+                this.palstanceOverLifetime = this.palstanceOverLifetime || new feng3d.ParticlePalstanceOverLifetimeModule(),
             ];
             this._modules.forEach(function (v) { return v.particleSystem = _this; });
         };
@@ -24158,6 +24159,10 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ block: "scaleOverLifetime", component: "OAVObjectView" })
         ], ParticleSystem.prototype, "scaleOverLifetime", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "palstanceOverLifetime", component: "OAVObjectView" })
+        ], ParticleSystem.prototype, "palstanceOverLifetime", void 0);
         __decorate([
             feng3d.oav({ block: "Renderer" })
         ], ParticleSystem.prototype, "geometry", void 0);
@@ -24882,6 +24887,35 @@ var feng3d;
         return ParticleColorOverLifetimeModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleColorOverLifetimeModule = ParticleColorOverLifetimeModule;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 粒子系统 角速度随时间变化模块
+     */
+    var ParticlePalstanceOverLifetimeModule = /** @class */ (function (_super) {
+        __extends(ParticlePalstanceOverLifetimeModule, _super);
+        function ParticlePalstanceOverLifetimeModule() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.palstance = new feng3d.Vector3();
+            return _this;
+        }
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticlePalstanceOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time) {
+            particle.rotation.x += this.palstance.x * (time - preTime);
+            particle.rotation.y += this.palstance.y * (time - preTime);
+            particle.rotation.z += this.palstance.z * (time - preTime);
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "角速度" })
+        ], ParticlePalstanceOverLifetimeModule.prototype, "palstance", void 0);
+        return ParticlePalstanceOverLifetimeModule;
+    }(feng3d.ParticleModule));
+    feng3d.ParticlePalstanceOverLifetimeModule = ParticlePalstanceOverLifetimeModule;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

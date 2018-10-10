@@ -59,6 +59,10 @@ namespace feng3d
         @oav({ block: "scaleOverLifetime", component: "OAVObjectView" })
         scaleOverLifetime: ParticleScaleOverLifetimeModule;
 
+        @serialize
+        @oav({ block: "palstanceOverLifetime", component: "OAVObjectView" })
+        palstanceOverLifetime: ParticlePalstanceOverLifetimeModule;
+
         @oav({ block: "Renderer" })
         geometry = Geometry.billboard;
 
@@ -95,6 +99,7 @@ namespace feng3d
                 this.accelerationOverLifetime = this.accelerationOverLifetime || new ParticleAccelerationOverLifetimeModule(),
                 this.colorOverLifetime = this.colorOverLifetime || new ParticleColorOverLifetimeModule(),
                 this.scaleOverLifetime = this.scaleOverLifetime || new ParticleScaleOverLifetimeModule(),
+                this.palstanceOverLifetime = this.palstanceOverLifetime || new ParticlePalstanceOverLifetimeModule(),
             ];
             this._modules.forEach(v => v.particleSystem = this);
         }
