@@ -4197,6 +4197,7 @@ declare namespace feng3d {
             y: number;
             z: number;
         }): Matrix4x4;
+        static fromRotation1(rx: number, ry: number, rz: number): Matrix4x4;
         /**
          * 创建缩放矩阵
          * @param   xScale      用于沿 x 轴缩放对象的乘数。

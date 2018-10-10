@@ -187,6 +187,22 @@ namespace feng3d
             return rotationMat;
         }
 
+        static fromRotation1(rx: number, ry: number, rz: number)
+        {
+            rx = FMath.degToRad(rx);
+            ry = FMath.degToRad(ry);
+            rz = FMath.degToRad(rz);
+
+            var sx = Math.sin(rx), cx = Math.cos(rx), sy = Math.sin(ry), cy = Math.cos(ry), sz = Math.sin(rz), cz = Math.cos(rz);
+
+            return new Matrix4x4([
+                cy, 0, - sy, 0,
+                sx * sy, cx, sx * cy, 0,
+                cx * sy, -sx, cx * cy, 0,
+                0, 0, 0, 1,
+            ]);
+        }
+
         /**
          * 创建缩放矩阵
          * @param   xScale      用于沿 x 轴缩放对象的乘数。

@@ -7987,6 +7987,18 @@ var feng3d;
             rotationMat.appendRotation(feng3d.Vector3.Z_AXIS, rz);
             return rotationMat;
         };
+        Matrix4x4.fromRotation1 = function (rx, ry, rz) {
+            rx = feng3d.FMath.degToRad(rx);
+            ry = feng3d.FMath.degToRad(ry);
+            rz = feng3d.FMath.degToRad(rz);
+            var sx = Math.sin(rx), cx = Math.cos(rx), sy = Math.sin(ry), cy = Math.cos(ry), sz = Math.sin(rz), cz = Math.cos(rz);
+            return new Matrix4x4([
+                cy, 0, -sy, 0,
+                sx * sy, cx, sx * cy, 0,
+                cx * sy, -sx, cx * cy, 0,
+                0, 0, 0, 1,
+            ]);
+        };
         Matrix4x4.fromScale = function () {
             var xScale = 1, yScale = 1, zScale = 1;
             if (arguments[0] instanceof Object) {
