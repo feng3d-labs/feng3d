@@ -267,6 +267,8 @@ namespace feng3d
          */
         private _emit()
         {
+            if (!this.emission.enabled) return;
+
             // 判断是否达到最大粒子数量
             if (this._activeParticles.length >= this.main.maxParticles) return;
 

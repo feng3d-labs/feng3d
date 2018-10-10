@@ -7,7 +7,7 @@ namespace feng3d
     {
         @serialize
         @oav()
-        scale = new Vector3();
+        scale = new Vector3(1, 1, 1);
 
         /**
          * 更新粒子状态

@@ -8,6 +8,8 @@ namespace feng3d
         /**
          * 是否开启
          */
+        @oav()
+        @serialize
         enabled = true;
 
         /**

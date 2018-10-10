@@ -1291,6 +1291,10 @@ declare namespace feng3d {
          * 优先级，数字越小，显示越靠前，默认为0
          */
         priority?: number;
+        /**
+         * 是否排除
+         */
+        exclude?: boolean;
     };
     /**
      * objectview属性装饰器
@@ -1411,6 +1415,10 @@ declare namespace feng3d {
          * 优先级，数字越小，显示越靠前，默认为0
          */
         priority?: number;
+        /**
+         * 是否排除
+         */
+        exclude?: boolean;
     }
     /**
      * 定义特定属性类型默认界面
@@ -1581,6 +1589,10 @@ declare namespace feng3d {
          * 优先级，数字越小，显示越靠前，默认为0
          */
         priority?: number;
+        /**
+         * 是否排除
+         */
+        exclude?: boolean;
     }
     /**
      * 对象属性块
@@ -12351,6 +12363,7 @@ declare namespace feng3d {
      * 粒子主模块
      */
     class ParticleMainModule extends ParticleModule {
+        enabled: boolean;
         /**
          * 粒子系统发射粒子的时间长度。如果系统是循环的，这表示一个循环的长度。
          */

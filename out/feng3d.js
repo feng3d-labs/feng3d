@@ -3078,6 +3078,11 @@ var feng3d;
             var classConfig = this.getObjectInfo(object, p.autocreate, p.excludeAttrs);
             classConfig.editable = classConfig.editable == undefined ? true : classConfig.editable;
             Object.assign(classConfig, param);
+            // 处理 exclude
+            classConfig.objectAttributeInfos = classConfig.objectAttributeInfos.filter(function (v) { return !v.exclude; });
+            classConfig.objectBlockInfos.forEach(function (v) {
+                v.itemList = v.itemList.filter(function (vv) { return !vv.exclude; });
+            });
             classConfig.objectAttributeInfos.forEach(function (v) { v.editable = v.editable && classConfig.editable; });
             if (classConfig.component == null || classConfig.component == "") {
                 //返回基础类型界面类定义
@@ -24017,6 +24022,8 @@ var feng3d;
          */
         ParticleSystem.prototype._emit = function () {
             var _this = this;
+            if (!this.emission.enabled)
+                return;
             // 判断是否达到最大粒子数量
             if (this._activeParticles.length >= this.main.maxParticles)
                 return;
@@ -24464,6 +24471,10 @@ var feng3d;
          */
         ParticleModule.prototype.updateParticleState = function (particle, preTime, time) {
         };
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], ParticleModule.prototype, "enabled", void 0);
         return ParticleModule;
     }(feng3d.EventDispatcher));
     feng3d.ParticleModule = ParticleModule;
@@ -24477,6 +24488,7 @@ var feng3d;
         __extends(ParticleMainModule, _super);
         function ParticleMainModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.enabled = true;
             /**
              * 粒子系统发射粒子的时间长度。如果系统是循环的，这表示一个循环的长度。
              */
@@ -24568,6 +24580,9 @@ var feng3d;
             //
             particle.color.copy(particle.startColor);
         };
+        __decorate([
+            feng3d.oav({ exclude: true })
+        ], ParticleMainModule.prototype, "enabled", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ tooltip: "粒子系统发射粒子的时间长度。如果系统是循环的，这表示一个循环的长度。" })
@@ -24830,7 +24845,7 @@ var feng3d;
         __extends(ParticleScaleOverLifetimeModule, _super);
         function ParticleScaleOverLifetimeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.scale = new feng3d.Vector3();
+            _this.scale = new feng3d.Vector3(1, 1, 1);
             return _this;
         }
         /**

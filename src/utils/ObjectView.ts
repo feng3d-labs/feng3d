@@ -91,6 +91,11 @@ namespace feng3d
 		 * 优先级，数字越小，显示越靠前，默认为0
 		 */
 		priority?: number;
+
+		/**
+		 * 是否排除
+		 */
+		exclude?: boolean;
 	};
 
 	/**
@@ -157,6 +162,13 @@ namespace feng3d
 			classConfig.editable = classConfig.editable == undefined ? true : classConfig.editable;
 
 			Object.assign(classConfig, param);
+
+			// 处理 exclude
+			classConfig.objectAttributeInfos = classConfig.objectAttributeInfos.filter(v => !v.exclude);
+			classConfig.objectBlockInfos.forEach(v =>
+			{
+				v.itemList = v.itemList.filter(vv => !vv.exclude);
+			});
 
 			classConfig.objectAttributeInfos.forEach(v => { v.editable = v.editable && classConfig.editable; });
 
@@ -563,6 +575,11 @@ namespace feng3d
 		 * 优先级，数字越小，显示越靠前，默认为0
 		 */
 		priority?: number;
+
+		/**
+		 * 是否排除
+		 */
+		exclude?: boolean;
 	}
 
 	/**
@@ -772,6 +789,11 @@ namespace feng3d
 		 * 优先级，数字越小，显示越靠前，默认为0
 		 */
 		priority?: number;
+
+		/**
+		 * 是否排除
+		 */
+		exclude?: boolean;
 	}
 
 	/**

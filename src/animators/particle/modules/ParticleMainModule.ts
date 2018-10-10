@@ -5,6 +5,9 @@ namespace feng3d
      */
     export class ParticleMainModule extends ParticleModule
     {
+        @oav({ exclude: true })
+        enabled = true;
+
         /**
          * 粒子系统发射粒子的时间长度。如果系统是循环的，这表示一个循环的长度。
          */
