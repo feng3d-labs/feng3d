@@ -820,7 +820,7 @@ namespace feng3d
         transformRotation(vin: Vector3, vout?: Vector3)
         {
             //转换旋转
-            var rotationMatrix3d = Matrix4x4.fromRotation(vin);
+            var rotationMatrix3d = Matrix4x4.fromRotation(vin.x, vin.y, vin.z);
             rotationMatrix3d.append(this);
             var newrotation = rotationMatrix3d.decompose()[1];
             newrotation.scale(180 / Math.PI);
