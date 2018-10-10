@@ -9,7 +9,6 @@ namespace feng3d
          * 粒子系统发射粒子的时间长度。如果系统是循环的，这表示一个循环的长度。
          */
         @serialize
-        // @oav({ tooltip: "The length of time the Particle System is emitting particles. If the system is looping, this indicates the length of one cycle." })
         @oav({ tooltip: "粒子系统发射粒子的时间长度。如果系统是循环的，这表示一个循环的长度。" })
         duration = 5;
 
@@ -17,31 +16,20 @@ namespace feng3d
          * 如果为真，发射周期将在持续时间后重复。
          */
         @serialize
-        // @oav({ tooltip: "If true, the emission cycle will repeat after the duration." })
         @oav({ tooltip: "如果为真，发射周期将在持续时间后重复。" })
         loop = true;
 
         /**
-         * 当播放预暖系统时，将处于一种状态，就好像它坏了发出一个循环。只能在系统循环时使用。
+         * 这个粒子系统在发射粒子之前会等待几秒。
          */
         @serialize
-        // @oav({ tooltip: "When played a prewarmed system will be in a state as if it bad emitted one loop cycle. Can only be used if the system is looping." })
-        @oav({ tooltip: "当播放预暖系统时，将处于一种状态，就好像它坏了发出一个循环。只能在系统循环时使用。" })
-        prewarm = false;
-
-        /**
-         * 这个粒子系统在发射粒子之前会等待几秒。不能与预加热循环系统一起使用。
-         */
-        // @oav({ tooltip: "Delay in seconds that this Particle System will wait before emitting particles. Cannot be used together with a prewarmed looping system." })
-        @serialize
-        @oav({ tooltip: "这个粒子系统在发射粒子之前会等待几秒。不能与预加热循环系统一起使用。" })
+        @oav({ tooltip: "这个粒子系统在发射粒子之前会等待几秒。" })
         startDelay = 0;
 
         /**
          * 起始寿命为秒，粒子寿命为0时死亡。
          */
         @serialize
-        // @oav({ tooltip: "Start lifetime is seconds, particle will die when its lifetime reaches 0." })
         @oav({ tooltip: "起始寿命为秒，粒子寿命为0时死亡。" })
         startLifetime = 5;
 
@@ -49,17 +37,15 @@ namespace feng3d
          * 粒子的起始速度，应用于起始方向。
          */
         @serialize
-        // @oav({ tooltip: "The start speed of particles, applied in the starting direction." })
         @oav({ tooltip: "粒子的起始速度，应用于起始方向。" })
         startSpeed = 5;
 
         /**
-         * 粒子的起始大小。
+         * 粒子的起始缩放。
          */
         @serialize
-        // @oav({ tooltip: "The start size of particles." })
-        @oav({ tooltip: "粒子的起始大小。" })
-        startSize = new Vector3(1, 1, 1);
+        @oav({ tooltip: "粒子的起始缩放。" })
+        startScale = new Vector3(1, 1, 1);
 
         /**
          * 粒子的起始旋转角度。
@@ -155,9 +141,11 @@ namespace feng3d
          */
         initParticleState(particle: Particle)
         {
-            particle.startColor.copy(this.startColor);
             particle.position.init(0, 0, 0);
             particle.velocity.init(0, 0, this.startSpeed);
+            particle.startScale.copy(this.startScale);
+            //
+            particle.startColor.copy(this.startColor);
         }
 
         /**
@@ -177,6 +165,8 @@ namespace feng3d
             particle.velocity.y += localAcceleration.y * (time - preTime);
             particle.velocity.z += localAcceleration.z * (time - preTime);
 
+            //
+            particle.scale.copy(particle.startScale);
             //
             particle.color.copy(particle.startColor);
         }

@@ -34,7 +34,12 @@ namespace feng3d
 		/**
 		 * 缩放
 		 */
-		// scale = new Vector3(1, 1, 1);
+		scale = new Vector3(1, 1, 1);
+
+		/**
+		 * 起始缩放
+		 */
+		startScale = new Vector3(1, 1, 1);
 
 		/**
 		 * 颜色

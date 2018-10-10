@@ -3478,13 +3478,13 @@ declare namespace feng3d {
          * @param v 乘以的向量
          * @return 返回自身
          */
-        mul(v: Vector4): this;
+        multiply(v: Vector4): this;
         /**
          * 乘以指定向量
          * @param v 乘以的向量
          * @return 返回新向量
          */
-        mulTo(v: Vector4, vout?: Vector4): Vector4;
+        multiplyTo(v: Vector4, vout?: Vector4): Vector4;
         /**
          * 除以指定向量
          * @param v 除以的向量
@@ -5683,13 +5683,13 @@ declare namespace feng3d {
          * @param c 乘以的颜色
          * @return 返回自身
          */
-        mul(c: Color4): this;
+        multiply(c: Color4): this;
         /**
          * 乘以指定颜色
          * @param v 乘以的颜色
          * @return 返回新颜色
          */
-        mulTo(v: Color4, vout?: Color4): Color4;
+        multiplyTo(v: Color4, vout?: Color4): Color4;
         /**
          * 拷贝
          */
@@ -12050,6 +12050,11 @@ declare namespace feng3d {
         /**
          * 缩放
          */
+        scale: Vector3;
+        /**
+         * 起始缩放
+         */
+        startScale: Vector3;
         /**
          * 颜色
          */
@@ -12103,6 +12108,7 @@ declare namespace feng3d {
         velocityOverLifetime: ParticleVelocityOverLifetimeModule;
         accelerationOverLifetime: ParticleAccelerationOverLifetimeModule;
         colorOverLifetime: ParticleColorOverLifetimeModule;
+        scaleOverLifetime: ParticleScaleOverLifetimeModule;
         geometry: PlaneGeometry;
         material: Material;
         castShadows: boolean;
@@ -12351,11 +12357,7 @@ declare namespace feng3d {
          */
         loop: boolean;
         /**
-         * 当播放预暖系统时，将处于一种状态，就好像它坏了发出一个循环。只能在系统循环时使用。
-         */
-        prewarm: boolean;
-        /**
-         * 这个粒子系统在发射粒子之前会等待几秒。不能与预加热循环系统一起使用。
+         * 这个粒子系统在发射粒子之前会等待几秒。
          */
         startDelay: number;
         /**
@@ -12367,9 +12369,9 @@ declare namespace feng3d {
          */
         startSpeed: number;
         /**
-         * 粒子的起始大小。
+         * 粒子的起始缩放。
          */
-        startSize: Vector3;
+        startScale: Vector3;
         /**
          * 粒子的起始旋转角度。
          */
@@ -12492,6 +12494,19 @@ declare namespace feng3d {
         acceleration: Vector3;
         private _preAcceleration;
         private _currentAcceleration;
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle, preTime: number, time: number): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 粒子系统 缩放随时间变化模块
+     */
+    class ParticleScaleOverLifetimeModule extends ParticleModule {
+        scale: Vector3;
         /**
          * 更新粒子状态
          * @param particle 粒子

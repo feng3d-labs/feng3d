@@ -207,7 +207,7 @@ namespace feng3d
          * @param v 乘以的向量
          * @return 返回自身
          */
-        mul(v: Vector4)
+        multiply(v: Vector4)
         {
             this.x *= v.x;
             this.y *= v.y;
@@ -221,9 +221,9 @@ namespace feng3d
          * @param v 乘以的向量
          * @return 返回新向量
          */
-        mulTo(v: Vector4, vout = new Vector4())
+        multiplyTo(v: Vector4, vout = new Vector4())
         {
-            return vout.copy(this).mul(v);
+            return vout.copy(this).multiply(v);
         }
 
         /**

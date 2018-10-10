@@ -1,13 +1,13 @@
 namespace feng3d
 {
     /**
-     * 粒子系统 颜色随时间变化模块
+     * 粒子系统 缩放随时间变化模块
      */
-    export class ParticleColorOverLifetimeModule extends ParticleModule
+    export class ParticleScaleOverLifetimeModule extends ParticleModule
     {
         @serialize
         @oav()
-        color = new Color4();
+        scale = new Vector3();
 
         /**
          * 更新粒子状态
@@ -15,7 +15,7 @@ namespace feng3d
          */
         updateParticleState(particle: Particle, preTime: number, time: number)
         {
-            particle.color.multiply(this.color);
+            particle.scale.multiply(this.scale);
         }
     }
 }

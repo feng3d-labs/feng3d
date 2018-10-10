@@ -111,7 +111,7 @@ namespace feng3d
          * @param c 乘以的颜色
          * @return 返回自身
          */
-        mul(c: Color4)
+        multiply(c: Color4)
         {
             this.r *= c.r;
             this.g *= c.g;
@@ -125,9 +125,9 @@ namespace feng3d
          * @param v 乘以的颜色
          * @return 返回新颜色
          */
-        mulTo(v: Color4, vout = new Color4())
+        multiplyTo(v: Color4, vout = new Color4())
         {
-            return vout.copy(this).mul(v);
+            return vout.copy(this).multiply(v);
         }
 
         /**

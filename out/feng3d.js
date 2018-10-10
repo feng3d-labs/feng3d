@@ -6713,7 +6713,7 @@ var feng3d;
          * @param v 乘以的向量
          * @return 返回自身
          */
-        Vector4.prototype.mul = function (v) {
+        Vector4.prototype.multiply = function (v) {
             this.x *= v.x;
             this.y *= v.y;
             this.z *= v.z;
@@ -6725,9 +6725,9 @@ var feng3d;
          * @param v 乘以的向量
          * @return 返回新向量
          */
-        Vector4.prototype.mulTo = function (v, vout) {
+        Vector4.prototype.multiplyTo = function (v, vout) {
             if (vout === void 0) { vout = new Vector4(); }
-            return vout.copy(this).mul(v);
+            return vout.copy(this).multiply(v);
         };
         /**
          * 除以指定向量
@@ -11137,7 +11137,7 @@ var feng3d;
          * @param c 乘以的颜色
          * @return 返回自身
          */
-        Color4.prototype.mul = function (c) {
+        Color4.prototype.multiply = function (c) {
             this.r *= c.r;
             this.g *= c.g;
             this.b *= c.b;
@@ -11149,9 +11149,9 @@ var feng3d;
          * @param v 乘以的颜色
          * @return 返回新颜色
          */
-        Color4.prototype.mulTo = function (v, vout) {
+        Color4.prototype.multiplyTo = function (v, vout) {
             if (vout === void 0) { vout = new Color4(); }
-            return vout.copy(this).mul(v);
+            return vout.copy(this).multiply(v);
         };
         /**
          * 拷贝
@@ -23778,7 +23778,11 @@ var feng3d;
             /**
              * 缩放
              */
-            // scale = new Vector3(1, 1, 1);
+            this.scale = new feng3d.Vector3(1, 1, 1);
+            /**
+             * 起始缩放
+             */
+            this.startScale = new feng3d.Vector3(1, 1, 1);
             /**
              * 颜色
              */
@@ -23912,6 +23916,7 @@ var feng3d;
                 this.velocityOverLifetime = this.velocityOverLifetime || new feng3d.ParticleVelocityOverLifetimeModule(),
                 this.accelerationOverLifetime = this.accelerationOverLifetime || new feng3d.ParticleAccelerationOverLifetimeModule(),
                 this.colorOverLifetime = this.colorOverLifetime || new feng3d.ParticleColorOverLifetimeModule(),
+                this.scaleOverLifetime = this.scaleOverLifetime || new feng3d.ParticleScaleOverLifetimeModule(),
             ];
         };
         ParticleSystem.prototype.update = function (interval) {
@@ -24136,6 +24141,10 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ block: "colorOverLifetime", component: "OAVObjectView" })
         ], ParticleSystem.prototype, "colorOverLifetime", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "scaleOverLifetime", component: "OAVObjectView" })
+        ], ParticleSystem.prototype, "scaleOverLifetime", void 0);
         __decorate([
             feng3d.oav({ block: "Renderer" })
         ], ParticleSystem.prototype, "geometry", void 0);
@@ -24474,13 +24483,8 @@ var feng3d;
              */
             _this.loop = true;
             /**
-             * 当播放预暖系统时，将处于一种状态，就好像它坏了发出一个循环。只能在系统循环时使用。
+             * 这个粒子系统在发射粒子之前会等待几秒。
              */
-            _this.prewarm = false;
-            /**
-             * 这个粒子系统在发射粒子之前会等待几秒。不能与预加热循环系统一起使用。
-             */
-            // @oav({ tooltip: "Delay in seconds that this Particle System will wait before emitting particles. Cannot be used together with a prewarmed looping system." })
             _this.startDelay = 0;
             /**
              * 起始寿命为秒，粒子寿命为0时死亡。
@@ -24491,9 +24495,9 @@ var feng3d;
              */
             _this.startSpeed = 5;
             /**
-             * 粒子的起始大小。
+             * 粒子的起始缩放。
              */
-            _this.startSize = new feng3d.Vector3(1, 1, 1);
+            _this.startScale = new feng3d.Vector3(1, 1, 1);
             /**
              * 粒子的起始旋转角度。
              */
@@ -24541,9 +24545,11 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleMainModule.prototype.initParticleState = function (particle) {
-            particle.startColor.copy(this.startColor);
             particle.position.init(0, 0, 0);
             particle.velocity.init(0, 0, this.startSpeed);
+            particle.startScale.copy(this.startScale);
+            //
+            particle.startColor.copy(this.startColor);
         };
         /**
          * 更新粒子状态
@@ -24559,48 +24565,34 @@ var feng3d;
             particle.velocity.y += localAcceleration.y * (time - preTime);
             particle.velocity.z += localAcceleration.z * (time - preTime);
             //
+            particle.scale.copy(particle.startScale);
+            //
             particle.color.copy(particle.startColor);
         };
         __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "The length of time the Particle System is emitting particles. If the system is looping, this indicates the length of one cycle." })
-            ,
+            feng3d.serialize,
             feng3d.oav({ tooltip: "粒子系统发射粒子的时间长度。如果系统是循环的，这表示一个循环的长度。" })
         ], ParticleMainModule.prototype, "duration", void 0);
         __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "If true, the emission cycle will repeat after the duration." })
-            ,
+            feng3d.serialize,
             feng3d.oav({ tooltip: "如果为真，发射周期将在持续时间后重复。" })
         ], ParticleMainModule.prototype, "loop", void 0);
         __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "When played a prewarmed system will be in a state as if it bad emitted one loop cycle. Can only be used if the system is looping." })
-            ,
-            feng3d.oav({ tooltip: "当播放预暖系统时，将处于一种状态，就好像它坏了发出一个循环。只能在系统循环时使用。" })
-        ], ParticleMainModule.prototype, "prewarm", void 0);
-        __decorate([
             feng3d.serialize,
-            feng3d.oav({ tooltip: "这个粒子系统在发射粒子之前会等待几秒。不能与预加热循环系统一起使用。" })
+            feng3d.oav({ tooltip: "这个粒子系统在发射粒子之前会等待几秒。" })
         ], ParticleMainModule.prototype, "startDelay", void 0);
         __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "Start lifetime is seconds, particle will die when its lifetime reaches 0." })
-            ,
+            feng3d.serialize,
             feng3d.oav({ tooltip: "起始寿命为秒，粒子寿命为0时死亡。" })
         ], ParticleMainModule.prototype, "startLifetime", void 0);
         __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "The start speed of particles, applied in the starting direction." })
-            ,
+            feng3d.serialize,
             feng3d.oav({ tooltip: "粒子的起始速度，应用于起始方向。" })
         ], ParticleMainModule.prototype, "startSpeed", void 0);
         __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "The start size of particles." })
-            ,
-            feng3d.oav({ tooltip: "粒子的起始大小。" })
-        ], ParticleMainModule.prototype, "startSize", void 0);
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "粒子的起始缩放。" })
+        ], ParticleMainModule.prototype, "startScale", void 0);
         __decorate([
             feng3d.serialize
             // @oav({ tooltip: "The start rotation of particles in degress." })
@@ -24834,6 +24826,33 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 粒子系统 缩放随时间变化模块
+     */
+    var ParticleScaleOverLifetimeModule = /** @class */ (function (_super) {
+        __extends(ParticleScaleOverLifetimeModule, _super);
+        function ParticleScaleOverLifetimeModule() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.scale = new feng3d.Vector3();
+            return _this;
+        }
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticleScaleOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time) {
+            particle.scale.multiply(this.scale);
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], ParticleScaleOverLifetimeModule.prototype, "scale", void 0);
+        return ParticleScaleOverLifetimeModule;
+    }(feng3d.ParticleModule));
+    feng3d.ParticleScaleOverLifetimeModule = ParticleScaleOverLifetimeModule;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 粒子系统 颜色随时间变化模块
      */
     var ParticleColorOverLifetimeModule = /** @class */ (function (_super) {
@@ -24848,7 +24867,7 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleColorOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time) {
-            particle.color.mul(this.color);
+            particle.color.multiply(this.color);
         };
         __decorate([
             feng3d.serialize,
