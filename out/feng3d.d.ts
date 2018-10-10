@@ -12476,6 +12476,7 @@ declare namespace feng3d {
      */
     class ParticleVelocityOverLifetimeModule extends ParticleModule {
         velocity: Vector3;
+        space: ParticleSystemSimulationSpace;
         /**
          * 更新粒子状态
          * @param particle 粒子

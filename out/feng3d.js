@@ -24748,6 +24748,7 @@ var feng3d;
         function ParticleVelocityOverLifetimeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.velocity = new feng3d.Vector3();
+            _this.space = feng3d.ParticleSystemSimulationSpace.Local;
             return _this;
         }
         /**
@@ -24755,7 +24756,10 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleVelocityOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time) {
-            var velocity = this.velocity;
+            var velocity = this.velocity.clone();
+            if (this.space == feng3d.ParticleSystemSimulationSpace.World) {
+                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(velocity, velocity);
+            }
             //
             particle.position.x += velocity.x * (time - preTime);
             particle.position.y += velocity.y * (time - preTime);
@@ -24765,6 +24769,9 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav()
         ], ParticleVelocityOverLifetimeModule.prototype, "velocity", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "模拟空间", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace } })
+        ], ParticleVelocityOverLifetimeModule.prototype, "space", void 0);
         return ParticleVelocityOverLifetimeModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleVelocityOverLifetimeModule = ParticleVelocityOverLifetimeModule;

@@ -12,13 +12,21 @@ namespace feng3d
         @oav()
         velocity = new Vector3();
 
+        @oav({ tooltip: "模拟空间", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
+        space = ParticleSystemSimulationSpace.Local;
+
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
         updateParticleState(particle: Particle, preTime: number, time: number)
         {
-            var velocity = this.velocity;
+            var velocity = this.velocity.clone();
+
+            if (this.space == ParticleSystemSimulationSpace.World)
+            {
+                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(velocity, velocity);
+            }
 
             //
             particle.position.x += velocity.x * (time - preTime);
