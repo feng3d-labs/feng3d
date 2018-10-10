@@ -107,9 +107,33 @@ namespace feng3d
         }
 
         /**
+         * 乘以指定颜色
+         * @param c 乘以的颜色
+         * @return 返回自身
+         */
+        mul(c: Color4)
+        {
+            this.r *= c.r;
+            this.g *= c.g;
+            this.b *= c.b;
+            this.a *= c.a;
+            return this;
+        }
+
+        /**
+         * 乘以指定颜色
+         * @param v 乘以的颜色
+         * @return 返回新颜色
+         */
+        mulTo(v: Color4, vout = new Color4())
+        {
+            return vout.copy(this).mul(v);
+        }
+
+        /**
          * 拷贝
          */
-        copyFrom(color: Color4)
+        copy(color: Color4)
         {
             this.r = color.r;
             this.g = color.g;

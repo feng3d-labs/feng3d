@@ -60,9 +60,6 @@ namespace feng3d
 			this.position.x += this.velocity.x * pTime;
 			this.position.y += this.velocity.y * pTime;
 			this.position.z += this.velocity.z * pTime;
-
-			// 计算颜色值
-			this.color.copyFrom(this.startColor);
 		}
 	}
 }

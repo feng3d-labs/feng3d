@@ -11133,9 +11133,30 @@ var feng3d;
             return this;
         };
         /**
+         * 乘以指定颜色
+         * @param c 乘以的颜色
+         * @return 返回自身
+         */
+        Color4.prototype.mul = function (c) {
+            this.r *= c.r;
+            this.g *= c.g;
+            this.b *= c.b;
+            this.a *= c.a;
+            return this;
+        };
+        /**
+         * 乘以指定颜色
+         * @param v 乘以的颜色
+         * @return 返回新颜色
+         */
+        Color4.prototype.mulTo = function (v, vout) {
+            if (vout === void 0) { vout = new Color4(); }
+            return vout.copy(this).mul(v);
+        };
+        /**
          * 拷贝
          */
-        Color4.prototype.copyFrom = function (color) {
+        Color4.prototype.copy = function (color) {
             this.r = color.r;
             this.g = color.g;
             this.b = color.b;
@@ -23778,8 +23799,6 @@ var feng3d;
             this.position.x += this.velocity.x * pTime;
             this.position.y += this.velocity.y * pTime;
             this.position.z += this.velocity.z * pTime;
-            // 计算颜色值
-            this.color.copyFrom(this.startColor);
         };
         return Particle;
     }());
@@ -24517,7 +24536,7 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleMainModule.prototype.initParticleState = function (particle) {
-            particle.startColor.copyFrom(this.startColor);
+            particle.startColor.copy(this.startColor);
             particle.position.init(0, 0, 0);
             particle.velocity.init(0, 0, this.startSpeed);
         };
@@ -24534,6 +24553,8 @@ var feng3d;
             particle.velocity.x += localAcceleration.x * (time - preTime);
             particle.velocity.y += localAcceleration.y * (time - preTime);
             particle.velocity.z += localAcceleration.z * (time - preTime);
+            //
+            particle.color.copy(particle.startColor);
         };
         __decorate([
             feng3d.serialize
@@ -24804,6 +24825,33 @@ var feng3d;
         return ParticleAccelerationOverLifetimeModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleAccelerationOverLifetimeModule = ParticleAccelerationOverLifetimeModule;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 粒子系统 颜色随时间变化模块
+     */
+    var ParticleColorOverLifetimeModule = /** @class */ (function (_super) {
+        __extends(ParticleColorOverLifetimeModule, _super);
+        function ParticleColorOverLifetimeModule() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.color = new feng3d.Color4();
+            return _this;
+        }
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticleColorOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time) {
+            particle.color.mul(this.color);
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], ParticleColorOverLifetimeModule.prototype, "color", void 0);
+        return ParticleColorOverLifetimeModule;
+    }(feng3d.ParticleModule));
+    feng3d.ParticleColorOverLifetimeModule = ParticleColorOverLifetimeModule;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

@@ -5679,9 +5679,21 @@ declare namespace feng3d {
          */
         mix(color: Color4, rate?: number): this;
         /**
+         * 乘以指定颜色
+         * @param c 乘以的颜色
+         * @return 返回自身
+         */
+        mul(c: Color4): this;
+        /**
+         * 乘以指定颜色
+         * @param v 乘以的颜色
+         * @return 返回新颜色
+         */
+        mulTo(v: Color4, vout?: Color4): Color4;
+        /**
          * 拷贝
          */
-        copyFrom(color: Color4): this;
+        copy(color: Color4): this;
         /**
          * 输出字符串
          */
@@ -12479,6 +12491,19 @@ declare namespace feng3d {
         acceleration: Vector3;
         private _preAcceleration;
         private _currentAcceleration;
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle, preTime: number, time: number): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 粒子系统 颜色随时间变化模块
+     */
+    class ParticleColorOverLifetimeModule extends ParticleModule {
+        color: Color4;
         /**
          * 更新粒子状态
          * @param particle 粒子
