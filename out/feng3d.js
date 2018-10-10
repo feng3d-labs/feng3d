@@ -23911,6 +23911,7 @@ var feng3d;
                 this.shape = this.shape || new feng3d.ParticleShapeModule(),
                 this.velocityOverLifetime = this.velocityOverLifetime || new feng3d.ParticleVelocityOverLifetimeModule(),
                 this.accelerationOverLifetime = this.accelerationOverLifetime || new feng3d.ParticleAccelerationOverLifetimeModule(),
+                this.colorOverLifetime = this.colorOverLifetime || new feng3d.ParticleColorOverLifetimeModule(),
             ];
         };
         ParticleSystem.prototype.update = function (interval) {
@@ -24131,6 +24132,10 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ block: "accelerationOverLifetime", component: "OAVObjectView" })
         ], ParticleSystem.prototype, "accelerationOverLifetime", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "colorOverLifetime", component: "OAVObjectView" })
+        ], ParticleSystem.prototype, "colorOverLifetime", void 0);
         __decorate([
             feng3d.oav({ block: "Renderer" })
         ], ParticleSystem.prototype, "geometry", void 0);

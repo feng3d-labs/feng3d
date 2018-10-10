@@ -12102,6 +12102,7 @@ declare namespace feng3d {
         shape: ParticleShapeModule;
         velocityOverLifetime: ParticleVelocityOverLifetimeModule;
         accelerationOverLifetime: ParticleAccelerationOverLifetimeModule;
+        colorOverLifetime: ParticleColorOverLifetimeModule;
         geometry: PlaneGeometry;
         material: Material;
         castShadows: boolean;
