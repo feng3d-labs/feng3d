@@ -11,6 +11,11 @@ namespace feng3d
         enabled = true;
 
         /**
+         * 粒子系统
+         */
+        particleSystem: ParticleSystem;
+
+        /**
          * 初始化粒子状态
          * @param particle 粒子
          */

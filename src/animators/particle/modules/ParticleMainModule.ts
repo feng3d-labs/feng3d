@@ -158,7 +158,7 @@ namespace feng3d
             var globalAcceleration = new Vector3(0, -this.gravityModifier * 9.8, 0)
 
             // 本地加速度
-            var localAcceleration = globalAcceleration.clone();
+            var localAcceleration = this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(globalAcceleration);
 
             //
             particle.velocity.x += localAcceleration.x * (time - preTime);

@@ -96,6 +96,7 @@ namespace feng3d
                 this.colorOverLifetime = this.colorOverLifetime || new ParticleColorOverLifetimeModule(),
                 this.scaleOverLifetime = this.scaleOverLifetime || new ParticleScaleOverLifetimeModule(),
             ];
+            this._modules.forEach(v => v.particleSystem = this);
         }
 
         update(interval: number)

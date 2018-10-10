@@ -23908,6 +23908,7 @@ var feng3d;
             configurable: true
         });
         ParticleSystem.prototype.init = function (gameObject) {
+            var _this = this;
             _super.prototype.init.call(this, gameObject);
             this._modules = [
                 this.main = this.main || new feng3d.ParticleMainModule(),
@@ -23918,6 +23919,7 @@ var feng3d;
                 this.colorOverLifetime = this.colorOverLifetime || new feng3d.ParticleColorOverLifetimeModule(),
                 this.scaleOverLifetime = this.scaleOverLifetime || new feng3d.ParticleScaleOverLifetimeModule(),
             ];
+            this._modules.forEach(function (v) { return v.particleSystem = _this; });
         };
         ParticleSystem.prototype.update = function (interval) {
             if (!this.isPlaying)
@@ -24559,7 +24561,7 @@ var feng3d;
             // 计算重力加速度影响速度
             var globalAcceleration = new feng3d.Vector3(0, -this.gravityModifier * 9.8, 0);
             // 本地加速度
-            var localAcceleration = globalAcceleration.clone();
+            var localAcceleration = this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(globalAcceleration);
             //
             particle.velocity.x += localAcceleration.x * (time - preTime);
             particle.velocity.y += localAcceleration.y * (time - preTime);
