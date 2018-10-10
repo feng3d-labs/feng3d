@@ -7969,33 +7969,21 @@ var feng3d;
             ]);
             return rotationMat;
         };
-        Matrix4x4.fromRotation = function () {
-            var rx = 0, ry = 0, rz = 0;
-            if (arguments[0] instanceof Object) {
-                rx = arguments[0].x;
-                ry = arguments[0].y;
-                rz = arguments[0].z;
-            }
-            else {
-                rx = arguments[0];
-                ry = arguments[1];
-                rz = arguments[2];
-            }
-            var rotationMat = new Matrix4x4();
-            rotationMat.appendRotation(feng3d.Vector3.X_AXIS, rx);
-            rotationMat.appendRotation(feng3d.Vector3.Y_AXIS, ry);
-            rotationMat.appendRotation(feng3d.Vector3.Z_AXIS, rz);
-            return rotationMat;
-        };
-        Matrix4x4.fromRotation1 = function (rx, ry, rz) {
+        /**
+         * 创建旋转矩阵
+         * @param   rx      用于沿 x 轴旋转对象的角度。
+         * @param   ry      用于沿 y 轴旋转对象的角度。
+         * @param   rz      用于沿 z 轴旋转对象的角度。
+         */
+        Matrix4x4.fromRotation = function (rx, ry, rz) {
             rx = feng3d.FMath.degToRad(rx);
             ry = feng3d.FMath.degToRad(ry);
             rz = feng3d.FMath.degToRad(rz);
             var sx = Math.sin(rx), cx = Math.cos(rx), sy = Math.sin(ry), cy = Math.cos(ry), sz = Math.sin(rz), cz = Math.cos(rz);
             return new Matrix4x4([
-                cy, 0, -sy, 0,
-                sx * sy, cx, sx * cy, 0,
-                cx * sy, -sx, cx * cy, 0,
+                cy * cz, cy * sz, -sy, 0,
+                sx * sy * cz - cx * sz, sx * sy * sz + cx * cz, sx * cy, 0,
+                cx * sy * cz + sx * sz, cx * sy * sz - sx * cz, cx * cy, 0,
                 0, 0, 0, 1,
             ]);
         };

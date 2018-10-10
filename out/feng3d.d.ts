@@ -4189,16 +4189,6 @@ declare namespace feng3d {
          */
         static fromRotation(rx: number, ry: number, rz: number): Matrix4x4;
         /**
-         * 创建旋转矩阵
-         * @param   euler         角度（角度值）
-         */
-        static fromRotation(euler: {
-            x: number;
-            y: number;
-            z: number;
-        }): Matrix4x4;
-        static fromRotation1(rx: number, ry: number, rz: number): Matrix4x4;
-        /**
          * 创建缩放矩阵
          * @param   xScale      用于沿 x 轴缩放对象的乘数。
          * @param   yScale      用于沿 y 轴缩放对象的乘数。
