@@ -23,7 +23,7 @@ namespace feng3d
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle)
+        updateParticleState(particle: Particle, preTime: number, time: number)
         {
 
         }

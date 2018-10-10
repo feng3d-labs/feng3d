@@ -23790,7 +23790,7 @@ var feng3d;
         /**
          * 更新状态
          */
-        Particle.prototype.updateState = function (time) {
+        Particle.prototype.updateState = function (preTime, time) {
             var pTime = time - this.birthTime;
             // 计算位置
             this.position.x = this.startPosition.x + (this.startVelocity.x + this.addVelocity.x + (this.startAcceleration.x + this.addAcceleration.x) * pTime) * pTime;
@@ -23848,6 +23848,14 @@ var feng3d;
              * 上次发射时间
              */
             _this._preEmitTime = 0;
+            /**
+             * 当前真实发射时间
+             */
+            _this._realEmitTime = 0;
+            /**
+             * 上次真实发射时间
+             */
+            _this._preRealEmitTime = 0;
             /**
              * 粒子池，用于存放未发射或者死亡粒子
              */
@@ -23908,9 +23916,11 @@ var feng3d;
             if (!this.isPlaying)
                 return;
             this.time = this.time + this.main.simulationSpeed * interval / 1000;
+            this._realEmitTime = this.time - this.main.startDelay;
             this._updateActiveParticlesState();
             this._emit();
             this._preEmitTime = this.time;
+            this._preRealEmitTime = this.time - this.main.startDelay;
             this._isInvalid = true;
             // 判断非循环的效果是否播放结束
             if (!this.main.loop && this._activeParticles.length == 0 && this.time > this.main.startDelay + this.main.duration) {
@@ -24049,18 +24059,18 @@ var feng3d;
         };
         /**
          * 发射粒子
-         * @param realTime 真实时间，减去startDelay的时间
+         * @param birthTime 发射时间
          * @param num 发射数量
          */
-        ParticleSystem.prototype._emitParticles = function (realTime, num) {
+        ParticleSystem.prototype._emitParticles = function (birthTime, num) {
             for (var i = 0; i < num; i++) {
                 if (this._activeParticles.length >= this.main.maxParticles)
                     return;
-                var startLifetime = this.main.startLifetime;
-                if (startLifetime + realTime + this.main.startDelay > this.time) {
+                var lifetime = this.main.startLifetime;
+                if (lifetime + birthTime + this.main.startDelay > this.time) {
                     var particle = this._particlePool.pop() || new feng3d.Particle();
-                    particle.birthTime = realTime;
-                    particle.lifetime = startLifetime;
+                    particle.birthTime = birthTime;
+                    particle.lifetime = lifetime;
                     this._activeParticles.push(particle);
                     this._initParticleState(particle);
                     this._updateParticleState(particle);
@@ -24094,8 +24104,9 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleSystem.prototype._updateParticleState = function (particle) {
-            this._modules.forEach(function (v) { v.enabled && v.updateParticleState(particle); });
-            particle.updateState(this.time - this.main.startDelay);
+            var _this = this;
+            this._modules.forEach(function (v) { v.enabled && v.updateParticleState(particle, _this._preRealEmitTime, _this._realEmitTime); });
+            particle.updateState(this._preRealEmitTime, this._realEmitTime);
         };
         __decorate([
             feng3d.serialize,
@@ -24431,7 +24442,7 @@ var feng3d;
          * 更新粒子状态
          * @param particle 粒子
          */
-        ParticleModule.prototype.updateParticleState = function (particle) {
+        ParticleModule.prototype.updateParticleState = function (particle, preTime, time) {
         };
         return ParticleModule;
     }(feng3d.EventDispatcher));
@@ -24530,7 +24541,7 @@ var feng3d;
          * 更新粒子状态
          * @param particle 粒子
          */
-        ParticleMainModule.prototype.updateParticleState = function (particle) {
+        ParticleMainModule.prototype.updateParticleState = function (particle, preTime, time) {
             particle.addPosition.init(0, 0, 0);
             particle.addVelocity.init(0, 0, 0);
             particle.addAcceleration.init(0, 0, 0);
@@ -24753,7 +24764,7 @@ var feng3d;
          * 更新粒子状态
          * @param particle 粒子
          */
-        ParticleVelocityOverLifetimeModule.prototype.updateParticleState = function (particle) {
+        ParticleVelocityOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time) {
             particle.addVelocity.add(this.velocity);
         };
         __decorate([
@@ -24782,7 +24793,7 @@ var feng3d;
          * 更新粒子状态
          * @param particle 粒子
          */
-        ParticleAccelerationOverLifetimeModule.prototype.updateParticleState = function (particle) {
+        ParticleAccelerationOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time) {
             particle.addAcceleration.add(this.acceleration);
         };
         __decorate([

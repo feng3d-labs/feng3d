@@ -12069,7 +12069,7 @@ declare namespace feng3d {
         /**
          * 更新状态
          */
-        updateState(time: number): void;
+        updateState(preTime: number, time: number): void;
     }
 }
 declare namespace feng3d {
@@ -12145,6 +12145,14 @@ declare namespace feng3d {
          */
         private _preEmitTime;
         /**
+         * 当前真实发射时间
+         */
+        private _realEmitTime;
+        /**
+         * 上次真实发射时间
+         */
+        private _preRealEmitTime;
+        /**
          * 粒子池，用于存放未发射或者死亡粒子
          */
         private _particlePool;
@@ -12168,7 +12176,7 @@ declare namespace feng3d {
         private _emit;
         /**
          * 发射粒子
-         * @param realTime 真实时间，减去startDelay的时间
+         * @param birthTime 发射时间
          * @param num 发射数量
          */
         private _emitParticles;
@@ -12333,7 +12341,7 @@ declare namespace feng3d {
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle): void;
+        updateParticleState(particle: Particle, preTime: number, time: number): void;
     }
 }
 declare namespace feng3d {
@@ -12422,7 +12430,7 @@ declare namespace feng3d {
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle): void;
+        updateParticleState(particle: Particle, preTime: number, time: number): void;
     }
 }
 declare namespace feng3d {
@@ -12478,7 +12486,7 @@ declare namespace feng3d {
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle): void;
+        updateParticleState(particle: Particle, preTime: number, time: number): void;
     }
 }
 declare namespace feng3d {
@@ -12493,7 +12501,7 @@ declare namespace feng3d {
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle): void;
+        updateParticleState(particle: Particle, preTime: number, time: number): void;
     }
 }
 declare namespace feng3d {

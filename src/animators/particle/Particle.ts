@@ -74,7 +74,7 @@ namespace feng3d
 		/**
 		 * 更新状态
 		 */
-		updateState(time: number)
+		updateState(preTime: number, time: number)
 		{
 			var pTime = time - this.birthTime;
 

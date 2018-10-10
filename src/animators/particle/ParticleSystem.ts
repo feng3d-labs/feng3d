@@ -93,12 +93,14 @@ namespace feng3d
             if (!this.isPlaying) return;
 
             this.time = this.time + this.main.simulationSpeed * interval / 1000;
+            this._realEmitTime = this.time - this.main.startDelay;
 
             this._updateActiveParticlesState();
 
             this._emit();
 
             this._preEmitTime = this.time;
+            this._preRealEmitTime = this.time - this.main.startDelay;
 
             this._isInvalid = true;
 
@@ -215,6 +217,14 @@ namespace feng3d
          * 上次发射时间
          */
         private _preEmitTime = 0;
+        /**
+         * 当前真实发射时间
+         */
+        private _realEmitTime = 0;
+        /**
+         * 上次真实发射时间
+         */
+        private _preRealEmitTime = 0;
 
         /**
          * 粒子池，用于存放未发射或者死亡粒子
@@ -310,20 +320,20 @@ namespace feng3d
 
         /**
          * 发射粒子
-         * @param realTime 真实时间，减去startDelay的时间
+         * @param birthTime 发射时间
          * @param num 发射数量
          */
-        private _emitParticles(realTime: number, num: number)
+        private _emitParticles(birthTime: number, num: number)
         {
             for (let i = 0; i < num; i++)
             {
                 if (this._activeParticles.length >= this.main.maxParticles) return;
-                var startLifetime = this.main.startLifetime;
-                if (startLifetime + realTime + this.main.startDelay > this.time)
+                var lifetime = this.main.startLifetime;
+                if (lifetime + birthTime + this.main.startDelay > this.time)
                 {
                     var particle = this._particlePool.pop() || new Particle();
-                    particle.birthTime = realTime;
-                    particle.lifetime = startLifetime;
+                    particle.birthTime = birthTime;
+                    particle.lifetime = lifetime;
                     this._activeParticles.push(particle);
                     this._initParticleState(particle);
                     this._updateParticleState(particle);
@@ -365,8 +375,8 @@ namespace feng3d
          */
         private _updateParticleState(particle: Particle)
         {
-            this._modules.forEach(v => { v.enabled && v.updateParticleState(particle) });
-            particle.updateState(this.time - this.main.startDelay);
+            this._modules.forEach(v => { v.enabled && v.updateParticleState(particle, this._preRealEmitTime, this._realEmitTime) });
+            particle.updateState(this._preRealEmitTime, this._realEmitTime);
         }
     }
 

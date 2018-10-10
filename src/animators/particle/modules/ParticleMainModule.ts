@@ -164,7 +164,7 @@ namespace feng3d
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle)
+        updateParticleState(particle: Particle, preTime: number, time: number)
         {
             particle.addPosition.init(0, 0, 0);
             particle.addVelocity.init(0, 0, 0);
