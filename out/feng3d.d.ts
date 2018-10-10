@@ -12201,8 +12201,7 @@ declare namespace feng3d {
      */
     enum ParticleSystemSimulationSpace {
         Local = 0,
-        World = 1,
-        Custom = 2
+        World = 1
     }
 }
 declare namespace feng3d {
@@ -12417,10 +12416,6 @@ declare namespace feng3d {
          */
         maxParticles: number;
         /**
-         * 每次播放效果时以不同的方式进行模拟。
-         */
-        autoRandomSeed: boolean;
-        /**
          * 初始化粒子状态
          * @param particle 粒子
          */
@@ -12496,6 +12491,7 @@ declare namespace feng3d {
      */
     class ParticleAccelerationOverLifetimeModule extends ParticleModule {
         acceleration: Vector3;
+        space: ParticleSystemSimulationSpace;
         private _preAcceleration;
         private _currentAcceleration;
         /**

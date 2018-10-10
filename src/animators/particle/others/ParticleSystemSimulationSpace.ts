@@ -7,6 +7,6 @@ namespace feng3d
     {
         Local,
         World,
-        Custom
+        // Custom
     }
 }

@@ -67,7 +67,6 @@ namespace feng3d
          * 粒子的起始颜色。
          */
         @serialize
-        // @oav({ tooltip: "The start color of particles." })
         @oav({ tooltip: "粒子的起始颜色。" })
         startColor = new Color4();
 
@@ -75,7 +74,6 @@ namespace feng3d
          * 按物理管理器中定义的重力进行缩放。
          */
         @serialize
-        // @oav({ tooltip: "Scales the gravity defined in Physics Manager." })
         @oav({ tooltip: "按物理管理器中定义的重力进行缩放。" })
         gravityModifier = 0;
 
@@ -83,8 +81,7 @@ namespace feng3d
          * 使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。
          */
         @serialize
-        // @oav({ tooltip: "Makes particle positions simulate in world, local or custom space. In local space they stay relative to their own Transform, and in custom space they are relative to the custom Transform." })
-        @oav({ tooltip: "使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。" })
+        @oav({ tooltip: "模拟空间，使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
         simulationSpace = ParticleSystemSimulationSpace.Local;
 
         /**
@@ -115,7 +112,6 @@ namespace feng3d
          * 如果启用，系统将自动开始运行。
          */
         @serialize
-        // @oav({ tooltip: "If enabled, the system will start palying automatically. Note that this setting is shared between all Particle Systems in the current particle effect." })
         @oav({ tooltip: "如果启用，系统将自动开始运行。" })
         playOnAwake = true;
 
@@ -123,17 +119,8 @@ namespace feng3d
          * 系统中粒子的数量将被这个数限制。如果达到这个目标，排放将暂时发射。
          */
         @serialize
-        // @oav({ tooltip: "The number of particles in the system will be limited by this number. Emission will be temporarily halted if this is reached." })
-        @oav({ tooltip: "系统中粒子的数量将被这个数限制。如果达到这个目标，排放将暂时发射。" })
+        @oav({ tooltip: "系统中粒子的数量将被这个数限制。如果达到这个目标，将暂时发射。" })
         maxParticles = 1000;
-
-        /**
-         * 每次播放效果时以不同的方式进行模拟。
-         */
-        @serialize
-        // @oav({ tooltip: "Simulate differently each time the effect is played." })
-        @oav({ tooltip: "每次播放效果时以不同的方式进行模拟。" })
-        autoRandomSeed = true;
 
         /**
          * 初始化粒子状态
@@ -155,7 +142,7 @@ namespace feng3d
         updateParticleState(particle: Particle, preTime: number, time: number)
         {
             // 计算重力加速度影响速度
-            var globalAcceleration = new Vector3(0, -this.gravityModifier * 9.8, 0)
+            var globalAcceleration = new Vector3(0, -this.gravityModifier * 9.8, 0);
 
             // 本地加速度
             var localAcceleration = this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(globalAcceleration);

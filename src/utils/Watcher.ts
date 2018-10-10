@@ -161,7 +161,8 @@ getset平均耗时比 17.3
                 }
                 else
                 {
-                    feng3d.error(`watch ${host} . ${property} 失败！`);
+                    feng3d.warn(`watch ${host} . ${property} 失败！`);
+                    return;
                 }
                 Object.defineProperty(host, property1, data);
             }

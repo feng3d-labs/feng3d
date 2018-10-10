@@ -11,6 +11,9 @@ namespace feng3d
         @oav()
         acceleration = new Vector3();
 
+        @oav({ tooltip: "模拟空间", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
+        space = ParticleSystemSimulationSpace.Local;
+
         private _preAcceleration = new Vector3();
         private _currentAcceleration = new Vector3();
 
@@ -23,6 +26,12 @@ namespace feng3d
             //
             this._preAcceleration.copy(this.acceleration);
             this._currentAcceleration.copy(this.acceleration);
+
+            if (this.space == ParticleSystemSimulationSpace.World)
+            {
+                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(this._preAcceleration, this._preAcceleration);
+                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(this._currentAcceleration, this._currentAcceleration);
+            }
 
             //
             particle.velocity.x += (this._currentAcceleration.x + this._preAcceleration.x) * 0.5 * (time - preTime);
