@@ -730,12 +730,13 @@ namespace feng3d
             var sx = Math.sin(rx), cx = Math.cos(rx), sy = Math.sin(ry), cy = Math.cos(ry), sz = Math.sin(rz), cz = Math.cos(rz);
             var xS = components[2].x, yS = components[2].y, zS = components[2].z;
 
-            return new Matrix4x4([
+            this.rawData = [
                 cy * cz * xS, cy * sz * xS, -sy * xS, 0,
                 (sx * sy * cz - cx * sz) * yS, (sx * sy * sz + cx * cz) * yS, sx * cy * yS, 0,
                 (cx * sy * cz + sx * sz) * zS, (cx * sy * sz - sx * cz) * zS, cx * cy * zS, 0,
                 components[0].x, components[0].y, components[0].z, 1,
-            ]);
+            ];
+            return this;
         }
 
         /**
