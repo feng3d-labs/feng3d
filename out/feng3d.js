@@ -24920,6 +24920,23 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 渐变模式
+     */
+    var GradientMode;
+    (function (GradientMode) {
+        /**
+         * 混合
+         */
+        GradientMode[GradientMode["Blend"] = 0] = "Blend";
+        /**
+         * 阶梯
+         */
+        GradientMode[GradientMode["Fixed"] = 1] = "Fixed";
+    })(GradientMode = feng3d.GradientMode || (feng3d.GradientMode = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 最大最小颜色渐变模式
      */
     var MinMaxGradientMode;
@@ -24953,7 +24970,103 @@ var feng3d;
      */
     var Gradient = /** @class */ (function () {
         function Gradient() {
+            this.mode = feng3d.GradientMode.Blend;
+            /**
+             * 在渐变中定义的所有alpha键。
+             */
+            this.alphaKeys = [];
+            /**
+             * 在渐变中定义的所有color键。
+             */
+            this.colorKeys = [];
         }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        Gradient.prototype.getValue = function (time) {
+            var alpha = this.getAlpha(time);
+            var color = this.getColor(time);
+            return new feng3d.Color4(color.r, color.g, color.b, alpha);
+        };
+        /**
+         * 获取透明度
+         * @param time 时间
+         */
+        Gradient.prototype.getAlpha = function (time) {
+            var alphaKeys = this.getRealAlphaKeys();
+            for (var i = 0, n = alphaKeys.length - 1; i < n; i++) {
+                var t = alphaKeys[i].time, v = alphaKeys[i].alpha, nt = alphaKeys[i + 1].time, nv = alphaKeys[i + 1].alpha;
+                if (time == t)
+                    return v;
+                if (time == nt)
+                    return nv;
+                if (t < time && time < nt) {
+                    if (this.mode == feng3d.GradientMode.Fixed)
+                        return nv;
+                    return feng3d.FMath.mapLinear(time, t, nt, v, nv);
+                }
+            }
+            return 1;
+        };
+        /**
+         * 获取透明度
+         * @param time 时间
+         */
+        Gradient.prototype.getColor = function (time) {
+            var colorKeys = this.getRealColorKeys();
+            for (var i = 0, n = colorKeys.length - 1; i < n; i++) {
+                var t = colorKeys[i].time, v = colorKeys[i].color, nt = colorKeys[i + 1].time, nv = colorKeys[i + 1].color;
+                if (time == t)
+                    return v;
+                if (time == nt)
+                    return nv;
+                if (t < time && time < nt) {
+                    if (this.mode == feng3d.GradientMode.Fixed)
+                        return nv;
+                    return v.mixTo(nv, (time - t) / (nt - t));
+                }
+            }
+            return new feng3d.Color3();
+        };
+        /**
+         * 获取标准 alpha 键列表
+         */
+        Gradient.prototype.getRealAlphaKeys = function () {
+            var alphaKeys = this.alphaKeys.concat().sort(function (a, b) { return a.time - b.time; });
+            if (alphaKeys.length == 0) {
+                alphaKeys = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
+            }
+            else if (alphaKeys.length == 1) {
+                alphaKeys = [{ alpha: alphaKeys[0].alpha, time: 0 }, { alpha: alphaKeys[0].alpha, time: 1 }];
+            }
+            if (alphaKeys[0].time > 0) {
+                alphaKeys.splice(0, 1, { time: 0, alpha: alphaKeys[0].alpha });
+            }
+            if (alphaKeys[alphaKeys.length - 1].time < 1) {
+                alphaKeys.push({ time: 1, alpha: alphaKeys[alphaKeys.length - 1].alpha });
+            }
+            return alphaKeys;
+        };
+        /**
+         * 获取标准 color 键列表
+         */
+        Gradient.prototype.getRealColorKeys = function () {
+            var colorKeys = this.colorKeys.concat().sort(function (a, b) { return a.time - b.time; });
+            if (colorKeys.length == 0) {
+                colorKeys = [{ color: new feng3d.Color3(), time: 0 }, { color: new feng3d.Color3(), time: 1 }];
+            }
+            else if (colorKeys.length == 1) {
+                colorKeys = [{ color: colorKeys[0].color, time: 0 }, { color: colorKeys[0].color, time: 1 }];
+            }
+            if (colorKeys[0].time > 0) {
+                colorKeys.splice(0, 1, { time: 0, color: colorKeys[0].color });
+            }
+            if (colorKeys[colorKeys.length - 1].time < 1) {
+                colorKeys.push({ time: 1, color: colorKeys[colorKeys.length - 1].color });
+            }
+            return colorKeys;
+        };
         return Gradient;
     }());
     feng3d.Gradient = Gradient;

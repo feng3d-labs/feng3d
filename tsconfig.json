@@ -250,6 +250,9 @@
         "src/animators/particle/modules/ParticleColorOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticlePalstanceOverLifetimeModule.ts",
         //
+        "src/animators/particle/math/GradientMode.ts",
+        "src/animators/particle/math/GradientAlphaKey.ts",
+        "src/animators/particle/math/GradientColorKey.ts",
         "src/animators/particle/math/MinMaxGradientMode.ts",
         "src/animators/particle/math/Gradient.ts",
         "src/animators/particle/math/MinMaxGradient.ts",

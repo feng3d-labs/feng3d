@@ -12535,6 +12535,51 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 渐变模式
+     */
+    enum GradientMode {
+        /**
+         * 混合
+         */
+        Blend = 0,
+        /**
+         * 阶梯
+         */
+        Fixed = 1
+    }
+}
+declare namespace feng3d {
+    /**
+     * 渐变透明键
+     */
+    interface GradientAlphaKey {
+        /**
+         * 透明值
+         */
+        alpha: number;
+        /**
+         * 时间
+         */
+        time: number;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 渐变颜色键
+     */
+    interface GradientColorKey {
+        /**
+         * 颜色值
+         */
+        color: Color3;
+        /**
+         * 时间
+         */
+        time: number;
+    }
+}
+declare namespace feng3d {
+    /**
      * 最大最小颜色渐变模式
      */
     enum MinMaxGradientMode {
@@ -12565,6 +12610,38 @@ declare namespace feng3d {
      * 颜色渐变
      */
     class Gradient {
+        mode: GradientMode;
+        /**
+         * 在渐变中定义的所有alpha键。
+         */
+        alphaKeys: GradientAlphaKey[];
+        /**
+         * 在渐变中定义的所有color键。
+         */
+        colorKeys: GradientColorKey[];
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): Color4;
+        /**
+         * 获取透明度
+         * @param time 时间
+         */
+        getAlpha(time: number): any;
+        /**
+         * 获取透明度
+         * @param time 时间
+         */
+        getColor(time: number): Color3;
+        /**
+         * 获取标准 alpha 键列表
+         */
+        getRealAlphaKeys(): GradientAlphaKey[];
+        /**
+         * 获取标准 color 键列表
+         */
+        getRealColorKeys(): GradientColorKey[];
     }
 }
 declare namespace feng3d {
