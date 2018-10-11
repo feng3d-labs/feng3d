@@ -38,19 +38,19 @@ namespace feng3d
                 case MinMaxGradientMode.RandomBetweenTwoColors:
                     this.minMaxGradient = new RandomBetweenTwoColors();
                     break;
+                case MinMaxGradientMode.RandomBetweenTwoGradients:
+                    this.minMaxGradient = new RandomBetweenTwoGradients();
+                    break;
+                case MinMaxGradientMode.RandomColor:
+                    this.minMaxGradient = new MinMaxGradientRandomColor();
+                    break;
             }
         }
 
         /**
-         * 最大颜色渐变
+         * 获取值
+         * @param time 时间
          */
-        gradientMax = new Gradient();
-
-        /**
-         * 最小颜色渐变
-         */
-        gradientMin = new Gradient();
-
         getValue(time: number)
         {
             var v = this.minMaxGradient.getValue(time);
