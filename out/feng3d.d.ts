@@ -5690,6 +5690,10 @@ declare namespace feng3d {
          */
         multiplyTo(v: Color4, vout?: Color4): Color4;
         /**
+         * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
+         */
+        equals(object: Color4, precision?: number): boolean;
+        /**
          * 拷贝
          */
         copy(color: Color4): this;
@@ -5699,6 +5703,7 @@ declare namespace feng3d {
         toString(): string;
         toColor3(color?: Color3): Color3;
         toVector4(vector4?: Vector4): Vector4;
+        clone(): Color4;
     }
 }
 declare namespace feng3d {

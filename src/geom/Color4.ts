@@ -141,6 +141,22 @@ namespace feng3d
         }
 
         /**
+         * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
+         */
+        equals(object: Color4, precision = FMath.PRECISION)
+        {
+            if (!FMath.equals(this.r - object.r, 0, precision))
+                return false;
+            if (!FMath.equals(this.g - object.g, 0, precision))
+                return false;
+            if (!FMath.equals(this.b - object.b, 0, precision))
+                return false;
+            if (!FMath.equals(this.a - object.a, 0, precision))
+                return false;
+            return true;
+        }
+
+        /**
          * 拷贝
          */
         copy(color: Color4)
@@ -175,6 +191,11 @@ namespace feng3d
             vector4.z = this.b;
             vector4.w = this.a;
             return vector4;
+        }
+
+        clone()
+        {
+            return new Color4(this.r, this.g, this.b, this.a);
         }
     }
 }

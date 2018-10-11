@@ -11164,6 +11164,21 @@ var feng3d;
             return vout.copy(this).multiply(v);
         };
         /**
+         * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
+         */
+        Color4.prototype.equals = function (object, precision) {
+            if (precision === void 0) { precision = feng3d.FMath.PRECISION; }
+            if (!feng3d.FMath.equals(this.r - object.r, 0, precision))
+                return false;
+            if (!feng3d.FMath.equals(this.g - object.g, 0, precision))
+                return false;
+            if (!feng3d.FMath.equals(this.b - object.b, 0, precision))
+                return false;
+            if (!feng3d.FMath.equals(this.a - object.a, 0, precision))
+                return false;
+            return true;
+        };
+        /**
          * 拷贝
          */
         Color4.prototype.copy = function (color) {
@@ -11193,6 +11208,9 @@ var feng3d;
             vector4.z = this.b;
             vector4.w = this.a;
             return vector4;
+        };
+        Color4.prototype.clone = function () {
+            return new Color4(this.r, this.g, this.b, this.a);
         };
         Color4.WHITE = new Color4();
         Color4.BLACK = new Color4(0, 0, 0);
