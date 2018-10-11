@@ -12384,7 +12384,7 @@ declare namespace feng3d {
         /**
          * 粒子的起始颜色。
          */
-        startColor: Color4;
+        startColor: MinMaxGradient;
         /**
          * 按物理管理器中定义的重力进行缩放。
          */
@@ -12739,6 +12739,11 @@ declare namespace feng3d {
          * 颜色渐变
          */
         minMaxGradient: IMinMaxGradient;
+        private _minMaxGradientColor;
+        private _gradient;
+        private _randomBetweenTwoColors;
+        private _randomBetweenTwoGradients;
+        private _minMaxGradientRandomColor;
         private _onModeChanged;
         /**
          * 获取值

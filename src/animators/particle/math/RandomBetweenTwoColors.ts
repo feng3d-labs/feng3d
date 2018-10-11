@@ -8,11 +8,13 @@ namespace feng3d
         /**
          * 最小颜色值
          */
+        @serialize
         colorMin = new Color4();
 
         /**
          * 最大颜色值
          */
+        @serialize
         colorMax = new Color4();
 
         /**

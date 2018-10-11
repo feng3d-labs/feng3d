@@ -62,7 +62,7 @@ namespace feng3d
          */
         @serialize
         @oav({ tooltip: "粒子的起始颜色。" })
-        startColor = new Color4();
+        startColor = new MinMaxGradient();
 
         /**
          * 按物理管理器中定义的重力进行缩放。
@@ -128,7 +128,8 @@ namespace feng3d
             //
             particle.rotation.copy(this.startRotation);
             //
-            particle.startColor.copy(this.startColor);
+            var t = ((this.particleSystem.time - this.startDelay) % this.duration) / this.duration;
+            particle.startColor.copy(this.startColor.getValue(t));
         }
 
         /**

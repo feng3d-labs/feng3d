@@ -8,6 +8,7 @@ namespace feng3d
         /**
          * 颜色渐变
          */
+        @serialize
         gradient = new Gradient();
 
         /**

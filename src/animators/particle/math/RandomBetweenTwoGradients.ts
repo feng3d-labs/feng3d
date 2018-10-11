@@ -6,11 +6,13 @@ namespace feng3d
         /**
          * 最小颜色渐变
          */
+        @serialize
         gradientMin = new Gradient();
 
         /**
          * 最大颜色渐变
          */
+        @serialize
         gradientMax = new Gradient();
 
         /**

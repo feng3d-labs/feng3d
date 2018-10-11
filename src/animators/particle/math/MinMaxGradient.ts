@@ -17,32 +17,40 @@ namespace feng3d
         /**
          * 模式
          */
+        @serialize
         @watch("_onModeChanged")
         mode = MinMaxGradientMode.Color;
 
         /**
          * 颜色渐变
          */
+        @serialize
         minMaxGradient: IMinMaxGradient = new MinMaxGradientColor();
+
+        private _minMaxGradientColor: MinMaxGradientColor;
+        private _gradient: Gradient;
+        private _randomBetweenTwoColors: RandomBetweenTwoColors;
+        private _randomBetweenTwoGradients: RandomBetweenTwoGradients;
+        private _minMaxGradientRandomColor: MinMaxGradientRandomColor;
 
         private _onModeChanged()
         {
             switch (this.mode)
             {
                 case MinMaxGradientMode.Color:
-                    this.minMaxGradient = new MinMaxGradientColor();
+                    this.minMaxGradient = this._minMaxGradientColor = this._minMaxGradientColor || new MinMaxGradientColor();
                     break;
                 case MinMaxGradientMode.Gradient:
-                    this.minMaxGradient = new Gradient();
+                    this.minMaxGradient = this._gradient = this._gradient || new Gradient();
                     break;
                 case MinMaxGradientMode.RandomBetweenTwoColors:
-                    this.minMaxGradient = new RandomBetweenTwoColors();
+                    this.minMaxGradient = this._randomBetweenTwoColors = this._randomBetweenTwoColors || new RandomBetweenTwoColors();
                     break;
                 case MinMaxGradientMode.RandomBetweenTwoGradients:
-                    this.minMaxGradient = new RandomBetweenTwoGradients();
+                    this.minMaxGradient = this._randomBetweenTwoGradients = this._randomBetweenTwoGradients || new RandomBetweenTwoGradients();
                     break;
                 case MinMaxGradientMode.RandomColor:
-                    this.minMaxGradient = new MinMaxGradientRandomColor();
+                    this.minMaxGradient = this._minMaxGradientRandomColor = this._minMaxGradientRandomColor || new MinMaxGradientRandomColor();
                     break;
             }
         }

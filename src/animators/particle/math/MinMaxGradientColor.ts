@@ -5,6 +5,7 @@ namespace feng3d
         /**
          * 常量颜色值
          */
+        @serialize
         color = new Color4();
 
         /**

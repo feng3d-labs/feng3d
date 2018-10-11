@@ -8,16 +8,19 @@ namespace feng3d
         /**
          * 渐变模式
          */
+        @serialize
         mode = GradientMode.Blend;
 
         /**
          * 在渐变中定义的所有alpha键。
          */
+        @serialize
         alphaKeys: GradientAlphaKey[] = [];
 
         /**
          * 在渐变中定义的所有color键。
          */
+        @serialize
         colorKeys: GradientColorKey[] = [];
 
         /**

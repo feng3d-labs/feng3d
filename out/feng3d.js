@@ -24537,7 +24537,7 @@ var feng3d;
             /**
              * 粒子的起始颜色。
              */
-            _this.startColor = new feng3d.Color4();
+            _this.startColor = new feng3d.MinMaxGradient();
             /**
              * 按物理管理器中定义的重力进行缩放。
              */
@@ -24575,7 +24575,8 @@ var feng3d;
             //
             particle.rotation.copy(this.startRotation);
             //
-            particle.startColor.copy(this.startColor);
+            var t = ((this.particleSystem.time - this.startDelay) % this.duration) / this.duration;
+            particle.startColor.copy(this.startColor.getValue(t));
         };
         /**
          * 更新粒子状态
@@ -24942,6 +24943,9 @@ var feng3d;
         MinMaxGradientColor.prototype.getValue = function (time) {
             return this.color;
         };
+        __decorate([
+            feng3d.serialize
+        ], MinMaxGradientColor.prototype, "color", void 0);
         return MinMaxGradientColor;
     }());
     feng3d.MinMaxGradientColor = MinMaxGradientColor;
@@ -24969,6 +24973,12 @@ var feng3d;
         RandomBetweenTwoColors.prototype.getValue = function (time) {
             return this.colorMin.mixTo(this.colorMax, Math.random());
         };
+        __decorate([
+            feng3d.serialize
+        ], RandomBetweenTwoColors.prototype, "colorMin", void 0);
+        __decorate([
+            feng3d.serialize
+        ], RandomBetweenTwoColors.prototype, "colorMax", void 0);
         return RandomBetweenTwoColors;
     }());
     feng3d.RandomBetweenTwoColors = RandomBetweenTwoColors;
@@ -24996,6 +25006,12 @@ var feng3d;
             var v = min.mixTo(max, Math.random());
             return v;
         };
+        __decorate([
+            feng3d.serialize
+        ], RandomBetweenTwoGradients.prototype, "gradientMin", void 0);
+        __decorate([
+            feng3d.serialize
+        ], RandomBetweenTwoGradients.prototype, "gradientMax", void 0);
         return RandomBetweenTwoGradients;
     }());
     feng3d.RandomBetweenTwoGradients = RandomBetweenTwoGradients;
@@ -25020,6 +25036,9 @@ var feng3d;
             var v = this.gradient.getValue(Math.random());
             return v;
         };
+        __decorate([
+            feng3d.serialize
+        ], MinMaxGradientRandomColor.prototype, "gradient", void 0);
         return MinMaxGradientRandomColor;
     }());
     feng3d.MinMaxGradientRandomColor = MinMaxGradientRandomColor;
@@ -25177,6 +25196,15 @@ var feng3d;
             }
             return colorKeys;
         };
+        __decorate([
+            feng3d.serialize
+        ], Gradient.prototype, "mode", void 0);
+        __decorate([
+            feng3d.serialize
+        ], Gradient.prototype, "alphaKeys", void 0);
+        __decorate([
+            feng3d.serialize
+        ], Gradient.prototype, "colorKeys", void 0);
         return Gradient;
     }());
     feng3d.Gradient = Gradient;
@@ -25200,19 +25228,19 @@ var feng3d;
         MinMaxGradient.prototype._onModeChanged = function () {
             switch (this.mode) {
                 case feng3d.MinMaxGradientMode.Color:
-                    this.minMaxGradient = new feng3d.MinMaxGradientColor();
+                    this.minMaxGradient = this._minMaxGradientColor = this._minMaxGradientColor || new feng3d.MinMaxGradientColor();
                     break;
                 case feng3d.MinMaxGradientMode.Gradient:
-                    this.minMaxGradient = new feng3d.Gradient();
+                    this.minMaxGradient = this._gradient = this._gradient || new feng3d.Gradient();
                     break;
                 case feng3d.MinMaxGradientMode.RandomBetweenTwoColors:
-                    this.minMaxGradient = new feng3d.RandomBetweenTwoColors();
+                    this.minMaxGradient = this._randomBetweenTwoColors = this._randomBetweenTwoColors || new feng3d.RandomBetweenTwoColors();
                     break;
                 case feng3d.MinMaxGradientMode.RandomBetweenTwoGradients:
-                    this.minMaxGradient = new feng3d.RandomBetweenTwoGradients();
+                    this.minMaxGradient = this._randomBetweenTwoGradients = this._randomBetweenTwoGradients || new feng3d.RandomBetweenTwoGradients();
                     break;
                 case feng3d.MinMaxGradientMode.RandomColor:
-                    this.minMaxGradient = new feng3d.MinMaxGradientRandomColor();
+                    this.minMaxGradient = this._minMaxGradientRandomColor = this._minMaxGradientRandomColor || new feng3d.MinMaxGradientRandomColor();
                     break;
             }
         };
@@ -25225,8 +25253,12 @@ var feng3d;
             return v;
         };
         __decorate([
+            feng3d.serialize,
             feng3d.watch("_onModeChanged")
         ], MinMaxGradient.prototype, "mode", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxGradient.prototype, "minMaxGradient", void 0);
         return MinMaxGradient;
     }());
     feng3d.MinMaxGradient = MinMaxGradient;
