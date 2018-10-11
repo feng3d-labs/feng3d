@@ -249,6 +249,10 @@
         "src/animators/particle/modules/ParticleScaleOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticleColorOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticlePalstanceOverLifetimeModule.ts",
+        //
+        "src/animators/particle/math/MinMaxGradientMode.ts",
+        "src/animators/particle/math/Gradient.ts",
+        "src/animators/particle/math/MinMaxGradient.ts",
         //骨骼动画
         "src/animators/skeleton/Skeleton.ts",
         "src/animators/skeleton/SkeletonComponent.ts",

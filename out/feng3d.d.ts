@@ -12535,6 +12535,75 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 最大最小颜色渐变模式
+     */
+    enum MinMaxGradientMode {
+        /**
+         * 颜色常量
+         */
+        Color = 0,
+        /**
+         * 颜色渐变
+         */
+        Gradient = 1,
+        /**
+         * 从最大最小常量颜色中随机
+         */
+        RandomBetweenTwoColors = 2,
+        /**
+         * 从最大最小颜色渐变值中随机
+         */
+        RandomBetweenTwoGradients = 3,
+        /**
+         * 从颜色渐变中进行随机
+         */
+        RandomColor = 4
+    }
+}
+declare namespace feng3d {
+    /**
+     * 颜色渐变
+     */
+    class Gradient {
+    }
+}
+declare namespace feng3d {
+    /**
+     * 最大最小颜色渐变
+     */
+    class MinMaxGradient {
+        /**
+         * 模式
+         */
+        mode: MinMaxGradientMode;
+        /**
+         * 常量颜色值
+         */
+        color: Color4;
+        /**
+         * 最小颜色值
+         */
+        colorMin: Color4;
+        /**
+         * 最大颜色值
+         */
+        colorMax: Color4;
+        /**
+         * 颜色渐变
+         */
+        gradient: Gradient;
+        /**
+         * 最大颜色渐变
+         */
+        gradientMax: Gradient;
+        /**
+         * 最小颜色渐变
+         */
+        gradientMin: Gradient;
+    }
+}
+declare namespace feng3d {
+    /**
      * 骨骼关节数据
 
      */

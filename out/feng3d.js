@@ -24919,6 +24919,87 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 最大最小颜色渐变模式
+     */
+    var MinMaxGradientMode;
+    (function (MinMaxGradientMode) {
+        /**
+         * 颜色常量
+         */
+        MinMaxGradientMode[MinMaxGradientMode["Color"] = 0] = "Color";
+        /**
+         * 颜色渐变
+         */
+        MinMaxGradientMode[MinMaxGradientMode["Gradient"] = 1] = "Gradient";
+        /**
+         * 从最大最小常量颜色中随机
+         */
+        MinMaxGradientMode[MinMaxGradientMode["RandomBetweenTwoColors"] = 2] = "RandomBetweenTwoColors";
+        /**
+         * 从最大最小颜色渐变值中随机
+         */
+        MinMaxGradientMode[MinMaxGradientMode["RandomBetweenTwoGradients"] = 3] = "RandomBetweenTwoGradients";
+        /**
+         * 从颜色渐变中进行随机
+         */
+        MinMaxGradientMode[MinMaxGradientMode["RandomColor"] = 4] = "RandomColor";
+    })(MinMaxGradientMode = feng3d.MinMaxGradientMode || (feng3d.MinMaxGradientMode = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 颜色渐变
+     */
+    var Gradient = /** @class */ (function () {
+        function Gradient() {
+        }
+        return Gradient;
+    }());
+    feng3d.Gradient = Gradient;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 最大最小颜色渐变
+     */
+    var MinMaxGradient = /** @class */ (function () {
+        function MinMaxGradient() {
+            /**
+             * 模式
+             */
+            this.mode = feng3d.MinMaxGradientMode.Color;
+            /**
+             * 常量颜色值
+             */
+            this.color = new feng3d.Color4();
+            /**
+             * 最小颜色值
+             */
+            this.colorMin = new feng3d.Color4();
+            /**
+             * 最大颜色值
+             */
+            this.colorMax = new feng3d.Color4();
+            /**
+             * 颜色渐变
+             */
+            this.gradient = new feng3d.Gradient();
+            /**
+             * 最大颜色渐变
+             */
+            this.gradientMax = new feng3d.Gradient();
+            /**
+             * 最小颜色渐变
+             */
+            this.gradientMin = new feng3d.Gradient();
+        }
+        return MinMaxGradient;
+    }());
+    feng3d.MinMaxGradient = MinMaxGradient;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     // /**
     //  * 骨骼数据
     //
