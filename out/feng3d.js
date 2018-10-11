@@ -11134,6 +11134,15 @@ var feng3d;
             return this;
         };
         /**
+         * 混合颜色
+         * @param color 混入的颜色
+         * @param rate  混入比例
+         */
+        Color4.prototype.mixTo = function (color, rate, vout) {
+            if (vout === void 0) { vout = new Color4(); }
+            return vout.copy(this).mix(color, rate);
+        };
+        /**
          * 乘以指定颜色
          * @param c 乘以的颜色
          * @return 返回自身
@@ -24920,6 +24929,53 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 从最大最小常量颜色中随机
+     */
+    var RandomBetweenTwoColors = /** @class */ (function () {
+        function RandomBetweenTwoColors() {
+            /**
+             * 最小颜色值
+             */
+            this.colorMin = new feng3d.Color4();
+            /**
+             * 最大颜色值
+             */
+            this.colorMax = new feng3d.Color4();
+        }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        RandomBetweenTwoColors.prototype.getValue = function (time) {
+            return this.colorMin.mixTo(this.colorMax, Math.random());
+        };
+        return RandomBetweenTwoColors;
+    }());
+    feng3d.RandomBetweenTwoColors = RandomBetweenTwoColors;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var MinMaxGradientColor = /** @class */ (function () {
+        function MinMaxGradientColor() {
+            /**
+             * 常量颜色值
+             */
+            this.color = new feng3d.Color4();
+        }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        MinMaxGradientColor.prototype.getValue = function (time) {
+            return this.color;
+        };
+        return MinMaxGradientColor;
+    }());
+    feng3d.MinMaxGradientColor = MinMaxGradientColor;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 渐变模式
      */
     var GradientMode;
@@ -24970,6 +25026,9 @@ var feng3d;
      */
     var Gradient = /** @class */ (function () {
         function Gradient() {
+            /**
+             * 渐变模式
+             */
             this.mode = feng3d.GradientMode.Blend;
             /**
              * 在渐变中定义的所有alpha键。
@@ -25083,21 +25142,9 @@ var feng3d;
              */
             this.mode = feng3d.MinMaxGradientMode.Color;
             /**
-             * 常量颜色值
-             */
-            this.color = new feng3d.Color4();
-            /**
-             * 最小颜色值
-             */
-            this.colorMin = new feng3d.Color4();
-            /**
-             * 最大颜色值
-             */
-            this.colorMax = new feng3d.Color4();
-            /**
              * 颜色渐变
              */
-            this.gradient = new feng3d.Gradient();
+            this.minMaxGradient = new feng3d.MinMaxGradientColor();
             /**
              * 最大颜色渐变
              */
@@ -25107,6 +25154,26 @@ var feng3d;
              */
             this.gradientMin = new feng3d.Gradient();
         }
+        MinMaxGradient.prototype._onModeChanged = function () {
+            switch (this.mode) {
+                case feng3d.MinMaxGradientMode.Color:
+                    this.minMaxGradient = new feng3d.MinMaxGradientColor();
+                    break;
+                case feng3d.MinMaxGradientMode.Gradient:
+                    this.minMaxGradient = new feng3d.Gradient();
+                    break;
+                case feng3d.MinMaxGradientMode.RandomBetweenTwoColors:
+                    this.minMaxGradient = new feng3d.RandomBetweenTwoColors();
+                    break;
+            }
+        };
+        MinMaxGradient.prototype.getValue = function (time) {
+            var v = this.minMaxGradient.getValue(time);
+            return v;
+        };
+        __decorate([
+            feng3d.watch("_onModeChanged")
+        ], MinMaxGradient.prototype, "mode", void 0);
         return MinMaxGradient;
     }());
     feng3d.MinMaxGradient = MinMaxGradient;

@@ -3,8 +3,11 @@ namespace feng3d
     /**
      * 颜色渐变
      */
-    export class Gradient
+    export class Gradient implements IMinMaxGradient
     {
+        /**
+         * 渐变模式
+         */
         mode = GradientMode.Blend;
 
         /**

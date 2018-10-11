@@ -1,5 +1,14 @@
 namespace feng3d
 {
+    export interface IMinMaxGradient
+    {
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): Color4;
+    }
+
     /**
      * 最大最小颜色渐变
      */
@@ -8,27 +17,29 @@ namespace feng3d
         /**
          * 模式
          */
+        @watch("_onModeChanged")
         mode = MinMaxGradientMode.Color;
-
-        /**
-         * 常量颜色值
-         */
-        color = new Color4();
-
-        /**
-         * 最小颜色值
-         */
-        colorMin = new Color4();
-
-        /**
-         * 最大颜色值
-         */
-        colorMax = new Color4();
 
         /**
          * 颜色渐变
          */
-        gradient = new Gradient();
+        minMaxGradient: IMinMaxGradient = new MinMaxGradientColor();
+
+        private _onModeChanged()
+        {
+            switch (this.mode)
+            {
+                case MinMaxGradientMode.Color:
+                    this.minMaxGradient = new MinMaxGradientColor();
+                    break;
+                case MinMaxGradientMode.Gradient:
+                    this.minMaxGradient = new Gradient();
+                    break;
+                case MinMaxGradientMode.RandomBetweenTwoColors:
+                    this.minMaxGradient = new RandomBetweenTwoColors();
+                    break;
+            }
+        }
 
         /**
          * 最大颜色渐变
@@ -39,5 +50,11 @@ namespace feng3d
          * 最小颜色渐变
          */
         gradientMin = new Gradient();
+
+        getValue(time: number)
+        {
+            var v = this.minMaxGradient.getValue(time);
+            return v;
+        }
     }
 }

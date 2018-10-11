@@ -107,6 +107,16 @@ namespace feng3d
         }
 
         /**
+         * 混合颜色
+         * @param color 混入的颜色
+         * @param rate  混入比例
+         */
+        mixTo(color: Color4, rate: number, vout = new Color4())
+        {
+            return vout.copy(this).mix(color, rate);
+        }
+
+        /**
          * 乘以指定颜色
          * @param c 乘以的颜色
          * @return 返回自身

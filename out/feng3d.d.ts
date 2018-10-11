@@ -5672,6 +5672,12 @@ declare namespace feng3d {
          */
         mix(color: Color4, rate?: number): this;
         /**
+         * 混合颜色
+         * @param color 混入的颜色
+         * @param rate  混入比例
+         */
+        mixTo(color: Color4, rate: number, vout?: Color4): Color4;
+        /**
          * 乘以指定颜色
          * @param c 乘以的颜色
          * @return 返回自身
@@ -12535,6 +12541,39 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 从最大最小常量颜色中随机
+     */
+    class RandomBetweenTwoColors implements IMinMaxGradient {
+        /**
+         * 最小颜色值
+         */
+        colorMin: Color4;
+        /**
+         * 最大颜色值
+         */
+        colorMax: Color4;
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): Color4;
+    }
+}
+declare namespace feng3d {
+    class MinMaxGradientColor implements IMinMaxGradient {
+        /**
+         * 常量颜色值
+         */
+        color: Color4;
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): Color4;
+    }
+}
+declare namespace feng3d {
+    /**
      * 渐变模式
      */
     enum GradientMode {
@@ -12609,7 +12648,10 @@ declare namespace feng3d {
     /**
      * 颜色渐变
      */
-    class Gradient {
+    class Gradient implements IMinMaxGradient {
+        /**
+         * 渐变模式
+         */
         mode: GradientMode;
         /**
          * 在渐变中定义的所有alpha键。
@@ -12645,6 +12687,13 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface IMinMaxGradient {
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): Color4;
+    }
     /**
      * 最大最小颜色渐变
      */
@@ -12654,21 +12703,10 @@ declare namespace feng3d {
          */
         mode: MinMaxGradientMode;
         /**
-         * 常量颜色值
-         */
-        color: Color4;
-        /**
-         * 最小颜色值
-         */
-        colorMin: Color4;
-        /**
-         * 最大颜色值
-         */
-        colorMax: Color4;
-        /**
          * 颜色渐变
          */
-        gradient: Gradient;
+        minMaxGradient: IMinMaxGradient;
+        private _onModeChanged;
         /**
          * 最大颜色渐变
          */
@@ -12677,6 +12715,7 @@ declare namespace feng3d {
          * 最小颜色渐变
          */
         gradientMin: Gradient;
+        getValue(time: number): Color4;
     }
 }
 declare namespace feng3d {
