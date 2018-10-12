@@ -24566,7 +24566,7 @@ var feng3d;
         ParticleModule.prototype.updateParticleState = function (particle, preTime, time) {
         };
         __decorate([
-            feng3d.oav(),
+            feng3d.oav({ tooltip: "是否开启" }),
             feng3d.serialize
         ], ParticleModule.prototype, "enabled", void 0);
         return ParticleModule;
