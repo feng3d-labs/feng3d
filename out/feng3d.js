@@ -4178,7 +4178,7 @@ var feng3d;
                 for (var j = 0; j < height; j++) {
                     //
                     var pos = (i + j * width) * 4;
-                    if (j < colorHeight) {
+                    if (j <= colorHeight) {
                         imageData.data[pos] = color.r * 255;
                         imageData.data[pos + 1] = color.g * 255;
                         imageData.data[pos + 2] = color.b * 255;
