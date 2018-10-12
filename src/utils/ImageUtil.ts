@@ -124,6 +124,8 @@ namespace feng3d
             canvas.height = height;
 
             var ctx = canvas.getContext('2d');
+            var imageData = ctx.getImageData(0, 0, width, height);
+            var data = imageData.data;
             //
             for (let i = 0; i < width; i++)
             {
@@ -133,11 +135,13 @@ namespace feng3d
                     var bottom = leftBottom.mixTo(rightBottom, i / width);
                     var v = top.mixTo(bottom, j / height);
                     //
-                    ctx.fillStyle = v.toHexString();
-                    ctx.fillRect(i, j, 1, 1);
+                    var pos = (i + j * width) * 4;
+                    data[pos] = v.r * 255;
+                    data[pos + 1] = v.g * 255;
+                    data[pos + 2] = v.b * 255;
+                    data[pos + 3] = 255;
                 }
             }
-            var imageData = ctx.getImageData(0, 0, width, height);
             return imageData;
         }
 
