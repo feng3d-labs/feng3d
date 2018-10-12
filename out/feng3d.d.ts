@@ -12525,7 +12525,7 @@ declare namespace feng3d {
      * 粒子系统 颜色随时间变化模块
      */
     class ParticleColorOverLifetimeModule extends ParticleModule {
-        color: Color4;
+        color: MinMaxGradient;
         /**
          * 更新粒子状态
          * @param particle 粒子

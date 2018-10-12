@@ -7,7 +7,7 @@ namespace feng3d
     {
         @serialize
         @oav()
-        color = new Color4();
+        color = new MinMaxGradient();
 
         /**
          * 更新粒子状态
@@ -15,7 +15,7 @@ namespace feng3d
          */
         updateParticleState(particle: Particle, preTime: number, time: number)
         {
-            particle.color.multiply(this.color);
+            particle.color.multiply(this.color.getValue((time - particle.birthTime) / particle.lifetime));
         }
     }
 }

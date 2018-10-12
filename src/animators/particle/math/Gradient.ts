@@ -84,7 +84,7 @@ namespace feng3d
             var alphaKeys = this.alphaKeys.concat().sort((a, b) => a.time - b.time);
             if (alphaKeys.length == 0)
             {
-                alphaKeys = [{ alpha: 0, time: 0 }, { alpha: 1, time: 1 }];
+                alphaKeys = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
             } else if (alphaKeys.length == 1)
             {
                 alphaKeys = [{ alpha: alphaKeys[0].alpha, time: 0 }, { alpha: alphaKeys[0].alpha, time: 1 }];

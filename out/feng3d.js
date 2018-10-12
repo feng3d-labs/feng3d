@@ -24957,7 +24957,7 @@ var feng3d;
         __extends(ParticleColorOverLifetimeModule, _super);
         function ParticleColorOverLifetimeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.color = new feng3d.Color4();
+            _this.color = new feng3d.MinMaxGradient();
             return _this;
         }
         /**
@@ -24965,7 +24965,7 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleColorOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time) {
-            particle.color.multiply(this.color);
+            particle.color.multiply(this.color.getValue((time - particle.birthTime) / particle.lifetime));
         };
         __decorate([
             feng3d.serialize,
@@ -25241,7 +25241,7 @@ var feng3d;
         Gradient.prototype.getRealAlphaKeys = function () {
             var alphaKeys = this.alphaKeys.concat().sort(function (a, b) { return a.time - b.time; });
             if (alphaKeys.length == 0) {
-                alphaKeys = [{ alpha: 0, time: 0 }, { alpha: 1, time: 1 }];
+                alphaKeys = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
             }
             else if (alphaKeys.length == 1) {
                 alphaKeys = [{ alpha: alphaKeys[0].alpha, time: 0 }, { alpha: alphaKeys[0].alpha, time: 1 }];
