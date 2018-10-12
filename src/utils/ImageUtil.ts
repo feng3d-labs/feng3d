@@ -84,6 +84,7 @@ namespace feng3d
             canvas.height = size;
 
             var ctx = canvas.getContext('2d');
+            var imageData = ctx.getImageData(0, 0, size, size);
 
             var half = size / 2;
             for (let i = 0; i < size; i++)
@@ -97,12 +98,13 @@ namespace feng3d
                     // f = f * f * f;
                     // f = - 8 / 3 * f * f * f + 4 * f * f - f / 3;
 
-                    ctx.globalAlpha = f;
-                    ctx.fillStyle = new Color3(1, 1, 1).toHexString();
-                    ctx.fillRect(i, j, 1, 1);
+                    var pos = (i + j * size) * 4;
+                    imageData.data[pos] = 255;
+                    imageData.data[pos + 1] = 255;
+                    imageData.data[pos + 2] = 255;
+                    imageData.data[pos + 3] = f * 255;
                 }
             }
-            var imageData = ctx.getImageData(0, 0, size, size);
             return imageData;
         }
 
@@ -336,6 +338,44 @@ namespace feng3d
                 }
             }
             return colors1[0];
+        }
+
+        createColorRect(color: Color4, width: number, height: number)
+        {
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext('2d');
+            var imageData = ctx.getImageData(0, 0, width, height);
+
+            var colorHeight = Math.floor(height * 0.8);
+            var alphaWidth = Math.floor(color.a * width);
+
+            //
+            for (let i = 0; i < width; i++)
+            {
+                for (let j = 0; j < height; j++)
+                {
+                    //
+                    var pos = (i + j * width) * 4;
+                    if (j < colorHeight)
+                    {
+                        imageData.data[pos] = color.r * 255;
+                        imageData.data[pos + 1] = color.g * 255;
+                        imageData.data[pos + 2] = color.b * 255;
+                        imageData.data[pos + 3] = 255;
+                    } else
+                    {
+                        var v = i < alphaWidth ? 255 : 0;
+                        imageData.data[pos] = v;
+                        imageData.data[pos + 1] = v;
+                        imageData.data[pos + 2] = v;
+                        imageData.data[pos + 3] = 255;
+                    }
+                }
+            }
+
+            return imageData;
         }
     }
 

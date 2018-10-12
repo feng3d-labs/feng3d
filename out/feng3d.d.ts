@@ -2081,6 +2081,7 @@ declare namespace feng3d {
         getMixColor(colors: number[], ratios: number[], ratio: number): Color3;
         getMixColorRatio(color: number, colors: number[], ratios?: number[]): number;
         getMixColorAtRatio(ratio: number, colors: number[], ratios?: number[]): Color3;
+        createColorRect(color: Color4, width: number, height: number): ImageData;
     }
 }
 /**
