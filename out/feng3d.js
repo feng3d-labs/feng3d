@@ -25247,7 +25247,7 @@ var feng3d;
                 alphaKeys = [{ alpha: alphaKeys[0].alpha, time: 0 }, { alpha: alphaKeys[0].alpha, time: 1 }];
             }
             if (alphaKeys[0].time > 0) {
-                alphaKeys.splice(0, 1, { time: 0, alpha: alphaKeys[0].alpha });
+                alphaKeys.splice(0, 0, { time: 0, alpha: alphaKeys[0].alpha });
             }
             if (alphaKeys[alphaKeys.length - 1].time < 1) {
                 alphaKeys.push({ time: 1, alpha: alphaKeys[alphaKeys.length - 1].alpha });
@@ -25260,13 +25260,13 @@ var feng3d;
         Gradient.prototype.getRealColorKeys = function () {
             var colorKeys = this.colorKeys.concat().sort(function (a, b) { return a.time - b.time; });
             if (colorKeys.length == 0) {
-                colorKeys = [{ color: new feng3d.Color3(0, 0, 1), time: 0 }, { color: new feng3d.Color3(1, 0, 0), time: 1 }];
+                colorKeys = [{ color: new feng3d.Color3(1, 1, 1), time: 0 }, { color: new feng3d.Color3(1, 1, 1), time: 1 }];
             }
             else if (colorKeys.length == 1) {
                 colorKeys = [{ color: colorKeys[0].color, time: 0 }, { color: colorKeys[0].color, time: 1 }];
             }
             if (colorKeys[0].time > 0) {
-                colorKeys.splice(0, 1, { time: 0, color: colorKeys[0].color });
+                colorKeys.splice(0, 0, { time: 0, color: colorKeys[0].color });
             }
             if (colorKeys[colorKeys.length - 1].time < 1) {
                 colorKeys.push({ time: 1, color: colorKeys[colorKeys.length - 1].color });
