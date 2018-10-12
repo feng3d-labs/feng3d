@@ -4072,16 +4072,19 @@ var feng3d;
             canvas.width = width;
             canvas.height = height;
             var ctx = canvas.getContext('2d');
+            var imageData = ctx.getImageData(0, 0, width, height);
             //
             for (var i = 0; i < width; i++) {
                 for (var j = 0; j < height; j++) {
                     var v = this.getMixColor(colors, ratios, dirw ? i / (width - 1) : j / (height - 1));
                     //
-                    ctx.fillStyle = v.toHexString();
-                    ctx.fillRect(i, j, 1, 1);
+                    var pos = (i + j * width) * 4;
+                    imageData.data[pos] = v.r * 255;
+                    imageData.data[pos + 1] = v.g * 255;
+                    imageData.data[pos + 2] = v.b * 255;
+                    imageData.data[pos + 3] = 255;
                 }
             }
-            var imageData = ctx.getImageData(0, 0, width, height);
             return imageData;
         };
         ImageUtil.prototype.getMixColor = function (colors, ratios, ratio) {
