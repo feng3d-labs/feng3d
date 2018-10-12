@@ -4195,6 +4195,26 @@ var feng3d;
             }
             return imageData;
         };
+        ImageUtil.prototype.createMinMaxGradientRect = function (gradient, width, height) {
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext('2d');
+            var imageData = ctx.getImageData(0, 0, width, height);
+            //
+            for (var i = 0; i < width; i++) {
+                for (var j = 0; j < height; j++) {
+                    //
+                    var pos = (i + j * width) * 4;
+                    var c = gradient.getValue(i / (width - 1));
+                    imageData.data[pos] = c.r * 255;
+                    imageData.data[pos + 1] = c.g * 255;
+                    imageData.data[pos + 2] = c.b * 255;
+                    imageData.data[pos + 3] = c.a * 255;
+                }
+            }
+            return imageData;
+        };
         return ImageUtil;
     }());
     feng3d.ImageUtil = ImageUtil;
@@ -25221,7 +25241,7 @@ var feng3d;
         Gradient.prototype.getRealAlphaKeys = function () {
             var alphaKeys = this.alphaKeys.concat().sort(function (a, b) { return a.time - b.time; });
             if (alphaKeys.length == 0) {
-                alphaKeys = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
+                alphaKeys = [{ alpha: 0, time: 0 }, { alpha: 1, time: 1 }];
             }
             else if (alphaKeys.length == 1) {
                 alphaKeys = [{ alpha: alphaKeys[0].alpha, time: 0 }, { alpha: alphaKeys[0].alpha, time: 1 }];
@@ -25240,7 +25260,7 @@ var feng3d;
         Gradient.prototype.getRealColorKeys = function () {
             var colorKeys = this.colorKeys.concat().sort(function (a, b) { return a.time - b.time; });
             if (colorKeys.length == 0) {
-                colorKeys = [{ color: new feng3d.Color3(), time: 0 }, { color: new feng3d.Color3(), time: 1 }];
+                colorKeys = [{ color: new feng3d.Color3(0, 0, 1), time: 0 }, { color: new feng3d.Color3(1, 0, 0), time: 1 }];
             }
             else if (colorKeys.length == 1) {
                 colorKeys = [{ color: colorKeys[0].color, time: 0 }, { color: colorKeys[0].color, time: 1 }];

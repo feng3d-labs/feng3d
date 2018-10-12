@@ -84,7 +84,7 @@ namespace feng3d
             var alphaKeys = this.alphaKeys.concat().sort((a, b) => a.time - b.time);
             if (alphaKeys.length == 0)
             {
-                alphaKeys = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
+                alphaKeys = [{ alpha: 0, time: 0 }, { alpha: 1, time: 1 }];
             } else if (alphaKeys.length == 1)
             {
                 alphaKeys = [{ alpha: alphaKeys[0].alpha, time: 0 }, { alpha: alphaKeys[0].alpha, time: 1 }];
@@ -108,7 +108,7 @@ namespace feng3d
             var colorKeys = this.colorKeys.concat().sort((a, b) => a.time - b.time);
             if (colorKeys.length == 0)
             {
-                colorKeys = [{ color: new Color3(), time: 0 }, { color: new Color3(), time: 1 }];
+                colorKeys = [{ color: new Color3(0, 0, 1), time: 0 }, { color: new Color3(1, 0, 0), time: 1 }];
             } else if (colorKeys.length == 1)
             {
                 colorKeys = [{ color: colorKeys[0].color, time: 0 }, { color: colorKeys[0].color, time: 1 }];

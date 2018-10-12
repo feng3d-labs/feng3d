@@ -377,6 +377,34 @@ namespace feng3d
 
             return imageData;
         }
+
+        createMinMaxGradientRect(gradient: IMinMaxGradient, width: number, height: number)
+        {
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext('2d');
+            var imageData = ctx.getImageData(0, 0, width, height);
+
+            //
+            for (let i = 0; i < width; i++)
+            {
+                for (let j = 0; j < height; j++)
+                {
+                    //
+                    var pos = (i + j * width) * 4;
+
+                    var c = gradient.getValue(i / (width - 1));
+
+                    imageData.data[pos] = c.r * 255;
+                    imageData.data[pos + 1] = c.g * 255;
+                    imageData.data[pos + 2] = c.b * 255;
+                    imageData.data[pos + 3] = c.a * 255;
+                }
+            }
+
+            return imageData;
+        }
     }
 
     imageUtil = new ImageUtil();
