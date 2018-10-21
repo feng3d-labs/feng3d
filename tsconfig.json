@@ -249,7 +249,7 @@
         "src/animators/particle/modules/ParticleScaleOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticleColorOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticlePalstanceOverLifetimeModule.ts",
-        //
+        //颜色渐变
         "src/animators/particle/math/MinMaxGradientColor.ts",
         "src/animators/particle/math/RandomBetweenTwoColors.ts",
         "src/animators/particle/math/RandomBetweenTwoGradients.ts",
@@ -260,6 +260,13 @@
         "src/animators/particle/math/MinMaxGradientMode.ts",
         "src/animators/particle/math/Gradient.ts",
         "src/animators/particle/math/MinMaxGradient.ts",
+        //曲线
+        "src/animators/particle/math/MinMaxCurveMode.ts",
+        "src/animators/particle/math/MinMaxCurveConstant.ts",
+        "src/animators/particle/math/Curve.ts",
+        "src/animators/particle/math/RandomBetweenTwoConstants.ts",
+        "src/animators/particle/math/RandomBetweenTwoCurves.ts",
+        "src/animators/particle/math/MinMaxCurve.ts",
         //骨骼动画
         "src/animators/skeleton/Skeleton.ts",
         "src/animators/skeleton/SkeletonComponent.ts",
