@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 两个常量间取随机值
      */
-    export class RandomBetweenTwoConstants implements IMinMaxCurve
+    export class MinMaxCurveRandomBetweenTwoConstants implements IMinMaxCurve
     {
         /**
          * 最小值

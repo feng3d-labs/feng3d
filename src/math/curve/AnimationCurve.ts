@@ -84,6 +84,7 @@ namespace feng3d
         {
             var keys = this.keys;
             var maxtan = this.maxtan;
+            var value = 0, tangent = 0, isfind = false;;
             for (let i = 0, n = keys.length; i < n; i++)
             {
                 // 使用 bezierCurve 进行采样曲线点
@@ -102,21 +103,34 @@ namespace feng3d
                         var ct = (t - prekey.time) / (key.time - prekey.time);
                         var sys = [ystart, ystart + tanstart * (xend - xstart) / 3, yend - tanend * (xend - xstart) / 3, yend];
                         var fy = bezierCurve.getValue(ct, sys);
-                        return { time: t, value: fy, tangent: bezierCurve.getDerivative(ct, sys) / (xend - xstart) };
+                        isfind = true;
+                        value = fy;
+                        tangent = bezierCurve.getDerivative(ct, sys) / (xend - xstart);
+                        break;
                     } else
                     {
-                        return { time: t, value: prekey.value, tangent: 0 };
+                        isfind = true;
+                        value = prekey.value;
+                        tangent = 0;
+                        break;
                     }
                 }
                 if (i == 0 && t <= key.time)
                 {
-                    return { time: t, value: key.value, tangent: 0 };
+                    isfind = true;
+                    value = key.value;
+                    tangent = 0;
+                    break;
                 }
                 if (i == n - 1 && t >= key.time)
                 {
-                    return { time: t, value: key.value, tangent: 0 };
+                    isfind = true;
+                    value = key.value;
+                    tangent = 0;
+                    break;
                 }
             }
+            if (isfind) return new AnimationCurveKeyframe({ time: t, value: value, tangent: tangent });
             return null;
         }
 

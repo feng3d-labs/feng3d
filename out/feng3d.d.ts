@@ -3947,6 +3947,7 @@ declare namespace feng3d {
          * 斜率
          */
         tangent: number;
+        constructor(v: gPartial<AnimationCurveKeyframe>);
     }
 }
 declare namespace feng3d {
@@ -3998,11 +3999,7 @@ declare namespace feng3d {
          * 获取曲线上点信息
          * @param t 时间轴的位置 [0,1]
          */
-        getPoint(t: number): {
-            time: number;
-            value: number;
-            tangent: number;
-        };
+        getPoint(t: number): AnimationCurveKeyframe;
         /**
          * 获取值
          * @param t 时间轴的位置 [0,1]
@@ -4024,11 +4021,7 @@ declare namespace feng3d {
          * @param value 值
          * @param precision 查找进度
          */
-        addKeyAtCurve(time: number, value: number, precision: number): {
-            time: number;
-            value: number;
-            tangent: number;
-        };
+        addKeyAtCurve(time: number, value: number, precision: number): AnimationCurveKeyframe;
         /**
          * 获取曲线样本数据
          *
@@ -4095,7 +4088,7 @@ declare namespace feng3d {
     /**
      * 两个常量间取随机值
      */
-    class RandomBetweenTwoConstants implements IMinMaxCurve {
+    class MinMaxCurveRandomBetweenTwoConstants implements IMinMaxCurve {
         /**
          * 最小值
          */
@@ -4112,7 +4105,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class RandomBetweenTwoCurves implements IMinMaxCurve {
+    class MinMaxCurveRandomBetweenTwoCurves implements IMinMaxCurve {
         /**
          * 获取值
          * @param time 时间

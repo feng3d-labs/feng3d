@@ -1,6 +1,6 @@
 namespace feng3d
 {
-    export class RandomBetweenTwoCurves implements IMinMaxCurve
+    export class MinMaxCurveRandomBetweenTwoCurves implements IMinMaxCurve
     {
         /**
          * 获取值

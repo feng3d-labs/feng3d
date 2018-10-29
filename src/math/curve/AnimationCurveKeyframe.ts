@@ -22,5 +22,11 @@ namespace feng3d
          */
         @serialize
         tangent: number
+
+        constructor(v: gPartial<AnimationCurveKeyframe>)
+        {
+            serialization.setValue(this, <any>v);
+            return this;
+        }
     }
 }

@@ -62,8 +62,8 @@
         "src/math/curve/MinMaxCurveMode.ts",
         "src/math/curve/MinMaxCurveConstant.ts",
         "src/math/curve/WrapMode.ts",
-        "src/math/curve/RandomBetweenTwoConstants.ts",
-        "src/math/curve/RandomBetweenTwoCurves.ts",
+        "src/math/curve/MinMaxCurveRandomBetweenTwoConstants.ts",
+        "src/math/curve/MinMaxCurveRandomBetweenTwoCurves.ts",
         "src/math/curve/MinMaxCurve.ts",
         // 事件
         "src/event/EventDispatcher.ts",

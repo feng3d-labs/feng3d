@@ -29,8 +29,8 @@ namespace feng3d
 
         private _minMaxCurveConstant: MinMaxCurveConstant;
         private _curve: AnimationCurve;
-        private _randomBetweenTwoConstants: RandomBetweenTwoConstants;
-        private _randomBetweenTwoCurves: RandomBetweenTwoCurves;
+        private _randomBetweenTwoConstants: MinMaxCurveRandomBetweenTwoConstants;
+        private _randomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves;
 
         private _onModeChanged()
         {
@@ -43,10 +43,10 @@ namespace feng3d
                     this.minMaxCurve = this._curve = this._curve || new AnimationCurve();
                     break;
                 case MinMaxCurveMode.RandomBetweenTwoConstants:
-                    this.minMaxCurve = this._randomBetweenTwoConstants = this._randomBetweenTwoConstants || new RandomBetweenTwoConstants();
+                    this.minMaxCurve = this._randomBetweenTwoConstants = this._randomBetweenTwoConstants || new MinMaxCurveRandomBetweenTwoConstants();
                     break;
                 case MinMaxCurveMode.RandomBetweenTwoCurves:
-                    this.minMaxCurve = this._randomBetweenTwoCurves = this._randomBetweenTwoCurves || new RandomBetweenTwoCurves();
+                    this.minMaxCurve = this._randomBetweenTwoCurves = this._randomBetweenTwoCurves || new MinMaxCurveRandomBetweenTwoCurves();
                     break;
             }
         }

@@ -7677,7 +7677,9 @@ var feng3d;
      * 动画关键帧
      */
     var AnimationCurveKeyframe = /** @class */ (function () {
-        function AnimationCurveKeyframe() {
+        function AnimationCurveKeyframe(v) {
+            feng3d.serialization.setValue(this, v);
+            return this;
         }
         __decorate([
             feng3d.serialize
@@ -7766,6 +7768,8 @@ var feng3d;
         AnimationCurve.prototype.getPoint = function (t) {
             var keys = this.keys;
             var maxtan = this.maxtan;
+            var value = 0, tangent = 0, isfind = false;
+            ;
             for (var i = 0, n = keys.length; i < n; i++) {
                 // 使用 bezierCurve 进行采样曲线点
                 var key = keys[i];
@@ -7781,19 +7785,33 @@ var feng3d;
                         var ct = (t - prekey.time) / (key.time - prekey.time);
                         var sys = [ystart, ystart + tanstart * (xend - xstart) / 3, yend - tanend * (xend - xstart) / 3, yend];
                         var fy = feng3d.bezierCurve.getValue(ct, sys);
-                        return { time: t, value: fy, tangent: feng3d.bezierCurve.getDerivative(ct, sys) / (xend - xstart) };
+                        isfind = true;
+                        value = fy;
+                        tangent = feng3d.bezierCurve.getDerivative(ct, sys) / (xend - xstart);
+                        break;
                     }
                     else {
-                        return { time: t, value: prekey.value, tangent: 0 };
+                        isfind = true;
+                        value = prekey.value;
+                        tangent = 0;
+                        break;
                     }
                 }
                 if (i == 0 && t <= key.time) {
-                    return { time: t, value: key.value, tangent: 0 };
+                    isfind = true;
+                    value = key.value;
+                    tangent = 0;
+                    break;
                 }
                 if (i == n - 1 && t >= key.time) {
-                    return { time: t, value: key.value, tangent: 0 };
+                    isfind = true;
+                    value = key.value;
+                    tangent = 0;
+                    break;
                 }
             }
+            if (isfind)
+                return new feng3d.AnimationCurveKeyframe({ time: t, value: value, tangent: tangent });
             return null;
         };
         /**
@@ -7930,42 +7948,42 @@ var feng3d;
     /**
      * 两个常量间取随机值
      */
-    var RandomBetweenTwoConstants = /** @class */ (function () {
-        function RandomBetweenTwoConstants() {
+    var MinMaxCurveRandomBetweenTwoConstants = /** @class */ (function () {
+        function MinMaxCurveRandomBetweenTwoConstants() {
         }
         /**
          * 获取值
          * @param time 时间
          */
-        RandomBetweenTwoConstants.prototype.getValue = function (time) {
+        MinMaxCurveRandomBetweenTwoConstants.prototype.getValue = function (time) {
             return this.minValue + Math.random() * (this.maxValue - this.minValue);
         };
         __decorate([
             feng3d.serialize
-        ], RandomBetweenTwoConstants.prototype, "minValue", void 0);
+        ], MinMaxCurveRandomBetweenTwoConstants.prototype, "minValue", void 0);
         __decorate([
             feng3d.serialize
-        ], RandomBetweenTwoConstants.prototype, "maxValue", void 0);
-        return RandomBetweenTwoConstants;
+        ], MinMaxCurveRandomBetweenTwoConstants.prototype, "maxValue", void 0);
+        return MinMaxCurveRandomBetweenTwoConstants;
     }());
-    feng3d.RandomBetweenTwoConstants = RandomBetweenTwoConstants;
+    feng3d.MinMaxCurveRandomBetweenTwoConstants = MinMaxCurveRandomBetweenTwoConstants;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var RandomBetweenTwoCurves = /** @class */ (function () {
-        function RandomBetweenTwoCurves() {
+    var MinMaxCurveRandomBetweenTwoCurves = /** @class */ (function () {
+        function MinMaxCurveRandomBetweenTwoCurves() {
         }
         /**
          * 获取值
          * @param time 时间
          */
-        RandomBetweenTwoCurves.prototype.getValue = function (time) {
+        MinMaxCurveRandomBetweenTwoCurves.prototype.getValue = function (time) {
             // return this.value;
             return 0;
         };
-        return RandomBetweenTwoCurves;
+        return MinMaxCurveRandomBetweenTwoCurves;
     }());
-    feng3d.RandomBetweenTwoCurves = RandomBetweenTwoCurves;
+    feng3d.MinMaxCurveRandomBetweenTwoCurves = MinMaxCurveRandomBetweenTwoCurves;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -7992,10 +8010,10 @@ var feng3d;
                     this.minMaxCurve = this._curve = this._curve || new feng3d.AnimationCurve();
                     break;
                 case feng3d.MinMaxCurveMode.RandomBetweenTwoConstants:
-                    this.minMaxCurve = this._randomBetweenTwoConstants = this._randomBetweenTwoConstants || new feng3d.RandomBetweenTwoConstants();
+                    this.minMaxCurve = this._randomBetweenTwoConstants = this._randomBetweenTwoConstants || new feng3d.MinMaxCurveRandomBetweenTwoConstants();
                     break;
                 case feng3d.MinMaxCurveMode.RandomBetweenTwoCurves:
-                    this.minMaxCurve = this._randomBetweenTwoCurves = this._randomBetweenTwoCurves || new feng3d.RandomBetweenTwoCurves();
+                    this.minMaxCurve = this._randomBetweenTwoCurves = this._randomBetweenTwoCurves || new feng3d.MinMaxCurveRandomBetweenTwoCurves();
                     break;
             }
         };
