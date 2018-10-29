@@ -1,3 +1,5 @@
+declare namespace feng3d {
+}
 interface ObjectConstructor {
     /**
      * Copy the values of all of the enumerable own properties from one or more source objects to a
@@ -9072,117 +9074,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-}
-declare namespace feng3d {
-    interface ComponentMap {
-        Component: Component;
-    }
-    type Components = ComponentMap[keyof ComponentMap];
-    interface Component {
-        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
-        has<K extends keyof GameObjectEventMap>(type: K): boolean;
-        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): any;
-    }
-    /**
-     * Base class for everything attached to GameObjects.
-     *
-     * Note that your code will never directly create a Component. Instead, you write script code, and attach the script to a GameObject. See Also: ScriptableObject as a way to create scripts that do not attach to any GameObject.
-     */
-    class Component extends Feng3dObject {
-        /**
-         * The game object this component is attached to. A component is always attached to a game object.
-         */
-        readonly gameObject: GameObject;
-        /**
-         * The tag of this game object.
-         */
-        tag: string;
-        /**
-         * The Transform attached to this GameObject (null if there is none attached).
-         */
-        readonly transform: Transform;
-        /**
-         * 是否唯一，同类型3D对象组件只允许一个
-         */
-        readonly single: boolean;
-        /**
-         * 创建一个组件容器
-         */
-        constructor();
-        init(gameObject: GameObject): void;
-        /**
-         * Returns the component of Type type if the game object has one attached, null if it doesn't.
-         * @param type				The type of Component to retrieve.
-         * @return                  返回指定类型组件
-         */
-        getComponent<T extends Components>(type: Constructor<T>): T;
-        /**
-         * Returns all components of Type type in the GameObject.
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponents<T extends Components>(type?: Constructor<T>): T[];
-        /**
-         * Returns all components of Type type in the GameObject.
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
-            findchildren: boolean;
-            value: boolean;
-        }, result?: T[]): T[];
-        /**
-         * 从父类中获取组件
-         * @param type		类定义
-         * @return			返回与给出类定义一致的组件
-         */
-        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
-        /**
-         * 派发事件
-         * @param event   事件对象
-         */
-        dispatchEvent(event: Event<any>): boolean;
-        /**
-         * 销毁
-         */
-        dispose(): void;
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
-        protected _gameObject: GameObject;
-    }
-}
-declare namespace feng3d {
-    interface ComponentMap {
-        Behaviour: Behaviour;
-    }
-    /**
-     * 行为
-     *
-     * 可以控制开关的组件
-     */
-    class Behaviour extends Component {
-        /**
-         * 是否启用update方法
-         */
-        enabled: boolean;
-        /**
-         * 可运行环境
-         */
-        runEnvironment: RunEnvironment;
-        /**
-         * Has the Behaviour had enabled called.
-         * 是否所在GameObject显示且该行为已启动。
-         */
-        readonly isVisibleAndEnabled: boolean;
-        /**
-         * 每帧执行
-         */
-        update(interval?: number): void;
-        dispose(): void;
-    }
-}
-declare namespace feng3d {
     /**
      * 渲染器
      * 所有渲染都由该渲染器执行
@@ -9365,6 +9256,115 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     interface ComponentMap {
+        Component: Component;
+    }
+    type Components = ComponentMap[keyof ComponentMap];
+    interface Component {
+        once<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof GameObjectEventMap>(type: K, data?: GameObjectEventMap[K], bubbles?: boolean): Event<GameObjectEventMap[K]>;
+        has<K extends keyof GameObjectEventMap>(type: K): boolean;
+        on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): any;
+    }
+    /**
+     * Base class for everything attached to GameObjects.
+     *
+     * Note that your code will never directly create a Component. Instead, you write script code, and attach the script to a GameObject. See Also: ScriptableObject as a way to create scripts that do not attach to any GameObject.
+     */
+    class Component extends Feng3dObject {
+        /**
+         * The game object this component is attached to. A component is always attached to a game object.
+         */
+        readonly gameObject: GameObject;
+        /**
+         * The tag of this game object.
+         */
+        tag: string;
+        /**
+         * The Transform attached to this GameObject (null if there is none attached).
+         */
+        readonly transform: Transform;
+        /**
+         * 是否唯一，同类型3D对象组件只允许一个
+         */
+        readonly single: boolean;
+        /**
+         * 创建一个组件容器
+         */
+        constructor();
+        init(gameObject: GameObject): void;
+        /**
+         * Returns the component of Type type if the game object has one attached, null if it doesn't.
+         * @param type				The type of Component to retrieve.
+         * @return                  返回指定类型组件
+         */
+        getComponent<T extends Components>(type: Constructor<T>): T;
+        /**
+         * Returns all components of Type type in the GameObject.
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponents<T extends Components>(type?: Constructor<T>): T[];
+        /**
+         * Returns all components of Type type in the GameObject.
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInChildren<T extends Components>(type?: Constructor<T>, filter?: (compnent: T) => {
+            findchildren: boolean;
+            value: boolean;
+        }, result?: T[]): T[];
+        /**
+         * 从父类中获取组件
+         * @param type		类定义
+         * @return			返回与给出类定义一致的组件
+         */
+        getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
+        /**
+         * 派发事件
+         * @param event   事件对象
+         */
+        dispatchEvent(event: Event<any>): boolean;
+        /**
+         * 销毁
+         */
+        dispose(): void;
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
+        protected _gameObject: GameObject;
+    }
+}
+declare namespace feng3d {
+    interface ComponentMap {
+        Behaviour: Behaviour;
+    }
+    /**
+     * 行为
+     *
+     * 可以控制开关的组件
+     */
+    class Behaviour extends Component {
+        /**
+         * 是否启用update方法
+         */
+        enabled: boolean;
+        /**
+         * 可运行环境
+         */
+        runEnvironment: RunEnvironment;
+        /**
+         * Has the Behaviour had enabled called.
+         * 是否所在GameObject显示且该行为已启动。
+         */
+        readonly isVisibleAndEnabled: boolean;
+        /**
+         * 每帧执行
+         */
+        update(interval?: number): void;
+        dispose(): void;
+    }
+}
+declare namespace feng3d {
+    interface ComponentMap {
         SkyBox: SkyBox;
     }
     /**
@@ -9401,26 +9401,6 @@ declare namespace feng3d {
          * @param camera 摄像机
          */
         drawSkyBox(gl: GL, skybox: SkyBox, scene3d: Scene3D, camera: Camera): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 后处理效果
-
-     */
-    class PostEffect {
-    }
-}
-declare namespace feng3d {
-    /**
-     * 快速近似抗锯齿（Fast Approximate Anti-Aliasing）后处理效果
-
-     *
-     * @see
-     * https://github.com/BabylonJS/Babylon.js/blob/master/src/Shaders/fxaa.fragment.fx
-     * https://github.com/playcanvas/engine/blob/master/extras/posteffects/posteffect-fxaa.js
-     */
-    class FXAAEffect {
     }
 }
 declare namespace feng3d {
