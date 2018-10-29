@@ -13,68 +13,13 @@ namespace feng3d
          */
         maxtan = 1000;
 
+        /**
+         * 关键帧
+         * 
+         * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
+         */
         @serialize
-        private keys: AnimationCurveKeyframe[] = [];
-
-        /**
-         * 关键点数量
-         */
-        get numKeys()
-        {
-            return this.keys.length;
-        }
-
-        /**
-         * 添加关键点
-         * 
-         * 添加关键点后将会执行按t进行排序
-         * 
-         * @param key 关键点
-         */
-        addKey(key: AnimationCurveKeyframe)
-        {
-            this.keys.push(key);
-            this.sort();
-        }
-
-        /**
-         * 关键点排序
-         * 
-         * 当移动关键点或者新增关键点时需要再次排序
-         */
-        sort()
-        {
-            this.keys.sort((a, b) => a.time - b.time);
-        }
-
-        /**
-         * 删除关键点
-         * @param key 关键点
-         */
-        deleteKey(key: AnimationCurveKeyframe)
-        {
-            var index = this.keys.indexOf(key);
-            if (index != -1)
-                this.keys.splice(index, 1);
-        }
-
-        /**
-         * 获取关键点
-         * @param index 索引
-         */
-        getKey(index: number)
-        {
-            return this.keys[index];
-        }
-
-        /**
-         * 获取关键点索引
-         * @param key 关键点
-         */
-        indexOfKeys(key: AnimationCurveKeyframe)
-        {
-            return this.keys.indexOf(key);
-        }
+        keys: AnimationCurveKeyframe[] = [];
 
         /**
          * 获取曲线上点信息
@@ -177,7 +122,8 @@ namespace feng3d
             var point = this.getPoint(time);
             if (Math.abs(value - point.value) < precision)
             {
-                this.addKey(point);
+                this.keys.push(point);
+                this.keys.sort((a, b) => a.time - b.time);
                 return point;
             }
             return null;

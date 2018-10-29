@@ -9963,60 +9963,13 @@ var feng3d;
              * 最大tan值，超出该值后将会变成分段
              */
             this.maxtan = 1000;
+            /**
+             * 关键帧
+             *
+             * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
+             */
             this.keys = [];
         }
-        Object.defineProperty(AnimationCurve.prototype, "numKeys", {
-            /**
-             * 关键点数量
-             */
-            get: function () {
-                return this.keys.length;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 添加关键点
-         *
-         * 添加关键点后将会执行按t进行排序
-         *
-         * @param key 关键点
-         */
-        AnimationCurve.prototype.addKey = function (key) {
-            this.keys.push(key);
-            this.sort();
-        };
-        /**
-         * 关键点排序
-         *
-         * 当移动关键点或者新增关键点时需要再次排序
-         */
-        AnimationCurve.prototype.sort = function () {
-            this.keys.sort(function (a, b) { return a.time - b.time; });
-        };
-        /**
-         * 删除关键点
-         * @param key 关键点
-         */
-        AnimationCurve.prototype.deleteKey = function (key) {
-            var index = this.keys.indexOf(key);
-            if (index != -1)
-                this.keys.splice(index, 1);
-        };
-        /**
-         * 获取关键点
-         * @param index 索引
-         */
-        AnimationCurve.prototype.getKey = function (index) {
-            return this.keys[index];
-        };
-        /**
-         * 获取关键点索引
-         * @param key 关键点
-         */
-        AnimationCurve.prototype.indexOfKeys = function (key) {
-            return this.keys.indexOf(key);
-        };
         /**
          * 获取曲线上点信息
          * @param t 时间轴的位置 [0,1]
@@ -10105,7 +10058,8 @@ var feng3d;
         AnimationCurve.prototype.addKeyAtCurve = function (time, value, precision) {
             var point = this.getPoint(time);
             if (Math.abs(value - point.value) < precision) {
-                this.addKey(point);
+                this.keys.push(point);
+                this.keys.sort(function (a, b) { return a.time - b.time; });
                 return point;
             }
             return null;

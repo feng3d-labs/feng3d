@@ -5077,40 +5077,12 @@ declare namespace feng3d {
          * 最大tan值，超出该值后将会变成分段
          */
         maxtan: number;
-        private keys;
         /**
-         * 关键点数量
-         */
-        readonly numKeys: number;
-        /**
-         * 添加关键点
+         * 关键帧
          *
-         * 添加关键点后将会执行按t进行排序
-         *
-         * @param key 关键点
+         * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
          */
-        addKey(key: AnimationCurveKeyframe): void;
-        /**
-         * 关键点排序
-         *
-         * 当移动关键点或者新增关键点时需要再次排序
-         */
-        sort(): void;
-        /**
-         * 删除关键点
-         * @param key 关键点
-         */
-        deleteKey(key: AnimationCurveKeyframe): void;
-        /**
-         * 获取关键点
-         * @param index 索引
-         */
-        getKey(index: number): AnimationCurveKeyframe;
-        /**
-         * 获取关键点索引
-         * @param key 关键点
-         */
-        indexOfKeys(key: AnimationCurveKeyframe): number;
+        keys: AnimationCurveKeyframe[];
         /**
          * 获取曲线上点信息
          * @param t 时间轴的位置 [0,1]
