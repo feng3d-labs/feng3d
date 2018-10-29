@@ -1,10 +1,17 @@
 namespace feng3d
 {
     /**
-     * 曲线
+     * 动画曲线
      */
-    export class Curve implements IMinMaxCurve
+    export class AnimationCurve implements IMinMaxCurve
     {
+        /**
+         * 动画曲线关键帧
+         */
+        keys: CubicBeziersKey[] = [];
+
+        postWrapMode = WrapMode.Clamp;
+
         /**
          * 获取值
          * @param time 时间

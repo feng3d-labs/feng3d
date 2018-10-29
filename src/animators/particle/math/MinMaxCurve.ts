@@ -28,7 +28,7 @@ namespace feng3d
         minMaxCurve: IMinMaxCurve = new MinMaxCurveConstant();
 
         private _minMaxCurveConstant: MinMaxCurveConstant;
-        private _curve: Curve;
+        private _curve: AnimationCurve;
         private _randomBetweenTwoConstants: RandomBetweenTwoConstants;
         private _randomBetweenTwoCurves: RandomBetweenTwoCurves;
 
@@ -40,7 +40,7 @@ namespace feng3d
                     this.minMaxCurve = this._minMaxCurveConstant = this._minMaxCurveConstant || new MinMaxCurveConstant();
                     break;
                 case MinMaxCurveMode.Curve:
-                    this.minMaxCurve = this._curve = this._curve || new Curve();
+                    this.minMaxCurve = this._curve = this._curve || new AnimationCurve();
                     break;
                 case MinMaxCurveMode.RandomBetweenTwoConstants:
                     this.minMaxCurve = this._randomBetweenTwoConstants = this._randomBetweenTwoConstants || new RandomBetweenTwoConstants();

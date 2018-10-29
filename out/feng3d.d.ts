@@ -278,8 +278,7 @@ declare namespace feng3d {
     /**
      * Bézier曲线
      * @see https://en.wikipedia.org/wiki/B%C3%A9zier_curve
-     *
-/ http://feng3d.com 03/06/2018
+     * @author feng / http://feng3d.com 03/06/2018
      */
     class Bezier {
         /**
@@ -724,7 +723,7 @@ declare namespace feng3d {
     /**
      * 基于时间轴的连续三阶Bézier曲线
      *
-/ http://feng3d.com 10/06/2018
+     * @author feng / http://feng3d.com 10/06/2018
      */
     class CubicBeziers {
         /**
@@ -12757,6 +12756,157 @@ declare namespace feng3d {
          * @param time 时间
          */
         getValue(time: number): Color4;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 曲线模式
+     */
+    enum MinMaxCurveMode {
+        /**
+         * 常量
+         */
+        Constant = 0,
+        /**
+         * 曲线
+         */
+        Curve = 1,
+        /**
+         * 两个曲线中取随机值
+         */
+        RandomBetweenTwoCurves = 2,
+        /**
+         * 两个常量间取随机值
+         */
+        RandomBetweenTwoConstants = 3
+    }
+}
+declare namespace feng3d {
+    /**
+     * 常量曲线
+     */
+    class MinMaxCurveConstant implements IMinMaxCurve {
+        /**
+         * 常量
+         */
+        value: number;
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): number;
+    }
+}
+declare namespace feng3d {
+    /**
+     * Wrap模式，处理超出范围情况
+     */
+    enum WrapMode {
+        /**
+         *
+         */
+        Loop = 0,
+        PingPong = 1,
+        Clamp = 2
+    }
+}
+declare namespace feng3d {
+    /**
+     * 动画曲线关键帧
+     */
+    class AnimationCurveKeyframe {
+        inTangent: number;
+        outTangent: number;
+        /**
+         *
+         */
+        tangentMode: number;
+        /**
+         * 关键帧时间
+         */
+        time: number;
+        /**
+         * 关键帧值
+         */
+        value: number;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 动画曲线
+     */
+    class AnimationCurve implements IMinMaxCurve {
+        /**
+         * 动画曲线关键帧
+         */
+        keys: CubicBeziersKey[];
+        postWrapMode: WrapMode;
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): number;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 两个常量间取随机值
+     */
+    class RandomBetweenTwoConstants implements IMinMaxCurve {
+        /**
+         * 最小值
+         */
+        minValue: number;
+        /**
+         * 最大值
+         */
+        maxValue: number;
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): number;
+    }
+}
+declare namespace feng3d {
+    class RandomBetweenTwoCurves implements IMinMaxCurve {
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): number;
+    }
+}
+declare namespace feng3d {
+    interface IMinMaxCurve {
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): number;
+    }
+    /**
+     * 最大最小曲线
+     */
+    class MinMaxCurve {
+        /**
+         * 模式
+         */
+        mode: MinMaxCurveMode;
+        /**
+         * 曲线
+         */
+        minMaxCurve: IMinMaxCurve;
+        private _minMaxCurveConstant;
+        private _curve;
+        private _randomBetweenTwoConstants;
+        private _randomBetweenTwoCurves;
+        private _onModeChanged;
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): number;
     }
 }
 declare namespace feng3d {

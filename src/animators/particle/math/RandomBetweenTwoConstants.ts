@@ -6,13 +6,22 @@ namespace feng3d
     export class RandomBetweenTwoConstants implements IMinMaxCurve
     {
         /**
+         * 最小值
+         */
+        minValue: number;
+
+        /**
+         * 最大值
+         */
+        maxValue: number;
+
+        /**
          * 获取值
          * @param time 时间
          */
         getValue(time: number)
         {
-            // return this.value;
-            return 0;
+            return this.minValue + Math.random() * (this.maxValue - this.minValue);
         }
     }
 }

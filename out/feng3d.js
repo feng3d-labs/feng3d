@@ -441,8 +441,7 @@ var feng3d;
     /**
      * Bézier曲线
      * @see https://en.wikipedia.org/wiki/B%C3%A9zier_curve
-     *
-/ http://feng3d.com 03/06/2018
+     * @author feng / http://feng3d.com 03/06/2018
      */
     var Bezier = /** @class */ (function () {
         function Bezier() {
@@ -1386,7 +1385,7 @@ var feng3d;
     /**
      * 基于时间轴的连续三阶Bézier曲线
      *
-/ http://feng3d.com 10/06/2018
+     * @author feng / http://feng3d.com 10/06/2018
      */
     var CubicBeziers = /** @class */ (function () {
         function CubicBeziers() {
@@ -25339,6 +25338,196 @@ var feng3d;
         return MinMaxGradient;
     }());
     feng3d.MinMaxGradient = MinMaxGradient;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 曲线模式
+     */
+    var MinMaxCurveMode;
+    (function (MinMaxCurveMode) {
+        /**
+         * 常量
+         */
+        MinMaxCurveMode[MinMaxCurveMode["Constant"] = 0] = "Constant";
+        /**
+         * 曲线
+         */
+        MinMaxCurveMode[MinMaxCurveMode["Curve"] = 1] = "Curve";
+        /**
+         * 两个曲线中取随机值
+         */
+        MinMaxCurveMode[MinMaxCurveMode["RandomBetweenTwoCurves"] = 2] = "RandomBetweenTwoCurves";
+        /**
+         * 两个常量间取随机值
+         */
+        MinMaxCurveMode[MinMaxCurveMode["RandomBetweenTwoConstants"] = 3] = "RandomBetweenTwoConstants";
+    })(MinMaxCurveMode = feng3d.MinMaxCurveMode || (feng3d.MinMaxCurveMode = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 常量曲线
+     */
+    var MinMaxCurveConstant = /** @class */ (function () {
+        function MinMaxCurveConstant() {
+            /**
+             * 常量
+             */
+            this.value = 0;
+        }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        MinMaxCurveConstant.prototype.getValue = function (time) {
+            return this.value;
+        };
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurveConstant.prototype, "value", void 0);
+        return MinMaxCurveConstant;
+    }());
+    feng3d.MinMaxCurveConstant = MinMaxCurveConstant;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Wrap模式，处理超出范围情况
+     */
+    var WrapMode;
+    (function (WrapMode) {
+        /**
+         *
+         */
+        WrapMode[WrapMode["Loop"] = 0] = "Loop";
+        WrapMode[WrapMode["PingPong"] = 1] = "PingPong";
+        WrapMode[WrapMode["Clamp"] = 2] = "Clamp";
+    })(WrapMode = feng3d.WrapMode || (feng3d.WrapMode = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 动画曲线关键帧
+     */
+    var AnimationCurveKeyframe = /** @class */ (function () {
+        function AnimationCurveKeyframe() {
+        }
+        return AnimationCurveKeyframe;
+    }());
+    feng3d.AnimationCurveKeyframe = AnimationCurveKeyframe;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 动画曲线
+     */
+    var AnimationCurve = /** @class */ (function () {
+        function AnimationCurve() {
+            /**
+             * 动画曲线关键帧
+             */
+            this.keys = [];
+            this.postWrapMode = feng3d.WrapMode.Clamp;
+        }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        AnimationCurve.prototype.getValue = function (time) {
+            // return this.value;
+            return 0;
+        };
+        return AnimationCurve;
+    }());
+    feng3d.AnimationCurve = AnimationCurve;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 两个常量间取随机值
+     */
+    var RandomBetweenTwoConstants = /** @class */ (function () {
+        function RandomBetweenTwoConstants() {
+        }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        RandomBetweenTwoConstants.prototype.getValue = function (time) {
+            return this.minValue + Math.random() * (this.maxValue - this.minValue);
+        };
+        return RandomBetweenTwoConstants;
+    }());
+    feng3d.RandomBetweenTwoConstants = RandomBetweenTwoConstants;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var RandomBetweenTwoCurves = /** @class */ (function () {
+        function RandomBetweenTwoCurves() {
+        }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        RandomBetweenTwoCurves.prototype.getValue = function (time) {
+            // return this.value;
+            return 0;
+        };
+        return RandomBetweenTwoCurves;
+    }());
+    feng3d.RandomBetweenTwoCurves = RandomBetweenTwoCurves;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 最大最小曲线
+     */
+    var MinMaxCurve = /** @class */ (function () {
+        function MinMaxCurve() {
+            /**
+             * 模式
+             */
+            this.mode = feng3d.MinMaxCurveMode.Constant;
+            /**
+             * 曲线
+             */
+            this.minMaxCurve = new feng3d.MinMaxCurveConstant();
+        }
+        MinMaxCurve.prototype._onModeChanged = function () {
+            switch (this.mode) {
+                case feng3d.MinMaxCurveMode.Constant:
+                    this.minMaxCurve = this._minMaxCurveConstant = this._minMaxCurveConstant || new feng3d.MinMaxCurveConstant();
+                    break;
+                case feng3d.MinMaxCurveMode.Curve:
+                    this.minMaxCurve = this._curve = this._curve || new feng3d.AnimationCurve();
+                    break;
+                case feng3d.MinMaxCurveMode.RandomBetweenTwoConstants:
+                    this.minMaxCurve = this._randomBetweenTwoConstants = this._randomBetweenTwoConstants || new feng3d.RandomBetweenTwoConstants();
+                    break;
+                case feng3d.MinMaxCurveMode.RandomBetweenTwoCurves:
+                    this.minMaxCurve = this._randomBetweenTwoCurves = this._randomBetweenTwoCurves || new feng3d.RandomBetweenTwoCurves();
+                    break;
+            }
+        };
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        MinMaxCurve.prototype.getValue = function (time) {
+            var v = this.minMaxCurve.getValue(time);
+            return v;
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.watch("_onModeChanged")
+        ], MinMaxCurve.prototype, "mode", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurve.prototype, "minMaxCurve", void 0);
+        return MinMaxCurve;
+    }());
+    feng3d.MinMaxCurve = MinMaxCurve;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
