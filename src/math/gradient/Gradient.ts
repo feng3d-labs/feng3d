@@ -15,16 +15,16 @@ namespace feng3d
          * 在渐变中定义的所有alpha键。
          */
         @serialize
-        get alphaKeys() { return this._alphaKeys.concat(); }
-        set alphaKeys(v) { this._alphaKeys = v; this.updateAlphaKeys(); }
+        get alphaKeys() { return this._alphaKeys; }
+        set alphaKeys(v) { this._alphaKeys = v; this._alphaKeys.sort((a, b) => a.time - b.time); }
         private _alphaKeys: GradientAlphaKey[] = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
 
         /**
          * 在渐变中定义的所有color键。
          */
         @serialize
-        get colorKeys() { return this._colorKeys.concat(); }
-        set colorKeys(v) { this._colorKeys = v; this.updateColorKeys() }
+        get colorKeys() { return this._colorKeys; }
+        set colorKeys(v) { this._colorKeys = v; this._colorKeys.sort((a, b) => a.time - b.time); }
 
         private _colorKeys: GradientColorKey[] = [{ color: new Color3(1, 1, 1), time: 0 }, { color: new Color3(1, 1, 1), time: 1 }];
 
@@ -46,7 +46,7 @@ namespace feng3d
         getAlpha(time: number)
         {
             var alphaKeys = this._alphaKeys;
-            if (alphaKeys.length = 1) return alphaKeys[0].alpha;
+            if (alphaKeys.length == 1) return alphaKeys[0].alpha;
             if (time <= alphaKeys[0].time) return alphaKeys[0].alpha;
             if (time >= alphaKeys[alphaKeys.length - 1].time) return alphaKeys[alphaKeys.length - 1].alpha;
 
@@ -71,7 +71,7 @@ namespace feng3d
         getColor(time: number)
         {
             var colorKeys = this._colorKeys;
-            if (colorKeys.length = 1) return colorKeys[0].color;
+            if (colorKeys.length == 1) return colorKeys[0].color;
             if (time <= colorKeys[0].time) return colorKeys[0].color;
             if (time >= colorKeys[colorKeys.length - 1].time) return colorKeys[colorKeys.length - 1].color;
 
@@ -87,54 +87,6 @@ namespace feng3d
                 }
             }
             return new Color3();
-        }
-
-        /**
-         * 调整 alpha 键列表
-         */
-        updateAlphaKeys()
-        {
-            var alphaKeys = this._alphaKeys.concat().sort((a, b) => a.time - b.time);
-            if (alphaKeys.length == 0)
-            {
-                alphaKeys = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
-            } else if (alphaKeys.length == 1)
-            {
-                alphaKeys = [{ alpha: alphaKeys[0].alpha, time: 0 }, { alpha: alphaKeys[0].alpha, time: 1 }];
-            }
-            if (alphaKeys[0].time > 0)
-            {
-                alphaKeys.splice(0, 0, { time: 0, alpha: alphaKeys[0].alpha });
-            }
-            if (alphaKeys[alphaKeys.length - 1].time < 1)
-            {
-                alphaKeys.push({ time: 1, alpha: alphaKeys[alphaKeys.length - 1].alpha });
-            }
-            this._alphaKeys = alphaKeys;
-        }
-
-        /**
-         * 更新 color 键列表
-         */
-        updateColorKeys()
-        {
-            var colorKeys = this._colorKeys.concat().sort((a, b) => a.time - b.time);
-            if (colorKeys.length == 0)
-            {
-                colorKeys = [{ color: new Color3(1, 1, 1), time: 0 }, { color: new Color3(1, 1, 1), time: 1 }];
-            } else if (colorKeys.length == 1)
-            {
-                colorKeys = [{ color: colorKeys[0].color, time: 0 }, { color: colorKeys[0].color, time: 1 }];
-            }
-            if (colorKeys[0].time > 0)
-            {
-                colorKeys.splice(0, 0, { time: 0, color: colorKeys[0].color });
-            }
-            if (colorKeys[colorKeys.length - 1].time < 1)
-            {
-                colorKeys.push({ time: 1, color: colorKeys[colorKeys.length - 1].color });
-            }
-            this._colorKeys = colorKeys;
         }
     }
 }

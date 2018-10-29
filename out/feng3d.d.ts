@@ -4752,14 +4752,6 @@ declare namespace feng3d {
          * @param time 时间
          */
         getColor(time: number): Color3;
-        /**
-         * 调整 alpha 键列表
-         */
-        updateAlphaKeys(): void;
-        /**
-         * 更新 color 键列表
-         */
-        updateColorKeys(): void;
     }
 }
 declare namespace feng3d {

@@ -9270,8 +9270,8 @@ var feng3d;
             /**
              * 在渐变中定义的所有alpha键。
              */
-            get: function () { return this._alphaKeys.concat(); },
-            set: function (v) { this._alphaKeys = v; this.updateAlphaKeys(); },
+            get: function () { return this._alphaKeys; },
+            set: function (v) { this._alphaKeys = v; this._alphaKeys.sort(function (a, b) { return a.time - b.time; }); },
             enumerable: true,
             configurable: true
         });
@@ -9279,8 +9279,8 @@ var feng3d;
             /**
              * 在渐变中定义的所有color键。
              */
-            get: function () { return this._colorKeys.concat(); },
-            set: function (v) { this._colorKeys = v; this.updateColorKeys(); },
+            get: function () { return this._colorKeys; },
+            set: function (v) { this._colorKeys = v; this._colorKeys.sort(function (a, b) { return a.time - b.time; }); },
             enumerable: true,
             configurable: true
         });
@@ -9299,7 +9299,7 @@ var feng3d;
          */
         Gradient.prototype.getAlpha = function (time) {
             var alphaKeys = this._alphaKeys;
-            if (alphaKeys.length = 1)
+            if (alphaKeys.length == 1)
                 return alphaKeys[0].alpha;
             if (time <= alphaKeys[0].time)
                 return alphaKeys[0].alpha;
@@ -9325,7 +9325,7 @@ var feng3d;
          */
         Gradient.prototype.getColor = function (time) {
             var colorKeys = this._colorKeys;
-            if (colorKeys.length = 1)
+            if (colorKeys.length == 1)
                 return colorKeys[0].color;
             if (time <= colorKeys[0].time)
                 return colorKeys[0].color;
@@ -9344,44 +9344,6 @@ var feng3d;
                 }
             }
             return new feng3d.Color3();
-        };
-        /**
-         * 调整 alpha 键列表
-         */
-        Gradient.prototype.updateAlphaKeys = function () {
-            var alphaKeys = this._alphaKeys.concat().sort(function (a, b) { return a.time - b.time; });
-            if (alphaKeys.length == 0) {
-                alphaKeys = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
-            }
-            else if (alphaKeys.length == 1) {
-                alphaKeys = [{ alpha: alphaKeys[0].alpha, time: 0 }, { alpha: alphaKeys[0].alpha, time: 1 }];
-            }
-            if (alphaKeys[0].time > 0) {
-                alphaKeys.splice(0, 0, { time: 0, alpha: alphaKeys[0].alpha });
-            }
-            if (alphaKeys[alphaKeys.length - 1].time < 1) {
-                alphaKeys.push({ time: 1, alpha: alphaKeys[alphaKeys.length - 1].alpha });
-            }
-            this._alphaKeys = alphaKeys;
-        };
-        /**
-         * 更新 color 键列表
-         */
-        Gradient.prototype.updateColorKeys = function () {
-            var colorKeys = this._colorKeys.concat().sort(function (a, b) { return a.time - b.time; });
-            if (colorKeys.length == 0) {
-                colorKeys = [{ color: new feng3d.Color3(1, 1, 1), time: 0 }, { color: new feng3d.Color3(1, 1, 1), time: 1 }];
-            }
-            else if (colorKeys.length == 1) {
-                colorKeys = [{ color: colorKeys[0].color, time: 0 }, { color: colorKeys[0].color, time: 1 }];
-            }
-            if (colorKeys[0].time > 0) {
-                colorKeys.splice(0, 0, { time: 0, color: colorKeys[0].color });
-            }
-            if (colorKeys[colorKeys.length - 1].time < 1) {
-                colorKeys.push({ time: 1, color: colorKeys[colorKeys.length - 1].color });
-            }
-            this._colorKeys = colorKeys;
         };
         __decorate([
             feng3d.serialize
