@@ -1015,717 +1015,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * Bézier曲线
-     * @see https://en.wikipedia.org/wiki/B%C3%A9zier_curve
-     * @author feng / http://feng3d.com 03/06/2018
-     */
-    var Bezier = /** @class */ (function () {
-        function Bezier() {
-        }
-        /**
-         * 线性Bézier曲线
-         * 给定不同的点P0和P1，线性Bézier曲线就是这两个点之间的直线。曲线由下式给出
-         * ```
-         * B(t) = p0 + t * (p1 - p0) = (1 - t) * p0 + t * p1 , 0 <= t && t <= 1
-         * ```
-         * 相当于线性插值
-         *
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         */
-        Bezier.prototype.linear = function (t, p0, p1) {
-            return p0 + t * (p1 - p0);
-            // return (1 - t) * p0 + t * p1;
-        };
-        /**
-         * 线性Bézier曲线关于t的导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         */
-        Bezier.prototype.linearDerivative = function (t, p0, p1) {
-            return p1 - p0;
-        };
-        /**
-         * 线性Bézier曲线关于t的二阶导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         */
-        Bezier.prototype.linearSecondDerivative = function (t, p0, p1) {
-            return 0;
-        };
-        /**
-         * 二次Bézier曲线
-         *
-         * 二次Bézier曲线是由函数B（t）跟踪的路径，给定点P0，P1和P2，
-         * ```
-         * B(t) = (1 - t) * ((1 - t) * p0 + t * p1) + t * ((1 - t) * p1 + t * p2) , 0 <= t && t <= 1
-         * ```
-         * 这可以解释为分别从P0到P1和从P1到P2的线性Bézier曲线上相应点的线性插值。重新排列前面的等式得出：
-         * ```
-         * B(t) = (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2 , 0 <= t && t <= 1
-         * ```
-         * Bézier曲线关于t的导数是
-         * ```
-         * B'(t) = 2 * (1 - t) * (p1 - p0) + 2 * t * (p2 - p1)
-         * ```
-         * 从中可以得出结论：在P0和P2处曲线的切线在P 1处相交。随着t从0增加到1，曲线沿P1的方向从P0偏离，然后从P1的方向弯曲到P2。
-         *
-         * Bézier曲线关于t的二阶导数是
-         * ```
-         * B''(t) = 2 * (p2 - 2 * p1 + p0)
-         * ```
-         *
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         * @param p2 点2
-         */
-        Bezier.prototype.quadratic = function (t, p0, p1, p2) {
-            // return this.linear(t, this.linear(t, p0, p1), this.linear(t, p1, p2));
-            // return (1 - t) * ((1 - t) * p0 + t * p1) + t * ((1 - t) * p1 + t * p2);
-            return (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2;
-        };
-        /**
-         * 二次Bézier曲线关于t的导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         * @param p2 点2
-         */
-        Bezier.prototype.quadraticDerivative = function (t, p0, p1, p2) {
-            // return 2 * this.linear(t, this.linearDerivative(t, p0, p1), this.linearDerivative(t, p1, p2));
-            return 2 * (1 - t) * (p1 - p0) + 2 * t * (p2 - p1);
-        };
-        /**
-         * 二次Bézier曲线关于t的二阶导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         * @param p2 点2
-         */
-        Bezier.prototype.quadraticSecondDerivative = function (t, p0, p1, p2) {
-            // return 1 * 2 * this.linearDerivative(t, p1 - p0, p2 - p1)
-            // return 1 * 2 * ((p2 - p1) - (p1 - p0));
-            return 2 * (p2 - 2 * p1 + p0);
-        };
-        /**
-         * 立方Bézier曲线
-         *
-         * 平面中或高维空间中（其实一维也是成立的，这里就是使用一维计算）的四个点P0，P1，P2和P3定义了三次Bézier曲线。
-         * 曲线开始于P0朝向P1并且从P2的方向到达P3。通常不会通过P1或P2; 这些点只是为了提供方向信息。
-         * P1和P2之间的距离在转向P2之前确定曲线向P1移动的“多远”和“多快” 。
-         *
-         * 对于由点Pi，Pj和Pk定义的二次Bézier曲线，可以将Bpipjpk(t)写成三次Bézier曲线，它可以定义为两条二次Bézier曲线的仿射组合：
-         * ```
-         * B(t) = (1 - t) * Bp0p1p2(t) + t * Bp1p2p3(t) , 0 <= t && t <= 1
-         * ```
-         * 曲线的显式形式是：
-         * ```
-         * B(t) = (1 - t) * (1 - t) * (1 - t) * p0 + 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t * p3 , 0 <= t && t <= 1
-         * ```
-         * 对于P1和P2的一些选择，曲线可以相交，或者包含尖点。
-         *
-         * 三次Bézier曲线相对于t的导数是
-         * ```
-         * B'(t) = 3 * (1 - t) * (1 - t) * (p1 - p0) + 6 * (1 - t) * t * (p2 - p1) + 3 * t * t * (p3 - p2);
-         * ```
-         * 三次Bézier曲线关于t的二阶导数是
-         * ```
-         * 6 * (1 - t) * (p2 - 2 * p1 + p0) + 6 * t * (p3 - 2 * p2 + p1);
-         * ```
-         *
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         * @param p2 点2
-         * @param p3 点3
-         */
-        Bezier.prototype.cubic = function (t, p0, p1, p2, p3) {
-            // return this.linear(t, this.quadratic(t, p0, p1, p2), this.quadratic(t, p1, p2, p3));
-            return (1 - t) * (1 - t) * (1 - t) * p0 + 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t * p3;
-        };
-        /**
-         * 三次Bézier曲线关于t的导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         * @param p2 点2
-         * @param p3 点3
-         */
-        Bezier.prototype.cubicDerivative = function (t, p0, p1, p2, p3) {
-            // return 3 * this.linear(t, this.quadraticDerivative(t, p0, p1, p2), this.quadraticDerivative(t, p1, p2, p3));
-            return 3 * (1 - t) * (1 - t) * (p1 - p0) + 6 * (1 - t) * t * (p2 - p1) + 3 * t * t * (p3 - p2);
-        };
-        /**
-         * 三次Bézier曲线关于t的二阶导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         * @param p2 点2
-         */
-        Bezier.prototype.cubicSecondDerivative = function (t, p0, p1, p2, p3) {
-            // return 3 * this.linear(t, this.quadraticSecondDerivative(t, p0, p1, p2), this.quadraticSecondDerivative(t, p1, p2, p3));
-            return 6 * (1 - t) * (p2 - 2 * p1 + p0) + 6 * t * (p3 - 2 * p2 + p1);
-        };
-        /**
-         * n次Bézier曲线
-         *
-         * 一般定义
-         *
-         * Bézier曲线可以定义为任意度n。
-         *
-         * @param t 插值度
-         * @param ps 点列表 ps.length == n+1
-         * @param processs 收集中间过程数据，可用作Bézier曲线动画数据
-         */
-        Bezier.prototype.bn = function (t, ps, processs) {
-            if (processs === void 0) { processs = null; }
-            ps = ps.concat();
-            if (processs)
-                processs.push(ps.concat());
-            // n次Bézier递推
-            for (var i = ps.length - 1; i > 0; i--) {
-                for (var j = 0; j < i; j++) {
-                    ps[j] = (1 - t) * ps[j] + t * ps[j + 1];
-                }
-                if (processs) {
-                    ps.length = ps.length - 1;
-                    processs.push(ps.concat());
-                }
-            }
-            return ps[0];
-        };
-        /**
-         * n次Bézier曲线关于t的导数
-         *
-         * 一般定义
-         *
-         * Bézier曲线可以定义为任意度n。
-         *
-         * @param t 插值度
-         * @param ps 点列表 ps.length == n+1
-         */
-        Bezier.prototype.bnDerivative = function (t, ps) {
-            if (ps.length < 2)
-                return 0;
-            ps = ps.concat();
-            // 进行
-            for (var i = 0, n = ps.length - 1; i < n; i++) {
-                ps[i] = ps[i + 1] - ps[i];
-            }
-            //
-            ps.length = ps.length - 1;
-            var v = ps.length * this.bn(t, ps);
-            return v;
-        };
-        /**
-         * n次Bézier曲线关于t的二阶导数
-         *
-         * 一般定义
-         *
-         * Bézier曲线可以定义为任意度n。
-         *
-         * @param t 插值度
-         * @param ps 点列表 ps.length == n+1
-         */
-        Bezier.prototype.bnSecondDerivative = function (t, ps) {
-            if (ps.length < 3)
-                return 0;
-            ps = ps.concat();
-            // 进行
-            for (var i = 0, n = ps.length - 1; i < n; i++) {
-                ps[i] = ps[i + 1] - ps[i];
-            }
-            //
-            ps.length = ps.length - 1;
-            var v = ps.length * this.bnDerivative(t, ps);
-            return v;
-        };
-        /**
-         * n次Bézier曲线关于t的dn阶导数
-         *
-         * Bézier曲线可以定义为任意度n。
-         *
-         * @param t 插值度
-         * @param dn 求导次数
-         * @param ps 点列表     ps.length == n+1
-         */
-        Bezier.prototype.bnND = function (t, dn, ps) {
-            if (ps.length < dn + 1)
-                return 0;
-            var factorial = 1;
-            ps = ps.concat();
-            for (var j = 0; j < dn; j++) {
-                // 进行
-                for (var i = 0, n = ps.length - 1; i < n; i++) {
-                    ps[i] = ps[i + 1] - ps[i];
-                }
-                //
-                ps.length = ps.length - 1;
-                factorial *= ps.length;
-            }
-            var v = factorial * this.bn(t, ps);
-            return v;
-        };
-        /**
-         * 获取曲线在指定插值度上的值
-         * @param t 插值度
-         * @param ps 点列表
-         */
-        Bezier.prototype.getValue = function (t, ps) {
-            if (ps.length == 2) {
-                return this.linear(t, ps[0], ps[1]);
-            }
-            if (ps.length == 3) {
-                return this.quadratic(t, ps[0], ps[1], ps[2]);
-            }
-            if (ps.length == 4) {
-                return this.cubic(t, ps[0], ps[1], ps[2], ps[3]);
-            }
-            return this.bn(t, ps);
-            // var t1 = 1 - t;
-            // return t1 * t1 * t1 * ps[0] + 3 * t1 * t1 * t * ps[1] + 3 * t1 * t * t * ps[2] + t * t * t * ps[3];
-        };
-        /**
-         * 获取曲线在指定插值度上的导数(斜率)
-         * @param t 插值度
-         * @param ps 点列表
-         */
-        Bezier.prototype.getDerivative = function (t, ps) {
-            if (ps.length == 2) {
-                return this.linearDerivative(t, ps[0], ps[1]);
-            }
-            if (ps.length == 3) {
-                return this.quadraticDerivative(t, ps[0], ps[1], ps[2]);
-            }
-            if (ps.length == 4) {
-                return this.cubicDerivative(t, ps[0], ps[1], ps[2], ps[3]);
-            }
-            return this.bnDerivative(t, ps);
-            // return 3 * (1 - t) * (1 - t) * (ps[1] - ps[0]) + 6 * (1 - t) * t * (ps[2] - ps[1]) + 3 * t * t * (ps[3] - ps[2]);
-        };
-        /**
-         * 获取曲线在指定插值度上的二阶导数
-         * @param t 插值度
-         * @param ps 点列表
-         */
-        Bezier.prototype.getSecondDerivative = function (t, ps) {
-            if (ps.length == 2) {
-                return this.linearSecondDerivative(t, ps[0], ps[1]);
-            }
-            if (ps.length == 3) {
-                return this.quadraticSecondDerivative(t, ps[0], ps[1], ps[2]);
-            }
-            if (ps.length == 4) {
-                return this.cubicSecondDerivative(t, ps[0], ps[1], ps[2], ps[3]);
-            }
-            return this.bnSecondDerivative(t, ps);
-            // return 3 * (1 - t) * (1 - t) * (ps[1] - ps[0]) + 6 * (1 - t) * t * (ps[2] - ps[1]) + 3 * t * t * (ps[3] - ps[2]);
-        };
-        /**
-         * 查找区间内极值列表
-         *
-         * @param ps 点列表
-         * @param numSamples 采样次数，用于分段查找极值
-         * @param precision  查找精度
-         *
-         * @returns 极值列表 {} {ts: 极值插值度列表,vs: 极值值列表}
-         */
-        Bezier.prototype.getExtremums = function (ps, numSamples, precision) {
-            var _this = this;
-            if (numSamples === void 0) { numSamples = 10; }
-            if (precision === void 0) { precision = 0.0000001; }
-            var samples = [];
-            for (var i = 0; i <= numSamples; i++) {
-                samples.push(this.getDerivative(i / numSamples, ps));
-            }
-            // 查找存在解的分段
-            //
-            var resultTs = [];
-            var resultVs = [];
-            for (var i = 0, n = numSamples; i < n; i++) {
-                if (samples[i] * samples[i + 1] < 0) {
-                    var guessT = feng3d.equationSolving.line(function (x) { return _this.getDerivative(x, ps); }, i / numSamples, (i + 1) / numSamples, precision);
-                    resultTs.push(guessT);
-                    resultVs.push(this.getValue(guessT, ps));
-                }
-            }
-            return { ts: resultTs, vs: resultVs };
-        };
-        /**
-         * 获取单调区间列表
-         * @returns {} {ts: 区间节点插值度列表,vs: 区间节点值列表}
-         */
-        Bezier.prototype.getMonotoneIntervals = function (ps, numSamples, precision) {
-            if (numSamples === void 0) { numSamples = 10; }
-            if (precision === void 0) { precision = 0.0000001; }
-            // 区间内的单调区间
-            var monotoneIntervalTs = [0, 1];
-            var monotoneIntervalVs = [ps[0], ps[ps.length - 1]];
-            // 预先计算好极值
-            var extremums = this.getExtremums(ps, numSamples, precision);
-            for (var i = 0; i < extremums.ts.length; i++) {
-                // 增加单调区间
-                monotoneIntervalTs.splice(i + 1, 0, extremums.ts[i]);
-                monotoneIntervalVs.splice(i + 1, 0, extremums.vs[i]);
-            }
-            return { ts: monotoneIntervalTs, vs: monotoneIntervalVs };
-        };
-        /**
-         * 获取目标值所在的插值度T
-         *
-         * @param targetV 目标值
-         * @param ps 点列表
-         * @param numSamples 分段数量，用于分段查找，用于解决寻找多个解、是否无解等问题；过少的分段可能会造成找不到存在的解决，过多的分段将会造成性能很差。
-         * @param precision  查找精度
-         *
-         * @returns 返回解数组
-         */
-        Bezier.prototype.getTFromValue = function (targetV, ps, numSamples, precision) {
-            var _this = this;
-            if (numSamples === void 0) { numSamples = 10; }
-            if (precision === void 0) { precision = 0.0000001; }
-            // 获取单调区间
-            var monotoneIntervals = this.getMonotoneIntervals(ps, numSamples, precision);
-            var monotoneIntervalTs = monotoneIntervals.ts;
-            var monotoneIntervalVs = monotoneIntervals.vs;
-            // 存在解的单调区间
-            var results = [];
-            // 遍历单调区间
-            for (var i = 0, n = monotoneIntervalVs.length - 1; i < n; i++) {
-                if ((monotoneIntervalVs[i] - targetV) * (monotoneIntervalVs[i + 1] - targetV) <= 0) {
-                    var fx = function (x) { return _this.getValue(x, ps) - targetV; };
-                    // 连线法
-                    var result = feng3d.equationSolving.line(fx, monotoneIntervalTs[i], monotoneIntervalTs[i + 1], precision);
-                    results.push(result);
-                }
-            }
-            return results;
-        };
-        /**
-         * 分割曲线
-         *
-         * 在曲线插值度t位置分割为两条连接起来与原曲线完全重合的曲线
-         *
-         * @param t 分割位置（插值度）
-         * @param ps 被分割曲线点列表
-         * @returns 返回两条曲线组成的数组
-         */
-        Bezier.prototype.split = function (t, ps) {
-            // 获取曲线的动画过程
-            var processs = [];
-            feng3d.bezier.bn(t, ps, processs);
-            // 第一条曲线
-            var fps = [];
-            // 第二条曲线
-            var sps = [];
-            // 使用当前t值进行分割曲线
-            for (var i = processs.length - 1; i >= 0; i--) {
-                if (i == processs.length - 1) {
-                    // 添加关键点
-                    fps.push(processs[i][0]);
-                    fps.push(processs[i][0]);
-                }
-                else {
-                    // 添加左右控制点
-                    fps.unshift(processs[i][0]);
-                    sps.push(processs[i].pop());
-                }
-            }
-            return [fps, sps];
-        };
-        /**
-         * 合并曲线
-         *
-         * 合并两条连接的曲线为一条曲线并且可以还原为分割前的曲线
-         *
-         * @param fps 第一条曲线点列表
-         * @param sps 第二条曲线点列表
-         * @param mergeType 合并方式。mergeType = 0时进行还原合并，还原拆分之前的曲线；mergeType = 1时进行拟合合并，合并后的曲线会经过两条曲线的连接点；
-         */
-        Bezier.prototype.merge = function (fps, sps, mergeType) {
-            if (mergeType === void 0) { mergeType = 0; }
-            fps = fps.concat();
-            sps = sps.concat();
-            var processs = [];
-            var t;
-            // 上条曲线
-            var pps;
-            // 当前曲线
-            var ps;
-            for (var i = 0, n = fps.length; i < n; i++) {
-                ps = processs[i] = [];
-                if (i == 0) {
-                    processs[i][0] = fps.pop();
-                    sps.shift();
-                }
-                else if (i == 1) {
-                    // 计算t值
-                    processs[i][0] = fps.pop();
-                    processs[i][1] = sps.shift();
-                    t = (processs[i - 1][0] - processs[i][0]) / (processs[i][1] - processs[i][0]);
-                }
-                else {
-                    pps = processs[i - 1];
-                    // 前面增加点
-                    var nfp = fps.pop();
-                    // 后面增加点
-                    var nsp = sps.shift();
-                    // 从前往后计算
-                    var ps0 = [];
-                    ps0[0] = nfp;
-                    for (var j = 0, n_1 = pps.length; j < n_1; j++) {
-                        ps0[j + 1] = ps0[j] + (pps[j] - ps0[j]) / t;
-                    }
-                    // 从后往前计算
-                    var ps1 = [];
-                    ps1[pps.length] = nsp;
-                    for (var j = pps.length - 1; j >= 0; j--) {
-                        ps1[j] = ps1[j + 1] - (ps1[j + 1] - pps[j]) / (1 - t);
-                    }
-                    // 拟合合并,合并前后两个方向的计算
-                    if (mergeType == 1) {
-                        for (var j = 0, n_2 = ps0.length - 1; j <= n_2; j++) {
-                            ps[j] = (ps0[j] * (n_2 - j) + ps1[j] * j) / n_2;
-                        }
-                    }
-                    else if (mergeType == 0) {
-                        // 还原合并，前半段使用从前往后计算，后半段使用从后往前计算
-                        for (var j = 0, n_3 = ps0.length - 1; j <= n_3; j++) {
-                            if (j < n_3 / 2) {
-                                ps[j] = ps0[j];
-                            }
-                            else if (j > n_3 / 2) {
-                                ps[j] = ps1[j];
-                            }
-                            else {
-                                ps[j] = (ps0[j] + ps1[j]) / 2;
-                            }
-                        }
-                    }
-                    else {
-                        throw "\u5408\u5E76\u7C7B\u578B mergeType " + mergeType + " \u9519\u8BEF!";
-                    }
-                }
-            }
-            return processs.pop();
-        };
-        /**
-         * 获取曲线样本数据
-         *
-         * 这些点可用于连线来拟合曲线。
-         *
-         * @param ps 点列表
-         * @param num 采样次数 ，采样点分别为[0,1/num,2/num,....,(num-1)/num,1]
-         */
-        Bezier.prototype.getSamples = function (ps, num) {
-            if (num === void 0) { num = 100; }
-            var results = [];
-            for (var i = 0; i <= num; i++) {
-                var p = this.getValue(i / num, ps);
-                results.push(p);
-            }
-            return results;
-        };
-        return Bezier;
-    }());
-    feng3d.Bezier = Bezier;
-    feng3d.bezier = new Bezier();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 动画关键帧
-     */
-    var AnimationCurveKeyframe = /** @class */ (function () {
-        function AnimationCurveKeyframe() {
-        }
-        __decorate([
-            feng3d.serialize
-        ], AnimationCurveKeyframe.prototype, "time", void 0);
-        __decorate([
-            feng3d.serialize
-        ], AnimationCurveKeyframe.prototype, "value", void 0);
-        __decorate([
-            feng3d.serialize
-        ], AnimationCurveKeyframe.prototype, "tangent", void 0);
-        return AnimationCurveKeyframe;
-    }());
-    feng3d.AnimationCurveKeyframe = AnimationCurveKeyframe;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 动画曲线
-     *
-     * 基于时间轴的连续三阶Bézier曲线
-     */
-    var AnimationCurve = /** @class */ (function () {
-        function AnimationCurve() {
-            /**
-             * 最大tan值，超出该值后将会变成分段
-             */
-            this.maxtan = 1000;
-            this.keys = [];
-        }
-        Object.defineProperty(AnimationCurve.prototype, "numKeys", {
-            /**
-             * 关键点数量
-             */
-            get: function () {
-                return this.keys.length;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 添加关键点
-         *
-         * 添加关键点后将会执行按t进行排序
-         *
-         * @param key 关键点
-         */
-        AnimationCurve.prototype.addKey = function (key) {
-            this.keys.push(key);
-            this.sort();
-        };
-        /**
-         * 关键点排序
-         *
-         * 当移动关键点或者新增关键点时需要再次排序
-         */
-        AnimationCurve.prototype.sort = function () {
-            this.keys.sort(function (a, b) { return a.time - b.time; });
-        };
-        /**
-         * 删除关键点
-         * @param key 关键点
-         */
-        AnimationCurve.prototype.deleteKey = function (key) {
-            var index = this.keys.indexOf(key);
-            if (index != -1)
-                this.keys.splice(index, 1);
-        };
-        /**
-         * 获取关键点
-         * @param index 索引
-         */
-        AnimationCurve.prototype.getKey = function (index) {
-            return this.keys[index];
-        };
-        /**
-         * 获取关键点索引
-         * @param key 关键点
-         */
-        AnimationCurve.prototype.indexOfKeys = function (key) {
-            return this.keys.indexOf(key);
-        };
-        /**
-         * 获取曲线上点信息
-         * @param t 时间轴的位置 [0,1]
-         */
-        AnimationCurve.prototype.getPoint = function (t) {
-            var keys = this.keys;
-            var maxtan = this.maxtan;
-            for (var i = 0, n = keys.length; i < n; i++) {
-                // 使用 bezierCurve 进行采样曲线点
-                var key = keys[i];
-                var prekey = keys[i - 1];
-                if (i > 0 && prekey.time <= t && t <= key.time) {
-                    var xstart = prekey.time;
-                    var ystart = prekey.value;
-                    var tanstart = prekey.tangent;
-                    var xend = key.time;
-                    var yend = key.value;
-                    var tanend = key.tangent;
-                    if (maxtan > Math.abs(tanstart) && maxtan > Math.abs(tanend)) {
-                        var ct = (t - prekey.time) / (key.time - prekey.time);
-                        var sys = [ystart, ystart + tanstart * (xend - xstart) / 3, yend - tanend * (xend - xstart) / 3, yend];
-                        var fy = feng3d.bezier.getValue(ct, sys);
-                        return { time: t, value: fy, tangent: feng3d.bezier.getDerivative(ct, sys) / (xend - xstart) };
-                    }
-                    else {
-                        return { time: t, value: prekey.value, tangent: 0 };
-                    }
-                }
-                if (i == 0 && t <= key.time) {
-                    return { time: t, value: key.value, tangent: 0 };
-                }
-                if (i == n - 1 && t >= key.time) {
-                    return { time: t, value: key.value, tangent: 0 };
-                }
-            }
-            return null;
-        };
-        /**
-         * 获取值
-         * @param t 时间轴的位置 [0,1]
-         */
-        AnimationCurve.prototype.getValue = function (t) {
-            var point = this.getPoint(t);
-            return point.value;
-        };
-        /**
-         * 查找关键点
-         * @param t 时间轴的位置 [0,1]
-         * @param y 值
-         * @param precision 查找精度
-         */
-        AnimationCurve.prototype.findKey = function (t, y, precision) {
-            var keys = this.keys;
-            for (var i = 0; i < keys.length; i++) {
-                if (Math.abs(keys[i].time - t) < precision && Math.abs(keys[i].value - y) < precision) {
-                    return keys[i];
-                }
-            }
-            return null;
-        };
-        /**
-         * 添加曲线上的关键点
-         *
-         * 如果该点在曲线上，则添加关键点
-         *
-         * @param time 时间轴的位置 [0,1]
-         * @param value 值
-         * @param precision 查找进度
-         */
-        AnimationCurve.prototype.addKeyAtCurve = function (time, value, precision) {
-            var point = this.getPoint(time);
-            if (Math.abs(value - point.value) < precision) {
-                this.addKey(point);
-                return point;
-            }
-            return null;
-        };
-        /**
-         * 获取曲线样本数据
-         *
-         * 这些点可用于连线来拟合曲线。
-         *
-         * @param num 采样次数 ，采样点分别为[0,1/num,2/num,....,(num-1)/num,1]
-         */
-        AnimationCurve.prototype.getSamples = function (num) {
-            if (num === void 0) { num = 100; }
-            var results = [];
-            for (var i = 0; i <= num; i++) {
-                var p = this.getValue(i / num);
-                results.push(p);
-            }
-            return results;
-        };
-        __decorate([
-            feng3d.serialize
-        ], AnimationCurve.prototype, "keys", void 0);
-        return AnimationCurve;
-    }());
-    feng3d.AnimationCurve = AnimationCurve;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 颜色
      */
     var Color3 = /** @class */ (function () {
@@ -7522,6 +6811,1212 @@ var feng3d;
         return TriangleGeometry;
     }());
     feng3d.TriangleGeometry = TriangleGeometry;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var MinMaxGradientColor = /** @class */ (function () {
+        function MinMaxGradientColor() {
+            /**
+             * 常量颜色值
+             */
+            this.color = new feng3d.Color4();
+        }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        MinMaxGradientColor.prototype.getValue = function (time) {
+            return this.color;
+        };
+        __decorate([
+            feng3d.serialize
+        ], MinMaxGradientColor.prototype, "color", void 0);
+        return MinMaxGradientColor;
+    }());
+    feng3d.MinMaxGradientColor = MinMaxGradientColor;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 从最大最小常量颜色中随机
+     */
+    var RandomBetweenTwoColors = /** @class */ (function () {
+        function RandomBetweenTwoColors() {
+            /**
+             * 最小颜色值
+             */
+            this.colorMin = new feng3d.Color4();
+            /**
+             * 最大颜色值
+             */
+            this.colorMax = new feng3d.Color4();
+        }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        RandomBetweenTwoColors.prototype.getValue = function (time) {
+            return this.colorMin.mixTo(this.colorMax, Math.random());
+        };
+        __decorate([
+            feng3d.serialize
+        ], RandomBetweenTwoColors.prototype, "colorMin", void 0);
+        __decorate([
+            feng3d.serialize
+        ], RandomBetweenTwoColors.prototype, "colorMax", void 0);
+        return RandomBetweenTwoColors;
+    }());
+    feng3d.RandomBetweenTwoColors = RandomBetweenTwoColors;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var RandomBetweenTwoGradients = /** @class */ (function () {
+        function RandomBetweenTwoGradients() {
+            /**
+             * 最小颜色渐变
+             */
+            this.gradientMin = new feng3d.Gradient();
+            /**
+             * 最大颜色渐变
+             */
+            this.gradientMax = new feng3d.Gradient();
+        }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        RandomBetweenTwoGradients.prototype.getValue = function (time) {
+            var min = this.gradientMin.getValue(time);
+            var max = this.gradientMax.getValue(time);
+            var v = min.mixTo(max, Math.random());
+            return v;
+        };
+        __decorate([
+            feng3d.serialize
+        ], RandomBetweenTwoGradients.prototype, "gradientMin", void 0);
+        __decorate([
+            feng3d.serialize
+        ], RandomBetweenTwoGradients.prototype, "gradientMax", void 0);
+        return RandomBetweenTwoGradients;
+    }());
+    feng3d.RandomBetweenTwoGradients = RandomBetweenTwoGradients;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 从颜色渐变中进行随机
+     */
+    var MinMaxGradientRandomColor = /** @class */ (function () {
+        function MinMaxGradientRandomColor() {
+            /**
+             * 颜色渐变
+             */
+            this.gradient = new feng3d.Gradient();
+        }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        MinMaxGradientRandomColor.prototype.getValue = function (time) {
+            var v = this.gradient.getValue(Math.random());
+            return v;
+        };
+        __decorate([
+            feng3d.serialize
+        ], MinMaxGradientRandomColor.prototype, "gradient", void 0);
+        return MinMaxGradientRandomColor;
+    }());
+    feng3d.MinMaxGradientRandomColor = MinMaxGradientRandomColor;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 渐变模式
+     */
+    var GradientMode;
+    (function (GradientMode) {
+        /**
+         * 混合
+         */
+        GradientMode[GradientMode["Blend"] = 0] = "Blend";
+        /**
+         * 阶梯
+         */
+        GradientMode[GradientMode["Fixed"] = 1] = "Fixed";
+    })(GradientMode = feng3d.GradientMode || (feng3d.GradientMode = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 最大最小颜色渐变模式
+     */
+    var MinMaxGradientMode;
+    (function (MinMaxGradientMode) {
+        /**
+         * 颜色常量
+         */
+        MinMaxGradientMode[MinMaxGradientMode["Color"] = 0] = "Color";
+        /**
+         * 颜色渐变
+         */
+        MinMaxGradientMode[MinMaxGradientMode["Gradient"] = 1] = "Gradient";
+        /**
+         * 从最大最小常量颜色中随机
+         */
+        MinMaxGradientMode[MinMaxGradientMode["RandomBetweenTwoColors"] = 2] = "RandomBetweenTwoColors";
+        /**
+         * 从最大最小颜色渐变值中随机
+         */
+        MinMaxGradientMode[MinMaxGradientMode["RandomBetweenTwoGradients"] = 3] = "RandomBetweenTwoGradients";
+        /**
+         * 从颜色渐变中进行随机
+         */
+        MinMaxGradientMode[MinMaxGradientMode["RandomColor"] = 4] = "RandomColor";
+    })(MinMaxGradientMode = feng3d.MinMaxGradientMode || (feng3d.MinMaxGradientMode = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 颜色渐变
+     */
+    var Gradient = /** @class */ (function () {
+        function Gradient() {
+            /**
+             * 渐变模式
+             */
+            this.mode = feng3d.GradientMode.Blend;
+            /**
+             * 在渐变中定义的所有alpha键。
+             */
+            this.alphaKeys = [];
+            /**
+             * 在渐变中定义的所有color键。
+             */
+            this.colorKeys = [];
+        }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        Gradient.prototype.getValue = function (time) {
+            var alpha = this.getAlpha(time);
+            var color = this.getColor(time);
+            return new feng3d.Color4(color.r, color.g, color.b, alpha);
+        };
+        /**
+         * 获取透明度
+         * @param time 时间
+         */
+        Gradient.prototype.getAlpha = function (time) {
+            var alphaKeys = this.getRealAlphaKeys();
+            for (var i = 0, n = alphaKeys.length - 1; i < n; i++) {
+                var t = alphaKeys[i].time, v = alphaKeys[i].alpha, nt = alphaKeys[i + 1].time, nv = alphaKeys[i + 1].alpha;
+                if (time == t)
+                    return v;
+                if (time == nt)
+                    return nv;
+                if (t < time && time < nt) {
+                    if (this.mode == feng3d.GradientMode.Fixed)
+                        return nv;
+                    return feng3d.FMath.mapLinear(time, t, nt, v, nv);
+                }
+            }
+            return 1;
+        };
+        /**
+         * 获取透明度
+         * @param time 时间
+         */
+        Gradient.prototype.getColor = function (time) {
+            var colorKeys = this.getRealColorKeys();
+            for (var i = 0, n = colorKeys.length - 1; i < n; i++) {
+                var t = colorKeys[i].time, v = colorKeys[i].color, nt = colorKeys[i + 1].time, nv = colorKeys[i + 1].color;
+                if (time == t)
+                    return v;
+                if (time == nt)
+                    return nv;
+                if (t < time && time < nt) {
+                    if (this.mode == feng3d.GradientMode.Fixed)
+                        return nv;
+                    return v.mixTo(nv, (time - t) / (nt - t));
+                }
+            }
+            return new feng3d.Color3();
+        };
+        /**
+         * 获取标准 alpha 键列表
+         */
+        Gradient.prototype.getRealAlphaKeys = function () {
+            var alphaKeys = this.alphaKeys.concat().sort(function (a, b) { return a.time - b.time; });
+            if (alphaKeys.length == 0) {
+                alphaKeys = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
+            }
+            else if (alphaKeys.length == 1) {
+                alphaKeys = [{ alpha: alphaKeys[0].alpha, time: 0 }, { alpha: alphaKeys[0].alpha, time: 1 }];
+            }
+            if (alphaKeys[0].time > 0) {
+                alphaKeys.splice(0, 0, { time: 0, alpha: alphaKeys[0].alpha });
+            }
+            if (alphaKeys[alphaKeys.length - 1].time < 1) {
+                alphaKeys.push({ time: 1, alpha: alphaKeys[alphaKeys.length - 1].alpha });
+            }
+            return alphaKeys;
+        };
+        /**
+         * 获取标准 color 键列表
+         */
+        Gradient.prototype.getRealColorKeys = function () {
+            var colorKeys = this.colorKeys.concat().sort(function (a, b) { return a.time - b.time; });
+            if (colorKeys.length == 0) {
+                colorKeys = [{ color: new feng3d.Color3(1, 1, 1), time: 0 }, { color: new feng3d.Color3(1, 1, 1), time: 1 }];
+            }
+            else if (colorKeys.length == 1) {
+                colorKeys = [{ color: colorKeys[0].color, time: 0 }, { color: colorKeys[0].color, time: 1 }];
+            }
+            if (colorKeys[0].time > 0) {
+                colorKeys.splice(0, 0, { time: 0, color: colorKeys[0].color });
+            }
+            if (colorKeys[colorKeys.length - 1].time < 1) {
+                colorKeys.push({ time: 1, color: colorKeys[colorKeys.length - 1].color });
+            }
+            return colorKeys;
+        };
+        __decorate([
+            feng3d.serialize
+        ], Gradient.prototype, "mode", void 0);
+        __decorate([
+            feng3d.serialize
+        ], Gradient.prototype, "alphaKeys", void 0);
+        __decorate([
+            feng3d.serialize
+        ], Gradient.prototype, "colorKeys", void 0);
+        return Gradient;
+    }());
+    feng3d.Gradient = Gradient;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 最大最小颜色渐变
+     */
+    var MinMaxGradient = /** @class */ (function () {
+        function MinMaxGradient() {
+            /**
+             * 模式
+             */
+            this.mode = feng3d.MinMaxGradientMode.Color;
+            /**
+             * 颜色渐变
+             */
+            this.minMaxGradient = new feng3d.MinMaxGradientColor();
+        }
+        MinMaxGradient.prototype._onModeChanged = function () {
+            switch (this.mode) {
+                case feng3d.MinMaxGradientMode.Color:
+                    this.minMaxGradient = this._minMaxGradientColor = this._minMaxGradientColor || new feng3d.MinMaxGradientColor();
+                    break;
+                case feng3d.MinMaxGradientMode.Gradient:
+                    this.minMaxGradient = this._gradient = this._gradient || new feng3d.Gradient();
+                    break;
+                case feng3d.MinMaxGradientMode.RandomBetweenTwoColors:
+                    this.minMaxGradient = this._randomBetweenTwoColors = this._randomBetweenTwoColors || new feng3d.RandomBetweenTwoColors();
+                    break;
+                case feng3d.MinMaxGradientMode.RandomBetweenTwoGradients:
+                    this.minMaxGradient = this._randomBetweenTwoGradients = this._randomBetweenTwoGradients || new feng3d.RandomBetweenTwoGradients();
+                    break;
+                case feng3d.MinMaxGradientMode.RandomColor:
+                    this.minMaxGradient = this._minMaxGradientRandomColor = this._minMaxGradientRandomColor || new feng3d.MinMaxGradientRandomColor();
+                    break;
+            }
+        };
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        MinMaxGradient.prototype.getValue = function (time) {
+            var v = this.minMaxGradient.getValue(time);
+            return v;
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.watch("_onModeChanged")
+        ], MinMaxGradient.prototype, "mode", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxGradient.prototype, "minMaxGradient", void 0);
+        return MinMaxGradient;
+    }());
+    feng3d.MinMaxGradient = MinMaxGradient;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Bézier曲线
+     * @see https://en.wikipedia.org/wiki/B%C3%A9zier_curve
+     * @author feng / http://feng3d.com 03/06/2018
+     */
+    var BezierCurve = /** @class */ (function () {
+        function BezierCurve() {
+        }
+        /**
+         * 线性Bézier曲线
+         * 给定不同的点P0和P1，线性Bézier曲线就是这两个点之间的直线。曲线由下式给出
+         * ```
+         * B(t) = p0 + t * (p1 - p0) = (1 - t) * p0 + t * p1 , 0 <= t && t <= 1
+         * ```
+         * 相当于线性插值
+         *
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         */
+        BezierCurve.prototype.linear = function (t, p0, p1) {
+            return p0 + t * (p1 - p0);
+            // return (1 - t) * p0 + t * p1;
+        };
+        /**
+         * 线性Bézier曲线关于t的导数
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         */
+        BezierCurve.prototype.linearDerivative = function (t, p0, p1) {
+            return p1 - p0;
+        };
+        /**
+         * 线性Bézier曲线关于t的二阶导数
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         */
+        BezierCurve.prototype.linearSecondDerivative = function (t, p0, p1) {
+            return 0;
+        };
+        /**
+         * 二次Bézier曲线
+         *
+         * 二次Bézier曲线是由函数B（t）跟踪的路径，给定点P0，P1和P2，
+         * ```
+         * B(t) = (1 - t) * ((1 - t) * p0 + t * p1) + t * ((1 - t) * p1 + t * p2) , 0 <= t && t <= 1
+         * ```
+         * 这可以解释为分别从P0到P1和从P1到P2的线性Bézier曲线上相应点的线性插值。重新排列前面的等式得出：
+         * ```
+         * B(t) = (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2 , 0 <= t && t <= 1
+         * ```
+         * Bézier曲线关于t的导数是
+         * ```
+         * B'(t) = 2 * (1 - t) * (p1 - p0) + 2 * t * (p2 - p1)
+         * ```
+         * 从中可以得出结论：在P0和P2处曲线的切线在P 1处相交。随着t从0增加到1，曲线沿P1的方向从P0偏离，然后从P1的方向弯曲到P2。
+         *
+         * Bézier曲线关于t的二阶导数是
+         * ```
+         * B''(t) = 2 * (p2 - 2 * p1 + p0)
+         * ```
+         *
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         * @param p2 点2
+         */
+        BezierCurve.prototype.quadratic = function (t, p0, p1, p2) {
+            // return this.linear(t, this.linear(t, p0, p1), this.linear(t, p1, p2));
+            // return (1 - t) * ((1 - t) * p0 + t * p1) + t * ((1 - t) * p1 + t * p2);
+            return (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2;
+        };
+        /**
+         * 二次Bézier曲线关于t的导数
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         * @param p2 点2
+         */
+        BezierCurve.prototype.quadraticDerivative = function (t, p0, p1, p2) {
+            // return 2 * this.linear(t, this.linearDerivative(t, p0, p1), this.linearDerivative(t, p1, p2));
+            return 2 * (1 - t) * (p1 - p0) + 2 * t * (p2 - p1);
+        };
+        /**
+         * 二次Bézier曲线关于t的二阶导数
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         * @param p2 点2
+         */
+        BezierCurve.prototype.quadraticSecondDerivative = function (t, p0, p1, p2) {
+            // return 1 * 2 * this.linearDerivative(t, p1 - p0, p2 - p1)
+            // return 1 * 2 * ((p2 - p1) - (p1 - p0));
+            return 2 * (p2 - 2 * p1 + p0);
+        };
+        /**
+         * 立方Bézier曲线
+         *
+         * 平面中或高维空间中（其实一维也是成立的，这里就是使用一维计算）的四个点P0，P1，P2和P3定义了三次Bézier曲线。
+         * 曲线开始于P0朝向P1并且从P2的方向到达P3。通常不会通过P1或P2; 这些点只是为了提供方向信息。
+         * P1和P2之间的距离在转向P2之前确定曲线向P1移动的“多远”和“多快” 。
+         *
+         * 对于由点Pi，Pj和Pk定义的二次Bézier曲线，可以将Bpipjpk(t)写成三次Bézier曲线，它可以定义为两条二次Bézier曲线的仿射组合：
+         * ```
+         * B(t) = (1 - t) * Bp0p1p2(t) + t * Bp1p2p3(t) , 0 <= t && t <= 1
+         * ```
+         * 曲线的显式形式是：
+         * ```
+         * B(t) = (1 - t) * (1 - t) * (1 - t) * p0 + 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t * p3 , 0 <= t && t <= 1
+         * ```
+         * 对于P1和P2的一些选择，曲线可以相交，或者包含尖点。
+         *
+         * 三次Bézier曲线相对于t的导数是
+         * ```
+         * B'(t) = 3 * (1 - t) * (1 - t) * (p1 - p0) + 6 * (1 - t) * t * (p2 - p1) + 3 * t * t * (p3 - p2);
+         * ```
+         * 三次Bézier曲线关于t的二阶导数是
+         * ```
+         * 6 * (1 - t) * (p2 - 2 * p1 + p0) + 6 * t * (p3 - 2 * p2 + p1);
+         * ```
+         *
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         * @param p2 点2
+         * @param p3 点3
+         */
+        BezierCurve.prototype.cubic = function (t, p0, p1, p2, p3) {
+            // return this.linear(t, this.quadratic(t, p0, p1, p2), this.quadratic(t, p1, p2, p3));
+            return (1 - t) * (1 - t) * (1 - t) * p0 + 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t * p3;
+        };
+        /**
+         * 三次Bézier曲线关于t的导数
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         * @param p2 点2
+         * @param p3 点3
+         */
+        BezierCurve.prototype.cubicDerivative = function (t, p0, p1, p2, p3) {
+            // return 3 * this.linear(t, this.quadraticDerivative(t, p0, p1, p2), this.quadraticDerivative(t, p1, p2, p3));
+            return 3 * (1 - t) * (1 - t) * (p1 - p0) + 6 * (1 - t) * t * (p2 - p1) + 3 * t * t * (p3 - p2);
+        };
+        /**
+         * 三次Bézier曲线关于t的二阶导数
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         * @param p2 点2
+         */
+        BezierCurve.prototype.cubicSecondDerivative = function (t, p0, p1, p2, p3) {
+            // return 3 * this.linear(t, this.quadraticSecondDerivative(t, p0, p1, p2), this.quadraticSecondDerivative(t, p1, p2, p3));
+            return 6 * (1 - t) * (p2 - 2 * p1 + p0) + 6 * t * (p3 - 2 * p2 + p1);
+        };
+        /**
+         * n次Bézier曲线
+         *
+         * 一般定义
+         *
+         * Bézier曲线可以定义为任意度n。
+         *
+         * @param t 插值度
+         * @param ps 点列表 ps.length == n+1
+         * @param processs 收集中间过程数据，可用作Bézier曲线动画数据
+         */
+        BezierCurve.prototype.bn = function (t, ps, processs) {
+            if (processs === void 0) { processs = null; }
+            ps = ps.concat();
+            if (processs)
+                processs.push(ps.concat());
+            // n次Bézier递推
+            for (var i = ps.length - 1; i > 0; i--) {
+                for (var j = 0; j < i; j++) {
+                    ps[j] = (1 - t) * ps[j] + t * ps[j + 1];
+                }
+                if (processs) {
+                    ps.length = ps.length - 1;
+                    processs.push(ps.concat());
+                }
+            }
+            return ps[0];
+        };
+        /**
+         * n次Bézier曲线关于t的导数
+         *
+         * 一般定义
+         *
+         * Bézier曲线可以定义为任意度n。
+         *
+         * @param t 插值度
+         * @param ps 点列表 ps.length == n+1
+         */
+        BezierCurve.prototype.bnDerivative = function (t, ps) {
+            if (ps.length < 2)
+                return 0;
+            ps = ps.concat();
+            // 进行
+            for (var i = 0, n = ps.length - 1; i < n; i++) {
+                ps[i] = ps[i + 1] - ps[i];
+            }
+            //
+            ps.length = ps.length - 1;
+            var v = ps.length * this.bn(t, ps);
+            return v;
+        };
+        /**
+         * n次Bézier曲线关于t的二阶导数
+         *
+         * 一般定义
+         *
+         * Bézier曲线可以定义为任意度n。
+         *
+         * @param t 插值度
+         * @param ps 点列表 ps.length == n+1
+         */
+        BezierCurve.prototype.bnSecondDerivative = function (t, ps) {
+            if (ps.length < 3)
+                return 0;
+            ps = ps.concat();
+            // 进行
+            for (var i = 0, n = ps.length - 1; i < n; i++) {
+                ps[i] = ps[i + 1] - ps[i];
+            }
+            //
+            ps.length = ps.length - 1;
+            var v = ps.length * this.bnDerivative(t, ps);
+            return v;
+        };
+        /**
+         * n次Bézier曲线关于t的dn阶导数
+         *
+         * Bézier曲线可以定义为任意度n。
+         *
+         * @param t 插值度
+         * @param dn 求导次数
+         * @param ps 点列表     ps.length == n+1
+         */
+        BezierCurve.prototype.bnND = function (t, dn, ps) {
+            if (ps.length < dn + 1)
+                return 0;
+            var factorial = 1;
+            ps = ps.concat();
+            for (var j = 0; j < dn; j++) {
+                // 进行
+                for (var i = 0, n = ps.length - 1; i < n; i++) {
+                    ps[i] = ps[i + 1] - ps[i];
+                }
+                //
+                ps.length = ps.length - 1;
+                factorial *= ps.length;
+            }
+            var v = factorial * this.bn(t, ps);
+            return v;
+        };
+        /**
+         * 获取曲线在指定插值度上的值
+         * @param t 插值度
+         * @param ps 点列表
+         */
+        BezierCurve.prototype.getValue = function (t, ps) {
+            if (ps.length == 2) {
+                return this.linear(t, ps[0], ps[1]);
+            }
+            if (ps.length == 3) {
+                return this.quadratic(t, ps[0], ps[1], ps[2]);
+            }
+            if (ps.length == 4) {
+                return this.cubic(t, ps[0], ps[1], ps[2], ps[3]);
+            }
+            return this.bn(t, ps);
+            // var t1 = 1 - t;
+            // return t1 * t1 * t1 * ps[0] + 3 * t1 * t1 * t * ps[1] + 3 * t1 * t * t * ps[2] + t * t * t * ps[3];
+        };
+        /**
+         * 获取曲线在指定插值度上的导数(斜率)
+         * @param t 插值度
+         * @param ps 点列表
+         */
+        BezierCurve.prototype.getDerivative = function (t, ps) {
+            if (ps.length == 2) {
+                return this.linearDerivative(t, ps[0], ps[1]);
+            }
+            if (ps.length == 3) {
+                return this.quadraticDerivative(t, ps[0], ps[1], ps[2]);
+            }
+            if (ps.length == 4) {
+                return this.cubicDerivative(t, ps[0], ps[1], ps[2], ps[3]);
+            }
+            return this.bnDerivative(t, ps);
+            // return 3 * (1 - t) * (1 - t) * (ps[1] - ps[0]) + 6 * (1 - t) * t * (ps[2] - ps[1]) + 3 * t * t * (ps[3] - ps[2]);
+        };
+        /**
+         * 获取曲线在指定插值度上的二阶导数
+         * @param t 插值度
+         * @param ps 点列表
+         */
+        BezierCurve.prototype.getSecondDerivative = function (t, ps) {
+            if (ps.length == 2) {
+                return this.linearSecondDerivative(t, ps[0], ps[1]);
+            }
+            if (ps.length == 3) {
+                return this.quadraticSecondDerivative(t, ps[0], ps[1], ps[2]);
+            }
+            if (ps.length == 4) {
+                return this.cubicSecondDerivative(t, ps[0], ps[1], ps[2], ps[3]);
+            }
+            return this.bnSecondDerivative(t, ps);
+            // return 3 * (1 - t) * (1 - t) * (ps[1] - ps[0]) + 6 * (1 - t) * t * (ps[2] - ps[1]) + 3 * t * t * (ps[3] - ps[2]);
+        };
+        /**
+         * 查找区间内极值列表
+         *
+         * @param ps 点列表
+         * @param numSamples 采样次数，用于分段查找极值
+         * @param precision  查找精度
+         *
+         * @returns 极值列表 {} {ts: 极值插值度列表,vs: 极值值列表}
+         */
+        BezierCurve.prototype.getExtremums = function (ps, numSamples, precision) {
+            var _this = this;
+            if (numSamples === void 0) { numSamples = 10; }
+            if (precision === void 0) { precision = 0.0000001; }
+            var samples = [];
+            for (var i = 0; i <= numSamples; i++) {
+                samples.push(this.getDerivative(i / numSamples, ps));
+            }
+            // 查找存在解的分段
+            //
+            var resultTs = [];
+            var resultVs = [];
+            for (var i = 0, n = numSamples; i < n; i++) {
+                if (samples[i] * samples[i + 1] < 0) {
+                    var guessT = feng3d.equationSolving.line(function (x) { return _this.getDerivative(x, ps); }, i / numSamples, (i + 1) / numSamples, precision);
+                    resultTs.push(guessT);
+                    resultVs.push(this.getValue(guessT, ps));
+                }
+            }
+            return { ts: resultTs, vs: resultVs };
+        };
+        /**
+         * 获取单调区间列表
+         * @returns {} {ts: 区间节点插值度列表,vs: 区间节点值列表}
+         */
+        BezierCurve.prototype.getMonotoneIntervals = function (ps, numSamples, precision) {
+            if (numSamples === void 0) { numSamples = 10; }
+            if (precision === void 0) { precision = 0.0000001; }
+            // 区间内的单调区间
+            var monotoneIntervalTs = [0, 1];
+            var monotoneIntervalVs = [ps[0], ps[ps.length - 1]];
+            // 预先计算好极值
+            var extremums = this.getExtremums(ps, numSamples, precision);
+            for (var i = 0; i < extremums.ts.length; i++) {
+                // 增加单调区间
+                monotoneIntervalTs.splice(i + 1, 0, extremums.ts[i]);
+                monotoneIntervalVs.splice(i + 1, 0, extremums.vs[i]);
+            }
+            return { ts: monotoneIntervalTs, vs: monotoneIntervalVs };
+        };
+        /**
+         * 获取目标值所在的插值度T
+         *
+         * @param targetV 目标值
+         * @param ps 点列表
+         * @param numSamples 分段数量，用于分段查找，用于解决寻找多个解、是否无解等问题；过少的分段可能会造成找不到存在的解决，过多的分段将会造成性能很差。
+         * @param precision  查找精度
+         *
+         * @returns 返回解数组
+         */
+        BezierCurve.prototype.getTFromValue = function (targetV, ps, numSamples, precision) {
+            var _this = this;
+            if (numSamples === void 0) { numSamples = 10; }
+            if (precision === void 0) { precision = 0.0000001; }
+            // 获取单调区间
+            var monotoneIntervals = this.getMonotoneIntervals(ps, numSamples, precision);
+            var monotoneIntervalTs = monotoneIntervals.ts;
+            var monotoneIntervalVs = monotoneIntervals.vs;
+            // 存在解的单调区间
+            var results = [];
+            // 遍历单调区间
+            for (var i = 0, n = monotoneIntervalVs.length - 1; i < n; i++) {
+                if ((monotoneIntervalVs[i] - targetV) * (monotoneIntervalVs[i + 1] - targetV) <= 0) {
+                    var fx = function (x) { return _this.getValue(x, ps) - targetV; };
+                    // 连线法
+                    var result = feng3d.equationSolving.line(fx, monotoneIntervalTs[i], monotoneIntervalTs[i + 1], precision);
+                    results.push(result);
+                }
+            }
+            return results;
+        };
+        /**
+         * 分割曲线
+         *
+         * 在曲线插值度t位置分割为两条连接起来与原曲线完全重合的曲线
+         *
+         * @param t 分割位置（插值度）
+         * @param ps 被分割曲线点列表
+         * @returns 返回两条曲线组成的数组
+         */
+        BezierCurve.prototype.split = function (t, ps) {
+            // 获取曲线的动画过程
+            var processs = [];
+            feng3d.bezierCurve.bn(t, ps, processs);
+            // 第一条曲线
+            var fps = [];
+            // 第二条曲线
+            var sps = [];
+            // 使用当前t值进行分割曲线
+            for (var i = processs.length - 1; i >= 0; i--) {
+                if (i == processs.length - 1) {
+                    // 添加关键点
+                    fps.push(processs[i][0]);
+                    fps.push(processs[i][0]);
+                }
+                else {
+                    // 添加左右控制点
+                    fps.unshift(processs[i][0]);
+                    sps.push(processs[i].pop());
+                }
+            }
+            return [fps, sps];
+        };
+        /**
+         * 合并曲线
+         *
+         * 合并两条连接的曲线为一条曲线并且可以还原为分割前的曲线
+         *
+         * @param fps 第一条曲线点列表
+         * @param sps 第二条曲线点列表
+         * @param mergeType 合并方式。mergeType = 0时进行还原合并，还原拆分之前的曲线；mergeType = 1时进行拟合合并，合并后的曲线会经过两条曲线的连接点；
+         */
+        BezierCurve.prototype.merge = function (fps, sps, mergeType) {
+            if (mergeType === void 0) { mergeType = 0; }
+            fps = fps.concat();
+            sps = sps.concat();
+            var processs = [];
+            var t;
+            // 上条曲线
+            var pps;
+            // 当前曲线
+            var ps;
+            for (var i = 0, n = fps.length; i < n; i++) {
+                ps = processs[i] = [];
+                if (i == 0) {
+                    processs[i][0] = fps.pop();
+                    sps.shift();
+                }
+                else if (i == 1) {
+                    // 计算t值
+                    processs[i][0] = fps.pop();
+                    processs[i][1] = sps.shift();
+                    t = (processs[i - 1][0] - processs[i][0]) / (processs[i][1] - processs[i][0]);
+                }
+                else {
+                    pps = processs[i - 1];
+                    // 前面增加点
+                    var nfp = fps.pop();
+                    // 后面增加点
+                    var nsp = sps.shift();
+                    // 从前往后计算
+                    var ps0 = [];
+                    ps0[0] = nfp;
+                    for (var j = 0, n_1 = pps.length; j < n_1; j++) {
+                        ps0[j + 1] = ps0[j] + (pps[j] - ps0[j]) / t;
+                    }
+                    // 从后往前计算
+                    var ps1 = [];
+                    ps1[pps.length] = nsp;
+                    for (var j = pps.length - 1; j >= 0; j--) {
+                        ps1[j] = ps1[j + 1] - (ps1[j + 1] - pps[j]) / (1 - t);
+                    }
+                    // 拟合合并,合并前后两个方向的计算
+                    if (mergeType == 1) {
+                        for (var j = 0, n_2 = ps0.length - 1; j <= n_2; j++) {
+                            ps[j] = (ps0[j] * (n_2 - j) + ps1[j] * j) / n_2;
+                        }
+                    }
+                    else if (mergeType == 0) {
+                        // 还原合并，前半段使用从前往后计算，后半段使用从后往前计算
+                        for (var j = 0, n_3 = ps0.length - 1; j <= n_3; j++) {
+                            if (j < n_3 / 2) {
+                                ps[j] = ps0[j];
+                            }
+                            else if (j > n_3 / 2) {
+                                ps[j] = ps1[j];
+                            }
+                            else {
+                                ps[j] = (ps0[j] + ps1[j]) / 2;
+                            }
+                        }
+                    }
+                    else {
+                        throw "\u5408\u5E76\u7C7B\u578B mergeType " + mergeType + " \u9519\u8BEF!";
+                    }
+                }
+            }
+            return processs.pop();
+        };
+        /**
+         * 获取曲线样本数据
+         *
+         * 这些点可用于连线来拟合曲线。
+         *
+         * @param ps 点列表
+         * @param num 采样次数 ，采样点分别为[0,1/num,2/num,....,(num-1)/num,1]
+         */
+        BezierCurve.prototype.getSamples = function (ps, num) {
+            if (num === void 0) { num = 100; }
+            var results = [];
+            for (var i = 0; i <= num; i++) {
+                var p = this.getValue(i / num, ps);
+                results.push(p);
+            }
+            return results;
+        };
+        return BezierCurve;
+    }());
+    feng3d.BezierCurve = BezierCurve;
+    feng3d.bezierCurve = new BezierCurve();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 动画关键帧
+     */
+    var AnimationCurveKeyframe = /** @class */ (function () {
+        function AnimationCurveKeyframe() {
+        }
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurveKeyframe.prototype, "time", void 0);
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurveKeyframe.prototype, "value", void 0);
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurveKeyframe.prototype, "tangent", void 0);
+        return AnimationCurveKeyframe;
+    }());
+    feng3d.AnimationCurveKeyframe = AnimationCurveKeyframe;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 动画曲线
+     *
+     * 基于时间轴的连续三阶Bézier曲线
+     */
+    var AnimationCurve = /** @class */ (function () {
+        function AnimationCurve() {
+            /**
+             * 最大tan值，超出该值后将会变成分段
+             */
+            this.maxtan = 1000;
+            this.keys = [];
+        }
+        Object.defineProperty(AnimationCurve.prototype, "numKeys", {
+            /**
+             * 关键点数量
+             */
+            get: function () {
+                return this.keys.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 添加关键点
+         *
+         * 添加关键点后将会执行按t进行排序
+         *
+         * @param key 关键点
+         */
+        AnimationCurve.prototype.addKey = function (key) {
+            this.keys.push(key);
+            this.sort();
+        };
+        /**
+         * 关键点排序
+         *
+         * 当移动关键点或者新增关键点时需要再次排序
+         */
+        AnimationCurve.prototype.sort = function () {
+            this.keys.sort(function (a, b) { return a.time - b.time; });
+        };
+        /**
+         * 删除关键点
+         * @param key 关键点
+         */
+        AnimationCurve.prototype.deleteKey = function (key) {
+            var index = this.keys.indexOf(key);
+            if (index != -1)
+                this.keys.splice(index, 1);
+        };
+        /**
+         * 获取关键点
+         * @param index 索引
+         */
+        AnimationCurve.prototype.getKey = function (index) {
+            return this.keys[index];
+        };
+        /**
+         * 获取关键点索引
+         * @param key 关键点
+         */
+        AnimationCurve.prototype.indexOfKeys = function (key) {
+            return this.keys.indexOf(key);
+        };
+        /**
+         * 获取曲线上点信息
+         * @param t 时间轴的位置 [0,1]
+         */
+        AnimationCurve.prototype.getPoint = function (t) {
+            var keys = this.keys;
+            var maxtan = this.maxtan;
+            for (var i = 0, n = keys.length; i < n; i++) {
+                // 使用 bezierCurve 进行采样曲线点
+                var key = keys[i];
+                var prekey = keys[i - 1];
+                if (i > 0 && prekey.time <= t && t <= key.time) {
+                    var xstart = prekey.time;
+                    var ystart = prekey.value;
+                    var tanstart = prekey.tangent;
+                    var xend = key.time;
+                    var yend = key.value;
+                    var tanend = key.tangent;
+                    if (maxtan > Math.abs(tanstart) && maxtan > Math.abs(tanend)) {
+                        var ct = (t - prekey.time) / (key.time - prekey.time);
+                        var sys = [ystart, ystart + tanstart * (xend - xstart) / 3, yend - tanend * (xend - xstart) / 3, yend];
+                        var fy = feng3d.bezierCurve.getValue(ct, sys);
+                        return { time: t, value: fy, tangent: feng3d.bezierCurve.getDerivative(ct, sys) / (xend - xstart) };
+                    }
+                    else {
+                        return { time: t, value: prekey.value, tangent: 0 };
+                    }
+                }
+                if (i == 0 && t <= key.time) {
+                    return { time: t, value: key.value, tangent: 0 };
+                }
+                if (i == n - 1 && t >= key.time) {
+                    return { time: t, value: key.value, tangent: 0 };
+                }
+            }
+            return null;
+        };
+        /**
+         * 获取值
+         * @param t 时间轴的位置 [0,1]
+         */
+        AnimationCurve.prototype.getValue = function (t) {
+            var point = this.getPoint(t);
+            return point.value;
+        };
+        /**
+         * 查找关键点
+         * @param t 时间轴的位置 [0,1]
+         * @param y 值
+         * @param precision 查找精度
+         */
+        AnimationCurve.prototype.findKey = function (t, y, precision) {
+            var keys = this.keys;
+            for (var i = 0; i < keys.length; i++) {
+                if (Math.abs(keys[i].time - t) < precision && Math.abs(keys[i].value - y) < precision) {
+                    return keys[i];
+                }
+            }
+            return null;
+        };
+        /**
+         * 添加曲线上的关键点
+         *
+         * 如果该点在曲线上，则添加关键点
+         *
+         * @param time 时间轴的位置 [0,1]
+         * @param value 值
+         * @param precision 查找进度
+         */
+        AnimationCurve.prototype.addKeyAtCurve = function (time, value, precision) {
+            var point = this.getPoint(time);
+            if (Math.abs(value - point.value) < precision) {
+                this.addKey(point);
+                return point;
+            }
+            return null;
+        };
+        /**
+         * 获取曲线样本数据
+         *
+         * 这些点可用于连线来拟合曲线。
+         *
+         * @param num 采样次数 ，采样点分别为[0,1/num,2/num,....,(num-1)/num,1]
+         */
+        AnimationCurve.prototype.getSamples = function (num) {
+            if (num === void 0) { num = 100; }
+            var results = [];
+            for (var i = 0; i <= num; i++) {
+                var p = this.getValue(i / num);
+                results.push(p);
+            }
+            return results;
+        };
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurve.prototype, "keys", void 0);
+        return AnimationCurve;
+    }());
+    feng3d.AnimationCurve = AnimationCurve;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 曲线模式
+     */
+    var MinMaxCurveMode;
+    (function (MinMaxCurveMode) {
+        /**
+         * 常量
+         */
+        MinMaxCurveMode[MinMaxCurveMode["Constant"] = 0] = "Constant";
+        /**
+         * 曲线
+         */
+        MinMaxCurveMode[MinMaxCurveMode["Curve"] = 1] = "Curve";
+        /**
+         * 两个曲线中取随机值
+         */
+        MinMaxCurveMode[MinMaxCurveMode["RandomBetweenTwoCurves"] = 2] = "RandomBetweenTwoCurves";
+        /**
+         * 两个常量间取随机值
+         */
+        MinMaxCurveMode[MinMaxCurveMode["RandomBetweenTwoConstants"] = 3] = "RandomBetweenTwoConstants";
+    })(MinMaxCurveMode = feng3d.MinMaxCurveMode || (feng3d.MinMaxCurveMode = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 常量曲线
+     */
+    var MinMaxCurveConstant = /** @class */ (function () {
+        function MinMaxCurveConstant() {
+            /**
+             * 常量
+             */
+            this.value = 0;
+        }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        MinMaxCurveConstant.prototype.getValue = function (time) {
+            return this.value;
+        };
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurveConstant.prototype, "value", void 0);
+        return MinMaxCurveConstant;
+    }());
+    feng3d.MinMaxCurveConstant = MinMaxCurveConstant;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Wrap模式，处理超出范围情况
+     */
+    var WrapMode;
+    (function (WrapMode) {
+        /**
+         *
+         */
+        WrapMode[WrapMode["Loop"] = 0] = "Loop";
+        WrapMode[WrapMode["PingPong"] = 1] = "PingPong";
+        WrapMode[WrapMode["Clamp"] = 2] = "Clamp";
+    })(WrapMode = feng3d.WrapMode || (feng3d.WrapMode = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 两个常量间取随机值
+     */
+    var RandomBetweenTwoConstants = /** @class */ (function () {
+        function RandomBetweenTwoConstants() {
+        }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        RandomBetweenTwoConstants.prototype.getValue = function (time) {
+            return this.minValue + Math.random() * (this.maxValue - this.minValue);
+        };
+        __decorate([
+            feng3d.serialize
+        ], RandomBetweenTwoConstants.prototype, "minValue", void 0);
+        __decorate([
+            feng3d.serialize
+        ], RandomBetweenTwoConstants.prototype, "maxValue", void 0);
+        return RandomBetweenTwoConstants;
+    }());
+    feng3d.RandomBetweenTwoConstants = RandomBetweenTwoConstants;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var RandomBetweenTwoCurves = /** @class */ (function () {
+        function RandomBetweenTwoCurves() {
+        }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        RandomBetweenTwoCurves.prototype.getValue = function (time) {
+            // return this.value;
+            return 0;
+        };
+        return RandomBetweenTwoCurves;
+    }());
+    feng3d.RandomBetweenTwoCurves = RandomBetweenTwoCurves;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 最大最小曲线
+     */
+    var MinMaxCurve = /** @class */ (function () {
+        function MinMaxCurve() {
+            /**
+             * 模式
+             */
+            this.mode = feng3d.MinMaxCurveMode.Constant;
+            /**
+             * 曲线
+             */
+            this.minMaxCurve = new feng3d.MinMaxCurveConstant();
+        }
+        MinMaxCurve.prototype._onModeChanged = function () {
+            switch (this.mode) {
+                case feng3d.MinMaxCurveMode.Constant:
+                    this.minMaxCurve = this._minMaxCurveConstant = this._minMaxCurveConstant || new feng3d.MinMaxCurveConstant();
+                    break;
+                case feng3d.MinMaxCurveMode.Curve:
+                    this.minMaxCurve = this._curve = this._curve || new feng3d.AnimationCurve();
+                    break;
+                case feng3d.MinMaxCurveMode.RandomBetweenTwoConstants:
+                    this.minMaxCurve = this._randomBetweenTwoConstants = this._randomBetweenTwoConstants || new feng3d.RandomBetweenTwoConstants();
+                    break;
+                case feng3d.MinMaxCurveMode.RandomBetweenTwoCurves:
+                    this.minMaxCurve = this._randomBetweenTwoCurves = this._randomBetweenTwoCurves || new feng3d.RandomBetweenTwoCurves();
+                    break;
+            }
+        };
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        MinMaxCurve.prototype.getValue = function (time) {
+            var v = this.minMaxCurve.getValue(time);
+            return v;
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.watch("_onModeChanged")
+        ], MinMaxCurve.prototype, "mode", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurve.prototype, "minMaxCurve", void 0);
+        return MinMaxCurve;
+    }());
+    feng3d.MinMaxCurve = MinMaxCurve;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -14333,19 +14828,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Component.prototype, "tag", {
-            /**
-             * The tag of this game object.
-             */
-            get: function () {
-                return this._tag;
-            },
-            set: function (value) {
-                this._tag = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Component.prototype, "transform", {
             /**
              * The Transform attached to this GameObject (null if there is none attached).
@@ -14420,7 +14902,7 @@ var feng3d;
         };
         __decorate([
             feng3d.serialize
-        ], Component.prototype, "tag", null);
+        ], Component.prototype, "tag", void 0);
         return Component;
     }(feng3d.Feng3dObject));
     feng3d.Component = Component;
@@ -25025,501 +25507,6 @@ var feng3d;
         return ParticlePalstanceOverLifetimeModule;
     }(feng3d.ParticleModule));
     feng3d.ParticlePalstanceOverLifetimeModule = ParticlePalstanceOverLifetimeModule;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var MinMaxGradientColor = /** @class */ (function () {
-        function MinMaxGradientColor() {
-            /**
-             * 常量颜色值
-             */
-            this.color = new feng3d.Color4();
-        }
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        MinMaxGradientColor.prototype.getValue = function (time) {
-            return this.color;
-        };
-        __decorate([
-            feng3d.serialize
-        ], MinMaxGradientColor.prototype, "color", void 0);
-        return MinMaxGradientColor;
-    }());
-    feng3d.MinMaxGradientColor = MinMaxGradientColor;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 从最大最小常量颜色中随机
-     */
-    var RandomBetweenTwoColors = /** @class */ (function () {
-        function RandomBetweenTwoColors() {
-            /**
-             * 最小颜色值
-             */
-            this.colorMin = new feng3d.Color4();
-            /**
-             * 最大颜色值
-             */
-            this.colorMax = new feng3d.Color4();
-        }
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        RandomBetweenTwoColors.prototype.getValue = function (time) {
-            return this.colorMin.mixTo(this.colorMax, Math.random());
-        };
-        __decorate([
-            feng3d.serialize
-        ], RandomBetweenTwoColors.prototype, "colorMin", void 0);
-        __decorate([
-            feng3d.serialize
-        ], RandomBetweenTwoColors.prototype, "colorMax", void 0);
-        return RandomBetweenTwoColors;
-    }());
-    feng3d.RandomBetweenTwoColors = RandomBetweenTwoColors;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var RandomBetweenTwoGradients = /** @class */ (function () {
-        function RandomBetweenTwoGradients() {
-            /**
-             * 最小颜色渐变
-             */
-            this.gradientMin = new feng3d.Gradient();
-            /**
-             * 最大颜色渐变
-             */
-            this.gradientMax = new feng3d.Gradient();
-        }
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        RandomBetweenTwoGradients.prototype.getValue = function (time) {
-            var min = this.gradientMin.getValue(time);
-            var max = this.gradientMax.getValue(time);
-            var v = min.mixTo(max, Math.random());
-            return v;
-        };
-        __decorate([
-            feng3d.serialize
-        ], RandomBetweenTwoGradients.prototype, "gradientMin", void 0);
-        __decorate([
-            feng3d.serialize
-        ], RandomBetweenTwoGradients.prototype, "gradientMax", void 0);
-        return RandomBetweenTwoGradients;
-    }());
-    feng3d.RandomBetweenTwoGradients = RandomBetweenTwoGradients;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 从颜色渐变中进行随机
-     */
-    var MinMaxGradientRandomColor = /** @class */ (function () {
-        function MinMaxGradientRandomColor() {
-            /**
-             * 颜色渐变
-             */
-            this.gradient = new feng3d.Gradient();
-        }
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        MinMaxGradientRandomColor.prototype.getValue = function (time) {
-            var v = this.gradient.getValue(Math.random());
-            return v;
-        };
-        __decorate([
-            feng3d.serialize
-        ], MinMaxGradientRandomColor.prototype, "gradient", void 0);
-        return MinMaxGradientRandomColor;
-    }());
-    feng3d.MinMaxGradientRandomColor = MinMaxGradientRandomColor;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 渐变模式
-     */
-    var GradientMode;
-    (function (GradientMode) {
-        /**
-         * 混合
-         */
-        GradientMode[GradientMode["Blend"] = 0] = "Blend";
-        /**
-         * 阶梯
-         */
-        GradientMode[GradientMode["Fixed"] = 1] = "Fixed";
-    })(GradientMode = feng3d.GradientMode || (feng3d.GradientMode = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 最大最小颜色渐变模式
-     */
-    var MinMaxGradientMode;
-    (function (MinMaxGradientMode) {
-        /**
-         * 颜色常量
-         */
-        MinMaxGradientMode[MinMaxGradientMode["Color"] = 0] = "Color";
-        /**
-         * 颜色渐变
-         */
-        MinMaxGradientMode[MinMaxGradientMode["Gradient"] = 1] = "Gradient";
-        /**
-         * 从最大最小常量颜色中随机
-         */
-        MinMaxGradientMode[MinMaxGradientMode["RandomBetweenTwoColors"] = 2] = "RandomBetweenTwoColors";
-        /**
-         * 从最大最小颜色渐变值中随机
-         */
-        MinMaxGradientMode[MinMaxGradientMode["RandomBetweenTwoGradients"] = 3] = "RandomBetweenTwoGradients";
-        /**
-         * 从颜色渐变中进行随机
-         */
-        MinMaxGradientMode[MinMaxGradientMode["RandomColor"] = 4] = "RandomColor";
-    })(MinMaxGradientMode = feng3d.MinMaxGradientMode || (feng3d.MinMaxGradientMode = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 颜色渐变
-     */
-    var Gradient = /** @class */ (function () {
-        function Gradient() {
-            /**
-             * 渐变模式
-             */
-            this.mode = feng3d.GradientMode.Blend;
-            /**
-             * 在渐变中定义的所有alpha键。
-             */
-            this.alphaKeys = [];
-            /**
-             * 在渐变中定义的所有color键。
-             */
-            this.colorKeys = [];
-        }
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        Gradient.prototype.getValue = function (time) {
-            var alpha = this.getAlpha(time);
-            var color = this.getColor(time);
-            return new feng3d.Color4(color.r, color.g, color.b, alpha);
-        };
-        /**
-         * 获取透明度
-         * @param time 时间
-         */
-        Gradient.prototype.getAlpha = function (time) {
-            var alphaKeys = this.getRealAlphaKeys();
-            for (var i = 0, n = alphaKeys.length - 1; i < n; i++) {
-                var t = alphaKeys[i].time, v = alphaKeys[i].alpha, nt = alphaKeys[i + 1].time, nv = alphaKeys[i + 1].alpha;
-                if (time == t)
-                    return v;
-                if (time == nt)
-                    return nv;
-                if (t < time && time < nt) {
-                    if (this.mode == feng3d.GradientMode.Fixed)
-                        return nv;
-                    return feng3d.FMath.mapLinear(time, t, nt, v, nv);
-                }
-            }
-            return 1;
-        };
-        /**
-         * 获取透明度
-         * @param time 时间
-         */
-        Gradient.prototype.getColor = function (time) {
-            var colorKeys = this.getRealColorKeys();
-            for (var i = 0, n = colorKeys.length - 1; i < n; i++) {
-                var t = colorKeys[i].time, v = colorKeys[i].color, nt = colorKeys[i + 1].time, nv = colorKeys[i + 1].color;
-                if (time == t)
-                    return v;
-                if (time == nt)
-                    return nv;
-                if (t < time && time < nt) {
-                    if (this.mode == feng3d.GradientMode.Fixed)
-                        return nv;
-                    return v.mixTo(nv, (time - t) / (nt - t));
-                }
-            }
-            return new feng3d.Color3();
-        };
-        /**
-         * 获取标准 alpha 键列表
-         */
-        Gradient.prototype.getRealAlphaKeys = function () {
-            var alphaKeys = this.alphaKeys.concat().sort(function (a, b) { return a.time - b.time; });
-            if (alphaKeys.length == 0) {
-                alphaKeys = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
-            }
-            else if (alphaKeys.length == 1) {
-                alphaKeys = [{ alpha: alphaKeys[0].alpha, time: 0 }, { alpha: alphaKeys[0].alpha, time: 1 }];
-            }
-            if (alphaKeys[0].time > 0) {
-                alphaKeys.splice(0, 0, { time: 0, alpha: alphaKeys[0].alpha });
-            }
-            if (alphaKeys[alphaKeys.length - 1].time < 1) {
-                alphaKeys.push({ time: 1, alpha: alphaKeys[alphaKeys.length - 1].alpha });
-            }
-            return alphaKeys;
-        };
-        /**
-         * 获取标准 color 键列表
-         */
-        Gradient.prototype.getRealColorKeys = function () {
-            var colorKeys = this.colorKeys.concat().sort(function (a, b) { return a.time - b.time; });
-            if (colorKeys.length == 0) {
-                colorKeys = [{ color: new feng3d.Color3(1, 1, 1), time: 0 }, { color: new feng3d.Color3(1, 1, 1), time: 1 }];
-            }
-            else if (colorKeys.length == 1) {
-                colorKeys = [{ color: colorKeys[0].color, time: 0 }, { color: colorKeys[0].color, time: 1 }];
-            }
-            if (colorKeys[0].time > 0) {
-                colorKeys.splice(0, 0, { time: 0, color: colorKeys[0].color });
-            }
-            if (colorKeys[colorKeys.length - 1].time < 1) {
-                colorKeys.push({ time: 1, color: colorKeys[colorKeys.length - 1].color });
-            }
-            return colorKeys;
-        };
-        __decorate([
-            feng3d.serialize
-        ], Gradient.prototype, "mode", void 0);
-        __decorate([
-            feng3d.serialize
-        ], Gradient.prototype, "alphaKeys", void 0);
-        __decorate([
-            feng3d.serialize
-        ], Gradient.prototype, "colorKeys", void 0);
-        return Gradient;
-    }());
-    feng3d.Gradient = Gradient;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 最大最小颜色渐变
-     */
-    var MinMaxGradient = /** @class */ (function () {
-        function MinMaxGradient() {
-            /**
-             * 模式
-             */
-            this.mode = feng3d.MinMaxGradientMode.Color;
-            /**
-             * 颜色渐变
-             */
-            this.minMaxGradient = new feng3d.MinMaxGradientColor();
-        }
-        MinMaxGradient.prototype._onModeChanged = function () {
-            switch (this.mode) {
-                case feng3d.MinMaxGradientMode.Color:
-                    this.minMaxGradient = this._minMaxGradientColor = this._minMaxGradientColor || new feng3d.MinMaxGradientColor();
-                    break;
-                case feng3d.MinMaxGradientMode.Gradient:
-                    this.minMaxGradient = this._gradient = this._gradient || new feng3d.Gradient();
-                    break;
-                case feng3d.MinMaxGradientMode.RandomBetweenTwoColors:
-                    this.minMaxGradient = this._randomBetweenTwoColors = this._randomBetweenTwoColors || new feng3d.RandomBetweenTwoColors();
-                    break;
-                case feng3d.MinMaxGradientMode.RandomBetweenTwoGradients:
-                    this.minMaxGradient = this._randomBetweenTwoGradients = this._randomBetweenTwoGradients || new feng3d.RandomBetweenTwoGradients();
-                    break;
-                case feng3d.MinMaxGradientMode.RandomColor:
-                    this.minMaxGradient = this._minMaxGradientRandomColor = this._minMaxGradientRandomColor || new feng3d.MinMaxGradientRandomColor();
-                    break;
-            }
-        };
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        MinMaxGradient.prototype.getValue = function (time) {
-            var v = this.minMaxGradient.getValue(time);
-            return v;
-        };
-        __decorate([
-            feng3d.serialize,
-            feng3d.watch("_onModeChanged")
-        ], MinMaxGradient.prototype, "mode", void 0);
-        __decorate([
-            feng3d.serialize
-        ], MinMaxGradient.prototype, "minMaxGradient", void 0);
-        return MinMaxGradient;
-    }());
-    feng3d.MinMaxGradient = MinMaxGradient;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 曲线模式
-     */
-    var MinMaxCurveMode;
-    (function (MinMaxCurveMode) {
-        /**
-         * 常量
-         */
-        MinMaxCurveMode[MinMaxCurveMode["Constant"] = 0] = "Constant";
-        /**
-         * 曲线
-         */
-        MinMaxCurveMode[MinMaxCurveMode["Curve"] = 1] = "Curve";
-        /**
-         * 两个曲线中取随机值
-         */
-        MinMaxCurveMode[MinMaxCurveMode["RandomBetweenTwoCurves"] = 2] = "RandomBetweenTwoCurves";
-        /**
-         * 两个常量间取随机值
-         */
-        MinMaxCurveMode[MinMaxCurveMode["RandomBetweenTwoConstants"] = 3] = "RandomBetweenTwoConstants";
-    })(MinMaxCurveMode = feng3d.MinMaxCurveMode || (feng3d.MinMaxCurveMode = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 常量曲线
-     */
-    var MinMaxCurveConstant = /** @class */ (function () {
-        function MinMaxCurveConstant() {
-            /**
-             * 常量
-             */
-            this.value = 0;
-        }
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        MinMaxCurveConstant.prototype.getValue = function (time) {
-            return this.value;
-        };
-        __decorate([
-            feng3d.serialize
-        ], MinMaxCurveConstant.prototype, "value", void 0);
-        return MinMaxCurveConstant;
-    }());
-    feng3d.MinMaxCurveConstant = MinMaxCurveConstant;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * Wrap模式，处理超出范围情况
-     */
-    var WrapMode;
-    (function (WrapMode) {
-        /**
-         *
-         */
-        WrapMode[WrapMode["Loop"] = 0] = "Loop";
-        WrapMode[WrapMode["PingPong"] = 1] = "PingPong";
-        WrapMode[WrapMode["Clamp"] = 2] = "Clamp";
-    })(WrapMode = feng3d.WrapMode || (feng3d.WrapMode = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 两个常量间取随机值
-     */
-    var RandomBetweenTwoConstants = /** @class */ (function () {
-        function RandomBetweenTwoConstants() {
-        }
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        RandomBetweenTwoConstants.prototype.getValue = function (time) {
-            return this.minValue + Math.random() * (this.maxValue - this.minValue);
-        };
-        __decorate([
-            feng3d.serialize
-        ], RandomBetweenTwoConstants.prototype, "minValue", void 0);
-        __decorate([
-            feng3d.serialize
-        ], RandomBetweenTwoConstants.prototype, "maxValue", void 0);
-        return RandomBetweenTwoConstants;
-    }());
-    feng3d.RandomBetweenTwoConstants = RandomBetweenTwoConstants;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var RandomBetweenTwoCurves = /** @class */ (function () {
-        function RandomBetweenTwoCurves() {
-        }
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        RandomBetweenTwoCurves.prototype.getValue = function (time) {
-            // return this.value;
-            return 0;
-        };
-        return RandomBetweenTwoCurves;
-    }());
-    feng3d.RandomBetweenTwoCurves = RandomBetweenTwoCurves;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 最大最小曲线
-     */
-    var MinMaxCurve = /** @class */ (function () {
-        function MinMaxCurve() {
-            /**
-             * 模式
-             */
-            this.mode = feng3d.MinMaxCurveMode.Constant;
-            /**
-             * 曲线
-             */
-            this.minMaxCurve = new feng3d.MinMaxCurveConstant();
-        }
-        MinMaxCurve.prototype._onModeChanged = function () {
-            switch (this.mode) {
-                case feng3d.MinMaxCurveMode.Constant:
-                    this.minMaxCurve = this._minMaxCurveConstant = this._minMaxCurveConstant || new feng3d.MinMaxCurveConstant();
-                    break;
-                case feng3d.MinMaxCurveMode.Curve:
-                    this.minMaxCurve = this._curve = this._curve || new feng3d.AnimationCurve();
-                    break;
-                case feng3d.MinMaxCurveMode.RandomBetweenTwoConstants:
-                    this.minMaxCurve = this._randomBetweenTwoConstants = this._randomBetweenTwoConstants || new feng3d.RandomBetweenTwoConstants();
-                    break;
-                case feng3d.MinMaxCurveMode.RandomBetweenTwoCurves:
-                    this.minMaxCurve = this._randomBetweenTwoCurves = this._randomBetweenTwoCurves || new feng3d.RandomBetweenTwoCurves();
-                    break;
-            }
-        };
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        MinMaxCurve.prototype.getValue = function (time) {
-            var v = this.minMaxCurve.getValue(time);
-            return v;
-        };
-        __decorate([
-            feng3d.serialize,
-            feng3d.watch("_onModeChanged")
-        ], MinMaxCurve.prototype, "mode", void 0);
-        __decorate([
-            feng3d.serialize
-        ], MinMaxCurve.prototype, "minMaxCurve", void 0);
-        return MinMaxCurve;
-    }());
-    feng3d.MinMaxCurve = MinMaxCurve;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

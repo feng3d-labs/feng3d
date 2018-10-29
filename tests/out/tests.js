@@ -1021,7 +1021,7 @@ var feng3d;
     });
 })(feng3d || (feng3d = {}));
 QUnit.module("Bezier", function () {
-    var bezier = feng3d.bezier;
+    var bezier = feng3d.bezierCurve;
     var equationSolving = feng3d.equationSolving;
     // 允许误差
     var deviation = 0.0000001;
@@ -1218,7 +1218,7 @@ QUnit.module("Bezier", function () {
     });
 });
 QUnit.module("EquationSolving", function () {
-    var bezier = feng3d.bezier;
+    var bezier = feng3d.bezierCurve;
     var equationSolving = feng3d.equationSolving;
     var HighFunction = feng3d.HighFunction;
     // 允许误差

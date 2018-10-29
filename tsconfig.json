@@ -22,10 +22,6 @@
         // 函数方程
         "src/math/EquationSolving.ts",
         "src/math/HighFunction.ts",
-        // 曲线
-        "src/math/curve/Bezier.ts",
-        "src/math/curve/AnimationCurveKeyframe.ts",
-        "src/math/curve/AnimationCurve.ts",
         // 颜色
         "src/math/Color3.ts",
         "src/math/Color4.ts",
@@ -48,6 +44,27 @@
         "src/math/geom/Plane3D.ts",
         "src/math/geom/PlaneClassification.ts",
         "src/math/geom/TriangleGeometry.ts",
+        // 颜色渐变
+        "src/math/gradient/MinMaxGradientColor.ts",
+        "src/math/gradient/RandomBetweenTwoColors.ts",
+        "src/math/gradient/RandomBetweenTwoGradients.ts",
+        "src/math/gradient/MinMaxGradientRandomColor.ts",
+        "src/math/gradient/GradientMode.ts",
+        "src/math/gradient/GradientAlphaKey.ts",
+        "src/math/gradient/GradientColorKey.ts",
+        "src/math/gradient/MinMaxGradientMode.ts",
+        "src/math/gradient/Gradient.ts",
+        "src/math/gradient/MinMaxGradient.ts",
+        // 曲线
+        "src/math/curve/BezierCurve.ts",
+        "src/math/curve/AnimationCurveKeyframe.ts",
+        "src/math/curve/AnimationCurve.ts",
+        "src/math/curve/MinMaxCurveMode.ts",
+        "src/math/curve/MinMaxCurveConstant.ts",
+        "src/math/curve/WrapMode.ts",
+        "src/math/curve/RandomBetweenTwoConstants.ts",
+        "src/math/curve/RandomBetweenTwoCurves.ts",
+        "src/math/curve/MinMaxCurve.ts",
         // 事件
         "src/event/EventDispatcher.ts",
         "src/event/EventProxy.ts",
@@ -253,24 +270,6 @@
         "src/animators/particle/modules/ParticleScaleOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticleColorOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticlePalstanceOverLifetimeModule.ts",
-        //颜色渐变
-        "src/math/gradient/MinMaxGradientColor.ts",
-        "src/math/gradient/RandomBetweenTwoColors.ts",
-        "src/math/gradient/RandomBetweenTwoGradients.ts",
-        "src/math/gradient/MinMaxGradientRandomColor.ts",
-        "src/math/gradient/GradientMode.ts",
-        "src/math/gradient/GradientAlphaKey.ts",
-        "src/math/gradient/GradientColorKey.ts",
-        "src/math/gradient/MinMaxGradientMode.ts",
-        "src/math/gradient/Gradient.ts",
-        "src/math/gradient/MinMaxGradient.ts",
-        //曲线
-        "src/math/curve/MinMaxCurveMode.ts",
-        "src/math/curve/MinMaxCurveConstant.ts",
-        "src/math/curve/WrapMode.ts",
-        "src/math/curve/RandomBetweenTwoConstants.ts",
-        "src/math/curve/RandomBetweenTwoCurves.ts",
-        "src/math/curve/MinMaxCurve.ts",
         //骨骼动画
         "src/animators/skeleton/Skeleton.ts",
         "src/animators/skeleton/SkeletonComponent.ts",

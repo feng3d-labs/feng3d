@@ -4,14 +4,14 @@ namespace feng3d
     /**
      * Bézier曲线
      */
-    export var bezier: Bezier;
+    export var bezierCurve: BezierCurve;
 
     /**
      * Bézier曲线
      * @see https://en.wikipedia.org/wiki/B%C3%A9zier_curve
      * @author feng / http://feng3d.com 03/06/2018
      */
-    export class Bezier
+    export class BezierCurve
     {
         /**
          * 线性Bézier曲线
@@ -462,7 +462,7 @@ namespace feng3d
         {
             // 获取曲线的动画过程
             var processs: number[][] = [];
-            bezier.bn(t, ps, processs);
+            bezierCurve.bn(t, ps, processs);
 
             // 第一条曲线
             var fps: number[] = [];
@@ -591,5 +591,5 @@ namespace feng3d
         }
     }
 
-    bezier = new Bezier();
+    bezierCurve = new BezierCurve();
 }

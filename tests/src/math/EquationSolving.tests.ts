@@ -1,6 +1,6 @@
 QUnit.module("EquationSolving", () =>
 {
-    var bezier = feng3d.bezier;
+    var bezier = feng3d.bezierCurve;
     var equationSolving = feng3d.equationSolving;
     var HighFunction = feng3d.HighFunction;
     // 允许误差

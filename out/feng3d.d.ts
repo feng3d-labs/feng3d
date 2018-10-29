@@ -529,372 +529,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * Bézier曲线
-     */
-    var bezier: Bezier;
-    /**
-     * Bézier曲线
-     * @see https://en.wikipedia.org/wiki/B%C3%A9zier_curve
-     * @author feng / http://feng3d.com 03/06/2018
-     */
-    class Bezier {
-        /**
-         * 线性Bézier曲线
-         * 给定不同的点P0和P1，线性Bézier曲线就是这两个点之间的直线。曲线由下式给出
-         * ```
-         * B(t) = p0 + t * (p1 - p0) = (1 - t) * p0 + t * p1 , 0 <= t && t <= 1
-         * ```
-         * 相当于线性插值
-         *
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         */
-        linear(t: number, p0: number, p1: number): number;
-        /**
-         * 线性Bézier曲线关于t的导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         */
-        linearDerivative(t: number, p0: number, p1: number): number;
-        /**
-         * 线性Bézier曲线关于t的二阶导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         */
-        linearSecondDerivative(t: number, p0: number, p1: number): number;
-        /**
-         * 二次Bézier曲线
-         *
-         * 二次Bézier曲线是由函数B（t）跟踪的路径，给定点P0，P1和P2，
-         * ```
-         * B(t) = (1 - t) * ((1 - t) * p0 + t * p1) + t * ((1 - t) * p1 + t * p2) , 0 <= t && t <= 1
-         * ```
-         * 这可以解释为分别从P0到P1和从P1到P2的线性Bézier曲线上相应点的线性插值。重新排列前面的等式得出：
-         * ```
-         * B(t) = (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2 , 0 <= t && t <= 1
-         * ```
-         * Bézier曲线关于t的导数是
-         * ```
-         * B'(t) = 2 * (1 - t) * (p1 - p0) + 2 * t * (p2 - p1)
-         * ```
-         * 从中可以得出结论：在P0和P2处曲线的切线在P 1处相交。随着t从0增加到1，曲线沿P1的方向从P0偏离，然后从P1的方向弯曲到P2。
-         *
-         * Bézier曲线关于t的二阶导数是
-         * ```
-         * B''(t) = 2 * (p2 - 2 * p1 + p0)
-         * ```
-         *
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         * @param p2 点2
-         */
-        quadratic(t: number, p0: number, p1: number, p2: number): number;
-        /**
-         * 二次Bézier曲线关于t的导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         * @param p2 点2
-         */
-        quadraticDerivative(t: number, p0: number, p1: number, p2: number): number;
-        /**
-         * 二次Bézier曲线关于t的二阶导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         * @param p2 点2
-         */
-        quadraticSecondDerivative(t: number, p0: number, p1: number, p2: number): number;
-        /**
-         * 立方Bézier曲线
-         *
-         * 平面中或高维空间中（其实一维也是成立的，这里就是使用一维计算）的四个点P0，P1，P2和P3定义了三次Bézier曲线。
-         * 曲线开始于P0朝向P1并且从P2的方向到达P3。通常不会通过P1或P2; 这些点只是为了提供方向信息。
-         * P1和P2之间的距离在转向P2之前确定曲线向P1移动的“多远”和“多快” 。
-         *
-         * 对于由点Pi，Pj和Pk定义的二次Bézier曲线，可以将Bpipjpk(t)写成三次Bézier曲线，它可以定义为两条二次Bézier曲线的仿射组合：
-         * ```
-         * B(t) = (1 - t) * Bp0p1p2(t) + t * Bp1p2p3(t) , 0 <= t && t <= 1
-         * ```
-         * 曲线的显式形式是：
-         * ```
-         * B(t) = (1 - t) * (1 - t) * (1 - t) * p0 + 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t * p3 , 0 <= t && t <= 1
-         * ```
-         * 对于P1和P2的一些选择，曲线可以相交，或者包含尖点。
-         *
-         * 三次Bézier曲线相对于t的导数是
-         * ```
-         * B'(t) = 3 * (1 - t) * (1 - t) * (p1 - p0) + 6 * (1 - t) * t * (p2 - p1) + 3 * t * t * (p3 - p2);
-         * ```
-         * 三次Bézier曲线关于t的二阶导数是
-         * ```
-         * 6 * (1 - t) * (p2 - 2 * p1 + p0) + 6 * t * (p3 - 2 * p2 + p1);
-         * ```
-         *
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         * @param p2 点2
-         * @param p3 点3
-         */
-        cubic(t: number, p0: number, p1: number, p2: number, p3: number): number;
-        /**
-         * 三次Bézier曲线关于t的导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         * @param p2 点2
-         * @param p3 点3
-         */
-        cubicDerivative(t: number, p0: number, p1: number, p2: number, p3: number): number;
-        /**
-         * 三次Bézier曲线关于t的二阶导数
-         * @param t 插值度
-         * @param p0 点0
-         * @param p1 点1
-         * @param p2 点2
-         */
-        cubicSecondDerivative(t: number, p0: number, p1: number, p2: number, p3: number): number;
-        /**
-         * n次Bézier曲线
-         *
-         * 一般定义
-         *
-         * Bézier曲线可以定义为任意度n。
-         *
-         * @param t 插值度
-         * @param ps 点列表 ps.length == n+1
-         * @param processs 收集中间过程数据，可用作Bézier曲线动画数据
-         */
-        bn(t: number, ps: number[], processs?: number[][]): number;
-        /**
-         * n次Bézier曲线关于t的导数
-         *
-         * 一般定义
-         *
-         * Bézier曲线可以定义为任意度n。
-         *
-         * @param t 插值度
-         * @param ps 点列表 ps.length == n+1
-         */
-        bnDerivative(t: number, ps: number[]): number;
-        /**
-         * n次Bézier曲线关于t的二阶导数
-         *
-         * 一般定义
-         *
-         * Bézier曲线可以定义为任意度n。
-         *
-         * @param t 插值度
-         * @param ps 点列表 ps.length == n+1
-         */
-        bnSecondDerivative(t: number, ps: number[]): number;
-        /**
-         * n次Bézier曲线关于t的dn阶导数
-         *
-         * Bézier曲线可以定义为任意度n。
-         *
-         * @param t 插值度
-         * @param dn 求导次数
-         * @param ps 点列表     ps.length == n+1
-         */
-        bnND(t: number, dn: number, ps: number[]): number;
-        /**
-         * 获取曲线在指定插值度上的值
-         * @param t 插值度
-         * @param ps 点列表
-         */
-        getValue(t: number, ps: number[]): number;
-        /**
-         * 获取曲线在指定插值度上的导数(斜率)
-         * @param t 插值度
-         * @param ps 点列表
-         */
-        getDerivative(t: number, ps: number[]): number;
-        /**
-         * 获取曲线在指定插值度上的二阶导数
-         * @param t 插值度
-         * @param ps 点列表
-         */
-        getSecondDerivative(t: number, ps: number[]): number;
-        /**
-         * 查找区间内极值列表
-         *
-         * @param ps 点列表
-         * @param numSamples 采样次数，用于分段查找极值
-         * @param precision  查找精度
-         *
-         * @returns 极值列表 {} {ts: 极值插值度列表,vs: 极值值列表}
-         */
-        getExtremums(ps: number[], numSamples?: number, precision?: number): {
-            ts: number[];
-            vs: number[];
-        };
-        /**
-         * 获取单调区间列表
-         * @returns {} {ts: 区间节点插值度列表,vs: 区间节点值列表}
-         */
-        getMonotoneIntervals(ps: number[], numSamples?: number, precision?: number): {
-            ts: number[];
-            vs: number[];
-        };
-        /**
-         * 获取目标值所在的插值度T
-         *
-         * @param targetV 目标值
-         * @param ps 点列表
-         * @param numSamples 分段数量，用于分段查找，用于解决寻找多个解、是否无解等问题；过少的分段可能会造成找不到存在的解决，过多的分段将会造成性能很差。
-         * @param precision  查找精度
-         *
-         * @returns 返回解数组
-         */
-        getTFromValue(targetV: number, ps: number[], numSamples?: number, precision?: number): number[];
-        /**
-         * 分割曲线
-         *
-         * 在曲线插值度t位置分割为两条连接起来与原曲线完全重合的曲线
-         *
-         * @param t 分割位置（插值度）
-         * @param ps 被分割曲线点列表
-         * @returns 返回两条曲线组成的数组
-         */
-        split(t: number, ps: number[]): number[][];
-        /**
-         * 合并曲线
-         *
-         * 合并两条连接的曲线为一条曲线并且可以还原为分割前的曲线
-         *
-         * @param fps 第一条曲线点列表
-         * @param sps 第二条曲线点列表
-         * @param mergeType 合并方式。mergeType = 0时进行还原合并，还原拆分之前的曲线；mergeType = 1时进行拟合合并，合并后的曲线会经过两条曲线的连接点；
-         */
-        merge(fps: number[], sps: number[], mergeType?: number): number[];
-        /**
-         * 获取曲线样本数据
-         *
-         * 这些点可用于连线来拟合曲线。
-         *
-         * @param ps 点列表
-         * @param num 采样次数 ，采样点分别为[0,1/num,2/num,....,(num-1)/num,1]
-         */
-        getSamples(ps: number[], num?: number): number[];
-    }
-}
-declare namespace feng3d {
-    /**
-     * 动画关键帧
-     */
-    class AnimationCurveKeyframe {
-        /**
-         * 时间轴的位置 [0,1]
-         */
-        time: number;
-        /**
-         * 值 [0,1]
-         */
-        value: number;
-        /**
-         * 斜率
-         */
-        tangent: number;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 动画曲线
-     *
-     * 基于时间轴的连续三阶Bézier曲线
-     */
-    class AnimationCurve {
-        /**
-         * 最大tan值，超出该值后将会变成分段
-         */
-        maxtan: number;
-        private keys;
-        /**
-         * 关键点数量
-         */
-        readonly numKeys: number;
-        /**
-         * 添加关键点
-         *
-         * 添加关键点后将会执行按t进行排序
-         *
-         * @param key 关键点
-         */
-        addKey(key: AnimationCurveKeyframe): void;
-        /**
-         * 关键点排序
-         *
-         * 当移动关键点或者新增关键点时需要再次排序
-         */
-        sort(): void;
-        /**
-         * 删除关键点
-         * @param key 关键点
-         */
-        deleteKey(key: AnimationCurveKeyframe): void;
-        /**
-         * 获取关键点
-         * @param index 索引
-         */
-        getKey(index: number): AnimationCurveKeyframe;
-        /**
-         * 获取关键点索引
-         * @param key 关键点
-         */
-        indexOfKeys(key: AnimationCurveKeyframe): number;
-        /**
-         * 获取曲线上点信息
-         * @param t 时间轴的位置 [0,1]
-         */
-        getPoint(t: number): {
-            time: number;
-            value: number;
-            tangent: number;
-        };
-        /**
-         * 获取值
-         * @param t 时间轴的位置 [0,1]
-         */
-        getValue(t: number): number;
-        /**
-         * 查找关键点
-         * @param t 时间轴的位置 [0,1]
-         * @param y 值
-         * @param precision 查找精度
-         */
-        findKey(t: number, y: number, precision: number): AnimationCurveKeyframe;
-        /**
-         * 添加曲线上的关键点
-         *
-         * 如果该点在曲线上，则添加关键点
-         *
-         * @param time 时间轴的位置 [0,1]
-         * @param value 值
-         * @param precision 查找进度
-         */
-        addKeyAtCurve(time: number, value: number, precision: number): {
-            time: number;
-            value: number;
-            tangent: number;
-        };
-        /**
-         * 获取曲线样本数据
-         *
-         * 这些点可用于连线来拟合曲线。
-         *
-         * @param num 采样次数 ，采样点分别为[0,1/num,2/num,....,(num-1)/num,1]
-         */
-        getSamples(num?: number): number[];
-    }
-}
-declare namespace feng3d {
-    /**
      * 颜色
      */
     class Color3 {
@@ -3824,6 +3458,698 @@ declare namespace feng3d {
          * 克隆
          */
         clone(): TriangleGeometry;
+    }
+}
+declare namespace feng3d {
+    class MinMaxGradientColor implements IMinMaxGradient {
+        /**
+         * 常量颜色值
+         */
+        color: Color4;
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): Color4;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 从最大最小常量颜色中随机
+     */
+    class RandomBetweenTwoColors implements IMinMaxGradient {
+        /**
+         * 最小颜色值
+         */
+        colorMin: Color4;
+        /**
+         * 最大颜色值
+         */
+        colorMax: Color4;
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): Color4;
+    }
+}
+declare namespace feng3d {
+    class RandomBetweenTwoGradients implements IMinMaxGradient {
+        /**
+         * 最小颜色渐变
+         */
+        gradientMin: Gradient;
+        /**
+         * 最大颜色渐变
+         */
+        gradientMax: Gradient;
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): Color4;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 从颜色渐变中进行随机
+     */
+    class MinMaxGradientRandomColor implements IMinMaxGradient {
+        /**
+         * 颜色渐变
+         */
+        gradient: Gradient;
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): Color4;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 渐变模式
+     */
+    enum GradientMode {
+        /**
+         * 混合
+         */
+        Blend = 0,
+        /**
+         * 阶梯
+         */
+        Fixed = 1
+    }
+}
+declare namespace feng3d {
+    /**
+     * 渐变透明键
+     */
+    interface GradientAlphaKey {
+        /**
+         * 透明值
+         */
+        alpha: number;
+        /**
+         * 时间
+         */
+        time: number;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 渐变颜色键
+     */
+    interface GradientColorKey {
+        /**
+         * 颜色值
+         */
+        color: Color3;
+        /**
+         * 时间
+         */
+        time: number;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 最大最小颜色渐变模式
+     */
+    enum MinMaxGradientMode {
+        /**
+         * 颜色常量
+         */
+        Color = 0,
+        /**
+         * 颜色渐变
+         */
+        Gradient = 1,
+        /**
+         * 从最大最小常量颜色中随机
+         */
+        RandomBetweenTwoColors = 2,
+        /**
+         * 从最大最小颜色渐变值中随机
+         */
+        RandomBetweenTwoGradients = 3,
+        /**
+         * 从颜色渐变中进行随机
+         */
+        RandomColor = 4
+    }
+}
+declare namespace feng3d {
+    /**
+     * 颜色渐变
+     */
+    class Gradient implements IMinMaxGradient {
+        /**
+         * 渐变模式
+         */
+        mode: GradientMode;
+        /**
+         * 在渐变中定义的所有alpha键。
+         */
+        alphaKeys: GradientAlphaKey[];
+        /**
+         * 在渐变中定义的所有color键。
+         */
+        colorKeys: GradientColorKey[];
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): Color4;
+        /**
+         * 获取透明度
+         * @param time 时间
+         */
+        getAlpha(time: number): any;
+        /**
+         * 获取透明度
+         * @param time 时间
+         */
+        getColor(time: number): Color3;
+        /**
+         * 获取标准 alpha 键列表
+         */
+        getRealAlphaKeys(): GradientAlphaKey[];
+        /**
+         * 获取标准 color 键列表
+         */
+        getRealColorKeys(): GradientColorKey[];
+    }
+}
+declare namespace feng3d {
+    interface IMinMaxGradient {
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): Color4;
+    }
+    /**
+     * 最大最小颜色渐变
+     */
+    class MinMaxGradient {
+        /**
+         * 模式
+         */
+        mode: MinMaxGradientMode;
+        /**
+         * 颜色渐变
+         */
+        minMaxGradient: IMinMaxGradient;
+        private _minMaxGradientColor;
+        private _gradient;
+        private _randomBetweenTwoColors;
+        private _randomBetweenTwoGradients;
+        private _minMaxGradientRandomColor;
+        private _onModeChanged;
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): Color4;
+    }
+}
+declare namespace feng3d {
+    /**
+     * Bézier曲线
+     */
+    var bezierCurve: BezierCurve;
+    /**
+     * Bézier曲线
+     * @see https://en.wikipedia.org/wiki/B%C3%A9zier_curve
+     * @author feng / http://feng3d.com 03/06/2018
+     */
+    class BezierCurve {
+        /**
+         * 线性Bézier曲线
+         * 给定不同的点P0和P1，线性Bézier曲线就是这两个点之间的直线。曲线由下式给出
+         * ```
+         * B(t) = p0 + t * (p1 - p0) = (1 - t) * p0 + t * p1 , 0 <= t && t <= 1
+         * ```
+         * 相当于线性插值
+         *
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         */
+        linear(t: number, p0: number, p1: number): number;
+        /**
+         * 线性Bézier曲线关于t的导数
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         */
+        linearDerivative(t: number, p0: number, p1: number): number;
+        /**
+         * 线性Bézier曲线关于t的二阶导数
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         */
+        linearSecondDerivative(t: number, p0: number, p1: number): number;
+        /**
+         * 二次Bézier曲线
+         *
+         * 二次Bézier曲线是由函数B（t）跟踪的路径，给定点P0，P1和P2，
+         * ```
+         * B(t) = (1 - t) * ((1 - t) * p0 + t * p1) + t * ((1 - t) * p1 + t * p2) , 0 <= t && t <= 1
+         * ```
+         * 这可以解释为分别从P0到P1和从P1到P2的线性Bézier曲线上相应点的线性插值。重新排列前面的等式得出：
+         * ```
+         * B(t) = (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2 , 0 <= t && t <= 1
+         * ```
+         * Bézier曲线关于t的导数是
+         * ```
+         * B'(t) = 2 * (1 - t) * (p1 - p0) + 2 * t * (p2 - p1)
+         * ```
+         * 从中可以得出结论：在P0和P2处曲线的切线在P 1处相交。随着t从0增加到1，曲线沿P1的方向从P0偏离，然后从P1的方向弯曲到P2。
+         *
+         * Bézier曲线关于t的二阶导数是
+         * ```
+         * B''(t) = 2 * (p2 - 2 * p1 + p0)
+         * ```
+         *
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         * @param p2 点2
+         */
+        quadratic(t: number, p0: number, p1: number, p2: number): number;
+        /**
+         * 二次Bézier曲线关于t的导数
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         * @param p2 点2
+         */
+        quadraticDerivative(t: number, p0: number, p1: number, p2: number): number;
+        /**
+         * 二次Bézier曲线关于t的二阶导数
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         * @param p2 点2
+         */
+        quadraticSecondDerivative(t: number, p0: number, p1: number, p2: number): number;
+        /**
+         * 立方Bézier曲线
+         *
+         * 平面中或高维空间中（其实一维也是成立的，这里就是使用一维计算）的四个点P0，P1，P2和P3定义了三次Bézier曲线。
+         * 曲线开始于P0朝向P1并且从P2的方向到达P3。通常不会通过P1或P2; 这些点只是为了提供方向信息。
+         * P1和P2之间的距离在转向P2之前确定曲线向P1移动的“多远”和“多快” 。
+         *
+         * 对于由点Pi，Pj和Pk定义的二次Bézier曲线，可以将Bpipjpk(t)写成三次Bézier曲线，它可以定义为两条二次Bézier曲线的仿射组合：
+         * ```
+         * B(t) = (1 - t) * Bp0p1p2(t) + t * Bp1p2p3(t) , 0 <= t && t <= 1
+         * ```
+         * 曲线的显式形式是：
+         * ```
+         * B(t) = (1 - t) * (1 - t) * (1 - t) * p0 + 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t * p3 , 0 <= t && t <= 1
+         * ```
+         * 对于P1和P2的一些选择，曲线可以相交，或者包含尖点。
+         *
+         * 三次Bézier曲线相对于t的导数是
+         * ```
+         * B'(t) = 3 * (1 - t) * (1 - t) * (p1 - p0) + 6 * (1 - t) * t * (p2 - p1) + 3 * t * t * (p3 - p2);
+         * ```
+         * 三次Bézier曲线关于t的二阶导数是
+         * ```
+         * 6 * (1 - t) * (p2 - 2 * p1 + p0) + 6 * t * (p3 - 2 * p2 + p1);
+         * ```
+         *
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         * @param p2 点2
+         * @param p3 点3
+         */
+        cubic(t: number, p0: number, p1: number, p2: number, p3: number): number;
+        /**
+         * 三次Bézier曲线关于t的导数
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         * @param p2 点2
+         * @param p3 点3
+         */
+        cubicDerivative(t: number, p0: number, p1: number, p2: number, p3: number): number;
+        /**
+         * 三次Bézier曲线关于t的二阶导数
+         * @param t 插值度
+         * @param p0 点0
+         * @param p1 点1
+         * @param p2 点2
+         */
+        cubicSecondDerivative(t: number, p0: number, p1: number, p2: number, p3: number): number;
+        /**
+         * n次Bézier曲线
+         *
+         * 一般定义
+         *
+         * Bézier曲线可以定义为任意度n。
+         *
+         * @param t 插值度
+         * @param ps 点列表 ps.length == n+1
+         * @param processs 收集中间过程数据，可用作Bézier曲线动画数据
+         */
+        bn(t: number, ps: number[], processs?: number[][]): number;
+        /**
+         * n次Bézier曲线关于t的导数
+         *
+         * 一般定义
+         *
+         * Bézier曲线可以定义为任意度n。
+         *
+         * @param t 插值度
+         * @param ps 点列表 ps.length == n+1
+         */
+        bnDerivative(t: number, ps: number[]): number;
+        /**
+         * n次Bézier曲线关于t的二阶导数
+         *
+         * 一般定义
+         *
+         * Bézier曲线可以定义为任意度n。
+         *
+         * @param t 插值度
+         * @param ps 点列表 ps.length == n+1
+         */
+        bnSecondDerivative(t: number, ps: number[]): number;
+        /**
+         * n次Bézier曲线关于t的dn阶导数
+         *
+         * Bézier曲线可以定义为任意度n。
+         *
+         * @param t 插值度
+         * @param dn 求导次数
+         * @param ps 点列表     ps.length == n+1
+         */
+        bnND(t: number, dn: number, ps: number[]): number;
+        /**
+         * 获取曲线在指定插值度上的值
+         * @param t 插值度
+         * @param ps 点列表
+         */
+        getValue(t: number, ps: number[]): number;
+        /**
+         * 获取曲线在指定插值度上的导数(斜率)
+         * @param t 插值度
+         * @param ps 点列表
+         */
+        getDerivative(t: number, ps: number[]): number;
+        /**
+         * 获取曲线在指定插值度上的二阶导数
+         * @param t 插值度
+         * @param ps 点列表
+         */
+        getSecondDerivative(t: number, ps: number[]): number;
+        /**
+         * 查找区间内极值列表
+         *
+         * @param ps 点列表
+         * @param numSamples 采样次数，用于分段查找极值
+         * @param precision  查找精度
+         *
+         * @returns 极值列表 {} {ts: 极值插值度列表,vs: 极值值列表}
+         */
+        getExtremums(ps: number[], numSamples?: number, precision?: number): {
+            ts: number[];
+            vs: number[];
+        };
+        /**
+         * 获取单调区间列表
+         * @returns {} {ts: 区间节点插值度列表,vs: 区间节点值列表}
+         */
+        getMonotoneIntervals(ps: number[], numSamples?: number, precision?: number): {
+            ts: number[];
+            vs: number[];
+        };
+        /**
+         * 获取目标值所在的插值度T
+         *
+         * @param targetV 目标值
+         * @param ps 点列表
+         * @param numSamples 分段数量，用于分段查找，用于解决寻找多个解、是否无解等问题；过少的分段可能会造成找不到存在的解决，过多的分段将会造成性能很差。
+         * @param precision  查找精度
+         *
+         * @returns 返回解数组
+         */
+        getTFromValue(targetV: number, ps: number[], numSamples?: number, precision?: number): number[];
+        /**
+         * 分割曲线
+         *
+         * 在曲线插值度t位置分割为两条连接起来与原曲线完全重合的曲线
+         *
+         * @param t 分割位置（插值度）
+         * @param ps 被分割曲线点列表
+         * @returns 返回两条曲线组成的数组
+         */
+        split(t: number, ps: number[]): number[][];
+        /**
+         * 合并曲线
+         *
+         * 合并两条连接的曲线为一条曲线并且可以还原为分割前的曲线
+         *
+         * @param fps 第一条曲线点列表
+         * @param sps 第二条曲线点列表
+         * @param mergeType 合并方式。mergeType = 0时进行还原合并，还原拆分之前的曲线；mergeType = 1时进行拟合合并，合并后的曲线会经过两条曲线的连接点；
+         */
+        merge(fps: number[], sps: number[], mergeType?: number): number[];
+        /**
+         * 获取曲线样本数据
+         *
+         * 这些点可用于连线来拟合曲线。
+         *
+         * @param ps 点列表
+         * @param num 采样次数 ，采样点分别为[0,1/num,2/num,....,(num-1)/num,1]
+         */
+        getSamples(ps: number[], num?: number): number[];
+    }
+}
+declare namespace feng3d {
+    /**
+     * 动画关键帧
+     */
+    class AnimationCurveKeyframe {
+        /**
+         * 时间轴的位置 [0,1]
+         */
+        time: number;
+        /**
+         * 值 [0,1]
+         */
+        value: number;
+        /**
+         * 斜率
+         */
+        tangent: number;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 动画曲线
+     *
+     * 基于时间轴的连续三阶Bézier曲线
+     */
+    class AnimationCurve {
+        /**
+         * 最大tan值，超出该值后将会变成分段
+         */
+        maxtan: number;
+        private keys;
+        /**
+         * 关键点数量
+         */
+        readonly numKeys: number;
+        /**
+         * 添加关键点
+         *
+         * 添加关键点后将会执行按t进行排序
+         *
+         * @param key 关键点
+         */
+        addKey(key: AnimationCurveKeyframe): void;
+        /**
+         * 关键点排序
+         *
+         * 当移动关键点或者新增关键点时需要再次排序
+         */
+        sort(): void;
+        /**
+         * 删除关键点
+         * @param key 关键点
+         */
+        deleteKey(key: AnimationCurveKeyframe): void;
+        /**
+         * 获取关键点
+         * @param index 索引
+         */
+        getKey(index: number): AnimationCurveKeyframe;
+        /**
+         * 获取关键点索引
+         * @param key 关键点
+         */
+        indexOfKeys(key: AnimationCurveKeyframe): number;
+        /**
+         * 获取曲线上点信息
+         * @param t 时间轴的位置 [0,1]
+         */
+        getPoint(t: number): {
+            time: number;
+            value: number;
+            tangent: number;
+        };
+        /**
+         * 获取值
+         * @param t 时间轴的位置 [0,1]
+         */
+        getValue(t: number): number;
+        /**
+         * 查找关键点
+         * @param t 时间轴的位置 [0,1]
+         * @param y 值
+         * @param precision 查找精度
+         */
+        findKey(t: number, y: number, precision: number): AnimationCurveKeyframe;
+        /**
+         * 添加曲线上的关键点
+         *
+         * 如果该点在曲线上，则添加关键点
+         *
+         * @param time 时间轴的位置 [0,1]
+         * @param value 值
+         * @param precision 查找进度
+         */
+        addKeyAtCurve(time: number, value: number, precision: number): {
+            time: number;
+            value: number;
+            tangent: number;
+        };
+        /**
+         * 获取曲线样本数据
+         *
+         * 这些点可用于连线来拟合曲线。
+         *
+         * @param num 采样次数 ，采样点分别为[0,1/num,2/num,....,(num-1)/num,1]
+         */
+        getSamples(num?: number): number[];
+    }
+}
+declare namespace feng3d {
+    /**
+     * 曲线模式
+     */
+    enum MinMaxCurveMode {
+        /**
+         * 常量
+         */
+        Constant = 0,
+        /**
+         * 曲线
+         */
+        Curve = 1,
+        /**
+         * 两个曲线中取随机值
+         */
+        RandomBetweenTwoCurves = 2,
+        /**
+         * 两个常量间取随机值
+         */
+        RandomBetweenTwoConstants = 3
+    }
+}
+declare namespace feng3d {
+    /**
+     * 常量曲线
+     */
+    class MinMaxCurveConstant implements IMinMaxCurve {
+        /**
+         * 常量
+         */
+        value: number;
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): number;
+    }
+}
+declare namespace feng3d {
+    /**
+     * Wrap模式，处理超出范围情况
+     */
+    enum WrapMode {
+        /**
+         *
+         */
+        Loop = 0,
+        PingPong = 1,
+        Clamp = 2
+    }
+}
+declare namespace feng3d {
+    /**
+     * 两个常量间取随机值
+     */
+    class RandomBetweenTwoConstants implements IMinMaxCurve {
+        /**
+         * 最小值
+         */
+        minValue: number;
+        /**
+         * 最大值
+         */
+        maxValue: number;
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): number;
+    }
+}
+declare namespace feng3d {
+    class RandomBetweenTwoCurves implements IMinMaxCurve {
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): number;
+    }
+}
+declare namespace feng3d {
+    interface IMinMaxCurve {
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): number;
+    }
+    /**
+     * 最大最小曲线
+     */
+    class MinMaxCurve {
+        /**
+         * 模式
+         */
+        mode: MinMaxCurveMode;
+        /**
+         * 曲线
+         */
+        minMaxCurve: IMinMaxCurve;
+        private _minMaxCurveConstant;
+        private _curve;
+        private _randomBetweenTwoConstants;
+        private _randomBetweenTwoCurves;
+        private _onModeChanged;
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): number;
     }
 }
 declare namespace feng3d {
@@ -8831,7 +9157,6 @@ declare namespace feng3d {
         dispose(): void;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
         protected _gameObject: GameObject;
-        private _tag;
     }
 }
 declare namespace feng3d {
@@ -12547,332 +12872,6 @@ declare namespace feng3d {
          * @param particle 粒子
          */
         updateParticleState(particle: Particle, preTime: number, time: number): void;
-    }
-}
-declare namespace feng3d {
-    class MinMaxGradientColor implements IMinMaxGradient {
-        /**
-         * 常量颜色值
-         */
-        color: Color4;
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): Color4;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 从最大最小常量颜色中随机
-     */
-    class RandomBetweenTwoColors implements IMinMaxGradient {
-        /**
-         * 最小颜色值
-         */
-        colorMin: Color4;
-        /**
-         * 最大颜色值
-         */
-        colorMax: Color4;
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): Color4;
-    }
-}
-declare namespace feng3d {
-    class RandomBetweenTwoGradients implements IMinMaxGradient {
-        /**
-         * 最小颜色渐变
-         */
-        gradientMin: Gradient;
-        /**
-         * 最大颜色渐变
-         */
-        gradientMax: Gradient;
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): Color4;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 从颜色渐变中进行随机
-     */
-    class MinMaxGradientRandomColor implements IMinMaxGradient {
-        /**
-         * 颜色渐变
-         */
-        gradient: Gradient;
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): Color4;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 渐变模式
-     */
-    enum GradientMode {
-        /**
-         * 混合
-         */
-        Blend = 0,
-        /**
-         * 阶梯
-         */
-        Fixed = 1
-    }
-}
-declare namespace feng3d {
-    /**
-     * 渐变透明键
-     */
-    interface GradientAlphaKey {
-        /**
-         * 透明值
-         */
-        alpha: number;
-        /**
-         * 时间
-         */
-        time: number;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 渐变颜色键
-     */
-    interface GradientColorKey {
-        /**
-         * 颜色值
-         */
-        color: Color3;
-        /**
-         * 时间
-         */
-        time: number;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 最大最小颜色渐变模式
-     */
-    enum MinMaxGradientMode {
-        /**
-         * 颜色常量
-         */
-        Color = 0,
-        /**
-         * 颜色渐变
-         */
-        Gradient = 1,
-        /**
-         * 从最大最小常量颜色中随机
-         */
-        RandomBetweenTwoColors = 2,
-        /**
-         * 从最大最小颜色渐变值中随机
-         */
-        RandomBetweenTwoGradients = 3,
-        /**
-         * 从颜色渐变中进行随机
-         */
-        RandomColor = 4
-    }
-}
-declare namespace feng3d {
-    /**
-     * 颜色渐变
-     */
-    class Gradient implements IMinMaxGradient {
-        /**
-         * 渐变模式
-         */
-        mode: GradientMode;
-        /**
-         * 在渐变中定义的所有alpha键。
-         */
-        alphaKeys: GradientAlphaKey[];
-        /**
-         * 在渐变中定义的所有color键。
-         */
-        colorKeys: GradientColorKey[];
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): Color4;
-        /**
-         * 获取透明度
-         * @param time 时间
-         */
-        getAlpha(time: number): any;
-        /**
-         * 获取透明度
-         * @param time 时间
-         */
-        getColor(time: number): Color3;
-        /**
-         * 获取标准 alpha 键列表
-         */
-        getRealAlphaKeys(): GradientAlphaKey[];
-        /**
-         * 获取标准 color 键列表
-         */
-        getRealColorKeys(): GradientColorKey[];
-    }
-}
-declare namespace feng3d {
-    interface IMinMaxGradient {
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): Color4;
-    }
-    /**
-     * 最大最小颜色渐变
-     */
-    class MinMaxGradient {
-        /**
-         * 模式
-         */
-        mode: MinMaxGradientMode;
-        /**
-         * 颜色渐变
-         */
-        minMaxGradient: IMinMaxGradient;
-        private _minMaxGradientColor;
-        private _gradient;
-        private _randomBetweenTwoColors;
-        private _randomBetweenTwoGradients;
-        private _minMaxGradientRandomColor;
-        private _onModeChanged;
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): Color4;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 曲线模式
-     */
-    enum MinMaxCurveMode {
-        /**
-         * 常量
-         */
-        Constant = 0,
-        /**
-         * 曲线
-         */
-        Curve = 1,
-        /**
-         * 两个曲线中取随机值
-         */
-        RandomBetweenTwoCurves = 2,
-        /**
-         * 两个常量间取随机值
-         */
-        RandomBetweenTwoConstants = 3
-    }
-}
-declare namespace feng3d {
-    /**
-     * 常量曲线
-     */
-    class MinMaxCurveConstant implements IMinMaxCurve {
-        /**
-         * 常量
-         */
-        value: number;
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): number;
-    }
-}
-declare namespace feng3d {
-    /**
-     * Wrap模式，处理超出范围情况
-     */
-    enum WrapMode {
-        /**
-         *
-         */
-        Loop = 0,
-        PingPong = 1,
-        Clamp = 2
-    }
-}
-declare namespace feng3d {
-    /**
-     * 两个常量间取随机值
-     */
-    class RandomBetweenTwoConstants implements IMinMaxCurve {
-        /**
-         * 最小值
-         */
-        minValue: number;
-        /**
-         * 最大值
-         */
-        maxValue: number;
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): number;
-    }
-}
-declare namespace feng3d {
-    class RandomBetweenTwoCurves implements IMinMaxCurve {
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): number;
-    }
-}
-declare namespace feng3d {
-    interface IMinMaxCurve {
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): number;
-    }
-    /**
-     * 最大最小曲线
-     */
-    class MinMaxCurve {
-        /**
-         * 模式
-         */
-        mode: MinMaxCurveMode;
-        /**
-         * 曲线
-         */
-        minMaxCurve: IMinMaxCurve;
-        private _minMaxCurveConstant;
-        private _curve;
-        private _randomBetweenTwoConstants;
-        private _randomBetweenTwoCurves;
-        private _onModeChanged;
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): number;
     }
 }
 declare namespace feng3d {

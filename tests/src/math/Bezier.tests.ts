@@ -1,6 +1,6 @@
 QUnit.module("Bezier", () =>
 {
-    var bezier = feng3d.bezier;
+    var bezier = feng3d.bezierCurve;
     var equationSolving = feng3d.equationSolving;
     // 允许误差
     var deviation = 0.0000001;

@@ -34,14 +34,7 @@ namespace feng3d
          * The tag of this game object.
          */
         @serialize
-        get tag()
-        {
-            return this._tag;
-        }
-        set tag(value)
-        {
-            this._tag = value;
-        }
+        tag: string;
 
         /**
          * The Transform attached to this GameObject (null if there is none attached).
@@ -155,6 +148,5 @@ namespace feng3d
         //------------------------------------------
         // Private Properties
         //------------------------------------------
-        private _tag: string;
     }
 }

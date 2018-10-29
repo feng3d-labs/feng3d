@@ -17,12 +17,14 @@ namespace feng3d
         @oav()
         @serialize
         r = 1;
+
         /**
          * 绿[0,1]
          */
         @oav()
         @serialize
         g = 1;
+
         /**
          * 蓝[0,1]
          */

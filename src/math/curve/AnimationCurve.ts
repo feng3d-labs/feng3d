@@ -101,8 +101,8 @@ namespace feng3d
                     {
                         var ct = (t - prekey.time) / (key.time - prekey.time);
                         var sys = [ystart, ystart + tanstart * (xend - xstart) / 3, yend - tanend * (xend - xstart) / 3, yend];
-                        var fy = bezier.getValue(ct, sys);
-                        return { time: t, value: fy, tangent: bezier.getDerivative(ct, sys) / (xend - xstart) };
+                        var fy = bezierCurve.getValue(ct, sys);
+                        return { time: t, value: fy, tangent: bezierCurve.getDerivative(ct, sys) / (xend - xstart) };
                     } else
                     {
                         return { time: t, value: prekey.value, tangent: 0 };
