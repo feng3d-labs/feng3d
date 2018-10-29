@@ -27,6 +27,12 @@ namespace feng3d
         @serialize
         minMaxCurve: IMinMaxCurve = new MinMaxCurveConstant();
 
+        /**
+         * 曲线缩放比
+         */
+        @serialize
+        curveMultiplier = 1;
+
         private _minMaxCurveConstant: MinMaxCurveConstant;
         private _curve: AnimationCurve;
         private _randomBetweenTwoConstants: MinMaxCurveRandomBetweenTwoConstants;
@@ -58,6 +64,7 @@ namespace feng3d
         getValue(time: number)
         {
             var v = this.minMaxCurve.getValue(time);
+            if (this.mode == MinMaxCurveMode.Curve || this.mode == MinMaxCurveMode.RandomBetweenTwoCurves) v = this.curveMultiplier * v;
             return v;
         }
     }

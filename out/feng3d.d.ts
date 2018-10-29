@@ -5233,6 +5233,10 @@ declare namespace feng3d {
          * 曲线
          */
         minMaxCurve: IMinMaxCurve;
+        /**
+         * 曲线缩放比
+         */
+        curveMultiplier: number;
         private _minMaxCurveConstant;
         private _curve;
         private _randomBetweenTwoConstants;

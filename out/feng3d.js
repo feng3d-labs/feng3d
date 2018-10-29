@@ -10245,6 +10245,10 @@ var feng3d;
              * 曲线
              */
             this.minMaxCurve = new feng3d.MinMaxCurveConstant();
+            /**
+             * 曲线缩放比
+             */
+            this.curveMultiplier = 1;
         }
         MinMaxCurve.prototype._onModeChanged = function () {
             switch (this.mode) {
@@ -10268,6 +10272,8 @@ var feng3d;
          */
         MinMaxCurve.prototype.getValue = function (time) {
             var v = this.minMaxCurve.getValue(time);
+            if (this.mode == feng3d.MinMaxCurveMode.Curve || this.mode == feng3d.MinMaxCurveMode.RandomBetweenTwoCurves)
+                v = this.curveMultiplier * v;
             return v;
         };
         __decorate([
@@ -10277,6 +10283,9 @@ var feng3d;
         __decorate([
             feng3d.serialize
         ], MinMaxCurve.prototype, "minMaxCurve", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurve.prototype, "curveMultiplier", void 0);
         return MinMaxCurve;
     }());
     feng3d.MinMaxCurve = MinMaxCurve;
