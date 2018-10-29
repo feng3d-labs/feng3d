@@ -4755,11 +4755,11 @@ declare namespace feng3d {
         /**
          * 调整 alpha 键列表
          */
-        private getRealAlphaKeys;
+        updateAlphaKeys(): void;
         /**
-         * 获取标准 color 键列表
+         * 更新 color 键列表
          */
-        private getRealColorKeys;
+        updateColorKeys(): void;
     }
 }
 declare namespace feng3d {

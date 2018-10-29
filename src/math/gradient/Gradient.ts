@@ -16,7 +16,7 @@ namespace feng3d
          */
         @serialize
         get alphaKeys() { return this._alphaKeys.concat(); }
-        set alphaKeys(v) { this._alphaKeys = this.getRealAlphaKeys(v); }
+        set alphaKeys(v) { this._alphaKeys = v; this.updateAlphaKeys(); }
         private _alphaKeys: GradientAlphaKey[] = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
 
         /**
@@ -24,7 +24,7 @@ namespace feng3d
          */
         @serialize
         get colorKeys() { return this._colorKeys.concat(); }
-        set colorKeys(v) { this._colorKeys = this.getRealColorKeys(v) }
+        set colorKeys(v) { this._colorKeys = v; this.updateColorKeys() }
 
         private _colorKeys: GradientColorKey[] = [{ color: new Color3(1, 1, 1), time: 0 }, { color: new Color3(1, 1, 1), time: 1 }];
 
@@ -46,6 +46,10 @@ namespace feng3d
         getAlpha(time: number)
         {
             var alphaKeys = this._alphaKeys;
+            if (alphaKeys.length = 1) return alphaKeys[0].alpha;
+            if (time <= alphaKeys[0].time) return alphaKeys[0].alpha;
+            if (time >= alphaKeys[alphaKeys.length - 1].time) return alphaKeys[alphaKeys.length - 1].alpha;
+
             for (let i = 0, n = alphaKeys.length - 1; i < n; i++)
             {
                 var t = alphaKeys[i].time, v = alphaKeys[i].alpha, nt = alphaKeys[i + 1].time, nv = alphaKeys[i + 1].alpha;
@@ -67,6 +71,10 @@ namespace feng3d
         getColor(time: number)
         {
             var colorKeys = this._colorKeys;
+            if (colorKeys.length = 1) return colorKeys[0].color;
+            if (time <= colorKeys[0].time) return colorKeys[0].color;
+            if (time >= colorKeys[colorKeys.length - 1].time) return colorKeys[colorKeys.length - 1].color;
+
             for (let i = 0, n = colorKeys.length - 1; i < n; i++)
             {
                 var t = colorKeys[i].time, v = colorKeys[i].color, nt = colorKeys[i + 1].time, nv = colorKeys[i + 1].color;
@@ -84,9 +92,9 @@ namespace feng3d
         /**
          * 调整 alpha 键列表
          */
-        private getRealAlphaKeys(alphaKeys: GradientAlphaKey[])
+        updateAlphaKeys()
         {
-            alphaKeys = alphaKeys.concat().sort((a, b) => a.time - b.time);
+            var alphaKeys = this._alphaKeys.concat().sort((a, b) => a.time - b.time);
             if (alphaKeys.length == 0)
             {
                 alphaKeys = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
@@ -102,15 +110,15 @@ namespace feng3d
             {
                 alphaKeys.push({ time: 1, alpha: alphaKeys[alphaKeys.length - 1].alpha });
             }
-            return alphaKeys;
+            this._alphaKeys = alphaKeys;
         }
 
         /**
-         * 获取标准 color 键列表
+         * 更新 color 键列表
          */
-        private getRealColorKeys(colorKeys: GradientColorKey[])
+        updateColorKeys()
         {
-            colorKeys = colorKeys.concat().sort((a, b) => a.time - b.time);
+            var colorKeys = this._colorKeys.concat().sort((a, b) => a.time - b.time);
             if (colorKeys.length == 0)
             {
                 colorKeys = [{ color: new Color3(1, 1, 1), time: 0 }, { color: new Color3(1, 1, 1), time: 1 }];
@@ -126,7 +134,7 @@ namespace feng3d
             {
                 colorKeys.push({ time: 1, color: colorKeys[colorKeys.length - 1].color });
             }
-            return colorKeys;
+            this._colorKeys = colorKeys;
         }
     }
 }
