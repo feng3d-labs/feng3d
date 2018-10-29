@@ -438,6 +438,582 @@ var ds;
 })(ds || (ds = {}));
 var feng3d;
 (function (feng3d) {
+    feng3d.FMath = {
+        /**
+         * 角度转弧度因子
+         */
+        DEG2RAD: Math.PI / 180,
+        /**
+         * 弧度转角度因子
+         */
+        RAD2DEG: 180 / Math.PI,
+        /**
+         * 默认精度
+         */
+        PRECISION: 0.000001,
+        /**
+         * http://www.broofa.com/Tools/Math.uuid.htm
+         */
+        uuid: function () {
+            // http://www.broofa.com/Tools/Math.uuid.htm
+            var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
+            var id = new Array(36);
+            var rnd = 0, r;
+            return function generateUUID() {
+                for (var i = 0; i < 36; i++) {
+                    if (i === 8 || i === 13 || i === 18 || i === 23) {
+                        id[i] = '-';
+                    }
+                    else if (i === 14) {
+                        id[i] = '4';
+                    }
+                    else {
+                        if (rnd <= 0x02)
+                            rnd = 0x2000000 + (Math.random() * 0x1000000) | 0;
+                        r = rnd & 0xf;
+                        rnd = rnd >> 4;
+                        id[i] = chars[(i === 19) ? (r & 0x3) | 0x8 : r];
+                    }
+                }
+                return id.join('');
+            };
+        }(),
+        clamp: function (value, min, max) {
+            return Math.max(min, Math.min(max, value));
+        },
+        /**
+         * compute euclidian modulo of m % n
+         * https://en.wikipedia.org/wiki/Modulo_operation
+         */
+        euclideanModulo: function (n, m) {
+            return ((n % m) + m) % m;
+        },
+        /**
+         * Linear mapping from range <a1, a2> to range <b1, b2>
+         */
+        mapLinear: function (x, a1, a2, b1, b2) {
+            return b1 + (x - a1) * (b2 - b1) / (a2 - a1);
+        },
+        /**
+         * https://en.wikipedia.org/wiki/Linear_interpolation
+         */
+        lerp: function (x, y, t) {
+            return (1 - t) * x + t * y;
+        },
+        /**
+         * http://en.wikipedia.org/wiki/Smoothstep
+         */
+        smoothstep: function (x, min, max) {
+            if (x <= min)
+                return 0;
+            if (x >= max)
+                return 1;
+            x = (x - min) / (max - min);
+            return x * x * (3 - 2 * x);
+        },
+        smootherstep: function (x, min, max) {
+            if (x <= min)
+                return 0;
+            if (x >= max)
+                return 1;
+            x = (x - min) / (max - min);
+            return x * x * x * (x * (x * 6 - 15) + 10);
+        },
+        /**
+         * Random integer from <low, high> interval
+         */
+        randInt: function (low, high) {
+            return low + Math.floor(Math.random() * (high - low + 1));
+        },
+        /**
+         * Random float from <low, high> interval
+         */
+        randFloat: function (low, high) {
+            return low + Math.random() * (high - low);
+        },
+        /**
+         * Random float from <-range/2, range/2> interval
+         */
+        randFloatSpread: function (range) {
+            return range * (0.5 - Math.random());
+        },
+        /**
+         * 角度转换为弧度
+         */
+        degToRad: function (degrees) {
+            return degrees * this.DEG2RAD;
+        },
+        radToDeg: function (radians) {
+            return radians * this.RAD2DEG;
+        },
+        isPowerOfTwo: function (value) {
+            return (value & (value - 1)) === 0 && value !== 0;
+        },
+        nearestPowerOfTwo: function (value) {
+            return Math.pow(2, Math.round(Math.log(value) / Math.LN2));
+        },
+        nextPowerOfTwo: function (value) {
+            value--;
+            value |= value >> 1;
+            value |= value >> 2;
+            value |= value >> 4;
+            value |= value >> 8;
+            value |= value >> 16;
+            value++;
+            return value;
+        },
+        /**
+         * 获取目标最近的值
+         *
+         * source增加或者减少整数倍precision后得到离target最近的值
+         *
+         * ```
+         * Math.toRound(71,0,5);//运算结果为1
+         * ```
+         *
+         * @param source 初始值
+         * @param target 目标值
+         * @param precision 精度
+         */
+        toRound: function (source, target, precision) {
+            if (precision === void 0) { precision = 360; }
+            return source + Math.round((target - source) / precision) * precision;
+        },
+        /**
+         * 比较两个Number是否相等
+         * @param a 数字a
+         * @param b 数字b
+         * @param precision 进度
+         */
+        equals: function (a, b, precision) {
+            if (precision == undefined)
+                precision = this.PRECISION;
+            return Math.abs(a - b) < precision;
+        }
+    };
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 方程求解
+     *
+     * 求解方程 f(x) == 0 在[a, b]上的解
+     *
+     * 参考：高等数学 第七版上册 第三章第八节 方程的近似解
+     * 当f(x)在区间 [a, b] 上连续，且f(a) * f(b) <= 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == 0
+     *
+     * 当f(x)在区间 [a, b] 上连续，且 (f(a) - y) * (f(b) - y) < 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == y
+     *
+     * @author feng / http://feng3d.com 05/06/2018
+     */
+    var EquationSolving = /** @class */ (function () {
+        function EquationSolving() {
+        }
+        /**
+         * 获取数字的(正负)符号
+         * @param n 数字
+         */
+        EquationSolving.prototype.getSign = function (n) {
+            return n > 0 ? "+" : "-";
+        };
+        /**
+         * 比较 a 与 b 是否相等
+         * @param a 值a
+         * @param b 值b
+         * @param precision 比较精度
+         */
+        EquationSolving.prototype.equalNumber = function (a, b, precision) {
+            if (precision === void 0) { precision = 0.0000001; }
+            return Math.abs(a - b) < precision;
+        };
+        /**
+         * 获取近似导函数 f'(x)
+         *
+         * 导函数定义
+         * f'(x) = (f(x + Δx) - f(x)) / Δx , Δx → 0
+         *
+         * 注：通过测试Δx不能太小，由于方程内存在x的n次方问题（比如0.000000000000001的10次方为0），过小会导致计算机计算进度不够反而导致求导不准确！
+         *
+         * 另外一种办法是还原一元多次函数，然后求出导函数。
+         *
+         * @param f 函数
+         * @param delta Δx，进过测试该值太小或者过大都会导致求导准确率降低（个人猜测是计算机计算精度问题导致）
+         */
+        EquationSolving.prototype.getDerivative = function (f, delta) {
+            if (delta === void 0) { delta = 0.000000001; }
+            return function (x) {
+                var d = (f(x + delta) - f(x)) / delta;
+                return d;
+            };
+        };
+        /**
+         * 函数是否连续
+         * @param f 函数
+         */
+        EquationSolving.prototype.isContinuous = function (f) {
+            return true;
+        };
+        /**
+         * 方程 f(x) == 0 在 [a, b] 区间内是否有解
+         *
+         * 当f(x)在区间 [a, b] 上连续，且f(a) * f(b) <= 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == 0
+         *
+         * @param f 函数f(x)
+         * @param a 区间起点
+         * @param b 区间终点
+         * @param errorcallback  错误回调函数
+         *
+         * @returns 是否有解
+         */
+        EquationSolving.prototype.hasSolution = function (f, a, b, errorcallback) {
+            if (!this.isContinuous(f)) {
+                errorcallback && errorcallback(new Error("\u51FD\u6570 " + f + " \u5728 [" + a + " ," + b + "] \u533A\u95F4\u5185\u4E0D\u8FDE\u7EED\uFF0C\u65E0\u6CD5\u4E3A\u5176\u6C42\u89E3\uFF01"));
+                return false;
+            }
+            var fa = f(a);
+            var fb = f(b);
+            if (fa * fb > 0) {
+                errorcallback && errorcallback(new Error("f(a) * f(b) \u503C\u4E3A " + fa * fb + "\uFF0C\u4E0D\u6EE1\u8DB3 f(a) * f(b) <= 0\uFF0C\u65E0\u6CD5\u4E3A\u5176\u6C42\u89E3\uFF01"));
+                return false;
+            }
+            return true;
+        };
+        /**
+         * 二分法 求解 f(x) == 0
+         *
+         * 通过区间中点作为边界来逐步缩小求解区间，最终获得解
+         *
+         * @param f 函数f(x)
+         * @param a 区间起点
+         * @param b 区间终点
+         * @param precision 求解精度
+         * @param errorcallback  错误回调函数
+         *
+         * @returns 不存在解时返回 undefined ，存在时返回 解
+         */
+        EquationSolving.prototype.binary = function (f, a, b, precision, errorcallback) {
+            if (precision === void 0) { precision = 0.0000001; }
+            if (!this.hasSolution(f, a, b, errorcallback))
+                return undefined;
+            var fa = f(a);
+            var fb = f(b);
+            if (this.equalNumber(fa, 0, precision)) {
+                return a;
+            }
+            if (this.equalNumber(fb, 0, precision)) {
+                return b;
+            }
+            do {
+                var x = (a + b) / 2;
+                var fr = f(x);
+                if (fa * fr < 0) {
+                    b = x;
+                    fb = fr;
+                }
+                else {
+                    a = x;
+                    fa = fr;
+                }
+            } while (!this.equalNumber(fr, 0, precision));
+            return x;
+        };
+        /**
+         * 连线法 求解 f(x) == 0
+         *
+         * 连线法是我自己想的方法，自己取的名字，目前没有找到相应的资料（这方法大家都能够想得到。）
+         *
+         * 用曲线弧两端的连线来代替曲线弧与X轴交点作为边界来逐步缩小求解区间，最终获得解
+         *
+         * 通过 A，B两点连线与x轴交点来缩小求解区间最终获得解
+         *
+         * A，B两点直线方程 f(x) = f(a) + (f(b) - f(a)) / (b - a) * (x-a) ,求 f(x) == 0 解得 x = a - fa * (b - a)/ (fb - fa)
+         *
+         * @param f 函数f(x)
+         * @param a 区间起点
+         * @param b 区间终点
+         * @param precision 求解精度
+         * @param errorcallback  错误回调函数
+         *
+         * @returns 不存在解时返回 undefined ，存在时返回 解
+         */
+        EquationSolving.prototype.line = function (f, a, b, precision, errorcallback) {
+            if (precision === void 0) { precision = 0.0000001; }
+            if (!this.hasSolution(f, a, b, errorcallback))
+                return undefined;
+            var fa = f(a);
+            var fb = f(b);
+            if (this.equalNumber(fa, 0, precision)) {
+                return a;
+            }
+            if (this.equalNumber(fb, 0, precision)) {
+                return b;
+            }
+            do {
+                // 
+                var x = a - fa * (b - a) / (fb - fa);
+                var fr = f(x);
+                if (fa * fr < 0) {
+                    b = x;
+                    fb = fr;
+                }
+                else {
+                    a = x;
+                    fa = fr;
+                }
+            } while (!this.equalNumber(fr, 0, precision));
+            return x;
+        };
+        /**
+         * 切线法 求解 f(x) == 0
+         *
+         * 用曲线弧一端的切线来代替曲线弧，从而求出方程实根的近似解。
+         *
+         * 迭代公式： Xn+1 = Xn - f(Xn) / f'(Xn)
+         *
+         * #### 额外需求
+         * 1. f(x)在[a, b]上具有一阶导数 f'(x)
+         * 1. f'(x)在[a, b]上保持定号；意味着f(x)在[a, b]上单调
+         * 1. f''(x)在[a, b]上保持定号；意味着f'(x)在[a, b]上单调
+         *
+         * 切记，当无法满足这些额外要求时，该函数将找不到[a, b]上的解！！！！！！！！！！！
+         *
+         * @param f 函数f(x)
+         * @param f1 一阶导函数 f'(x)
+         * @param f2 二阶导函数 f''(x)
+         * @param a 区间起点
+         * @param b 区间终点
+         * @param precision 求解精度
+         * @param errorcallback  错误回调函数
+         *
+         * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
+         */
+        EquationSolving.prototype.tangent = function (f, f1, f2, a, b, precision, errorcallback) {
+            if (precision === void 0) { precision = 0.0000001; }
+            if (!this.hasSolution(f, a, b, errorcallback))
+                return undefined;
+            var fa = f(a);
+            var fb = f(b);
+            if (this.equalNumber(fa, 0, precision)) {
+                return a;
+            }
+            if (this.equalNumber(fb, 0, precision)) {
+                return b;
+            }
+            var f1Sign = fb - fa; // f'(x)在[a, b]上保持的定号
+            var f1a = f1(a);
+            var f1b = f1(b);
+            // f'(x)在[a, b]上保持定号
+            if (f1a * f1Sign <= 0) {
+                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + a + ") = " + f1a + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                return undefined;
+            }
+            if (f1b * f1Sign <= 0) {
+                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + b + ") = " + f1b + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                return undefined;
+            }
+            var f2Sign = fb - fa; // f''(x)在[a, b]上保持的定号
+            var f2a = f2(a);
+            var f2b = f2(b);
+            // f''(x)在[a, b]上保持定号
+            if (f2a * f2Sign <= 0) {
+                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + a + ") = " + f2a + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                return undefined;
+            }
+            if (f2b * f2Sign <= 0) {
+                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + b + ") = " + f2b + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                return undefined;
+            }
+            var x;
+            if (f1Sign > 0) {
+                if (f2Sign > 0)
+                    x = b;
+                else
+                    x = a;
+            }
+            else {
+                if (f2Sign > 0)
+                    x = a;
+                else
+                    x = b;
+            }
+            do {
+                var fx = f(x);
+                var f1x = f1(x);
+                var f2x = f2(x);
+                // f'(x)在[a, b]上保持定号
+                if (f1x * f1Sign <= 0) {
+                    errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + x + ") = " + f1x + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                    return undefined;
+                }
+                // f''(x)在[a, b]上保持定号
+                if (f2x * f2Sign <= 0) {
+                    errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + x + ") = " + f2x + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                    return undefined;
+                }
+                // 迭代 Xn+1 = Xn - f(Xn) / f'(Xn)
+                x = x - fx / f1x;
+            } while (!this.equalNumber(fx, 0, precision));
+            return x;
+        };
+        /**
+         * 割线法（弦截法） 求解 f(x) == 0
+         *
+         * 使用 (f(Xn) - f(Xn-1)) / (Xn - Xn-1) 代替切线法迭代公式 Xn+1 = Xn - f(Xn) / f'(Xn) 中的 f'(x)
+         *
+         * 迭代公式：Xn+1 = Xn - f(Xn) * (Xn - Xn-1) / (f(Xn) - f(Xn-1));
+         *
+         * 用过点(Xn-1,f(Xn-1))和点(Xn,f(Xn))的割线来近似代替(Xn,f(Xn))处的切线，将这条割线与X轴交点的横坐标作为新的近似解。
+         *
+         * #### 额外需求
+         * 1. f(x)在[a, b]上具有一阶导数 f'(x)
+         * 1. f'(x)在[a, b]上保持定号；意味着f(x)在[a, b]上单调
+         * 1. f''(x)在[a, b]上保持定号；意味着f'(x)在[a, b]上单调
+         *
+         * 切记，当无法满足这些额外要求时，该函数将找不到[a, b]上的解！！！！！！！！！！！
+         *
+         * @param f 函数f(x)
+         * @param a 区间起点
+         * @param b 区间终点
+         * @param precision 求解精度
+         * @param errorcallback  错误回调函数
+         *
+         * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
+         */
+        EquationSolving.prototype.secant = function (f, a, b, precision, errorcallback) {
+            if (precision === void 0) { precision = 0.0000001; }
+            if (!this.hasSolution(f, a, b, errorcallback))
+                return undefined;
+            var fa = f(a);
+            var fb = f(b);
+            if (this.equalNumber(fa, 0, precision)) {
+                return a;
+            }
+            if (this.equalNumber(fb, 0, precision)) {
+                return b;
+            }
+            // 此处创建近似导函数以及二次导函数，其实割线法使用在计算f'(x)困难时的，但是 getDerivative 方法解决了这个困难。。。。
+            var f1 = this.getDerivative(f, precision);
+            var f2 = this.getDerivative(f1, precision);
+            var f1Sign = fb - fa; // f'(x)在[a, b]上保持的定号
+            // 
+            var f1a = f1(a);
+            var f1b = f1(b);
+            // f'(x)在[a, b]上保持定号
+            if (f1a * f1Sign <= 0) {
+                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + a + ") = " + f1a + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                return undefined;
+            }
+            if (f1b * f1Sign <= 0) {
+                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + b + ") = " + f1b + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                return undefined;
+            }
+            var f2Sign = fb - fa; // f''(x)在[a, b]上保持的定号
+            var f2a = f2(a);
+            var f2b = f2(b);
+            // f''(x)在[a, b]上保持定号
+            if (f2a * f2Sign <= 0) {
+                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + a + ") = " + f2a + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                return undefined;
+            }
+            if (f2b * f2Sign <= 0) {
+                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + b + ") = " + f2b + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                return undefined;
+            }
+            var x;
+            if (f1Sign > 0) {
+                if (f2Sign > 0)
+                    x = b;
+                else
+                    x = a;
+            }
+            else {
+                if (f2Sign > 0)
+                    x = a;
+                else
+                    x = b;
+            }
+            // Xn-1
+            var xn_1 = x;
+            var fxn_1 = f(xn_1);
+            // Xn
+            var xn = xn_1 - precision * f2Sign / Math.abs(f2Sign);
+            var fxn = f(xn);
+            // 
+            if (fxn * fxn_1 < 0) {
+                return xn;
+            }
+            // Xn+1
+            var xn$1;
+            do {
+                var f1xn = f1(xn);
+                // f'(x)在[a, b]上保持定号
+                if (f1xn * f1Sign <= 0) {
+                    errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + xn + ") = " + f1xn + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                    return undefined;
+                }
+                var f2xn = f2(xn);
+                // f''(x)在[a, b]上保持定号
+                if (f2xn * f2Sign <= 0) {
+                    errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + xn + ") = " + f2xn + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
+                    return undefined;
+                }
+                // 迭代 Xn+1 = Xn - f(Xn) * (Xn - Xn-1) / (f(Xn) - f(Xn-1));
+                xn$1 = xn - fxn * (xn - xn_1) / (fxn - fxn_1);
+                //
+                xn_1 = xn;
+                fxn_1 = fxn;
+                xn = xn$1;
+                fxn = f(xn);
+            } while (!this.equalNumber(fxn, 0, precision));
+            return xn;
+        };
+        return EquationSolving;
+    }());
+    feng3d.EquationSolving = EquationSolving;
+    feng3d.equationSolving = new EquationSolving();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 高次函数
+     *
+     * 处理N次函数定义，求值，方程求解问题
+     *
+     * n次函数定义
+     * f(x) = a0 * pow(x, n) + a1 * pow(x, n - 1) +.....+ an_1 * pow(x, 1) + an
+     *
+     * 0次 f(x) = a0;
+     * 1次 f(x) = a0 * x + a1;
+     * 2次 f(x) = a0 * x * x + a1 * x + a2;
+     * ......
+     *
+     */
+    var HighFunction = /** @class */ (function () {
+        /**
+         * 构建函数
+         * @param as 函数系数 a0-an 数组
+         */
+        function HighFunction(as) {
+            this.as = as;
+        }
+        /**
+         * 获取函数 f(x) 的值
+         * @param x x坐标
+         */
+        HighFunction.prototype.getValue = function (x) {
+            var v = 0;
+            var as = this.as;
+            for (var i = 0, n = as.length; i < n; i++) {
+                v = v * x + as[i];
+            }
+            return v;
+        };
+        return HighFunction;
+    }());
+    feng3d.HighFunction = HighFunction;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * Bézier曲线
      * @see https://en.wikipedia.org/wiki/B%C3%A9zier_curve
@@ -962,426 +1538,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 方程求解
-     *
-     * 求解方程 f(x) == 0 在[a, b]上的解
-     *
-     * 参考：高等数学 第七版上册 第三章第八节 方程的近似解
-     * 当f(x)在区间 [a, b] 上连续，且f(a) * f(b) <= 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == 0
-     *
-     * 当f(x)在区间 [a, b] 上连续，且 (f(a) - y) * (f(b) - y) < 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == y
-     *
-     * @author feng / http://feng3d.com 05/06/2018
-     */
-    var EquationSolving = /** @class */ (function () {
-        function EquationSolving() {
-        }
-        /**
-         * 获取数字的(正负)符号
-         * @param n 数字
-         */
-        EquationSolving.prototype.getSign = function (n) {
-            return n > 0 ? "+" : "-";
-        };
-        /**
-         * 比较 a 与 b 是否相等
-         * @param a 值a
-         * @param b 值b
-         * @param precision 比较精度
-         */
-        EquationSolving.prototype.equalNumber = function (a, b, precision) {
-            if (precision === void 0) { precision = 0.0000001; }
-            return Math.abs(a - b) < precision;
-        };
-        /**
-         * 获取近似导函数 f'(x)
-         *
-         * 导函数定义
-         * f'(x) = (f(x + Δx) - f(x)) / Δx , Δx → 0
-         *
-         * 注：通过测试Δx不能太小，由于方程内存在x的n次方问题（比如0.000000000000001的10次方为0），过小会导致计算机计算进度不够反而导致求导不准确！
-         *
-         * 另外一种办法是还原一元多次函数，然后求出导函数。
-         *
-         * @param f 函数
-         * @param delta Δx，进过测试该值太小或者过大都会导致求导准确率降低（个人猜测是计算机计算精度问题导致）
-         */
-        EquationSolving.prototype.getDerivative = function (f, delta) {
-            if (delta === void 0) { delta = 0.000000001; }
-            return function (x) {
-                var d = (f(x + delta) - f(x)) / delta;
-                return d;
-            };
-        };
-        /**
-         * 函数是否连续
-         * @param f 函数
-         */
-        EquationSolving.prototype.isContinuous = function (f) {
-            return true;
-        };
-        /**
-         * 方程 f(x) == 0 在 [a, b] 区间内是否有解
-         *
-         * 当f(x)在区间 [a, b] 上连续，且f(a) * f(b) <= 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == 0
-         *
-         * @param f 函数f(x)
-         * @param a 区间起点
-         * @param b 区间终点
-         * @param errorcallback  错误回调函数
-         *
-         * @returns 是否有解
-         */
-        EquationSolving.prototype.hasSolution = function (f, a, b, errorcallback) {
-            if (!this.isContinuous(f)) {
-                errorcallback && errorcallback(new Error("\u51FD\u6570 " + f + " \u5728 [" + a + " ," + b + "] \u533A\u95F4\u5185\u4E0D\u8FDE\u7EED\uFF0C\u65E0\u6CD5\u4E3A\u5176\u6C42\u89E3\uFF01"));
-                return false;
-            }
-            var fa = f(a);
-            var fb = f(b);
-            if (fa * fb > 0) {
-                errorcallback && errorcallback(new Error("f(a) * f(b) \u503C\u4E3A " + fa * fb + "\uFF0C\u4E0D\u6EE1\u8DB3 f(a) * f(b) <= 0\uFF0C\u65E0\u6CD5\u4E3A\u5176\u6C42\u89E3\uFF01"));
-                return false;
-            }
-            return true;
-        };
-        /**
-         * 二分法 求解 f(x) == 0
-         *
-         * 通过区间中点作为边界来逐步缩小求解区间，最终获得解
-         *
-         * @param f 函数f(x)
-         * @param a 区间起点
-         * @param b 区间终点
-         * @param precision 求解精度
-         * @param errorcallback  错误回调函数
-         *
-         * @returns 不存在解时返回 undefined ，存在时返回 解
-         */
-        EquationSolving.prototype.binary = function (f, a, b, precision, errorcallback) {
-            if (precision === void 0) { precision = 0.0000001; }
-            if (!this.hasSolution(f, a, b, errorcallback))
-                return undefined;
-            var fa = f(a);
-            var fb = f(b);
-            if (this.equalNumber(fa, 0, precision)) {
-                return a;
-            }
-            if (this.equalNumber(fb, 0, precision)) {
-                return b;
-            }
-            do {
-                var x = (a + b) / 2;
-                var fr = f(x);
-                if (fa * fr < 0) {
-                    b = x;
-                    fb = fr;
-                }
-                else {
-                    a = x;
-                    fa = fr;
-                }
-            } while (!this.equalNumber(fr, 0, precision));
-            return x;
-        };
-        /**
-         * 连线法 求解 f(x) == 0
-         *
-         * 连线法是我自己想的方法，自己取的名字，目前没有找到相应的资料（这方法大家都能够想得到。）
-         *
-         * 用曲线弧两端的连线来代替曲线弧与X轴交点作为边界来逐步缩小求解区间，最终获得解
-         *
-         * 通过 A，B两点连线与x轴交点来缩小求解区间最终获得解
-         *
-         * A，B两点直线方程 f(x) = f(a) + (f(b) - f(a)) / (b - a) * (x-a) ,求 f(x) == 0 解得 x = a - fa * (b - a)/ (fb - fa)
-         *
-         * @param f 函数f(x)
-         * @param a 区间起点
-         * @param b 区间终点
-         * @param precision 求解精度
-         * @param errorcallback  错误回调函数
-         *
-         * @returns 不存在解时返回 undefined ，存在时返回 解
-         */
-        EquationSolving.prototype.line = function (f, a, b, precision, errorcallback) {
-            if (precision === void 0) { precision = 0.0000001; }
-            if (!this.hasSolution(f, a, b, errorcallback))
-                return undefined;
-            var fa = f(a);
-            var fb = f(b);
-            if (this.equalNumber(fa, 0, precision)) {
-                return a;
-            }
-            if (this.equalNumber(fb, 0, precision)) {
-                return b;
-            }
-            do {
-                // 
-                var x = a - fa * (b - a) / (fb - fa);
-                var fr = f(x);
-                if (fa * fr < 0) {
-                    b = x;
-                    fb = fr;
-                }
-                else {
-                    a = x;
-                    fa = fr;
-                }
-            } while (!this.equalNumber(fr, 0, precision));
-            return x;
-        };
-        /**
-         * 切线法 求解 f(x) == 0
-         *
-         * 用曲线弧一端的切线来代替曲线弧，从而求出方程实根的近似解。
-         *
-         * 迭代公式： Xn+1 = Xn - f(Xn) / f'(Xn)
-         *
-         * #### 额外需求
-         * 1. f(x)在[a, b]上具有一阶导数 f'(x)
-         * 1. f'(x)在[a, b]上保持定号；意味着f(x)在[a, b]上单调
-         * 1. f''(x)在[a, b]上保持定号；意味着f'(x)在[a, b]上单调
-         *
-         * 切记，当无法满足这些额外要求时，该函数将找不到[a, b]上的解！！！！！！！！！！！
-         *
-         * @param f 函数f(x)
-         * @param f1 一阶导函数 f'(x)
-         * @param f2 二阶导函数 f''(x)
-         * @param a 区间起点
-         * @param b 区间终点
-         * @param precision 求解精度
-         * @param errorcallback  错误回调函数
-         *
-         * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
-         */
-        EquationSolving.prototype.tangent = function (f, f1, f2, a, b, precision, errorcallback) {
-            if (precision === void 0) { precision = 0.0000001; }
-            if (!this.hasSolution(f, a, b, errorcallback))
-                return undefined;
-            var fa = f(a);
-            var fb = f(b);
-            if (this.equalNumber(fa, 0, precision)) {
-                return a;
-            }
-            if (this.equalNumber(fb, 0, precision)) {
-                return b;
-            }
-            var f1Sign = fb - fa; // f'(x)在[a, b]上保持的定号
-            var f1a = f1(a);
-            var f1b = f1(b);
-            // f'(x)在[a, b]上保持定号
-            if (f1a * f1Sign <= 0) {
-                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + a + ") = " + f1a + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                return undefined;
-            }
-            if (f1b * f1Sign <= 0) {
-                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + b + ") = " + f1b + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                return undefined;
-            }
-            var f2Sign = fb - fa; // f''(x)在[a, b]上保持的定号
-            var f2a = f2(a);
-            var f2b = f2(b);
-            // f''(x)在[a, b]上保持定号
-            if (f2a * f2Sign <= 0) {
-                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + a + ") = " + f2a + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                return undefined;
-            }
-            if (f2b * f2Sign <= 0) {
-                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + b + ") = " + f2b + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                return undefined;
-            }
-            var x;
-            if (f1Sign > 0) {
-                if (f2Sign > 0)
-                    x = b;
-                else
-                    x = a;
-            }
-            else {
-                if (f2Sign > 0)
-                    x = a;
-                else
-                    x = b;
-            }
-            do {
-                var fx = f(x);
-                var f1x = f1(x);
-                var f2x = f2(x);
-                // f'(x)在[a, b]上保持定号
-                if (f1x * f1Sign <= 0) {
-                    errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + x + ") = " + f1x + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                    return undefined;
-                }
-                // f''(x)在[a, b]上保持定号
-                if (f2x * f2Sign <= 0) {
-                    errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + x + ") = " + f2x + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                    return undefined;
-                }
-                // 迭代 Xn+1 = Xn - f(Xn) / f'(Xn)
-                x = x - fx / f1x;
-            } while (!this.equalNumber(fx, 0, precision));
-            return x;
-        };
-        /**
-         * 割线法（弦截法） 求解 f(x) == 0
-         *
-         * 使用 (f(Xn) - f(Xn-1)) / (Xn - Xn-1) 代替切线法迭代公式 Xn+1 = Xn - f(Xn) / f'(Xn) 中的 f'(x)
-         *
-         * 迭代公式：Xn+1 = Xn - f(Xn) * (Xn - Xn-1) / (f(Xn) - f(Xn-1));
-         *
-         * 用过点(Xn-1,f(Xn-1))和点(Xn,f(Xn))的割线来近似代替(Xn,f(Xn))处的切线，将这条割线与X轴交点的横坐标作为新的近似解。
-         *
-         * #### 额外需求
-         * 1. f(x)在[a, b]上具有一阶导数 f'(x)
-         * 1. f'(x)在[a, b]上保持定号；意味着f(x)在[a, b]上单调
-         * 1. f''(x)在[a, b]上保持定号；意味着f'(x)在[a, b]上单调
-         *
-         * 切记，当无法满足这些额外要求时，该函数将找不到[a, b]上的解！！！！！！！！！！！
-         *
-         * @param f 函数f(x)
-         * @param a 区间起点
-         * @param b 区间终点
-         * @param precision 求解精度
-         * @param errorcallback  错误回调函数
-         *
-         * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
-         */
-        EquationSolving.prototype.secant = function (f, a, b, precision, errorcallback) {
-            if (precision === void 0) { precision = 0.0000001; }
-            if (!this.hasSolution(f, a, b, errorcallback))
-                return undefined;
-            var fa = f(a);
-            var fb = f(b);
-            if (this.equalNumber(fa, 0, precision)) {
-                return a;
-            }
-            if (this.equalNumber(fb, 0, precision)) {
-                return b;
-            }
-            // 此处创建近似导函数以及二次导函数，其实割线法使用在计算f'(x)困难时的，但是 getDerivative 方法解决了这个困难。。。。
-            var f1 = this.getDerivative(f, precision);
-            var f2 = this.getDerivative(f1, precision);
-            var f1Sign = fb - fa; // f'(x)在[a, b]上保持的定号
-            // 
-            var f1a = f1(a);
-            var f1b = f1(b);
-            // f'(x)在[a, b]上保持定号
-            if (f1a * f1Sign <= 0) {
-                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + a + ") = " + f1a + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                return undefined;
-            }
-            if (f1b * f1Sign <= 0) {
-                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + b + ") = " + f1b + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                return undefined;
-            }
-            var f2Sign = fb - fa; // f''(x)在[a, b]上保持的定号
-            var f2a = f2(a);
-            var f2b = f2(b);
-            // f''(x)在[a, b]上保持定号
-            if (f2a * f2Sign <= 0) {
-                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + a + ") = " + f2a + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                return undefined;
-            }
-            if (f2b * f2Sign <= 0) {
-                errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + b + ") = " + f2b + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                return undefined;
-            }
-            var x;
-            if (f1Sign > 0) {
-                if (f2Sign > 0)
-                    x = b;
-                else
-                    x = a;
-            }
-            else {
-                if (f2Sign > 0)
-                    x = a;
-                else
-                    x = b;
-            }
-            // Xn-1
-            var xn_1 = x;
-            var fxn_1 = f(xn_1);
-            // Xn
-            var xn = xn_1 - precision * f2Sign / Math.abs(f2Sign);
-            var fxn = f(xn);
-            // 
-            if (fxn * fxn_1 < 0) {
-                return xn;
-            }
-            // Xn+1
-            var xn$1;
-            do {
-                var f1xn = f1(xn);
-                // f'(x)在[a, b]上保持定号
-                if (f1xn * f1Sign <= 0) {
-                    errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef'(" + xn + ") = " + f1xn + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f1Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                    return undefined;
-                }
-                var f2xn = f2(xn);
-                // f''(x)在[a, b]上保持定号
-                if (f2xn * f2Sign <= 0) {
-                    errorcallback && errorcallback(new Error("[" + a + ", " + b + "] \u4E0A\u5B58\u5728\u89E3\uFF0C\u7531\u4E8Ef''(" + xn + ") = " + f2xn + " \u5728[a, b]\u4E0A\u6CA1\u6709\u4FDD\u6301\u5B9A\u53F7 " + this.getSign(f2Sign) + " \uFF0C\u65E0\u6CD5\u4F7F\u7528\u5207\u7EBF\u6CD5\u6C42\u89E3"));
-                    return undefined;
-                }
-                // 迭代 Xn+1 = Xn - f(Xn) * (Xn - Xn-1) / (f(Xn) - f(Xn-1));
-                xn$1 = xn - fxn * (xn - xn_1) / (fxn - fxn_1);
-                //
-                xn_1 = xn;
-                fxn_1 = fxn;
-                xn = xn$1;
-                fxn = f(xn);
-            } while (!this.equalNumber(fxn, 0, precision));
-            return xn;
-        };
-        return EquationSolving;
-    }());
-    feng3d.EquationSolving = EquationSolving;
-    feng3d.equationSolving = new EquationSolving();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 高次函数
-     *
-     * 处理N次函数定义，求值，方程求解问题
-     *
-     * n次函数定义
-     * f(x) = a0 * pow(x, n) + a1 * pow(x, n - 1) +.....+ an_1 * pow(x, 1) + an
-     *
-     * 0次 f(x) = a0;
-     * 1次 f(x) = a0 * x + a1;
-     * 2次 f(x) = a0 * x * x + a1 * x + a2;
-     * ......
-     *
-     */
-    var HighFunction = /** @class */ (function () {
-        /**
-         * 构建函数
-         * @param as 函数系数 a0-an 数组
-         */
-        function HighFunction(as) {
-            this.as = as;
-        }
-        /**
-         * 获取函数 f(x) 的值
-         * @param x x坐标
-         */
-        HighFunction.prototype.getValue = function (x) {
-            var v = 0;
-            var as = this.as;
-            for (var i = 0, n = as.length; i < n; i++) {
-                v = v * x + as[i];
-            }
-            return v;
-        };
-        return HighFunction;
-    }());
-    feng3d.HighFunction = HighFunction;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 动画关键帧
      */
     var AnimationCurveKeyframe = /** @class */ (function () {
@@ -1569,4168 +1725,388 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    feng3d.EVENT_KEY = "__event__";
-    function getBubbleTargets(target) {
-        return [target["parent"]];
-    }
     /**
-     * 事件适配器
+     * 颜色
      */
-    var EventDispatcher = /** @class */ (function () {
-        function EventDispatcher() {
-        }
+    var Color3 = /** @class */ (function () {
         /**
-         * 监听一次事件后将会被移除
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         * 构建颜色
+         * @param r     红[0,1]
+         * @param g     绿[0,1]
+         * @param b     蓝[0,1]
          */
-        EventDispatcher.prototype.once = function (type, listener, thisObject, priority) {
-            if (thisObject === void 0) { thisObject = null; }
-            if (priority === void 0) { priority = 0; }
-            this.on(type, listener, thisObject, priority, true);
+        function Color3(r, g, b) {
+            if (r === void 0) { r = 1; }
+            if (g === void 0) { g = 1; }
+            if (b === void 0) { b = 1; }
+            this.__class__ = "feng3d.Color3";
+            /**
+             * 红[0,1]
+             */
+            this.r = 1;
+            /**
+             * 绿[0,1]
+             */
+            this.g = 1;
+            /**
+             * 蓝[0,1]
+             */
+            this.b = 1;
+            this.r = r;
+            this.g = g;
+            this.b = b;
+        }
+        Color3.prototype.setTo = function (r, g, b) {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            return this;
         };
         /**
-         * 派发事件
-         *
-         * 当事件重复流向一个对象时将不会被处理。
-         *
-         * @param e   事件对象
-         * @returns 返回事件是否被该对象处理
+         * 通过
+         * @param color
          */
-        EventDispatcher.prototype.dispatchEvent = function (e) {
-            var targets = e.targets = e.targets || [];
-            if (targets.indexOf(this) != -1)
+        Color3.prototype.fromUnit = function (color) {
+            this.r = ((color >> 16) & 0xff) / 0xff;
+            this.g = ((color >> 8) & 0xff) / 0xff;
+            this.b = (color & 0xff) / 0xff;
+            return this;
+        };
+        Color3.prototype.toInt = function () {
+            var value = ((this.r * 0xff) << 16) + ((this.g * 0xff) << 8) + (this.b * 0xff);
+            return value;
+        };
+        /**
+         * 输出16进制字符串
+         */
+        Color3.prototype.toHexString = function () {
+            var intR = (this.r * 0xff) | 0;
+            var intG = (this.g * 0xff) | 0;
+            var intB = (this.b * 0xff) | 0;
+            return "#" + Color3.ToHex(intR) + Color3.ToHex(intG) + Color3.ToHex(intB);
+        };
+        /**
+         * 混合颜色
+         * @param color 混入的颜色
+         * @param rate  混入比例
+         */
+        Color3.prototype.mix = function (color, rate) {
+            this.r = this.r * (1 - rate) + color.r * rate;
+            this.g = this.g * (1 - rate) + color.g * rate;
+            this.b = this.b * (1 - rate) + color.b * rate;
+            return this;
+        };
+        /**
+         * 混合颜色
+         * @param color 混入的颜色
+         * @param rate  混入比例
+         */
+        Color3.prototype.mixTo = function (color, rate, vout) {
+            if (vout === void 0) { vout = new Color3(); }
+            return vout.copy(this).mix(color, rate);
+        };
+        /**
+         * 按标量（大小）缩放当前的 Color3 对象。
+         */
+        Color3.prototype.scale = function (s) {
+            this.r *= s;
+            this.g *= s;
+            this.b *= s;
+            return this;
+        };
+        /**
+         * 按标量（大小）缩放当前的 Color3 对象。
+         */
+        Color3.prototype.scaleTo = function (s, vout) {
+            if (vout === void 0) { vout = new Color3(); }
+            return vout.copy(this).scale(s);
+        };
+        /**
+         * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
+         */
+        Color3.prototype.equals = function (object, precision) {
+            if (precision === void 0) { precision = feng3d.FMath.PRECISION; }
+            if (!feng3d.FMath.equals(this.r - object.r, 0, precision))
                 return false;
-            targets.push(this);
-            this.handleEvent(e);
-            this.handelEventBubbles(e);
+            if (!feng3d.FMath.equals(this.g - object.g, 0, precision))
+                return false;
+            if (!feng3d.FMath.equals(this.b - object.b, 0, precision))
+                return false;
             return true;
         };
         /**
-         * 处理事件
-         * @param e 事件
+         * 拷贝
          */
-        EventDispatcher.prototype.handleEvent = function (e) {
-            //设置目标
-            e.target || (e.target = this);
-            try {
-                //使用 try 处理 MouseEvent 等无法更改currentTarget的对象
-                e.currentTarget = this;
-            }
-            catch (error) { }
-            var listeners = this[feng3d.EVENT_KEY] && this[feng3d.EVENT_KEY][e.type];
-            if (listeners) {
-                //遍历调用事件回调函数
-                for (var i = 0; i < listeners.length && !e.isStop; i++) {
-                    listeners[i].listener.call(listeners[i].thisObject, e);
-                }
-                for (var i = listeners.length - 1; i >= 0; i--) {
-                    if (listeners[i].once)
-                        listeners.splice(i, 1);
-                }
-                if (listeners.length == 0)
-                    delete this[feng3d.EVENT_KEY][e.type];
-            }
-        };
-        /**
-         * 处理事件冒泡
-         * @param e 事件
-         */
-        EventDispatcher.prototype.handelEventBubbles = function (e) {
-            if (e.bubbles && !e.isStopBubbles) {
-                var bubbleTargets = getBubbleTargets(this);
-                for (var i = 0, n = bubbleTargets.length; i < n; i++) {
-                    var bubbleTarget = bubbleTargets[i];
-                    if (!e.isStop && bubbleTarget instanceof EventDispatcher)
-                        bubbleTarget.dispatchEvent(e);
-                }
-            }
-        };
-        /**
-         * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
-         * @param type                      事件的类型。类型区分大小写。
-         * @param data                      事件携带的自定义数据。
-         * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
-         */
-        EventDispatcher.prototype.dispatch = function (type, data, bubbles) {
-            if (bubbles === void 0) { bubbles = false; }
-            var e = { type: type, data: data, bubbles: bubbles, target: null, currentTarget: null, isStop: false, isStopBubbles: false, targets: [] };
-            this.dispatchEvent(e);
-            return e;
-        };
-        /**
-         * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
-         *
-         * @param type		事件的类型。
-         * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
-         */
-        EventDispatcher.prototype.has = function (type) {
-            return !!(this[feng3d.EVENT_KEY] && this[feng3d.EVENT_KEY][type] && this[feng3d.EVENT_KEY][type].length);
-        };
-        /**
-         * 添加监听
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        EventDispatcher.prototype.on = function (type, listener, thisObject, priority, once) {
-            if (priority === void 0) { priority = 0; }
-            if (once === void 0) { once = false; }
-            var objectListener = this[feng3d.EVENT_KEY] || (this[feng3d.EVENT_KEY] = {});
-            var listeners = objectListener[type] = objectListener[type] || [];
-            for (var i = 0; i < listeners.length; i++) {
-                var element = listeners[i];
-                if (element.listener == listener && element.thisObject == thisObject) {
-                    listeners.splice(i, 1);
-                    break;
-                }
-            }
-            for (var i = 0; i < listeners.length; i++) {
-                var element = listeners[i];
-                if (priority > element.priority) {
-                    break;
-                }
-            }
-            listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority, once: once });
-        };
-        /**
-         * 移除监听
-         * @param dispatcher 派发器
-         * @param type						事件的类型。
-         * @param listener					要删除的侦听器对象。
-         */
-        EventDispatcher.prototype.off = function (type, listener, thisObject) {
-            if (!type) {
-                delete this[feng3d.EVENT_KEY];
-                return;
-            }
-            if (!listener) {
-                if (this[feng3d.EVENT_KEY])
-                    delete this[feng3d.EVENT_KEY][type];
-                return;
-            }
-            var listeners = this[feng3d.EVENT_KEY] && this[feng3d.EVENT_KEY][type];
-            if (listeners) {
-                for (var i = listeners.length - 1; i >= 0; i--) {
-                    var element = listeners[i];
-                    if (element.listener == listener && element.thisObject == thisObject) {
-                        listeners.splice(i, 1);
-                    }
-                }
-                if (listeners.length == 0) {
-                    delete this[feng3d.EVENT_KEY][type];
-                }
-            }
-        };
-        return EventDispatcher;
-    }());
-    feng3d.EventDispatcher = EventDispatcher;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 代理 EventTarget, 处理js事件中this关键字问题
-
-     */
-    var EventProxy = /** @class */ (function (_super) {
-        __extends(EventProxy, _super);
-        function EventProxy(target) {
-            var _this = _super.call(this) || this;
-            _this.pageX = 0;
-            _this.pageY = 0;
-            _this.clientX = 0;
-            _this.clientY = 0;
-            /**
-             * 是否右击
-             */
-            _this.rightmouse = false;
-            _this.key = "";
-            _this.keyCode = 0;
-            _this.wheelDelta = 0;
-            _this.listentypes = [];
-            /**
-             * 处理鼠标按下时同时出发 "mousemove" 事件bug
-             */
-            _this.handleMouseMoveBug = true;
-            /**
-             * 键盘按下事件
-             */
-            _this.onMouseKey = function (event) {
-                // this.clear();
-                if (event["clientX"] != undefined) {
-                    event = event;
-                    _this.clientX = event.clientX;
-                    _this.clientY = event.clientY;
-                    _this.pageX = event.pageX;
-                    _this.pageY = event.pageY;
-                }
-                if (event instanceof MouseEvent) {
-                    _this.rightmouse = event.button == 2;
-                    // 处理鼠标按下时同时出发 "mousemove" 事件bug
-                    if (_this.handleMouseMoveBug) {
-                        if (event.type == "mousedown") {
-                            _this.mousedownposition = new feng3d.Vector2(event.clientX, event.clientY);
-                        }
-                        if (event.type == "mousemove") {
-                            if (_this.mousedownposition) {
-                                var position = new feng3d.Vector2(event.clientX, event.clientY);
-                                if (position.equals(_this.mousedownposition)) {
-                                    // console.log(`由于系统原因，触发mousedown同时触发了mousemove，此处屏蔽mousemove事件派发！`);
-                                    return;
-                                }
-                            }
-                        }
-                        if (event.type == "mouseup") {
-                            _this.mousedownposition = null;
-                        }
-                    }
-                }
-                if (event instanceof KeyboardEvent) {
-                    _this.keyCode = event.keyCode;
-                    _this.key = event.key;
-                }
-                if (event instanceof WheelEvent) {
-                    _this.wheelDelta = event.wheelDelta;
-                }
-                // 赋值上次鼠标事件值
-                event.clientX = _this.clientX;
-                event.clientY = _this.clientY;
-                event.pageX = _this.pageX;
-                event.pageY = _this.pageY;
-                _this.dispatchEvent(event);
-            };
-            _this.target = target;
-            return _this;
-        }
-        Object.defineProperty(EventProxy.prototype, "target", {
-            get: function () {
-                return this._target;
-            },
-            set: function (v) {
-                var _this = this;
-                if (this._target == v)
-                    return;
-                if (this._target) {
-                    this.listentypes.forEach(function (element) {
-                        _this._target.removeEventListener(element, _this.onMouseKey);
-                    });
-                }
-                this._target = v;
-                if (this._target) {
-                    this.listentypes.forEach(function (element) {
-                        _this._target.addEventListener(element, _this.onMouseKey);
-                    });
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 监听一次事件后将会被移除
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        EventProxy.prototype.once = function (type, listener, thisObject, priority) {
-            this.on(type, listener, thisObject, priority, true);
-        };
-        /**
-         * 添加监听
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        EventProxy.prototype.on = function (type, listener, thisObject, priority, once) {
-            if (priority === void 0) { priority = 0; }
-            if (once === void 0) { once = false; }
-            _super.prototype.on.call(this, type, listener, thisObject, priority, once);
-            if (this.listentypes.indexOf(type) == -1) {
-                this.listentypes.push(type);
-                this._target.addEventListener(type, this.onMouseKey);
-            }
-        };
-        /**
-         * 移除监听
-         * @param dispatcher 派发器
-         * @param type						事件的类型。
-         * @param listener					要删除的侦听器对象。
-         */
-        EventProxy.prototype.off = function (type, listener, thisObject) {
-            var _this = this;
-            _super.prototype.off.call(this, type, listener, thisObject);
-            if (!type) {
-                this.listentypes.forEach(function (element) {
-                    _this._target.removeEventListener(element, _this.onMouseKey);
-                });
-                this.listentypes.length = 0;
-            }
-            else if (!this.has(type)) {
-                this._target.removeEventListener(type, this.onMouseKey);
-                this.listentypes.splice(this.listentypes.indexOf(type), 1);
-            }
-        };
-        /**
-         * 清理数据
-         */
-        EventProxy.prototype.clear = function () {
-            this.clientX = 0;
-            this.clientY = 0;
-            this.rightmouse = false;
-            this.key = "";
-            this.keyCode = 0;
-            this.wheelDelta = 0;
-        };
-        return EventProxy;
-    }(feng3d.EventDispatcher));
-    feng3d.EventProxy = EventProxy;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var WindowEventProxy = /** @class */ (function (_super) {
-        __extends(WindowEventProxy, _super);
-        function WindowEventProxy() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return WindowEventProxy;
-    }(feng3d.EventProxy));
-    feng3d.WindowEventProxy = WindowEventProxy;
-    if (typeof global != "undefined")
-        feng3d.windowEventProxy = new WindowEventProxy(global);
-    else
-        feng3d.windowEventProxy = new WindowEventProxy(window);
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 全局事件
-     */
-    var Feng3dDispatcher = /** @class */ (function (_super) {
-        __extends(Feng3dDispatcher, _super);
-        function Feng3dDispatcher() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return Feng3dDispatcher;
-    }(feng3d.EventDispatcher));
-    feng3d.Feng3dDispatcher = Feng3dDispatcher;
-    feng3d.feng3dDispatcher = new Feng3dDispatcher();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    feng3d.loadjs = {
-        load: load,
-        ready: ready,
-    };
-    /**
-     * 加载文件
-     * @param params.paths          加载路径
-     * @param params.bundleId       加载包编号
-     * @param params.success        成功回调
-     * @param params.error          错误回调
-     * @param params.async          是否异步加载
-     * @param params.numRetries     加载失败尝试次数
-     * @param params.before         加载前回调
-     * @param params.onitemload     单条文件加载完成回调
-     */
-    function load(params) {
-        // throw error if bundle is already defined
-        if (params.bundleId) {
-            if (params.bundleId in bundleIdCache) {
-                throw "LoadJS";
-            }
-            else {
-                bundleIdCache[params.bundleId] = true;
-            }
-        }
-        var paths = getPaths(params.paths);
-        // load scripts
-        loadFiles(paths, function (pathsNotFound) {
-            // success and error callbacks
-            if (pathsNotFound.length)
-                (params.error || devnull)(pathsNotFound);
-            else
-                (params.success || devnull)();
-            // publish bundle load event
-            publish(params.bundleId, pathsNotFound);
-        }, params);
-    }
-    /**
-     * 准备依赖包
-     * @param params.depends        依赖包编号
-     * @param params.success        成功回调
-     * @param params.error          错误回调
-     */
-    function ready(params) {
-        // subscribe to bundle load event
-        subscribe(params.depends, function (depsNotFound) {
-            // execute callbacks
-            if (depsNotFound.length)
-                (params.error || devnull)(depsNotFound);
-            else
-                (params.success || devnull)();
-        });
-    }
-    /**
-     * 完成下载包
-     * @param bundleId 下载包编号
-     */
-    function done(bundleId) {
-        publish(bundleId, []);
-    }
-    /**
-     * 重置下载包依赖状态
-     */
-    function reset() {
-        bundleIdCache = {};
-        bundleResultCache = {};
-        bundleCallbackQueue = {};
-    }
-    /**
-     * 是否定义下载包
-     * @param {string} bundleId 包编号
-     */
-    function isDefined(bundleId) {
-        return bundleId in bundleIdCache;
-    }
-    var devnull = function () { }, bundleIdCache = {}, bundleResultCache = {}, bundleCallbackQueue = {};
-    /**
-     * 订阅包加载事件
-     * @param bundleIds              包编号
-     * @param callbackFn             完成回调
-     */
-    function subscribe(bundleIds, callbackFn) {
-        var depsNotFound = [];
-        // listify
-        if (bundleIds instanceof String) {
-            bundleIds = [bundleIds];
-        }
-        // define callback function
-        var numWaiting = bundleIds.length;
-        var fn = function (bundleId, pathsNotFound) {
-            if (pathsNotFound.length)
-                depsNotFound.push(bundleId);
-            numWaiting--;
-            if (!numWaiting)
-                callbackFn(depsNotFound);
-        };
-        // register callback
-        var i = bundleIds.length;
-        while (i--) {
-            var bundleId = bundleIds[i];
-            // execute callback if in result cache
-            var r = bundleResultCache[bundleId];
-            if (r) {
-                fn(bundleId, r);
-                continue;
-            }
-            // add to callback queue
-            var q = bundleCallbackQueue[bundleId] = bundleCallbackQueue[bundleId] || [];
-            q.push(fn);
-        }
-    }
-    /**
-     * 派发加载包完成事件
-     * @param bundleId                  加载包编号
-     * @param pathsNotFound             加载失败包
-     */
-    function publish(bundleId, pathsNotFound) {
-        // exit if id isn't defined
-        if (!bundleId)
-            return;
-        var q = bundleCallbackQueue[bundleId];
-        // cache result
-        bundleResultCache[bundleId] = pathsNotFound;
-        // exit if queue is empty
-        if (!q)
-            return;
-        // empty callback queue
-        while (q.length) {
-            q[0](bundleId, pathsNotFound);
-            q.splice(0, 1);
-        }
-    }
-    /**
-     * 加载单个文件
-     * @param path                          文件路径
-     * @param callbackFn                    加载完成回调
-     * @param args                          加载参数
-     * @param args.async                    是否异步加载
-     * @param args.numRetries               尝试加载次数
-     * @param args.before                   加载前回调
-     * @param numTries                      当前尝试次数
-     */
-    function loadFile(path, callbackFn, args, numTries) {
-        var loaderFun = loaders[path.type] || loadTxt;
-        loaderFun(path, callbackFn, args, numTries);
-    }
-    /**
-     * 加载单个Image文件
-     * @param path                          文件路径
-     * @param callbackFn                    加载完成回调
-     * @param args                          加载参数
-     * @param args.async                    是否异步加载
-     * @param args.numRetries               尝试加载次数
-     * @param args.before                   加载前回调
-     * @param numTries                      当前尝试次数
-     */
-    function loadImage(path, callbackFn, args, numTries) {
-        if (numTries === void 0) { numTries = 0; }
-        var image = new Image();
-        image.crossOrigin = "Anonymous";
-        image.onerror = image.onload = function (ev) {
-            var result = ev.type;
-            // handle retries in case of load failure
-            if (result == 'error') {
-                // increment counter
-                numTries = ~~numTries + 1;
-                // exit function and try again
-                args.numRetries = args.numRetries || 0;
-                if (numTries < ~~args.numRetries + 1) {
-                    return loadImage(path, callbackFn, args, numTries);
-                }
-                image.src = "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
-            }
-            // execute callback
-            callbackFn(path, result, ev.defaultPrevented, image);
-        };
-        //
-        var beforeCallbackFn = args.before || (function () { return true; });
-        if (beforeCallbackFn(path, image) !== false)
-            image.src = path.url;
-    }
-    /**
-     * 加载单个txt文件
-     * @param path                          文件路径
-     * @param callbackFn                    加载完成回调
-     * @param args                          加载参数
-     * @param args.async                    是否异步加载
-     * @param args.numRetries               尝试加载次数
-     * @param args.before                   加载前回调
-     * @param numTries                      当前尝试次数
-     */
-    function loadTxt(path, callbackFn, args, numTries) {
-        if (numTries === void 0) { numTries = 0; }
-        var request = new XMLHttpRequest();
-        request.onreadystatechange = function (ev) {
-            var result = ev.type;
-            if (request.readyState == 4) { // 4 = "loaded"
-                request.onreadystatechange = null;
-                // handle retries in case of load failure
-                if (request.status < 200 || request.status > 300) {
-                    // increment counter
-                    numTries = ~~numTries + 1;
-                    // exit function and try again
-                    args.numRetries = args.numRetries || 0;
-                    if (numTries < ~~args.numRetries + 1) {
-                        return loadTxt(path, callbackFn, args, numTries);
-                    }
-                }
-                // execute callback
-                callbackFn(path, result, ev.defaultPrevented, request.responseText);
-            }
-        };
-        request.open('Get', path.url, true);
-        //
-        var beforeCallbackFn = args.before || (function () { return true; });
-        if (beforeCallbackFn(path, request) !== false)
-            request.send();
-    }
-    /**
-     * 加载单个js或者css文件
-     * @param path                          文件路径
-     * @param callbackFn                    加载完成回调
-     * @param args                          加载参数
-     * @param args.async                    是否异步加载
-     * @param args.numRetries               尝试加载次数
-     * @param args.before                   加载前回调
-     * @param numTries                      当前尝试次数
-     */
-    function loadJsCss(path, callbackFn, args, numTries) {
-        if (numTries === void 0) { numTries = 0; }
-        var doc = document, isCss, e;
-        if (/(^css!|\.css$)/.test(path.url)) {
-            isCss = true;
-            // css
-            e = doc.createElement('link');
-            e.rel = 'stylesheet';
-            e.href = path.url.replace(/^css!/, ''); // remove "css!" prefix
-        }
-        else {
-            // javascript
-            e = doc.createElement('script');
-            e.src = path.url;
-            e.async = !!args.async;
-        }
-        e.onload = e.onerror = e.onbeforeload = function (ev) {
-            var result = ev.type;
-            // Note: The following code isolates IE using `hideFocus` and treats empty
-            // stylesheets as failures to get around lack of onerror support
-            if (isCss && 'hideFocus' in e) {
-                try {
-                    if (!e.sheet.cssText.length)
-                        result = 'error';
-                }
-                catch (x) {
-                    // sheets objects created from load errors don't allow access to
-                    // `cssText`
-                    result = 'error';
-                }
-            }
-            // handle retries in case of load failure
-            if (result == 'error') {
-                // increment counter
-                numTries = ~~numTries + 1;
-                // exit function and try again
-                args.numRetries = args.numRetries || 0;
-                if (numTries < ~~args.numRetries + 1) {
-                    return loadJsCss(path, callbackFn, args, numTries);
-                }
-            }
-            // execute callback
-            callbackFn(path, result, ev.defaultPrevented, e);
-        };
-        // add to document (unless callback returns `false`)
-        var beforeCallbackFn = args.before || (function () { return true; });
-        if (beforeCallbackFn(path, e) !== false)
-            doc.head.appendChild(e);
-    }
-    /**
-     * 加载多文件
-     * @param paths         文件路径
-     * @param callbackFn    加载完成回调
-     */
-    function loadFiles(paths, callbackFn, args) {
-        var notLoadFiles = paths.concat();
-        var loadingFiles = [];
-        var pathsNotFound = [];
-        // define callback function
-        var fn = function (path, result, defaultPrevented, content) {
-            // handle error
-            if (result == 'error')
-                pathsNotFound.push(path.url);
-            // handle beforeload event. If defaultPrevented then that means the load
-            // will be blocked (ex. Ghostery/ABP on Safari)
-            if (result[0] == 'b') {
-                if (defaultPrevented)
-                    pathsNotFound.push(path.url);
-                else
-                    return;
-            }
-            var index = loadingFiles.indexOf(path);
-            loadingFiles.splice(index, 1);
-            args.onitemload && args.onitemload(path.url, content);
-            if (loadingFiles.length == 0 && notLoadFiles.length == 0)
-                callbackFn(pathsNotFound);
-            if (notLoadFiles.length) {
-                var file = notLoadFiles[0];
-                notLoadFiles.shift();
-                loadingFiles.push(file);
-                loadFile(file, fn, args);
-            }
-        };
-        // load scripts
-        var file;
-        if (!!args.async) {
-            for (var i = 0, x = notLoadFiles.length; i < x; i++) {
-                file = notLoadFiles[i];
-                loadingFiles.push(file);
-                loadFile(file, fn, args);
-            }
-            notLoadFiles.length = 0;
-        }
-        else {
-            file = notLoadFiles[0];
-            notLoadFiles.shift();
-            loadingFiles.push(file);
-            loadFile(file, fn, args);
-        }
-    }
-    /**
-     * 获取路径以及类型
-     * @param pathUrls 路径
-     */
-    function getPaths(pathUrls) {
-        var paths = [];
-        if (typeof pathUrls == "string") {
-            pathUrls = [pathUrls];
-        }
-        if (!(pathUrls instanceof Array)) {
-            pathUrls = [pathUrls];
-        }
-        for (var i = 0; i < pathUrls.length; i++) {
-            var pathurl = pathUrls[i];
-            if (typeof pathurl == "string") {
-                paths[i] = { url: pathurl, type: getPathType(pathurl) };
-            }
-            else {
-                paths[i] = pathurl;
-            }
-        }
-        return paths;
-    }
-    /**
-     * 获取路径类型
-     * @param path 路径
-     */
-    function getPathType(path) {
-        var type = "txt";
-        for (var i = 0; i < typeRegExps.length; i++) {
-            var element = typeRegExps[i];
-            if (element.reg.test(path))
-                type = element.type;
-        }
-        return type;
-    }
-    /**
-     * 资源类型
-     */
-    var types = { js: "js", css: "css", txt: "txt", image: "image" };
-    /**
-     * 加载函数
-     */
-    var loaders = {
-        txt: loadTxt,
-        js: loadJsCss,
-        css: loadJsCss,
-        image: loadImage,
-    };
-    var typeRegExps = [
-        { reg: /(^css!|\.css$)/i, type: types.css },
-        { reg: /(\.js\b)/i, type: types.js },
-        { reg: /(\.png\b)/i, type: types.image },
-        { reg: /(\.jpg\b)/i, type: types.image },
-    ];
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 测试代码运行时间
-     * @param fn 被测试的方法
-     * @param labal 标签
-     */
-    function time(fn, labal) {
-        labal = labal || fn["name"] || "Anonymous function " + Math.random();
-        console.time(labal);
-        fn();
-        console.timeEnd(labal);
-    }
-    feng3d.time = time;
-    /**
-     * 断言，测试不通过时报错
-     * @param test 测试项
-     * @param message 测试失败时提示信息
-     * @param optionalParams
-     */
-    function assert(test, message) {
-        var optionalParams = [];
-        for (var _i = 2; _i < arguments.length; _i++) {
-            optionalParams[_i - 2] = arguments[_i];
-        }
-        if (!test)
-            debugger;
-        console.assert.apply(null, arguments);
-    }
-    feng3d.assert = assert;
-    /**
-     * 输出错误
-     * @param message 错误信息
-     * @param optionalParams
-     */
-    function error(message) {
-        var optionalParams = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            optionalParams[_i - 1] = arguments[_i];
-        }
-        debugger;
-        console.error.apply(null, arguments);
-    }
-    feng3d.error = error;
-    /**
-     * 记录日志信息
-     * @param message 日志信息
-     * @param optionalParams
-     */
-    function log(message) {
-        var optionalParams = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            optionalParams[_i - 1] = arguments[_i];
-        }
-        console.log.apply(null, arguments);
-    }
-    feng3d.log = log;
-    /**
-     * 警告
-     * @param message 警告信息
-     * @param optionalParams
-     */
-    function warn(message) {
-        var optionalParams = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            optionalParams[_i - 1] = arguments[_i];
-        }
-        console.warn.apply(null, arguments);
-    }
-    feng3d.warn = warn;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 观察装饰器，观察被装饰属性的变化
-     *
-     * @param onChange 属性变化回调  例如参数为“onChange”时，回调将会调用this.onChange(property, oldValue, newValue)
-     * @see https://gitee.com/feng3d/feng3d/issues/IGIK0
-     *
-     * 使用@watch后会自动生成一个带"_"的属性，例如 属性"a"会生成"_a"
-     *
-     * 通过使用 eval 函数 生成出 与自己手动写的set get 一样的函数，性能已经接近 手动写的get set函数。
-     *
-     * 性能：
-     * chrome：
-     * 测试 get ：
-Test.ts:100 watch与getset最大耗时比 1.2222222222222223
-Test.ts:101 watch与getset最小耗时比 0.7674418604651163
-Test.ts:102 watch与getset平均耗时比 0.9558823529411765
-Test.ts:103 watch平均耗时比 13
-Test.ts:104 getset平均耗时比 13.6
-Test.ts:98 测试 set ：
-Test.ts:100 watch与getset最大耗时比 4.5
-Test.ts:101 watch与getset最小耗时比 2.409090909090909
-Test.ts:102 watch与getset平均耗时比 3.037037037037037
-Test.ts:103 watch平均耗时比 57.4
-Test.ts:104 getset平均耗时比 18.9
-
-     *
-     * nodejs:
-     * 测试 get ：
-watch与getset最大耗时比 1.3333333333333333
-watch与getset最小耗时比 0.55
-watch与getset平均耗时比 1.0075757575757576
-watch平均耗时比 13.3
-getset平均耗时比 13.2
-测试 set ：
-watch与getset最大耗时比 4.9
-watch与getset最小耗时比 3
-watch与getset平均耗时比 4.143497757847534
-watch平均耗时比 92.4
-getset平均耗时比 22.3
-     *
-     *
-     * firefox:
-     * 测试 get ：  Test.js:122:5
-watch与getset最大耗时比 4.142857142857143  Test.js:124:5
-watch与getset最小耗时比 0.4090909090909091  Test.js:125:5
-watch与getset平均耗时比 1.0725806451612903  Test.js:126:5
-watch平均耗时比 13.3  Test.js:127:5
-getset平均耗时比 12.4  Test.js:128:5
-测试 set ：  Test.js:122:5
-watch与getset最大耗时比 1.5333333333333334  Test.js:124:5
-watch与getset最小耗时比 0.6842105263157895  Test.js:125:5
-watch与getset平均耗时比 0.9595375722543352  Test.js:126:5
-watch平均耗时比 16.6  Test.js:127:5
-getset平均耗时比 17.3
-     *
-     * 结果分析：
-     * chrome、nodejs、firefox运行结果出现差异,firefox运行结果最完美
-     *
-     * 使用watch后的get测试的消耗与手动写get消耗一致
-     * chrome与nodejs上set消耗是手动写set的消耗(3-4)倍
-     *
-     * 注：不适用eval的情况下，chrome表现最好的，与此次测试结果差不多；在nodejs与firfox上将会出现比使用eval情况下消耗的（40-400）倍，其中详细原因不明，求高人解释！
-     *
-     */
-    function watch(onChange) {
-        return function (target, property) {
-            var key = "_" + property;
-            var get;
-            // get = function () { return this[key]; };
-            eval("get = function (){return this." + key + "}");
-            var set;
-            // set = function (value)
-            // {
-            //     if (this[key] === value)
-            //         return;
-            //     var oldValue = this[key];
-            //     this[key] = value;
-            //     this[onChange](propertyKey, oldValue, this[key]);
-            // };
-            eval("set = function (value){\n                if (this." + key + " == value)\n                    return;\n                var oldValue = this." + key + ";\n                this." + key + " = value;\n                this." + onChange + "(\"" + property + "\", oldValue, value);\n            }");
-            Object.defineProperty(target, property, {
-                get: get,
-                set: set,
-                enumerable: true,
-                configurable: true
-            });
-        };
-    }
-    feng3d.watch = watch;
-    var Watcher = /** @class */ (function () {
-        function Watcher() {
-        }
-        /**
-         * 注意：使用watch后获取该属性值的性能将会是原来的1/60，禁止在feng3d引擎内部使用watch
-         * @param host
-         * @param property1
-         * @param handler
-         * @param thisObject
-         */
-        Watcher.prototype.watch = function (host, property, handler, thisObject) {
-            if (!Object.getOwnPropertyDescriptor(host, bindables)) {
-                Object.defineProperty(host, bindables, {
-                    value: {},
-                    enumerable: false,
-                });
-            }
-            var watchs = host[bindables];
-            var property1 = property;
-            if (!watchs[property1]) {
-                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(host, property1);
-                watchs[property1] = { value: host[property1], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
-                //
-                var data = Object.getPropertyDescriptor(host, property1);
-                if (data && data.set && data.get) {
-                    data = { enumerable: true, configurable: true, get: data.get, set: data.set };
-                    var orgSet = data.set;
-                    data.set = function (value) {
-                        var oldvalue = this[property1];
-                        if (oldvalue != value) {
-                            orgSet && orgSet.call(this, value);
-                            notifyListener(this, property1, oldvalue);
-                        }
-                    };
-                }
-                else if (!data || (!data.get && !data.set)) {
-                    data = { enumerable: true, configurable: true };
-                    data.get = function () {
-                        return this[bindables][property1].value;
-                    };
-                    data.set = function (value) {
-                        var oldvalue = this[bindables][property1].value;
-                        if (oldvalue != value) {
-                            this[bindables][property1].value = value;
-                            notifyListener(this, property1, oldvalue);
-                        }
-                    };
-                }
-                else {
-                    feng3d.warn("watch " + host + " . " + property + " \u5931\u8D25\uFF01");
-                    return;
-                }
-                Object.defineProperty(host, property1, data);
-            }
-            var propertywatchs = watchs[property1];
-            var has = propertywatchs.handlers.reduce(function (v, item) { return v || (item.handler == handler && item.thisObject == thisObject); }, false);
-            if (!has)
-                propertywatchs.handlers.push({ handler: handler, thisObject: thisObject });
-        };
-        Watcher.prototype.unwatch = function (host, property, handler, thisObject) {
-            var watchs = host[bindables];
-            if (!watchs)
-                return;
-            var property1 = property;
-            if (watchs[property1]) {
-                var handlers = watchs[property1].handlers;
-                if (handler === undefined)
-                    handlers.length = 0;
-                for (var i = handlers.length - 1; i >= 0; i--) {
-                    if (handlers[i].handler == handler && (handlers[i].thisObject == thisObject || thisObject === undefined))
-                        handlers.splice(i, 1);
-                }
-                if (handlers.length == 0) {
-                    var value = host[property1];
-                    delete host[property1];
-                    if (watchs[property1].oldPropertyDescriptor)
-                        Object.defineProperty(host, property1, watchs[property1].oldPropertyDescriptor);
-                    host[property1] = value;
-                    delete watchs[property1];
-                }
-                if (Object.keys(watchs).length == 0) {
-                    delete host[bindables];
-                }
-            }
-        };
-        Watcher.prototype.watchchain = function (host, property, handler, thisObject) {
-            var _this = this;
-            var notIndex = property.indexOf(".");
-            if (notIndex == -1) {
-                this.watch(host, property, handler, thisObject);
-                return;
-            }
-            if (!Object.getOwnPropertyDescriptor(host, bindablechains))
-                Object.defineProperty(host, bindablechains, { value: {}, enumerable: false, });
-            var watchchains = host[bindablechains];
-            if (!watchchains[property]) {
-                watchchains[property] = [];
-            }
-            var propertywatchs = watchchains[property];
-            var has = propertywatchs.reduce(function (v, item) { return v || (item.handler == handler && item.thisObject == thisObject); }, false);
-            if (!has) {
-                // 添加下级监听链
-                var currentp = property.substr(0, notIndex);
-                var nextp = property.substr(notIndex + 1);
-                if (host[currentp]) {
-                    this.watchchain(host[currentp], nextp, handler, thisObject);
-                }
-                // 添加链监听
-                var watchchainFun = function (h, p, oldvalue) {
-                    var newvalue = h[p];
-                    if (oldvalue)
-                        _this.unwatchchain(oldvalue, nextp, handler, thisObject);
-                    if (newvalue)
-                        _this.watchchain(newvalue, nextp, handler, thisObject);
-                    // 当更换对象且监听值发生改变时触发处理函数
-                    try {
-                        var ov = eval("oldvalue." + nextp + "");
-                    }
-                    catch (e) {
-                        ov = undefined;
-                    }
-                    try {
-                        var nv = eval("newvalue." + nextp + "");
-                    }
-                    catch (e) {
-                        nv = undefined;
-                    }
-                    if (ov != nv) {
-                        handler.call(thisObject, newvalue, nextp, ov);
-                    }
-                };
-                this.watch(host, currentp, watchchainFun);
-                // 记录链监听函数
-                propertywatchs.push({ handler: handler, thisObject: thisObject, watchchainFun: watchchainFun });
-            }
-        };
-        Watcher.prototype.unwatchchain = function (host, property, handler, thisObject) {
-            var notIndex = property.indexOf(".");
-            if (notIndex == -1) {
-                this.unwatch(host, property, handler, thisObject);
-                return;
-            }
-            var currentp = property.substr(0, notIndex);
-            var nextp = property.substr(notIndex + 1);
-            //
-            var watchchains = host[bindablechains];
-            if (!watchchains || !watchchains[property])
-                return;
-            // 
-            var propertywatchs = watchchains[property];
-            for (var i = propertywatchs.length - 1; i >= 0; i--) {
-                var element = propertywatchs[i];
-                if (handler == null || (handler == element.handler && thisObject == element.thisObject)) {
-                    // 删除下级监听链
-                    if (host[currentp]) {
-                        this.unwatchchain(host[currentp], nextp, element.handler, element.thisObject);
-                    }
-                    // 删除链监听
-                    this.unwatch(host, currentp, element.watchchainFun);
-                    // 清理记录链监听函数
-                    propertywatchs.splice(i, 1);
-                }
-            }
-            // 清理空列表
-            if (propertywatchs.length == 0)
-                delete watchchains[property];
-            if (Object.keys(watchchains).length == 0) {
-                delete host[bindablechains];
-            }
-        };
-        return Watcher;
-    }());
-    feng3d.Watcher = Watcher;
-    feng3d.watcher = new Watcher();
-    var bindables = "__watchs__";
-    var bindablechains = "__watchchains__";
-    function notifyListener(host, property, oldview) {
-        var watchs = host[bindables];
-        var handlers = watchs[property].handlers;
-        handlers.forEach(function (element) {
-            element.handler.call(element.thisObject, host, property, oldview);
-        });
-    }
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 序列化装饰器，被装饰属性将被序列化
-     * @param {*} target                序列化原型
-     * @param {string} propertyKey      序列化属性
-     */
-    function serialize(target, propertyKey) {
-        var serializeInfo = getSerializeInfo(target);
-        serializeInfo.propertys.push({ property: propertyKey });
-    }
-    feng3d.serialize = serialize;
-    /**
-     * 序列化资源装饰器，被装饰属性将被序列化为资源编号
-     * @param {*} target                序列化原型
-     * @param {string} propertyKey      序列化属性
-     */
-    function serializeAssets(target, propertyKey) {
-        var serializeInfo = getSerializeInfo(target);
-        serializeInfo.propertys.push({ property: propertyKey, assets: true });
-    }
-    feng3d.serializeAssets = serializeAssets;
-    /**
-     * 序列化
-     */
-    var Serialization = /** @class */ (function () {
-        function Serialization() {
-        }
-        /**
-         * 序列化对象
-         * @param target 被序列化的对象
-         * @returns 序列化后可以转换为Json的数据对象
-         */
-        Serialization.prototype.serialize = function (target) {
-            //基础类型
-            if (isBaseType(target))
-                return target;
-            // 排除不支持序列化对象
-            if (target.hasOwnProperty("serializable") && !target["serializable"])
-                return undefined;
-            //处理数组
-            if (target.constructor === Array) {
-                var arr = [];
-                for (var i = 0; i < target.length; i++) {
-                    arr[i] = this.serialize(target[i]);
-                }
-                return arr;
-            }
-            var object = {};
-            //处理普通Object
-            if (target.constructor === Object) {
-                object[CLASS_KEY] = "Object";
-                for (var key in target) {
-                    if (target.hasOwnProperty(key)) {
-                        if (target[key] !== undefined) {
-                            object[key] = this.serialize(target[key]);
-                        }
-                    }
-                }
-                return object;
-            }
-            //处理方法
-            if (typeof target == "function") {
-                object[CLASS_KEY] = "function";
-                object.data = target.toString();
-                return object;
-            }
-            var className = feng3d.classUtils.getQualifiedClassName(target);
-            object[CLASS_KEY] = className;
-            if (target["serialize"])
-                return target["serialize"](object);
-            //使用默认序列化
-            var defaultInstance = getDefaultInstance(target);
-            this.different(target, defaultInstance, object);
-            return object;
-        };
-        /**
-         * 比较两个对象的不同，提取出不同的数据
-         * @param target 用于检测不同的数据
-         * @param defaultInstance   模板（默认）数据
-         * @param different 比较得出的不同（简单结构）数据
-         * @returns 比较得出的不同（简单结构）数据
-         */
-        Serialization.prototype.different = function (target, defaultInstance, different) {
-            different = different || {};
-            var serializableMembers = getSerializableMembers(target);
-            if (target.constructor == Object)
-                serializableMembers = Object.keys(target).map(function (v) { return { property: v }; });
-            for (var i = 0; i < serializableMembers.length; i++) {
-                var property = serializableMembers[i].property;
-                var assets = serializableMembers[i].assets;
-                if (assets && target[property] instanceof feng3d.Feng3dAssets && target[property].assetsId) {
-                    var assetsId0 = target[property] && target[property].assetsId;
-                    var assetsId1 = defaultInstance[property] && defaultInstance[property].assetsId;
-                    if (assetsId0 != assetsId1)
-                        different[property] = assetsId0;
-                    continue;
-                }
-                if (target[property] === defaultInstance[property])
-                    continue;
-                if (isBaseType(target[property])) {
-                    different[property] = target[property];
-                    continue;
-                }
-                if (defaultInstance[property] == null) {
-                    different[property] = this.serialize(target[property]);
-                    continue;
-                }
-                if (defaultInstance[property].constructor != target[property].constructor) {
-                    different[property] = this.serialize(target[property]);
-                    continue;
-                }
-                if (target[property].constructor == Array) {
-                    if (target[property].length == 0) {
-                        if (defaultInstance[property].length == 0)
-                            continue;
-                        different[property] = [];
-                        continue;
-                    }
-                    different[property] = this.serialize(target[property]);
-                    continue;
-                }
-                var diff = this.different(target[property], defaultInstance[property]);
-                if (Object.keys(diff).length > 0)
-                    different[property] = diff;
-            }
-            return different;
-        };
-        /**
-         * 反序列化
-         * @param object 换为Json的对象
-         * @returns 反序列化后的数据
-         */
-        Serialization.prototype.deserialize = function (object, tempInfo) {
-            var _this = this;
-            tempInfo = initTempInfo(tempInfo);
-            //基础类型
-            if (isBaseType(object))
-                return object;
-            //处理数组
-            if (object instanceof Array) {
-                var arr = object.map(function (v) { return _this.deserialize(v, tempInfo); });
-                return arr;
-            }
-            if (object.constructor != Object) {
-                return object;
-            }
-            // 获取类型
-            var className = object[CLASS_KEY];
-            // 处理普通Object
-            if (className == "Object" || className == null) {
-                var target = {};
-                for (var key in object) {
-                    target[key] = this.deserialize(object[key], tempInfo);
-                }
-                return target;
-            }
-            //处理方法
-            if (className == "function") {
-                var f;
-                eval("f=" + object.data);
-                return f;
-            }
-            var cls = feng3d.classUtils.getDefinitionByName(className);
-            if (!cls) {
-                feng3d.warn("\u65E0\u6CD5\u5E8F\u5217\u53F7\u5BF9\u8C61 " + className);
-                return undefined;
-            }
-            target = new cls();
-            //处理自定义反序列化对象
-            if (target["deserialize"])
-                return target["deserialize"](object);
-            //默认反序列
-            this.setValue(target, object, tempInfo);
-            return target;
-        };
-        /**
-         * 从数据对象中提取数据给目标对象赋值
-         * @param target 目标对象
-         * @param object 数据对象
-         */
-        Serialization.prototype.setValue = function (target, object, tempInfo) {
-            if (!object)
-                return;
-            tempInfo = initTempInfo(tempInfo);
-            var serializeAssets = getSerializableMembers(target).reduce(function (pv, cv) { if (cv.assets)
-                pv.push(cv.property); return pv; }, []);
-            var _loop_1 = function (property) {
-                if (object.hasOwnProperty(property)) {
-                    if (serializeAssets.indexOf(property) != -1) {
-                        if (typeof object[property] == "string") {
-                            tempInfo.loadingNum++;
-                            feng3d.assets.readAssets(object[property], function (err, feng3dAssets) {
-                                target[property] = feng3dAssets;
-                                tempInfo.loadingNum--;
-                                if (tempInfo.loadingNum == 0) {
-                                    tempInfo.onLoaded && tempInfo.onLoaded();
-                                }
-                            });
-                        }
-                        else {
-                            target[property] = this_1.deserialize(object[property], tempInfo);
-                        }
-                    }
-                    else {
-                        this_1.setPropertyValue(target, object, property, tempInfo);
-                    }
-                }
-            };
-            var this_1 = this;
-            for (var property in object) {
-                _loop_1(property);
-            }
-            // var serializableMembers = getSerializableMembers(target);
-            // for (var i = 0; i < serializableMembers.length; i++)
-            // {
-            //     var property = serializableMembers[i];
-            //     if (object[property] !== undefined)
-            //     {
-            //         this.setPropertyValue(target, object, property);
-            //     }
-            // }
-        };
-        /**
-         * 给目标对象的指定属性赋值
-         * @param target 目标对象
-         * @param object 数据对象
-         * @param property 属性名称
-         */
-        Serialization.prototype.setPropertyValue = function (target, object, property, tempInfo) {
-            if (target[property] == object[property])
-                return;
-            tempInfo = initTempInfo(tempInfo);
-            var objvalue = object[property];
-            // 当原值等于null时直接反序列化赋值
-            if (target[property] == null) {
-                target[property] = this.deserialize(objvalue, tempInfo);
-                return;
-            }
-            if (isBaseType(objvalue)) {
-                target[property] = objvalue;
-                return;
-            }
-            if (objvalue.constructor == Array) {
-                target[property] = this.deserialize(objvalue, tempInfo);
-                return;
-            }
-            // 处理同为Object类型
-            if (objvalue[CLASS_KEY] == undefined) {
-                if (target[property].constructor == Object) {
-                    for (var key in objvalue) {
-                        this.setPropertyValue(target[property], objvalue, key, tempInfo);
-                    }
-                }
-                else {
-                    this.setValue(target[property], objvalue, tempInfo);
-                }
-                return;
-            }
-            var targetClassName = feng3d.classUtils.getQualifiedClassName(target[property]);
-            if (targetClassName == objvalue[CLASS_KEY]) {
-                this.setValue(target[property], objvalue, tempInfo);
-            }
-            else {
-                target[property] = this.deserialize(objvalue, tempInfo);
-            }
-        };
-        /**
-         * 克隆
-         * @param target 被克隆对象
-         */
-        Serialization.prototype.clone = function (target) {
-            return this.deserialize(this.serialize(target));
-        };
-        return Serialization;
-    }());
-    feng3d.Serialization = Serialization;
-    var CLASS_KEY = "__class__";
-    var SERIALIZE_KEY = "_serialize__";
-    /**
-     * 判断是否为基础类型（在序列化中不发生变化的对象）
-     */
-    function isBaseType(object) {
-        //基础类型
-        if (object == undefined
-            || object == null
-            || typeof object == "boolean"
-            || typeof object == "string"
-            || typeof object == "number")
-            return true;
-    }
-    /**
-     * 获取默认实例
-     */
-    function getDefaultInstance(object) {
-        var serializeInfo = getSerializeInfo(object);
-        serializeInfo.default = serializeInfo.default || new object.constructor();
-        return serializeInfo.default;
-    }
-    /**
-     * 获取序列号信息
-     * @param object 对象
-     */
-    function getSerializeInfo(object) {
-        if (!Object.getOwnPropertyDescriptor(object, SERIALIZE_KEY)) {
-            Object.defineProperty(object, SERIALIZE_KEY, {
-                /**
-                 * uv数据
-                 */
-                value: { propertys: [] },
-                enumerable: false,
-                configurable: true
-            });
-        }
-        var serializeInfo = object[SERIALIZE_KEY];
-        return serializeInfo;
-    }
-    /**
-     * 获取序列化属性列表
-     */
-    function getSerializableMembers(object, serializableMembers) {
-        serializableMembers = serializableMembers || [];
-        if (object["__proto__"]) {
-            getSerializableMembers(object["__proto__"], serializableMembers);
-        }
-        var serializeInfo = getSerializeInfo(object);
-        if (serializeInfo) {
-            var propertys = serializeInfo.propertys;
-            for (var i = 0, n = propertys.length; i < n; i++) {
-                serializableMembers.push(propertys[i]);
-            }
-        }
-        return serializableMembers;
-    }
-    function initTempInfo(tempInfo) {
-        tempInfo = tempInfo || { loadingNum: 0, onLoaded: function () { } };
-        tempInfo.loadingNum = tempInfo.loadingNum || 0;
-        return tempInfo;
-    }
-    feng3d.serialization = new Serialization();
-})(feng3d || (feng3d = {}));
-// [Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach(element =>
-// {
-//     element.prototype["serialize"] = function (object: { value: number[] })
-//     {
-//         object.value = Array.from(this);
-//         return object;
-//     }
-//     element.prototype["deserialize"] = function (object: { value: number[] })
-//     {
-//         return new (<any>(this.constructor))(object.value);
-//     }
-// });
-var feng3d;
-(function (feng3d) {
-    /**
-     * 标记objectview对象界面类
-     */
-    function OVComponent(component) {
-        return function (constructor) {
-            component = component || constructor["name"];
-            feng3d.objectview.OVComponent[component] = constructor;
-        };
-    }
-    feng3d.OVComponent = OVComponent;
-    /**
-     * 标记objectview块界面类
-     */
-    function OBVComponent(component) {
-        return function (constructor) {
-            component = component || constructor["name"];
-            feng3d.objectview.OBVComponent[component] = constructor;
-        };
-    }
-    feng3d.OBVComponent = OBVComponent;
-    /**
-     * 标记objectview属性界面类
-     */
-    function OAVComponent(component) {
-        return function (constructor) {
-            component = component || constructor["name"];
-            feng3d.objectview.OAVComponent[component] = constructor;
-        };
-    }
-    feng3d.OAVComponent = OAVComponent;
-    /**
-     * objectview类装饰器
-     */
-    function ov(param) {
-        return function (constructor) {
-            if (!Object.getOwnPropertyDescriptor(constructor["prototype"], OBJECTVIEW_KEY))
-                constructor["prototype"][OBJECTVIEW_KEY] = {};
-            var objectview = constructor["prototype"][OBJECTVIEW_KEY];
-            objectview.component = param.component;
-            objectview.componentParam = param.componentParam;
-        };
-    }
-    feng3d.ov = ov;
-    /**
-     * objectview属性装饰器
-     * @param param 参数
-     */
-    function oav(param) {
-        return function (target, propertyKey) {
-            feng3d.objectview.addOAV(target, propertyKey, param);
-        };
-    }
-    feng3d.oav = oav;
-    /**
-     * 对象界面
-     */
-    var ObjectView = /** @class */ (function () {
-        function ObjectView() {
-            /**
-             * 默认基础类型对象界面类定义
-             */
-            this.defaultBaseObjectViewClass = "";
-            /**
-             * 默认对象界面类定义
-             */
-            this.defaultObjectViewClass = "";
-            /**
-             * 默认对象属性界面类定义
-             */
-            this.defaultObjectAttributeViewClass = "";
-            /**
-             * 属性块默认界面
-             */
-            this.defaultObjectAttributeBlockView = "";
-            /**
-             * 指定属性类型界面类定义字典（key:属性类名称,value:属性界面类定义）
-             */
-            this.defaultTypeAttributeView = {};
-            this.OAVComponent = {};
-            this.OBVComponent = {};
-            this.OVComponent = {};
-        }
-        ObjectView.prototype.setDefaultTypeAttributeView = function (type, component) {
-            this.defaultTypeAttributeView[type] = component;
-        };
-        /**
-         * 获取对象界面
-         * @param object 用于生成界面的对象
-         * @param param 参数
-         */
-        ObjectView.prototype.getObjectView = function (object, param) {
-            var p = { autocreate: true, excludeAttrs: [] };
-            Object.assign(p, param);
-            var classConfig = this.getObjectInfo(object, p.autocreate, p.excludeAttrs);
-            classConfig.editable = classConfig.editable == undefined ? true : classConfig.editable;
-            Object.assign(classConfig, param);
-            // 处理 exclude
-            classConfig.objectAttributeInfos = classConfig.objectAttributeInfos.filter(function (v) { return !v.exclude; });
-            classConfig.objectBlockInfos.forEach(function (v) {
-                v.itemList = v.itemList.filter(function (vv) { return !vv.exclude; });
-            });
-            classConfig.objectAttributeInfos.forEach(function (v) { v.editable = v.editable && classConfig.editable; });
-            if (classConfig.component == null || classConfig.component == "") {
-                //返回基础类型界面类定义
-                if (!(classConfig.owner instanceof Object)) {
-                    classConfig.component = this.defaultBaseObjectViewClass;
-                }
-                else {
-                    //使用默认类型界面类定义
-                    classConfig.component = this.defaultObjectViewClass;
-                }
-            }
-            var cls = this.OVComponent[classConfig.component];
-            feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + classConfig.component + " \u5BF9\u5E94\u7684\u5BF9\u8C61\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + classConfig.component + " \u4E2D\u4F7F\u7528@OVComponent()\u6807\u8BB0");
-            var view = new cls(classConfig);
-            return view;
-        };
-        /**
-         * 获取属性界面
-         *
-         * @static
-         * @param {AttributeViewInfo} attributeViewInfo			属性界面信息
-         * @returns {egret.DisplayObject}						属性界面
-         *
-         * @memberOf ObjectView
-         */
-        ObjectView.prototype.getAttributeView = function (attributeViewInfo) {
-            if (attributeViewInfo.component == null || attributeViewInfo.component == "") {
-                var defaultViewClass = this.defaultTypeAttributeView[attributeViewInfo.type];
-                var tempComponent = defaultViewClass ? defaultViewClass.component : "";
-                if (tempComponent != null && tempComponent != "") {
-                    attributeViewInfo.component = defaultViewClass.component;
-                    attributeViewInfo.componentParam = defaultViewClass.componentParam || attributeViewInfo.componentParam;
-                }
-            }
-            if (attributeViewInfo.component == null || attributeViewInfo.component == "") {
-                //使用默认对象属性界面类定义
-                attributeViewInfo.component = this.defaultObjectAttributeViewClass;
-            }
-            var cls = this.OAVComponent[attributeViewInfo.component];
-            feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + attributeViewInfo.component + " \u5BF9\u5E94\u7684\u5C5E\u6027\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + attributeViewInfo.component + " \u4E2D\u4F7F\u7528@OVAComponent()\u6807\u8BB0");
-            var view = new cls(attributeViewInfo);
-            return view;
-        };
-        /**
-         * 获取块界面
-         *
-         * @static
-         * @param {BlockViewInfo} blockViewInfo			块界面信息
-         * @returns {egret.DisplayObject}				块界面
-         *
-         * @memberOf ObjectView
-         */
-        ObjectView.prototype.getBlockView = function (blockViewInfo) {
-            if (blockViewInfo.component == null || blockViewInfo.component == "") {
-                //返回默认对象属性界面类定义
-                blockViewInfo.component = this.defaultObjectAttributeBlockView;
-            }
-            var cls = this.OBVComponent[blockViewInfo.component];
-            feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + blockViewInfo.component + " \u5BF9\u5E94\u7684\u5757\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + blockViewInfo.component + " \u4E2D\u4F7F\u7528@OVBComponent()\u6807\u8BB0");
-            var view = new cls(blockViewInfo);
-            return view;
-        };
-        ObjectView.prototype.addOAV = function (target, propertyKey, param) {
-            if (!Object.getOwnPropertyDescriptor(target, OBJECTVIEW_KEY))
-                target[OBJECTVIEW_KEY] = {};
-            var objectview = target[OBJECTVIEW_KEY] || {};
-            var attributeDefinitionVec = objectview.attributeDefinitionVec = objectview.attributeDefinitionVec || [];
-            var attributeDefinition = Object.assign({ name: propertyKey }, param);
-            attributeDefinitionVec.push(attributeDefinition);
-        };
-        /**
-         * 获取对象信息
-         * @param object				对象
-         * @param autocreate			当对象没有注册属性时是否自动创建属性信息
-         * @param excludeAttrs			排除属性列表
-         * @return
-         */
-        ObjectView.prototype.getObjectInfo = function (object, autocreate, excludeAttrs) {
-            if (autocreate === void 0) { autocreate = true; }
-            if (excludeAttrs === void 0) { excludeAttrs = []; }
-            if (typeof object == "string" || typeof object == "number" || typeof object == "boolean") {
-                return {
-                    objectAttributeInfos: [],
-                    objectBlockInfos: [],
-                    owner: object,
-                    component: "",
-                    componentParam: undefined
-                };
-            }
-            var classConfig = getInheritClassDefinition(object, autocreate);
-            classConfig = classConfig || {
-                component: "",
-                componentParam: null,
-                attributeDefinitionVec: [],
-                blockDefinitionVec: [],
-            };
-            var objectAttributeInfos = [];
-            classConfig.attributeDefinitionVec.forEach(function (attributeDefinition) {
-                if (excludeAttrs.indexOf(attributeDefinition.name) == -1) {
-                    var editable = attributeDefinition.editable == undefined ? true : attributeDefinition.editable;
-                    editable = editable && Object.propertyIsWritable(object, attributeDefinition.name);
-                    var obj = { owner: object, type: getAttributeType(object[attributeDefinition.name]) };
-                    Object.assign(obj, attributeDefinition);
-                    obj.editable = editable;
-                    objectAttributeInfos.push(obj);
-                }
-            });
-            function getAttributeType(attribute) {
-                if (attribute == null)
-                    return "null";
-                if (typeof attribute == "number")
-                    return "number";
-                return attribute.constructor.name;
-            }
-            objectAttributeInfos.forEach(function (v, i) { v["___tempI"] = i; });
-            objectAttributeInfos.sort(function (a, b) {
-                return ((a.priority || 0) - (b.priority || 0)) || (a["___tempI"] - b["___tempI"]);
-            });
-            objectAttributeInfos.forEach(function (v, i) { delete v["___tempI"]; });
-            var objectInfo = {
-                objectAttributeInfos: objectAttributeInfos,
-                objectBlockInfos: getObjectBlockInfos(object, objectAttributeInfos, classConfig.blockDefinitionVec),
-                owner: object,
-                component: classConfig.component,
-                componentParam: classConfig.componentParam
-            };
-            return objectInfo;
-        };
-        return ObjectView;
-    }());
-    feng3d.ObjectView = ObjectView;
-    feng3d.objectview = new ObjectView();
-    var OBJECTVIEW_KEY = "__objectview__";
-    function mergeClassDefinition(oldClassDefinition, newClassDefinition) {
-        if (newClassDefinition.component && newClassDefinition.component.length > 0) {
-            oldClassDefinition.component = newClassDefinition.component;
-            oldClassDefinition.componentParam = newClassDefinition.componentParam;
-        }
-        //合并属性
-        oldClassDefinition.attributeDefinitionVec = oldClassDefinition.attributeDefinitionVec || [];
-        if (newClassDefinition.attributeDefinitionVec && newClassDefinition.attributeDefinitionVec.length > 0) {
-            newClassDefinition.attributeDefinitionVec.forEach(function (newAttributeDefinition) {
-                var isfound = false;
-                oldClassDefinition.attributeDefinitionVec.forEach(function (oldAttributeDefinition) {
-                    if (newAttributeDefinition && oldAttributeDefinition.name == newAttributeDefinition.name) {
-                        Object.assign(oldAttributeDefinition, newAttributeDefinition);
-                        //
-                        var oldIndex = oldClassDefinition.attributeDefinitionVec.indexOf(oldAttributeDefinition);
-                        oldClassDefinition.attributeDefinitionVec.splice(oldIndex, 1);
-                        //
-                        oldClassDefinition.attributeDefinitionVec.push(oldAttributeDefinition);
-                        isfound = true;
-                    }
-                });
-                if (!isfound) {
-                    var attributeDefinition = {};
-                    Object.assign(attributeDefinition, newAttributeDefinition);
-                    oldClassDefinition.attributeDefinitionVec.push(attributeDefinition);
-                }
-            });
-        }
-        //合并块
-        oldClassDefinition.blockDefinitionVec = oldClassDefinition.blockDefinitionVec || [];
-        if (newClassDefinition.blockDefinitionVec && newClassDefinition.blockDefinitionVec.length > 0) {
-            newClassDefinition.blockDefinitionVec.forEach(function (newBlockDefinition) {
-                var isfound = false;
-                oldClassDefinition.blockDefinitionVec.forEach(function (oldBlockDefinition) {
-                    if (newBlockDefinition && newBlockDefinition.name == oldBlockDefinition.name) {
-                        Object.assign(oldBlockDefinition, newBlockDefinition);
-                        isfound = true;
-                    }
-                });
-                if (!isfound) {
-                    var blockDefinition = {};
-                    Object.assign(blockDefinition, newBlockDefinition);
-                    oldClassDefinition.blockDefinitionVec.push(blockDefinition);
-                }
-            });
-        }
-    }
-    function getInheritClassDefinition(object, autocreate) {
-        if (autocreate === void 0) { autocreate = true; }
-        var classConfigVec = [];
-        var prototype = object;
-        while (prototype) {
-            var classConfig = prototype[OBJECTVIEW_KEY];
-            if (classConfig)
-                classConfigVec.push(classConfig);
-            prototype = prototype["__proto__"];
-        }
-        var resultclassConfig;
-        if (classConfigVec.length > 0) {
-            resultclassConfig = {};
-            for (var i = classConfigVec.length - 1; i >= 0; i--) {
-                mergeClassDefinition(resultclassConfig, classConfigVec[i]);
-            }
-        }
-        else if (autocreate) {
-            resultclassConfig = getDefaultClassConfig(object);
-        }
-        return resultclassConfig;
-    }
-    function getDefaultClassConfig(object, filterReg) {
-        if (filterReg === void 0) { filterReg = /(([a-zA-Z0-9])+|(\d+))/; }
-        //
-        var attributeNames = [];
-        for (var key in object) {
-            var result = filterReg.exec(key);
-            if (result && result[0] == key) {
-                var value = object[key];
-                if (value === undefined || value instanceof Function)
-                    continue;
-                attributeNames.push(key);
-            }
-        }
-        attributeNames = attributeNames.sort();
-        var attributeDefinitionVec = [];
-        attributeNames.forEach(function (element) {
-            attributeDefinitionVec.push({
-                name: element,
-                block: "",
-            });
-        });
-        var defaultClassConfig = {
-            component: "",
-            attributeDefinitionVec: attributeDefinitionVec,
-            blockDefinitionVec: []
-        };
-        return defaultClassConfig;
-    }
-    /**
-     * 获取对象块信息列表
-     * @param {Object} object			对象
-     * @returns {BlockViewInfo[]}		对象块信息列表
-     */
-    function getObjectBlockInfos(object, objectAttributeInfos, blockDefinitionVec) {
-        var objectBlockInfos = [];
-        var dic = {};
-        var objectBlockInfo;
-        //收集块信息
-        var i = 0;
-        var tempVec = [];
-        for (i = 0; i < objectAttributeInfos.length; i++) {
-            var blockName = objectAttributeInfos[i].block || "";
-            objectBlockInfo = dic[blockName];
-            if (objectBlockInfo == null) {
-                objectBlockInfo = dic[blockName] = { name: blockName, owner: object, itemList: [] };
-                tempVec.push(objectBlockInfo);
-            }
-            objectBlockInfo.itemList.push(objectAttributeInfos[i]);
-        }
-        //按快的默认顺序生成 块信息列表
-        var blockDefinition;
-        var pushDic = {};
-        if (blockDefinitionVec) {
-            for (i = 0; i < blockDefinitionVec.length; i++) {
-                blockDefinition = blockDefinitionVec[i];
-                objectBlockInfo = dic[blockDefinition.name];
-                if (objectBlockInfo == null) {
-                    objectBlockInfo = {
-                        name: blockDefinition.name,
-                        owner: object,
-                        itemList: []
-                    };
-                }
-                objectBlockInfo.component = blockDefinition.component;
-                objectBlockInfo.componentParam = blockDefinition.componentParam;
-                objectBlockInfos.push(objectBlockInfo);
-                pushDic[objectBlockInfo.name] = true;
-            }
-        }
-        //添加剩余的块信息
-        for (i = 0; i < tempVec.length; i++) {
-            if (Boolean(pushDic[tempVec[i].name]) == false) {
-                objectBlockInfos.push(tempVec[i]);
-            }
-        }
-        return objectBlockInfos;
-    }
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 心跳计时器
-     */
-    var Ticker = /** @class */ (function () {
-        function Ticker() {
-            /**
-             * 帧率
-             */
-            this.frameRate = 60;
-        }
-        /**
-         * 注册帧函数
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        Ticker.prototype.onframe = function (func, thisObject, priority) {
-            var _this = this;
-            if (priority === void 0) { priority = 0; }
-            this.on(function () { return 1000 / _this.frameRate; }, func, thisObject, priority);
+        Color3.prototype.copy = function (color) {
+            this.r = color.r;
+            this.g = color.g;
+            this.b = color.b;
             return this;
         };
-        /**
-         * 下一帧执行方法
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        Ticker.prototype.nextframe = function (func, thisObject, priority) {
-            var _this = this;
-            if (priority === void 0) { priority = 0; }
-            this.once(function () { return 1000 / _this.frameRate; }, func, thisObject, priority);
-            return this;
+        Color3.prototype.clone = function () {
+            return new Color3(this.r, this.g, this.b);
+        };
+        Color3.prototype.toVector3 = function (vector3) {
+            if (vector3 === void 0) { vector3 = new feng3d.Vector3(); }
+            vector3.x = this.r;
+            vector3.y = this.g;
+            vector3.z = this.b;
+            return vector3;
+        };
+        Color3.prototype.toColor4 = function (color4) {
+            if (color4 === void 0) { color4 = new feng3d.Color4(); }
+            color4.r = this.r;
+            color4.g = this.g;
+            color4.b = this.b;
+            return color4;
         };
         /**
-         * 注销帧函数（只执行一次）
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
+         * 输出字符串
          */
-        Ticker.prototype.offframe = function (func, thisObject) {
-            var _this = this;
-            this.off(function () { return 1000 / _this.frameRate; }, func, thisObject);
-            return this;
+        Color3.prototype.toString = function () {
+            return "{R: " + this.r + " G:" + this.g + " B:" + this.b + "}";
         };
         /**
-         * 注册周期函数
-         * @param interval  执行周期，以ms为单位
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
+         * [0,15]数值转为16进制字符串
+         * param i  [0,15]数值
          */
-        Ticker.prototype.on = function (interval, func, thisObject, priority) {
-            if (priority === void 0) { priority = 0; }
-            addTickerFunc({ interval: interval, func: func, thisObject: thisObject, priority: priority, once: false });
-            return this;
-        };
-        /**
-         * 注册周期函数（只执行一次）
-         * @param interval  执行周期，以ms为单位
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        Ticker.prototype.once = function (interval, func, thisObject, priority) {
-            if (priority === void 0) { priority = 0; }
-            addTickerFunc({ interval: interval, func: func, thisObject: thisObject, priority: priority, once: true });
-            return this;
-        };
-        /**
-         * 注销周期函数
-         * @param interval  执行周期，以ms为单位
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         */
-        Ticker.prototype.off = function (interval, func, thisObject) {
-            removeTickerFunc({ interval: interval, func: func, thisObject: thisObject });
-            return this;
-        };
-        /**
-         * 重复指定次数 执行函数
-         * @param interval  执行周期，以ms为单位
-         * @param 	repeatCount     执行次数
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        Ticker.prototype.repeat = function (interval, repeatCount, func, thisObject, priority) {
-            if (priority === void 0) { priority = 0; }
-            repeatCount = ~~repeatCount;
-            if (repeatCount < 1)
-                return;
-            var timer = new Timer(this, interval, repeatCount, func, thisObject, priority);
-            return timer;
-        };
-        return Ticker;
-    }());
-    feng3d.Ticker = Ticker;
-    feng3d.ticker = new Ticker();
-    var Timer = /** @class */ (function () {
-        function Timer(ticker, interval, repeatCount, func, thisObject, priority) {
-            if (priority === void 0) { priority = 0; }
-            /**
-             * 计时器从 0 开始后触发的总次数。
-             */
-            this.currentCount = 0;
-            this.ticker = ticker;
-            this.interval = interval;
-            this.func = func;
-            this.thisObject = thisObject;
-            this.priority = priority;
-        }
-        /**
-         * 如果计时器尚未运行，则启动计时器。
-         */
-        Timer.prototype.start = function () {
-            this.ticker.on(this.interval, this.runfunc, this, this.priority);
-            return this;
-        };
-        /**
-         * 停止计时器。
-         */
-        Timer.prototype.stop = function () {
-            this.ticker.off(this.interval, this.runfunc, this);
-            return this;
-        };
-        /**
-         * 如果计时器正在运行，则停止计时器，并将 currentCount 属性设回为 0，这类似于秒表的重置按钮。
-         */
-        Timer.prototype.reset = function () {
-            this.stop();
-            this.currentCount = 0;
-            return this;
-        };
-        Timer.prototype.runfunc = function () {
-            this.currentCount++;
-            this.repeatCount--;
-            this.func.call(this.thisObject, feng3d.lazy.getvalue(this.interval));
-            if (this.repeatCount < 1)
-                this.stop();
-        };
-        return Timer;
-    }());
-    feng3d.Timer = Timer;
-    var tickerFuncs = [];
-    function addTickerFunc(item) {
-        if (running) {
-            affers.push([addTickerFunc, [item]]);
-            return;
-        }
-        removeTickerFunc(item);
-        if (item.priority == undefined)
-            item.priority = 0;
-        item.runtime = Date.now() + feng3d.lazy.getvalue(item.interval);
-        tickerFuncs.push(item);
-    }
-    function removeTickerFunc(item) {
-        if (running) {
-            affers.push([removeTickerFunc, [item]]);
-            return;
-        }
-        for (var i = tickerFuncs.length - 1; i >= 0; i--) {
-            var element = tickerFuncs[i];
-            if (feng3d.lazy.getvalue(element.interval) == feng3d.lazy.getvalue(item.interval)
-                && element.func == item.func
-                && element.thisObject == item.thisObject) {
-                tickerFuncs.splice(i, 1);
+        Color3.ToHex = function (i) {
+            var str = i.toString(16);
+            if (i <= 0xf) {
+                return ("0" + str).toUpperCase();
             }
-        }
-    }
-    var running = false;
-    var affers = [];
-    function runTickerFuncs() {
-        running = true;
-        //倒序，优先级高的排在后面
-        tickerFuncs.sort(function (a, b) {
-            return a.priority - b.priority;
-        });
-        var currenttime = Date.now();
-        for (var i = tickerFuncs.length - 1; i >= 0; i--) {
-            var element = tickerFuncs[i];
-            if (element.runtime < currenttime) {
-                // try
-                // {
-                element.func.call(element.thisObject, feng3d.lazy.getvalue(element.interval));
-                // } catch (error)
-                // {
-                //     warn(`${element.func} 方法执行错误，从 ticker 中移除`, error)
-                //     tickerFuncs.splice(i, 1);
-                //     continue;
-                // }
-                if (element.once) {
-                    tickerFuncs.splice(i, 1);
-                    continue;
-                }
-                element.runtime = nextRuntime(element.runtime, feng3d.lazy.getvalue(element.interval));
-            }
-        }
-        running = false;
-        for (var i = 0; i < affers.length; i++) {
-            var affer = affers[i];
-            affer[0].apply(null, affer[1]);
-        }
-        affers.length = 0;
-        localrequestAnimationFrame(runTickerFuncs);
-        function nextRuntime(runtime, interval) {
-            return runtime + Math.ceil((currenttime - runtime) / interval) * interval;
-        }
-    }
-    var localrequestAnimationFrame;
-    if (typeof requestAnimationFrame == "undefined") {
-        if (typeof window != "undefined") {
-            localrequestAnimationFrame =
-                window["requestAnimationFrame"] ||
-                    window["webkitRequestAnimationFrame"] ||
-                    window["mozRequestAnimationFrame"] ||
-                    window["oRequestAnimationFrame"] ||
-                    window["msRequestAnimationFrame"];
-        }
-        else {
-            localrequestAnimationFrame = function (callback) {
-                return window.setTimeout(callback, 1000 / feng3d.ticker.frameRate);
-            };
-        }
-    }
-    else {
-        localrequestAnimationFrame = requestAnimationFrame;
-    }
-    runTickerFuncs();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 数据类型转换
-     * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
-     * @see http://blog.csdn.net/yinwhm12/article/details/73482904
-     */
-    var DataTransform = /** @class */ (function () {
-        function DataTransform() {
-        }
-        /**
-         * Blob to ArrayBuffer
-         */
-        DataTransform.prototype.blobToArrayBuffer = function (blob, callback) {
-            var reader = new FileReader();
-            reader.onload = function (e) {
-                callback(e.target["result"]);
-            };
-            reader.readAsArrayBuffer(blob);
+            return str.toUpperCase();
         };
-        /**
-         * ArrayBuffer to Blob
-         */
-        DataTransform.prototype.arrayBufferToBlob = function (arrayBuffer, callback) {
-            var blob = new Blob([arrayBuffer]); // 注意必须包裹[]
-            callback(blob);
-        };
-        /**
-         * ArrayBuffer to Uint8
-         * Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
-         */
-        DataTransform.prototype.arrayBufferToUint8 = function (arrayBuffer, callback) {
-            var buffer = new ArrayBuffer(32);
-            var u8 = new Uint8Array(arrayBuffer);
-            callback(u8);
-        };
-        /**
-         * Uint8 to ArrayBuffer
-         * 我们Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
-         */
-        DataTransform.prototype.uint8ToArrayBuffer = function (uint8Array, callback) {
-            var buffer = uint8Array.buffer;
-            callback(buffer);
-        };
-        /**
-         * Array to ArrayBuffer
-         * @param array 例如：[0x15, 0xFF, 0x01, 0x00, 0x34, 0xAB, 0x11];
-         */
-        DataTransform.prototype.arrayToArrayBuffer = function (array, callback) {
-            var uint8 = new Uint8Array(array);
-            var buffer = uint8.buffer;
-            callback(buffer);
-        };
-        /**
-         * TypeArray to Array
-         */
-        DataTransform.prototype.uint8ArrayToArray = function (u8a) {
-            var arr = [];
-            for (var i = 0; i < u8a.length; i++) {
-                arr.push(u8a[i]);
-            }
-            return arr;
-        };
-        /**
-         * canvas转换为dataURL
-         */
-        DataTransform.prototype.canvasToDataURL = function (canvas, type) {
-            if (type === void 0) { type = "png"; }
-            if (type == "png")
-                return canvas.toDataURL("image/png");
-            return canvas.toDataURL("image/jpeg", 0.8);
-        };
-        /**
-         * File、Blob对象转换为dataURL
-         * File对象也是一个Blob对象，二者的处理相同。
-         */
-        DataTransform.prototype.blobToDataURL = function (blob, callback) {
-            var a = new FileReader();
-            a.onload = function (e) {
-                callback(e.target["result"]);
-            };
-            a.readAsDataURL(blob);
-        };
-        /**
-         * dataURL转换为Blob对象
-         */
-        DataTransform.prototype.dataURLtoBlob = function (dataurl, callback) {
-            var arr = dataurl.split(","), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-            while (n--) {
-                u8arr[n] = bstr.charCodeAt(n);
-            }
-            var blob = new Blob([u8arr], { type: mime });
-            callback(blob);
-        };
-        /**
-         * dataURL图片数据转换为HTMLImageElement
-         * dataURL图片数据绘制到canvas
-         * 先构造Image对象，src为dataURL，图片onload之后绘制到canvas
-         */
-        DataTransform.prototype.dataURLDrawCanvas = function (dataurl, canvas, callback) {
-            this.dataURLToImage(dataurl, function (img) {
-                // canvas.drawImage(img);
-                callback(img);
-            });
-        };
-        DataTransform.prototype.dataURLToArrayBuffer = function (dataurl, callback) {
-            var _this = this;
-            this.dataURLtoBlob(dataurl, function (blob) {
-                _this.blobToArrayBuffer(blob, callback);
-            });
-        };
-        DataTransform.prototype.arrayBufferToDataURL = function (arrayBuffer, callback) {
-            var _this = this;
-            this.arrayBufferToBlob(arrayBuffer, function (blob) {
-                _this.blobToDataURL(blob, callback);
-            });
-        };
-        DataTransform.prototype.dataURLToImage = function (dataurl, callback) {
-            var img = new Image();
-            img.onload = function () {
-                callback(img);
-            };
-            img.src = dataurl;
-        };
-        DataTransform.prototype.imageToDataURL = function (img) {
-            var canvas = this.imageToCanvas(img);
-            var dataurl = this.canvasToDataURL(canvas, "png");
-            return dataurl;
-        };
-        DataTransform.prototype.imageToCanvas = function (img) {
-            var canvas = document.createElement("canvas");
-            canvas.width = img.width;
-            canvas.height = img.height;
-            var ctxt = canvas.getContext('2d');
-            ctxt.drawImage(img, 0, 0);
-            return canvas;
-        };
-        DataTransform.prototype.imageDataToDataURL = function (imageData) {
-            var canvas = this.imageDataToCanvas(imageData);
-            var dataurl = this.canvasToDataURL(canvas, "png");
-            return dataurl;
-        };
-        DataTransform.prototype.imageDataToCanvas = function (imageData) {
-            var canvas = document.createElement("canvas");
-            canvas.width = imageData.width;
-            canvas.height = imageData.height;
-            var ctxt = canvas.getContext('2d');
-            ctxt.putImageData(imageData, 0, 0);
-            return canvas;
-        };
-        DataTransform.prototype.arrayBufferToImage = function (arrayBuffer, callback) {
-            var _this = this;
-            this.arrayBufferToDataURL(arrayBuffer, function (dataurl) {
-                _this.dataURLToImage(dataurl, callback);
-            });
-        };
-        DataTransform.prototype.blobToText = function (blob, callback) {
-            var a = new FileReader();
-            a.onload = function (e) { callback(e.target["result"]); };
-            a.readAsText(blob);
-        };
-        DataTransform.prototype.stringToArrayBuffer = function (str, callback) {
-            var _this = this;
-            this.stringToUint8Array(str, function (unit8Array) {
-                _this.uint8ToArrayBuffer(unit8Array, callback);
-            });
-        };
-        DataTransform.prototype.arrayBufferToString = function (arrayBuffer, callback) {
-            var _this = this;
-            this.arrayBufferToBlob(arrayBuffer, function (blob) {
-                _this.blobToText(blob, callback);
-            });
-        };
-        DataTransform.prototype.stringToUint8Array = function (str, callback) {
-            var utf8 = unescape(encodeURIComponent(str));
-            var uint8Array = new Uint8Array(utf8.split('').map(function (item) {
-                return item.charCodeAt(0);
-            }));
-            callback(uint8Array);
-        };
-        DataTransform.prototype.uint8ArrayToString = function (arr, callback) {
-            // or [].slice.apply(arr)
-            // var utf8 = Array.from(arr).map(function (item)
-            var utf8 = [].slice.apply(arr).map(function (item) {
-                return String.fromCharCode(item);
-            }).join('');
-            var str = decodeURIComponent(escape(utf8));
-            callback(str);
-        };
-        return DataTransform;
-    }());
-    feng3d.DataTransform = DataTransform;
-    feng3d.dataTransform = new DataTransform();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var CLASS_KEY = "__class__";
-    /**
-     * 类工具
-     */
-    var ClassUtils = /** @class */ (function () {
-        function ClassUtils() {
-        }
-        /**
-         * 返回对象的完全限定类名。
-         * @param value 需要完全限定类名称的对象，可以将任何 JavaScript 值传递给此方法，包括所有可用的 JavaScript 类型、对象实例、原始类型
-         * （如number)和类对象
-         * @returns 包含完全限定类名称的字符串。
-         */
-        ClassUtils.prototype.getQualifiedClassName = function (value) {
-            if (value == null)
-                return "null";
-            var prototype = value.prototype ? value.prototype : Object.getPrototypeOf(value);
-            if (prototype.hasOwnProperty(CLASS_KEY))
-                return prototype[CLASS_KEY];
-            var className = prototype.constructor.name;
-            if (_global[className] == prototype.constructor)
-                return className;
-            //在可能的命名空间内查找
-            for (var i = 0; i < _classNameSpaces.length; i++) {
-                var tryClassName = _classNameSpaces[i] + "." + className;
-                if (this.getDefinitionByName(tryClassName) == prototype.constructor) {
-                    className = tryClassName;
-                    registerClass(prototype.constructor, className);
-                    return className;
-                }
-            }
-            feng3d.error("\u672A\u5728\u7ED9\u51FA\u7684\u547D\u540D\u7A7A\u95F4 " + _classNameSpaces + " \u5185\u627E\u5230 " + value + " \u7684\u5B9A\u4E49");
-            return "undefined";
-        };
-        /**
-         * 返回 name 参数指定的类的类对象引用。
-         * @param name 类的名称。
-         */
-        ClassUtils.prototype.getDefinitionByName = function (name, readCache) {
-            if (readCache === void 0) { readCache = true; }
-            if (name == "null")
-                return null;
-            if (!name)
-                return null;
-            if (_global[name])
-                return _global[name];
-            if (readCache && _definitionCache[name])
-                return _definitionCache[name];
-            var paths = name.split(".");
-            var length = paths.length;
-            var definition = _global;
-            for (var i = 0; i < length; i++) {
-                var path = paths[i];
-                definition = definition[path];
-                if (!definition) {
-                    return null;
-                }
-            }
-            _definitionCache[name] = definition;
-            return definition;
-        };
-        /**
-         * 新增反射对象所在的命名空间，使得getQualifiedClassName能够得到正确的结果
-         */
-        ClassUtils.prototype.addClassNameSpace = function (namespace) {
-            if (_classNameSpaces.indexOf(namespace) == -1) {
-                _classNameSpaces.push(namespace);
-            }
-        };
-        return ClassUtils;
-    }());
-    feng3d.ClassUtils = ClassUtils;
-    ;
-    feng3d.classUtils = new ClassUtils();
-    var _definitionCache = {};
-    var _global = window;
-    var _classNameSpaces = ["feng3d"];
-    /**
-     * 为一个类定义注册完全限定类名
-     * @param classDefinition 类定义
-     * @param className 完全限定类名
-     */
-    function registerClass(classDefinition, className) {
-        var prototype = classDefinition.prototype;
-        Object.defineProperty(prototype, CLASS_KEY, {
-            value: className,
-            enumerable: false,
-            writable: true
-        });
-    }
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 图片相关工具
-     */
-    var ImageUtil = /** @class */ (function () {
-        function ImageUtil() {
-        }
-        /**
-         * 加载图片
-         * @param url 图片路径
-         * @param callback 加载完成回调
-         */
-        ImageUtil.prototype.loadImage = function (url, callback) {
-            feng3d.assets.readImage(url, callback);
-        };
-        /**
-         * 获取图片数据
-         * @param image 加载完成的图片元素
-         */
-        ImageUtil.prototype.getImageData = function (image) {
-            if (!image)
-                return null;
-            var canvasImg = document.createElement("canvas");
-            canvasImg.width = image.width;
-            canvasImg.height = image.height;
-            var ctxt = canvasImg.getContext('2d');
-            feng3d.assert(!!ctxt);
-            ctxt.drawImage(image, 0, 0);
-            var imageData = ctxt.getImageData(0, 0, image.width, image.height); //读取整张图片的像素。
-            return imageData;
-        };
-        /**
-         * 从url获取图片数据
-         * @param url 图片路径
-         * @param callback 获取图片数据完成回调
-         */
-        ImageUtil.prototype.getImageDataFromUrl = function (url, callback) {
-            var _this = this;
-            this.loadImage(url, function (err, image) {
-                var imageData = _this.getImageData(image);
-                callback(imageData);
-            });
-        };
-        /**
-         * 创建ImageData
-         * @param width 数据宽度
-         * @param height 数据高度
-         * @param fillcolor 填充颜色
-         */
-        ImageUtil.prototype.createImageData = function (width, height, fillcolor) {
-            if (width === void 0) { width = 1024; }
-            if (height === void 0) { height = 1024; }
-            if (fillcolor === void 0) { fillcolor = 0; }
-            var canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            var ctx = canvas.getContext('2d');
-            ctx.fillStyle = new feng3d.Color3().fromUnit(fillcolor).toHexString();
-            ctx.fillRect(0, 0, width, height);
-            var imageData = ctx.getImageData(0, 0, width, height);
-            return imageData;
-        };
-        /**
-         * 创建默认粒子贴图
-         * @param size 尺寸
-         */
-        ImageUtil.prototype.createDefaultParticle = function (size) {
-            if (size === void 0) { size = 64; }
-            var canvas = document.createElement('canvas');
-            canvas.width = size;
-            canvas.height = size;
-            var ctx = canvas.getContext('2d');
-            var imageData = ctx.getImageData(0, 0, size, size);
-            var half = size / 2;
-            for (var i = 0; i < size; i++) {
-                for (var j = 0; j < size; j++) {
-                    var l = feng3d.FMath.clamp(new feng3d.Vector2(i - half, j - half).length, 0, half) / half;
-                    // l = l * l;
-                    var f = 1 - l;
-                    f = f * f;
-                    // f = f * f * f;
-                    // f = - 8 / 3 * f * f * f + 4 * f * f - f / 3;
-                    var pos = (i + j * size) * 4;
-                    imageData.data[pos] = 255;
-                    imageData.data[pos + 1] = 255;
-                    imageData.data[pos + 2] = 255;
-                    imageData.data[pos + 3] = f * 255;
-                }
-            }
-            return imageData;
-        };
-        /**
-         * 创建颜色拾取矩形
-         * @param color 基色
-         * @param width 宽度
-         * @param height 高度
-         */
-        ImageUtil.prototype.createColorPickerRect = function (color, width, height) {
-            if (width === void 0) { width = 64; }
-            if (height === void 0) { height = 64; }
-            var leftTop = new feng3d.Color3(1, 1, 1);
-            var rightTop = new feng3d.Color3().fromUnit(color);
-            var leftBottom = new feng3d.Color3(0, 0, 0);
-            var rightBottom = new feng3d.Color3(0, 0, 0);
-            var canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            var ctx = canvas.getContext('2d');
-            var imageData = ctx.getImageData(0, 0, width, height);
-            var data = imageData.data;
-            //
-            for (var i = 0; i < width; i++) {
-                for (var j = 0; j < height; j++) {
-                    var top = leftTop.mixTo(rightTop, i / width);
-                    var bottom = leftBottom.mixTo(rightBottom, i / width);
-                    var v = top.mixTo(bottom, j / height);
-                    //
-                    var pos = (i + j * width) * 4;
-                    data[pos] = v.r * 255;
-                    data[pos + 1] = v.g * 255;
-                    data[pos + 2] = v.b * 255;
-                    data[pos + 3] = 255;
-                }
-            }
-            return imageData;
-        };
-        /**
-         * 获取颜色的基色以及颜色拾取矩形所在位置
-         * @param color 查找颜色
-         */
-        ImageUtil.prototype.getColorPickerRectAtPosition = function (color, rw, rh) {
-            var leftTop = new feng3d.Color3(1, 1, 1);
-            var rightTop = new feng3d.Color3().fromUnit(color);
-            var leftBottom = new feng3d.Color3(0, 0, 0);
-            var rightBottom = new feng3d.Color3(0, 0, 0);
-            var top = leftTop.mixTo(rightTop, rw);
-            var bottom = leftBottom.mixTo(rightBottom, rw);
-            var v = top.mixTo(bottom, rh);
-            return v;
-        };
-        /**
-         * 获取颜色的基色以及颜色拾取矩形所在位置
-         * @param color 查找颜色
-         */
-        ImageUtil.prototype.getColorPickerRectPosition = function (color) {
-            var black = new feng3d.Color3(0, 0, 0);
-            var white = new feng3d.Color3(1, 1, 1);
-            var c = new feng3d.Color3().fromUnit(color);
-            var max = Math.max(c.r, c.g, c.b);
-            if (max != 0)
-                c = black.mix(c, 1 / max);
-            var min = Math.min(c.r, c.g, c.b);
-            if (min != 1)
-                c = white.mix(c, 1 / (1 - min));
-            var ratioH = 1 - max;
-            var ratioW = 1 - min;
-            return {
-                /**
-                 * 基色
-                 */
-                color: c,
-                /**
-                 * 横向位置
-                 */
-                ratioW: ratioW,
-                /**
-                 * 纵向位置
-                 */
-                ratioH: ratioH
-            };
-        };
-        /**
-         * 创建颜色条带
-         * @param colors
-         * @param ratios [0,1]
-         * @param width
-         * @param height
-         * @param dirw true为横向条带，否则纵向条带
-         */
-        ImageUtil.prototype.createColorPickerStripe = function (width, height, colors, ratios, dirw) {
-            if (dirw === void 0) { dirw = true; }
-            if (!ratios) {
-                ratios = [];
-                for (var i = 0; i < colors.length; i++) {
-                    ratios[i] = i / (colors.length - 1);
-                }
-            }
-            var canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            var ctx = canvas.getContext('2d');
-            var imageData = ctx.getImageData(0, 0, width, height);
-            //
-            for (var i = 0; i < width; i++) {
-                for (var j = 0; j < height; j++) {
-                    var v = this.getMixColor(colors, ratios, dirw ? i / (width - 1) : j / (height - 1));
-                    //
-                    var pos = (i + j * width) * 4;
-                    imageData.data[pos] = v.r * 255;
-                    imageData.data[pos + 1] = v.g * 255;
-                    imageData.data[pos + 2] = v.b * 255;
-                    imageData.data[pos + 3] = 255;
-                }
-            }
-            return imageData;
-        };
-        ImageUtil.prototype.getMixColor = function (colors, ratios, ratio) {
-            if (!ratios) {
-                ratios = [];
-                for (var i_1 = 0; i_1 < colors.length; i_1++) {
-                    ratios[i_1] = i_1 / (colors.length - 1);
-                }
-            }
-            var colors1 = colors.map(function (v) { return new feng3d.Color3().fromUnit(v); });
-            for (var i = 0; i < colors1.length - 1; i++) {
-                if (ratios[i] <= ratio && ratio <= ratios[i + 1]) {
-                    var v = feng3d.FMath.mapLinear(ratio, ratios[i], ratios[i + 1], 0, 1);
-                    var c = colors1[i].mixTo(colors1[i + 1], v);
-                    return c;
-                }
-            }
-            return colors1[0];
-        };
-        ImageUtil.prototype.getMixColorRatio = function (color, colors, ratios) {
-            if (!ratios) {
-                ratios = [];
-                for (var i_2 = 0; i_2 < colors.length; i_2++) {
-                    ratios[i_2] = i_2 / (colors.length - 1);
-                }
-            }
-            var colors1 = colors.map(function (v) { return new feng3d.Color3().fromUnit(v); });
-            var c = new feng3d.Color3().fromUnit(color);
-            var r = c.r;
-            var g = c.g;
-            var b = c.b;
-            for (var i = 0; i < colors1.length - 1; i++) {
-                var c0 = colors1[i];
-                var c1 = colors1[i + 1];
-                //
-                if (c.equals(c0))
-                    return ratios[i];
-                if (c.equals(c1))
-                    return ratios[i + 1];
-                //
-                var r1 = c0.r + c1.r;
-                var g1 = c0.g + c1.g;
-                var b1 = c0.b + c1.b;
-                //
-                var v = r * r1 + g * g1 + b * b1;
-                if (v > 2) {
-                    var result = 0;
-                    if (r1 == 1) {
-                        result = feng3d.FMath.mapLinear(r, c0.r, c1.r, ratios[i], ratios[i + 1]);
-                    }
-                    else if (g1 == 1) {
-                        result = feng3d.FMath.mapLinear(g, c0.g, c1.g, ratios[i], ratios[i + 1]);
-                    }
-                    else if (b1 == 1) {
-                        result = feng3d.FMath.mapLinear(b, c0.b, c1.b, ratios[i], ratios[i + 1]);
-                    }
-                    return result;
-                }
-            }
-            return 0;
-        };
-        ImageUtil.prototype.getMixColorAtRatio = function (ratio, colors, ratios) {
-            if (!ratios) {
-                ratios = [];
-                for (var i_3 = 0; i_3 < colors.length; i_3++) {
-                    ratios[i_3] = i_3 / (colors.length - 1);
-                }
-            }
-            var colors1 = colors.map(function (v) { return new feng3d.Color3().fromUnit(v); });
-            for (var i = 0; i < colors1.length - 1; i++) {
-                if (ratios[i] <= ratio && ratio <= ratios[i + 1]) {
-                    var mix = feng3d.FMath.mapLinear(ratio, ratios[i], ratios[i + 1], 0, 1);
-                    var c = colors1[i].mixTo(colors1[i + 1], mix);
-                    return c;
-                }
-            }
-            return colors1[0];
-        };
-        ImageUtil.prototype.createColorRect = function (color, width, height) {
-            var canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            var ctx = canvas.getContext('2d');
-            var imageData = ctx.getImageData(0, 0, width, height);
-            var colorHeight = Math.floor(height * 0.8);
-            var alphaWidth = Math.floor(color.a * width);
-            //
-            for (var i = 0; i < width; i++) {
-                for (var j = 0; j < height; j++) {
-                    //
-                    var pos = (i + j * width) * 4;
-                    if (j <= colorHeight) {
-                        imageData.data[pos] = color.r * 255;
-                        imageData.data[pos + 1] = color.g * 255;
-                        imageData.data[pos + 2] = color.b * 255;
-                        imageData.data[pos + 3] = 255;
-                    }
-                    else {
-                        var v = i < alphaWidth ? 255 : 0;
-                        imageData.data[pos] = v;
-                        imageData.data[pos + 1] = v;
-                        imageData.data[pos + 2] = v;
-                        imageData.data[pos + 3] = 255;
-                    }
-                }
-            }
-            return imageData;
-        };
-        ImageUtil.prototype.createMinMaxGradientRect = function (gradient, width, height) {
-            var canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            var ctx = canvas.getContext('2d');
-            var imageData = ctx.getImageData(0, 0, width, height);
-            //
-            for (var i = 0; i < width; i++) {
-                for (var j = 0; j < height; j++) {
-                    //
-                    var pos = (i + j * width) * 4;
-                    var c = gradient.getValue(i / (width - 1));
-                    imageData.data[pos] = c.r * 255;
-                    imageData.data[pos + 1] = c.g * 255;
-                    imageData.data[pos + 2] = c.b * 255;
-                    imageData.data[pos + 3] = c.a * 255;
-                }
-            }
-            return imageData;
-        };
-        return ImageUtil;
-    }());
-    feng3d.ImageUtil = ImageUtil;
-    feng3d.imageUtil = new ImageUtil();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var Stats = /** @class */ (function () {
-        function Stats() {
-            var _this = this;
-            var mode = 0;
-            var container = document.createElement('div');
-            container.style.cssText = 'position:fixed;top:0;left:0;cursor:pointer;opacity:0.9;';
-            container.addEventListener('click', function (event) {
-                event.preventDefault();
-                showPanel(++mode % container.children.length);
-            }, false);
-            //
-            function addPanel(panel) {
-                container.appendChild(panel.dom);
-                return panel;
-            }
-            function showPanel(id) {
-                for (var i = 0; i < container.children.length; i++) {
-                    container.children[i].style.display = i === id ? 'block' : 'none';
-                }
-                mode = id;
-            }
-            //
-            var beginTime = (performance || Date).now(), prevTime = beginTime, frames = 0;
-            var fpsPanel = addPanel(new StatsPanel('FPS', '#0ff', '#002'));
-            var msPanel = addPanel(new StatsPanel('MS', '#0f0', '#020'));
-            if (self.performance && self.performance.memory) {
-                var memPanel = addPanel(new StatsPanel('MB', '#f08', '#201'));
-            }
-            showPanel(0);
-            this.REVISION = 16;
-            this.dom = container;
-            this.addPanel = addPanel;
-            this.showPanel = showPanel;
-            this.begin = function () {
-                beginTime = (performance || Date).now();
-            };
-            this.end = function () {
-                frames++;
-                var time = (performance || Date).now();
-                msPanel.update(time - beginTime, 200);
-                if (time > prevTime + 1000) {
-                    fpsPanel.update((frames * 1000) / (time - prevTime), 100);
-                    prevTime = time;
-                    frames = 0;
-                    if (memPanel) {
-                        var memory = performance.memory;
-                        memPanel.update(memory.usedJSHeapSize / 1048576, memory.jsHeapSizeLimit / 1048576);
-                    }
-                }
-                return time;
-            };
-            this.update = function () {
-                beginTime = _this.end();
-            };
-            // Backwards Compatibility
-            this.domElement = container;
-            this.setMode = showPanel;
-        }
-        Stats.init = function (parent) {
-            if (!this.instance) {
-                this.instance = new Stats();
-                parent = parent || document.body;
-                parent.appendChild(this.instance.dom);
-            }
-            feng3d.ticker.onframe(this.instance.update, this.instance);
-        };
-        ;
-        return Stats;
-    }());
-    feng3d.Stats = Stats;
-    var StatsPanel = /** @class */ (function () {
-        function StatsPanel(name, fg, bg) {
-            var min = Infinity, max = 0, round = Math.round;
-            var PR = round(window.devicePixelRatio || 1);
-            var WIDTH = 80 * PR, HEIGHT = 48 * PR, TEXT_X = 3 * PR, TEXT_Y = 2 * PR, GRAPH_X = 3 * PR, GRAPH_Y = 15 * PR, GRAPH_WIDTH = 74 * PR, GRAPH_HEIGHT = 30 * PR;
-            var canvas = document.createElement('canvas');
-            canvas.width = WIDTH;
-            canvas.height = HEIGHT;
-            canvas.style.cssText = 'width:80px;height:48px';
-            var context0 = canvas.getContext('2d');
-            if (context0 == null) {
-                feng3d.log("\u65E0\u6CD5\u521B\u5EFA CanvasRenderingContext2D ");
-                return;
-            }
-            var context = context0;
-            context.font = 'bold ' + (9 * PR) + 'px Helvetica,Arial,sans-serif';
-            context.textBaseline = 'top';
-            context.fillStyle = bg;
-            context.fillRect(0, 0, WIDTH, HEIGHT);
-            context.fillStyle = fg;
-            context.fillText(name, TEXT_X, TEXT_Y);
-            context.fillRect(GRAPH_X, GRAPH_Y, GRAPH_WIDTH, GRAPH_HEIGHT);
-            context.fillStyle = bg;
-            context.globalAlpha = 0.9;
-            context.fillRect(GRAPH_X, GRAPH_Y, GRAPH_WIDTH, GRAPH_HEIGHT);
-            this.dom = canvas;
-            this.update = function (value, maxValue) {
-                min = Math.min(min, value);
-                max = Math.max(max, value);
-                context.fillStyle = bg;
-                context.globalAlpha = 1;
-                context.fillRect(0, 0, WIDTH, GRAPH_Y);
-                context.fillStyle = fg;
-                context.fillText(round(value) + ' ' + name + ' (' + round(min) + '-' + round(max) + ')', TEXT_X, TEXT_Y);
-                context.drawImage(canvas, GRAPH_X + PR, GRAPH_Y, GRAPH_WIDTH - PR, GRAPH_HEIGHT, GRAPH_X, GRAPH_Y, GRAPH_WIDTH - PR, GRAPH_HEIGHT);
-                context.fillRect(GRAPH_X + GRAPH_WIDTH - PR, GRAPH_Y, PR, GRAPH_HEIGHT);
-                context.fillStyle = bg;
-                context.globalAlpha = 0.9;
-                context.fillRect(GRAPH_X + GRAPH_WIDTH - PR, GRAPH_Y, PR, round((1 - (value / maxValue)) * GRAPH_HEIGHT));
-            };
-        }
-        return StatsPanel;
-    }());
-    feng3d.StatsPanel = StatsPanel;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 路径工具
-     */
-    var PathUtils = /** @class */ (function () {
-        function PathUtils() {
-        }
-        /**
-         * 获取不带后缀名称
-         * @param path 路径
-         */
-        PathUtils.prototype.getName = function (path) {
-            var name = this.getNameWithExtension(path);
-            if (this.isDirectory(path))
-                return name;
-            name = name.split(".").shift();
-            return name;
-        };
-        /**
-         * 获取带后缀名称
-         * @param path 路径
-         */
-        PathUtils.prototype.getNameWithExtension = function (path) {
-            var paths = path.split("/");
-            var name = paths.pop();
-            if (name == "")
-                name = paths.pop();
-            return name;
-        };
-        /**
-         * 获取后缀
-         * @param path 路径
-         */
-        PathUtils.prototype.getExtension = function (path) {
-            var name = this.getNameWithExtension(path);
-            var extension = name.split(".").slice(1).join(".");
-            return extension;
-        };
-        /**
-         * 父路径
-         * @param path 路径
-         */
-        PathUtils.prototype.getParentPath = function (path) {
-            var paths = path.split("/");
-            if (this.isDirectory(path))
-                paths.pop();
-            paths.pop();
-            return paths.join("/") + "/";
-        };
-        /**
-         * 是否文件夹
-         * @param path 路径
-         */
-        PathUtils.prototype.isDirectory = function (path) {
-            return path.split("/").pop() == "";
-        };
-        /**
-         * 获取目录深度
-         * @param path 路径
-         */
-        PathUtils.prototype.getDirDepth = function (path) {
-            var length = path.split("/").length;
-            if (this.isDirectory(path))
-                length--;
-            return length - 1;
-        };
-        return PathUtils;
-    }());
-    feng3d.PathUtils = PathUtils;
-    feng3d.pathUtils = new PathUtils();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var shaderMacroKeys = ["if", "ifdef", "defined"];
-    var ShaderMacroUtils = /** @class */ (function () {
-        function ShaderMacroUtils() {
-        }
-        /**
-         * 从着色器代码中获取宏变量列表
-         * @param vertex
-         * @param fragment
-         */
-        ShaderMacroUtils.prototype.getMacroVariablesFromShaderCode = function (vertex, fragment) {
-            var variables0 = this.getMacroVariablesFromCode(vertex);
-            var variables1 = this.getMacroVariablesFromCode(fragment);
-            for (var i = 0; i < variables1.length; i++) {
-                var element = variables1[i];
-                if (variables0.indexOf(element) == -1)
-                    variables0.push(element);
-            }
-            return variables0;
-        };
-        /**
-         * 从着色器代码中获取宏变量列表
-         * @param code
-         */
-        ShaderMacroUtils.prototype.getMacroVariablesFromCode = function (code) {
-            var variables = [];
-            var lines = code.split("\n");
-            for (var i = 0; i < lines.length; i++) {
-                var line = lines[i];
-                if (line.indexOf("#if") != -1) {
-                    var reg = /(\w+)/g;
-                    var result;
-                    while (result = reg.exec(line)) {
-                        var key = result[1];
-                        if (key != null && isNaN(Number(key)) && shaderMacroKeys.indexOf(key) == -1 && variables.indexOf(key) == -1)
-                            variables.push(key);
-                    }
-                }
-            }
-            return variables;
-        };
-        return ShaderMacroUtils;
-    }());
-    feng3d.ShaderMacroUtils = ShaderMacroUtils;
-    feng3d.shaderMacroUtils = new ShaderMacroUtils();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    feng3d.lazy = {
-        getvalue: function (lazyItem) {
-            if (typeof lazyItem == "function")
-                return lazyItem();
-            return lazyItem;
-        }
-    };
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 常用正则表示式
-     */
-    var RegExps = /** @class */ (function () {
-        function RegExps() {
-            /**
-             * json文件
-             */
-            this.json = /(\.json)\b/i;
-            /**
-             * 图片
-             */
-            this.image = /(\.jpg|\.png|\.jpeg|\.gif)\b/i;
-            /**
-             * 声音
-             */
-            this.audio = /(\.ogg|\.mp3|\.wav)\b/i;
-            /**
-             * 命名空间
-             */
-            this.namespace = /namespace\s+([\w$_\d\.]+)/;
-            /**
-             * 类
-             */
-            this.classReg = /(export\s+)?(abstract\s+)?class\s+([\w$_\d]+)(\s+extends\s+([\w$_\d\.]+))?/;
-        }
-        return RegExps;
-    }());
-    feng3d.RegExps = RegExps;
-    feng3d.regExps = new RegExps();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 所有feng3d对象的基类
-     */
-    var Feng3dObject = /** @class */ (function (_super) {
-        __extends(Feng3dObject, _super);
-        function Feng3dObject() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            /**
-             * 隐藏标记，用于控制是否在层级面板、检查器显示，是否保存
-             */
-            _this.hideFlags = feng3d.HideFlags.None;
-            return _this;
-        }
-        /**
-         * 设置对象值
-         * @param v 对象对于的Object值
-         */
-        Feng3dObject.prototype.value = function (v) {
-            feng3d.serialization.setValue(this, v);
-            return this;
-        };
-        return Feng3dObject;
-    }(feng3d.EventDispatcher));
-    feng3d.Feng3dObject = Feng3dObject;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var databases = {};
-    /**
-     *
-     */
-    var Storage = /** @class */ (function () {
-        function Storage() {
-        }
-        /**
-         * 是否支持 indexedDB
-         */
-        Storage.prototype.support = function () {
-            if (typeof indexedDB == "undefined") {
-                indexedDB = window.indexedDB || window["mozIndexedDB"] || window["webkitIndexedDB"] || window["msIndexedDB"];
-                if (indexedDB == undefined) {
-                    return false;
-                }
-            }
-            return true;
-        };
-        Storage.prototype.getDatabase = function (dbname, callback) {
-            if (databases[dbname]) {
-                callback(null, databases[dbname]);
-                return;
-            }
-            var request = indexedDB.open(dbname);
-            request.onsuccess = function (event) {
-                databases[dbname] = event.target["result"];
-                callback(null, databases[dbname]);
-                request.onsuccess = null;
-            };
-            request.onerror = function (event) {
-                callback(event, null);
-                request.onerror = null;
-            };
-        };
-        Storage.prototype.deleteDatabase = function (dbname, callback) {
-            var request = indexedDB.deleteDatabase(dbname);
-            request.onsuccess = function (event) {
-                delete databases[dbname];
-                callback && callback(null);
-                request.onsuccess = null;
-            };
-            request.onerror = function (event) {
-                callback && callback(event);
-                request.onerror = null;
-            };
-        };
-        Storage.prototype.hasObjectStore = function (dbname, objectStroreName, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                callback(database.objectStoreNames.contains(objectStroreName));
-            });
-        };
-        Storage.prototype.getObjectStoreNames = function (dbname, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                var objectStoreNames = [];
-                for (var i = 0; i < database.objectStoreNames.length; i++) {
-                    objectStoreNames.push(database.objectStoreNames.item(i));
-                }
-                callback(null, objectStoreNames);
-            });
-        };
-        Storage.prototype.createObjectStore = function (dbname, objectStroreName, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                if (database.objectStoreNames.contains(objectStroreName)) {
-                    callback && callback(null);
-                    return;
-                }
-                database.close();
-                var request = indexedDB.open(database.name, database.version + 1);
-                request.onupgradeneeded = function (event) {
-                    var newdatabase = event.target["result"];
-                    newdatabase.createObjectStore(objectStroreName);
-                    databases[newdatabase.name] = newdatabase;
-                    request.onupgradeneeded = null;
-                    callback && callback(null);
-                };
-                request.onsuccess = function (event) {
-                    var newdatabase = event.target["result"];
-                    databases[newdatabase.name] = newdatabase;
-                    request.onsuccess = null;
-                    callback && callback(null);
-                };
-                request.onerror = function (event) {
-                    request.onerror = null;
-                    callback && callback(event);
-                };
-            });
-        };
-        Storage.prototype.deleteObjectStore = function (dbname, objectStroreName, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                if (!database.objectStoreNames.contains(objectStroreName)) {
-                    callback && callback(null);
-                    return;
-                }
-                database.close();
-                var request = indexedDB.open(database.name, database.version + 1);
-                request.onupgradeneeded = function (event) {
-                    var newdatabase = event.target["result"];
-                    newdatabase.deleteObjectStore(objectStroreName);
-                    request.onupgradeneeded = null;
-                    callback && callback(null);
-                };
-                request.onsuccess = function (event) {
-                    var newdatabase = event.target["result"];
-                    databases[newdatabase.name] = newdatabase;
-                    request.onsuccess = null;
-                    callback && callback(event);
-                };
-                request.onerror = function (event) {
-                    request.onerror = null;
-                    callback && callback(event);
-                };
-            });
-        };
-        Storage.prototype.getAllKeys = function (dbname, objectStroreName, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                try {
-                    var transaction = database.transaction([objectStroreName], 'readwrite');
-                    var objectStore = transaction.objectStore(objectStroreName);
-                    var request = objectStore.getAllKeys();
-                    request.onsuccess = function (event) {
-                        callback && callback(null, event.target["result"]);
-                        request.onsuccess = null;
-                    };
-                }
-                catch (error) {
-                    callback && callback(error, null);
-                }
-            });
-        };
-        Storage.prototype.get = function (dbname, objectStroreName, key, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                var transaction = database.transaction([objectStroreName], 'readwrite');
-                var objectStore = transaction.objectStore(objectStroreName);
-                var request = objectStore.get(key);
-                request.onsuccess = function (event) {
-                    var result = event.target["result"];
-                    callback && callback(result ? null : new Error("\u6CA1\u6709\u627E\u5230\u8D44\u6E90 " + key), result);
-                    request.onsuccess = null;
-                };
-            });
-        };
-        Storage.prototype.set = function (dbname, objectStroreName, key, data, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                try {
-                    var transaction = database.transaction([objectStroreName], 'readwrite');
-                    var objectStore = transaction.objectStore(objectStroreName);
-                    var request = objectStore.put(data, key);
-                    request.onsuccess = function (event) {
-                        callback && callback(null);
-                        request.onsuccess = null;
-                    };
-                }
-                catch (error) {
-                    callback && callback(error);
-                }
-            });
-        };
-        Storage.prototype.delete = function (dbname, objectStroreName, key, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                try {
-                    var transaction = database.transaction([objectStroreName], 'readwrite');
-                    var objectStore = transaction.objectStore(objectStroreName);
-                    var request = objectStore.delete(key);
-                    request.onsuccess = function (event) {
-                        callback && callback();
-                        request.onsuccess = null;
-                    };
-                }
-                catch (error) {
-                    callback && callback(error);
-                }
-            });
-        };
-        Storage.prototype.clear = function (dbname, objectStroreName, callback) {
-            this.getDatabase(dbname, function (err, database) {
-                try {
-                    var transaction = database.transaction([objectStroreName], 'readwrite');
-                    var objectStore = transaction.objectStore(objectStroreName);
-                    var request = objectStore.clear();
-                    request.onsuccess = function (event) {
-                        callback && callback();
-                        request.onsuccess = null;
-                    };
-                }
-                catch (error) {
-                    callback && callback(error);
-                }
-            });
-        };
-        return Storage;
-    }());
-    feng3d.Storage = Storage;
-    feng3d.storage = new Storage();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 索引数据文件系统
-     */
-    var IndexedDBfs = /** @class */ (function () {
-        function IndexedDBfs(DBname, projectname) {
-            if (DBname === void 0) { DBname = "feng3d-editor"; }
-            if (projectname === void 0) { projectname = "testproject"; }
-            this.DBname = DBname;
-            this.projectname = projectname;
-        }
-        Object.defineProperty(IndexedDBfs.prototype, "type", {
-            get: function () {
-                return feng3d.FSType.indexedDB;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        IndexedDBfs.prototype.readArrayBuffer = function (path, callback) {
-            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
-                callback(err, data);
-            });
-        };
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        IndexedDBfs.prototype.getAbsolutePath = function (path, callback) {
-            callback(null, path);
-        };
-        /**
-         * 文件是否存在
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        IndexedDBfs.prototype.exists = function (path, callback) {
-            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
-                callback(!!data);
-            });
-        };
-        /**
-         * 读取文件夹中文件列表
-         * @param path 路径
-         * @param callback 回调函数
-         */
-        IndexedDBfs.prototype.readdir = function (path, callback) {
-            feng3d.storage.getAllKeys(this.DBname, this.projectname, function (err, allfilepaths) {
-                if (!allfilepaths) {
-                    callback(err, null);
-                    return;
-                }
-                var subfilemap = {};
-                allfilepaths.forEach(function (element) {
-                    if (element.substr(0, path.length) == path && element != path) {
-                        var result = element.substr(path.length);
-                        var index = result.indexOf("/");
-                        if (index != -1)
-                            result = result.substring(0, index + 1);
-                        subfilemap[result] = 1;
-                    }
-                });
-                var files = Object.keys(subfilemap);
-                callback(null, files);
-            });
-        };
-        /**
-         * 新建文件夹
-         * @param path 文件夹路径
-         * @param callback 回调函数
-         */
-        IndexedDBfs.prototype.mkdir = function (path, callback) {
-            feng3d.storage.set(this.DBname, this.projectname, path, new ArrayBuffer(0), callback);
-        };
-        /**
-         * 删除文件
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        IndexedDBfs.prototype.deleteFile = function (path, callback) {
-            feng3d.storage.delete(this.DBname, this.projectname, path, callback);
-        };
-        /**
-         * 写文件
-         * @param path 文件路径
-         * @param data 文件数据
-         * @param callback 回调函数
-         */
-        IndexedDBfs.prototype.writeArrayBuffer = function (path, data, callback) {
-            feng3d.storage.set(this.DBname, this.projectname, path, data, callback);
-        };
-        /**
-         * 获取所有文件路径
-         * @param callback 回调函数
-         */
-        IndexedDBfs.prototype.getAllPaths = function (callback) {
-            feng3d.storage.getAllKeys(this.DBname, this.projectname, callback);
-        };
-        return IndexedDBfs;
-    }());
-    feng3d.IndexedDBfs = IndexedDBfs;
-    feng3d.indexedDBfs = new IndexedDBfs();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * Http可读文件系统
-     */
-    var HttpFS = /** @class */ (function () {
-        function HttpFS() {
-            /**
-             * 根路径
-             */
-            this.rootPath = "";
-            this.rootPath = document.URL.substring(0, document.URL.lastIndexOf("/") + 1);
-        }
-        Object.defineProperty(HttpFS.prototype, "type", {
-            get: function () {
-                return feng3d.FSType.http;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        HttpFS.prototype.readArrayBuffer = function (path, callback) {
-            // rootPath
-            feng3d.loader.loadBinary(path, function (content) {
-                callback(null, content);
-            }, null, function (e) {
-                callback(e, null);
-            });
-        };
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        HttpFS.prototype.getAbsolutePath = function (path, callback) {
-            callback(null, this.rootPath + path);
-        };
-        return HttpFS;
-    }());
-    feng3d.HttpFS = HttpFS;
-    feng3d.httpFS = new HttpFS();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 文件系统类型
-     */
-    var FSType;
-    (function (FSType) {
-        FSType["http"] = "http";
-        FSType["native"] = "native";
-        FSType["indexedDB"] = "indexedDB";
-    })(FSType = feng3d.FSType || (feng3d.FSType = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 资源
-     * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
-     */
-    var ReadAssets = /** @class */ (function () {
-        function ReadAssets() {
-            /**
-             * 可读文件系统
-             */
-            this.fs = feng3d.httpFS;
-        }
-        Object.defineProperty(ReadAssets.prototype, "type", {
-            get: function () {
-                return this.fs.type;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        ReadAssets.prototype.getAbsolutePath = function (path, callback) {
-            this.fs.getAbsolutePath(path, callback);
-        };
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        ReadAssets.prototype.readArrayBuffer = function (path, callback) {
-            if (path == "" || path == null) {
-                callback(new Error("无效路径!"), null);
-                return;
-            }
-            var readFS = this.fs;
-            if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1)
-                readFS = feng3d.httpFS;
-            readFS.readArrayBuffer(path, callback);
-        };
-        /**
-         * 读取文件为字符串
-         */
-        ReadAssets.prototype.readString = function (path, callback) {
-            this.readArrayBuffer(path, function (err, data) {
-                if (err) {
-                    callback(err, null);
-                    return;
-                }
-                feng3d.dataTransform.arrayBufferToString(data, function (content) {
-                    callback(null, content);
-                });
-            });
-        };
-        /**
-         * 加载图片
-         * @param path 图片路径
-         * @param callback 加载完成回调
-         */
-        ReadAssets.prototype.readImage = function (path, callback) {
-            if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1) {
-                var img = new Image();
-                img.onload = function () {
-                    callback(null, img);
-                };
-                img.src = path;
-            }
-            else {
-                this.readArrayBuffer(path, function (err, data) {
-                    if (err) {
-                        callback(err, null);
-                        return;
-                    }
-                    feng3d.dataTransform.arrayBufferToImage(data, function (img) {
-                        callback(null, img);
-                    });
-                });
-            }
-        };
-        /**
-         * 读取文件为DataURL
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        ReadAssets.prototype.readDataURL = function (path, callback) {
-            this.readArrayBuffer(path, function (err, data) {
-                feng3d.dataTransform.arrayBufferToDataURL(data, function (dataurl) {
-                    callback(null, dataurl);
-                });
-            });
-        };
-        /**
-         * 读取文件为Blob
-         * @param path 资源路径
-         * @param callback 读取完成回调
-         */
-        ReadAssets.prototype.readBlob = function (path, callback) {
-            feng3d.assets.readArrayBuffer(path, function (err, data) {
-                if (err) {
-                    callback(err, null);
-                    return;
-                }
-                feng3d.dataTransform.arrayBufferToBlob(data, function (blob) {
-                    callback(null, blob);
-                });
-            });
-        };
-        /**
-         * 读取文件为对象
-         * @param path 资源路径
-         * @param callback 读取完成回调
-         */
-        ReadAssets.prototype.readObject = function (path, callback) {
-            this.readString(path, function (err, str) {
-                if (err) {
-                    callback(err, null);
-                    return;
-                }
-                var object = feng3d.serialization.deserialize(JSON.parse(str));
-                callback(null, object);
-            });
-        };
-        /**
-         * 读取文件为资源对象
-         * @param id 资源编号
-         * @param callback 读取完成回调
-         */
-        ReadAssets.prototype.readAssets = function (id, callback) {
-            var _this = this;
-            var assets = feng3d.Feng3dAssets.getAssets(id);
-            if (assets) {
-                callback(null, assets);
-                return;
-            }
-            this.readObject(feng3d.Feng3dAssets.getPath(id), function (err, assets) {
-                if (assets)
-                    feng3d.Feng3dAssets.setAssets(assets);
-                if (assets instanceof feng3d.Feng3dFile) {
-                    assets["readFile"](_this, function (err) {
-                        callback(err, assets);
-                    });
-                }
-                else {
-                    callback(err, assets);
-                }
-            });
-        };
-        return ReadAssets;
-    }());
-    feng3d.ReadAssets = ReadAssets;
-    feng3d.assets = new ReadAssets();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var ReadWriteAssets = /** @class */ (function (_super) {
-        __extends(ReadWriteAssets, _super);
-        function ReadWriteAssets(readWriteFS) {
-            var _this = _super.call(this) || this;
-            /**
-             * 可读写文件系统
-             */
-            _this.fs = feng3d.indexedDBfs;
-            if (readWriteFS)
-                _this.fs = readWriteFS;
-            return _this;
-        }
-        Object.defineProperty(ReadWriteAssets.prototype, "projectname", {
-            // fs = indexedDBfs;
-            get: function () {
-                return this.fs.projectname;
-            },
-            set: function (v) {
-                this.fs.projectname = v;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 文件是否存在
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.exists = function (path, callback) {
-            this.fs.exists(path, callback);
-        };
-        /**
-         * 读取文件夹中文件列表
-         * @param path 路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.readdir = function (path, callback) {
-            feng3d.assert(this.isDir(path), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
-            this.fs.readdir(path, callback);
-        };
-        /**
-         * 新建文件夹
-         * @param path 文件夹路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.mkdir = function (path, callback) {
-            feng3d.assert(this.isDir(path), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
-            this.fs.mkdir(path, callback);
-        };
-        /**
-         * 删除文件
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.deleteFile = function (path, callback) {
-            this.fs.deleteFile(path, callback);
-        };
-        /**
-         * 写文件
-         * @param path 文件路径
-         * @param data 文件数据
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.writeArrayBuffer = function (path, data, callback) {
-            if (this.isDir(path)) {
-                this.fs.mkdir(path, callback);
-            }
-            else {
-                this.fs.writeArrayBuffer(path, data, callback);
-            }
-        };
-        ///--------------------------
-        /**
-         * 保存字符串到文件
-         * @param path 文件路径
-         * @param string 保存的字符串
-         * @param callback 完成回调
-         */
-        ReadWriteAssets.prototype.writeString = function (path, string, callback) {
-            var _this = this;
-            feng3d.dataTransform.stringToArrayBuffer(string, function (arrayBuffer) {
-                _this.writeArrayBuffer(path, arrayBuffer, callback);
-            });
-        };
-        /**
-         * 保存对象到文件
-         * @param path 文件路径
-         * @param object 保存的对象
-         * @param callback 完成回调
-         */
-        ReadWriteAssets.prototype.writeObject = function (path, object, callback) {
-            var obj = feng3d.serialization.serialize(object);
-            var str = JSON.stringify(obj, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
-            this.writeString(path, str, callback);
-        };
-        /**
-         * 保存资源
-         * @param assets 资源
-         * @param callback 保存资源完成回调
-         */
-        ReadWriteAssets.prototype.writeAssets = function (assets, callback) {
-            assets.save(this, callback);
-        };
-        /**
-         * 获取所有文件路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.getAllPaths = function (callback) {
-            this.getAllfilepathInFolder("", callback);
-        };
-        /**
-         * 获取指定文件下所有文件路径列表
-         */
-        ReadWriteAssets.prototype.getAllfilepathInFolder = function (dirpath, callback) {
-            var _this = this;
-            feng3d.assert(this.isDir(dirpath), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
-            var dirs = [dirpath];
-            var result = [];
-            var currentdir = "";
-            // 递归获取文件
-            var handle = function () {
-                if (dirs.length > 0) {
-                    currentdir = dirs.shift();
-                    _this.readdir(currentdir, function (err, files) {
-                        files.forEach(function (element) {
-                            var childpath = currentdir + element;
-                            result.push(childpath);
-                            if (_this.isDir(childpath))
-                                dirs.push(childpath);
-                        });
-                        handle();
-                    });
-                }
-                else {
-                    callback(null, result);
-                }
-            };
-            handle();
-        };
-        /**
-         * 复制文件
-         * @param src    源路径
-         * @param dest    目标路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.copyFile = function (src, dest, callback) {
-            var _this = this;
-            this.readArrayBuffer(src, function (err, data) {
-                if (err) {
-                    callback && callback(err);
-                    return;
-                }
-                _this.writeArrayBuffer(dest, data, callback);
-            });
-        };
-        /**
-         * 移动文件
-         * @param src 源路径
-         * @param dest 目标路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.moveFile = function (src, dest, callback) {
-            var _this = this;
-            this.copyFile(src, dest, function (err) {
-                if (err) {
-                    callback && callback(err);
-                    return;
-                }
-                _this.deleteFile(src, callback);
-            });
-        };
-        /**
-         * 重命名文件
-         * @param oldPath 老路径
-         * @param newPath 新路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.renameFile = function (oldPath, newPath, callback) {
-            this.moveFile(oldPath, newPath, callback);
-        };
-        /**
-         * 移动一组文件
-         * @param movelists 移动列表
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.moveFiles = function (movelists, callback) {
-            var _this = this;
-            this.copyFiles(movelists.concat(), function (err) {
-                if (err) {
-                    callback && callback(err);
-                    return;
-                }
-                var deletelists = movelists.reduce(function (value, current) { value.push(current[0]); return value; }, []);
-                _this.deleteFiles(deletelists, callback);
-            });
-        };
-        /**
-         * 复制一组文件
-         * @param copylists 复制列表
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.copyFiles = function (copylists, callback) {
-            var _this = this;
-            if (copylists.length > 0) {
-                var copyitem = copylists.shift();
-                this.copyFile(copyitem[0], copyitem[1], function (err) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
-                    }
-                    _this.copyFiles(copylists, callback);
-                });
-                return;
-            }
-            callback && callback(null);
-        };
-        /**
-         * 删除一组文件
-         * @param deletelists 删除列表
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.deleteFiles = function (deletelists, callback) {
-            var _this = this;
-            if (deletelists.length > 0) {
-                this.deleteFile(deletelists.shift(), function (err) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
-                    }
-                    _this.deleteFiles(deletelists, callback);
-                });
-                return;
-            }
-            callback && callback(null);
-        };
-        /**
-         * 重命名文件(夹)
-         * @param oldPath 老路径
-         * @param newPath 新路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.rename = function (oldPath, newPath, callback) {
-            var _this = this;
-            if (this.isDir(oldPath)) {
-                this.getAllfilepathInFolder(oldPath, function (err, filepaths) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
-                    }
-                    var renamelists = [[oldPath, newPath]];
-                    filepaths.forEach(function (element) {
-                        renamelists.push([element, element.replace(oldPath, newPath)]);
-                    });
-                    _this.moveFiles(renamelists, callback);
-                });
-            }
-            else {
-                this.renameFile(oldPath, newPath, callback);
-            }
-        };
-        /**
-         * 移动文件(夹)
-         * @param src 源路径
-         * @param dest 目标路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.move = function (src, dest, callback) {
-            this.rename(src, dest, callback);
-        };
-        /**
-         * 删除文件(夹)
-         * @param path 路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.delete = function (path, callback) {
-            var _this = this;
-            if (this.isDir(path)) {
-                this.getAllfilepathInFolder(path, function (err, filepaths) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
-                    }
-                    var removelists = filepaths.concat(path);
-                    _this.deleteFiles(removelists, callback);
-                });
-            }
-            else {
-                this.deleteFile(path, callback);
-            }
-        };
-        /**
-         * 删除资源
-         * @param assetsId 资源编号
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.deleteAssets = function (assetsId, callback) {
-            if (assetsId) {
-                feng3d.Feng3dAssets["_lib"].delete(assetsId);
-                this.delete(feng3d.Feng3dAssets.getAssetDir(assetsId), callback);
-            }
-            else {
-                callback && callback(null);
-            }
-        };
-        /**
-         * 是否为文件夹
-         * @param path 文件路径
-         */
-        ReadWriteAssets.prototype.isDir = function (path) {
-            if (path == "")
-                return true;
-            return path.charAt(path.length - 1) == "/";
-        };
-        return ReadWriteAssets;
-    }(feng3d.ReadAssets));
-    feng3d.ReadWriteAssets = ReadWriteAssets;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 资源扩展名
-     */
-    var AssetExtension;
-    (function (AssetExtension) {
-        /**
-         * 文件夹
-         */
-        AssetExtension["folder"] = "folder";
-        /**
-         * 音频
-         */
-        AssetExtension["audio"] = "audio";
-        /**
-         * ts文件
-         */
-        AssetExtension["ts"] = "ts";
-        /**
-         * js文件
-         */
-        AssetExtension["js"] = "js";
-        /**
-         * 文本文件
-         */
-        AssetExtension["txt"] = "txt";
-        /**
-         * json文件
-         */
-        AssetExtension["json"] = "json";
-        /**
-         * OBJ模型资源附带的材质文件
-         */
-        AssetExtension["mtl"] = "mtl";
-        /**
-         * OBJ模型文件
-         */
-        AssetExtension["obj"] = "obj";
-        /**
-         * MD5模型文件
-         */
-        AssetExtension["md5mesh"] = "md5mesh";
-        /**
-         * MD5动画
-         */
-        AssetExtension["md5anim"] = "md5anim";
-        /**
-         * 魔兽MDL模型
-         */
-        AssetExtension["mdl"] = "mdl";
-        // -- feng3d中的类型
-        /**
-         * 纹理
-         */
-        AssetExtension["texture"] = "texture";
-        /**
-         * 立方体纹理
-         */
-        AssetExtension["texturecube"] = "texturecube";
-        /**
-         * 材质
-         */
-        AssetExtension["material"] = "material";
-        /**
-         * 几何体
-         */
-        AssetExtension["geometry"] = "geometry";
-        /**
-         * 游戏对象
-         */
-        AssetExtension["gameobject"] = "gameobject";
-        /**
-         * 场景
-         */
-        AssetExtension["scene"] = "scene";
-        /**
-         * 动画
-         */
-        AssetExtension["anim"] = "anim";
-        /**
-         * 着色器
-         */
-        AssetExtension["shader"] = "shader";
-        /**
-         * 脚本
-         */
-        AssetExtension["script"] = "script";
-    })(AssetExtension = feng3d.AssetExtension || (feng3d.AssetExtension = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * feng3d资源
-     */
-    var Feng3dAssets = /** @class */ (function (_super) {
-        __extends(Feng3dAssets, _super);
-        function Feng3dAssets() {
-            var _this = _super.call(this) || this;
-            /**
-             * 名称
-             */
-            _this.name = "";
-            return _this;
-        }
-        /**
-         * 保存资源
-         * @param readWriteAssets
-         * @param callback  完成回调
-         */
-        Feng3dAssets.prototype.save = function (readWriteAssets, callback) {
-            if (!this.assetsId) {
-                this.assetsId = feng3d.FMath.uuid();
-                Feng3dAssets.setAssets(this);
-            }
-            readWriteAssets.writeObject(this.path, this, callback);
-        };
-        /**
-         * 删除资源
-         * @param readWriteAssets 可读写资源管理器
-         * @param callback 完成回调
-         */
-        Feng3dAssets.prototype.delete = function (readWriteAssets, callback) {
-            readWriteAssets.deleteAssets(this.assetsId, callback);
-        };
-        Feng3dAssets.prototype.assetsIdChanged = function () {
-            this.path = Feng3dAssets.getPath(this.assetsId);
-        };
-        /**
-         * 获取资源所在文件夹
-         * @param assetsId 资源编号
-         */
-        Feng3dAssets.getAssetDir = function (assetsId) {
-            return "Library/" + assetsId + "/";
-        };
-        /**
-         * 获取资源路径
-         * @param assetsId 资源编号
-         */
-        Feng3dAssets.getPath = function (assetsId) {
-            return this.getAssetDir(assetsId) + ".json";
-        };
-        Feng3dAssets.setAssets = function (assets) {
-            this._lib.set(assets.assetsId, assets);
-        };
-        /**
-         * 获取资源
-         * @param assetsId 资源编号
-         */
-        Feng3dAssets.getAssets = function (assetsId) {
-            return this._lib.get(assetsId);
-        };
-        /**
-         * 获取指定类型资源
-         * @param type 资源类型
-         */
-        Feng3dAssets.getAssetsByType = function (type) {
-            return this._lib.getValues().filter(function (v) { return v instanceof type; });
-        };
-        Feng3dAssets._lib = new Map();
-        __decorate([
-            feng3d.serialize,
-            feng3d.watch("assetsIdChanged")
-        ], Feng3dAssets.prototype, "assetsId", void 0);
+        Color3.WHITE = new Color3();
+        Color3.BLACK = new Color3(0, 0, 0);
         __decorate([
             feng3d.oav(),
             feng3d.serialize
-        ], Feng3dAssets.prototype, "name", void 0);
-        return Feng3dAssets;
-    }(feng3d.Feng3dObject));
-    feng3d.Feng3dAssets = Feng3dAssets;
+        ], Color3.prototype, "r", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], Color3.prototype, "g", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], Color3.prototype, "b", void 0);
+        return Color3;
+    }());
+    feng3d.Color3 = Color3;
+    feng3d.ColorKeywords = {
+        'aliceblue': 0xF0F8FF, 'antiquewhite': 0xFAEBD7, 'aqua': 0x00FFFF, 'aquamarine': 0x7FFFD4, 'azure': 0xF0FFFF,
+        'beige': 0xF5F5DC, 'bisque': 0xFFE4C4, 'black': 0x000000, 'blanchedalmond': 0xFFEBCD, 'blue': 0x0000FF, 'blueviolet': 0x8A2BE2,
+        'brown': 0xA52A2A, 'burlywood': 0xDEB887, 'cadetblue': 0x5F9EA0, 'chartreuse': 0x7FFF00, 'chocolate': 0xD2691E, 'coral': 0xFF7F50,
+        'cornflowerblue': 0x6495ED, 'cornsilk': 0xFFF8DC, 'crimson': 0xDC143C, 'cyan': 0x00FFFF, 'darkblue': 0x00008B, 'darkcyan': 0x008B8B,
+        'darkgoldenrod': 0xB8860B, 'darkgray': 0xA9A9A9, 'darkgreen': 0x006400, 'darkgrey': 0xA9A9A9, 'darkkhaki': 0xBDB76B, 'darkmagenta': 0x8B008B,
+        'darkolivegreen': 0x556B2F, 'darkorange': 0xFF8C00, 'darkorchid': 0x9932CC, 'darkred': 0x8B0000, 'darksalmon': 0xE9967A, 'darkseagreen': 0x8FBC8F,
+        'darkslateblue': 0x483D8B, 'darkslategray': 0x2F4F4F, 'darkslategrey': 0x2F4F4F, 'darkturquoise': 0x00CED1, 'darkviolet': 0x9400D3,
+        'deeppink': 0xFF1493, 'deepskyblue': 0x00BFFF, 'dimgray': 0x696969, 'dimgrey': 0x696969, 'dodgerblue': 0x1E90FF, 'firebrick': 0xB22222,
+        'floralwhite': 0xFFFAF0, 'forestgreen': 0x228B22, 'fuchsia': 0xFF00FF, 'gainsboro': 0xDCDCDC, 'ghostwhite': 0xF8F8FF, 'gold': 0xFFD700,
+        'goldenrod': 0xDAA520, 'gray': 0x808080, 'green': 0x008000, 'greenyellow': 0xADFF2F, 'grey': 0x808080, 'honeydew': 0xF0FFF0, 'hotpink': 0xFF69B4,
+        'indianred': 0xCD5C5C, 'indigo': 0x4B0082, 'ivory': 0xFFFFF0, 'khaki': 0xF0E68C, 'lavender': 0xE6E6FA, 'lavenderblush': 0xFFF0F5, 'lawngreen': 0x7CFC00,
+        'lemonchiffon': 0xFFFACD, 'lightblue': 0xADD8E6, 'lightcoral': 0xF08080, 'lightcyan': 0xE0FFFF, 'lightgoldenrodyellow': 0xFAFAD2, 'lightgray': 0xD3D3D3,
+        'lightgreen': 0x90EE90, 'lightgrey': 0xD3D3D3, 'lightpink': 0xFFB6C1, 'lightsalmon': 0xFFA07A, 'lightseagreen': 0x20B2AA, 'lightskyblue': 0x87CEFA,
+        'lightslategray': 0x778899, 'lightslategrey': 0x778899, 'lightsteelblue': 0xB0C4DE, 'lightyellow': 0xFFFFE0, 'lime': 0x00FF00, 'limegreen': 0x32CD32,
+        'linen': 0xFAF0E6, 'magenta': 0xFF00FF, 'maroon': 0x800000, 'mediumaquamarine': 0x66CDAA, 'mediumblue': 0x0000CD, 'mediumorchid': 0xBA55D3,
+        'mediumpurple': 0x9370DB, 'mediumseagreen': 0x3CB371, 'mediumslateblue': 0x7B68EE, 'mediumspringgreen': 0x00FA9A, 'mediumturquoise': 0x48D1CC,
+        'mediumvioletred': 0xC71585, 'midnightblue': 0x191970, 'mintcream': 0xF5FFFA, 'mistyrose': 0xFFE4E1, 'moccasin': 0xFFE4B5, 'navajowhite': 0xFFDEAD,
+        'navy': 0x000080, 'oldlace': 0xFDF5E6, 'olive': 0x808000, 'olivedrab': 0x6B8E23, 'orange': 0xFFA500, 'orangered': 0xFF4500, 'orchid': 0xDA70D6,
+        'palegoldenrod': 0xEEE8AA, 'palegreen': 0x98FB98, 'paleturquoise': 0xAFEEEE, 'palevioletred': 0xDB7093, 'papayawhip': 0xFFEFD5, 'peachpuff': 0xFFDAB9,
+        'peru': 0xCD853F, 'pink': 0xFFC0CB, 'plum': 0xDDA0DD, 'powderblue': 0xB0E0E6, 'purple': 0x800080, 'rebeccapurple': 0x663399, 'red': 0xFF0000, 'rosybrown': 0xBC8F8F,
+        'royalblue': 0x4169E1, 'saddlebrown': 0x8B4513, 'salmon': 0xFA8072, 'sandybrown': 0xF4A460, 'seagreen': 0x2E8B57, 'seashell': 0xFFF5EE,
+        'sienna': 0xA0522D, 'silver': 0xC0C0C0, 'skyblue': 0x87CEEB, 'slateblue': 0x6A5ACD, 'slategray': 0x708090, 'slategrey': 0x708090, 'snow': 0xFFFAFA,
+        'springgreen': 0x00FF7F, 'steelblue': 0x4682B4, 'tan': 0xD2B48C, 'teal': 0x008080, 'thistle': 0xD8BFD8, 'tomato': 0xFF6347, 'turquoise': 0x40E0D0,
+        'violet': 0xEE82EE, 'wheat': 0xF5DEB3, 'white': 0xFFFFFF, 'whitesmoke': 0xF5F5F5, 'yellow': 0xFFFF00, 'yellowgreen': 0x9ACD32
+    };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
     /**
-     * 资源
+     * 颜色（包含透明度）
      */
-    var Resources = /** @class */ (function () {
-        function Resources() {
-        }
+    var Color4 = /** @class */ (function () {
         /**
-         * 卸载没有被使用的资源
+         * 构建颜色
+         * @param r     红[0,1]
+         * @param g     绿[0,1]
+         * @param b     蓝[0,1]
+         * @param a     透明度[0,1]
          */
-        Resources.prototype.unloadUnusedAssets = function () {
+        function Color4(r, g, b, a) {
+            if (r === void 0) { r = 1; }
+            if (g === void 0) { g = 1; }
+            if (b === void 0) { b = 1; }
+            if (a === void 0) { a = 1; }
+            this.__class__ = "feng3d.Color4";
+            /**
+             * 红[0,1]
+             */
+            this.r = 1;
+            /**
+             * 绿[0,1]
+             */
+            this.g = 1;
+            /**
+             * 蓝[0,1]
+             */
+            this.b = 1;
+            /**
+             * 透明度[0,1]
+             */
+            this.a = 1;
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            this.a = a;
+        }
+        Color4.prototype.setTo = function (r, g, b, a) {
+            if (a === void 0) { a = 1; }
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            this.a = a;
+            return this;
         };
-        return Resources;
-    }());
-    feng3d.Resources = Resources;
-    feng3d.resources = new Resources();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    feng3d.FMath = {
         /**
-         * 角度转弧度因子
+         * 通过
+         * @param color
          */
-        DEG2RAD: Math.PI / 180,
-        /**
-         * 弧度转角度因子
-         */
-        RAD2DEG: 180 / Math.PI,
-        /**
-         * 默认精度
-         */
-        PRECISION: 0.000001,
-        /**
-         * http://www.broofa.com/Tools/Math.uuid.htm
-         */
-        uuid: function () {
-            // http://www.broofa.com/Tools/Math.uuid.htm
-            var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
-            var id = new Array(36);
-            var rnd = 0, r;
-            return function generateUUID() {
-                for (var i = 0; i < 36; i++) {
-                    if (i === 8 || i === 13 || i === 18 || i === 23) {
-                        id[i] = '-';
-                    }
-                    else if (i === 14) {
-                        id[i] = '4';
-                    }
-                    else {
-                        if (rnd <= 0x02)
-                            rnd = 0x2000000 + (Math.random() * 0x1000000) | 0;
-                        r = rnd & 0xf;
-                        rnd = rnd >> 4;
-                        id[i] = chars[(i === 19) ? (r & 0x3) | 0x8 : r];
-                    }
-                }
-                return id.join('');
-            };
-        }(),
-        clamp: function (value, min, max) {
-            return Math.max(min, Math.min(max, value));
-        },
-        /**
-         * compute euclidian modulo of m % n
-         * https://en.wikipedia.org/wiki/Modulo_operation
-         */
-        euclideanModulo: function (n, m) {
-            return ((n % m) + m) % m;
-        },
-        /**
-         * Linear mapping from range <a1, a2> to range <b1, b2>
-         */
-        mapLinear: function (x, a1, a2, b1, b2) {
-            return b1 + (x - a1) * (b2 - b1) / (a2 - a1);
-        },
-        /**
-         * https://en.wikipedia.org/wiki/Linear_interpolation
-         */
-        lerp: function (x, y, t) {
-            return (1 - t) * x + t * y;
-        },
-        /**
-         * http://en.wikipedia.org/wiki/Smoothstep
-         */
-        smoothstep: function (x, min, max) {
-            if (x <= min)
-                return 0;
-            if (x >= max)
-                return 1;
-            x = (x - min) / (max - min);
-            return x * x * (3 - 2 * x);
-        },
-        smootherstep: function (x, min, max) {
-            if (x <= min)
-                return 0;
-            if (x >= max)
-                return 1;
-            x = (x - min) / (max - min);
-            return x * x * x * (x * (x * 6 - 15) + 10);
-        },
-        /**
-         * Random integer from <low, high> interval
-         */
-        randInt: function (low, high) {
-            return low + Math.floor(Math.random() * (high - low + 1));
-        },
-        /**
-         * Random float from <low, high> interval
-         */
-        randFloat: function (low, high) {
-            return low + Math.random() * (high - low);
-        },
-        /**
-         * Random float from <-range/2, range/2> interval
-         */
-        randFloatSpread: function (range) {
-            return range * (0.5 - Math.random());
-        },
-        /**
-         * 角度转换为弧度
-         */
-        degToRad: function (degrees) {
-            return degrees * this.DEG2RAD;
-        },
-        radToDeg: function (radians) {
-            return radians * this.RAD2DEG;
-        },
-        isPowerOfTwo: function (value) {
-            return (value & (value - 1)) === 0 && value !== 0;
-        },
-        nearestPowerOfTwo: function (value) {
-            return Math.pow(2, Math.round(Math.log(value) / Math.LN2));
-        },
-        nextPowerOfTwo: function (value) {
-            value--;
-            value |= value >> 1;
-            value |= value >> 2;
-            value |= value >> 4;
-            value |= value >> 8;
-            value |= value >> 16;
-            value++;
+        Color4.prototype.fromUnit = function (color) {
+            this.a = ((color >> 24) & 0xff) / 0xff;
+            this.r = ((color >> 16) & 0xff) / 0xff;
+            this.g = ((color >> 8) & 0xff) / 0xff;
+            this.b = (color & 0xff) / 0xff;
+            return this;
+        };
+        Color4.prototype.toInt = function () {
+            var value = ((this.a * 0xff) << 24) + ((this.r * 0xff) << 16) + ((this.g * 0xff) << 8) + (this.b * 0xff);
             return value;
-        },
+        };
         /**
-         * 获取目标最近的值
-         *
-         * source增加或者减少整数倍precision后得到离target最近的值
-         *
-         * ```
-         * Math.toRound(71,0,5);//运算结果为1
-         * ```
-         *
-         * @param source 初始值
-         * @param target 目标值
-         * @param precision 精度
+         * 输出16进制字符串
          */
-        toRound: function (source, target, precision) {
-            if (precision === void 0) { precision = 360; }
-            return source + Math.round((target - source) / precision) * precision;
-        },
+        Color4.prototype.toHexString = function () {
+            var intR = (this.r * 0xff) | 0;
+            var intG = (this.g * 0xff) | 0;
+            var intB = (this.b * 0xff) | 0;
+            var intA = (this.a * 0xff) | 0;
+            return "#" + feng3d.Color3.ToHex(intA) + feng3d.Color3.ToHex(intR) + feng3d.Color3.ToHex(intG) + feng3d.Color3.ToHex(intB);
+        };
         /**
-         * 比较两个Number是否相等
-         * @param a 数字a
-         * @param b 数字b
-         * @param precision 进度
+         * 混合颜色
+         * @param color 混入的颜色
+         * @param rate  混入比例
          */
-        equals: function (a, b, precision) {
-            if (precision == undefined)
-                precision = this.PRECISION;
-            return Math.abs(a - b) < precision;
-        }
-    };
+        Color4.prototype.mix = function (color, rate) {
+            if (rate === void 0) { rate = 0.5; }
+            this.r = this.r * (1 - rate) + color.r * rate;
+            this.g = this.g * (1 - rate) + color.g * rate;
+            this.b = this.b * (1 - rate) + color.b * rate;
+            this.a = this.a * (1 - rate) + color.a * rate;
+            return this;
+        };
+        /**
+         * 混合颜色
+         * @param color 混入的颜色
+         * @param rate  混入比例
+         */
+        Color4.prototype.mixTo = function (color, rate, vout) {
+            if (vout === void 0) { vout = new Color4(); }
+            return vout.copy(this).mix(color, rate);
+        };
+        /**
+         * 乘以指定颜色
+         * @param c 乘以的颜色
+         * @return 返回自身
+         */
+        Color4.prototype.multiply = function (c) {
+            this.r *= c.r;
+            this.g *= c.g;
+            this.b *= c.b;
+            this.a *= c.a;
+            return this;
+        };
+        /**
+         * 乘以指定颜色
+         * @param v 乘以的颜色
+         * @return 返回新颜色
+         */
+        Color4.prototype.multiplyTo = function (v, vout) {
+            if (vout === void 0) { vout = new Color4(); }
+            return vout.copy(this).multiply(v);
+        };
+        /**
+         * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
+         */
+        Color4.prototype.equals = function (object, precision) {
+            if (precision === void 0) { precision = feng3d.FMath.PRECISION; }
+            if (!feng3d.FMath.equals(this.r - object.r, 0, precision))
+                return false;
+            if (!feng3d.FMath.equals(this.g - object.g, 0, precision))
+                return false;
+            if (!feng3d.FMath.equals(this.b - object.b, 0, precision))
+                return false;
+            if (!feng3d.FMath.equals(this.a - object.a, 0, precision))
+                return false;
+            return true;
+        };
+        /**
+         * 拷贝
+         */
+        Color4.prototype.copy = function (color) {
+            this.r = color.r;
+            this.g = color.g;
+            this.b = color.b;
+            this.a = color.a;
+            return this;
+        };
+        /**
+         * 输出字符串
+         */
+        Color4.prototype.toString = function () {
+            return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
+        };
+        Color4.prototype.toColor3 = function (color) {
+            if (color === void 0) { color = new feng3d.Color3(); }
+            color.r = this.r;
+            color.g = this.g;
+            color.b = this.b;
+            return color;
+        };
+        Color4.prototype.toVector4 = function (vector4) {
+            if (vector4 === void 0) { vector4 = new feng3d.Vector4(); }
+            vector4.x = this.r;
+            vector4.y = this.g;
+            vector4.z = this.b;
+            vector4.w = this.a;
+            return vector4;
+        };
+        Color4.prototype.clone = function () {
+            return new Color4(this.r, this.g, this.b, this.a);
+        };
+        Color4.WHITE = new Color4();
+        Color4.BLACK = new Color4(0, 0, 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], Color4.prototype, "r", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], Color4.prototype, "g", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], Color4.prototype, "b", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], Color4.prototype, "a", void 0);
+        return Color4;
+    }());
+    feng3d.Color4 = Color4;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -10933,391 +7309,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 颜色
-     */
-    var Color3 = /** @class */ (function () {
-        /**
-         * 构建颜色
-         * @param r     红[0,1]
-         * @param g     绿[0,1]
-         * @param b     蓝[0,1]
-         */
-        function Color3(r, g, b) {
-            if (r === void 0) { r = 1; }
-            if (g === void 0) { g = 1; }
-            if (b === void 0) { b = 1; }
-            this.__class__ = "feng3d.Color3";
-            /**
-             * 红[0,1]
-             */
-            this.r = 1;
-            /**
-             * 绿[0,1]
-             */
-            this.g = 1;
-            /**
-             * 蓝[0,1]
-             */
-            this.b = 1;
-            this.r = r;
-            this.g = g;
-            this.b = b;
-        }
-        Color3.prototype.setTo = function (r, g, b) {
-            this.r = r;
-            this.g = g;
-            this.b = b;
-            return this;
-        };
-        /**
-         * 通过
-         * @param color
-         */
-        Color3.prototype.fromUnit = function (color) {
-            this.r = ((color >> 16) & 0xff) / 0xff;
-            this.g = ((color >> 8) & 0xff) / 0xff;
-            this.b = (color & 0xff) / 0xff;
-            return this;
-        };
-        Color3.prototype.toInt = function () {
-            var value = ((this.r * 0xff) << 16) + ((this.g * 0xff) << 8) + (this.b * 0xff);
-            return value;
-        };
-        /**
-         * 输出16进制字符串
-         */
-        Color3.prototype.toHexString = function () {
-            var intR = (this.r * 0xff) | 0;
-            var intG = (this.g * 0xff) | 0;
-            var intB = (this.b * 0xff) | 0;
-            return "#" + Color3.ToHex(intR) + Color3.ToHex(intG) + Color3.ToHex(intB);
-        };
-        /**
-         * 混合颜色
-         * @param color 混入的颜色
-         * @param rate  混入比例
-         */
-        Color3.prototype.mix = function (color, rate) {
-            this.r = this.r * (1 - rate) + color.r * rate;
-            this.g = this.g * (1 - rate) + color.g * rate;
-            this.b = this.b * (1 - rate) + color.b * rate;
-            return this;
-        };
-        /**
-         * 混合颜色
-         * @param color 混入的颜色
-         * @param rate  混入比例
-         */
-        Color3.prototype.mixTo = function (color, rate, vout) {
-            if (vout === void 0) { vout = new Color3(); }
-            return vout.copy(this).mix(color, rate);
-        };
-        /**
-         * 按标量（大小）缩放当前的 Color3 对象。
-         */
-        Color3.prototype.scale = function (s) {
-            this.r *= s;
-            this.g *= s;
-            this.b *= s;
-            return this;
-        };
-        /**
-         * 按标量（大小）缩放当前的 Color3 对象。
-         */
-        Color3.prototype.scaleTo = function (s, vout) {
-            if (vout === void 0) { vout = new Color3(); }
-            return vout.copy(this).scale(s);
-        };
-        /**
-         * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
-         */
-        Color3.prototype.equals = function (object, precision) {
-            if (precision === void 0) { precision = feng3d.FMath.PRECISION; }
-            if (!feng3d.FMath.equals(this.r - object.r, 0, precision))
-                return false;
-            if (!feng3d.FMath.equals(this.g - object.g, 0, precision))
-                return false;
-            if (!feng3d.FMath.equals(this.b - object.b, 0, precision))
-                return false;
-            return true;
-        };
-        /**
-         * 拷贝
-         */
-        Color3.prototype.copy = function (color) {
-            this.r = color.r;
-            this.g = color.g;
-            this.b = color.b;
-            return this;
-        };
-        Color3.prototype.clone = function () {
-            return new Color3(this.r, this.g, this.b);
-        };
-        Color3.prototype.toVector3 = function (vector3) {
-            if (vector3 === void 0) { vector3 = new feng3d.Vector3(); }
-            vector3.x = this.r;
-            vector3.y = this.g;
-            vector3.z = this.b;
-            return vector3;
-        };
-        Color3.prototype.toColor4 = function (color4) {
-            if (color4 === void 0) { color4 = new feng3d.Color4(); }
-            color4.r = this.r;
-            color4.g = this.g;
-            color4.b = this.b;
-            return color4;
-        };
-        /**
-         * 输出字符串
-         */
-        Color3.prototype.toString = function () {
-            return "{R: " + this.r + " G:" + this.g + " B:" + this.b + "}";
-        };
-        /**
-         * [0,15]数值转为16进制字符串
-         * param i  [0,15]数值
-         */
-        Color3.ToHex = function (i) {
-            var str = i.toString(16);
-            if (i <= 0xf) {
-                return ("0" + str).toUpperCase();
-            }
-            return str.toUpperCase();
-        };
-        Color3.WHITE = new Color3();
-        Color3.BLACK = new Color3(0, 0, 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], Color3.prototype, "r", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], Color3.prototype, "g", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], Color3.prototype, "b", void 0);
-        return Color3;
-    }());
-    feng3d.Color3 = Color3;
-    feng3d.ColorKeywords = {
-        'aliceblue': 0xF0F8FF, 'antiquewhite': 0xFAEBD7, 'aqua': 0x00FFFF, 'aquamarine': 0x7FFFD4, 'azure': 0xF0FFFF,
-        'beige': 0xF5F5DC, 'bisque': 0xFFE4C4, 'black': 0x000000, 'blanchedalmond': 0xFFEBCD, 'blue': 0x0000FF, 'blueviolet': 0x8A2BE2,
-        'brown': 0xA52A2A, 'burlywood': 0xDEB887, 'cadetblue': 0x5F9EA0, 'chartreuse': 0x7FFF00, 'chocolate': 0xD2691E, 'coral': 0xFF7F50,
-        'cornflowerblue': 0x6495ED, 'cornsilk': 0xFFF8DC, 'crimson': 0xDC143C, 'cyan': 0x00FFFF, 'darkblue': 0x00008B, 'darkcyan': 0x008B8B,
-        'darkgoldenrod': 0xB8860B, 'darkgray': 0xA9A9A9, 'darkgreen': 0x006400, 'darkgrey': 0xA9A9A9, 'darkkhaki': 0xBDB76B, 'darkmagenta': 0x8B008B,
-        'darkolivegreen': 0x556B2F, 'darkorange': 0xFF8C00, 'darkorchid': 0x9932CC, 'darkred': 0x8B0000, 'darksalmon': 0xE9967A, 'darkseagreen': 0x8FBC8F,
-        'darkslateblue': 0x483D8B, 'darkslategray': 0x2F4F4F, 'darkslategrey': 0x2F4F4F, 'darkturquoise': 0x00CED1, 'darkviolet': 0x9400D3,
-        'deeppink': 0xFF1493, 'deepskyblue': 0x00BFFF, 'dimgray': 0x696969, 'dimgrey': 0x696969, 'dodgerblue': 0x1E90FF, 'firebrick': 0xB22222,
-        'floralwhite': 0xFFFAF0, 'forestgreen': 0x228B22, 'fuchsia': 0xFF00FF, 'gainsboro': 0xDCDCDC, 'ghostwhite': 0xF8F8FF, 'gold': 0xFFD700,
-        'goldenrod': 0xDAA520, 'gray': 0x808080, 'green': 0x008000, 'greenyellow': 0xADFF2F, 'grey': 0x808080, 'honeydew': 0xF0FFF0, 'hotpink': 0xFF69B4,
-        'indianred': 0xCD5C5C, 'indigo': 0x4B0082, 'ivory': 0xFFFFF0, 'khaki': 0xF0E68C, 'lavender': 0xE6E6FA, 'lavenderblush': 0xFFF0F5, 'lawngreen': 0x7CFC00,
-        'lemonchiffon': 0xFFFACD, 'lightblue': 0xADD8E6, 'lightcoral': 0xF08080, 'lightcyan': 0xE0FFFF, 'lightgoldenrodyellow': 0xFAFAD2, 'lightgray': 0xD3D3D3,
-        'lightgreen': 0x90EE90, 'lightgrey': 0xD3D3D3, 'lightpink': 0xFFB6C1, 'lightsalmon': 0xFFA07A, 'lightseagreen': 0x20B2AA, 'lightskyblue': 0x87CEFA,
-        'lightslategray': 0x778899, 'lightslategrey': 0x778899, 'lightsteelblue': 0xB0C4DE, 'lightyellow': 0xFFFFE0, 'lime': 0x00FF00, 'limegreen': 0x32CD32,
-        'linen': 0xFAF0E6, 'magenta': 0xFF00FF, 'maroon': 0x800000, 'mediumaquamarine': 0x66CDAA, 'mediumblue': 0x0000CD, 'mediumorchid': 0xBA55D3,
-        'mediumpurple': 0x9370DB, 'mediumseagreen': 0x3CB371, 'mediumslateblue': 0x7B68EE, 'mediumspringgreen': 0x00FA9A, 'mediumturquoise': 0x48D1CC,
-        'mediumvioletred': 0xC71585, 'midnightblue': 0x191970, 'mintcream': 0xF5FFFA, 'mistyrose': 0xFFE4E1, 'moccasin': 0xFFE4B5, 'navajowhite': 0xFFDEAD,
-        'navy': 0x000080, 'oldlace': 0xFDF5E6, 'olive': 0x808000, 'olivedrab': 0x6B8E23, 'orange': 0xFFA500, 'orangered': 0xFF4500, 'orchid': 0xDA70D6,
-        'palegoldenrod': 0xEEE8AA, 'palegreen': 0x98FB98, 'paleturquoise': 0xAFEEEE, 'palevioletred': 0xDB7093, 'papayawhip': 0xFFEFD5, 'peachpuff': 0xFFDAB9,
-        'peru': 0xCD853F, 'pink': 0xFFC0CB, 'plum': 0xDDA0DD, 'powderblue': 0xB0E0E6, 'purple': 0x800080, 'rebeccapurple': 0x663399, 'red': 0xFF0000, 'rosybrown': 0xBC8F8F,
-        'royalblue': 0x4169E1, 'saddlebrown': 0x8B4513, 'salmon': 0xFA8072, 'sandybrown': 0xF4A460, 'seagreen': 0x2E8B57, 'seashell': 0xFFF5EE,
-        'sienna': 0xA0522D, 'silver': 0xC0C0C0, 'skyblue': 0x87CEEB, 'slateblue': 0x6A5ACD, 'slategray': 0x708090, 'slategrey': 0x708090, 'snow': 0xFFFAFA,
-        'springgreen': 0x00FF7F, 'steelblue': 0x4682B4, 'tan': 0xD2B48C, 'teal': 0x008080, 'thistle': 0xD8BFD8, 'tomato': 0xFF6347, 'turquoise': 0x40E0D0,
-        'violet': 0xEE82EE, 'wheat': 0xF5DEB3, 'white': 0xFFFFFF, 'whitesmoke': 0xF5F5F5, 'yellow': 0xFFFF00, 'yellowgreen': 0x9ACD32
-    };
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 颜色（包含透明度）
-     */
-    var Color4 = /** @class */ (function () {
-        /**
-         * 构建颜色
-         * @param r     红[0,1]
-         * @param g     绿[0,1]
-         * @param b     蓝[0,1]
-         * @param a     透明度[0,1]
-         */
-        function Color4(r, g, b, a) {
-            if (r === void 0) { r = 1; }
-            if (g === void 0) { g = 1; }
-            if (b === void 0) { b = 1; }
-            if (a === void 0) { a = 1; }
-            this.__class__ = "feng3d.Color4";
-            /**
-             * 红[0,1]
-             */
-            this.r = 1;
-            /**
-             * 绿[0,1]
-             */
-            this.g = 1;
-            /**
-             * 蓝[0,1]
-             */
-            this.b = 1;
-            /**
-             * 透明度[0,1]
-             */
-            this.a = 1;
-            this.r = r;
-            this.g = g;
-            this.b = b;
-            this.a = a;
-        }
-        Color4.prototype.setTo = function (r, g, b, a) {
-            if (a === void 0) { a = 1; }
-            this.r = r;
-            this.g = g;
-            this.b = b;
-            this.a = a;
-            return this;
-        };
-        /**
-         * 通过
-         * @param color
-         */
-        Color4.prototype.fromUnit = function (color) {
-            this.a = ((color >> 24) & 0xff) / 0xff;
-            this.r = ((color >> 16) & 0xff) / 0xff;
-            this.g = ((color >> 8) & 0xff) / 0xff;
-            this.b = (color & 0xff) / 0xff;
-            return this;
-        };
-        Color4.prototype.toInt = function () {
-            var value = ((this.a * 0xff) << 24) + ((this.r * 0xff) << 16) + ((this.g * 0xff) << 8) + (this.b * 0xff);
-            return value;
-        };
-        /**
-         * 输出16进制字符串
-         */
-        Color4.prototype.toHexString = function () {
-            var intR = (this.r * 0xff) | 0;
-            var intG = (this.g * 0xff) | 0;
-            var intB = (this.b * 0xff) | 0;
-            var intA = (this.a * 0xff) | 0;
-            return "#" + feng3d.Color3.ToHex(intA) + feng3d.Color3.ToHex(intR) + feng3d.Color3.ToHex(intG) + feng3d.Color3.ToHex(intB);
-        };
-        /**
-         * 混合颜色
-         * @param color 混入的颜色
-         * @param rate  混入比例
-         */
-        Color4.prototype.mix = function (color, rate) {
-            if (rate === void 0) { rate = 0.5; }
-            this.r = this.r * (1 - rate) + color.r * rate;
-            this.g = this.g * (1 - rate) + color.g * rate;
-            this.b = this.b * (1 - rate) + color.b * rate;
-            this.a = this.a * (1 - rate) + color.a * rate;
-            return this;
-        };
-        /**
-         * 混合颜色
-         * @param color 混入的颜色
-         * @param rate  混入比例
-         */
-        Color4.prototype.mixTo = function (color, rate, vout) {
-            if (vout === void 0) { vout = new Color4(); }
-            return vout.copy(this).mix(color, rate);
-        };
-        /**
-         * 乘以指定颜色
-         * @param c 乘以的颜色
-         * @return 返回自身
-         */
-        Color4.prototype.multiply = function (c) {
-            this.r *= c.r;
-            this.g *= c.g;
-            this.b *= c.b;
-            this.a *= c.a;
-            return this;
-        };
-        /**
-         * 乘以指定颜色
-         * @param v 乘以的颜色
-         * @return 返回新颜色
-         */
-        Color4.prototype.multiplyTo = function (v, vout) {
-            if (vout === void 0) { vout = new Color4(); }
-            return vout.copy(this).multiply(v);
-        };
-        /**
-         * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
-         */
-        Color4.prototype.equals = function (object, precision) {
-            if (precision === void 0) { precision = feng3d.FMath.PRECISION; }
-            if (!feng3d.FMath.equals(this.r - object.r, 0, precision))
-                return false;
-            if (!feng3d.FMath.equals(this.g - object.g, 0, precision))
-                return false;
-            if (!feng3d.FMath.equals(this.b - object.b, 0, precision))
-                return false;
-            if (!feng3d.FMath.equals(this.a - object.a, 0, precision))
-                return false;
-            return true;
-        };
-        /**
-         * 拷贝
-         */
-        Color4.prototype.copy = function (color) {
-            this.r = color.r;
-            this.g = color.g;
-            this.b = color.b;
-            this.a = color.a;
-            return this;
-        };
-        /**
-         * 输出字符串
-         */
-        Color4.prototype.toString = function () {
-            return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
-        };
-        Color4.prototype.toColor3 = function (color) {
-            if (color === void 0) { color = new feng3d.Color3(); }
-            color.r = this.r;
-            color.g = this.g;
-            color.b = this.b;
-            return color;
-        };
-        Color4.prototype.toVector4 = function (vector4) {
-            if (vector4 === void 0) { vector4 = new feng3d.Vector4(); }
-            vector4.x = this.r;
-            vector4.y = this.g;
-            vector4.z = this.b;
-            vector4.w = this.a;
-            return vector4;
-        };
-        Color4.prototype.clone = function () {
-            return new Color4(this.r, this.g, this.b, this.a);
-        };
-        Color4.WHITE = new Color4();
-        Color4.BLACK = new Color4(0, 0, 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], Color4.prototype, "r", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], Color4.prototype, "g", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], Color4.prototype, "b", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], Color4.prototype, "a", void 0);
-        return Color4;
-    }());
-    feng3d.Color4 = Color4;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 由三角形构成的几何体
      * ### 限定：
      *  * 只包含三角形，不存在四边形等其他多边形
@@ -11531,6 +7522,4015 @@ var feng3d;
         return TriangleGeometry;
     }());
     feng3d.TriangleGeometry = TriangleGeometry;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    feng3d.EVENT_KEY = "__event__";
+    function getBubbleTargets(target) {
+        return [target["parent"]];
+    }
+    /**
+     * 事件适配器
+     */
+    var EventDispatcher = /** @class */ (function () {
+        function EventDispatcher() {
+        }
+        /**
+         * 监听一次事件后将会被移除
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        EventDispatcher.prototype.once = function (type, listener, thisObject, priority) {
+            if (thisObject === void 0) { thisObject = null; }
+            if (priority === void 0) { priority = 0; }
+            this.on(type, listener, thisObject, priority, true);
+        };
+        /**
+         * 派发事件
+         *
+         * 当事件重复流向一个对象时将不会被处理。
+         *
+         * @param e   事件对象
+         * @returns 返回事件是否被该对象处理
+         */
+        EventDispatcher.prototype.dispatchEvent = function (e) {
+            var targets = e.targets = e.targets || [];
+            if (targets.indexOf(this) != -1)
+                return false;
+            targets.push(this);
+            this.handleEvent(e);
+            this.handelEventBubbles(e);
+            return true;
+        };
+        /**
+         * 处理事件
+         * @param e 事件
+         */
+        EventDispatcher.prototype.handleEvent = function (e) {
+            //设置目标
+            e.target || (e.target = this);
+            try {
+                //使用 try 处理 MouseEvent 等无法更改currentTarget的对象
+                e.currentTarget = this;
+            }
+            catch (error) { }
+            var listeners = this[feng3d.EVENT_KEY] && this[feng3d.EVENT_KEY][e.type];
+            if (listeners) {
+                //遍历调用事件回调函数
+                for (var i = 0; i < listeners.length && !e.isStop; i++) {
+                    listeners[i].listener.call(listeners[i].thisObject, e);
+                }
+                for (var i = listeners.length - 1; i >= 0; i--) {
+                    if (listeners[i].once)
+                        listeners.splice(i, 1);
+                }
+                if (listeners.length == 0)
+                    delete this[feng3d.EVENT_KEY][e.type];
+            }
+        };
+        /**
+         * 处理事件冒泡
+         * @param e 事件
+         */
+        EventDispatcher.prototype.handelEventBubbles = function (e) {
+            if (e.bubbles && !e.isStopBubbles) {
+                var bubbleTargets = getBubbleTargets(this);
+                for (var i = 0, n = bubbleTargets.length; i < n; i++) {
+                    var bubbleTarget = bubbleTargets[i];
+                    if (!e.isStop && bubbleTarget instanceof EventDispatcher)
+                        bubbleTarget.dispatchEvent(e);
+                }
+            }
+        };
+        /**
+         * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
+         * @param type                      事件的类型。类型区分大小写。
+         * @param data                      事件携带的自定义数据。
+         * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
+         */
+        EventDispatcher.prototype.dispatch = function (type, data, bubbles) {
+            if (bubbles === void 0) { bubbles = false; }
+            var e = { type: type, data: data, bubbles: bubbles, target: null, currentTarget: null, isStop: false, isStopBubbles: false, targets: [] };
+            this.dispatchEvent(e);
+            return e;
+        };
+        /**
+         * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
+         *
+         * @param type		事件的类型。
+         * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
+         */
+        EventDispatcher.prototype.has = function (type) {
+            return !!(this[feng3d.EVENT_KEY] && this[feng3d.EVENT_KEY][type] && this[feng3d.EVENT_KEY][type].length);
+        };
+        /**
+         * 添加监听
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        EventDispatcher.prototype.on = function (type, listener, thisObject, priority, once) {
+            if (priority === void 0) { priority = 0; }
+            if (once === void 0) { once = false; }
+            var objectListener = this[feng3d.EVENT_KEY] || (this[feng3d.EVENT_KEY] = {});
+            var listeners = objectListener[type] = objectListener[type] || [];
+            for (var i = 0; i < listeners.length; i++) {
+                var element = listeners[i];
+                if (element.listener == listener && element.thisObject == thisObject) {
+                    listeners.splice(i, 1);
+                    break;
+                }
+            }
+            for (var i = 0; i < listeners.length; i++) {
+                var element = listeners[i];
+                if (priority > element.priority) {
+                    break;
+                }
+            }
+            listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority, once: once });
+        };
+        /**
+         * 移除监听
+         * @param dispatcher 派发器
+         * @param type						事件的类型。
+         * @param listener					要删除的侦听器对象。
+         */
+        EventDispatcher.prototype.off = function (type, listener, thisObject) {
+            if (!type) {
+                delete this[feng3d.EVENT_KEY];
+                return;
+            }
+            if (!listener) {
+                if (this[feng3d.EVENT_KEY])
+                    delete this[feng3d.EVENT_KEY][type];
+                return;
+            }
+            var listeners = this[feng3d.EVENT_KEY] && this[feng3d.EVENT_KEY][type];
+            if (listeners) {
+                for (var i = listeners.length - 1; i >= 0; i--) {
+                    var element = listeners[i];
+                    if (element.listener == listener && element.thisObject == thisObject) {
+                        listeners.splice(i, 1);
+                    }
+                }
+                if (listeners.length == 0) {
+                    delete this[feng3d.EVENT_KEY][type];
+                }
+            }
+        };
+        return EventDispatcher;
+    }());
+    feng3d.EventDispatcher = EventDispatcher;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 代理 EventTarget, 处理js事件中this关键字问题
+
+     */
+    var EventProxy = /** @class */ (function (_super) {
+        __extends(EventProxy, _super);
+        function EventProxy(target) {
+            var _this = _super.call(this) || this;
+            _this.pageX = 0;
+            _this.pageY = 0;
+            _this.clientX = 0;
+            _this.clientY = 0;
+            /**
+             * 是否右击
+             */
+            _this.rightmouse = false;
+            _this.key = "";
+            _this.keyCode = 0;
+            _this.wheelDelta = 0;
+            _this.listentypes = [];
+            /**
+             * 处理鼠标按下时同时出发 "mousemove" 事件bug
+             */
+            _this.handleMouseMoveBug = true;
+            /**
+             * 键盘按下事件
+             */
+            _this.onMouseKey = function (event) {
+                // this.clear();
+                if (event["clientX"] != undefined) {
+                    event = event;
+                    _this.clientX = event.clientX;
+                    _this.clientY = event.clientY;
+                    _this.pageX = event.pageX;
+                    _this.pageY = event.pageY;
+                }
+                if (event instanceof MouseEvent) {
+                    _this.rightmouse = event.button == 2;
+                    // 处理鼠标按下时同时出发 "mousemove" 事件bug
+                    if (_this.handleMouseMoveBug) {
+                        if (event.type == "mousedown") {
+                            _this.mousedownposition = new feng3d.Vector2(event.clientX, event.clientY);
+                        }
+                        if (event.type == "mousemove") {
+                            if (_this.mousedownposition) {
+                                var position = new feng3d.Vector2(event.clientX, event.clientY);
+                                if (position.equals(_this.mousedownposition)) {
+                                    // console.log(`由于系统原因，触发mousedown同时触发了mousemove，此处屏蔽mousemove事件派发！`);
+                                    return;
+                                }
+                            }
+                        }
+                        if (event.type == "mouseup") {
+                            _this.mousedownposition = null;
+                        }
+                    }
+                }
+                if (event instanceof KeyboardEvent) {
+                    _this.keyCode = event.keyCode;
+                    _this.key = event.key;
+                }
+                if (event instanceof WheelEvent) {
+                    _this.wheelDelta = event.wheelDelta;
+                }
+                // 赋值上次鼠标事件值
+                event.clientX = _this.clientX;
+                event.clientY = _this.clientY;
+                event.pageX = _this.pageX;
+                event.pageY = _this.pageY;
+                _this.dispatchEvent(event);
+            };
+            _this.target = target;
+            return _this;
+        }
+        Object.defineProperty(EventProxy.prototype, "target", {
+            get: function () {
+                return this._target;
+            },
+            set: function (v) {
+                var _this = this;
+                if (this._target == v)
+                    return;
+                if (this._target) {
+                    this.listentypes.forEach(function (element) {
+                        _this._target.removeEventListener(element, _this.onMouseKey);
+                    });
+                }
+                this._target = v;
+                if (this._target) {
+                    this.listentypes.forEach(function (element) {
+                        _this._target.addEventListener(element, _this.onMouseKey);
+                    });
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 监听一次事件后将会被移除
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        EventProxy.prototype.once = function (type, listener, thisObject, priority) {
+            this.on(type, listener, thisObject, priority, true);
+        };
+        /**
+         * 添加监听
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        EventProxy.prototype.on = function (type, listener, thisObject, priority, once) {
+            if (priority === void 0) { priority = 0; }
+            if (once === void 0) { once = false; }
+            _super.prototype.on.call(this, type, listener, thisObject, priority, once);
+            if (this.listentypes.indexOf(type) == -1) {
+                this.listentypes.push(type);
+                this._target.addEventListener(type, this.onMouseKey);
+            }
+        };
+        /**
+         * 移除监听
+         * @param dispatcher 派发器
+         * @param type						事件的类型。
+         * @param listener					要删除的侦听器对象。
+         */
+        EventProxy.prototype.off = function (type, listener, thisObject) {
+            var _this = this;
+            _super.prototype.off.call(this, type, listener, thisObject);
+            if (!type) {
+                this.listentypes.forEach(function (element) {
+                    _this._target.removeEventListener(element, _this.onMouseKey);
+                });
+                this.listentypes.length = 0;
+            }
+            else if (!this.has(type)) {
+                this._target.removeEventListener(type, this.onMouseKey);
+                this.listentypes.splice(this.listentypes.indexOf(type), 1);
+            }
+        };
+        /**
+         * 清理数据
+         */
+        EventProxy.prototype.clear = function () {
+            this.clientX = 0;
+            this.clientY = 0;
+            this.rightmouse = false;
+            this.key = "";
+            this.keyCode = 0;
+            this.wheelDelta = 0;
+        };
+        return EventProxy;
+    }(feng3d.EventDispatcher));
+    feng3d.EventProxy = EventProxy;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var WindowEventProxy = /** @class */ (function (_super) {
+        __extends(WindowEventProxy, _super);
+        function WindowEventProxy() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return WindowEventProxy;
+    }(feng3d.EventProxy));
+    feng3d.WindowEventProxy = WindowEventProxy;
+    if (typeof global != "undefined")
+        feng3d.windowEventProxy = new WindowEventProxy(global);
+    else
+        feng3d.windowEventProxy = new WindowEventProxy(window);
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 全局事件
+     */
+    var Feng3dDispatcher = /** @class */ (function (_super) {
+        __extends(Feng3dDispatcher, _super);
+        function Feng3dDispatcher() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return Feng3dDispatcher;
+    }(feng3d.EventDispatcher));
+    feng3d.Feng3dDispatcher = Feng3dDispatcher;
+    feng3d.feng3dDispatcher = new Feng3dDispatcher();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    feng3d.loadjs = {
+        load: load,
+        ready: ready,
+    };
+    /**
+     * 加载文件
+     * @param params.paths          加载路径
+     * @param params.bundleId       加载包编号
+     * @param params.success        成功回调
+     * @param params.error          错误回调
+     * @param params.async          是否异步加载
+     * @param params.numRetries     加载失败尝试次数
+     * @param params.before         加载前回调
+     * @param params.onitemload     单条文件加载完成回调
+     */
+    function load(params) {
+        // throw error if bundle is already defined
+        if (params.bundleId) {
+            if (params.bundleId in bundleIdCache) {
+                throw "LoadJS";
+            }
+            else {
+                bundleIdCache[params.bundleId] = true;
+            }
+        }
+        var paths = getPaths(params.paths);
+        // load scripts
+        loadFiles(paths, function (pathsNotFound) {
+            // success and error callbacks
+            if (pathsNotFound.length)
+                (params.error || devnull)(pathsNotFound);
+            else
+                (params.success || devnull)();
+            // publish bundle load event
+            publish(params.bundleId, pathsNotFound);
+        }, params);
+    }
+    /**
+     * 准备依赖包
+     * @param params.depends        依赖包编号
+     * @param params.success        成功回调
+     * @param params.error          错误回调
+     */
+    function ready(params) {
+        // subscribe to bundle load event
+        subscribe(params.depends, function (depsNotFound) {
+            // execute callbacks
+            if (depsNotFound.length)
+                (params.error || devnull)(depsNotFound);
+            else
+                (params.success || devnull)();
+        });
+    }
+    /**
+     * 完成下载包
+     * @param bundleId 下载包编号
+     */
+    function done(bundleId) {
+        publish(bundleId, []);
+    }
+    /**
+     * 重置下载包依赖状态
+     */
+    function reset() {
+        bundleIdCache = {};
+        bundleResultCache = {};
+        bundleCallbackQueue = {};
+    }
+    /**
+     * 是否定义下载包
+     * @param {string} bundleId 包编号
+     */
+    function isDefined(bundleId) {
+        return bundleId in bundleIdCache;
+    }
+    var devnull = function () { }, bundleIdCache = {}, bundleResultCache = {}, bundleCallbackQueue = {};
+    /**
+     * 订阅包加载事件
+     * @param bundleIds              包编号
+     * @param callbackFn             完成回调
+     */
+    function subscribe(bundleIds, callbackFn) {
+        var depsNotFound = [];
+        // listify
+        if (bundleIds instanceof String) {
+            bundleIds = [bundleIds];
+        }
+        // define callback function
+        var numWaiting = bundleIds.length;
+        var fn = function (bundleId, pathsNotFound) {
+            if (pathsNotFound.length)
+                depsNotFound.push(bundleId);
+            numWaiting--;
+            if (!numWaiting)
+                callbackFn(depsNotFound);
+        };
+        // register callback
+        var i = bundleIds.length;
+        while (i--) {
+            var bundleId = bundleIds[i];
+            // execute callback if in result cache
+            var r = bundleResultCache[bundleId];
+            if (r) {
+                fn(bundleId, r);
+                continue;
+            }
+            // add to callback queue
+            var q = bundleCallbackQueue[bundleId] = bundleCallbackQueue[bundleId] || [];
+            q.push(fn);
+        }
+    }
+    /**
+     * 派发加载包完成事件
+     * @param bundleId                  加载包编号
+     * @param pathsNotFound             加载失败包
+     */
+    function publish(bundleId, pathsNotFound) {
+        // exit if id isn't defined
+        if (!bundleId)
+            return;
+        var q = bundleCallbackQueue[bundleId];
+        // cache result
+        bundleResultCache[bundleId] = pathsNotFound;
+        // exit if queue is empty
+        if (!q)
+            return;
+        // empty callback queue
+        while (q.length) {
+            q[0](bundleId, pathsNotFound);
+            q.splice(0, 1);
+        }
+    }
+    /**
+     * 加载单个文件
+     * @param path                          文件路径
+     * @param callbackFn                    加载完成回调
+     * @param args                          加载参数
+     * @param args.async                    是否异步加载
+     * @param args.numRetries               尝试加载次数
+     * @param args.before                   加载前回调
+     * @param numTries                      当前尝试次数
+     */
+    function loadFile(path, callbackFn, args, numTries) {
+        var loaderFun = loaders[path.type] || loadTxt;
+        loaderFun(path, callbackFn, args, numTries);
+    }
+    /**
+     * 加载单个Image文件
+     * @param path                          文件路径
+     * @param callbackFn                    加载完成回调
+     * @param args                          加载参数
+     * @param args.async                    是否异步加载
+     * @param args.numRetries               尝试加载次数
+     * @param args.before                   加载前回调
+     * @param numTries                      当前尝试次数
+     */
+    function loadImage(path, callbackFn, args, numTries) {
+        if (numTries === void 0) { numTries = 0; }
+        var image = new Image();
+        image.crossOrigin = "Anonymous";
+        image.onerror = image.onload = function (ev) {
+            var result = ev.type;
+            // handle retries in case of load failure
+            if (result == 'error') {
+                // increment counter
+                numTries = ~~numTries + 1;
+                // exit function and try again
+                args.numRetries = args.numRetries || 0;
+                if (numTries < ~~args.numRetries + 1) {
+                    return loadImage(path, callbackFn, args, numTries);
+                }
+                image.src = "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
+            }
+            // execute callback
+            callbackFn(path, result, ev.defaultPrevented, image);
+        };
+        //
+        var beforeCallbackFn = args.before || (function () { return true; });
+        if (beforeCallbackFn(path, image) !== false)
+            image.src = path.url;
+    }
+    /**
+     * 加载单个txt文件
+     * @param path                          文件路径
+     * @param callbackFn                    加载完成回调
+     * @param args                          加载参数
+     * @param args.async                    是否异步加载
+     * @param args.numRetries               尝试加载次数
+     * @param args.before                   加载前回调
+     * @param numTries                      当前尝试次数
+     */
+    function loadTxt(path, callbackFn, args, numTries) {
+        if (numTries === void 0) { numTries = 0; }
+        var request = new XMLHttpRequest();
+        request.onreadystatechange = function (ev) {
+            var result = ev.type;
+            if (request.readyState == 4) { // 4 = "loaded"
+                request.onreadystatechange = null;
+                // handle retries in case of load failure
+                if (request.status < 200 || request.status > 300) {
+                    // increment counter
+                    numTries = ~~numTries + 1;
+                    // exit function and try again
+                    args.numRetries = args.numRetries || 0;
+                    if (numTries < ~~args.numRetries + 1) {
+                        return loadTxt(path, callbackFn, args, numTries);
+                    }
+                }
+                // execute callback
+                callbackFn(path, result, ev.defaultPrevented, request.responseText);
+            }
+        };
+        request.open('Get', path.url, true);
+        //
+        var beforeCallbackFn = args.before || (function () { return true; });
+        if (beforeCallbackFn(path, request) !== false)
+            request.send();
+    }
+    /**
+     * 加载单个js或者css文件
+     * @param path                          文件路径
+     * @param callbackFn                    加载完成回调
+     * @param args                          加载参数
+     * @param args.async                    是否异步加载
+     * @param args.numRetries               尝试加载次数
+     * @param args.before                   加载前回调
+     * @param numTries                      当前尝试次数
+     */
+    function loadJsCss(path, callbackFn, args, numTries) {
+        if (numTries === void 0) { numTries = 0; }
+        var doc = document, isCss, e;
+        if (/(^css!|\.css$)/.test(path.url)) {
+            isCss = true;
+            // css
+            e = doc.createElement('link');
+            e.rel = 'stylesheet';
+            e.href = path.url.replace(/^css!/, ''); // remove "css!" prefix
+        }
+        else {
+            // javascript
+            e = doc.createElement('script');
+            e.src = path.url;
+            e.async = !!args.async;
+        }
+        e.onload = e.onerror = e.onbeforeload = function (ev) {
+            var result = ev.type;
+            // Note: The following code isolates IE using `hideFocus` and treats empty
+            // stylesheets as failures to get around lack of onerror support
+            if (isCss && 'hideFocus' in e) {
+                try {
+                    if (!e.sheet.cssText.length)
+                        result = 'error';
+                }
+                catch (x) {
+                    // sheets objects created from load errors don't allow access to
+                    // `cssText`
+                    result = 'error';
+                }
+            }
+            // handle retries in case of load failure
+            if (result == 'error') {
+                // increment counter
+                numTries = ~~numTries + 1;
+                // exit function and try again
+                args.numRetries = args.numRetries || 0;
+                if (numTries < ~~args.numRetries + 1) {
+                    return loadJsCss(path, callbackFn, args, numTries);
+                }
+            }
+            // execute callback
+            callbackFn(path, result, ev.defaultPrevented, e);
+        };
+        // add to document (unless callback returns `false`)
+        var beforeCallbackFn = args.before || (function () { return true; });
+        if (beforeCallbackFn(path, e) !== false)
+            doc.head.appendChild(e);
+    }
+    /**
+     * 加载多文件
+     * @param paths         文件路径
+     * @param callbackFn    加载完成回调
+     */
+    function loadFiles(paths, callbackFn, args) {
+        var notLoadFiles = paths.concat();
+        var loadingFiles = [];
+        var pathsNotFound = [];
+        // define callback function
+        var fn = function (path, result, defaultPrevented, content) {
+            // handle error
+            if (result == 'error')
+                pathsNotFound.push(path.url);
+            // handle beforeload event. If defaultPrevented then that means the load
+            // will be blocked (ex. Ghostery/ABP on Safari)
+            if (result[0] == 'b') {
+                if (defaultPrevented)
+                    pathsNotFound.push(path.url);
+                else
+                    return;
+            }
+            var index = loadingFiles.indexOf(path);
+            loadingFiles.splice(index, 1);
+            args.onitemload && args.onitemload(path.url, content);
+            if (loadingFiles.length == 0 && notLoadFiles.length == 0)
+                callbackFn(pathsNotFound);
+            if (notLoadFiles.length) {
+                var file = notLoadFiles[0];
+                notLoadFiles.shift();
+                loadingFiles.push(file);
+                loadFile(file, fn, args);
+            }
+        };
+        // load scripts
+        var file;
+        if (!!args.async) {
+            for (var i = 0, x = notLoadFiles.length; i < x; i++) {
+                file = notLoadFiles[i];
+                loadingFiles.push(file);
+                loadFile(file, fn, args);
+            }
+            notLoadFiles.length = 0;
+        }
+        else {
+            file = notLoadFiles[0];
+            notLoadFiles.shift();
+            loadingFiles.push(file);
+            loadFile(file, fn, args);
+        }
+    }
+    /**
+     * 获取路径以及类型
+     * @param pathUrls 路径
+     */
+    function getPaths(pathUrls) {
+        var paths = [];
+        if (typeof pathUrls == "string") {
+            pathUrls = [pathUrls];
+        }
+        if (!(pathUrls instanceof Array)) {
+            pathUrls = [pathUrls];
+        }
+        for (var i = 0; i < pathUrls.length; i++) {
+            var pathurl = pathUrls[i];
+            if (typeof pathurl == "string") {
+                paths[i] = { url: pathurl, type: getPathType(pathurl) };
+            }
+            else {
+                paths[i] = pathurl;
+            }
+        }
+        return paths;
+    }
+    /**
+     * 获取路径类型
+     * @param path 路径
+     */
+    function getPathType(path) {
+        var type = "txt";
+        for (var i = 0; i < typeRegExps.length; i++) {
+            var element = typeRegExps[i];
+            if (element.reg.test(path))
+                type = element.type;
+        }
+        return type;
+    }
+    /**
+     * 资源类型
+     */
+    var types = { js: "js", css: "css", txt: "txt", image: "image" };
+    /**
+     * 加载函数
+     */
+    var loaders = {
+        txt: loadTxt,
+        js: loadJsCss,
+        css: loadJsCss,
+        image: loadImage,
+    };
+    var typeRegExps = [
+        { reg: /(^css!|\.css$)/i, type: types.css },
+        { reg: /(\.js\b)/i, type: types.js },
+        { reg: /(\.png\b)/i, type: types.image },
+        { reg: /(\.jpg\b)/i, type: types.image },
+    ];
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 测试代码运行时间
+     * @param fn 被测试的方法
+     * @param labal 标签
+     */
+    function time(fn, labal) {
+        labal = labal || fn["name"] || "Anonymous function " + Math.random();
+        console.time(labal);
+        fn();
+        console.timeEnd(labal);
+    }
+    feng3d.time = time;
+    /**
+     * 断言，测试不通过时报错
+     * @param test 测试项
+     * @param message 测试失败时提示信息
+     * @param optionalParams
+     */
+    function assert(test, message) {
+        var optionalParams = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            optionalParams[_i - 2] = arguments[_i];
+        }
+        if (!test)
+            debugger;
+        console.assert.apply(null, arguments);
+    }
+    feng3d.assert = assert;
+    /**
+     * 输出错误
+     * @param message 错误信息
+     * @param optionalParams
+     */
+    function error(message) {
+        var optionalParams = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            optionalParams[_i - 1] = arguments[_i];
+        }
+        debugger;
+        console.error.apply(null, arguments);
+    }
+    feng3d.error = error;
+    /**
+     * 记录日志信息
+     * @param message 日志信息
+     * @param optionalParams
+     */
+    function log(message) {
+        var optionalParams = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            optionalParams[_i - 1] = arguments[_i];
+        }
+        console.log.apply(null, arguments);
+    }
+    feng3d.log = log;
+    /**
+     * 警告
+     * @param message 警告信息
+     * @param optionalParams
+     */
+    function warn(message) {
+        var optionalParams = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            optionalParams[_i - 1] = arguments[_i];
+        }
+        console.warn.apply(null, arguments);
+    }
+    feng3d.warn = warn;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 观察装饰器，观察被装饰属性的变化
+     *
+     * @param onChange 属性变化回调  例如参数为“onChange”时，回调将会调用this.onChange(property, oldValue, newValue)
+     * @see https://gitee.com/feng3d/feng3d/issues/IGIK0
+     *
+     * 使用@watch后会自动生成一个带"_"的属性，例如 属性"a"会生成"_a"
+     *
+     * 通过使用 eval 函数 生成出 与自己手动写的set get 一样的函数，性能已经接近 手动写的get set函数。
+     *
+     * 性能：
+     * chrome：
+     * 测试 get ：
+Test.ts:100 watch与getset最大耗时比 1.2222222222222223
+Test.ts:101 watch与getset最小耗时比 0.7674418604651163
+Test.ts:102 watch与getset平均耗时比 0.9558823529411765
+Test.ts:103 watch平均耗时比 13
+Test.ts:104 getset平均耗时比 13.6
+Test.ts:98 测试 set ：
+Test.ts:100 watch与getset最大耗时比 4.5
+Test.ts:101 watch与getset最小耗时比 2.409090909090909
+Test.ts:102 watch与getset平均耗时比 3.037037037037037
+Test.ts:103 watch平均耗时比 57.4
+Test.ts:104 getset平均耗时比 18.9
+
+     *
+     * nodejs:
+     * 测试 get ：
+watch与getset最大耗时比 1.3333333333333333
+watch与getset最小耗时比 0.55
+watch与getset平均耗时比 1.0075757575757576
+watch平均耗时比 13.3
+getset平均耗时比 13.2
+测试 set ：
+watch与getset最大耗时比 4.9
+watch与getset最小耗时比 3
+watch与getset平均耗时比 4.143497757847534
+watch平均耗时比 92.4
+getset平均耗时比 22.3
+     *
+     *
+     * firefox:
+     * 测试 get ：  Test.js:122:5
+watch与getset最大耗时比 4.142857142857143  Test.js:124:5
+watch与getset最小耗时比 0.4090909090909091  Test.js:125:5
+watch与getset平均耗时比 1.0725806451612903  Test.js:126:5
+watch平均耗时比 13.3  Test.js:127:5
+getset平均耗时比 12.4  Test.js:128:5
+测试 set ：  Test.js:122:5
+watch与getset最大耗时比 1.5333333333333334  Test.js:124:5
+watch与getset最小耗时比 0.6842105263157895  Test.js:125:5
+watch与getset平均耗时比 0.9595375722543352  Test.js:126:5
+watch平均耗时比 16.6  Test.js:127:5
+getset平均耗时比 17.3
+     *
+     * 结果分析：
+     * chrome、nodejs、firefox运行结果出现差异,firefox运行结果最完美
+     *
+     * 使用watch后的get测试的消耗与手动写get消耗一致
+     * chrome与nodejs上set消耗是手动写set的消耗(3-4)倍
+     *
+     * 注：不适用eval的情况下，chrome表现最好的，与此次测试结果差不多；在nodejs与firfox上将会出现比使用eval情况下消耗的（40-400）倍，其中详细原因不明，求高人解释！
+     *
+     */
+    function watch(onChange) {
+        return function (target, property) {
+            var key = "_" + property;
+            var get;
+            // get = function () { return this[key]; };
+            eval("get = function (){return this." + key + "}");
+            var set;
+            // set = function (value)
+            // {
+            //     if (this[key] === value)
+            //         return;
+            //     var oldValue = this[key];
+            //     this[key] = value;
+            //     this[onChange](propertyKey, oldValue, this[key]);
+            // };
+            eval("set = function (value){\n                if (this." + key + " == value)\n                    return;\n                var oldValue = this." + key + ";\n                this." + key + " = value;\n                this." + onChange + "(\"" + property + "\", oldValue, value);\n            }");
+            Object.defineProperty(target, property, {
+                get: get,
+                set: set,
+                enumerable: true,
+                configurable: true
+            });
+        };
+    }
+    feng3d.watch = watch;
+    var Watcher = /** @class */ (function () {
+        function Watcher() {
+        }
+        /**
+         * 注意：使用watch后获取该属性值的性能将会是原来的1/60，禁止在feng3d引擎内部使用watch
+         * @param host
+         * @param property1
+         * @param handler
+         * @param thisObject
+         */
+        Watcher.prototype.watch = function (host, property, handler, thisObject) {
+            if (!Object.getOwnPropertyDescriptor(host, bindables)) {
+                Object.defineProperty(host, bindables, {
+                    value: {},
+                    enumerable: false,
+                });
+            }
+            var watchs = host[bindables];
+            var property1 = property;
+            if (!watchs[property1]) {
+                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(host, property1);
+                watchs[property1] = { value: host[property1], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
+                //
+                var data = Object.getPropertyDescriptor(host, property1);
+                if (data && data.set && data.get) {
+                    data = { enumerable: true, configurable: true, get: data.get, set: data.set };
+                    var orgSet = data.set;
+                    data.set = function (value) {
+                        var oldvalue = this[property1];
+                        if (oldvalue != value) {
+                            orgSet && orgSet.call(this, value);
+                            notifyListener(this, property1, oldvalue);
+                        }
+                    };
+                }
+                else if (!data || (!data.get && !data.set)) {
+                    data = { enumerable: true, configurable: true };
+                    data.get = function () {
+                        return this[bindables][property1].value;
+                    };
+                    data.set = function (value) {
+                        var oldvalue = this[bindables][property1].value;
+                        if (oldvalue != value) {
+                            this[bindables][property1].value = value;
+                            notifyListener(this, property1, oldvalue);
+                        }
+                    };
+                }
+                else {
+                    feng3d.warn("watch " + host + " . " + property + " \u5931\u8D25\uFF01");
+                    return;
+                }
+                Object.defineProperty(host, property1, data);
+            }
+            var propertywatchs = watchs[property1];
+            var has = propertywatchs.handlers.reduce(function (v, item) { return v || (item.handler == handler && item.thisObject == thisObject); }, false);
+            if (!has)
+                propertywatchs.handlers.push({ handler: handler, thisObject: thisObject });
+        };
+        Watcher.prototype.unwatch = function (host, property, handler, thisObject) {
+            var watchs = host[bindables];
+            if (!watchs)
+                return;
+            var property1 = property;
+            if (watchs[property1]) {
+                var handlers = watchs[property1].handlers;
+                if (handler === undefined)
+                    handlers.length = 0;
+                for (var i = handlers.length - 1; i >= 0; i--) {
+                    if (handlers[i].handler == handler && (handlers[i].thisObject == thisObject || thisObject === undefined))
+                        handlers.splice(i, 1);
+                }
+                if (handlers.length == 0) {
+                    var value = host[property1];
+                    delete host[property1];
+                    if (watchs[property1].oldPropertyDescriptor)
+                        Object.defineProperty(host, property1, watchs[property1].oldPropertyDescriptor);
+                    host[property1] = value;
+                    delete watchs[property1];
+                }
+                if (Object.keys(watchs).length == 0) {
+                    delete host[bindables];
+                }
+            }
+        };
+        Watcher.prototype.watchchain = function (host, property, handler, thisObject) {
+            var _this = this;
+            var notIndex = property.indexOf(".");
+            if (notIndex == -1) {
+                this.watch(host, property, handler, thisObject);
+                return;
+            }
+            if (!Object.getOwnPropertyDescriptor(host, bindablechains))
+                Object.defineProperty(host, bindablechains, { value: {}, enumerable: false, });
+            var watchchains = host[bindablechains];
+            if (!watchchains[property]) {
+                watchchains[property] = [];
+            }
+            var propertywatchs = watchchains[property];
+            var has = propertywatchs.reduce(function (v, item) { return v || (item.handler == handler && item.thisObject == thisObject); }, false);
+            if (!has) {
+                // 添加下级监听链
+                var currentp = property.substr(0, notIndex);
+                var nextp = property.substr(notIndex + 1);
+                if (host[currentp]) {
+                    this.watchchain(host[currentp], nextp, handler, thisObject);
+                }
+                // 添加链监听
+                var watchchainFun = function (h, p, oldvalue) {
+                    var newvalue = h[p];
+                    if (oldvalue)
+                        _this.unwatchchain(oldvalue, nextp, handler, thisObject);
+                    if (newvalue)
+                        _this.watchchain(newvalue, nextp, handler, thisObject);
+                    // 当更换对象且监听值发生改变时触发处理函数
+                    try {
+                        var ov = eval("oldvalue." + nextp + "");
+                    }
+                    catch (e) {
+                        ov = undefined;
+                    }
+                    try {
+                        var nv = eval("newvalue." + nextp + "");
+                    }
+                    catch (e) {
+                        nv = undefined;
+                    }
+                    if (ov != nv) {
+                        handler.call(thisObject, newvalue, nextp, ov);
+                    }
+                };
+                this.watch(host, currentp, watchchainFun);
+                // 记录链监听函数
+                propertywatchs.push({ handler: handler, thisObject: thisObject, watchchainFun: watchchainFun });
+            }
+        };
+        Watcher.prototype.unwatchchain = function (host, property, handler, thisObject) {
+            var notIndex = property.indexOf(".");
+            if (notIndex == -1) {
+                this.unwatch(host, property, handler, thisObject);
+                return;
+            }
+            var currentp = property.substr(0, notIndex);
+            var nextp = property.substr(notIndex + 1);
+            //
+            var watchchains = host[bindablechains];
+            if (!watchchains || !watchchains[property])
+                return;
+            // 
+            var propertywatchs = watchchains[property];
+            for (var i = propertywatchs.length - 1; i >= 0; i--) {
+                var element = propertywatchs[i];
+                if (handler == null || (handler == element.handler && thisObject == element.thisObject)) {
+                    // 删除下级监听链
+                    if (host[currentp]) {
+                        this.unwatchchain(host[currentp], nextp, element.handler, element.thisObject);
+                    }
+                    // 删除链监听
+                    this.unwatch(host, currentp, element.watchchainFun);
+                    // 清理记录链监听函数
+                    propertywatchs.splice(i, 1);
+                }
+            }
+            // 清理空列表
+            if (propertywatchs.length == 0)
+                delete watchchains[property];
+            if (Object.keys(watchchains).length == 0) {
+                delete host[bindablechains];
+            }
+        };
+        return Watcher;
+    }());
+    feng3d.Watcher = Watcher;
+    feng3d.watcher = new Watcher();
+    var bindables = "__watchs__";
+    var bindablechains = "__watchchains__";
+    function notifyListener(host, property, oldview) {
+        var watchs = host[bindables];
+        var handlers = watchs[property].handlers;
+        handlers.forEach(function (element) {
+            element.handler.call(element.thisObject, host, property, oldview);
+        });
+    }
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 序列化装饰器，被装饰属性将被序列化
+     * @param {*} target                序列化原型
+     * @param {string} propertyKey      序列化属性
+     */
+    function serialize(target, propertyKey) {
+        var serializeInfo = getSerializeInfo(target);
+        serializeInfo.propertys.push({ property: propertyKey });
+    }
+    feng3d.serialize = serialize;
+    /**
+     * 序列化资源装饰器，被装饰属性将被序列化为资源编号
+     * @param {*} target                序列化原型
+     * @param {string} propertyKey      序列化属性
+     */
+    function serializeAssets(target, propertyKey) {
+        var serializeInfo = getSerializeInfo(target);
+        serializeInfo.propertys.push({ property: propertyKey, assets: true });
+    }
+    feng3d.serializeAssets = serializeAssets;
+    /**
+     * 序列化
+     */
+    var Serialization = /** @class */ (function () {
+        function Serialization() {
+        }
+        /**
+         * 序列化对象
+         * @param target 被序列化的对象
+         * @returns 序列化后可以转换为Json的数据对象
+         */
+        Serialization.prototype.serialize = function (target) {
+            //基础类型
+            if (isBaseType(target))
+                return target;
+            // 排除不支持序列化对象
+            if (target.hasOwnProperty("serializable") && !target["serializable"])
+                return undefined;
+            //处理数组
+            if (target.constructor === Array) {
+                var arr = [];
+                for (var i = 0; i < target.length; i++) {
+                    arr[i] = this.serialize(target[i]);
+                }
+                return arr;
+            }
+            var object = {};
+            //处理普通Object
+            if (target.constructor === Object) {
+                object[CLASS_KEY] = "Object";
+                for (var key in target) {
+                    if (target.hasOwnProperty(key)) {
+                        if (target[key] !== undefined) {
+                            object[key] = this.serialize(target[key]);
+                        }
+                    }
+                }
+                return object;
+            }
+            //处理方法
+            if (typeof target == "function") {
+                object[CLASS_KEY] = "function";
+                object.data = target.toString();
+                return object;
+            }
+            var className = feng3d.classUtils.getQualifiedClassName(target);
+            object[CLASS_KEY] = className;
+            if (target["serialize"])
+                return target["serialize"](object);
+            //使用默认序列化
+            var defaultInstance = getDefaultInstance(target);
+            this.different(target, defaultInstance, object);
+            return object;
+        };
+        /**
+         * 比较两个对象的不同，提取出不同的数据
+         * @param target 用于检测不同的数据
+         * @param defaultInstance   模板（默认）数据
+         * @param different 比较得出的不同（简单结构）数据
+         * @returns 比较得出的不同（简单结构）数据
+         */
+        Serialization.prototype.different = function (target, defaultInstance, different) {
+            different = different || {};
+            var serializableMembers = getSerializableMembers(target);
+            if (target.constructor == Object)
+                serializableMembers = Object.keys(target).map(function (v) { return { property: v }; });
+            for (var i = 0; i < serializableMembers.length; i++) {
+                var property = serializableMembers[i].property;
+                var assets = serializableMembers[i].assets;
+                if (assets && target[property] instanceof feng3d.Feng3dAssets && target[property].assetsId) {
+                    var assetsId0 = target[property] && target[property].assetsId;
+                    var assetsId1 = defaultInstance[property] && defaultInstance[property].assetsId;
+                    if (assetsId0 != assetsId1)
+                        different[property] = assetsId0;
+                    continue;
+                }
+                if (target[property] === defaultInstance[property])
+                    continue;
+                if (isBaseType(target[property])) {
+                    different[property] = target[property];
+                    continue;
+                }
+                if (defaultInstance[property] == null) {
+                    different[property] = this.serialize(target[property]);
+                    continue;
+                }
+                if (defaultInstance[property].constructor != target[property].constructor) {
+                    different[property] = this.serialize(target[property]);
+                    continue;
+                }
+                if (target[property].constructor == Array) {
+                    if (target[property].length == 0) {
+                        if (defaultInstance[property].length == 0)
+                            continue;
+                        different[property] = [];
+                        continue;
+                    }
+                    different[property] = this.serialize(target[property]);
+                    continue;
+                }
+                var diff = this.different(target[property], defaultInstance[property]);
+                if (Object.keys(diff).length > 0)
+                    different[property] = diff;
+            }
+            return different;
+        };
+        /**
+         * 反序列化
+         * @param object 换为Json的对象
+         * @returns 反序列化后的数据
+         */
+        Serialization.prototype.deserialize = function (object, tempInfo) {
+            var _this = this;
+            tempInfo = initTempInfo(tempInfo);
+            //基础类型
+            if (isBaseType(object))
+                return object;
+            //处理数组
+            if (object instanceof Array) {
+                var arr = object.map(function (v) { return _this.deserialize(v, tempInfo); });
+                return arr;
+            }
+            if (object.constructor != Object) {
+                return object;
+            }
+            // 获取类型
+            var className = object[CLASS_KEY];
+            // 处理普通Object
+            if (className == "Object" || className == null) {
+                var target = {};
+                for (var key in object) {
+                    target[key] = this.deserialize(object[key], tempInfo);
+                }
+                return target;
+            }
+            //处理方法
+            if (className == "function") {
+                var f;
+                eval("f=" + object.data);
+                return f;
+            }
+            var cls = feng3d.classUtils.getDefinitionByName(className);
+            if (!cls) {
+                feng3d.warn("\u65E0\u6CD5\u5E8F\u5217\u53F7\u5BF9\u8C61 " + className);
+                return undefined;
+            }
+            target = new cls();
+            //处理自定义反序列化对象
+            if (target["deserialize"])
+                return target["deserialize"](object);
+            //默认反序列
+            this.setValue(target, object, tempInfo);
+            return target;
+        };
+        /**
+         * 从数据对象中提取数据给目标对象赋值
+         * @param target 目标对象
+         * @param object 数据对象
+         */
+        Serialization.prototype.setValue = function (target, object, tempInfo) {
+            if (!object)
+                return;
+            tempInfo = initTempInfo(tempInfo);
+            var serializeAssets = getSerializableMembers(target).reduce(function (pv, cv) { if (cv.assets)
+                pv.push(cv.property); return pv; }, []);
+            var _loop_1 = function (property) {
+                if (object.hasOwnProperty(property)) {
+                    if (serializeAssets.indexOf(property) != -1) {
+                        if (typeof object[property] == "string") {
+                            tempInfo.loadingNum++;
+                            feng3d.assets.readAssets(object[property], function (err, feng3dAssets) {
+                                target[property] = feng3dAssets;
+                                tempInfo.loadingNum--;
+                                if (tempInfo.loadingNum == 0) {
+                                    tempInfo.onLoaded && tempInfo.onLoaded();
+                                }
+                            });
+                        }
+                        else {
+                            target[property] = this_1.deserialize(object[property], tempInfo);
+                        }
+                    }
+                    else {
+                        this_1.setPropertyValue(target, object, property, tempInfo);
+                    }
+                }
+            };
+            var this_1 = this;
+            for (var property in object) {
+                _loop_1(property);
+            }
+            // var serializableMembers = getSerializableMembers(target);
+            // for (var i = 0; i < serializableMembers.length; i++)
+            // {
+            //     var property = serializableMembers[i];
+            //     if (object[property] !== undefined)
+            //     {
+            //         this.setPropertyValue(target, object, property);
+            //     }
+            // }
+        };
+        /**
+         * 给目标对象的指定属性赋值
+         * @param target 目标对象
+         * @param object 数据对象
+         * @param property 属性名称
+         */
+        Serialization.prototype.setPropertyValue = function (target, object, property, tempInfo) {
+            if (target[property] == object[property])
+                return;
+            tempInfo = initTempInfo(tempInfo);
+            var objvalue = object[property];
+            // 当原值等于null时直接反序列化赋值
+            if (target[property] == null) {
+                target[property] = this.deserialize(objvalue, tempInfo);
+                return;
+            }
+            if (isBaseType(objvalue)) {
+                target[property] = objvalue;
+                return;
+            }
+            if (objvalue.constructor == Array) {
+                target[property] = this.deserialize(objvalue, tempInfo);
+                return;
+            }
+            // 处理同为Object类型
+            if (objvalue[CLASS_KEY] == undefined) {
+                if (target[property].constructor == Object) {
+                    for (var key in objvalue) {
+                        this.setPropertyValue(target[property], objvalue, key, tempInfo);
+                    }
+                }
+                else {
+                    this.setValue(target[property], objvalue, tempInfo);
+                }
+                return;
+            }
+            var targetClassName = feng3d.classUtils.getQualifiedClassName(target[property]);
+            if (targetClassName == objvalue[CLASS_KEY]) {
+                this.setValue(target[property], objvalue, tempInfo);
+            }
+            else {
+                target[property] = this.deserialize(objvalue, tempInfo);
+            }
+        };
+        /**
+         * 克隆
+         * @param target 被克隆对象
+         */
+        Serialization.prototype.clone = function (target) {
+            return this.deserialize(this.serialize(target));
+        };
+        return Serialization;
+    }());
+    feng3d.Serialization = Serialization;
+    var CLASS_KEY = "__class__";
+    var SERIALIZE_KEY = "_serialize__";
+    /**
+     * 判断是否为基础类型（在序列化中不发生变化的对象）
+     */
+    function isBaseType(object) {
+        //基础类型
+        if (object == undefined
+            || object == null
+            || typeof object == "boolean"
+            || typeof object == "string"
+            || typeof object == "number")
+            return true;
+    }
+    /**
+     * 获取默认实例
+     */
+    function getDefaultInstance(object) {
+        var serializeInfo = getSerializeInfo(object);
+        serializeInfo.default = serializeInfo.default || new object.constructor();
+        return serializeInfo.default;
+    }
+    /**
+     * 获取序列号信息
+     * @param object 对象
+     */
+    function getSerializeInfo(object) {
+        if (!Object.getOwnPropertyDescriptor(object, SERIALIZE_KEY)) {
+            Object.defineProperty(object, SERIALIZE_KEY, {
+                /**
+                 * uv数据
+                 */
+                value: { propertys: [] },
+                enumerable: false,
+                configurable: true
+            });
+        }
+        var serializeInfo = object[SERIALIZE_KEY];
+        return serializeInfo;
+    }
+    /**
+     * 获取序列化属性列表
+     */
+    function getSerializableMembers(object, serializableMembers) {
+        serializableMembers = serializableMembers || [];
+        if (object["__proto__"]) {
+            getSerializableMembers(object["__proto__"], serializableMembers);
+        }
+        var serializeInfo = getSerializeInfo(object);
+        if (serializeInfo) {
+            var propertys = serializeInfo.propertys;
+            for (var i = 0, n = propertys.length; i < n; i++) {
+                serializableMembers.push(propertys[i]);
+            }
+        }
+        return serializableMembers;
+    }
+    function initTempInfo(tempInfo) {
+        tempInfo = tempInfo || { loadingNum: 0, onLoaded: function () { } };
+        tempInfo.loadingNum = tempInfo.loadingNum || 0;
+        return tempInfo;
+    }
+    feng3d.serialization = new Serialization();
+})(feng3d || (feng3d = {}));
+// [Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach(element =>
+// {
+//     element.prototype["serialize"] = function (object: { value: number[] })
+//     {
+//         object.value = Array.from(this);
+//         return object;
+//     }
+//     element.prototype["deserialize"] = function (object: { value: number[] })
+//     {
+//         return new (<any>(this.constructor))(object.value);
+//     }
+// });
+var feng3d;
+(function (feng3d) {
+    /**
+     * 标记objectview对象界面类
+     */
+    function OVComponent(component) {
+        return function (constructor) {
+            component = component || constructor["name"];
+            feng3d.objectview.OVComponent[component] = constructor;
+        };
+    }
+    feng3d.OVComponent = OVComponent;
+    /**
+     * 标记objectview块界面类
+     */
+    function OBVComponent(component) {
+        return function (constructor) {
+            component = component || constructor["name"];
+            feng3d.objectview.OBVComponent[component] = constructor;
+        };
+    }
+    feng3d.OBVComponent = OBVComponent;
+    /**
+     * 标记objectview属性界面类
+     */
+    function OAVComponent(component) {
+        return function (constructor) {
+            component = component || constructor["name"];
+            feng3d.objectview.OAVComponent[component] = constructor;
+        };
+    }
+    feng3d.OAVComponent = OAVComponent;
+    /**
+     * objectview类装饰器
+     */
+    function ov(param) {
+        return function (constructor) {
+            if (!Object.getOwnPropertyDescriptor(constructor["prototype"], OBJECTVIEW_KEY))
+                constructor["prototype"][OBJECTVIEW_KEY] = {};
+            var objectview = constructor["prototype"][OBJECTVIEW_KEY];
+            objectview.component = param.component;
+            objectview.componentParam = param.componentParam;
+        };
+    }
+    feng3d.ov = ov;
+    /**
+     * objectview属性装饰器
+     * @param param 参数
+     */
+    function oav(param) {
+        return function (target, propertyKey) {
+            feng3d.objectview.addOAV(target, propertyKey, param);
+        };
+    }
+    feng3d.oav = oav;
+    /**
+     * 对象界面
+     */
+    var ObjectView = /** @class */ (function () {
+        function ObjectView() {
+            /**
+             * 默认基础类型对象界面类定义
+             */
+            this.defaultBaseObjectViewClass = "";
+            /**
+             * 默认对象界面类定义
+             */
+            this.defaultObjectViewClass = "";
+            /**
+             * 默认对象属性界面类定义
+             */
+            this.defaultObjectAttributeViewClass = "";
+            /**
+             * 属性块默认界面
+             */
+            this.defaultObjectAttributeBlockView = "";
+            /**
+             * 指定属性类型界面类定义字典（key:属性类名称,value:属性界面类定义）
+             */
+            this.defaultTypeAttributeView = {};
+            this.OAVComponent = {};
+            this.OBVComponent = {};
+            this.OVComponent = {};
+        }
+        ObjectView.prototype.setDefaultTypeAttributeView = function (type, component) {
+            this.defaultTypeAttributeView[type] = component;
+        };
+        /**
+         * 获取对象界面
+         * @param object 用于生成界面的对象
+         * @param param 参数
+         */
+        ObjectView.prototype.getObjectView = function (object, param) {
+            var p = { autocreate: true, excludeAttrs: [] };
+            Object.assign(p, param);
+            var classConfig = this.getObjectInfo(object, p.autocreate, p.excludeAttrs);
+            classConfig.editable = classConfig.editable == undefined ? true : classConfig.editable;
+            Object.assign(classConfig, param);
+            // 处理 exclude
+            classConfig.objectAttributeInfos = classConfig.objectAttributeInfos.filter(function (v) { return !v.exclude; });
+            classConfig.objectBlockInfos.forEach(function (v) {
+                v.itemList = v.itemList.filter(function (vv) { return !vv.exclude; });
+            });
+            classConfig.objectAttributeInfos.forEach(function (v) { v.editable = v.editable && classConfig.editable; });
+            if (classConfig.component == null || classConfig.component == "") {
+                //返回基础类型界面类定义
+                if (!(classConfig.owner instanceof Object)) {
+                    classConfig.component = this.defaultBaseObjectViewClass;
+                }
+                else {
+                    //使用默认类型界面类定义
+                    classConfig.component = this.defaultObjectViewClass;
+                }
+            }
+            var cls = this.OVComponent[classConfig.component];
+            feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + classConfig.component + " \u5BF9\u5E94\u7684\u5BF9\u8C61\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + classConfig.component + " \u4E2D\u4F7F\u7528@OVComponent()\u6807\u8BB0");
+            var view = new cls(classConfig);
+            return view;
+        };
+        /**
+         * 获取属性界面
+         *
+         * @static
+         * @param {AttributeViewInfo} attributeViewInfo			属性界面信息
+         * @returns {egret.DisplayObject}						属性界面
+         *
+         * @memberOf ObjectView
+         */
+        ObjectView.prototype.getAttributeView = function (attributeViewInfo) {
+            if (attributeViewInfo.component == null || attributeViewInfo.component == "") {
+                var defaultViewClass = this.defaultTypeAttributeView[attributeViewInfo.type];
+                var tempComponent = defaultViewClass ? defaultViewClass.component : "";
+                if (tempComponent != null && tempComponent != "") {
+                    attributeViewInfo.component = defaultViewClass.component;
+                    attributeViewInfo.componentParam = defaultViewClass.componentParam || attributeViewInfo.componentParam;
+                }
+            }
+            if (attributeViewInfo.component == null || attributeViewInfo.component == "") {
+                //使用默认对象属性界面类定义
+                attributeViewInfo.component = this.defaultObjectAttributeViewClass;
+            }
+            var cls = this.OAVComponent[attributeViewInfo.component];
+            feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + attributeViewInfo.component + " \u5BF9\u5E94\u7684\u5C5E\u6027\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + attributeViewInfo.component + " \u4E2D\u4F7F\u7528@OVAComponent()\u6807\u8BB0");
+            var view = new cls(attributeViewInfo);
+            return view;
+        };
+        /**
+         * 获取块界面
+         *
+         * @static
+         * @param {BlockViewInfo} blockViewInfo			块界面信息
+         * @returns {egret.DisplayObject}				块界面
+         *
+         * @memberOf ObjectView
+         */
+        ObjectView.prototype.getBlockView = function (blockViewInfo) {
+            if (blockViewInfo.component == null || blockViewInfo.component == "") {
+                //返回默认对象属性界面类定义
+                blockViewInfo.component = this.defaultObjectAttributeBlockView;
+            }
+            var cls = this.OBVComponent[blockViewInfo.component];
+            feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + blockViewInfo.component + " \u5BF9\u5E94\u7684\u5757\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + blockViewInfo.component + " \u4E2D\u4F7F\u7528@OVBComponent()\u6807\u8BB0");
+            var view = new cls(blockViewInfo);
+            return view;
+        };
+        ObjectView.prototype.addOAV = function (target, propertyKey, param) {
+            if (!Object.getOwnPropertyDescriptor(target, OBJECTVIEW_KEY))
+                target[OBJECTVIEW_KEY] = {};
+            var objectview = target[OBJECTVIEW_KEY] || {};
+            var attributeDefinitionVec = objectview.attributeDefinitionVec = objectview.attributeDefinitionVec || [];
+            var attributeDefinition = Object.assign({ name: propertyKey }, param);
+            attributeDefinitionVec.push(attributeDefinition);
+        };
+        /**
+         * 获取对象信息
+         * @param object				对象
+         * @param autocreate			当对象没有注册属性时是否自动创建属性信息
+         * @param excludeAttrs			排除属性列表
+         * @return
+         */
+        ObjectView.prototype.getObjectInfo = function (object, autocreate, excludeAttrs) {
+            if (autocreate === void 0) { autocreate = true; }
+            if (excludeAttrs === void 0) { excludeAttrs = []; }
+            if (typeof object == "string" || typeof object == "number" || typeof object == "boolean") {
+                return {
+                    objectAttributeInfos: [],
+                    objectBlockInfos: [],
+                    owner: object,
+                    component: "",
+                    componentParam: undefined
+                };
+            }
+            var classConfig = getInheritClassDefinition(object, autocreate);
+            classConfig = classConfig || {
+                component: "",
+                componentParam: null,
+                attributeDefinitionVec: [],
+                blockDefinitionVec: [],
+            };
+            var objectAttributeInfos = [];
+            classConfig.attributeDefinitionVec.forEach(function (attributeDefinition) {
+                if (excludeAttrs.indexOf(attributeDefinition.name) == -1) {
+                    var editable = attributeDefinition.editable == undefined ? true : attributeDefinition.editable;
+                    editable = editable && Object.propertyIsWritable(object, attributeDefinition.name);
+                    var obj = { owner: object, type: getAttributeType(object[attributeDefinition.name]) };
+                    Object.assign(obj, attributeDefinition);
+                    obj.editable = editable;
+                    objectAttributeInfos.push(obj);
+                }
+            });
+            function getAttributeType(attribute) {
+                if (attribute == null)
+                    return "null";
+                if (typeof attribute == "number")
+                    return "number";
+                return attribute.constructor.name;
+            }
+            objectAttributeInfos.forEach(function (v, i) { v["___tempI"] = i; });
+            objectAttributeInfos.sort(function (a, b) {
+                return ((a.priority || 0) - (b.priority || 0)) || (a["___tempI"] - b["___tempI"]);
+            });
+            objectAttributeInfos.forEach(function (v, i) { delete v["___tempI"]; });
+            var objectInfo = {
+                objectAttributeInfos: objectAttributeInfos,
+                objectBlockInfos: getObjectBlockInfos(object, objectAttributeInfos, classConfig.blockDefinitionVec),
+                owner: object,
+                component: classConfig.component,
+                componentParam: classConfig.componentParam
+            };
+            return objectInfo;
+        };
+        return ObjectView;
+    }());
+    feng3d.ObjectView = ObjectView;
+    feng3d.objectview = new ObjectView();
+    var OBJECTVIEW_KEY = "__objectview__";
+    function mergeClassDefinition(oldClassDefinition, newClassDefinition) {
+        if (newClassDefinition.component && newClassDefinition.component.length > 0) {
+            oldClassDefinition.component = newClassDefinition.component;
+            oldClassDefinition.componentParam = newClassDefinition.componentParam;
+        }
+        //合并属性
+        oldClassDefinition.attributeDefinitionVec = oldClassDefinition.attributeDefinitionVec || [];
+        if (newClassDefinition.attributeDefinitionVec && newClassDefinition.attributeDefinitionVec.length > 0) {
+            newClassDefinition.attributeDefinitionVec.forEach(function (newAttributeDefinition) {
+                var isfound = false;
+                oldClassDefinition.attributeDefinitionVec.forEach(function (oldAttributeDefinition) {
+                    if (newAttributeDefinition && oldAttributeDefinition.name == newAttributeDefinition.name) {
+                        Object.assign(oldAttributeDefinition, newAttributeDefinition);
+                        //
+                        var oldIndex = oldClassDefinition.attributeDefinitionVec.indexOf(oldAttributeDefinition);
+                        oldClassDefinition.attributeDefinitionVec.splice(oldIndex, 1);
+                        //
+                        oldClassDefinition.attributeDefinitionVec.push(oldAttributeDefinition);
+                        isfound = true;
+                    }
+                });
+                if (!isfound) {
+                    var attributeDefinition = {};
+                    Object.assign(attributeDefinition, newAttributeDefinition);
+                    oldClassDefinition.attributeDefinitionVec.push(attributeDefinition);
+                }
+            });
+        }
+        //合并块
+        oldClassDefinition.blockDefinitionVec = oldClassDefinition.blockDefinitionVec || [];
+        if (newClassDefinition.blockDefinitionVec && newClassDefinition.blockDefinitionVec.length > 0) {
+            newClassDefinition.blockDefinitionVec.forEach(function (newBlockDefinition) {
+                var isfound = false;
+                oldClassDefinition.blockDefinitionVec.forEach(function (oldBlockDefinition) {
+                    if (newBlockDefinition && newBlockDefinition.name == oldBlockDefinition.name) {
+                        Object.assign(oldBlockDefinition, newBlockDefinition);
+                        isfound = true;
+                    }
+                });
+                if (!isfound) {
+                    var blockDefinition = {};
+                    Object.assign(blockDefinition, newBlockDefinition);
+                    oldClassDefinition.blockDefinitionVec.push(blockDefinition);
+                }
+            });
+        }
+    }
+    function getInheritClassDefinition(object, autocreate) {
+        if (autocreate === void 0) { autocreate = true; }
+        var classConfigVec = [];
+        var prototype = object;
+        while (prototype) {
+            var classConfig = prototype[OBJECTVIEW_KEY];
+            if (classConfig)
+                classConfigVec.push(classConfig);
+            prototype = prototype["__proto__"];
+        }
+        var resultclassConfig;
+        if (classConfigVec.length > 0) {
+            resultclassConfig = {};
+            for (var i = classConfigVec.length - 1; i >= 0; i--) {
+                mergeClassDefinition(resultclassConfig, classConfigVec[i]);
+            }
+        }
+        else if (autocreate) {
+            resultclassConfig = getDefaultClassConfig(object);
+        }
+        return resultclassConfig;
+    }
+    function getDefaultClassConfig(object, filterReg) {
+        if (filterReg === void 0) { filterReg = /(([a-zA-Z0-9])+|(\d+))/; }
+        //
+        var attributeNames = [];
+        for (var key in object) {
+            var result = filterReg.exec(key);
+            if (result && result[0] == key) {
+                var value = object[key];
+                if (value === undefined || value instanceof Function)
+                    continue;
+                attributeNames.push(key);
+            }
+        }
+        attributeNames = attributeNames.sort();
+        var attributeDefinitionVec = [];
+        attributeNames.forEach(function (element) {
+            attributeDefinitionVec.push({
+                name: element,
+                block: "",
+            });
+        });
+        var defaultClassConfig = {
+            component: "",
+            attributeDefinitionVec: attributeDefinitionVec,
+            blockDefinitionVec: []
+        };
+        return defaultClassConfig;
+    }
+    /**
+     * 获取对象块信息列表
+     * @param {Object} object			对象
+     * @returns {BlockViewInfo[]}		对象块信息列表
+     */
+    function getObjectBlockInfos(object, objectAttributeInfos, blockDefinitionVec) {
+        var objectBlockInfos = [];
+        var dic = {};
+        var objectBlockInfo;
+        //收集块信息
+        var i = 0;
+        var tempVec = [];
+        for (i = 0; i < objectAttributeInfos.length; i++) {
+            var blockName = objectAttributeInfos[i].block || "";
+            objectBlockInfo = dic[blockName];
+            if (objectBlockInfo == null) {
+                objectBlockInfo = dic[blockName] = { name: blockName, owner: object, itemList: [] };
+                tempVec.push(objectBlockInfo);
+            }
+            objectBlockInfo.itemList.push(objectAttributeInfos[i]);
+        }
+        //按快的默认顺序生成 块信息列表
+        var blockDefinition;
+        var pushDic = {};
+        if (blockDefinitionVec) {
+            for (i = 0; i < blockDefinitionVec.length; i++) {
+                blockDefinition = blockDefinitionVec[i];
+                objectBlockInfo = dic[blockDefinition.name];
+                if (objectBlockInfo == null) {
+                    objectBlockInfo = {
+                        name: blockDefinition.name,
+                        owner: object,
+                        itemList: []
+                    };
+                }
+                objectBlockInfo.component = blockDefinition.component;
+                objectBlockInfo.componentParam = blockDefinition.componentParam;
+                objectBlockInfos.push(objectBlockInfo);
+                pushDic[objectBlockInfo.name] = true;
+            }
+        }
+        //添加剩余的块信息
+        for (i = 0; i < tempVec.length; i++) {
+            if (Boolean(pushDic[tempVec[i].name]) == false) {
+                objectBlockInfos.push(tempVec[i]);
+            }
+        }
+        return objectBlockInfos;
+    }
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 心跳计时器
+     */
+    var Ticker = /** @class */ (function () {
+        function Ticker() {
+            /**
+             * 帧率
+             */
+            this.frameRate = 60;
+        }
+        /**
+         * 注册帧函数
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        Ticker.prototype.onframe = function (func, thisObject, priority) {
+            var _this = this;
+            if (priority === void 0) { priority = 0; }
+            this.on(function () { return 1000 / _this.frameRate; }, func, thisObject, priority);
+            return this;
+        };
+        /**
+         * 下一帧执行方法
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        Ticker.prototype.nextframe = function (func, thisObject, priority) {
+            var _this = this;
+            if (priority === void 0) { priority = 0; }
+            this.once(function () { return 1000 / _this.frameRate; }, func, thisObject, priority);
+            return this;
+        };
+        /**
+         * 注销帧函数（只执行一次）
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        Ticker.prototype.offframe = function (func, thisObject) {
+            var _this = this;
+            this.off(function () { return 1000 / _this.frameRate; }, func, thisObject);
+            return this;
+        };
+        /**
+         * 注册周期函数
+         * @param interval  执行周期，以ms为单位
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        Ticker.prototype.on = function (interval, func, thisObject, priority) {
+            if (priority === void 0) { priority = 0; }
+            addTickerFunc({ interval: interval, func: func, thisObject: thisObject, priority: priority, once: false });
+            return this;
+        };
+        /**
+         * 注册周期函数（只执行一次）
+         * @param interval  执行周期，以ms为单位
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        Ticker.prototype.once = function (interval, func, thisObject, priority) {
+            if (priority === void 0) { priority = 0; }
+            addTickerFunc({ interval: interval, func: func, thisObject: thisObject, priority: priority, once: true });
+            return this;
+        };
+        /**
+         * 注销周期函数
+         * @param interval  执行周期，以ms为单位
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         */
+        Ticker.prototype.off = function (interval, func, thisObject) {
+            removeTickerFunc({ interval: interval, func: func, thisObject: thisObject });
+            return this;
+        };
+        /**
+         * 重复指定次数 执行函数
+         * @param interval  执行周期，以ms为单位
+         * @param 	repeatCount     执行次数
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        Ticker.prototype.repeat = function (interval, repeatCount, func, thisObject, priority) {
+            if (priority === void 0) { priority = 0; }
+            repeatCount = ~~repeatCount;
+            if (repeatCount < 1)
+                return;
+            var timer = new Timer(this, interval, repeatCount, func, thisObject, priority);
+            return timer;
+        };
+        return Ticker;
+    }());
+    feng3d.Ticker = Ticker;
+    feng3d.ticker = new Ticker();
+    var Timer = /** @class */ (function () {
+        function Timer(ticker, interval, repeatCount, func, thisObject, priority) {
+            if (priority === void 0) { priority = 0; }
+            /**
+             * 计时器从 0 开始后触发的总次数。
+             */
+            this.currentCount = 0;
+            this.ticker = ticker;
+            this.interval = interval;
+            this.func = func;
+            this.thisObject = thisObject;
+            this.priority = priority;
+        }
+        /**
+         * 如果计时器尚未运行，则启动计时器。
+         */
+        Timer.prototype.start = function () {
+            this.ticker.on(this.interval, this.runfunc, this, this.priority);
+            return this;
+        };
+        /**
+         * 停止计时器。
+         */
+        Timer.prototype.stop = function () {
+            this.ticker.off(this.interval, this.runfunc, this);
+            return this;
+        };
+        /**
+         * 如果计时器正在运行，则停止计时器，并将 currentCount 属性设回为 0，这类似于秒表的重置按钮。
+         */
+        Timer.prototype.reset = function () {
+            this.stop();
+            this.currentCount = 0;
+            return this;
+        };
+        Timer.prototype.runfunc = function () {
+            this.currentCount++;
+            this.repeatCount--;
+            this.func.call(this.thisObject, feng3d.lazy.getvalue(this.interval));
+            if (this.repeatCount < 1)
+                this.stop();
+        };
+        return Timer;
+    }());
+    feng3d.Timer = Timer;
+    var tickerFuncs = [];
+    function addTickerFunc(item) {
+        if (running) {
+            affers.push([addTickerFunc, [item]]);
+            return;
+        }
+        removeTickerFunc(item);
+        if (item.priority == undefined)
+            item.priority = 0;
+        item.runtime = Date.now() + feng3d.lazy.getvalue(item.interval);
+        tickerFuncs.push(item);
+    }
+    function removeTickerFunc(item) {
+        if (running) {
+            affers.push([removeTickerFunc, [item]]);
+            return;
+        }
+        for (var i = tickerFuncs.length - 1; i >= 0; i--) {
+            var element = tickerFuncs[i];
+            if (feng3d.lazy.getvalue(element.interval) == feng3d.lazy.getvalue(item.interval)
+                && element.func == item.func
+                && element.thisObject == item.thisObject) {
+                tickerFuncs.splice(i, 1);
+            }
+        }
+    }
+    var running = false;
+    var affers = [];
+    function runTickerFuncs() {
+        running = true;
+        //倒序，优先级高的排在后面
+        tickerFuncs.sort(function (a, b) {
+            return a.priority - b.priority;
+        });
+        var currenttime = Date.now();
+        for (var i = tickerFuncs.length - 1; i >= 0; i--) {
+            var element = tickerFuncs[i];
+            if (element.runtime < currenttime) {
+                // try
+                // {
+                element.func.call(element.thisObject, feng3d.lazy.getvalue(element.interval));
+                // } catch (error)
+                // {
+                //     warn(`${element.func} 方法执行错误，从 ticker 中移除`, error)
+                //     tickerFuncs.splice(i, 1);
+                //     continue;
+                // }
+                if (element.once) {
+                    tickerFuncs.splice(i, 1);
+                    continue;
+                }
+                element.runtime = nextRuntime(element.runtime, feng3d.lazy.getvalue(element.interval));
+            }
+        }
+        running = false;
+        for (var i = 0; i < affers.length; i++) {
+            var affer = affers[i];
+            affer[0].apply(null, affer[1]);
+        }
+        affers.length = 0;
+        localrequestAnimationFrame(runTickerFuncs);
+        function nextRuntime(runtime, interval) {
+            return runtime + Math.ceil((currenttime - runtime) / interval) * interval;
+        }
+    }
+    var localrequestAnimationFrame;
+    if (typeof requestAnimationFrame == "undefined") {
+        if (typeof window != "undefined") {
+            localrequestAnimationFrame =
+                window["requestAnimationFrame"] ||
+                    window["webkitRequestAnimationFrame"] ||
+                    window["mozRequestAnimationFrame"] ||
+                    window["oRequestAnimationFrame"] ||
+                    window["msRequestAnimationFrame"];
+        }
+        else {
+            localrequestAnimationFrame = function (callback) {
+                return window.setTimeout(callback, 1000 / feng3d.ticker.frameRate);
+            };
+        }
+    }
+    else {
+        localrequestAnimationFrame = requestAnimationFrame;
+    }
+    runTickerFuncs();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 数据类型转换
+     * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
+     * @see http://blog.csdn.net/yinwhm12/article/details/73482904
+     */
+    var DataTransform = /** @class */ (function () {
+        function DataTransform() {
+        }
+        /**
+         * Blob to ArrayBuffer
+         */
+        DataTransform.prototype.blobToArrayBuffer = function (blob, callback) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                callback(e.target["result"]);
+            };
+            reader.readAsArrayBuffer(blob);
+        };
+        /**
+         * ArrayBuffer to Blob
+         */
+        DataTransform.prototype.arrayBufferToBlob = function (arrayBuffer, callback) {
+            var blob = new Blob([arrayBuffer]); // 注意必须包裹[]
+            callback(blob);
+        };
+        /**
+         * ArrayBuffer to Uint8
+         * Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
+         */
+        DataTransform.prototype.arrayBufferToUint8 = function (arrayBuffer, callback) {
+            var buffer = new ArrayBuffer(32);
+            var u8 = new Uint8Array(arrayBuffer);
+            callback(u8);
+        };
+        /**
+         * Uint8 to ArrayBuffer
+         * 我们Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
+         */
+        DataTransform.prototype.uint8ToArrayBuffer = function (uint8Array, callback) {
+            var buffer = uint8Array.buffer;
+            callback(buffer);
+        };
+        /**
+         * Array to ArrayBuffer
+         * @param array 例如：[0x15, 0xFF, 0x01, 0x00, 0x34, 0xAB, 0x11];
+         */
+        DataTransform.prototype.arrayToArrayBuffer = function (array, callback) {
+            var uint8 = new Uint8Array(array);
+            var buffer = uint8.buffer;
+            callback(buffer);
+        };
+        /**
+         * TypeArray to Array
+         */
+        DataTransform.prototype.uint8ArrayToArray = function (u8a) {
+            var arr = [];
+            for (var i = 0; i < u8a.length; i++) {
+                arr.push(u8a[i]);
+            }
+            return arr;
+        };
+        /**
+         * canvas转换为dataURL
+         */
+        DataTransform.prototype.canvasToDataURL = function (canvas, type) {
+            if (type === void 0) { type = "png"; }
+            if (type == "png")
+                return canvas.toDataURL("image/png");
+            return canvas.toDataURL("image/jpeg", 0.8);
+        };
+        /**
+         * File、Blob对象转换为dataURL
+         * File对象也是一个Blob对象，二者的处理相同。
+         */
+        DataTransform.prototype.blobToDataURL = function (blob, callback) {
+            var a = new FileReader();
+            a.onload = function (e) {
+                callback(e.target["result"]);
+            };
+            a.readAsDataURL(blob);
+        };
+        /**
+         * dataURL转换为Blob对象
+         */
+        DataTransform.prototype.dataURLtoBlob = function (dataurl, callback) {
+            var arr = dataurl.split(","), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            var blob = new Blob([u8arr], { type: mime });
+            callback(blob);
+        };
+        /**
+         * dataURL图片数据转换为HTMLImageElement
+         * dataURL图片数据绘制到canvas
+         * 先构造Image对象，src为dataURL，图片onload之后绘制到canvas
+         */
+        DataTransform.prototype.dataURLDrawCanvas = function (dataurl, canvas, callback) {
+            this.dataURLToImage(dataurl, function (img) {
+                // canvas.drawImage(img);
+                callback(img);
+            });
+        };
+        DataTransform.prototype.dataURLToArrayBuffer = function (dataurl, callback) {
+            var _this = this;
+            this.dataURLtoBlob(dataurl, function (blob) {
+                _this.blobToArrayBuffer(blob, callback);
+            });
+        };
+        DataTransform.prototype.arrayBufferToDataURL = function (arrayBuffer, callback) {
+            var _this = this;
+            this.arrayBufferToBlob(arrayBuffer, function (blob) {
+                _this.blobToDataURL(blob, callback);
+            });
+        };
+        DataTransform.prototype.dataURLToImage = function (dataurl, callback) {
+            var img = new Image();
+            img.onload = function () {
+                callback(img);
+            };
+            img.src = dataurl;
+        };
+        DataTransform.prototype.imageToDataURL = function (img) {
+            var canvas = this.imageToCanvas(img);
+            var dataurl = this.canvasToDataURL(canvas, "png");
+            return dataurl;
+        };
+        DataTransform.prototype.imageToCanvas = function (img) {
+            var canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            var ctxt = canvas.getContext('2d');
+            ctxt.drawImage(img, 0, 0);
+            return canvas;
+        };
+        DataTransform.prototype.imageDataToDataURL = function (imageData) {
+            var canvas = this.imageDataToCanvas(imageData);
+            var dataurl = this.canvasToDataURL(canvas, "png");
+            return dataurl;
+        };
+        DataTransform.prototype.imageDataToCanvas = function (imageData) {
+            var canvas = document.createElement("canvas");
+            canvas.width = imageData.width;
+            canvas.height = imageData.height;
+            var ctxt = canvas.getContext('2d');
+            ctxt.putImageData(imageData, 0, 0);
+            return canvas;
+        };
+        DataTransform.prototype.arrayBufferToImage = function (arrayBuffer, callback) {
+            var _this = this;
+            this.arrayBufferToDataURL(arrayBuffer, function (dataurl) {
+                _this.dataURLToImage(dataurl, callback);
+            });
+        };
+        DataTransform.prototype.blobToText = function (blob, callback) {
+            var a = new FileReader();
+            a.onload = function (e) { callback(e.target["result"]); };
+            a.readAsText(blob);
+        };
+        DataTransform.prototype.stringToArrayBuffer = function (str, callback) {
+            var _this = this;
+            this.stringToUint8Array(str, function (unit8Array) {
+                _this.uint8ToArrayBuffer(unit8Array, callback);
+            });
+        };
+        DataTransform.prototype.arrayBufferToString = function (arrayBuffer, callback) {
+            var _this = this;
+            this.arrayBufferToBlob(arrayBuffer, function (blob) {
+                _this.blobToText(blob, callback);
+            });
+        };
+        DataTransform.prototype.stringToUint8Array = function (str, callback) {
+            var utf8 = unescape(encodeURIComponent(str));
+            var uint8Array = new Uint8Array(utf8.split('').map(function (item) {
+                return item.charCodeAt(0);
+            }));
+            callback(uint8Array);
+        };
+        DataTransform.prototype.uint8ArrayToString = function (arr, callback) {
+            // or [].slice.apply(arr)
+            // var utf8 = Array.from(arr).map(function (item)
+            var utf8 = [].slice.apply(arr).map(function (item) {
+                return String.fromCharCode(item);
+            }).join('');
+            var str = decodeURIComponent(escape(utf8));
+            callback(str);
+        };
+        return DataTransform;
+    }());
+    feng3d.DataTransform = DataTransform;
+    feng3d.dataTransform = new DataTransform();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var CLASS_KEY = "__class__";
+    /**
+     * 类工具
+     */
+    var ClassUtils = /** @class */ (function () {
+        function ClassUtils() {
+        }
+        /**
+         * 返回对象的完全限定类名。
+         * @param value 需要完全限定类名称的对象，可以将任何 JavaScript 值传递给此方法，包括所有可用的 JavaScript 类型、对象实例、原始类型
+         * （如number)和类对象
+         * @returns 包含完全限定类名称的字符串。
+         */
+        ClassUtils.prototype.getQualifiedClassName = function (value) {
+            if (value == null)
+                return "null";
+            var prototype = value.prototype ? value.prototype : Object.getPrototypeOf(value);
+            if (prototype.hasOwnProperty(CLASS_KEY))
+                return prototype[CLASS_KEY];
+            var className = prototype.constructor.name;
+            if (_global[className] == prototype.constructor)
+                return className;
+            //在可能的命名空间内查找
+            for (var i = 0; i < _classNameSpaces.length; i++) {
+                var tryClassName = _classNameSpaces[i] + "." + className;
+                if (this.getDefinitionByName(tryClassName) == prototype.constructor) {
+                    className = tryClassName;
+                    registerClass(prototype.constructor, className);
+                    return className;
+                }
+            }
+            feng3d.error("\u672A\u5728\u7ED9\u51FA\u7684\u547D\u540D\u7A7A\u95F4 " + _classNameSpaces + " \u5185\u627E\u5230 " + value + " \u7684\u5B9A\u4E49");
+            return "undefined";
+        };
+        /**
+         * 返回 name 参数指定的类的类对象引用。
+         * @param name 类的名称。
+         */
+        ClassUtils.prototype.getDefinitionByName = function (name, readCache) {
+            if (readCache === void 0) { readCache = true; }
+            if (name == "null")
+                return null;
+            if (!name)
+                return null;
+            if (_global[name])
+                return _global[name];
+            if (readCache && _definitionCache[name])
+                return _definitionCache[name];
+            var paths = name.split(".");
+            var length = paths.length;
+            var definition = _global;
+            for (var i = 0; i < length; i++) {
+                var path = paths[i];
+                definition = definition[path];
+                if (!definition) {
+                    return null;
+                }
+            }
+            _definitionCache[name] = definition;
+            return definition;
+        };
+        /**
+         * 新增反射对象所在的命名空间，使得getQualifiedClassName能够得到正确的结果
+         */
+        ClassUtils.prototype.addClassNameSpace = function (namespace) {
+            if (_classNameSpaces.indexOf(namespace) == -1) {
+                _classNameSpaces.push(namespace);
+            }
+        };
+        return ClassUtils;
+    }());
+    feng3d.ClassUtils = ClassUtils;
+    ;
+    feng3d.classUtils = new ClassUtils();
+    var _definitionCache = {};
+    var _global = window;
+    var _classNameSpaces = ["feng3d"];
+    /**
+     * 为一个类定义注册完全限定类名
+     * @param classDefinition 类定义
+     * @param className 完全限定类名
+     */
+    function registerClass(classDefinition, className) {
+        var prototype = classDefinition.prototype;
+        Object.defineProperty(prototype, CLASS_KEY, {
+            value: className,
+            enumerable: false,
+            writable: true
+        });
+    }
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 图片相关工具
+     */
+    var ImageUtil = /** @class */ (function () {
+        function ImageUtil() {
+        }
+        /**
+         * 加载图片
+         * @param url 图片路径
+         * @param callback 加载完成回调
+         */
+        ImageUtil.prototype.loadImage = function (url, callback) {
+            feng3d.assets.readImage(url, callback);
+        };
+        /**
+         * 获取图片数据
+         * @param image 加载完成的图片元素
+         */
+        ImageUtil.prototype.getImageData = function (image) {
+            if (!image)
+                return null;
+            var canvasImg = document.createElement("canvas");
+            canvasImg.width = image.width;
+            canvasImg.height = image.height;
+            var ctxt = canvasImg.getContext('2d');
+            feng3d.assert(!!ctxt);
+            ctxt.drawImage(image, 0, 0);
+            var imageData = ctxt.getImageData(0, 0, image.width, image.height); //读取整张图片的像素。
+            return imageData;
+        };
+        /**
+         * 从url获取图片数据
+         * @param url 图片路径
+         * @param callback 获取图片数据完成回调
+         */
+        ImageUtil.prototype.getImageDataFromUrl = function (url, callback) {
+            var _this = this;
+            this.loadImage(url, function (err, image) {
+                var imageData = _this.getImageData(image);
+                callback(imageData);
+            });
+        };
+        /**
+         * 创建ImageData
+         * @param width 数据宽度
+         * @param height 数据高度
+         * @param fillcolor 填充颜色
+         */
+        ImageUtil.prototype.createImageData = function (width, height, fillcolor) {
+            if (width === void 0) { width = 1024; }
+            if (height === void 0) { height = 1024; }
+            if (fillcolor === void 0) { fillcolor = 0; }
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = new feng3d.Color3().fromUnit(fillcolor).toHexString();
+            ctx.fillRect(0, 0, width, height);
+            var imageData = ctx.getImageData(0, 0, width, height);
+            return imageData;
+        };
+        /**
+         * 创建默认粒子贴图
+         * @param size 尺寸
+         */
+        ImageUtil.prototype.createDefaultParticle = function (size) {
+            if (size === void 0) { size = 64; }
+            var canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            var ctx = canvas.getContext('2d');
+            var imageData = ctx.getImageData(0, 0, size, size);
+            var half = size / 2;
+            for (var i = 0; i < size; i++) {
+                for (var j = 0; j < size; j++) {
+                    var l = feng3d.FMath.clamp(new feng3d.Vector2(i - half, j - half).length, 0, half) / half;
+                    // l = l * l;
+                    var f = 1 - l;
+                    f = f * f;
+                    // f = f * f * f;
+                    // f = - 8 / 3 * f * f * f + 4 * f * f - f / 3;
+                    var pos = (i + j * size) * 4;
+                    imageData.data[pos] = 255;
+                    imageData.data[pos + 1] = 255;
+                    imageData.data[pos + 2] = 255;
+                    imageData.data[pos + 3] = f * 255;
+                }
+            }
+            return imageData;
+        };
+        /**
+         * 创建颜色拾取矩形
+         * @param color 基色
+         * @param width 宽度
+         * @param height 高度
+         */
+        ImageUtil.prototype.createColorPickerRect = function (color, width, height) {
+            if (width === void 0) { width = 64; }
+            if (height === void 0) { height = 64; }
+            var leftTop = new feng3d.Color3(1, 1, 1);
+            var rightTop = new feng3d.Color3().fromUnit(color);
+            var leftBottom = new feng3d.Color3(0, 0, 0);
+            var rightBottom = new feng3d.Color3(0, 0, 0);
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext('2d');
+            var imageData = ctx.getImageData(0, 0, width, height);
+            var data = imageData.data;
+            //
+            for (var i = 0; i < width; i++) {
+                for (var j = 0; j < height; j++) {
+                    var top = leftTop.mixTo(rightTop, i / width);
+                    var bottom = leftBottom.mixTo(rightBottom, i / width);
+                    var v = top.mixTo(bottom, j / height);
+                    //
+                    var pos = (i + j * width) * 4;
+                    data[pos] = v.r * 255;
+                    data[pos + 1] = v.g * 255;
+                    data[pos + 2] = v.b * 255;
+                    data[pos + 3] = 255;
+                }
+            }
+            return imageData;
+        };
+        /**
+         * 获取颜色的基色以及颜色拾取矩形所在位置
+         * @param color 查找颜色
+         */
+        ImageUtil.prototype.getColorPickerRectAtPosition = function (color, rw, rh) {
+            var leftTop = new feng3d.Color3(1, 1, 1);
+            var rightTop = new feng3d.Color3().fromUnit(color);
+            var leftBottom = new feng3d.Color3(0, 0, 0);
+            var rightBottom = new feng3d.Color3(0, 0, 0);
+            var top = leftTop.mixTo(rightTop, rw);
+            var bottom = leftBottom.mixTo(rightBottom, rw);
+            var v = top.mixTo(bottom, rh);
+            return v;
+        };
+        /**
+         * 获取颜色的基色以及颜色拾取矩形所在位置
+         * @param color 查找颜色
+         */
+        ImageUtil.prototype.getColorPickerRectPosition = function (color) {
+            var black = new feng3d.Color3(0, 0, 0);
+            var white = new feng3d.Color3(1, 1, 1);
+            var c = new feng3d.Color3().fromUnit(color);
+            var max = Math.max(c.r, c.g, c.b);
+            if (max != 0)
+                c = black.mix(c, 1 / max);
+            var min = Math.min(c.r, c.g, c.b);
+            if (min != 1)
+                c = white.mix(c, 1 / (1 - min));
+            var ratioH = 1 - max;
+            var ratioW = 1 - min;
+            return {
+                /**
+                 * 基色
+                 */
+                color: c,
+                /**
+                 * 横向位置
+                 */
+                ratioW: ratioW,
+                /**
+                 * 纵向位置
+                 */
+                ratioH: ratioH
+            };
+        };
+        /**
+         * 创建颜色条带
+         * @param colors
+         * @param ratios [0,1]
+         * @param width
+         * @param height
+         * @param dirw true为横向条带，否则纵向条带
+         */
+        ImageUtil.prototype.createColorPickerStripe = function (width, height, colors, ratios, dirw) {
+            if (dirw === void 0) { dirw = true; }
+            if (!ratios) {
+                ratios = [];
+                for (var i = 0; i < colors.length; i++) {
+                    ratios[i] = i / (colors.length - 1);
+                }
+            }
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext('2d');
+            var imageData = ctx.getImageData(0, 0, width, height);
+            //
+            for (var i = 0; i < width; i++) {
+                for (var j = 0; j < height; j++) {
+                    var v = this.getMixColor(colors, ratios, dirw ? i / (width - 1) : j / (height - 1));
+                    //
+                    var pos = (i + j * width) * 4;
+                    imageData.data[pos] = v.r * 255;
+                    imageData.data[pos + 1] = v.g * 255;
+                    imageData.data[pos + 2] = v.b * 255;
+                    imageData.data[pos + 3] = 255;
+                }
+            }
+            return imageData;
+        };
+        ImageUtil.prototype.getMixColor = function (colors, ratios, ratio) {
+            if (!ratios) {
+                ratios = [];
+                for (var i_1 = 0; i_1 < colors.length; i_1++) {
+                    ratios[i_1] = i_1 / (colors.length - 1);
+                }
+            }
+            var colors1 = colors.map(function (v) { return new feng3d.Color3().fromUnit(v); });
+            for (var i = 0; i < colors1.length - 1; i++) {
+                if (ratios[i] <= ratio && ratio <= ratios[i + 1]) {
+                    var v = feng3d.FMath.mapLinear(ratio, ratios[i], ratios[i + 1], 0, 1);
+                    var c = colors1[i].mixTo(colors1[i + 1], v);
+                    return c;
+                }
+            }
+            return colors1[0];
+        };
+        ImageUtil.prototype.getMixColorRatio = function (color, colors, ratios) {
+            if (!ratios) {
+                ratios = [];
+                for (var i_2 = 0; i_2 < colors.length; i_2++) {
+                    ratios[i_2] = i_2 / (colors.length - 1);
+                }
+            }
+            var colors1 = colors.map(function (v) { return new feng3d.Color3().fromUnit(v); });
+            var c = new feng3d.Color3().fromUnit(color);
+            var r = c.r;
+            var g = c.g;
+            var b = c.b;
+            for (var i = 0; i < colors1.length - 1; i++) {
+                var c0 = colors1[i];
+                var c1 = colors1[i + 1];
+                //
+                if (c.equals(c0))
+                    return ratios[i];
+                if (c.equals(c1))
+                    return ratios[i + 1];
+                //
+                var r1 = c0.r + c1.r;
+                var g1 = c0.g + c1.g;
+                var b1 = c0.b + c1.b;
+                //
+                var v = r * r1 + g * g1 + b * b1;
+                if (v > 2) {
+                    var result = 0;
+                    if (r1 == 1) {
+                        result = feng3d.FMath.mapLinear(r, c0.r, c1.r, ratios[i], ratios[i + 1]);
+                    }
+                    else if (g1 == 1) {
+                        result = feng3d.FMath.mapLinear(g, c0.g, c1.g, ratios[i], ratios[i + 1]);
+                    }
+                    else if (b1 == 1) {
+                        result = feng3d.FMath.mapLinear(b, c0.b, c1.b, ratios[i], ratios[i + 1]);
+                    }
+                    return result;
+                }
+            }
+            return 0;
+        };
+        ImageUtil.prototype.getMixColorAtRatio = function (ratio, colors, ratios) {
+            if (!ratios) {
+                ratios = [];
+                for (var i_3 = 0; i_3 < colors.length; i_3++) {
+                    ratios[i_3] = i_3 / (colors.length - 1);
+                }
+            }
+            var colors1 = colors.map(function (v) { return new feng3d.Color3().fromUnit(v); });
+            for (var i = 0; i < colors1.length - 1; i++) {
+                if (ratios[i] <= ratio && ratio <= ratios[i + 1]) {
+                    var mix = feng3d.FMath.mapLinear(ratio, ratios[i], ratios[i + 1], 0, 1);
+                    var c = colors1[i].mixTo(colors1[i + 1], mix);
+                    return c;
+                }
+            }
+            return colors1[0];
+        };
+        ImageUtil.prototype.createColorRect = function (color, width, height) {
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext('2d');
+            var imageData = ctx.getImageData(0, 0, width, height);
+            var colorHeight = Math.floor(height * 0.8);
+            var alphaWidth = Math.floor(color.a * width);
+            //
+            for (var i = 0; i < width; i++) {
+                for (var j = 0; j < height; j++) {
+                    //
+                    var pos = (i + j * width) * 4;
+                    if (j <= colorHeight) {
+                        imageData.data[pos] = color.r * 255;
+                        imageData.data[pos + 1] = color.g * 255;
+                        imageData.data[pos + 2] = color.b * 255;
+                        imageData.data[pos + 3] = 255;
+                    }
+                    else {
+                        var v = i < alphaWidth ? 255 : 0;
+                        imageData.data[pos] = v;
+                        imageData.data[pos + 1] = v;
+                        imageData.data[pos + 2] = v;
+                        imageData.data[pos + 3] = 255;
+                    }
+                }
+            }
+            return imageData;
+        };
+        ImageUtil.prototype.createMinMaxGradientRect = function (gradient, width, height) {
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext('2d');
+            var imageData = ctx.getImageData(0, 0, width, height);
+            //
+            for (var i = 0; i < width; i++) {
+                for (var j = 0; j < height; j++) {
+                    //
+                    var pos = (i + j * width) * 4;
+                    var c = gradient.getValue(i / (width - 1));
+                    imageData.data[pos] = c.r * 255;
+                    imageData.data[pos + 1] = c.g * 255;
+                    imageData.data[pos + 2] = c.b * 255;
+                    imageData.data[pos + 3] = c.a * 255;
+                }
+            }
+            return imageData;
+        };
+        return ImageUtil;
+    }());
+    feng3d.ImageUtil = ImageUtil;
+    feng3d.imageUtil = new ImageUtil();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var Stats = /** @class */ (function () {
+        function Stats() {
+            var _this = this;
+            var mode = 0;
+            var container = document.createElement('div');
+            container.style.cssText = 'position:fixed;top:0;left:0;cursor:pointer;opacity:0.9;';
+            container.addEventListener('click', function (event) {
+                event.preventDefault();
+                showPanel(++mode % container.children.length);
+            }, false);
+            //
+            function addPanel(panel) {
+                container.appendChild(panel.dom);
+                return panel;
+            }
+            function showPanel(id) {
+                for (var i = 0; i < container.children.length; i++) {
+                    container.children[i].style.display = i === id ? 'block' : 'none';
+                }
+                mode = id;
+            }
+            //
+            var beginTime = (performance || Date).now(), prevTime = beginTime, frames = 0;
+            var fpsPanel = addPanel(new StatsPanel('FPS', '#0ff', '#002'));
+            var msPanel = addPanel(new StatsPanel('MS', '#0f0', '#020'));
+            if (self.performance && self.performance.memory) {
+                var memPanel = addPanel(new StatsPanel('MB', '#f08', '#201'));
+            }
+            showPanel(0);
+            this.REVISION = 16;
+            this.dom = container;
+            this.addPanel = addPanel;
+            this.showPanel = showPanel;
+            this.begin = function () {
+                beginTime = (performance || Date).now();
+            };
+            this.end = function () {
+                frames++;
+                var time = (performance || Date).now();
+                msPanel.update(time - beginTime, 200);
+                if (time > prevTime + 1000) {
+                    fpsPanel.update((frames * 1000) / (time - prevTime), 100);
+                    prevTime = time;
+                    frames = 0;
+                    if (memPanel) {
+                        var memory = performance.memory;
+                        memPanel.update(memory.usedJSHeapSize / 1048576, memory.jsHeapSizeLimit / 1048576);
+                    }
+                }
+                return time;
+            };
+            this.update = function () {
+                beginTime = _this.end();
+            };
+            // Backwards Compatibility
+            this.domElement = container;
+            this.setMode = showPanel;
+        }
+        Stats.init = function (parent) {
+            if (!this.instance) {
+                this.instance = new Stats();
+                parent = parent || document.body;
+                parent.appendChild(this.instance.dom);
+            }
+            feng3d.ticker.onframe(this.instance.update, this.instance);
+        };
+        ;
+        return Stats;
+    }());
+    feng3d.Stats = Stats;
+    var StatsPanel = /** @class */ (function () {
+        function StatsPanel(name, fg, bg) {
+            var min = Infinity, max = 0, round = Math.round;
+            var PR = round(window.devicePixelRatio || 1);
+            var WIDTH = 80 * PR, HEIGHT = 48 * PR, TEXT_X = 3 * PR, TEXT_Y = 2 * PR, GRAPH_X = 3 * PR, GRAPH_Y = 15 * PR, GRAPH_WIDTH = 74 * PR, GRAPH_HEIGHT = 30 * PR;
+            var canvas = document.createElement('canvas');
+            canvas.width = WIDTH;
+            canvas.height = HEIGHT;
+            canvas.style.cssText = 'width:80px;height:48px';
+            var context0 = canvas.getContext('2d');
+            if (context0 == null) {
+                feng3d.log("\u65E0\u6CD5\u521B\u5EFA CanvasRenderingContext2D ");
+                return;
+            }
+            var context = context0;
+            context.font = 'bold ' + (9 * PR) + 'px Helvetica,Arial,sans-serif';
+            context.textBaseline = 'top';
+            context.fillStyle = bg;
+            context.fillRect(0, 0, WIDTH, HEIGHT);
+            context.fillStyle = fg;
+            context.fillText(name, TEXT_X, TEXT_Y);
+            context.fillRect(GRAPH_X, GRAPH_Y, GRAPH_WIDTH, GRAPH_HEIGHT);
+            context.fillStyle = bg;
+            context.globalAlpha = 0.9;
+            context.fillRect(GRAPH_X, GRAPH_Y, GRAPH_WIDTH, GRAPH_HEIGHT);
+            this.dom = canvas;
+            this.update = function (value, maxValue) {
+                min = Math.min(min, value);
+                max = Math.max(max, value);
+                context.fillStyle = bg;
+                context.globalAlpha = 1;
+                context.fillRect(0, 0, WIDTH, GRAPH_Y);
+                context.fillStyle = fg;
+                context.fillText(round(value) + ' ' + name + ' (' + round(min) + '-' + round(max) + ')', TEXT_X, TEXT_Y);
+                context.drawImage(canvas, GRAPH_X + PR, GRAPH_Y, GRAPH_WIDTH - PR, GRAPH_HEIGHT, GRAPH_X, GRAPH_Y, GRAPH_WIDTH - PR, GRAPH_HEIGHT);
+                context.fillRect(GRAPH_X + GRAPH_WIDTH - PR, GRAPH_Y, PR, GRAPH_HEIGHT);
+                context.fillStyle = bg;
+                context.globalAlpha = 0.9;
+                context.fillRect(GRAPH_X + GRAPH_WIDTH - PR, GRAPH_Y, PR, round((1 - (value / maxValue)) * GRAPH_HEIGHT));
+            };
+        }
+        return StatsPanel;
+    }());
+    feng3d.StatsPanel = StatsPanel;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 路径工具
+     */
+    var PathUtils = /** @class */ (function () {
+        function PathUtils() {
+        }
+        /**
+         * 获取不带后缀名称
+         * @param path 路径
+         */
+        PathUtils.prototype.getName = function (path) {
+            var name = this.getNameWithExtension(path);
+            if (this.isDirectory(path))
+                return name;
+            name = name.split(".").shift();
+            return name;
+        };
+        /**
+         * 获取带后缀名称
+         * @param path 路径
+         */
+        PathUtils.prototype.getNameWithExtension = function (path) {
+            var paths = path.split("/");
+            var name = paths.pop();
+            if (name == "")
+                name = paths.pop();
+            return name;
+        };
+        /**
+         * 获取后缀
+         * @param path 路径
+         */
+        PathUtils.prototype.getExtension = function (path) {
+            var name = this.getNameWithExtension(path);
+            var extension = name.split(".").slice(1).join(".");
+            return extension;
+        };
+        /**
+         * 父路径
+         * @param path 路径
+         */
+        PathUtils.prototype.getParentPath = function (path) {
+            var paths = path.split("/");
+            if (this.isDirectory(path))
+                paths.pop();
+            paths.pop();
+            return paths.join("/") + "/";
+        };
+        /**
+         * 是否文件夹
+         * @param path 路径
+         */
+        PathUtils.prototype.isDirectory = function (path) {
+            return path.split("/").pop() == "";
+        };
+        /**
+         * 获取目录深度
+         * @param path 路径
+         */
+        PathUtils.prototype.getDirDepth = function (path) {
+            var length = path.split("/").length;
+            if (this.isDirectory(path))
+                length--;
+            return length - 1;
+        };
+        return PathUtils;
+    }());
+    feng3d.PathUtils = PathUtils;
+    feng3d.pathUtils = new PathUtils();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var shaderMacroKeys = ["if", "ifdef", "defined"];
+    var ShaderMacroUtils = /** @class */ (function () {
+        function ShaderMacroUtils() {
+        }
+        /**
+         * 从着色器代码中获取宏变量列表
+         * @param vertex
+         * @param fragment
+         */
+        ShaderMacroUtils.prototype.getMacroVariablesFromShaderCode = function (vertex, fragment) {
+            var variables0 = this.getMacroVariablesFromCode(vertex);
+            var variables1 = this.getMacroVariablesFromCode(fragment);
+            for (var i = 0; i < variables1.length; i++) {
+                var element = variables1[i];
+                if (variables0.indexOf(element) == -1)
+                    variables0.push(element);
+            }
+            return variables0;
+        };
+        /**
+         * 从着色器代码中获取宏变量列表
+         * @param code
+         */
+        ShaderMacroUtils.prototype.getMacroVariablesFromCode = function (code) {
+            var variables = [];
+            var lines = code.split("\n");
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                if (line.indexOf("#if") != -1) {
+                    var reg = /(\w+)/g;
+                    var result;
+                    while (result = reg.exec(line)) {
+                        var key = result[1];
+                        if (key != null && isNaN(Number(key)) && shaderMacroKeys.indexOf(key) == -1 && variables.indexOf(key) == -1)
+                            variables.push(key);
+                    }
+                }
+            }
+            return variables;
+        };
+        return ShaderMacroUtils;
+    }());
+    feng3d.ShaderMacroUtils = ShaderMacroUtils;
+    feng3d.shaderMacroUtils = new ShaderMacroUtils();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    feng3d.lazy = {
+        getvalue: function (lazyItem) {
+            if (typeof lazyItem == "function")
+                return lazyItem();
+            return lazyItem;
+        }
+    };
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 常用正则表示式
+     */
+    var RegExps = /** @class */ (function () {
+        function RegExps() {
+            /**
+             * json文件
+             */
+            this.json = /(\.json)\b/i;
+            /**
+             * 图片
+             */
+            this.image = /(\.jpg|\.png|\.jpeg|\.gif)\b/i;
+            /**
+             * 声音
+             */
+            this.audio = /(\.ogg|\.mp3|\.wav)\b/i;
+            /**
+             * 命名空间
+             */
+            this.namespace = /namespace\s+([\w$_\d\.]+)/;
+            /**
+             * 类
+             */
+            this.classReg = /(export\s+)?(abstract\s+)?class\s+([\w$_\d]+)(\s+extends\s+([\w$_\d\.]+))?/;
+        }
+        return RegExps;
+    }());
+    feng3d.RegExps = RegExps;
+    feng3d.regExps = new RegExps();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 所有feng3d对象的基类
+     */
+    var Feng3dObject = /** @class */ (function (_super) {
+        __extends(Feng3dObject, _super);
+        function Feng3dObject() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * 隐藏标记，用于控制是否在层级面板、检查器显示，是否保存
+             */
+            _this.hideFlags = feng3d.HideFlags.None;
+            return _this;
+        }
+        /**
+         * 设置对象值
+         * @param v 对象对于的Object值
+         */
+        Feng3dObject.prototype.value = function (v) {
+            feng3d.serialization.setValue(this, v);
+            return this;
+        };
+        return Feng3dObject;
+    }(feng3d.EventDispatcher));
+    feng3d.Feng3dObject = Feng3dObject;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var databases = {};
+    /**
+     *
+     */
+    var Storage = /** @class */ (function () {
+        function Storage() {
+        }
+        /**
+         * 是否支持 indexedDB
+         */
+        Storage.prototype.support = function () {
+            if (typeof indexedDB == "undefined") {
+                indexedDB = window.indexedDB || window["mozIndexedDB"] || window["webkitIndexedDB"] || window["msIndexedDB"];
+                if (indexedDB == undefined) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        Storage.prototype.getDatabase = function (dbname, callback) {
+            if (databases[dbname]) {
+                callback(null, databases[dbname]);
+                return;
+            }
+            var request = indexedDB.open(dbname);
+            request.onsuccess = function (event) {
+                databases[dbname] = event.target["result"];
+                callback(null, databases[dbname]);
+                request.onsuccess = null;
+            };
+            request.onerror = function (event) {
+                callback(event, null);
+                request.onerror = null;
+            };
+        };
+        Storage.prototype.deleteDatabase = function (dbname, callback) {
+            var request = indexedDB.deleteDatabase(dbname);
+            request.onsuccess = function (event) {
+                delete databases[dbname];
+                callback && callback(null);
+                request.onsuccess = null;
+            };
+            request.onerror = function (event) {
+                callback && callback(event);
+                request.onerror = null;
+            };
+        };
+        Storage.prototype.hasObjectStore = function (dbname, objectStroreName, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                callback(database.objectStoreNames.contains(objectStroreName));
+            });
+        };
+        Storage.prototype.getObjectStoreNames = function (dbname, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                var objectStoreNames = [];
+                for (var i = 0; i < database.objectStoreNames.length; i++) {
+                    objectStoreNames.push(database.objectStoreNames.item(i));
+                }
+                callback(null, objectStoreNames);
+            });
+        };
+        Storage.prototype.createObjectStore = function (dbname, objectStroreName, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                if (database.objectStoreNames.contains(objectStroreName)) {
+                    callback && callback(null);
+                    return;
+                }
+                database.close();
+                var request = indexedDB.open(database.name, database.version + 1);
+                request.onupgradeneeded = function (event) {
+                    var newdatabase = event.target["result"];
+                    newdatabase.createObjectStore(objectStroreName);
+                    databases[newdatabase.name] = newdatabase;
+                    request.onupgradeneeded = null;
+                    callback && callback(null);
+                };
+                request.onsuccess = function (event) {
+                    var newdatabase = event.target["result"];
+                    databases[newdatabase.name] = newdatabase;
+                    request.onsuccess = null;
+                    callback && callback(null);
+                };
+                request.onerror = function (event) {
+                    request.onerror = null;
+                    callback && callback(event);
+                };
+            });
+        };
+        Storage.prototype.deleteObjectStore = function (dbname, objectStroreName, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                if (!database.objectStoreNames.contains(objectStroreName)) {
+                    callback && callback(null);
+                    return;
+                }
+                database.close();
+                var request = indexedDB.open(database.name, database.version + 1);
+                request.onupgradeneeded = function (event) {
+                    var newdatabase = event.target["result"];
+                    newdatabase.deleteObjectStore(objectStroreName);
+                    request.onupgradeneeded = null;
+                    callback && callback(null);
+                };
+                request.onsuccess = function (event) {
+                    var newdatabase = event.target["result"];
+                    databases[newdatabase.name] = newdatabase;
+                    request.onsuccess = null;
+                    callback && callback(event);
+                };
+                request.onerror = function (event) {
+                    request.onerror = null;
+                    callback && callback(event);
+                };
+            });
+        };
+        Storage.prototype.getAllKeys = function (dbname, objectStroreName, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                try {
+                    var transaction = database.transaction([objectStroreName], 'readwrite');
+                    var objectStore = transaction.objectStore(objectStroreName);
+                    var request = objectStore.getAllKeys();
+                    request.onsuccess = function (event) {
+                        callback && callback(null, event.target["result"]);
+                        request.onsuccess = null;
+                    };
+                }
+                catch (error) {
+                    callback && callback(error, null);
+                }
+            });
+        };
+        Storage.prototype.get = function (dbname, objectStroreName, key, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                var transaction = database.transaction([objectStroreName], 'readwrite');
+                var objectStore = transaction.objectStore(objectStroreName);
+                var request = objectStore.get(key);
+                request.onsuccess = function (event) {
+                    var result = event.target["result"];
+                    callback && callback(result ? null : new Error("\u6CA1\u6709\u627E\u5230\u8D44\u6E90 " + key), result);
+                    request.onsuccess = null;
+                };
+            });
+        };
+        Storage.prototype.set = function (dbname, objectStroreName, key, data, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                try {
+                    var transaction = database.transaction([objectStroreName], 'readwrite');
+                    var objectStore = transaction.objectStore(objectStroreName);
+                    var request = objectStore.put(data, key);
+                    request.onsuccess = function (event) {
+                        callback && callback(null);
+                        request.onsuccess = null;
+                    };
+                }
+                catch (error) {
+                    callback && callback(error);
+                }
+            });
+        };
+        Storage.prototype.delete = function (dbname, objectStroreName, key, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                try {
+                    var transaction = database.transaction([objectStroreName], 'readwrite');
+                    var objectStore = transaction.objectStore(objectStroreName);
+                    var request = objectStore.delete(key);
+                    request.onsuccess = function (event) {
+                        callback && callback();
+                        request.onsuccess = null;
+                    };
+                }
+                catch (error) {
+                    callback && callback(error);
+                }
+            });
+        };
+        Storage.prototype.clear = function (dbname, objectStroreName, callback) {
+            this.getDatabase(dbname, function (err, database) {
+                try {
+                    var transaction = database.transaction([objectStroreName], 'readwrite');
+                    var objectStore = transaction.objectStore(objectStroreName);
+                    var request = objectStore.clear();
+                    request.onsuccess = function (event) {
+                        callback && callback();
+                        request.onsuccess = null;
+                    };
+                }
+                catch (error) {
+                    callback && callback(error);
+                }
+            });
+        };
+        return Storage;
+    }());
+    feng3d.Storage = Storage;
+    feng3d.storage = new Storage();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 索引数据文件系统
+     */
+    var IndexedDBfs = /** @class */ (function () {
+        function IndexedDBfs(DBname, projectname) {
+            if (DBname === void 0) { DBname = "feng3d-editor"; }
+            if (projectname === void 0) { projectname = "testproject"; }
+            this.DBname = DBname;
+            this.projectname = projectname;
+        }
+        Object.defineProperty(IndexedDBfs.prototype, "type", {
+            get: function () {
+                return feng3d.FSType.indexedDB;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        IndexedDBfs.prototype.readArrayBuffer = function (path, callback) {
+            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
+                callback(err, data);
+            });
+        };
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.getAbsolutePath = function (path, callback) {
+            callback(null, path);
+        };
+        /**
+         * 文件是否存在
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.exists = function (path, callback) {
+            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
+                callback(!!data);
+            });
+        };
+        /**
+         * 读取文件夹中文件列表
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.readdir = function (path, callback) {
+            feng3d.storage.getAllKeys(this.DBname, this.projectname, function (err, allfilepaths) {
+                if (!allfilepaths) {
+                    callback(err, null);
+                    return;
+                }
+                var subfilemap = {};
+                allfilepaths.forEach(function (element) {
+                    if (element.substr(0, path.length) == path && element != path) {
+                        var result = element.substr(path.length);
+                        var index = result.indexOf("/");
+                        if (index != -1)
+                            result = result.substring(0, index + 1);
+                        subfilemap[result] = 1;
+                    }
+                });
+                var files = Object.keys(subfilemap);
+                callback(null, files);
+            });
+        };
+        /**
+         * 新建文件夹
+         * @param path 文件夹路径
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.mkdir = function (path, callback) {
+            feng3d.storage.set(this.DBname, this.projectname, path, new ArrayBuffer(0), callback);
+        };
+        /**
+         * 删除文件
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.deleteFile = function (path, callback) {
+            feng3d.storage.delete(this.DBname, this.projectname, path, callback);
+        };
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.writeArrayBuffer = function (path, data, callback) {
+            feng3d.storage.set(this.DBname, this.projectname, path, data, callback);
+        };
+        /**
+         * 获取所有文件路径
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.getAllPaths = function (callback) {
+            feng3d.storage.getAllKeys(this.DBname, this.projectname, callback);
+        };
+        return IndexedDBfs;
+    }());
+    feng3d.IndexedDBfs = IndexedDBfs;
+    feng3d.indexedDBfs = new IndexedDBfs();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Http可读文件系统
+     */
+    var HttpFS = /** @class */ (function () {
+        function HttpFS() {
+            /**
+             * 根路径
+             */
+            this.rootPath = "";
+            this.rootPath = document.URL.substring(0, document.URL.lastIndexOf("/") + 1);
+        }
+        Object.defineProperty(HttpFS.prototype, "type", {
+            get: function () {
+                return feng3d.FSType.http;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        HttpFS.prototype.readArrayBuffer = function (path, callback) {
+            // rootPath
+            feng3d.loader.loadBinary(path, function (content) {
+                callback(null, content);
+            }, null, function (e) {
+                callback(e, null);
+            });
+        };
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        HttpFS.prototype.getAbsolutePath = function (path, callback) {
+            callback(null, this.rootPath + path);
+        };
+        return HttpFS;
+    }());
+    feng3d.HttpFS = HttpFS;
+    feng3d.httpFS = new HttpFS();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 文件系统类型
+     */
+    var FSType;
+    (function (FSType) {
+        FSType["http"] = "http";
+        FSType["native"] = "native";
+        FSType["indexedDB"] = "indexedDB";
+    })(FSType = feng3d.FSType || (feng3d.FSType = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 资源
+     * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
+     */
+    var ReadAssets = /** @class */ (function () {
+        function ReadAssets() {
+            /**
+             * 可读文件系统
+             */
+            this.fs = feng3d.httpFS;
+        }
+        Object.defineProperty(ReadAssets.prototype, "type", {
+            get: function () {
+                return this.fs.type;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        ReadAssets.prototype.getAbsolutePath = function (path, callback) {
+            this.fs.getAbsolutePath(path, callback);
+        };
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        ReadAssets.prototype.readArrayBuffer = function (path, callback) {
+            if (path == "" || path == null) {
+                callback(new Error("无效路径!"), null);
+                return;
+            }
+            var readFS = this.fs;
+            if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1)
+                readFS = feng3d.httpFS;
+            readFS.readArrayBuffer(path, callback);
+        };
+        /**
+         * 读取文件为字符串
+         */
+        ReadAssets.prototype.readString = function (path, callback) {
+            this.readArrayBuffer(path, function (err, data) {
+                if (err) {
+                    callback(err, null);
+                    return;
+                }
+                feng3d.dataTransform.arrayBufferToString(data, function (content) {
+                    callback(null, content);
+                });
+            });
+        };
+        /**
+         * 加载图片
+         * @param path 图片路径
+         * @param callback 加载完成回调
+         */
+        ReadAssets.prototype.readImage = function (path, callback) {
+            if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1) {
+                var img = new Image();
+                img.onload = function () {
+                    callback(null, img);
+                };
+                img.src = path;
+            }
+            else {
+                this.readArrayBuffer(path, function (err, data) {
+                    if (err) {
+                        callback(err, null);
+                        return;
+                    }
+                    feng3d.dataTransform.arrayBufferToImage(data, function (img) {
+                        callback(null, img);
+                    });
+                });
+            }
+        };
+        /**
+         * 读取文件为DataURL
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        ReadAssets.prototype.readDataURL = function (path, callback) {
+            this.readArrayBuffer(path, function (err, data) {
+                feng3d.dataTransform.arrayBufferToDataURL(data, function (dataurl) {
+                    callback(null, dataurl);
+                });
+            });
+        };
+        /**
+         * 读取文件为Blob
+         * @param path 资源路径
+         * @param callback 读取完成回调
+         */
+        ReadAssets.prototype.readBlob = function (path, callback) {
+            feng3d.assets.readArrayBuffer(path, function (err, data) {
+                if (err) {
+                    callback(err, null);
+                    return;
+                }
+                feng3d.dataTransform.arrayBufferToBlob(data, function (blob) {
+                    callback(null, blob);
+                });
+            });
+        };
+        /**
+         * 读取文件为对象
+         * @param path 资源路径
+         * @param callback 读取完成回调
+         */
+        ReadAssets.prototype.readObject = function (path, callback) {
+            this.readString(path, function (err, str) {
+                if (err) {
+                    callback(err, null);
+                    return;
+                }
+                var object = feng3d.serialization.deserialize(JSON.parse(str));
+                callback(null, object);
+            });
+        };
+        /**
+         * 读取文件为资源对象
+         * @param id 资源编号
+         * @param callback 读取完成回调
+         */
+        ReadAssets.prototype.readAssets = function (id, callback) {
+            var _this = this;
+            var assets = feng3d.Feng3dAssets.getAssets(id);
+            if (assets) {
+                callback(null, assets);
+                return;
+            }
+            this.readObject(feng3d.Feng3dAssets.getPath(id), function (err, assets) {
+                if (assets)
+                    feng3d.Feng3dAssets.setAssets(assets);
+                if (assets instanceof feng3d.Feng3dFile) {
+                    assets["readFile"](_this, function (err) {
+                        callback(err, assets);
+                    });
+                }
+                else {
+                    callback(err, assets);
+                }
+            });
+        };
+        return ReadAssets;
+    }());
+    feng3d.ReadAssets = ReadAssets;
+    feng3d.assets = new ReadAssets();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var ReadWriteAssets = /** @class */ (function (_super) {
+        __extends(ReadWriteAssets, _super);
+        function ReadWriteAssets(readWriteFS) {
+            var _this = _super.call(this) || this;
+            /**
+             * 可读写文件系统
+             */
+            _this.fs = feng3d.indexedDBfs;
+            if (readWriteFS)
+                _this.fs = readWriteFS;
+            return _this;
+        }
+        Object.defineProperty(ReadWriteAssets.prototype, "projectname", {
+            // fs = indexedDBfs;
+            get: function () {
+                return this.fs.projectname;
+            },
+            set: function (v) {
+                this.fs.projectname = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 文件是否存在
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.exists = function (path, callback) {
+            this.fs.exists(path, callback);
+        };
+        /**
+         * 读取文件夹中文件列表
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.readdir = function (path, callback) {
+            feng3d.assert(this.isDir(path), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
+            this.fs.readdir(path, callback);
+        };
+        /**
+         * 新建文件夹
+         * @param path 文件夹路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.mkdir = function (path, callback) {
+            feng3d.assert(this.isDir(path), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
+            this.fs.mkdir(path, callback);
+        };
+        /**
+         * 删除文件
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.deleteFile = function (path, callback) {
+            this.fs.deleteFile(path, callback);
+        };
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.writeArrayBuffer = function (path, data, callback) {
+            if (this.isDir(path)) {
+                this.fs.mkdir(path, callback);
+            }
+            else {
+                this.fs.writeArrayBuffer(path, data, callback);
+            }
+        };
+        ///--------------------------
+        /**
+         * 保存字符串到文件
+         * @param path 文件路径
+         * @param string 保存的字符串
+         * @param callback 完成回调
+         */
+        ReadWriteAssets.prototype.writeString = function (path, string, callback) {
+            var _this = this;
+            feng3d.dataTransform.stringToArrayBuffer(string, function (arrayBuffer) {
+                _this.writeArrayBuffer(path, arrayBuffer, callback);
+            });
+        };
+        /**
+         * 保存对象到文件
+         * @param path 文件路径
+         * @param object 保存的对象
+         * @param callback 完成回调
+         */
+        ReadWriteAssets.prototype.writeObject = function (path, object, callback) {
+            var obj = feng3d.serialization.serialize(object);
+            var str = JSON.stringify(obj, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
+            this.writeString(path, str, callback);
+        };
+        /**
+         * 保存资源
+         * @param assets 资源
+         * @param callback 保存资源完成回调
+         */
+        ReadWriteAssets.prototype.writeAssets = function (assets, callback) {
+            assets.save(this, callback);
+        };
+        /**
+         * 获取所有文件路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.getAllPaths = function (callback) {
+            this.getAllfilepathInFolder("", callback);
+        };
+        /**
+         * 获取指定文件下所有文件路径列表
+         */
+        ReadWriteAssets.prototype.getAllfilepathInFolder = function (dirpath, callback) {
+            var _this = this;
+            feng3d.assert(this.isDir(dirpath), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
+            var dirs = [dirpath];
+            var result = [];
+            var currentdir = "";
+            // 递归获取文件
+            var handle = function () {
+                if (dirs.length > 0) {
+                    currentdir = dirs.shift();
+                    _this.readdir(currentdir, function (err, files) {
+                        files.forEach(function (element) {
+                            var childpath = currentdir + element;
+                            result.push(childpath);
+                            if (_this.isDir(childpath))
+                                dirs.push(childpath);
+                        });
+                        handle();
+                    });
+                }
+                else {
+                    callback(null, result);
+                }
+            };
+            handle();
+        };
+        /**
+         * 复制文件
+         * @param src    源路径
+         * @param dest    目标路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.copyFile = function (src, dest, callback) {
+            var _this = this;
+            this.readArrayBuffer(src, function (err, data) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                _this.writeArrayBuffer(dest, data, callback);
+            });
+        };
+        /**
+         * 移动文件
+         * @param src 源路径
+         * @param dest 目标路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.moveFile = function (src, dest, callback) {
+            var _this = this;
+            this.copyFile(src, dest, function (err) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                _this.deleteFile(src, callback);
+            });
+        };
+        /**
+         * 重命名文件
+         * @param oldPath 老路径
+         * @param newPath 新路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.renameFile = function (oldPath, newPath, callback) {
+            this.moveFile(oldPath, newPath, callback);
+        };
+        /**
+         * 移动一组文件
+         * @param movelists 移动列表
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.moveFiles = function (movelists, callback) {
+            var _this = this;
+            this.copyFiles(movelists.concat(), function (err) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                var deletelists = movelists.reduce(function (value, current) { value.push(current[0]); return value; }, []);
+                _this.deleteFiles(deletelists, callback);
+            });
+        };
+        /**
+         * 复制一组文件
+         * @param copylists 复制列表
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.copyFiles = function (copylists, callback) {
+            var _this = this;
+            if (copylists.length > 0) {
+                var copyitem = copylists.shift();
+                this.copyFile(copyitem[0], copyitem[1], function (err) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    _this.copyFiles(copylists, callback);
+                });
+                return;
+            }
+            callback && callback(null);
+        };
+        /**
+         * 删除一组文件
+         * @param deletelists 删除列表
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.deleteFiles = function (deletelists, callback) {
+            var _this = this;
+            if (deletelists.length > 0) {
+                this.deleteFile(deletelists.shift(), function (err) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    _this.deleteFiles(deletelists, callback);
+                });
+                return;
+            }
+            callback && callback(null);
+        };
+        /**
+         * 重命名文件(夹)
+         * @param oldPath 老路径
+         * @param newPath 新路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.rename = function (oldPath, newPath, callback) {
+            var _this = this;
+            if (this.isDir(oldPath)) {
+                this.getAllfilepathInFolder(oldPath, function (err, filepaths) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    var renamelists = [[oldPath, newPath]];
+                    filepaths.forEach(function (element) {
+                        renamelists.push([element, element.replace(oldPath, newPath)]);
+                    });
+                    _this.moveFiles(renamelists, callback);
+                });
+            }
+            else {
+                this.renameFile(oldPath, newPath, callback);
+            }
+        };
+        /**
+         * 移动文件(夹)
+         * @param src 源路径
+         * @param dest 目标路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.move = function (src, dest, callback) {
+            this.rename(src, dest, callback);
+        };
+        /**
+         * 删除文件(夹)
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.delete = function (path, callback) {
+            var _this = this;
+            if (this.isDir(path)) {
+                this.getAllfilepathInFolder(path, function (err, filepaths) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    var removelists = filepaths.concat(path);
+                    _this.deleteFiles(removelists, callback);
+                });
+            }
+            else {
+                this.deleteFile(path, callback);
+            }
+        };
+        /**
+         * 删除资源
+         * @param assetsId 资源编号
+         * @param callback 回调函数
+         */
+        ReadWriteAssets.prototype.deleteAssets = function (assetsId, callback) {
+            if (assetsId) {
+                feng3d.Feng3dAssets["_lib"].delete(assetsId);
+                this.delete(feng3d.Feng3dAssets.getAssetDir(assetsId), callback);
+            }
+            else {
+                callback && callback(null);
+            }
+        };
+        /**
+         * 是否为文件夹
+         * @param path 文件路径
+         */
+        ReadWriteAssets.prototype.isDir = function (path) {
+            if (path == "")
+                return true;
+            return path.charAt(path.length - 1) == "/";
+        };
+        return ReadWriteAssets;
+    }(feng3d.ReadAssets));
+    feng3d.ReadWriteAssets = ReadWriteAssets;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 资源扩展名
+     */
+    var AssetExtension;
+    (function (AssetExtension) {
+        /**
+         * 文件夹
+         */
+        AssetExtension["folder"] = "folder";
+        /**
+         * 音频
+         */
+        AssetExtension["audio"] = "audio";
+        /**
+         * ts文件
+         */
+        AssetExtension["ts"] = "ts";
+        /**
+         * js文件
+         */
+        AssetExtension["js"] = "js";
+        /**
+         * 文本文件
+         */
+        AssetExtension["txt"] = "txt";
+        /**
+         * json文件
+         */
+        AssetExtension["json"] = "json";
+        /**
+         * OBJ模型资源附带的材质文件
+         */
+        AssetExtension["mtl"] = "mtl";
+        /**
+         * OBJ模型文件
+         */
+        AssetExtension["obj"] = "obj";
+        /**
+         * MD5模型文件
+         */
+        AssetExtension["md5mesh"] = "md5mesh";
+        /**
+         * MD5动画
+         */
+        AssetExtension["md5anim"] = "md5anim";
+        /**
+         * 魔兽MDL模型
+         */
+        AssetExtension["mdl"] = "mdl";
+        // -- feng3d中的类型
+        /**
+         * 纹理
+         */
+        AssetExtension["texture"] = "texture";
+        /**
+         * 立方体纹理
+         */
+        AssetExtension["texturecube"] = "texturecube";
+        /**
+         * 材质
+         */
+        AssetExtension["material"] = "material";
+        /**
+         * 几何体
+         */
+        AssetExtension["geometry"] = "geometry";
+        /**
+         * 游戏对象
+         */
+        AssetExtension["gameobject"] = "gameobject";
+        /**
+         * 场景
+         */
+        AssetExtension["scene"] = "scene";
+        /**
+         * 动画
+         */
+        AssetExtension["anim"] = "anim";
+        /**
+         * 着色器
+         */
+        AssetExtension["shader"] = "shader";
+        /**
+         * 脚本
+         */
+        AssetExtension["script"] = "script";
+    })(AssetExtension = feng3d.AssetExtension || (feng3d.AssetExtension = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * feng3d资源
+     */
+    var Feng3dAssets = /** @class */ (function (_super) {
+        __extends(Feng3dAssets, _super);
+        function Feng3dAssets() {
+            var _this = _super.call(this) || this;
+            /**
+             * 名称
+             */
+            _this.name = "";
+            return _this;
+        }
+        /**
+         * 保存资源
+         * @param readWriteAssets
+         * @param callback  完成回调
+         */
+        Feng3dAssets.prototype.save = function (readWriteAssets, callback) {
+            if (!this.assetsId) {
+                this.assetsId = feng3d.FMath.uuid();
+                Feng3dAssets.setAssets(this);
+            }
+            readWriteAssets.writeObject(this.path, this, callback);
+        };
+        /**
+         * 删除资源
+         * @param readWriteAssets 可读写资源管理器
+         * @param callback 完成回调
+         */
+        Feng3dAssets.prototype.delete = function (readWriteAssets, callback) {
+            readWriteAssets.deleteAssets(this.assetsId, callback);
+        };
+        Feng3dAssets.prototype.assetsIdChanged = function () {
+            this.path = Feng3dAssets.getPath(this.assetsId);
+        };
+        /**
+         * 获取资源所在文件夹
+         * @param assetsId 资源编号
+         */
+        Feng3dAssets.getAssetDir = function (assetsId) {
+            return "Library/" + assetsId + "/";
+        };
+        /**
+         * 获取资源路径
+         * @param assetsId 资源编号
+         */
+        Feng3dAssets.getPath = function (assetsId) {
+            return this.getAssetDir(assetsId) + ".json";
+        };
+        Feng3dAssets.setAssets = function (assets) {
+            this._lib.set(assets.assetsId, assets);
+        };
+        /**
+         * 获取资源
+         * @param assetsId 资源编号
+         */
+        Feng3dAssets.getAssets = function (assetsId) {
+            return this._lib.get(assetsId);
+        };
+        /**
+         * 获取指定类型资源
+         * @param type 资源类型
+         */
+        Feng3dAssets.getAssetsByType = function (type) {
+            return this._lib.getValues().filter(function (v) { return v instanceof type; });
+        };
+        Feng3dAssets._lib = new Map();
+        __decorate([
+            feng3d.serialize,
+            feng3d.watch("assetsIdChanged")
+        ], Feng3dAssets.prototype, "assetsId", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], Feng3dAssets.prototype, "name", void 0);
+        return Feng3dAssets;
+    }(feng3d.Feng3dObject));
+    feng3d.Feng3dAssets = Feng3dAssets;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 资源
+     */
+    var Resources = /** @class */ (function () {
+        function Resources() {
+        }
+        /**
+         * 卸载没有被使用的资源
+         */
+        Resources.prototype.unloadUnusedAssets = function () {
+        };
+        return Resources;
+    }());
+    feng3d.Resources = Resources;
+    feng3d.resources = new Resources();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

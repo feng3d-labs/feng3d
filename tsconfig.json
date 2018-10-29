@@ -9,7 +9,7 @@
         "outFile": "out/feng3d.js"
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
-        //
+        // 数据结构
         "src/ds/Object.ts",
         "src/ds/Map.ts",
         //
@@ -17,13 +17,38 @@
         "src/ds/Queue.ts",
         "src/ds/LinkedList.ts",
         "src/ds/PriorityQueue.ts",
-        //
-        "src/math/curve/Bezier.ts",
+        // 数学相关程序
+        "src/math/Math.ts",
+        // 函数方程
         "src/math/EquationSolving.ts",
         "src/math/HighFunction.ts",
+        // 曲线
+        "src/math/curve/Bezier.ts",
         "src/math/curve/AnimationCurveKeyframe.ts",
         "src/math/curve/AnimationCurve.ts",
-        //
+        // 颜色
+        "src/math/Color3.ts",
+        "src/math/Color4.ts",
+        // 几何运算
+        "src/math/geom/Vector2.ts",
+        "src/math/geom/Vector3.ts",
+        "src/math/geom/Vector4.ts",
+        "src/math/geom/Orientation3D.ts",
+        "src/math/geom/Rectangle.ts",
+        "src/math/geom/Matrix.ts",
+        "src/math/geom/Matrix4x4.ts",
+        "src/math/geom/Quaternion.ts",
+        "src/math/geom/Euler.ts",
+        "src/math/geom/Line3D.ts",
+        "src/math/geom/Segment3D.ts",
+        "src/math/geom/Ray3D.ts",
+        "src/math/geom/Triangle3D.ts",
+        "src/math/geom/Box.ts",
+        "src/math/geom/Sphere.ts",
+        "src/math/geom/Plane3D.ts",
+        "src/math/geom/PlaneClassification.ts",
+        "src/math/geom/TriangleGeometry.ts",
+        // 事件
         "src/event/EventDispatcher.ts",
         "src/event/EventProxy.ts",
         "src/event/WindowEventProxy.ts",
@@ -56,28 +81,6 @@
         "src/assets/AssetExtension.ts",
         "src/assets/Feng3dAssets.ts",
         "src/assets/Resources.ts",
-        //几何运算
-        "src/geom/Math.ts",
-        "src/geom/Vector2.ts",
-        "src/geom/Vector3.ts",
-        "src/geom/Vector4.ts",
-        "src/geom/Orientation3D.ts",
-        "src/geom/Rectangle.ts",
-        "src/geom/Matrix.ts",
-        "src/geom/Matrix4x4.ts",
-        "src/geom/Quaternion.ts",
-        "src/geom/Euler.ts",
-        "src/geom/Line3D.ts",
-        "src/geom/Segment3D.ts",
-        "src/geom/Ray3D.ts",
-        "src/geom/Triangle3D.ts",
-        "src/geom/Box.ts",
-        "src/geom/Sphere.ts",
-        "src/geom/Plane3D.ts",
-        "src/geom/PlaneClassification.ts",
-        "src/geom/Color3.ts",
-        "src/geom/Color4.ts",
-        "src/geom/TriangleGeometry.ts",
         //快捷键模块
         "src/shortcut/Keyboard.ts",
         "src/shortcut/handle/KeyCapture.ts",

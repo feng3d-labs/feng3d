@@ -271,6 +271,263 @@ declare module ds {
     }
 }
 declare namespace feng3d {
+    var FMath: {
+        /**
+         * 角度转弧度因子
+         */
+        DEG2RAD: number;
+        /**
+         * 弧度转角度因子
+         */
+        RAD2DEG: number;
+        /**
+         * 默认精度
+         */
+        PRECISION: number;
+        /**
+         * http://www.broofa.com/Tools/Math.uuid.htm
+         */
+        uuid: () => string;
+        clamp: (value: any, min: any, max: any) => number;
+        /**
+         * compute euclidian modulo of m % n
+         * https://en.wikipedia.org/wiki/Modulo_operation
+         */
+        euclideanModulo: (n: any, m: any) => number;
+        /**
+         * Linear mapping from range <a1, a2> to range <b1, b2>
+         */
+        mapLinear: (x: any, a1: any, a2: any, b1: any, b2: any) => any;
+        /**
+         * https://en.wikipedia.org/wiki/Linear_interpolation
+         */
+        lerp: (x: any, y: any, t: any) => number;
+        /**
+         * http://en.wikipedia.org/wiki/Smoothstep
+         */
+        smoothstep: (x: any, min: any, max: any) => number;
+        smootherstep: (x: any, min: any, max: any) => number;
+        /**
+         * Random integer from <low, high> interval
+         */
+        randInt: (low: any, high: any) => any;
+        /**
+         * Random float from <low, high> interval
+         */
+        randFloat: (low: any, high: any) => any;
+        /**
+         * Random float from <-range/2, range/2> interval
+         */
+        randFloatSpread: (range: any) => number;
+        /**
+         * 角度转换为弧度
+         */
+        degToRad: (degrees: any) => number;
+        radToDeg: (radians: any) => number;
+        isPowerOfTwo: (value: any) => boolean;
+        nearestPowerOfTwo: (value: any) => number;
+        nextPowerOfTwo: (value: any) => any;
+        /**
+         * 获取目标最近的值
+         *
+         * source增加或者减少整数倍precision后得到离target最近的值
+         *
+         * ```
+         * Math.toRound(71,0,5);//运算结果为1
+         * ```
+         *
+         * @param source 初始值
+         * @param target 目标值
+         * @param precision 精度
+         */
+        toRound: (source: number, target: number, precision?: number) => number;
+        /**
+         * 比较两个Number是否相等
+         * @param a 数字a
+         * @param b 数字b
+         * @param precision 进度
+         */
+        equals(a: number, b: number, precision?: number): boolean;
+    };
+}
+declare namespace feng3d {
+    /**
+     * 方程求解
+     */
+    var equationSolving: EquationSolving;
+    /**
+     * 方程求解
+     *
+     * 求解方程 f(x) == 0 在[a, b]上的解
+     *
+     * 参考：高等数学 第七版上册 第三章第八节 方程的近似解
+     * 当f(x)在区间 [a, b] 上连续，且f(a) * f(b) <= 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == 0
+     *
+     * 当f(x)在区间 [a, b] 上连续，且 (f(a) - y) * (f(b) - y) < 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == y
+     *
+     * @author feng / http://feng3d.com 05/06/2018
+     */
+    class EquationSolving {
+        /**
+         * 获取数字的(正负)符号
+         * @param n 数字
+         */
+        private getSign;
+        /**
+         * 比较 a 与 b 是否相等
+         * @param a 值a
+         * @param b 值b
+         * @param precision 比较精度
+         */
+        private equalNumber;
+        /**
+         * 获取近似导函数 f'(x)
+         *
+         * 导函数定义
+         * f'(x) = (f(x + Δx) - f(x)) / Δx , Δx → 0
+         *
+         * 注：通过测试Δx不能太小，由于方程内存在x的n次方问题（比如0.000000000000001的10次方为0），过小会导致计算机计算进度不够反而导致求导不准确！
+         *
+         * 另外一种办法是还原一元多次函数，然后求出导函数。
+         *
+         * @param f 函数
+         * @param delta Δx，进过测试该值太小或者过大都会导致求导准确率降低（个人猜测是计算机计算精度问题导致）
+         */
+        getDerivative(f: (x: number) => number, delta?: number): (x: number) => number;
+        /**
+         * 函数是否连续
+         * @param f 函数
+         */
+        isContinuous(f: (x: number) => number): boolean;
+        /**
+         * 方程 f(x) == 0 在 [a, b] 区间内是否有解
+         *
+         * 当f(x)在区间 [a, b] 上连续，且f(a) * f(b) <= 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == 0
+         *
+         * @param f 函数f(x)
+         * @param a 区间起点
+         * @param b 区间终点
+         * @param errorcallback  错误回调函数
+         *
+         * @returns 是否有解
+         */
+        hasSolution(f: (x: number) => number, a: number, b: number, errorcallback?: (err: Error) => void): boolean;
+        /**
+         * 二分法 求解 f(x) == 0
+         *
+         * 通过区间中点作为边界来逐步缩小求解区间，最终获得解
+         *
+         * @param f 函数f(x)
+         * @param a 区间起点
+         * @param b 区间终点
+         * @param precision 求解精度
+         * @param errorcallback  错误回调函数
+         *
+         * @returns 不存在解时返回 undefined ，存在时返回 解
+         */
+        binary(f: (x: number) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
+        /**
+         * 连线法 求解 f(x) == 0
+         *
+         * 连线法是我自己想的方法，自己取的名字，目前没有找到相应的资料（这方法大家都能够想得到。）
+         *
+         * 用曲线弧两端的连线来代替曲线弧与X轴交点作为边界来逐步缩小求解区间，最终获得解
+         *
+         * 通过 A，B两点连线与x轴交点来缩小求解区间最终获得解
+         *
+         * A，B两点直线方程 f(x) = f(a) + (f(b) - f(a)) / (b - a) * (x-a) ,求 f(x) == 0 解得 x = a - fa * (b - a)/ (fb - fa)
+         *
+         * @param f 函数f(x)
+         * @param a 区间起点
+         * @param b 区间终点
+         * @param precision 求解精度
+         * @param errorcallback  错误回调函数
+         *
+         * @returns 不存在解时返回 undefined ，存在时返回 解
+         */
+        line(f: (x: number) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
+        /**
+         * 切线法 求解 f(x) == 0
+         *
+         * 用曲线弧一端的切线来代替曲线弧，从而求出方程实根的近似解。
+         *
+         * 迭代公式： Xn+1 = Xn - f(Xn) / f'(Xn)
+         *
+         * #### 额外需求
+         * 1. f(x)在[a, b]上具有一阶导数 f'(x)
+         * 1. f'(x)在[a, b]上保持定号；意味着f(x)在[a, b]上单调
+         * 1. f''(x)在[a, b]上保持定号；意味着f'(x)在[a, b]上单调
+         *
+         * 切记，当无法满足这些额外要求时，该函数将找不到[a, b]上的解！！！！！！！！！！！
+         *
+         * @param f 函数f(x)
+         * @param f1 一阶导函数 f'(x)
+         * @param f2 二阶导函数 f''(x)
+         * @param a 区间起点
+         * @param b 区间终点
+         * @param precision 求解精度
+         * @param errorcallback  错误回调函数
+         *
+         * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
+         */
+        tangent(f: (x: number) => number, f1: (x: number) => number, f2: (x: number) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
+        /**
+         * 割线法（弦截法） 求解 f(x) == 0
+         *
+         * 使用 (f(Xn) - f(Xn-1)) / (Xn - Xn-1) 代替切线法迭代公式 Xn+1 = Xn - f(Xn) / f'(Xn) 中的 f'(x)
+         *
+         * 迭代公式：Xn+1 = Xn - f(Xn) * (Xn - Xn-1) / (f(Xn) - f(Xn-1));
+         *
+         * 用过点(Xn-1,f(Xn-1))和点(Xn,f(Xn))的割线来近似代替(Xn,f(Xn))处的切线，将这条割线与X轴交点的横坐标作为新的近似解。
+         *
+         * #### 额外需求
+         * 1. f(x)在[a, b]上具有一阶导数 f'(x)
+         * 1. f'(x)在[a, b]上保持定号；意味着f(x)在[a, b]上单调
+         * 1. f''(x)在[a, b]上保持定号；意味着f'(x)在[a, b]上单调
+         *
+         * 切记，当无法满足这些额外要求时，该函数将找不到[a, b]上的解！！！！！！！！！！！
+         *
+         * @param f 函数f(x)
+         * @param a 区间起点
+         * @param b 区间终点
+         * @param precision 求解精度
+         * @param errorcallback  错误回调函数
+         *
+         * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
+         */
+        secant(f: (x: number) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 高次函数
+     *
+     * 处理N次函数定义，求值，方程求解问题
+     *
+     * n次函数定义
+     * f(x) = a0 * pow(x, n) + a1 * pow(x, n - 1) +.....+ an_1 * pow(x, 1) + an
+     *
+     * 0次 f(x) = a0;
+     * 1次 f(x) = a0 * x + a1;
+     * 2次 f(x) = a0 * x * x + a1 * x + a2;
+     * ......
+     *
+     */
+    class HighFunction {
+        private as;
+        /**
+         * 构建函数
+         * @param as 函数系数 a0-an 数组
+         */
+        constructor(as: number[]);
+        /**
+         * 获取函数 f(x) 的值
+         * @param x x坐标
+         */
+        getValue(x: number): number;
+    }
+}
+declare namespace feng3d {
     /**
      * Bézier曲线
      */
@@ -529,183 +786,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 方程求解
-     */
-    var equationSolving: EquationSolving;
-    /**
-     * 方程求解
-     *
-     * 求解方程 f(x) == 0 在[a, b]上的解
-     *
-     * 参考：高等数学 第七版上册 第三章第八节 方程的近似解
-     * 当f(x)在区间 [a, b] 上连续，且f(a) * f(b) <= 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == 0
-     *
-     * 当f(x)在区间 [a, b] 上连续，且 (f(a) - y) * (f(b) - y) < 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == y
-     *
-     * @author feng / http://feng3d.com 05/06/2018
-     */
-    class EquationSolving {
-        /**
-         * 获取数字的(正负)符号
-         * @param n 数字
-         */
-        private getSign;
-        /**
-         * 比较 a 与 b 是否相等
-         * @param a 值a
-         * @param b 值b
-         * @param precision 比较精度
-         */
-        private equalNumber;
-        /**
-         * 获取近似导函数 f'(x)
-         *
-         * 导函数定义
-         * f'(x) = (f(x + Δx) - f(x)) / Δx , Δx → 0
-         *
-         * 注：通过测试Δx不能太小，由于方程内存在x的n次方问题（比如0.000000000000001的10次方为0），过小会导致计算机计算进度不够反而导致求导不准确！
-         *
-         * 另外一种办法是还原一元多次函数，然后求出导函数。
-         *
-         * @param f 函数
-         * @param delta Δx，进过测试该值太小或者过大都会导致求导准确率降低（个人猜测是计算机计算精度问题导致）
-         */
-        getDerivative(f: (x: number) => number, delta?: number): (x: number) => number;
-        /**
-         * 函数是否连续
-         * @param f 函数
-         */
-        isContinuous(f: (x: number) => number): boolean;
-        /**
-         * 方程 f(x) == 0 在 [a, b] 区间内是否有解
-         *
-         * 当f(x)在区间 [a, b] 上连续，且f(a) * f(b) <= 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == 0
-         *
-         * @param f 函数f(x)
-         * @param a 区间起点
-         * @param b 区间终点
-         * @param errorcallback  错误回调函数
-         *
-         * @returns 是否有解
-         */
-        hasSolution(f: (x: number) => number, a: number, b: number, errorcallback?: (err: Error) => void): boolean;
-        /**
-         * 二分法 求解 f(x) == 0
-         *
-         * 通过区间中点作为边界来逐步缩小求解区间，最终获得解
-         *
-         * @param f 函数f(x)
-         * @param a 区间起点
-         * @param b 区间终点
-         * @param precision 求解精度
-         * @param errorcallback  错误回调函数
-         *
-         * @returns 不存在解时返回 undefined ，存在时返回 解
-         */
-        binary(f: (x: number) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
-        /**
-         * 连线法 求解 f(x) == 0
-         *
-         * 连线法是我自己想的方法，自己取的名字，目前没有找到相应的资料（这方法大家都能够想得到。）
-         *
-         * 用曲线弧两端的连线来代替曲线弧与X轴交点作为边界来逐步缩小求解区间，最终获得解
-         *
-         * 通过 A，B两点连线与x轴交点来缩小求解区间最终获得解
-         *
-         * A，B两点直线方程 f(x) = f(a) + (f(b) - f(a)) / (b - a) * (x-a) ,求 f(x) == 0 解得 x = a - fa * (b - a)/ (fb - fa)
-         *
-         * @param f 函数f(x)
-         * @param a 区间起点
-         * @param b 区间终点
-         * @param precision 求解精度
-         * @param errorcallback  错误回调函数
-         *
-         * @returns 不存在解时返回 undefined ，存在时返回 解
-         */
-        line(f: (x: number) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
-        /**
-         * 切线法 求解 f(x) == 0
-         *
-         * 用曲线弧一端的切线来代替曲线弧，从而求出方程实根的近似解。
-         *
-         * 迭代公式： Xn+1 = Xn - f(Xn) / f'(Xn)
-         *
-         * #### 额外需求
-         * 1. f(x)在[a, b]上具有一阶导数 f'(x)
-         * 1. f'(x)在[a, b]上保持定号；意味着f(x)在[a, b]上单调
-         * 1. f''(x)在[a, b]上保持定号；意味着f'(x)在[a, b]上单调
-         *
-         * 切记，当无法满足这些额外要求时，该函数将找不到[a, b]上的解！！！！！！！！！！！
-         *
-         * @param f 函数f(x)
-         * @param f1 一阶导函数 f'(x)
-         * @param f2 二阶导函数 f''(x)
-         * @param a 区间起点
-         * @param b 区间终点
-         * @param precision 求解精度
-         * @param errorcallback  错误回调函数
-         *
-         * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
-         */
-        tangent(f: (x: number) => number, f1: (x: number) => number, f2: (x: number) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
-        /**
-         * 割线法（弦截法） 求解 f(x) == 0
-         *
-         * 使用 (f(Xn) - f(Xn-1)) / (Xn - Xn-1) 代替切线法迭代公式 Xn+1 = Xn - f(Xn) / f'(Xn) 中的 f'(x)
-         *
-         * 迭代公式：Xn+1 = Xn - f(Xn) * (Xn - Xn-1) / (f(Xn) - f(Xn-1));
-         *
-         * 用过点(Xn-1,f(Xn-1))和点(Xn,f(Xn))的割线来近似代替(Xn,f(Xn))处的切线，将这条割线与X轴交点的横坐标作为新的近似解。
-         *
-         * #### 额外需求
-         * 1. f(x)在[a, b]上具有一阶导数 f'(x)
-         * 1. f'(x)在[a, b]上保持定号；意味着f(x)在[a, b]上单调
-         * 1. f''(x)在[a, b]上保持定号；意味着f'(x)在[a, b]上单调
-         *
-         * 切记，当无法满足这些额外要求时，该函数将找不到[a, b]上的解！！！！！！！！！！！
-         *
-         * @param f 函数f(x)
-         * @param a 区间起点
-         * @param b 区间终点
-         * @param precision 求解精度
-         * @param errorcallback  错误回调函数
-         *
-         * @returns 不存在解与无法使用该函数求解时返回 undefined ，否则返回 解
-         */
-        secant(f: (x: number) => number, a: number, b: number, precision?: number, errorcallback?: (err: Error) => void): number;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 高次函数
-     *
-     * 处理N次函数定义，求值，方程求解问题
-     *
-     * n次函数定义
-     * f(x) = a0 * pow(x, n) + a1 * pow(x, n - 1) +.....+ an_1 * pow(x, 1) + an
-     *
-     * 0次 f(x) = a0;
-     * 1次 f(x) = a0 * x + a1;
-     * 2次 f(x) = a0 * x * x + a1 * x + a2;
-     * ......
-     *
-     */
-    class HighFunction {
-        private as;
-        /**
-         * 构建函数
-         * @param as 函数系数 a0-an 数组
-         */
-        constructor(as: number[]);
-        /**
-         * 获取函数 f(x) 的值
-         * @param x x坐标
-         */
-        getValue(x: number): number;
-    }
-}
-declare namespace feng3d {
-    /**
      * 动画关键帧
      */
     class AnimationCurveKeyframe {
@@ -815,2063 +895,317 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 事件
+     * 颜色
      */
-    interface Event<T> {
+    class Color3 {
+        __class__: "feng3d.Color3";
+        static WHITE: Color3;
+        static BLACK: Color3;
         /**
-         * 事件的类型。类型区分大小写。
+         * 红[0,1]
          */
-        type: string;
+        r: number;
         /**
-         * 事件携带的自定义数据
+         * 绿[0,1]
          */
-        data: T;
+        g: number;
         /**
-         * 表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
+         * 蓝[0,1]
          */
-        bubbles: boolean;
+        b: number;
         /**
-         * 事件目标。
+         * 构建颜色
+         * @param r     红[0,1]
+         * @param g     绿[0,1]
+         * @param b     蓝[0,1]
          */
-        target: any;
+        constructor(r?: number, g?: number, b?: number);
+        setTo(r: number, g: number, b: number): this;
         /**
-         * 当前正在使用某个事件侦听器处理 Event 对象的对象。
+         * 通过
+         * @param color
          */
-        currentTarget: any;
+        fromUnit(color: number): this;
+        toInt(): number;
         /**
-         * 是否停止处理事件监听器
+         * 输出16进制字符串
          */
-        isStop: boolean;
+        toHexString(): string;
         /**
-         * 是否停止冒泡
+         * 混合颜色
+         * @param color 混入的颜色
+         * @param rate  混入比例
          */
-        isStopBubbles: boolean;
+        mix(color: Color3, rate: number): this;
         /**
-         * 事件流过的对象列表，事件路径
+         * 混合颜色
+         * @param color 混入的颜色
+         * @param rate  混入比例
          */
-        targets: any[];
+        mixTo(color: Color3, rate: number, vout?: Color3): Color3;
+        /**
+         * 按标量（大小）缩放当前的 Color3 对象。
+         */
+        scale(s: number): this;
+        /**
+         * 按标量（大小）缩放当前的 Color3 对象。
+         */
+        scaleTo(s: number, vout?: Color3): Color3;
+        /**
+         * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
+         */
+        equals(object: Color3, precision?: number): boolean;
+        /**
+         * 拷贝
+         */
+        copy(color: Color3): this;
+        clone(): Color3;
+        toVector3(vector3?: Vector3): Vector3;
+        toColor4(color4?: Color4): Color4;
+        /**
+         * 输出字符串
+         */
+        toString(): string;
+        /**
+         * [0,15]数值转为16进制字符串
+         * param i  [0,15]数值
+         */
+        static ToHex(i: number): string;
     }
-    interface IEventDispatcher<T> {
-        once<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
-        has<K extends keyof T>(type: K): boolean;
-        on<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof T>(type?: K, listener?: (event: Event<T[K]>) => any, thisObject?: any): any;
-    }
-    const EVENT_KEY = "__event__";
-    /**
-     * 事件适配器
-     */
-    class EventDispatcher {
-        /**
-         * 监听一次事件后将会被移除
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        once(type: string, listener: (event: any) => void, thisObject?: any, priority?: number): void;
-        /**
-         * 派发事件
-         *
-         * 当事件重复流向一个对象时将不会被处理。
-         *
-         * @param e   事件对象
-         * @returns 返回事件是否被该对象处理
-         */
-        dispatchEvent(e: Event<any>): boolean;
-        /**
-         * 处理事件
-         * @param e 事件
-         */
-        protected handleEvent(e: Event<any>): void;
-        /**
-         * 处理事件冒泡
-         * @param e 事件
-         */
-        protected handelEventBubbles(e: Event<any>): void;
-        /**
-         * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
-         * @param type                      事件的类型。类型区分大小写。
-         * @param data                      事件携带的自定义数据。
-         * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
-         */
-        dispatch(type: string, data?: any, bubbles?: boolean): Event<any>;
-        /**
-         * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
-         *
-         * @param type		事件的类型。
-         * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
-         */
-        has(type: string): boolean;
-        /**
-         * 添加监听
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        on(type: string, listener: (event: any) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        /**
-         * 移除监听
-         * @param dispatcher 派发器
-         * @param type						事件的类型。
-         * @param listener					要删除的侦听器对象。
-         */
-        off(type?: string, listener?: (event: any) => any, thisObject?: any): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 代理 EventTarget, 处理js事件中this关键字问题
-
-     */
-    class EventProxy extends EventDispatcher {
-        pageX: number;
-        pageY: number;
-        clientX: number;
-        clientY: number;
-        /**
-         * 是否右击
-         */
-        rightmouse: boolean;
-        key: string;
-        keyCode: number;
-        wheelDelta: number;
-        private listentypes;
-        target: EventTarget;
-        private _target;
-        constructor(target?: EventTarget);
-        /**
-         * 监听一次事件后将会被移除
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        once(type: string, listener: (event: any) => void, thisObject?: any, priority?: number): void;
-        /**
-         * 添加监听
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        on(type: string, listener: (event: any) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        /**
-         * 移除监听
-         * @param dispatcher 派发器
-         * @param type						事件的类型。
-         * @param listener					要删除的侦听器对象。
-         */
-        off(type?: string, listener?: (event: any) => any, thisObject?: any): void;
-        /**
-         * 处理鼠标按下时同时出发 "mousemove" 事件bug
-         */
-        private handleMouseMoveBug;
-        private mousedownposition;
-        /**
-         * 键盘按下事件
-         */
-        private onMouseKey;
-        /**
-         * 清理数据
-         */
-        private clear;
-    }
-}
-declare namespace feng3d {
-    interface WindowEventProxy {
-        once<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof WindowEventMap>(type: K, data?: WindowEventMap[K], bubbles?: boolean): any;
-        has<K extends keyof WindowEventMap>(type: K): boolean;
-        on<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof WindowEventMap>(type?: K, listener?: (event: WindowEventMap[K]) => any, thisObject?: any): any;
-    }
-    class WindowEventProxy extends EventProxy {
-    }
-    /**
-     * 键盘鼠标输入
-     */
-    var windowEventProxy: WindowEventProxy;
-}
-declare namespace feng3d {
-    /**
-     * 全局事件
-     */
-    var feng3dDispatcher: Feng3dDispatcher;
-    interface Feng3dEventMap {
-        /**
-         * shader资源发生变化
-         */
-        "assets.shaderChanged": any;
-        /**
-         * 脚本发生变化
-         */
-        "assets.scriptChanged": any;
-        /**
-         * 图片资源发生变化
-         */
-        "assets.imageAssetsChanged": {
-            url: string;
-        };
-        /**
-         * 解析出资源
-         */
-        "assets.parsed": any;
-    }
-    interface Feng3dDispatcher {
-        once<K extends keyof Feng3dEventMap>(type: K, listener: (event: Event<Feng3dEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof Feng3dEventMap>(type: K, data?: Feng3dEventMap[K], bubbles?: boolean): Event<Feng3dEventMap[K]>;
-        has<K extends keyof Feng3dEventMap>(type: K): boolean;
-        on<K extends keyof Feng3dEventMap>(type: K, listener: (event: Event<Feng3dEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof Feng3dEventMap>(type?: K, listener?: (event: Event<Feng3dEventMap[K]>) => any, thisObject?: any): any;
-    }
-    /**
-     * 全局事件
-     */
-    class Feng3dDispatcher extends EventDispatcher {
-    }
-}
-declare namespace feng3d {
-    var loadjs: {
-        load: typeof load;
-        ready: typeof ready;
-    };
-    /**
-     * 加载文件
-     * @param params.paths          加载路径
-     * @param params.bundleId       加载包编号
-     * @param params.success        成功回调
-     * @param params.error          错误回调
-     * @param params.async          是否异步加载
-     * @param params.numRetries     加载失败尝试次数
-     * @param params.before         加载前回调
-     * @param params.onitemload     单条文件加载完成回调
-     */
-    function load(params: {
-        paths: string | string[] | {
-            url: string;
-            type: string;
-        } | {
-            url: string;
-            type: string;
-        }[];
-        bundleId?: string;
-        success?: () => void;
-        error?: (pathsNotFound?: string[]) => void;
-        async?: boolean;
-        numRetries?: number;
-        before?: (path: {
-            url: string;
-            type: string;
-        }, e: any) => boolean;
-        onitemload?: (url: string, content: string) => void;
-    }): void;
-    /**
-     * 准备依赖包
-     * @param params.depends        依赖包编号
-     * @param params.success        成功回调
-     * @param params.error          错误回调
-     */
-    function ready(params: {
-        depends: string | string[];
-        success?: () => void;
-        error?: (pathsNotFound?: string[]) => void;
-    }): void;
-}
-declare namespace feng3d {
-    /**
-     * 测试代码运行时间
-     * @param fn 被测试的方法
-     * @param labal 标签
-     */
-    function time(fn: Function, labal?: string): void;
-    /**
-     * 断言，测试不通过时报错
-     * @param test 测试项
-     * @param message 测试失败时提示信息
-     * @param optionalParams
-     */
-    function assert(test?: boolean, message?: string, ...optionalParams: any[]): void;
-    /**
-     * 输出错误
-     * @param message 错误信息
-     * @param optionalParams
-     */
-    function error(message?: any, ...optionalParams: any[]): void;
-    /**
-     * 记录日志信息
-     * @param message 日志信息
-     * @param optionalParams
-     */
-    function log(message?: any, ...optionalParams: any[]): void;
-    /**
-     * 警告
-     * @param message 警告信息
-     * @param optionalParams
-     */
-    function warn(message?: any, ...optionalParams: any[]): void;
-}
-declare namespace feng3d {
-    /**
-     * 观察装饰器，观察被装饰属性的变化
-     *
-     * @param onChange 属性变化回调  例如参数为“onChange”时，回调将会调用this.onChange(property, oldValue, newValue)
-     * @see https://gitee.com/feng3d/feng3d/issues/IGIK0
-     *
-     * 使用@watch后会自动生成一个带"_"的属性，例如 属性"a"会生成"_a"
-     *
-     * 通过使用 eval 函数 生成出 与自己手动写的set get 一样的函数，性能已经接近 手动写的get set函数。
-     *
-     * 性能：
-     * chrome：
-     * 测试 get ：
-Test.ts:100 watch与getset最大耗时比 1.2222222222222223
-Test.ts:101 watch与getset最小耗时比 0.7674418604651163
-Test.ts:102 watch与getset平均耗时比 0.9558823529411765
-Test.ts:103 watch平均耗时比 13
-Test.ts:104 getset平均耗时比 13.6
-Test.ts:98 测试 set ：
-Test.ts:100 watch与getset最大耗时比 4.5
-Test.ts:101 watch与getset最小耗时比 2.409090909090909
-Test.ts:102 watch与getset平均耗时比 3.037037037037037
-Test.ts:103 watch平均耗时比 57.4
-Test.ts:104 getset平均耗时比 18.9
-
-     *
-     * nodejs:
-     * 测试 get ：
-watch与getset最大耗时比 1.3333333333333333
-watch与getset最小耗时比 0.55
-watch与getset平均耗时比 1.0075757575757576
-watch平均耗时比 13.3
-getset平均耗时比 13.2
-测试 set ：
-watch与getset最大耗时比 4.9
-watch与getset最小耗时比 3
-watch与getset平均耗时比 4.143497757847534
-watch平均耗时比 92.4
-getset平均耗时比 22.3
-     *
-     *
-     * firefox:
-     * 测试 get ：  Test.js:122:5
-watch与getset最大耗时比 4.142857142857143  Test.js:124:5
-watch与getset最小耗时比 0.4090909090909091  Test.js:125:5
-watch与getset平均耗时比 1.0725806451612903  Test.js:126:5
-watch平均耗时比 13.3  Test.js:127:5
-getset平均耗时比 12.4  Test.js:128:5
-测试 set ：  Test.js:122:5
-watch与getset最大耗时比 1.5333333333333334  Test.js:124:5
-watch与getset最小耗时比 0.6842105263157895  Test.js:125:5
-watch与getset平均耗时比 0.9595375722543352  Test.js:126:5
-watch平均耗时比 16.6  Test.js:127:5
-getset平均耗时比 17.3
-     *
-     * 结果分析：
-     * chrome、nodejs、firefox运行结果出现差异,firefox运行结果最完美
-     *
-     * 使用watch后的get测试的消耗与手动写get消耗一致
-     * chrome与nodejs上set消耗是手动写set的消耗(3-4)倍
-     *
-     * 注：不适用eval的情况下，chrome表现最好的，与此次测试结果差不多；在nodejs与firfox上将会出现比使用eval情况下消耗的（40-400）倍，其中详细原因不明，求高人解释！
-     *
-     */
-    function watch(onChange: string): (target: any, property: string) => void;
-    var watcher: Watcher;
-    class Watcher {
-        /**
-         * 注意：使用watch后获取该属性值的性能将会是原来的1/60，禁止在feng3d引擎内部使用watch
-         * @param host
-         * @param property1
-         * @param handler
-         * @param thisObject
-         */
-        watch<T extends Object>(host: T, property: keyof T, handler: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
-        unwatch<T extends Object>(host: T, property: keyof T, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
-        watchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
-        unwatchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 序列化
-     */
-    var serialization: Serialization;
-    /**
-     * 序列化装饰器，被装饰属性将被序列化
-     * @param {*} target                序列化原型
-     * @param {string} propertyKey      序列化属性
-     */
-    function serialize(target: any, propertyKey: string): void;
-    /**
-     * 序列化资源装饰器，被装饰属性将被序列化为资源编号
-     * @param {*} target                序列化原型
-     * @param {string} propertyKey      序列化属性
-     */
-    function serializeAssets(target: any, propertyKey: string): void;
-    /**
-     * 序列化
-     */
-    class Serialization {
-        /**
-         * 序列化对象
-         * @param target 被序列化的对象
-         * @returns 序列化后可以转换为Json的数据对象
-         */
-        serialize(target: any): any;
-        /**
-         * 比较两个对象的不同，提取出不同的数据
-         * @param target 用于检测不同的数据
-         * @param defaultInstance   模板（默认）数据
-         * @param different 比较得出的不同（简单结构）数据
-         * @returns 比较得出的不同（简单结构）数据
-         */
-        different(target: Object, defaultInstance: Object, different?: Object): Object;
-        /**
-         * 反序列化
-         * @param object 换为Json的对象
-         * @returns 反序列化后的数据
-         */
-        deserialize(object: any, tempInfo?: SerializationTempInfo): any;
-        /**
-         * 从数据对象中提取数据给目标对象赋值
-         * @param target 目标对象
-         * @param object 数据对象
-         */
-        setValue<T>(target: T, object: gPartial<T>, tempInfo?: SerializationTempInfo): void;
-        /**
-         * 给目标对象的指定属性赋值
-         * @param target 目标对象
-         * @param object 数据对象
-         * @param property 属性名称
-         */
-        private setPropertyValue;
-        /**
-         * 克隆
-         * @param target 被克隆对象
-         */
-        clone<T>(target: T): T;
-    }
-    interface SerializationTempInfo {
-        loadingNum?: number;
-        onLoaded?: () => void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 标记objectview对象界面类
-     */
-    function OVComponent(component?: string): (constructor: Function) => void;
-    /**
-     * 标记objectview块界面类
-     */
-    function OBVComponent(component?: string): (constructor: Function) => void;
-    /**
-     * 标记objectview属性界面类
-     */
-    function OAVComponent(component?: string): (constructor: Function) => void;
-    /**
-     * objectview类装饰器
-     */
-    function ov<K extends keyof OVComponentParamMap>(param: {
-        component?: K;
-        componentParam?: OVComponentParamMap[K];
-    }): (constructor: Function) => void;
-    type OAVComponentParams = Partial<OAVComponentParamMap[keyof OAVComponentParamMap]> & {
-        /**
-         * 是否可编辑
-         */
-        editable?: boolean;
-        /**
-         * 所属块名称
-         */
-        block?: string;
-        /**
-         * 提示信息
-         */
-        tooltip?: string;
-        /**
-         * 优先级，数字越小，显示越靠前，默认为0
-         */
-        priority?: number;
-        /**
-         * 是否排除
-         */
-        exclude?: boolean;
-    };
-    /**
-     * objectview属性装饰器
-     * @param param 参数
-     */
-    function oav(param?: OAVComponentParams): (target: any, propertyKey: string) => void;
-    /**
-     * 对象界面
-     */
-    var objectview: ObjectView;
-    /**
-     * 对象界面
-     */
-    class ObjectView {
-        /**
-         * 默认基础类型对象界面类定义
-         */
-        defaultBaseObjectViewClass: string;
-        /**
-         * 默认对象界面类定义
-         */
-        defaultObjectViewClass: string;
-        /**
-         * 默认对象属性界面类定义
-         */
-        defaultObjectAttributeViewClass: string;
-        /**
-         * 属性块默认界面
-         */
-        defaultObjectAttributeBlockView: string;
-        /**
-         * 指定属性类型界面类定义字典（key:属性类名称,value:属性界面类定义）
-         */
-        defaultTypeAttributeView: {};
-        OAVComponent: {};
-        OBVComponent: {};
-        OVComponent: {};
-        setDefaultTypeAttributeView(type: string, component: AttributeTypeDefinition): void;
-        /**
-         * 获取对象界面
-         * @param object 用于生成界面的对象
-         * @param param 参数
-         */
-        getObjectView(object: Object, param?: GetObjectViewParam): IObjectView;
-        /**
-         * 获取属性界面
-         *
-         * @static
-         * @param {AttributeViewInfo} attributeViewInfo			属性界面信息
-         * @returns {egret.DisplayObject}						属性界面
-         *
-         * @memberOf ObjectView
-         */
-        getAttributeView(attributeViewInfo: AttributeViewInfo): IObjectAttributeView;
-        /**
-         * 获取块界面
-         *
-         * @static
-         * @param {BlockViewInfo} blockViewInfo			块界面信息
-         * @returns {egret.DisplayObject}				块界面
-         *
-         * @memberOf ObjectView
-         */
-        getBlockView(blockViewInfo: BlockViewInfo): IObjectBlockView;
-        addOAV(target: any, propertyKey: string, param?: OAVComponentParams): void;
-        /**
-         * 获取对象信息
-         * @param object				对象
-         * @param autocreate			当对象没有注册属性时是否自动创建属性信息
-         * @param excludeAttrs			排除属性列表
-         * @return
-         */
-        getObjectInfo(object: Object, autocreate?: boolean, excludeAttrs?: string[]): ObjectViewInfo;
-    }
-    /**
-     * OAV 组件参数映射
-     * {key: OAV组件名称,value：组件参数类定义}
-     */
-    interface OAVComponentParamMap {
-    }
-    interface OBVComponentParamMap {
-        块组件名称: "块组件参数";
-        [component: string]: any;
-    }
-    interface OVComponentParamMap {
-        类组件名称: "类组件参数";
-        [component: string]: any;
-    }
-    /**
-     * 定义属性
-     */
-    interface AttributeDefinition {
-        /**
-         * 属性名称
-         */
-        name: string;
-        /**
-         * 是否可编辑
-         */
-        editable?: boolean;
-        /**
-         * 所属块名称
-         */
-        block?: string;
-        /**
-         * 提示信息
-         */
-        tooltip?: string;
-        /**
-         * 组件
-         */
-        component?: string;
-        /**
-         * 组件参数
-         */
-        componentParam?: Object;
-        /**
-         * 优先级，数字越小，显示越靠前，默认为0
-         */
-        priority?: number;
-        /**
-         * 是否排除
-         */
-        exclude?: boolean;
-    }
-    /**
-     * 定义特定属性类型默认界面
-     */
-    interface AttributeTypeDefinition {
-        /**
-         * 界面类
-         */
-        component: string;
-        /**
-         * 组件参数
-         */
-        componentParam?: Object;
-    }
-    /**
-     * 块定义
-     */
-    interface BlockDefinition {
-        /**
-         * 块名称
-         */
-        name: string;
-        /**
-         * 组件
-         */
-        component?: string;
-        /**
-         * 组件参数
-         */
-        componentParam?: Object;
-    }
-    /**
-     * ObjectView类配置
-     */
-    interface ClassDefinition {
-        /**
-         * 组件
-         */
-        component?: string;
-        /**
-         * 组件参数
-         */
-        componentParam?: Object;
-        /**
-         * 自定义对象属性定义字典（key:属性名,value:属性定义）
-         */
-        attributeDefinitionVec: AttributeDefinition[];
-        /**
-         * 自定义对象属性块界面类定义字典（key:属性块名称,value:自定义对象属性块界面类定义）
-         */
-        blockDefinitionVec: BlockDefinition[];
-    }
-    /**
-     * 对象属性界面接口
-     */
-    interface IObjectAttributeView {
-        /**
-         * 界面所属对象（空间）
-         */
-        space: Object;
-        /**
-         * 更新界面
-         */
-        updateView(): void;
-        /**
-         * 属性名称
-         */
-        attributeName: string;
-        /**
-         * 属性值
-         */
-        attributeValue: Object;
-        /**
-         * 对象属性界面
-         */
-        objectView: IObjectView;
-        /**
-         * 对象属性块界面
-         */
-        objectBlockView: IObjectBlockView;
-    }
-    /**
-     * 对象属性块界面接口
-     */
-    interface IObjectBlockView {
-        /**
-         * 界面所属对象（空间）
-         */
-        space: Object;
-        /**
-         * 块名称
-         */
-        blockName: string;
-        /**
-         * 对象属性界面
-         */
-        objectView: IObjectView;
-        /**
-         * 更新界面
-         */
-        updateView(): void;
-        /**
-         * 获取属性界面
-         * @param attributeName		属性名称
-         */
-        getAttributeView(attributeName: string): IObjectAttributeView;
-    }
-    /**
-     * 对象界面接口
-     */
-    interface IObjectView {
-        /**
-         * 界面所属对象（空间）
-         */
-        space: Object;
-        /**
-         * 更新界面
-         */
-        updateView(): void;
-        /**
-         * 获取块界面
-         * @param blockName		块名称
-         */
-        getblockView(blockName: string): IObjectBlockView;
-        /**
-         * 获取属性界面
-         * @param attributeName		属性名称
-         */
-        getAttributeView(attributeName: string): IObjectAttributeView;
-    }
-    /**
-     * 对象属性信息
-     */
-    interface AttributeViewInfo {
-        /**
-         * 属性名称
-         */
-        name: string;
-        /**
-         * 属性类型
-         */
-        type: string;
-        /**
-         * 是否可写
-         */
-        editable: boolean;
-        /**
-         * 所属块名称
-         */
-        block?: string;
-        /**
-         * 提示信息
-         */
-        tooltip?: string;
-        /**
-         * 组件
-         */
-        component?: string;
-        /**
-         * 组件参数
-         */
-        componentParam?: Object;
-        /**
-         * 属性所属对象
-         */
-        owner: Object;
-        /**
-         * 优先级，数字越小，显示越靠前，默认为0
-         */
-        priority?: number;
-        /**
-         * 是否排除
-         */
-        exclude?: boolean;
-    }
-    /**
-     * 对象属性块
-     */
-    interface BlockViewInfo {
-        /**
-         * 块名称
-         */
-        name: string;
-        /**
-         * 组件
-         */
-        component?: string;
-        /**
-         * 组件参数
-         */
-        componentParam?: Object;
-        /**
-         * 属性信息列表
-         */
-        itemList: AttributeViewInfo[];
-        /**
-         * 属性拥有者
-         */
-        owner: Object;
-    }
-    /**
-     * 对象信息
-     */
-    interface ObjectViewInfo {
-        /**
-         * 组件
-         */
-        component?: string;
-        /**
-         * 组件参数
-         */
-        componentParam?: Object;
-        /**
-         * 对象属性列表
-         */
-        objectAttributeInfos: AttributeViewInfo[];
-        /**
-         * 对象块信息列表
-         */
-        objectBlockInfos: BlockViewInfo[];
-        /**
-         * 保存类的一个实例，为了能够获取动态属性信息
-         */
-        owner: Object;
-        /**
-         * 是否可编辑
-         */
-        editable?: boolean;
-    }
-    type GetObjectViewParam = {
-        /**
-         * 当对象没有注册属性时是否自动创建属性信息
-         */
-        autocreate?: boolean;
-        /**
-         * 排除属性列表
-         */
-        excludeAttrs?: string[];
-        /**
-         * 是否可编辑
-         */
-        editable?: boolean;
-    };
-}
-declare namespace feng3d {
-    interface OAVComponentParamMap {
-        OAVDefault: OAVDefaultParam;
-        OAVArray: OAVArrayParam;
-        OAVPick: OAVPickParam;
-        OAVEnum: OAVEnumParam;
-        OAVCubeMap: {
-            component: "OAVCubeMap";
-            componentParam: Object;
-        };
-        OAVImage: {
-            component: "OAVImage";
-            componentParam: Object;
-        };
-        OAVObjectView: {
-            component: "OAVObjectView";
-            componentParam: Object;
-        };
-        OAVParticleComponentList: {
-            component: "OAVParticleComponentList";
-            componentParam: Object;
-        };
-        OAVComponentList: {
-            component: "OAVComponentList";
-            componentParam: Object;
-        };
-        OAVGameObjectName: {
-            component: "OAVGameObjectName";
-            componentParam: Object;
-        };
-        OAVMaterialName: {
-            component: "OAVMaterialName";
-            componentParam: Object;
-        };
-        OAVMultiText: {
-            component: "OAVMultiText";
-            componentParam: Object;
-        };
-        OAVFeng3dPreView: {
-            component: "OAVFeng3dPreView";
-            componentParam: Object;
-        };
-        OAVAccordionObjectView: {
-            component: "OAVAccordionObjectView";
-            componentParam: Object;
-        };
-    }
-    /**
-     * OAVDefault 组件参数
-     */
-    interface OAVDefaultParam {
-        component: "OAVDefault";
-        componentParam: {
-            /**
-             * 拾取参数
-             */
-            dragparam?: {
-                /**
-                 * 可接受数据类型
-                 */
-                accepttype: string;
-                /**
-                 * 提供数据类型
-                 */
-                datatype?: string;
-            };
-        };
-    }
-    /**
-     * OAVArray 组件参数
-     */
-    interface OAVArrayParam {
-        component: "OAVArray";
-        componentParam: {
-            /**
-             * 拾取参数
-             */
-            dragparam?: {
-                /**
-                 * 可接受数据类型
-                 */
-                accepttype: string;
-                /**
-                 * 提供数据类型
-                 */
-                datatype?: string;
-            };
-            /**
-             * 添加item时默认数据，赋值 ()=>any
-             */
-            defaultItem: any;
-        };
-    }
-    /**
-     * OAVPick 组件参数
-     */
-    interface OAVPickParam {
-        component: "OAVPick";
-        componentParam: {
-            /**
-             * 可接受数据类型
-             */
-            accepttype: string;
-            /**
-             * 提供数据类型
-             */
-            datatype?: string;
-        };
-    }
-    /**
-     * OAVEnum 组件参数
-     */
-    interface OAVEnumParam {
-        component: "OAVEnum";
-        componentParam: {
-            /**
-             * 枚举类型
-             */
-            enumClass: any;
-        };
-    }
-}
-declare namespace feng3d {
-    /**
-     * 心跳计时器
-     */
-    var ticker: Ticker;
-    /**
-     * 心跳计时器
-     */
-    class Ticker {
-        /**
-         * 帧率
-         */
-        frameRate: number;
-        /**
-         * 注册帧函数
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        onframe(func: (interval: number) => void, thisObject?: Object, priority?: number): this;
-        /**
-         * 下一帧执行方法
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        nextframe(func: (interval: number) => void, thisObject?: Object, priority?: number): this;
-        /**
-         * 注销帧函数（只执行一次）
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        offframe(func: (interval: number) => void, thisObject?: Object): this;
-        /**
-         * 注册周期函数
-         * @param interval  执行周期，以ms为单位
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        on(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object, priority?: number): this;
-        /**
-         * 注册周期函数（只执行一次）
-         * @param interval  执行周期，以ms为单位
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        once(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object, priority?: number): this;
-        /**
-         * 注销周期函数
-         * @param interval  执行周期，以ms为单位
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         */
-        off(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object): this;
-        /**
-         * 重复指定次数 执行函数
-         * @param interval  执行周期，以ms为单位
-         * @param 	repeatCount     执行次数
-         * @param func  执行方法
-         * @param thisObject    方法this指针
-         * @param priority      执行优先级
-         */
-        repeat(interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: Object, priority?: number): Timer;
-    }
-    class Timer {
-        private ticker;
-        private interval;
-        private priority;
-        private func;
-        private thisObject;
-        /**
-         * 计时器从 0 开始后触发的总次数。
-         */
-        currentCount: number;
-        /**
-         * 计时器事件间的延迟（以毫秒为单位）。
-         */
-        delay: number;
-        /**
-         * 设置的计时器运行总次数。
-         */
-        repeatCount: number;
-        constructor(ticker: Ticker, interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: Object, priority?: number);
-        /**
-         * 如果计时器尚未运行，则启动计时器。
-         */
-        start(): this;
-        /**
-         * 停止计时器。
-         */
-        stop(): this;
-        /**
-         * 如果计时器正在运行，则停止计时器，并将 currentCount 属性设回为 0，这类似于秒表的重置按钮。
-         */
-        reset(): this;
-        private runfunc;
-    }
-}
-/**
- * The unescape() function computes a new string in which hexadecimal escape sequences are replaced with the character that it represents. The escape sequences might be introduced by a function like escape. Usually, decodeURI or decodeURIComponent are preferred over unescape.
- * @param str A string to be decoded.
- * @return A new string in which certain characters have been unescaped.
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/unescape
- */
-declare function unescape(str: string): string;
-/**
- * The escape() function computes a new string in which certain characters have been replaced by a hexadecimal escape sequence.
- * @param str A string to be encoded.
- * @return A new string in which certain characters have been escaped.
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/escape
- */
-declare function escape(str: string): string;
-declare namespace feng3d {
-    /**
-     * 数据类型转换
-     * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
-     * @see http://blog.csdn.net/yinwhm12/article/details/73482904
-     */
-    var dataTransform: DataTransform;
-    /**
-     * 数据类型转换
-     * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
-     * @see http://blog.csdn.net/yinwhm12/article/details/73482904
-     */
-    class DataTransform {
-        /**
-         * Blob to ArrayBuffer
-         */
-        blobToArrayBuffer(blob: Blob, callback: (arrayBuffer: ArrayBuffer) => void): void;
-        /**
-         * ArrayBuffer to Blob
-         */
-        arrayBufferToBlob(arrayBuffer: ArrayBuffer, callback: (blob: Blob) => void): void;
-        /**
-         * ArrayBuffer to Uint8
-         * Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
-         */
-        arrayBufferToUint8(arrayBuffer: ArrayBuffer, callback: (uint8Array: Uint8Array) => void): void;
-        /**
-         * Uint8 to ArrayBuffer
-         * 我们Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
-         */
-        uint8ToArrayBuffer(uint8Array: Uint8Array, callback: (arrayBuffer: ArrayBuffer) => void): void;
-        /**
-         * Array to ArrayBuffer
-         * @param array 例如：[0x15, 0xFF, 0x01, 0x00, 0x34, 0xAB, 0x11];
-         */
-        arrayToArrayBuffer(array: number[], callback: (arrayBuffer: ArrayBuffer) => void): void;
-        /**
-         * TypeArray to Array
-         */
-        uint8ArrayToArray(u8a: Uint8Array): number[];
-        /**
-         * canvas转换为dataURL
-         */
-        canvasToDataURL(canvas: HTMLCanvasElement, type?: "png" | "jpeg"): string;
-        /**
-         * File、Blob对象转换为dataURL
-         * File对象也是一个Blob对象，二者的处理相同。
-         */
-        blobToDataURL(blob: Blob, callback: (dataurl: string) => void): void;
-        /**
-         * dataURL转换为Blob对象
-         */
-        dataURLtoBlob(dataurl: string, callback: (blob: Blob) => void): void;
-        /**
-         * dataURL图片数据转换为HTMLImageElement
-         * dataURL图片数据绘制到canvas
-         * 先构造Image对象，src为dataURL，图片onload之后绘制到canvas
-         */
-        dataURLDrawCanvas(dataurl: string, canvas: HTMLCanvasElement, callback: (img: HTMLImageElement) => void): void;
-        dataURLToArrayBuffer(dataurl: string, callback: (arraybuffer: ArrayBuffer) => void): void;
-        arrayBufferToDataURL(arrayBuffer: ArrayBuffer, callback: (dataurl: string) => void): void;
-        dataURLToImage(dataurl: string, callback: (img: HTMLImageElement) => void): void;
-        imageToDataURL(img: HTMLImageElement): string;
-        imageToCanvas(img: HTMLImageElement): HTMLCanvasElement;
-        imageDataToDataURL(imageData: ImageData): string;
-        imageDataToCanvas(imageData: ImageData): HTMLCanvasElement;
-        arrayBufferToImage(arrayBuffer: ArrayBuffer, callback: (img: HTMLImageElement) => void): void;
-        blobToText(blob: Blob, callback: (content: string) => void): void;
-        stringToArrayBuffer(str: string, callback: (arrayBuffer: ArrayBuffer) => void): void;
-        arrayBufferToString(arrayBuffer: ArrayBuffer, callback: (content: string) => void): void;
-        stringToUint8Array(str: string, callback: (uint8Array: Uint8Array) => void): void;
-        uint8ArrayToString(arr: Uint8Array, callback: (str: string) => void): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 类工具
-     */
-    var classUtils: ClassUtils;
-    /**
-     * 类工具
-     */
-    class ClassUtils {
-        /**
-         * 返回对象的完全限定类名。
-         * @param value 需要完全限定类名称的对象，可以将任何 JavaScript 值传递给此方法，包括所有可用的 JavaScript 类型、对象实例、原始类型
-         * （如number)和类对象
-         * @returns 包含完全限定类名称的字符串。
-         */
-        getQualifiedClassName(value: any): string;
-        /**
-         * 返回 name 参数指定的类的类对象引用。
-         * @param name 类的名称。
-         */
-        getDefinitionByName(name: string, readCache?: boolean): any;
-        /**
-         * 新增反射对象所在的命名空间，使得getQualifiedClassName能够得到正确的结果
-         */
-        addClassNameSpace(namespace: string): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 图片相关工具
-     */
-    var imageUtil: ImageUtil;
-    /**
-     * 图片相关工具
-     */
-    class ImageUtil {
-        /**
-         * 加载图片
-         * @param url 图片路径
-         * @param callback 加载完成回调
-         */
-        loadImage(url: string, callback: (err: Error, image: HTMLImageElement) => void): void;
-        /**
-         * 获取图片数据
-         * @param image 加载完成的图片元素
-         */
-        getImageData(image: HTMLImageElement): ImageData;
-        /**
-         * 从url获取图片数据
-         * @param url 图片路径
-         * @param callback 获取图片数据完成回调
-         */
-        getImageDataFromUrl(url: string, callback: (imageData: ImageData) => void): void;
-        /**
-         * 创建ImageData
-         * @param width 数据宽度
-         * @param height 数据高度
-         * @param fillcolor 填充颜色
-         */
-        createImageData(width?: number, height?: number, fillcolor?: number): ImageData;
-        /**
-         * 创建默认粒子贴图
-         * @param size 尺寸
-         */
-        createDefaultParticle(size?: number): ImageData;
-        /**
-         * 创建颜色拾取矩形
-         * @param color 基色
-         * @param width 宽度
-         * @param height 高度
-         */
-        createColorPickerRect(color: number, width?: number, height?: number): ImageData;
-        /**
-         * 获取颜色的基色以及颜色拾取矩形所在位置
-         * @param color 查找颜色
-         */
-        getColorPickerRectAtPosition(color: number, rw: number, rh: number): Color3;
-        /**
-         * 获取颜色的基色以及颜色拾取矩形所在位置
-         * @param color 查找颜色
-         */
-        getColorPickerRectPosition(color: number): {
-            /**
-             * 基色
-             */
-            color: Color3;
-            /**
-             * 横向位置
-             */
-            ratioW: number;
-            /**
-             * 纵向位置
-             */
-            ratioH: number;
-        };
-        /**
-         * 创建颜色条带
-         * @param colors
-         * @param ratios [0,1]
-         * @param width
-         * @param height
-         * @param dirw true为横向条带，否则纵向条带
-         */
-        createColorPickerStripe(width: number, height: number, colors: number[], ratios?: number[], dirw?: boolean): ImageData;
-        getMixColor(colors: number[], ratios: number[], ratio: number): Color3;
-        getMixColorRatio(color: number, colors: number[], ratios?: number[]): number;
-        getMixColorAtRatio(ratio: number, colors: number[], ratios?: number[]): Color3;
-        createColorRect(color: Color4, width: number, height: number): ImageData;
-        createMinMaxGradientRect(gradient: IMinMaxGradient, width: number, height: number): ImageData;
-    }
-}
-/**
- * @author mrdoob / http://mrdoob.com/
- */
-interface Performance {
-    memory: any;
-}
-declare namespace feng3d {
-    class Stats {
-        static instance: Stats;
-        static init(parent?: HTMLElement): void;
-        REVISION: number;
-        dom: HTMLDivElement;
-        domElement: HTMLDivElement;
-        addPanel: (panel: StatsPanel) => StatsPanel;
-        showPanel: (id: number) => void;
-        setMode: (id: number) => void;
-        begin: () => void;
-        end: () => number;
-        update: () => void;
-        constructor();
-    }
-    class StatsPanel {
-        dom: HTMLCanvasElement;
-        update: (value: number, maxValue: number) => void;
-        constructor(name: string, fg: string, bg: string);
-    }
-}
-declare namespace feng3d {
-    /**
-     * 路径工具
-     */
-    var pathUtils: PathUtils;
-    /**
-     * 路径工具
-     */
-    class PathUtils {
-        /**
-         * 获取不带后缀名称
-         * @param path 路径
-         */
-        getName(path: string): string;
-        /**
-         * 获取带后缀名称
-         * @param path 路径
-         */
-        getNameWithExtension(path: string): string;
-        /**
-         * 获取后缀
-         * @param path 路径
-         */
-        getExtension(path: string): string;
-        /**
-         * 父路径
-         * @param path 路径
-         */
-        getParentPath(path: string): string;
-        /**
-         * 是否文件夹
-         * @param path 路径
-         */
-        isDirectory(path: string): boolean;
-        /**
-         * 获取目录深度
-         * @param path 路径
-         */
-        getDirDepth(path: string): number;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 着色器代码宏工具
-     */
-    var shaderMacroUtils: ShaderMacroUtils;
-    class ShaderMacroUtils {
-        /**
-         * 从着色器代码中获取宏变量列表
-         * @param vertex
-         * @param fragment
-         */
-        getMacroVariablesFromShaderCode(vertex: string, fragment: string): string[];
-        /**
-         * 从着色器代码中获取宏变量列表
-         * @param code
-         */
-        getMacroVariablesFromCode(code: string): string[];
-    }
-}
-declare namespace feng3d {
-    type Lazy<T> = T | (() => T);
-    type LazyObject<T> = {
-        [P in keyof T]: Lazy<T[P]>;
-    };
-    var lazy: {
-        getvalue: <T>(lazyItem: Lazy<T>) => T;
+    var ColorKeywords: {
+        'aliceblue': number;
+        'antiquewhite': number;
+        'aqua': number;
+        'aquamarine': number;
+        'azure': number;
+        'beige': number;
+        'bisque': number;
+        'black': number;
+        'blanchedalmond': number;
+        'blue': number;
+        'blueviolet': number;
+        'brown': number;
+        'burlywood': number;
+        'cadetblue': number;
+        'chartreuse': number;
+        'chocolate': number;
+        'coral': number;
+        'cornflowerblue': number;
+        'cornsilk': number;
+        'crimson': number;
+        'cyan': number;
+        'darkblue': number;
+        'darkcyan': number;
+        'darkgoldenrod': number;
+        'darkgray': number;
+        'darkgreen': number;
+        'darkgrey': number;
+        'darkkhaki': number;
+        'darkmagenta': number;
+        'darkolivegreen': number;
+        'darkorange': number;
+        'darkorchid': number;
+        'darkred': number;
+        'darksalmon': number;
+        'darkseagreen': number;
+        'darkslateblue': number;
+        'darkslategray': number;
+        'darkslategrey': number;
+        'darkturquoise': number;
+        'darkviolet': number;
+        'deeppink': number;
+        'deepskyblue': number;
+        'dimgray': number;
+        'dimgrey': number;
+        'dodgerblue': number;
+        'firebrick': number;
+        'floralwhite': number;
+        'forestgreen': number;
+        'fuchsia': number;
+        'gainsboro': number;
+        'ghostwhite': number;
+        'gold': number;
+        'goldenrod': number;
+        'gray': number;
+        'green': number;
+        'greenyellow': number;
+        'grey': number;
+        'honeydew': number;
+        'hotpink': number;
+        'indianred': number;
+        'indigo': number;
+        'ivory': number;
+        'khaki': number;
+        'lavender': number;
+        'lavenderblush': number;
+        'lawngreen': number;
+        'lemonchiffon': number;
+        'lightblue': number;
+        'lightcoral': number;
+        'lightcyan': number;
+        'lightgoldenrodyellow': number;
+        'lightgray': number;
+        'lightgreen': number;
+        'lightgrey': number;
+        'lightpink': number;
+        'lightsalmon': number;
+        'lightseagreen': number;
+        'lightskyblue': number;
+        'lightslategray': number;
+        'lightslategrey': number;
+        'lightsteelblue': number;
+        'lightyellow': number;
+        'lime': number;
+        'limegreen': number;
+        'linen': number;
+        'magenta': number;
+        'maroon': number;
+        'mediumaquamarine': number;
+        'mediumblue': number;
+        'mediumorchid': number;
+        'mediumpurple': number;
+        'mediumseagreen': number;
+        'mediumslateblue': number;
+        'mediumspringgreen': number;
+        'mediumturquoise': number;
+        'mediumvioletred': number;
+        'midnightblue': number;
+        'mintcream': number;
+        'mistyrose': number;
+        'moccasin': number;
+        'navajowhite': number;
+        'navy': number;
+        'oldlace': number;
+        'olive': number;
+        'olivedrab': number;
+        'orange': number;
+        'orangered': number;
+        'orchid': number;
+        'palegoldenrod': number;
+        'palegreen': number;
+        'paleturquoise': number;
+        'palevioletred': number;
+        'papayawhip': number;
+        'peachpuff': number;
+        'peru': number;
+        'pink': number;
+        'plum': number;
+        'powderblue': number;
+        'purple': number;
+        'rebeccapurple': number;
+        'red': number;
+        'rosybrown': number;
+        'royalblue': number;
+        'saddlebrown': number;
+        'salmon': number;
+        'sandybrown': number;
+        'seagreen': number;
+        'seashell': number;
+        'sienna': number;
+        'silver': number;
+        'skyblue': number;
+        'slateblue': number;
+        'slategray': number;
+        'slategrey': number;
+        'snow': number;
+        'springgreen': number;
+        'steelblue': number;
+        'tan': number;
+        'teal': number;
+        'thistle': number;
+        'tomato': number;
+        'turquoise': number;
+        'violet': number;
+        'wheat': number;
+        'white': number;
+        'whitesmoke': number;
+        'yellow': number;
+        'yellowgreen': number;
     };
 }
 declare namespace feng3d {
     /**
-     * 常用正则表示式
+     * 颜色（包含透明度）
      */
-    var regExps: RegExps;
-    /**
-     * 常用正则表示式
-     */
-    class RegExps {
+    class Color4 {
+        __class__: "feng3d.Color4";
+        static WHITE: Color4;
+        static BLACK: Color4;
         /**
-         * json文件
+         * 红[0,1]
          */
-        json: RegExp;
+        r: number;
         /**
-         * 图片
+         * 绿[0,1]
          */
-        image: RegExp;
+        g: number;
         /**
-         * 声音
+         * 蓝[0,1]
          */
-        audio: RegExp;
+        b: number;
         /**
-         * 命名空间
+         * 透明度[0,1]
          */
-        namespace: RegExp;
+        a: number;
         /**
-         * 类
+         * 构建颜色
+         * @param r     红[0,1]
+         * @param g     绿[0,1]
+         * @param b     蓝[0,1]
+         * @param a     透明度[0,1]
          */
-        classReg: RegExp;
+        constructor(r?: number, g?: number, b?: number, a?: number);
+        setTo(r: number, g: number, b: number, a?: number): this;
+        /**
+         * 通过
+         * @param color
+         */
+        fromUnit(color: number): this;
+        toInt(): number;
+        /**
+         * 输出16进制字符串
+         */
+        toHexString(): string;
+        /**
+         * 混合颜色
+         * @param color 混入的颜色
+         * @param rate  混入比例
+         */
+        mix(color: Color4, rate?: number): this;
+        /**
+         * 混合颜色
+         * @param color 混入的颜色
+         * @param rate  混入比例
+         */
+        mixTo(color: Color4, rate: number, vout?: Color4): Color4;
+        /**
+         * 乘以指定颜色
+         * @param c 乘以的颜色
+         * @return 返回自身
+         */
+        multiply(c: Color4): this;
+        /**
+         * 乘以指定颜色
+         * @param v 乘以的颜色
+         * @return 返回新颜色
+         */
+        multiplyTo(v: Color4, vout?: Color4): Color4;
+        /**
+         * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
+         */
+        equals(object: Color4, precision?: number): boolean;
+        /**
+         * 拷贝
+         */
+        copy(color: Color4): this;
+        /**
+         * 输出字符串
+         */
+        toString(): string;
+        toColor3(color?: Color3): Color3;
+        toVector4(vector4?: Vector4): Vector4;
+        clone(): Color4;
     }
-}
-declare namespace feng3d {
-    /**
-     * 所有feng3d对象的基类
-     */
-    class Feng3dObject extends EventDispatcher {
-        /**
-         * 隐藏标记，用于控制是否在层级面板、检查器显示，是否保存
-         */
-        hideFlags: HideFlags;
-        /**
-         * 设置对象值
-         * @param v 对象对于的Object值
-         */
-        value(v: gPartial<this>): this;
-    }
-}
-interface IDBObjectStore {
-    getAllKeys(): IDBRequest;
-}
-declare namespace feng3d {
-    /**
-     *
-     */
-    var storage: Storage;
-    /**
-     *
-     */
-    class Storage {
-        /**
-         * 是否支持 indexedDB
-         */
-        support(): boolean;
-        getDatabase(dbname: string, callback: (err: any, database: IDBDatabase) => void): void;
-        deleteDatabase(dbname: string, callback?: (err: any) => void): void;
-        hasObjectStore(dbname: string, objectStroreName: string, callback: (has: boolean) => void): void;
-        getObjectStoreNames(dbname: string, callback: (err: Error | null, objectStoreNames: string[]) => void): void;
-        createObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void): void;
-        deleteObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void): void;
-        getAllKeys(dbname: string, objectStroreName: string, callback?: (err: Error, keys: string[]) => void): void;
-        get(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: ArrayBuffer) => void): void;
-        set(dbname: string, objectStroreName: string, key: string | number, data: ArrayBuffer, callback?: (err: Error) => void): void;
-        delete(dbname: string, objectStroreName: string, key: string | number, callback?: (err?: Error) => void): void;
-        clear(dbname: string, objectStroreName: string, callback?: (err?: Error) => void): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 索引数据文件系统
-     */
-    var indexedDBfs: IndexedDBfs;
-    /**
-     * 索引数据文件系统
-     */
-    class IndexedDBfs implements ReadWriteFS {
-        readonly type: FSType;
-        /**
-         * 数据库名称
-         */
-        DBname: string;
-        /**
-         * 项目名称（表单名称）
-         */
-        projectname: string;
-        constructor(DBname?: string, projectname?: string);
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
-        /**
-         * 文件是否存在
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        exists(path: string, callback: (exists: boolean) => void): void;
-        /**
-         * 读取文件夹中文件列表
-         * @param path 路径
-         * @param callback 回调函数
-         */
-        readdir(path: string, callback: (err: Error, files: string[]) => void): void;
-        /**
-         * 新建文件夹
-         * @param path 文件夹路径
-         * @param callback 回调函数
-         */
-        mkdir(path: string, callback?: (err: Error) => void): void;
-        /**
-         * 删除文件
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        deleteFile(path: string, callback: (err: Error) => void): void;
-        /**
-         * 写文件
-         * @param path 文件路径
-         * @param data 文件数据
-         * @param callback 回调函数
-         */
-        writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
-        /**
-         * 获取所有文件路径
-         * @param callback 回调函数
-         */
-        getAllPaths(callback: (err: Error, allPaths: string[]) => void): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * Http可读文件系统
-     */
-    var httpFS: HttpFS;
-    /**
-     * Http可读文件系统
-     */
-    class HttpFS implements ReadFS {
-        /**
-         * 根路径
-         */
-        rootPath: string;
-        readonly type: FSType;
-        constructor();
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 文件系统类型
-     */
-    enum FSType {
-        http = "http",
-        native = "native",
-        indexedDB = "indexedDB"
-    }
-    /**
-     * 可读文件系统
-     */
-    interface ReadFS {
-        /**
-         * 文件系统类型
-         */
-        readonly type: FSType;
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): any;
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
-    }
-    /**
-     * 可读写文件系统
-     */
-    interface ReadWriteFS extends ReadFS {
-        /**
-         * 项目名称
-         */
-        projectname: string;
-        /**
-         * 文件是否存在
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        exists(path: string, callback: (exists: boolean) => void): void;
-        /**
-         * 读取文件夹中文件列表
-         * @param path 路径
-         * @param callback 回调函数
-         */
-        readdir(path: string, callback: (err: Error, files: string[]) => void): void;
-        /**
-         * 新建文件夹
-         * @param path 文件夹路径
-         * @param callback 回调函数
-         */
-        mkdir(path: string, callback?: (err: Error) => void): void;
-        /**
-         * 删除文件
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        deleteFile(path: string, callback?: (err: Error) => void): void;
-        /**
-         * 写(新建)文件
-         * @param path 文件路径
-         * @param data 文件数据
-         * @param callback 回调函数
-         */
-        writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 资源系统
-     */
-    var assets: ReadAssets;
-    /**
-     * 资源
-     * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
-     */
-    class ReadAssets implements ReadFS {
-        /**
-         * 可读文件系统
-         */
-        fs: ReadFS;
-        readonly type: FSType;
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
-        /**
-         * 读取文件为字符串
-         */
-        readString(path: string, callback: (err: Error | null, data: string | null) => void): void;
-        /**
-         * 加载图片
-         * @param path 图片路径
-         * @param callback 加载完成回调
-         */
-        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
-        /**
-         * 读取文件为DataURL
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        readDataURL(path: string, callback: (err: Error, dataurl: string) => void): void;
-        /**
-         * 读取文件为Blob
-         * @param path 资源路径
-         * @param callback 读取完成回调
-         */
-        readBlob(path: string, callback: (err: Error, blob: Blob) => void): void;
-        /**
-         * 读取文件为对象
-         * @param path 资源路径
-         * @param callback 读取完成回调
-         */
-        readObject(path: string, callback: (err: Error, object: Object) => void): void;
-        /**
-         * 读取文件为资源对象
-         * @param id 资源编号
-         * @param callback 读取完成回调
-         */
-        readAssets(id: string, callback: (err: Error, assets: Feng3dAssets) => void): void;
-    }
-}
-declare namespace feng3d {
-    class ReadWriteAssets extends ReadAssets implements ReadWriteFS {
-        /**
-         * 可读写文件系统
-         */
-        fs: ReadWriteFS;
-        projectname: string;
-        constructor(readWriteFS?: ReadWriteFS);
-        /**
-         * 文件是否存在
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        exists(path: string, callback: (exists: boolean) => void): void;
-        /**
-         * 读取文件夹中文件列表
-         * @param path 路径
-         * @param callback 回调函数
-         */
-        readdir(path: string, callback: (err: Error, files: string[]) => void): void;
-        /**
-         * 新建文件夹
-         * @param path 文件夹路径
-         * @param callback 回调函数
-         */
-        mkdir(path: string, callback?: (err: Error) => void): void;
-        /**
-         * 删除文件
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        deleteFile(path: string, callback?: (err: Error) => void): void;
-        /**
-         * 写文件
-         * @param path 文件路径
-         * @param data 文件数据
-         * @param callback 回调函数
-         */
-        writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
-        /**
-         * 保存字符串到文件
-         * @param path 文件路径
-         * @param string 保存的字符串
-         * @param callback 完成回调
-         */
-        writeString(path: string, string: string, callback?: (err: Error) => void): void;
-        /**
-         * 保存对象到文件
-         * @param path 文件路径
-         * @param object 保存的对象
-         * @param callback 完成回调
-         */
-        writeObject(path: string, object: Object, callback?: (err: Error) => void): void;
-        /**
-         * 保存资源
-         * @param assets 资源
-         * @param callback 保存资源完成回调
-         */
-        writeAssets(assets: Feng3dAssets, callback?: (err: Error) => void): void;
-        /**
-         * 获取所有文件路径
-         * @param callback 回调函数
-         */
-        getAllPaths(callback: (err: Error, allPaths: string[]) => void): void;
-        /**
-         * 获取指定文件下所有文件路径列表
-         */
-        getAllfilepathInFolder(dirpath: string, callback: (err: Error, filepaths: string[]) => void): void;
-        /**
-         * 复制文件
-         * @param src    源路径
-         * @param dest    目标路径
-         * @param callback 回调函数
-         */
-        copyFile(src: string, dest: string, callback?: (err: Error) => void): void;
-        /**
-         * 移动文件
-         * @param src 源路径
-         * @param dest 目标路径
-         * @param callback 回调函数
-         */
-        moveFile(src: string, dest: string, callback?: (err: Error) => void): void;
-        /**
-         * 重命名文件
-         * @param oldPath 老路径
-         * @param newPath 新路径
-         * @param callback 回调函数
-         */
-        renameFile(oldPath: string, newPath: string, callback?: (err: Error) => void): void;
-        /**
-         * 移动一组文件
-         * @param movelists 移动列表
-         * @param callback 回调函数
-         */
-        moveFiles(movelists: [string, string][], callback?: (err: Error) => void): void;
-        /**
-         * 复制一组文件
-         * @param copylists 复制列表
-         * @param callback 回调函数
-         */
-        copyFiles(copylists: [string, string][], callback?: (err: Error) => void): void;
-        /**
-         * 删除一组文件
-         * @param deletelists 删除列表
-         * @param callback 回调函数
-         */
-        deleteFiles(deletelists: string[], callback?: (err: Error) => void): void;
-        /**
-         * 重命名文件(夹)
-         * @param oldPath 老路径
-         * @param newPath 新路径
-         * @param callback 回调函数
-         */
-        rename(oldPath: string, newPath: string, callback?: (err: Error) => void): void;
-        /**
-         * 移动文件(夹)
-         * @param src 源路径
-         * @param dest 目标路径
-         * @param callback 回调函数
-         */
-        move(src: string, dest: string, callback?: (err: Error) => void): void;
-        /**
-         * 删除文件(夹)
-         * @param path 路径
-         * @param callback 回调函数
-         */
-        delete(path: string, callback?: (err: Error) => void): void;
-        /**
-         * 删除资源
-         * @param assetsId 资源编号
-         * @param callback 回调函数
-         */
-        deleteAssets(assetsId: string, callback?: (err: Error) => void): void;
-        /**
-         * 是否为文件夹
-         * @param path 文件路径
-         */
-        isDir(path: string): boolean;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 资源扩展名
-     */
-    enum AssetExtension {
-        /**
-         * 文件夹
-         */
-        folder = "folder",
-        /**
-         * 音频
-         */
-        audio = "audio",
-        /**
-         * ts文件
-         */
-        ts = "ts",
-        /**
-         * js文件
-         */
-        js = "js",
-        /**
-         * 文本文件
-         */
-        txt = "txt",
-        /**
-         * json文件
-         */
-        json = "json",
-        /**
-         * OBJ模型资源附带的材质文件
-         */
-        mtl = "mtl",
-        /**
-         * OBJ模型文件
-         */
-        obj = "obj",
-        /**
-         * MD5模型文件
-         */
-        md5mesh = "md5mesh",
-        /**
-         * MD5动画
-         */
-        md5anim = "md5anim",
-        /**
-         * 魔兽MDL模型
-         */
-        mdl = "mdl",
-        /**
-         * 纹理
-         */
-        texture = "texture",
-        /**
-         * 立方体纹理
-         */
-        texturecube = "texturecube",
-        /**
-         * 材质
-         */
-        material = "material",
-        /**
-         * 几何体
-         */
-        geometry = "geometry",
-        /**
-         * 游戏对象
-         */
-        gameobject = "gameobject",
-        /**
-         * 场景
-         */
-        scene = "scene",
-        /**
-         * 动画
-         */
-        anim = "anim",
-        /**
-         * 着色器
-         */
-        shader = "shader",
-        /**
-         * 脚本
-         */
-        script = "script"
-    }
-}
-declare namespace feng3d {
-    /**
-     * feng3d资源
-     */
-    class Feng3dAssets extends Feng3dObject {
-        /**
-         * 资源编号
-         */
-        assetsId: string;
-        /**
-         * 名称
-         */
-        name: string;
-        /**
-         * 资源类型，由具体对象类型决定
-         */
-        assetType: AssetExtension;
-        /**
-         * 资源路径，由资源编号决定
-         */
-        path: string;
-        constructor();
-        /**
-         * 保存资源
-         * @param readWriteAssets
-         * @param callback  完成回调
-         */
-        save(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any;
-        /**
-         * 删除资源
-         * @param readWriteAssets 可读写资源管理器
-         * @param callback 完成回调
-         */
-        delete(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any;
-        protected assetsIdChanged(): void;
-        /**
-         * 获取资源所在文件夹
-         * @param assetsId 资源编号
-         */
-        static getAssetDir(assetsId: string): string;
-        /**
-         * 获取资源路径
-         * @param assetsId 资源编号
-         */
-        static getPath(assetsId: string): string;
-        static setAssets(assets: Feng3dAssets): void;
-        /**
-         * 获取资源
-         * @param assetsId 资源编号
-         */
-        static getAssets(assetsId: string): Feng3dAssets;
-        /**
-         * 获取指定类型资源
-         * @param type 资源类型
-         */
-        static getAssetsByType<T extends Feng3dAssets>(type: Constructor<T>): T[];
-        private static _lib;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 资源
-     */
-    var resources: Resources;
-    /**
-     * 资源
-     */
-    class Resources {
-        /**
-         * 卸载没有被使用的资源
-         */
-        unloadUnusedAssets(): void;
-    }
-}
-declare namespace feng3d {
-    var FMath: {
-        /**
-         * 角度转弧度因子
-         */
-        DEG2RAD: number;
-        /**
-         * 弧度转角度因子
-         */
-        RAD2DEG: number;
-        /**
-         * 默认精度
-         */
-        PRECISION: number;
-        /**
-         * http://www.broofa.com/Tools/Math.uuid.htm
-         */
-        uuid: () => string;
-        clamp: (value: any, min: any, max: any) => number;
-        /**
-         * compute euclidian modulo of m % n
-         * https://en.wikipedia.org/wiki/Modulo_operation
-         */
-        euclideanModulo: (n: any, m: any) => number;
-        /**
-         * Linear mapping from range <a1, a2> to range <b1, b2>
-         */
-        mapLinear: (x: any, a1: any, a2: any, b1: any, b2: any) => any;
-        /**
-         * https://en.wikipedia.org/wiki/Linear_interpolation
-         */
-        lerp: (x: any, y: any, t: any) => number;
-        /**
-         * http://en.wikipedia.org/wiki/Smoothstep
-         */
-        smoothstep: (x: any, min: any, max: any) => number;
-        smootherstep: (x: any, min: any, max: any) => number;
-        /**
-         * Random integer from <low, high> interval
-         */
-        randInt: (low: any, high: any) => any;
-        /**
-         * Random float from <low, high> interval
-         */
-        randFloat: (low: any, high: any) => any;
-        /**
-         * Random float from <-range/2, range/2> interval
-         */
-        randFloatSpread: (range: any) => number;
-        /**
-         * 角度转换为弧度
-         */
-        degToRad: (degrees: any) => number;
-        radToDeg: (radians: any) => number;
-        isPowerOfTwo: (value: any) => boolean;
-        nearestPowerOfTwo: (value: any) => number;
-        nextPowerOfTwo: (value: any) => any;
-        /**
-         * 获取目标最近的值
-         *
-         * source增加或者减少整数倍precision后得到离target最近的值
-         *
-         * ```
-         * Math.toRound(71,0,5);//运算结果为1
-         * ```
-         *
-         * @param source 初始值
-         * @param target 目标值
-         * @param precision 精度
-         */
-        toRound: (source: number, target: number, precision?: number) => number;
-        /**
-         * 比较两个Number是否相等
-         * @param a 数字a
-         * @param b 数字b
-         * @param precision 进度
-         */
-        equals(a: number, b: number, precision?: number): boolean;
-    };
 }
 declare namespace feng3d {
     /**
@@ -5399,320 +3733,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 颜色
-     */
-    class Color3 {
-        __class__: "feng3d.Color3";
-        static WHITE: Color3;
-        static BLACK: Color3;
-        /**
-         * 红[0,1]
-         */
-        r: number;
-        /**
-         * 绿[0,1]
-         */
-        g: number;
-        /**
-         * 蓝[0,1]
-         */
-        b: number;
-        /**
-         * 构建颜色
-         * @param r     红[0,1]
-         * @param g     绿[0,1]
-         * @param b     蓝[0,1]
-         */
-        constructor(r?: number, g?: number, b?: number);
-        setTo(r: number, g: number, b: number): this;
-        /**
-         * 通过
-         * @param color
-         */
-        fromUnit(color: number): this;
-        toInt(): number;
-        /**
-         * 输出16进制字符串
-         */
-        toHexString(): string;
-        /**
-         * 混合颜色
-         * @param color 混入的颜色
-         * @param rate  混入比例
-         */
-        mix(color: Color3, rate: number): this;
-        /**
-         * 混合颜色
-         * @param color 混入的颜色
-         * @param rate  混入比例
-         */
-        mixTo(color: Color3, rate: number, vout?: Color3): Color3;
-        /**
-         * 按标量（大小）缩放当前的 Color3 对象。
-         */
-        scale(s: number): this;
-        /**
-         * 按标量（大小）缩放当前的 Color3 对象。
-         */
-        scaleTo(s: number, vout?: Color3): Color3;
-        /**
-         * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
-         */
-        equals(object: Color3, precision?: number): boolean;
-        /**
-         * 拷贝
-         */
-        copy(color: Color3): this;
-        clone(): Color3;
-        toVector3(vector3?: Vector3): Vector3;
-        toColor4(color4?: Color4): Color4;
-        /**
-         * 输出字符串
-         */
-        toString(): string;
-        /**
-         * [0,15]数值转为16进制字符串
-         * param i  [0,15]数值
-         */
-        static ToHex(i: number): string;
-    }
-    var ColorKeywords: {
-        'aliceblue': number;
-        'antiquewhite': number;
-        'aqua': number;
-        'aquamarine': number;
-        'azure': number;
-        'beige': number;
-        'bisque': number;
-        'black': number;
-        'blanchedalmond': number;
-        'blue': number;
-        'blueviolet': number;
-        'brown': number;
-        'burlywood': number;
-        'cadetblue': number;
-        'chartreuse': number;
-        'chocolate': number;
-        'coral': number;
-        'cornflowerblue': number;
-        'cornsilk': number;
-        'crimson': number;
-        'cyan': number;
-        'darkblue': number;
-        'darkcyan': number;
-        'darkgoldenrod': number;
-        'darkgray': number;
-        'darkgreen': number;
-        'darkgrey': number;
-        'darkkhaki': number;
-        'darkmagenta': number;
-        'darkolivegreen': number;
-        'darkorange': number;
-        'darkorchid': number;
-        'darkred': number;
-        'darksalmon': number;
-        'darkseagreen': number;
-        'darkslateblue': number;
-        'darkslategray': number;
-        'darkslategrey': number;
-        'darkturquoise': number;
-        'darkviolet': number;
-        'deeppink': number;
-        'deepskyblue': number;
-        'dimgray': number;
-        'dimgrey': number;
-        'dodgerblue': number;
-        'firebrick': number;
-        'floralwhite': number;
-        'forestgreen': number;
-        'fuchsia': number;
-        'gainsboro': number;
-        'ghostwhite': number;
-        'gold': number;
-        'goldenrod': number;
-        'gray': number;
-        'green': number;
-        'greenyellow': number;
-        'grey': number;
-        'honeydew': number;
-        'hotpink': number;
-        'indianred': number;
-        'indigo': number;
-        'ivory': number;
-        'khaki': number;
-        'lavender': number;
-        'lavenderblush': number;
-        'lawngreen': number;
-        'lemonchiffon': number;
-        'lightblue': number;
-        'lightcoral': number;
-        'lightcyan': number;
-        'lightgoldenrodyellow': number;
-        'lightgray': number;
-        'lightgreen': number;
-        'lightgrey': number;
-        'lightpink': number;
-        'lightsalmon': number;
-        'lightseagreen': number;
-        'lightskyblue': number;
-        'lightslategray': number;
-        'lightslategrey': number;
-        'lightsteelblue': number;
-        'lightyellow': number;
-        'lime': number;
-        'limegreen': number;
-        'linen': number;
-        'magenta': number;
-        'maroon': number;
-        'mediumaquamarine': number;
-        'mediumblue': number;
-        'mediumorchid': number;
-        'mediumpurple': number;
-        'mediumseagreen': number;
-        'mediumslateblue': number;
-        'mediumspringgreen': number;
-        'mediumturquoise': number;
-        'mediumvioletred': number;
-        'midnightblue': number;
-        'mintcream': number;
-        'mistyrose': number;
-        'moccasin': number;
-        'navajowhite': number;
-        'navy': number;
-        'oldlace': number;
-        'olive': number;
-        'olivedrab': number;
-        'orange': number;
-        'orangered': number;
-        'orchid': number;
-        'palegoldenrod': number;
-        'palegreen': number;
-        'paleturquoise': number;
-        'palevioletred': number;
-        'papayawhip': number;
-        'peachpuff': number;
-        'peru': number;
-        'pink': number;
-        'plum': number;
-        'powderblue': number;
-        'purple': number;
-        'rebeccapurple': number;
-        'red': number;
-        'rosybrown': number;
-        'royalblue': number;
-        'saddlebrown': number;
-        'salmon': number;
-        'sandybrown': number;
-        'seagreen': number;
-        'seashell': number;
-        'sienna': number;
-        'silver': number;
-        'skyblue': number;
-        'slateblue': number;
-        'slategray': number;
-        'slategrey': number;
-        'snow': number;
-        'springgreen': number;
-        'steelblue': number;
-        'tan': number;
-        'teal': number;
-        'thistle': number;
-        'tomato': number;
-        'turquoise': number;
-        'violet': number;
-        'wheat': number;
-        'white': number;
-        'whitesmoke': number;
-        'yellow': number;
-        'yellowgreen': number;
-    };
-}
-declare namespace feng3d {
-    /**
-     * 颜色（包含透明度）
-     */
-    class Color4 {
-        __class__: "feng3d.Color4";
-        static WHITE: Color4;
-        static BLACK: Color4;
-        /**
-         * 红[0,1]
-         */
-        r: number;
-        /**
-         * 绿[0,1]
-         */
-        g: number;
-        /**
-         * 蓝[0,1]
-         */
-        b: number;
-        /**
-         * 透明度[0,1]
-         */
-        a: number;
-        /**
-         * 构建颜色
-         * @param r     红[0,1]
-         * @param g     绿[0,1]
-         * @param b     蓝[0,1]
-         * @param a     透明度[0,1]
-         */
-        constructor(r?: number, g?: number, b?: number, a?: number);
-        setTo(r: number, g: number, b: number, a?: number): this;
-        /**
-         * 通过
-         * @param color
-         */
-        fromUnit(color: number): this;
-        toInt(): number;
-        /**
-         * 输出16进制字符串
-         */
-        toHexString(): string;
-        /**
-         * 混合颜色
-         * @param color 混入的颜色
-         * @param rate  混入比例
-         */
-        mix(color: Color4, rate?: number): this;
-        /**
-         * 混合颜色
-         * @param color 混入的颜色
-         * @param rate  混入比例
-         */
-        mixTo(color: Color4, rate: number, vout?: Color4): Color4;
-        /**
-         * 乘以指定颜色
-         * @param c 乘以的颜色
-         * @return 返回自身
-         */
-        multiply(c: Color4): this;
-        /**
-         * 乘以指定颜色
-         * @param v 乘以的颜色
-         * @return 返回新颜色
-         */
-        multiplyTo(v: Color4, vout?: Color4): Color4;
-        /**
-         * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
-         */
-        equals(object: Color4, precision?: number): boolean;
-        /**
-         * 拷贝
-         */
-        copy(color: Color4): this;
-        /**
-         * 输出字符串
-         */
-        toString(): string;
-        toColor3(color?: Color3): Color3;
-        toVector4(vector4?: Vector4): Vector4;
-        clone(): Color4;
-    }
-}
-declare namespace feng3d {
-    /**
      * 由三角形构成的几何体
      * ### 限定：
      *  * 只包含三角形，不存在四边形等其他多边形
@@ -5804,6 +3824,1986 @@ declare namespace feng3d {
          * 克隆
          */
         clone(): TriangleGeometry;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 事件
+     */
+    interface Event<T> {
+        /**
+         * 事件的类型。类型区分大小写。
+         */
+        type: string;
+        /**
+         * 事件携带的自定义数据
+         */
+        data: T;
+        /**
+         * 表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
+         */
+        bubbles: boolean;
+        /**
+         * 事件目标。
+         */
+        target: any;
+        /**
+         * 当前正在使用某个事件侦听器处理 Event 对象的对象。
+         */
+        currentTarget: any;
+        /**
+         * 是否停止处理事件监听器
+         */
+        isStop: boolean;
+        /**
+         * 是否停止冒泡
+         */
+        isStopBubbles: boolean;
+        /**
+         * 事件流过的对象列表，事件路径
+         */
+        targets: any[];
+    }
+    interface IEventDispatcher<T> {
+        once<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
+        has<K extends keyof T>(type: K): boolean;
+        on<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof T>(type?: K, listener?: (event: Event<T[K]>) => any, thisObject?: any): any;
+    }
+    const EVENT_KEY = "__event__";
+    /**
+     * 事件适配器
+     */
+    class EventDispatcher {
+        /**
+         * 监听一次事件后将会被移除
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        once(type: string, listener: (event: any) => void, thisObject?: any, priority?: number): void;
+        /**
+         * 派发事件
+         *
+         * 当事件重复流向一个对象时将不会被处理。
+         *
+         * @param e   事件对象
+         * @returns 返回事件是否被该对象处理
+         */
+        dispatchEvent(e: Event<any>): boolean;
+        /**
+         * 处理事件
+         * @param e 事件
+         */
+        protected handleEvent(e: Event<any>): void;
+        /**
+         * 处理事件冒泡
+         * @param e 事件
+         */
+        protected handelEventBubbles(e: Event<any>): void;
+        /**
+         * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
+         * @param type                      事件的类型。类型区分大小写。
+         * @param data                      事件携带的自定义数据。
+         * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
+         */
+        dispatch(type: string, data?: any, bubbles?: boolean): Event<any>;
+        /**
+         * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
+         *
+         * @param type		事件的类型。
+         * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
+         */
+        has(type: string): boolean;
+        /**
+         * 添加监听
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        on(type: string, listener: (event: any) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        /**
+         * 移除监听
+         * @param dispatcher 派发器
+         * @param type						事件的类型。
+         * @param listener					要删除的侦听器对象。
+         */
+        off(type?: string, listener?: (event: any) => any, thisObject?: any): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 代理 EventTarget, 处理js事件中this关键字问题
+
+     */
+    class EventProxy extends EventDispatcher {
+        pageX: number;
+        pageY: number;
+        clientX: number;
+        clientY: number;
+        /**
+         * 是否右击
+         */
+        rightmouse: boolean;
+        key: string;
+        keyCode: number;
+        wheelDelta: number;
+        private listentypes;
+        target: EventTarget;
+        private _target;
+        constructor(target?: EventTarget);
+        /**
+         * 监听一次事件后将会被移除
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        once(type: string, listener: (event: any) => void, thisObject?: any, priority?: number): void;
+        /**
+         * 添加监听
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        on(type: string, listener: (event: any) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        /**
+         * 移除监听
+         * @param dispatcher 派发器
+         * @param type						事件的类型。
+         * @param listener					要删除的侦听器对象。
+         */
+        off(type?: string, listener?: (event: any) => any, thisObject?: any): void;
+        /**
+         * 处理鼠标按下时同时出发 "mousemove" 事件bug
+         */
+        private handleMouseMoveBug;
+        private mousedownposition;
+        /**
+         * 键盘按下事件
+         */
+        private onMouseKey;
+        /**
+         * 清理数据
+         */
+        private clear;
+    }
+}
+declare namespace feng3d {
+    interface WindowEventProxy {
+        once<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof WindowEventMap>(type: K, data?: WindowEventMap[K], bubbles?: boolean): any;
+        has<K extends keyof WindowEventMap>(type: K): boolean;
+        on<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof WindowEventMap>(type?: K, listener?: (event: WindowEventMap[K]) => any, thisObject?: any): any;
+    }
+    class WindowEventProxy extends EventProxy {
+    }
+    /**
+     * 键盘鼠标输入
+     */
+    var windowEventProxy: WindowEventProxy;
+}
+declare namespace feng3d {
+    /**
+     * 全局事件
+     */
+    var feng3dDispatcher: Feng3dDispatcher;
+    interface Feng3dEventMap {
+        /**
+         * shader资源发生变化
+         */
+        "assets.shaderChanged": any;
+        /**
+         * 脚本发生变化
+         */
+        "assets.scriptChanged": any;
+        /**
+         * 图片资源发生变化
+         */
+        "assets.imageAssetsChanged": {
+            url: string;
+        };
+        /**
+         * 解析出资源
+         */
+        "assets.parsed": any;
+    }
+    interface Feng3dDispatcher {
+        once<K extends keyof Feng3dEventMap>(type: K, listener: (event: Event<Feng3dEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof Feng3dEventMap>(type: K, data?: Feng3dEventMap[K], bubbles?: boolean): Event<Feng3dEventMap[K]>;
+        has<K extends keyof Feng3dEventMap>(type: K): boolean;
+        on<K extends keyof Feng3dEventMap>(type: K, listener: (event: Event<Feng3dEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof Feng3dEventMap>(type?: K, listener?: (event: Event<Feng3dEventMap[K]>) => any, thisObject?: any): any;
+    }
+    /**
+     * 全局事件
+     */
+    class Feng3dDispatcher extends EventDispatcher {
+    }
+}
+declare namespace feng3d {
+    var loadjs: {
+        load: typeof load;
+        ready: typeof ready;
+    };
+    /**
+     * 加载文件
+     * @param params.paths          加载路径
+     * @param params.bundleId       加载包编号
+     * @param params.success        成功回调
+     * @param params.error          错误回调
+     * @param params.async          是否异步加载
+     * @param params.numRetries     加载失败尝试次数
+     * @param params.before         加载前回调
+     * @param params.onitemload     单条文件加载完成回调
+     */
+    function load(params: {
+        paths: string | string[] | {
+            url: string;
+            type: string;
+        } | {
+            url: string;
+            type: string;
+        }[];
+        bundleId?: string;
+        success?: () => void;
+        error?: (pathsNotFound?: string[]) => void;
+        async?: boolean;
+        numRetries?: number;
+        before?: (path: {
+            url: string;
+            type: string;
+        }, e: any) => boolean;
+        onitemload?: (url: string, content: string) => void;
+    }): void;
+    /**
+     * 准备依赖包
+     * @param params.depends        依赖包编号
+     * @param params.success        成功回调
+     * @param params.error          错误回调
+     */
+    function ready(params: {
+        depends: string | string[];
+        success?: () => void;
+        error?: (pathsNotFound?: string[]) => void;
+    }): void;
+}
+declare namespace feng3d {
+    /**
+     * 测试代码运行时间
+     * @param fn 被测试的方法
+     * @param labal 标签
+     */
+    function time(fn: Function, labal?: string): void;
+    /**
+     * 断言，测试不通过时报错
+     * @param test 测试项
+     * @param message 测试失败时提示信息
+     * @param optionalParams
+     */
+    function assert(test?: boolean, message?: string, ...optionalParams: any[]): void;
+    /**
+     * 输出错误
+     * @param message 错误信息
+     * @param optionalParams
+     */
+    function error(message?: any, ...optionalParams: any[]): void;
+    /**
+     * 记录日志信息
+     * @param message 日志信息
+     * @param optionalParams
+     */
+    function log(message?: any, ...optionalParams: any[]): void;
+    /**
+     * 警告
+     * @param message 警告信息
+     * @param optionalParams
+     */
+    function warn(message?: any, ...optionalParams: any[]): void;
+}
+declare namespace feng3d {
+    /**
+     * 观察装饰器，观察被装饰属性的变化
+     *
+     * @param onChange 属性变化回调  例如参数为“onChange”时，回调将会调用this.onChange(property, oldValue, newValue)
+     * @see https://gitee.com/feng3d/feng3d/issues/IGIK0
+     *
+     * 使用@watch后会自动生成一个带"_"的属性，例如 属性"a"会生成"_a"
+     *
+     * 通过使用 eval 函数 生成出 与自己手动写的set get 一样的函数，性能已经接近 手动写的get set函数。
+     *
+     * 性能：
+     * chrome：
+     * 测试 get ：
+Test.ts:100 watch与getset最大耗时比 1.2222222222222223
+Test.ts:101 watch与getset最小耗时比 0.7674418604651163
+Test.ts:102 watch与getset平均耗时比 0.9558823529411765
+Test.ts:103 watch平均耗时比 13
+Test.ts:104 getset平均耗时比 13.6
+Test.ts:98 测试 set ：
+Test.ts:100 watch与getset最大耗时比 4.5
+Test.ts:101 watch与getset最小耗时比 2.409090909090909
+Test.ts:102 watch与getset平均耗时比 3.037037037037037
+Test.ts:103 watch平均耗时比 57.4
+Test.ts:104 getset平均耗时比 18.9
+
+     *
+     * nodejs:
+     * 测试 get ：
+watch与getset最大耗时比 1.3333333333333333
+watch与getset最小耗时比 0.55
+watch与getset平均耗时比 1.0075757575757576
+watch平均耗时比 13.3
+getset平均耗时比 13.2
+测试 set ：
+watch与getset最大耗时比 4.9
+watch与getset最小耗时比 3
+watch与getset平均耗时比 4.143497757847534
+watch平均耗时比 92.4
+getset平均耗时比 22.3
+     *
+     *
+     * firefox:
+     * 测试 get ：  Test.js:122:5
+watch与getset最大耗时比 4.142857142857143  Test.js:124:5
+watch与getset最小耗时比 0.4090909090909091  Test.js:125:5
+watch与getset平均耗时比 1.0725806451612903  Test.js:126:5
+watch平均耗时比 13.3  Test.js:127:5
+getset平均耗时比 12.4  Test.js:128:5
+测试 set ：  Test.js:122:5
+watch与getset最大耗时比 1.5333333333333334  Test.js:124:5
+watch与getset最小耗时比 0.6842105263157895  Test.js:125:5
+watch与getset平均耗时比 0.9595375722543352  Test.js:126:5
+watch平均耗时比 16.6  Test.js:127:5
+getset平均耗时比 17.3
+     *
+     * 结果分析：
+     * chrome、nodejs、firefox运行结果出现差异,firefox运行结果最完美
+     *
+     * 使用watch后的get测试的消耗与手动写get消耗一致
+     * chrome与nodejs上set消耗是手动写set的消耗(3-4)倍
+     *
+     * 注：不适用eval的情况下，chrome表现最好的，与此次测试结果差不多；在nodejs与firfox上将会出现比使用eval情况下消耗的（40-400）倍，其中详细原因不明，求高人解释！
+     *
+     */
+    function watch(onChange: string): (target: any, property: string) => void;
+    var watcher: Watcher;
+    class Watcher {
+        /**
+         * 注意：使用watch后获取该属性值的性能将会是原来的1/60，禁止在feng3d引擎内部使用watch
+         * @param host
+         * @param property1
+         * @param handler
+         * @param thisObject
+         */
+        watch<T extends Object>(host: T, property: keyof T, handler: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
+        unwatch<T extends Object>(host: T, property: keyof T, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
+        watchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
+        unwatchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 序列化
+     */
+    var serialization: Serialization;
+    /**
+     * 序列化装饰器，被装饰属性将被序列化
+     * @param {*} target                序列化原型
+     * @param {string} propertyKey      序列化属性
+     */
+    function serialize(target: any, propertyKey: string): void;
+    /**
+     * 序列化资源装饰器，被装饰属性将被序列化为资源编号
+     * @param {*} target                序列化原型
+     * @param {string} propertyKey      序列化属性
+     */
+    function serializeAssets(target: any, propertyKey: string): void;
+    /**
+     * 序列化
+     */
+    class Serialization {
+        /**
+         * 序列化对象
+         * @param target 被序列化的对象
+         * @returns 序列化后可以转换为Json的数据对象
+         */
+        serialize(target: any): any;
+        /**
+         * 比较两个对象的不同，提取出不同的数据
+         * @param target 用于检测不同的数据
+         * @param defaultInstance   模板（默认）数据
+         * @param different 比较得出的不同（简单结构）数据
+         * @returns 比较得出的不同（简单结构）数据
+         */
+        different(target: Object, defaultInstance: Object, different?: Object): Object;
+        /**
+         * 反序列化
+         * @param object 换为Json的对象
+         * @returns 反序列化后的数据
+         */
+        deserialize(object: any, tempInfo?: SerializationTempInfo): any;
+        /**
+         * 从数据对象中提取数据给目标对象赋值
+         * @param target 目标对象
+         * @param object 数据对象
+         */
+        setValue<T>(target: T, object: gPartial<T>, tempInfo?: SerializationTempInfo): void;
+        /**
+         * 给目标对象的指定属性赋值
+         * @param target 目标对象
+         * @param object 数据对象
+         * @param property 属性名称
+         */
+        private setPropertyValue;
+        /**
+         * 克隆
+         * @param target 被克隆对象
+         */
+        clone<T>(target: T): T;
+    }
+    interface SerializationTempInfo {
+        loadingNum?: number;
+        onLoaded?: () => void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 标记objectview对象界面类
+     */
+    function OVComponent(component?: string): (constructor: Function) => void;
+    /**
+     * 标记objectview块界面类
+     */
+    function OBVComponent(component?: string): (constructor: Function) => void;
+    /**
+     * 标记objectview属性界面类
+     */
+    function OAVComponent(component?: string): (constructor: Function) => void;
+    /**
+     * objectview类装饰器
+     */
+    function ov<K extends keyof OVComponentParamMap>(param: {
+        component?: K;
+        componentParam?: OVComponentParamMap[K];
+    }): (constructor: Function) => void;
+    type OAVComponentParams = Partial<OAVComponentParamMap[keyof OAVComponentParamMap]> & {
+        /**
+         * 是否可编辑
+         */
+        editable?: boolean;
+        /**
+         * 所属块名称
+         */
+        block?: string;
+        /**
+         * 提示信息
+         */
+        tooltip?: string;
+        /**
+         * 优先级，数字越小，显示越靠前，默认为0
+         */
+        priority?: number;
+        /**
+         * 是否排除
+         */
+        exclude?: boolean;
+    };
+    /**
+     * objectview属性装饰器
+     * @param param 参数
+     */
+    function oav(param?: OAVComponentParams): (target: any, propertyKey: string) => void;
+    /**
+     * 对象界面
+     */
+    var objectview: ObjectView;
+    /**
+     * 对象界面
+     */
+    class ObjectView {
+        /**
+         * 默认基础类型对象界面类定义
+         */
+        defaultBaseObjectViewClass: string;
+        /**
+         * 默认对象界面类定义
+         */
+        defaultObjectViewClass: string;
+        /**
+         * 默认对象属性界面类定义
+         */
+        defaultObjectAttributeViewClass: string;
+        /**
+         * 属性块默认界面
+         */
+        defaultObjectAttributeBlockView: string;
+        /**
+         * 指定属性类型界面类定义字典（key:属性类名称,value:属性界面类定义）
+         */
+        defaultTypeAttributeView: {};
+        OAVComponent: {};
+        OBVComponent: {};
+        OVComponent: {};
+        setDefaultTypeAttributeView(type: string, component: AttributeTypeDefinition): void;
+        /**
+         * 获取对象界面
+         * @param object 用于生成界面的对象
+         * @param param 参数
+         */
+        getObjectView(object: Object, param?: GetObjectViewParam): IObjectView;
+        /**
+         * 获取属性界面
+         *
+         * @static
+         * @param {AttributeViewInfo} attributeViewInfo			属性界面信息
+         * @returns {egret.DisplayObject}						属性界面
+         *
+         * @memberOf ObjectView
+         */
+        getAttributeView(attributeViewInfo: AttributeViewInfo): IObjectAttributeView;
+        /**
+         * 获取块界面
+         *
+         * @static
+         * @param {BlockViewInfo} blockViewInfo			块界面信息
+         * @returns {egret.DisplayObject}				块界面
+         *
+         * @memberOf ObjectView
+         */
+        getBlockView(blockViewInfo: BlockViewInfo): IObjectBlockView;
+        addOAV(target: any, propertyKey: string, param?: OAVComponentParams): void;
+        /**
+         * 获取对象信息
+         * @param object				对象
+         * @param autocreate			当对象没有注册属性时是否自动创建属性信息
+         * @param excludeAttrs			排除属性列表
+         * @return
+         */
+        getObjectInfo(object: Object, autocreate?: boolean, excludeAttrs?: string[]): ObjectViewInfo;
+    }
+    /**
+     * OAV 组件参数映射
+     * {key: OAV组件名称,value：组件参数类定义}
+     */
+    interface OAVComponentParamMap {
+    }
+    interface OBVComponentParamMap {
+        块组件名称: "块组件参数";
+        [component: string]: any;
+    }
+    interface OVComponentParamMap {
+        类组件名称: "类组件参数";
+        [component: string]: any;
+    }
+    /**
+     * 定义属性
+     */
+    interface AttributeDefinition {
+        /**
+         * 属性名称
+         */
+        name: string;
+        /**
+         * 是否可编辑
+         */
+        editable?: boolean;
+        /**
+         * 所属块名称
+         */
+        block?: string;
+        /**
+         * 提示信息
+         */
+        tooltip?: string;
+        /**
+         * 组件
+         */
+        component?: string;
+        /**
+         * 组件参数
+         */
+        componentParam?: Object;
+        /**
+         * 优先级，数字越小，显示越靠前，默认为0
+         */
+        priority?: number;
+        /**
+         * 是否排除
+         */
+        exclude?: boolean;
+    }
+    /**
+     * 定义特定属性类型默认界面
+     */
+    interface AttributeTypeDefinition {
+        /**
+         * 界面类
+         */
+        component: string;
+        /**
+         * 组件参数
+         */
+        componentParam?: Object;
+    }
+    /**
+     * 块定义
+     */
+    interface BlockDefinition {
+        /**
+         * 块名称
+         */
+        name: string;
+        /**
+         * 组件
+         */
+        component?: string;
+        /**
+         * 组件参数
+         */
+        componentParam?: Object;
+    }
+    /**
+     * ObjectView类配置
+     */
+    interface ClassDefinition {
+        /**
+         * 组件
+         */
+        component?: string;
+        /**
+         * 组件参数
+         */
+        componentParam?: Object;
+        /**
+         * 自定义对象属性定义字典（key:属性名,value:属性定义）
+         */
+        attributeDefinitionVec: AttributeDefinition[];
+        /**
+         * 自定义对象属性块界面类定义字典（key:属性块名称,value:自定义对象属性块界面类定义）
+         */
+        blockDefinitionVec: BlockDefinition[];
+    }
+    /**
+     * 对象属性界面接口
+     */
+    interface IObjectAttributeView {
+        /**
+         * 界面所属对象（空间）
+         */
+        space: Object;
+        /**
+         * 更新界面
+         */
+        updateView(): void;
+        /**
+         * 属性名称
+         */
+        attributeName: string;
+        /**
+         * 属性值
+         */
+        attributeValue: Object;
+        /**
+         * 对象属性界面
+         */
+        objectView: IObjectView;
+        /**
+         * 对象属性块界面
+         */
+        objectBlockView: IObjectBlockView;
+    }
+    /**
+     * 对象属性块界面接口
+     */
+    interface IObjectBlockView {
+        /**
+         * 界面所属对象（空间）
+         */
+        space: Object;
+        /**
+         * 块名称
+         */
+        blockName: string;
+        /**
+         * 对象属性界面
+         */
+        objectView: IObjectView;
+        /**
+         * 更新界面
+         */
+        updateView(): void;
+        /**
+         * 获取属性界面
+         * @param attributeName		属性名称
+         */
+        getAttributeView(attributeName: string): IObjectAttributeView;
+    }
+    /**
+     * 对象界面接口
+     */
+    interface IObjectView {
+        /**
+         * 界面所属对象（空间）
+         */
+        space: Object;
+        /**
+         * 更新界面
+         */
+        updateView(): void;
+        /**
+         * 获取块界面
+         * @param blockName		块名称
+         */
+        getblockView(blockName: string): IObjectBlockView;
+        /**
+         * 获取属性界面
+         * @param attributeName		属性名称
+         */
+        getAttributeView(attributeName: string): IObjectAttributeView;
+    }
+    /**
+     * 对象属性信息
+     */
+    interface AttributeViewInfo {
+        /**
+         * 属性名称
+         */
+        name: string;
+        /**
+         * 属性类型
+         */
+        type: string;
+        /**
+         * 是否可写
+         */
+        editable: boolean;
+        /**
+         * 所属块名称
+         */
+        block?: string;
+        /**
+         * 提示信息
+         */
+        tooltip?: string;
+        /**
+         * 组件
+         */
+        component?: string;
+        /**
+         * 组件参数
+         */
+        componentParam?: Object;
+        /**
+         * 属性所属对象
+         */
+        owner: Object;
+        /**
+         * 优先级，数字越小，显示越靠前，默认为0
+         */
+        priority?: number;
+        /**
+         * 是否排除
+         */
+        exclude?: boolean;
+    }
+    /**
+     * 对象属性块
+     */
+    interface BlockViewInfo {
+        /**
+         * 块名称
+         */
+        name: string;
+        /**
+         * 组件
+         */
+        component?: string;
+        /**
+         * 组件参数
+         */
+        componentParam?: Object;
+        /**
+         * 属性信息列表
+         */
+        itemList: AttributeViewInfo[];
+        /**
+         * 属性拥有者
+         */
+        owner: Object;
+    }
+    /**
+     * 对象信息
+     */
+    interface ObjectViewInfo {
+        /**
+         * 组件
+         */
+        component?: string;
+        /**
+         * 组件参数
+         */
+        componentParam?: Object;
+        /**
+         * 对象属性列表
+         */
+        objectAttributeInfos: AttributeViewInfo[];
+        /**
+         * 对象块信息列表
+         */
+        objectBlockInfos: BlockViewInfo[];
+        /**
+         * 保存类的一个实例，为了能够获取动态属性信息
+         */
+        owner: Object;
+        /**
+         * 是否可编辑
+         */
+        editable?: boolean;
+    }
+    type GetObjectViewParam = {
+        /**
+         * 当对象没有注册属性时是否自动创建属性信息
+         */
+        autocreate?: boolean;
+        /**
+         * 排除属性列表
+         */
+        excludeAttrs?: string[];
+        /**
+         * 是否可编辑
+         */
+        editable?: boolean;
+    };
+}
+declare namespace feng3d {
+    interface OAVComponentParamMap {
+        OAVDefault: OAVDefaultParam;
+        OAVArray: OAVArrayParam;
+        OAVPick: OAVPickParam;
+        OAVEnum: OAVEnumParam;
+        OAVCubeMap: {
+            component: "OAVCubeMap";
+            componentParam: Object;
+        };
+        OAVImage: {
+            component: "OAVImage";
+            componentParam: Object;
+        };
+        OAVObjectView: {
+            component: "OAVObjectView";
+            componentParam: Object;
+        };
+        OAVParticleComponentList: {
+            component: "OAVParticleComponentList";
+            componentParam: Object;
+        };
+        OAVComponentList: {
+            component: "OAVComponentList";
+            componentParam: Object;
+        };
+        OAVGameObjectName: {
+            component: "OAVGameObjectName";
+            componentParam: Object;
+        };
+        OAVMaterialName: {
+            component: "OAVMaterialName";
+            componentParam: Object;
+        };
+        OAVMultiText: {
+            component: "OAVMultiText";
+            componentParam: Object;
+        };
+        OAVFeng3dPreView: {
+            component: "OAVFeng3dPreView";
+            componentParam: Object;
+        };
+        OAVAccordionObjectView: {
+            component: "OAVAccordionObjectView";
+            componentParam: Object;
+        };
+    }
+    /**
+     * OAVDefault 组件参数
+     */
+    interface OAVDefaultParam {
+        component: "OAVDefault";
+        componentParam: {
+            /**
+             * 拾取参数
+             */
+            dragparam?: {
+                /**
+                 * 可接受数据类型
+                 */
+                accepttype: string;
+                /**
+                 * 提供数据类型
+                 */
+                datatype?: string;
+            };
+        };
+    }
+    /**
+     * OAVArray 组件参数
+     */
+    interface OAVArrayParam {
+        component: "OAVArray";
+        componentParam: {
+            /**
+             * 拾取参数
+             */
+            dragparam?: {
+                /**
+                 * 可接受数据类型
+                 */
+                accepttype: string;
+                /**
+                 * 提供数据类型
+                 */
+                datatype?: string;
+            };
+            /**
+             * 添加item时默认数据，赋值 ()=>any
+             */
+            defaultItem: any;
+        };
+    }
+    /**
+     * OAVPick 组件参数
+     */
+    interface OAVPickParam {
+        component: "OAVPick";
+        componentParam: {
+            /**
+             * 可接受数据类型
+             */
+            accepttype: string;
+            /**
+             * 提供数据类型
+             */
+            datatype?: string;
+        };
+    }
+    /**
+     * OAVEnum 组件参数
+     */
+    interface OAVEnumParam {
+        component: "OAVEnum";
+        componentParam: {
+            /**
+             * 枚举类型
+             */
+            enumClass: any;
+        };
+    }
+}
+declare namespace feng3d {
+    /**
+     * 心跳计时器
+     */
+    var ticker: Ticker;
+    /**
+     * 心跳计时器
+     */
+    class Ticker {
+        /**
+         * 帧率
+         */
+        frameRate: number;
+        /**
+         * 注册帧函数
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        onframe(func: (interval: number) => void, thisObject?: Object, priority?: number): this;
+        /**
+         * 下一帧执行方法
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        nextframe(func: (interval: number) => void, thisObject?: Object, priority?: number): this;
+        /**
+         * 注销帧函数（只执行一次）
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        offframe(func: (interval: number) => void, thisObject?: Object): this;
+        /**
+         * 注册周期函数
+         * @param interval  执行周期，以ms为单位
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        on(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object, priority?: number): this;
+        /**
+         * 注册周期函数（只执行一次）
+         * @param interval  执行周期，以ms为单位
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        once(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object, priority?: number): this;
+        /**
+         * 注销周期函数
+         * @param interval  执行周期，以ms为单位
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         */
+        off(interval: Lazy<number>, func: (interval: number) => void, thisObject?: Object): this;
+        /**
+         * 重复指定次数 执行函数
+         * @param interval  执行周期，以ms为单位
+         * @param 	repeatCount     执行次数
+         * @param func  执行方法
+         * @param thisObject    方法this指针
+         * @param priority      执行优先级
+         */
+        repeat(interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: Object, priority?: number): Timer;
+    }
+    class Timer {
+        private ticker;
+        private interval;
+        private priority;
+        private func;
+        private thisObject;
+        /**
+         * 计时器从 0 开始后触发的总次数。
+         */
+        currentCount: number;
+        /**
+         * 计时器事件间的延迟（以毫秒为单位）。
+         */
+        delay: number;
+        /**
+         * 设置的计时器运行总次数。
+         */
+        repeatCount: number;
+        constructor(ticker: Ticker, interval: Lazy<number>, repeatCount: number, func: (interval: number) => void, thisObject?: Object, priority?: number);
+        /**
+         * 如果计时器尚未运行，则启动计时器。
+         */
+        start(): this;
+        /**
+         * 停止计时器。
+         */
+        stop(): this;
+        /**
+         * 如果计时器正在运行，则停止计时器，并将 currentCount 属性设回为 0，这类似于秒表的重置按钮。
+         */
+        reset(): this;
+        private runfunc;
+    }
+}
+/**
+ * The unescape() function computes a new string in which hexadecimal escape sequences are replaced with the character that it represents. The escape sequences might be introduced by a function like escape. Usually, decodeURI or decodeURIComponent are preferred over unescape.
+ * @param str A string to be decoded.
+ * @return A new string in which certain characters have been unescaped.
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/unescape
+ */
+declare function unescape(str: string): string;
+/**
+ * The escape() function computes a new string in which certain characters have been replaced by a hexadecimal escape sequence.
+ * @param str A string to be encoded.
+ * @return A new string in which certain characters have been escaped.
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/escape
+ */
+declare function escape(str: string): string;
+declare namespace feng3d {
+    /**
+     * 数据类型转换
+     * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
+     * @see http://blog.csdn.net/yinwhm12/article/details/73482904
+     */
+    var dataTransform: DataTransform;
+    /**
+     * 数据类型转换
+     * TypeArray、ArrayBuffer、Blob、File、DataURL、canvas的相互转换
+     * @see http://blog.csdn.net/yinwhm12/article/details/73482904
+     */
+    class DataTransform {
+        /**
+         * Blob to ArrayBuffer
+         */
+        blobToArrayBuffer(blob: Blob, callback: (arrayBuffer: ArrayBuffer) => void): void;
+        /**
+         * ArrayBuffer to Blob
+         */
+        arrayBufferToBlob(arrayBuffer: ArrayBuffer, callback: (blob: Blob) => void): void;
+        /**
+         * ArrayBuffer to Uint8
+         * Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
+         */
+        arrayBufferToUint8(arrayBuffer: ArrayBuffer, callback: (uint8Array: Uint8Array) => void): void;
+        /**
+         * Uint8 to ArrayBuffer
+         * 我们Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
+         */
+        uint8ToArrayBuffer(uint8Array: Uint8Array, callback: (arrayBuffer: ArrayBuffer) => void): void;
+        /**
+         * Array to ArrayBuffer
+         * @param array 例如：[0x15, 0xFF, 0x01, 0x00, 0x34, 0xAB, 0x11];
+         */
+        arrayToArrayBuffer(array: number[], callback: (arrayBuffer: ArrayBuffer) => void): void;
+        /**
+         * TypeArray to Array
+         */
+        uint8ArrayToArray(u8a: Uint8Array): number[];
+        /**
+         * canvas转换为dataURL
+         */
+        canvasToDataURL(canvas: HTMLCanvasElement, type?: "png" | "jpeg"): string;
+        /**
+         * File、Blob对象转换为dataURL
+         * File对象也是一个Blob对象，二者的处理相同。
+         */
+        blobToDataURL(blob: Blob, callback: (dataurl: string) => void): void;
+        /**
+         * dataURL转换为Blob对象
+         */
+        dataURLtoBlob(dataurl: string, callback: (blob: Blob) => void): void;
+        /**
+         * dataURL图片数据转换为HTMLImageElement
+         * dataURL图片数据绘制到canvas
+         * 先构造Image对象，src为dataURL，图片onload之后绘制到canvas
+         */
+        dataURLDrawCanvas(dataurl: string, canvas: HTMLCanvasElement, callback: (img: HTMLImageElement) => void): void;
+        dataURLToArrayBuffer(dataurl: string, callback: (arraybuffer: ArrayBuffer) => void): void;
+        arrayBufferToDataURL(arrayBuffer: ArrayBuffer, callback: (dataurl: string) => void): void;
+        dataURLToImage(dataurl: string, callback: (img: HTMLImageElement) => void): void;
+        imageToDataURL(img: HTMLImageElement): string;
+        imageToCanvas(img: HTMLImageElement): HTMLCanvasElement;
+        imageDataToDataURL(imageData: ImageData): string;
+        imageDataToCanvas(imageData: ImageData): HTMLCanvasElement;
+        arrayBufferToImage(arrayBuffer: ArrayBuffer, callback: (img: HTMLImageElement) => void): void;
+        blobToText(blob: Blob, callback: (content: string) => void): void;
+        stringToArrayBuffer(str: string, callback: (arrayBuffer: ArrayBuffer) => void): void;
+        arrayBufferToString(arrayBuffer: ArrayBuffer, callback: (content: string) => void): void;
+        stringToUint8Array(str: string, callback: (uint8Array: Uint8Array) => void): void;
+        uint8ArrayToString(arr: Uint8Array, callback: (str: string) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 类工具
+     */
+    var classUtils: ClassUtils;
+    /**
+     * 类工具
+     */
+    class ClassUtils {
+        /**
+         * 返回对象的完全限定类名。
+         * @param value 需要完全限定类名称的对象，可以将任何 JavaScript 值传递给此方法，包括所有可用的 JavaScript 类型、对象实例、原始类型
+         * （如number)和类对象
+         * @returns 包含完全限定类名称的字符串。
+         */
+        getQualifiedClassName(value: any): string;
+        /**
+         * 返回 name 参数指定的类的类对象引用。
+         * @param name 类的名称。
+         */
+        getDefinitionByName(name: string, readCache?: boolean): any;
+        /**
+         * 新增反射对象所在的命名空间，使得getQualifiedClassName能够得到正确的结果
+         */
+        addClassNameSpace(namespace: string): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 图片相关工具
+     */
+    var imageUtil: ImageUtil;
+    /**
+     * 图片相关工具
+     */
+    class ImageUtil {
+        /**
+         * 加载图片
+         * @param url 图片路径
+         * @param callback 加载完成回调
+         */
+        loadImage(url: string, callback: (err: Error, image: HTMLImageElement) => void): void;
+        /**
+         * 获取图片数据
+         * @param image 加载完成的图片元素
+         */
+        getImageData(image: HTMLImageElement): ImageData;
+        /**
+         * 从url获取图片数据
+         * @param url 图片路径
+         * @param callback 获取图片数据完成回调
+         */
+        getImageDataFromUrl(url: string, callback: (imageData: ImageData) => void): void;
+        /**
+         * 创建ImageData
+         * @param width 数据宽度
+         * @param height 数据高度
+         * @param fillcolor 填充颜色
+         */
+        createImageData(width?: number, height?: number, fillcolor?: number): ImageData;
+        /**
+         * 创建默认粒子贴图
+         * @param size 尺寸
+         */
+        createDefaultParticle(size?: number): ImageData;
+        /**
+         * 创建颜色拾取矩形
+         * @param color 基色
+         * @param width 宽度
+         * @param height 高度
+         */
+        createColorPickerRect(color: number, width?: number, height?: number): ImageData;
+        /**
+         * 获取颜色的基色以及颜色拾取矩形所在位置
+         * @param color 查找颜色
+         */
+        getColorPickerRectAtPosition(color: number, rw: number, rh: number): Color3;
+        /**
+         * 获取颜色的基色以及颜色拾取矩形所在位置
+         * @param color 查找颜色
+         */
+        getColorPickerRectPosition(color: number): {
+            /**
+             * 基色
+             */
+            color: Color3;
+            /**
+             * 横向位置
+             */
+            ratioW: number;
+            /**
+             * 纵向位置
+             */
+            ratioH: number;
+        };
+        /**
+         * 创建颜色条带
+         * @param colors
+         * @param ratios [0,1]
+         * @param width
+         * @param height
+         * @param dirw true为横向条带，否则纵向条带
+         */
+        createColorPickerStripe(width: number, height: number, colors: number[], ratios?: number[], dirw?: boolean): ImageData;
+        getMixColor(colors: number[], ratios: number[], ratio: number): Color3;
+        getMixColorRatio(color: number, colors: number[], ratios?: number[]): number;
+        getMixColorAtRatio(ratio: number, colors: number[], ratios?: number[]): Color3;
+        createColorRect(color: Color4, width: number, height: number): ImageData;
+        createMinMaxGradientRect(gradient: IMinMaxGradient, width: number, height: number): ImageData;
+    }
+}
+/**
+ * @author mrdoob / http://mrdoob.com/
+ */
+interface Performance {
+    memory: any;
+}
+declare namespace feng3d {
+    class Stats {
+        static instance: Stats;
+        static init(parent?: HTMLElement): void;
+        REVISION: number;
+        dom: HTMLDivElement;
+        domElement: HTMLDivElement;
+        addPanel: (panel: StatsPanel) => StatsPanel;
+        showPanel: (id: number) => void;
+        setMode: (id: number) => void;
+        begin: () => void;
+        end: () => number;
+        update: () => void;
+        constructor();
+    }
+    class StatsPanel {
+        dom: HTMLCanvasElement;
+        update: (value: number, maxValue: number) => void;
+        constructor(name: string, fg: string, bg: string);
+    }
+}
+declare namespace feng3d {
+    /**
+     * 路径工具
+     */
+    var pathUtils: PathUtils;
+    /**
+     * 路径工具
+     */
+    class PathUtils {
+        /**
+         * 获取不带后缀名称
+         * @param path 路径
+         */
+        getName(path: string): string;
+        /**
+         * 获取带后缀名称
+         * @param path 路径
+         */
+        getNameWithExtension(path: string): string;
+        /**
+         * 获取后缀
+         * @param path 路径
+         */
+        getExtension(path: string): string;
+        /**
+         * 父路径
+         * @param path 路径
+         */
+        getParentPath(path: string): string;
+        /**
+         * 是否文件夹
+         * @param path 路径
+         */
+        isDirectory(path: string): boolean;
+        /**
+         * 获取目录深度
+         * @param path 路径
+         */
+        getDirDepth(path: string): number;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 着色器代码宏工具
+     */
+    var shaderMacroUtils: ShaderMacroUtils;
+    class ShaderMacroUtils {
+        /**
+         * 从着色器代码中获取宏变量列表
+         * @param vertex
+         * @param fragment
+         */
+        getMacroVariablesFromShaderCode(vertex: string, fragment: string): string[];
+        /**
+         * 从着色器代码中获取宏变量列表
+         * @param code
+         */
+        getMacroVariablesFromCode(code: string): string[];
+    }
+}
+declare namespace feng3d {
+    type Lazy<T> = T | (() => T);
+    type LazyObject<T> = {
+        [P in keyof T]: Lazy<T[P]>;
+    };
+    var lazy: {
+        getvalue: <T>(lazyItem: Lazy<T>) => T;
+    };
+}
+declare namespace feng3d {
+    /**
+     * 常用正则表示式
+     */
+    var regExps: RegExps;
+    /**
+     * 常用正则表示式
+     */
+    class RegExps {
+        /**
+         * json文件
+         */
+        json: RegExp;
+        /**
+         * 图片
+         */
+        image: RegExp;
+        /**
+         * 声音
+         */
+        audio: RegExp;
+        /**
+         * 命名空间
+         */
+        namespace: RegExp;
+        /**
+         * 类
+         */
+        classReg: RegExp;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 所有feng3d对象的基类
+     */
+    class Feng3dObject extends EventDispatcher {
+        /**
+         * 隐藏标记，用于控制是否在层级面板、检查器显示，是否保存
+         */
+        hideFlags: HideFlags;
+        /**
+         * 设置对象值
+         * @param v 对象对于的Object值
+         */
+        value(v: gPartial<this>): this;
+    }
+}
+interface IDBObjectStore {
+    getAllKeys(): IDBRequest;
+}
+declare namespace feng3d {
+    /**
+     *
+     */
+    var storage: Storage;
+    /**
+     *
+     */
+    class Storage {
+        /**
+         * 是否支持 indexedDB
+         */
+        support(): boolean;
+        getDatabase(dbname: string, callback: (err: any, database: IDBDatabase) => void): void;
+        deleteDatabase(dbname: string, callback?: (err: any) => void): void;
+        hasObjectStore(dbname: string, objectStroreName: string, callback: (has: boolean) => void): void;
+        getObjectStoreNames(dbname: string, callback: (err: Error | null, objectStoreNames: string[]) => void): void;
+        createObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void): void;
+        deleteObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void): void;
+        getAllKeys(dbname: string, objectStroreName: string, callback?: (err: Error, keys: string[]) => void): void;
+        get(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: ArrayBuffer) => void): void;
+        set(dbname: string, objectStroreName: string, key: string | number, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        delete(dbname: string, objectStroreName: string, key: string | number, callback?: (err?: Error) => void): void;
+        clear(dbname: string, objectStroreName: string, callback?: (err?: Error) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 索引数据文件系统
+     */
+    var indexedDBfs: IndexedDBfs;
+    /**
+     * 索引数据文件系统
+     */
+    class IndexedDBfs implements ReadWriteFS {
+        readonly type: FSType;
+        /**
+         * 数据库名称
+         */
+        DBname: string;
+        /**
+         * 项目名称（表单名称）
+         */
+        projectname: string;
+        constructor(DBname?: string, projectname?: string);
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
+        /**
+         * 文件是否存在
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        exists(path: string, callback: (exists: boolean) => void): void;
+        /**
+         * 读取文件夹中文件列表
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        readdir(path: string, callback: (err: Error, files: string[]) => void): void;
+        /**
+         * 新建文件夹
+         * @param path 文件夹路径
+         * @param callback 回调函数
+         */
+        mkdir(path: string, callback?: (err: Error) => void): void;
+        /**
+         * 删除文件
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        deleteFile(path: string, callback: (err: Error) => void): void;
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        /**
+         * 获取所有文件路径
+         * @param callback 回调函数
+         */
+        getAllPaths(callback: (err: Error, allPaths: string[]) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * Http可读文件系统
+     */
+    var httpFS: HttpFS;
+    /**
+     * Http可读文件系统
+     */
+    class HttpFS implements ReadFS {
+        /**
+         * 根路径
+         */
+        rootPath: string;
+        readonly type: FSType;
+        constructor();
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 文件系统类型
+     */
+    enum FSType {
+        http = "http",
+        native = "native",
+        indexedDB = "indexedDB"
+    }
+    /**
+     * 可读文件系统
+     */
+    interface ReadFS {
+        /**
+         * 文件系统类型
+         */
+        readonly type: FSType;
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): any;
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
+    }
+    /**
+     * 可读写文件系统
+     */
+    interface ReadWriteFS extends ReadFS {
+        /**
+         * 项目名称
+         */
+        projectname: string;
+        /**
+         * 文件是否存在
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        exists(path: string, callback: (exists: boolean) => void): void;
+        /**
+         * 读取文件夹中文件列表
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        readdir(path: string, callback: (err: Error, files: string[]) => void): void;
+        /**
+         * 新建文件夹
+         * @param path 文件夹路径
+         * @param callback 回调函数
+         */
+        mkdir(path: string, callback?: (err: Error) => void): void;
+        /**
+         * 删除文件
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        deleteFile(path: string, callback?: (err: Error) => void): void;
+        /**
+         * 写(新建)文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 资源系统
+     */
+    var assets: ReadAssets;
+    /**
+     * 资源
+     * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
+     */
+    class ReadAssets implements ReadFS {
+        /**
+         * 可读文件系统
+         */
+        fs: ReadFS;
+        readonly type: FSType;
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
+        /**
+         * 读取文件为字符串
+         */
+        readString(path: string, callback: (err: Error | null, data: string | null) => void): void;
+        /**
+         * 加载图片
+         * @param path 图片路径
+         * @param callback 加载完成回调
+         */
+        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
+        /**
+         * 读取文件为DataURL
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readDataURL(path: string, callback: (err: Error, dataurl: string) => void): void;
+        /**
+         * 读取文件为Blob
+         * @param path 资源路径
+         * @param callback 读取完成回调
+         */
+        readBlob(path: string, callback: (err: Error, blob: Blob) => void): void;
+        /**
+         * 读取文件为对象
+         * @param path 资源路径
+         * @param callback 读取完成回调
+         */
+        readObject(path: string, callback: (err: Error, object: Object) => void): void;
+        /**
+         * 读取文件为资源对象
+         * @param id 资源编号
+         * @param callback 读取完成回调
+         */
+        readAssets(id: string, callback: (err: Error, assets: Feng3dAssets) => void): void;
+    }
+}
+declare namespace feng3d {
+    class ReadWriteAssets extends ReadAssets implements ReadWriteFS {
+        /**
+         * 可读写文件系统
+         */
+        fs: ReadWriteFS;
+        projectname: string;
+        constructor(readWriteFS?: ReadWriteFS);
+        /**
+         * 文件是否存在
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        exists(path: string, callback: (exists: boolean) => void): void;
+        /**
+         * 读取文件夹中文件列表
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        readdir(path: string, callback: (err: Error, files: string[]) => void): void;
+        /**
+         * 新建文件夹
+         * @param path 文件夹路径
+         * @param callback 回调函数
+         */
+        mkdir(path: string, callback?: (err: Error) => void): void;
+        /**
+         * 删除文件
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        deleteFile(path: string, callback?: (err: Error) => void): void;
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        /**
+         * 保存字符串到文件
+         * @param path 文件路径
+         * @param string 保存的字符串
+         * @param callback 完成回调
+         */
+        writeString(path: string, string: string, callback?: (err: Error) => void): void;
+        /**
+         * 保存对象到文件
+         * @param path 文件路径
+         * @param object 保存的对象
+         * @param callback 完成回调
+         */
+        writeObject(path: string, object: Object, callback?: (err: Error) => void): void;
+        /**
+         * 保存资源
+         * @param assets 资源
+         * @param callback 保存资源完成回调
+         */
+        writeAssets(assets: Feng3dAssets, callback?: (err: Error) => void): void;
+        /**
+         * 获取所有文件路径
+         * @param callback 回调函数
+         */
+        getAllPaths(callback: (err: Error, allPaths: string[]) => void): void;
+        /**
+         * 获取指定文件下所有文件路径列表
+         */
+        getAllfilepathInFolder(dirpath: string, callback: (err: Error, filepaths: string[]) => void): void;
+        /**
+         * 复制文件
+         * @param src    源路径
+         * @param dest    目标路径
+         * @param callback 回调函数
+         */
+        copyFile(src: string, dest: string, callback?: (err: Error) => void): void;
+        /**
+         * 移动文件
+         * @param src 源路径
+         * @param dest 目标路径
+         * @param callback 回调函数
+         */
+        moveFile(src: string, dest: string, callback?: (err: Error) => void): void;
+        /**
+         * 重命名文件
+         * @param oldPath 老路径
+         * @param newPath 新路径
+         * @param callback 回调函数
+         */
+        renameFile(oldPath: string, newPath: string, callback?: (err: Error) => void): void;
+        /**
+         * 移动一组文件
+         * @param movelists 移动列表
+         * @param callback 回调函数
+         */
+        moveFiles(movelists: [string, string][], callback?: (err: Error) => void): void;
+        /**
+         * 复制一组文件
+         * @param copylists 复制列表
+         * @param callback 回调函数
+         */
+        copyFiles(copylists: [string, string][], callback?: (err: Error) => void): void;
+        /**
+         * 删除一组文件
+         * @param deletelists 删除列表
+         * @param callback 回调函数
+         */
+        deleteFiles(deletelists: string[], callback?: (err: Error) => void): void;
+        /**
+         * 重命名文件(夹)
+         * @param oldPath 老路径
+         * @param newPath 新路径
+         * @param callback 回调函数
+         */
+        rename(oldPath: string, newPath: string, callback?: (err: Error) => void): void;
+        /**
+         * 移动文件(夹)
+         * @param src 源路径
+         * @param dest 目标路径
+         * @param callback 回调函数
+         */
+        move(src: string, dest: string, callback?: (err: Error) => void): void;
+        /**
+         * 删除文件(夹)
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        delete(path: string, callback?: (err: Error) => void): void;
+        /**
+         * 删除资源
+         * @param assetsId 资源编号
+         * @param callback 回调函数
+         */
+        deleteAssets(assetsId: string, callback?: (err: Error) => void): void;
+        /**
+         * 是否为文件夹
+         * @param path 文件路径
+         */
+        isDir(path: string): boolean;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 资源扩展名
+     */
+    enum AssetExtension {
+        /**
+         * 文件夹
+         */
+        folder = "folder",
+        /**
+         * 音频
+         */
+        audio = "audio",
+        /**
+         * ts文件
+         */
+        ts = "ts",
+        /**
+         * js文件
+         */
+        js = "js",
+        /**
+         * 文本文件
+         */
+        txt = "txt",
+        /**
+         * json文件
+         */
+        json = "json",
+        /**
+         * OBJ模型资源附带的材质文件
+         */
+        mtl = "mtl",
+        /**
+         * OBJ模型文件
+         */
+        obj = "obj",
+        /**
+         * MD5模型文件
+         */
+        md5mesh = "md5mesh",
+        /**
+         * MD5动画
+         */
+        md5anim = "md5anim",
+        /**
+         * 魔兽MDL模型
+         */
+        mdl = "mdl",
+        /**
+         * 纹理
+         */
+        texture = "texture",
+        /**
+         * 立方体纹理
+         */
+        texturecube = "texturecube",
+        /**
+         * 材质
+         */
+        material = "material",
+        /**
+         * 几何体
+         */
+        geometry = "geometry",
+        /**
+         * 游戏对象
+         */
+        gameobject = "gameobject",
+        /**
+         * 场景
+         */
+        scene = "scene",
+        /**
+         * 动画
+         */
+        anim = "anim",
+        /**
+         * 着色器
+         */
+        shader = "shader",
+        /**
+         * 脚本
+         */
+        script = "script"
+    }
+}
+declare namespace feng3d {
+    /**
+     * feng3d资源
+     */
+    class Feng3dAssets extends Feng3dObject {
+        /**
+         * 资源编号
+         */
+        assetsId: string;
+        /**
+         * 名称
+         */
+        name: string;
+        /**
+         * 资源类型，由具体对象类型决定
+         */
+        assetType: AssetExtension;
+        /**
+         * 资源路径，由资源编号决定
+         */
+        path: string;
+        constructor();
+        /**
+         * 保存资源
+         * @param readWriteAssets
+         * @param callback  完成回调
+         */
+        save(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any;
+        /**
+         * 删除资源
+         * @param readWriteAssets 可读写资源管理器
+         * @param callback 完成回调
+         */
+        delete(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any;
+        protected assetsIdChanged(): void;
+        /**
+         * 获取资源所在文件夹
+         * @param assetsId 资源编号
+         */
+        static getAssetDir(assetsId: string): string;
+        /**
+         * 获取资源路径
+         * @param assetsId 资源编号
+         */
+        static getPath(assetsId: string): string;
+        static setAssets(assets: Feng3dAssets): void;
+        /**
+         * 获取资源
+         * @param assetsId 资源编号
+         */
+        static getAssets(assetsId: string): Feng3dAssets;
+        /**
+         * 获取指定类型资源
+         * @param type 资源类型
+         */
+        static getAssetsByType<T extends Feng3dAssets>(type: Constructor<T>): T[];
+        private static _lib;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 资源
+     */
+    var resources: Resources;
+    /**
+     * 资源
+     */
+    class Resources {
+        /**
+         * 卸载没有被使用的资源
+         */
+        unloadUnusedAssets(): void;
     }
 }
 declare namespace feng3d {
