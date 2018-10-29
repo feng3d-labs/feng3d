@@ -11,6 +11,20 @@
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
         // 自动生成文件
         "src/autofiles/ShaderConfig.ts",
+        //基础工具
+        "src/utils/debug.ts",
+        "src/utils/Watcher.ts",
+        "src/utils/Serialization.ts",
+        "src/utils/ObjectView.ts",
+        "src/utils/ObjectViewDefinitions.ts",
+        "src/utils/Ticker.ts",
+        "src/utils/DataTransform.ts",
+        "src/utils/ClassUtils.ts",
+        "src/utils/ImageUtil.ts",
+        "src/utils/Stats.ts",
+        "src/utils/PathUtils.ts",
+        "src/utils/Lazy.ts",
+        "src/utils/RegExps.ts",
         // 数据结构
         "src/ds/Object.ts",
         "src/ds/Map.ts",
@@ -73,21 +87,6 @@
         "src/event/WindowEventProxy.ts",
         "src/event/Feng3dDispatcher.ts",
         "src/resources/load.ts",
-        //基础工具
-        "src/utils/debug.ts",
-        "src/utils/Watcher.ts",
-        "src/utils/Serialization.ts",
-        "src/utils/ObjectView.ts",
-        "src/utils/ObjectViewDefinitions.ts",
-        "src/utils/Ticker.ts",
-        "src/utils/DataTransform.ts",
-        "src/utils/ClassUtils.ts",
-        "src/utils/ImageUtil.ts",
-        "src/utils/Stats.ts",
-        "src/utils/PathUtils.ts",
-        "src/render/shader/ShaderMacroUtils.ts",
-        "src/utils/Lazy.ts",
-        "src/utils/RegExps.ts",
         //
         "src/core/Feng3dObject.ts",
         //
@@ -143,6 +142,7 @@
         "src/render/FrameBufferObject.ts",
         "src/render/RenderBuffer.ts",
         //
+        "src/render/shader/ShaderMacroUtils.ts",
         "src/render/shader/Macro.ts",
         "src/render/shader/ShaderLib.ts",
         //

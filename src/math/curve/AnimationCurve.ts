@@ -6,7 +6,7 @@ namespace feng3d
      * 
      * 基于时间轴的连续三阶Bézier曲线
      */
-    export class AnimationCurve
+    export class AnimationCurve implements IMinMaxCurve
     {
         /**
          * 最大tan值，超出该值后将会变成分段

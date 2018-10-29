@@ -15,13 +15,18 @@ namespace feng3d
          * 在渐变中定义的所有alpha键。
          */
         @serialize
-        alphaKeys: GradientAlphaKey[] = [];
+        get alphaKeys() { return this._alphaKeys.concat(); }
+        set alphaKeys(v) { this._alphaKeys = this.getRealAlphaKeys(v); }
+        private _alphaKeys: GradientAlphaKey[] = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
 
         /**
          * 在渐变中定义的所有color键。
          */
         @serialize
-        colorKeys: GradientColorKey[] = [];
+        get colorKeys() { return this._colorKeys.concat(); }
+        set colorKeys(v) { this._colorKeys = this.getRealColorKeys(v) }
+
+        private _colorKeys: GradientColorKey[] = [{ color: new Color3(1, 1, 1), time: 0 }, { color: new Color3(1, 1, 1), time: 1 }];
 
         /**
          * 获取值
@@ -40,7 +45,7 @@ namespace feng3d
          */
         getAlpha(time: number)
         {
-            var alphaKeys = this.getRealAlphaKeys();
+            var alphaKeys = this._alphaKeys;
             for (let i = 0, n = alphaKeys.length - 1; i < n; i++)
             {
                 var t = alphaKeys[i].time, v = alphaKeys[i].alpha, nt = alphaKeys[i + 1].time, nv = alphaKeys[i + 1].alpha;
@@ -61,7 +66,7 @@ namespace feng3d
          */
         getColor(time: number)
         {
-            var colorKeys = this.getRealColorKeys();
+            var colorKeys = this._colorKeys;
             for (let i = 0, n = colorKeys.length - 1; i < n; i++)
             {
                 var t = colorKeys[i].time, v = colorKeys[i].color, nt = colorKeys[i + 1].time, nv = colorKeys[i + 1].color;
@@ -77,11 +82,11 @@ namespace feng3d
         }
 
         /**
-         * 获取标准 alpha 键列表
+         * 调整 alpha 键列表
          */
-        getRealAlphaKeys()
+        private getRealAlphaKeys(alphaKeys: GradientAlphaKey[])
         {
-            var alphaKeys = this.alphaKeys.concat().sort((a, b) => a.time - b.time);
+            alphaKeys = alphaKeys.concat().sort((a, b) => a.time - b.time);
             if (alphaKeys.length == 0)
             {
                 alphaKeys = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
@@ -103,9 +108,9 @@ namespace feng3d
         /**
          * 获取标准 color 键列表
          */
-        getRealColorKeys()
+        private getRealColorKeys(colorKeys: GradientColorKey[])
         {
-            var colorKeys = this.colorKeys.concat().sort((a, b) => a.time - b.time);
+            colorKeys = colorKeys.concat().sort((a, b) => a.time - b.time);
             if (colorKeys.length == 0)
             {
                 colorKeys = [{ color: new Color3(1, 1, 1), time: 0 }, { color: new Color3(1, 1, 1), time: 1 }];
