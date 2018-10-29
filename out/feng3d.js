@@ -9263,27 +9263,19 @@ var feng3d;
              * 渐变模式
              */
             this.mode = feng3d.GradientMode.Blend;
-            this._alphaKeys = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
-            this._colorKeys = [{ color: new feng3d.Color3(1, 1, 1), time: 0 }, { color: new feng3d.Color3(1, 1, 1), time: 1 }];
-        }
-        Object.defineProperty(Gradient.prototype, "alphaKeys", {
             /**
              * 在渐变中定义的所有alpha键。
+             *
+             * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
              */
-            get: function () { return this._alphaKeys; },
-            set: function (v) { this._alphaKeys = v; this._alphaKeys.sort(function (a, b) { return a.time - b.time; }); },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Gradient.prototype, "colorKeys", {
+            this.alphaKeys = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
             /**
              * 在渐变中定义的所有color键。
+             *
+             * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
              */
-            get: function () { return this._colorKeys; },
-            set: function (v) { this._colorKeys = v; this._colorKeys.sort(function (a, b) { return a.time - b.time; }); },
-            enumerable: true,
-            configurable: true
-        });
+            this.colorKeys = [{ color: new feng3d.Color3(1, 1, 1), time: 0 }, { color: new feng3d.Color3(1, 1, 1), time: 1 }];
+        }
         /**
          * 获取值
          * @param time 时间
@@ -9298,7 +9290,7 @@ var feng3d;
          * @param time 时间
          */
         Gradient.prototype.getAlpha = function (time) {
-            var alphaKeys = this._alphaKeys;
+            var alphaKeys = this.alphaKeys;
             if (alphaKeys.length == 1)
                 return alphaKeys[0].alpha;
             if (time <= alphaKeys[0].time)
@@ -9324,7 +9316,7 @@ var feng3d;
          * @param time 时间
          */
         Gradient.prototype.getColor = function (time) {
-            var colorKeys = this._colorKeys;
+            var colorKeys = this.colorKeys;
             if (colorKeys.length == 1)
                 return colorKeys[0].color;
             if (time <= colorKeys[0].time)
@@ -9350,10 +9342,10 @@ var feng3d;
         ], Gradient.prototype, "mode", void 0);
         __decorate([
             feng3d.serialize
-        ], Gradient.prototype, "alphaKeys", null);
+        ], Gradient.prototype, "alphaKeys", void 0);
         __decorate([
             feng3d.serialize
-        ], Gradient.prototype, "colorKeys", null);
+        ], Gradient.prototype, "colorKeys", void 0);
         return Gradient;
     }());
     feng3d.Gradient = Gradient;

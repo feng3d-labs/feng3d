@@ -13,20 +13,19 @@ namespace feng3d
 
         /**
          * 在渐变中定义的所有alpha键。
+         * 
+         * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
          */
         @serialize
-        get alphaKeys() { return this._alphaKeys; }
-        set alphaKeys(v) { this._alphaKeys = v; this._alphaKeys.sort((a, b) => a.time - b.time); }
-        private _alphaKeys: GradientAlphaKey[] = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
+        alphaKeys: GradientAlphaKey[] = [{ alpha: 1, time: 0 }, { alpha: 1, time: 1 }];
 
         /**
          * 在渐变中定义的所有color键。
+         * 
+         * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
          */
         @serialize
-        get colorKeys() { return this._colorKeys; }
-        set colorKeys(v) { this._colorKeys = v; this._colorKeys.sort((a, b) => a.time - b.time); }
-
-        private _colorKeys: GradientColorKey[] = [{ color: new Color3(1, 1, 1), time: 0 }, { color: new Color3(1, 1, 1), time: 1 }];
+        colorKeys: GradientColorKey[] = [{ color: new Color3(1, 1, 1), time: 0 }, { color: new Color3(1, 1, 1), time: 1 }];
 
         /**
          * 获取值
@@ -45,7 +44,7 @@ namespace feng3d
          */
         getAlpha(time: number)
         {
-            var alphaKeys = this._alphaKeys;
+            var alphaKeys = this.alphaKeys;
             if (alphaKeys.length == 1) return alphaKeys[0].alpha;
             if (time <= alphaKeys[0].time) return alphaKeys[0].alpha;
             if (time >= alphaKeys[alphaKeys.length - 1].time) return alphaKeys[alphaKeys.length - 1].alpha;
@@ -70,7 +69,7 @@ namespace feng3d
          */
         getColor(time: number)
         {
-            var colorKeys = this._colorKeys;
+            var colorKeys = this.colorKeys;
             if (colorKeys.length == 1) return colorKeys[0].color;
             if (time <= colorKeys[0].time) return colorKeys[0].color;
             if (time >= colorKeys[colorKeys.length - 1].time) return colorKeys[colorKeys.length - 1].color;

@@ -4729,14 +4729,16 @@ declare namespace feng3d {
         mode: GradientMode;
         /**
          * 在渐变中定义的所有alpha键。
+         *
+         * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
          */
         alphaKeys: GradientAlphaKey[];
-        private _alphaKeys;
         /**
          * 在渐变中定义的所有color键。
+         *
+         * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
          */
         colorKeys: GradientColorKey[];
-        private _colorKeys;
         /**
          * 获取值
          * @param time 时间
