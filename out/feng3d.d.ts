@@ -1179,7 +1179,7 @@ interface ObjectConstructor {
      * @param obj 对象
      * @param value 数据
      */
-    value<T>(obj: T, value: gPartial<T>): T;
+    setValue<T>(obj: T, value: gPartial<T>): T;
 }
 interface Map<K, V> {
     clear(): void;
@@ -5541,11 +5541,6 @@ declare namespace feng3d {
          * 隐藏标记，用于控制是否在层级面板、检查器显示，是否保存
          */
         hideFlags: HideFlags;
-        /**
-         * 设置对象值
-         * @param v 对象对于的Object值
-         */
-        value(v: gPartial<this>): this;
     }
 }
 interface IDBObjectStore {
@@ -12680,7 +12675,7 @@ declare namespace feng3d {
         /**
          * 起始寿命为秒，粒子寿命为0时死亡。
          */
-        startLifetime: MinMaxCurve;
+        startLifetime: number;
         /**
          * 粒子的起始速度，应用于起始方向。
          */

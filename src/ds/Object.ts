@@ -67,7 +67,7 @@ interface ObjectConstructor
      * @param obj 对象
      * @param value 数据
      */
-    value<T>(obj: T, value: gPartial<T>): T;
+    setValue<T>(obj: T, value: gPartial<T>): T;
 }
 
 if (typeof Object.assign != 'function')
@@ -136,7 +136,7 @@ Object.runFunc = function (obj, func)
     return obj;
 }
 
-Object.value = function (obj, value)
+Object.setValue = function (obj, value)
 {
     feng3d.serialization.setValue(obj, value);
     return obj;

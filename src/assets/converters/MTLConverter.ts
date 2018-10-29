@@ -20,7 +20,7 @@ namespace feng3d
             for (const name in mtl)
             {
                 var materialInfo = mtl[name];
-                var material = materials[name] = new Material().value({
+                var material = materials[name] = Object.setValue(new Material(), {
                     name: materialInfo.name,
                     uniforms: {
                         u_diffuse: { r: materialInfo.kd[0], g: materialInfo.kd[1], b: materialInfo.kd[2], },

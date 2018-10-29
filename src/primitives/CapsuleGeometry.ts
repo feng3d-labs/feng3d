@@ -225,5 +225,5 @@ namespace feng3d
         }
 
     }
-    Feng3dAssets.setAssets(Geometry.capsule = new CapsuleGeometry().value({ name: "Capsule", assetsId: "Capsule", hideFlags: HideFlags.NotEditable }));
+    Feng3dAssets.setAssets(Geometry.capsule = Object.setValue(new CapsuleGeometry(), { name: "Capsule", assetsId: "Capsule", hideFlags: HideFlags.NotEditable }));
 }

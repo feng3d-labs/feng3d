@@ -106,7 +106,7 @@ namespace feng3d
         constructor()
         {
             super();
-            this.shadowCamera = new GameObject().value({ name: "LightShadowCamera" }).addComponent(Camera);
+            this.shadowCamera = Object.setValue(new GameObject(), { name: "LightShadowCamera" }).addComponent(Camera);
         }
 
         init(gameObject: GameObject)
@@ -126,8 +126,8 @@ namespace feng3d
 
                 //材质
                 var model = gameObject.getComponent(Model);
-                model.geometry = new feng3d.PlaneGeometry().value({ width: this.lightType == LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
-                var textureMaterial = model.material = new Material().value({ shaderName: "texture", uniforms: { s_texture: this.frameBufferObject.texture } });
+                model.geometry = Object.setValue(new feng3d.PlaneGeometry(), { width: this.lightType == LightType.Point ? 1 : 0.5, height: 0.5, segmentsW: 1, segmentsH: 1, yUp: false });
+                var textureMaterial = model.material = Object.setValue(new Material(), { shaderName: "texture", uniforms: { s_texture: this.frameBufferObject.texture } });
                 //
                 // textureMaterial.uniforms.s_texture.url = 'Assets/pz.jpg';
                 // textureMaterial.uniforms.u_color.setTo(1.0, 0.0, 0.0, 1.0);

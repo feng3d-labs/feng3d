@@ -41,7 +41,7 @@ namespace feng3d.war3
 			this.meshs = [];
 			this.meshs.length = this.geosets.length;
 
-			var container = new GameObject().value({ name: this.model.name });
+			var container = Object.setValue(new GameObject(), { name: this.model.name });
 
 			var skeletonjoints = createSkeleton(this);
 			this.skeletonComponent = container.addComponent(SkeletonComponent);
@@ -80,7 +80,7 @@ namespace feng3d.war3
 					// {
 					// image = image.substring(0, image.indexOf("."));
 					// image += ".JPG";
-					material.material = model.material = new feng3d.Material().value({ name: image, renderParams: { cullFace: CullFace.FRONT } });
+					material.material = model.material = Object.setValue(new feng3d.Material(), { name: image, renderParams: { cullFace: CullFace.FRONT } });
 					// }
 
 					feng3dDispatcher.dispatch("assets.parsed", material.material);

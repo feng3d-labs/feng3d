@@ -62,7 +62,7 @@ namespace feng3d
             target.reflect(normal).negate();
             target.add(mirrorWorldPosition);
 
-            var mirrorCamera = new GameObject().value({ name: "waterMirrorCamera" }).addComponent(Camera);
+            var mirrorCamera = Object.setValue(new GameObject(), { name: "waterMirrorCamera" }).addComponent(Camera);
             mirrorCamera.transform.position = view;
             mirrorCamera.transform.lookAt(target, rotationMatrix.up);
 

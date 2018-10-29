@@ -23,7 +23,7 @@ namespace feng3d
                 var cameras = this.scene.getComponentsInChildren(Camera);
                 if (cameras.length == 0)
                 {
-                    this._camera = new GameObject().value({ name: "defaultCamera" }).addComponent(Camera);
+                    this._camera = Object.setValue(new GameObject(), { name: "defaultCamera" }).addComponent(Camera);
                     this.scene.gameObject.addChild(this._camera.gameObject);
                 } else
                 {
@@ -104,7 +104,7 @@ namespace feng3d
 
             this.canvas = canvas;
 
-            this.scene = scene || new GameObject().value({ name: "scene" }).addComponent(Scene3D);
+            this.scene = scene || Object.setValue(new GameObject(), { name: "scene" }).addComponent(Scene3D);
             this.camera = camera;
 
             this.start();
