@@ -153,7 +153,6 @@
         "src/render/renderer/ShadowRenderer.ts",
         "src/render/renderer/OutlineRenderer.ts",
         "src/render/renderer/WireframeRenderer.ts",
-        "src/render/renderer/CartoonComponent.ts",
         // 组件模块
         "src/component/Component.ts",
         "src/component/Behaviour.ts",
@@ -170,6 +169,8 @@
         "src/component/HoldSizeComponent.ts",
         "src/component/BillboardComponent.ts",
         "src/component/WireframeComponent.ts",
+        "src/component/CartoonComponent.ts",
+        "src/component/OutLineComponent.ts",
         "src/core/Model.ts",
         "src/core/MeshModel.ts",
         "src/core/ScriptComponent.ts",

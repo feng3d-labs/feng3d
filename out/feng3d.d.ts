@@ -9170,32 +9170,6 @@ declare namespace feng3d {
         init(): void;
         draw(gl: GL, scene3d: Scene3D, camera: Camera): void;
     }
-    interface ComponentMap {
-        OutLineComponent: OutLineComponent;
-    }
-    class OutLineComponent extends Component {
-        __class__: "feng3d.OutLineComponent";
-        size: number;
-        color: Color4;
-        outlineMorphFactor: number;
-        init(gameobject: GameObject): void;
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
-    }
-    interface Uniforms {
-        /**
-         * 描边宽度
-         */
-        u_outlineSize: number;
-        /**
-         * 描边颜色
-         */
-        u_outlineColor: Color4;
-        /**
-         * 描边形态因子
-         * (0.0，1.0):0.0表示延法线方向，1.0表示延顶点方向
-         */
-        u_outlineMorphFactor: number;
-    }
 }
 declare namespace feng3d {
     /**
@@ -9220,38 +9194,6 @@ declare namespace feng3d {
          */
         wireframeindexBuffer: Index;
         wireframeShader: Shader;
-    }
-}
-declare namespace feng3d {
-    interface ComponentMap {
-        CartoonComponent: CartoonComponent;
-    }
-    /**
-     * 参考
-     */
-    class CartoonComponent extends Component {
-        __class__: "feng3d.CartoonComponent";
-        outlineSize: number;
-        outlineColor: Color4;
-        outlineMorphFactor: number;
-        /**
-         * 半兰伯特值diff，分段值 4个(0.0,1.0)
-         */
-        diffuseSegment: Vector4;
-        /**
-         * 半兰伯特值diff，替换分段值 4个(0.0,1.0)
-         */
-        diffuseSegmentValue: Vector4;
-        specularSegment: number;
-        cartoon_Anti_aliasing: boolean;
-        _cartoon_Anti_aliasing: boolean;
-        init(gameObject: GameObject): void;
-        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
-    }
-    interface Uniforms {
-        u_diffuseSegment: Vector4;
-        u_diffuseSegmentValue: Vector4;
-        u_specularSegment: number;
     }
 }
 declare namespace feng3d {
@@ -10011,6 +9953,66 @@ declare namespace feng3d {
     class WireframeComponent extends Component {
         __class__: "feng3d.WireframeComponent";
         color: Color4;
+    }
+}
+declare namespace feng3d {
+    interface ComponentMap {
+        CartoonComponent: CartoonComponent;
+    }
+    /**
+     * 参考
+     */
+    class CartoonComponent extends Component {
+        __class__: "feng3d.CartoonComponent";
+        outlineSize: number;
+        outlineColor: Color4;
+        outlineMorphFactor: number;
+        /**
+         * 半兰伯特值diff，分段值 4个(0.0,1.0)
+         */
+        diffuseSegment: Vector4;
+        /**
+         * 半兰伯特值diff，替换分段值 4个(0.0,1.0)
+         */
+        diffuseSegmentValue: Vector4;
+        specularSegment: number;
+        cartoon_Anti_aliasing: boolean;
+        _cartoon_Anti_aliasing: boolean;
+        init(gameObject: GameObject): void;
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
+    }
+    interface Uniforms {
+        u_diffuseSegment: Vector4;
+        u_diffuseSegmentValue: Vector4;
+        u_specularSegment: number;
+    }
+}
+declare namespace feng3d {
+    interface ComponentMap {
+        OutLineComponent: OutLineComponent;
+    }
+    class OutLineComponent extends Component {
+        __class__: "feng3d.OutLineComponent";
+        size: number;
+        color: Color4;
+        outlineMorphFactor: number;
+        init(gameobject: GameObject): void;
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
+    }
+    interface Uniforms {
+        /**
+         * 描边宽度
+         */
+        u_outlineSize: number;
+        /**
+         * 描边颜色
+         */
+        u_outlineColor: Color4;
+        /**
+         * 描边形态因子
+         * (0.0，1.0):0.0表示延法线方向，1.0表示延顶点方向
+         */
+        u_outlineMorphFactor: number;
     }
 }
 declare namespace feng3d {

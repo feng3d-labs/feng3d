@@ -15407,7 +15407,7 @@ var feng3d;
             this.init();
             for (var i = 0; i < unblenditems.length; i++) {
                 var model = unblenditems[i];
-                if (model.getComponent(OutLineComponent) || model.getComponent(feng3d.CartoonComponent)) {
+                if (model.getComponent(feng3d.OutLineComponent) || model.getComponent(feng3d.CartoonComponent)) {
                     var renderAtomic = model.gameObject.renderAtomic;
                     model.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
                     this.renderAtomic.next = renderAtomic;
@@ -15419,39 +15419,6 @@ var feng3d;
     }());
     feng3d.OutlineRenderer = OutlineRenderer;
     feng3d.outlineRenderer = new OutlineRenderer();
-    var OutLineComponent = /** @class */ (function (_super) {
-        __extends(OutLineComponent, _super);
-        function OutLineComponent() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.OutLineComponent";
-            _this.size = 1;
-            _this.color = new feng3d.Color4(0.2, 0.2, 0.2, 1.0);
-            _this.outlineMorphFactor = 0.0;
-            return _this;
-        }
-        OutLineComponent.prototype.init = function (gameobject) {
-            _super.prototype.init.call(this, gameobject);
-        };
-        OutLineComponent.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
-            renderAtomic.uniforms.u_outlineSize = this.size;
-            renderAtomic.uniforms.u_outlineColor = this.color;
-            renderAtomic.uniforms.u_outlineMorphFactor = this.outlineMorphFactor;
-        };
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], OutLineComponent.prototype, "size", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], OutLineComponent.prototype, "color", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], OutLineComponent.prototype, "outlineMorphFactor", void 0);
-        return OutLineComponent;
-    }(feng3d.Component));
-    feng3d.OutLineComponent = OutLineComponent;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -15529,85 +15496,6 @@ var feng3d;
     }());
     feng3d.WireframeRenderer = WireframeRenderer;
     feng3d.wireframeRenderer = new WireframeRenderer();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 参考
-     */
-    var CartoonComponent = /** @class */ (function (_super) {
-        __extends(CartoonComponent, _super);
-        function CartoonComponent() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.CartoonComponent";
-            _this.outlineSize = 1;
-            _this.outlineColor = new feng3d.Color4(0.2, 0.2, 0.2, 1.0);
-            _this.outlineMorphFactor = 0.0;
-            /**
-             * 半兰伯特值diff，分段值 4个(0.0,1.0)
-             */
-            _this.diffuseSegment = new feng3d.Vector4(0.1, 0.3, 0.6, 1.0);
-            /**
-             * 半兰伯特值diff，替换分段值 4个(0.0,1.0)
-             */
-            _this.diffuseSegmentValue = new feng3d.Vector4(0.1, 0.3, 0.6, 1.0);
-            _this.specularSegment = 0.5;
-            _this._cartoon_Anti_aliasing = false;
-            return _this;
-        }
-        Object.defineProperty(CartoonComponent.prototype, "cartoon_Anti_aliasing", {
-            get: function () {
-                return this._cartoon_Anti_aliasing;
-            },
-            set: function (value) {
-                this._cartoon_Anti_aliasing = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        CartoonComponent.prototype.init = function (gameObject) {
-            _super.prototype.init.call(this, gameObject);
-        };
-        CartoonComponent.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
-            renderAtomic.uniforms.u_diffuseSegment = this.diffuseSegment;
-            renderAtomic.uniforms.u_diffuseSegmentValue = this.diffuseSegmentValue;
-            renderAtomic.uniforms.u_specularSegment = this.specularSegment;
-            //
-            renderAtomic.uniforms.u_outlineSize = this.outlineSize;
-            renderAtomic.uniforms.u_outlineColor = this.outlineColor;
-            renderAtomic.uniforms.u_outlineMorphFactor = this.outlineMorphFactor;
-        };
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], CartoonComponent.prototype, "outlineSize", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], CartoonComponent.prototype, "outlineColor", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], CartoonComponent.prototype, "outlineMorphFactor", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], CartoonComponent.prototype, "diffuseSegment", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], CartoonComponent.prototype, "diffuseSegmentValue", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], CartoonComponent.prototype, "specularSegment", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], CartoonComponent.prototype, "cartoon_Anti_aliasing", null);
-        return CartoonComponent;
-    }(feng3d.Component));
-    feng3d.CartoonComponent = CartoonComponent;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -17656,6 +17544,121 @@ var feng3d;
         return WireframeComponent;
     }(feng3d.Component));
     feng3d.WireframeComponent = WireframeComponent;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 参考
+     */
+    var CartoonComponent = /** @class */ (function (_super) {
+        __extends(CartoonComponent, _super);
+        function CartoonComponent() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.CartoonComponent";
+            _this.outlineSize = 1;
+            _this.outlineColor = new feng3d.Color4(0.2, 0.2, 0.2, 1.0);
+            _this.outlineMorphFactor = 0.0;
+            /**
+             * 半兰伯特值diff，分段值 4个(0.0,1.0)
+             */
+            _this.diffuseSegment = new feng3d.Vector4(0.1, 0.3, 0.6, 1.0);
+            /**
+             * 半兰伯特值diff，替换分段值 4个(0.0,1.0)
+             */
+            _this.diffuseSegmentValue = new feng3d.Vector4(0.1, 0.3, 0.6, 1.0);
+            _this.specularSegment = 0.5;
+            _this._cartoon_Anti_aliasing = false;
+            return _this;
+        }
+        Object.defineProperty(CartoonComponent.prototype, "cartoon_Anti_aliasing", {
+            get: function () {
+                return this._cartoon_Anti_aliasing;
+            },
+            set: function (value) {
+                this._cartoon_Anti_aliasing = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        CartoonComponent.prototype.init = function (gameObject) {
+            _super.prototype.init.call(this, gameObject);
+        };
+        CartoonComponent.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
+            renderAtomic.uniforms.u_diffuseSegment = this.diffuseSegment;
+            renderAtomic.uniforms.u_diffuseSegmentValue = this.diffuseSegmentValue;
+            renderAtomic.uniforms.u_specularSegment = this.specularSegment;
+            //
+            renderAtomic.uniforms.u_outlineSize = this.outlineSize;
+            renderAtomic.uniforms.u_outlineColor = this.outlineColor;
+            renderAtomic.uniforms.u_outlineMorphFactor = this.outlineMorphFactor;
+        };
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], CartoonComponent.prototype, "outlineSize", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], CartoonComponent.prototype, "outlineColor", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], CartoonComponent.prototype, "outlineMorphFactor", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], CartoonComponent.prototype, "diffuseSegment", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], CartoonComponent.prototype, "diffuseSegmentValue", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], CartoonComponent.prototype, "specularSegment", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], CartoonComponent.prototype, "cartoon_Anti_aliasing", null);
+        return CartoonComponent;
+    }(feng3d.Component));
+    feng3d.CartoonComponent = CartoonComponent;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var OutLineComponent = /** @class */ (function (_super) {
+        __extends(OutLineComponent, _super);
+        function OutLineComponent() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.OutLineComponent";
+            _this.size = 1;
+            _this.color = new feng3d.Color4(0.2, 0.2, 0.2, 1.0);
+            _this.outlineMorphFactor = 0.0;
+            return _this;
+        }
+        OutLineComponent.prototype.init = function (gameobject) {
+            _super.prototype.init.call(this, gameobject);
+        };
+        OutLineComponent.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
+            renderAtomic.uniforms.u_outlineSize = this.size;
+            renderAtomic.uniforms.u_outlineColor = this.color;
+            renderAtomic.uniforms.u_outlineMorphFactor = this.outlineMorphFactor;
+        };
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], OutLineComponent.prototype, "size", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], OutLineComponent.prototype, "color", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], OutLineComponent.prototype, "outlineMorphFactor", void 0);
+        return OutLineComponent;
+    }(feng3d.Component));
+    feng3d.OutLineComponent = OutLineComponent;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
