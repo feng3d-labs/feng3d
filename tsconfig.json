@@ -21,7 +21,8 @@
         "src/math/Bezier.ts",
         "src/math/EquationSolving.ts",
         "src/math/HighFunction.ts",
-        "src/math/CubicBeziers.ts",
+        "src/math/AnimationCurveKeyframe.ts",
+        "src/math/AnimationCurve.ts",
         //
         "src/event/EventDispatcher.ts",
         "src/event/EventProxy.ts",
@@ -264,8 +265,6 @@
         "src/animators/particle/math/MinMaxCurveMode.ts",
         "src/animators/particle/math/MinMaxCurveConstant.ts",
         "src/animators/particle/math/WrapMode.ts",
-        "src/animators/particle/math/AnimationCurveKeyframe.ts",
-        "src/animators/particle/math/AnimationCurve.ts",
         "src/animators/particle/math/RandomBetweenTwoConstants.ts",
         "src/animators/particle/math/RandomBetweenTwoCurves.ts",
         "src/animators/particle/math/MinMaxCurve.ts",

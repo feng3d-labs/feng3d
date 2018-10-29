@@ -706,26 +706,31 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface CubicBeziersKey {
+    /**
+     * 动画关键帧
+     */
+    class AnimationCurveKeyframe {
         /**
          * 时间轴的位置 [0,1]
          */
-        t: number;
+        time: number;
         /**
          * 值 [0,1]
          */
-        y: number;
+        value: number;
         /**
          * 斜率
          */
-        tan: number;
+        tangent: number;
     }
+}
+declare namespace feng3d {
     /**
-     * 基于时间轴的连续三阶Bézier曲线
+     * 动画曲线
      *
-     * @author feng / http://feng3d.com 10/06/2018
+     * 基于时间轴的连续三阶Bézier曲线
      */
-    class CubicBeziers {
+    class AnimationCurve {
         /**
          * 最大tan值，超出该值后将会变成分段
          */
@@ -742,7 +747,7 @@ declare namespace feng3d {
          *
          * @param key 关键点
          */
-        addKey(key: CubicBeziersKey): void;
+        addKey(key: AnimationCurveKeyframe): void;
         /**
          * 关键点排序
          *
@@ -753,25 +758,25 @@ declare namespace feng3d {
          * 删除关键点
          * @param key 关键点
          */
-        deleteKey(key: CubicBeziersKey): void;
+        deleteKey(key: AnimationCurveKeyframe): void;
         /**
          * 获取关键点
          * @param index 索引
          */
-        getKey(index: number): CubicBeziersKey;
+        getKey(index: number): AnimationCurveKeyframe;
         /**
          * 获取关键点索引
          * @param key 关键点
          */
-        indexOfKeys(key: CubicBeziersKey): number;
+        indexOfKeys(key: AnimationCurveKeyframe): number;
         /**
          * 获取曲线上点信息
          * @param t 时间轴的位置 [0,1]
          */
         getPoint(t: number): {
-            t: number;
-            y: number;
-            tan: number;
+            time: number;
+            value: number;
+            tangent: number;
         };
         /**
          * 获取值
@@ -784,20 +789,20 @@ declare namespace feng3d {
          * @param y 值
          * @param precision 查找精度
          */
-        findKey(t: number, y: number, precision: number): CubicBeziersKey;
+        findKey(t: number, y: number, precision: number): AnimationCurveKeyframe;
         /**
          * 添加曲线上的关键点
          *
          * 如果该点在曲线上，则添加关键点
          *
-         * @param t 时间轴的位置 [0,1]
-         * @param y y坐标
+         * @param time 时间轴的位置 [0,1]
+         * @param value 值
          * @param precision 查找进度
          */
-        addKeyAtCurve(t: number, y: number, precision: number): {
-            t: number;
-            y: number;
-            tan: number;
+        addKeyAtCurve(time: number, value: number, precision: number): {
+            time: number;
+            value: number;
+            tangent: number;
         };
         /**
          * 获取曲线样本数据
@@ -12808,44 +12813,6 @@ declare namespace feng3d {
         Loop = 0,
         PingPong = 1,
         Clamp = 2
-    }
-}
-declare namespace feng3d {
-    /**
-     * 动画曲线关键帧
-     */
-    class AnimationCurveKeyframe {
-        inTangent: number;
-        outTangent: number;
-        /**
-         *
-         */
-        tangentMode: number;
-        /**
-         * 关键帧时间
-         */
-        time: number;
-        /**
-         * 关键帧值
-         */
-        value: number;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 动画曲线
-     */
-    class AnimationCurve implements IMinMaxCurve {
-        /**
-         * 动画曲线关键帧
-         */
-        keys: CubicBeziersKey[];
-        postWrapMode: WrapMode;
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): number;
     }
 }
 declare namespace feng3d {

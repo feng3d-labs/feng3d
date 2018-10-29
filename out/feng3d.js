@@ -1,3 +1,9 @@
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -11,12 +17,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
 if (typeof Object.assign != 'function') {
     // Must be writable: true, enumerable: false, configurable: true
     Object.defineProperty(Object, "assign", {
@@ -1383,19 +1383,40 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 基于时间轴的连续三阶Bézier曲线
-     *
-     * @author feng / http://feng3d.com 10/06/2018
+     * 动画关键帧
      */
-    var CubicBeziers = /** @class */ (function () {
-        function CubicBeziers() {
+    var AnimationCurveKeyframe = /** @class */ (function () {
+        function AnimationCurveKeyframe() {
+        }
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurveKeyframe.prototype, "time", void 0);
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurveKeyframe.prototype, "value", void 0);
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurveKeyframe.prototype, "tangent", void 0);
+        return AnimationCurveKeyframe;
+    }());
+    feng3d.AnimationCurveKeyframe = AnimationCurveKeyframe;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 动画曲线
+     *
+     * 基于时间轴的连续三阶Bézier曲线
+     */
+    var AnimationCurve = /** @class */ (function () {
+        function AnimationCurve() {
             /**
              * 最大tan值，超出该值后将会变成分段
              */
             this.maxtan = 1000;
             this.keys = [];
         }
-        Object.defineProperty(CubicBeziers.prototype, "numKeys", {
+        Object.defineProperty(AnimationCurve.prototype, "numKeys", {
             /**
              * 关键点数量
              */
@@ -1412,7 +1433,7 @@ var feng3d;
          *
          * @param key 关键点
          */
-        CubicBeziers.prototype.addKey = function (key) {
+        AnimationCurve.prototype.addKey = function (key) {
             this.keys.push(key);
             this.sort();
         };
@@ -1421,14 +1442,14 @@ var feng3d;
          *
          * 当移动关键点或者新增关键点时需要再次排序
          */
-        CubicBeziers.prototype.sort = function () {
-            this.keys.sort(function (a, b) { return a.t - b.t; });
+        AnimationCurve.prototype.sort = function () {
+            this.keys.sort(function (a, b) { return a.time - b.time; });
         };
         /**
          * 删除关键点
          * @param key 关键点
          */
-        CubicBeziers.prototype.deleteKey = function (key) {
+        AnimationCurve.prototype.deleteKey = function (key) {
             var index = this.keys.indexOf(key);
             if (index != -1)
                 this.keys.splice(index, 1);
@@ -1437,49 +1458,49 @@ var feng3d;
          * 获取关键点
          * @param index 索引
          */
-        CubicBeziers.prototype.getKey = function (index) {
+        AnimationCurve.prototype.getKey = function (index) {
             return this.keys[index];
         };
         /**
          * 获取关键点索引
          * @param key 关键点
          */
-        CubicBeziers.prototype.indexOfKeys = function (key) {
+        AnimationCurve.prototype.indexOfKeys = function (key) {
             return this.keys.indexOf(key);
         };
         /**
          * 获取曲线上点信息
          * @param t 时间轴的位置 [0,1]
          */
-        CubicBeziers.prototype.getPoint = function (t) {
+        AnimationCurve.prototype.getPoint = function (t) {
             var keys = this.keys;
             var maxtan = this.maxtan;
             for (var i = 0, n = keys.length; i < n; i++) {
                 // 使用 bezierCurve 进行采样曲线点
                 var key = keys[i];
                 var prekey = keys[i - 1];
-                if (i > 0 && prekey.t <= t && t <= key.t) {
-                    var xstart = prekey.t;
-                    var ystart = prekey.y;
-                    var tanstart = prekey.tan;
-                    var xend = key.t;
-                    var yend = key.y;
-                    var tanend = key.tan;
+                if (i > 0 && prekey.time <= t && t <= key.time) {
+                    var xstart = prekey.time;
+                    var ystart = prekey.value;
+                    var tanstart = prekey.tangent;
+                    var xend = key.time;
+                    var yend = key.value;
+                    var tanend = key.tangent;
                     if (maxtan > Math.abs(tanstart) && maxtan > Math.abs(tanend)) {
-                        var ct = (t - prekey.t) / (key.t - prekey.t);
+                        var ct = (t - prekey.time) / (key.time - prekey.time);
                         var sys = [ystart, ystart + tanstart * (xend - xstart) / 3, yend - tanend * (xend - xstart) / 3, yend];
                         var fy = feng3d.bezier.getValue(ct, sys);
-                        return { t: t, y: fy, tan: feng3d.bezier.getDerivative(ct, sys) / (xend - xstart) };
+                        return { time: t, value: fy, tangent: feng3d.bezier.getDerivative(ct, sys) / (xend - xstart) };
                     }
                     else {
-                        return { t: t, y: prekey.y, tan: 0 };
+                        return { time: t, value: prekey.value, tangent: 0 };
                     }
                 }
-                if (i == 0 && t <= key.t) {
-                    return { t: t, y: key.y, tan: 0 };
+                if (i == 0 && t <= key.time) {
+                    return { time: t, value: key.value, tangent: 0 };
                 }
-                if (i == n - 1 && t >= key.t) {
-                    return { t: t, y: key.y, tan: 0 };
+                if (i == n - 1 && t >= key.time) {
+                    return { time: t, value: key.value, tangent: 0 };
                 }
             }
             return null;
@@ -1488,9 +1509,9 @@ var feng3d;
          * 获取值
          * @param t 时间轴的位置 [0,1]
          */
-        CubicBeziers.prototype.getValue = function (t) {
+        AnimationCurve.prototype.getValue = function (t) {
             var point = this.getPoint(t);
-            return point.y;
+            return point.value;
         };
         /**
          * 查找关键点
@@ -1498,10 +1519,10 @@ var feng3d;
          * @param y 值
          * @param precision 查找精度
          */
-        CubicBeziers.prototype.findKey = function (t, y, precision) {
+        AnimationCurve.prototype.findKey = function (t, y, precision) {
             var keys = this.keys;
             for (var i = 0; i < keys.length; i++) {
-                if (Math.abs(keys[i].t - t) < precision && Math.abs(keys[i].y - y) < precision) {
+                if (Math.abs(keys[i].time - t) < precision && Math.abs(keys[i].value - y) < precision) {
                     return keys[i];
                 }
             }
@@ -1512,13 +1533,13 @@ var feng3d;
          *
          * 如果该点在曲线上，则添加关键点
          *
-         * @param t 时间轴的位置 [0,1]
-         * @param y y坐标
+         * @param time 时间轴的位置 [0,1]
+         * @param value 值
          * @param precision 查找进度
          */
-        CubicBeziers.prototype.addKeyAtCurve = function (t, y, precision) {
-            var point = this.getPoint(t);
-            if (Math.abs(y - point.y) < precision) {
+        AnimationCurve.prototype.addKeyAtCurve = function (time, value, precision) {
+            var point = this.getPoint(time);
+            if (Math.abs(value - point.value) < precision) {
                 this.addKey(point);
                 return point;
             }
@@ -1531,7 +1552,7 @@ var feng3d;
          *
          * @param num 采样次数 ，采样点分别为[0,1/num,2/num,....,(num-1)/num,1]
          */
-        CubicBeziers.prototype.getSamples = function (num) {
+        AnimationCurve.prototype.getSamples = function (num) {
             if (num === void 0) { num = 100; }
             var results = [];
             for (var i = 0; i <= num; i++) {
@@ -1540,9 +1561,9 @@ var feng3d;
             }
             return results;
         };
-        return CubicBeziers;
+        return AnimationCurve;
     }());
-    feng3d.CubicBeziers = CubicBeziers;
+    feng3d.AnimationCurve = AnimationCurve;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -25408,43 +25429,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 动画曲线关键帧
-     */
-    var AnimationCurveKeyframe = /** @class */ (function () {
-        function AnimationCurveKeyframe() {
-        }
-        return AnimationCurveKeyframe;
-    }());
-    feng3d.AnimationCurveKeyframe = AnimationCurveKeyframe;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 动画曲线
-     */
-    var AnimationCurve = /** @class */ (function () {
-        function AnimationCurve() {
-            /**
-             * 动画曲线关键帧
-             */
-            this.keys = [];
-            this.postWrapMode = feng3d.WrapMode.Clamp;
-        }
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        AnimationCurve.prototype.getValue = function (time) {
-            // return this.value;
-            return 0;
-        };
-        return AnimationCurve;
-    }());
-    feng3d.AnimationCurve = AnimationCurve;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 两个常量间取随机值
      */
     var RandomBetweenTwoConstants = /** @class */ (function () {
@@ -25457,6 +25441,12 @@ var feng3d;
         RandomBetweenTwoConstants.prototype.getValue = function (time) {
             return this.minValue + Math.random() * (this.maxValue - this.minValue);
         };
+        __decorate([
+            feng3d.serialize
+        ], RandomBetweenTwoConstants.prototype, "minValue", void 0);
+        __decorate([
+            feng3d.serialize
+        ], RandomBetweenTwoConstants.prototype, "maxValue", void 0);
         return RandomBetweenTwoConstants;
     }());
     feng3d.RandomBetweenTwoConstants = RandomBetweenTwoConstants;

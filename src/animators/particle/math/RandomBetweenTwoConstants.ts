@@ -8,11 +8,13 @@ namespace feng3d
         /**
          * 最小值
          */
+        @serialize
         minValue: number;
 
         /**
          * 最大值
          */
+        @serialize
         maxValue: number;
 
         /**

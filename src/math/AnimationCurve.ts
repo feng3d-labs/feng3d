@@ -1,35 +1,19 @@
 namespace feng3d
 {
 
-    export interface CubicBeziersKey
-    {
-        /**
-         * 时间轴的位置 [0,1]
-         */
-        t: number
-        /**
-         * 值 [0,1]
-         */
-        y: number
-        /**
-         * 斜率
-         */
-        tan: number
-    }
-
     /**
-     * 基于时间轴的连续三阶Bézier曲线
+     * 动画曲线
      * 
-     * @author feng / http://feng3d.com 10/06/2018
+     * 基于时间轴的连续三阶Bézier曲线
      */
-    export class CubicBeziers
+    export class AnimationCurve
     {
         /**
          * 最大tan值，超出该值后将会变成分段
          */
         maxtan = 1000;
 
-        private keys: CubicBeziersKey[] = [];
+        private keys: AnimationCurveKeyframe[] = [];
 
         /**
          * 关键点数量
@@ -39,7 +23,6 @@ namespace feng3d
             return this.keys.length;
         }
 
-
         /**
          * 添加关键点
          * 
@@ -47,7 +30,7 @@ namespace feng3d
          * 
          * @param key 关键点
          */
-        addKey(key: CubicBeziersKey)
+        addKey(key: AnimationCurveKeyframe)
         {
             this.keys.push(key);
             this.sort();
@@ -60,14 +43,14 @@ namespace feng3d
          */
         sort()
         {
-            this.keys.sort((a, b) => a.t - b.t);
+            this.keys.sort((a, b) => a.time - b.time);
         }
 
         /**
          * 删除关键点
          * @param key 关键点
          */
-        deleteKey(key: CubicBeziersKey)
+        deleteKey(key: AnimationCurveKeyframe)
         {
             var index = this.keys.indexOf(key);
             if (index != -1)
@@ -87,7 +70,7 @@ namespace feng3d
          * 获取关键点索引
          * @param key 关键点
          */
-        indexOfKeys(key: CubicBeziersKey)
+        indexOfKeys(key: AnimationCurveKeyframe)
         {
             return this.keys.indexOf(key);
         }
@@ -105,32 +88,32 @@ namespace feng3d
                 // 使用 bezierCurve 进行采样曲线点
                 var key = keys[i];
                 var prekey = keys[i - 1];
-                if (i > 0 && prekey.t <= t && t <= key.t)
+                if (i > 0 && prekey.time <= t && t <= key.time)
                 {
-                    var xstart = prekey.t;
-                    var ystart = prekey.y;
-                    var tanstart = prekey.tan;
-                    var xend = key.t;
-                    var yend = key.y;
-                    var tanend = key.tan;
+                    var xstart = prekey.time;
+                    var ystart = prekey.value;
+                    var tanstart = prekey.tangent;
+                    var xend = key.time;
+                    var yend = key.value;
+                    var tanend = key.tangent;
                     if (maxtan > Math.abs(tanstart) && maxtan > Math.abs(tanend))
                     {
-                        var ct = (t - prekey.t) / (key.t - prekey.t);
+                        var ct = (t - prekey.time) / (key.time - prekey.time);
                         var sys = [ystart, ystart + tanstart * (xend - xstart) / 3, yend - tanend * (xend - xstart) / 3, yend];
                         var fy = bezier.getValue(ct, sys);
-                        return { t: t, y: fy, tan: bezier.getDerivative(ct, sys) / (xend - xstart) };
+                        return { time: t, value: fy, tangent: bezier.getDerivative(ct, sys) / (xend - xstart) };
                     } else
                     {
-                        return { t: t, y: prekey.y, tan: 0 };
+                        return { time: t, value: prekey.value, tangent: 0 };
                     }
                 }
-                if (i == 0 && t <= key.t)
+                if (i == 0 && t <= key.time)
                 {
-                    return { t: t, y: key.y, tan: 0 };
+                    return { time: t, value: key.value, tangent: 0 };
                 }
-                if (i == n - 1 && t >= key.t)
+                if (i == n - 1 && t >= key.time)
                 {
-                    return { t: t, y: key.y, tan: 0 };
+                    return { time: t, value: key.value, tangent: 0 };
                 }
             }
             return null;
@@ -143,7 +126,7 @@ namespace feng3d
         getValue(t: number)
         {
             var point = this.getPoint(t);
-            return point.y;
+            return point.value;
         }
 
         /**
@@ -157,7 +140,7 @@ namespace feng3d
             var keys = this.keys;
             for (let i = 0; i < keys.length; i++)
             {
-                if (Math.abs(keys[i].t - t) < precision && Math.abs(keys[i].y - y) < precision)
+                if (Math.abs(keys[i].time - t) < precision && Math.abs(keys[i].value - y) < precision)
                 {
                     return keys[i];
                 }
@@ -170,14 +153,14 @@ namespace feng3d
          * 
          * 如果该点在曲线上，则添加关键点
          * 
-         * @param t 时间轴的位置 [0,1]
-         * @param y y坐标
+         * @param time 时间轴的位置 [0,1]
+         * @param value 值
          * @param precision 查找进度
          */
-        addKeyAtCurve(t: number, y: number, precision: number)
+        addKeyAtCurve(time: number, value: number, precision: number)
         {
-            var point = this.getPoint(t);
-            if (Math.abs(y - point.y) < precision)
+            var point = this.getPoint(time);
+            if (Math.abs(value - point.value) < precision)
             {
                 this.addKey(point);
                 return point;
