@@ -971,7 +971,7 @@ var feng3d;
      *
      * 当f(x)在区间 [a, b] 上连续，且 (f(a) - y) * (f(b) - y) < 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == y
      *
-/ http://feng3d.com 05/06/2018
+     * @author feng / http://feng3d.com 05/06/2018
      */
     var EquationSolving = /** @class */ (function () {
         function EquationSolving() {
@@ -1354,7 +1354,6 @@ var feng3d;
      * 2次 f(x) = a0 * x * x + a1 * x + a2;
      * ......
      *
-/ http://feng3d.com 05/06/2018
      */
     var HighFunction = /** @class */ (function () {
         /**
@@ -1561,6 +1560,9 @@ var feng3d;
             }
             return results;
         };
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurve.prototype, "keys", void 0);
         return AnimationCurve;
     }());
     feng3d.AnimationCurve = AnimationCurve;

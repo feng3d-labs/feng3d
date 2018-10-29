@@ -13,6 +13,7 @@ namespace feng3d
          */
         maxtan = 1000;
 
+        @serialize
         private keys: AnimationCurveKeyframe[] = [];
 
         /**

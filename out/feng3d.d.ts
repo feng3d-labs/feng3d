@@ -542,7 +542,7 @@ declare namespace feng3d {
      *
      * 当f(x)在区间 [a, b] 上连续，且 (f(a) - y) * (f(b) - y) < 0 时，f(x)在区间 [a, b] 上至少存在一个解使得 f(x) == y
      *
-/ http://feng3d.com 05/06/2018
+     * @author feng / http://feng3d.com 05/06/2018
      */
     class EquationSolving {
         /**
@@ -689,7 +689,6 @@ declare namespace feng3d {
      * 2次 f(x) = a0 * x * x + a1 * x + a2;
      * ......
      *
-/ http://feng3d.com 05/06/2018
      */
     class HighFunction {
         private as;

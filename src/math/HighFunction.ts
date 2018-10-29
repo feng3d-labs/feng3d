@@ -13,7 +13,6 @@ namespace feng3d
      * 2次 f(x) = a0 * x * x + a1 * x + a2;
      * ......
      * 
-/ http://feng3d.com 05/06/2018
      */
     export class HighFunction
     {
