@@ -2340,6 +2340,14 @@ Object.propertyIsWritable = function (host, property) {
         return false;
     return true;
 };
+Object.runFunc = function (obj, func) {
+    func(obj);
+    return obj;
+};
+Object.value = function (obj, value) {
+    feng3d.serialization.setValue(obj, value);
+    return obj;
+};
 //参考 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
 Map.prototype.getKeys = function () {
     var keys = [];
@@ -25069,7 +25077,7 @@ var feng3d;
             /**
              * 起始寿命为秒，粒子寿命为0时死亡。
              */
-            _this.startLifetime = 5;
+            _this.startLifetime = Object.runFunc(new feng3d.MinMaxCurve(), function (obj) { obj.mode = feng3d.MinMaxCurveMode.Constant; obj.minMaxCurve.value = 5; });
             /**
              * 粒子的起始速度，应用于起始方向。
              */

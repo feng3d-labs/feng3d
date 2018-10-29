@@ -1162,6 +1162,24 @@ interface ObjectConstructor {
      * @param property 属性名称
      */
     propertyIsWritable(obj: Object, property: string): boolean;
+    /**
+     * 执行方法
+     *
+     * 用例：
+     * 1. 给一个新建的对象进行初始化
+     *
+     *  ``` startLifetime = Object.runFunc(new MinMaxCurve(), (obj) => { obj.mode = MinMaxCurveMode.Constant; (<MinMaxCurveConstant>obj.minMaxCurve).value = 5; }); ```
+     *
+     * @param obj 对象
+     * @param func 被执行的方法
+     */
+    runFunc<T>(obj: T, func: (obj: T) => void): T;
+    /**
+     * 给指定对象进行深度赋值
+     * @param obj 对象
+     * @param value 数据
+     */
+    value<T>(obj: T, value: gPartial<T>): T;
 }
 interface Map<K, V> {
     clear(): void;
@@ -12662,7 +12680,7 @@ declare namespace feng3d {
         /**
          * 起始寿命为秒，粒子寿命为0时死亡。
          */
-        startLifetime: number;
+        startLifetime: MinMaxCurve;
         /**
          * 粒子的起始速度，应用于起始方向。
          */

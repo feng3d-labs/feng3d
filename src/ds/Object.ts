@@ -48,6 +48,26 @@ interface ObjectConstructor
      * @param property 属性名称
      */
     propertyIsWritable(obj: Object, property: string): boolean;
+
+    /**
+     * 执行方法
+     * 
+     * 用例：
+     * 1. 给一个新建的对象进行初始化 
+     * 
+     *  ``` startLifetime = Object.runFunc(new MinMaxCurve(), (obj) => { obj.mode = MinMaxCurveMode.Constant; (<MinMaxCurveConstant>obj.minMaxCurve).value = 5; }); ```
+     * 
+     * @param obj 对象
+     * @param func 被执行的方法
+     */
+    runFunc<T>(obj: T, func: (obj: T) => void): T;
+
+    /**
+     * 给指定对象进行深度赋值
+     * @param obj 对象
+     * @param value 数据
+     */
+    value<T>(obj: T, value: gPartial<T>): T;
 }
 
 if (typeof Object.assign != 'function')
@@ -108,4 +128,16 @@ Object.propertyIsWritable = function (host: any, property: string): boolean
     if (!data) return false;
     if (data.get && !data.set) return false;
     return true;
+}
+
+Object.runFunc = function (obj, func)
+{
+    func(obj);
+    return obj;
+}
+
+Object.value = function (obj, value)
+{
+    feng3d.serialization.setValue(obj, value);
+    return obj;
 }
