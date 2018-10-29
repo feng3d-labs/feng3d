@@ -22,11 +22,31 @@ namespace feng3d
         keys: AnimationCurveKeyframe[] = [];
 
         /**
+         * Wrap模式
+         */
+        @serialize
+        wrapMode = AnimationCurveWrapMode.Clamp;
+
+        /**
          * 获取曲线上点信息
          * @param t 时间轴的位置 [0,1]
          */
         getPoint(t: number)
         {
+            switch (this.wrapMode)
+            {
+                case AnimationCurveWrapMode.Clamp:
+                    t = FMath.clamp(t, 0, 1);
+                    break;
+                case AnimationCurveWrapMode.Loop:
+                    t = FMath.clamp(t - Math.floor(t), 0, 1);
+                    break;
+                case AnimationCurveWrapMode.PingPong:
+                    t = FMath.clamp(t - Math.floor(t), 0, 1);
+                    if (Math.floor(t) % 2 == 1) t = 1 - t;
+                    break;
+            }
+
             var keys = this.keys;
             var maxtan = this.maxtan;
             var value = 0, tangent = 0, isfind = false;;

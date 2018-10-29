@@ -5084,6 +5084,10 @@ declare namespace feng3d {
          */
         keys: AnimationCurveKeyframe[];
         /**
+         * Wrap模式
+         */
+        wrapMode: AnimationCurveWrapMode;
+        /**
          * 获取曲线上点信息
          * @param t 时间轴的位置 [0,1]
          */

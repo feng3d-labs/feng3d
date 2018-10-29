@@ -9969,12 +9969,29 @@ var feng3d;
              * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
              */
             this.keys = [];
+            /**
+             * Wrap模式
+             */
+            this.wrapMode = feng3d.AnimationCurveWrapMode.Clamp;
         }
         /**
          * 获取曲线上点信息
          * @param t 时间轴的位置 [0,1]
          */
         AnimationCurve.prototype.getPoint = function (t) {
+            switch (this.wrapMode) {
+                case feng3d.AnimationCurveWrapMode.Clamp:
+                    t = feng3d.FMath.clamp(t, 0, 1);
+                    break;
+                case feng3d.AnimationCurveWrapMode.Loop:
+                    t = feng3d.FMath.clamp(t - Math.floor(t), 0, 1);
+                    break;
+                case feng3d.AnimationCurveWrapMode.PingPong:
+                    t = feng3d.FMath.clamp(t - Math.floor(t), 0, 1);
+                    if (Math.floor(t) % 2 == 1)
+                        t = 1 - t;
+                    break;
+            }
             var keys = this.keys;
             var maxtan = this.maxtan;
             var value = 0, tangent = 0, isfind = false;
@@ -10083,6 +10100,9 @@ var feng3d;
         __decorate([
             feng3d.serialize
         ], AnimationCurve.prototype, "keys", void 0);
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurve.prototype, "wrapMode", void 0);
         return AnimationCurve;
     }());
     feng3d.AnimationCurve = AnimationCurve;
