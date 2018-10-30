@@ -10300,8 +10300,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    feng3d.EVENT_KEY = "__event__";
-    var All_EVENT_Type = "__allEventType__";
+    feng3d.feventMap = new Map();
     function getBubbleTargets(target) {
         return [target["parent"]];
     }
@@ -10356,7 +10355,7 @@ var feng3d;
          * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
          */
         FEvent.prototype.has = function (obj, type) {
-            return !!(obj[feng3d.EVENT_KEY] && obj[feng3d.EVENT_KEY][type] && obj[feng3d.EVENT_KEY][type].length);
+            return !!(feng3d.feventMap.get(obj) && feng3d.feventMap.get(obj)[type] && feng3d.feventMap.get(obj)[type].length);
         };
         /**
          * 添加监听
@@ -10367,7 +10366,9 @@ var feng3d;
         FEvent.prototype.on = function (obj, type, listener, thisObject, priority, once) {
             if (priority === void 0) { priority = 0; }
             if (once === void 0) { once = false; }
-            var objectListener = obj[feng3d.EVENT_KEY] || (obj[feng3d.EVENT_KEY] = {});
+            var objectListener = feng3d.feventMap.get(obj);
+            if (!objectListener)
+                (feng3d.feventMap.set(obj, objectListener = {}));
             var listeners = objectListener[type] = objectListener[type] || [];
             for (var i = 0; i < listeners.length; i++) {
                 var element = listeners[i];
@@ -10392,15 +10393,15 @@ var feng3d;
          */
         FEvent.prototype.off = function (obj, type, listener, thisObject) {
             if (!type) {
-                delete obj[feng3d.EVENT_KEY];
+                feng3d.feventMap.delete(obj);
                 return;
             }
             if (!listener) {
-                if (obj[feng3d.EVENT_KEY])
-                    delete obj[feng3d.EVENT_KEY][type];
+                if (feng3d.feventMap.get(obj))
+                    delete feng3d.feventMap.get(obj)[type];
                 return;
             }
-            var listeners = obj[feng3d.EVENT_KEY] && obj[feng3d.EVENT_KEY][type];
+            var listeners = feng3d.feventMap.get(obj) && feng3d.feventMap.get(obj)[type];
             if (listeners) {
                 for (var i = listeners.length - 1; i >= 0; i--) {
                     var element = listeners[i];
@@ -10409,7 +10410,7 @@ var feng3d;
                     }
                 }
                 if (listeners.length == 0) {
-                    delete obj[feng3d.EVENT_KEY][type];
+                    delete feng3d.feventMap.get(obj)[type];
                 }
             }
         };
@@ -10422,8 +10423,10 @@ var feng3d;
          */
         FEvent.prototype.onAll = function (obj, listener, thisObject, priority) {
             if (priority === void 0) { priority = 0; }
-            var objectListener = obj[feng3d.EVENT_KEY] || (obj[feng3d.EVENT_KEY] = {});
-            var listeners = objectListener[All_EVENT_Type] = objectListener[All_EVENT_Type] || [];
+            var objectListener = feng3d.feventMap.get(obj);
+            if (!objectListener)
+                (feng3d.feventMap.set(obj, objectListener = {}));
+            var listeners = objectListener.__allEventType__ = objectListener.__allEventType__ || [];
             for (var i = 0; i < listeners.length; i++) {
                 var element = listeners[i];
                 if (element.listener == listener && element.thisObject == thisObject) {
@@ -10447,11 +10450,11 @@ var feng3d;
          */
         FEvent.prototype.offAll = function (obj, listener, thisObject) {
             if (!listener) {
-                if (obj[feng3d.EVENT_KEY])
-                    delete obj[feng3d.EVENT_KEY][All_EVENT_Type];
+                if (feng3d.feventMap.get(obj))
+                    delete feng3d.feventMap.get(obj).__allEventType__;
                 return;
             }
-            var listeners = obj[feng3d.EVENT_KEY] && obj[feng3d.EVENT_KEY][All_EVENT_Type];
+            var listeners = feng3d.feventMap.get(obj) && feng3d.feventMap.get(obj).__allEventType__;
             if (listeners) {
                 for (var i = listeners.length - 1; i >= 0; i--) {
                     var element = listeners[i];
@@ -10460,7 +10463,7 @@ var feng3d;
                     }
                 }
                 if (listeners.length == 0) {
-                    delete obj[feng3d.EVENT_KEY][All_EVENT_Type];
+                    delete feng3d.feventMap.get(obj).__allEventType__;
                 }
             }
         };
@@ -10476,7 +10479,7 @@ var feng3d;
                 e.currentTarget = obj;
             }
             catch (error) { }
-            var listeners = obj[feng3d.EVENT_KEY] && obj[feng3d.EVENT_KEY][e.type];
+            var listeners = feng3d.feventMap.get(obj) && feng3d.feventMap.get(obj)[e.type];
             if (listeners) {
                 //遍历调用事件回调函数
                 for (var i = 0; i < listeners.length && !e.isStop; i++) {
@@ -10487,10 +10490,10 @@ var feng3d;
                         listeners.splice(i, 1);
                 }
                 if (listeners.length == 0)
-                    delete obj[feng3d.EVENT_KEY][e.type];
+                    delete feng3d.feventMap.get(obj)[e.type];
             }
             // All_EVENT_Type
-            listeners = obj[feng3d.EVENT_KEY] && obj[feng3d.EVENT_KEY][All_EVENT_Type];
+            listeners = feng3d.feventMap.get(obj) && feng3d.feventMap.get(obj).__allEventType__;
             if (listeners) {
                 //遍历调用事件回调函数
                 for (var i = 0; i < listeners.length && !e.isStop; i++) {
@@ -10501,7 +10504,7 @@ var feng3d;
                         listeners.splice(i, 1);
                 }
                 if (listeners.length == 0)
-                    delete obj[feng3d.EVENT_KEY][All_EVENT_Type];
+                    delete feng3d.feventMap.get(obj).__allEventType__;
             }
         };
         /**

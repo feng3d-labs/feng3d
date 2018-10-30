@@ -5269,7 +5269,7 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     var fevent: FEvent;
-    const EVENT_KEY = "__event__";
+    var feventMap: Map<any, ObjectListener>;
     class FEvent {
         /**
          * 监听一次事件后将会被移除
@@ -5341,6 +5341,31 @@ declare namespace feng3d {
          * @param e 事件
          */
         protected handelEventBubbles(obj: Object, e: Event<any>): void;
+    }
+    interface ObjectListener {
+        [type: string]: ListenerVO[];
+        __allEventType__?: ListenerVO[];
+    }
+    /**
+     * 监听数据
+     */
+    interface ListenerVO {
+        /**
+         * 监听函数
+         */
+        listener: (event: Event<any>) => void;
+        /**
+         * 监听函数作用域
+         */
+        thisObject: any;
+        /**
+         * 优先级
+         */
+        priority: number;
+        /**
+         * 是否只监听一次
+         */
+        once: boolean;
     }
 }
 declare namespace feng3d {

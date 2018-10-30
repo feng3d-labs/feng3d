@@ -2,8 +2,7 @@ namespace feng3d
 {
     export var fevent: FEvent;
 
-    export const EVENT_KEY = "__event__";
-    const All_EVENT_Type = "__allEventType__";
+    export var feventMap = new Map<any, ObjectListener>();
 
     function getBubbleTargets(target)
     {
@@ -67,7 +66,7 @@ namespace feng3d
          */
         has(obj: Object, type: string): boolean
         {
-            return !!(obj[EVENT_KEY] && obj[EVENT_KEY][type] && obj[EVENT_KEY][type].length);
+            return !!(feventMap.get(obj) && feventMap.get(obj)[type] && feventMap.get(obj)[type].length);
         }
 
         /**
@@ -78,7 +77,9 @@ namespace feng3d
          */
         on(obj: Object, type: string, listener: (event: any) => any, thisObject?: any, priority = 0, once = false)
         {
-            var objectListener = obj[EVENT_KEY] || (obj[EVENT_KEY] = {});
+            var objectListener = feventMap.get(obj);
+            if (!objectListener) (feventMap.set(obj, objectListener = {}));
+
             var listeners: ListenerVO[] = objectListener[type] = objectListener[type] || [];
             for (var i = 0; i < listeners.length; i++)
             {
@@ -110,16 +111,16 @@ namespace feng3d
         {
             if (!type)
             {
-                delete obj[EVENT_KEY];
+                feventMap.delete(obj)
                 return;
             }
             if (!listener)
             {
-                if (obj[EVENT_KEY])
-                    delete obj[EVENT_KEY][type];
+                if (feventMap.get(obj))
+                    delete feventMap.get(obj)[type];
                 return;
             }
-            var listeners = obj[EVENT_KEY] && obj[EVENT_KEY][type];
+            var listeners = feventMap.get(obj) && feventMap.get(obj)[type];
             if (listeners)
             {
                 for (var i = listeners.length - 1; i >= 0; i--)
@@ -132,7 +133,7 @@ namespace feng3d
                 }
                 if (listeners.length == 0)
                 {
-                    delete obj[EVENT_KEY][type];
+                    delete feventMap.get(obj)[type];
                 }
             }
         }
@@ -146,8 +147,10 @@ namespace feng3d
          */
         onAll(obj: Object, listener: (event: any) => any, thisObject?: any, priority = 0)
         {
-            var objectListener = obj[EVENT_KEY] || (obj[EVENT_KEY] = {});
-            var listeners: ListenerVO[] = objectListener[All_EVENT_Type] = objectListener[All_EVENT_Type] || [];
+            var objectListener = feventMap.get(obj)
+            if (!objectListener) (feventMap.set(obj, objectListener = {}));
+
+            var listeners: ListenerVO[] = objectListener.__allEventType__ = objectListener.__allEventType__ || [];
             for (var i = 0; i < listeners.length; i++)
             {
                 var element = listeners[i];
@@ -178,11 +181,11 @@ namespace feng3d
         {
             if (!listener)
             {
-                if (obj[EVENT_KEY])
-                    delete obj[EVENT_KEY][All_EVENT_Type];
+                if (feventMap.get(obj))
+                    delete feventMap.get(obj).__allEventType__;
                 return;
             }
-            var listeners = obj[EVENT_KEY] && obj[EVENT_KEY][All_EVENT_Type];
+            var listeners = feventMap.get(obj) && feventMap.get(obj).__allEventType__;
             if (listeners)
             {
                 for (var i = listeners.length - 1; i >= 0; i--)
@@ -195,7 +198,7 @@ namespace feng3d
                 }
                 if (listeners.length == 0)
                 {
-                    delete obj[EVENT_KEY][All_EVENT_Type];
+                    delete feventMap.get(obj).__allEventType__;
                 }
             }
         }
@@ -213,7 +216,7 @@ namespace feng3d
                 //使用 try 处理 MouseEvent 等无法更改currentTarget的对象
                 e.currentTarget = obj;
             } catch (error) { }
-            var listeners: ListenerVO[] = obj[EVENT_KEY] && obj[EVENT_KEY][e.type];
+            var listeners: ListenerVO[] = feventMap.get(obj) && feventMap.get(obj)[e.type];
             if (listeners)
             {
                 //遍历调用事件回调函数
@@ -227,10 +230,10 @@ namespace feng3d
                         listeners.splice(i, 1);
                 }
                 if (listeners.length == 0)
-                    delete obj[EVENT_KEY][e.type];
+                    delete feventMap.get(obj)[e.type];
             }
             // All_EVENT_Type
-            listeners = obj[EVENT_KEY] && obj[EVENT_KEY][All_EVENT_Type];
+            listeners = feventMap.get(obj) && feventMap.get(obj).__allEventType__;
             if (listeners)
             {
                 //遍历调用事件回调函数
@@ -244,7 +247,7 @@ namespace feng3d
                         listeners.splice(i, 1);
                 }
                 if (listeners.length == 0)
-                    delete obj[EVENT_KEY][All_EVENT_Type];
+                    delete feventMap.get(obj).__allEventType__;
             }
         }
 
@@ -273,6 +276,7 @@ namespace feng3d
     interface ObjectListener
     {
         [type: string]: ListenerVO[];
+        __allEventType__?: ListenerVO[];
     }
 
     /**
