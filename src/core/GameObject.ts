@@ -205,6 +205,8 @@ namespace feng3d
             this.guid = FMath.uuid();
             //
             GameObject.pool.set(this.guid, this);
+
+            fevent.onAll(this, this._onAllListener, this);
         }
 
         find(name: string): GameObject
@@ -551,30 +553,14 @@ namespace feng3d
         }
 
         /**
-         * 派发事件
-         * 
-         * 当事件重复流向一个对象时将不会被处理。
-         * 
-         * @param e   事件对象
-         * @returns 返回事件是否被该对象处理
+         * 监听对象的所有事件并且传播到所有组件中
          */
-        dispatchEvent(e: Event<any>)
+        private _onAllListener(e: Event<any>)
         {
-            var targets = e["targets"] = e["targets"] || [];
-            if (targets.indexOf(this) != -1)
-                return false;
-            targets.push(this);
-
-            this.handleEvent(e);
-
             this.components.forEach(element =>
             {
                 element.dispatchEvent(e);
             });
-
-            this.handelEventBubbles(e);
-
-            return true;
         }
 
         /**

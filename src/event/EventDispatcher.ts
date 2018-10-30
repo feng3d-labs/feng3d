@@ -55,13 +55,6 @@ namespace feng3d
         off<K extends keyof T>(type?: K, listener?: (event: Event<T[K]>) => any, thisObject?: any);
     }
 
-    export const EVENT_KEY = "__event__";
-
-    function getBubbleTargets(target)
-    {
-        return [target["parent"]];
-    }
-
 	/**
 	 * 事件适配器
 	 */
@@ -76,7 +69,7 @@ namespace feng3d
          */
         once(type: string, listener: (event: any) => void, thisObject = null, priority = 0)
         {
-            this.on(type, listener, thisObject, priority, true);
+            fevent.on(this, type, listener, thisObject, priority, true);
         }
 
         /**
@@ -89,65 +82,7 @@ namespace feng3d
          */
         dispatchEvent(e: Event<any>)
         {
-            var targets = e.targets = e.targets || [];
-            if (targets.indexOf(this) != -1)
-                return false;
-            targets.push(this);
-
-            this.handleEvent(e);
-
-            this.handelEventBubbles(e);
-
-            return true;
-        }
-
-        /**
-         * 处理事件
-         * @param e 事件
-         */
-        protected handleEvent(e: Event<any>)
-        {
-            //设置目标
-            e.target || (e.target = this);
-            try
-            {
-                //使用 try 处理 MouseEvent 等无法更改currentTarget的对象
-                e.currentTarget = this;
-            } catch (error) { }
-            var listeners: ListenerVO[] = this[EVENT_KEY] && this[EVENT_KEY][e.type];
-            if (listeners)
-            {
-                //遍历调用事件回调函数
-                for (var i = 0; i < listeners.length && !e.isStop; i++)
-                {
-                    listeners[i].listener.call(listeners[i].thisObject, e);
-                }
-                for (var i = listeners.length - 1; i >= 0; i--)
-                {
-                    if (listeners[i].once)
-                        listeners.splice(i, 1);
-                }
-                if (listeners.length == 0)
-                    delete this[EVENT_KEY][e.type];
-            }
-        }
-
-        /**
-         * 处理事件冒泡
-         * @param e 事件
-         */
-        protected handelEventBubbles(e: Event<any>)
-        {
-            if (e.bubbles && !e.isStopBubbles)
-            {
-                var bubbleTargets = getBubbleTargets(this);
-                for (var i = 0, n = bubbleTargets.length; i < n; i++)
-                {
-                    var bubbleTarget = bubbleTargets[i];
-                    if (!e.isStop && bubbleTarget instanceof EventDispatcher)
-                        bubbleTarget.dispatchEvent(e);
-                }
-            }
+            return fevent.dispatchEvent(this, e);
         }
 
         /**
@@ -158,9 +93,7 @@ namespace feng3d
          */
         dispatch(type: string, data?: any, bubbles = false)
         {
-            var e: Event<any> = { type: type, data: data, bubbles: bubbles, target: null, currentTarget: null, isStop: false, isStopBubbles: false, targets: [] };
-            this.dispatchEvent(e);
-            return e;
+            return fevent.dispatch(this, type, data, bubbles);
         }
 
         /**
@@ -171,7 +104,7 @@ namespace feng3d
          */
         has(type: string): boolean
         {
-            return !!(this[EVENT_KEY] && this[EVENT_KEY][type] && this[EVENT_KEY][type].length);
+            return fevent.has(this, type);
         }
 
         /**
@@ -182,26 +115,7 @@ namespace feng3d
          */
         on(type: string, listener: (event: any) => any, thisObject?: any, priority = 0, once = false)
         {
-            var objectListener = this[EVENT_KEY] || (this[EVENT_KEY] = {});
-            var listeners: ListenerVO[] = objectListener[type] = objectListener[type] || [];
-            for (var i = 0; i < listeners.length; i++)
-            {
-                var element = listeners[i];
-                if (element.listener == listener && element.thisObject == thisObject)
-                {
-                    listeners.splice(i, 1);
-                    break;
-                }
-            }
-            for (var i = 0; i < listeners.length; i++)
-            {
-                var element = listeners[i];
-                if (priority > element.priority)
-                {
-                    break;
-                }
-            }
-            listeners.splice(i, 0, { listener: listener, thisObject: thisObject, priority: priority, once: once });
+            fevent.on(this, type, listener, thisObject, priority, once);
         }
 
         /**
@@ -212,61 +126,25 @@ namespace feng3d
          */
         off(type?: string, listener?: (event: any) => any, thisObject?: any)
         {
-            if (!type)
-            {
-                delete this[EVENT_KEY];
-                return;
-            }
-            if (!listener)
-            {
-                if (this[EVENT_KEY])
-                    delete this[EVENT_KEY][type];
-                return;
-            }
-            var listeners = this[EVENT_KEY] && this[EVENT_KEY][type];
-            if (listeners)
-            {
-                for (var i = listeners.length - 1; i >= 0; i--)
-                {
-                    var element = listeners[i];
-                    if (element.listener == listener && element.thisObject == thisObject)
-                    {
-                        listeners.splice(i, 1);
-                    }
-                }
-                if (listeners.length == 0)
-                {
-                    delete this[EVENT_KEY][type];
-                }
-            }
+            fevent.off(this, type, listener, thisObject);
         }
-    }
 
-    interface ObjectListener
-    {
-        [type: string]: ListenerVO[];
-    }
+        /**
+         * 处理事件
+         * @param e 事件
+         */
+        protected handleEvent(e: Event<any>)
+        {
+            fevent["handleEvent"](this, e);
+        }
 
-    /**
-     * 监听数据
-     */
-    interface ListenerVO
-    {
         /**
-         * 监听函数
+         * 处理事件冒泡
+         * @param e 事件
          */
-        listener: (event: Event<any>) => void;
-        /**
-         * 监听函数作用域
-         */
-        thisObject: any;
-        /**
-         * 优先级
-         */
-        priority: number;
-        /**
-         * 是否只监听一次
-         */
-        once: boolean;
+        protected handelEventBubbles(e: Event<any>)
+        {
+            fevent["handelEventBubbles"](this, e);
+        }
     }
 }

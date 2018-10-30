@@ -61,6 +61,7 @@ namespace feng3d
         constructor()
         {
             super();
+            fevent.onAll(this, this._onAllListener, this);
         }
 
         init(gameObject: GameObject)
@@ -109,17 +110,6 @@ namespace feng3d
         }
 
         /**
-         * 派发事件
-         * @param event   事件对象
-         */
-        dispatchEvent(event: Event<any>)
-        {
-            if (this._gameObject)
-                this._gameObject.dispatchEvent(event);
-            return super.dispatchEvent(event);
-        }
-
-        /**
          * 销毁
          */
         dispose()
@@ -130,6 +120,15 @@ namespace feng3d
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
 
+        }
+
+        /**
+         * 监听对象的所有事件并且传播到所有组件中
+         */
+        private _onAllListener(e: Event<any>)
+        {
+            if (this._gameObject)
+                this._gameObject.dispatchEvent(e);
         }
 
         //------------------------------------------

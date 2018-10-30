@@ -5268,6 +5268,82 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    var fevent: FEvent;
+    const EVENT_KEY = "__event__";
+    class FEvent {
+        /**
+         * 监听一次事件后将会被移除
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        once(obj: Object, type: string, listener: (event: any) => void, thisObject?: any, priority?: number): void;
+        /**
+         * 派发事件
+         *
+         * 当事件重复流向一个对象时将不会被处理。
+         *
+         * @param e   事件对象
+         * @returns 返回事件是否被该对象处理
+         */
+        dispatchEvent(obj: Object, e: Event<any>): boolean;
+        /**
+         * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
+         * @param type                      事件的类型。类型区分大小写。
+         * @param data                      事件携带的自定义数据。
+         * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
+         */
+        dispatch(obj: Object, type: string, data?: any, bubbles?: boolean): Event<any>;
+        /**
+         * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
+         *
+         * @param type		事件的类型。
+         * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
+         */
+        has(obj: Object, type: string): boolean;
+        /**
+         * 添加监听
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        on(obj: Object, type: string, listener: (event: any) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        /**
+         * 移除监听
+         * @param dispatcher 派发器
+         * @param type						事件的类型。
+         * @param listener					要删除的侦听器对象。
+         */
+        off(obj: Object, type?: string, listener?: (event: any) => any, thisObject?: any): void;
+        /**
+         * 监听对象的所有事件
+         * @param obj 被监听对象
+         * @param listener 回调函数
+         * @param thisObject 回调函数 this 指针
+         * @param priority 优先级
+         */
+        onAll(obj: Object, listener: (event: any) => any, thisObject?: any, priority?: number): void;
+        /**
+         * 移除监听对象的所有事件
+         * @param obj 被监听对象
+         * @param listener 回调函数
+         * @param thisObject 回调函数 this 指针
+         */
+        offAll(obj: Object, listener?: (event: any) => any, thisObject?: any): void;
+        /**
+         * 处理事件
+         * @param e 事件
+         */
+        protected handleEvent(obj: Object, e: Event<any>): void;
+        /**
+         * 处理事件冒泡
+         * @param e 事件
+         */
+        protected handelEventBubbles(obj: Object, e: Event<any>): void;
+    }
+}
+declare namespace feng3d {
     /**
      * 事件
      */
@@ -5312,7 +5388,6 @@ declare namespace feng3d {
         on<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
         off<K extends keyof T>(type?: K, listener?: (event: Event<T[K]>) => any, thisObject?: any): any;
     }
-    const EVENT_KEY = "__event__";
     /**
      * 事件适配器
      */
@@ -5334,16 +5409,6 @@ declare namespace feng3d {
          * @returns 返回事件是否被该对象处理
          */
         dispatchEvent(e: Event<any>): boolean;
-        /**
-         * 处理事件
-         * @param e 事件
-         */
-        protected handleEvent(e: Event<any>): void;
-        /**
-         * 处理事件冒泡
-         * @param e 事件
-         */
-        protected handelEventBubbles(e: Event<any>): void;
         /**
          * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
          * @param type                      事件的类型。类型区分大小写。
@@ -5372,6 +5437,16 @@ declare namespace feng3d {
          * @param listener					要删除的侦听器对象。
          */
         off(type?: string, listener?: (event: any) => any, thisObject?: any): void;
+        /**
+         * 处理事件
+         * @param e 事件
+         */
+        protected handleEvent(e: Event<any>): void;
+        /**
+         * 处理事件冒泡
+         * @param e 事件
+         */
+        protected handelEventBubbles(e: Event<any>): void;
     }
 }
 declare namespace feng3d {
@@ -9260,15 +9335,14 @@ declare namespace feng3d {
          */
         getComponentsInParents<T extends Components>(type?: Constructor<T>, result?: T[]): T[];
         /**
-         * 派发事件
-         * @param event   事件对象
-         */
-        dispatchEvent(event: Event<any>): boolean;
-        /**
          * 销毁
          */
         dispose(): void;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
+        /**
+         * 监听对象的所有事件并且传播到所有组件中
+         */
+        private _onAllListener;
         protected _gameObject: GameObject;
     }
 }
@@ -9775,14 +9849,9 @@ declare namespace feng3d {
          */
         readonly worldBounds: Box;
         /**
-         * 派发事件
-         *
-         * 当事件重复流向一个对象时将不会被处理。
-         *
-         * @param e   事件对象
-         * @returns 返回事件是否被该对象处理
+         * 监听对象的所有事件并且传播到所有组件中
          */
-        dispatchEvent(e: Event<any>): boolean;
+        private _onAllListener;
         /**
          * 销毁
          */
@@ -13918,6 +13987,13 @@ declare namespace feng3d {
          * 是否捕获鼠标移动
          */
         catchMouseMove: boolean;
+        /**
+         * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
+         * @param type                      事件的类型。类型区分大小写。
+         * @param data                      事件携带的自定义数据。
+         * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
+         */
+        dispatch(type: string, data?: any, bubbles?: boolean): Event<any>;
         /**
          * 派发事件
          * @param event   事件对象

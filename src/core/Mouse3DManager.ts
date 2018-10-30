@@ -177,6 +177,21 @@ namespace feng3d
         catchMouseMove = false;
 
         /**
+		 * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
+		 * @param type                      事件的类型。类型区分大小写。
+		 * @param data                      事件携带的自定义数据。
+		 * @param bubbles                   表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
+         */
+        dispatch(type: string, data?: any, bubbles = false)
+        {
+            if (!this.enable)
+                return null;
+            if (!this.catchMouseMove && type == "mousemove")
+                return null;
+            return fevent.dispatch(this, type, data, bubbles);
+        }
+
+        /**
          * 派发事件
          * @param event   事件对象
          */
