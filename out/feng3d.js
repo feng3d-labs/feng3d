@@ -9976,7 +9976,7 @@ var feng3d;
              *
              * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
              */
-            this.keys = [];
+            this.keys = [{ time: 0, value: 1, tangent: 0 }, { time: 1, value: 1, tangent: 0 }];
             /**
              * Wrap模式
              */
@@ -10150,7 +10150,7 @@ var feng3d;
             /**
              * 常量
              */
-            this.value = 0;
+            this.value = 5;
         }
         /**
          * 获取值
@@ -10194,6 +10194,14 @@ var feng3d;
      */
     var MinMaxCurveRandomBetweenTwoConstants = /** @class */ (function () {
         function MinMaxCurveRandomBetweenTwoConstants() {
+            /**
+             * 最小值
+             */
+            this.minValue = 5;
+            /**
+             * 最大值
+             */
+            this.maxValue = 5;
         }
         /**
          * 获取值

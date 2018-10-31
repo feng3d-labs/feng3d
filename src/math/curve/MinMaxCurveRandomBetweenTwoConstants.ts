@@ -9,13 +9,13 @@ namespace feng3d
          * 最小值
          */
         @serialize
-        minValue: number;
+        minValue: number = 5;
 
         /**
          * 最大值
          */
         @serialize
-        maxValue: number;
+        maxValue: number = 5;
 
         /**
          * 获取值

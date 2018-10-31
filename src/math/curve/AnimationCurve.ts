@@ -19,7 +19,7 @@ namespace feng3d
          * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
          */
         @serialize
-        keys: AnimationCurveKeyframe[] = [];
+        keys: AnimationCurveKeyframe[] = [{ time: 0, value: 1, tangent: 0 }, { time: 1, value: 1, tangent: 0 }];
 
         /**
          * Wrap模式
