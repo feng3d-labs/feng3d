@@ -1017,6 +1017,15 @@ declare namespace feng3d {
          * @param backColor
          */
         createAnimationCurveRect(curve: AnimationCurve, width: number, height: number, color?: Color3, backColor?: Color3): ImageData;
+        /**
+         * 绘制曲线矩形块
+         * @param minMaxCurveRandomBetweenTwoCurves
+         * @param width
+         * @param height
+         * @param color
+         * @param backColor
+         */
+        createMinMaxCurveRandomBetweenTwoCurvesRect(minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, width: number, height: number, color?: Color3, backColor?: Color3): ImageData;
     }
 }
 /**
@@ -5230,6 +5239,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * 两个曲线中取随机值
+     */
     class MinMaxCurveRandomBetweenTwoCurves implements IMinMaxCurve {
         curveMin: AnimationCurve;
         curveMax: AnimationCurve;

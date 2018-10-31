@@ -2083,12 +2083,59 @@ var feng3d;
             for (var i = 0; i < width; i++) {
                 //
                 var y = curve.getValue(i / (width - 1));
-                var j = Math.round((1 - y) * (height - 1));
+                var j = Math.round((1 - (y + 1) / 2) * (height - 1));
                 var pos = (i + j * width) * 4;
                 imageData.data[pos] = color.r * 255;
                 imageData.data[pos + 1] = color.g * 255;
                 imageData.data[pos + 2] = color.b * 255;
                 imageData.data[pos + 3] = 255;
+            }
+            return imageData;
+        };
+        /**
+         * 绘制曲线矩形块
+         * @param minMaxCurveRandomBetweenTwoCurves
+         * @param width
+         * @param height
+         * @param color
+         * @param backColor
+         */
+        ImageUtil.prototype.createMinMaxCurveRandomBetweenTwoCurvesRect = function (minMaxCurveRandomBetweenTwoCurves, width, height, color, backColor) {
+            if (color === void 0) { color = new feng3d.Color3(1, 0, 0); }
+            if (backColor === void 0) { backColor = new feng3d.Color3(); }
+            width = width || 1;
+            height = height || 1;
+            //
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = backColor.toHexString();
+            ctx.fillRect(0, 0, width, height);
+            var imageData = ctx.getImageData(0, 0, width, height);
+            //
+            for (var i = 0; i < width; i++) {
+                //
+                var y0 = minMaxCurveRandomBetweenTwoCurves.curveMin.getValue(i / (width - 1));
+                var y1 = minMaxCurveRandomBetweenTwoCurves.curveMax.getValue(i / (width - 1));
+                y0 = Math.round((1 - (y0 + 1) / 2) * (height - 1));
+                y1 = Math.round((1 - (y1 + 1) / 2) * (height - 1));
+                for (var j = 0; j < height; j++) {
+                    var pos = (i + j * width) * 4;
+                    var v = (y0 - j) * (y1 - j);
+                    if (v < 0) {
+                        imageData.data[pos] = color.r * 255;
+                        imageData.data[pos + 1] = color.g * 255;
+                        imageData.data[pos + 2] = color.b * 255;
+                        imageData.data[pos + 3] = 128;
+                    }
+                    else if (v == 0) {
+                        imageData.data[pos] = color.r * 255;
+                        imageData.data[pos + 1] = color.g * 255;
+                        imageData.data[pos + 2] = color.b * 255;
+                        imageData.data[pos + 3] = 255;
+                    }
+                }
             }
             return imageData;
         };
@@ -10256,10 +10303,13 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 两个曲线中取随机值
+     */
     var MinMaxCurveRandomBetweenTwoCurves = /** @class */ (function () {
         function MinMaxCurveRandomBetweenTwoCurves() {
             this.curveMin = new feng3d.AnimationCurve();
-            this.curveMax = new feng3d.AnimationCurve();
+            this.curveMax = Object.setValue(new feng3d.AnimationCurve(), { keys: [{ time: 0, value: -1, tangent: 0 }, { time: 1, value: 1, tangent: 0 }] });
         }
         /**
          * 获取值
@@ -10306,7 +10356,7 @@ var feng3d;
                     this.minMaxCurve = this._minMaxCurveConstant = this._minMaxCurveConstant || new feng3d.MinMaxCurveConstant();
                     break;
                 case feng3d.MinMaxCurveMode.Curve:
-                    this.minMaxCurve = this._curve = this._curve || new feng3d.AnimationCurve();
+                    this.minMaxCurve = this._curve = this._curve || Object.setValue(new feng3d.AnimationCurve(), { keys: [{ time: 0, value: -1, tangent: 0 }, { time: 1, value: 1, tangent: 0 }] });
                     break;
                 case feng3d.MinMaxCurveMode.RandomBetweenTwoConstants:
                     this.minMaxCurve = this._randomBetweenTwoConstants = this._randomBetweenTwoConstants || new feng3d.MinMaxCurveRandomBetweenTwoConstants();

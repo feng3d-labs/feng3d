@@ -434,13 +434,68 @@ namespace feng3d
                 //
                 var y = curve.getValue(i / (width - 1));
 
-                var j = Math.round((1 - y) * (height - 1));
+                var j = Math.round((1 - (y + 1) / 2) * (height - 1));
                 var pos = (i + j * width) * 4;
 
                 imageData.data[pos] = color.r * 255;
                 imageData.data[pos + 1] = color.g * 255;
                 imageData.data[pos + 2] = color.b * 255;
                 imageData.data[pos + 3] = 255;
+            }
+
+            return imageData;
+        }
+
+        /**
+         * 绘制曲线矩形块
+         * @param minMaxCurveRandomBetweenTwoCurves 
+         * @param width 
+         * @param height 
+         * @param color 
+         * @param backColor 
+         */
+        createMinMaxCurveRandomBetweenTwoCurvesRect(minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, width: number, height: number, color = new Color3(1, 0, 0), backColor = new Color3())
+        {
+            width = width || 1;
+            height = height || 1;
+
+            //
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = backColor.toHexString();
+            ctx.fillRect(0, 0, width, height);
+            var imageData = ctx.getImageData(0, 0, width, height);
+
+            //
+            for (let i = 0; i < width; i++)
+            {
+                //
+                var y0 = minMaxCurveRandomBetweenTwoCurves.curveMin.getValue(i / (width - 1));
+                var y1 = minMaxCurveRandomBetweenTwoCurves.curveMax.getValue(i / (width - 1));
+
+                y0 = Math.round((1 - (y0 + 1) / 2) * (height - 1));
+                y1 = Math.round((1 - (y1 + 1) / 2) * (height - 1));
+
+                for (let j = 0; j < height; j++)
+                {
+                    var pos = (i + j * width) * 4;
+                    var v = (y0 - j) * (y1 - j);
+                    if (v < 0)
+                    {
+                        imageData.data[pos] = color.r * 255;
+                        imageData.data[pos + 1] = color.g * 255;
+                        imageData.data[pos + 2] = color.b * 255;
+                        imageData.data[pos + 3] = 128;
+                    } else if (v == 0)
+                    {
+                        imageData.data[pos] = color.r * 255;
+                        imageData.data[pos + 1] = color.g * 255;
+                        imageData.data[pos + 2] = color.b * 255;
+                        imageData.data[pos + 3] = 255;
+                    }
+                }
             }
 
             return imageData;

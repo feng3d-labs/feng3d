@@ -46,7 +46,7 @@ namespace feng3d
                     this.minMaxCurve = this._minMaxCurveConstant = this._minMaxCurveConstant || new MinMaxCurveConstant();
                     break;
                 case MinMaxCurveMode.Curve:
-                    this.minMaxCurve = this._curve = this._curve || new AnimationCurve();
+                    this.minMaxCurve = this._curve = this._curve || Object.setValue(new AnimationCurve(), { keys: [{ time: 0, value: -1, tangent: 0 }, { time: 1, value: 1, tangent: 0 }] });
                     break;
                 case MinMaxCurveMode.RandomBetweenTwoConstants:
                     this.minMaxCurve = this._randomBetweenTwoConstants = this._randomBetweenTwoConstants || new MinMaxCurveRandomBetweenTwoConstants();
