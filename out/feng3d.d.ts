@@ -1008,6 +1008,15 @@ declare namespace feng3d {
         getMixColorAtRatio(ratio: number, colors: number[], ratios?: number[]): Color3;
         createColorRect(color: Color4, width: number, height: number): ImageData;
         createMinMaxGradientRect(gradient: IMinMaxGradient, width: number, height: number): ImageData;
+        /**
+         * 绘制曲线矩形块
+         * @param curve
+         * @param width
+         * @param height
+         * @param color
+         * @param backColor
+         */
+        createAnimationCurveRect(curve: AnimationCurve, width: number, height: number, color?: Color3, backColor?: Color3): ImageData;
     }
 }
 /**

@@ -2058,6 +2058,40 @@ var feng3d;
             }
             return imageData;
         };
+        /**
+         * 绘制曲线矩形块
+         * @param curve
+         * @param width
+         * @param height
+         * @param color
+         * @param backColor
+         */
+        ImageUtil.prototype.createAnimationCurveRect = function (curve, width, height, color, backColor) {
+            if (color === void 0) { color = new feng3d.Color3(1, 0, 0); }
+            if (backColor === void 0) { backColor = new feng3d.Color3(); }
+            width = width || 1;
+            height = height || 1;
+            //
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = backColor.toHexString();
+            ctx.fillRect(0, 0, width, height);
+            var imageData = ctx.getImageData(0, 0, width, height);
+            //
+            for (var i = 0; i < width; i++) {
+                //
+                var y = curve.getValue(i / (width - 1));
+                var j = Math.round((1 - y) * (height - 1));
+                var pos = (i + j * width) * 4;
+                imageData.data[pos] = color.r * 255;
+                imageData.data[pos + 1] = color.g * 255;
+                imageData.data[pos + 2] = color.b * 255;
+                imageData.data[pos + 3] = 255;
+            }
+            return imageData;
+        };
         return ImageUtil;
     }());
     feng3d.ImageUtil = ImageUtil;
