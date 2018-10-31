@@ -10300,7 +10300,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    feng3d.feventMap = new Map();
+    var feventMap = new Map();
     function getBubbleTargets(target) {
         return [target["parent"]];
     }
@@ -10355,7 +10355,7 @@ var feng3d;
          * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
          */
         FEvent.prototype.has = function (obj, type) {
-            return !!(feng3d.feventMap.get(obj) && feng3d.feventMap.get(obj)[type] && feng3d.feventMap.get(obj)[type].length);
+            return !!(feventMap.get(obj) && feventMap.get(obj)[type] && feventMap.get(obj)[type].length);
         };
         /**
          * 添加监听
@@ -10366,9 +10366,9 @@ var feng3d;
         FEvent.prototype.on = function (obj, type, listener, thisObject, priority, once) {
             if (priority === void 0) { priority = 0; }
             if (once === void 0) { once = false; }
-            var objectListener = feng3d.feventMap.get(obj);
+            var objectListener = feventMap.get(obj);
             if (!objectListener)
-                (feng3d.feventMap.set(obj, objectListener = {}));
+                (feventMap.set(obj, objectListener = {}));
             var listeners = objectListener[type] = objectListener[type] || [];
             for (var i = 0; i < listeners.length; i++) {
                 var element = listeners[i];
@@ -10393,15 +10393,15 @@ var feng3d;
          */
         FEvent.prototype.off = function (obj, type, listener, thisObject) {
             if (!type) {
-                feng3d.feventMap.delete(obj);
+                feventMap.delete(obj);
                 return;
             }
             if (!listener) {
-                if (feng3d.feventMap.get(obj))
-                    delete feng3d.feventMap.get(obj)[type];
+                if (feventMap.get(obj))
+                    delete feventMap.get(obj)[type];
                 return;
             }
-            var listeners = feng3d.feventMap.get(obj) && feng3d.feventMap.get(obj)[type];
+            var listeners = feventMap.get(obj) && feventMap.get(obj)[type];
             if (listeners) {
                 for (var i = listeners.length - 1; i >= 0; i--) {
                     var element = listeners[i];
@@ -10410,7 +10410,7 @@ var feng3d;
                     }
                 }
                 if (listeners.length == 0) {
-                    delete feng3d.feventMap.get(obj)[type];
+                    delete feventMap.get(obj)[type];
                 }
             }
         };
@@ -10423,9 +10423,9 @@ var feng3d;
          */
         FEvent.prototype.onAll = function (obj, listener, thisObject, priority) {
             if (priority === void 0) { priority = 0; }
-            var objectListener = feng3d.feventMap.get(obj);
+            var objectListener = feventMap.get(obj);
             if (!objectListener)
-                (feng3d.feventMap.set(obj, objectListener = {}));
+                (feventMap.set(obj, objectListener = {}));
             var listeners = objectListener.__allEventType__ = objectListener.__allEventType__ || [];
             for (var i = 0; i < listeners.length; i++) {
                 var element = listeners[i];
@@ -10450,11 +10450,11 @@ var feng3d;
          */
         FEvent.prototype.offAll = function (obj, listener, thisObject) {
             if (!listener) {
-                if (feng3d.feventMap.get(obj))
-                    delete feng3d.feventMap.get(obj).__allEventType__;
+                if (feventMap.get(obj))
+                    delete feventMap.get(obj).__allEventType__;
                 return;
             }
-            var listeners = feng3d.feventMap.get(obj) && feng3d.feventMap.get(obj).__allEventType__;
+            var listeners = feventMap.get(obj) && feventMap.get(obj).__allEventType__;
             if (listeners) {
                 for (var i = listeners.length - 1; i >= 0; i--) {
                     var element = listeners[i];
@@ -10463,7 +10463,7 @@ var feng3d;
                     }
                 }
                 if (listeners.length == 0) {
-                    delete feng3d.feventMap.get(obj).__allEventType__;
+                    delete feventMap.get(obj).__allEventType__;
                 }
             }
         };
@@ -10479,7 +10479,7 @@ var feng3d;
                 e.currentTarget = obj;
             }
             catch (error) { }
-            var listeners = feng3d.feventMap.get(obj) && feng3d.feventMap.get(obj)[e.type];
+            var listeners = feventMap.get(obj) && feventMap.get(obj)[e.type];
             if (listeners) {
                 //遍历调用事件回调函数
                 for (var i = 0; i < listeners.length && !e.isStop; i++) {
@@ -10490,10 +10490,10 @@ var feng3d;
                         listeners.splice(i, 1);
                 }
                 if (listeners.length == 0)
-                    delete feng3d.feventMap.get(obj)[e.type];
+                    delete feventMap.get(obj)[e.type];
             }
             // All_EVENT_Type
-            listeners = feng3d.feventMap.get(obj) && feng3d.feventMap.get(obj).__allEventType__;
+            listeners = feventMap.get(obj) && feventMap.get(obj).__allEventType__;
             if (listeners) {
                 //遍历调用事件回调函数
                 for (var i = 0; i < listeners.length && !e.isStop; i++) {
@@ -10504,7 +10504,7 @@ var feng3d;
                         listeners.splice(i, 1);
                 }
                 if (listeners.length == 0)
-                    delete feng3d.feventMap.get(obj).__allEventType__;
+                    delete feventMap.get(obj).__allEventType__;
             }
         };
         /**
@@ -24788,7 +24788,7 @@ var feng3d;
             for (var i = 0; i < num; i++) {
                 if (this._activeParticles.length >= this.main.maxParticles)
                     return;
-                var lifetime = this.main.startLifetime;
+                var lifetime = this.main.startLifetime.getValue(((birthTime - this.main.startDelay) % this.main.duration) / this.main.duration);
                 if (lifetime + birthTime + this.main.startDelay > this.time) {
                     var particle = this._particlePool.pop() || new feng3d.Particle();
                     particle.birthTime = birthTime;
@@ -25213,8 +25213,8 @@ var feng3d;
             /**
              * 起始寿命为秒，粒子寿命为0时死亡。
              */
-            // startLifetime = Object.runFunc(new MinMaxCurve(), (obj) => { obj.mode = MinMaxCurveMode.Constant; (<MinMaxCurveConstant>obj.minMaxCurve).value = 5; });
-            _this.startLifetime = 5;
+            _this.startLifetime = Object.runFunc(new feng3d.MinMaxCurve(), function (obj) { obj.mode = feng3d.MinMaxCurveMode.Constant; obj.minMaxCurve.value = 5; });
+            // startLifetime = 5;
             /**
              * 粒子的起始速度，应用于起始方向。
              */
@@ -25307,7 +25307,6 @@ var feng3d;
         __decorate([
             feng3d.serialize,
             feng3d.oav({ tooltip: "起始寿命为秒，粒子寿命为0时死亡。" })
-            // startLifetime = Object.runFunc(new MinMaxCurve(), (obj) => { obj.mode = MinMaxCurveMode.Constant; (<MinMaxCurveConstant>obj.minMaxCurve).value = 5; });
         ], ParticleMainModule.prototype, "startLifetime", void 0);
         __decorate([
             feng3d.serialize,

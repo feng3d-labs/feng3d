@@ -2,7 +2,7 @@ namespace feng3d
 {
     export var fevent: FEvent;
 
-    export var feventMap = new Map<any, ObjectListener>();
+    var feventMap = new Map<any, ObjectListener>();
 
     function getBubbleTargets(target)
     {

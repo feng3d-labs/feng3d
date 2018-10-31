@@ -34,8 +34,8 @@ namespace feng3d
          */
         @serialize
         @oav({ tooltip: "起始寿命为秒，粒子寿命为0时死亡。" })
-        // startLifetime = Object.runFunc(new MinMaxCurve(), (obj) => { obj.mode = MinMaxCurveMode.Constant; (<MinMaxCurveConstant>obj.minMaxCurve).value = 5; });
-        startLifetime = 5;
+        startLifetime = Object.runFunc(new MinMaxCurve(), (obj) => { obj.mode = MinMaxCurveMode.Constant; (<MinMaxCurveConstant>obj.minMaxCurve).value = 5; });
+        // startLifetime = 5;
 
         /**
          * 粒子的起始速度，应用于起始方向。

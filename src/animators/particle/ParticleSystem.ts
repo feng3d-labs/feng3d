@@ -354,7 +354,7 @@ namespace feng3d
             for (let i = 0; i < num; i++)
             {
                 if (this._activeParticles.length >= this.main.maxParticles) return;
-                var lifetime = this.main.startLifetime;
+                var lifetime = this.main.startLifetime.getValue(((birthTime - this.main.startDelay) % this.main.duration) / this.main.duration);
                 if (lifetime + birthTime + this.main.startDelay > this.time)
                 {
                     var particle = this._particlePool.pop() || new Particle();
