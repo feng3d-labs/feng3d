@@ -2066,7 +2066,7 @@ var feng3d;
          * @param color
          * @param backColor
          */
-        ImageUtil.prototype.createAnimationCurveRect = function (curve, width, height, color, backColor) {
+        ImageUtil.prototype.createAnimationCurveRect = function (curve, between0And1, width, height, color, backColor) {
             if (color === void 0) { color = new feng3d.Color3(1, 0, 0); }
             if (backColor === void 0) { backColor = new feng3d.Color3(); }
             width = width || 1;
@@ -2083,7 +2083,9 @@ var feng3d;
             for (var i = 0; i < width; i++) {
                 //
                 var y = curve.getValue(i / (width - 1));
-                var j = Math.round((1 - (y + 1) / 2) * (height - 1));
+                if (!between0And1)
+                    y = (y + 1) / 2;
+                var j = Math.round((1 - y) * (height - 1));
                 var pos = (i + j * width) * 4;
                 imageData.data[pos] = color.r * 255;
                 imageData.data[pos + 1] = color.g * 255;
@@ -2100,7 +2102,7 @@ var feng3d;
          * @param color
          * @param backColor
          */
-        ImageUtil.prototype.createMinMaxCurveRandomBetweenTwoCurvesRect = function (minMaxCurveRandomBetweenTwoCurves, width, height, color, backColor) {
+        ImageUtil.prototype.createMinMaxCurveRandomBetweenTwoCurvesRect = function (minMaxCurveRandomBetweenTwoCurves, between0And1, width, height, color, backColor) {
             if (color === void 0) { color = new feng3d.Color3(1, 0, 0); }
             if (backColor === void 0) { backColor = new feng3d.Color3(); }
             width = width || 1;
@@ -2118,8 +2120,12 @@ var feng3d;
                 //
                 var y0 = minMaxCurveRandomBetweenTwoCurves.curveMin.getValue(i / (width - 1));
                 var y1 = minMaxCurveRandomBetweenTwoCurves.curveMax.getValue(i / (width - 1));
-                y0 = Math.round((1 - (y0 + 1) / 2) * (height - 1));
-                y1 = Math.round((1 - (y1 + 1) / 2) * (height - 1));
+                if (!between0And1)
+                    y0 = (y0 + 1) / 2;
+                if (!between0And1)
+                    y1 = (y1 + 1) / 2;
+                y0 = Math.round((1 - y0) * (height - 1));
+                y1 = Math.round((1 - y1) * (height - 1));
                 for (var j = 0; j < height; j++) {
                     var pos = (i + j * width) * 4;
                     var v = (y0 - j) * (y1 - j);
@@ -10309,7 +10315,7 @@ var feng3d;
     var MinMaxCurveRandomBetweenTwoCurves = /** @class */ (function () {
         function MinMaxCurveRandomBetweenTwoCurves() {
             this.curveMin = new feng3d.AnimationCurve();
-            this.curveMax = Object.setValue(new feng3d.AnimationCurve(), { keys: [{ time: 0, value: -1, tangent: 0 }, { time: 1, value: 1, tangent: 0 }] });
+            this.curveMax = Object.setValue(new feng3d.AnimationCurve(), { keys: [{ time: 0, value: 0, tangent: 0 }, { time: 1, value: 1, tangent: 0 }] });
         }
         /**
          * 获取值
@@ -10349,6 +10355,10 @@ var feng3d;
              * 曲线缩放比
              */
             this.curveMultiplier = 1;
+            /**
+             * 是否只取 0-1 ，例如 lifetime 为非负，需要设置为true
+             */
+            this.between0And1 = false;
         }
         MinMaxCurve.prototype._onModeChanged = function () {
             switch (this.mode) {
@@ -10356,12 +10366,16 @@ var feng3d;
                     this.minMaxCurve = this._minMaxCurveConstant = this._minMaxCurveConstant || new feng3d.MinMaxCurveConstant();
                     break;
                 case feng3d.MinMaxCurveMode.Curve:
-                    this.minMaxCurve = this._curve = this._curve || Object.setValue(new feng3d.AnimationCurve(), { keys: [{ time: 0, value: -1, tangent: 0 }, { time: 1, value: 1, tangent: 0 }] });
+                    if (this.minMaxCurve instanceof feng3d.MinMaxCurveConstant)
+                        this.curveMultiplier = this.minMaxCurve.value;
+                    this.minMaxCurve = this._curve = this._curve || Object.setValue(new feng3d.AnimationCurve(), { keys: [{ time: 0, value: 0, tangent: 0 }, { time: 1, value: 1, tangent: 0 }] });
                     break;
                 case feng3d.MinMaxCurveMode.RandomBetweenTwoConstants:
                     this.minMaxCurve = this._randomBetweenTwoConstants = this._randomBetweenTwoConstants || new feng3d.MinMaxCurveRandomBetweenTwoConstants();
                     break;
                 case feng3d.MinMaxCurveMode.RandomBetweenTwoCurves:
+                    if (this.minMaxCurve instanceof feng3d.MinMaxCurveConstant)
+                        this.curveMultiplier = this.minMaxCurve.value;
                     this.minMaxCurve = this._randomBetweenTwoCurves = this._randomBetweenTwoCurves || new feng3d.MinMaxCurveRandomBetweenTwoCurves();
                     break;
             }
@@ -25305,7 +25319,7 @@ var feng3d;
             /**
              * 起始寿命为秒，粒子寿命为0时死亡。
              */
-            _this.startLifetime = Object.runFunc(new feng3d.MinMaxCurve(), function (obj) { obj.mode = feng3d.MinMaxCurveMode.Constant; obj.minMaxCurve.value = 5; });
+            _this.startLifetime = Object.runFunc(new feng3d.MinMaxCurve(), function (obj) { obj.mode = feng3d.MinMaxCurveMode.Constant; obj.between0And1 = true; obj.minMaxCurve.value = 5; });
             // startLifetime = 5;
             /**
              * 粒子的起始速度，应用于起始方向。

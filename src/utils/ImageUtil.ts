@@ -414,7 +414,7 @@ namespace feng3d
          * @param color 
          * @param backColor 
          */
-        createAnimationCurveRect(curve: AnimationCurve, width: number, height: number, color = new Color3(1, 0, 0), backColor = new Color3())
+        createAnimationCurveRect(curve: AnimationCurve, between0And1: boolean, width: number, height: number, color = new Color3(1, 0, 0), backColor = new Color3())
         {
             width = width || 1;
             height = height || 1;
@@ -433,8 +433,9 @@ namespace feng3d
             {
                 //
                 var y = curve.getValue(i / (width - 1));
+                if (!between0And1) y = (y + 1) / 2;
 
-                var j = Math.round((1 - (y + 1) / 2) * (height - 1));
+                var j = Math.round((1 - y) * (height - 1));
                 var pos = (i + j * width) * 4;
 
                 imageData.data[pos] = color.r * 255;
@@ -454,7 +455,7 @@ namespace feng3d
          * @param color 
          * @param backColor 
          */
-        createMinMaxCurveRandomBetweenTwoCurvesRect(minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, width: number, height: number, color = new Color3(1, 0, 0), backColor = new Color3())
+        createMinMaxCurveRandomBetweenTwoCurvesRect(minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, width: number, height: number, color = new Color3(1, 0, 0), backColor = new Color3())
         {
             width = width || 1;
             height = height || 1;
@@ -475,8 +476,11 @@ namespace feng3d
                 var y0 = minMaxCurveRandomBetweenTwoCurves.curveMin.getValue(i / (width - 1));
                 var y1 = minMaxCurveRandomBetweenTwoCurves.curveMax.getValue(i / (width - 1));
 
-                y0 = Math.round((1 - (y0 + 1) / 2) * (height - 1));
-                y1 = Math.round((1 - (y1 + 1) / 2) * (height - 1));
+                if (!between0And1) y0 = (y0 + 1) / 2;
+                if (!between0And1) y1 = (y1 + 1) / 2;
+
+                y0 = Math.round((1 - y0) * (height - 1));
+                y1 = Math.round((1 - y1) * (height - 1));
 
                 for (let j = 0; j < height; j++)
                 {

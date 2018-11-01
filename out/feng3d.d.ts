@@ -1016,7 +1016,7 @@ declare namespace feng3d {
          * @param color
          * @param backColor
          */
-        createAnimationCurveRect(curve: AnimationCurve, width: number, height: number, color?: Color3, backColor?: Color3): ImageData;
+        createAnimationCurveRect(curve: AnimationCurve, between0And1: boolean, width: number, height: number, color?: Color3, backColor?: Color3): ImageData;
         /**
          * 绘制曲线矩形块
          * @param minMaxCurveRandomBetweenTwoCurves
@@ -1025,7 +1025,7 @@ declare namespace feng3d {
          * @param color
          * @param backColor
          */
-        createMinMaxCurveRandomBetweenTwoCurvesRect(minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, width: number, height: number, color?: Color3, backColor?: Color3): ImageData;
+        createMinMaxCurveRandomBetweenTwoCurvesRect(minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, width: number, height: number, color?: Color3, backColor?: Color3): ImageData;
     }
 }
 /**
@@ -5276,6 +5276,10 @@ declare namespace feng3d {
          * 曲线缩放比
          */
         curveMultiplier: number;
+        /**
+         * 是否只取 0-1 ，例如 lifetime 为非负，需要设置为true
+         */
+        between0And1: boolean;
         private _minMaxCurveConstant;
         private _curve;
         private _randomBetweenTwoConstants;

@@ -9,7 +9,7 @@ namespace feng3d
         curveMin = new AnimationCurve();
 
         @serialize
-        curveMax = Object.setValue(new AnimationCurve(), { keys: [{ time: 0, value: -1, tangent: 0 }, { time: 1, value: 1, tangent: 0 }] });
+        curveMax = Object.setValue(new AnimationCurve(), { keys: [{ time: 0, value: 0, tangent: 0 }, { time: 1, value: 1, tangent: 0 }] });
 
         /**
          * 获取值
