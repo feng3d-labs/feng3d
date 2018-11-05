@@ -10193,6 +10193,8 @@ var feng3d;
          */
         AnimationCurve.prototype.getValue = function (t) {
             var point = this.getPoint(t);
+            if (!point)
+                return 0;
             return point.value;
         };
         /**

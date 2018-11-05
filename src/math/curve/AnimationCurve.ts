@@ -168,6 +168,7 @@ namespace feng3d
         getValue(t: number)
         {
             var point = this.getPoint(t);
+            if (!point) return 0;
             return point.value;
         }
 
