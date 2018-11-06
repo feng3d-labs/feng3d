@@ -11,6 +11,21 @@ namespace feng3d
         static WHITE = new Color4();
         static BLACK = new Color4(0, 0, 0);
 
+        static fromUnit(color: number)
+        {
+            return new Color4().fromUnit(color);
+        }
+
+        static fromUnit24(color: number, a = 1)
+        {
+            return Color4.fromColor3(Color3.fromUnit(color), a);
+        }
+
+        static fromColor3(color3: Color3, a = 1)
+        {
+            return new Color4(color3.r, color3.g, color3.b, a);
+        }
+
         /**
          * 红[0,1]
          */

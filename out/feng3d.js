@@ -1778,13 +1778,16 @@ var feng3d;
         ImageUtil.prototype.createImageData = function (width, height, fillcolor) {
             if (width === void 0) { width = 1024; }
             if (height === void 0) { height = 1024; }
-            if (fillcolor === void 0) { fillcolor = 0; }
+            if (fillcolor === void 0) { fillcolor = new feng3d.Color4(); }
             var canvas = document.createElement('canvas');
             canvas.width = width;
             canvas.height = height;
             var ctx = canvas.getContext('2d');
-            ctx.fillStyle = new feng3d.Color3().fromUnit(fillcolor).toHexString();
+            ctx.fillStyle = feng3d.Color3.fromColor4(fillcolor).toHexString();
+            var backAlpha = ctx.globalAlpha;
+            ctx.globalAlpha = fillcolor.a;
             ctx.fillRect(0, 0, width, height);
+            ctx.globalAlpha = backAlpha;
             var imageData = ctx.getImageData(0, 0, width, height);
             return imageData;
         };
@@ -2067,35 +2070,32 @@ var feng3d;
          * @param backColor
          */
         ImageUtil.prototype.createAnimationCurveRect = function (curve, between0And1, width, height, color, backColor) {
-            if (color === void 0) { color = new feng3d.Color3(1, 0, 0); }
-            if (backColor === void 0) { backColor = new feng3d.Color3(); }
-            width = width || 1;
-            height = height || 1;
-            //
-            var canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            var ctx = canvas.getContext('2d');
-            ctx.fillStyle = backColor.toHexString();
-            ctx.fillRect(0, 0, width, height);
-            var imageData = ctx.getImageData(0, 0, width, height);
-            //
-            for (var i = 0; i < width; i++) {
-                //
-                var y = curve.getValue(i / (width - 1));
-                if (!between0And1)
-                    y = (y + 1) / 2;
-                var j = Math.round((1 - y) * (height - 1));
-                var pos = (i + j * width) * 4;
-                imageData.data[pos] = color.r * 255;
-                imageData.data[pos + 1] = color.g * 255;
-                imageData.data[pos + 2] = color.b * 255;
-                imageData.data[pos + 3] = 255;
-            }
+            if (color === void 0) { color = new feng3d.Color4(1, 0, 0); }
+            if (backColor === void 0) { backColor = new feng3d.Color4(); }
+            var imageData = this.createImageData(width, height, backColor);
+            this.drawImageDataCurve(imageData, curve, between0And1, color);
             return imageData;
         };
         /**
-         * 绘制曲线矩形块
+         * 绘制曲线
+         * @param imageData
+         * @param curve
+         * @param between0And1
+         * @param color4
+         */
+        ImageUtil.prototype.drawImageDataCurve = function (imageData, curve, between0And1, color4) {
+            //
+            for (var i = 0; i < imageData.width; i++) {
+                //
+                var y = curve.getValue(i / (imageData.width - 1));
+                if (!between0And1)
+                    y = (y + 1) / 2;
+                var j = Math.round((1 - y) * (imageData.height - 1));
+                this.setImageDataPixel(imageData, i, j, color4);
+            }
+        };
+        /**
+         * 绘制双曲线
          * @param minMaxCurveRandomBetweenTwoCurves
          * @param width
          * @param height
@@ -2103,47 +2103,57 @@ var feng3d;
          * @param backColor
          */
         ImageUtil.prototype.createMinMaxCurveRandomBetweenTwoCurvesRect = function (minMaxCurveRandomBetweenTwoCurves, between0And1, width, height, color, backColor) {
-            if (color === void 0) { color = new feng3d.Color3(1, 0, 0); }
-            if (backColor === void 0) { backColor = new feng3d.Color3(); }
-            width = width || 1;
-            height = height || 1;
+            if (color === void 0) { color = new feng3d.Color4(1, 0, 0); }
+            if (backColor === void 0) { backColor = new feng3d.Color4(); }
+            var imageData = this.createImageData(width, height, backColor);
+            this.drawImageDataBetweenTwoCurves(imageData, minMaxCurveRandomBetweenTwoCurves, between0And1, color);
+            return imageData;
+        };
+        /**
+         * 绘制双曲线
+         * @param imageData
+         * @param minMaxCurveRandomBetweenTwoCurves
+         * @param between0And1
+         * @param color4
+         */
+        ImageUtil.prototype.drawImageDataBetweenTwoCurves = function (imageData, minMaxCurveRandomBetweenTwoCurves, between0And1, color4) {
             //
-            var canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            var ctx = canvas.getContext('2d');
-            ctx.fillStyle = backColor.toHexString();
-            ctx.fillRect(0, 0, width, height);
-            var imageData = ctx.getImageData(0, 0, width, height);
-            //
-            for (var i = 0; i < width; i++) {
+            for (var i = 0; i < imageData.width; i++) {
                 //
-                var y0 = minMaxCurveRandomBetweenTwoCurves.curveMin.getValue(i / (width - 1));
-                var y1 = minMaxCurveRandomBetweenTwoCurves.curveMax.getValue(i / (width - 1));
+                var y0 = minMaxCurveRandomBetweenTwoCurves.curveMin.getValue(i / (imageData.width - 1));
+                var y1 = minMaxCurveRandomBetweenTwoCurves.curveMax.getValue(i / (imageData.width - 1));
                 if (!between0And1)
                     y0 = (y0 + 1) / 2;
                 if (!between0And1)
                     y1 = (y1 + 1) / 2;
-                y0 = Math.round((1 - y0) * (height - 1));
-                y1 = Math.round((1 - y1) * (height - 1));
-                for (var j = 0; j < height; j++) {
-                    var pos = (i + j * width) * 4;
+                y0 = Math.round((1 - y0) * (imageData.height - 1));
+                y1 = Math.round((1 - y1) * (imageData.height - 1));
+                for (var j = 0; j < imageData.height; j++) {
+                    var pos = (i + j * imageData.width) * 4;
                     var v = (y0 - j) * (y1 - j);
-                    if (v < 0) {
-                        imageData.data[pos] = color.r * 255;
-                        imageData.data[pos + 1] = color.g * 255;
-                        imageData.data[pos + 2] = color.b * 255;
-                        imageData.data[pos + 3] = 128;
-                    }
-                    else if (v == 0) {
-                        imageData.data[pos] = color.r * 255;
-                        imageData.data[pos + 1] = color.g * 255;
-                        imageData.data[pos + 2] = color.b * 255;
-                        imageData.data[pos + 3] = 255;
+                    if (v <= 0) {
+                        color4.a = v == 0 ? 1 : 0.5;
+                        this.setImageDataPixel(imageData, i, j, color4);
                     }
                 }
             }
-            return imageData;
+        };
+        ImageUtil.prototype.drawImageDataPixel = function (imageData, x, y, color) {
+            var oldColor = this.getImageDataPixel(imageData, x, y);
+            oldColor.mix(color);
+            this.setImageDataPixel(imageData, x, y, oldColor);
+        };
+        ImageUtil.prototype.getImageDataPixel = function (imageData, x, y) {
+            var pos = (x + y * imageData.width) * 4;
+            var color = new feng3d.Color4(imageData.data[pos] / 255, imageData.data[pos + 1] / 255, imageData.data[pos + 2] / 255, imageData.data[pos + 3] / 255);
+            return color;
+        };
+        ImageUtil.prototype.setImageDataPixel = function (imageData, x, y, color) {
+            var pos = (x + y * imageData.width) * 4;
+            imageData.data[pos] = color.r * 255;
+            imageData.data[pos + 1] = color.g * 255;
+            imageData.data[pos + 2] = color.b * 255;
+            imageData.data[pos + 3] = color.a * 255;
         };
         return ImageUtil;
     }());
@@ -3418,6 +3428,12 @@ var feng3d;
             this.g = g;
             this.b = b;
         }
+        Color3.fromUnit = function (color) {
+            return new Color3().fromUnit(color);
+        };
+        Color3.fromColor4 = function (color4) {
+            return new Color3(color4.r, color4.g, color4.b);
+        };
         Color3.prototype.setTo = function (r, g, b) {
             this.r = r;
             this.g = g;
@@ -3623,6 +3639,17 @@ var feng3d;
             this.b = b;
             this.a = a;
         }
+        Color4.fromUnit = function (color) {
+            return new Color4().fromUnit(color);
+        };
+        Color4.fromUnit24 = function (color, a) {
+            if (a === void 0) { a = 1; }
+            return Color4.fromColor3(feng3d.Color3.fromUnit(color), a);
+        };
+        Color4.fromColor3 = function (color3, a) {
+            if (a === void 0) { a = 1; }
+            return new Color4(color3.r, color3.g, color3.b, a);
+        };
         Color4.prototype.setTo = function (r, g, b, a) {
             if (a === void 0) { a = 1; }
             this.r = r;
@@ -10012,8 +10039,9 @@ var feng3d;
             if (num === void 0) { num = 100; }
             var results = [];
             for (var i = 0; i <= num; i++) {
-                var p = this.getValue(i / num, ps);
-                results.push(p);
+                var t = i / num;
+                var p = this.getValue(t, ps);
+                results.push({ t: t, v: p });
             }
             return results;
         };
@@ -10183,9 +10211,10 @@ var feng3d;
                     break;
                 }
             }
-            if (isfind)
-                return new feng3d.AnimationCurveKeyframe({ time: t, value: value, tangent: tangent });
-            return null;
+            if (keys.length == 0)
+                return new feng3d.AnimationCurveKeyframe({ time: t, value: 0, tangent: 0 });
+            feng3d.assert(isfind);
+            return new feng3d.AnimationCurveKeyframe({ time: t, value: value, tangent: tangent });
         };
         /**
          * 获取值
@@ -10241,7 +10270,7 @@ var feng3d;
             if (num === void 0) { num = 100; }
             var results = [];
             for (var i = 0; i <= num; i++) {
-                var p = this.getValue(i / num);
+                var p = this.getPoint(i / num);
                 results.push(p);
             }
             return results;
@@ -21823,12 +21852,12 @@ var feng3d;
         ImageDatas["defaultParticle"] = "defaultParticle";
     })(ImageDatas = feng3d.ImageDatas || (feng3d.ImageDatas = {}));
     feng3d.imageDatas = {
-        black: feng3d.imageUtil.createImageData(1, 1, feng3d.ColorKeywords.black),
-        white: feng3d.imageUtil.createImageData(1, 1, feng3d.ColorKeywords.white),
-        red: feng3d.imageUtil.createImageData(1, 1, feng3d.ColorKeywords.red),
-        green: feng3d.imageUtil.createImageData(1, 1, feng3d.ColorKeywords.green),
-        blue: feng3d.imageUtil.createImageData(1, 1, feng3d.ColorKeywords.blue),
-        defaultNormal: feng3d.imageUtil.createImageData(1, 1, 0x8080ff),
+        black: feng3d.imageUtil.createImageData(1, 1, feng3d.Color4.fromUnit24(feng3d.ColorKeywords.black)),
+        white: feng3d.imageUtil.createImageData(1, 1, feng3d.Color4.fromUnit24(feng3d.ColorKeywords.white)),
+        red: feng3d.imageUtil.createImageData(1, 1, feng3d.Color4.fromUnit24(feng3d.ColorKeywords.red)),
+        green: feng3d.imageUtil.createImageData(1, 1, feng3d.Color4.fromUnit24(feng3d.ColorKeywords.green)),
+        blue: feng3d.imageUtil.createImageData(1, 1, feng3d.Color4.fromUnit24(feng3d.ColorKeywords.blue)),
+        defaultNormal: feng3d.imageUtil.createImageData(1, 1, feng3d.Color4.fromUnit24(0x8080ff)),
         defaultParticle: feng3d.imageUtil.createDefaultParticle(),
     };
     /**

@@ -958,7 +958,7 @@ declare namespace feng3d {
          * @param height 数据高度
          * @param fillcolor 填充颜色
          */
-        createImageData(width?: number, height?: number, fillcolor?: number): ImageData;
+        createImageData(width?: number, height?: number, fillcolor?: Color4): ImageData;
         /**
          * 创建默认粒子贴图
          * @param size 尺寸
@@ -1016,16 +1016,35 @@ declare namespace feng3d {
          * @param color
          * @param backColor
          */
-        createAnimationCurveRect(curve: AnimationCurve, between0And1: boolean, width: number, height: number, color?: Color3, backColor?: Color3): ImageData;
+        createAnimationCurveRect(curve: AnimationCurve, between0And1: boolean, width: number, height: number, color?: Color4, backColor?: Color4): ImageData;
         /**
-         * 绘制曲线矩形块
+         * 绘制曲线
+         * @param imageData
+         * @param curve
+         * @param between0And1
+         * @param color4
+         */
+        private drawImageDataCurve;
+        /**
+         * 绘制双曲线
          * @param minMaxCurveRandomBetweenTwoCurves
          * @param width
          * @param height
          * @param color
          * @param backColor
          */
-        createMinMaxCurveRandomBetweenTwoCurvesRect(minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, width: number, height: number, color?: Color3, backColor?: Color3): ImageData;
+        createMinMaxCurveRandomBetweenTwoCurvesRect(minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, width: number, height: number, color?: Color4, backColor?: Color4): ImageData;
+        /**
+         * 绘制双曲线
+         * @param imageData
+         * @param minMaxCurveRandomBetweenTwoCurves
+         * @param between0And1
+         * @param color4
+         */
+        drawImageDataBetweenTwoCurves(imageData: ImageData, minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, color4: Color4): any;
+        drawImageDataPixel(imageData: ImageData, x: number, y: number, color: Color4): void;
+        getImageDataPixel(imageData: ImageData, x: number, y: number): Color4;
+        setImageDataPixel(imageData: ImageData, x: number, y: number, color: Color4): void;
     }
 }
 /**
@@ -1691,6 +1710,8 @@ declare namespace feng3d {
         __class__: "feng3d.Color3";
         static WHITE: Color3;
         static BLACK: Color3;
+        static fromUnit(color: number): Color3;
+        static fromColor4(color4: Color4): Color3;
         /**
          * 红[0,1]
          */
@@ -1921,6 +1942,9 @@ declare namespace feng3d {
         __class__: "feng3d.Color4";
         static WHITE: Color4;
         static BLACK: Color4;
+        static fromUnit(color: number): Color4;
+        static fromUnit24(color: number, a?: number): Color4;
+        static fromColor3(color3: Color3, a?: number): Color4;
         /**
          * 红[0,1]
          */
@@ -5079,7 +5103,10 @@ declare namespace feng3d {
          * @param ps 点列表
          * @param num 采样次数 ，采样点分别为[0,1/num,2/num,....,(num-1)/num,1]
          */
-        getSamples(ps: number[], num?: number): number[];
+        getSamples(ps: number[], num?: number): {
+            t: number;
+            v: number;
+        }[];
     }
 }
 declare namespace feng3d {
@@ -5190,7 +5217,7 @@ declare namespace feng3d {
          *
          * @param num 采样次数 ，采样点分别为[0,1/num,2/num,....,(num-1)/num,1]
          */
-        getSamples(num?: number): number[];
+        getSamples(num?: number): AnimationCurveKeyframe[];
     }
 }
 declare namespace feng3d {

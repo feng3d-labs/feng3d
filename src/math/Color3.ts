@@ -5,11 +5,20 @@ namespace feng3d
      */
     export class Color3
     {
-
         __class__: "feng3d.Color3" = "feng3d.Color3";
 
         static WHITE = new Color3();
         static BLACK = new Color3(0, 0, 0);
+
+        static fromUnit(color: number)
+        {
+            return new Color3().fromUnit(color);
+        }
+
+        static fromColor4(color4: Color4)
+        {
+            return new Color3(color4.r, color4.g, color4.b);
+        }
 
         /**
          * 红[0,1]

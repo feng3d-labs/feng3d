@@ -36,7 +36,6 @@ namespace feng3d
             return this.keys.length;
         }
 
-
         /**
          * 添加关键点
          * 
@@ -157,8 +156,11 @@ namespace feng3d
                     break;
                 }
             }
-            if (isfind) return new AnimationCurveKeyframe({ time: t, value: value, tangent: tangent });
-            return null;
+
+            if (keys.length == 0) return new AnimationCurveKeyframe({ time: t, value: 0, tangent: 0 });
+
+            assert(isfind);
+            return new AnimationCurveKeyframe({ time: t, value: value, tangent: tangent });
         }
 
         /**
@@ -221,10 +223,10 @@ namespace feng3d
          */
         getSamples(num = 100)
         {
-            var results: number[] = [];
+            var results: AnimationCurveKeyframe[] = [];
             for (let i = 0; i <= num; i++)
             {
-                var p = this.getValue(i / num)
+                var p = this.getPoint(i / num)
                 results.push(p);
             }
             return results;

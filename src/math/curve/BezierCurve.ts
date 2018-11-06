@@ -581,11 +581,12 @@ namespace feng3d
          */
         getSamples(ps: number[], num = 100)
         {
-            var results: number[] = [];
+            var results: { t: number, v: number }[] = [];
             for (let i = 0; i <= num; i++)
             {
-                var p = this.getValue(i / num, ps)
-                results.push(p);
+                var t = i / num;
+                var p = this.getValue(t, ps)
+                results.push({ t: t, v: p });
             }
             return results;
         }

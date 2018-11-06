@@ -58,15 +58,18 @@ namespace feng3d
          * @param height 数据高度
          * @param fillcolor 填充颜色
          */
-        createImageData(width = 1024, height = 1024, fillcolor = 0)
+        createImageData(width = 1024, height = 1024, fillcolor = new Color4())
         {
             var canvas = document.createElement('canvas');
             canvas.width = width;
             canvas.height = height;
 
             var ctx = canvas.getContext('2d');
-            ctx.fillStyle = new Color3().fromUnit(fillcolor).toHexString();
+            ctx.fillStyle = Color3.fromColor4(fillcolor).toHexString();
+            var backAlpha = ctx.globalAlpha;
+            ctx.globalAlpha = fillcolor.a;
             ctx.fillRect(0, 0, width, height);
+            ctx.globalAlpha = backAlpha;
 
             var imageData = ctx.getImageData(0, 0, width, height);
 
@@ -414,98 +417,110 @@ namespace feng3d
          * @param color 
          * @param backColor 
          */
-        createAnimationCurveRect(curve: AnimationCurve, between0And1: boolean, width: number, height: number, color = new Color3(1, 0, 0), backColor = new Color3())
+        createAnimationCurveRect(curve: AnimationCurve, between0And1: boolean, width: number, height: number, color = new Color4(1, 0, 0), backColor = new Color4())
         {
-            width = width || 1;
-            height = height || 1;
+            var imageData = this.createImageData(width, height, backColor);
 
-            //
-            var canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            var ctx = canvas.getContext('2d');
-            ctx.fillStyle = backColor.toHexString();
-            ctx.fillRect(0, 0, width, height);
-            var imageData = ctx.getImageData(0, 0, width, height);
-
-            //
-            for (let i = 0; i < width; i++)
-            {
-                //
-                var y = curve.getValue(i / (width - 1));
-                if (!between0And1) y = (y + 1) / 2;
-
-                var j = Math.round((1 - y) * (height - 1));
-                var pos = (i + j * width) * 4;
-
-                imageData.data[pos] = color.r * 255;
-                imageData.data[pos + 1] = color.g * 255;
-                imageData.data[pos + 2] = color.b * 255;
-                imageData.data[pos + 3] = 255;
-            }
+            this.drawImageDataCurve(imageData, curve, between0And1, color);
 
             return imageData;
         }
 
         /**
-         * 绘制曲线矩形块
+         * 绘制曲线
+         * @param imageData 
+         * @param curve 
+         * @param between0And1 
+         * @param color4 
+         */
+        private drawImageDataCurve(imageData: ImageData, curve: AnimationCurve, between0And1: boolean, color4: Color4)
+        {
+            //
+            for (let i = 0; i < imageData.width; i++)
+            {
+                //
+                var y = curve.getValue(i / (imageData.width - 1));
+                if (!between0And1) y = (y + 1) / 2;
+                var j = Math.round((1 - y) * (imageData.height - 1));
+                this.setImageDataPixel(imageData, i, j, color4);
+            }
+        }
+
+        /**
+         * 绘制双曲线
          * @param minMaxCurveRandomBetweenTwoCurves 
          * @param width 
          * @param height 
          * @param color 
          * @param backColor 
          */
-        createMinMaxCurveRandomBetweenTwoCurvesRect(minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, width: number, height: number, color = new Color3(1, 0, 0), backColor = new Color3())
+        createMinMaxCurveRandomBetweenTwoCurvesRect(minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, width: number, height: number, color = new Color4(1, 0, 0), backColor = new Color4())
         {
-            width = width || 1;
-            height = height || 1;
+            var imageData = this.createImageData(width, height, backColor);
 
-            //
-            var canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            var ctx = canvas.getContext('2d');
-            ctx.fillStyle = backColor.toHexString();
-            ctx.fillRect(0, 0, width, height);
-            var imageData = ctx.getImageData(0, 0, width, height);
-
-            //
-            for (let i = 0; i < width; i++)
-            {
-                //
-                var y0 = minMaxCurveRandomBetweenTwoCurves.curveMin.getValue(i / (width - 1));
-                var y1 = minMaxCurveRandomBetweenTwoCurves.curveMax.getValue(i / (width - 1));
-
-                if (!between0And1) y0 = (y0 + 1) / 2;
-                if (!between0And1) y1 = (y1 + 1) / 2;
-
-                y0 = Math.round((1 - y0) * (height - 1));
-                y1 = Math.round((1 - y1) * (height - 1));
-
-                for (let j = 0; j < height; j++)
-                {
-                    var pos = (i + j * width) * 4;
-                    var v = (y0 - j) * (y1 - j);
-                    if (v < 0)
-                    {
-                        imageData.data[pos] = color.r * 255;
-                        imageData.data[pos + 1] = color.g * 255;
-                        imageData.data[pos + 2] = color.b * 255;
-                        imageData.data[pos + 3] = 128;
-                    } else if (v == 0)
-                    {
-                        imageData.data[pos] = color.r * 255;
-                        imageData.data[pos + 1] = color.g * 255;
-                        imageData.data[pos + 2] = color.b * 255;
-                        imageData.data[pos + 3] = 255;
-                    }
-                }
-            }
+            this.drawImageDataBetweenTwoCurves(imageData, minMaxCurveRandomBetweenTwoCurves, between0And1, color);
 
             return imageData;
         }
 
+        /**
+         * 绘制双曲线
+         * @param imageData 
+         * @param minMaxCurveRandomBetweenTwoCurves 
+         * @param between0And1 
+         * @param color4 
+         */
+        drawImageDataBetweenTwoCurves(imageData: ImageData, minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, color4: Color4): any
+        {
+            //
+            for (let i = 0; i < imageData.width; i++)
+            {
+                //
+                var y0 = minMaxCurveRandomBetweenTwoCurves.curveMin.getValue(i / (imageData.width - 1));
+                var y1 = minMaxCurveRandomBetweenTwoCurves.curveMax.getValue(i / (imageData.width - 1));
 
+                if (!between0And1) y0 = (y0 + 1) / 2;
+                if (!between0And1) y1 = (y1 + 1) / 2;
+
+                y0 = Math.round((1 - y0) * (imageData.height - 1));
+                y1 = Math.round((1 - y1) * (imageData.height - 1));
+
+                for (let j = 0; j < imageData.height; j++)
+                {
+                    var pos = (i + j * imageData.width) * 4;
+                    var v = (y0 - j) * (y1 - j);
+                    if (v <= 0)
+                    {
+                        color4.a = v == 0 ? 1 : 0.5;
+                        this.setImageDataPixel(imageData, i, j, color4);
+                    }
+                }
+            }
+        }
+
+        drawImageDataPixel(imageData: ImageData, x: number, y: number, color: Color4)
+        {
+            var oldColor = this.getImageDataPixel(imageData, x, y);
+            oldColor.mix(color);
+            this.setImageDataPixel(imageData, x, y, oldColor);
+        }
+
+        getImageDataPixel(imageData: ImageData, x: number, y: number)
+        {
+            var pos = (x + y * imageData.width) * 4;
+            var color = new Color4(imageData.data[pos] / 255, imageData.data[pos + 1] / 255, imageData.data[pos + 2] / 255, imageData.data[pos + 3] / 255);
+            return color;
+        }
+
+        setImageDataPixel(imageData: ImageData, x: number, y: number, color: Color4)
+        {
+            var pos = (x + y * imageData.width) * 4;
+
+            imageData.data[pos] = color.r * 255;
+            imageData.data[pos + 1] = color.g * 255;
+            imageData.data[pos + 2] = color.b * 255;
+            imageData.data[pos + 3] = color.a * 255;
+        }
     }
 
     imageUtil = new ImageUtil();
