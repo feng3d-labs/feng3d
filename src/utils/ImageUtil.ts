@@ -1,55 +1,20 @@
 namespace feng3d
 {
-    /**
-     * 图片相关工具
-     */
-    export var imageUtil: ImageUtil;
 
     /**
      * 图片相关工具
      */
     export class ImageUtil
     {
-        /**
-         * 加载图片
-         * @param url 图片路径
-         * @param callback 加载完成回调
-         */
-        loadImage(url: string, callback: (err: Error, image: HTMLImageElement) => void) 
-        {
-            assets.readImage(url, callback);
-        }
+        imageData: ImageData;
 
         /**
          * 获取图片数据
          * @param image 加载完成的图片元素
          */
-        getImageData(image: HTMLImageElement) 
+        static fromImage(image: HTMLImageElement) 
         {
-            if (!image) return null;
-            var canvasImg = document.createElement("canvas");
-            canvasImg.width = image.width;
-            canvasImg.height = image.height;
-
-            var ctxt = canvasImg.getContext('2d');
-            assert(!!ctxt);
-            ctxt.drawImage(image, 0, 0);
-            var imageData = ctxt.getImageData(0, 0, image.width, image.height);//读取整张图片的像素。
-            return imageData;
-        }
-
-        /**
-         * 从url获取图片数据
-         * @param url 图片路径
-         * @param callback 获取图片数据完成回调
-         */
-        getImageDataFromUrl(url: string, callback: (imageData: ImageData) => void) 
-        {
-            this.loadImage(url, (err, image) =>
-            {
-                var imageData = this.getImageData(image);
-                callback(imageData);
-            });
+            return new ImageUtil().fromImage(image);
         }
 
         /**
@@ -58,7 +23,7 @@ namespace feng3d
          * @param height 数据高度
          * @param fillcolor 填充颜色
          */
-        createImageData(width = 1024, height = 1024, fillcolor = new Color4())
+        constructor(width = 1, height = 1, fillcolor = new Color4(0, 0, 0, 0))
         {
             var canvas = document.createElement('canvas');
             canvas.width = width;
@@ -71,16 +36,72 @@ namespace feng3d
             ctx.fillRect(0, 0, width, height);
             ctx.globalAlpha = backAlpha;
 
-            var imageData = ctx.getImageData(0, 0, width, height);
+            this.imageData = ctx.getImageData(0, 0, width, height);
+            return this;
+        }
 
-            return imageData;
+        /**
+         * 获取图片数据
+         * @param image 加载完成的图片元素
+         */
+        fromImage(image: HTMLImageElement) 
+        {
+            if (!image) return null;
+            var canvasImg = document.createElement("canvas");
+            canvasImg.width = image.width;
+            canvasImg.height = image.height;
+
+            var ctxt = canvasImg.getContext('2d');
+            assert(!!ctxt);
+            ctxt.drawImage(image, 0, 0);
+            this.imageData = ctxt.getImageData(0, 0, image.width, image.height);//读取整张图片的像素。
+            return this;
+        }
+
+        /**
+         * 清理图片数据
+         * @param clearColor 清理时填充颜色
+         */
+        clear(clearColor = new Color4(0, 0, 0, 0))
+        {
+            for (let i = 0; i < this.imageData.width; i++)
+            {
+                for (let j = 0; j < this.imageData.height; j++)
+                {
+                    this.setImageDataPixel(i, j, clearColor);
+                }
+            }
+        }
+
+        /**
+         * 填充矩形
+         * @param rect 填充的矩形
+         * @param fillcolor 填充颜色
+         */
+        fillRect(rect: Rectangle, fillcolor = new Color4())
+        {
+            for (let i = rect.x > 0 ? rect.x : 0; i < this.imageData.width && i < rect.x + rect.width; i++)
+            {
+                for (let j = rect.y > 0 ? rect.y : 0; j < this.imageData.height && j < rect.y + rect.height; j++)
+                {
+                    this.setImageDataPixel(i, j, fillcolor);
+                }
+            }
+        }
+
+        /**
+         * 转换为DataUrl字符串数据
+         */
+        toDataURL()
+        {
+            return dataTransform.imageDataToDataURL(this.imageData);
         }
 
         /**
          * 创建默认粒子贴图
          * @param size 尺寸
          */
-        createDefaultParticle(size = 64)
+        drawDefaultParticle(size = 64)
         {
             var canvas = document.createElement('canvas');
             canvas.width = size;
@@ -108,7 +129,8 @@ namespace feng3d
                     imageData.data[pos + 3] = f * 255;
                 }
             }
-            return imageData;
+            this.imageData = imageData;
+            return this;
         }
 
         /**
@@ -117,376 +139,152 @@ namespace feng3d
          * @param width 宽度    
          * @param height 高度
          */
-        createColorPickerRect(color: number, width = 64, height = 64)
+        drawColorPickerRect(color: number)
         {
+            Image
             var leftTop = new Color3(1, 1, 1);
             var rightTop = new Color3().fromUnit(color);
             var leftBottom = new Color3(0, 0, 0);
             var rightBottom = new Color3(0, 0, 0);
 
-            var canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-
-            var ctx = canvas.getContext('2d');
-            var imageData = ctx.getImageData(0, 0, width, height);
-            var data = imageData.data;
             //
-            for (let i = 0; i < width; i++)
+            for (let i = 0; i < this.imageData.width; i++)
             {
-                for (let j = 0; j < height; j++)
+                for (let j = 0; j < this.imageData.height; j++)
                 {
-                    var top = leftTop.mixTo(rightTop, i / width);
-                    var bottom = leftBottom.mixTo(rightBottom, i / width);
-                    var v = top.mixTo(bottom, j / height);
-                    //
-                    var pos = (i + j * width) * 4;
-                    data[pos] = v.r * 255;
-                    data[pos + 1] = v.g * 255;
-                    data[pos + 2] = v.b * 255;
-                    data[pos + 3] = 255;
+                    var top = leftTop.mixTo(rightTop, i / this.imageData.width);
+                    var bottom = leftBottom.mixTo(rightBottom, i / this.imageData.width);
+                    var v = top.mixTo(bottom, j / this.imageData.height);
+
+                    this.setImageDataPixel(i, j, v.toColor4())
                 }
             }
-            return imageData;
+            return this;
         }
 
-        /**
-         * 获取颜色的基色以及颜色拾取矩形所在位置
-         * @param color 查找颜色
-         */
-        getColorPickerRectAtPosition(color: number, rw: number, rh: number)
+        createColorRect(color: Color4)
         {
-            var leftTop = new Color3(1, 1, 1);
-            var rightTop = new Color3().fromUnit(color);
-            var leftBottom = new Color3(0, 0, 0);
-            var rightBottom = new Color3(0, 0, 0);
+            var colorHeight = Math.floor(this.imageData.height * 0.8);
+            var alphaWidth = Math.floor(color.a * this.imageData.width);
 
-            var top = leftTop.mixTo(rightTop, rw);
-            var bottom = leftBottom.mixTo(rightBottom, rw);
-            var v = top.mixTo(bottom, rh);
-            return v;
-        }
-
-        /**
-         * 获取颜色的基色以及颜色拾取矩形所在位置
-         * @param color 查找颜色
-         */
-        getColorPickerRectPosition(color: number)
-        {
-            var black = new Color3(0, 0, 0);
-            var white = new Color3(1, 1, 1);
-
-            var c = new Color3().fromUnit(color);
-            var max = Math.max(c.r, c.g, c.b);
-            if (max != 0)
-                c = black.mix(c, 1 / max);
-            var min = Math.min(c.r, c.g, c.b);
-            if (min != 1)
-                c = white.mix(c, 1 / (1 - min));
-            var ratioH = 1 - max;
-            var ratioW = 1 - min;
-            return {
-                /**
-                 * 基色
-                 */
-                color: c,
-                /**
-                 * 横向位置
-                 */
-                ratioW: ratioW,
-                /**
-                 * 纵向位置
-                 */
-                ratioH: ratioH
-            }
-        }
-
-        /**
-         * 创建颜色条带
-         * @param colors 
-         * @param ratios [0,1]
-         * @param width 
-         * @param height 
-         * @param dirw true为横向条带，否则纵向条带
-         */
-        createColorPickerStripe(width: number, height: number, colors: number[], ratios?: number[], dirw = true)
-        {
-            if (!ratios)
-            {
-                ratios = [];
-                for (let i = 0; i < colors.length; i++)
-                {
-                    ratios[i] = i / (colors.length - 1);
-                }
-            }
-
-            var canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            var ctx = canvas.getContext('2d');
-            var imageData = ctx.getImageData(0, 0, width, height);
-
+            var color4 = color.clone(); color4.a = 1;
+            var white = new Color4(1, 1, 1);
+            var black = new Color4(0, 0, 0);
             //
-            for (let i = 0; i < width; i++)
+            for (let i = 0; i < this.imageData.width; i++)
             {
-                for (let j = 0; j < height; j++)
-                {
-                    var v = this.getMixColor(colors, ratios, dirw ? i / (width - 1) : j / (height - 1));
-                    //
-                    var pos = (i + j * width) * 4;
-                    imageData.data[pos] = v.r * 255;
-                    imageData.data[pos + 1] = v.g * 255;
-                    imageData.data[pos + 2] = v.b * 255;
-                    imageData.data[pos + 3] = 255;
-                }
-            }
-            return imageData;
-        }
-
-        getMixColor(colors: number[], ratios: number[], ratio: number)
-        {
-            if (!ratios)
-            {
-                ratios = [];
-                for (let i = 0; i < colors.length; i++)
-                {
-                    ratios[i] = i / (colors.length - 1);
-                }
-            }
-
-            var colors1 = colors.map(v => new Color3().fromUnit(v));
-
-            for (var i = 0; i < colors1.length - 1; i++)
-            {
-                if (ratios[i] <= ratio && ratio <= ratios[i + 1])
-                {
-                    var v = FMath.mapLinear(ratio, ratios[i], ratios[i + 1], 0, 1)
-                    var c = colors1[i].mixTo(colors1[i + 1], v);
-                    return c;
-                }
-            }
-            return colors1[0];
-        }
-
-        getMixColorRatio(color: number, colors: number[], ratios?: number[])
-        {
-            if (!ratios)
-            {
-                ratios = [];
-                for (let i = 0; i < colors.length; i++)
-                {
-                    ratios[i] = i / (colors.length - 1);
-                }
-            }
-
-            var colors1 = colors.map(v => new Color3().fromUnit(v));
-            var c = new Color3().fromUnit(color);
-
-            var r = c.r;
-            var g = c.g;
-            var b = c.b;
-
-            for (var i = 0; i < colors1.length - 1; i++)
-            {
-                var c0 = colors1[i];
-                var c1 = colors1[i + 1];
-                //
-                if (c.equals(c0)) return ratios[i];
-                if (c.equals(c1)) return ratios[i + 1];
-                //
-                var r1 = c0.r + c1.r;
-                var g1 = c0.g + c1.g;
-                var b1 = c0.b + c1.b;
-                //
-                var v = r * r1 + g * g1 + b * b1;
-                if (v > 2)
-                {
-                    var result = 0;
-                    if (r1 == 1)
-                    {
-                        result = FMath.mapLinear(r, c0.r, c1.r, ratios[i], ratios[i + 1]);
-                    } else if (g1 == 1)
-                    {
-                        result = FMath.mapLinear(g, c0.g, c1.g, ratios[i], ratios[i + 1]);
-                    } else if (b1 == 1)
-                    {
-                        result = FMath.mapLinear(b, c0.b, c1.b, ratios[i], ratios[i + 1]);
-                    }
-                    return result;
-                }
-            }
-            return 0;
-        }
-
-        getMixColorAtRatio(ratio: number, colors: number[], ratios?: number[])
-        {
-            if (!ratios)
-            {
-                ratios = [];
-                for (let i = 0; i < colors.length; i++)
-                {
-                    ratios[i] = i / (colors.length - 1);
-                }
-            }
-
-            var colors1 = colors.map(v => new Color3().fromUnit(v));
-
-            for (var i = 0; i < colors1.length - 1; i++)
-            {
-                if (ratios[i] <= ratio && ratio <= ratios[i + 1])
-                {
-                    var mix = FMath.mapLinear(ratio, ratios[i], ratios[i + 1], 0, 1);
-                    var c = colors1[i].mixTo(colors1[i + 1], mix);
-                    return c;
-                }
-            }
-            return colors1[0];
-        }
-
-        createColorRect(color: Color4, width: number, height: number)
-        {
-            var canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            var ctx = canvas.getContext('2d');
-            var imageData = ctx.getImageData(0, 0, width, height);
-
-            var colorHeight = Math.floor(height * 0.8);
-            var alphaWidth = Math.floor(color.a * width);
-
-            //
-            for (let i = 0; i < width; i++)
-            {
-                for (let j = 0; j < height; j++)
+                for (let j = 0; j < this.imageData.height; j++)
                 {
                     //
-                    var pos = (i + j * width) * 4;
                     if (j <= colorHeight)
                     {
-                        imageData.data[pos] = color.r * 255;
-                        imageData.data[pos + 1] = color.g * 255;
-                        imageData.data[pos + 2] = color.b * 255;
-                        imageData.data[pos + 3] = 255;
+                        this.setImageDataPixel(i, j, color4)
                     } else
                     {
-                        var v = i < alphaWidth ? 255 : 0;
-                        imageData.data[pos] = v;
-                        imageData.data[pos + 1] = v;
-                        imageData.data[pos + 2] = v;
-                        imageData.data[pos + 3] = 255;
+                        this.setImageDataPixel(i, j, i < alphaWidth ? white : black)
                     }
                 }
             }
-
-            return imageData;
+            return this;
         }
 
-        createMinMaxGradientRect(gradient: IMinMaxGradient, width: number, height: number)
+        /**
+         * 
+         * @param gradient 
+         * @param dirw true为横向条带，否则纵向条带
+         */
+        drawMinMaxGradient(gradient: IMinMaxGradient, dirw = true)
         {
-            var canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            var ctx = canvas.getContext('2d');
-            var imageData = ctx.getImageData(0, 0, width, height);
-
             //
-            for (let i = 0; i < width; i++)
+            for (let i = 0; i < this.imageData.width; i++)
             {
-                for (let j = 0; j < height; j++)
+                for (let j = 0; j < this.imageData.height; j++)
                 {
-                    //
-                    var pos = (i + j * width) * 4;
+                    var c = gradient.getValue(dirw ? i / (this.imageData.width - 1) : j / (this.imageData.height - 1));
 
-                    var c = gradient.getValue(i / (width - 1));
-
-                    imageData.data[pos] = c.r * 255;
-                    imageData.data[pos + 1] = c.g * 255;
-                    imageData.data[pos + 2] = c.b * 255;
-                    imageData.data[pos + 3] = c.a * 255;
+                    this.setImageDataPixel(i, j, c);
                 }
             }
-
-            return imageData;
+            return this;
         }
 
         /**
          * 绘制曲线
-         * @param imageData 图片数据
          * @param curve 曲线
          * @param between0And1 是否显示值在[0,1]区间，否则[-1,1]区间
          * @param color 曲线颜色
          */
-        drawImageDataCurve(imageData: ImageData, curve: AnimationCurve, between0And1: boolean, color: Color4)
+        drawImageDataCurve(curve: AnimationCurve, between0And1: boolean, color: Color4)
         {
             //
-            for (let i = 0; i < imageData.width; i++)
+            for (let i = 0; i < this.imageData.width; i++)
             {
                 //
-                var y = curve.getValue(i / (imageData.width - 1));
+                var y = curve.getValue(i / (this.imageData.width - 1));
                 if (!between0And1) y = (y + 1) / 2;
-                var j = Math.round((1 - y) * (imageData.height - 1));
-                this.drawImageDataPixel(imageData, i, j, color);
+                var j = Math.round((1 - y) * (this.imageData.height - 1));
+                this.drawImageDataPixel(i, j, color);
             }
+            return this;
         }
 
         /**
          * 绘制双曲线
-         * @param imageData 图片数据
          * @param minMaxCurveRandomBetweenTwoCurves 双曲线
          * @param between0And1  是否显示值在[0,1]区间，否则[-1,1]区间
          * @param curveColor 颜色
          */
-        drawImageDataBetweenTwoCurves(imageData: ImageData, minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, curveColor = new Color4(), fillcolor = new Color4(1, 1, 1, 0.5)): any
+        drawImageDataBetweenTwoCurves(minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, curveColor = new Color4(), fillcolor = new Color4(1, 1, 1, 0.5))
         {
             //
-            for (let i = 0; i < imageData.width; i++)
+            for (let i = 0; i < this.imageData.width; i++)
             {
                 //
-                var y0 = minMaxCurveRandomBetweenTwoCurves.curveMin.getValue(i / (imageData.width - 1));
-                var y1 = minMaxCurveRandomBetweenTwoCurves.curveMax.getValue(i / (imageData.width - 1));
+                var y0 = minMaxCurveRandomBetweenTwoCurves.curveMin.getValue(i / (this.imageData.width - 1));
+                var y1 = minMaxCurveRandomBetweenTwoCurves.curveMax.getValue(i / (this.imageData.width - 1));
 
                 if (!between0And1) y0 = (y0 + 1) / 2;
                 if (!between0And1) y1 = (y1 + 1) / 2;
 
-                y0 = Math.round((1 - y0) * (imageData.height - 1));
-                y1 = Math.round((1 - y1) * (imageData.height - 1));
+                y0 = Math.round((1 - y0) * (this.imageData.height - 1));
+                y1 = Math.round((1 - y1) * (this.imageData.height - 1));
 
-                for (let j = 0; j < imageData.height; j++)
+                for (let j = 0; j < this.imageData.height; j++)
                 {
-                    var pos = (i + j * imageData.width) * 4;
+                    var pos = (i + j * this.imageData.width) * 4;
                     var v = (y0 - j) * (y1 - j);
                     if (v <= 0)
                     {
-                        this.drawImageDataPixel(imageData, i, j, v == 0 ? curveColor : fillcolor);
+                        this.drawImageDataPixel(i, j, v == 0 ? curveColor : fillcolor);
                     }
                 }
             }
+            return this;
         }
 
         /**
          * 绘制图片数据指定位置颜色
-         * @param imageData 图片数据
          * @param x 图片数据x坐标
          * @param y 图片数据y坐标
          * @param color 颜色值
          */
-        drawImageDataPixel(imageData: ImageData, x: number, y: number, color: Color4)
+        drawImageDataPixel(x: number, y: number, color: Color4)
         {
-            var oldColor = this.getImageDataPixel(imageData, x, y);
+            var oldColor = this.getImageDataPixel(x, y);
             oldColor.mix(color, color.a);
-            this.setImageDataPixel(imageData, x, y, oldColor);
+            this.setImageDataPixel(x, y, oldColor);
+            return this;
         }
 
         /**
          * 获取图片指定位置颜色值
-         * @param imageData 图片数据 
          * @param x 图片数据x坐标
          * @param y 图片数据y坐标
          */
-        getImageDataPixel(imageData: ImageData, x: number, y: number)
+        getImageDataPixel(x: number, y: number)
         {
-            var pos = (x + y * imageData.width) * 4;
-            var color = new Color4(imageData.data[pos] / 255, imageData.data[pos + 1] / 255, imageData.data[pos + 2] / 255, imageData.data[pos + 3] / 255);
+            var pos = (x + y * this.imageData.width) * 4;
+            var color = new Color4(this.imageData.data[pos] / 255, this.imageData.data[pos + 1] / 255, this.imageData.data[pos + 2] / 255, this.imageData.data[pos + 3] / 255);
             return color;
         }
 
@@ -497,16 +295,15 @@ namespace feng3d
          * @param y 图片数据y坐标
          * @param color 颜色值
          */
-        setImageDataPixel(imageData: ImageData, x: number, y: number, color: Color4)
+        setImageDataPixel(x: number, y: number, color: Color4)
         {
-            var pos = (x + y * imageData.width) * 4;
+            var pos = (x + y * this.imageData.width) * 4;
 
-            imageData.data[pos] = color.r * 255;
-            imageData.data[pos + 1] = color.g * 255;
-            imageData.data[pos + 2] = color.b * 255;
-            imageData.data[pos + 3] = color.a * 255;
+            this.imageData.data[pos] = color.r * 255;
+            this.imageData.data[pos + 1] = color.g * 255;
+            this.imageData.data[pos + 2] = color.b * 255;
+            this.imageData.data[pos + 3] = color.a * 255;
+            return this;
         }
     }
-
-    imageUtil = new ImageUtil();
 }

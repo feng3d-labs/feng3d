@@ -12,13 +12,13 @@ namespace feng3d
     }
 
     export var imageDatas = {
-        black: imageUtil.createImageData(1, 1, Color4.fromUnit24(ColorKeywords.black)),
-        white: imageUtil.createImageData(1, 1, Color4.fromUnit24(ColorKeywords.white)),
-        red: imageUtil.createImageData(1, 1, Color4.fromUnit24(ColorKeywords.red)),
-        green: imageUtil.createImageData(1, 1, Color4.fromUnit24(ColorKeywords.green)),
-        blue: imageUtil.createImageData(1, 1, Color4.fromUnit24(ColorKeywords.blue)),
-        defaultNormal: imageUtil.createImageData(1, 1, Color4.fromUnit24(0x8080ff)),
-        defaultParticle: imageUtil.createDefaultParticle(),
+        black: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.black)).imageData,
+        white: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.white)).imageData,
+        red: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.red)).imageData,
+        green: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.green)).imageData,
+        blue: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.blue)).imageData,
+        defaultNormal: new ImageUtil(1, 1, Color4.fromUnit24(0x8080ff)).imageData,
+        defaultParticle: new ImageUtil().drawDefaultParticle().imageData,
     }
 
     /**

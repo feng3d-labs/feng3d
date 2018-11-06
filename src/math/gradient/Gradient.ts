@@ -28,6 +28,30 @@ namespace feng3d
         colorKeys: GradientColorKey[] = [{ color: new Color3(1, 1, 1), time: 0 }, { color: new Color3(1, 1, 1), time: 1 }];
 
         /**
+         * 从颜色列表初始化
+         * @param colors 颜色列表
+         * @param times  
+         */
+        fromColors(colors: number[], times?: number[])
+        {
+            if (!times)
+            {
+                times = [];
+                for (let i = 0; i < colors.length; i++)
+                {
+                    times[i] = i / (colors.length - 1);
+                }
+            }
+
+            var colors1 = colors.map(v => new Color3().fromUnit(v));
+            for (let i = 0; i < colors1.length; i++)
+            {
+                this.colorKeys[i] = { color: colors1[i], time: times[i] };
+            }
+            return this;
+        }
+
+        /**
          * 获取值
          * @param time 时间
          */

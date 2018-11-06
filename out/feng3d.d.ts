@@ -930,115 +930,86 @@ declare namespace feng3d {
     /**
      * 图片相关工具
      */
-    var imageUtil: ImageUtil;
-    /**
-     * 图片相关工具
-     */
     class ImageUtil {
-        /**
-         * 加载图片
-         * @param url 图片路径
-         * @param callback 加载完成回调
-         */
-        loadImage(url: string, callback: (err: Error, image: HTMLImageElement) => void): void;
+        imageData: ImageData;
         /**
          * 获取图片数据
          * @param image 加载完成的图片元素
          */
-        getImageData(image: HTMLImageElement): ImageData;
-        /**
-         * 从url获取图片数据
-         * @param url 图片路径
-         * @param callback 获取图片数据完成回调
-         */
-        getImageDataFromUrl(url: string, callback: (imageData: ImageData) => void): void;
+        static fromImage(image: HTMLImageElement): ImageUtil;
         /**
          * 创建ImageData
          * @param width 数据宽度
          * @param height 数据高度
          * @param fillcolor 填充颜色
          */
-        createImageData(width?: number, height?: number, fillcolor?: Color4): ImageData;
+        constructor(width?: number, height?: number, fillcolor?: Color4);
+        /**
+         * 获取图片数据
+         * @param image 加载完成的图片元素
+         */
+        fromImage(image: HTMLImageElement): this;
+        /**
+         * 清理图片数据
+         * @param clearColor 清理时填充颜色
+         */
+        clear(clearColor?: Color4): void;
+        /**
+         * 填充矩形
+         * @param rect 填充的矩形
+         * @param fillcolor 填充颜色
+         */
+        fillRect(rect: Rectangle, fillcolor?: Color4): void;
+        /**
+         * 转换为DataUrl字符串数据
+         */
+        toDataURL(): string;
         /**
          * 创建默认粒子贴图
          * @param size 尺寸
          */
-        createDefaultParticle(size?: number): ImageData;
+        drawDefaultParticle(size?: number): this;
         /**
          * 创建颜色拾取矩形
          * @param color 基色
          * @param width 宽度
          * @param height 高度
          */
-        createColorPickerRect(color: number, width?: number, height?: number): ImageData;
+        drawColorPickerRect(color: number): this;
+        createColorRect(color: Color4): this;
         /**
-         * 获取颜色的基色以及颜色拾取矩形所在位置
-         * @param color 查找颜色
-         */
-        getColorPickerRectAtPosition(color: number, rw: number, rh: number): Color3;
-        /**
-         * 获取颜色的基色以及颜色拾取矩形所在位置
-         * @param color 查找颜色
-         */
-        getColorPickerRectPosition(color: number): {
-            /**
-             * 基色
-             */
-            color: Color3;
-            /**
-             * 横向位置
-             */
-            ratioW: number;
-            /**
-             * 纵向位置
-             */
-            ratioH: number;
-        };
-        /**
-         * 创建颜色条带
-         * @param colors
-         * @param ratios [0,1]
-         * @param width
-         * @param height
+         *
+         * @param gradient
          * @param dirw true为横向条带，否则纵向条带
          */
-        createColorPickerStripe(width: number, height: number, colors: number[], ratios?: number[], dirw?: boolean): ImageData;
-        getMixColor(colors: number[], ratios: number[], ratio: number): Color3;
-        getMixColorRatio(color: number, colors: number[], ratios?: number[]): number;
-        getMixColorAtRatio(ratio: number, colors: number[], ratios?: number[]): Color3;
-        createColorRect(color: Color4, width: number, height: number): ImageData;
-        createMinMaxGradientRect(gradient: IMinMaxGradient, width: number, height: number): ImageData;
+        drawMinMaxGradient(gradient: IMinMaxGradient, dirw?: boolean): this;
         /**
          * 绘制曲线
-         * @param imageData 图片数据
          * @param curve 曲线
          * @param between0And1 是否显示值在[0,1]区间，否则[-1,1]区间
          * @param color 曲线颜色
          */
-        drawImageDataCurve(imageData: ImageData, curve: AnimationCurve, between0And1: boolean, color: Color4): void;
+        drawImageDataCurve(curve: AnimationCurve, between0And1: boolean, color: Color4): this;
         /**
          * 绘制双曲线
-         * @param imageData 图片数据
          * @param minMaxCurveRandomBetweenTwoCurves 双曲线
          * @param between0And1  是否显示值在[0,1]区间，否则[-1,1]区间
          * @param curveColor 颜色
          */
-        drawImageDataBetweenTwoCurves(imageData: ImageData, minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, curveColor?: Color4, fillcolor?: Color4): any;
+        drawImageDataBetweenTwoCurves(minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, curveColor?: Color4, fillcolor?: Color4): this;
         /**
          * 绘制图片数据指定位置颜色
-         * @param imageData 图片数据
          * @param x 图片数据x坐标
          * @param y 图片数据y坐标
          * @param color 颜色值
          */
-        drawImageDataPixel(imageData: ImageData, x: number, y: number, color: Color4): void;
+        drawImageDataPixel(x: number, y: number, color: Color4): this;
         /**
          * 获取图片指定位置颜色值
-         * @param imageData 图片数据
          * @param x 图片数据x坐标
          * @param y 图片数据y坐标
          */
-        getImageDataPixel(imageData: ImageData, x: number, y: number): Color4;
+        getImageDataPixel(x: number, y: number): Color4;
         /**
          * 设置指定位置颜色值
          * @param imageData 图片数据
@@ -1046,7 +1017,7 @@ declare namespace feng3d {
          * @param y 图片数据y坐标
          * @param color 颜色值
          */
-        setImageDataPixel(imageData: ImageData, x: number, y: number, color: Color4): void;
+        setImageDataPixel(x: number, y: number, color: Color4): this;
     }
 }
 /**
@@ -4801,6 +4772,12 @@ declare namespace feng3d {
          * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
          */
         colorKeys: GradientColorKey[];
+        /**
+         * 从颜色列表初始化
+         * @param colors 颜色列表
+         * @param times
+         */
+        fromColors(colors: number[], times?: number[]): this;
         /**
          * 获取值
          * @param time 时间

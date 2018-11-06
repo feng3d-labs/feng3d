@@ -91,11 +91,11 @@ namespace feng3d
                 this.invalidateGeometry();
                 return;
             }
-            imageUtil.getImageDataFromUrl(this.heightMap.url, (imageData) =>
+            assets.readImage(this.heightMap.url, (err, img) =>
             {
-                if (imageData)
+                if (img)
                 {
-                    this._heightImageData = imageData;
+                    this._heightImageData = ImageUtil.fromImage(img).imageData;
                     this.invalidateGeometry();
                 }
             });
@@ -244,7 +244,7 @@ namespace feng3d
     /**
      * 默认高度图
      */
-    var defaultHeightMap = imageUtil.createImageData();
+    var defaultHeightMap = new ImageUtil(1024, 1024, new Color4(0, 0, 0, 0)).imageData;
 
     Feng3dAssets.setAssets(Geometry.terrain = Object.setValue(new TerrainGeometry(), { name: "Terrain-Geometry", assetsId: "Terrain-Geometry", hideFlags: HideFlags.NotEditable }));
 }
