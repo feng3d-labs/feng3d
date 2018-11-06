@@ -2062,28 +2062,13 @@ var feng3d;
             return imageData;
         };
         /**
-         * 绘制曲线矩形块
-         * @param curve
-         * @param width
-         * @param height
-         * @param color
-         * @param backColor
-         */
-        ImageUtil.prototype.createAnimationCurveRect = function (curve, between0And1, width, height, color, backColor) {
-            if (color === void 0) { color = new feng3d.Color4(1, 0, 0); }
-            if (backColor === void 0) { backColor = new feng3d.Color4(); }
-            var imageData = this.createImageData(width, height, backColor);
-            this.drawImageDataCurve(imageData, curve, between0And1, color);
-            return imageData;
-        };
-        /**
          * 绘制曲线
-         * @param imageData
-         * @param curve
-         * @param between0And1
-         * @param color4
+         * @param imageData 图片数据
+         * @param curve 曲线
+         * @param between0And1 是否显示值在[0,1]区间，否则[-1,1]区间
+         * @param color 曲线颜色
          */
-        ImageUtil.prototype.drawImageDataCurve = function (imageData, curve, between0And1, color4) {
+        ImageUtil.prototype.drawImageDataCurve = function (imageData, curve, between0And1, color) {
             //
             for (var i = 0; i < imageData.width; i++) {
                 //
@@ -2091,32 +2076,19 @@ var feng3d;
                 if (!between0And1)
                     y = (y + 1) / 2;
                 var j = Math.round((1 - y) * (imageData.height - 1));
-                this.setImageDataPixel(imageData, i, j, color4);
+                this.drawImageDataPixel(imageData, i, j, color);
             }
         };
         /**
          * 绘制双曲线
-         * @param minMaxCurveRandomBetweenTwoCurves
-         * @param width
-         * @param height
-         * @param color
-         * @param backColor
+         * @param imageData 图片数据
+         * @param minMaxCurveRandomBetweenTwoCurves 双曲线
+         * @param between0And1  是否显示值在[0,1]区间，否则[-1,1]区间
+         * @param curveColor 颜色
          */
-        ImageUtil.prototype.createMinMaxCurveRandomBetweenTwoCurvesRect = function (minMaxCurveRandomBetweenTwoCurves, between0And1, width, height, color, backColor) {
-            if (color === void 0) { color = new feng3d.Color4(1, 0, 0); }
-            if (backColor === void 0) { backColor = new feng3d.Color4(); }
-            var imageData = this.createImageData(width, height, backColor);
-            this.drawImageDataBetweenTwoCurves(imageData, minMaxCurveRandomBetweenTwoCurves, between0And1, color);
-            return imageData;
-        };
-        /**
-         * 绘制双曲线
-         * @param imageData
-         * @param minMaxCurveRandomBetweenTwoCurves
-         * @param between0And1
-         * @param color4
-         */
-        ImageUtil.prototype.drawImageDataBetweenTwoCurves = function (imageData, minMaxCurveRandomBetweenTwoCurves, between0And1, color4) {
+        ImageUtil.prototype.drawImageDataBetweenTwoCurves = function (imageData, minMaxCurveRandomBetweenTwoCurves, between0And1, curveColor, fillcolor) {
+            if (curveColor === void 0) { curveColor = new feng3d.Color4(); }
+            if (fillcolor === void 0) { fillcolor = new feng3d.Color4(1, 1, 1, 0.5); }
             //
             for (var i = 0; i < imageData.width; i++) {
                 //
@@ -2132,22 +2104,41 @@ var feng3d;
                     var pos = (i + j * imageData.width) * 4;
                     var v = (y0 - j) * (y1 - j);
                     if (v <= 0) {
-                        color4.a = v == 0 ? 1 : 0.5;
-                        this.setImageDataPixel(imageData, i, j, color4);
+                        this.drawImageDataPixel(imageData, i, j, v == 0 ? curveColor : fillcolor);
                     }
                 }
             }
         };
+        /**
+         * 绘制图片数据指定位置颜色
+         * @param imageData 图片数据
+         * @param x 图片数据x坐标
+         * @param y 图片数据y坐标
+         * @param color 颜色值
+         */
         ImageUtil.prototype.drawImageDataPixel = function (imageData, x, y, color) {
             var oldColor = this.getImageDataPixel(imageData, x, y);
-            oldColor.mix(color);
+            oldColor.mix(color, color.a);
             this.setImageDataPixel(imageData, x, y, oldColor);
         };
+        /**
+         * 获取图片指定位置颜色值
+         * @param imageData 图片数据
+         * @param x 图片数据x坐标
+         * @param y 图片数据y坐标
+         */
         ImageUtil.prototype.getImageDataPixel = function (imageData, x, y) {
             var pos = (x + y * imageData.width) * 4;
             var color = new feng3d.Color4(imageData.data[pos] / 255, imageData.data[pos + 1] / 255, imageData.data[pos + 2] / 255, imageData.data[pos + 3] / 255);
             return color;
         };
+        /**
+         * 设置指定位置颜色值
+         * @param imageData 图片数据
+         * @param x 图片数据x坐标
+         * @param y 图片数据y坐标
+         * @param color 颜色值
+         */
         ImageUtil.prototype.setImageDataPixel = function (imageData, x, y, color) {
             var pos = (x + y * imageData.width) * 4;
             imageData.data[pos] = color.r * 255;

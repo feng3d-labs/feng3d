@@ -410,30 +410,13 @@ namespace feng3d
         }
 
         /**
-         * 绘制曲线矩形块
-         * @param curve 
-         * @param width 
-         * @param height 
-         * @param color 
-         * @param backColor 
-         */
-        createAnimationCurveRect(curve: AnimationCurve, between0And1: boolean, width: number, height: number, color = new Color4(1, 0, 0), backColor = new Color4())
-        {
-            var imageData = this.createImageData(width, height, backColor);
-
-            this.drawImageDataCurve(imageData, curve, between0And1, color);
-
-            return imageData;
-        }
-
-        /**
          * 绘制曲线
-         * @param imageData 
-         * @param curve 
-         * @param between0And1 
-         * @param color4 
+         * @param imageData 图片数据
+         * @param curve 曲线
+         * @param between0And1 是否显示值在[0,1]区间，否则[-1,1]区间
+         * @param color 曲线颜色
          */
-        private drawImageDataCurve(imageData: ImageData, curve: AnimationCurve, between0And1: boolean, color4: Color4)
+        drawImageDataCurve(imageData: ImageData, curve: AnimationCurve, between0And1: boolean, color: Color4)
         {
             //
             for (let i = 0; i < imageData.width; i++)
@@ -442,35 +425,18 @@ namespace feng3d
                 var y = curve.getValue(i / (imageData.width - 1));
                 if (!between0And1) y = (y + 1) / 2;
                 var j = Math.round((1 - y) * (imageData.height - 1));
-                this.setImageDataPixel(imageData, i, j, color4);
+                this.drawImageDataPixel(imageData, i, j, color);
             }
         }
 
         /**
          * 绘制双曲线
-         * @param minMaxCurveRandomBetweenTwoCurves 
-         * @param width 
-         * @param height 
-         * @param color 
-         * @param backColor 
+         * @param imageData 图片数据
+         * @param minMaxCurveRandomBetweenTwoCurves 双曲线
+         * @param between0And1  是否显示值在[0,1]区间，否则[-1,1]区间
+         * @param curveColor 颜色
          */
-        createMinMaxCurveRandomBetweenTwoCurvesRect(minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, width: number, height: number, color = new Color4(1, 0, 0), backColor = new Color4())
-        {
-            var imageData = this.createImageData(width, height, backColor);
-
-            this.drawImageDataBetweenTwoCurves(imageData, minMaxCurveRandomBetweenTwoCurves, between0And1, color);
-
-            return imageData;
-        }
-
-        /**
-         * 绘制双曲线
-         * @param imageData 
-         * @param minMaxCurveRandomBetweenTwoCurves 
-         * @param between0And1 
-         * @param color4 
-         */
-        drawImageDataBetweenTwoCurves(imageData: ImageData, minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, color4: Color4): any
+        drawImageDataBetweenTwoCurves(imageData: ImageData, minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, curveColor = new Color4(), fillcolor = new Color4(1, 1, 1, 0.5)): any
         {
             //
             for (let i = 0; i < imageData.width; i++)
@@ -491,20 +457,32 @@ namespace feng3d
                     var v = (y0 - j) * (y1 - j);
                     if (v <= 0)
                     {
-                        color4.a = v == 0 ? 1 : 0.5;
-                        this.setImageDataPixel(imageData, i, j, color4);
+                        this.drawImageDataPixel(imageData, i, j, v == 0 ? curveColor : fillcolor);
                     }
                 }
             }
         }
 
+        /**
+         * 绘制图片数据指定位置颜色
+         * @param imageData 图片数据
+         * @param x 图片数据x坐标
+         * @param y 图片数据y坐标
+         * @param color 颜色值
+         */
         drawImageDataPixel(imageData: ImageData, x: number, y: number, color: Color4)
         {
             var oldColor = this.getImageDataPixel(imageData, x, y);
-            oldColor.mix(color);
+            oldColor.mix(color, color.a);
             this.setImageDataPixel(imageData, x, y, oldColor);
         }
 
+        /**
+         * 获取图片指定位置颜色值
+         * @param imageData 图片数据 
+         * @param x 图片数据x坐标
+         * @param y 图片数据y坐标
+         */
         getImageDataPixel(imageData: ImageData, x: number, y: number)
         {
             var pos = (x + y * imageData.width) * 4;
@@ -512,6 +490,13 @@ namespace feng3d
             return color;
         }
 
+        /**
+         * 设置指定位置颜色值
+         * @param imageData 图片数据 
+         * @param x 图片数据x坐标
+         * @param y 图片数据y坐标
+         * @param color 颜色值
+         */
         setImageDataPixel(imageData: ImageData, x: number, y: number, color: Color4)
         {
             var pos = (x + y * imageData.width) * 4;
