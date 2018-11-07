@@ -2017,15 +2017,17 @@ var feng3d;
          * @param between0And1 是否显示值在[0,1]区间，否则[-1,1]区间
          * @param color 曲线颜色
          */
-        ImageUtil.prototype.drawCurve = function (curve, between0And1, color) {
+        ImageUtil.prototype.drawCurve = function (curve, between0And1, color, rect) {
+            if (rect === void 0) { rect = null; }
+            rect = rect || new feng3d.Rectangle(0, 0, this.imageData.width, this.imageData.height);
+            var range = between0And1 ? [1, 0] : [1, -1];
             //
-            for (var i = 0; i < this.imageData.width; i++) {
+            for (var i = 0; i < rect.width; i++) {
                 //
-                var y = curve.getValue(i / (this.imageData.width - 1));
-                if (!between0And1)
-                    y = (y + 1) / 2;
-                var j = Math.round((1 - y) * (this.imageData.height - 1));
-                this.setPixel(i, j, color);
+                var y = curve.getValue(i / (rect.width - 1));
+                y = feng3d.FMath.mapLinear(y, range[0], range[1], 0, 1);
+                var j = Math.round(y * (rect.height - 1));
+                this.setPixel(rect.x + i, rect.y + j, color);
             }
             return this;
         };
@@ -2040,17 +2042,16 @@ var feng3d;
             if (fillcolor === void 0) { fillcolor = new feng3d.Color4(1, 1, 1, 0.5); }
             if (rect === void 0) { rect = null; }
             rect = rect || new feng3d.Rectangle(0, 0, this.imageData.width, this.imageData.height);
+            var range = between0And1 ? [1, 0] : [1, -1];
             //
             for (var i = 0; i < rect.width; i++) {
                 //
                 var y0 = minMaxCurveRandomBetweenTwoCurves.curveMin.getValue(i / (rect.width - 1));
                 var y1 = minMaxCurveRandomBetweenTwoCurves.curveMax.getValue(i / (rect.width - 1));
-                if (!between0And1)
-                    y0 = (y0 + 1) / 2;
-                if (!between0And1)
-                    y1 = (y1 + 1) / 2;
-                y0 = Math.round((1 - y0) * (rect.height - 1));
-                y1 = Math.round((1 - y1) * (rect.height - 1));
+                y0 = feng3d.FMath.mapLinear(y0, range[0], range[1], 0, 1);
+                y1 = feng3d.FMath.mapLinear(y1, range[0], range[1], 0, 1);
+                y0 = Math.round(y0 * (rect.height - 1));
+                y1 = Math.round(y1 * (rect.height - 1));
                 for (var j = 0; j < this.imageData.height; j++) {
                     var v = (y0 - j) * (y1 - j);
                     if (v <= 0) {

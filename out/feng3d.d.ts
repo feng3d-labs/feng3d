@@ -1039,7 +1039,7 @@ declare namespace feng3d {
          * @param between0And1 是否显示值在[0,1]区间，否则[-1,1]区间
          * @param color 曲线颜色
          */
-        drawCurve(curve: AnimationCurve, between0And1: boolean, color: Color4): this;
+        drawCurve(curve: AnimationCurve, between0And1: boolean, color: Color4, rect?: any): this;
         /**
          * 绘制双曲线
          * @param minMaxCurveRandomBetweenTwoCurves 双曲线
