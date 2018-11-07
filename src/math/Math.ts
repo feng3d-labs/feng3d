@@ -44,9 +44,11 @@ namespace feng3d
             };
         }(),
 
-        clamp: function (value, min, max)
+        clamp: function (value: number, a: number, b: number)
         {
-            return Math.max(min, Math.min(max, value));
+            if ((value - a) * (value - b) <= 0) return value;
+            if (value < a) return Math.min(a, b);
+            return Math.max(a, b);
         },
 
         /**

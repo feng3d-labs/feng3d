@@ -2766,8 +2766,12 @@ var feng3d;
                 return id.join('');
             };
         }(),
-        clamp: function (value, min, max) {
-            return Math.max(min, Math.min(max, value));
+        clamp: function (value, a, b) {
+            if ((value - a) * (value - b) <= 0)
+                return value;
+            if (value < a)
+                return Math.min(a, b);
+            return Math.max(a, b);
         },
         /**
          * compute euclidian modulo of m % n

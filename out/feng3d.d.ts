@@ -1465,7 +1465,7 @@ declare namespace feng3d {
          * http://www.broofa.com/Tools/Math.uuid.htm
          */
         uuid: () => string;
-        clamp: (value: any, min: any, max: any) => number;
+        clamp: (value: number, a: number, b: number) => number;
         /**
          * compute euclidian modulo of m % n
          * https://en.wikipedia.org/wiki/Modulo_operation
