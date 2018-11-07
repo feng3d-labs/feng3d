@@ -945,6 +945,13 @@ declare namespace feng3d {
          */
         constructor(width?: number, height?: number, fillcolor?: Color4);
         /**
+         * 初始化
+         * @param width 宽度
+         * @param height 高度
+         * @param fillcolor 填充颜色
+         */
+        init(width?: number, height?: number, fillcolor?: Color4): void;
+        /**
          * 获取图片数据
          * @param image 加载完成的图片元素
          */
@@ -960,6 +967,21 @@ declare namespace feng3d {
          * @param fillcolor 填充颜色
          */
         fillRect(rect: Rectangle, fillcolor?: Color4): void;
+        /**
+         * 绘制线条
+         * @param start 起始坐标
+         * @param end 终止坐标
+         * @param color 线条颜色
+         */
+        drawLine(start: Vector2, end: Vector2, color: Color4): this;
+        /**
+         * 绘制点
+         * @param x x坐标
+         * @param y y坐标
+         * @param color 颜色
+         * @param size 尺寸
+         */
+        drawPoint(x: number, y: number, color: Color4, size?: number): this;
         /**
          * 转换为DataUrl字符串数据
          */

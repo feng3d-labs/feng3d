@@ -1741,6 +1741,25 @@ var feng3d;
             if (width === void 0) { width = 1; }
             if (height === void 0) { height = 1; }
             if (fillcolor === void 0) { fillcolor = new feng3d.Color4(0, 0, 0, 0); }
+            this.init(width, height, fillcolor);
+        }
+        /**
+         * 获取图片数据
+         * @param image 加载完成的图片元素
+         */
+        ImageUtil.fromImage = function (image) {
+            return new ImageUtil().fromImage(image);
+        };
+        /**
+         * 初始化
+         * @param width 宽度
+         * @param height 高度
+         * @param fillcolor 填充颜色
+         */
+        ImageUtil.prototype.init = function (width, height, fillcolor) {
+            if (width === void 0) { width = 1; }
+            if (height === void 0) { height = 1; }
+            if (fillcolor === void 0) { fillcolor = new feng3d.Color4(0, 0, 0, 0); }
             var canvas = document.createElement('canvas');
             canvas.width = width;
             canvas.height = height;
@@ -1751,14 +1770,6 @@ var feng3d;
             ctx.fillRect(0, 0, width, height);
             ctx.globalAlpha = backAlpha;
             this.imageData = ctx.getImageData(0, 0, width, height);
-            return this;
-        }
-        /**
-         * 获取图片数据
-         * @param image 加载完成的图片元素
-         */
-        ImageUtil.fromImage = function (image) {
-            return new ImageUtil().fromImage(image);
         };
         /**
          * 获取图片数据
@@ -1800,6 +1811,52 @@ var feng3d;
                     this.setImageDataPixel(i, j, fillcolor);
                 }
             }
+        };
+        /**
+         * 绘制线条
+         * @param start 起始坐标
+         * @param end 终止坐标
+         * @param color 线条颜色
+         */
+        ImageUtil.prototype.drawLine = function (start, end, color) {
+            var length = end.subTo(start).length;
+            var p = new feng3d.Vector2();
+            for (var i = 0; i <= length; i++) {
+                start.lerpNumberTo(end, i / length, p);
+                this.drawImageDataPixel(p.x, p.y, color);
+            }
+            return this;
+        };
+        /**
+         * 绘制点
+         * @param x x坐标
+         * @param y y坐标
+         * @param color 颜色
+         * @param size 尺寸
+         */
+        ImageUtil.prototype.drawPoint = function (x, y, color, size) {
+            if (size === void 0) { size = 1; }
+            var half = Math.floor(size / 2);
+            //
+            var sx = x - half;
+            if (sx < 0)
+                sx = 0;
+            var ex = sx + size;
+            if (ex > this.imageData.width)
+                ex = this.imageData.width;
+            var sy = y - half;
+            if (sy < 0)
+                sy = 0;
+            var ey = sy + size;
+            if (ey > this.imageData.height)
+                ey = this.imageData.height;
+            //
+            for (var i = sx; i < ex; i++) {
+                for (var j = sy; j < ey; j++) {
+                    this.drawImageDataPixel(i, j, color);
+                }
+            }
+            return this;
         };
         /**
          * 转换为DataUrl字符串数据

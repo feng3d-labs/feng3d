@@ -25,6 +25,17 @@ namespace feng3d
          */
         constructor(width = 1, height = 1, fillcolor = new Color4(0, 0, 0, 0))
         {
+            this.init(width, height, fillcolor);
+        }
+
+        /**
+         * 初始化
+         * @param width 宽度
+         * @param height 高度
+         * @param fillcolor 填充颜色
+         */
+        init(width = 1, height = 1, fillcolor = new Color4(0, 0, 0, 0))
+        {
             var canvas = document.createElement('canvas');
             canvas.width = width;
             canvas.height = height;
@@ -37,7 +48,6 @@ namespace feng3d
             ctx.globalAlpha = backAlpha;
 
             this.imageData = ctx.getImageData(0, 0, width, height);
-            return this;
         }
 
         /**
@@ -87,6 +97,50 @@ namespace feng3d
                     this.setImageDataPixel(i, j, fillcolor);
                 }
             }
+        }
+
+        /**
+         * 绘制线条
+         * @param start 起始坐标
+         * @param end 终止坐标
+         * @param color 线条颜色
+         */
+        drawLine(start: Vector2, end: Vector2, color: Color4)
+        {
+            var length = end.subTo(start).length;
+            var p = new feng3d.Vector2();
+            for (let i = 0; i <= length; i++)
+            {
+                start.lerpNumberTo(end, i / length, p);
+                this.drawImageDataPixel(p.x, p.y, color);
+            }
+            return this;
+        }
+
+        /**
+         * 绘制点
+         * @param x x坐标
+         * @param y y坐标
+         * @param color 颜色
+         * @param size 尺寸
+         */
+        drawPoint(x: number, y: number, color: Color4, size = 1)
+        {
+            var half = Math.floor(size / 2);
+            //
+            var sx = x - half; if (sx < 0) sx = 0;
+            var ex = sx + size; if (ex > this.imageData.width) ex = this.imageData.width;
+            var sy = y - half; if (sy < 0) sy = 0;
+            var ey = sy + size; if (ey > this.imageData.height) ey = this.imageData.height;
+            //
+            for (let i = sx; i < ex; i++)
+            {
+                for (let j = sy; j < ey; j++)
+                {
+                    this.drawImageDataPixel(i, j, color);
+                }
+            }
+            return this;
         }
 
         /**
