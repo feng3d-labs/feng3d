@@ -1880,13 +1880,13 @@ var feng3d;
             var sx = x - half;
             if (sx < 0)
                 sx = 0;
-            var ex = sx + size;
+            var ex = x - half + size;
             if (ex > this.imageData.width)
                 ex = this.imageData.width;
             var sy = y - half;
             if (sy < 0)
                 sy = 0;
-            var ey = sy + size;
+            var ey = y - half + size;
             if (ey > this.imageData.height)
                 ey = this.imageData.height;
             //
@@ -25324,7 +25324,7 @@ var feng3d;
             /**
              * 起始寿命为秒，粒子寿命为0时死亡。
              */
-            _this.startLifetime = Object.runFunc(new feng3d.MinMaxCurve(), function (obj) { obj.mode = feng3d.MinMaxCurveMode.Constant; obj.between0And1 = true; obj.minMaxCurve.value = 5; });
+            _this.startLifetime = Object.runFunc(new feng3d.MinMaxCurve(), function (obj) { obj.mode = feng3d.MinMaxCurveMode.Constant; obj.between0And1 = false; obj.minMaxCurve.value = 5; });
             // startLifetime = 5;
             /**
              * 粒子的起始速度，应用于起始方向。

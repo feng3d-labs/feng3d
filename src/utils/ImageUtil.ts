@@ -175,9 +175,9 @@ namespace feng3d
             var half = Math.floor(size / 2);
             //
             var sx = x - half; if (sx < 0) sx = 0;
-            var ex = sx + size; if (ex > this.imageData.width) ex = this.imageData.width;
+            var ex = x - half + size; if (ex > this.imageData.width) ex = this.imageData.width;
             var sy = y - half; if (sy < 0) sy = 0;
-            var ey = sy + size; if (ey > this.imageData.height) ey = this.imageData.height;
+            var ey = y - half + size; if (ey > this.imageData.height) ey = this.imageData.height;
             //
             for (let i = sx; i < ex; i++)
             {
