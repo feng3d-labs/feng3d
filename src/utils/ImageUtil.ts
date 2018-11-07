@@ -112,7 +112,7 @@ namespace feng3d
             for (let i = 0; i <= length; i++)
             {
                 start.lerpNumberTo(end, i / length, p);
-                this.drawImageDataPixel(p.x, p.y, color);
+                this.setImageDataPixel(p.x, p.y, color);
             }
             return this;
         }
@@ -137,9 +137,32 @@ namespace feng3d
             {
                 for (let j = sy; j < ey; j++)
                 {
-                    this.drawImageDataPixel(i, j, color);
+                    this.setImageDataPixel(i, j, color);
                 }
             }
+            return this;
+        }
+
+        /**
+         * 绘制图片数据
+         * @param imageData 图片数据
+         * @param x x坐标
+         * @param y y坐标
+         */
+        drawImageData(imageData: ImageData, x: number, y: number)
+        {
+            var rect = new Rectangle(0, 0, this.imageData.width, this.imageData.height).intersection(new Rectangle(x, y, imageData.width, imageData.height));
+
+            var imageUtil = new ImageUtil(); imageUtil.imageData = imageData;
+            for (let i = rect.x; i < rect.x + rect.width; i++)
+            {
+                for (let j = rect.y; j < rect.y + rect.height; j++)
+                {
+                    var c = imageUtil.getImageDataPixel(i - x, j - y);
+                    this.drawImageDataPixel(i, j, c);
+                }
+            }
+
             return this;
         }
 
@@ -277,7 +300,7 @@ namespace feng3d
                 var y = curve.getValue(i / (this.imageData.width - 1));
                 if (!between0And1) y = (y + 1) / 2;
                 var j = Math.round((1 - y) * (this.imageData.height - 1));
-                this.drawImageDataPixel(i, j, color);
+                this.setImageDataPixel(i, j, color);
             }
             return this;
         }
@@ -309,7 +332,7 @@ namespace feng3d
                     var v = (y0 - j) * (y1 - j);
                     if (v <= 0)
                     {
-                        this.drawImageDataPixel(i, j, v == 0 ? curveColor : fillcolor);
+                        this.setImageDataPixel(i, j, v == 0 ? curveColor : fillcolor);
                     }
                 }
             }
@@ -351,6 +374,8 @@ namespace feng3d
          */
         setImageDataPixel(x: number, y: number, color: Color4)
         {
+            x = ~~x;
+            y = ~~y;
             var pos = (x + y * this.imageData.width) * 4;
 
             this.imageData.data[pos] = color.r * 255;

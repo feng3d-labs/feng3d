@@ -983,6 +983,13 @@ declare namespace feng3d {
          */
         drawPoint(x: number, y: number, color: Color4, size?: number): this;
         /**
+         * 绘制图片数据
+         * @param imageData 图片数据
+         * @param x x坐标
+         * @param y y坐标
+         */
+        drawImageData(imageData: ImageData, x: number, y: number): this;
+        /**
          * 转换为DataUrl字符串数据
          */
         toDataURL(): string;
