@@ -1817,8 +1817,8 @@ var feng3d;
          * @param color 颜色值
          */
         ImageUtil.prototype.setPixel = function (x, y, color) {
-            x = ~~x;
-            y = ~~y;
+            x = Math.round(x);
+            y = Math.round(y);
             var pos = (x + y * this.imageData.width) * 4;
             this.imageData.data[pos] = color.r * 255;
             this.imageData.data[pos + 1] = color.g * 255;
@@ -2052,12 +2052,9 @@ var feng3d;
                 y1 = feng3d.FMath.mapLinear(y1, range[0], range[1], 0, 1);
                 y0 = Math.round(y0 * (rect.height - 1));
                 y1 = Math.round(y1 * (rect.height - 1));
-                for (var j = 0; j < this.imageData.height; j++) {
-                    var v = (y0 - j) * (y1 - j);
-                    if (v <= 0) {
-                        this.drawPixel(rect.x + i, rect.y + j, v == 0 ? curveColor : fillcolor);
-                    }
-                }
+                this.drawLine(new feng3d.Vector2(rect.x + i, rect.y + y0), new feng3d.Vector2(rect.x + i, rect.y + y1), fillcolor);
+                this.drawPixel(rect.x + i, rect.y + y0, curveColor);
+                this.drawPixel(rect.x + i, rect.y + y1, curveColor);
             }
             return this;
         };
@@ -3946,6 +3943,14 @@ var feng3d;
         Vector2.prototype.max = function (v) {
             this.x = Math.max(this.x, v.x);
             this.y = Math.max(this.y, v.y);
+            return this;
+        };
+        /**
+         * 各分量均取最近的整数
+         */
+        Vector2.prototype.round = function () {
+            this.x = Math.round(this.x);
+            this.y = Math.round(this.y);
             return this;
         };
         /**

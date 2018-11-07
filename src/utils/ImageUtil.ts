@@ -103,8 +103,8 @@ namespace feng3d
          */
         setPixel(x: number, y: number, color: Color4)
         {
-            x = ~~x;
-            y = ~~y;
+            x = Math.round(x)
+            y = Math.round(y)
             var pos = (x + y * this.imageData.width) * 4;
 
             this.imageData.data[pos] = color.r * 255;
@@ -380,14 +380,11 @@ namespace feng3d
                 y0 = Math.round(y0 * (rect.height - 1));
                 y1 = Math.round(y1 * (rect.height - 1));
 
-                for (let j = 0; j < this.imageData.height; j++)
-                {
-                    var v = (y0 - j) * (y1 - j);
-                    if (v <= 0)
-                    {
-                        this.drawPixel(rect.x + i, rect.y + j, v == 0 ? curveColor : fillcolor);
-                    }
-                }
+                this.drawLine(new feng3d.Vector2(rect.x + i, rect.y + y0), new feng3d.Vector2(rect.x + i, rect.y + y1), fillcolor);
+
+                this.drawPixel(rect.x + i, rect.y + y0, curveColor);
+                this.drawPixel(rect.x + i, rect.y + y1, curveColor);
+
             }
             return this;
         }

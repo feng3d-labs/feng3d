@@ -304,6 +304,16 @@ namespace feng3d
         }
 
         /**
+         * 各分量均取最近的整数
+         */
+        round()
+        {
+            this.x = Math.round(this.x);
+            this.y = Math.round(this.y);
+            return this;
+        }
+
+        /**
          * 返回包含 x 和 y 坐标的值的字符串。该字符串的格式为 "(x=x, y=y)"，因此为点 23,17 调用 toString() 方法将返回 "(x=23, y=17)"。
          * @returns 坐标的字符串表示形式。
          */
