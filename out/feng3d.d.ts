@@ -957,6 +957,27 @@ declare namespace feng3d {
          */
         fromImage(image: HTMLImageElement): this;
         /**
+         * 绘制图片数据指定位置颜色
+         * @param x 图片数据x坐标
+         * @param y 图片数据y坐标
+         * @param color 颜色值
+         */
+        drawPixel(x: number, y: number, color: Color4): this;
+        /**
+         * 获取图片指定位置颜色值
+         * @param x 图片数据x坐标
+         * @param y 图片数据y坐标
+         */
+        getPixel(x: number, y: number): Color4;
+        /**
+         * 设置指定位置颜色值
+         * @param imageData 图片数据
+         * @param x 图片数据x坐标
+         * @param y 图片数据y坐标
+         * @param color 颜色值
+         */
+        setPixel(x: number, y: number, color: Color4): this;
+        /**
          * 清理图片数据
          * @param clearColor 清理时填充颜色
          */
@@ -1005,7 +1026,7 @@ declare namespace feng3d {
          * @param height 高度
          */
         drawColorPickerRect(color: number): this;
-        createColorRect(color: Color4): this;
+        drawColorRect(color: Color4): this;
         /**
          *
          * @param gradient
@@ -1018,35 +1039,14 @@ declare namespace feng3d {
          * @param between0And1 是否显示值在[0,1]区间，否则[-1,1]区间
          * @param color 曲线颜色
          */
-        drawImageDataCurve(curve: AnimationCurve, between0And1: boolean, color: Color4): this;
+        drawCurve(curve: AnimationCurve, between0And1: boolean, color: Color4): this;
         /**
          * 绘制双曲线
          * @param minMaxCurveRandomBetweenTwoCurves 双曲线
          * @param between0And1  是否显示值在[0,1]区间，否则[-1,1]区间
          * @param curveColor 颜色
          */
-        drawImageDataBetweenTwoCurves(minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, curveColor?: Color4, fillcolor?: Color4): this;
-        /**
-         * 绘制图片数据指定位置颜色
-         * @param x 图片数据x坐标
-         * @param y 图片数据y坐标
-         * @param color 颜色值
-         */
-        drawImageDataPixel(x: number, y: number, color: Color4): this;
-        /**
-         * 获取图片指定位置颜色值
-         * @param x 图片数据x坐标
-         * @param y 图片数据y坐标
-         */
-        getImageDataPixel(x: number, y: number): Color4;
-        /**
-         * 设置指定位置颜色值
-         * @param imageData 图片数据
-         * @param x 图片数据x坐标
-         * @param y 图片数据y坐标
-         * @param color 颜色值
-         */
-        setImageDataPixel(x: number, y: number, color: Color4): this;
+        drawBetweenTwoCurves(minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, curveColor?: Color4, fillcolor?: Color4, rect?: any): this;
     }
 }
 /**

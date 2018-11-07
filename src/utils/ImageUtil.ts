@@ -69,6 +69,52 @@ namespace feng3d
         }
 
         /**
+         * 绘制图片数据指定位置颜色
+         * @param x 图片数据x坐标
+         * @param y 图片数据y坐标
+         * @param color 颜色值
+         */
+        drawPixel(x: number, y: number, color: Color4)
+        {
+            var oldColor = this.getPixel(x, y);
+            oldColor.mix(color, color.a);
+            this.setPixel(x, y, oldColor);
+            return this;
+        }
+
+        /**
+         * 获取图片指定位置颜色值
+         * @param x 图片数据x坐标
+         * @param y 图片数据y坐标
+         */
+        getPixel(x: number, y: number)
+        {
+            var pos = (x + y * this.imageData.width) * 4;
+            var color = new Color4(this.imageData.data[pos] / 255, this.imageData.data[pos + 1] / 255, this.imageData.data[pos + 2] / 255, this.imageData.data[pos + 3] / 255);
+            return color;
+        }
+
+        /**
+         * 设置指定位置颜色值
+         * @param imageData 图片数据 
+         * @param x 图片数据x坐标
+         * @param y 图片数据y坐标
+         * @param color 颜色值
+         */
+        setPixel(x: number, y: number, color: Color4)
+        {
+            x = ~~x;
+            y = ~~y;
+            var pos = (x + y * this.imageData.width) * 4;
+
+            this.imageData.data[pos] = color.r * 255;
+            this.imageData.data[pos + 1] = color.g * 255;
+            this.imageData.data[pos + 2] = color.b * 255;
+            this.imageData.data[pos + 3] = color.a * 255;
+            return this;
+        }
+
+        /**
          * 清理图片数据
          * @param clearColor 清理时填充颜色
          */
@@ -78,7 +124,7 @@ namespace feng3d
             {
                 for (let j = 0; j < this.imageData.height; j++)
                 {
-                    this.setImageDataPixel(i, j, clearColor);
+                    this.setPixel(i, j, clearColor);
                 }
             }
         }
@@ -94,7 +140,7 @@ namespace feng3d
             {
                 for (let j = rect.y > 0 ? rect.y : 0; j < this.imageData.height && j < rect.y + rect.height; j++)
                 {
-                    this.setImageDataPixel(i, j, fillcolor);
+                    this.setPixel(i, j, fillcolor);
                 }
             }
         }
@@ -112,7 +158,7 @@ namespace feng3d
             for (let i = 0; i <= length; i++)
             {
                 start.lerpNumberTo(end, i / length, p);
-                this.setImageDataPixel(p.x, p.y, color);
+                this.setPixel(p.x, p.y, color);
             }
             return this;
         }
@@ -137,7 +183,7 @@ namespace feng3d
             {
                 for (let j = sy; j < ey; j++)
                 {
-                    this.setImageDataPixel(i, j, color);
+                    this.setPixel(i, j, color);
                 }
             }
             return this;
@@ -158,8 +204,8 @@ namespace feng3d
             {
                 for (let j = rect.y; j < rect.y + rect.height; j++)
                 {
-                    var c = imageUtil.getImageDataPixel(i - x, j - y);
-                    this.drawImageDataPixel(i, j, c);
+                    var c = imageUtil.getPixel(i - x, j - y);
+                    this.drawPixel(i, j, c);
                 }
             }
 
@@ -233,13 +279,13 @@ namespace feng3d
                     var bottom = leftBottom.mixTo(rightBottom, i / this.imageData.width);
                     var v = top.mixTo(bottom, j / this.imageData.height);
 
-                    this.setImageDataPixel(i, j, v.toColor4())
+                    this.setPixel(i, j, v.toColor4())
                 }
             }
             return this;
         }
 
-        createColorRect(color: Color4)
+        drawColorRect(color: Color4)
         {
             var colorHeight = Math.floor(this.imageData.height * 0.8);
             var alphaWidth = Math.floor(color.a * this.imageData.width);
@@ -255,10 +301,10 @@ namespace feng3d
                     //
                     if (j <= colorHeight)
                     {
-                        this.setImageDataPixel(i, j, color4)
+                        this.setPixel(i, j, color4)
                     } else
                     {
-                        this.setImageDataPixel(i, j, i < alphaWidth ? white : black)
+                        this.setPixel(i, j, i < alphaWidth ? white : black)
                     }
                 }
             }
@@ -279,7 +325,7 @@ namespace feng3d
                 {
                     var c = gradient.getValue(dirw ? i / (this.imageData.width - 1) : j / (this.imageData.height - 1));
 
-                    this.setImageDataPixel(i, j, c);
+                    this.setPixel(i, j, c);
                 }
             }
             return this;
@@ -291,7 +337,7 @@ namespace feng3d
          * @param between0And1 是否显示值在[0,1]区间，否则[-1,1]区间
          * @param color 曲线颜色
          */
-        drawImageDataCurve(curve: AnimationCurve, between0And1: boolean, color: Color4)
+        drawCurve(curve: AnimationCurve, between0And1: boolean, color: Color4)
         {
             //
             for (let i = 0; i < this.imageData.width; i++)
@@ -300,7 +346,7 @@ namespace feng3d
                 var y = curve.getValue(i / (this.imageData.width - 1));
                 if (!between0And1) y = (y + 1) / 2;
                 var j = Math.round((1 - y) * (this.imageData.height - 1));
-                this.setImageDataPixel(i, j, color);
+                this.setPixel(i, j, color);
             }
             return this;
         }
@@ -311,77 +357,31 @@ namespace feng3d
          * @param between0And1  是否显示值在[0,1]区间，否则[-1,1]区间
          * @param curveColor 颜色
          */
-        drawImageDataBetweenTwoCurves(minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, curveColor = new Color4(), fillcolor = new Color4(1, 1, 1, 0.5))
+        drawBetweenTwoCurves(minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, curveColor = new Color4(), fillcolor = new Color4(1, 1, 1, 0.5), rect = null)
         {
+            rect = rect || new Rectangle(0, 0, this.imageData.width, this.imageData.height);
             //
-            for (let i = 0; i < this.imageData.width; i++)
+            for (let i = 0; i < rect.width; i++)
             {
                 //
-                var y0 = minMaxCurveRandomBetweenTwoCurves.curveMin.getValue(i / (this.imageData.width - 1));
-                var y1 = minMaxCurveRandomBetweenTwoCurves.curveMax.getValue(i / (this.imageData.width - 1));
+                var y0 = minMaxCurveRandomBetweenTwoCurves.curveMin.getValue(i / (rect.width - 1));
+                var y1 = minMaxCurveRandomBetweenTwoCurves.curveMax.getValue(i / (rect.width - 1));
 
                 if (!between0And1) y0 = (y0 + 1) / 2;
                 if (!between0And1) y1 = (y1 + 1) / 2;
 
-                y0 = Math.round((1 - y0) * (this.imageData.height - 1));
-                y1 = Math.round((1 - y1) * (this.imageData.height - 1));
+                y0 = Math.round((1 - y0) * (rect.height - 1));
+                y1 = Math.round((1 - y1) * (rect.height - 1));
 
                 for (let j = 0; j < this.imageData.height; j++)
                 {
-                    var pos = (i + j * this.imageData.width) * 4;
                     var v = (y0 - j) * (y1 - j);
                     if (v <= 0)
                     {
-                        this.setImageDataPixel(i, j, v == 0 ? curveColor : fillcolor);
+                        this.drawPixel(rect.x + i, rect.y + j, v == 0 ? curveColor : fillcolor);
                     }
                 }
             }
-            return this;
-        }
-
-        /**
-         * 绘制图片数据指定位置颜色
-         * @param x 图片数据x坐标
-         * @param y 图片数据y坐标
-         * @param color 颜色值
-         */
-        drawImageDataPixel(x: number, y: number, color: Color4)
-        {
-            var oldColor = this.getImageDataPixel(x, y);
-            oldColor.mix(color, color.a);
-            this.setImageDataPixel(x, y, oldColor);
-            return this;
-        }
-
-        /**
-         * 获取图片指定位置颜色值
-         * @param x 图片数据x坐标
-         * @param y 图片数据y坐标
-         */
-        getImageDataPixel(x: number, y: number)
-        {
-            var pos = (x + y * this.imageData.width) * 4;
-            var color = new Color4(this.imageData.data[pos] / 255, this.imageData.data[pos + 1] / 255, this.imageData.data[pos + 2] / 255, this.imageData.data[pos + 3] / 255);
-            return color;
-        }
-
-        /**
-         * 设置指定位置颜色值
-         * @param imageData 图片数据 
-         * @param x 图片数据x坐标
-         * @param y 图片数据y坐标
-         * @param color 颜色值
-         */
-        setImageDataPixel(x: number, y: number, color: Color4)
-        {
-            x = ~~x;
-            y = ~~y;
-            var pos = (x + y * this.imageData.width) * 4;
-
-            this.imageData.data[pos] = color.r * 255;
-            this.imageData.data[pos + 1] = color.g * 255;
-            this.imageData.data[pos + 2] = color.b * 255;
-            this.imageData.data[pos + 3] = color.a * 255;
             return this;
         }
     }
