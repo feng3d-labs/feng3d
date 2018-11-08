@@ -114,6 +114,14 @@ namespace feng3d
         maxParticles = 1000;
 
         /**
+         * 此时在周期中的位置
+         */
+        get rateAtDuration()
+        {
+            return ((this.particleSystem.time - this.startDelay) % this.duration) / this.duration;
+        }
+
+        /**
          * 初始化粒子状态
          * @param particle 粒子
          */
@@ -137,10 +145,8 @@ namespace feng3d
          */
         updateParticleState(particle: Particle, preTime: number, time: number)
         {
-            var rateAtDuration = ((this.particleSystem.time - this.startDelay) % this.duration) / this.duration;
-
             // 计算重力加速度影响速度
-            var globalAcceleration = new Vector3(0, -this.gravityModifier.getValue(rateAtDuration) * 9.8, 0);
+            var globalAcceleration = new Vector3(0, -this.gravityModifier.getValue(this.rateAtDuration) * 9.8, 0);
 
             // 本地加速度
             var localAcceleration = this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(globalAcceleration);

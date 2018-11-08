@@ -24725,7 +24725,7 @@ var feng3d;
             // 
             var emits = [];
             // 单粒子发射周期
-            var step = 1 / this.emission.rate;
+            var step = 1 / this.emission.rate.getValue(this.main.rateAtDuration);
             var bursts = this.emission.bursts;
             // 遍历所有发射周期
             var cycleEndIndex = Math.ceil(realEmitTime / duration);
@@ -25234,6 +25234,16 @@ var feng3d;
             _this.maxParticles = 1000;
             return _this;
         }
+        Object.defineProperty(ParticleMainModule.prototype, "rateAtDuration", {
+            /**
+             * 此时在周期中的位置
+             */
+            get: function () {
+                return ((this.particleSystem.time - this.startDelay) % this.duration) / this.duration;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 初始化粒子状态
          * @param particle 粒子
@@ -25254,9 +25264,8 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleMainModule.prototype.updateParticleState = function (particle, preTime, time) {
-            var rateAtDuration = ((this.particleSystem.time - this.startDelay) % this.duration) / this.duration;
             // 计算重力加速度影响速度
-            var globalAcceleration = new feng3d.Vector3(0, -this.gravityModifier.getValue(rateAtDuration) * 9.8, 0);
+            var globalAcceleration = new feng3d.Vector3(0, -this.gravityModifier.getValue(this.rateAtDuration) * 9.8, 0);
             // 本地加速度
             var localAcceleration = this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(globalAcceleration);
             //
@@ -25347,7 +25356,8 @@ var feng3d;
             /**
              * 发射率，每秒发射粒子数量
              */
-            _this.rate = 10;
+            _this.rate = Object.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constant: 10, constant1: 10 });
+            // rate = 10;
             /**
              * 爆发，在time时刻额外喷射particles粒子
              */

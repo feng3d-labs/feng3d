@@ -12790,6 +12790,10 @@ declare namespace feng3d {
          */
         maxParticles: number;
         /**
+         * 此时在周期中的位置
+         */
+        readonly rateAtDuration: number;
+        /**
          * 初始化粒子状态
          * @param particle 粒子
          */
@@ -12809,7 +12813,7 @@ declare namespace feng3d {
         /**
          * 发射率，每秒发射粒子数量
          */
-        rate: number;
+        rate: MinMaxCurve;
         /**
          * 爆发，在time时刻额外喷射particles粒子
          */

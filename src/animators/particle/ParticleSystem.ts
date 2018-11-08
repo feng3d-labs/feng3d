@@ -301,7 +301,7 @@ namespace feng3d
             // 
             var emits: { time: number, num: number }[] = [];
             // 单粒子发射周期
-            var step = 1 / this.emission.rate;
+            var step = 1 / this.emission.rate.getValue(this.main.rateAtDuration);
             var bursts = this.emission.bursts;
 
             // 遍历所有发射周期
