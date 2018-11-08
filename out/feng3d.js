@@ -10424,6 +10424,43 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var MinMaxCurveVector3 = /** @class */ (function () {
+        function MinMaxCurveVector3() {
+            /**
+             * x 曲线
+             */
+            this.xCurve = new feng3d.MinMaxCurve();
+            /**
+             * y 曲线
+             */
+            this.yCurve = new feng3d.MinMaxCurve();
+            /**
+             * z 曲线
+             */
+            this.zCurve = new feng3d.MinMaxCurve();
+        }
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        MinMaxCurveVector3.prototype.getValue = function (time) {
+            return new feng3d.Vector3(this.xCurve.getValue(time), this.yCurve.getValue(time), this.zCurve.getValue(time));
+        };
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurveVector3.prototype, "xCurve", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurveVector3.prototype, "yCurve", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurveVector3.prototype, "zCurve", void 0);
+        return MinMaxCurveVector3;
+    }());
+    feng3d.MinMaxCurveVector3 = MinMaxCurveVector3;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     var feventMap = new Map();
     function getBubbleTargets(target) {
         return [target["parent"]];
@@ -25350,7 +25387,7 @@ var feng3d;
             /**
              * 粒子的起始旋转角度。
              */
-            _this.startRotation = new feng3d.Vector3();
+            _this.startRotation = new feng3d.MinMaxCurveVector3();
             /**
              * 粒子的起始颜色。
              */
@@ -25386,11 +25423,13 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleMainModule.prototype.initParticleState = function (particle) {
+            var rateAtDuration = ((particle.birthTime - this.startDelay) % this.duration) / this.duration;
+            //
             particle.position.init(0, 0, 0);
-            particle.velocity.init(0, 0, this.startSpeed.getValue(((particle.birthTime - this.startDelay) % this.duration) / this.duration));
+            particle.velocity.init(0, 0, this.startSpeed.getValue(rateAtDuration));
             particle.startScale.copy(this.startScale);
             //
-            particle.rotation.copy(this.startRotation);
+            particle.rotation.copy(this.startRotation.getValue(rateAtDuration));
             //
             var t = ((this.particleSystem.time - this.startDelay) % this.duration) / this.duration;
             particle.startColor.copy(this.startColor.getValue(t));

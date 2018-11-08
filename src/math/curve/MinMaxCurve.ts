@@ -12,7 +12,7 @@ namespace feng3d
     /**
      * 最大最小曲线
      */
-    export class MinMaxCurve
+    export class MinMaxCurve implements IMinMaxCurve 
     {
         /**
          * 模式

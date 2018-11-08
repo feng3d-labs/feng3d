@@ -81,6 +81,7 @@
         "src/math/curve/MinMaxCurveRandomBetweenTwoConstants.ts",
         "src/math/curve/MinMaxCurveRandomBetweenTwoCurves.ts",
         "src/math/curve/MinMaxCurve.ts",
+        "src/math/curve/MinMaxCurveVector3.ts",
         // 事件
         "src/event/FEvent.ts",
         "src/event/EventDispatcher.ts",

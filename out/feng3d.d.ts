@@ -5340,7 +5340,7 @@ declare namespace feng3d {
     /**
      * 最大最小曲线
      */
-    class MinMaxCurve {
+    class MinMaxCurve implements IMinMaxCurve {
         /**
          * 模式
          */
@@ -5367,6 +5367,27 @@ declare namespace feng3d {
          * @param time 时间
          */
         getValue(time: number): number;
+    }
+}
+declare namespace feng3d {
+    class MinMaxCurveVector3 {
+        /**
+         * x 曲线
+         */
+        xCurve: MinMaxCurve;
+        /**
+         * y 曲线
+         */
+        yCurve: MinMaxCurve;
+        /**
+         * z 曲线
+         */
+        zCurve: MinMaxCurve;
+        /**
+         * 获取值
+         * @param time 时间
+         */
+        getValue(time: number): Vector3;
     }
 }
 declare namespace feng3d {
@@ -12857,7 +12878,7 @@ declare namespace feng3d {
         /**
          * 粒子的起始旋转角度。
          */
-        startRotation: Vector3;
+        startRotation: MinMaxCurveVector3;
         /**
          * 粒子的起始颜色。
          */

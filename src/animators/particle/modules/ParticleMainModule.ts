@@ -56,7 +56,7 @@ namespace feng3d
          */
         @serialize
         @oav({ tooltip: "粒子的起始旋转角度。" })
-        startRotation = new Vector3();
+        startRotation = new MinMaxCurveVector3();
 
         /**
          * 粒子的起始颜色。
@@ -123,11 +123,14 @@ namespace feng3d
          */
         initParticleState(particle: Particle)
         {
+            var rateAtDuration = ((particle.birthTime - this.startDelay) % this.duration) / this.duration;
+            //
+
             particle.position.init(0, 0, 0);
-            particle.velocity.init(0, 0, this.startSpeed.getValue(((particle.birthTime - this.startDelay) % this.duration) / this.duration));
+            particle.velocity.init(0, 0, this.startSpeed.getValue(rateAtDuration));
             particle.startScale.copy(this.startScale);
             //
-            particle.rotation.copy(this.startRotation);
+            particle.rotation.copy(this.startRotation.getValue(rateAtDuration));
             //
             var t = ((this.particleSystem.time - this.startDelay) % this.duration) / this.duration;
             particle.startColor.copy(this.startColor.getValue(t));
