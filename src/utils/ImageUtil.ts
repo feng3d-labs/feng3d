@@ -316,7 +316,7 @@ namespace feng3d
          * @param gradient 
          * @param dirw true为横向条带，否则纵向条带
          */
-        drawMinMaxGradient(gradient: IMinMaxGradient, dirw = true)
+        drawMinMaxGradient(gradient: Gradient, dirw = true)
         {
             //
             for (let i = 0; i < this.imageData.width; i++)

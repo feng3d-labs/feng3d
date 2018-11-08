@@ -1032,7 +1032,7 @@ declare namespace feng3d {
          * @param gradient
          * @param dirw true为横向条带，否则纵向条带
          */
-        drawMinMaxGradient(gradient: IMinMaxGradient, dirw?: boolean): this;
+        drawMinMaxGradient(gradient: Gradient, dirw?: boolean): this;
         /**
          * 绘制曲线
          * @param curve 曲线
@@ -4653,72 +4653,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class MinMaxGradientColor implements IMinMaxGradient {
-        /**
-         * 常量颜色值
-         */
-        color: Color4;
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): Color4;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 从最大最小常量颜色中随机
-     */
-    class RandomBetweenTwoColors implements IMinMaxGradient {
-        /**
-         * 最小颜色值
-         */
-        colorMin: Color4;
-        /**
-         * 最大颜色值
-         */
-        colorMax: Color4;
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): Color4;
-    }
-}
-declare namespace feng3d {
-    class RandomBetweenTwoGradients implements IMinMaxGradient {
-        /**
-         * 最小颜色渐变
-         */
-        gradientMin: Gradient;
-        /**
-         * 最大颜色渐变
-         */
-        gradientMax: Gradient;
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): Color4;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 从颜色渐变中进行随机
-     */
-    class MinMaxGradientRandomColor implements IMinMaxGradient {
-        /**
-         * 颜色渐变
-         */
-        gradient: Gradient;
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): Color4;
-    }
-}
-declare namespace feng3d {
     /**
      * 渐变模式
      */
@@ -4765,36 +4699,9 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 最大最小颜色渐变模式
-     */
-    enum MinMaxGradientMode {
-        /**
-         * 颜色常量
-         */
-        Color = 0,
-        /**
-         * 颜色渐变
-         */
-        Gradient = 1,
-        /**
-         * 从最大最小常量颜色中随机
-         */
-        RandomBetweenTwoColors = 2,
-        /**
-         * 从最大最小颜色渐变值中随机
-         */
-        RandomBetweenTwoGradients = 3,
-        /**
-         * 从颜色渐变中进行随机
-         */
-        RandomColor = 4
-    }
-}
-declare namespace feng3d {
-    /**
      * 颜色渐变
      */
-    class Gradient implements IMinMaxGradient {
+    class Gradient {
         /**
          * 渐变模式
          */
@@ -4835,13 +4742,33 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    interface IMinMaxGradient {
+    /**
+     * 最大最小颜色渐变模式
+     */
+    enum MinMaxGradientMode {
         /**
-         * 获取值
-         * @param time 时间
+         * 颜色常量
          */
-        getValue(time: number): Color4;
+        Color = 0,
+        /**
+         * 颜色渐变
+         */
+        Gradient = 1,
+        /**
+         * 从最大最小常量颜色中随机
+         */
+        RandomBetweenTwoColors = 2,
+        /**
+         * 从最大最小颜色渐变值中随机
+         */
+        RandomBetweenTwoGradients = 3,
+        /**
+         * 从颜色渐变中进行随机
+         */
+        RandomColor = 4
     }
+}
+declare namespace feng3d {
     /**
      * 最大最小颜色渐变
      */
