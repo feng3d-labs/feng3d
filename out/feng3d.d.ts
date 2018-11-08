@@ -4851,15 +4851,15 @@ declare namespace feng3d {
          */
         mode: MinMaxGradientMode;
         /**
-         * 颜色渐变
+         * 常量颜色值
          */
-        minMaxGradient: IMinMaxGradient;
-        private _minMaxGradientColor;
-        private _gradient;
-        private _randomBetweenTwoColors;
-        private _randomBetweenTwoGradients;
-        private _minMaxGradientRandomColor;
-        private _onModeChanged;
+        color: Color4;
+        /**
+         * 常量颜色值，作用于 MinMaxGradientMode.RandomBetweenTwoColors
+         */
+        color1: Color4;
+        gradient: Gradient;
+        gradient1: Gradient;
         /**
          * 获取值
          * @param time 时间

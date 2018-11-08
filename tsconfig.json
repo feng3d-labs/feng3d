@@ -61,15 +61,11 @@
         "src/math/geom/PlaneClassification.ts",
         "src/math/geom/TriangleGeometry.ts",
         // 颜色渐变
-        "src/math/gradient/MinMaxGradientColor.ts",
-        "src/math/gradient/RandomBetweenTwoColors.ts",
-        "src/math/gradient/RandomBetweenTwoGradients.ts",
-        "src/math/gradient/MinMaxGradientRandomColor.ts",
         "src/math/gradient/GradientMode.ts",
         "src/math/gradient/GradientAlphaKey.ts",
         "src/math/gradient/GradientColorKey.ts",
-        "src/math/gradient/MinMaxGradientMode.ts",
         "src/math/gradient/Gradient.ts",
+        "src/math/gradient/MinMaxGradientMode.ts",
         "src/math/gradient/MinMaxGradient.ts",
         // 曲线
         "src/math/curve/BezierCurve.ts",

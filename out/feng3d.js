@@ -9132,122 +9132,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var MinMaxGradientColor = /** @class */ (function () {
-        function MinMaxGradientColor() {
-            /**
-             * 常量颜色值
-             */
-            this.color = new feng3d.Color4();
-        }
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        MinMaxGradientColor.prototype.getValue = function (time) {
-            return this.color;
-        };
-        __decorate([
-            feng3d.serialize
-        ], MinMaxGradientColor.prototype, "color", void 0);
-        return MinMaxGradientColor;
-    }());
-    feng3d.MinMaxGradientColor = MinMaxGradientColor;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 从最大最小常量颜色中随机
-     */
-    var RandomBetweenTwoColors = /** @class */ (function () {
-        function RandomBetweenTwoColors() {
-            /**
-             * 最小颜色值
-             */
-            this.colorMin = new feng3d.Color4();
-            /**
-             * 最大颜色值
-             */
-            this.colorMax = new feng3d.Color4();
-        }
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        RandomBetweenTwoColors.prototype.getValue = function (time) {
-            return this.colorMin.mixTo(this.colorMax, Math.random());
-        };
-        __decorate([
-            feng3d.serialize
-        ], RandomBetweenTwoColors.prototype, "colorMin", void 0);
-        __decorate([
-            feng3d.serialize
-        ], RandomBetweenTwoColors.prototype, "colorMax", void 0);
-        return RandomBetweenTwoColors;
-    }());
-    feng3d.RandomBetweenTwoColors = RandomBetweenTwoColors;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var RandomBetweenTwoGradients = /** @class */ (function () {
-        function RandomBetweenTwoGradients() {
-            /**
-             * 最小颜色渐变
-             */
-            this.gradientMin = new feng3d.Gradient();
-            /**
-             * 最大颜色渐变
-             */
-            this.gradientMax = new feng3d.Gradient();
-        }
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        RandomBetweenTwoGradients.prototype.getValue = function (time) {
-            var min = this.gradientMin.getValue(time);
-            var max = this.gradientMax.getValue(time);
-            var v = min.mixTo(max, Math.random());
-            return v;
-        };
-        __decorate([
-            feng3d.serialize
-        ], RandomBetweenTwoGradients.prototype, "gradientMin", void 0);
-        __decorate([
-            feng3d.serialize
-        ], RandomBetweenTwoGradients.prototype, "gradientMax", void 0);
-        return RandomBetweenTwoGradients;
-    }());
-    feng3d.RandomBetweenTwoGradients = RandomBetweenTwoGradients;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 从颜色渐变中进行随机
-     */
-    var MinMaxGradientRandomColor = /** @class */ (function () {
-        function MinMaxGradientRandomColor() {
-            /**
-             * 颜色渐变
-             */
-            this.gradient = new feng3d.Gradient();
-        }
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        MinMaxGradientRandomColor.prototype.getValue = function (time) {
-            var v = this.gradient.getValue(Math.random());
-            return v;
-        };
-        __decorate([
-            feng3d.serialize
-        ], MinMaxGradientRandomColor.prototype, "gradient", void 0);
-        return MinMaxGradientRandomColor;
-    }());
-    feng3d.MinMaxGradientRandomColor = MinMaxGradientRandomColor;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     /**
      * 渐变模式
      */
@@ -9262,35 +9146,6 @@ var feng3d;
          */
         GradientMode[GradientMode["Fixed"] = 1] = "Fixed";
     })(GradientMode = feng3d.GradientMode || (feng3d.GradientMode = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 最大最小颜色渐变模式
-     */
-    var MinMaxGradientMode;
-    (function (MinMaxGradientMode) {
-        /**
-         * 颜色常量
-         */
-        MinMaxGradientMode[MinMaxGradientMode["Color"] = 0] = "Color";
-        /**
-         * 颜色渐变
-         */
-        MinMaxGradientMode[MinMaxGradientMode["Gradient"] = 1] = "Gradient";
-        /**
-         * 从最大最小常量颜色中随机
-         */
-        MinMaxGradientMode[MinMaxGradientMode["RandomBetweenTwoColors"] = 2] = "RandomBetweenTwoColors";
-        /**
-         * 从最大最小颜色渐变值中随机
-         */
-        MinMaxGradientMode[MinMaxGradientMode["RandomBetweenTwoGradients"] = 3] = "RandomBetweenTwoGradients";
-        /**
-         * 从颜色渐变中进行随机
-         */
-        MinMaxGradientMode[MinMaxGradientMode["RandomColor"] = 4] = "RandomColor";
-    })(MinMaxGradientMode = feng3d.MinMaxGradientMode || (feng3d.MinMaxGradientMode = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -9411,6 +9266,35 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 最大最小颜色渐变模式
+     */
+    var MinMaxGradientMode;
+    (function (MinMaxGradientMode) {
+        /**
+         * 颜色常量
+         */
+        MinMaxGradientMode[MinMaxGradientMode["Color"] = 0] = "Color";
+        /**
+         * 颜色渐变
+         */
+        MinMaxGradientMode[MinMaxGradientMode["Gradient"] = 1] = "Gradient";
+        /**
+         * 从最大最小常量颜色中随机
+         */
+        MinMaxGradientMode[MinMaxGradientMode["RandomBetweenTwoColors"] = 2] = "RandomBetweenTwoColors";
+        /**
+         * 从最大最小颜色渐变值中随机
+         */
+        MinMaxGradientMode[MinMaxGradientMode["RandomBetweenTwoGradients"] = 3] = "RandomBetweenTwoGradients";
+        /**
+         * 从颜色渐变中进行随机
+         */
+        MinMaxGradientMode[MinMaxGradientMode["RandomColor"] = 4] = "RandomColor";
+    })(MinMaxGradientMode = feng3d.MinMaxGradientMode || (feng3d.MinMaxGradientMode = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 最大最小颜色渐变
      */
     var MinMaxGradient = /** @class */ (function () {
@@ -9420,44 +9304,54 @@ var feng3d;
              */
             this.mode = feng3d.MinMaxGradientMode.Color;
             /**
-             * 颜色渐变
+             * 常量颜色值
              */
-            this.minMaxGradient = new feng3d.MinMaxGradientColor();
+            this.color = new feng3d.Color4();
+            /**
+             * 常量颜色值，作用于 MinMaxGradientMode.RandomBetweenTwoColors
+             */
+            this.color1 = new feng3d.Color4();
+            this.gradient = new feng3d.Gradient();
+            this.gradient1 = new feng3d.Gradient();
         }
-        MinMaxGradient.prototype._onModeChanged = function () {
-            switch (this.mode) {
-                case feng3d.MinMaxGradientMode.Color:
-                    this.minMaxGradient = this._minMaxGradientColor = this._minMaxGradientColor || new feng3d.MinMaxGradientColor();
-                    break;
-                case feng3d.MinMaxGradientMode.Gradient:
-                    this.minMaxGradient = this._gradient = this._gradient || new feng3d.Gradient();
-                    break;
-                case feng3d.MinMaxGradientMode.RandomBetweenTwoColors:
-                    this.minMaxGradient = this._randomBetweenTwoColors = this._randomBetweenTwoColors || new feng3d.RandomBetweenTwoColors();
-                    break;
-                case feng3d.MinMaxGradientMode.RandomBetweenTwoGradients:
-                    this.minMaxGradient = this._randomBetweenTwoGradients = this._randomBetweenTwoGradients || new feng3d.RandomBetweenTwoGradients();
-                    break;
-                case feng3d.MinMaxGradientMode.RandomColor:
-                    this.minMaxGradient = this._minMaxGradientRandomColor = this._minMaxGradientRandomColor || new feng3d.MinMaxGradientRandomColor();
-                    break;
-            }
-        };
         /**
          * 获取值
          * @param time 时间
          */
         MinMaxGradient.prototype.getValue = function (time) {
-            var v = this.minMaxGradient.getValue(time);
-            return v;
+            switch (this.mode) {
+                case feng3d.MinMaxGradientMode.Color:
+                    return this.color;
+                case feng3d.MinMaxGradientMode.Gradient:
+                    return this.gradient.getValue(time);
+                case feng3d.MinMaxGradientMode.RandomBetweenTwoColors:
+                    return this.color.mixTo(this.color1, Math.random());
+                case feng3d.MinMaxGradientMode.RandomBetweenTwoGradients:
+                    var min = this.gradient.getValue(time);
+                    var max = this.gradient1.getValue(time);
+                    var v = min.mixTo(max, Math.random());
+                    return v;
+                case feng3d.MinMaxGradientMode.RandomColor:
+                    var v = this.gradient.getValue(Math.random());
+                    return v;
+            }
+            return this.color;
         };
         __decorate([
-            feng3d.serialize,
-            feng3d.watch("_onModeChanged")
+            feng3d.serialize
         ], MinMaxGradient.prototype, "mode", void 0);
         __decorate([
             feng3d.serialize
-        ], MinMaxGradient.prototype, "minMaxGradient", void 0);
+        ], MinMaxGradient.prototype, "color", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxGradient.prototype, "color1", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxGradient.prototype, "gradient", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxGradient.prototype, "gradient1", void 0);
         return MinMaxGradient;
     }());
     feng3d.MinMaxGradient = MinMaxGradient;

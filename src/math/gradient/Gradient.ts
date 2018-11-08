@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 颜色渐变
      */
-    export class Gradient implements IMinMaxGradient
+    export class Gradient
     {
         /**
          * 渐变模式

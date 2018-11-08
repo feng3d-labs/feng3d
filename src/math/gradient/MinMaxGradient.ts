@@ -1,14 +1,5 @@
 namespace feng3d
 {
-    export interface IMinMaxGradient
-    {
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): Color4;
-    }
-
     /**
      * 最大最小颜色渐变
      */
@@ -18,42 +9,25 @@ namespace feng3d
          * 模式
          */
         @serialize
-        @watch("_onModeChanged")
         mode = MinMaxGradientMode.Color;
 
         /**
-         * 颜色渐变
+         * 常量颜色值
          */
         @serialize
-        minMaxGradient: IMinMaxGradient = new MinMaxGradientColor();
+        color = new Color4();
 
-        private _minMaxGradientColor: MinMaxGradientColor;
-        private _gradient: Gradient;
-        private _randomBetweenTwoColors: RandomBetweenTwoColors;
-        private _randomBetweenTwoGradients: RandomBetweenTwoGradients;
-        private _minMaxGradientRandomColor: MinMaxGradientRandomColor;
+        /**
+         * 常量颜色值，作用于 MinMaxGradientMode.RandomBetweenTwoColors
+         */
+        @serialize
+        color1 = new Color4();
 
-        private _onModeChanged()
-        {
-            switch (this.mode)
-            {
-                case MinMaxGradientMode.Color:
-                    this.minMaxGradient = this._minMaxGradientColor = this._minMaxGradientColor || new MinMaxGradientColor();
-                    break;
-                case MinMaxGradientMode.Gradient:
-                    this.minMaxGradient = this._gradient = this._gradient || new Gradient();
-                    break;
-                case MinMaxGradientMode.RandomBetweenTwoColors:
-                    this.minMaxGradient = this._randomBetweenTwoColors = this._randomBetweenTwoColors || new RandomBetweenTwoColors();
-                    break;
-                case MinMaxGradientMode.RandomBetweenTwoGradients:
-                    this.minMaxGradient = this._randomBetweenTwoGradients = this._randomBetweenTwoGradients || new RandomBetweenTwoGradients();
-                    break;
-                case MinMaxGradientMode.RandomColor:
-                    this.minMaxGradient = this._minMaxGradientRandomColor = this._minMaxGradientRandomColor || new MinMaxGradientRandomColor();
-                    break;
-            }
-        }
+        @serialize
+        gradient = new Gradient();
+
+        @serialize
+        gradient1 = new Gradient();
 
         /**
          * 获取值
@@ -61,8 +35,24 @@ namespace feng3d
          */
         getValue(time: number)
         {
-            var v = this.minMaxGradient.getValue(time);
-            return v;
+            switch (this.mode)
+            {
+                case MinMaxGradientMode.Color:
+                    return this.color;
+                case MinMaxGradientMode.Gradient:
+                    return this.gradient.getValue(time);
+                case MinMaxGradientMode.RandomBetweenTwoColors:
+                    return this.color.mixTo(this.color1, Math.random());
+                case MinMaxGradientMode.RandomBetweenTwoGradients:
+                    var min = this.gradient.getValue(time);
+                    var max = this.gradient1.getValue(time);
+                    var v = min.mixTo(max, Math.random());
+                    return v;
+                case MinMaxGradientMode.RandomColor:
+                    var v = this.gradient.getValue(Math.random());
+                    return v;
+            }
+            return this.color;
         }
     }
 }
