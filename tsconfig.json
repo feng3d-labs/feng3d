@@ -74,12 +74,9 @@
         // 曲线
         "src/math/curve/BezierCurve.ts",
         "src/math/curve/AnimationCurveKeyframe.ts",
+        "src/math/curve/AnimationCurveWrapMode.ts",
         "src/math/curve/AnimationCurve.ts",
         "src/math/curve/MinMaxCurveMode.ts",
-        "src/math/curve/MinMaxCurveConstant.ts",
-        "src/math/curve/AnimationCurveWrapMode.ts",
-        "src/math/curve/MinMaxCurveRandomBetweenTwoConstants.ts",
-        "src/math/curve/MinMaxCurveRandomBetweenTwoCurves.ts",
         "src/math/curve/MinMaxCurve.ts",
         "src/math/curve/MinMaxCurveVector3.ts",
         // 事件

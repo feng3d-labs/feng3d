@@ -2033,11 +2033,12 @@ var feng3d;
         };
         /**
          * 绘制双曲线
-         * @param minMaxCurveRandomBetweenTwoCurves 双曲线
+         * @param curve 曲线
+         * @param curve1 曲线
          * @param between0And1  是否显示值在[0,1]区间，否则[-1,1]区间
          * @param curveColor 颜色
          */
-        ImageUtil.prototype.drawBetweenTwoCurves = function (minMaxCurveRandomBetweenTwoCurves, between0And1, curveColor, fillcolor, rect) {
+        ImageUtil.prototype.drawBetweenTwoCurves = function (curve, curve1, between0And1, curveColor, fillcolor, rect) {
             if (curveColor === void 0) { curveColor = new feng3d.Color4(); }
             if (fillcolor === void 0) { fillcolor = new feng3d.Color4(1, 1, 1, 0.5); }
             if (rect === void 0) { rect = null; }
@@ -2046,8 +2047,8 @@ var feng3d;
             //
             for (var i = 0; i < rect.width; i++) {
                 //
-                var y0 = minMaxCurveRandomBetweenTwoCurves.curveMin.getValue(i / (rect.width - 1));
-                var y1 = minMaxCurveRandomBetweenTwoCurves.curveMax.getValue(i / (rect.width - 1));
+                var y0 = curve.getValue(i / (rect.width - 1));
+                var y1 = curve1.getValue(i / (rect.width - 1));
                 y0 = feng3d.FMath.mapLinear(y0, range[0], range[1], 0, 1);
                 y1 = feng3d.FMath.mapLinear(y1, range[0], range[1], 0, 1);
                 y0 = Math.round(y0 * (rect.height - 1));
@@ -10011,6 +10012,27 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 动画曲线Wrap模式，处理超出范围情况
+     */
+    var AnimationCurveWrapMode;
+    (function (AnimationCurveWrapMode) {
+        /**
+         * 循环; 0->1,0->1
+         */
+        AnimationCurveWrapMode[AnimationCurveWrapMode["Loop"] = 0] = "Loop";
+        /**
+         * 来回循环; 0->1,1->0
+         */
+        AnimationCurveWrapMode[AnimationCurveWrapMode["PingPong"] = 1] = "PingPong";
+        /**
+         * 夹紧; 0>-<1
+         */
+        AnimationCurveWrapMode[AnimationCurveWrapMode["Clamp"] = 2] = "Clamp";
+    })(AnimationCurveWrapMode = feng3d.AnimationCurveWrapMode || (feng3d.AnimationCurveWrapMode = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 动画曲线
      *
      * 基于时间轴的连续三阶Bézier曲线
@@ -10236,123 +10258,14 @@ var feng3d;
          */
         MinMaxCurveMode[MinMaxCurveMode["Curve"] = 1] = "Curve";
         /**
-         * 两个曲线中取随机值
-         */
-        MinMaxCurveMode[MinMaxCurveMode["RandomBetweenTwoCurves"] = 2] = "RandomBetweenTwoCurves";
-        /**
          * 两个常量间取随机值
          */
-        MinMaxCurveMode[MinMaxCurveMode["RandomBetweenTwoConstants"] = 3] = "RandomBetweenTwoConstants";
+        MinMaxCurveMode[MinMaxCurveMode["RandomBetweenTwoConstants"] = 2] = "RandomBetweenTwoConstants";
+        /**
+         * 两个曲线中取随机值
+         */
+        MinMaxCurveMode[MinMaxCurveMode["RandomBetweenTwoCurves"] = 3] = "RandomBetweenTwoCurves";
     })(MinMaxCurveMode = feng3d.MinMaxCurveMode || (feng3d.MinMaxCurveMode = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 常量曲线
-     */
-    var MinMaxCurveConstant = /** @class */ (function () {
-        function MinMaxCurveConstant() {
-            /**
-             * 常量
-             */
-            this.value = 0;
-        }
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        MinMaxCurveConstant.prototype.getValue = function (time) {
-            return this.value;
-        };
-        __decorate([
-            feng3d.serialize
-        ], MinMaxCurveConstant.prototype, "value", void 0);
-        return MinMaxCurveConstant;
-    }());
-    feng3d.MinMaxCurveConstant = MinMaxCurveConstant;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 动画曲线Wrap模式，处理超出范围情况
-     */
-    var AnimationCurveWrapMode;
-    (function (AnimationCurveWrapMode) {
-        /**
-         * 循环; 0->1,0->1
-         */
-        AnimationCurveWrapMode[AnimationCurveWrapMode["Loop"] = 0] = "Loop";
-        /**
-         * 来回循环; 0->1,1->0
-         */
-        AnimationCurveWrapMode[AnimationCurveWrapMode["PingPong"] = 1] = "PingPong";
-        /**
-         * 夹紧; 0>-<1
-         */
-        AnimationCurveWrapMode[AnimationCurveWrapMode["Clamp"] = 2] = "Clamp";
-    })(AnimationCurveWrapMode = feng3d.AnimationCurveWrapMode || (feng3d.AnimationCurveWrapMode = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 两个常量间取随机值
-     */
-    var MinMaxCurveRandomBetweenTwoConstants = /** @class */ (function () {
-        function MinMaxCurveRandomBetweenTwoConstants() {
-            /**
-             * 最小值
-             */
-            this.minValue = 5;
-            /**
-             * 最大值
-             */
-            this.maxValue = 5;
-        }
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        MinMaxCurveRandomBetweenTwoConstants.prototype.getValue = function (time) {
-            return this.minValue + Math.random() * (this.maxValue - this.minValue);
-        };
-        __decorate([
-            feng3d.serialize
-        ], MinMaxCurveRandomBetweenTwoConstants.prototype, "minValue", void 0);
-        __decorate([
-            feng3d.serialize
-        ], MinMaxCurveRandomBetweenTwoConstants.prototype, "maxValue", void 0);
-        return MinMaxCurveRandomBetweenTwoConstants;
-    }());
-    feng3d.MinMaxCurveRandomBetweenTwoConstants = MinMaxCurveRandomBetweenTwoConstants;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 两个曲线中取随机值
-     */
-    var MinMaxCurveRandomBetweenTwoCurves = /** @class */ (function () {
-        function MinMaxCurveRandomBetweenTwoCurves() {
-            this.curveMin = new feng3d.AnimationCurve();
-            this.curveMax = Object.setValue(new feng3d.AnimationCurve(), { keys: [{ time: 0, value: 0, tangent: 0 }, { time: 1, value: 1, tangent: 0 }] });
-        }
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        MinMaxCurveRandomBetweenTwoCurves.prototype.getValue = function (time) {
-            var min = this.curveMin.getValue(time);
-            var max = this.curveMax.getValue(time);
-            return min + Math.random() * (max - min);
-        };
-        __decorate([
-            feng3d.serialize
-        ], MinMaxCurveRandomBetweenTwoCurves.prototype, "curveMin", void 0);
-        __decorate([
-            feng3d.serialize
-        ], MinMaxCurveRandomBetweenTwoCurves.prototype, "curveMax", void 0);
-        return MinMaxCurveRandomBetweenTwoCurves;
-    }());
-    feng3d.MinMaxCurveRandomBetweenTwoCurves = MinMaxCurveRandomBetweenTwoCurves;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -10366,9 +10279,21 @@ var feng3d;
              */
             this.mode = feng3d.MinMaxCurveMode.Constant;
             /**
-             * 曲线
+             * 常量值
              */
-            this.minMaxCurve = new feng3d.MinMaxCurveConstant();
+            this.constant = 0;
+            /**
+             * 常量值，用于 MinMaxCurveMode.RandomBetweenTwoConstants
+             */
+            this.constant1 = 0;
+            /**
+             * 曲线，用于 MinMaxCurveMode.RandomBetweenTwoCurves
+             */
+            this.curve = new feng3d.AnimationCurve();
+            /**
+             * 曲线1
+             */
+            this.curve1 = Object.setValue(new feng3d.AnimationCurve(), { keys: [{ time: 0, value: 0, tangent: 0 }, { time: 1, value: 1, tangent: 0 }] });
             /**
              * 曲线缩放比
              */
@@ -10378,43 +10303,38 @@ var feng3d;
              */
             this.between0And1 = false;
         }
-        MinMaxCurve.prototype._onModeChanged = function () {
-            switch (this.mode) {
-                case feng3d.MinMaxCurveMode.Constant:
-                    this.minMaxCurve = this._minMaxCurveConstant = this._minMaxCurveConstant || new feng3d.MinMaxCurveConstant();
-                    break;
-                case feng3d.MinMaxCurveMode.Curve:
-                    if (this.minMaxCurve instanceof feng3d.MinMaxCurveConstant)
-                        this.curveMultiplier = this.minMaxCurve.value;
-                    this.minMaxCurve = this._curve = this._curve || Object.setValue(new feng3d.AnimationCurve(), { keys: [{ time: 0, value: 0, tangent: 0 }, { time: 1, value: 1, tangent: 0 }] });
-                    break;
-                case feng3d.MinMaxCurveMode.RandomBetweenTwoConstants:
-                    this.minMaxCurve = this._randomBetweenTwoConstants = this._randomBetweenTwoConstants || new feng3d.MinMaxCurveRandomBetweenTwoConstants();
-                    break;
-                case feng3d.MinMaxCurveMode.RandomBetweenTwoCurves:
-                    if (this.minMaxCurve instanceof feng3d.MinMaxCurveConstant)
-                        this.curveMultiplier = this.minMaxCurve.value;
-                    this.minMaxCurve = this._randomBetweenTwoCurves = this._randomBetweenTwoCurves || new feng3d.MinMaxCurveRandomBetweenTwoCurves();
-                    break;
-            }
-        };
         /**
          * 获取值
          * @param time 时间
          */
         MinMaxCurve.prototype.getValue = function (time) {
-            var v = this.minMaxCurve.getValue(time);
-            if (this.mode == feng3d.MinMaxCurveMode.Curve || this.mode == feng3d.MinMaxCurveMode.RandomBetweenTwoCurves)
-                v = this.curveMultiplier * v;
-            return v;
+            switch (this.mode) {
+                case feng3d.MinMaxCurveMode.Constant:
+                    return this.constant;
+                case feng3d.MinMaxCurveMode.Curve:
+                    return this.curve.getValue(time);
+                case feng3d.MinMaxCurveMode.RandomBetweenTwoConstants:
+                    return feng3d.FMath.lerp(this.constant, this.constant1, Math.random());
+                case feng3d.MinMaxCurveMode.RandomBetweenTwoCurves:
+                    return feng3d.FMath.lerp(this.curve.getValue(time), this.curve1.getValue(time), Math.random());
+            }
+            return this.constant;
         };
         __decorate([
-            feng3d.serialize,
-            feng3d.watch("_onModeChanged")
+            feng3d.serialize
         ], MinMaxCurve.prototype, "mode", void 0);
         __decorate([
             feng3d.serialize
-        ], MinMaxCurve.prototype, "minMaxCurve", void 0);
+        ], MinMaxCurve.prototype, "constant", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurve.prototype, "constant1", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurve.prototype, "curve", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurve.prototype, "curve1", void 0);
         __decorate([
             feng3d.serialize
         ], MinMaxCurve.prototype, "curveMultiplier", void 0);
@@ -25374,15 +25294,15 @@ var feng3d;
             /**
              * 起始寿命为秒，粒子寿命为0时死亡。
              */
-            _this.startLifetime = Object.runFunc(new feng3d.MinMaxCurve(), function (obj) { obj.mode = feng3d.MinMaxCurveMode.Constant; obj.between0And1 = true; obj.minMaxCurve.value = 5; });
+            _this.startLifetime = Object.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constant: 5, constant1: 5 });
             /**
              * 粒子的起始速度，应用于起始方向。
              */
-            _this.startSpeed = Object.runFunc(new feng3d.MinMaxCurve(), function (obj) { obj.mode = feng3d.MinMaxCurveMode.Constant; obj.minMaxCurve.value = 5; });
+            _this.startSpeed = Object.setValue(new feng3d.MinMaxCurve(), { constant: 5, constant1: 5 });
             /**
              * 粒子的起始缩放。
              */
-            _this.startScale = Object.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { between0And1: true, }, yCurve: { between0And1: true }, zCurve: { between0And1: true } });
+            _this.startScale = Object.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
             /**
              * 粒子的起始旋转角度。
              */
@@ -25494,21 +25414,15 @@ var feng3d;
             feng3d.oav({ tooltip: "模拟空间，使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace } })
         ], ParticleMainModule.prototype, "simulationSpace", void 0);
         __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "Makes particle positions simulate relative to a custom Transform component." })
-            ,
+            feng3d.serialize,
             feng3d.oav({ tooltip: "使粒子位置模拟相对于自定义转换组件。" })
         ], ParticleMainModule.prototype, "customSimulationSpace", void 0);
         __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "Scale the playback speed of the Particle System." })
-            ,
+            feng3d.serialize,
             feng3d.oav({ tooltip: "缩放粒子系统的播放速度。" })
         ], ParticleMainModule.prototype, "simulationSpeed", void 0);
         __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "Should we use the combined scale from our entire hierachy, just this particle node, or just apply scale to the shape module?" })
-            ,
+            feng3d.serialize,
             feng3d.oav({ tooltip: "我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度?" })
         ], ParticleMainModule.prototype, "scalingMode", void 0);
         __decorate([

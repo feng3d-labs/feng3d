@@ -34,21 +34,21 @@ namespace feng3d
          */
         @serialize
         @oav({ tooltip: "起始寿命为秒，粒子寿命为0时死亡。" })
-        startLifetime = Object.runFunc(new MinMaxCurve(), (obj) => { obj.mode = MinMaxCurveMode.Constant; obj.between0And1 = true; (<MinMaxCurveConstant>obj.minMaxCurve).value = 5; });
+        startLifetime = Object.setValue(new MinMaxCurve(), { between0And1: true, constant: 5, constant1: 5 });
 
         /**
          * 粒子的起始速度，应用于起始方向。
          */
         @serialize
         @oav({ tooltip: "粒子的起始速度，应用于起始方向。" })
-        startSpeed = Object.runFunc(new MinMaxCurve(), (obj) => { obj.mode = MinMaxCurveMode.Constant; (<MinMaxCurveConstant>obj.minMaxCurve).value = 5; });
+        startSpeed = Object.setValue(new MinMaxCurve(), { constant: 5, constant1: 5 });
 
         /**
          * 粒子的起始缩放。
          */
         @serialize
         @oav({ tooltip: "粒子的起始缩放。" })
-        startScale = Object.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, }, yCurve: { between0And1: true }, zCurve: { between0And1: true } });
+        startScale = Object.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
 
         /**
          * 粒子的起始旋转角度。
@@ -82,7 +82,6 @@ namespace feng3d
          * 使粒子位置模拟相对于自定义转换组件。
          */
         @serialize
-        // @oav({ tooltip: "Makes particle positions simulate relative to a custom Transform component." })
         @oav({ tooltip: "使粒子位置模拟相对于自定义转换组件。" })
         customSimulationSpace: Transform;
 
@@ -90,7 +89,6 @@ namespace feng3d
          * 缩放粒子系统的播放速度。
          */
         @serialize
-        // @oav({ tooltip: "Scale the playback speed of the Particle System." })
         @oav({ tooltip: "缩放粒子系统的播放速度。" })
         simulationSpeed = 1;
 
@@ -98,7 +96,6 @@ namespace feng3d
          * 我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度
          */
         @serialize
-        // @oav({ tooltip: "Should we use the combined scale from our entire hierachy, just this particle node, or just apply scale to the shape module?" })
         @oav({ tooltip: "我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度?" })
         scalingMode = ParticleSystemScalingMode.Local;
 

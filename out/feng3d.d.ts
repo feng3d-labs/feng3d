@@ -1042,11 +1042,12 @@ declare namespace feng3d {
         drawCurve(curve: AnimationCurve, between0And1: boolean, color: Color4, rect?: any): this;
         /**
          * 绘制双曲线
-         * @param minMaxCurveRandomBetweenTwoCurves 双曲线
+         * @param curve 曲线
+         * @param curve1 曲线
          * @param between0And1  是否显示值在[0,1]区间，否则[-1,1]区间
          * @param curveColor 颜色
          */
-        drawBetweenTwoCurves(minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, curveColor?: Color4, fillcolor?: Color4, rect?: any): this;
+        drawBetweenTwoCurves(curve: AnimationCurve, curve1: AnimationCurve, between0And1: boolean, curveColor?: Color4, fillcolor?: Color4, rect?: any): this;
     }
 }
 /**
@@ -5148,11 +5149,30 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 动画曲线Wrap模式，处理超出范围情况
+     */
+    enum AnimationCurveWrapMode {
+        /**
+         * 循环; 0->1,0->1
+         */
+        Loop = 0,
+        /**
+         * 来回循环; 0->1,1->0
+         */
+        PingPong = 1,
+        /**
+         * 夹紧; 0>-<1
+         */
+        Clamp = 2
+    }
+}
+declare namespace feng3d {
+    /**
      * 动画曲线
      *
      * 基于时间轴的连续三阶Bézier曲线
      */
-    class AnimationCurve implements IMinMaxCurve {
+    class AnimationCurve {
         /**
          * 最大tan值，超出该值后将会变成分段
          */
@@ -5251,104 +5271,40 @@ declare namespace feng3d {
          */
         Curve = 1,
         /**
-         * 两个曲线中取随机值
-         */
-        RandomBetweenTwoCurves = 2,
-        /**
          * 两个常量间取随机值
          */
-        RandomBetweenTwoConstants = 3
+        RandomBetweenTwoConstants = 2,
+        /**
+         * 两个曲线中取随机值
+         */
+        RandomBetweenTwoCurves = 3
     }
 }
 declare namespace feng3d {
-    /**
-     * 常量曲线
-     */
-    class MinMaxCurveConstant implements IMinMaxCurve {
-        /**
-         * 常量
-         */
-        value: number;
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): number;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 动画曲线Wrap模式，处理超出范围情况
-     */
-    enum AnimationCurveWrapMode {
-        /**
-         * 循环; 0->1,0->1
-         */
-        Loop = 0,
-        /**
-         * 来回循环; 0->1,1->0
-         */
-        PingPong = 1,
-        /**
-         * 夹紧; 0>-<1
-         */
-        Clamp = 2
-    }
-}
-declare namespace feng3d {
-    /**
-     * 两个常量间取随机值
-     */
-    class MinMaxCurveRandomBetweenTwoConstants implements IMinMaxCurve {
-        /**
-         * 最小值
-         */
-        minValue: number;
-        /**
-         * 最大值
-         */
-        maxValue: number;
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): number;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 两个曲线中取随机值
-     */
-    class MinMaxCurveRandomBetweenTwoCurves implements IMinMaxCurve {
-        curveMin: AnimationCurve;
-        curveMax: AnimationCurve;
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): number;
-    }
-}
-declare namespace feng3d {
-    interface IMinMaxCurve {
-        /**
-         * 获取值
-         * @param time 时间
-         */
-        getValue(time: number): number;
-    }
     /**
      * 最大最小曲线
      */
-    class MinMaxCurve implements IMinMaxCurve {
+    class MinMaxCurve {
         /**
          * 模式
          */
         mode: MinMaxCurveMode;
         /**
-         * 曲线
+         * 常量值
          */
-        minMaxCurve: IMinMaxCurve;
+        constant: number;
+        /**
+         * 常量值，用于 MinMaxCurveMode.RandomBetweenTwoConstants
+         */
+        constant1: number;
+        /**
+         * 曲线，用于 MinMaxCurveMode.RandomBetweenTwoCurves
+         */
+        curve: AnimationCurve;
+        /**
+         * 曲线1
+         */
+        curve1: AnimationCurve;
         /**
          * 曲线缩放比
          */
@@ -5357,11 +5313,6 @@ declare namespace feng3d {
          * 是否只取 0-1 ，例如 lifetime 为非负，需要设置为true
          */
         between0And1: boolean;
-        private _minMaxCurveConstant;
-        private _curve;
-        private _randomBetweenTwoConstants;
-        private _randomBetweenTwoCurves;
-        private _onModeChanged;
         /**
          * 获取值
          * @param time 时间

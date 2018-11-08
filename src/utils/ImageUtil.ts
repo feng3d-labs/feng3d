@@ -358,11 +358,12 @@ namespace feng3d
 
         /**
          * 绘制双曲线
-         * @param minMaxCurveRandomBetweenTwoCurves 双曲线
+         * @param curve 曲线
+         * @param curve1 曲线
          * @param between0And1  是否显示值在[0,1]区间，否则[-1,1]区间
          * @param curveColor 颜色
          */
-        drawBetweenTwoCurves(minMaxCurveRandomBetweenTwoCurves: MinMaxCurveRandomBetweenTwoCurves, between0And1: boolean, curveColor = new Color4(), fillcolor = new Color4(1, 1, 1, 0.5), rect = null)
+        drawBetweenTwoCurves(curve: AnimationCurve, curve1: AnimationCurve, between0And1: boolean, curveColor = new Color4(), fillcolor = new Color4(1, 1, 1, 0.5), rect = null)
         {
             rect = rect || new Rectangle(0, 0, this.imageData.width, this.imageData.height);
             var range = between0And1 ? [1, 0] : [1, -1];
@@ -371,8 +372,8 @@ namespace feng3d
             for (let i = 0; i < rect.width; i++)
             {
                 //
-                var y0 = minMaxCurveRandomBetweenTwoCurves.curveMin.getValue(i / (rect.width - 1));
-                var y1 = minMaxCurveRandomBetweenTwoCurves.curveMax.getValue(i / (rect.width - 1));
+                var y0 = curve.getValue(i / (rect.width - 1));
+                var y1 = curve1.getValue(i / (rect.width - 1));
 
                 y0 = FMath.mapLinear(y0, range[0], range[1], 0, 1);
                 y1 = FMath.mapLinear(y1, range[0], range[1], 0, 1);

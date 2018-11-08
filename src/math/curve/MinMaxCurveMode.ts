@@ -14,12 +14,12 @@ namespace feng3d
          */
         Curve,
         /**
+         * 两个常量间取随机值
+         */
+        RandomBetweenTwoConstants,
+        /**
          * 两个曲线中取随机值
          */
         RandomBetweenTwoCurves,
-        /**
-         * 两个常量间取随机值
-         */
-        RandomBetweenTwoConstants
     }
 }
