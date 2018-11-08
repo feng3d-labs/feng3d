@@ -10174,6 +10174,7 @@ declare namespace feng3d {
         private scriptInit;
         init(gameObject: GameObject): void;
         private scriptChanged;
+        private onScriptChanged;
         /**
          * 每帧执行
          */

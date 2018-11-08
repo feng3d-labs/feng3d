@@ -17962,6 +17962,7 @@ var feng3d;
         }
         ScriptComponent.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
+            feng3d.feng3dDispatcher.on("assets.scriptChanged", this.onScriptChanged, this);
         };
         ScriptComponent.prototype.scriptChanged = function (property, oldValue, newValue) {
             if (this.scriptInstance) {
@@ -17970,8 +17971,19 @@ var feng3d;
                 this.scriptInstance = null;
             }
             var cls = feng3d.classUtils.getDefinitionByName(this.scriptName, false);
-            cls && (this.scriptInstance = new cls());
+            if (cls)
+                this.scriptInstance = new cls();
+            else
+                feng3d.warn("\u65E0\u6CD5\u521D\u59CB\u5316\u811A\u672C " + this.scriptName);
             this.scriptInit = false;
+        };
+        ScriptComponent.prototype.onScriptChanged = function () {
+            var cls = feng3d.classUtils.getDefinitionByName(this.scriptName, false);
+            if (this.scriptInstance instanceof cls)
+                return;
+            var newInstance = new cls();
+            Object.setValue(newInstance, this.scriptInstance);
+            this.scriptInstance = newInstance;
         };
         /**
          * 每帧执行
@@ -17995,6 +18007,7 @@ var feng3d;
                 this.scriptInstance = null;
             }
             _super.prototype.dispose.call(this);
+            feng3d.feng3dDispatcher.off("assets.scriptChanged", this.onScriptChanged, this);
         };
         __decorate([
             feng3d.serialize,

@@ -28,6 +28,7 @@ namespace feng3d
         init(gameObject: GameObject)
         {
             super.init(gameObject);
+            feng3d.feng3dDispatcher.on("assets.scriptChanged", this.onScriptChanged, this);
         }
 
         private scriptChanged(property, oldValue: Script, newValue: Script)
@@ -40,9 +41,22 @@ namespace feng3d
             }
 
             var cls = classUtils.getDefinitionByName(this.scriptName, false);
-            cls && (this.scriptInstance = new cls());
+            if (cls)
+                this.scriptInstance = new cls();
+            else
+                warn(`无法初始化脚本 ${this.scriptName}`);
 
             this.scriptInit = false;
+        }
+
+        private onScriptChanged()
+        {
+            var cls = classUtils.getDefinitionByName(this.scriptName, false);
+            if (this.scriptInstance instanceof cls) return;
+
+            var newInstance = new cls();
+            Object.setValue(newInstance, <any>this.scriptInstance);
+            this.scriptInstance = newInstance;
         }
 
         /**
@@ -73,6 +87,8 @@ namespace feng3d
                 this.scriptInstance = null;
             }
             super.dispose();
+
+            feng3d.feng3dDispatcher.off("assets.scriptChanged", this.onScriptChanged, this);
         }
     }
 }
