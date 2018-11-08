@@ -13,9 +13,9 @@ namespace feng3d
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number)
+        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
-            particle.color.multiply(this.color.getValue((time - particle.birthTime) / particle.lifetime));
+            particle.color.multiply(this.color.getValue(rateAtLifeTime));
         }
     }
 }

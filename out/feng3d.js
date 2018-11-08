@@ -24806,8 +24806,9 @@ var feng3d;
         ParticleSystem.prototype._updateParticleState = function (particle) {
             var _this = this;
             var preTime = this._preRealEmitTime < particle.birthTime ? particle.birthTime : this._preRealEmitTime;
+            var rateAtLifeTime = (this.time - this.main.startDelay - particle.birthTime) / particle.lifetime;
             //
-            this._modules.forEach(function (v) { v.enabled && v.updateParticleState(particle, preTime, _this._realEmitTime); });
+            this._modules.forEach(function (v) { v.enabled && v.updateParticleState(particle, preTime, _this._realEmitTime, rateAtLifeTime); });
             particle.updateState(preTime, this._realEmitTime);
         };
         __decorate([
@@ -25156,7 +25157,7 @@ var feng3d;
          * 更新粒子状态
          * @param particle 粒子
          */
-        ParticleModule.prototype.updateParticleState = function (particle, preTime, time) {
+        ParticleModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
         };
         __decorate([
             feng3d.oav({ tooltip: "是否开启" }),
@@ -25263,7 +25264,7 @@ var feng3d;
          * 更新粒子状态
          * @param particle 粒子
          */
-        ParticleMainModule.prototype.updateParticleState = function (particle, preTime, time) {
+        ParticleMainModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
             // 计算重力加速度影响速度
             var globalAcceleration = new feng3d.Vector3(0, -this.gravityModifier.getValue(this.rateAtDuration) * 9.8, 0);
             // 本地加速度
@@ -25446,7 +25447,7 @@ var feng3d;
         __extends(ParticleVelocityOverLifetimeModule, _super);
         function ParticleVelocityOverLifetimeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.velocity = new feng3d.Vector3();
+            _this.velocity = new feng3d.MinMaxCurveVector3();
             _this.space = feng3d.ParticleSystemSimulationSpace.Local;
             return _this;
         }
@@ -25454,8 +25455,8 @@ var feng3d;
          * 更新粒子状态
          * @param particle 粒子
          */
-        ParticleVelocityOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time) {
-            var velocity = this.velocity.clone();
+        ParticleVelocityOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
+            var velocity = this.velocity.getValue(rateAtLifeTime);
             if (this.space == feng3d.ParticleSystemSimulationSpace.World) {
                 this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(velocity, velocity);
             }
@@ -25486,7 +25487,7 @@ var feng3d;
         __extends(ParticleAccelerationOverLifetimeModule, _super);
         function ParticleAccelerationOverLifetimeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.acceleration = new feng3d.Vector3();
+            _this.acceleration = new feng3d.MinMaxCurveVector3();
             _this.space = feng3d.ParticleSystemSimulationSpace.Local;
             _this._preAcceleration = new feng3d.Vector3();
             _this._currentAcceleration = new feng3d.Vector3();
@@ -25496,18 +25497,17 @@ var feng3d;
          * 更新粒子状态
          * @param particle 粒子
          */
-        ParticleAccelerationOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time) {
+        ParticleAccelerationOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
             //
-            this._preAcceleration.copy(this.acceleration);
-            this._currentAcceleration.copy(this.acceleration);
+            this._currentAcceleration.copy(this.acceleration.getValue(rateAtLifeTime));
             if (this.space == feng3d.ParticleSystemSimulationSpace.World) {
-                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(this._preAcceleration, this._preAcceleration);
                 this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(this._currentAcceleration, this._currentAcceleration);
             }
             //
             particle.velocity.x += (this._currentAcceleration.x + this._preAcceleration.x) * 0.5 * (time - preTime);
             particle.velocity.y += (this._currentAcceleration.y + this._preAcceleration.y) * 0.5 * (time - preTime);
             particle.velocity.z += (this._currentAcceleration.z + this._preAcceleration.z) * 0.5 * (time - preTime);
+            this._preAcceleration = this._currentAcceleration.clone();
         };
         __decorate([
             feng3d.serialize,
@@ -25529,15 +25529,15 @@ var feng3d;
         __extends(ParticleScaleOverLifetimeModule, _super);
         function ParticleScaleOverLifetimeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.scale = new feng3d.Vector3(1, 1, 1);
+            _this.scale = Object.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { constant: 1, constant1: 1, curveMultiplier: 1 }, yCurve: { constant: 1, constant1: 1, curveMultiplier: 1 }, zCurve: { constant: 1, constant1: 1, curveMultiplier: 1 } });
             return _this;
         }
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
-        ParticleScaleOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time) {
-            particle.scale.multiply(this.scale);
+        ParticleScaleOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
+            particle.scale.multiply(this.scale.getValue(rateAtLifeTime));
         };
         __decorate([
             feng3d.serialize,
@@ -25563,8 +25563,8 @@ var feng3d;
          * 更新粒子状态
          * @param particle 粒子
          */
-        ParticleColorOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time) {
-            particle.color.multiply(this.color.getValue((time - particle.birthTime) / particle.lifetime));
+        ParticleColorOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
+            particle.color.multiply(this.color.getValue(rateAtLifeTime));
         };
         __decorate([
             feng3d.serialize,
@@ -25583,17 +25583,18 @@ var feng3d;
         __extends(ParticlePalstanceOverLifetimeModule, _super);
         function ParticlePalstanceOverLifetimeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.palstance = new feng3d.Vector3();
+            _this.palstance = Object.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { constant: 45, constant1: 45, curveMultiplier: 45 }, yCurve: { constant: 45, constant1: 45, curveMultiplier: 45 }, zCurve: { constant: 45, constant1: 45, curveMultiplier: 45 } });
             return _this;
         }
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
-        ParticlePalstanceOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time) {
-            particle.rotation.x += this.palstance.x * (time - preTime);
-            particle.rotation.y += this.palstance.y * (time - preTime);
-            particle.rotation.z += this.palstance.z * (time - preTime);
+        ParticlePalstanceOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
+            var v = this.palstance.getValue(rateAtLifeTime);
+            particle.rotation.x += v.x * (time - preTime);
+            particle.rotation.y += v.y * (time - preTime);
+            particle.rotation.z += v.z * (time - preTime);
         };
         __decorate([
             feng3d.serialize,

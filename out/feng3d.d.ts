@@ -12720,7 +12720,7 @@ declare namespace feng3d {
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number): void;
+        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number): void;
     }
 }
 declare namespace feng3d {
@@ -12802,7 +12802,7 @@ declare namespace feng3d {
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number): void;
+        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number): void;
     }
 }
 declare namespace feng3d {
@@ -12853,13 +12853,13 @@ declare namespace feng3d {
      * 控制每个粒子在其生命周期内的速度。
      */
     class ParticleVelocityOverLifetimeModule extends ParticleModule {
-        velocity: Vector3;
+        velocity: MinMaxCurveVector3;
         space: ParticleSystemSimulationSpace;
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number): void;
+        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number): void;
     }
 }
 declare namespace feng3d {
@@ -12869,7 +12869,7 @@ declare namespace feng3d {
      * 控制每个粒子在其生命周期内的加速度。
      */
     class ParticleAccelerationOverLifetimeModule extends ParticleModule {
-        acceleration: Vector3;
+        acceleration: MinMaxCurveVector3;
         space: ParticleSystemSimulationSpace;
         private _preAcceleration;
         private _currentAcceleration;
@@ -12877,7 +12877,7 @@ declare namespace feng3d {
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number): void;
+        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number): void;
     }
 }
 declare namespace feng3d {
@@ -12885,12 +12885,12 @@ declare namespace feng3d {
      * 粒子系统 缩放随时间变化模块
      */
     class ParticleScaleOverLifetimeModule extends ParticleModule {
-        scale: Vector3;
+        scale: MinMaxCurveVector3;
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number): void;
+        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number): void;
     }
 }
 declare namespace feng3d {
@@ -12903,7 +12903,7 @@ declare namespace feng3d {
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number): void;
+        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number): void;
     }
 }
 declare namespace feng3d {
@@ -12911,12 +12911,12 @@ declare namespace feng3d {
      * 粒子系统 角速度随时间变化模块
      */
     class ParticlePalstanceOverLifetimeModule extends ParticleModule {
-        palstance: Vector3;
+        palstance: MinMaxCurveVector3;
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number): void;
+        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number): void;
     }
 }
 declare namespace feng3d {

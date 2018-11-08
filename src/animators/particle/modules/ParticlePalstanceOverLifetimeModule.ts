@@ -7,17 +7,19 @@ namespace feng3d
     {
         @serialize
         @oav({ tooltip: "角速度" })
-        palstance = new Vector3();
+        palstance = Object.setValue(new MinMaxCurveVector3(), { xCurve: { constant: 45, constant1: 45, curveMultiplier: 45 }, yCurve: { constant: 45, constant1: 45, curveMultiplier: 45 }, zCurve: { constant: 45, constant1: 45, curveMultiplier: 45 } });
 
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number)
+        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
-            particle.rotation.x += this.palstance.x * (time - preTime);
-            particle.rotation.y += this.palstance.y * (time - preTime);
-            particle.rotation.z += this.palstance.z * (time - preTime);
+            var v = this.palstance.getValue(rateAtLifeTime);
+
+            particle.rotation.x += v.x * (time - preTime);
+            particle.rotation.y += v.y * (time - preTime);
+            particle.rotation.z += v.z * (time - preTime);
         }
     }
 }

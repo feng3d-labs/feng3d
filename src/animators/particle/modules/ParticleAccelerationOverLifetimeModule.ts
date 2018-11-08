@@ -9,7 +9,7 @@ namespace feng3d
     {
         @serialize
         @oav()
-        acceleration = new Vector3();
+        acceleration = new MinMaxCurveVector3();
 
         @oav({ tooltip: "模拟空间", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
         space = ParticleSystemSimulationSpace.Local;
@@ -21,15 +21,13 @@ namespace feng3d
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number)
+        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
             //
-            this._preAcceleration.copy(this.acceleration);
-            this._currentAcceleration.copy(this.acceleration);
+            this._currentAcceleration.copy(this.acceleration.getValue(rateAtLifeTime));
 
             if (this.space == ParticleSystemSimulationSpace.World)
             {
-                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(this._preAcceleration, this._preAcceleration);
                 this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(this._currentAcceleration, this._currentAcceleration);
             }
 
@@ -37,6 +35,8 @@ namespace feng3d
             particle.velocity.x += (this._currentAcceleration.x + this._preAcceleration.x) * 0.5 * (time - preTime);
             particle.velocity.y += (this._currentAcceleration.y + this._preAcceleration.y) * 0.5 * (time - preTime);
             particle.velocity.z += (this._currentAcceleration.z + this._preAcceleration.z) * 0.5 * (time - preTime);
+
+            this._preAcceleration = this._currentAcceleration.clone();
         }
     }
 }

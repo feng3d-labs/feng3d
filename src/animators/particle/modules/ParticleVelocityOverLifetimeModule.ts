@@ -10,7 +10,7 @@ namespace feng3d
     {
         @serialize
         @oav()
-        velocity = new Vector3();
+        velocity = new MinMaxCurveVector3();
 
         @oav({ tooltip: "模拟空间", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
         space = ParticleSystemSimulationSpace.Local;
@@ -19,9 +19,9 @@ namespace feng3d
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number)
+        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
-            var velocity = this.velocity.clone();
+            var velocity = this.velocity.getValue(rateAtLifeTime);
 
             if (this.space == ParticleSystemSimulationSpace.World)
             {

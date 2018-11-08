@@ -143,7 +143,7 @@ namespace feng3d
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number)
+        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
             // 计算重力加速度影响速度
             var globalAcceleration = new Vector3(0, -this.gravityModifier.getValue(this.rateAtDuration) * 9.8, 0);
