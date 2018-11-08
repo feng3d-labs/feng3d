@@ -10255,7 +10255,7 @@ var feng3d;
             /**
              * 常量
              */
-            this.value = 5;
+            this.value = 0;
         }
         /**
          * 获取值
@@ -25375,7 +25375,6 @@ var feng3d;
              * 起始寿命为秒，粒子寿命为0时死亡。
              */
             _this.startLifetime = Object.runFunc(new feng3d.MinMaxCurve(), function (obj) { obj.mode = feng3d.MinMaxCurveMode.Constant; obj.between0And1 = true; obj.minMaxCurve.value = 5; });
-            // startLifetime = 5;
             /**
              * 粒子的起始速度，应用于起始方向。
              */
@@ -25383,11 +25382,11 @@ var feng3d;
             /**
              * 粒子的起始缩放。
              */
-            _this.startScale = new feng3d.Vector3(1, 1, 1);
+            _this.startScale = Object.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { between0And1: true, }, yCurve: { between0And1: true }, zCurve: { between0And1: true } });
             /**
              * 粒子的起始旋转角度。
              */
-            _this.startRotation = new feng3d.MinMaxCurveVector3();
+            _this.startRotation = Object.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { curveMultiplier: 180 }, yCurve: { curveMultiplier: 180 }, zCurve: { curveMultiplier: 180 } });
             /**
              * 粒子的起始颜色。
              */
@@ -25427,12 +25426,11 @@ var feng3d;
             //
             particle.position.init(0, 0, 0);
             particle.velocity.init(0, 0, this.startSpeed.getValue(rateAtDuration));
-            particle.startScale.copy(this.startScale);
+            particle.startScale.copy(this.startScale.getValue(rateAtDuration));
             //
             particle.rotation.copy(this.startRotation.getValue(rateAtDuration));
             //
-            var t = ((this.particleSystem.time - this.startDelay) % this.duration) / this.duration;
-            particle.startColor.copy(this.startColor.getValue(t));
+            particle.startColor.copy(this.startColor.getValue(rateAtDuration));
         };
         /**
          * 更新粒子状态

@@ -12874,7 +12874,7 @@ declare namespace feng3d {
         /**
          * 粒子的起始缩放。
          */
-        startScale: Vector3;
+        startScale: MinMaxCurveVector3;
         /**
          * 粒子的起始旋转角度。
          */

@@ -35,7 +35,6 @@ namespace feng3d
         @serialize
         @oav({ tooltip: "起始寿命为秒，粒子寿命为0时死亡。" })
         startLifetime = Object.runFunc(new MinMaxCurve(), (obj) => { obj.mode = MinMaxCurveMode.Constant; obj.between0And1 = true; (<MinMaxCurveConstant>obj.minMaxCurve).value = 5; });
-        // startLifetime = 5;
 
         /**
          * 粒子的起始速度，应用于起始方向。
@@ -49,14 +48,14 @@ namespace feng3d
          */
         @serialize
         @oav({ tooltip: "粒子的起始缩放。" })
-        startScale = new Vector3(1, 1, 1);
+        startScale = Object.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, }, yCurve: { between0And1: true }, zCurve: { between0And1: true } });
 
         /**
          * 粒子的起始旋转角度。
          */
         @serialize
         @oav({ tooltip: "粒子的起始旋转角度。" })
-        startRotation = new MinMaxCurveVector3();
+        startRotation = Object.setValue(new MinMaxCurveVector3(), { xCurve: { curveMultiplier: 180 }, yCurve: { curveMultiplier: 180 }, zCurve: { curveMultiplier: 180 } });
 
         /**
          * 粒子的起始颜色。
@@ -128,12 +127,11 @@ namespace feng3d
 
             particle.position.init(0, 0, 0);
             particle.velocity.init(0, 0, this.startSpeed.getValue(rateAtDuration));
-            particle.startScale.copy(this.startScale);
+            particle.startScale.copy(this.startScale.getValue(rateAtDuration));
             //
             particle.rotation.copy(this.startRotation.getValue(rateAtDuration));
             //
-            var t = ((this.particleSystem.time - this.startDelay) % this.duration) / this.duration;
-            particle.startColor.copy(this.startColor.getValue(t));
+            particle.startColor.copy(this.startColor.getValue(rateAtDuration));
         }
 
         /**

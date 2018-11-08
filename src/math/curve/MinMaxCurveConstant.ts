@@ -9,7 +9,7 @@ namespace feng3d
          * 常量
          */
         @serialize
-        value = 5;
+        value = 0;
 
         /**
          * 获取值
