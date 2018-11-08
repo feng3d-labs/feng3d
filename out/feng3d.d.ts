@@ -1219,6 +1219,11 @@ interface ObjectConstructor {
      * @param value 数据
      */
     setValue<T>(obj: T, value: gPartial<T>): T;
+    /**
+     * 深拷贝
+     * @param obj 被拷贝对象
+     */
+    deepClone<T>(obj: T): T;
 }
 interface Map<K, V> {
     clear(): void;

@@ -2347,6 +2347,9 @@ Object.setValue = function (obj, value) {
     feng3d.serialization.setValue(obj, value);
     return obj;
 };
+Object.deepClone = function (obj) {
+    return feng3d.serialization.clone(obj);
+};
 //参考 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
 Map.prototype.getKeys = function () {
     var keys = [];

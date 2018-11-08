@@ -68,6 +68,12 @@ interface ObjectConstructor
      * @param value 数据
      */
     setValue<T>(obj: T, value: gPartial<T>): T;
+
+    /**
+     * 深拷贝
+     * @param obj 被拷贝对象
+     */
+    deepClone<T>(obj: T): T;
 }
 
 if (typeof Object.assign != 'function')
@@ -140,4 +146,9 @@ Object.setValue = function (obj, value)
 {
     feng3d.serialization.setValue(obj, value);
     return obj;
+}
+
+Object.deepClone = function (obj)
+{
+    return feng3d.serialization.clone(obj);
 }
