@@ -10206,11 +10206,11 @@ var feng3d;
                 case feng3d.MinMaxCurveMode.Constant:
                     return this.constant;
                 case feng3d.MinMaxCurveMode.Curve:
-                    return this.curve.getValue(time);
+                    return this.curve.getValue(time) * this.curveMultiplier;
                 case feng3d.MinMaxCurveMode.RandomBetweenTwoConstants:
                     return feng3d.FMath.lerp(this.constant, this.constant1, Math.random());
                 case feng3d.MinMaxCurveMode.RandomBetweenTwoCurves:
-                    return feng3d.FMath.lerp(this.curve.getValue(time), this.curve1.getValue(time), Math.random());
+                    return feng3d.FMath.lerp(this.curve.getValue(time), this.curve1.getValue(time), Math.random()) * this.curveMultiplier;
             }
             return this.constant;
         };
@@ -10232,6 +10232,9 @@ var feng3d;
         __decorate([
             feng3d.serialize
         ], MinMaxCurve.prototype, "curveMultiplier", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurve.prototype, "between0And1", void 0);
         return MinMaxCurve;
     }());
     feng3d.MinMaxCurve = MinMaxCurve;
@@ -25208,7 +25211,7 @@ var feng3d;
             /**
              * 按物理管理器中定义的重力进行缩放。
              */
-            _this.gravityModifier = 0;
+            _this.gravityModifier = new feng3d.MinMaxCurve();
             /**
              * 使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。
              */
@@ -25251,8 +25254,9 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleMainModule.prototype.updateParticleState = function (particle, preTime, time) {
+            var rateAtDuration = ((this.particleSystem.time - this.startDelay) % this.duration) / this.duration;
             // 计算重力加速度影响速度
-            var globalAcceleration = new feng3d.Vector3(0, -this.gravityModifier * 9.8, 0);
+            var globalAcceleration = new feng3d.Vector3(0, -this.gravityModifier.getValue(rateAtDuration) * 9.8, 0);
             // 本地加速度
             var localAcceleration = this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(globalAcceleration);
             //

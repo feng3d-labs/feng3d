@@ -44,6 +44,7 @@ namespace feng3d
         /**
          * 是否只取 0-1 ，例如 lifetime 为非负，需要设置为true
          */
+        @serialize
         between0And1 = false;
 
         /**
@@ -57,11 +58,11 @@ namespace feng3d
                 case MinMaxCurveMode.Constant:
                     return this.constant;
                 case MinMaxCurveMode.Curve:
-                    return this.curve.getValue(time);
+                    return this.curve.getValue(time) * this.curveMultiplier;
                 case MinMaxCurveMode.RandomBetweenTwoConstants:
                     return FMath.lerp(this.constant, this.constant1, Math.random());
                 case MinMaxCurveMode.RandomBetweenTwoCurves:
-                    return FMath.lerp(this.curve.getValue(time), this.curve1.getValue(time), Math.random());
+                    return FMath.lerp(this.curve.getValue(time), this.curve1.getValue(time), Math.random()) * this.curveMultiplier;
             }
 
             return this.constant;

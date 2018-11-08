@@ -69,7 +69,7 @@ namespace feng3d
          */
         @serialize
         @oav({ tooltip: "按物理管理器中定义的重力进行缩放。" })
-        gravityModifier = 0;
+        gravityModifier = new MinMaxCurve();
 
         /**
          * 使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。
@@ -137,8 +137,10 @@ namespace feng3d
          */
         updateParticleState(particle: Particle, preTime: number, time: number)
         {
+            var rateAtDuration = ((this.particleSystem.time - this.startDelay) % this.duration) / this.duration;
+
             // 计算重力加速度影响速度
-            var globalAcceleration = new Vector3(0, -this.gravityModifier * 9.8, 0);
+            var globalAcceleration = new Vector3(0, -this.gravityModifier.getValue(rateAtDuration) * 9.8, 0);
 
             // 本地加速度
             var localAcceleration = this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(globalAcceleration);
