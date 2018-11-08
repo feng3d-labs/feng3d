@@ -12844,7 +12844,7 @@ declare namespace feng3d {
         /**
          * 粒子的起始速度，应用于起始方向。
          */
-        startSpeed: number;
+        startSpeed: MinMaxCurve;
         /**
          * 粒子的起始缩放。
          */

@@ -34,7 +34,7 @@ namespace feng3d
          */
         @serialize
         @oav({ tooltip: "起始寿命为秒，粒子寿命为0时死亡。" })
-        startLifetime = Object.runFunc(new MinMaxCurve(), (obj) => { obj.mode = MinMaxCurveMode.Constant; obj.between0And1 = false; (<MinMaxCurveConstant>obj.minMaxCurve).value = 5; });
+        startLifetime = Object.runFunc(new MinMaxCurve(), (obj) => { obj.mode = MinMaxCurveMode.Constant; obj.between0And1 = true; (<MinMaxCurveConstant>obj.minMaxCurve).value = 5; });
         // startLifetime = 5;
 
         /**
@@ -42,7 +42,7 @@ namespace feng3d
          */
         @serialize
         @oav({ tooltip: "粒子的起始速度，应用于起始方向。" })
-        startSpeed = 5;
+        startSpeed = Object.runFunc(new MinMaxCurve(), (obj) => { obj.mode = MinMaxCurveMode.Constant; (<MinMaxCurveConstant>obj.minMaxCurve).value = 5; });
 
         /**
          * 粒子的起始缩放。
@@ -124,7 +124,7 @@ namespace feng3d
         initParticleState(particle: Particle)
         {
             particle.position.init(0, 0, 0);
-            particle.velocity.init(0, 0, this.startSpeed);
+            particle.velocity.init(0, 0, this.startSpeed.getValue(((particle.birthTime - this.startDelay) % this.duration) / this.duration));
             particle.startScale.copy(this.startScale);
             //
             particle.rotation.copy(this.startRotation);

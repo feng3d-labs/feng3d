@@ -25334,12 +25334,12 @@ var feng3d;
             /**
              * 起始寿命为秒，粒子寿命为0时死亡。
              */
-            _this.startLifetime = Object.runFunc(new feng3d.MinMaxCurve(), function (obj) { obj.mode = feng3d.MinMaxCurveMode.Constant; obj.between0And1 = false; obj.minMaxCurve.value = 5; });
+            _this.startLifetime = Object.runFunc(new feng3d.MinMaxCurve(), function (obj) { obj.mode = feng3d.MinMaxCurveMode.Constant; obj.between0And1 = true; obj.minMaxCurve.value = 5; });
             // startLifetime = 5;
             /**
              * 粒子的起始速度，应用于起始方向。
              */
-            _this.startSpeed = 5;
+            _this.startSpeed = Object.runFunc(new feng3d.MinMaxCurve(), function (obj) { obj.mode = feng3d.MinMaxCurveMode.Constant; obj.minMaxCurve.value = 5; });
             /**
              * 粒子的起始缩放。
              */
@@ -25384,7 +25384,7 @@ var feng3d;
          */
         ParticleMainModule.prototype.initParticleState = function (particle) {
             particle.position.init(0, 0, 0);
-            particle.velocity.init(0, 0, this.startSpeed);
+            particle.velocity.init(0, 0, this.startSpeed.getValue(((particle.birthTime - this.startDelay) % this.duration) / this.duration));
             particle.startScale.copy(this.startScale);
             //
             particle.rotation.copy(this.startRotation);
