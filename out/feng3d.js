@@ -98,7 +98,7 @@ var feng3d;
             "normal_vert": "vec3 normal = a_normal;",
             "particle_frag": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    finalColor = particleAnimation(finalColor);\r\n#endif",
             "particle_pars_frag": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    varying vec4 v_particle_color;\r\n\r\n    vec4 particleAnimation(vec4 color) {\r\n\r\n        return color * v_particle_color;\r\n    }\r\n#endif",
-            "particle_pars_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    //\r\n    attribute vec3 a_particle_position;\r\n    attribute vec3 a_particle_scale;\r\n    attribute vec3 a_particle_rotation;\r\n    attribute vec4 a_particle_color;\r\n\r\n    uniform mat4 u_particle_billboardMatrix;\r\n\r\n    varying vec4 v_particle_color;\r\n\r\n    mat3 makeParticleRotationMatrix(vec3 rotation)\r\n    {\r\n        float DEG2RAD = 3.1415926 / 180.0;\r\n        \r\n        float rx = rotation.x * DEG2RAD;\r\n        float ry = rotation.y * DEG2RAD;\r\n        float rz = rotation.z * DEG2RAD;\r\n\r\n        float sx = sin(rx);\r\n        float cx = cos(rx);\r\n        float sy = sin(ry);\r\n        float cy = cos(ry);\r\n        float sz = sin(rz);\r\n        float cz = cos(rz);\r\n\r\n        mat3 tmp;\r\n        tmp[ 0 ] = vec3(cy * cz, cy * sz, -sy);\r\n        tmp[ 1 ] = vec3(sx * sy * cz - cx * sz, sx * sy * sz + cx * cz, sx * cy);\r\n        tmp[ 2 ] = vec3(cx * sy * cz + sx * sz, cx * sy * sz - sx * cz, cx * cy);\r\n        return tmp;\r\n    }\r\n\r\n    vec4 particleAnimation(vec4 position) \r\n    {\r\n        // 计算缩放\r\n        position.xyz = position.xyz * a_particle_scale;\r\n\r\n        // 计算旋转\r\n        mat3 rMat = makeParticleRotationMatrix(a_particle_rotation);\r\n        position.xyz = rMat * position.xyz;\r\n\r\n        // 位移\r\n        position = u_particle_billboardMatrix * position;\r\n\r\n        position.xyz = position.xyz + a_particle_position;\r\n\r\n        // 颜色\r\n        v_particle_color = a_particle_color;\r\n        \r\n        return position;\r\n    }\r\n#endif",
+            "particle_pars_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    //\r\n    attribute vec3 a_particle_position;\r\n    attribute vec3 a_particle_scale;\r\n    attribute vec3 a_particle_rotation;\r\n    attribute vec4 a_particle_color;\r\n\r\n    varying vec4 v_particle_color;\r\n\r\n    mat3 makeParticleRotationMatrix(vec3 rotation)\r\n    {\r\n        float DEG2RAD = 3.1415926 / 180.0;\r\n        \r\n        float rx = rotation.x * DEG2RAD;\r\n        float ry = rotation.y * DEG2RAD;\r\n        float rz = rotation.z * DEG2RAD;\r\n\r\n        float sx = sin(rx);\r\n        float cx = cos(rx);\r\n        float sy = sin(ry);\r\n        float cy = cos(ry);\r\n        float sz = sin(rz);\r\n        float cz = cos(rz);\r\n\r\n        mat3 tmp;\r\n        tmp[ 0 ] = vec3(cy * cz, cy * sz, -sy);\r\n        tmp[ 1 ] = vec3(sx * sy * cz - cx * sz, sx * sy * sz + cx * cz, sx * cy);\r\n        tmp[ 2 ] = vec3(cx * sy * cz + sx * sz, cx * sy * sz - sx * cz, cx * cy);\r\n        return tmp;\r\n    }\r\n\r\n    vec4 particleAnimation(vec4 position) \r\n    {\r\n        // 计算缩放\r\n        position.xyz = position.xyz * a_particle_scale;\r\n\r\n        // 计算旋转\r\n        mat3 rMat = makeParticleRotationMatrix(a_particle_rotation);\r\n        position.xyz = rMat * position.xyz;\r\n\r\n        // 位移\r\n        position.xyz = position.xyz + a_particle_position;\r\n\r\n        // 颜色\r\n        v_particle_color = a_particle_color;\r\n        \r\n        return position;\r\n    }\r\n#endif",
             "particle_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    position = particleAnimation(position);\r\n#endif",
             "pointsize_pars_vert": "#ifdef IS_POINTS_MODE\r\n    uniform float u_PointSize;\r\n#endif",
             "pointsize_vert": "#ifdef IS_POINTS_MODE\r\n    gl_PointSize = u_PointSize;\r\n#endif",
@@ -24541,7 +24541,6 @@ var feng3d;
             _this.castShadows = true;
             _this.receiveShadows = true;
             _this._awaked = false;
-            _this._isInvalid = true;
             /**
              * 上次发射时间
              */
@@ -24571,10 +24570,6 @@ var feng3d;
                 a_particle_rotation: new feng3d.Attribute("a_particle_rotation", [], 3, 1),
                 a_particle_color: new feng3d.Attribute("a_particle_color", [], 4, 1),
             };
-            /**
-             * 公告牌矩阵
-             */
-            _this.billboardMatrix = new feng3d.Matrix4x4();
             return _this;
         }
         Object.defineProperty(ParticleSystem.prototype, "isPlaying", {
@@ -24626,7 +24621,6 @@ var feng3d;
             this._emit();
             this._preEmitTime = this.time;
             this._preRealEmitTime = this.time - this.main.startDelay;
-            this._isInvalid = true;
             // 判断非循环的效果是否播放结束
             if (!this.main.loop && this._activeParticles.length == 0 && this.time > this.main.startDelay + this.main.duration) {
                 this.stop();
@@ -24671,43 +24665,35 @@ var feng3d;
                 this._isPlaying = this.main.playOnAwake;
                 this._awaked = true;
             }
-            var cameraMatrix = feng3d.lazy.getvalue(renderAtomic.uniforms.u_cameraMatrix);
-            if (this.geometry == feng3d.Geometry.billboard && cameraMatrix) {
-                var matrix = this.billboardMatrix.identity();
-                matrix.position = this.gameObject.transform.scenePosition;
-                matrix.lookAt(cameraMatrix.position, cameraMatrix.up);
-                matrix.append(this.gameObject.transform.worldToLocalRotationMatrix);
-                matrix.position = feng3d.Vector3.ZERO;
-            }
-            else {
-                this.billboardMatrix.identity();
-            }
             renderAtomic.instanceCount = this._activeParticles.length;
             //
             renderAtomic.shaderMacro.HAS_PARTICLE_ANIMATOR = true;
-            if (this._isInvalid) {
-                var positions = [];
-                var scales = [];
-                var rotations = [];
-                var colors = [];
-                for (var i = 0, n = this._activeParticles.length; i < n; i++) {
-                    var particle = this._activeParticles[i];
-                    positions.push(particle.position.x, particle.position.y, particle.position.z);
-                    scales.push(particle.scale.x, particle.scale.y, particle.scale.z);
-                    rotations.push(particle.rotation.x, particle.rotation.y, particle.rotation.z);
-                    colors.push(particle.color.r, particle.color.g, particle.color.b, particle.color.a);
+            var cameraMatrix = feng3d.lazy.getvalue(renderAtomic.uniforms.u_cameraMatrix);
+            var localCameraPos = this.gameObject.transform.worldToLocalMatrix.transformVector(cameraMatrix.position);
+            var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
+            var positions = [];
+            var scales = [];
+            var rotations = [];
+            var colors = [];
+            for (var i = 0, n = this._activeParticles.length; i < n; i++) {
+                var particle = this._activeParticles[i];
+                if (this.geometry == feng3d.Geometry.billboard && cameraMatrix) {
+                    var matrix = new feng3d.Matrix4x4().recompose([particle.position, particle.rotation.scaleTo(feng3d.FMath.DEG2RAD), particle.scale]);
+                    matrix.lookAt(localCameraPos, localCameraUp);
+                    particle.rotation = matrix.decompose()[1].scale(feng3d.FMath.RAD2DEG);
                 }
-                //
-                this._attributes.a_particle_position.data = positions;
-                this._attributes.a_particle_scale.data = scales;
-                this._attributes.a_particle_rotation.data = rotations;
-                this._attributes.a_particle_color.data = colors;
-                //
-                this._isInvalid = false;
+                positions.push(particle.position.x, particle.position.y, particle.position.z);
+                scales.push(particle.scale.x, particle.scale.y, particle.scale.z);
+                rotations.push(particle.rotation.x, particle.rotation.y, particle.rotation.z);
+                colors.push(particle.color.r, particle.color.g, particle.color.b, particle.color.a);
             }
             //
+            this._attributes.a_particle_position.data = positions;
+            this._attributes.a_particle_scale.data = scales;
+            this._attributes.a_particle_rotation.data = rotations;
+            this._attributes.a_particle_color.data = colors;
+            //
             renderAtomic.uniforms.u_particleTime = this.time - this.main.startDelay;
-            renderAtomic.uniforms.u_particle_billboardMatrix = this.billboardMatrix;
             for (var key in this._attributes) {
                 renderAtomic.attributes[key] = this._attributes[key];
             }
@@ -25229,7 +25215,15 @@ var feng3d;
             /**
              * 使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。
              */
-            _this.simulationSpace = feng3d.ParticleSystemSimulationSpace.Local;
+            // @serialize
+            // @oav({ tooltip: "模拟空间，使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
+            // simulationSpace = ParticleSystemSimulationSpace.Local;
+            /**
+             * 使粒子位置模拟相对于自定义转换组件。
+             */
+            // @serialize
+            // @oav({ tooltip: "使粒子位置模拟相对于自定义转换组件。" })
+            // customSimulationSpace: Transform;
             /**
              * 缩放粒子系统的播放速度。
              */
@@ -25237,7 +25231,9 @@ var feng3d;
             /**
              * 我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度
              */
-            _this.scalingMode = feng3d.ParticleSystemScalingMode.Local;
+            // @serialize
+            // @oav({ tooltip: "我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度?" })
+            // scalingMode = ParticleSystemScalingMode.Local;
             /**
              * 如果启用，系统将自动开始运行。
              */
@@ -25332,20 +25328,8 @@ var feng3d;
         ], ParticleMainModule.prototype, "gravityModifier", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ tooltip: "模拟空间，使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace } })
-        ], ParticleMainModule.prototype, "simulationSpace", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ tooltip: "使粒子位置模拟相对于自定义转换组件。" })
-        ], ParticleMainModule.prototype, "customSimulationSpace", void 0);
-        __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "缩放粒子系统的播放速度。" })
         ], ParticleMainModule.prototype, "simulationSpeed", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ tooltip: "我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度?" })
-        ], ParticleMainModule.prototype, "scalingMode", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ tooltip: "如果启用，系统将自动开始运行。" })

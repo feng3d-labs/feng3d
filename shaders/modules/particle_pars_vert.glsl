@@ -5,8 +5,6 @@
     attribute vec3 a_particle_rotation;
     attribute vec4 a_particle_color;
 
-    uniform mat4 u_particle_billboardMatrix;
-
     varying vec4 v_particle_color;
 
     mat3 makeParticleRotationMatrix(vec3 rotation)
@@ -41,8 +39,6 @@
         position.xyz = rMat * position.xyz;
 
         // 位移
-        position = u_particle_billboardMatrix * position;
-
         position.xyz = position.xyz + a_particle_position;
 
         // 颜色

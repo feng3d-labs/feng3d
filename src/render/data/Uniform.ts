@@ -221,11 +221,6 @@ namespace feng3d
          */
         u_particleTime: number;
 
-		/**
-		 * 粒子 公告牌矩阵
-		 */
-        u_particle_billboardMatrix: Matrix4x4;
-
         /**
          * 点大小
          */

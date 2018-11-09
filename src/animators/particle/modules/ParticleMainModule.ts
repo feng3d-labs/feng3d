@@ -74,16 +74,16 @@ namespace feng3d
         /**
          * 使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。
          */
-        @serialize
-        @oav({ tooltip: "模拟空间，使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
-        simulationSpace = ParticleSystemSimulationSpace.Local;
+        // @serialize
+        // @oav({ tooltip: "模拟空间，使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
+        // simulationSpace = ParticleSystemSimulationSpace.Local;
 
         /**
          * 使粒子位置模拟相对于自定义转换组件。
          */
-        @serialize
-        @oav({ tooltip: "使粒子位置模拟相对于自定义转换组件。" })
-        customSimulationSpace: Transform;
+        // @serialize
+        // @oav({ tooltip: "使粒子位置模拟相对于自定义转换组件。" })
+        // customSimulationSpace: Transform;
 
         /**
          * 缩放粒子系统的播放速度。
@@ -95,9 +95,9 @@ namespace feng3d
         /**
          * 我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度
          */
-        @serialize
-        @oav({ tooltip: "我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度?" })
-        scalingMode = ParticleSystemScalingMode.Local;
+        // @serialize
+        // @oav({ tooltip: "我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度?" })
+        // scalingMode = ParticleSystemScalingMode.Local;
 
         /**
          * 如果启用，系统将自动开始运行。

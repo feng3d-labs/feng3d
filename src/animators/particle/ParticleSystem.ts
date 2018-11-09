@@ -118,8 +118,6 @@ namespace feng3d
             this._preEmitTime = this.time;
             this._preRealEmitTime = this.time - this.main.startDelay;
 
-            this._isInvalid = true;
-
             // 判断非循环的效果是否播放结束
             if (!this.main.loop && this._activeParticles.length == 0 && this.time > this.main.startDelay + this.main.duration)
             {
@@ -180,51 +178,44 @@ namespace feng3d
                 this._awaked = true;
             }
 
-            var cameraMatrix = lazy.getvalue(renderAtomic.uniforms.u_cameraMatrix)
-            if (this.geometry == Geometry.billboard && cameraMatrix)
-            {
-                var matrix = this.billboardMatrix.identity();
-                matrix.position = this.gameObject.transform.scenePosition;
-                matrix.lookAt(cameraMatrix.position, cameraMatrix.up);
-                matrix.append(this.gameObject.transform.worldToLocalRotationMatrix);
-                matrix.position = Vector3.ZERO;
-            } else
-            {
-                this.billboardMatrix.identity();
-            }
-
             renderAtomic.instanceCount = this._activeParticles.length;
             //
             renderAtomic.shaderMacro.HAS_PARTICLE_ANIMATOR = true;
 
-            if (this._isInvalid)
+            var cameraMatrix = lazy.getvalue(renderAtomic.uniforms.u_cameraMatrix)
+            var localCameraPos = this.gameObject.transform.worldToLocalMatrix.transformVector(cameraMatrix.position);
+            var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
+
+            var positions: number[] = [];
+            var scales: number[] = [];
+            var rotations: number[] = [];
+            var colors: number[] = [];
+            for (let i = 0, n = this._activeParticles.length; i < n; i++)
             {
-                var positions: number[] = [];
-                var scales: number[] = [];
-                var rotations: number[] = [];
-                var colors: number[] = [];
-                for (let i = 0, n = this._activeParticles.length; i < n; i++)
+                var particle = this._activeParticles[i];
+
+                if (this.geometry == Geometry.billboard && cameraMatrix)
                 {
-                    var particle = this._activeParticles[i];
-                    positions.push(particle.position.x, particle.position.y, particle.position.z);
-                    scales.push(particle.scale.x, particle.scale.y, particle.scale.z);
-                    rotations.push(particle.rotation.x, particle.rotation.y, particle.rotation.z);
-                    colors.push(particle.color.r, particle.color.g, particle.color.b, particle.color.a);
+                    var matrix = new Matrix4x4().recompose([particle.position, particle.rotation.scaleTo(FMath.DEG2RAD), particle.scale]);
+                    matrix.lookAt(localCameraPos, localCameraUp);
+
+                    particle.rotation = matrix.decompose()[1].scale(FMath.RAD2DEG);
                 }
 
-                //
-                this._attributes.a_particle_position.data = positions;
-                this._attributes.a_particle_scale.data = scales;
-                this._attributes.a_particle_rotation.data = rotations;
-                this._attributes.a_particle_color.data = colors;
-
-                //
-                this._isInvalid = false;
+                positions.push(particle.position.x, particle.position.y, particle.position.z);
+                scales.push(particle.scale.x, particle.scale.y, particle.scale.z);
+                rotations.push(particle.rotation.x, particle.rotation.y, particle.rotation.z);
+                colors.push(particle.color.r, particle.color.g, particle.color.b, particle.color.a);
             }
 
             //
+            this._attributes.a_particle_position.data = positions;
+            this._attributes.a_particle_scale.data = scales;
+            this._attributes.a_particle_rotation.data = rotations;
+            this._attributes.a_particle_color.data = colors;
+
+            //
             renderAtomic.uniforms.u_particleTime = this.time - this.main.startDelay;
-            renderAtomic.uniforms.u_particle_billboardMatrix = this.billboardMatrix;
 
             for (const key in this._attributes)
             {
@@ -233,7 +224,6 @@ namespace feng3d
         }
 
         private _awaked = false;
-        private _isInvalid = true;
 
         /**
          * 上次发射时间
@@ -268,11 +258,6 @@ namespace feng3d
         };
 
         private _modules: ParticleModule[];
-
-        /**
-         * 公告牌矩阵
-         */
-        private billboardMatrix = new Matrix4x4();
 
         /**
          * 发射粒子

@@ -8380,10 +8380,6 @@ declare namespace feng3d {
          */
         u_particleTime: number;
         /**
-         * 粒子 公告牌矩阵
-         */
-        u_particle_billboardMatrix: Matrix4x4;
-        /**
          * 点大小
          */
         u_PointSize: number;
@@ -12516,7 +12512,6 @@ declare namespace feng3d {
         continue(): void;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
         private _awaked;
-        private _isInvalid;
         /**
          * 上次发射时间
          */
@@ -12542,10 +12537,6 @@ declare namespace feng3d {
          */
         private _attributes;
         private _modules;
-        /**
-         * 公告牌矩阵
-         */
-        private billboardMatrix;
         /**
          * 发射粒子
          * @param time 当前粒子时间
@@ -12769,11 +12760,9 @@ declare namespace feng3d {
         /**
          * 使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。
          */
-        simulationSpace: ParticleSystemSimulationSpace;
         /**
          * 使粒子位置模拟相对于自定义转换组件。
          */
-        customSimulationSpace: Transform;
         /**
          * 缩放粒子系统的播放速度。
          */
@@ -12781,7 +12770,6 @@ declare namespace feng3d {
         /**
          * 我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度
          */
-        scalingMode: ParticleSystemScalingMode;
         /**
          * 如果启用，系统将自动开始运行。
          */
