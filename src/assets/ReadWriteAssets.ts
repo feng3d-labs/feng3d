@@ -84,6 +84,20 @@ namespace feng3d
             }
         }
 
+        /**
+         * 写图片
+         * @param path 图片路径
+         * @param image 图片
+         * @param callback 回调函数
+         */
+        writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void)
+        {
+            dataTransform.imageToArrayBuffer(image, (arraybuffer) =>
+            {
+                this.writeArrayBuffer(path, arraybuffer, callback);
+            });
+        }
+
         ///--------------------------
 
         /**
@@ -356,14 +370,8 @@ namespace feng3d
          */
         deleteAssets(assetsId: string, callback?: (err: Error) => void)
         {
-            if (assetsId)
-            {
-                Feng3dAssets["_lib"].delete(assetsId);
-                this.delete(Feng3dAssets.getAssetDir(assetsId), callback);
-            } else
-            {
-                callback && callback(null);
-            }
+            var assets = Feng3dAssets.getAssets(assetsId);
+            assets.delete(this, callback);
         }
 
         /**

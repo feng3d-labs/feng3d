@@ -45,6 +45,25 @@ namespace feng3d
             else this.once("loadCompleted", callback);
         }
 
+        protected saveFile(readWriteAssets: ReadWriteAssets, callback = (err: Error) => { })
+        {
+            readWriteAssets.writeImage(this.url, this.image, callback);
+        }
+
+        /**
+         * 读取文件
+         * @param readAssets 刻度资源管理系统
+         * @param callback 完成回调
+         */
+        protected readFile(readAssets: ReadAssets, callback = (err: Error) => { })
+        {
+            readAssets.readImage(this.url, (err, img) =>
+            {
+                this.image = img;
+                callback && callback(err);
+            });
+        }
+
         private imageChanged()
         {
             this._pixels = this.image;

@@ -877,7 +877,7 @@ declare namespace feng3d {
         /**
          * dataURL转换为Blob对象
          */
-        dataURLtoBlob(dataurl: string, callback: (blob: Blob) => void): void;
+        dataURLtoBlob(dataurl: string): Blob;
         /**
          * dataURL图片数据转换为HTMLImageElement
          * dataURL图片数据绘制到canvas
@@ -889,8 +889,10 @@ declare namespace feng3d {
         dataURLToImage(dataurl: string, callback: (img: HTMLImageElement) => void): void;
         imageToDataURL(img: HTMLImageElement): string;
         imageToCanvas(img: HTMLImageElement): HTMLCanvasElement;
+        imageToArrayBuffer(img: HTMLImageElement, callback: (arraybuffer: ArrayBuffer) => void): void;
         imageDataToDataURL(imageData: ImageData): string;
         imageDataToCanvas(imageData: ImageData): HTMLCanvasElement;
+        imagedataToImage(imageData: ImageData, callback: (img: HTMLImageElement) => void): void;
         arrayBufferToImage(arrayBuffer: ArrayBuffer, callback: (img: HTMLImageElement) => void): void;
         blobToText(blob: Blob, callback: (content: string) => void): void;
         stringToArrayBuffer(str: string, callback: (arrayBuffer: ArrayBuffer) => void): void;
@@ -1048,6 +1050,11 @@ declare namespace feng3d {
          * @param curveColor 颜色
          */
         drawBetweenTwoCurves(curve: AnimationCurve, curve1: AnimationCurve, between0And1: boolean, curveColor?: Color4, fillcolor?: Color4, rect?: any): this;
+        /**
+         * 清理背景颜色，目前仅用于特定的抠图，例如 editor\resource\assets\3d\terrain\terrain_brushes.png
+         * @param backColor 背景颜色
+         */
+        clearBackColor(backColor: Color4): void;
     }
 }
 /**
@@ -5919,6 +5926,13 @@ declare namespace feng3d {
          */
         writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
         /**
+         * 写图片
+         * @param path 图片路径
+         * @param image 图片
+         * @param callback 回调函数
+         */
+        writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void): void;
+        /**
          * 保存字符串到文件
          * @param path 文件路径
          * @param string 保存的字符串
@@ -6129,17 +6143,29 @@ declare namespace feng3d {
         path: string;
         constructor();
         /**
+         * 删除资源
+         * @param readWriteAssets 可读写资源管理器
+         * @param callback 完成回调
+         */
+        delete(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any;
+        /**
          * 保存资源
          * @param readWriteAssets
          * @param callback  完成回调
          */
         save(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any;
         /**
-         * 删除资源
-         * @param readWriteAssets 可读写资源管理器
+         * 保存文件
+         * @param readWriteAssets 可读写资源管理系统
          * @param callback 完成回调
          */
-        delete(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any;
+        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
+        /**
+         * 读取文件
+         * @param readAssets 刻度资源管理系统
+         * @param callback 完成回调
+         */
+        protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void): void;
         protected assetsIdChanged(): void;
         /**
          * 获取资源所在文件夹
@@ -11421,6 +11447,13 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         onLoadCompleted(callback: () => void): void;
+        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
+        /**
+         * 读取文件
+         * @param readAssets 刻度资源管理系统
+         * @param callback 完成回调
+         */
+        protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void): void;
         private imageChanged;
         private urlChanged;
         private onImageAssetsChanged;
@@ -13088,24 +13121,6 @@ declare namespace feng3d {
          * 文件路径
          */
         filePath: string;
-        /**
-         * 保存资源
-         * @param readWriteAssets
-         * @param callback  完成回调
-         */
-        save(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any;
-        /**
-         * 保存文件
-         * @param readWriteAssets 可读写资源管理系统
-         * @param callback 完成回调
-         */
-        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
-        /**
-         * 读取文件
-         * @param readAssets 刻度资源管理系统
-         * @param callback 完成回调
-         */
-        protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void): void;
         protected fileNameChanged(): void;
         protected assetsIdChanged(): void;
     }

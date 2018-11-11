@@ -389,5 +389,26 @@ namespace feng3d
             }
             return this;
         }
+
+        /**
+         * 清理背景颜色，目前仅用于特定的抠图，例如 editor\resource\assets\3d\terrain\terrain_brushes.png
+         * @param backColor 背景颜色
+         */
+        clearBackColor(backColor: Color4)
+        {
+            for (let i = 0; i < this.imageData.width; i++)
+            {
+                for (let j = 0; j < this.imageData.height; j++)
+                {
+                    var t = this.getPixel(i, j);
+                    var a = 1 - t.r / backColor.r;
+                    t.r = t.g = t.b = 0;
+                    t.a = a;
+                    this.setPixel(i, j, t);
+                }
+            }
+
+
+        }
     }
 }

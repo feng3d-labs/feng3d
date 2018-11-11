@@ -35,6 +35,23 @@ namespace feng3d
         }
 
         /**
+         * 删除资源
+         * @param readWriteAssets 可读写资源管理器
+         * @param callback 完成回调
+         */
+        delete(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any
+        {
+            if (this.assetsId)
+            {
+                Feng3dAssets["_lib"].delete(this.assetsId);
+                readWriteAssets.delete(Feng3dAssets.getAssetDir(this.assetsId), callback);
+            } else
+            {
+                callback && callback(null);
+            }
+        }
+
+        /**
          * 保存资源
          * @param readWriteAssets 
          * @param callback  完成回调 
@@ -46,17 +63,35 @@ namespace feng3d
                 this.assetsId = FMath.uuid();
                 Feng3dAssets.setAssets(this);
             }
-            readWriteAssets.writeObject(this.path, this, callback);
+            readWriteAssets.writeObject(this.path, this, (err) =>
+            {
+                if (err)
+                {
+                    callback(err);
+                    return;
+                }
+                this.saveFile(readWriteAssets, callback);
+            });
         }
 
         /**
-         * 删除资源
-         * @param readWriteAssets 可读写资源管理器
+         * 保存文件
+         * @param readWriteAssets 可读写资源管理系统
          * @param callback 完成回调
          */
-        delete(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any
+        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void)
         {
-            readWriteAssets.deleteAssets(this.assetsId, callback);
+            callback && callback(null);
+        }
+
+        /**
+         * 读取文件
+         * @param readAssets 刻度资源管理系统
+         * @param callback 完成回调
+         */
+        protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void)
+        {
+            callback && callback(null);
         }
 
         protected assetsIdChanged()

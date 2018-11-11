@@ -123,7 +123,7 @@ namespace feng3d
         /**
          * dataURL转换为Blob对象
          */
-        dataURLtoBlob(dataurl: string, callback: (blob: Blob) => void)
+        dataURLtoBlob(dataurl: string)
         {
             var arr = dataurl.split(","), mime = (<any>arr[0].match(/:(.*?);/))[1],
                 bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
@@ -132,7 +132,7 @@ namespace feng3d
                 u8arr[n] = bstr.charCodeAt(n);
             }
             var blob = new Blob([u8arr], { type: mime });
-            callback(blob);
+            return blob;
         }
 
         /**
@@ -151,10 +151,8 @@ namespace feng3d
 
         dataURLToArrayBuffer(dataurl: string, callback: (arraybuffer: ArrayBuffer) => void)
         {
-            this.dataURLtoBlob(dataurl, (blob) =>
-            {
-                this.blobToArrayBuffer(blob, callback)
-            });
+            var blob = this.dataURLtoBlob(dataurl);
+            this.blobToArrayBuffer(blob, callback)
         }
 
         arrayBufferToDataURL(arrayBuffer: ArrayBuffer, callback: (dataurl: string) => void)
@@ -192,6 +190,12 @@ namespace feng3d
             return canvas;
         }
 
+        imageToArrayBuffer(img: HTMLImageElement, callback: (arraybuffer: ArrayBuffer) => void)
+        {
+            var dataUrl = this.imageToDataURL(img);
+            this.dataURLToArrayBuffer(dataUrl, callback);
+        }
+
         imageDataToDataURL(imageData: ImageData)
         {
             var canvas = this.imageDataToCanvas(imageData);
@@ -207,6 +211,12 @@ namespace feng3d
             var ctxt = canvas.getContext('2d');
             ctxt.putImageData(imageData, 0, 0);
             return canvas;
+        }
+
+        imagedataToImage(imageData: ImageData, callback: (img: HTMLImageElement) => void)
+        {
+            var dataUrl = this.imageDataToDataURL(imageData);
+            this.dataURLToImage(dataUrl, callback);
         }
 
         arrayBufferToImage(arrayBuffer: ArrayBuffer, callback: (img: HTMLImageElement) => void)
