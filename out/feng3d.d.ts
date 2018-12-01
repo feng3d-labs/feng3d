@@ -3883,7 +3883,7 @@ declare namespace feng3d {
          * 判定点是否在线段上
          * @param point
          */
-        onWithPoint(point: Vector3): boolean;
+        onWithPoint(point: Vector3, precision?: number): boolean;
         /**
          * 判定点是否投影在线段上
          * @param point
@@ -3960,6 +3960,11 @@ declare namespace feng3d {
          */
         static fromPoints(p0: Vector3, p1: Vector3, p2: Vector3): Triangle3D;
         /**
+         * 从顶点数据初始化三角形
+         * @param positions 顶点数据
+         */
+        static fromPositions(positions: number[]): Triangle3D;
+        /**
          * 随机三角形
          */
         static random(): Triangle3D;
@@ -4019,6 +4024,11 @@ declare namespace feng3d {
          */
         fromPoints(p0: Vector3, p1: Vector3, p2: Vector3): this;
         /**
+         * 从顶点数据初始化三角形
+         * @param positions 顶点数据
+         */
+        fromPositions(positions: number[]): this;
+        /**
          * 获取三角形内的点
          * @param p 三点的权重
          * @param pout 输出点
@@ -4039,9 +4049,10 @@ declare namespace feng3d {
         intersectionWithSegment(segment: Segment3D): Vector3 | Segment3D;
         /**
          * 判定点是否在三角形上
-         * @param p
+         * @param p 点
+         * @param precision 精度，如果距离小于精度则判定为在三角形上
          */
-        onWithPoint(p: Vector3): boolean;
+        onWithPoint(p: Vector3, precision?: number): boolean;
         /**
          * 获取指定点分别占三个点的混合值
          */
@@ -4056,6 +4067,16 @@ declare namespace feng3d {
          * @param vout 输出点
          */
         closestPointWithPoint(point: Vector3, vout?: Vector3): Vector3;
+        /**
+         * 与点最近距离
+         * @param point 点
+         */
+        distanceWithPoint(point: Vector3): number;
+        /**
+         * 与点最近距离平方
+         * @param point 点
+         */
+        distanceSquaredWithPoint(point: Vector3): number;
         /**
          * 用点分解（切割）三角形
          */

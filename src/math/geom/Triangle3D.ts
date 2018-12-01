@@ -13,7 +13,16 @@ namespace feng3d
 		 */
         static fromPoints(p0: Vector3, p1: Vector3, p2: Vector3)
         {
-            return new Triangle3D(p0, p1, p2);
+            return new Triangle3D().fromPoints(p0, p1, p2);
+        }
+
+        /**
+         * 从顶点数据初始化三角形
+         * @param positions 顶点数据
+         */
+        static fromPositions(positions: number[])
+        {
+            return new Triangle3D().fromPositions(positions);
         }
 
         /**
@@ -142,6 +151,18 @@ namespace feng3d
         }
 
         /**
+         * 从顶点数据初始化三角形
+         * @param positions 顶点数据
+         */
+        fromPositions(positions: number[])
+        {
+            this.p0.init(positions[0], positions[1], positions[2]);
+            this.p1.init(positions[3], positions[4], positions[5]);
+            this.p2.init(positions[6], positions[7], positions[8]);
+            return this;
+        }
+
+        /**
          * 获取三角形内的点
          * @param p 三点的权重
          * @param pout 输出点
@@ -232,19 +253,20 @@ namespace feng3d
 
         /**
          * 判定点是否在三角形上
-         * @param p 
+         * @param p 点
+         * @param precision 精度，如果距离小于精度则判定为在三角形上
          */
-        onWithPoint(p: Vector3)
+        onWithPoint(p: Vector3, precision = FMath.PRECISION)
         {
             var plane3d = this.getPlane3d();
-            if (plane3d.classifyPoint(p) != PlaneClassification.INTERSECT)
+            if (plane3d.classifyPoint(p, precision) != PlaneClassification.INTERSECT)
                 return false;
 
-            if (Segment3D.fromPoints(this.p0, this.p1).onWithPoint(p))
+            if (Segment3D.fromPoints(this.p0, this.p1).onWithPoint(p, precision))
                 return true;
-            if (Segment3D.fromPoints(this.p1, this.p2).onWithPoint(p))
+            if (Segment3D.fromPoints(this.p1, this.p2).onWithPoint(p, precision))
                 return true;
-            if (Segment3D.fromPoints(this.p2, this.p0).onWithPoint(p))
+            if (Segment3D.fromPoints(this.p2, this.p0).onWithPoint(p, precision))
                 return true;
 
             var n = this.getNormal();
@@ -304,6 +326,24 @@ namespace feng3d
                 return vout;
             var p = this.getSegments().map((s) => { var p = s.closestPointWithPoint(point); return { point: p, d: point.distanceSquared(p) } }).sort((a, b) => { return a.d - b.d; })[0].point;
             return vout.copy(p);
+        }
+
+        /**
+         * 与点最近距离
+         * @param point 点
+         */
+        distanceWithPoint(point: Vector3)
+        {
+            return this.closestPointWithPoint(point).distance(point);
+        }
+
+        /**
+         * 与点最近距离平方
+         * @param point 点
+         */
+        distanceSquaredWithPoint(point: Vector3)
+        {
+            return this.closestPointWithPoint(point).distanceSquared(point);
         }
 
         /**

@@ -7424,8 +7424,9 @@ var feng3d;
          * 判定点是否在线段上
          * @param point
          */
-        Segment3D.prototype.onWithPoint = function (point) {
-            return feng3d.FMath.equals(this.getPointDistance(point), 0);
+        Segment3D.prototype.onWithPoint = function (point, precision) {
+            if (precision === void 0) { precision = feng3d.FMath.PRECISION; }
+            return feng3d.FMath.equals(this.getPointDistance(point), 0, precision);
         };
         /**
          * 判定点是否投影在线段上
@@ -7591,7 +7592,14 @@ var feng3d;
          * @param p2		点2
          */
         Triangle3D.fromPoints = function (p0, p1, p2) {
-            return new Triangle3D(p0, p1, p2);
+            return new Triangle3D().fromPoints(p0, p1, p2);
+        };
+        /**
+         * 从顶点数据初始化三角形
+         * @param positions 顶点数据
+         */
+        Triangle3D.fromPositions = function (positions) {
+            return new Triangle3D().fromPositions(positions);
         };
         /**
          * 随机三角形
@@ -7685,6 +7693,16 @@ var feng3d;
             return this;
         };
         /**
+         * 从顶点数据初始化三角形
+         * @param positions 顶点数据
+         */
+        Triangle3D.prototype.fromPositions = function (positions) {
+            this.p0.init(positions[0], positions[1], positions[2]);
+            this.p1.init(positions[3], positions[4], positions[5]);
+            this.p2.init(positions[6], positions[7], positions[8]);
+            return this;
+        };
+        /**
          * 获取三角形内的点
          * @param p 三点的权重
          * @param pout 输出点
@@ -7764,17 +7782,19 @@ var feng3d;
         };
         /**
          * 判定点是否在三角形上
-         * @param p
+         * @param p 点
+         * @param precision 精度，如果距离小于精度则判定为在三角形上
          */
-        Triangle3D.prototype.onWithPoint = function (p) {
+        Triangle3D.prototype.onWithPoint = function (p, precision) {
+            if (precision === void 0) { precision = feng3d.FMath.PRECISION; }
             var plane3d = this.getPlane3d();
-            if (plane3d.classifyPoint(p) != feng3d.PlaneClassification.INTERSECT)
+            if (plane3d.classifyPoint(p, precision) != feng3d.PlaneClassification.INTERSECT)
                 return false;
-            if (feng3d.Segment3D.fromPoints(this.p0, this.p1).onWithPoint(p))
+            if (feng3d.Segment3D.fromPoints(this.p0, this.p1).onWithPoint(p, precision))
                 return true;
-            if (feng3d.Segment3D.fromPoints(this.p1, this.p2).onWithPoint(p))
+            if (feng3d.Segment3D.fromPoints(this.p1, this.p2).onWithPoint(p, precision))
                 return true;
-            if (feng3d.Segment3D.fromPoints(this.p2, this.p0).onWithPoint(p))
+            if (feng3d.Segment3D.fromPoints(this.p2, this.p0).onWithPoint(p, precision))
                 return true;
             var n = this.getNormal();
             if (new Triangle3D(this.p0, this.p1, p).getNormal().dot(n) < 0)
@@ -7827,6 +7847,20 @@ var feng3d;
                 return vout;
             var p = this.getSegments().map(function (s) { var p = s.closestPointWithPoint(point); return { point: p, d: point.distanceSquared(p) }; }).sort(function (a, b) { return a.d - b.d; })[0].point;
             return vout.copy(p);
+        };
+        /**
+         * 与点最近距离
+         * @param point 点
+         */
+        Triangle3D.prototype.distanceWithPoint = function (point) {
+            return this.closestPointWithPoint(point).distance(point);
+        };
+        /**
+         * 与点最近距离平方
+         * @param point 点
+         */
+        Triangle3D.prototype.distanceSquaredWithPoint = function (point) {
+            return this.closestPointWithPoint(point).distanceSquared(point);
         };
         /**
          * 用点分解（切割）三角形
