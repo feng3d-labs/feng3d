@@ -470,6 +470,7 @@ namespace feng3d
             this.p0.scale(v);
             this.p1.scale(v);
             this.p2.scale(v);
+            return this;
         }
 
         /**
@@ -479,8 +480,20 @@ namespace feng3d
          */
         rasterizeCustom(voxelSize = new Vector3(1, 1, 1), origin = new Vector3())
         {
-            var tri = this.clone().translateVector3(origin.clone().negate()).scaleVector3(voxelSize.inverseTo());
-
+            var tri = this.clone().translateVector3(origin.negateTo()).scaleVector3(voxelSize.inverseTo());
+            var ps = tri.rasterize();
+            var vec = new Vector3();
+            ps.forEach((v, i) =>
+            {
+                if (i % 3 == 0)
+                {
+                    vec.init(ps[i], ps[i + 1], ps[i + 2]).scale(voxelSize).add(origin);
+                    ps[i] = vec.x;
+                    ps[i + 1] = vec.y;
+                    ps[i + 2] = vec.z;
+                }
+            });
+            return ps;
         }
 
         /**

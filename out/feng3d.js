@@ -4324,6 +4324,14 @@ var feng3d;
             return this;
         };
         /**
+         * 负向量
+         * (a,b,c)->(-a,-b,-c)
+         */
+        Vector3.prototype.negateTo = function (vout) {
+            if (vout === void 0) { vout = new Vector3(); }
+            return vout.copy(this).negate();
+        };
+        /**
          * 倒向量
          * (a,b,c)->(1/a,1/b,1/c)
          */
@@ -8005,6 +8013,7 @@ var feng3d;
             this.p0.scale(v);
             this.p1.scale(v);
             this.p2.scale(v);
+            return this;
         };
         /**
          * 自定义栅格化为点阵
@@ -8014,7 +8023,18 @@ var feng3d;
         Triangle3D.prototype.rasterizeCustom = function (voxelSize, origin) {
             if (voxelSize === void 0) { voxelSize = new feng3d.Vector3(1, 1, 1); }
             if (origin === void 0) { origin = new feng3d.Vector3(); }
-            var tri = this.clone().translateVector3(origin.clone().negate()).scaleVector3(voxelSize.inverseTo());
+            var tri = this.clone().translateVector3(origin.negateTo()).scaleVector3(voxelSize.inverseTo());
+            var ps = tri.rasterize();
+            var vec = new feng3d.Vector3();
+            ps.forEach(function (v, i) {
+                if (i % 3 == 0) {
+                    vec.init(ps[i], ps[i + 1], ps[i + 2]).scale(voxelSize).add(origin);
+                    ps[i] = vec.x;
+                    ps[i + 1] = vec.y;
+                    ps[i + 2] = vec.z;
+                }
+            });
+            return ps;
         };
         /**
          * 复制

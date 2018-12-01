@@ -384,6 +384,15 @@ namespace feng3d
         }
 
         /**
+         * 负向量
+         * (a,b,c)->(-a,-b,-c)
+         */
+        negateTo(vout = new Vector3())
+        {
+            return vout.copy(this).negate();
+        }
+
+        /**
          * 倒向量
          * (a,b,c)->(1/a,1/b,1/c)
          */

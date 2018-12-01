@@ -976,6 +976,17 @@ var feng3d;
                 }
             });
         });
+        QUnit.test("rasterizeCustom 栅格化为点阵", function (assert) {
+            var t = feng3d.Triangle3D.random(10);
+            var ps = t.rasterizeCustom(feng3d.Vector3.random(0.5).addNumber(0.25), feng3d.Vector3.random());
+            if (ps.length == 0)
+                assert.ok(true);
+            ps.forEach(function (v, i) {
+                if (i % 3 == 0) {
+                    assert.ok(t.onWithPoint(new feng3d.Vector3(ps[i], ps[i + 1], ps[i + 2]), 0.5));
+                }
+            });
+        });
     });
 })(feng3d || (feng3d = {}));
 var feng3d;

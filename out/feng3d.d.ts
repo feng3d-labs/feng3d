@@ -2406,6 +2406,11 @@ declare namespace feng3d {
          */
         negate(): this;
         /**
+         * 负向量
+         * (a,b,c)->(-a,-b,-c)
+         */
+        negateTo(vout?: Vector3): Vector3;
+        /**
          * 倒向量
          * (a,b,c)->(1/a,1/b,1/c)
          */
@@ -4135,13 +4140,13 @@ declare namespace feng3d {
          * 缩放
          * @param v 缩放量
          */
-        scaleVector3(v: Vector3): void;
+        scaleVector3(v: Vector3): this;
         /**
          * 自定义栅格化为点阵
          * @param voxelSize 体素尺寸，点阵XYZ轴间距
          * @param origin 原点，点阵中的某点正处于原点上，因此可以用作体素范围内的偏移
          */
-        rasterizeCustom(voxelSize?: Vector3, origin?: Vector3): void;
+        rasterizeCustom(voxelSize?: Vector3, origin?: Vector3): number[];
         /**
          * 复制
          * @param triangle 三角形
