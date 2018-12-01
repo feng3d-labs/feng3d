@@ -59,7 +59,7 @@ namespace feng3d.war3
 				geometry.positions = geoset.Vertices;
 				geometry.uvs = geoset.TVertices;
 				geometry.indices = geoset.Faces;
-				var normals = GeometryUtils.createVertexNormals(geometry.indices, geometry.positions, true);
+				var normals = geometryUtils.createVertexNormals(geometry.indices, geometry.positions, true);
 				geometry.normals = normals;
 
 				var skins = BuildAnimatedMeshSkin(geoset);

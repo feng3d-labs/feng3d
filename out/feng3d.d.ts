@@ -10602,16 +10602,55 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    var GeometryUtils: {
-        createIndices: typeof createIndices;
-        createUVs: typeof createUVs;
-        createVertexNormals: typeof createVertexNormals;
-        createVertexTangents: typeof createVertexTangents;
-    };
-    function createIndices(positions: number[]): Array<number>;
-    function createUVs(positions: number[]): Array<number>;
-    function createVertexNormals(indices: number[] | Uint16Array, positions: number[], useFaceWeights?: boolean): number[];
-    function createVertexTangents(indices: number[] | Uint16Array, positions: number[], uvs: number[], useFaceWeights?: boolean): Array<number>;
+    var geometryUtils: GeometryUtils;
+    class GeometryUtils {
+        /**
+         * 根据顶点数量按顺序创建顶点索引
+         * @param positions 顶点数据
+         */
+        createIndices(positions: number[]): number[];
+        /**
+         * 创建循环uv数据
+         * @param positions 顶点数据
+         */
+        createUVs(positions: number[]): number[];
+        /**
+         * 计算顶点法线数据
+         * @param indices 顶点索引
+         * @param positions 顶点数据
+         * @param useFaceWeights 是否使用面权重计算法线
+         */
+        createVertexNormals(indices: number[] | Uint16Array, positions: number[], useFaceWeights?: boolean): number[];
+        /**
+         * 计算顶点切线数据
+         * @param indices 顶点索引
+         * @param positions 顶点数据
+         * @param uvs uv数据
+         * @param useFaceWeights 是否使用面权重计算切线数据
+         */
+        createVertexTangents(indices: number[] | Uint16Array, positions: number[], uvs: number[], useFaceWeights?: boolean): number[];
+        /**
+         * 计算面切线数据
+         * @param indices 顶点索引数据
+         * @param positions 顶点数据
+         * @param uvs uv数据
+         * @param useFaceWeights 是否计算面权重
+         */
+        createFaceTangents(indices: number[] | Uint16Array, positions: number[], uvs: number[], useFaceWeights?: boolean): {
+            faceTangents: number[];
+            faceWeights: number[];
+        };
+        /**
+         * 计算面法线数据
+         * @param indices 顶点索引数据
+         * @param positions 顶点数据
+         * @param useFaceWeights 是否计算面权重
+         */
+        createFaceNormals(indices: number[] | Uint16Array, positions: number[], useFaceWeights?: boolean): {
+            faceNormals: number[];
+            faceWeights: number[];
+        };
+    }
 }
 declare namespace feng3d {
     interface GeometryMap {

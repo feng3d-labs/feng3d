@@ -109,7 +109,7 @@ namespace feng3d
             if (!this._indices && this._invalids.index)
             {
                 this._invalids.index = false;
-                this._autoIndices = GeometryUtils.createIndices(this.positions);
+                this._autoIndices = geometryUtils.createIndices(this.positions);
             }
             return this._indices || this._autoIndices;
         }
@@ -259,7 +259,7 @@ namespace feng3d
                 if (!this._attributes.a_uv && this._invalids.a_uv)
                 {
                     this._invalids.a_uv = false;
-                    var uvs = GeometryUtils.createUVs(this.positions);
+                    var uvs = geometryUtils.createUVs(this.positions);
                     this._autoAttributeDatas[vaId] = { data: uvs, size: 2 };
                 }
             }
@@ -269,7 +269,7 @@ namespace feng3d
                 if (!this._attributes.a_normal && this._invalids.a_normal)
                 {
                     this._invalids.a_normal = false;
-                    var normals = GeometryUtils.createVertexNormals(this.indices, this.positions, this._useFaceWeights);
+                    var normals = geometryUtils.createVertexNormals(this.indices, this.positions, this._useFaceWeights);
                     this._autoAttributeDatas[vaId] = { data: normals, size: 3 };
                 }
             }
@@ -279,7 +279,7 @@ namespace feng3d
                 if (!this._attributes.a_tangent && this._invalids.a_tangent)
                 {
                     this._invalids.a_tangent = false;
-                    var tangents = GeometryUtils.createVertexTangents(this.indices, this.positions, this.uvs, this._useFaceWeights);
+                    var tangents = geometryUtils.createVertexTangents(this.indices, this.positions, this.uvs, this._useFaceWeights);
                     this._autoAttributeDatas[vaId] = { data: tangents, size: 3 };
                 }
             }
