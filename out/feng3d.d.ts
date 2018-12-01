@@ -10669,6 +10669,24 @@ declare namespace feng3d {
             normals?: number[];
             tangents?: number[];
         }[]): any;
+        /**
+         * 射线投影几何体
+         * @param ray                           射线
+         * @param shortestCollisionDistance     当前最短碰撞距离
+         * @param cullFace                      裁剪面枚举
+         */
+        raycast(ray: Ray3D, indices: number[], positions: number[], uvs: number[], shortestCollisionDistance?: number, cullFace?: CullFace): {
+            rayEntryDistance: number;
+            localPosition: Vector3;
+            localNormal: Vector3;
+            uv: Vector2;
+            index: number;
+        };
+        /**
+         * 获取包围盒
+         * @param positions 顶点数据
+         */
+        getAABB(positions: number[]): Box;
     }
 }
 declare namespace feng3d {
