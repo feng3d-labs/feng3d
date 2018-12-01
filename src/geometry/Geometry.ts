@@ -374,76 +374,7 @@ namespace feng3d
             var normals = this.normals;
             var tangents = this.tangents;
 
-            var posStride = 3;
-            var normalStride = 3;
-            var tangentStride = 3;
-
-            var len = vertices.length / posStride;
-            var i: number, i1: number, i2: number;
-            var vector: Vector3 = new Vector3();
-
-            var bakeNormals = normals != null;
-            var bakeTangents = tangents != null;
-            var invTranspose = new Matrix4x4();
-
-            if (bakeNormals || bakeTangents)
-            {
-                invTranspose.copyFrom(transform);
-                invTranspose.invert();
-                invTranspose.transpose();
-            }
-
-            var vi0 = 0;
-            var ni0 = 0;
-            var ti0 = 0;
-
-            for (i = 0; i < len; ++i)
-            {
-                i1 = vi0 + 1;
-                i2 = vi0 + 2;
-
-                // bake position
-                vector.x = vertices[vi0];
-                vector.y = vertices[i1];
-                vector.z = vertices[i2];
-                vector = transform.transformVector(vector);
-                vertices[vi0] = vector.x;
-                vertices[i1] = vector.y;
-                vertices[i2] = vector.z;
-                vi0 += posStride;
-
-                // bake normal
-                if (bakeNormals)
-                {
-                    i1 = ni0 + 1;
-                    i2 = ni0 + 2;
-                    vector.x = normals[ni0];
-                    vector.y = normals[i1];
-                    vector.z = normals[i2];
-                    vector = invTranspose.deltaTransformVector(vector);
-                    vector.normalize();
-                    normals[ni0] = vector.x;
-                    normals[i1] = vector.y;
-                    normals[i2] = vector.z;
-                    ni0 += normalStride;
-                }
-
-                // bake tangent
-                if (bakeTangents)
-                {
-                    i1 = ti0 + 1;
-                    i2 = ti0 + 2;
-                    vector.x = tangents[ti0];
-                    vector.y = tangents[i1];
-                    vector.z = tangents[i2];
-                    vector = invTranspose.deltaTransformVector(vector);
-                    vector.normalize();
-                    tangents[ti0] = vector.x;
-                    tangents[i1] = vector.y;
-                    tangents[i2] = vector.z;
-                    ti0 += tangentStride;
-                }
-            }
+            geometryUtils.applyTransformation(transform, vertices, normals, tangents);
 
             this.positions = vertices;
             this.normals = normals;

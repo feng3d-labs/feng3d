@@ -10650,6 +10650,25 @@ declare namespace feng3d {
             faceNormals: number[];
             faceWeights: number[];
         };
+        /**
+         * 应用变换矩阵
+         * @param transform 变换矩阵
+         * @param positions 顶点数据
+         * @param normals 顶点法线数据
+         * @param tangents 顶点切线数据
+         */
+        applyTransformation(transform: Matrix4x4, positions: number[], normals?: number[], tangents?: number[]): void;
+        /**
+         * 合并几何体
+         * @param geometrys 几何体列表
+         */
+        mergeGeometry(geometrys: {
+            indices: number[];
+            positions: number[];
+            uvs?: number[];
+            normals?: number[];
+            tangents?: number[];
+        }[]): any;
     }
 }
 declare namespace feng3d {

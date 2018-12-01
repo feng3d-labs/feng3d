@@ -18755,64 +18755,7 @@ var feng3d;
             var vertices = this.positions;
             var normals = this.normals;
             var tangents = this.tangents;
-            var posStride = 3;
-            var normalStride = 3;
-            var tangentStride = 3;
-            var len = vertices.length / posStride;
-            var i, i1, i2;
-            var vector = new feng3d.Vector3();
-            var bakeNormals = normals != null;
-            var bakeTangents = tangents != null;
-            var invTranspose = new feng3d.Matrix4x4();
-            if (bakeNormals || bakeTangents) {
-                invTranspose.copyFrom(transform);
-                invTranspose.invert();
-                invTranspose.transpose();
-            }
-            var vi0 = 0;
-            var ni0 = 0;
-            var ti0 = 0;
-            for (i = 0; i < len; ++i) {
-                i1 = vi0 + 1;
-                i2 = vi0 + 2;
-                // bake position
-                vector.x = vertices[vi0];
-                vector.y = vertices[i1];
-                vector.z = vertices[i2];
-                vector = transform.transformVector(vector);
-                vertices[vi0] = vector.x;
-                vertices[i1] = vector.y;
-                vertices[i2] = vector.z;
-                vi0 += posStride;
-                // bake normal
-                if (bakeNormals) {
-                    i1 = ni0 + 1;
-                    i2 = ni0 + 2;
-                    vector.x = normals[ni0];
-                    vector.y = normals[i1];
-                    vector.z = normals[i2];
-                    vector = invTranspose.deltaTransformVector(vector);
-                    vector.normalize();
-                    normals[ni0] = vector.x;
-                    normals[i1] = vector.y;
-                    normals[i2] = vector.z;
-                    ni0 += normalStride;
-                }
-                // bake tangent
-                if (bakeTangents) {
-                    i1 = ti0 + 1;
-                    i2 = ti0 + 2;
-                    vector.x = tangents[ti0];
-                    vector.y = tangents[i1];
-                    vector.z = tangents[i2];
-                    vector = invTranspose.deltaTransformVector(vector);
-                    vector.normalize();
-                    tangents[ti0] = vector.x;
-                    tangents[i1] = vector.y;
-                    tangents[i2] = vector.z;
-                    ti0 += tangentStride;
-                }
-            }
+            feng3d.geometryUtils.applyTransformation(transform, vertices, normals, tangents);
             this.positions = vertices;
             this.normals = normals;
             this.tangents = tangents;
@@ -19432,6 +19375,90 @@ var feng3d;
                 faceNormals[j++] = cz * d;
             }
             return { faceNormals: faceNormals, faceWeights: faceWeights };
+        };
+        /**
+         * 应用变换矩阵
+         * @param transform 变换矩阵
+         * @param positions 顶点数据
+         * @param normals 顶点法线数据
+         * @param tangents 顶点切线数据
+         */
+        GeometryUtils.prototype.applyTransformation = function (transform, positions, normals, tangents) {
+            var posStride = 3;
+            var normalStride = 3;
+            var tangentStride = 3;
+            var len = positions.length / posStride;
+            var i, i1, i2;
+            var vector = new feng3d.Vector3();
+            var bakeNormals = normals != null;
+            var bakeTangents = tangents != null;
+            var invTranspose = new feng3d.Matrix4x4();
+            if (bakeNormals || bakeTangents) {
+                invTranspose.copyFrom(transform);
+                invTranspose.invert();
+                invTranspose.transpose();
+            }
+            var vi0 = 0;
+            var ni0 = 0;
+            var ti0 = 0;
+            for (i = 0; i < len; ++i) {
+                i1 = vi0 + 1;
+                i2 = vi0 + 2;
+                // bake position
+                vector.x = positions[vi0];
+                vector.y = positions[i1];
+                vector.z = positions[i2];
+                vector = transform.transformVector(vector);
+                positions[vi0] = vector.x;
+                positions[i1] = vector.y;
+                positions[i2] = vector.z;
+                vi0 += posStride;
+                // bake normal
+                if (bakeNormals) {
+                    i1 = ni0 + 1;
+                    i2 = ni0 + 2;
+                    vector.x = normals[ni0];
+                    vector.y = normals[i1];
+                    vector.z = normals[i2];
+                    vector = invTranspose.deltaTransformVector(vector);
+                    vector.normalize();
+                    normals[ni0] = vector.x;
+                    normals[i1] = vector.y;
+                    normals[i2] = vector.z;
+                    ni0 += normalStride;
+                }
+                // bake tangent
+                if (bakeTangents) {
+                    i1 = ti0 + 1;
+                    i2 = ti0 + 2;
+                    vector.x = tangents[ti0];
+                    vector.y = tangents[i1];
+                    vector.z = tangents[i2];
+                    vector = invTranspose.deltaTransformVector(vector);
+                    vector.normalize();
+                    tangents[ti0] = vector.x;
+                    tangents[i1] = vector.y;
+                    tangents[i2] = vector.z;
+                    ti0 += tangentStride;
+                }
+            }
+        };
+        /**
+         * 合并几何体
+         * @param geometrys 几何体列表
+         */
+        GeometryUtils.prototype.mergeGeometry = function (geometrys) {
+            var result = Object.deepClone(geometry[0]);
+            for (var i = 1; i < geometrys.length; i++) {
+                var geometry = geometrys[i];
+                var startIndex = result.positions.length / 3;
+                geometry.indices.forEach(function (v) { return result.indices.push(v + startIndex); });
+                geometry.positions.forEach(function (v) { return result.positions.push(v); });
+                result.uvs && geometry.uvs.forEach(function (v) { return result.uvs.push(v); });
+                result.normals && geometry.normals.forEach(function (v) { return result.normals.push(v); });
+                result.tangents && geometry.tangents.forEach(function (v) { return result.tangents.push(v); });
+            }
+            return result;
         };
         return GeometryUtils;
     }());
