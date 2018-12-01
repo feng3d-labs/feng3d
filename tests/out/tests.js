@@ -339,7 +339,7 @@ var feng3d;
             var c = Object.setValue(new feng3d.GameObject(), { name: "t" }).addComponent(feng3d.Camera);
             var e = c.dispatch("lensChanged");
             c.dispatchEvent(e);
-            assert.ok(e.targets[0] == c.gameObject);
+            assert.ok(e.targets[0] == c);
             c.gameObject.components.forEach(function (element) {
                 assert.ok(e.targets.indexOf(element) != -1);
             });

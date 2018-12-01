@@ -11,7 +11,7 @@ namespace feng3d
             var e = c.dispatch("lensChanged");
             c.dispatchEvent(e);
 
-            assert.ok(e.targets[0] == c.gameObject);
+            assert.ok(e.targets[0] == c);
 
             c.gameObject.components.forEach(element =>
             {
