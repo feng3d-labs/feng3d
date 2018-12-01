@@ -326,11 +326,11 @@ namespace feng3d.war3
 					break;
 				case "Linear":
 					tempVec = key1.value.clone();
-					tempVec.scale(InverseFactor);
+					tempVec.scaleNumber(InverseFactor);
 					scalingVector.add(tempVec);
 
 					tempVec = key2.value.clone();
-					tempVec.scale(Factor);
+					tempVec.scaleNumber(Factor);
 					scalingVector.add(tempVec);
 					break;
 				case "Hermite":
@@ -342,19 +342,19 @@ namespace feng3d.war3
 					Factor4 = FactorTimesTwo * (3.0 - 2.0 * Factor);
 
 					tempVec = key1.value.clone();
-					tempVec.scale(Factor1);
+					tempVec.scaleNumber(Factor1);
 					scalingVector.add(tempVec);
 
 					tempVec = key1.OutTan.clone();
-					tempVec.scale(Factor2);
+					tempVec.scaleNumber(Factor2);
 					scalingVector.add(tempVec);
 
 					tempVec = key2.InTan.clone();
-					tempVec.scale(Factor3);
+					tempVec.scaleNumber(Factor3);
 					scalingVector.add(tempVec);
 
 					tempVec = key2.value.clone();
-					tempVec.scale(Factor4);
+					tempVec.scaleNumber(Factor4);
 					scalingVector.add(tempVec);
 					break;
 
@@ -368,19 +368,19 @@ namespace feng3d.war3
 					Factor4 = FactorTimesTwo * Factor;
 
 					tempVec = key1.value.clone();
-					tempVec.scale(Factor1);
+					tempVec.scaleNumber(Factor1);
 					scalingVector.add(tempVec);
 
 					tempVec = key1.OutTan.clone();
-					tempVec.scale(Factor2);
+					tempVec.scaleNumber(Factor2);
 					scalingVector.add(tempVec);
 
 					tempVec = key2.InTan.clone();
-					tempVec.scale(Factor3);
+					tempVec.scaleNumber(Factor3);
 					scalingVector.add(tempVec);
 
 					tempVec = key2.value.clone();
-					tempVec.scale(Factor4);
+					tempVec.scaleNumber(Factor4);
 					scalingVector.add(tempVec);
 					break;
 			}
@@ -444,11 +444,11 @@ namespace feng3d.war3
 					break;
 				case "Linear":
 					tempVec = key1.value.clone();
-					tempVec.scale(InverseFactor);
+					tempVec.scaleNumber(InverseFactor);
 					TranslationVector.add(tempVec);
 
 					tempVec = key2.value.clone();
-					tempVec.scale(Factor);
+					tempVec.scaleNumber(Factor);
 					TranslationVector.add(tempVec);
 					break;
 				case "Hermite":
@@ -460,19 +460,19 @@ namespace feng3d.war3
 					Factor4 = FactorTimesTwo * (3.0 - 2.0 * Factor);
 
 					tempVec = key1.value.clone();
-					tempVec.scale(Factor1);
+					tempVec.scaleNumber(Factor1);
 					TranslationVector.add(tempVec);
 
 					tempVec = key1.OutTan.clone();
-					tempVec.scale(Factor2);
+					tempVec.scaleNumber(Factor2);
 					TranslationVector.add(tempVec);
 
 					tempVec = key2.InTan.clone();
-					tempVec.scale(Factor3);
+					tempVec.scaleNumber(Factor3);
 					TranslationVector.add(tempVec);
 
 					tempVec = key2.value.clone();
-					tempVec.scale(Factor4);
+					tempVec.scaleNumber(Factor4);
 					TranslationVector.add(tempVec);
 					break;
 
@@ -486,19 +486,19 @@ namespace feng3d.war3
 					Factor4 = FactorTimesTwo * Factor;
 
 					tempVec = key1.value.clone();
-					tempVec.scale(Factor1);
+					tempVec.scaleNumber(Factor1);
 					TranslationVector.add(tempVec);
 
 					tempVec = key1.OutTan.clone();
-					tempVec.scale(Factor2);
+					tempVec.scaleNumber(Factor2);
 					TranslationVector.add(tempVec);
 
 					tempVec = key2.InTan.clone();
-					tempVec.scale(Factor3);
+					tempVec.scaleNumber(Factor3);
 					TranslationVector.add(tempVec);
 
 					tempVec = key2.value.clone();
-					tempVec.scale(Factor4);
+					tempVec.scaleNumber(Factor4);
 					TranslationVector.add(tempVec);
 					break;
 			}

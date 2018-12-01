@@ -203,7 +203,7 @@ namespace feng3d
             if (deltaLengthSq > (this.radius * this.radius))
             {
                 pout.sub(this.center).normalize();
-                pout.scale(this.radius).add(this.center);
+                pout.scaleNumber(this.radius).add(this.center);
             }
             return pout;
         }

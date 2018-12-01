@@ -59,7 +59,7 @@ namespace feng3d
             {
                 var depthScale = this.getDepthScale(this.camera);
                 var vec = _localToWorldMatrix.decompose();
-                vec[2].scale(depthScale);
+                vec[2].scaleNumber(depthScale);
                 _localToWorldMatrix.recompose(vec);
             }
         }

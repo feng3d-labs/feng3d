@@ -52,7 +52,7 @@ namespace feng3d
 		 */
         getPoint(position: number, pout = new Vector3()): Vector3
         {
-            var newPoint: Vector3 = pout.copy(this.p0).add(this.p1.subTo(this.p0).scale(position));
+            var newPoint: Vector3 = pout.copy(this.p0).add(this.p1.subTo(this.p0).scaleNumber(position));
             return newPoint;
         }
 

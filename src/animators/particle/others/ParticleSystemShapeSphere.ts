@@ -18,14 +18,14 @@ namespace feng3d
             var speed = particle.velocity.length;
 
             // 计算位置
-            var dir = Vector3.random().scale(2).subNumber(1).normalize();
+            var dir = Vector3.random().scaleNumber(2).subNumber(1).normalize();
 
-            var p = dir.scaleTo(Math.random() * this.radius);
+            var p = dir.scaleNumberTo(Math.random() * this.radius);
 
             particle.position.copy(p);
 
             // 计算速度
-            particle.velocity.copy(dir).scale(speed);
+            particle.velocity.copy(dir).scaleNumber(speed);
         }
     }
 }

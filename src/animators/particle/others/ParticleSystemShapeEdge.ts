@@ -26,7 +26,7 @@ namespace feng3d
             particle.position.copy(p);
 
             // 计算速度
-            particle.velocity.copy(dir).scale(speed);
+            particle.velocity.copy(dir).scaleNumber(speed);
         }
     }
 }

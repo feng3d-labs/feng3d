@@ -137,7 +137,7 @@ namespace feng3d
             }
 
             var depth = viewCamera.lens.near * 2;
-            gameObject.transform.position = viewCamera.transform.scenePosition.addTo(viewCamera.transform.localToWorldMatrix.forward.scaleTo(depth));
+            gameObject.transform.position = viewCamera.transform.scenePosition.addTo(viewCamera.transform.localToWorldMatrix.forward.scaleNumberTo(depth));
             var billboardComponent = gameObject.getComponent(BillboardComponent);
             billboardComponent.camera = viewCamera;
 

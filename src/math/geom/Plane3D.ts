@@ -208,7 +208,7 @@ namespace feng3d
             var cosAngle = lineDir.dot(this.getNormal());
             var distance = this.distanceWithPoint(line3D.position);
             var addVec = lineDir.clone();
-            addVec.scale(-distance / cosAngle);
+            addVec.scaleNumber(-distance / cosAngle);
             var crossPos = line3D.position.addTo(addVec);
             return crossPos;
         }
@@ -267,7 +267,7 @@ namespace feng3d
          */
         projectPoint(point: Vector3, vout = new Vector3())
         {
-            return this.getNormal(vout).scale(- this.distanceWithPoint(point)).add(point);
+            return this.getNormal(vout).scaleNumber(- this.distanceWithPoint(point)).add(point);
         }
 
         /**

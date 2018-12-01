@@ -93,7 +93,7 @@ namespace feng3d
 		 */
         getPoint(length = 0, vout = new Vector3())
         {
-            return vout.copy(this.direction).scale(length).add(this.position);
+            return vout.copy(this.direction).scaleNumber(length).add(this.position);
         }
 
         /**

@@ -688,7 +688,7 @@ namespace feng3d
         moveRight(distance: number)
         {
             var direction = this.right;
-            direction.scale(distance);
+            direction.scaleNumber(distance);
             this.position = this.position.addTo(direction);
             return this;
         }
@@ -700,7 +700,7 @@ namespace feng3d
         moveUp(distance: number)
         {
             var direction = this.up;
-            direction.scale(distance);
+            direction.scaleNumber(distance);
             this.position = this.position.addTo(direction);
             return this;
         }
@@ -712,7 +712,7 @@ namespace feng3d
         moveForward(distance: number)
         {
             var direction = this.forward;
-            direction.scale(distance);
+            direction.scaleNumber(distance);
             this.position = this.position.addTo(direction);
             return this;
         }
@@ -794,7 +794,7 @@ namespace feng3d
             var rotationMatrix3d = Matrix4x4.fromRotation(vin.x, vin.y, vin.z);
             rotationMatrix3d.append(this);
             var newrotation = rotationMatrix3d.decompose()[1];
-            newrotation.scale(180 / Math.PI);
+            newrotation.scaleNumber(180 / Math.PI);
             var v = Math.round((newrotation.x - vin.x) / 180);
             if (v % 2 != 0)
             {

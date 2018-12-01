@@ -203,5 +203,22 @@ namespace feng3d
 
             assert.ok(t.onWithPoint(closest));
         });
+
+        QUnit.test("rasterize 栅格化为点阵", (assert) =>
+        {
+            var t = Triangle3D.random(10);
+            var ps = t.rasterize();
+
+            if (ps.length == 0) assert.ok(true);
+
+            ps.forEach((v, i) =>
+            {
+                if (i % 3 == 0)
+                {
+                    assert.ok(t.onWithPoint(new Vector3(ps[i], ps[i + 1], ps[i + 2]), 0.5));
+                }
+            });
+
+        });
     });
 }

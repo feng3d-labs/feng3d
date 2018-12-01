@@ -20,7 +20,7 @@ namespace feng3d
             var l = Line3D.random();
             assert.ok(l.distanceWithPoint(l.position) == 0);
 
-            var n = Vector3.random().cross(l.direction).scale(100);
+            var n = Vector3.random().cross(l.direction).scaleNumber(100);
             assert.ok(Math.abs(l.distanceWithPoint(n.addTo(l.position)) - n.length) < n.length / 1000)
         });
 

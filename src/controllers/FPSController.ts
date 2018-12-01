@@ -134,7 +134,7 @@ namespace feng3d
                 if (matrix3d.up.dot(up) < 0)
                 {
                     up = up.clone();
-                    up.scale(-1);
+                    up.scaleNumber(-1);
                 }
                 matrix3d.appendRotation(up, offsetPoint.x, matrix3d.position);
                 this.transform.localToWorldMatrix = matrix3d;
@@ -153,15 +153,15 @@ namespace feng3d
                     accelerationVec.add(element);
                 }
             }
-            accelerationVec.scale(this.acceleration);
+            accelerationVec.scaleNumber(this.acceleration);
             //计算速度
             this.velocity.add(accelerationVec);
             var right = this.transform.rightVector;
             var up = this.transform.upVector;
             var forward = this.transform.forwardVector;
-            right.scale(this.velocity.x);
-            up.scale(this.velocity.y);
-            forward.scale(this.velocity.z);
+            right.scaleNumber(this.velocity.x);
+            up.scaleNumber(this.velocity.y);
+            forward.scaleNumber(this.velocity.z);
             //计算位移
             var displacement = right.clone();
             displacement.add(up);

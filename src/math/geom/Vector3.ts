@@ -8,7 +8,7 @@ namespace feng3d
     {
 
         __class__: "feng3d.Vector3" = "feng3d.Vector3";
-        
+
         /**
         * 定义为 Vector3 对象的 x 轴，坐标为 (1,0,0)。
         */
@@ -42,10 +42,11 @@ namespace feng3d
 
         /**
          * 随机三维向量
+         * @param size 尺寸
          */
-        static random()
+        static random(size = 1)
         {
-            return new Vector3(Math.random(), Math.random(), Math.random());
+            return new Vector3(Math.random() * size, Math.random() * size, Math.random() * size);
         }
 
         /**
@@ -371,7 +372,8 @@ namespace feng3d
         }
 
         /**
-         * 将当前 Vector3 对象设置为其逆对象。
+         * 负向量
+         * (a,b,c)->(-a,-b,-c)
          */
         negate()
         {
@@ -379,6 +381,27 @@ namespace feng3d
             this.y = -this.y;
             this.z = -this.z;
             return this;
+        }
+
+        /**
+         * 倒向量
+         * (a,b,c)->(1/a,1/b,1/c)
+         */
+        inverse()
+        {
+            this.x = 1 / this.x;
+            this.y = 1 / this.y;
+            this.z = 1 / this.z;
+            return this;
+        }
+
+        /**
+         * 倒向量
+         * (a,b,c)->(1/a,1/b,1/c)
+         */
+        inverseTo(vout = new Vector3())
+        {
+            return vout.copy(this).inverse();
         }
 
         /**
@@ -399,7 +422,7 @@ namespace feng3d
         /**
          * 按标量（大小）缩放当前的 Vector3 对象。
          */
-        scale(s: number)
+        scaleNumber(s: number)
         {
             this.x *= s;
             this.y *= s;
@@ -410,7 +433,28 @@ namespace feng3d
         /**
          * 按标量（大小）缩放当前的 Vector3 对象。
          */
-        scaleTo(s: number, vout = new Vector3())
+        scaleNumberTo(s: number, vout = new Vector3())
+        {
+            return vout.copy(this).scaleNumber(s);
+        }
+
+        /**
+         * 缩放
+         * @param s 缩放量
+         */
+        scale(s: Vector3)
+        {
+            this.x *= s.x;
+            this.y *= s.y;
+            this.z *= s.z;
+            return this;
+        }
+
+        /**
+         * 缩放
+         * @param s 缩放量
+         */
+        scaleTo(s: Vector3, vout = new Vector3())
         {
             return vout.copy(this).scale(s);
         }

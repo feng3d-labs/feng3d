@@ -27,10 +27,11 @@ namespace feng3d
 
         /**
          * 随机三角形
+         * @param size 尺寸
          */
-        static random()
+        static random(size = 1)
         {
-            return new Triangle3D(Vector3.random(), Vector3.random(), Vector3.random());
+            return new Triangle3D(Vector3.random(size), Vector3.random(size), Vector3.random(size));
         }
 
         /**
@@ -90,7 +91,7 @@ namespace feng3d
          */
         getBarycenter(pout = new Vector3())
         {
-            return pout.copy(this.p0).add(this.p1).add(this.p2).scale(1 / 3);
+            return pout.copy(this.p0).add(this.p1).add(this.p2).scaleNumber(1 / 3);
         }
 
         /**
@@ -106,7 +107,7 @@ namespace feng3d
             var a0 = -a.dot(a) * c.dot(b) / d;
             var b0 = -b.dot(b) * c.dot(a) / d;
             var c0 = -c.dot(c) * b.dot(a) / d;
-            return pout.copy(this.p0).scale(a0).add(this.p1.scaleTo(b0)).add(this.p2.scaleTo(c0));
+            return pout.copy(this.p0).scaleNumber(a0).add(this.p1.scaleNumberTo(b0)).add(this.p2.scaleNumberTo(c0));
         }
 
         /**
@@ -118,7 +119,7 @@ namespace feng3d
             var a = this.p2.subTo(this.p1).length;
             var b = this.p0.subTo(this.p2).length;
             var c = this.p1.subTo(this.p0).length;
-            return pout.copy(this.p0).scale(a).add(this.p1.scaleTo(b)).add(this.p2.scaleTo(c)).scale(1 / (a + b + c));
+            return pout.copy(this.p0).scaleNumber(a).add(this.p1.scaleNumberTo(b)).add(this.p2.scaleNumberTo(c)).scaleNumber(1 / (a + b + c));
         }
 
         /**
@@ -133,7 +134,7 @@ namespace feng3d
             var a0 = a.dot(b) * a.dot(c);
             var b0 = b.dot(c) * b.dot(a);
             var c0 = c.dot(a) * c.dot(b);
-            return pout.copy(this.p0).scale(a0).add(this.p1.scaleTo(b0)).add(this.p2.scaleTo(c0)).scale(1 / (a0 + b0 + c0));
+            return pout.copy(this.p0).scaleNumber(a0).add(this.p1.scaleNumberTo(b0)).add(this.p2.scaleNumberTo(c0)).scaleNumber(1 / (a0 + b0 + c0));
         }
 
         /**
@@ -169,7 +170,7 @@ namespace feng3d
          */
         getPoint(p: Vector3, pout = new Vector3())
         {
-            return pout.copy(this.p0).scale(p.x).add(this.p1.scaleTo(p.y)).add(this.p2.scaleTo(p.z));
+            return pout.copy(this.p0).scaleNumber(p.x).add(this.p1.scaleNumberTo(p.y)).add(this.p2.scaleNumberTo(p.z));
         }
 
         /**
@@ -420,6 +421,66 @@ namespace feng3d
         area()
         {
             return this.p1.subTo(this.p0).crossTo(this.p2.subTo(this.p1)).length * 0.5;
+        }
+
+        /**
+         * 栅格化，点阵化为XYZ轴间距为1的点阵
+         */
+        rasterize()
+        {
+            var aabb = feng3d.Box.fromPoints([this.p0, this.p1, this.p2]);
+            var point = new feng3d.Vector3();
+            var result: number[] = [];
+            for (let x = aabb.min.x; x <= aabb.max.x; x++)
+            {
+                for (let y = aabb.min.y; y <= aabb.max.y; y++)
+                {
+                    for (let z = aabb.min.z; z <= aabb.max.y; z++)
+                    {
+                        // 判定是否在三角形上
+                        var onTri = this.onWithPoint(point.init(x, y, z), 0.5);
+                        if (onTri)
+                        {
+                            result.push(x, y, z);
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        /**
+         * 平移
+         * @param v 向量
+         */
+        translateVector3(v: Vector3)
+        {
+            this.p0.add(v);
+            this.p1.add(v);
+            this.p2.add(v);
+            return this;
+        }
+
+        /**
+         * 缩放
+         * @param v 缩放量
+         */
+        scaleVector3(v: Vector3)
+        {
+            this.p0.scale(v);
+            this.p1.scale(v);
+            this.p2.scale(v);
+        }
+
+        /**
+         * 自定义栅格化为点阵
+         * @param voxelSize 体素尺寸，点阵XYZ轴间距
+         * @param origin 原点，点阵中的某点正处于原点上，因此可以用作体素范围内的偏移
+         */
+        rasterizeCustom(voxelSize = new Vector3(1, 1, 1), origin = new Vector3())
+        {
+            var tri = this.clone().translateVector3(origin.clone().negate()).scaleVector3(voxelSize.inverseTo());
+
         }
 
         /**

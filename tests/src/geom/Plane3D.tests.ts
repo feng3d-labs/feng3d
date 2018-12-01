@@ -26,12 +26,12 @@ namespace feng3d
             var plane = new Plane3D();
             assert.ok(plane.distanceWithPoint(new Vector3()) == plane.d);
             //
-            var p = Vector3.random().scale(100);
+            var p = Vector3.random().scaleNumber(100);
             var n = Vector3.random().normalize();
             var length = (0.5 - Math.random()) * 100;
             plane.fromNormalAndPoint(n, p);
             //
-            var p0 = n.scaleTo(length).add(p);
+            var p0 = n.scaleNumberTo(length).add(p);
             assert.ok(plane.distanceWithPoint(p0).toPrecision(6) == length.toPrecision(6));
         });
 
@@ -49,10 +49,10 @@ namespace feng3d
 
         QUnit.test("intersectWithPlane3D", (assert) =>
         {
-            var p0 = Vector3.random().scale(100);
-            var p1 = Vector3.random().scale(100);
-            var p2 = Vector3.random().scale(100);
-            var p3 = Vector3.random().scale(100);
+            var p0 = Vector3.random().scaleNumber(100);
+            var p1 = Vector3.random().scaleNumber(100);
+            var p2 = Vector3.random().scaleNumber(100);
+            var p3 = Vector3.random().scaleNumber(100);
 
             var line = new Line3D().fromPoints(p0, p1);
 

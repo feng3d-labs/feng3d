@@ -28,12 +28,12 @@ namespace feng3d
             // 计算位置
             var dir = new Vector3(0, 0, 1);
 
-            var p = new Vector3(this.boxX, this.boxY, this.boxZ).multiply(Vector3.random().scale(2).subNumber(1));
+            var p = new Vector3(this.boxX, this.boxY, this.boxZ).multiply(Vector3.random().scaleNumber(2).subNumber(1));
 
             particle.position.copy(p);
 
             // 计算速度
-            particle.velocity.copy(dir).scale(speed);
+            particle.velocity.copy(dir).scaleNumber(speed);
         }
     }
 }

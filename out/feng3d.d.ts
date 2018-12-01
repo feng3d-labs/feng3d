@@ -2244,8 +2244,9 @@ declare namespace feng3d {
         static fromArray(array: ArrayLike<number>, offset?: number): Vector3;
         /**
          * 随机三维向量
+         * @param size 尺寸
          */
-        static random(): Vector3;
+        static random(size?: number): Vector3;
         /**
          * 从Vector2初始化
          */
@@ -2400,9 +2401,20 @@ declare namespace feng3d {
          */
         equals(object: Vector3, precision?: number): boolean;
         /**
-         * 将当前 Vector3 对象设置为其逆对象。
+         * 负向量
+         * (a,b,c)->(-a,-b,-c)
          */
         negate(): this;
+        /**
+         * 倒向量
+         * (a,b,c)->(1/a,1/b,1/c)
+         */
+        inverse(): this;
+        /**
+         * 倒向量
+         * (a,b,c)->(1/a,1/b,1/c)
+         */
+        inverseTo(vout?: Vector3): Vector3;
         /**
          * 通过将最前面的三个元素（x、y、z）除以矢量的长度可将 Vector3 对象转换为单位矢量。
          */
@@ -2410,11 +2422,21 @@ declare namespace feng3d {
         /**
          * 按标量（大小）缩放当前的 Vector3 对象。
          */
-        scale(s: number): this;
+        scaleNumber(s: number): this;
         /**
          * 按标量（大小）缩放当前的 Vector3 对象。
          */
-        scaleTo(s: number, vout?: Vector3): Vector3;
+        scaleNumberTo(s: number, vout?: Vector3): Vector3;
+        /**
+         * 缩放
+         * @param s 缩放量
+         */
+        scale(s: Vector3): this;
+        /**
+         * 缩放
+         * @param s 缩放量
+         */
+        scaleTo(s: Vector3, vout?: Vector3): Vector3;
         /**
          * 减去向量
          * @param a 减去的向量
@@ -3966,8 +3988,9 @@ declare namespace feng3d {
         static fromPositions(positions: number[]): Triangle3D;
         /**
          * 随机三角形
+         * @param size 尺寸
          */
-        static random(): Triangle3D;
+        static random(size?: number): Triangle3D;
         /**
          * 三角形0号点
          */
@@ -4099,6 +4122,26 @@ declare namespace feng3d {
          * 面积
          */
         area(): number;
+        /**
+         * 栅格化，点阵化为XYZ轴间距为1的点阵
+         */
+        rasterize(): number[];
+        /**
+         * 平移
+         * @param v 向量
+         */
+        translateVector3(v: Vector3): this;
+        /**
+         * 缩放
+         * @param v 缩放量
+         */
+        scaleVector3(v: Vector3): void;
+        /**
+         * 自定义栅格化为点阵
+         * @param voxelSize 体素尺寸，点阵XYZ轴间距
+         * @param origin 原点，点阵中的某点正处于原点上，因此可以用作体素范围内的偏移
+         */
+        rasterizeCustom(voxelSize?: Vector3, origin?: Vector3): void;
         /**
          * 复制
          * @param triangle 三角形

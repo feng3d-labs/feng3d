@@ -48,7 +48,7 @@ namespace feng3d
          */
         getCenter(vout = new Vector3())
         {
-            return vout.copy(this.min).add(this.max).scale(0.5);
+            return vout.copy(this.min).add(this.max).scaleNumber(0.5);
         }
 
         /**
@@ -258,7 +258,7 @@ namespace feng3d
          */
         inflatePoint(delta: Vector3)
         {
-            delta = delta.scaleTo(0.5);
+            delta = delta.scaleNumberTo(0.5);
             this.min.sub(delta);
             this.max.add(delta);
         }

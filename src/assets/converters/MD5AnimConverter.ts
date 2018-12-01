@@ -91,7 +91,7 @@ namespace feng3d
                     translation.x = -translation.x;
 
                     var eulers = orientation.toEulerAngles();
-                    eulers.scale(180 / Math.PI);
+                    eulers.scaleNumber(180 / Math.PI);
 
                     var path: PropertyClipPath = [
                         [PropertyClipPathItemType.GameObject, hierarchy.name],

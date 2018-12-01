@@ -563,7 +563,7 @@ var feng3d;
         QUnit.test("distanceWithPoint", function (assert) {
             var l = feng3d.Line3D.random();
             assert.ok(l.distanceWithPoint(l.position) == 0);
-            var n = feng3d.Vector3.random().cross(l.direction).scale(100);
+            var n = feng3d.Vector3.random().cross(l.direction).scaleNumber(100);
             assert.ok(Math.abs(l.distanceWithPoint(n.addTo(l.position)) - n.length) < n.length / 1000);
         });
         QUnit.test("intersectWithLine3D", function (assert) {
@@ -798,12 +798,12 @@ var feng3d;
             var plane = new feng3d.Plane3D();
             assert.ok(plane.distanceWithPoint(new feng3d.Vector3()) == plane.d);
             //
-            var p = feng3d.Vector3.random().scale(100);
+            var p = feng3d.Vector3.random().scaleNumber(100);
             var n = feng3d.Vector3.random().normalize();
             var length = (0.5 - Math.random()) * 100;
             plane.fromNormalAndPoint(n, p);
             //
-            var p0 = n.scaleTo(length).add(p);
+            var p0 = n.scaleNumberTo(length).add(p);
             assert.ok(plane.distanceWithPoint(p0).toPrecision(6) == length.toPrecision(6));
         });
         QUnit.test("intersectWithLine3D", function (assert) {
@@ -816,10 +816,10 @@ var feng3d;
             }
         });
         QUnit.test("intersectWithPlane3D", function (assert) {
-            var p0 = feng3d.Vector3.random().scale(100);
-            var p1 = feng3d.Vector3.random().scale(100);
-            var p2 = feng3d.Vector3.random().scale(100);
-            var p3 = feng3d.Vector3.random().scale(100);
+            var p0 = feng3d.Vector3.random().scaleNumber(100);
+            var p1 = feng3d.Vector3.random().scaleNumber(100);
+            var p2 = feng3d.Vector3.random().scaleNumber(100);
+            var p3 = feng3d.Vector3.random().scaleNumber(100);
             var line = new feng3d.Line3D().fromPoints(p0, p1);
             var plane0 = feng3d.Plane3D.fromPoints(p0, p1, p2);
             var plane1 = feng3d.Plane3D.fromPoints(p0, p1, p3);
@@ -964,6 +964,17 @@ var feng3d;
             p = feng3d.Vector3.random();
             var closest = t.closestPointWithPoint(p);
             assert.ok(t.onWithPoint(closest));
+        });
+        QUnit.test("rasterize 栅格化为点阵", function (assert) {
+            var t = feng3d.Triangle3D.random(10);
+            var ps = t.rasterize();
+            if (ps.length == 0)
+                assert.ok(true);
+            ps.forEach(function (v, i) {
+                if (i % 3 == 0) {
+                    assert.ok(t.onWithPoint(new feng3d.Vector3(ps[i], ps[i + 1], ps[i + 2]), 0.5));
+                }
+            });
         });
     });
 })(feng3d || (feng3d = {}));

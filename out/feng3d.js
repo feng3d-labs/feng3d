@@ -4053,9 +4053,11 @@ var feng3d;
         };
         /**
          * 随机三维向量
+         * @param size 尺寸
          */
-        Vector3.random = function () {
-            return new Vector3(Math.random(), Math.random(), Math.random());
+        Vector3.random = function (size) {
+            if (size === void 0) { size = 1; }
+            return new Vector3(Math.random() * size, Math.random() * size, Math.random() * size);
         };
         /**
          * 从Vector2初始化
@@ -4312,13 +4314,32 @@ var feng3d;
             return true;
         };
         /**
-         * 将当前 Vector3 对象设置为其逆对象。
+         * 负向量
+         * (a,b,c)->(-a,-b,-c)
          */
         Vector3.prototype.negate = function () {
             this.x = -this.x;
             this.y = -this.y;
             this.z = -this.z;
             return this;
+        };
+        /**
+         * 倒向量
+         * (a,b,c)->(1/a,1/b,1/c)
+         */
+        Vector3.prototype.inverse = function () {
+            this.x = 1 / this.x;
+            this.y = 1 / this.y;
+            this.z = 1 / this.z;
+            return this;
+        };
+        /**
+         * 倒向量
+         * (a,b,c)->(1/a,1/b,1/c)
+         */
+        Vector3.prototype.inverseTo = function (vout) {
+            if (vout === void 0) { vout = new Vector3(); }
+            return vout.copy(this).inverse();
         };
         /**
          * 通过将最前面的三个元素（x、y、z）除以矢量的长度可将 Vector3 对象转换为单位矢量。
@@ -4336,7 +4357,7 @@ var feng3d;
         /**
          * 按标量（大小）缩放当前的 Vector3 对象。
          */
-        Vector3.prototype.scale = function (s) {
+        Vector3.prototype.scaleNumber = function (s) {
             this.x *= s;
             this.y *= s;
             this.z *= s;
@@ -4344,6 +4365,24 @@ var feng3d;
         };
         /**
          * 按标量（大小）缩放当前的 Vector3 对象。
+         */
+        Vector3.prototype.scaleNumberTo = function (s, vout) {
+            if (vout === void 0) { vout = new Vector3(); }
+            return vout.copy(this).scaleNumber(s);
+        };
+        /**
+         * 缩放
+         * @param s 缩放量
+         */
+        Vector3.prototype.scale = function (s) {
+            this.x *= s.x;
+            this.y *= s.y;
+            this.z *= s.z;
+            return this;
+        };
+        /**
+         * 缩放
+         * @param s 缩放量
          */
         Vector3.prototype.scaleTo = function (s, vout) {
             if (vout === void 0) { vout = new Vector3(); }
@@ -6526,7 +6565,7 @@ var feng3d;
          */
         Matrix4x4.prototype.moveRight = function (distance) {
             var direction = this.right;
-            direction.scale(distance);
+            direction.scaleNumber(distance);
             this.position = this.position.addTo(direction);
             return this;
         };
@@ -6536,7 +6575,7 @@ var feng3d;
          */
         Matrix4x4.prototype.moveUp = function (distance) {
             var direction = this.up;
-            direction.scale(distance);
+            direction.scaleNumber(distance);
             this.position = this.position.addTo(direction);
             return this;
         };
@@ -6546,7 +6585,7 @@ var feng3d;
          */
         Matrix4x4.prototype.moveForward = function (distance) {
             var direction = this.forward;
-            direction.scale(distance);
+            direction.scaleNumber(distance);
             this.position = this.position.addTo(direction);
             return this;
         };
@@ -6615,7 +6654,7 @@ var feng3d;
             var rotationMatrix3d = Matrix4x4.fromRotation(vin.x, vin.y, vin.z);
             rotationMatrix3d.append(this);
             var newrotation = rotationMatrix3d.decompose()[1];
-            newrotation.scale(180 / Math.PI);
+            newrotation.scaleNumber(180 / Math.PI);
             var v = Math.round((newrotation.x - vin.x) / 180);
             if (v % 2 != 0) {
                 newrotation.x += 180;
@@ -7272,7 +7311,7 @@ var feng3d;
         Line3D.prototype.getPoint = function (length, vout) {
             if (length === void 0) { length = 0; }
             if (vout === void 0) { vout = new feng3d.Vector3(); }
-            return vout.copy(this.direction).scale(length).add(this.position);
+            return vout.copy(this.direction).scaleNumber(length).add(this.position);
         };
         /**
          * 获取指定z值的点
@@ -7417,7 +7456,7 @@ var feng3d;
          */
         Segment3D.prototype.getPoint = function (position, pout) {
             if (pout === void 0) { pout = new feng3d.Vector3(); }
-            var newPoint = pout.copy(this.p0).add(this.p1.subTo(this.p0).scale(position));
+            var newPoint = pout.copy(this.p0).add(this.p1.subTo(this.p0).scaleNumber(position));
             return newPoint;
         };
         /**
@@ -7603,9 +7642,11 @@ var feng3d;
         };
         /**
          * 随机三角形
+         * @param size 尺寸
          */
-        Triangle3D.random = function () {
-            return new Triangle3D(feng3d.Vector3.random(), feng3d.Vector3.random(), feng3d.Vector3.random());
+        Triangle3D.random = function (size) {
+            if (size === void 0) { size = 1; }
+            return new Triangle3D(feng3d.Vector3.random(size), feng3d.Vector3.random(size), feng3d.Vector3.random(size));
         };
         /**
          * 三角形三个点
@@ -7638,7 +7679,7 @@ var feng3d;
          */
         Triangle3D.prototype.getBarycenter = function (pout) {
             if (pout === void 0) { pout = new feng3d.Vector3(); }
-            return pout.copy(this.p0).add(this.p1).add(this.p2).scale(1 / 3);
+            return pout.copy(this.p0).add(this.p1).add(this.p2).scaleNumber(1 / 3);
         };
         /**
          * 外心，外切圆心,三角形三边的垂直平分线的交点，称为三角形外心。
@@ -7653,7 +7694,7 @@ var feng3d;
             var a0 = -a.dot(a) * c.dot(b) / d;
             var b0 = -b.dot(b) * c.dot(a) / d;
             var c0 = -c.dot(c) * b.dot(a) / d;
-            return pout.copy(this.p0).scale(a0).add(this.p1.scaleTo(b0)).add(this.p2.scaleTo(c0));
+            return pout.copy(this.p0).scaleNumber(a0).add(this.p1.scaleNumberTo(b0)).add(this.p2.scaleNumberTo(c0));
         };
         /**
          * 外心，内切圆心,三角形内心为三角形三条内角平分线的交点。
@@ -7664,7 +7705,7 @@ var feng3d;
             var a = this.p2.subTo(this.p1).length;
             var b = this.p0.subTo(this.p2).length;
             var c = this.p1.subTo(this.p0).length;
-            return pout.copy(this.p0).scale(a).add(this.p1.scaleTo(b)).add(this.p2.scaleTo(c)).scale(1 / (a + b + c));
+            return pout.copy(this.p0).scaleNumber(a).add(this.p1.scaleNumberTo(b)).add(this.p2.scaleNumberTo(c)).scaleNumber(1 / (a + b + c));
         };
         /**
          * 垂心，三角形三边上的三条高或其延长线交于一点，称为三角形垂心。
@@ -7678,7 +7719,7 @@ var feng3d;
             var a0 = a.dot(b) * a.dot(c);
             var b0 = b.dot(c) * b.dot(a);
             var c0 = c.dot(a) * c.dot(b);
-            return pout.copy(this.p0).scale(a0).add(this.p1.scaleTo(b0)).add(this.p2.scaleTo(c0)).scale(1 / (a0 + b0 + c0));
+            return pout.copy(this.p0).scaleNumber(a0).add(this.p1.scaleNumberTo(b0)).add(this.p2.scaleNumberTo(c0)).scaleNumber(1 / (a0 + b0 + c0));
         };
         /**
          * 通过3顶点定义一个三角形
@@ -7709,7 +7750,7 @@ var feng3d;
          */
         Triangle3D.prototype.getPoint = function (p, pout) {
             if (pout === void 0) { pout = new feng3d.Vector3(); }
-            return pout.copy(this.p0).scale(p.x).add(this.p1.scaleTo(p.y)).add(this.p2.scaleTo(p.z));
+            return pout.copy(this.p0).scaleNumber(p.x).add(this.p1.scaleNumberTo(p.y)).add(this.p2.scaleNumberTo(p.z));
         };
         /**
          * 获取三角形内随机点
@@ -7927,6 +7968,55 @@ var feng3d;
             return this.p1.subTo(this.p0).crossTo(this.p2.subTo(this.p1)).length * 0.5;
         };
         /**
+         * 栅格化，点阵化为XYZ轴间距为1的点阵
+         */
+        Triangle3D.prototype.rasterize = function () {
+            var aabb = feng3d.Box.fromPoints([this.p0, this.p1, this.p2]);
+            var point = new feng3d.Vector3();
+            var result = [];
+            for (var x = aabb.min.x; x <= aabb.max.x; x++) {
+                for (var y = aabb.min.y; y <= aabb.max.y; y++) {
+                    for (var z = aabb.min.z; z <= aabb.max.y; z++) {
+                        // 判定是否在三角形上
+                        var onTri = this.onWithPoint(point.init(x, y, z), 0.5);
+                        if (onTri) {
+                            result.push(x, y, z);
+                        }
+                    }
+                }
+            }
+            return result;
+        };
+        /**
+         * 平移
+         * @param v 向量
+         */
+        Triangle3D.prototype.translateVector3 = function (v) {
+            this.p0.add(v);
+            this.p1.add(v);
+            this.p2.add(v);
+            return this;
+        };
+        /**
+         * 缩放
+         * @param v 缩放量
+         */
+        Triangle3D.prototype.scaleVector3 = function (v) {
+            this.p0.scale(v);
+            this.p1.scale(v);
+            this.p2.scale(v);
+        };
+        /**
+         * 自定义栅格化为点阵
+         * @param voxelSize 体素尺寸，点阵XYZ轴间距
+         * @param origin 原点，点阵中的某点正处于原点上，因此可以用作体素范围内的偏移
+         */
+        Triangle3D.prototype.rasterizeCustom = function (voxelSize, origin) {
+            if (voxelSize === void 0) { voxelSize = new feng3d.Vector3(1, 1, 1); }
+            if (origin === void 0) { origin = new feng3d.Vector3(); }
+            var tri = this.clone().translateVector3(origin.clone().negate()).scaleVector3(voxelSize.inverseTo());
+        };
+        /**
          * 复制
          * @param triangle 三角形
          */
@@ -7991,7 +8081,7 @@ var feng3d;
          */
         Box.prototype.getCenter = function (vout) {
             if (vout === void 0) { vout = new feng3d.Vector3(); }
-            return vout.copy(this.min).add(this.max).scale(0.5);
+            return vout.copy(this.min).add(this.max).scaleNumber(0.5);
         };
         /**
          * 尺寸
@@ -8160,7 +8250,7 @@ var feng3d;
          * @param delta 膨胀量
          */
         Box.prototype.inflatePoint = function (delta) {
-            delta = delta.scaleTo(0.5);
+            delta = delta.scaleNumberTo(0.5);
             this.min.sub(delta);
             this.max.add(delta);
         };
@@ -8651,7 +8741,7 @@ var feng3d;
             pout.copy(point);
             if (deltaLengthSq > (this.radius * this.radius)) {
                 pout.sub(this.center).normalize();
-                pout.scale(this.radius).add(this.center);
+                pout.scaleNumber(this.radius).add(this.center);
             }
             return pout;
         };
@@ -8858,7 +8948,7 @@ var feng3d;
             var cosAngle = lineDir.dot(this.getNormal());
             var distance = this.distanceWithPoint(line3D.position);
             var addVec = lineDir.clone();
-            addVec.scale(-distance / cosAngle);
+            addVec.scaleNumber(-distance / cosAngle);
             var crossPos = line3D.position.addTo(addVec);
             return crossPos;
         };
@@ -8909,7 +8999,7 @@ var feng3d;
          */
         Plane3D.prototype.projectPoint = function (point, vout) {
             if (vout === void 0) { vout = new feng3d.Vector3(); }
-            return this.getNormal(vout).scale(-this.distanceWithPoint(point)).add(point);
+            return this.getNormal(vout).scaleNumber(-this.distanceWithPoint(point)).add(point);
         };
         /**
          * 与指定点最近的点
@@ -16399,7 +16489,7 @@ var feng3d;
                 }
                 val.decompose(feng3d.Orientation3D.EULER_ANGLES, elements);
                 this.position = elements[0];
-                this.rotation = elements[1].scale(feng3d.FMath.RAD2DEG);
+                this.rotation = elements[1].scaleNumber(feng3d.FMath.RAD2DEG);
                 this.scale = elements[2];
             },
             enumerable: true,
@@ -16476,7 +16566,7 @@ var feng3d;
             },
             set: function (value) {
                 var angles = value.toEulerAngles();
-                angles.scale(feng3d.FMath.RAD2DEG);
+                angles.scaleNumber(feng3d.FMath.RAD2DEG);
                 this.rotation = angles;
             },
             enumerable: true,
@@ -16621,7 +16711,7 @@ var feng3d;
             var rotationMatrix3d = feng3d.Matrix4x4.fromRotation(this.rx, this.ry, this.rz);
             rotationMatrix3d.appendRotation(axis, angle, pivotPoint);
             var newrotation = rotationMatrix3d.decompose()[1];
-            newrotation.scale(180 / Math.PI);
+            newrotation.scaleNumber(180 / Math.PI);
             var v = Math.round((newrotation.x - this.rx) / 180);
             if (v % 2 != 0) {
                 newrotation.x += 180;
@@ -17640,7 +17730,7 @@ var feng3d;
             if (this.holdSize && this.camera && _localToWorldMatrix) {
                 var depthScale = this.getDepthScale(this.camera);
                 var vec = _localToWorldMatrix.decompose();
-                vec[2].scale(depthScale);
+                vec[2].scaleNumber(depthScale);
                 _localToWorldMatrix.recompose(vec);
             }
         };
@@ -22676,7 +22766,7 @@ var feng3d;
                 textureMaterial.renderParams.dfactor = feng3d.BlendFactor.ZERO;
             }
             var depth = viewCamera.lens.near * 2;
-            gameObject.transform.position = viewCamera.transform.scenePosition.addTo(viewCamera.transform.localToWorldMatrix.forward.scaleTo(depth));
+            gameObject.transform.position = viewCamera.transform.scenePosition.addTo(viewCamera.transform.localToWorldMatrix.forward.scaleNumberTo(depth));
             var billboardComponent = gameObject.getComponent(feng3d.BillboardComponent);
             billboardComponent.camera = viewCamera;
             if (this.debugShadowMap) {
@@ -22747,7 +22837,7 @@ var feng3d;
             var center = worldBounds.getCenter();
             var radius = worldBounds.getSize().length / 2;
             // 
-            this.shadowCamera.transform.position = center.addTo(this.direction.scaleTo(radius + this.shadowCameraNear).negate());
+            this.shadowCamera.transform.position = center.addTo(this.direction.scaleNumberTo(radius + this.shadowCameraNear).negate());
             this.shadowCamera.transform.lookAt(center, this.shadowCamera.transform.upVector);
             //
             if (!this.orthographicLens) {
@@ -23394,7 +23484,7 @@ var feng3d;
                 var up = feng3d.Vector3.Y_AXIS;
                 if (matrix3d.up.dot(up) < 0) {
                     up = up.clone();
-                    up.scale(-1);
+                    up.scaleNumber(-1);
                 }
                 matrix3d.appendRotation(up, offsetPoint.x, matrix3d.position);
                 this.transform.localToWorldMatrix = matrix3d;
@@ -23410,15 +23500,15 @@ var feng3d;
                     accelerationVec.add(element);
                 }
             }
-            accelerationVec.scale(this.acceleration);
+            accelerationVec.scaleNumber(this.acceleration);
             //计算速度
             this.velocity.add(accelerationVec);
             var right = this.transform.rightVector;
             var up = this.transform.upVector;
             var forward = this.transform.forwardVector;
-            right.scale(this.velocity.x);
-            up.scale(this.velocity.y);
-            forward.scale(this.velocity.z);
+            right.scaleNumber(this.velocity.x);
+            up.scaleNumber(this.velocity.y);
+            forward.scaleNumber(this.velocity.z);
             //计算位移
             var displacement = right.clone();
             displacement.add(up);
@@ -24866,9 +24956,9 @@ var feng3d;
             for (var i = 0, n = this._activeParticles.length; i < n; i++) {
                 var particle = this._activeParticles[i];
                 if (this.geometry == feng3d.Geometry.billboard && cameraMatrix) {
-                    var matrix = new feng3d.Matrix4x4().recompose([particle.position, particle.rotation.scaleTo(feng3d.FMath.DEG2RAD), particle.scale]);
+                    var matrix = new feng3d.Matrix4x4().recompose([particle.position, particle.rotation.scaleNumberTo(feng3d.FMath.DEG2RAD), particle.scale]);
                     matrix.lookAt(localCameraPos, localCameraUp);
-                    particle.rotation = matrix.decompose()[1].scale(feng3d.FMath.RAD2DEG);
+                    particle.rotation = matrix.decompose()[1].scaleNumber(feng3d.FMath.RAD2DEG);
                 }
                 positions.push(particle.position.x, particle.position.y, particle.position.z);
                 scales.push(particle.scale.x, particle.scale.y, particle.scale.z);
@@ -25142,12 +25232,12 @@ var feng3d;
             var angle = Math.random() * feng3d.FMath.degToRad(this.arc);
             var r = Math.random();
             var p = new feng3d.Vector3(Math.sin(angle), Math.cos(angle), 0);
-            particle.position.copy(p).scale(this.radius).scale(r);
+            particle.position.copy(p).scaleNumber(this.radius).scaleNumber(r);
             // 计算速度
-            p.scale(this.radius + this.height * Math.tan(feng3d.FMath.degToRad(this.angle))).scale(r);
+            p.scaleNumber(this.radius + this.height * Math.tan(feng3d.FMath.degToRad(this.angle))).scaleNumber(r);
             p.z = this.height;
             var dir = p.sub(particle.position).normalize();
-            particle.velocity.copy(dir).scale(speed);
+            particle.velocity.copy(dir).scaleNumber(speed);
         };
         __decorate([
             feng3d.serialize,
@@ -25188,11 +25278,11 @@ var feng3d;
         ParticleSystemShapeSphere.prototype.initParticleState = function (particle) {
             var speed = particle.velocity.length;
             // 计算位置
-            var dir = feng3d.Vector3.random().scale(2).subNumber(1).normalize();
-            var p = dir.scaleTo(Math.random() * this.radius);
+            var dir = feng3d.Vector3.random().scaleNumber(2).subNumber(1).normalize();
+            var p = dir.scaleNumberTo(Math.random() * this.radius);
             particle.position.copy(p);
             // 计算速度
-            particle.velocity.copy(dir).scale(speed);
+            particle.velocity.copy(dir).scaleNumber(speed);
         };
         __decorate([
             feng3d.serialize,
@@ -25224,10 +25314,10 @@ var feng3d;
             var speed = particle.velocity.length;
             // 计算位置
             var dir = new feng3d.Vector3(0, 0, 1);
-            var p = new feng3d.Vector3(this.boxX, this.boxY, this.boxZ).multiply(feng3d.Vector3.random().scale(2).subNumber(1));
+            var p = new feng3d.Vector3(this.boxX, this.boxY, this.boxZ).multiply(feng3d.Vector3.random().scaleNumber(2).subNumber(1));
             particle.position.copy(p);
             // 计算速度
-            particle.velocity.copy(dir).scale(speed);
+            particle.velocity.copy(dir).scaleNumber(speed);
         };
         __decorate([
             feng3d.serialize,
@@ -25267,11 +25357,11 @@ var feng3d;
             // 计算位置
             var angle = Math.random() * feng3d.FMath.degToRad(this.arc);
             var dir = new feng3d.Vector3(Math.sin(angle), Math.cos(angle), 0);
-            var p = dir.scaleTo(this.radius * Math.random());
+            var p = dir.scaleNumberTo(this.radius * Math.random());
             //
             particle.position.copy(p);
             // 计算速度
-            particle.velocity.copy(dir).scale(speed);
+            particle.velocity.copy(dir).scaleNumber(speed);
         };
         __decorate([
             feng3d.serialize,
@@ -25309,7 +25399,7 @@ var feng3d;
             //
             particle.position.copy(p);
             // 计算速度
-            particle.velocity.copy(dir).scale(speed);
+            particle.velocity.copy(dir).scaleNumber(speed);
         };
         __decorate([
             feng3d.serialize,
@@ -27312,10 +27402,10 @@ var feng3d;
                         break;
                     case "Linear":
                         tempVec = key1.value.clone();
-                        tempVec.scale(InverseFactor);
+                        tempVec.scaleNumber(InverseFactor);
                         scalingVector.add(tempVec);
                         tempVec = key2.value.clone();
-                        tempVec.scale(Factor);
+                        tempVec.scaleNumber(Factor);
                         scalingVector.add(tempVec);
                         break;
                     case "Hermite":
@@ -27325,16 +27415,16 @@ var feng3d;
                         Factor3 = FactorTimesTwo * (Factor - 1.0);
                         Factor4 = FactorTimesTwo * (3.0 - 2.0 * Factor);
                         tempVec = key1.value.clone();
-                        tempVec.scale(Factor1);
+                        tempVec.scaleNumber(Factor1);
                         scalingVector.add(tempVec);
                         tempVec = key1.OutTan.clone();
-                        tempVec.scale(Factor2);
+                        tempVec.scaleNumber(Factor2);
                         scalingVector.add(tempVec);
                         tempVec = key2.InTan.clone();
-                        tempVec.scale(Factor3);
+                        tempVec.scaleNumber(Factor3);
                         scalingVector.add(tempVec);
                         tempVec = key2.value.clone();
-                        tempVec.scale(Factor4);
+                        tempVec.scaleNumber(Factor4);
                         scalingVector.add(tempVec);
                         break;
                     case "Bezier":
@@ -27345,16 +27435,16 @@ var feng3d;
                         Factor3 = 3.0 * FactorTimesTwo * InverseFactor;
                         Factor4 = FactorTimesTwo * Factor;
                         tempVec = key1.value.clone();
-                        tempVec.scale(Factor1);
+                        tempVec.scaleNumber(Factor1);
                         scalingVector.add(tempVec);
                         tempVec = key1.OutTan.clone();
-                        tempVec.scale(Factor2);
+                        tempVec.scaleNumber(Factor2);
                         scalingVector.add(tempVec);
                         tempVec = key2.InTan.clone();
-                        tempVec.scale(Factor3);
+                        tempVec.scaleNumber(Factor3);
                         scalingVector.add(tempVec);
                         tempVec = key2.value.clone();
-                        tempVec.scale(Factor4);
+                        tempVec.scaleNumber(Factor4);
                         scalingVector.add(tempVec);
                         break;
                 }
@@ -27402,10 +27492,10 @@ var feng3d;
                         break;
                     case "Linear":
                         tempVec = key1.value.clone();
-                        tempVec.scale(InverseFactor);
+                        tempVec.scaleNumber(InverseFactor);
                         TranslationVector.add(tempVec);
                         tempVec = key2.value.clone();
-                        tempVec.scale(Factor);
+                        tempVec.scaleNumber(Factor);
                         TranslationVector.add(tempVec);
                         break;
                     case "Hermite":
@@ -27415,16 +27505,16 @@ var feng3d;
                         Factor3 = FactorTimesTwo * (Factor - 1.0);
                         Factor4 = FactorTimesTwo * (3.0 - 2.0 * Factor);
                         tempVec = key1.value.clone();
-                        tempVec.scale(Factor1);
+                        tempVec.scaleNumber(Factor1);
                         TranslationVector.add(tempVec);
                         tempVec = key1.OutTan.clone();
-                        tempVec.scale(Factor2);
+                        tempVec.scaleNumber(Factor2);
                         TranslationVector.add(tempVec);
                         tempVec = key2.InTan.clone();
-                        tempVec.scale(Factor3);
+                        tempVec.scaleNumber(Factor3);
                         TranslationVector.add(tempVec);
                         tempVec = key2.value.clone();
-                        tempVec.scale(Factor4);
+                        tempVec.scaleNumber(Factor4);
                         TranslationVector.add(tempVec);
                         break;
                     case "Bezier":
@@ -27435,16 +27525,16 @@ var feng3d;
                         Factor3 = 3.0 * FactorTimesTwo * InverseFactor;
                         Factor4 = FactorTimesTwo * Factor;
                         tempVec = key1.value.clone();
-                        tempVec.scale(Factor1);
+                        tempVec.scaleNumber(Factor1);
                         TranslationVector.add(tempVec);
                         tempVec = key1.OutTan.clone();
-                        tempVec.scale(Factor2);
+                        tempVec.scaleNumber(Factor2);
                         TranslationVector.add(tempVec);
                         tempVec = key2.InTan.clone();
-                        tempVec.scale(Factor3);
+                        tempVec.scaleNumber(Factor3);
                         TranslationVector.add(tempVec);
                         tempVec = key2.value.clone();
-                        tempVec.scale(Factor4);
+                        tempVec.scaleNumber(Factor4);
                         TranslationVector.add(tempVec);
                         break;
                 }
@@ -29370,7 +29460,7 @@ var feng3d;
                     orientation.z = -orientation.z;
                     translation.x = -translation.x;
                     var eulers = orientation.toEulerAngles();
-                    eulers.scale(180 / Math.PI);
+                    eulers.scaleNumber(180 / Math.PI);
                     var path = [
                         [feng3d.PropertyClipPathItemType.GameObject, hierarchy.name],
                         [feng3d.PropertyClipPathItemType.Component, "feng3d.Transform"],
