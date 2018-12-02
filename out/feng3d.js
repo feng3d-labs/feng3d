@@ -17514,7 +17514,8 @@ var feng3d;
             feng3d.serialize
         ], GameObject.prototype, "mouseEnabled", void 0);
         __decorate([
-            feng3d.serialize
+            feng3d.serialize,
+            feng3d.oav()
         ], GameObject.prototype, "navigationArea", void 0);
         __decorate([
             feng3d.serialize

@@ -96,6 +96,7 @@ namespace feng3d
          * 模型生成的导航网格类型
          */
         @serialize
+        @oav()
         navigationArea = -1;
 
         /**
