@@ -10737,7 +10737,13 @@ declare namespace feng3d {
             uvs?: number[];
             normals?: number[];
             tangents?: number[];
-        }[]): any;
+        }[]): {
+            indices: number[];
+            positions: number[];
+            uvs?: number[];
+            normals?: number[];
+            tangents?: number[];
+        };
         /**
          * 射线投影几何体
          * @param ray                           射线

@@ -19441,7 +19441,7 @@ var feng3d;
          * @param geometrys 几何体列表
          */
         GeometryUtils.prototype.mergeGeometry = function (geometrys) {
-            var result = Object.deepClone(geometry[0]);
+            var result = Object.deepClone(geometrys[0]);
             for (var i = 1; i < geometrys.length; i++) {
                 var geometry = geometrys[i];
                 var startIndex = result.positions.length / 3;

@@ -382,7 +382,7 @@ namespace feng3d
          */
         mergeGeometry(geometrys: { indices: number[], positions: number[], uvs?: number[], normals?: number[], tangents?: number[] }[])
         {
-            var result = Object.deepClone(geometry[0]);
+            var result = Object.deepClone(geometrys[0]);
             for (let i = 1; i < geometrys.length; i++)
             {
                 var geometry = geometrys[i];
