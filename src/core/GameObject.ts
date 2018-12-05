@@ -182,6 +182,7 @@ namespace feng3d
         set components(value)
         {
             if (!value) return;
+            this._transform = <any>null;
             for (var i = 0, n = value.length; i < n; i++)
             {
                 var compnent = value[i];
@@ -189,7 +190,6 @@ namespace feng3d
                 if (compnent.single) this.removeComponentsByType(<any>compnent.constructor);
                 this.addComponentAt(value[i], this.numComponents);
             }
-            this._transform = <any>null;
         }
 
         //------------------------------------------

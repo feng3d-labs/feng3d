@@ -503,12 +503,15 @@ var feng3d;
          * @param target 被序列化的对象
          * @returns 序列化后可以转换为Json的数据对象
          */
-        Serialization.prototype.serialize = function (target) {
+        Serialization.prototype.serialize = function (target, saveFlags) {
+            if (saveFlags === void 0) { saveFlags = feng3d.HideFlags.DontSave; }
             //基础类型
             if (isBaseType(target))
                 return target;
             // 排除不支持序列化对象
             if (target.hasOwnProperty("serializable") && !target["serializable"])
+                return undefined;
+            if (target instanceof feng3d.Feng3dObject && !!(target.hideFlags & saveFlags))
                 return undefined;
             //处理数组
             if (target.constructor === Array) {
@@ -16105,6 +16108,10 @@ var feng3d;
          */
         HideFlags[HideFlags["DontUnloadUnusedAsset"] = 32] = "DontUnloadUnusedAsset";
         /**
+         * 不能被变换
+         */
+        HideFlags[HideFlags["DontTransform"] = 64] = "DontTransform";
+        /**
          * 隐藏
          */
         HideFlags[HideFlags["Hide"] = 3] = "Hide";
@@ -17024,6 +17031,7 @@ var feng3d;
             set: function (value) {
                 if (!value)
                     return;
+                this._transform = null;
                 for (var i = 0, n = value.length; i < n; i++) {
                     var compnent = value[i];
                     if (!compnent)
@@ -17032,7 +17040,6 @@ var feng3d;
                         this.removeComponentsByType(compnent.constructor);
                     this.addComponentAt(value[i], this.numComponents);
                 }
-                this._transform = null;
             },
             enumerable: true,
             configurable: true
@@ -18306,7 +18313,8 @@ var feng3d;
          */
         Scene3D.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
-            this.transform.hideFlags = feng3d.HideFlags.Hide;
+            this.transform.hideFlags = this.transform.hideFlags | feng3d.HideFlags.Hide;
+            this.gameObject.hideFlags = this.gameObject.hideFlags | feng3d.HideFlags.DontTransform;
             //
             gameObject["_scene"] = this;
             this.gameObject["updateChildrenScene"]();
@@ -26102,6 +26110,7 @@ var feng3d;
          */
         SkinnedModel.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
+            this.hideFlags = feng3d.HideFlags.DontTransform;
         };
         SkinnedModel.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
             var _this = this;

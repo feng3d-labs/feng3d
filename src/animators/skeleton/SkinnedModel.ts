@@ -21,6 +21,7 @@ namespace feng3d
         init(gameObject: GameObject)
         {
             super.init(gameObject);
+            this.hideFlags = HideFlags.DontTransform;
         }
 
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)

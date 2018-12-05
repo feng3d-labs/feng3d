@@ -34,6 +34,10 @@ namespace feng3d
          */
         DontUnloadUnusedAsset = 32,
         /**
+         * 不能被变换
+         */
+        DontTransform = 64,
+        /**
          * 隐藏
          */
         Hide = HideInHierarchy | HideInInspector,

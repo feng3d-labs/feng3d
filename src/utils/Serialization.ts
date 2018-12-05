@@ -37,7 +37,7 @@ namespace feng3d
          * @param target 被序列化的对象
          * @returns 序列化后可以转换为Json的数据对象 
          */
-        serialize(target)
+        serialize(target, saveFlags = HideFlags.DontSave)
         {
             //基础类型
             if (isBaseType(target))
@@ -45,6 +45,9 @@ namespace feng3d
 
             // 排除不支持序列化对象
             if (target.hasOwnProperty("serializable") && !target["serializable"])
+                return undefined;
+
+            if (target instanceof Feng3dObject && !!(target.hideFlags & saveFlags))
                 return undefined;
 
             //处理数组

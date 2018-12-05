@@ -49,7 +49,8 @@ namespace feng3d
         init(gameObject: GameObject)
         {
             super.init(gameObject);
-            this.transform.hideFlags = HideFlags.Hide;
+            this.transform.hideFlags = this.transform.hideFlags | HideFlags.Hide;
+            this.gameObject.hideFlags = this.gameObject.hideFlags | HideFlags.DontTransform;
 
             //
             gameObject["_scene"] = this;

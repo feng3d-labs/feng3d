@@ -140,7 +140,7 @@ declare namespace feng3d {
          * @param target 被序列化的对象
          * @returns 序列化后可以转换为Json的数据对象
          */
-        serialize(target: any): any;
+        serialize(target: any, saveFlags?: HideFlags): any;
         /**
          * 比较两个对象的不同，提取出不同的数据
          * @param target 用于检测不同的数据
@@ -9547,6 +9547,10 @@ declare namespace feng3d {
          * 对象不会被Resources.UnloadUnusedAssets卸载。
          */
         DontUnloadUnusedAsset = 32,
+        /**
+         * 不能被变换
+         */
+        DontTransform = 64,
         /**
          * 隐藏
          */
