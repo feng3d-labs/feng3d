@@ -981,10 +981,8 @@ var feng3d;
             var ps = t.rasterizeCustom(feng3d.Vector3.random(0.5).addNumber(0.25), feng3d.Vector3.random());
             if (ps.length == 0)
                 assert.ok(true);
-            ps.forEach(function (v, i) {
-                if (i % 3 == 0) {
-                    assert.ok(t.onWithPoint(new feng3d.Vector3(ps[i], ps[i + 1], ps[i + 2]), 0.5));
-                }
+            ps.forEach(function (v) {
+                assert.ok(t.onWithPoint(new feng3d.Vector3(v.xv, v.yv, v.zv), 0.5));
             });
         });
     });

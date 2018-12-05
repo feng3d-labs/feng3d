@@ -429,6 +429,8 @@ namespace feng3d
         rasterize()
         {
             var aabb = feng3d.Box.fromPoints([this.p0, this.p1, this.p2]);
+            aabb.min.round();
+            aabb.max.round();
             var point = new feng3d.Vector3();
             var result: number[] = [];
             for (let x = aabb.min.x; x <= aabb.max.x; x++)
@@ -483,17 +485,16 @@ namespace feng3d
             var tri = this.clone().translateVector3(origin.negateTo()).scaleVector3(voxelSize.inverseTo());
             var ps = tri.rasterize();
             var vec = new Vector3();
+            var result: { xi: number, yi: number, zi: number, xv: number, yv: number, zv: number }[] = [];
             ps.forEach((v, i) =>
             {
                 if (i % 3 == 0)
                 {
                     vec.init(ps[i], ps[i + 1], ps[i + 2]).scale(voxelSize).add(origin);
-                    ps[i] = vec.x;
-                    ps[i + 1] = vec.y;
-                    ps[i + 2] = vec.z;
+                    result.push({ xi: ps[i], yi: ps[i + 1], zi: ps[i + 2], xv: vec.x, yv: vec.y, zv: vec.z });
                 }
             });
-            return ps;
+            return result;
         }
 
         /**

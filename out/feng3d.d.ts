@@ -4146,7 +4146,14 @@ declare namespace feng3d {
          * @param voxelSize 体素尺寸，点阵XYZ轴间距
          * @param origin 原点，点阵中的某点正处于原点上，因此可以用作体素范围内的偏移
          */
-        rasterizeCustom(voxelSize?: Vector3, origin?: Vector3): number[];
+        rasterizeCustom(voxelSize?: Vector3, origin?: Vector3): {
+            xi: number;
+            yi: number;
+            zi: number;
+            xv: number;
+            yv: number;
+            zv: number;
+        }[];
         /**
          * 复制
          * @param triangle 三角形
