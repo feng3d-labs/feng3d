@@ -7510,21 +7510,29 @@ var feng3d;
          * 指定点到该线段距离，如果投影点不在线段上时，该距离为指定点到最近的线段端点的距离
          * @param point 指定点
          */
-        Segment3D.prototype.getPointDistance = function (point) {
+        Segment3D.prototype.getPointDistanceSquare = function (point) {
             var position = this.getPositionByPoint(point);
             if (position <= 0) {
-                distance = point.subTo(this.p0).length;
+                lengthSquared = point.subTo(this.p0).lengthSquared;
             }
             else if (position >= 1) {
-                distance = point.subTo(this.p1).length;
+                lengthSquared = point.subTo(this.p1).lengthSquared;
             }
             else {
-                var s0 = point.subTo(this.p0).length;
-                var s1 = position * this.p1.subTo(this.p0).length;
-                var distance = Math.sqrt(Math.abs(s0 * s0 - s1 * s1));
-                distance = Number(distance.toPrecision(6));
+                var s0 = point.subTo(this.p0).lengthSquared;
+                var s1 = position * position * this.p1.subTo(this.p0).lengthSquared;
+                var lengthSquared = Math.abs(s0 - s1);
             }
-            return distance;
+            return lengthSquared;
+        };
+        /**
+         * 指定点到该线段距离，如果投影点不在线段上时，该距离为指定点到最近的线段端点的距离
+         * @param point 指定点
+         */
+        Segment3D.prototype.getPointDistance = function (point) {
+            var v = this.getPointDistanceSquare(point);
+            v = Math.sqrt(v);
+            return v;
         };
         /**
          * 与直线相交
@@ -8886,6 +8894,9 @@ var feng3d;
          * @param p2		点2
          */
         Plane3D.prototype.fromPoints = function (p0, p1, p2) {
+            // p1.subTo(p0, v0);
+            // p2.subTo(p1, v1);
+            // var normal = v0.crossTo(v1).normalize();
             var normal = p1.subTo(p0).crossTo(p2.subTo(p1)).normalize();
             this.a = normal.x;
             this.b = normal.y;
@@ -9059,6 +9070,9 @@ var feng3d;
         return Plane3D;
     }());
     feng3d.Plane3D = Plane3D;
+    // var v0 = new Vector3();
+    // var v1 = new Vector3();
+    // var v2 = new Vector3();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

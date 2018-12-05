@@ -3930,6 +3930,11 @@ declare namespace feng3d {
          * 指定点到该线段距离，如果投影点不在线段上时，该距离为指定点到最近的线段端点的距离
          * @param point 指定点
          */
+        getPointDistanceSquare(point: Vector3): number;
+        /**
+         * 指定点到该线段距离，如果投影点不在线段上时，该距离为指定点到最近的线段端点的距离
+         * @param point 指定点
+         */
         getPointDistance(point: Vector3): number;
         /**
          * 与直线相交

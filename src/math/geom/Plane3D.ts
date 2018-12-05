@@ -109,6 +109,9 @@ namespace feng3d
 		 */
         fromPoints(p0: Vector3, p1: Vector3, p2: Vector3)
         {
+            // p1.subTo(p0, v0);
+            // p2.subTo(p1, v1);
+            // var normal = v0.crossTo(v1).normalize();
             var normal = p1.subTo(p0).crossTo(p2.subTo(p1)).normalize();
             this.a = normal.x;
             this.b = normal.y;
@@ -308,4 +311,7 @@ namespace feng3d
             return "Plane3D [this.a:" + this.a + ", this.b:" + this.b + ", this.c:" + this.c + ", this.d:" + this.d + "]";
         }
     }
+    // var v0 = new Vector3();
+    // var v1 = new Vector3();
+    // var v2 = new Vector3();
 }

@@ -103,25 +103,35 @@ namespace feng3d
          * 指定点到该线段距离，如果投影点不在线段上时，该距离为指定点到最近的线段端点的距离
          * @param point 指定点
          */
-        getPointDistance(point: Vector3)
+        getPointDistanceSquare(point: Vector3)
         {
             var position = this.getPositionByPoint(point);
             if (position <= 0)
             {
-                distance = point.subTo(this.p0).length;
+                lengthSquared = point.subTo(this.p0).lengthSquared;
             }
             else if (position >= 1)
             {
-                distance = point.subTo(this.p1).length;
+                lengthSquared = point.subTo(this.p1).lengthSquared;
             }
             else
             {
-                var s0 = point.subTo(this.p0).length;
-                var s1 = position * this.p1.subTo(this.p0).length;
-                var distance = Math.sqrt(Math.abs(s0 * s0 - s1 * s1));
-                distance = Number(distance.toPrecision(6));
+                var s0 = point.subTo(this.p0).lengthSquared;
+                var s1 = position * position * this.p1.subTo(this.p0).lengthSquared;
+                var lengthSquared = Math.abs(s0 - s1);
             }
-            return distance;
+            return lengthSquared;
+        }
+
+        /**
+         * 指定点到该线段距离，如果投影点不在线段上时，该距离为指定点到最近的线段端点的距离
+         * @param point 指定点
+         */
+        getPointDistance(point: Vector3)
+        {
+            var v = this.getPointDistanceSquare(point);
+            v = Math.sqrt(v);
+            return v;
         }
 
         /**
