@@ -8835,11 +8835,10 @@ var feng3d;
             if (b === void 0) { b = 1; }
             if (c === void 0) { c = 0; }
             if (d === void 0) { d = 0; }
-            var len = 1 / Math.sqrt(a * a + b * b + c * c);
-            this.a = a * len;
-            this.b = b * len;
-            this.c = c * len;
-            this.d = d * len;
+            this.a = a;
+            this.b = b;
+            this.c = c;
+            this.d = d;
         }
         /**
          * 通过3顶点定义一个平面
