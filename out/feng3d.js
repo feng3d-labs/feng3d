@@ -7984,7 +7984,7 @@ var feng3d;
             var result = [];
             for (var x = aabb.min.x; x <= aabb.max.x; x++) {
                 for (var y = aabb.min.y; y <= aabb.max.y; y++) {
-                    for (var z = aabb.min.z; z <= aabb.max.y; z++) {
+                    for (var z = aabb.min.z; z <= aabb.max.z; z++) {
                         // 判定是否在三角形上
                         var onTri = this.onWithPoint(point.init(x, y, z), 0.5);
                         if (onTri) {
