@@ -1475,10 +1475,17 @@ declare namespace feng3d {
          */
         PRECISION: number;
         /**
-         * http://www.broofa.com/Tools/Math.uuid.htm
+         * 获取唯一标识符
+         * @see http://www.broofa.com/Tools/Math.uuid.htm
          */
         uuid: () => string;
-        clamp: (value: number, a: number, b: number) => number;
+        /**
+         * 计算指定值与区间[edge0,edge1]最近的值
+         * @param value 指定值
+         * @param edge0 区间边界0
+         * @param edge1 区间边界1
+         */
+        clamp(value: number, edge0: number, edge1: number): number;
         /**
          * compute euclidian modulo of m % n
          * https://en.wikipedia.org/wiki/Modulo_operation
@@ -1491,32 +1498,60 @@ declare namespace feng3d {
         /**
          * https://en.wikipedia.org/wiki/Linear_interpolation
          */
-        lerp: (x: any, y: any, t: any) => number;
+        /**
+         * 线性插值
+         * @param start 起始值
+         * @param end 终止值
+         * @param t 插值系数
+         */
+        lerp(start: number, end: number, t: number): number;
         /**
          * http://en.wikipedia.org/wiki/Smoothstep
          */
         smoothstep: (x: any, min: any, max: any) => number;
         smootherstep: (x: any, min: any, max: any) => number;
         /**
-         * Random integer from <low, high> interval
+         * 从<low, high>获取随机整数
+         * @param low 区间起始值
+         * @param high 区间终止值
          */
-        randInt: (low: any, high: any) => any;
+        randInt(low: number, high: number): number;
         /**
-         * Random float from <low, high> interval
+         * 从<low, high>获取随机浮点数
+         * @param low 区间起始值
+         * @param high 区间终止值
          */
-        randFloat: (low: any, high: any) => any;
+        randFloat(low: number, high: number): number;
         /**
-         * Random float from <-range/2, range/2> interval
+         * 从<-range/2, range/2>获取随机浮点数
+         * @param range 范围
          */
-        randFloatSpread: (range: any) => number;
+        randFloatSpread(range: number): number;
         /**
          * 角度转换为弧度
+         * @param degrees 角度
          */
-        degToRad: (degrees: any) => number;
-        radToDeg: (radians: any) => number;
-        isPowerOfTwo: (value: any) => boolean;
-        nearestPowerOfTwo: (value: any) => number;
-        nextPowerOfTwo: (value: any) => any;
+        degToRad(degrees: number): number;
+        /**
+         * 弧度转换为角度
+         * @param radians 弧度
+         */
+        radToDeg(radians: number): number;
+        /**
+         * 判断指定整数是否为2的幂
+         * @param value 整数
+         */
+        isPowerOfTwo(value: number): boolean;
+        /**
+         * 获取离指定整数最近的2的幂
+         * @param value 整数
+         */
+        nearestPowerOfTwo(value: number): number;
+        /**
+         * 获取指定大于等于整数最小2的幂，3->4,5->8,17->32,33->64
+         * @param value 整数
+         */
+        nextPowerOfTwo(value: number): number;
         /**
          * 获取目标最近的值
          *
@@ -1530,7 +1565,7 @@ declare namespace feng3d {
          * @param target 目标值
          * @param precision 精度
          */
-        toRound: (source: number, target: number, precision?: number) => number;
+        toRound(source: number, target: number, precision?: number): number;
         /**
          * 比较两个Number是否相等
          * @param a 数字a
@@ -1538,6 +1573,13 @@ declare namespace feng3d {
          * @param precision 进度
          */
         equals(a: number, b: number, precision?: number): boolean;
+        /**
+         * 计算最大公约数
+         * @param a 整数a
+         * @param b 整数b
+         * @see https://en.wikipedia.org/wiki/Greatest_common_divisor
+         */
+        gcd(a: number, b: number): number;
     };
 }
 declare namespace feng3d {

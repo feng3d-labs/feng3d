@@ -14,11 +14,11 @@ namespace feng3d
          */
         PRECISION: 0.000001,
         /**
-         * http://www.broofa.com/Tools/Math.uuid.htm
+         * 获取唯一标识符
+         * @see http://www.broofa.com/Tools/Math.uuid.htm
          */
         uuid: function ()
         {
-            // http://www.broofa.com/Tools/Math.uuid.htm
             var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
             var id = new Array(36);
             var rnd = 0, r;
@@ -43,14 +43,18 @@ namespace feng3d
                 return id.join('');
             };
         }(),
-
-        clamp: function (value: number, a: number, b: number)
+        /**
+         * 计算指定值与区间[edge0,edge1]最近的值 
+         * @param value 指定值
+         * @param edge0 区间边界0
+         * @param edge1 区间边界1
+         */
+        clamp(value: number, edge0: number, edge1: number)
         {
-            if ((value - a) * (value - b) <= 0) return value;
-            if (value < a) return Math.min(a, b);
-            return Math.max(a, b);
+            if ((value - edge0) * (value - edge1) <= 0) return value;
+            if (value < edge0) return edge0 < edge1 ? edge0 : edge1;
+            return edge0 > edge1 ? edge0 : edge1;
         },
-
         /**
          * compute euclidian modulo of m % n
          * https://en.wikipedia.org/wiki/Modulo_operation
@@ -71,9 +75,15 @@ namespace feng3d
         /**
          * https://en.wikipedia.org/wiki/Linear_interpolation
          */
-        lerp: function (x, y, t)
+        /**
+         * 线性插值
+         * @param start 起始值
+         * @param end 终止值
+         * @param t 插值系数
+         */
+        lerp(start: number, end: number, t: number)
         {
-            return (1 - t) * x + t * y;
+            return (1 - t) * start + t * end;
         },
 
         /**
@@ -98,57 +108,69 @@ namespace feng3d
 
             return x * x * x * (x * (x * 6 - 15) + 10);
         },
-
         /**
-         * Random integer from <low, high> interval
+         * 从<low, high>获取随机整数
+         * @param low 区间起始值
+         * @param high 区间终止值
          */
-        randInt: function (low, high)
+        randInt(low: number, high: number)
         {
             return low + Math.floor(Math.random() * (high - low + 1));
         },
-
         /**
-         * Random float from <low, high> interval
+         * 从<low, high>获取随机浮点数
+         * @param low 区间起始值
+         * @param high 区间终止值
          */
-        randFloat: function (low, high)
+        randFloat(low: number, high: number)
         {
             return low + Math.random() * (high - low);
         },
-
-
         /**
-         * Random float from <-range/2, range/2> interval
+         * 从<-range/2, range/2>获取随机浮点数
+         * @param range 范围
          */
-        randFloatSpread: function (range)
+        randFloatSpread(range: number)
         {
             return range * (0.5 - Math.random());
         },
-
         /**
          * 角度转换为弧度
+         * @param degrees 角度
          */
-        degToRad: function (degrees)
+        degToRad(degrees: number)
         {
             return degrees * this.DEG2RAD;
         },
-
-        radToDeg: function (radians)
+        /**
+         * 弧度转换为角度
+         * @param radians 弧度
+         */
+        radToDeg(radians: number)
         {
             return radians * this.RAD2DEG;
         },
-
-
-        isPowerOfTwo: function (value)
+        /**
+         * 判断指定整数是否为2的幂
+         * @param value 整数
+         */
+        isPowerOfTwo(value: number)
         {
             return (value & (value - 1)) === 0 && value !== 0;
         },
-
-        nearestPowerOfTwo: function (value)
+        /**
+         * 获取离指定整数最近的2的幂
+         * @param value 整数
+         */
+        nearestPowerOfTwo(value: number)
         {
             return Math.pow(2, Math.round(Math.log(value) / Math.LN2));
         },
-
-        nextPowerOfTwo: function (value)
+        /**
+         * 获取指定大于等于整数最小2的幂，3->4,5->8,17->32,33->64
+         * @param value 整数
+         */
+        nextPowerOfTwo(value: number)
         {
             value--;
             value |= value >> 1;
@@ -159,7 +181,6 @@ namespace feng3d
             value++;
             return value;
         },
-
         /**
          * 获取目标最近的值
          * 
@@ -173,11 +194,10 @@ namespace feng3d
          * @param target 目标值
          * @param precision 精度
          */
-        toRound: function (source: number, target: number, precision = 360) 
+        toRound(source: number, target: number, precision = 360) 
         {
             return source + Math.round((target - source) / precision) * precision;
         },
-
         /**
          * 比较两个Number是否相等
          * @param a 数字a
@@ -189,6 +209,17 @@ namespace feng3d
             if (precision == undefined)
                 precision = this.PRECISION;
             return Math.abs(a - b) < precision;
-        }
+        },
+        /**
+         * 计算最大公约数
+         * @param a 整数a
+         * @param b 整数b
+         * @see https://en.wikipedia.org/wiki/Greatest_common_divisor
+         */
+        gcd(a: number, b: number)
+        {
+            if (b) while ((a %= b) && (b %= a));
+            return a + b;
+        },
     };
 }
