@@ -9109,7 +9109,8 @@ var feng3d;
          * 随机平面
          */
         Plane3D.random = function () {
-            return new Plane3D(Math.random(), Math.random(), Math.random(), Math.random());
+            var normal = feng3d.Vector3.random().normalize();
+            return new Plane3D(normal.x, normal.y, normal.z, Math.random());
         };
         /**
          * 原点在平面上的投影

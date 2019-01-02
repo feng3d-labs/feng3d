@@ -32,7 +32,8 @@ namespace feng3d
          */
         static random()
         {
-            return new Plane3D(Math.random(), Math.random(), Math.random(), Math.random());
+            var normal = Vector3.random().normalize();
+            return new Plane3D(normal.x, normal.y, normal.z, Math.random());
         }
 
 		/**
