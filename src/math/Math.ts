@@ -21,7 +21,7 @@ namespace feng3d
         {
             var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
             var id = new Array(36);
-            var rnd = 0, r;
+            var rnd = 0, r = 0;
             return function generateUUID()
             {
                 for (var i = 0; i < 36; i++)

@@ -1300,6 +1300,66 @@ interface Map<K, V> {
     getKeys(): K[];
     getValues(): V[];
 }
+declare namespace ds {
+    type CompareFunction<T> = (a: T, b: T) => number;
+    /**
+     * 比较器
+     */
+    class Comparator<T> {
+        /**
+         * 默认比较函数。只能处理 a和b 同为string或number的比较。
+         *
+         * @param a 比较值a
+         * @param b 比较值b
+         */
+        static defaultCompareFunction(a: string | number, b: string | number): 0 | 1 | -1;
+        private compare;
+        /**
+         * 构建比较器
+         * @param compareFunction 比较函数
+         */
+        constructor(compareFunction?: CompareFunction<T>);
+        /**
+         * 检查 a 是否等于 b 。
+         *
+         * @param a 值a
+         * @param b 值b
+         */
+        equal(a: any, b: any): boolean;
+        /**
+         * 检查 a 是否小于 b 。
+         *
+         * @param a 值a
+         * @param b 值b
+         */
+        lessThan(a: any, b: any): boolean;
+        /**
+         * 检查 a 是否大于 b 。
+         *
+         * @param a 值a
+         * @param b 值b
+         */
+        greaterThan(a: any, b: any): boolean;
+        /**
+         * 检查 a 是否小于等于 b 。
+         *
+         * @param a 值a
+         * @param b 值b
+         */
+        lessThanOrEqual(a: any, b: any): boolean;
+        /**
+         * 检查 a 是否大于等于 b 。
+         *
+         * @param a 值a
+         * @param b 值b
+         */
+        greaterThanOrEqual(a: any, b: any): boolean;
+        /**
+         * 反转比较函数。
+         */
+        reverse(): void;
+    }
+}
 declare module ds {
     /**
      * 工具
@@ -1383,40 +1443,95 @@ declare namespace ds {
 }
 declare namespace ds {
     /**
-     * (双向)链表
+     * 链表
      */
     class LinkedList<T> {
-        private first;
-        private last;
-        private length;
         /**
-         * 头部添加元素，如果多个元素则保持顺序不变
-         * @param items 元素列表
-         * @returns 长度
+         * 表头
          */
-        unshift(...items: T[]): number;
+        private head;
         /**
-         * 尾部添加元素，如果多个元素则保持顺序不变
-         * @param items 元素列表
-         * @returns 长度
+         * 表尾
          */
-        push(...items: T[]): number;
+        private tail;
         /**
-         * 头部移除元素
+         * 比较器
          */
-        shift(): T | undefined;
+        private compare;
         /**
-         * 尾部移除元素
+         * 构建链表
+         *
+         * @param comparatorFunction 比较函数
          */
-        pop(): T | undefined;
+        constructor(comparatorFunction?: CompareFunction<T>);
+        /**
+         * 清空
+         */
+        empty(): void;
+        /**
+         * 添加新节点到表头
+         *
+         * @param value 节点数据
+         */
+        addHead(value: T): this;
+        /**
+         * 添加新节点到表尾
+         *
+         * @param value 节点数据
+         */
+        addTail(value: T): this;
+        /**
+         * 删除链表中所有与指定值相等的节点
+         *
+         * @param value 节点值
+         */
+        delete(value: T): LinkedListNode<T>;
+        /**
+         * 查找与节点值相等的节点
+         *
+         * @param value 节点值
+         */
+        find(value: T): LinkedListNode<T>;
+        /**
+         * 删除表头
+         */
+        deleteHead(): T;
+        /**
+         * 删除表尾
+         */
+        deleteTail(): T;
+        /**
+         * 从数组中初始化链表
+         *
+         * @param values 节点值列表
+         */
+        fromArray(values: T[]): this;
         /**
          * 转换为数组
          */
         toArray(): T[];
         /**
-         * 从数组初始化链表
+         * 转换为字符串
+         * @param valueToString 值输出为字符串函数
          */
-        fromArray(array: T[]): this;
+        toString(valueToString?: (value: T) => string): string;
+        /**
+         * 反转链表
+         */
+        reverse(): this;
+    }
+    /**
+     * 链表节点
+     */
+    interface LinkedListNode<T> {
+        /**
+         * 值
+         */
+        value: T;
+        /**
+         * 下一个节点
+         */
+        next: LinkedListNode<T>;
     }
 }
 declare module ds {

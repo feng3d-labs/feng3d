@@ -29,6 +29,7 @@
         "src/ds/Object.ts",
         "src/ds/Map.ts",
         //
+        "src/ds/utils/Comparator.ts",
         "src/ds/Utils.ts",
         "src/ds/Queue.ts",
         "src/ds/LinkedList.ts",

@@ -3,64 +3,66 @@ QUnit.module("LinkedList", () =>
     QUnit.test("LinkedList", (assert) =>
     {
         var ll = new ds.LinkedList<number>();
-        assert.deepEqual(ll.shift(), undefined);
-        assert.deepEqual(ll.pop(), undefined);
+        assert.deepEqual(ll.deleteHead(), undefined);
+        assert.deepEqual(ll.deleteTail(), undefined);
     });
 
-    QUnit.test("unshift", (assert) =>
+    QUnit.test("addHead", (assert) =>
     {
         var ll = new ds.LinkedList<number>();
 
         var arr = ds.utils.createArray(10, () => Math.random());
-        ll.unshift.apply(ll, arr);
+        arr.concat().reverse().forEach(element =>
+        {
+            ll.addHead(element);
+        });
 
         assert.deepEqual(ll.toArray(), arr);
 
-        ll.unshift(1);
+        ll.addHead(1);
         arr.unshift(1);
         assert.deepEqual(ll.toArray(), arr);
     });
 
-    QUnit.test("push", (assert) =>
+    QUnit.test("addTail", (assert) =>
     {
         var ll = new ds.LinkedList<number>();
 
         var arr = ds.utils.createArray(10, () => Math.random());
-        ll.push.apply(ll, arr);
+        arr.forEach(element =>
+        {
+            ll.addTail(element);
+        });
 
         assert.deepEqual(ll.toArray(), arr);
 
-        ll.push(1);
+        ll.addTail(1);
         arr.push(1);
         assert.deepEqual(ll.toArray(), arr);
     });
 
-    QUnit.test("shift", (assert) =>
+    QUnit.test("deleteHead", (assert) =>
     {
         var ll = new ds.LinkedList<number>();
 
         var arr = ds.utils.createArray(10, () => Math.random());
-        ll.push.apply(ll, arr);
+        ll.fromArray(arr);
 
-        assert.deepEqual(ll.toArray(), arr);
-
-        assert.deepEqual(ll.shift(), arr.shift());
-        assert.deepEqual(ll.shift(), arr.shift());
+        assert.deepEqual(ll.deleteHead(), arr.shift());
+        assert.deepEqual(ll.deleteHead(), arr.shift());
 
         assert.deepEqual(ll.toArray(), arr);
     });
 
-    QUnit.test("pop", (assert) =>
+    QUnit.test("deleteTail", (assert) =>
     {
         var ll = new ds.LinkedList<number>();
 
         var arr = ds.utils.createArray(10, () => Math.random());
-        ll.push.apply(ll, arr);
+        ll.fromArray(arr);
 
-        assert.deepEqual(ll.toArray(), arr);
-
-        assert.deepEqual(ll.pop(), arr.pop());
-        assert.deepEqual(ll.pop(), arr.pop());
+        assert.deepEqual(ll.deleteTail(), arr.pop());
+        assert.deepEqual(ll.deleteTail(), arr.pop());
 
         assert.deepEqual(ll.toArray(), arr);
     });
@@ -70,7 +72,7 @@ QUnit.module("LinkedList", () =>
         var ll = new ds.LinkedList<number>();
 
         var arr = ds.utils.createArray(10, () => Math.random());
-        ll.push.apply(ll, arr);
+        ll.fromArray(arr);
 
         assert.deepEqual(ll.toArray(), arr);
     });

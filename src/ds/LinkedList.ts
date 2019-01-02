@@ -1,79 +1,202 @@
 namespace ds
 {
     /**
-     * (双向)链表
+     * 链表
      */
     export class LinkedList<T>
     {
-        private first: Node<T>;
-        private last: Node<T>;
-        private length = 0;
+        /**
+         * 表头
+         */
+        private head: LinkedListNode<T>;
+        /**
+         * 表尾
+         */
+        private tail: LinkedListNode<T>;
 
         /**
-         * 头部添加元素，如果多个元素则保持顺序不变
-         * @param items 元素列表
-         * @returns 长度
+         * 比较器
          */
-        unshift(...items: T[])
+        private compare: Comparator<T>;
+
+        /**
+         * 构建链表
+         * 
+         * @param comparatorFunction 比较函数
+         */
+        constructor(comparatorFunction?: CompareFunction<T>)
         {
-            for (let i = items.length - 1; i >= 0; i--)
+            this.head = null;
+            this.tail = null;
+            this.compare = new Comparator(comparatorFunction);
+        }
+
+        /**
+         * 清空
+         */
+        empty()
+        {
+            this.head = null;
+            this.tail = null;
+        }
+
+        /**
+         * 添加新节点到表头
+         * 
+         * @param value 节点数据
+         */
+        addHead(value: T)
+        {
+            var newNode: LinkedListNode<T> = { value: value, next: this.head };
+            this.head = newNode;
+            if (!this.tail) this.tail = newNode;
+            return this;
+        }
+
+        /**
+         * 添加新节点到表尾
+         * 
+         * @param value 节点数据
+         */
+        addTail(value: T)
+        {
+            var newNode: LinkedListNode<T> = { value: value, next: null };
+            if (this.tail) this.tail.next = newNode;
+            this.tail = newNode;
+            if (!this.head) this.head = newNode;
+            return this;
+        }
+
+        /**
+         * 删除链表中所有与指定值相等的节点
+         * 
+         * @param value 节点值
+         */
+        delete(value: T)
+        {
+            if (!this.head) return null;
+
+            let deletedNode: LinkedListNode<T> = null;
+
+            // 从表头删除节点
+            while (this.head && this.compare.equal(this.head.value, value))
             {
-                const item = items[i];
-                var newitem: Node<T> = { item: item, previous: null, next: this.first };
-                if (this.first) this.first.previous = newitem;
-                this.first = newitem;
-                if (!this.last) this.last = this.first;
-                this.length++
+                deletedNode = this.head;
+                this.head = this.head.next;
             }
-            return this.length
-        }
 
-        /**
-         * 尾部添加元素，如果多个元素则保持顺序不变
-         * @param items 元素列表
-         * @returns 长度
-         */
-        push(...items: T[])
-        {
-            items.forEach(item =>
+            let currentNode = this.head;
+
+            if (currentNode !== null)
             {
-                var node: Node<T> = { item: item, previous: this.last, next: null };
-                if (this.last) this.last.next = node;
-                this.last = node;
-                if (!this.first) this.first = node;
-                this.length++;
-            });
-            return this.length;
+                // 删除相等的下一个节点
+                while (currentNode.next)
+                {
+                    if (this.compare.equal(currentNode.next.value, value))
+                    {
+                        deletedNode = currentNode.next;
+                        currentNode.next = currentNode.next.next;
+                    } else
+                    {
+                        currentNode = currentNode.next;
+                    }
+                }
+            }
+
+            // 判断表尾是否被删除
+            if (this.compare.equal(this.tail.value, value))
+            {
+                this.tail = currentNode;
+            }
+
+            return deletedNode;
         }
 
         /**
-         * 头部移除元素
+         * 查找与节点值相等的节点
+         * 
+         * @param value 节点值
          */
-        shift(): T | undefined
+        find(value: T)
         {
-            var removeitem = this.first ? this.first.item : undefined;
-            if (this.length == 1)
-                this.first = this.last = null;
-            if (this.first)
-                this.first = this.first.next;
-            if (this.first)
-                this.first.previous = null;
-            return removeitem;
+            if (!this.head) return null;
+
+            let currentNode = this.head;
+
+            while (currentNode)
+            {
+                if (this.compare.equal(currentNode.value, value)) return currentNode;
+                currentNode = currentNode.next;
+            }
+            return null;
         }
 
         /**
-         * 尾部移除元素
+         * 删除表头
          */
-        pop(): T | undefined
+        deleteHead()
         {
-            var removeitem = this.last ? this.last.item : undefined;
-            if (this.length == 1)
-                this.first = this.last = null;
-            if (this.last)
-                this.last = this.last.previous;
-            if (this.last)
-                this.last.next = null;
-            return removeitem;
+            if (!this.head) return undefined;
+
+            const deletedHead = this.head;
+
+            if (this.head.next)
+            {
+                this.head = this.head.next;
+            } else
+            {
+                this.head = null;
+                this.tail = null;
+            }
+
+            return deletedHead.value;
+        }
+
+        /**
+         * 删除表尾
+         */
+        deleteTail()
+        {
+            if (!this.tail) return undefined;
+
+            const deletedTail = this.tail;
+
+            if (this.head === this.tail)
+            {
+                this.head = null;
+                this.tail = null;
+
+                return deletedTail.value;
+            }
+
+            // 遍历链表删除表尾
+            let currentNode = this.head;
+            while (currentNode.next)
+            {
+                if (!currentNode.next.next)
+                {
+                    currentNode.next = null;
+                } else
+                {
+                    currentNode = currentNode.next;
+                }
+            }
+
+            this.tail = currentNode;
+
+            return deletedTail.value;
+        }
+
+        /**
+         * 从数组中初始化链表
+         * 
+         * @param values 节点值列表
+         */
+        fromArray(values: T[])
+        {
+            this.empty();
+            values.forEach(value => this.addTail(value));
+            return this;
         }
 
         /**
@@ -81,31 +204,64 @@ namespace ds
          */
         toArray()
         {
-            var arr: T[] = [];
-            var node = this.first;
-            while (node)
+            var values: T[] = [];
+            var currentNode = this.head;
+            while (currentNode)
             {
-                arr.push(node.item);
-                node = node.next;
+                values.push(currentNode.value);
+                currentNode = currentNode.next;
             }
-            return arr;
+            return values;
         }
 
         /**
-         * 从数组初始化链表
+         * 转换为字符串
+         * @param valueToString 值输出为字符串函数
          */
-        fromArray(array: T[])
+        toString(valueToString?: (value: T) => string)
         {
-            this.first = this.last = null;
-            this.push.apply(this, array);
+            return this.toArray().map(value => valueToString ? valueToString(value) : `${value}`).toString();
+        }
+
+        /**
+         * 反转链表
+         */
+        reverse()
+        {
+            let currNode = this.head;
+            let prevNode = null;
+            let nextNode = null;
+
+            while (currNode)
+            {
+                nextNode = currNode.next;
+
+                currNode.next = prevNode;
+
+                prevNode = currNode;
+                currNode = nextNode;
+            }
+
+            // 重置表头与表尾
+            this.tail = this.head;
+            this.head = prevNode;
+
             return this;
         }
     }
 
-    interface Node<T>
+    /**
+     * 链表节点
+     */
+    export interface LinkedListNode<T>
     {
-        item: T;
-        previous: Node<T>;
-        next: Node<T>;
+        /**
+         * 值
+         */
+        value: T;
+        /**
+         * 下一个节点
+         */
+        next: LinkedListNode<T>;
     }
 }

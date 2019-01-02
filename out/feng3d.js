@@ -2393,6 +2393,86 @@ Map.prototype.getValues = function () {
 var ds;
 (function (ds) {
     /**
+     * 比较器
+     */
+    var Comparator = /** @class */ (function () {
+        /**
+         * 构建比较器
+         * @param compareFunction 比较函数
+         */
+        function Comparator(compareFunction) {
+            this.compare = compareFunction || Comparator.defaultCompareFunction;
+        }
+        /**
+         * 默认比较函数。只能处理 a和b 同为string或number的比较。
+         *
+         * @param a 比较值a
+         * @param b 比较值b
+         */
+        Comparator.defaultCompareFunction = function (a, b) {
+            if (a === b)
+                return 0;
+            return a < b ? -1 : 1;
+        };
+        /**
+         * 检查 a 是否等于 b 。
+         *
+         * @param a 值a
+         * @param b 值b
+         */
+        Comparator.prototype.equal = function (a, b) {
+            return this.compare(a, b) === 0;
+        };
+        /**
+         * 检查 a 是否小于 b 。
+         *
+         * @param a 值a
+         * @param b 值b
+         */
+        Comparator.prototype.lessThan = function (a, b) {
+            return this.compare(a, b) < 0;
+        };
+        /**
+         * 检查 a 是否大于 b 。
+         *
+         * @param a 值a
+         * @param b 值b
+         */
+        Comparator.prototype.greaterThan = function (a, b) {
+            return this.compare(a, b) > 0;
+        };
+        /**
+         * 检查 a 是否小于等于 b 。
+         *
+         * @param a 值a
+         * @param b 值b
+         */
+        Comparator.prototype.lessThanOrEqual = function (a, b) {
+            return this.lessThan(a, b) || this.equal(a, b);
+        };
+        /**
+         * 检查 a 是否大于等于 b 。
+         *
+         * @param a 值a
+         * @param b 值b
+         */
+        Comparator.prototype.greaterThanOrEqual = function (a, b) {
+            return this.greaterThan(a, b) || this.equal(a, b);
+        };
+        /**
+         * 反转比较函数。
+         */
+        Comparator.prototype.reverse = function () {
+            var compareOriginal = this.compare;
+            this.compare = function (a, b) { return compareOriginal(b, a); };
+        };
+        return Comparator;
+    }());
+    ds.Comparator = Comparator;
+})(ds || (ds = {}));
+var ds;
+(function (ds) {
+    /**
      * 工具
      */
     var Utils = /** @class */ (function () {
@@ -2570,100 +2650,188 @@ var ds;
 var ds;
 (function (ds) {
     /**
-     * (双向)链表
+     * 链表
      */
     var LinkedList = /** @class */ (function () {
-        function LinkedList() {
-            this.length = 0;
+        /**
+         * 构建链表
+         *
+         * @param comparatorFunction 比较函数
+         */
+        function LinkedList(comparatorFunction) {
+            this.head = null;
+            this.tail = null;
+            this.compare = new ds.Comparator(comparatorFunction);
         }
         /**
-         * 头部添加元素，如果多个元素则保持顺序不变
-         * @param items 元素列表
-         * @returns 长度
+         * 清空
          */
-        LinkedList.prototype.unshift = function () {
-            var items = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                items[_i] = arguments[_i];
-            }
-            for (var i = items.length - 1; i >= 0; i--) {
-                var item = items[i];
-                var newitem = { item: item, previous: null, next: this.first };
-                if (this.first)
-                    this.first.previous = newitem;
-                this.first = newitem;
-                if (!this.last)
-                    this.last = this.first;
-                this.length++;
-            }
-            return this.length;
+        LinkedList.prototype.empty = function () {
+            this.head = null;
+            this.tail = null;
         };
         /**
-         * 尾部添加元素，如果多个元素则保持顺序不变
-         * @param items 元素列表
-         * @returns 长度
+         * 添加新节点到表头
+         *
+         * @param value 节点数据
          */
-        LinkedList.prototype.push = function () {
+        LinkedList.prototype.addHead = function (value) {
+            var newNode = { value: value, next: this.head };
+            this.head = newNode;
+            if (!this.tail)
+                this.tail = newNode;
+            return this;
+        };
+        /**
+         * 添加新节点到表尾
+         *
+         * @param value 节点数据
+         */
+        LinkedList.prototype.addTail = function (value) {
+            var newNode = { value: value, next: null };
+            if (this.tail)
+                this.tail.next = newNode;
+            this.tail = newNode;
+            if (!this.head)
+                this.head = newNode;
+            return this;
+        };
+        /**
+         * 删除链表中所有与指定值相等的节点
+         *
+         * @param value 节点值
+         */
+        LinkedList.prototype.delete = function (value) {
+            if (!this.head)
+                return null;
+            var deletedNode = null;
+            // 从表头删除节点
+            while (this.head && this.compare.equal(this.head.value, value)) {
+                deletedNode = this.head;
+                this.head = this.head.next;
+            }
+            var currentNode = this.head;
+            if (currentNode !== null) {
+                // 删除相等的下一个节点
+                while (currentNode.next) {
+                    if (this.compare.equal(currentNode.next.value, value)) {
+                        deletedNode = currentNode.next;
+                        currentNode.next = currentNode.next.next;
+                    }
+                    else {
+                        currentNode = currentNode.next;
+                    }
+                }
+            }
+            // 判断表尾是否被删除
+            if (this.compare.equal(this.tail.value, value)) {
+                this.tail = currentNode;
+            }
+            return deletedNode;
+        };
+        /**
+         * 查找与节点值相等的节点
+         *
+         * @param value 节点值
+         */
+        LinkedList.prototype.find = function (value) {
+            if (!this.head)
+                return null;
+            var currentNode = this.head;
+            while (currentNode) {
+                if (this.compare.equal(currentNode.value, value))
+                    return currentNode;
+                currentNode = currentNode.next;
+            }
+            return null;
+        };
+        /**
+         * 删除表头
+         */
+        LinkedList.prototype.deleteHead = function () {
+            if (!this.head)
+                return undefined;
+            var deletedHead = this.head;
+            if (this.head.next) {
+                this.head = this.head.next;
+            }
+            else {
+                this.head = null;
+                this.tail = null;
+            }
+            return deletedHead.value;
+        };
+        /**
+         * 删除表尾
+         */
+        LinkedList.prototype.deleteTail = function () {
+            if (!this.tail)
+                return undefined;
+            var deletedTail = this.tail;
+            if (this.head === this.tail) {
+                this.head = null;
+                this.tail = null;
+                return deletedTail.value;
+            }
+            // 遍历链表删除表尾
+            var currentNode = this.head;
+            while (currentNode.next) {
+                if (!currentNode.next.next) {
+                    currentNode.next = null;
+                }
+                else {
+                    currentNode = currentNode.next;
+                }
+            }
+            this.tail = currentNode;
+            return deletedTail.value;
+        };
+        /**
+         * 从数组中初始化链表
+         *
+         * @param values 节点值列表
+         */
+        LinkedList.prototype.fromArray = function (values) {
             var _this = this;
-            var items = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                items[_i] = arguments[_i];
-            }
-            items.forEach(function (item) {
-                var node = { item: item, previous: _this.last, next: null };
-                if (_this.last)
-                    _this.last.next = node;
-                _this.last = node;
-                if (!_this.first)
-                    _this.first = node;
-                _this.length++;
-            });
-            return this.length;
-        };
-        /**
-         * 头部移除元素
-         */
-        LinkedList.prototype.shift = function () {
-            var removeitem = this.first ? this.first.item : undefined;
-            if (this.length == 1)
-                this.first = this.last = null;
-            if (this.first)
-                this.first = this.first.next;
-            if (this.first)
-                this.first.previous = null;
-            return removeitem;
-        };
-        /**
-         * 尾部移除元素
-         */
-        LinkedList.prototype.pop = function () {
-            var removeitem = this.last ? this.last.item : undefined;
-            if (this.length == 1)
-                this.first = this.last = null;
-            if (this.last)
-                this.last = this.last.previous;
-            if (this.last)
-                this.last.next = null;
-            return removeitem;
+            this.empty();
+            values.forEach(function (value) { return _this.addTail(value); });
+            return this;
         };
         /**
          * 转换为数组
          */
         LinkedList.prototype.toArray = function () {
-            var arr = [];
-            var node = this.first;
-            while (node) {
-                arr.push(node.item);
-                node = node.next;
+            var values = [];
+            var currentNode = this.head;
+            while (currentNode) {
+                values.push(currentNode.value);
+                currentNode = currentNode.next;
             }
-            return arr;
+            return values;
         };
         /**
-         * 从数组初始化链表
+         * 转换为字符串
+         * @param valueToString 值输出为字符串函数
          */
-        LinkedList.prototype.fromArray = function (array) {
-            this.first = this.last = null;
-            this.push.apply(this, array);
+        LinkedList.prototype.toString = function (valueToString) {
+            return this.toArray().map(function (value) { return valueToString ? valueToString(value) : "" + value; }).toString();
+        };
+        /**
+         * 反转链表
+         */
+        LinkedList.prototype.reverse = function () {
+            var currNode = this.head;
+            var prevNode = null;
+            var nextNode = null;
+            while (currNode) {
+                nextNode = currNode.next;
+                currNode.next = prevNode;
+                prevNode = currNode;
+                currNode = nextNode;
+            }
+            // 重置表头与表尾
+            this.tail = this.head;
+            this.head = prevNode;
             return this;
         };
         return LinkedList;
@@ -2771,7 +2939,7 @@ var feng3d;
         uuid: function () {
             var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
             var id = new Array(36);
-            var rnd = 0, r;
+            var rnd = 0, r = 0;
             return function generateUUID() {
                 for (var i = 0; i < 36; i++) {
                     if (i === 8 || i === 13 || i === 18 || i === 23) {

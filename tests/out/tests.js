@@ -365,49 +365,51 @@ var feng3d;
 QUnit.module("LinkedList", function () {
     QUnit.test("LinkedList", function (assert) {
         var ll = new ds.LinkedList();
-        assert.deepEqual(ll.shift(), undefined);
-        assert.deepEqual(ll.pop(), undefined);
+        assert.deepEqual(ll.deleteHead(), undefined);
+        assert.deepEqual(ll.deleteTail(), undefined);
     });
-    QUnit.test("unshift", function (assert) {
+    QUnit.test("addHead", function (assert) {
         var ll = new ds.LinkedList();
         var arr = ds.utils.createArray(10, function () { return Math.random(); });
-        ll.unshift.apply(ll, arr);
+        arr.concat().reverse().forEach(function (element) {
+            ll.addHead(element);
+        });
         assert.deepEqual(ll.toArray(), arr);
-        ll.unshift(1);
+        ll.addHead(1);
         arr.unshift(1);
         assert.deepEqual(ll.toArray(), arr);
     });
-    QUnit.test("push", function (assert) {
+    QUnit.test("addTail", function (assert) {
         var ll = new ds.LinkedList();
         var arr = ds.utils.createArray(10, function () { return Math.random(); });
-        ll.push.apply(ll, arr);
+        arr.forEach(function (element) {
+            ll.addTail(element);
+        });
         assert.deepEqual(ll.toArray(), arr);
-        ll.push(1);
+        ll.addTail(1);
         arr.push(1);
         assert.deepEqual(ll.toArray(), arr);
     });
-    QUnit.test("shift", function (assert) {
+    QUnit.test("deleteHead", function (assert) {
         var ll = new ds.LinkedList();
         var arr = ds.utils.createArray(10, function () { return Math.random(); });
-        ll.push.apply(ll, arr);
-        assert.deepEqual(ll.toArray(), arr);
-        assert.deepEqual(ll.shift(), arr.shift());
-        assert.deepEqual(ll.shift(), arr.shift());
+        ll.fromArray(arr);
+        assert.deepEqual(ll.deleteHead(), arr.shift());
+        assert.deepEqual(ll.deleteHead(), arr.shift());
         assert.deepEqual(ll.toArray(), arr);
     });
-    QUnit.test("pop", function (assert) {
+    QUnit.test("deleteTail", function (assert) {
         var ll = new ds.LinkedList();
         var arr = ds.utils.createArray(10, function () { return Math.random(); });
-        ll.push.apply(ll, arr);
-        assert.deepEqual(ll.toArray(), arr);
-        assert.deepEqual(ll.pop(), arr.pop());
-        assert.deepEqual(ll.pop(), arr.pop());
+        ll.fromArray(arr);
+        assert.deepEqual(ll.deleteTail(), arr.pop());
+        assert.deepEqual(ll.deleteTail(), arr.pop());
         assert.deepEqual(ll.toArray(), arr);
     });
     QUnit.test("toArray", function (assert) {
         var ll = new ds.LinkedList();
         var arr = ds.utils.createArray(10, function () { return Math.random(); });
-        ll.push.apply(ll, arr);
+        ll.fromArray(arr);
         assert.deepEqual(ll.toArray(), arr);
     });
     QUnit.test("fromArray", function (assert) {
