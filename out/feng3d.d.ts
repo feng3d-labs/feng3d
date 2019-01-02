@@ -1480,75 +1480,106 @@ declare namespace feng3d {
          */
         uuid: () => string;
         /**
-         * 计算指定值与区间[edge0,edge1]最近的值
+         * （夹紧）计算指定值到区间[edge0 ,edge1]最近的值
+         *
          * @param value 指定值
-         * @param edge0 区间边界0
-         * @param edge1 区间边界1
+         * @param lowerlimit 区间下界
+         * @param upperlimit 区间上界
          */
-        clamp(value: number, edge0: number, edge1: number): number;
+        clamp(value: number, lowerlimit: number, upperlimit: number): number;
         /**
-         * compute euclidian modulo of m % n
-         * https://en.wikipedia.org/wiki/Modulo_operation
+         * 计算欧几里得模（整数模） ((n % m) + m) % m
+         *
+         * @param n 被除数
+         * @param m 除数
+         * @see https://en.wikipedia.org/wiki/Modulo_operation
          */
-        euclideanModulo: (n: any, m: any) => number;
+        euclideanModulo(n: number, m: number): number;
         /**
-         * Linear mapping from range <a1, a2> to range <b1, b2>
+         * 使 x 值从区间 <a1, a2> 线性映射到区间 <b1, b2>
+         *
+         * @param x 第一个区间中值
+         * @param a1 第一个区间起始值
+         * @param a2 第一个区间终止值
+         * @param b1 第二个区间起始值
+         * @param b2 第二个区间起始值
          */
         mapLinear: (x: any, a1: any, a2: any, b1: any, b2: any) => any;
         /**
-         * https://en.wikipedia.org/wiki/Linear_interpolation
-         */
-        /**
          * 线性插值
+         *
          * @param start 起始值
          * @param end 终止值
-         * @param t 插值系数
+         * @param t 插值系数 [0 ,1]
+         *
+         * @see https://en.wikipedia.org/wiki/Linear_interpolation
          */
         lerp(start: number, end: number, t: number): number;
         /**
-         * http://en.wikipedia.org/wiki/Smoothstep
+         * 计算平滑值 3x^2 - 2x^3
+         *
+         * @param x
+         * @param min 最小值
+         * @param max 最大值
+         *
+         * @see http://en.wikipedia.org/wiki/Smoothstep
          */
-        smoothstep: (x: any, min: any, max: any) => number;
-        smootherstep: (x: any, min: any, max: any) => number;
+        smoothstep(x: number, min: number, max: number): number;
+        /**
+         * 计算平滑值 6x^5 - 15x^4 + 10x^3
+         *
+         * @param x
+         * @param min 最小值
+         * @param max 最大值
+         */
+        smootherstep(x: number, min: number, max: number): number;
         /**
          * 从<low, high>获取随机整数
+         *
          * @param low 区间起始值
          * @param high 区间终止值
          */
         randInt(low: number, high: number): number;
         /**
          * 从<low, high>获取随机浮点数
+         *
          * @param low 区间起始值
          * @param high 区间终止值
          */
         randFloat(low: number, high: number): number;
         /**
          * 从<-range/2, range/2>获取随机浮点数
+         *
          * @param range 范围
          */
         randFloatSpread(range: number): number;
         /**
          * 角度转换为弧度
+         *
          * @param degrees 角度
          */
         degToRad(degrees: number): number;
         /**
          * 弧度转换为角度
+         *
          * @param radians 弧度
          */
         radToDeg(radians: number): number;
         /**
          * 判断指定整数是否为2的幂
+         *
          * @param value 整数
          */
         isPowerOfTwo(value: number): boolean;
         /**
          * 获取离指定整数最近的2的幂
+         *
          * @param value 整数
          */
         nearestPowerOfTwo(value: number): number;
         /**
          * 获取指定大于等于整数最小2的幂，3->4,5->8,17->32,33->64
+         *
          * @param value 整数
          */
         nextPowerOfTwo(value: number): number;
@@ -1568,6 +1599,7 @@ declare namespace feng3d {
         toRound(source: number, target: number, precision?: number): number;
         /**
          * 比较两个Number是否相等
+         *
          * @param a 数字a
          * @param b 数字b
          * @param precision 进度
@@ -1575,8 +1607,10 @@ declare namespace feng3d {
         equals(a: number, b: number, precision?: number): boolean;
         /**
          * 计算最大公约数
+         *
          * @param a 整数a
          * @param b 整数b
+         *
          * @see https://en.wikipedia.org/wiki/Greatest_common_divisor
          */
         gcd(a: number, b: number): number;
