@@ -140,6 +140,25 @@ namespace ds
         }
 
         /**
+         * 使用比较函数查找相等的结点
+         * 
+         * @param compareFunc 比较函数
+         */
+        findByFunc(compareFunc: (value: T) => boolean)
+        {
+            if (!this.head) return null;
+
+            let currentNode = this.head;
+
+            while (currentNode)
+            {
+                if (compareFunc(currentNode.value)) return currentNode;
+                currentNode = currentNode.next;
+            }
+            return null;
+        }
+
+        /**
          * 删除表头
          * 
          * 删除链表前面的元素(链表的头)并返回元素值。如果队列为空，则返回null。

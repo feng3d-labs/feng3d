@@ -2685,6 +2685,22 @@ var ds;
             return null;
         };
         /**
+         * 使用比较函数查找相等的结点
+         *
+         * @param compareFunc 比较函数
+         */
+        LinkedList.prototype.findByFunc = function (compareFunc) {
+            if (!this.head)
+                return null;
+            var currentNode = this.head;
+            while (currentNode) {
+                if (compareFunc(currentNode.value))
+                    return currentNode;
+                currentNode = currentNode.next;
+            }
+            return null;
+        };
+        /**
          * 删除表头
          *
          * 删除链表前面的元素(链表的头)并返回元素值。如果队列为空，则返回null。
@@ -3403,6 +3419,101 @@ var ds;
         return MinHeap;
     }(ds.Heap));
     ds.MinHeap = MinHeap;
+})(ds || (ds = {}));
+var ds;
+(function (ds) {
+    /**
+     * 默认哈希表 （建议使用Object代替）
+     *
+     * 哈希表的大小直接影响冲突的次数。
+     * 哈希表的大小越大，冲突就越少。
+     */
+    var defaultHashTableSize = 32;
+    /**
+     * 哈希表（散列表）
+     */
+    var HashTable = /** @class */ (function () {
+        /**
+         * 构建哈希表
+         * @param hashTableSize 哈希表尺寸
+         */
+        function HashTable(hashTableSize) {
+            if (hashTableSize === void 0) { hashTableSize = defaultHashTableSize; }
+            this.buckets = [];
+            for (var i = 0; i < hashTableSize; i++) {
+                this.buckets.push(new ds.LinkedList());
+            }
+            this.keys = {};
+        }
+        /**
+         * 将字符串键转换为哈希数。
+         *
+         * @param key 字符串键
+         */
+        HashTable.prototype.hash = function (key) {
+            var hash = key.split("").reduce(function (hashAccumulator, char) { return (hashAccumulator + char.charCodeAt(0)); }, 0);
+            return hash % this.buckets.length;
+        };
+        /**
+         * 设置值
+         *
+         * @param key 键
+         * @param value 值
+         */
+        HashTable.prototype.set = function (key, value) {
+            var keyHash = this.hash(key);
+            this.keys[key] = keyHash;
+            var bucketLinkedList = this.buckets[keyHash];
+            var node = bucketLinkedList.findByFunc(function (nodeValue) { return nodeValue.key === key; });
+            if (!node) {
+                bucketLinkedList.addTail({ key: key, value: value });
+            }
+            else {
+                node.value.value = value;
+            }
+        };
+        /**
+         * 删除指定键以及对于值
+         *
+         * @param key 键
+         */
+        HashTable.prototype.delete = function (key) {
+            var keyHash = this.hash(key);
+            delete this.keys[key];
+            var bucketLinkedList = this.buckets[keyHash];
+            var node = bucketLinkedList.findByFunc(function (nodeValue) { return nodeValue.key === key; });
+            if (node) {
+                return bucketLinkedList.delete(node.value);
+            }
+            return null;
+        };
+        /**
+         * 获取与键对应的值
+         *
+         * @param key 键
+         */
+        HashTable.prototype.get = function (key) {
+            var bucketLinkedList = this.buckets[this.hash(key)];
+            var node = bucketLinkedList.findByFunc(function (nodeValue) { return nodeValue.key === key; });
+            return node ? node.value.value : undefined;
+        };
+        /**
+         * 是否拥有键
+         *
+         * @param key 键
+         */
+        HashTable.prototype.has = function (key) {
+            return Object.hasOwnProperty.call(this.keys, key);
+        };
+        /**
+         * 获取键列表
+         */
+        HashTable.prototype.getKeys = function () {
+            return Object.keys(this.keys);
+        };
+        return HashTable;
+    }());
+    ds.HashTable = HashTable;
 })(ds || (ds = {}));
 var ds;
 (function (ds) {

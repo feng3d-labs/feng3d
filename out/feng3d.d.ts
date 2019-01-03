@@ -1468,6 +1468,12 @@ declare namespace ds {
          */
         find(value: T): LinkedListNode<T>;
         /**
+         * 使用比较函数查找相等的结点
+         *
+         * @param compareFunc 比较函数
+         */
+        findByFunc(compareFunc: (value: T) => boolean): LinkedListNode<T>;
+        /**
          * 删除表头
          *
          * 删除链表前面的元素(链表的头)并返回元素值。如果队列为空，则返回null。
@@ -1876,6 +1882,58 @@ declare namespace ds {
          * @param secondElement 第二个元素
          */
         pairIsInCorrectOrder(firstElement: T, secondElement: T): boolean;
+    }
+}
+declare namespace ds {
+    /**
+     * 哈希表（散列表）
+     */
+    class HashTable {
+        private keys;
+        private buckets;
+        /**
+         * 构建哈希表
+         * @param hashTableSize 哈希表尺寸
+         */
+        constructor(hashTableSize?: number);
+        /**
+         * 将字符串键转换为哈希数。
+         *
+         * @param key 字符串键
+         */
+        hash(key: string): number;
+        /**
+         * 设置值
+         *
+         * @param key 键
+         * @param value 值
+         */
+        set(key: string, value: any): void;
+        /**
+         * 删除指定键以及对于值
+         *
+         * @param key 键
+         */
+        delete(key: string): LinkedListNode<{
+            key: string;
+            value: any;
+        }>;
+        /**
+         * 获取与键对应的值
+         *
+         * @param key 键
+         */
+        get(key: string): any;
+        /**
+         * 是否拥有键
+         *
+         * @param key 键
+         */
+        has(key: string): any;
+        /**
+         * 获取键列表
+         */
+        getKeys(): string[];
     }
 }
 declare module ds {
