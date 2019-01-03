@@ -36,6 +36,8 @@
         "src/ds/Queue.ts",
         "src/ds/Stack.ts",
         "src/ds/Heap.ts",
+        "src/ds/MaxHeap.ts",
+        "src/ds/MinHeap.ts",
         "src/ds/PriorityQueue.ts",
         // 数学相关程序
         "src/math/Math.ts",

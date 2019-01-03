@@ -1,9 +1,3 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -17,6 +11,12 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var feng3d;
 (function (feng3d) {
     feng3d.shaderConfig = {
@@ -3349,6 +3349,60 @@ var ds;
         return Heap;
     }());
     ds.Heap = Heap;
+})(ds || (ds = {}));
+var ds;
+(function (ds) {
+    /**
+     * 最大堆
+     *
+     * 所有父结点都大于子结点
+     */
+    var MaxHeap = /** @class */ (function (_super) {
+        __extends(MaxHeap, _super);
+        function MaxHeap() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        /**
+         * 检查堆元素对的顺序是否正确。
+         * 对于MinHeap，第一个元素必须总是小于等于。
+         * 对于MaxHeap，第一个元素必须总是大于或等于。
+         *
+         * @param firstElement 第一个元素
+         * @param secondElement 第二个元素
+         */
+        MaxHeap.prototype.pairIsInCorrectOrder = function (firstElement, secondElement) {
+            return this.compare.greaterThanOrEqual(firstElement, secondElement);
+        };
+        return MaxHeap;
+    }(ds.Heap));
+    ds.MaxHeap = MaxHeap;
+})(ds || (ds = {}));
+var ds;
+(function (ds) {
+    /**
+     * 最小堆
+     *
+     * 所有父结点都小于子结点
+     */
+    var MinHeap = /** @class */ (function (_super) {
+        __extends(MinHeap, _super);
+        function MinHeap() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        /**
+         * 检查堆元素对的顺序是否正确。
+         * 对于MinHeap，第一个元素必须总是小于等于。
+         * 对于MaxHeap，第一个元素必须总是大于或等于。
+         *
+         * @param firstElement 第一个元素
+         * @param secondElement 第二个元素
+         */
+        MinHeap.prototype.pairIsInCorrectOrder = function (firstElement, secondElement) {
+            return this.compare.lessThanOrEqual(firstElement, secondElement);
+        };
+        return MinHeap;
+    }(ds.Heap));
+    ds.MinHeap = MinHeap;
 })(ds || (ds = {}));
 var ds;
 (function (ds) {

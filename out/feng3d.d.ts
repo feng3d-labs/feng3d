@@ -1325,35 +1325,35 @@ declare namespace ds {
          * @param a 值a
          * @param b 值b
          */
-        equal(a: any, b: any): boolean;
+        equal(a: T, b: T): boolean;
         /**
          * 检查 a 是否小于 b 。
          *
          * @param a 值a
          * @param b 值b
          */
-        lessThan(a: any, b: any): boolean;
+        lessThan(a: T, b: T): boolean;
         /**
          * 检查 a 是否大于 b 。
          *
          * @param a 值a
          * @param b 值b
          */
-        greaterThan(a: any, b: any): boolean;
+        greaterThan(a: T, b: T): boolean;
         /**
          * 检查 a 是否小于等于 b 。
          *
          * @param a 值a
          * @param b 值b
          */
-        lessThanOrEqual(a: any, b: any): boolean;
+        lessThanOrEqual(a: T, b: T): boolean;
         /**
          * 检查 a 是否大于等于 b 。
          *
          * @param a 值a
          * @param b 值b
          */
-        greaterThanOrEqual(a: any, b: any): boolean;
+        greaterThanOrEqual(a: T, b: T): boolean;
         /**
          * 反转比较函数。
          */
@@ -1713,7 +1713,7 @@ declare namespace ds {
         /**
          * 比较器
          */
-        private compare;
+        protected compare: Comparator<T>;
         /**
          * 构建链表
          *
@@ -1840,6 +1840,42 @@ declare namespace ds {
          * @param secondElement 第二个元素
          */
         abstract pairIsInCorrectOrder(firstElement: T, secondElement: T): boolean;
+    }
+}
+declare namespace ds {
+    /**
+     * 最大堆
+     *
+     * 所有父结点都大于子结点
+     */
+    class MaxHeap<T> extends Heap<T> {
+        /**
+         * 检查堆元素对的顺序是否正确。
+         * 对于MinHeap，第一个元素必须总是小于等于。
+         * 对于MaxHeap，第一个元素必须总是大于或等于。
+         *
+         * @param firstElement 第一个元素
+         * @param secondElement 第二个元素
+         */
+        pairIsInCorrectOrder(firstElement: T, secondElement: T): boolean;
+    }
+}
+declare namespace ds {
+    /**
+     * 最小堆
+     *
+     * 所有父结点都小于子结点
+     */
+    class MinHeap<T> extends Heap<T> {
+        /**
+         * 检查堆元素对的顺序是否正确。
+         * 对于MinHeap，第一个元素必须总是小于等于。
+         * 对于MaxHeap，第一个元素必须总是大于或等于。
+         *
+         * @param firstElement 第一个元素
+         * @param secondElement 第二个元素
+         */
+        pairIsInCorrectOrder(firstElement: T, secondElement: T): boolean;
     }
 }
 declare module ds {

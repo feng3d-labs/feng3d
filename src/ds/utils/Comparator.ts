@@ -36,7 +36,7 @@ namespace ds
          * @param a 值a
          * @param b 值b
          */
-        equal(a: any, b: any)
+        equal(a: T, b: T)
         {
             return this.compare(a, b) === 0;
         }
@@ -47,7 +47,7 @@ namespace ds
          * @param a 值a
          * @param b 值b
          */
-        lessThan(a: any, b: any)
+        lessThan(a: T, b: T)
         {
             return this.compare(a, b) < 0;
         }
@@ -58,7 +58,7 @@ namespace ds
          * @param a 值a
          * @param b 值b
          */
-        greaterThan(a: any, b: any)
+        greaterThan(a: T, b: T)
         {
             return this.compare(a, b) > 0;
         }
@@ -69,7 +69,7 @@ namespace ds
          * @param a 值a
          * @param b 值b
          */
-        lessThanOrEqual(a: any, b: any)
+        lessThanOrEqual(a: T, b: T)
         {
             return this.lessThan(a, b) || this.equal(a, b);
         }
@@ -80,7 +80,7 @@ namespace ds
          * @param a 值a
          * @param b 值b
          */
-        greaterThanOrEqual(a: any, b: any)
+        greaterThanOrEqual(a: T, b: T)
         {
             return this.greaterThan(a, b) || this.equal(a, b);
         }

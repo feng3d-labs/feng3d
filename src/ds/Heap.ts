@@ -15,7 +15,7 @@ namespace ds
         /**
          * 比较器
          */
-        private compare: Comparator<T>;
+        protected compare: Comparator<T>;
 
         /**
          * 构建链表
