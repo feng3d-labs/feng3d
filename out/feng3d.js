@@ -3113,6 +3113,246 @@ var ds;
 var ds;
 (function (ds) {
     /**
+     * 堆
+     *
+     * 最小和最大堆的父类。
+     */
+    var Heap = /** @class */ (function () {
+        /**
+         * 构建链表
+         *
+         * @param comparatorFunction 比较函数
+         */
+        function Heap(comparatorFunction) {
+            var _newTarget = this.constructor;
+            if (_newTarget === Heap) {
+                throw new TypeError('无法直接构造堆实例');
+            }
+            this.heapContainer = [];
+            this.compare = new ds.Comparator(comparatorFunction);
+        }
+        /**
+         * 获取左边子结点索引
+         *
+         * @param parentIndex 父结点索引
+         */
+        Heap.prototype.getLeftChildIndex = function (parentIndex) {
+            return (2 * parentIndex) + 1;
+        };
+        /**
+         * 获取右边子结点索引
+         *
+         * @param parentIndex 父结点索引
+         */
+        Heap.prototype.getRightChildIndex = function (parentIndex) {
+            return (2 * parentIndex) + 2;
+        };
+        /**
+         * 获取父结点索引
+         *
+         * @param childIndex 子结点索引
+         */
+        Heap.prototype.getParentIndex = function (childIndex) {
+            return Math.floor((childIndex - 1) / 2);
+        };
+        /**
+         * 是否有父结点
+         *
+         * @param childIndex 子结点索引
+         */
+        Heap.prototype.hasParent = function (childIndex) {
+            return this.getParentIndex(childIndex) >= 0;
+        };
+        /**
+         * 是否有左结点
+         *
+         * @param parentIndex 父结点索引
+         */
+        Heap.prototype.hasLeftChild = function (parentIndex) {
+            return this.getLeftChildIndex(parentIndex) < this.heapContainer.length;
+        };
+        /**
+         * 是否有右结点
+         *
+         * @param parentIndex 父结点索引
+         */
+        Heap.prototype.hasRightChild = function (parentIndex) {
+            return this.getRightChildIndex(parentIndex) < this.heapContainer.length;
+        };
+        /**
+         * 获取左结点
+         *
+         * @param parentIndex 父结点索引
+         */
+        Heap.prototype.leftChild = function (parentIndex) {
+            return this.heapContainer[this.getLeftChildIndex(parentIndex)];
+        };
+        /**
+         * 获取右结点
+         *
+         * @param parentIndex 父结点索引
+         */
+        Heap.prototype.rightChild = function (parentIndex) {
+            return this.heapContainer[this.getRightChildIndex(parentIndex)];
+        };
+        /**
+         * 获取父结点
+         *
+         * @param childIndex 子结点索引
+         */
+        Heap.prototype.parent = function (childIndex) {
+            return this.heapContainer[this.getParentIndex(childIndex)];
+        };
+        /**
+         * 交换两个结点数据
+         *
+         * @param index1 索引1
+         * @param index2 索引2
+         */
+        Heap.prototype.swap = function (index1, index2) {
+            var tmp = this.heapContainer[index2];
+            this.heapContainer[index2] = this.heapContainer[index1];
+            this.heapContainer[index1] = tmp;
+        };
+        /**
+         * 查看堆顶数据
+         */
+        Heap.prototype.peek = function () {
+            if (this.heapContainer.length === 0)
+                return null;
+            return this.heapContainer[0];
+        };
+        /**
+         * 出堆
+         *
+         * 取出堆顶元素
+         */
+        Heap.prototype.poll = function () {
+            if (this.heapContainer.length === 0)
+                return null;
+            if (this.heapContainer.length === 1)
+                return this.heapContainer.pop();
+            var item = this.heapContainer[0];
+            // 将最后一个元素从末尾移动到堆顶。
+            this.heapContainer[0] = this.heapContainer.pop();
+            this.heapifyDown();
+            return item;
+        };
+        /**
+         * 新增元素
+         *
+         * @param item 元素
+         */
+        Heap.prototype.add = function (item) {
+            this.heapContainer.push(item);
+            this.heapifyUp();
+            return this;
+        };
+        /**
+         * 移除所有指定元素
+         *
+         * @param item 元素
+         * @param comparator 比较器
+         */
+        Heap.prototype.remove = function (item, comparator) {
+            if (comparator === void 0) { comparator = this.compare; }
+            // 找到要删除的项的数量。
+            var numberOfItemsToRemove = this.find(item, comparator).length;
+            for (var iteration = 0; iteration < numberOfItemsToRemove; iteration += 1) {
+                // 获取一个删除元素索引
+                var indexToRemove = this.find(item, comparator).pop();
+                // 删除元素为最后一个索引时
+                if (indexToRemove === (this.heapContainer.length - 1)) {
+                    this.heapContainer.pop();
+                }
+                else {
+                    // 把数组最后元素移动到删除位置
+                    this.heapContainer[indexToRemove] = this.heapContainer.pop();
+                    var parentItem = this.parent(indexToRemove);
+                    if (this.hasLeftChild(indexToRemove)
+                        && (!parentItem
+                            || this.pairIsInCorrectOrder(parentItem, this.heapContainer[indexToRemove]))) {
+                        this.heapifyDown(indexToRemove);
+                    }
+                    else {
+                        this.heapifyUp(indexToRemove);
+                    }
+                }
+            }
+            return this;
+        };
+        /**
+         * 查找元素所在所有索引
+         *
+         * @param item 查找的元素
+         * @param comparator 比较器
+         */
+        Heap.prototype.find = function (item, comparator) {
+            if (comparator === void 0) { comparator = this.compare; }
+            var foundItemIndices = [];
+            for (var itemIndex = 0; itemIndex < this.heapContainer.length; itemIndex += 1) {
+                if (comparator.equal(item, this.heapContainer[itemIndex])) {
+                    foundItemIndices.push(itemIndex);
+                }
+            }
+            return foundItemIndices;
+        };
+        /**
+         * 是否为空
+         */
+        Heap.prototype.isEmpty = function () {
+            return !this.heapContainer.length;
+        };
+        /**
+         * 转换为字符串
+         */
+        Heap.prototype.toString = function () {
+            return this.heapContainer.toString();
+        };
+        /**
+         * 堆冒泡
+         *
+         * @param startIndex 堆冒泡起始索引
+         */
+        Heap.prototype.heapifyUp = function (startIndex) {
+            var currentIndex = startIndex || this.heapContainer.length - 1;
+            while (this.hasParent(currentIndex)
+                && !this.pairIsInCorrectOrder(this.parent(currentIndex), this.heapContainer[currentIndex])) {
+                this.swap(currentIndex, this.getParentIndex(currentIndex));
+                currentIndex = this.getParentIndex(currentIndex);
+            }
+        };
+        /**
+         * 堆下沉
+         *
+         * @param startIndex 堆下沉起始索引
+         */
+        Heap.prototype.heapifyDown = function (startIndex) {
+            if (startIndex === void 0) { startIndex = 0; }
+            var currentIndex = startIndex;
+            var nextIndex = null;
+            while (this.hasLeftChild(currentIndex)) {
+                if (this.hasRightChild(currentIndex)
+                    && this.pairIsInCorrectOrder(this.rightChild(currentIndex), this.leftChild(currentIndex))) {
+                    nextIndex = this.getRightChildIndex(currentIndex);
+                }
+                else {
+                    nextIndex = this.getLeftChildIndex(currentIndex);
+                }
+                if (this.pairIsInCorrectOrder(this.heapContainer[currentIndex], this.heapContainer[nextIndex])) {
+                    break;
+                }
+                this.swap(currentIndex, nextIndex);
+                currentIndex = nextIndex;
+            }
+        };
+        return Heap;
+    }());
+    ds.Heap = Heap;
+})(ds || (ds = {}));
+var ds;
+(function (ds) {
+    /**
      * 优先队列，自动按优先级排序
      * 基于数组实现
      */

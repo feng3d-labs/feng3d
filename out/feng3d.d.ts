@@ -1699,6 +1699,149 @@ declare namespace ds {
         toString(valueToString?: (value: T) => string): string;
     }
 }
+declare namespace ds {
+    /**
+     * 堆
+     *
+     * 最小和最大堆的父类。
+     */
+    abstract class Heap<T> {
+        /**
+         * 堆的数组表示。
+         */
+        private heapContainer;
+        /**
+         * 比较器
+         */
+        private compare;
+        /**
+         * 构建链表
+         *
+         * @param comparatorFunction 比较函数
+         */
+        constructor(comparatorFunction?: CompareFunction<T>);
+        /**
+         * 获取左边子结点索引
+         *
+         * @param parentIndex 父结点索引
+         */
+        getLeftChildIndex(parentIndex: number): number;
+        /**
+         * 获取右边子结点索引
+         *
+         * @param parentIndex 父结点索引
+         */
+        getRightChildIndex(parentIndex: number): number;
+        /**
+         * 获取父结点索引
+         *
+         * @param childIndex 子结点索引
+         */
+        getParentIndex(childIndex: number): number;
+        /**
+         * 是否有父结点
+         *
+         * @param childIndex 子结点索引
+         */
+        hasParent(childIndex: number): boolean;
+        /**
+         * 是否有左结点
+         *
+         * @param parentIndex 父结点索引
+         */
+        hasLeftChild(parentIndex: number): boolean;
+        /**
+         * 是否有右结点
+         *
+         * @param parentIndex 父结点索引
+         */
+        hasRightChild(parentIndex: number): boolean;
+        /**
+         * 获取左结点
+         *
+         * @param parentIndex 父结点索引
+         */
+        leftChild(parentIndex: number): T;
+        /**
+         * 获取右结点
+         *
+         * @param parentIndex 父结点索引
+         */
+        rightChild(parentIndex: number): T;
+        /**
+         * 获取父结点
+         *
+         * @param childIndex 子结点索引
+         */
+        parent(childIndex: number): T;
+        /**
+         * 交换两个结点数据
+         *
+         * @param index1 索引1
+         * @param index2 索引2
+         */
+        swap(index1: number, index2: number): void;
+        /**
+         * 查看堆顶数据
+         */
+        peek(): T;
+        /**
+         * 出堆
+         *
+         * 取出堆顶元素
+         */
+        poll(): T;
+        /**
+         * 新增元素
+         *
+         * @param item 元素
+         */
+        add(item: T): this;
+        /**
+         * 移除所有指定元素
+         *
+         * @param item 元素
+         * @param comparator 比较器
+         */
+        remove(item: T, comparator?: Comparator<T>): this;
+        /**
+         * 查找元素所在所有索引
+         *
+         * @param item 查找的元素
+         * @param comparator 比较器
+         */
+        find(item: T, comparator?: Comparator<T>): any[];
+        /**
+         * 是否为空
+         */
+        isEmpty(): boolean;
+        /**
+         * 转换为字符串
+         */
+        toString(): string;
+        /**
+         * 堆冒泡
+         *
+         * @param startIndex 堆冒泡起始索引
+         */
+        heapifyUp(startIndex?: number): void;
+        /**
+         * 堆下沉
+         *
+         * @param startIndex 堆下沉起始索引
+         */
+        heapifyDown(startIndex?: number): void;
+        /**
+         * 检查堆元素对的顺序是否正确。
+         * 对于MinHeap，第一个元素必须总是小于等于。
+         * 对于MaxHeap，第一个元素必须总是大于或等于。
+         *
+         * @param firstElement 第一个元素
+         * @param secondElement 第二个元素
+         */
+        abstract pairIsInCorrectOrder(firstElement: T, secondElement: T): boolean;
+    }
+}
 declare module ds {
     /**
      * 优先队列，自动按优先级排序
