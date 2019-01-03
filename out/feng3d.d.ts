@@ -1579,6 +1579,39 @@ declare namespace ds {
          * @param value 结点值
          */
         delete(value: T): DoublyLinkedListNode<T>;
+        /**
+         * 查找与结点值相等的结点
+         *
+         * @param value 结点值
+         */
+        find(value: T): DoublyLinkedListNode<T>;
+        /**
+         * 删除表头
+         */
+        deleteHead(): T;
+        /**
+         * 删除表尾
+         */
+        deleteTail(): T;
+        /**
+         * 从数组中初始化链表
+         *
+         * @param values 结点值列表
+         */
+        fromArray(values: T[]): this;
+        /**
+         * 转换为数组
+         */
+        toArray(): T[];
+        /**
+         * 转换为字符串
+         * @param valueToString 值输出为字符串函数
+         */
+        toString(valueToString?: (value: T) => string): string;
+        /**
+         * 反转链表
+         */
+        reverse(): this;
     }
     /**
      * 双向链接结点

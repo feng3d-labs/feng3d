@@ -2824,9 +2824,13 @@ var ds;
             var prevNode = null;
             var nextNode = null;
             while (currNode) {
+                // 存储下一个结点
                 nextNode = currNode.next;
+                // 反转结点的next指向
                 currNode.next = prevNode;
+                // 存储上一个节点
                 prevNode = currNode;
+                // 遍历指针向后移动
                 currNode = nextNode;
             }
             // 重置表头与表尾
@@ -2924,6 +2928,107 @@ var ds;
                 this.tail = currentNode;
             }
             return deletedNode;
+        };
+        /**
+         * 查找与结点值相等的结点
+         *
+         * @param value 结点值
+         */
+        DoublyLinkedList.prototype.find = function (value) {
+            if (!this.head)
+                return null;
+            var currentNode = this.head;
+            while (currentNode) {
+                if (this.compare.equal(currentNode.value, value))
+                    return currentNode;
+                currentNode = currentNode.next;
+            }
+            return null;
+        };
+        /**
+         * 删除表头
+         */
+        DoublyLinkedList.prototype.deleteHead = function () {
+            if (!this.head)
+                return undefined;
+            var deletedHead = this.head;
+            if (this.head.next) {
+                this.head = this.head.next;
+                this.head.previous = null;
+            }
+            else {
+                this.head = null;
+                this.tail = null;
+            }
+            return deletedHead.value;
+        };
+        /**
+         * 删除表尾
+         */
+        DoublyLinkedList.prototype.deleteTail = function () {
+            if (!this.tail)
+                return undefined;
+            var deletedTail = this.tail;
+            if (this.head === this.tail) {
+                this.head = null;
+                this.tail = null;
+                return deletedTail.value;
+            }
+            this.tail = this.tail.previous;
+            this.tail.next = null;
+            return deletedTail.value;
+        };
+        /**
+         * 从数组中初始化链表
+         *
+         * @param values 结点值列表
+         */
+        DoublyLinkedList.prototype.fromArray = function (values) {
+            var _this = this;
+            this.empty();
+            values.forEach(function (value) { return _this.addTail(value); });
+            return this;
+        };
+        /**
+         * 转换为数组
+         */
+        DoublyLinkedList.prototype.toArray = function () {
+            var values = [];
+            var currentNode = this.head;
+            while (currentNode) {
+                values.push(currentNode.value);
+                currentNode = currentNode.next;
+            }
+            return values;
+        };
+        /**
+         * 转换为字符串
+         * @param valueToString 值输出为字符串函数
+         */
+        DoublyLinkedList.prototype.toString = function (valueToString) {
+            return this.toArray().map(function (value) { return valueToString ? valueToString(value) : "" + value; }).toString();
+        };
+        /**
+         * 反转链表
+         */
+        DoublyLinkedList.prototype.reverse = function () {
+            var currNode = this.head;
+            var prevNode = null;
+            var nextNode = null;
+            while (currNode) {
+                // 存储当前结点的next与previous指向
+                nextNode = currNode.next;
+                prevNode = currNode.previous;
+                // 反转结点的next与previous指向
+                currNode.next = prevNode;
+                currNode.previous = nextNode;
+                // 遍历指针向后移动
+                currNode = nextNode;
+            }
+            // 重置表头与表尾
+            this.tail = this.head;
+            this.head = prevNode;
+            return this;
         };
         return DoublyLinkedList;
     }());

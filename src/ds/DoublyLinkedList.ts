@@ -68,7 +68,6 @@ namespace ds
             return this;
         }
 
-
         /**
          * 删除链表中所有与指定值相等的结点
          * 
@@ -114,6 +113,136 @@ namespace ds
             }
 
             return deletedNode;
+        }
+
+        /**
+         * 查找与结点值相等的结点
+         * 
+         * @param value 结点值
+         */
+        find(value: T)
+        {
+            if (!this.head) return null;
+
+            let currentNode = this.head;
+
+            while (currentNode)
+            {
+                if (this.compare.equal(currentNode.value, value)) return currentNode;
+                currentNode = currentNode.next;
+            }
+            return null;
+        }
+
+        /**
+         * 删除表头
+         */
+        deleteHead()
+        {
+            if (!this.head) return undefined;
+
+            const deletedHead = this.head;
+
+            if (this.head.next)
+            {
+                this.head = this.head.next;
+                this.head.previous = null;
+            } else
+            {
+                this.head = null;
+                this.tail = null;
+            }
+
+            return deletedHead.value;
+        }
+
+        /**
+         * 删除表尾
+         */
+        deleteTail()
+        {
+            if (!this.tail) return undefined;
+
+            const deletedTail = this.tail;
+
+            if (this.head === this.tail)
+            {
+                this.head = null;
+                this.tail = null;
+
+                return deletedTail.value;
+            }
+
+            this.tail = this.tail.previous;
+            this.tail.next = null;
+
+            return deletedTail.value;
+        }
+
+        /**
+         * 从数组中初始化链表
+         * 
+         * @param values 结点值列表
+         */
+        fromArray(values: T[])
+        {
+            this.empty();
+            values.forEach(value => this.addTail(value));
+            return this;
+        }
+
+        /**
+         * 转换为数组
+         */
+        toArray()
+        {
+            var values: T[] = [];
+            var currentNode = this.head;
+            while (currentNode)
+            {
+                values.push(currentNode.value);
+                currentNode = currentNode.next;
+            }
+            return values;
+        }
+
+        /**
+         * 转换为字符串
+         * @param valueToString 值输出为字符串函数
+         */
+        toString(valueToString?: (value: T) => string)
+        {
+            return this.toArray().map(value => valueToString ? valueToString(value) : `${value}`).toString();
+        }
+
+        /**
+         * 反转链表
+         */
+        reverse()
+        {
+            let currNode = this.head;
+            let prevNode = null;
+            let nextNode = null;
+
+            while (currNode)
+            {
+                // 存储当前结点的next与previous指向
+                nextNode = currNode.next;
+                prevNode = currNode.previous;
+
+                // 反转结点的next与previous指向
+                currNode.next = prevNode;
+                currNode.previous = nextNode;
+
+                // 遍历指针向后移动
+                currNode = nextNode;
+            }
+
+            // 重置表头与表尾
+            this.tail = this.head;
+            this.head = prevNode;
+
+            return this;
         }
     }
 

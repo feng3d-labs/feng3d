@@ -234,11 +234,16 @@ namespace ds
 
             while (currNode)
             {
+                // 存储下一个结点
                 nextNode = currNode.next;
 
+                // 反转结点的next指向
                 currNode.next = prevNode;
 
+                // 存储上一个节点
                 prevNode = currNode;
+
+                // 遍历指针向后移动
                 currNode = nextNode;
             }
 
