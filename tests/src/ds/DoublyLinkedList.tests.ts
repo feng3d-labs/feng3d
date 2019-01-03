@@ -1,22 +1,28 @@
-QUnit.module("LinkedList", () =>
+QUnit.module("DoublyLinkedList", () =>
 {
-    QUnit.test("LinkedList", (assert) =>
+    QUnit.test("DoublyLinkedList", (assert) =>
     {
-        var ll = new ds.LinkedList<number>();
+        var ll = new ds.DoublyLinkedList<number>();
         assert.deepEqual(ll.deleteHead(), undefined);
         assert.deepEqual(ll.deleteTail(), undefined);
     });
 
+    QUnit.test("empty", (assert) =>
+    {
+        var ll = new ds.DoublyLinkedList<number>();
+        ll.fromArray([Math.random(), Math.random(), Math.random()]);
+        ll.empty();
+        assert.deepEqual(ll.toArray().length, 0);
+    });
+
     QUnit.test("addHead", (assert) =>
     {
-        var ll = new ds.LinkedList<number>();
-
+        var ll = new ds.DoublyLinkedList<number>();
         var arr = ds.utils.createArray(10, () => Math.random());
         arr.concat().reverse().forEach(element =>
         {
             ll.addHead(element);
         });
-
         assert.deepEqual(ll.toArray(), arr);
 
         ll.addHead(1);
@@ -24,9 +30,10 @@ QUnit.module("LinkedList", () =>
         assert.deepEqual(ll.toArray(), arr);
     });
 
+
     QUnit.test("addTail", (assert) =>
     {
-        var ll = new ds.LinkedList<number>();
+        var ll = new ds.DoublyLinkedList<number>();
 
         var arr = ds.utils.createArray(10, () => Math.random());
         arr.forEach(element =>
@@ -43,7 +50,7 @@ QUnit.module("LinkedList", () =>
 
     QUnit.test("deleteHead", (assert) =>
     {
-        var ll = new ds.LinkedList<number>();
+        var ll = new ds.DoublyLinkedList<number>();
 
         var arr = ds.utils.createArray(10, () => Math.random());
         ll.fromArray(arr);
@@ -56,7 +63,7 @@ QUnit.module("LinkedList", () =>
 
     QUnit.test("deleteTail", (assert) =>
     {
-        var ll = new ds.LinkedList<number>();
+        var ll = new ds.DoublyLinkedList<number>();
 
         var arr = ds.utils.createArray(10, () => Math.random());
         ll.fromArray(arr);
@@ -69,7 +76,7 @@ QUnit.module("LinkedList", () =>
 
     QUnit.test("toArray", (assert) =>
     {
-        var ll = new ds.LinkedList<number>();
+        var ll = new ds.DoublyLinkedList<number>();
 
         var arr = ds.utils.createArray(10, () => Math.random());
         ll.fromArray(arr);
@@ -79,7 +86,7 @@ QUnit.module("LinkedList", () =>
 
     QUnit.test("fromArray", (assert) =>
     {
-        var ll = new ds.LinkedList<number>();
+        var ll = new ds.DoublyLinkedList<number>();
 
         var arr = ds.utils.createArray(10, () => Math.random());
         ll.fromArray(arr);
@@ -99,7 +106,7 @@ QUnit.module("LinkedList", () =>
 
     QUnit.test("reverse", (assert) =>
     {
-        var ll = new ds.LinkedList<number>();
+        var ll = new ds.DoublyLinkedList<number>();
 
         var arr = ds.utils.createArray(10, () => Math.random());
         ll.fromArray(arr);
@@ -117,5 +124,4 @@ QUnit.module("LinkedList", () =>
 
         assert.deepEqual(ll.toArray(), arr);
     });
-
 });

@@ -234,6 +234,9 @@ namespace ds
                 currNode.next = prevNode;
                 currNode.previous = nextNode;
 
+                // 存储上一个节点
+                prevNode = currNode;
+
                 // 遍历指针向后移动
                 currNode = nextNode;
             }

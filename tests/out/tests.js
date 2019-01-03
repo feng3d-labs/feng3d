@@ -362,6 +362,88 @@ var feng3d;
         });
     });
 })(feng3d || (feng3d = {}));
+QUnit.module("DoublyLinkedList", function () {
+    QUnit.test("DoublyLinkedList", function (assert) {
+        var ll = new ds.DoublyLinkedList();
+        assert.deepEqual(ll.deleteHead(), undefined);
+        assert.deepEqual(ll.deleteTail(), undefined);
+    });
+    QUnit.test("empty", function (assert) {
+        var ll = new ds.DoublyLinkedList();
+        ll.fromArray([Math.random(), Math.random(), Math.random()]);
+        ll.empty();
+        assert.deepEqual(ll.toArray().length, 0);
+    });
+    QUnit.test("addHead", function (assert) {
+        var ll = new ds.DoublyLinkedList();
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        arr.concat().reverse().forEach(function (element) {
+            ll.addHead(element);
+        });
+        assert.deepEqual(ll.toArray(), arr);
+        ll.addHead(1);
+        arr.unshift(1);
+        assert.deepEqual(ll.toArray(), arr);
+    });
+    QUnit.test("addTail", function (assert) {
+        var ll = new ds.DoublyLinkedList();
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        arr.forEach(function (element) {
+            ll.addTail(element);
+        });
+        assert.deepEqual(ll.toArray(), arr);
+        ll.addTail(1);
+        arr.push(1);
+        assert.deepEqual(ll.toArray(), arr);
+    });
+    QUnit.test("deleteHead", function (assert) {
+        var ll = new ds.DoublyLinkedList();
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        ll.fromArray(arr);
+        assert.deepEqual(ll.deleteHead(), arr.shift());
+        assert.deepEqual(ll.deleteHead(), arr.shift());
+        assert.deepEqual(ll.toArray(), arr);
+    });
+    QUnit.test("deleteTail", function (assert) {
+        var ll = new ds.DoublyLinkedList();
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        ll.fromArray(arr);
+        assert.deepEqual(ll.deleteTail(), arr.pop());
+        assert.deepEqual(ll.deleteTail(), arr.pop());
+        assert.deepEqual(ll.toArray(), arr);
+    });
+    QUnit.test("toArray", function (assert) {
+        var ll = new ds.DoublyLinkedList();
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        ll.fromArray(arr);
+        assert.deepEqual(ll.toArray(), arr);
+    });
+    QUnit.test("fromArray", function (assert) {
+        var ll = new ds.DoublyLinkedList();
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        ll.fromArray(arr);
+        assert.deepEqual(ll.toArray(), arr);
+    });
+    QUnit.test("toString", function (assert) {
+        var ll = new ds.DoublyLinkedList();
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        ll.fromArray(arr);
+        assert.ok(true, ll.toString(function (v) { return v.toFixed(3); }));
+    });
+    QUnit.test("reverse", function (assert) {
+        var ll = new ds.DoublyLinkedList();
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        ll.fromArray(arr);
+        ll.reverse();
+        arr.reverse();
+        assert.deepEqual(ll.toArray(), arr);
+        arr.length = 1;
+        ll.fromArray(arr);
+        ll.reverse();
+        arr.reverse();
+        assert.deepEqual(ll.toArray(), arr);
+    });
+});
 QUnit.module("LinkedList", function () {
     QUnit.test("LinkedList", function (assert) {
         var ll = new ds.LinkedList();
@@ -416,6 +498,25 @@ QUnit.module("LinkedList", function () {
         var ll = new ds.LinkedList();
         var arr = ds.utils.createArray(10, function () { return Math.random(); });
         ll.fromArray(arr);
+        assert.deepEqual(ll.toArray(), arr);
+    });
+    QUnit.test("toString", function (assert) {
+        var ll = new ds.DoublyLinkedList();
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        ll.fromArray(arr);
+        assert.ok(true, ll.toString(function (v) { return v.toFixed(3); }));
+    });
+    QUnit.test("reverse", function (assert) {
+        var ll = new ds.LinkedList();
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        ll.fromArray(arr);
+        ll.reverse();
+        arr.reverse();
+        assert.deepEqual(ll.toArray(), arr);
+        arr.length = 1;
+        ll.fromArray(arr);
+        ll.reverse();
+        arr.reverse();
         assert.deepEqual(ll.toArray(), arr);
     });
 });
