@@ -1,52 +1,75 @@
 QUnit.module("Queue", () =>
 {
-    QUnit.test("push", (assert) =>
+    QUnit.test("isEmpty", (assert) =>
     {
-        var arr = ds.utils.createArray(10, () => Math.random());
-
         var q = new ds.Queue<number>();
-        q.push.apply(q, arr);
 
-        assert.deepEqual(q.toArray(), arr);
-
-        arr.push(1);
-        q.push(1);
-        assert.deepEqual(q.toArray(), arr);
+        assert.deepEqual(q.isEmpty(), true);
     });
 
-
-    QUnit.test("shift", (assert) =>
+    QUnit.test("empty", (assert) =>
     {
         var arr = ds.utils.createArray(10, () => Math.random());
 
         var q = new ds.Queue<number>();
-        q.push.apply(q, arr);
-
-        for (let i = arr.length - 1; i >= 0; i--)
+        arr.forEach(element =>
         {
-            assert.deepEqual(q.shift(), arr.shift());
+            q.enqueue(element);
+        });
+        q.empty();
+        assert.deepEqual(q.isEmpty(), true);
+    });
+
+    QUnit.test("peek", (assert) =>
+    {
+        var arr = ds.utils.createArray(10, () => Math.random());
+
+        var q = new ds.Queue<number>();
+        arr.forEach(element =>
+        {
+            q.enqueue(element);
+        });
+        assert.deepEqual(q.peek(), arr[0]);
+    });
+
+    QUnit.test("enqueue", (assert) =>
+    {
+        var arr = ds.utils.createArray(10, () => Math.random());
+
+        var q = new ds.Queue<number>();
+        arr.forEach(element =>
+        {
+            q.enqueue(element);
+        });
+        assert.deepEqual(q.peek(), arr[0]);
+    });
+
+    QUnit.test("enqueue", (assert) =>
+    {
+        var arr = ds.utils.createArray(10, () => Math.random());
+
+        var q = new ds.Queue<number>();
+        arr.forEach(element =>
+        {
+            q.enqueue(element);
+        });
+        while (!q.isEmpty())
+        {
+            assert.deepEqual(q.dequeue(), arr.shift());
         }
-
     });
 
-    QUnit.test("toArray", (assert) =>
+    QUnit.test("toString", (assert) =>
     {
         var arr = ds.utils.createArray(10, () => Math.random());
 
         var q = new ds.Queue<number>();
-        q.push.apply(q, arr);
+        arr.forEach(element =>
+        {
+            q.enqueue(element);
+        });
 
-        assert.deepEqual(q.toArray(), arr);
-    });
-
-    QUnit.test("fromArray", (assert) =>
-    {
-        var arr = ds.utils.createArray(10, () => Math.random());
-
-        var q = new ds.Queue<number>();
-        q.fromArray(arr);
-
-        assert.deepEqual(q.toArray(), arr);
+        assert.ok(true, q.toString((v) => v.toFixed(3)));
     });
 
 

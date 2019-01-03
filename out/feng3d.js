@@ -2587,61 +2587,62 @@ var ds;
      * 使用单向链表实现
      */
     var Queue = /** @class */ (function () {
+        /**
+         * 构建队列
+         *
+         * @param comparatorFunction 比较函数
+         */
         function Queue() {
-            this.length = 0;
+            this.linkedList = new ds.LinkedList();
         }
         /**
-         * 尾部添加元素（进队）
-         * @param items 元素列表
-         * @returns 长度
+         * 是否为空
          */
-        Queue.prototype.push = function () {
-            var _this = this;
-            var items = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                items[_i] = arguments[_i];
+        Queue.prototype.isEmpty = function () {
+            return !this.linkedList.head;
+        };
+        /**
+         * 清空
+         */
+        Queue.prototype.empty = function () {
+            this.linkedList.empty();
+        };
+        /**
+         * 读取队列前面的元素，但不删除它。
+         */
+        Queue.prototype.peek = function () {
+            if (!this.linkedList.head) {
+                return null;
             }
-            items.forEach(function (item) {
-                var node = { item: item, next: null };
-                if (_this.last)
-                    _this.last.next = node;
-                _this.last = node;
-                if (!_this.first)
-                    _this.first = node;
-                _this.length++;
-            });
-            return this.length;
+            return this.linkedList.head.value;
         };
         /**
-         * 头部移除元素（出队）
+         * 入队
+         *
+         * 在队列的末尾(链表的尾部)添加一个新元素。
+         * 这个元素将在它前面的所有元素之后被处理。
+         *
+         * @param value 元素值
          */
-        Queue.prototype.shift = function () {
-            var removeitem = this.first ? this.first.item : undefined;
-            if (this.length == 1)
-                this.first = this.last = null;
-            if (this.first)
-                this.first = this.first.next;
-            return removeitem;
+        Queue.prototype.enqueue = function (value) {
+            this.linkedList.addTail(value);
         };
         /**
-         * 转换为数组
+         * 出队
+         *
+         * 删除队列前面的元素(链表的头)。如果队列为空，则返回null。
          */
-        Queue.prototype.toArray = function () {
-            var arr = [];
-            var node = this.first;
-            while (node) {
-                arr.push(node.item);
-                node = node.next;
-            }
-            return arr;
+        Queue.prototype.dequeue = function () {
+            var removedValue = this.linkedList.deleteHead();
+            return removedValue;
         };
         /**
-         * 从数组初始化链表
+         * 转换为字符串
+         *
+         * @param valueToString 值输出为字符串函数
          */
-        Queue.prototype.fromArray = function (array) {
-            this.first = this.last = null;
-            this.push.apply(this, array);
-            return this;
+        Queue.prototype.toString = function (valueToString) {
+            return this.linkedList.toString(valueToString);
         };
         return Queue;
     }());
@@ -2663,6 +2664,12 @@ var ds;
             this.tail = null;
             this.compare = new ds.Comparator(comparatorFunction);
         }
+        /**
+         * 是否为空
+         */
+        LinkedList.prototype.isEmpty = function () {
+            return !this.head;
+        };
         /**
          * 清空
          */
@@ -2747,10 +2754,12 @@ var ds;
         };
         /**
          * 删除表头
+         *
+         * 删除链表前面的元素(链表的头)并返回元素值。如果队列为空，则返回null。
          */
         LinkedList.prototype.deleteHead = function () {
             if (!this.head)
-                return undefined;
+                return null;
             var deletedHead = this.head;
             if (this.head.next) {
                 this.head = this.head.next;
@@ -2766,7 +2775,7 @@ var ds;
          */
         LinkedList.prototype.deleteTail = function () {
             if (!this.tail)
-                return undefined;
+                return null;
             var deletedTail = this.tail;
             if (this.head === this.tail) {
                 this.head = null;
@@ -2811,6 +2820,7 @@ var ds;
         };
         /**
          * 转换为字符串
+         *
          * @param valueToString 值输出为字符串函数
          */
         LinkedList.prototype.toString = function (valueToString) {
@@ -2858,6 +2868,12 @@ var ds;
             this.tail = null;
             this.compare = new ds.Comparator(comparatorFunction);
         }
+        /**
+         * 是否为空
+         */
+        DoublyLinkedList.prototype.isEmpty = function () {
+            return !this.head;
+        };
         /**
          * 清空
          */

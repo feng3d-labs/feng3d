@@ -1418,27 +1418,46 @@ declare namespace ds {
      * 使用单向链表实现
      */
     class Queue<T> {
-        private first;
-        private last;
-        private length;
+        private linkedList;
         /**
-         * 尾部添加元素（进队）
-         * @param items 元素列表
-         * @returns 长度
+         * 构建队列
+         *
+         * @param comparatorFunction 比较函数
          */
-        push(...items: T[]): number;
+        constructor();
         /**
-         * 头部移除元素（出队）
+         * 是否为空
          */
-        shift(): T;
+        isEmpty(): boolean;
         /**
-         * 转换为数组
+         * 清空
          */
-        toArray(): T[];
+        empty(): void;
         /**
-         * 从数组初始化链表
+         * 读取队列前面的元素，但不删除它。
          */
-        fromArray(array: T[]): this;
+        peek(): T;
+        /**
+         * 入队
+         *
+         * 在队列的末尾(链表的尾部)添加一个新元素。
+         * 这个元素将在它前面的所有元素之后被处理。
+         *
+         * @param value 元素值
+         */
+        enqueue(value: T): void;
+        /**
+         * 出队
+         *
+         * 删除队列前面的元素(链表的头)。如果队列为空，则返回null。
+         */
+        dequeue(): T;
+        /**
+         * 转换为字符串
+         *
+         * @param valueToString 值输出为字符串函数
+         */
+        toString(valueToString?: (value: T) => string): string;
     }
 }
 declare namespace ds {
@@ -1449,11 +1468,11 @@ declare namespace ds {
         /**
          * 表头
          */
-        private head;
+        head: LinkedListNode<T>;
         /**
          * 表尾
          */
-        private tail;
+        tail: LinkedListNode<T>;
         /**
          * 比较器
          */
@@ -1464,6 +1483,10 @@ declare namespace ds {
          * @param comparatorFunction 比较函数
          */
         constructor(comparatorFunction?: CompareFunction<T>);
+        /**
+         * 是否为空
+         */
+        isEmpty(): boolean;
         /**
          * 清空
          */
@@ -1494,6 +1517,8 @@ declare namespace ds {
         find(value: T): LinkedListNode<T>;
         /**
          * 删除表头
+         *
+         * 删除链表前面的元素(链表的头)并返回元素值。如果队列为空，则返回null。
          */
         deleteHead(): T;
         /**
@@ -1512,6 +1537,7 @@ declare namespace ds {
         toArray(): T[];
         /**
          * 转换为字符串
+         *
          * @param valueToString 值输出为字符串函数
          */
         toString(valueToString?: (value: T) => string): string;
@@ -1557,6 +1583,10 @@ declare namespace ds {
          * @param comparatorFunction 比较函数
          */
         constructor(comparatorFunction?: CompareFunction<T>);
+        /**
+         * 是否为空
+         */
+        isEmpty(): boolean;
         /**
          * 清空
          */

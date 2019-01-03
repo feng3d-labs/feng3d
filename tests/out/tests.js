@@ -447,8 +447,8 @@ QUnit.module("DoublyLinkedList", function () {
 QUnit.module("LinkedList", function () {
     QUnit.test("LinkedList", function (assert) {
         var ll = new ds.LinkedList();
-        assert.deepEqual(ll.deleteHead(), undefined);
-        assert.deepEqual(ll.deleteTail(), undefined);
+        assert.deepEqual(ll.deleteHead(), null);
+        assert.deepEqual(ll.deleteTail(), null);
     });
     QUnit.test("addHead", function (assert) {
         var ll = new ds.LinkedList();
@@ -561,34 +561,52 @@ QUnit.module("PriorityQueue", function () {
     });
 });
 QUnit.module("Queue", function () {
-    QUnit.test("push", function (assert) {
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+    QUnit.test("isEmpty", function (assert) {
         var q = new ds.Queue();
-        q.push.apply(q, arr);
-        assert.deepEqual(q.toArray(), arr);
-        arr.push(1);
-        q.push(1);
-        assert.deepEqual(q.toArray(), arr);
+        assert.deepEqual(q.isEmpty(), true);
     });
-    QUnit.test("shift", function (assert) {
+    QUnit.test("empty", function (assert) {
         var arr = ds.utils.createArray(10, function () { return Math.random(); });
         var q = new ds.Queue();
-        q.push.apply(q, arr);
-        for (var i = arr.length - 1; i >= 0; i--) {
-            assert.deepEqual(q.shift(), arr.shift());
+        arr.forEach(function (element) {
+            q.enqueue(element);
+        });
+        q.empty();
+        assert.deepEqual(q.isEmpty(), true);
+    });
+    QUnit.test("peek", function (assert) {
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var q = new ds.Queue();
+        arr.forEach(function (element) {
+            q.enqueue(element);
+        });
+        assert.deepEqual(q.peek(), arr[0]);
+    });
+    QUnit.test("enqueue", function (assert) {
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var q = new ds.Queue();
+        arr.forEach(function (element) {
+            q.enqueue(element);
+        });
+        assert.deepEqual(q.peek(), arr[0]);
+    });
+    QUnit.test("enqueue", function (assert) {
+        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var q = new ds.Queue();
+        arr.forEach(function (element) {
+            q.enqueue(element);
+        });
+        while (!q.isEmpty()) {
+            assert.deepEqual(q.dequeue(), arr.shift());
         }
     });
-    QUnit.test("toArray", function (assert) {
+    QUnit.test("toString", function (assert) {
         var arr = ds.utils.createArray(10, function () { return Math.random(); });
         var q = new ds.Queue();
-        q.push.apply(q, arr);
-        assert.deepEqual(q.toArray(), arr);
-    });
-    QUnit.test("fromArray", function (assert) {
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
-        var q = new ds.Queue();
-        q.fromArray(arr);
-        assert.deepEqual(q.toArray(), arr);
+        arr.forEach(function (element) {
+            q.enqueue(element);
+        });
+        assert.ok(true, q.toString(function (v) { return v.toFixed(3); }));
     });
 });
 QUnit.module("Utils", function () {

@@ -32,6 +32,14 @@ namespace ds
         }
 
         /**
+         * 是否为空
+         */
+        isEmpty()
+        {
+            return !this.head;
+        }
+
+        /**
          * 清空
          */
         empty()

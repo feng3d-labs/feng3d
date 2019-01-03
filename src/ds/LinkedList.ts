@@ -8,11 +8,11 @@ namespace ds
         /**
          * 表头
          */
-        private head: LinkedListNode<T>;
+        head: LinkedListNode<T>;
         /**
          * 表尾
          */
-        private tail: LinkedListNode<T>;
+        tail: LinkedListNode<T>;
 
         /**
          * 比较器
@@ -29,6 +29,14 @@ namespace ds
             this.head = null;
             this.tail = null;
             this.compare = new Comparator(comparatorFunction);
+        }
+
+        /**
+         * 是否为空
+         */
+        isEmpty()
+        {
+            return !this.head;
         }
 
         /**
@@ -133,10 +141,12 @@ namespace ds
 
         /**
          * 删除表头
+         * 
+         * 删除链表前面的元素(链表的头)并返回元素值。如果队列为空，则返回null。
          */
         deleteHead()
         {
-            if (!this.head) return undefined;
+            if (!this.head) return null;
 
             const deletedHead = this.head;
 
@@ -157,7 +167,7 @@ namespace ds
          */
         deleteTail()
         {
-            if (!this.tail) return undefined;
+            if (!this.tail) return null;
 
             const deletedTail = this.tail;
 
@@ -216,6 +226,7 @@ namespace ds
 
         /**
          * 转换为字符串
+         * 
          * @param valueToString 值输出为字符串函数
          */
         toString(valueToString?: (value: T) => string)

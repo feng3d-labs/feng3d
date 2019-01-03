@@ -6,70 +6,79 @@ namespace ds
      */
     export class Queue<T>
     {
-        private first: Node<T>;
-        private last: Node<T>;
-        private length = 0;
+        private linkedList: LinkedList<T>;
 
         /**
-         * 尾部添加元素（进队）
-         * @param items 元素列表
-         * @returns 长度
+         * 构建队列
+         * 
+         * @param comparatorFunction 比较函数
          */
-        push(...items: T[])
+        constructor()
         {
-            items.forEach(item =>
-            {
-                var node: Node<T> = { item: item, next: null };
-                if (this.last) this.last.next = node;
-                this.last = node;
-                if (!this.first) this.first = node;
-                this.length++;
-            });
-            return this.length;
+            this.linkedList = new LinkedList();
         }
 
         /**
-         * 头部移除元素（出队）
+         * 是否为空
          */
-        shift()
+        isEmpty()
         {
-            var removeitem = this.first ? this.first.item : undefined;
-            if (this.length == 1)
-                this.first = this.last = null;
-            if (this.first)
-                this.first = this.first.next;
-            return removeitem;
+            return !this.linkedList.head;
         }
 
         /**
-         * 转换为数组
+         * 清空
          */
-        toArray()
+        empty()
         {
-            var arr: T[] = [];
-            var node = this.first;
-            while (node)
+            this.linkedList.empty();
+        }
+
+        /**
+         * 读取队列前面的元素，但不删除它。
+         */
+        peek()
+        {
+            if (!this.linkedList.head)
             {
-                arr.push(node.item);
-                node = node.next;
+                return null;
             }
-            return arr;
+
+            return this.linkedList.head.value;
         }
 
         /**
-         * 从数组初始化链表
+         * 入队
+         * 
+         * 在队列的末尾(链表的尾部)添加一个新元素。
+         * 这个元素将在它前面的所有元素之后被处理。
+         * 
+         * @param value 元素值
          */
-        fromArray(array: T[])
+        enqueue(value: T)
         {
-            this.first = this.last = null;
-            this.push.apply(this, array);
-            return this;
+            this.linkedList.addTail(value);
         }
-    }
 
-    interface Node<T>
-    {
-        item: T;
-        next: Node<T>;
+        /**
+         * 出队
+         * 
+         * 删除队列前面的元素(链表的头)。如果队列为空，则返回null。
+         */
+        dequeue()
+        {
+            const removedValue = this.linkedList.deleteHead();
+            return removedValue;
+        }
+        
+        /**
+         * 转换为字符串
+         * 
+         * @param valueToString 值输出为字符串函数
+         */
+        toString(valueToString?: (value: T) => string)
+        {
+            return this.linkedList.toString(valueToString);
+        }
     }
 }

@@ -3,8 +3,8 @@ QUnit.module("LinkedList", () =>
     QUnit.test("LinkedList", (assert) =>
     {
         var ll = new ds.LinkedList<number>();
-        assert.deepEqual(ll.deleteHead(), undefined);
-        assert.deepEqual(ll.deleteTail(), undefined);
+        assert.deepEqual(ll.deleteHead(), null);
+        assert.deepEqual(ll.deleteTail(), null);
     });
 
     QUnit.test("addHead", (assert) =>
