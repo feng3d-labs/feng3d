@@ -2841,11 +2841,90 @@ var ds;
 var ds;
 (function (ds) {
     /**
-     * 双向列表
+     * 双向链表
      */
     var DoublyLinkedList = /** @class */ (function () {
-        function DoublyLinkedList() {
+        /**
+         * 构建双向链表
+         *
+         * @param comparatorFunction 比较函数
+         */
+        function DoublyLinkedList(comparatorFunction) {
+            this.head = null;
+            this.tail = null;
+            this.compare = new ds.Comparator(comparatorFunction);
         }
+        /**
+         * 清空
+         */
+        DoublyLinkedList.prototype.empty = function () {
+            this.head = null;
+            this.tail = null;
+        };
+        /**
+         * 添加新结点到表头
+         *
+         * @param value 结点数据
+         */
+        DoublyLinkedList.prototype.addHead = function (value) {
+            var newNode = { value: value, previous: null, next: this.head };
+            if (this.head)
+                this.head.previous = newNode;
+            this.head = newNode;
+            if (!this.tail)
+                this.tail = newNode;
+            return this;
+        };
+        /**
+         * 添加新结点到表尾
+         *
+         * @param value 结点数据
+         */
+        DoublyLinkedList.prototype.addTail = function (value) {
+            var newNode = { value: value, previous: this.tail, next: null };
+            if (this.tail)
+                this.tail.next = newNode;
+            this.tail = newNode;
+            if (!this.head)
+                this.head = newNode;
+            return this;
+        };
+        /**
+         * 删除链表中所有与指定值相等的结点
+         *
+         * @param value 结点值
+         */
+        DoublyLinkedList.prototype.delete = function (value) {
+            if (!this.head)
+                return null;
+            var deletedNode = null;
+            // 从表头删除结点
+            while (this.head && this.compare.equal(this.head.value, value)) {
+                deletedNode = this.head;
+                this.head = this.head.next;
+                this.head.previous = null;
+            }
+            var currentNode = this.head;
+            if (currentNode !== null) {
+                // 删除相等的下一个结点
+                while (currentNode.next) {
+                    if (this.compare.equal(currentNode.next.value, value)) {
+                        deletedNode = currentNode.next;
+                        currentNode.next = currentNode.next.next;
+                        if (currentNode.next)
+                            currentNode.next.previous = currentNode;
+                    }
+                    else {
+                        currentNode = currentNode.next;
+                    }
+                }
+            }
+            // 判断表尾是否被删除
+            if (this.compare.equal(this.tail.value, value)) {
+                this.tail = currentNode;
+            }
+            return deletedNode;
+        };
         return DoublyLinkedList;
     }());
     ds.DoublyLinkedList = DoublyLinkedList;

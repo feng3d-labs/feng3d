@@ -1536,10 +1536,53 @@ declare namespace ds {
 }
 declare namespace ds {
     /**
-     * 双向列表
+     * 双向链表
      */
     class DoublyLinkedList<T> {
+        /**
+         * 表头
+         */
+        private head;
+        /**
+         * 表尾
+         */
+        private tail;
+        /**
+         * 比较器
+         */
+        private compare;
+        /**
+         * 构建双向链表
+         *
+         * @param comparatorFunction 比较函数
+         */
+        constructor(comparatorFunction?: CompareFunction<T>);
+        /**
+         * 清空
+         */
+        empty(): void;
+        /**
+         * 添加新结点到表头
+         *
+         * @param value 结点数据
+         */
+        addHead(value: T): this;
+        /**
+         * 添加新结点到表尾
+         *
+         * @param value 结点数据
+         */
+        addTail(value: T): this;
+        /**
+         * 删除链表中所有与指定值相等的结点
+         *
+         * @param value 结点值
+         */
+        delete(value: T): DoublyLinkedListNode<T>;
     }
+    /**
+     * 双向链接结点
+     */
     interface DoublyLinkedListNode<T> {
         /**
          * 值
