@@ -1469,27 +1469,27 @@ declare namespace ds {
          */
         empty(): void;
         /**
-         * 添加新节点到表头
+         * 添加新结点到表头
          *
-         * @param value 节点数据
+         * @param value 结点数据
          */
         addHead(value: T): this;
         /**
-         * 添加新节点到表尾
+         * 添加新结点到表尾
          *
-         * @param value 节点数据
+         * @param value 结点数据
          */
         addTail(value: T): this;
         /**
-         * 删除链表中所有与指定值相等的节点
+         * 删除链表中所有与指定值相等的结点
          *
-         * @param value 节点值
+         * @param value 结点值
          */
         delete(value: T): LinkedListNode<T>;
         /**
-         * 查找与节点值相等的节点
+         * 查找与结点值相等的结点
          *
-         * @param value 节点值
+         * @param value 结点值
          */
         find(value: T): LinkedListNode<T>;
         /**
@@ -1503,7 +1503,7 @@ declare namespace ds {
         /**
          * 从数组中初始化链表
          *
-         * @param values 节点值列表
+         * @param values 结点值列表
          */
         fromArray(values: T[]): this;
         /**
@@ -1521,7 +1521,7 @@ declare namespace ds {
         reverse(): this;
     }
     /**
-     * 链表节点
+     * 链表结点
      */
     interface LinkedListNode<T> {
         /**
@@ -1529,9 +1529,30 @@ declare namespace ds {
          */
         value: T;
         /**
-         * 下一个节点
+         * 下一个结点
          */
         next: LinkedListNode<T>;
+    }
+}
+declare namespace ds {
+    /**
+     * 双向列表
+     */
+    class DoublyLinkedList<T> {
+    }
+    interface DoublyLinkedListNode<T> {
+        /**
+         * 值
+         */
+        value: T;
+        /**
+         * 上一个结点
+         */
+        previous: DoublyLinkedListNode<T>;
+        /**
+         * 下一个结点
+         */
+        next: DoublyLinkedListNode<T>;
     }
 }
 declare module ds {
@@ -5282,7 +5303,7 @@ declare namespace feng3d {
         };
         /**
          * 获取单调区间列表
-         * @returns {} {ts: 区间节点插值度列表,vs: 区间节点值列表}
+         * @returns {} {ts: 区间结点插值度列表,vs: 区间结点值列表}
          */
         getMonotoneIntervals(ps: number[], numSamples?: number, precision?: number): {
             ts: number[];
@@ -8891,7 +8912,7 @@ declare namespace feng3d {
      */
     class RenderAtomic {
         /**
-         * 下一个节点
+         * 下一个结点
          */
         next: RenderAtomic;
         /**
@@ -10224,7 +10245,7 @@ declare namespace feng3d {
          */
         scene: Scene3D;
         /**
-         * 根节点
+         * 根结点
          */
         readonly root: GameObject;
         readonly gl: GL;
@@ -13159,7 +13180,7 @@ declare namespace feng3d {
          */
         simulationSpeed: number;
         /**
-         * 我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度
+         * 我们应该使用来自整个层次的组合尺度，仅仅是这个粒子结点，还是仅仅对形状模块应用尺度
          */
         /**
          * 如果启用，系统将自动开始运行。
@@ -13305,7 +13326,7 @@ declare namespace feng3d {
 
      */
     class SkeletonJoint {
-        /** 父关节索引 （-1说明本身是总父节点，这个序号其实就是行号了，譬如上面”origin“节点的序号就是0，无父节点； "body"节点序号是1，父节点序号是0，也就是说父节点是”origin“）*/
+        /** 父关节索引 （-1说明本身是总父结点，这个序号其实就是行号了，譬如上面”origin“结点的序号就是0，无父结点； "body"结点序号是1，父结点序号是0，也就是说父结点是”origin“）*/
         parentIndex: number;
         /** 关节名字 */
         name: string;
@@ -13365,7 +13386,7 @@ declare namespace feng3d {
          */
         dispose(): void;
         /**
-         * 缓存，通过寻找父节点获得
+         * 缓存，通过寻找父结点获得
          */
         private cacheSkeletonComponent;
         private cacheU_skeletonGlobalMatriices;
@@ -13788,7 +13809,7 @@ declare namespace feng3d {
     type MD5_HierarchyData = {
         /** Joint 名字 */
         name: string;
-        /** 父节点序号 */
+        /** 父结点序号 */
         parentIndex: number;
         /** flag */
         flags: number;

@@ -41,9 +41,9 @@ namespace ds
         }
 
         /**
-         * 添加新节点到表头
+         * 添加新结点到表头
          * 
-         * @param value 节点数据
+         * @param value 结点数据
          */
         addHead(value: T)
         {
@@ -54,9 +54,9 @@ namespace ds
         }
 
         /**
-         * 添加新节点到表尾
+         * 添加新结点到表尾
          * 
-         * @param value 节点数据
+         * @param value 结点数据
          */
         addTail(value: T)
         {
@@ -68,9 +68,9 @@ namespace ds
         }
 
         /**
-         * 删除链表中所有与指定值相等的节点
+         * 删除链表中所有与指定值相等的结点
          * 
-         * @param value 节点值
+         * @param value 结点值
          */
         delete(value: T)
         {
@@ -78,7 +78,7 @@ namespace ds
 
             let deletedNode: LinkedListNode<T> = null;
 
-            // 从表头删除节点
+            // 从表头删除结点
             while (this.head && this.compare.equal(this.head.value, value))
             {
                 deletedNode = this.head;
@@ -89,7 +89,7 @@ namespace ds
 
             if (currentNode !== null)
             {
-                // 删除相等的下一个节点
+                // 删除相等的下一个结点
                 while (currentNode.next)
                 {
                     if (this.compare.equal(currentNode.next.value, value))
@@ -113,9 +113,9 @@ namespace ds
         }
 
         /**
-         * 查找与节点值相等的节点
+         * 查找与结点值相等的结点
          * 
-         * @param value 节点值
+         * @param value 结点值
          */
         find(value: T)
         {
@@ -190,7 +190,7 @@ namespace ds
         /**
          * 从数组中初始化链表
          * 
-         * @param values 节点值列表
+         * @param values 结点值列表
          */
         fromArray(values: T[])
         {
@@ -251,7 +251,7 @@ namespace ds
     }
 
     /**
-     * 链表节点
+     * 链表结点
      */
     export interface LinkedListNode<T>
     {
@@ -260,7 +260,7 @@ namespace ds
          */
         value: T;
         /**
-         * 下一个节点
+         * 下一个结点
          */
         next: LinkedListNode<T>;
     }

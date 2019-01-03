@@ -16,12 +16,12 @@ namespace ds
         value: T;
 
         /**
-         * 上一个节点
+         * 上一个结点
          */
         previous: DoublyLinkedListNode<T>;
 
         /**
-         * 下一个节点
+         * 下一个结点
          */
         next: DoublyLinkedListNode<T>;
     }

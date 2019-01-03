@@ -7,7 +7,7 @@ namespace feng3d
     export class RenderAtomic
     {
         /**
-         * 下一个节点
+         * 下一个结点
          */
         next: RenderAtomic;
 

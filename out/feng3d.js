@@ -2671,9 +2671,9 @@ var ds;
             this.tail = null;
         };
         /**
-         * 添加新节点到表头
+         * 添加新结点到表头
          *
-         * @param value 节点数据
+         * @param value 结点数据
          */
         LinkedList.prototype.addHead = function (value) {
             var newNode = { value: value, next: this.head };
@@ -2683,9 +2683,9 @@ var ds;
             return this;
         };
         /**
-         * 添加新节点到表尾
+         * 添加新结点到表尾
          *
-         * @param value 节点数据
+         * @param value 结点数据
          */
         LinkedList.prototype.addTail = function (value) {
             var newNode = { value: value, next: null };
@@ -2697,22 +2697,22 @@ var ds;
             return this;
         };
         /**
-         * 删除链表中所有与指定值相等的节点
+         * 删除链表中所有与指定值相等的结点
          *
-         * @param value 节点值
+         * @param value 结点值
          */
         LinkedList.prototype.delete = function (value) {
             if (!this.head)
                 return null;
             var deletedNode = null;
-            // 从表头删除节点
+            // 从表头删除结点
             while (this.head && this.compare.equal(this.head.value, value)) {
                 deletedNode = this.head;
                 this.head = this.head.next;
             }
             var currentNode = this.head;
             if (currentNode !== null) {
-                // 删除相等的下一个节点
+                // 删除相等的下一个结点
                 while (currentNode.next) {
                     if (this.compare.equal(currentNode.next.value, value)) {
                         deletedNode = currentNode.next;
@@ -2730,9 +2730,9 @@ var ds;
             return deletedNode;
         };
         /**
-         * 查找与节点值相等的节点
+         * 查找与结点值相等的结点
          *
-         * @param value 节点值
+         * @param value 结点值
          */
         LinkedList.prototype.find = function (value) {
             if (!this.head)
@@ -2789,7 +2789,7 @@ var ds;
         /**
          * 从数组中初始化链表
          *
-         * @param values 节点值列表
+         * @param values 结点值列表
          */
         LinkedList.prototype.fromArray = function (values) {
             var _this = this;
@@ -2837,6 +2837,18 @@ var ds;
         return LinkedList;
     }());
     ds.LinkedList = LinkedList;
+})(ds || (ds = {}));
+var ds;
+(function (ds) {
+    /**
+     * 双向列表
+     */
+    var DoublyLinkedList = /** @class */ (function () {
+        function DoublyLinkedList() {
+        }
+        return DoublyLinkedList;
+    }());
+    ds.DoublyLinkedList = DoublyLinkedList;
 })(ds || (ds = {}));
 var ds;
 (function (ds) {
@@ -10132,7 +10144,7 @@ var feng3d;
         };
         /**
          * 获取单调区间列表
-         * @returns {} {ts: 区间节点插值度列表,vs: 区间节点值列表}
+         * @returns {} {ts: 区间结点插值度列表,vs: 区间结点值列表}
          */
         BezierCurve.prototype.getMonotoneIntervals = function (ps, numSamples, precision) {
             if (numSamples === void 0) { numSamples = 10; }
@@ -17854,7 +17866,7 @@ var feng3d;
         });
         Object.defineProperty(Engine.prototype, "root", {
             /**
-             * 根节点
+             * 根结点
              */
             get: function () {
                 return this.scene.gameObject;
@@ -25799,10 +25811,10 @@ var feng3d;
              */
             _this.simulationSpeed = 1;
             /**
-             * 我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度
+             * 我们应该使用来自整个层次的组合尺度，仅仅是这个粒子结点，还是仅仅对形状模块应用尺度
              */
             // @serialize
-            // @oav({ tooltip: "我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度?" })
+            // @oav({ tooltip: "我们应该使用来自整个层次的组合尺度，仅仅是这个粒子结点，还是仅仅对形状模块应用尺度?" })
             // scalingMode = ParticleSystemScalingMode.Local;
             /**
              * 如果启用，系统将自动开始运行。
@@ -26186,7 +26198,7 @@ var feng3d;
      */
     var SkeletonJoint = /** @class */ (function () {
         function SkeletonJoint() {
-            /** 父关节索引 （-1说明本身是总父节点，这个序号其实就是行号了，譬如上面”origin“节点的序号就是0，无父节点； "body"节点序号是1，父节点序号是0，也就是说父节点是”origin“）*/
+            /** 父关节索引 （-1说明本身是总父结点，这个序号其实就是行号了，譬如上面”origin“结点的序号就是0，无父结点； "body"结点序号是1，父结点序号是0，也就是说父结点是”origin“）*/
             this.parentIndex = -1;
             this.children = [];
         }
