@@ -93,10 +93,10 @@ namespace feng3d
         simulationSpeed = 1;
 
         /**
-         * 我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度
+         * 我们应该使用来自整个层次的组合尺度，仅仅是这个粒子结点，还是仅仅对形状模块应用尺度
          */
         // @serialize
-        // @oav({ tooltip: "我们应该使用来自整个层次的组合尺度，仅仅是这个粒子节点，还是仅仅对形状模块应用尺度?" })
+        // @oav({ tooltip: "我们应该使用来自整个层次的组合尺度，仅仅是这个粒子结点，还是仅仅对形状模块应用尺度?" })
         // scalingMode = ParticleSystemScalingMode.Local;
 
         /**

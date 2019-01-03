@@ -397,7 +397,7 @@ namespace feng3d
 
         /**
          * 获取单调区间列表
-         * @returns {} {ts: 区间节点插值度列表,vs: 区间节点值列表}
+         * @returns {} {ts: 区间结点插值度列表,vs: 区间结点值列表}
          */
         getMonotoneIntervals(ps: number[], numSamples = 10, precision = 0.0000001)
         {

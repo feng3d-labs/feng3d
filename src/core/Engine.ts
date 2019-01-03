@@ -42,7 +42,7 @@ namespace feng3d
          */
         scene: Scene3D;
         /**
-         * 根节点
+         * 根结点
          */
         get root()
         {

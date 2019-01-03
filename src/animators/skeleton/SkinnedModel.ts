@@ -60,7 +60,7 @@ namespace feng3d
         }
 
         /**
-         * 缓存，通过寻找父节点获得
+         * 缓存，通过寻找父结点获得
          */
         private cacheSkeletonComponent: SkeletonComponent;
 

@@ -62,7 +62,7 @@ namespace feng3d
     export type MD5_HierarchyData = {
         /** Joint 名字 */
         name: string;
-        /** 父节点序号 */
+        /** 父结点序号 */
         parentIndex: number;
         /** flag */
         flags: number;

@@ -33,6 +33,7 @@
         "src/ds/Utils.ts",
         "src/ds/Queue.ts",
         "src/ds/LinkedList.ts",
+        "src/ds/DoublyLinkedList.ts",
         "src/ds/PriorityQueue.ts",
         // 数学相关程序
         "src/math/Math.ts",
