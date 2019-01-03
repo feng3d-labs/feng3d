@@ -31,9 +31,10 @@
         //
         "src/ds/utils/Comparator.ts",
         "src/ds/Utils.ts",
-        "src/ds/Queue.ts",
         "src/ds/LinkedList.ts",
         "src/ds/DoublyLinkedList.ts",
+        "src/ds/Queue.ts",
+        "src/ds/Stack.ts",
         "src/ds/PriorityQueue.ts",
         // 数学相关程序
         "src/math/Math.ts",

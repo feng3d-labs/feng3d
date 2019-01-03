@@ -1414,54 +1414,6 @@ declare module ds {
 }
 declare namespace ds {
     /**
-     * 队列，只能从后面进，前面出
-     * 使用单向链表实现
-     */
-    class Queue<T> {
-        private linkedList;
-        /**
-         * 构建队列
-         *
-         * @param comparatorFunction 比较函数
-         */
-        constructor();
-        /**
-         * 是否为空
-         */
-        isEmpty(): boolean;
-        /**
-         * 清空
-         */
-        empty(): void;
-        /**
-         * 读取队列前面的元素，但不删除它。
-         */
-        peek(): T;
-        /**
-         * 入队
-         *
-         * 在队列的末尾(链表的尾部)添加一个新元素。
-         * 这个元素将在它前面的所有元素之后被处理。
-         *
-         * @param value 元素值
-         */
-        enqueue(value: T): void;
-        /**
-         * 出队
-         *
-         * 删除队列前面的元素(链表的头)。如果队列为空，则返回null。
-         */
-        dequeue(): T;
-        /**
-         * 转换为字符串
-         *
-         * @param valueToString 值输出为字符串函数
-         */
-        toString(valueToString?: (value: T) => string): string;
-    }
-}
-declare namespace ds {
-    /**
      * 链表
      */
     class LinkedList<T> {
@@ -1659,6 +1611,92 @@ declare namespace ds {
          * 下一个结点
          */
         next: DoublyLinkedListNode<T>;
+    }
+}
+declare namespace ds {
+    /**
+     * 队列，只能从后面进，前面出
+     * 使用单向链表实现
+     */
+    class Queue<T> {
+        private linkedList;
+        /**
+         * 构建队列
+         *
+         * @param comparatorFunction 比较函数
+         */
+        constructor();
+        /**
+         * 是否为空
+         */
+        isEmpty(): boolean;
+        /**
+         * 清空
+         */
+        empty(): void;
+        /**
+         * 读取队列前面的元素，但不删除它。
+         */
+        peek(): T;
+        /**
+         * 入队
+         *
+         * 在队列的末尾(链表的尾部)添加一个新元素。
+         * 这个元素将在它前面的所有元素之后被处理。
+         *
+         * @param value 元素值
+         */
+        enqueue(value: T): void;
+        /**
+         * 出队
+         *
+         * 删除队列前面的元素(链表的头)。如果队列为空，则返回null。
+         */
+        dequeue(): T;
+        /**
+         * 转换为字符串
+         *
+         * @param valueToString 值输出为字符串函数
+         */
+        toString(valueToString?: (value: T) => string): string;
+    }
+}
+declare namespace ds {
+    /**
+     * 栈
+     *
+     * 后进先出
+     */
+    class Stack<T> {
+        private linkedList;
+        /**
+         * 是否为空
+         */
+        isEmpty(): boolean;
+        /**
+         * 查看第一个元素值
+         */
+        peek(): T;
+        /**
+         * 入栈
+         *
+         * @param value 元素值
+         */
+        push(value: T): void;
+        /**
+         * 出栈
+         */
+        pop(): T;
+        /**
+         * 转换为数组
+         */
+        toArray(): T[];
+        /**
+         * 转换为字符串
+         *
+         * @param valueToString 值输出为字符串函数
+         */
+        toString(valueToString?: (value: T) => string): string;
     }
 }
 declare module ds {

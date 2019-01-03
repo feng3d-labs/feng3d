@@ -2583,74 +2583,6 @@ var ds;
 var ds;
 (function (ds) {
     /**
-     * 队列，只能从后面进，前面出
-     * 使用单向链表实现
-     */
-    var Queue = /** @class */ (function () {
-        /**
-         * 构建队列
-         *
-         * @param comparatorFunction 比较函数
-         */
-        function Queue() {
-            this.linkedList = new ds.LinkedList();
-        }
-        /**
-         * 是否为空
-         */
-        Queue.prototype.isEmpty = function () {
-            return !this.linkedList.head;
-        };
-        /**
-         * 清空
-         */
-        Queue.prototype.empty = function () {
-            this.linkedList.empty();
-        };
-        /**
-         * 读取队列前面的元素，但不删除它。
-         */
-        Queue.prototype.peek = function () {
-            if (!this.linkedList.head) {
-                return null;
-            }
-            return this.linkedList.head.value;
-        };
-        /**
-         * 入队
-         *
-         * 在队列的末尾(链表的尾部)添加一个新元素。
-         * 这个元素将在它前面的所有元素之后被处理。
-         *
-         * @param value 元素值
-         */
-        Queue.prototype.enqueue = function (value) {
-            this.linkedList.addTail(value);
-        };
-        /**
-         * 出队
-         *
-         * 删除队列前面的元素(链表的头)。如果队列为空，则返回null。
-         */
-        Queue.prototype.dequeue = function () {
-            var removedValue = this.linkedList.deleteHead();
-            return removedValue;
-        };
-        /**
-         * 转换为字符串
-         *
-         * @param valueToString 值输出为字符串函数
-         */
-        Queue.prototype.toString = function (valueToString) {
-            return this.linkedList.toString(valueToString);
-        };
-        return Queue;
-    }());
-    ds.Queue = Queue;
-})(ds || (ds = {}));
-var ds;
-(function (ds) {
-    /**
      * 链表
      */
     var LinkedList = /** @class */ (function () {
@@ -3051,6 +2983,132 @@ var ds;
         return DoublyLinkedList;
     }());
     ds.DoublyLinkedList = DoublyLinkedList;
+})(ds || (ds = {}));
+var ds;
+(function (ds) {
+    /**
+     * 队列，只能从后面进，前面出
+     * 使用单向链表实现
+     */
+    var Queue = /** @class */ (function () {
+        /**
+         * 构建队列
+         *
+         * @param comparatorFunction 比较函数
+         */
+        function Queue() {
+            this.linkedList = new ds.LinkedList();
+        }
+        /**
+         * 是否为空
+         */
+        Queue.prototype.isEmpty = function () {
+            return !this.linkedList.head;
+        };
+        /**
+         * 清空
+         */
+        Queue.prototype.empty = function () {
+            this.linkedList.empty();
+        };
+        /**
+         * 读取队列前面的元素，但不删除它。
+         */
+        Queue.prototype.peek = function () {
+            if (!this.linkedList.head) {
+                return null;
+            }
+            return this.linkedList.head.value;
+        };
+        /**
+         * 入队
+         *
+         * 在队列的末尾(链表的尾部)添加一个新元素。
+         * 这个元素将在它前面的所有元素之后被处理。
+         *
+         * @param value 元素值
+         */
+        Queue.prototype.enqueue = function (value) {
+            this.linkedList.addTail(value);
+        };
+        /**
+         * 出队
+         *
+         * 删除队列前面的元素(链表的头)。如果队列为空，则返回null。
+         */
+        Queue.prototype.dequeue = function () {
+            var removedValue = this.linkedList.deleteHead();
+            return removedValue;
+        };
+        /**
+         * 转换为字符串
+         *
+         * @param valueToString 值输出为字符串函数
+         */
+        Queue.prototype.toString = function (valueToString) {
+            return this.linkedList.toString(valueToString);
+        };
+        return Queue;
+    }());
+    ds.Queue = Queue;
+})(ds || (ds = {}));
+var ds;
+(function (ds) {
+    /**
+     * 栈
+     *
+     * 后进先出
+     */
+    var Stack = /** @class */ (function () {
+        function Stack() {
+            this.linkedList = new ds.LinkedList();
+        }
+        /**
+         * 是否为空
+         */
+        Stack.prototype.isEmpty = function () {
+            return !this.linkedList.head;
+        };
+        /**
+         * 查看第一个元素值
+         */
+        Stack.prototype.peek = function () {
+            if (this.isEmpty())
+                return null;
+            return this.linkedList.head.value;
+        };
+        /**
+         * 入栈
+         *
+         * @param value 元素值
+         */
+        Stack.prototype.push = function (value) {
+            this.linkedList.addHead(value);
+        };
+        /**
+         * 出栈
+         */
+        Stack.prototype.pop = function () {
+            var removedValue = this.linkedList.deleteHead();
+            return removedValue;
+        };
+        /**
+         * 转换为数组
+         */
+        Stack.prototype.toArray = function () {
+            return this.linkedList.toArray();
+        };
+        /**
+         * 转换为字符串
+         *
+         * @param valueToString 值输出为字符串函数
+         */
+        Stack.prototype.toString = function (valueToString) {
+            return this.linkedList.toString(valueToString);
+        };
+        return Stack;
+    }());
+    ds.Stack = Stack;
 })(ds || (ds = {}));
 var ds;
 (function (ds) {
