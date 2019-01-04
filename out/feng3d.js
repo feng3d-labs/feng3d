@@ -4480,6 +4480,209 @@ var ds;
     }());
     ds.GraphVertex = GraphVertex;
 })(ds || (ds = {}));
+var ds;
+(function (ds) {
+    /**
+     * 二叉树结点
+     *
+     * @see https://gitee.com/feng3d_admin/javascript-algorithms/blob/master/src/data-structures/tree/BinaryTreeNode.js
+     */
+    var BinaryTreeNode = /** @class */ (function () {
+        /**
+         * 构建二叉树结点
+         *
+         * @param value 结点值
+         */
+        function BinaryTreeNode(value) {
+            if (value === void 0) { value = null; }
+            this.left = null;
+            this.right = null;
+            this.parent = null;
+            this.value = value;
+            this.meta = new ds.HashTable();
+            this.nodeComparator = new ds.Comparator();
+        }
+        Object.defineProperty(BinaryTreeNode.prototype, "leftHeight", {
+            /**
+             * 左结点高度
+             */
+            get: function () {
+                if (!this.left) {
+                    return 0;
+                }
+                return this.left.height + 1;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BinaryTreeNode.prototype, "rightHeight", {
+            /**
+             * 右结点高度
+             */
+            get: function () {
+                if (!this.right) {
+                    return 0;
+                }
+                return this.right.height + 1;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BinaryTreeNode.prototype, "height", {
+            /**
+             * 高度
+             */
+            get: function () {
+                return Math.max(this.leftHeight, this.rightHeight);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BinaryTreeNode.prototype, "balanceFactor", {
+            /**
+             * 平衡系数
+             */
+            get: function () {
+                return this.leftHeight - this.rightHeight;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BinaryTreeNode.prototype, "uncle", {
+            /**
+             * 获取叔伯结点
+             */
+            get: function () {
+                if (!this.parent) {
+                    return undefined;
+                }
+                if (!this.parent.parent) {
+                    return undefined;
+                }
+                // 判断祖父结点是否有两个子结点
+                if (!(this.parent.parent.left && this.parent.parent.right)) {
+                    return undefined;
+                }
+                // 现在我们知道当前节点有祖父结点，而这个祖父结点有两个子结点。让我们看看谁是叔叔。
+                if (this.nodeComparator.equal(this.parent, this.parent.parent.left)) {
+                    // 右边的是一个叔叔。
+                    return this.parent.parent.right;
+                }
+                return this.parent.parent.left;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 设置结点值
+         *
+         * @param value 值
+         */
+        BinaryTreeNode.prototype.setValue = function (value) {
+            this.value = value;
+            return this;
+        };
+        /**
+         * 设置左结点
+         *
+         * @param node 结点
+         */
+        BinaryTreeNode.prototype.setLeft = function (node) {
+            if (this.left) {
+                this.left.parent = null;
+            }
+            this.left = node;
+            if (this.left) {
+                this.left.parent = this;
+            }
+            return this;
+        };
+        /**
+         * 设置右结点
+         *
+         * @param node 结点
+         */
+        BinaryTreeNode.prototype.setRight = function (node) {
+            if (this.right) {
+                this.right.parent = null;
+            }
+            this.right = node;
+            if (node) {
+                this.right.parent = this;
+            }
+            return this;
+        };
+        /**
+         * 移除子结点
+         *
+         * @param nodeToRemove 子结点
+         */
+        BinaryTreeNode.prototype.removeChild = function (nodeToRemove) {
+            if (this.left && this.nodeComparator.equal(this.left, nodeToRemove)) {
+                this.left = null;
+                return true;
+            }
+            if (this.right && this.nodeComparator.equal(this.right, nodeToRemove)) {
+                this.right = null;
+                return true;
+            }
+            return false;
+        };
+        /**
+         * 替换节点
+         *
+         * @param nodeToReplace 被替换的节点
+         * @param replacementNode 替换后的节点
+         */
+        BinaryTreeNode.prototype.replaceChild = function (nodeToReplace, replacementNode) {
+            if (!nodeToReplace || !replacementNode) {
+                return false;
+            }
+            if (this.left && this.nodeComparator.equal(this.left, nodeToReplace)) {
+                this.left = replacementNode;
+                return true;
+            }
+            if (this.right && this.nodeComparator.equal(this.right, nodeToReplace)) {
+                this.right = replacementNode;
+                return true;
+            }
+            return false;
+        };
+        /**
+         * 拷贝节点
+         *
+         * @param sourceNode 源节点
+         * @param targetNode 目标节点
+         */
+        BinaryTreeNode.copyNode = function (sourceNode, targetNode) {
+            targetNode.setValue(sourceNode.value);
+            targetNode.setLeft(sourceNode.left);
+            targetNode.setRight(sourceNode.right);
+        };
+        /**
+         * 左序深度遍历
+         */
+        BinaryTreeNode.prototype.traverseInOrder = function () {
+            var traverse = [];
+            if (this.left) {
+                traverse = traverse.concat(this.left.traverseInOrder());
+            }
+            traverse.push(this.value);
+            if (this.right) {
+                traverse = traverse.concat(this.right.traverseInOrder());
+            }
+            return traverse;
+        };
+        /**
+         * 转换为字符串
+         */
+        BinaryTreeNode.prototype.toString = function () {
+            return this.traverseInOrder().toString();
+        };
+        return BinaryTreeNode;
+    }());
+    ds.BinaryTreeNode = BinaryTreeNode;
+})(ds || (ds = {}));
 var feng3d;
 (function (feng3d) {
     feng3d.FMath = {

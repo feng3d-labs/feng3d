@@ -2464,6 +2464,108 @@ declare namespace ds {
         toString(callback?: (value: T) => string): string;
     }
 }
+declare namespace ds {
+    /**
+     * 二叉树结点
+     *
+     * @see https://gitee.com/feng3d_admin/javascript-algorithms/blob/master/src/data-structures/tree/BinaryTreeNode.js
+     */
+    class BinaryTreeNode<T> {
+        /**
+         * 左结点
+         */
+        left: BinaryTreeNode<T>;
+        /**
+         * 右结点
+         */
+        right: BinaryTreeNode<T>;
+        /**
+         * 父结点
+         */
+        parent: BinaryTreeNode<T>;
+        /**
+         * 结点值
+         */
+        value: T;
+        /**
+         * 结点比较器
+         */
+        nodeComparator: Comparator<BinaryTreeNode<T>>;
+        meta: HashTable;
+        /**
+         * 构建二叉树结点
+         *
+         * @param value 结点值
+         */
+        constructor(value?: T);
+        /**
+         * 左结点高度
+         */
+        readonly leftHeight: any;
+        /**
+         * 右结点高度
+         */
+        readonly rightHeight: any;
+        /**
+         * 高度
+         */
+        readonly height: number;
+        /**
+         * 平衡系数
+         */
+        readonly balanceFactor: number;
+        /**
+         * 获取叔伯结点
+         */
+        readonly uncle: BinaryTreeNode<T>;
+        /**
+         * 设置结点值
+         *
+         * @param value 值
+         */
+        setValue(value: T): this;
+        /**
+         * 设置左结点
+         *
+         * @param node 结点
+         */
+        setLeft(node: BinaryTreeNode<T> | null): this;
+        /**
+         * 设置右结点
+         *
+         * @param node 结点
+         */
+        setRight(node: BinaryTreeNode<T> | null): this;
+        /**
+         * 移除子结点
+         *
+         * @param nodeToRemove 子结点
+         */
+        removeChild(nodeToRemove: BinaryTreeNode<T>): boolean;
+        /**
+         * 替换节点
+         *
+         * @param nodeToReplace 被替换的节点
+         * @param replacementNode 替换后的节点
+         */
+        replaceChild(nodeToReplace: BinaryTreeNode<T>, replacementNode: BinaryTreeNode<T>): boolean;
+        /**
+         * 拷贝节点
+         *
+         * @param sourceNode 源节点
+         * @param targetNode 目标节点
+         */
+        static copyNode<T>(sourceNode: BinaryTreeNode<T>, targetNode: BinaryTreeNode<T>): void;
+        /**
+         * 左序深度遍历
+         */
+        traverseInOrder(): any[];
+        /**
+         * 转换为字符串
+         */
+        toString(): string;
+    }
+}
 declare namespace feng3d {
     var FMath: {
         /**
