@@ -2584,6 +2584,8 @@ var ds;
 (function (ds) {
     /**
      * 链表
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/linked-list/LinkedList.js
      */
     var LinkedList = /** @class */ (function () {
         /**
@@ -2843,6 +2845,8 @@ var ds;
 (function (ds) {
     /**
      * 双向链表
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/doubly-linked-list/DoublyLinkedList.js
      */
     var DoublyLinkedList = /** @class */ (function () {
         /**
@@ -3105,6 +3109,8 @@ var ds;
     /**
      * 队列，只能从后面进，前面出
      * 使用单向链表实现
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/queue/Queue.js
      */
     var Queue = /** @class */ (function () {
         /**
@@ -3172,6 +3178,8 @@ var ds;
      * 栈
      *
      * 后进先出
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/stack/Stack.js
      */
     var Stack = /** @class */ (function () {
         function Stack() {
@@ -3228,6 +3236,8 @@ var ds;
      * 堆
      *
      * 最小和最大堆的父类。
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/heap/Heap.js
      */
     var Heap = /** @class */ (function () {
         /**
@@ -3527,6 +3537,8 @@ var ds;
     var defaultHashTableSize = 32;
     /**
      * 哈希表（散列表）
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/hash-table/HashTable.js
      */
     var HashTable = /** @class */ (function () {
         /**
@@ -3618,6 +3630,8 @@ var ds;
      * 优先队列
      *
      * 所有元素按优先级排序
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/priority-queue/PriorityQueue.js
      */
     var PriorityQueue = /** @class */ (function () {
         /**
@@ -3699,6 +3713,8 @@ var ds;
      *
      * 与最小堆相同，只是与元素比较时不同
      * 我们考虑的不是元素的值，而是它的优先级。
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/priority-queue/PriorityQueue.js
      */
     var PriorityQueue1 = /** @class */ (function (_super) {
         __extends(PriorityQueue1, _super);
@@ -3786,6 +3802,130 @@ var ds;
         return PriorityQueue1;
     }(ds.MinHeap));
     ds.PriorityQueue1 = PriorityQueue1;
+})(ds || (ds = {}));
+var ds;
+(function (ds) {
+    /**
+     * 布隆过滤器 （ 在 JavaScript中 该类可由Object对象代替）
+     *
+     * 用于判断某元素是否可能插入
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/bloom-filter/BloomFilter.js
+     * @see https://baike.baidu.com/item/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8
+     */
+    var BloomFilter = /** @class */ (function () {
+        /**
+         *
+         * @param size 尺寸
+         */
+        function BloomFilter(size) {
+            if (size === void 0) { size = 100; }
+            this.size = 100;
+            this.size = size;
+            this.storage = this.createStore(size);
+        }
+        /**
+         * 插入
+         *
+         * @param item 元素
+         */
+        BloomFilter.prototype.insert = function (item) {
+            var _this = this;
+            var hashValues = this.getHashValues(item);
+            hashValues.forEach(function (val) { return _this.storage.setValue(val); });
+        };
+        /**
+         * 可能包含
+         *
+         * @param item 元素
+         */
+        BloomFilter.prototype.mayContain = function (item) {
+            var hashValues = this.getHashValues(item);
+            for (var hashIndex = 0; hashIndex < hashValues.length; hashIndex += 1) {
+                if (!this.storage.getValue(hashValues[hashIndex])) {
+                    // 我们知道项目肯定没有插入。
+                    return false;
+                }
+            }
+            // 项目可能已经插入，也可能没有插入。
+            return true;
+        };
+        /**
+         * 创建存储器
+         * @param size 尺寸
+         */
+        BloomFilter.prototype.createStore = function (size) {
+            var storage = [];
+            // 初始化
+            for (var storageCellIndex = 0; storageCellIndex < size; storageCellIndex += 1) {
+                storage.push(false);
+            }
+            var storageInterface = {
+                getValue: function (index) {
+                    return storage[index];
+                },
+                setValue: function (index) {
+                    storage[index] = true;
+                },
+            };
+            return storageInterface;
+        };
+        /**
+         * 计算哈希值1
+         *
+         * @param item 元素
+         */
+        BloomFilter.prototype.hash1 = function (item) {
+            var hash = 0;
+            for (var charIndex = 0; charIndex < item.length; charIndex += 1) {
+                var char = item.charCodeAt(charIndex);
+                hash = (hash << 5) + hash + char;
+                hash &= hash; // Convert to 32bit integer
+                hash = Math.abs(hash);
+            }
+            return hash % this.size;
+        };
+        /**
+         * 计算哈希值2
+         *
+         * @param item 元素
+         */
+        BloomFilter.prototype.hash2 = function (item) {
+            var hash = 5381;
+            for (var charIndex = 0; charIndex < item.length; charIndex += 1) {
+                var char = item.charCodeAt(charIndex);
+                hash = (hash << 5) + hash + char; /* hash * 33 + c */
+            }
+            return Math.abs(hash % this.size);
+        };
+        /**
+         * 计算哈希值3
+         *
+         * @param item 元素
+         */
+        BloomFilter.prototype.hash3 = function (item) {
+            var hash = 0;
+            for (var charIndex = 0; charIndex < item.length; charIndex += 1) {
+                var char = item.charCodeAt(charIndex);
+                hash = (hash << 5) - hash;
+                hash += char;
+                hash &= hash; // Convert to 32bit integer
+            }
+            return Math.abs(hash % this.size);
+        };
+        /**
+         * 获取3个哈希值组成的数组
+         */
+        BloomFilter.prototype.getHashValues = function (item) {
+            return [
+                this.hash1(item),
+                this.hash2(item),
+                this.hash3(item),
+            ];
+        };
+        return BloomFilter;
+    }());
+    ds.BloomFilter = BloomFilter;
 })(ds || (ds = {}));
 var feng3d;
 (function (feng3d) {

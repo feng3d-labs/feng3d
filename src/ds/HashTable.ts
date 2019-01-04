@@ -10,6 +10,8 @@ namespace ds
 
     /**
      * 哈希表（散列表）
+     * 
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/hash-table/HashTable.js
      */
     export class HashTable
     {

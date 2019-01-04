@@ -2,6 +2,8 @@ namespace ds
 {
     /**
      * 双向链表
+     * 
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/doubly-linked-list/DoublyLinkedList.js
      */
     export class DoublyLinkedList<T>
     {

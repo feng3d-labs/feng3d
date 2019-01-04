@@ -41,6 +41,7 @@
         "src/ds/HashTable.ts",
         "src/ds/PriorityQueue.ts",
         "src/ds/PriorityQueue1.ts",
+        "src/ds/BloomFilter.ts",
         // 数学相关程序
         "src/math/Math.ts",
         // 函数方程

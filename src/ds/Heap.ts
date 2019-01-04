@@ -4,6 +4,8 @@ namespace ds
      * 堆
      * 
      * 最小和最大堆的父类。
+     * 
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/heap/Heap.js
      */
     export abstract class Heap<T>
     {

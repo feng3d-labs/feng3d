@@ -5,6 +5,8 @@ module ds
      * 
      * 与最小堆相同，只是与元素比较时不同
      * 我们考虑的不是元素的值，而是它的优先级。
+     * 
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/priority-queue/PriorityQueue.js
      */
     export class PriorityQueue1<T> extends MinHeap<T>
     {

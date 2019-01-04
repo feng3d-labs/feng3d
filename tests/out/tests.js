@@ -362,6 +362,55 @@ var feng3d;
         });
     });
 })(feng3d || (feng3d = {}));
+QUnit.module('BloomFilter', function () {
+    var bloomFilter;
+    var people = [
+        'Bruce Wayne',
+        'Clark Kent',
+        'Barry Allen',
+    ];
+    QUnit.test('should have methods named "insert" and "mayContain"', function (assert) {
+        var bloomFilter = new ds.BloomFilter();
+        assert.deepEqual(typeof bloomFilter.insert, 'function');
+        assert.deepEqual(typeof bloomFilter.mayContain, 'function');
+    });
+    QUnit.test('should create a new filter store with the appropriate methods', function (assert) {
+        var bloomFilter = new ds.BloomFilter();
+        var store = bloomFilter.createStore(18);
+        assert.deepEqual(typeof store.getValue, 'function');
+        assert.deepEqual(typeof store.setValue, 'function');
+    });
+    QUnit.test('should hash deterministically with all 3 hash functions', function (assert) {
+        var bloomFilter = new ds.BloomFilter();
+        var str1 = 'apple';
+        assert.deepEqual(bloomFilter.hash1(str1), bloomFilter.hash1(str1));
+        assert.deepEqual(bloomFilter.hash2(str1), bloomFilter.hash2(str1));
+        assert.deepEqual(bloomFilter.hash3(str1), bloomFilter.hash3(str1));
+        assert.deepEqual(bloomFilter.hash1(str1), 14);
+        assert.deepEqual(bloomFilter.hash2(str1), 43);
+        assert.deepEqual(bloomFilter.hash3(str1), 10);
+        var str2 = 'orange';
+        assert.deepEqual(bloomFilter.hash1(str2), bloomFilter.hash1(str2));
+        assert.deepEqual(bloomFilter.hash2(str2), bloomFilter.hash2(str2));
+        assert.deepEqual(bloomFilter.hash3(str2), bloomFilter.hash3(str2));
+        assert.deepEqual(bloomFilter.hash1(str2), 0);
+        assert.deepEqual(bloomFilter.hash2(str2), 61);
+        assert.deepEqual(bloomFilter.hash3(str2), 10);
+    });
+    QUnit.test('should create an array with 3 hash values', function (assert) {
+        var bloomFilter = new ds.BloomFilter();
+        assert.deepEqual(bloomFilter.getHashValues('abc').length, 3);
+        assert.deepEqual(bloomFilter.getHashValues('abc'), [66, 63, 54]);
+    });
+    QUnit.test('should insert strings correctly and return true when checking for inserted values', function (assert) {
+        var bloomFilter = new ds.BloomFilter();
+        people.forEach(function (person) { return bloomFilter.insert(person); });
+        assert.deepEqual(bloomFilter.mayContain('Bruce Wayne'), true);
+        assert.deepEqual(bloomFilter.mayContain('Clark Kent'), true);
+        assert.deepEqual(bloomFilter.mayContain('Barry Allen'), true);
+        assert.deepEqual(bloomFilter.mayContain('Tony Stark'), false);
+    });
+});
 QUnit.module("DoublyLinkedList", function () {
     QUnit.test("DoublyLinkedList", function (assert) {
         var ll = new ds.DoublyLinkedList();

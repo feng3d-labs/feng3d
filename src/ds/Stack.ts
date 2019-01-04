@@ -4,6 +4,8 @@ namespace ds
      * 栈
      * 
      * 后进先出
+     * 
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/stack/Stack.js
      */
     export class Stack<T>
     {

@@ -3,6 +3,8 @@ namespace ds
     /**
      * 队列，只能从后面进，前面出
      * 使用单向链表实现
+     * 
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/queue/Queue.js
      */
     export class Queue<T>
     {

@@ -4,6 +4,8 @@ module ds
      * 优先队列
      * 
      * 所有元素按优先级排序
+     * 
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/priority-queue/PriorityQueue.js
      */
     export class PriorityQueue<T>
     {

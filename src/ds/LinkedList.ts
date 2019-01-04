@@ -2,6 +2,8 @@ namespace ds
 {
     /**
      * 链表
+     * 
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/linked-list/LinkedList.js
      */
     export class LinkedList<T>
     {

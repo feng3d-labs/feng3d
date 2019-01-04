@@ -1415,6 +1415,8 @@ declare module ds {
 declare namespace ds {
     /**
      * 链表
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/linked-list/LinkedList.js
      */
     class LinkedList<T> {
         /**
@@ -1526,6 +1528,8 @@ declare namespace ds {
 declare namespace ds {
     /**
      * 双向链表
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/doubly-linked-list/DoublyLinkedList.js
      */
     class DoublyLinkedList<T> {
         /**
@@ -1640,6 +1644,8 @@ declare namespace ds {
     /**
      * 队列，只能从后面进，前面出
      * 使用单向链表实现
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/queue/Queue.js
      */
     class Queue<T> {
         private linkedList;
@@ -1689,6 +1695,8 @@ declare namespace ds {
      * 栈
      *
      * 后进先出
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/stack/Stack.js
      */
     class Stack<T> {
         private linkedList;
@@ -1727,6 +1735,8 @@ declare namespace ds {
      * 堆
      *
      * 最小和最大堆的父类。
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/heap/Heap.js
      */
     abstract class Heap<T> {
         /**
@@ -1904,6 +1914,8 @@ declare namespace ds {
 declare namespace ds {
     /**
      * 哈希表（散列表）
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/hash-table/HashTable.js
      */
     class HashTable {
         private keys;
@@ -1961,6 +1973,8 @@ declare module ds {
      * 优先队列
      *
      * 所有元素按优先级排序
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/priority-queue/PriorityQueue.js
      */
     class PriorityQueue<T> {
         private items;
@@ -2004,6 +2018,8 @@ declare module ds {
      *
      * 与最小堆相同，只是与元素比较时不同
      * 我们考虑的不是元素的值，而是它的优先级。
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/priority-queue/PriorityQueue.js
      */
     class PriorityQueue1<T> extends MinHeap<T> {
         private priorities;
@@ -2055,6 +2071,67 @@ declare module ds {
          * @param b 元素b
          */
         compareValue(a: T, b: T): 0 | 1 | -1;
+    }
+}
+declare namespace ds {
+    /**
+     * 布隆过滤器 （ 在 JavaScript中 该类可由Object对象代替）
+     *
+     * 用于判断某元素是否可能插入
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/bloom-filter/BloomFilter.js
+     * @see https://baike.baidu.com/item/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8
+     */
+    class BloomFilter {
+        private size;
+        private storage;
+        /**
+         *
+         * @param size 尺寸
+         */
+        constructor(size?: number);
+        /**
+         * 插入
+         *
+         * @param item 元素
+         */
+        insert(item: string): void;
+        /**
+         * 可能包含
+         *
+         * @param item 元素
+         */
+        mayContain(item: string): boolean;
+        /**
+         * 创建存储器
+         * @param size 尺寸
+         */
+        createStore(size: number): {
+            getValue(index: any): any;
+            setValue(index: any): void;
+        };
+        /**
+         * 计算哈希值1
+         *
+         * @param item 元素
+         */
+        hash1(item: string): number;
+        /**
+         * 计算哈希值2
+         *
+         * @param item 元素
+         */
+        hash2(item: string): number;
+        /**
+         * 计算哈希值3
+         *
+         * @param item 元素
+         */
+        hash3(item: string): number;
+        /**
+         * 获取3个哈希值组成的数组
+         */
+        getHashValues(item: string): number[];
     }
 }
 declare namespace feng3d {
