@@ -17,12 +17,20 @@ namespace ds
         private tail: LinkedListNode<T>;
 
         /**
-         * 构建链表
+         * 比较器
          */
-        constructor()
+        private compare: Comparator<T>;
+
+        /**
+         * 构建双向链表
+         * 
+         * @param comparatorFunction 比较函数
+         */
+        constructor(comparatorFunction?: CompareFunction<T>)
         {
             this.head = null;
             this.tail = null;
+            this.compare = new Comparator(comparatorFunction);
         }
 
         /**
@@ -81,16 +89,15 @@ namespace ds
          * 删除链表中第一个与指定值相等的结点
          * 
          * @param value 结点值
-         * @param equalFunc 判断是否相等函数
          */
-        delete(value: T, equalFunc = (a: T, b: T) => a == b)
+        delete(value: T)
         {
             if (!this.head) return null;
 
             let deletedNode: LinkedListNode<T> = null;
 
             // 从表头删除结点
-            while (this.head && !deletedNode && equalFunc(this.head.value, value))
+            while (this.head && !deletedNode && this.compare.equal(this.head.value, value))
             {
                 deletedNode = this.head;
                 this.head = this.head.next;
@@ -103,7 +110,7 @@ namespace ds
                 // 删除相等的下一个结点
                 while (!deletedNode && currentNode.next)
                 {
-                    if (equalFunc(currentNode.next.value, value))
+                    if (this.compare.equal(currentNode.next.value, value))
                     {
                         deletedNode = currentNode.next;
                         currentNode.next = currentNode.next.next;
@@ -127,16 +134,15 @@ namespace ds
          * 删除链表中所有与指定值相等的结点
          * 
          * @param value 结点值
-         * @param equalFunc 判断是否相等函数
          */
-        deleteAll(value: T, equalFunc = (a: T, b: T) => a == b)
+        deleteAll(value: T)
         {
             if (!this.head) return null;
 
             let deletedNode: LinkedListNode<T> = null;
 
             // 从表头删除结点
-            while (this.head && equalFunc(this.head.value, value))
+            while (this.head && this.compare.equal(this.head.value, value))
             {
                 deletedNode = this.head;
                 this.head = this.head.next;
@@ -149,7 +155,7 @@ namespace ds
                 // 删除相等的下一个结点
                 while (currentNode.next)
                 {
-                    if (equalFunc(currentNode.next.value, value))
+                    if (this.compare.equal(currentNode.next.value, value))
                     {
                         deletedNode = currentNode.next;
                         currentNode.next = currentNode.next.next;
@@ -173,9 +179,8 @@ namespace ds
          * 查找与结点值相等的结点
          * 
          * @param value 结点值
-         * @param equalFunc 判断是否相等函数
          */
-        find(value: T, equalFunc = (a: T, b: T) => a == b)
+        find(value: T)
         {
             if (!this.head) return null;
 
@@ -183,7 +188,26 @@ namespace ds
 
             while (currentNode)
             {
-                if (equalFunc(currentNode.value, value)) return currentNode;
+                if (this.compare.equal(currentNode.value, value)) return currentNode;
+                currentNode = currentNode.next;
+            }
+            return null;
+        }
+
+        /**
+         * 查找与结点值相等的结点
+         * 
+         * @param callback 判断是否为查找的元素
+         */
+        findByFunc(callback: (value: T) => Boolean)
+        {
+            if (!this.head) return null;
+
+            let currentNode = this.head;
+
+            while (currentNode)
+            {
+                if (callback(currentNode.value)) return currentNode;
                 currentNode = currentNode.next;
             }
             return null;

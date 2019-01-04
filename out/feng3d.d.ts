@@ -1428,9 +1428,15 @@ declare namespace ds {
          */
         private tail;
         /**
-         * 构建链表
+         * 比较器
          */
-        constructor();
+        private compare;
+        /**
+         * 构建双向链表
+         *
+         * @param comparatorFunction 比较函数
+         */
+        constructor(comparatorFunction?: CompareFunction<T>);
         /**
          * 是否为空
          */
@@ -1459,23 +1465,26 @@ declare namespace ds {
          * 删除链表中第一个与指定值相等的结点
          *
          * @param value 结点值
-         * @param equalFunc 判断是否相等函数
          */
-        delete(value: T, equalFunc?: (a: T, b: T) => boolean): LinkedListNode<T>;
+        delete(value: T): LinkedListNode<T>;
         /**
          * 删除链表中所有与指定值相等的结点
          *
          * @param value 结点值
-         * @param equalFunc 判断是否相等函数
          */
-        deleteAll(value: T, equalFunc?: (a: T, b: T) => boolean): LinkedListNode<T>;
+        deleteAll(value: T): LinkedListNode<T>;
         /**
          * 查找与结点值相等的结点
          *
          * @param value 结点值
-         * @param equalFunc 判断是否相等函数
          */
-        find(value: T, equalFunc?: (a: T, b: T) => boolean): LinkedListNode<T>;
+        find(value: T): LinkedListNode<T>;
+        /**
+         * 查找与结点值相等的结点
+         *
+         * @param callback 判断是否为查找的元素
+         */
+        findByFunc(callback: (value: T) => Boolean): LinkedListNode<T>;
         /**
          * 删除表头
          *
@@ -1574,22 +1583,26 @@ declare namespace ds {
          * 删除链表中第一个与指定值相等的结点
          *
          * @param value 结点值
-         * @param equalFunc 判断是否相等函数
          */
-        delete(value: T, equalFunc?: (a: T, b: T) => boolean): DoublyLinkedListNode<T>;
+        delete(value: T): DoublyLinkedListNode<T>;
         /**
          * 删除链表中所有与指定值相等的结点
          *
          * @param value 结点值
-         * @param equalFunc 判断是否相等函数
          */
-        deleteAll(value: T, equalFunc?: (a: T, b: T) => boolean): DoublyLinkedListNode<T>;
+        deleteAll(value: T): DoublyLinkedListNode<T>;
         /**
          * 查找与结点值相等的结点
          *
          * @param value 结点值
          */
         find(value: T): DoublyLinkedListNode<T>;
+        /**
+         * 查找与结点值相等的结点
+         *
+         * @param callback 判断是否为查找的元素
+         */
+        findByFunc(callback: (value: T) => Boolean): DoublyLinkedListNode<T>;
         /**
          * 删除表头
          */
@@ -2239,6 +2252,165 @@ declare namespace ds {
          * @param childNode 子结点
          */
         addChild(childNode: DisjointSetNode<T>): this;
+    }
+}
+declare namespace ds {
+    /**
+     * 图
+     *
+     * @see https://gitee.com/feng3d_admin/javascript-algorithms/blob/master/src/data-structures/graph/Graph.js
+     * @see https://en.wikipedia.org/wiki/Graph_(abstract_data_type)
+     * @see https://www.youtube.com/watch?v=gXgEDyodOJU&index=9&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8
+     * @see https://www.youtube.com/watch?v=k1wraWzqtvQ&index=10&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8
+     */
+    class Graph {
+        vertices: Object;
+        edges: Object;
+        /**
+         * 是否有向
+         */
+        isDirected: boolean;
+        /**
+         * 构建图
+         *
+         * @param isDirected 是否有向
+         */
+        constructor(isDirected?: boolean);
+        /**
+         * @param {GraphVertex} newVertex
+         * @returns {Graph}
+         */
+        addVertex(newVertex: any): this;
+        /**
+         * @param {string} vertexKey
+         * @returns GraphVertex
+         */
+        getVertexByKey(vertexKey: any): any;
+        /**
+         * @param {GraphVertex} vertex
+         * @returns {GraphVertex[]}
+         */
+        getNeighbors(vertex: any): any;
+        /**
+         * @return {GraphVertex[]}
+         */
+        getAllVertices(): any[];
+        /**
+         * @return {GraphEdge[]}
+         */
+        getAllEdges(): any[];
+        /**
+         * @param {GraphEdge} edge
+         * @returns {Graph}
+         */
+        addEdge(edge: any): this;
+        /**
+         * @param {GraphEdge} edge
+         */
+        deleteEdge(edge: any): void;
+        /**
+         * @param {GraphVertex} startVertex
+         * @param {GraphVertex} endVertex
+         * @return {(GraphEdge|null)}
+         */
+        findEdge(startVertex: any, endVertex: any): any;
+        /**
+         * @return {number}
+         */
+        getWeight(): any;
+        /**
+         * Reverse all the edges in directed graph.
+         * @return {Graph}
+         */
+        reverse(): this;
+        /**
+         * @return {object}
+         */
+        getVerticesIndices(): {};
+        /**
+         * @return {*[][]}
+         */
+        getAdjacencyMatrix(): any[];
+        /**
+         * @return {string}
+         */
+        toString(): string;
+    }
+    class GraphEdge {
+        /**
+         * @param {GraphVertex} startVertex
+         * @param {GraphVertex} endVertex
+         * @param {number} [weight=1]
+         */
+        constructor(startVertex: any, endVertex: any, weight?: number);
+        /**
+         * @return {string}
+         */
+        getKey(): string;
+        /**
+         * @return {GraphEdge}
+         */
+        reverse(): this;
+        /**
+         * @return {string}
+         */
+        toString(): string;
+    }
+    class GraphVertex<T> {
+        value: T;
+        /**
+         * @param {*} value
+         */
+        constructor(value: T);
+        /**
+         * @param {GraphEdge} edge
+         * @returns {GraphVertex}
+         */
+        addEdge(edge: any): this;
+        /**
+         * @param {GraphEdge} edge
+         */
+        deleteEdge(edge: any): void;
+        /**
+         * @returns {GraphVertex[]}
+         */
+        getNeighbors(): any;
+        /**
+         * @return {GraphEdge[]}
+         */
+        getEdges(): any;
+        /**
+         * @return {number}
+         */
+        getDegree(): any;
+        /**
+         * @param {GraphEdge} requiredEdge
+         * @returns {boolean}
+         */
+        hasEdge(requiredEdge: any): boolean;
+        /**
+         * @param {GraphVertex} vertex
+         * @returns {boolean}
+         */
+        hasNeighbor(vertex: any): boolean;
+        /**
+         * @param {GraphVertex} vertex
+         * @returns {(GraphEdge|null)}
+         */
+        findEdge(vertex: any): any;
+        /**
+         * @returns {string}
+         */
+        getKey(): T;
+        /**
+         * @return {GraphVertex}
+         */
+        deleteAllEdges(): this;
+        /**
+         * @param {function} [callback]
+         * @returns {string}
+         */
+        toString(callback: any): any;
     }
 }
 declare namespace feng3d {

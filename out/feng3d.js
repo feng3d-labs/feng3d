@@ -2589,11 +2589,14 @@ var ds;
      */
     var LinkedList = /** @class */ (function () {
         /**
-         * 构建链表
+         * 构建双向链表
+         *
+         * @param comparatorFunction 比较函数
          */
-        function LinkedList() {
+        function LinkedList(comparatorFunction) {
             this.head = null;
             this.tail = null;
+            this.compare = new ds.Comparator(comparatorFunction);
         }
         /**
          * 是否为空
@@ -2644,15 +2647,13 @@ var ds;
          * 删除链表中第一个与指定值相等的结点
          *
          * @param value 结点值
-         * @param equalFunc 判断是否相等函数
          */
-        LinkedList.prototype.delete = function (value, equalFunc) {
-            if (equalFunc === void 0) { equalFunc = function (a, b) { return a == b; }; }
+        LinkedList.prototype.delete = function (value) {
             if (!this.head)
                 return null;
             var deletedNode = null;
             // 从表头删除结点
-            while (this.head && !deletedNode && equalFunc(this.head.value, value)) {
+            while (this.head && !deletedNode && this.compare.equal(this.head.value, value)) {
                 deletedNode = this.head;
                 this.head = this.head.next;
             }
@@ -2660,7 +2661,7 @@ var ds;
             if (!deletedNode && currentNode) {
                 // 删除相等的下一个结点
                 while (!deletedNode && currentNode.next) {
-                    if (equalFunc(currentNode.next.value, value)) {
+                    if (this.compare.equal(currentNode.next.value, value)) {
                         deletedNode = currentNode.next;
                         currentNode.next = currentNode.next.next;
                     }
@@ -2679,15 +2680,13 @@ var ds;
          * 删除链表中所有与指定值相等的结点
          *
          * @param value 结点值
-         * @param equalFunc 判断是否相等函数
          */
-        LinkedList.prototype.deleteAll = function (value, equalFunc) {
-            if (equalFunc === void 0) { equalFunc = function (a, b) { return a == b; }; }
+        LinkedList.prototype.deleteAll = function (value) {
             if (!this.head)
                 return null;
             var deletedNode = null;
             // 从表头删除结点
-            while (this.head && equalFunc(this.head.value, value)) {
+            while (this.head && this.compare.equal(this.head.value, value)) {
                 deletedNode = this.head;
                 this.head = this.head.next;
             }
@@ -2695,7 +2694,7 @@ var ds;
             if (currentNode !== null) {
                 // 删除相等的下一个结点
                 while (currentNode.next) {
-                    if (equalFunc(currentNode.next.value, value)) {
+                    if (this.compare.equal(currentNode.next.value, value)) {
                         deletedNode = currentNode.next;
                         currentNode.next = currentNode.next.next;
                     }
@@ -2714,15 +2713,29 @@ var ds;
          * 查找与结点值相等的结点
          *
          * @param value 结点值
-         * @param equalFunc 判断是否相等函数
          */
-        LinkedList.prototype.find = function (value, equalFunc) {
-            if (equalFunc === void 0) { equalFunc = function (a, b) { return a == b; }; }
+        LinkedList.prototype.find = function (value) {
             if (!this.head)
                 return null;
             var currentNode = this.head;
             while (currentNode) {
-                if (equalFunc(currentNode.value, value))
+                if (this.compare.equal(currentNode.value, value))
+                    return currentNode;
+                currentNode = currentNode.next;
+            }
+            return null;
+        };
+        /**
+         * 查找与结点值相等的结点
+         *
+         * @param callback 判断是否为查找的元素
+         */
+        LinkedList.prototype.findByFunc = function (callback) {
+            if (!this.head)
+                return null;
+            var currentNode = this.head;
+            while (currentNode) {
+                if (callback(currentNode.value))
                     return currentNode;
                 currentNode = currentNode.next;
             }
@@ -2904,15 +2917,13 @@ var ds;
          * 删除链表中第一个与指定值相等的结点
          *
          * @param value 结点值
-         * @param equalFunc 判断是否相等函数
          */
-        DoublyLinkedList.prototype.delete = function (value, equalFunc) {
-            if (equalFunc === void 0) { equalFunc = function (a, b) { return a == b; }; }
+        DoublyLinkedList.prototype.delete = function (value) {
             if (!this.head)
                 return null;
             var deletedNode = null;
             // 从表头删除结点
-            while (this.head && !deletedNode && equalFunc(this.head.value, value)) {
+            while (this.head && !deletedNode && this.compare.equal(this.head.value, value)) {
                 deletedNode = this.head;
                 this.head = this.head.next;
                 this.head.previous = null;
@@ -2921,7 +2932,7 @@ var ds;
             if (!deletedNode && currentNode) {
                 // 删除相等的下一个结点
                 while (!deletedNode && currentNode.next) {
-                    if (equalFunc(currentNode.next.value, value)) {
+                    if (this.compare.equal(currentNode.next.value, value)) {
                         deletedNode = currentNode.next;
                         currentNode.next = currentNode.next.next;
                         if (currentNode.next)
@@ -2942,15 +2953,13 @@ var ds;
          * 删除链表中所有与指定值相等的结点
          *
          * @param value 结点值
-         * @param equalFunc 判断是否相等函数
          */
-        DoublyLinkedList.prototype.deleteAll = function (value, equalFunc) {
-            if (equalFunc === void 0) { equalFunc = function (a, b) { return a == b; }; }
+        DoublyLinkedList.prototype.deleteAll = function (value) {
             if (!this.head)
                 return null;
             var deletedNode = null;
             // 从表头删除结点
-            while (this.head && equalFunc(this.head.value, value)) {
+            while (this.head && this.compare.equal(this.head.value, value)) {
                 deletedNode = this.head;
                 this.head = this.head.next;
                 this.head.previous = null;
@@ -2959,7 +2968,7 @@ var ds;
             if (currentNode !== null) {
                 // 删除相等的下一个结点
                 while (currentNode.next) {
-                    if (equalFunc(currentNode.next.value, value)) {
+                    if (this.compare.equal(currentNode.next.value, value)) {
                         deletedNode = currentNode.next;
                         currentNode.next = currentNode.next.next;
                         if (currentNode.next)
@@ -2987,6 +2996,22 @@ var ds;
             var currentNode = this.head;
             while (currentNode) {
                 if (this.compare.equal(currentNode.value, value))
+                    return currentNode;
+                currentNode = currentNode.next;
+            }
+            return null;
+        };
+        /**
+         * 查找与结点值相等的结点
+         *
+         * @param callback 判断是否为查找的元素
+         */
+        DoublyLinkedList.prototype.findByFunc = function (callback) {
+            if (!this.head)
+                return null;
+            var currentNode = this.head;
+            while (currentNode) {
+                if (callback(currentNode.value))
                     return currentNode;
                 currentNode = currentNode.next;
             }
@@ -3573,7 +3598,7 @@ var ds;
             var keyHash = this.hash(key);
             this.keys[key] = keyHash;
             var bucketLinkedList = this.buckets[keyHash];
-            var node = bucketLinkedList.find(keyValue, function (a, b) { return a.key === b.key; });
+            var node = bucketLinkedList.findByFunc(function (v) { return v.key === key; });
             if (!node) {
                 bucketLinkedList.addTail(keyValue);
             }
@@ -3590,7 +3615,7 @@ var ds;
             var keyHash = this.hash(key);
             delete this.keys[key];
             var bucketLinkedList = this.buckets[keyHash];
-            var node = bucketLinkedList.find({ key: key, value: 1 }, function (a, b) { return a.key === b.key; });
+            var node = bucketLinkedList.findByFunc(function (v) { return v.key === key; });
             if (node) {
                 return bucketLinkedList.deleteAll(node.value);
             }
@@ -3603,7 +3628,7 @@ var ds;
          */
         HashTable.prototype.get = function (key) {
             var bucketLinkedList = this.buckets[this.hash(key)];
-            var node = bucketLinkedList.find({ key: key, value: 1 }, function (a, b) { return a.key === b.key; });
+            var node = bucketLinkedList.findByFunc(function (v) { return v.key === key; });
             return node ? node.value.value : undefined;
         };
         /**
@@ -4094,6 +4119,363 @@ var ds;
         return DisjointSetNode;
     }());
     ds.DisjointSetNode = DisjointSetNode;
+})(ds || (ds = {}));
+var ds;
+(function (ds) {
+    /**
+     * 图
+     *
+     * @see https://gitee.com/feng3d_admin/javascript-algorithms/blob/master/src/data-structures/graph/Graph.js
+     * @see https://en.wikipedia.org/wiki/Graph_(abstract_data_type)
+     * @see https://www.youtube.com/watch?v=gXgEDyodOJU&index=9&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8
+     * @see https://www.youtube.com/watch?v=k1wraWzqtvQ&index=10&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8
+     */
+    var Graph = /** @class */ (function () {
+        /**
+         * 构建图
+         *
+         * @param isDirected 是否有向
+         */
+        function Graph(isDirected) {
+            if (isDirected === void 0) { isDirected = false; }
+            /**
+             * 是否有向
+             */
+            this.isDirected = false;
+            this.vertices = {};
+            this.edges = {};
+            this.isDirected = isDirected;
+        }
+        /**
+         * @param {GraphVertex} newVertex
+         * @returns {Graph}
+         */
+        Graph.prototype.addVertex = function (newVertex) {
+            this.vertices[newVertex.getKey()] = newVertex;
+            return this;
+        };
+        /**
+         * @param {string} vertexKey
+         * @returns GraphVertex
+         */
+        Graph.prototype.getVertexByKey = function (vertexKey) {
+            return this.vertices[vertexKey];
+        };
+        /**
+         * @param {GraphVertex} vertex
+         * @returns {GraphVertex[]}
+         */
+        Graph.prototype.getNeighbors = function (vertex) {
+            return vertex.getNeighbors();
+        };
+        /**
+         * @return {GraphVertex[]}
+         */
+        Graph.prototype.getAllVertices = function () {
+            var _this = this;
+            var values = Object.keys(this.vertices).map(function (key) { return _this.vertices[key]; });
+            return values;
+        };
+        /**
+         * @return {GraphEdge[]}
+         */
+        Graph.prototype.getAllEdges = function () {
+            var _this = this;
+            var values = Object.keys(this.edges).map(function (key) { return _this.edges[key]; });
+            return values;
+        };
+        /**
+         * @param {GraphEdge} edge
+         * @returns {Graph}
+         */
+        Graph.prototype.addEdge = function (edge) {
+            // Try to find and end start vertices.
+            var startVertex = this.getVertexByKey(edge.startVertex.getKey());
+            var endVertex = this.getVertexByKey(edge.endVertex.getKey());
+            // Insert start vertex if it wasn't inserted.
+            if (!startVertex) {
+                this.addVertex(edge.startVertex);
+                startVertex = this.getVertexByKey(edge.startVertex.getKey());
+            }
+            // Insert end vertex if it wasn't inserted.
+            if (!endVertex) {
+                this.addVertex(edge.endVertex);
+                endVertex = this.getVertexByKey(edge.endVertex.getKey());
+            }
+            // Check if edge has been already added.
+            if (this.edges[edge.getKey()]) {
+                throw new Error('Edge has already been added before');
+            }
+            else {
+                this.edges[edge.getKey()] = edge;
+            }
+            // Add edge to the vertices.
+            if (this.isDirected) {
+                // If graph IS directed then add the edge only to start vertex.
+                startVertex.addEdge(edge);
+            }
+            else {
+                // If graph ISN'T directed then add the edge to both vertices.
+                startVertex.addEdge(edge);
+                endVertex.addEdge(edge);
+            }
+            return this;
+        };
+        /**
+         * @param {GraphEdge} edge
+         */
+        Graph.prototype.deleteEdge = function (edge) {
+            // Delete edge from the list of edges.
+            if (this.edges[edge.getKey()]) {
+                delete this.edges[edge.getKey()];
+            }
+            else {
+                throw new Error('Edge not found in graph');
+            }
+            // Try to find and end start vertices and delete edge from them.
+            var startVertex = this.getVertexByKey(edge.startVertex.getKey());
+            var endVertex = this.getVertexByKey(edge.endVertex.getKey());
+            startVertex.deleteEdge(edge);
+            endVertex.deleteEdge(edge);
+        };
+        /**
+         * @param {GraphVertex} startVertex
+         * @param {GraphVertex} endVertex
+         * @return {(GraphEdge|null)}
+         */
+        Graph.prototype.findEdge = function (startVertex, endVertex) {
+            var vertex = this.getVertexByKey(startVertex.getKey());
+            if (!vertex) {
+                return null;
+            }
+            return vertex.findEdge(endVertex);
+        };
+        /**
+         * @return {number}
+         */
+        Graph.prototype.getWeight = function () {
+            return this.getAllEdges().reduce(function (weight, graphEdge) {
+                return weight + graphEdge.weight;
+            }, 0);
+        };
+        /**
+         * Reverse all the edges in directed graph.
+         * @return {Graph}
+         */
+        Graph.prototype.reverse = function () {
+            var _this = this;
+            /** @param {GraphEdge} edge */
+            this.getAllEdges().forEach(function (edge) {
+                // Delete straight edge from graph and from vertices.
+                _this.deleteEdge(edge);
+                // Reverse the edge.
+                edge.reverse();
+                // Add reversed edge back to the graph and its vertices.
+                _this.addEdge(edge);
+            });
+            return this;
+        };
+        /**
+         * @return {object}
+         */
+        Graph.prototype.getVerticesIndices = function () {
+            var verticesIndices = {};
+            this.getAllVertices().forEach(function (vertex, index) {
+                verticesIndices[vertex.getKey()] = index;
+            });
+            return verticesIndices;
+        };
+        /**
+         * @return {*[][]}
+         */
+        Graph.prototype.getAdjacencyMatrix = function () {
+            var _this = this;
+            var vertices = this.getAllVertices();
+            var verticesIndices = this.getVerticesIndices();
+            // Init matrix with infinities meaning that there is no ways of
+            // getting from one vertex to another yet.
+            var adjacencyMatrix = [];
+            var n = vertices.length;
+            for (var i = 0; i < n; i++) {
+                adjacencyMatrix[i] = [];
+                for (var j = 0; j < n; j++) {
+                    adjacencyMatrix[i][j] = Infinity;
+                }
+            }
+            // Fill the columns.
+            vertices.forEach(function (vertex, vertexIndex) {
+                vertex.getNeighbors().forEach(function (neighbor) {
+                    var neighborIndex = verticesIndices[neighbor.getKey()];
+                    adjacencyMatrix[vertexIndex][neighborIndex] = _this.findEdge(vertex, neighbor).weight;
+                });
+            });
+            return adjacencyMatrix;
+        };
+        /**
+         * @return {string}
+         */
+        Graph.prototype.toString = function () {
+            return Object.keys(this.vertices).toString();
+        };
+        return Graph;
+    }());
+    ds.Graph = Graph;
+    var GraphEdge = /** @class */ (function () {
+        /**
+         * @param {GraphVertex} startVertex
+         * @param {GraphVertex} endVertex
+         * @param {number} [weight=1]
+         */
+        function GraphEdge(startVertex, endVertex, weight) {
+            if (weight === void 0) { weight = 0; }
+            this.startVertex = startVertex;
+            this.endVertex = endVertex;
+            this.weight = weight;
+        }
+        /**
+         * @return {string}
+         */
+        GraphEdge.prototype.getKey = function () {
+            var startVertexKey = this.startVertex.getKey();
+            var endVertexKey = this.endVertex.getKey();
+            return startVertexKey + "_" + endVertexKey;
+        };
+        /**
+         * @return {GraphEdge}
+         */
+        GraphEdge.prototype.reverse = function () {
+            var tmp = this.startVertex;
+            this.startVertex = this.endVertex;
+            this.endVertex = tmp;
+            return this;
+        };
+        /**
+         * @return {string}
+         */
+        GraphEdge.prototype.toString = function () {
+            return this.getKey();
+        };
+        return GraphEdge;
+    }());
+    ds.GraphEdge = GraphEdge;
+    var GraphVertex = /** @class */ (function () {
+        /**
+         * @param {*} value
+         */
+        function GraphVertex(value) {
+            if (value === undefined) {
+                throw new Error('Graph vertex must have a value');
+            }
+            /**
+             * @param {GraphEdge} edgeA
+             * @param {GraphEdge} edgeB
+             */
+            var edgeComparator = function (edgeA, edgeB) {
+                if (edgeA.getKey() === edgeB.getKey()) {
+                    return 0;
+                }
+                return edgeA.getKey() < edgeB.getKey() ? -1 : 1;
+            };
+            // Normally you would store string value like vertex name.
+            // But generally it may be any object as well
+            this.value = value;
+            this.edges = new ds.LinkedList(edgeComparator);
+        }
+        /**
+         * @param {GraphEdge} edge
+         * @returns {GraphVertex}
+         */
+        GraphVertex.prototype.addEdge = function (edge) {
+            this.edges.append(edge);
+            return this;
+        };
+        /**
+         * @param {GraphEdge} edge
+         */
+        GraphVertex.prototype.deleteEdge = function (edge) {
+            this.edges.delete(edge);
+        };
+        /**
+         * @returns {GraphVertex[]}
+         */
+        GraphVertex.prototype.getNeighbors = function () {
+            var _this = this;
+            var edges = this.edges.toArray();
+            /** @param {LinkedListNode} node */
+            var neighborsConverter = function (node) {
+                return node.value.startVertex === _this ? node.value.endVertex : node.value.startVertex;
+            };
+            // Return either start or end vertex.
+            // For undirected graphs it is possible that current vertex will be the end one.
+            return edges.map(neighborsConverter);
+        };
+        /**
+         * @return {GraphEdge[]}
+         */
+        GraphVertex.prototype.getEdges = function () {
+            return this.edges.toArray().map(function (linkedListNode) { return linkedListNode.value; });
+        };
+        /**
+         * @return {number}
+         */
+        GraphVertex.prototype.getDegree = function () {
+            return this.edges.toArray().length;
+        };
+        /**
+         * @param {GraphEdge} requiredEdge
+         * @returns {boolean}
+         */
+        GraphVertex.prototype.hasEdge = function (requiredEdge) {
+            var edgeNode = this.edges.find({
+                callback: function (edge) { return edge === requiredEdge; },
+            });
+            return !!edgeNode;
+        };
+        /**
+         * @param {GraphVertex} vertex
+         * @returns {boolean}
+         */
+        GraphVertex.prototype.hasNeighbor = function (vertex) {
+            var vertexNode = this.edges.find({
+                callback: function (edge) { return edge.startVertex === vertex || edge.endVertex === vertex; },
+            });
+            return !!vertexNode;
+        };
+        /**
+         * @param {GraphVertex} vertex
+         * @returns {(GraphEdge|null)}
+         */
+        GraphVertex.prototype.findEdge = function (vertex) {
+            var edgeFinder = function (edge) {
+                return edge.startVertex === vertex || edge.endVertex === vertex;
+            };
+            var edge = this.edges.find({ callback: edgeFinder });
+            return edge ? edge.value : null;
+        };
+        /**
+         * @returns {string}
+         */
+        GraphVertex.prototype.getKey = function () {
+            return this.value;
+        };
+        /**
+         * @return {GraphVertex}
+         */
+        GraphVertex.prototype.deleteAllEdges = function () {
+            var _this = this;
+            this.getEdges().forEach(function (edge) { return _this.deleteEdge(edge); });
+            return this;
+        };
+        /**
+         * @param {function} [callback]
+         * @returns {string}
+         */
+        GraphVertex.prototype.toString = function (callback) {
+            return callback ? callback(this.value) : "" + this.value;
+        };
+        return GraphVertex;
+    }());
+    ds.GraphVertex = GraphVertex;
 })(ds || (ds = {}));
 var feng3d;
 (function (feng3d) {
