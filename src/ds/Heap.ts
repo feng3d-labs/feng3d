@@ -231,7 +231,7 @@ namespace ds
          */
         find(item: T, comparator = this.compare)
         {
-            const foundItemIndices = [];
+            const foundItemIndices: number[] = [];
 
             for (let itemIndex = 0; itemIndex < this.heapContainer.length; itemIndex += 1)
             {

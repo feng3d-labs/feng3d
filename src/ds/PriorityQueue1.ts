@@ -1,60 +1,53 @@
 module ds
 {
     /**
-     * 优先队列，自动按优先级排序
+     * 优先队列
      * 
      * 与最小堆相同，只是与元素比较时不同
      * 我们考虑的不是元素的值，而是它的优先级。
      */
-    export class PriorityQueueByHeap<T>
+    export class PriorityQueue1<T> extends MinHeap<T>
     {
-        /**
-         * 优先值Map
-         */
         private priorities: any;
 
-        /**
-         * 最小堆
-         */
-        private minHeap: MinHeap<T>;
-
-        /**
-         * 构建优先队列
-         */
         constructor()
         {
+            super();
             this.priorities = {};
-            this.minHeap = new MinHeap(this.comparePriority.bind(this));
+            this.compare = new Comparator(this.comparePriority.bind(this));
         }
 
         /**
          * 新增元素
          * 
          * @param item 元素
+         * @param priority 优先级
          */
         add(item: T, priority = 0)
         {
             this.priorities[item] = priority;
-            this.minHeap.add(item);
+            super.add(item);
 
             return this;
         }
 
         /**
-         * 移除指定元素 
+         * 移除元素
+         * 
          * @param item 元素
          * @param customFindingComparator 自定义查找比较器
          */
-        remove(item: T, customFindingComparator: Comparator<T>)
+        remove(item: T, customFindingComparator = this.compare)
         {
-            this.minHeap.remove(item, customFindingComparator);
+            super.remove(item, customFindingComparator);
             delete this.priorities[item];
 
             return this;
         }
 
         /**
-         * 改变指定元素优先级
+         * 改变元素优先级
+         * 
          * @param item 元素
          * @param priority 优先级
          */
@@ -67,17 +60,17 @@ module ds
         }
 
         /**
-         * 查找指定元素索引
+         * 查找元素所在索引
          * 
          * @param item 元素
          */
         findByValue(item: T)
         {
-            return this.minHeap.find(item, new Comparator(this.compareValue));
+            return this.find(item, new Comparator(this.compareValue));
         }
 
         /**
-         * 是否拥有指定元素
+         * 是否拥有元素
          * 
          * @param item 元素
          */
@@ -103,7 +96,7 @@ module ds
         }
 
         /**
-         * 比较两个元素
+         * 比较两个元素大小
          * 
          * @param a 元素a
          * @param b 元素b
@@ -118,4 +111,5 @@ module ds
             return a < b ? -1 : 1;
         }
     }
+
 }
