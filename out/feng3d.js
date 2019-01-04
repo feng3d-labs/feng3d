@@ -2607,6 +2607,12 @@ var ds;
             this.tail = null;
         };
         /**
+         * 获取表头值
+         */
+        LinkedList.prototype.getHeadValue = function () {
+            return this.head && this.head.value;
+        };
+        /**
          * 添加新结点到表头
          *
          * @param value 结点数据
@@ -3004,7 +3010,7 @@ var ds;
          * 是否为空
          */
         Queue.prototype.isEmpty = function () {
-            return !this.linkedList.head;
+            return this.linkedList.isEmpty();
         };
         /**
          * 清空
@@ -3016,10 +3022,7 @@ var ds;
          * 读取队列前面的元素，但不删除它。
          */
         Queue.prototype.peek = function () {
-            if (!this.linkedList.head) {
-                return null;
-            }
-            return this.linkedList.head.value;
+            return this.linkedList.getHeadValue();
         };
         /**
          * 入队
@@ -3031,6 +3034,7 @@ var ds;
          */
         Queue.prototype.enqueue = function (value) {
             this.linkedList.addTail(value);
+            return this;
         };
         /**
          * 出队
@@ -3068,15 +3072,13 @@ var ds;
          * 是否为空
          */
         Stack.prototype.isEmpty = function () {
-            return !this.linkedList.head;
+            return this.linkedList.isEmpty();
         };
         /**
          * 查看第一个元素值
          */
         Stack.prototype.peek = function () {
-            if (this.isEmpty())
-                return null;
-            return this.linkedList.head.value;
+            return this.linkedList.getHeadValue();
         };
         /**
          * 入栈
@@ -3085,13 +3087,13 @@ var ds;
          */
         Stack.prototype.push = function (value) {
             this.linkedList.addHead(value);
+            return this;
         };
         /**
          * 出栈
          */
         Stack.prototype.pop = function () {
-            var removedValue = this.linkedList.deleteHead();
-            return removedValue;
+            return this.linkedList.deleteHead();
         };
         /**
          * 转换为数组

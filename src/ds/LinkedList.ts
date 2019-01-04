@@ -8,11 +8,11 @@ namespace ds
         /**
          * 表头
          */
-        head: LinkedListNode<T>;
+        private head: LinkedListNode<T>;
         /**
          * 表尾
          */
-        tail: LinkedListNode<T>;
+        private tail: LinkedListNode<T>;
 
         /**
          * 构建链表
@@ -38,6 +38,14 @@ namespace ds
         {
             this.head = null;
             this.tail = null;
+        }
+
+        /**
+         * 获取表头值
+         */
+        getHeadValue()
+        {
+            return this.head && this.head.value;
         }
 
         /**

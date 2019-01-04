@@ -14,7 +14,7 @@ namespace ds
          */
         isEmpty()
         {
-            return !this.linkedList.head;
+            return this.linkedList.isEmpty();
         }
 
         /**
@@ -22,8 +22,7 @@ namespace ds
          */
         peek()
         {
-            if (this.isEmpty()) return null;
-            return this.linkedList.head.value;
+            return this.linkedList.getHeadValue();
         }
 
         /**
@@ -34,6 +33,7 @@ namespace ds
         push(value: T)
         {
             this.linkedList.addHead(value);
+            return this;
         }
 
         /**
@@ -41,8 +41,7 @@ namespace ds
          */
         pop()
         {
-            const removedValue = this.linkedList.deleteHead();
-            return removedValue;
+            return this.linkedList.deleteHead();
         }
 
         /**

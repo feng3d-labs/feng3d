@@ -1420,11 +1420,11 @@ declare namespace ds {
         /**
          * 表头
          */
-        head: LinkedListNode<T>;
+        private head;
         /**
          * 表尾
          */
-        tail: LinkedListNode<T>;
+        private tail;
         /**
          * 构建链表
          */
@@ -1437,6 +1437,10 @@ declare namespace ds {
          * 清空
          */
         empty(): void;
+        /**
+         * 获取表头值
+         */
+        getHeadValue(): T;
         /**
          * 添加新结点到表头
          *
@@ -1642,7 +1646,7 @@ declare namespace ds {
          *
          * @param value 元素值
          */
-        enqueue(value: T): void;
+        enqueue(value: T): this;
         /**
          * 出队
          *
@@ -1678,7 +1682,7 @@ declare namespace ds {
          *
          * @param value 元素值
          */
-        push(value: T): void;
+        push(value: T): this;
         /**
          * 出栈
          */

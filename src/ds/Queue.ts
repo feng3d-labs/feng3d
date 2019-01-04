@@ -23,7 +23,7 @@ namespace ds
          */
         isEmpty()
         {
-            return !this.linkedList.head;
+            return this.linkedList.isEmpty();
         }
 
         /**
@@ -39,12 +39,7 @@ namespace ds
          */
         peek()
         {
-            if (!this.linkedList.head)
-            {
-                return null;
-            }
-
-            return this.linkedList.head.value;
+            return this.linkedList.getHeadValue();
         }
 
         /**
@@ -58,6 +53,7 @@ namespace ds
         enqueue(value: T)
         {
             this.linkedList.addTail(value);
+            return this;
         }
 
         /**
@@ -70,7 +66,7 @@ namespace ds
             const removedValue = this.linkedList.deleteHead();
             return removedValue;
         }
-        
+
         /**
          * 转换为字符串
          * 
