@@ -15,7 +15,7 @@ namespace ds
     {
         private keys: Object;
 
-        private buckets: LinkedList<{ key: string, value: any }>[];
+        buckets: LinkedList<{ key: string, value: any }>[];
 
         /**
          * 构建哈希表

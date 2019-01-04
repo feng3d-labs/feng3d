@@ -1907,7 +1907,10 @@ declare namespace ds {
      */
     class HashTable {
         private keys;
-        private buckets;
+        buckets: LinkedList<{
+            key: string;
+            value: any;
+        }>[];
         /**
          * 构建哈希表
          * @param hashTableSize 哈希表尺寸
