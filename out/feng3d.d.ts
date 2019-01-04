@@ -2146,81 +2146,99 @@ declare namespace ds {
      */
     class DisjointSet<T> {
         private items;
+        /**
+         * 计算键值函数
+         */
         private keyCallback;
         /**
-         * @param {function(value: *)} [keyCallback]
+         * 构建 并查集
+         * @param keyCallback 计算键值函数
          */
-        constructor(keyCallback?: any);
+        constructor(keyCallback?: (value: T) => string);
         /**
-         * @param {*} itemValue
-         * @return {DisjointSet}
-         */
-        makeSet(itemValue: any): this;
-        /**
-         * Find set representation node.
+         * 创建集合
          *
-         * @param {*} itemValue
-         * @return {(string|null)}
+         * @param nodeValue 结点值
          */
-        find(itemValue: any): any;
+        makeSet(nodeValue: T): this;
         /**
-         * Union by rank.
+         * 查找给出值所在集合根结点键值
          *
-         * @param {*} valueA
-         * @param {*} valueB
-         * @return {DisjointSet}
+         * @param nodeValue 结点值
          */
-        union(valueA: any, valueB: any): this;
+        find(nodeValue: T): string;
         /**
-         * @param {*} valueA
-         * @param {*} valueB
-         * @return {boolean}
+         * 合并两个值所在的集合
+         *
+         * @param valueA 值a
+         * @param valueB 值b
          */
-        inSameSet(valueA: any, valueB: any): boolean;
+        union(valueA: T, valueB: T): this;
+        /**
+         * 判断两个值是否在相同集合中
+         *
+         * @param valueA 值A
+         * @param valueB 值B
+         */
+        inSameSet(valueA: T, valueB: T): boolean;
     }
-    class DisjointSetItem<T> {
+    /**
+     * 并查集结点
+     */
+    class DisjointSetNode<T> {
+        /**
+         * 值
+         */
         value: T;
-        keyCallback: any;
-        parent: DisjointSetItem<T>;
-        children: {};
         /**
-         * @param {*} value
-         * @param {function(value: *)} [keyCallback]
+         * 计算键值函数
          */
-        constructor(value: T, keyCallback?: any);
+        keyCallback: (value: T) => string;
         /**
-         * @return {*}
+         * 父结点
          */
-        getKey(): any;
+        parent: DisjointSetNode<T>;
         /**
-         * @return {DisjointSetItem}
+         * 子结点
          */
-        getRoot(): any;
+        children: any;
         /**
-         * @return {boolean}
+         * 构建 并查集 项
+         *
+         * @param value 值
+         * @param keyCallback 计算键值函数
+         */
+        constructor(value: T, keyCallback?: (value: T) => string);
+        /**
+         * 获取键值
+         */
+        getKey(): string;
+        /**
+         * 获取根结点
+         */
+        getRoot(): DisjointSetNode<T>;
+        /**
+         * 是否为根结点
          */
         isRoot(): boolean;
         /**
-         * Rank basically means the number of all ancestors.
-         *
-         * @return {number}
+         * 获取所有子孙结点数量
          */
         getRank(): number;
         /**
-         * @return {DisjointSetItem[]}
+         * 获取子结点列表
          */
         getChildren(): any[];
         /**
-         * @param {DisjointSetItem} parentItem
-         * @param {boolean} forceSettingParentChild
-         * @return {DisjointSetItem}
+         * 设置父结点
+         * @param parentNode 父结点
          */
-        setParent(parentItem: any, forceSettingParentChild?: boolean): this;
+        setParent(parentNode: DisjointSetNode<T>): this;
         /**
-         * @param {DisjointSetItem} childItem
-         * @return {DisjointSetItem}
+         * 添加子结点
+         * @param childNode 子结点
          */
-        addChild(childItem: any): this;
+        addChild(childNode: DisjointSetNode<T>): this;
     }
 }
 declare namespace feng3d {

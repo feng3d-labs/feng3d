@@ -3940,33 +3940,32 @@ var ds;
      */
     var DisjointSet = /** @class */ (function () {
         /**
-         * @param {function(value: *)} [keyCallback]
+         * 构建 并查集
+         * @param keyCallback 计算键值函数
          */
         function DisjointSet(keyCallback) {
             this.keyCallback = keyCallback;
             this.items = {};
         }
         /**
-         * @param {*} itemValue
-         * @return {DisjointSet}
+         * 创建集合
+         *
+         * @param nodeValue 结点值
          */
-        DisjointSet.prototype.makeSet = function (itemValue) {
-            var disjointSetItem = new DisjointSetItem(itemValue, this.keyCallback);
+        DisjointSet.prototype.makeSet = function (nodeValue) {
+            var disjointSetItem = new DisjointSetNode(nodeValue, this.keyCallback);
             if (!this.items[disjointSetItem.getKey()]) {
-                // Add new item only in case if it not presented yet.
                 this.items[disjointSetItem.getKey()] = disjointSetItem;
             }
             return this;
         };
         /**
-         * Find set representation node.
+         * 查找给出值所在集合根结点键值
          *
-         * @param {*} itemValue
-         * @return {(string|null)}
+         * @param nodeValue 结点值
          */
-        DisjointSet.prototype.find = function (itemValue) {
-            var templateDisjointItem = new DisjointSetItem(itemValue, this.keyCallback);
-            // Try to find item itself;
+        DisjointSet.prototype.find = function (nodeValue) {
+            var templateDisjointItem = new DisjointSetNode(nodeValue, this.keyCallback);
             var requiredDisjointItem = this.items[templateDisjointItem.getKey()];
             if (!requiredDisjointItem) {
                 return null;
@@ -3974,136 +3973,127 @@ var ds;
             return requiredDisjointItem.getRoot().getKey();
         };
         /**
-         * Union by rank.
+         * 合并两个值所在的集合
          *
-         * @param {*} valueA
-         * @param {*} valueB
-         * @return {DisjointSet}
+         * @param valueA 值a
+         * @param valueB 值b
          */
         DisjointSet.prototype.union = function (valueA, valueB) {
             var rootKeyA = this.find(valueA);
             var rootKeyB = this.find(valueB);
             if (rootKeyA === null || rootKeyB === null) {
-                throw new Error('One or two values are not in sets');
+                throw new Error('给出值不全在集合内');
             }
             if (rootKeyA === rootKeyB) {
-                // In case if both elements are already in the same set then just return its key.
                 return this;
             }
             var rootA = this.items[rootKeyA];
             var rootB = this.items[rootKeyB];
+            // 小集合合并到大集合中
             if (rootA.getRank() < rootB.getRank()) {
-                // If rootB's tree is bigger then make rootB to be a new root.
                 rootB.addChild(rootA);
                 return this;
             }
-            // If rootA's tree is bigger then make rootA to be a new root.
             rootA.addChild(rootB);
             return this;
         };
         /**
-         * @param {*} valueA
-         * @param {*} valueB
-         * @return {boolean}
+         * 判断两个值是否在相同集合中
+         *
+         * @param valueA 值A
+         * @param valueB 值B
          */
         DisjointSet.prototype.inSameSet = function (valueA, valueB) {
             var rootKeyA = this.find(valueA);
             var rootKeyB = this.find(valueB);
             if (rootKeyA === null || rootKeyB === null) {
-                throw new Error('One or two values are not in sets');
+                throw new Error('给出的值不全在集合内');
             }
             return rootKeyA === rootKeyB;
         };
         return DisjointSet;
     }());
     ds.DisjointSet = DisjointSet;
-    var DisjointSetItem = /** @class */ (function () {
+    /**
+     * 并查集结点
+     */
+    var DisjointSetNode = /** @class */ (function () {
         /**
-         * @param {*} value
-         * @param {function(value: *)} [keyCallback]
+         * 构建 并查集 项
+         *
+         * @param value 值
+         * @param keyCallback 计算键值函数
          */
-        function DisjointSetItem(value, keyCallback) {
+        function DisjointSetNode(value, keyCallback) {
             this.value = value;
             this.keyCallback = keyCallback;
-            /** @var {DisjointSetItem} this.parent */
             this.parent = null;
             this.children = {};
         }
         /**
-         * @return {*}
+         * 获取键值
          */
-        DisjointSetItem.prototype.getKey = function () {
-            // Allow user to define custom key generator.
+        DisjointSetNode.prototype.getKey = function () {
             if (this.keyCallback) {
                 return this.keyCallback(this.value);
             }
-            // Otherwise use value as a key by default.
             return this.value;
         };
         /**
-         * @return {DisjointSetItem}
+         * 获取根结点
          */
-        DisjointSetItem.prototype.getRoot = function () {
+        DisjointSetNode.prototype.getRoot = function () {
             return this.isRoot() ? this : this.parent.getRoot();
         };
         /**
-         * @return {boolean}
+         * 是否为根结点
          */
-        DisjointSetItem.prototype.isRoot = function () {
+        DisjointSetNode.prototype.isRoot = function () {
             return this.parent === null;
         };
         /**
-         * Rank basically means the number of all ancestors.
-         *
-         * @return {number}
+         * 获取所有子孙结点数量
          */
-        DisjointSetItem.prototype.getRank = function () {
+        DisjointSetNode.prototype.getRank = function () {
             if (this.getChildren().length === 0) {
                 return 0;
             }
             var rank = 0;
-            /** @var {DisjointSetItem} child */
             this.getChildren().forEach(function (child) {
-                // Count child itself.
                 rank += 1;
-                // Also add all children of current child.
                 rank += child.getRank();
             });
             return rank;
         };
         /**
-         * @return {DisjointSetItem[]}
+         * 获取子结点列表
          */
-        DisjointSetItem.prototype.getChildren = function () {
+        DisjointSetNode.prototype.getChildren = function () {
             var _this = this;
             var values = Object.keys(this.children).map(function (key) { return _this.children[key]; });
             return values;
         };
         /**
-         * @param {DisjointSetItem} parentItem
-         * @param {boolean} forceSettingParentChild
-         * @return {DisjointSetItem}
+         * 设置父结点
+         * @param parentNode 父结点
          */
-        DisjointSetItem.prototype.setParent = function (parentItem, forceSettingParentChild) {
-            if (forceSettingParentChild === void 0) { forceSettingParentChild = true; }
-            this.parent = parentItem;
-            if (forceSettingParentChild) {
-                parentItem.addChild(this);
-            }
+        DisjointSetNode.prototype.setParent = function (parentNode) {
+            this.parent = parentNode;
+            this.parent.children[this.getKey()] = this;
             return this;
         };
         /**
-         * @param {DisjointSetItem} childItem
-         * @return {DisjointSetItem}
+         * 添加子结点
+         * @param childNode 子结点
          */
-        DisjointSetItem.prototype.addChild = function (childItem) {
-            this.children[childItem.getKey()] = childItem;
-            childItem.setParent(this, false);
+        DisjointSetNode.prototype.addChild = function (childNode) {
+            this.children[childNode.getKey()] = childNode;
+            childNode.parent = this;
             return this;
         };
-        return DisjointSetItem;
+        return DisjointSetNode;
     }());
-    ds.DisjointSetItem = DisjointSetItem;
+    ds.DisjointSetNode = DisjointSetNode;
 })(ds || (ds = {}));
 var feng3d;
 (function (feng3d) {

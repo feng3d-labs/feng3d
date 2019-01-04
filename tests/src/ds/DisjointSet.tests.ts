@@ -160,14 +160,14 @@ QUnit.module('DisjointSet', () =>
     });
 });
 
-QUnit.module('DisjointSetItem', () =>
+QUnit.module('DisjointSetNode', () =>
 {
     QUnit.test('should do basic manipulation with disjoint set item', (assert) =>
     {
-        const itemA = new ds.DisjointSetItem('A');
-        const itemB = new ds.DisjointSetItem('B');
-        const itemC = new ds.DisjointSetItem('C');
-        const itemD = new ds.DisjointSetItem('D');
+        const itemA = new ds.DisjointSetNode('A');
+        const itemB = new ds.DisjointSetNode('B');
+        const itemC = new ds.DisjointSetNode('C');
+        const itemD = new ds.DisjointSetNode('D');
 
         assert.deepEqual(itemA.getRank(), 0);
         assert.deepEqual(itemA.getChildren(), []);
@@ -224,10 +224,10 @@ QUnit.module('DisjointSetItem', () =>
             return value.key;
         };
 
-        const itemA = new ds.DisjointSetItem({ key: 'A', value: 1 }, keyExtractor);
-        const itemB = new ds.DisjointSetItem({ key: 'B', value: 2 }, keyExtractor);
-        const itemC = new ds.DisjointSetItem({ key: 'C', value: 3 }, keyExtractor);
-        const itemD = new ds.DisjointSetItem({ key: 'D', value: 4 }, keyExtractor);
+        const itemA = new ds.DisjointSetNode({ key: 'A', value: 1 }, keyExtractor);
+        const itemB = new ds.DisjointSetNode({ key: 'B', value: 2 }, keyExtractor);
+        const itemC = new ds.DisjointSetNode({ key: 'C', value: 3 }, keyExtractor);
+        const itemD = new ds.DisjointSetNode({ key: 'D', value: 4 }, keyExtractor);
 
         assert.deepEqual(itemA.getRank(), 0);
         assert.deepEqual(itemA.getChildren(), []);
