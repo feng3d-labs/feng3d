@@ -362,6 +362,200 @@ var feng3d;
         });
     });
 })(feng3d || (feng3d = {}));
+QUnit.module('BinarySearchTreeNode', function () {
+    QUnit.test('should create binary search tree', function (assert) {
+        var bstNode = new ds.BinarySearchTreeNode(2);
+        assert.deepEqual(bstNode.value, 2);
+        assert.deepEqual(bstNode.left, null);
+        assert.deepEqual(bstNode.right, null);
+    });
+    QUnit.test('should insert in itself if it is empty', function (assert) {
+        var bstNode = new ds.BinarySearchTreeNode();
+        bstNode.insert(1);
+        assert.deepEqual(bstNode.value, 1);
+        assert.deepEqual(bstNode.left, null);
+        assert.deepEqual(bstNode.right, null);
+    });
+    QUnit.test('should insert nodes in correct order', function (assert) {
+        var bstNode = new ds.BinarySearchTreeNode(2);
+        var insertedNode1 = bstNode.insert(1);
+        assert.deepEqual(insertedNode1.value, 1);
+        assert.deepEqual(bstNode.toString(), '1,2');
+        assert.deepEqual(bstNode.contains(1), true);
+        assert.deepEqual(bstNode.contains(3), false);
+        var insertedNode2 = bstNode.insert(3);
+        assert.deepEqual(insertedNode2.value, 3);
+        assert.deepEqual(bstNode.toString(), '1,2,3');
+        assert.deepEqual(bstNode.contains(3), true);
+        assert.deepEqual(bstNode.contains(4), false);
+        bstNode.insert(7);
+        assert.deepEqual(bstNode.toString(), '1,2,3,7');
+        assert.deepEqual(bstNode.contains(7), true);
+        assert.deepEqual(bstNode.contains(8), false);
+        bstNode.insert(4);
+        assert.deepEqual(bstNode.toString(), '1,2,3,4,7');
+        assert.deepEqual(bstNode.contains(4), true);
+        assert.deepEqual(bstNode.contains(8), false);
+        bstNode.insert(6);
+        assert.deepEqual(bstNode.toString(), '1,2,3,4,6,7');
+        assert.deepEqual(bstNode.contains(6), true);
+        assert.deepEqual(bstNode.contains(8), false);
+    });
+    QUnit.test('should not insert duplicates', function (assert) {
+        var bstNode = new ds.BinarySearchTreeNode(2);
+        bstNode.insert(1);
+        assert.deepEqual(bstNode.toString(), '1,2');
+        assert.deepEqual(bstNode.contains(1), true);
+        assert.deepEqual(bstNode.contains(3), false);
+        bstNode.insert(1);
+        assert.deepEqual(bstNode.toString(), '1,2');
+        assert.deepEqual(bstNode.contains(1), true);
+        assert.deepEqual(bstNode.contains(3), false);
+    });
+    QUnit.test('should find min node', function (assert) {
+        var node = new ds.BinarySearchTreeNode(10);
+        node.insert(20);
+        node.insert(30);
+        node.insert(5);
+        node.insert(40);
+        node.insert(1);
+        assert.deepEqual(node.findMin() != null, true);
+        assert.deepEqual(node.findMin().value, 1);
+    });
+    QUnit.test('should be possible to attach meta information to binary search tree nodes', function (assert) {
+        var node = new ds.BinarySearchTreeNode(10);
+        node.insert(20);
+        var node1 = node.insert(30);
+        node.insert(5);
+        node.insert(40);
+        var node2 = node.insert(1);
+        node.meta.set('color', 'red');
+        node1.meta.set('color', 'black');
+        node2.meta.set('color', 'white');
+        assert.deepEqual(node.meta.get('color'), 'red');
+        assert.deepEqual(node.findMin() != null, true);
+        assert.deepEqual(node.findMin().value, 1);
+        assert.deepEqual(node.findMin().meta.get('color'), 'white');
+        assert.deepEqual(node.find(30).meta.get('color'), 'black');
+    });
+    QUnit.test('should find node', function (assert) {
+        var node = new ds.BinarySearchTreeNode(10);
+        node.insert(20);
+        node.insert(30);
+        node.insert(5);
+        node.insert(40);
+        node.insert(1);
+        assert.deepEqual(node.find(6), null);
+        assert.deepEqual(node.find(5) != null, true);
+        assert.deepEqual(node.find(5).value, 5);
+    });
+    QUnit.test('should remove leaf nodes', function (assert) {
+        var bstRootNode = new ds.BinarySearchTreeNode();
+        bstRootNode.insert(10);
+        bstRootNode.insert(20);
+        bstRootNode.insert(5);
+        assert.deepEqual(bstRootNode.toString(), '5,10,20');
+        var removed1 = bstRootNode.remove(5);
+        assert.deepEqual(bstRootNode.toString(), '10,20');
+        assert.deepEqual(removed1, true);
+        var removed2 = bstRootNode.remove(20);
+        assert.deepEqual(bstRootNode.toString(), '10');
+        assert.deepEqual(removed2, true);
+    });
+    QUnit.test('should remove nodes with one child', function (assert) {
+        var bstRootNode = new ds.BinarySearchTreeNode();
+        bstRootNode.insert(10);
+        bstRootNode.insert(20);
+        bstRootNode.insert(5);
+        bstRootNode.insert(30);
+        assert.deepEqual(bstRootNode.toString(), '5,10,20,30');
+        bstRootNode.remove(20);
+        assert.deepEqual(bstRootNode.toString(), '5,10,30');
+        bstRootNode.insert(1);
+        assert.deepEqual(bstRootNode.toString(), '1,5,10,30');
+        bstRootNode.remove(5);
+        assert.deepEqual(bstRootNode.toString(), '1,10,30');
+    });
+    QUnit.test('should remove nodes with two children', function (assert) {
+        var bstRootNode = new ds.BinarySearchTreeNode();
+        bstRootNode.insert(10);
+        bstRootNode.insert(20);
+        bstRootNode.insert(5);
+        bstRootNode.insert(30);
+        bstRootNode.insert(15);
+        bstRootNode.insert(25);
+        assert.deepEqual(bstRootNode.toString(), '5,10,15,20,25,30');
+        assert.deepEqual(bstRootNode.find(20).left.value, 15);
+        assert.deepEqual(bstRootNode.find(20).right.value, 30);
+        bstRootNode.remove(20);
+        assert.deepEqual(bstRootNode.toString(), '5,10,15,25,30');
+        bstRootNode.remove(15);
+        assert.deepEqual(bstRootNode.toString(), '5,10,25,30');
+        bstRootNode.remove(10);
+        assert.deepEqual(bstRootNode.toString(), '5,25,30');
+        assert.deepEqual(bstRootNode.value, 25);
+        bstRootNode.remove(25);
+        assert.deepEqual(bstRootNode.toString(), '5,30');
+        bstRootNode.remove(5);
+        assert.deepEqual(bstRootNode.toString(), '30');
+    });
+    QUnit.test('should remove node with no parent', function (assert) {
+        var bstRootNode = new ds.BinarySearchTreeNode();
+        assert.deepEqual(bstRootNode.toString(), '');
+        bstRootNode.insert(1);
+        bstRootNode.insert(2);
+        assert.deepEqual(bstRootNode.toString(), '1,2');
+        bstRootNode.remove(1);
+        assert.deepEqual(bstRootNode.toString(), '2');
+        bstRootNode.remove(2);
+        assert.deepEqual(bstRootNode.toString(), '');
+    });
+    QUnit.test('should throw error when trying to remove not existing node', function (assert) {
+        var bstRootNode = new ds.BinarySearchTreeNode();
+        bstRootNode.insert(10);
+        bstRootNode.insert(20);
+        function removeNotExistingElementFromTree() {
+            bstRootNode.remove(30);
+        }
+        var error0 = false;
+        try {
+            removeNotExistingElementFromTree();
+        }
+        catch (error) {
+            error0 = true;
+        }
+        assert.deepEqual(error0, true);
+    });
+    QUnit.test('should be possible to use objects as node values', function (assert) {
+        var nodeValueComparatorCallback = function (a, b) {
+            var normalizedA = a || { value: null };
+            var normalizedB = b || { value: null };
+            if (normalizedA.value === normalizedB.value) {
+                return 0;
+            }
+            return normalizedA.value < normalizedB.value ? -1 : 1;
+        };
+        var obj1 = { key: 'obj1', value: 1, toString: function () { return 'obj1'; } };
+        var obj2 = { key: 'obj2', value: 2, toString: function () { return 'obj2'; } };
+        var obj3 = { key: 'obj3', value: 3, toString: function () { return 'obj3'; } };
+        var bstNode = new ds.BinarySearchTreeNode(obj2, nodeValueComparatorCallback);
+        bstNode.insert(obj1);
+        assert.deepEqual(bstNode.toString(), 'obj1,obj2');
+        assert.deepEqual(bstNode.contains(obj1), true);
+        assert.deepEqual(bstNode.contains(obj3), false);
+        bstNode.insert(obj3);
+        assert.deepEqual(bstNode.toString(), 'obj1,obj2,obj3');
+        assert.deepEqual(bstNode.contains(obj3), true);
+        assert.deepEqual(bstNode.findMin().value, obj1);
+    });
+    QUnit.test('should abandon removed node', function (assert) {
+        var rootNode = new ds.BinarySearchTreeNode('foo');
+        rootNode.insert('bar');
+        var childNode = rootNode.find('bar');
+        rootNode.remove('bar');
+        assert.deepEqual(childNode.parent, null);
+    });
+});
 QUnit.module('BinaryTreeNode', function () {
     QUnit.test('should create node', function (assert) {
         var node = new ds.BinaryTreeNode();

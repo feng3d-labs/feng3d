@@ -2258,7 +2258,7 @@ declare namespace ds {
     /**
      * 图
      *
-     * @see https://gitee.com/feng3d_admin/javascript-algorithms/blob/master/src/data-structures/graph/Graph.js
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/graph/Graph.js
      * @see https://en.wikipedia.org/wiki/Graph_(abstract_data_type)
      * @see https://www.youtube.com/watch?v=gXgEDyodOJU&index=9&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8
      * @see https://www.youtube.com/watch?v=k1wraWzqtvQ&index=10&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8
@@ -2468,7 +2468,7 @@ declare namespace ds {
     /**
      * 二叉树结点
      *
-     * @see https://gitee.com/feng3d_admin/javascript-algorithms/blob/master/src/data-structures/tree/BinaryTreeNode.js
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/tree/BinaryTreeNode.js
      */
     class BinaryTreeNode<T> {
         /**
@@ -2564,6 +2564,66 @@ declare namespace ds {
          * 转换为字符串
          */
         toString(): string;
+    }
+}
+declare namespace ds {
+    /**
+     * 二叉查找树结点
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/tree/binary-search-tree/BinarySearchTreeNode.js
+     */
+    class BinarySearchTreeNode<T> extends BinaryTreeNode<T> {
+        /**
+         * 左结点
+         */
+        left: BinarySearchTreeNode<T>;
+        /**
+         * 右结点
+         */
+        right: BinarySearchTreeNode<T>;
+        /**
+         * 比较函数
+         */
+        private compareFunction;
+        /**
+         * 结点值比较器
+         */
+        private nodeValueComparator;
+        /**
+         * 构建二叉查找树结点
+         *
+         * @param value 结点值
+         * @param compareFunction 比较函数
+         */
+        constructor(value?: T, compareFunction?: CompareFunction<T>);
+        /**
+         * 插入值
+         *
+         * @param value 值
+         */
+        insert(value: T): any;
+        /**
+         * 查找结点
+         *
+         * @param value 值
+         */
+        find(value: T): BinarySearchTreeNode<T>;
+        /**
+         * 是否包含指定值
+         *
+         * @param value 结点值
+         */
+        contains(value: T): boolean;
+        /**
+         * 移除指定值
+         *
+         * @param value 结点值
+         */
+        remove(value: T): boolean;
+        /**
+         * 查找最小值
+         */
+        findMin(): BinarySearchTreeNode<T>;
     }
 }
 declare namespace feng3d {

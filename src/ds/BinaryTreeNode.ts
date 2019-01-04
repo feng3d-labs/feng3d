@@ -3,7 +3,7 @@ namespace ds
     /**
      * 二叉树结点
      * 
-     * @see https://gitee.com/feng3d_admin/javascript-algorithms/blob/master/src/data-structures/tree/BinaryTreeNode.js
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/tree/BinaryTreeNode.js
      */
     export class BinaryTreeNode<T>
     {
@@ -11,6 +11,7 @@ namespace ds
          * 左结点
          */
         left: BinaryTreeNode<T>;
+        
         /**
          * 右结点
          */

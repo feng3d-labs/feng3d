@@ -45,6 +45,7 @@
         "src/ds/DisjointSet.ts",
         "src/ds/Graph.ts",
         "src/ds/BinaryTreeNode.ts",
+        "src/ds/BinarySearchTreeNode.ts",
         // 数学相关程序
         "src/math/Math.ts",
         // 函数方程

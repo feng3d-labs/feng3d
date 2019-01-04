@@ -3,7 +3,7 @@ namespace ds
     /**
      * 图
      * 
-     * @see https://gitee.com/feng3d_admin/javascript-algorithms/blob/master/src/data-structures/graph/Graph.js
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/graph/Graph.js
      * @see https://en.wikipedia.org/wiki/Graph_(abstract_data_type)
      * @see https://www.youtube.com/watch?v=gXgEDyodOJU&index=9&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8
      * @see https://www.youtube.com/watch?v=k1wraWzqtvQ&index=10&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8
