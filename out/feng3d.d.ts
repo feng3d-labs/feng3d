@@ -2263,9 +2263,13 @@ declare namespace ds {
      * @see https://www.youtube.com/watch?v=gXgEDyodOJU&index=9&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8
      * @see https://www.youtube.com/watch?v=k1wraWzqtvQ&index=10&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8
      */
-    class Graph {
-        vertices: Object;
-        edges: Object;
+    class Graph<T> {
+        vertices: {
+            [key: string]: GraphVertex<T>;
+        };
+        edges: {
+            [key: string]: GraphEdge<T>;
+        };
         /**
          * 是否有向
          */
@@ -2277,140 +2281,181 @@ declare namespace ds {
          */
         constructor(isDirected?: boolean);
         /**
-         * @param {GraphVertex} newVertex
-         * @returns {Graph}
+         * 新增顶点
+         *
+         * @param newVertex 新顶点
          */
-        addVertex(newVertex: any): this;
+        addVertex(newVertex: GraphVertex<T>): this;
         /**
-         * @param {string} vertexKey
-         * @returns GraphVertex
+         * 获取顶点
+         *
+         * @param vertexKey 顶点键值
          */
-        getVertexByKey(vertexKey: any): any;
+        getVertexByKey(vertexKey: string): GraphVertex<T>;
         /**
-         * @param {GraphVertex} vertex
-         * @returns {GraphVertex[]}
+         * 获取相邻点
+         *
+         * @param vertex 顶点
          */
-        getNeighbors(vertex: any): any;
+        getNeighbors(vertex: GraphVertex<T>): GraphVertex<T>[];
         /**
-         * @return {GraphVertex[]}
+         * 获取所有顶点
          */
-        getAllVertices(): any[];
+        getAllVertices(): GraphVertex<T>[];
         /**
-         * @return {GraphEdge[]}
+         * 获取所有边
          */
-        getAllEdges(): any[];
+        getAllEdges(): GraphEdge<T>[];
         /**
-         * @param {GraphEdge} edge
-         * @returns {Graph}
+         * 新增边
+         *
+         * @param edge 边
          */
-        addEdge(edge: any): this;
+        addEdge(edge: GraphEdge<T>): this;
         /**
-         * @param {GraphEdge} edge
+         * 删除边
+         *
+         * @param edge 边
          */
-        deleteEdge(edge: any): void;
+        deleteEdge(edge: GraphEdge<T>): void;
         /**
-         * @param {GraphVertex} startVertex
-         * @param {GraphVertex} endVertex
-         * @return {(GraphEdge|null)}
+         * 查找边
+         *
+         * @param startVertex 起始顶点
+         * @param endVertex 结束顶点
          */
-        findEdge(startVertex: any, endVertex: any): any;
+        findEdge(startVertex: GraphVertex<T>, endVertex: GraphVertex<T>): GraphEdge<T>;
         /**
-         * @return {number}
+         * 获取权重
          */
-        getWeight(): any;
+        getWeight(): number;
         /**
-         * Reverse all the edges in directed graph.
-         * @return {Graph}
+         * 反转
          */
         reverse(): this;
         /**
-         * @return {object}
+         * 获取所有顶点索引
          */
         getVerticesIndices(): {};
         /**
-         * @return {*[][]}
+         * 获取邻接矩阵
          */
         getAdjacencyMatrix(): any[];
         /**
-         * @return {string}
+         * 转换为字符串
          */
         toString(): string;
     }
-    class GraphEdge {
+    /**
+     * 图边
+     */
+    class GraphEdge<T> {
         /**
-         * @param {GraphVertex} startVertex
-         * @param {GraphVertex} endVertex
-         * @param {number} [weight=1]
+         * 起始顶点
          */
-        constructor(startVertex: any, endVertex: any, weight?: number);
+        startVertex: GraphVertex<T>;
         /**
-         * @return {string}
+         * 结束顶点
+         */
+        endVertex: GraphVertex<T>;
+        /**
+         * 权重
+         */
+        weight: number;
+        /**
+         * 构建图边
+         * @param startVertex 起始顶点
+         * @param endVertex 结束顶点
+         * @param weight 权重
+         */
+        constructor(startVertex: GraphVertex<T>, endVertex: GraphVertex<T>, weight?: number);
+        /**
+         * 获取键值
          */
         getKey(): string;
         /**
-         * @return {GraphEdge}
+         * 反转
          */
         reverse(): this;
         /**
-         * @return {string}
+         * 转换为字符串
          */
         toString(): string;
     }
+    /**
+     * 图顶点
+     */
     class GraphVertex<T> {
+        /**
+         * 值
+         */
         value: T;
         /**
-         * @param {*} value
+         * 边列表
+         */
+        edges: LinkedList<GraphEdge<T>>;
+        /**
+         * 构建图顶点
+         *
+         * @param value 值
          */
         constructor(value: T);
         /**
-         * @param {GraphEdge} edge
-         * @returns {GraphVertex}
+         * 新增边
+         *
+         * @param edge 边
          */
-        addEdge(edge: any): this;
+        addEdge(edge: GraphEdge<T>): this;
         /**
-         * @param {GraphEdge} edge
+         * 删除边
+         *
+         * @param edge 边
          */
-        deleteEdge(edge: any): void;
+        deleteEdge(edge: GraphEdge<T>): void;
         /**
-         * @returns {GraphVertex[]}
+         * 获取相邻顶点
          */
-        getNeighbors(): any;
+        getNeighbors(): GraphVertex<T>[];
         /**
-         * @return {GraphEdge[]}
+         * 获取边列表
          */
-        getEdges(): any;
+        getEdges(): GraphEdge<T>[];
         /**
-         * @return {number}
+         * 获取边的数量
          */
-        getDegree(): any;
+        getDegree(): number;
         /**
-         * @param {GraphEdge} requiredEdge
-         * @returns {boolean}
+         * 是否存在指定边
+         *
+         * @param requiredEdge 边
          */
-        hasEdge(requiredEdge: any): boolean;
+        hasEdge(requiredEdge: GraphEdge<T>): boolean;
         /**
-         * @param {GraphVertex} vertex
-         * @returns {boolean}
+         * 是否有相邻顶点
+         *
+         * @param vertex 顶点
          */
-        hasNeighbor(vertex: any): boolean;
+        hasNeighbor(vertex: GraphVertex<T>): boolean;
         /**
-         * @param {GraphVertex} vertex
-         * @returns {(GraphEdge|null)}
+         * 查找边
+         *
+         * @param vertex 顶点
          */
-        findEdge(vertex: any): any;
+        findEdge(vertex: GraphVertex<T>): GraphEdge<T>;
         /**
-         * @returns {string}
+         * 获取键值
          */
-        getKey(): T;
+        getKey(): string;
         /**
-         * @return {GraphVertex}
+         * 删除所有边
          */
         deleteAllEdges(): this;
         /**
-         * @param {function} [callback]
-         * @returns {string}
+         * 转换为字符串
+         *
+         * @param callback 转换为字符串函数
          */
-        toString(callback: any): any;
+        toString(callback?: (value: T) => string): string;
     }
 }
 declare namespace feng3d {

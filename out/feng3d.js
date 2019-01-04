@@ -4147,29 +4147,32 @@ var ds;
             this.isDirected = isDirected;
         }
         /**
-         * @param {GraphVertex} newVertex
-         * @returns {Graph}
+         * 新增顶点
+         *
+         * @param newVertex 新顶点
          */
         Graph.prototype.addVertex = function (newVertex) {
             this.vertices[newVertex.getKey()] = newVertex;
             return this;
         };
         /**
-         * @param {string} vertexKey
-         * @returns GraphVertex
+         * 获取顶点
+         *
+         * @param vertexKey 顶点键值
          */
         Graph.prototype.getVertexByKey = function (vertexKey) {
             return this.vertices[vertexKey];
         };
         /**
-         * @param {GraphVertex} vertex
-         * @returns {GraphVertex[]}
+         * 获取相邻点
+         *
+         * @param vertex 顶点
          */
         Graph.prototype.getNeighbors = function (vertex) {
             return vertex.getNeighbors();
         };
         /**
-         * @return {GraphVertex[]}
+         * 获取所有顶点
          */
         Graph.prototype.getAllVertices = function () {
             var _this = this;
@@ -4177,7 +4180,7 @@ var ds;
             return values;
         };
         /**
-         * @return {GraphEdge[]}
+         * 获取所有边
          */
         Graph.prototype.getAllEdges = function () {
             var _this = this;
@@ -4185,63 +4188,65 @@ var ds;
             return values;
         };
         /**
-         * @param {GraphEdge} edge
-         * @returns {Graph}
+         * 新增边
+         *
+         * @param edge 边
          */
         Graph.prototype.addEdge = function (edge) {
-            // Try to find and end start vertices.
+            // 获取起点与终点
             var startVertex = this.getVertexByKey(edge.startVertex.getKey());
             var endVertex = this.getVertexByKey(edge.endVertex.getKey());
-            // Insert start vertex if it wasn't inserted.
+            // 新增不存在的起点
             if (!startVertex) {
                 this.addVertex(edge.startVertex);
                 startVertex = this.getVertexByKey(edge.startVertex.getKey());
             }
-            // Insert end vertex if it wasn't inserted.
+            // 新增不存在的终点
             if (!endVertex) {
                 this.addVertex(edge.endVertex);
                 endVertex = this.getVertexByKey(edge.endVertex.getKey());
             }
-            // Check if edge has been already added.
+            // 新增边到边列表
             if (this.edges[edge.getKey()]) {
-                throw new Error('Edge has already been added before');
+                throw new Error('指定边已经存在，无法再次添加');
             }
             else {
                 this.edges[edge.getKey()] = edge;
             }
-            // Add edge to the vertices.
+            // 新增边到顶点
             if (this.isDirected) {
-                // If graph IS directed then add the edge only to start vertex.
                 startVertex.addEdge(edge);
             }
             else {
-                // If graph ISN'T directed then add the edge to both vertices.
                 startVertex.addEdge(edge);
                 endVertex.addEdge(edge);
             }
             return this;
         };
         /**
-         * @param {GraphEdge} edge
+         * 删除边
+         *
+         * @param edge 边
          */
         Graph.prototype.deleteEdge = function (edge) {
-            // Delete edge from the list of edges.
+            // 从列表中删除边
             if (this.edges[edge.getKey()]) {
                 delete this.edges[edge.getKey()];
             }
             else {
-                throw new Error('Edge not found in graph');
+                throw new Error('图中不存在指定边');
             }
-            // Try to find and end start vertices and delete edge from them.
+            // 从起点与终点里删除边
             var startVertex = this.getVertexByKey(edge.startVertex.getKey());
             var endVertex = this.getVertexByKey(edge.endVertex.getKey());
             startVertex.deleteEdge(edge);
             endVertex.deleteEdge(edge);
         };
         /**
-         * @param {GraphVertex} startVertex
-         * @param {GraphVertex} endVertex
-         * @return {(GraphEdge|null)}
+         * 查找边
+         *
+         * @param startVertex 起始顶点
+         * @param endVertex 结束顶点
          */
         Graph.prototype.findEdge = function (startVertex, endVertex) {
             var vertex = this.getVertexByKey(startVertex.getKey());
@@ -4251,7 +4256,7 @@ var ds;
             return vertex.findEdge(endVertex);
         };
         /**
-         * @return {number}
+         * 获取权重
          */
         Graph.prototype.getWeight = function () {
             return this.getAllEdges().reduce(function (weight, graphEdge) {
@@ -4259,24 +4264,23 @@ var ds;
             }, 0);
         };
         /**
-         * Reverse all the edges in directed graph.
-         * @return {Graph}
+         * 反转
          */
         Graph.prototype.reverse = function () {
             var _this = this;
-            /** @param {GraphEdge} edge */
+            // 遍历边
             this.getAllEdges().forEach(function (edge) {
-                // Delete straight edge from graph and from vertices.
+                // 删除边
                 _this.deleteEdge(edge);
-                // Reverse the edge.
+                // 反转边
                 edge.reverse();
-                // Add reversed edge back to the graph and its vertices.
+                // 新增边
                 _this.addEdge(edge);
             });
             return this;
         };
         /**
-         * @return {object}
+         * 获取所有顶点索引
          */
         Graph.prototype.getVerticesIndices = function () {
             var verticesIndices = {};
@@ -4286,14 +4290,13 @@ var ds;
             return verticesIndices;
         };
         /**
-         * @return {*[][]}
+         * 获取邻接矩阵
          */
         Graph.prototype.getAdjacencyMatrix = function () {
             var _this = this;
             var vertices = this.getAllVertices();
             var verticesIndices = this.getVerticesIndices();
-            // Init matrix with infinities meaning that there is no ways of
-            // getting from one vertex to another yet.
+            // 初始化邻接矩阵
             var adjacencyMatrix = [];
             var n = vertices.length;
             for (var i = 0; i < n; i++) {
@@ -4302,7 +4305,7 @@ var ds;
                     adjacencyMatrix[i][j] = Infinity;
                 }
             }
-            // Fill the columns.
+            // 填充邻接矩阵
             vertices.forEach(function (vertex, vertexIndex) {
                 vertex.getNeighbors().forEach(function (neighbor) {
                     var neighborIndex = verticesIndices[neighbor.getKey()];
@@ -4312,7 +4315,7 @@ var ds;
             return adjacencyMatrix;
         };
         /**
-         * @return {string}
+         * 转换为字符串
          */
         Graph.prototype.toString = function () {
             return Object.keys(this.vertices).toString();
@@ -4320,11 +4323,15 @@ var ds;
         return Graph;
     }());
     ds.Graph = Graph;
+    /**
+     * 图边
+     */
     var GraphEdge = /** @class */ (function () {
         /**
-         * @param {GraphVertex} startVertex
-         * @param {GraphVertex} endVertex
-         * @param {number} [weight=1]
+         * 构建图边
+         * @param startVertex 起始顶点
+         * @param endVertex 结束顶点
+         * @param weight 权重
          */
         function GraphEdge(startVertex, endVertex, weight) {
             if (weight === void 0) { weight = 0; }
@@ -4333,7 +4340,7 @@ var ds;
             this.weight = weight;
         }
         /**
-         * @return {string}
+         * 获取键值
          */
         GraphEdge.prototype.getKey = function () {
             var startVertexKey = this.startVertex.getKey();
@@ -4341,7 +4348,7 @@ var ds;
             return startVertexKey + "_" + endVertexKey;
         };
         /**
-         * @return {GraphEdge}
+         * 反转
          */
         GraphEdge.prototype.reverse = function () {
             var tmp = this.startVertex;
@@ -4350,7 +4357,7 @@ var ds;
             return this;
         };
         /**
-         * @return {string}
+         * 转换为字符串
          */
         GraphEdge.prototype.toString = function () {
             return this.getKey();
@@ -4358,108 +4365,103 @@ var ds;
         return GraphEdge;
     }());
     ds.GraphEdge = GraphEdge;
+    /**
+     * 图顶点
+     */
     var GraphVertex = /** @class */ (function () {
         /**
-         * @param {*} value
+         * 构建图顶点
+         *
+         * @param value 值
          */
         function GraphVertex(value) {
-            if (value === undefined) {
-                throw new Error('Graph vertex must have a value');
-            }
-            /**
-             * @param {GraphEdge} edgeA
-             * @param {GraphEdge} edgeB
-             */
             var edgeComparator = function (edgeA, edgeB) {
                 if (edgeA.getKey() === edgeB.getKey()) {
                     return 0;
                 }
                 return edgeA.getKey() < edgeB.getKey() ? -1 : 1;
             };
-            // Normally you would store string value like vertex name.
-            // But generally it may be any object as well
             this.value = value;
             this.edges = new ds.LinkedList(edgeComparator);
         }
         /**
-         * @param {GraphEdge} edge
-         * @returns {GraphVertex}
+         * 新增边
+         *
+         * @param edge 边
          */
         GraphVertex.prototype.addEdge = function (edge) {
-            this.edges.append(edge);
+            this.edges.addTail(edge);
             return this;
         };
         /**
-         * @param {GraphEdge} edge
+         * 删除边
+         *
+         * @param edge 边
          */
         GraphVertex.prototype.deleteEdge = function (edge) {
             this.edges.delete(edge);
         };
         /**
-         * @returns {GraphVertex[]}
+         * 获取相邻顶点
          */
         GraphVertex.prototype.getNeighbors = function () {
             var _this = this;
             var edges = this.edges.toArray();
-            /** @param {LinkedListNode} node */
-            var neighborsConverter = function (node) {
-                return node.value.startVertex === _this ? node.value.endVertex : node.value.startVertex;
+            var neighborsConverter = function (edge) {
+                return edge.startVertex === _this ? edge.endVertex : edge.startVertex;
             };
-            // Return either start or end vertex.
-            // For undirected graphs it is possible that current vertex will be the end one.
             return edges.map(neighborsConverter);
         };
         /**
-         * @return {GraphEdge[]}
+         * 获取边列表
          */
         GraphVertex.prototype.getEdges = function () {
-            return this.edges.toArray().map(function (linkedListNode) { return linkedListNode.value; });
+            return this.edges.toArray();
         };
         /**
-         * @return {number}
+         * 获取边的数量
          */
         GraphVertex.prototype.getDegree = function () {
             return this.edges.toArray().length;
         };
         /**
-         * @param {GraphEdge} requiredEdge
-         * @returns {boolean}
+         * 是否存在指定边
+         *
+         * @param requiredEdge 边
          */
         GraphVertex.prototype.hasEdge = function (requiredEdge) {
-            var edgeNode = this.edges.find({
-                callback: function (edge) { return edge === requiredEdge; },
-            });
+            var edgeNode = this.edges.findByFunc(function (edge) { return edge === requiredEdge; });
             return !!edgeNode;
         };
         /**
-         * @param {GraphVertex} vertex
-         * @returns {boolean}
+         * 是否有相邻顶点
+         *
+         * @param vertex 顶点
          */
         GraphVertex.prototype.hasNeighbor = function (vertex) {
-            var vertexNode = this.edges.find({
-                callback: function (edge) { return edge.startVertex === vertex || edge.endVertex === vertex; },
-            });
+            var vertexNode = this.edges.findByFunc(function (edge) { return edge.startVertex === vertex || edge.endVertex === vertex; });
             return !!vertexNode;
         };
         /**
-         * @param {GraphVertex} vertex
-         * @returns {(GraphEdge|null)}
+         * 查找边
+         *
+         * @param vertex 顶点
          */
         GraphVertex.prototype.findEdge = function (vertex) {
             var edgeFinder = function (edge) {
                 return edge.startVertex === vertex || edge.endVertex === vertex;
             };
-            var edge = this.edges.find({ callback: edgeFinder });
+            var edge = this.edges.findByFunc(edgeFinder);
             return edge ? edge.value : null;
         };
         /**
-         * @returns {string}
+         * 获取键值
          */
         GraphVertex.prototype.getKey = function () {
             return this.value;
         };
         /**
-         * @return {GraphVertex}
+         * 删除所有边
          */
         GraphVertex.prototype.deleteAllEdges = function () {
             var _this = this;
@@ -4467,8 +4469,9 @@ var ds;
             return this;
         };
         /**
-         * @param {function} [callback]
-         * @returns {string}
+         * 转换为字符串
+         *
+         * @param callback 转换为字符串函数
          */
         GraphVertex.prototype.toString = function (callback) {
             return callback ? callback(this.value) : "" + this.value;
