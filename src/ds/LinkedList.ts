@@ -158,8 +158,8 @@ namespace ds
                 }
             }
 
-            // 判断表尾是否被删除
-            if (equalFunc(this.tail.value, value))
+            // currentNode 是否为表尾
+            if (currentNode.next == null)
             {
                 this.tail = currentNode;
             }
@@ -311,6 +311,23 @@ namespace ds
             this.head = prevNode;
 
             return this;
+        }
+
+        /**
+         * 核查结构是否正确
+         */
+        checkStructure()
+        {
+            if (this.head)
+            {
+                var currNode = this.head;
+                while (currNode.next)
+                {
+                    currNode = currNode.next;
+                }
+                return this.tail == currNode;
+            }
+            return !this.tail;
         }
     }
 

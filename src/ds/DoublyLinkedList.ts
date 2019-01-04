@@ -77,18 +77,67 @@ namespace ds
         }
 
         /**
-         * 删除链表中所有与指定值相等的结点
+         * 删除链表中第一个与指定值相等的结点
          * 
          * @param value 结点值
+         * @param equalFunc 判断是否相等函数
          */
-        delete(value: T)
+        delete(value: T, equalFunc = (a: T, b: T) => a == b)
         {
             if (!this.head) return null;
 
             let deletedNode: DoublyLinkedListNode<T> = null;
 
             // 从表头删除结点
-            while (this.head && this.compare.equal(this.head.value, value))
+            while (this.head && !deletedNode && equalFunc(this.head.value, value))
+            {
+                deletedNode = this.head;
+                this.head = this.head.next;
+                this.head.previous = null;
+            }
+
+            let currentNode = this.head;
+
+            if (!deletedNode && currentNode)
+            {
+                // 删除相等的下一个结点
+                while (!deletedNode && currentNode.next)
+                {
+                    if (equalFunc(currentNode.next.value, value))
+                    {
+                        deletedNode = currentNode.next;
+                        currentNode.next = currentNode.next.next;
+                        if (currentNode.next) currentNode.next.previous = currentNode;
+                    } else
+                    {
+                        currentNode = currentNode.next;
+                    }
+                }
+            }
+
+            // currentNode 是否为表尾
+            if (currentNode.next == null)
+            {
+                this.tail = currentNode;
+            }
+
+            return deletedNode;
+        }
+
+        /**
+         * 删除链表中所有与指定值相等的结点
+         * 
+         * @param value 结点值
+         * @param equalFunc 判断是否相等函数
+         */
+        deleteAll(value: T, equalFunc = (a: T, b: T) => a == b)
+        {
+            if (!this.head) return null;
+
+            let deletedNode: DoublyLinkedListNode<T> = null;
+
+            // 从表头删除结点
+            while (this.head && equalFunc(this.head.value, value))
             {
                 deletedNode = this.head;
                 this.head = this.head.next;
@@ -102,7 +151,7 @@ namespace ds
                 // 删除相等的下一个结点
                 while (currentNode.next)
                 {
-                    if (this.compare.equal(currentNode.next.value, value))
+                    if (equalFunc(currentNode.next.value, value))
                     {
                         deletedNode = currentNode.next;
                         currentNode.next = currentNode.next.next;
@@ -114,8 +163,8 @@ namespace ds
                 }
             }
 
-            // 判断表尾是否被删除
-            if (this.compare.equal(this.tail.value, value))
+            // currentNode 是否为表尾
+            if (currentNode.next == null)
             {
                 this.tail = currentNode;
             }
@@ -254,6 +303,32 @@ namespace ds
             this.head = prevNode;
 
             return this;
+        }
+
+        /**
+         * 核查结构是否正确
+         */
+        checkStructure()
+        {
+            if (this.head)
+            {
+                // 核查正向链表
+                var currNode = this.head;
+                while (currNode.next)
+                {
+                    currNode = currNode.next;
+                }
+                if (this.tail !== currNode) return false;
+
+                // 核查逆向链表
+                currNode = this.tail;
+                while (currNode.previous)
+                {
+                    currNode = currNode.previous;
+                }
+                return this.head == currNode;
+            }
+            return !this.tail;
         }
     }
 

@@ -1504,6 +1504,10 @@ declare namespace ds {
          * 反转链表
          */
         reverse(): this;
+        /**
+         * 核查结构是否正确
+         */
+        checkStructure(): boolean;
     }
     /**
      * 链表结点
@@ -1563,11 +1567,19 @@ declare namespace ds {
          */
         addTail(value: T): this;
         /**
+         * 删除链表中第一个与指定值相等的结点
+         *
+         * @param value 结点值
+         * @param equalFunc 判断是否相等函数
+         */
+        delete(value: T, equalFunc?: (a: T, b: T) => boolean): DoublyLinkedListNode<T>;
+        /**
          * 删除链表中所有与指定值相等的结点
          *
          * @param value 结点值
+         * @param equalFunc 判断是否相等函数
          */
-        delete(value: T): DoublyLinkedListNode<T>;
+        deleteAll(value: T, equalFunc?: (a: T, b: T) => boolean): DoublyLinkedListNode<T>;
         /**
          * 查找与结点值相等的结点
          *
@@ -1601,6 +1613,10 @@ declare namespace ds {
          * 反转链表
          */
         reverse(): this;
+        /**
+         * 核查结构是否正确
+         */
+        checkStructure(): boolean;
     }
     /**
      * 双向链接结点

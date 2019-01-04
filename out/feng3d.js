@@ -2702,8 +2702,8 @@ var ds;
                     }
                 }
             }
-            // 判断表尾是否被删除
-            if (equalFunc(this.tail.value, value)) {
+            // currentNode 是否为表尾
+            if (currentNode.next == null) {
                 this.tail = currentNode;
             }
             return deletedNode;
@@ -2822,6 +2822,19 @@ var ds;
             this.head = prevNode;
             return this;
         };
+        /**
+         * 核查结构是否正确
+         */
+        LinkedList.prototype.checkStructure = function () {
+            if (this.head) {
+                var currNode = this.head;
+                while (currNode.next) {
+                    currNode = currNode.next;
+                }
+                return this.tail == currNode;
+            }
+            return !this.tail;
+        };
         return LinkedList;
     }());
     ds.LinkedList = LinkedList;
@@ -2884,25 +2897,27 @@ var ds;
             return this;
         };
         /**
-         * 删除链表中所有与指定值相等的结点
+         * 删除链表中第一个与指定值相等的结点
          *
          * @param value 结点值
+         * @param equalFunc 判断是否相等函数
          */
-        DoublyLinkedList.prototype.delete = function (value) {
+        DoublyLinkedList.prototype.delete = function (value, equalFunc) {
+            if (equalFunc === void 0) { equalFunc = function (a, b) { return a == b; }; }
             if (!this.head)
                 return null;
             var deletedNode = null;
             // 从表头删除结点
-            while (this.head && this.compare.equal(this.head.value, value)) {
+            while (this.head && !deletedNode && equalFunc(this.head.value, value)) {
                 deletedNode = this.head;
                 this.head = this.head.next;
                 this.head.previous = null;
             }
             var currentNode = this.head;
-            if (currentNode !== null) {
+            if (!deletedNode && currentNode) {
                 // 删除相等的下一个结点
-                while (currentNode.next) {
-                    if (this.compare.equal(currentNode.next.value, value)) {
+                while (!deletedNode && currentNode.next) {
+                    if (equalFunc(currentNode.next.value, value)) {
                         deletedNode = currentNode.next;
                         currentNode.next = currentNode.next.next;
                         if (currentNode.next)
@@ -2913,8 +2928,46 @@ var ds;
                     }
                 }
             }
-            // 判断表尾是否被删除
-            if (this.compare.equal(this.tail.value, value)) {
+            // currentNode 是否为表尾
+            if (currentNode.next == null) {
+                this.tail = currentNode;
+            }
+            return deletedNode;
+        };
+        /**
+         * 删除链表中所有与指定值相等的结点
+         *
+         * @param value 结点值
+         * @param equalFunc 判断是否相等函数
+         */
+        DoublyLinkedList.prototype.deleteAll = function (value, equalFunc) {
+            if (equalFunc === void 0) { equalFunc = function (a, b) { return a == b; }; }
+            if (!this.head)
+                return null;
+            var deletedNode = null;
+            // 从表头删除结点
+            while (this.head && equalFunc(this.head.value, value)) {
+                deletedNode = this.head;
+                this.head = this.head.next;
+                this.head.previous = null;
+            }
+            var currentNode = this.head;
+            if (currentNode !== null) {
+                // 删除相等的下一个结点
+                while (currentNode.next) {
+                    if (equalFunc(currentNode.next.value, value)) {
+                        deletedNode = currentNode.next;
+                        currentNode.next = currentNode.next.next;
+                        if (currentNode.next)
+                            currentNode.next.previous = currentNode;
+                    }
+                    else {
+                        currentNode = currentNode.next;
+                    }
+                }
+            }
+            // currentNode 是否为表尾
+            if (currentNode.next == null) {
                 this.tail = currentNode;
             }
             return deletedNode;
@@ -3021,6 +3074,27 @@ var ds;
             this.tail = this.head;
             this.head = prevNode;
             return this;
+        };
+        /**
+         * 核查结构是否正确
+         */
+        DoublyLinkedList.prototype.checkStructure = function () {
+            if (this.head) {
+                // 核查正向链表
+                var currNode = this.head;
+                while (currNode.next) {
+                    currNode = currNode.next;
+                }
+                if (this.tail !== currNode)
+                    return false;
+                // 核查逆向链表
+                currNode = this.tail;
+                while (currNode.previous) {
+                    currNode = currNode.previous;
+                }
+                return this.head == currNode;
+            }
+            return !this.tail;
         };
         return DoublyLinkedList;
     }());

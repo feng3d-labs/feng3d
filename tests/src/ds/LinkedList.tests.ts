@@ -5,6 +5,8 @@ QUnit.module("LinkedList", () =>
         var ll = new ds.LinkedList<number>();
         assert.deepEqual(ll.deleteHead(), null);
         assert.deepEqual(ll.deleteTail(), null);
+
+        assert.ok(ll.checkStructure());
     });
 
     QUnit.test("addHead", (assert) =>
@@ -22,6 +24,8 @@ QUnit.module("LinkedList", () =>
         ll.addHead(1);
         arr.unshift(1);
         assert.deepEqual(ll.toArray(), arr);
+
+        assert.ok(ll.checkStructure());
     });
 
     QUnit.test("addTail", (assert) =>
@@ -39,6 +43,8 @@ QUnit.module("LinkedList", () =>
         ll.addTail(1);
         arr.push(1);
         assert.deepEqual(ll.toArray(), arr);
+
+        assert.ok(ll.checkStructure());
     });
 
     QUnit.test("delete", (assert) =>
@@ -60,6 +66,8 @@ QUnit.module("LinkedList", () =>
         ll.delete(deleteItem);
 
         assert.deepEqual(ll.toArray(), arr);
+
+        assert.ok(ll.checkStructure());
     });
 
     QUnit.test("deleteAll", (assert) =>
@@ -86,6 +94,8 @@ QUnit.module("LinkedList", () =>
         ll.deleteAll(deleteItem);
 
         assert.deepEqual(ll.toArray(), arr);
+
+        assert.ok(ll.checkStructure());
     });
 
     QUnit.test("deleteHead", (assert) =>
@@ -99,6 +109,8 @@ QUnit.module("LinkedList", () =>
         assert.deepEqual(ll.deleteHead(), arr.shift());
 
         assert.deepEqual(ll.toArray(), arr);
+
+        assert.ok(ll.checkStructure());
     });
 
     QUnit.test("deleteTail", (assert) =>
@@ -112,6 +124,8 @@ QUnit.module("LinkedList", () =>
         assert.deepEqual(ll.deleteTail(), arr.pop());
 
         assert.deepEqual(ll.toArray(), arr);
+
+        assert.ok(ll.checkStructure());
     });
 
     QUnit.test("toArray", (assert) =>
@@ -122,6 +136,8 @@ QUnit.module("LinkedList", () =>
         ll.fromArray(arr);
 
         assert.deepEqual(ll.toArray(), arr);
+
+        assert.ok(ll.checkStructure());
     });
 
     QUnit.test("fromArray", (assert) =>
@@ -132,16 +148,20 @@ QUnit.module("LinkedList", () =>
         ll.fromArray(arr);
 
         assert.deepEqual(ll.toArray(), arr);
+
+        assert.ok(ll.checkStructure());
     });
 
     QUnit.test("toString", (assert) =>
     {
-        var ll = new ds.DoublyLinkedList<number>();
+        var ll = new ds.LinkedList<number>();
 
         var arr = ds.utils.createArray(10, () => Math.random());
         ll.fromArray(arr);
 
         assert.ok(true, ll.toString((v) => v.toFixed(3)));
+
+        assert.ok(ll.checkStructure());
     });
 
     QUnit.test("reverse", (assert) =>
@@ -163,6 +183,8 @@ QUnit.module("LinkedList", () =>
         arr.reverse();
 
         assert.deepEqual(ll.toArray(), arr);
+
+        assert.ok(ll.checkStructure());
     });
 
 });
