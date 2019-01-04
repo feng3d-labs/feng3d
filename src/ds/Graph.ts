@@ -10,8 +10,14 @@ namespace ds
      */
     export class Graph<T>
     {
+        /**
+         * 顶点列表
+         */
         vertices: { [key: string]: GraphVertex<T> };
 
+        /**
+         * 边列表
+         */
         edges: { [key: string]: GraphEdge<T> };
 
         /**

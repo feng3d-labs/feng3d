@@ -2671,7 +2671,7 @@ var ds;
                 }
             }
             // currentNode 是否为表尾
-            if (currentNode.next == null) {
+            if (currentNode == null || currentNode.next == null) {
                 this.tail = currentNode;
             }
             return deletedNode;
@@ -2704,7 +2704,7 @@ var ds;
                 }
             }
             // currentNode 是否为表尾
-            if (currentNode.next == null) {
+            if (currentNode == null || currentNode.next == null) {
                 this.tail = currentNode;
             }
             return deletedNode;
@@ -2944,7 +2944,7 @@ var ds;
                 }
             }
             // currentNode 是否为表尾
-            if (currentNode.next == null) {
+            if (currentNode == null || currentNode.next == null) {
                 this.tail = currentNode;
             }
             return deletedNode;
@@ -2980,7 +2980,7 @@ var ds;
                 }
             }
             // currentNode 是否为表尾
-            if (currentNode.next == null) {
+            if (currentNode == null || currentNode.next == null) {
                 this.tail = currentNode;
             }
             return deletedNode;

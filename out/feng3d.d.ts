@@ -2264,9 +2264,15 @@ declare namespace ds {
      * @see https://www.youtube.com/watch?v=k1wraWzqtvQ&index=10&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8
      */
     class Graph<T> {
+        /**
+         * 顶点列表
+         */
         vertices: {
             [key: string]: GraphVertex<T>;
         };
+        /**
+         * 边列表
+         */
         edges: {
             [key: string]: GraphEdge<T>;
         };
