@@ -1454,12 +1454,19 @@ declare namespace ds {
          */
         addTail(value: T): this;
         /**
-         * 删除链表中所有与指定值相等的结点
+         * 删除链表中第一个与指定值相等的结点
          *
          * @param value 结点值
          * @param equalFunc 判断是否相等函数
          */
         delete(value: T, equalFunc?: (a: T, b: T) => boolean): LinkedListNode<T>;
+        /**
+         * 删除链表中所有与指定值相等的结点
+         *
+         * @param value 结点值
+         * @param equalFunc 判断是否相等函数
+         */
+        deleteAll(value: T, equalFunc?: (a: T, b: T) => boolean): LinkedListNode<T>;
         /**
          * 查找与结点值相等的结点
          *

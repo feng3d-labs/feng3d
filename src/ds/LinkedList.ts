@@ -76,12 +76,58 @@ namespace ds
         }
 
         /**
-         * 删除链表中所有与指定值相等的结点
+         * 删除链表中第一个与指定值相等的结点
          * 
          * @param value 结点值
          * @param equalFunc 判断是否相等函数
          */
         delete(value: T, equalFunc = (a: T, b: T) => a == b)
+        {
+            if (!this.head) return null;
+
+            let deletedNode: LinkedListNode<T> = null;
+
+            // 从表头删除结点
+            while (this.head && !deletedNode && equalFunc(this.head.value, value))
+            {
+                deletedNode = this.head;
+                this.head = this.head.next;
+            }
+
+            let currentNode = this.head;
+
+            if (!deletedNode && currentNode)
+            {
+                // 删除相等的下一个结点
+                while (currentNode.next)
+                {
+                    if (!deletedNode && equalFunc(currentNode.next.value, value))
+                    {
+                        deletedNode = currentNode.next;
+                        currentNode.next = currentNode.next.next;
+                    } else
+                    {
+                        currentNode = currentNode.next;
+                    }
+                }
+            }
+
+            // currentNode 是否为表尾
+            if (currentNode.next == null)
+            {
+                this.tail = currentNode;
+            }
+
+            return deletedNode;
+        }
+
+        /**
+         * 删除链表中所有与指定值相等的结点
+         * 
+         * @param value 结点值
+         * @param equalFunc 判断是否相等函数
+         */
+        deleteAll(value: T, equalFunc = (a: T, b: T) => a == b)
         {
             if (!this.head) return null;
 

@@ -84,7 +84,7 @@ namespace ds
 
             if (node)
             {
-                return bucketLinkedList.delete(node.value);
+                return bucketLinkedList.deleteAll(node.value);
             }
 
             return null;
