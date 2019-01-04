@@ -2134,6 +2134,95 @@ declare namespace ds {
         getHashValues(item: string): number[];
     }
 }
+declare namespace ds {
+    /**
+     * 并查集
+     *
+     * 并查集是一种树型的数据结构，用于处理一些不交集（Disjoint Sets）的合并及查询问题。
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/disjoint-set/DisjointSet.js
+     * @see https://en.wikipedia.org/wiki/Disjoint-set_data_structure
+     * @see https://www.youtube.com/watch?v=wU6udHRIkcc&index=14&t=0s&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8
+     */
+    class DisjointSet<T> {
+        private items;
+        private keyCallback;
+        /**
+         * @param {function(value: *)} [keyCallback]
+         */
+        constructor(keyCallback?: any);
+        /**
+         * @param {*} itemValue
+         * @return {DisjointSet}
+         */
+        makeSet(itemValue: any): this;
+        /**
+         * Find set representation node.
+         *
+         * @param {*} itemValue
+         * @return {(string|null)}
+         */
+        find(itemValue: any): any;
+        /**
+         * Union by rank.
+         *
+         * @param {*} valueA
+         * @param {*} valueB
+         * @return {DisjointSet}
+         */
+        union(valueA: any, valueB: any): this;
+        /**
+         * @param {*} valueA
+         * @param {*} valueB
+         * @return {boolean}
+         */
+        inSameSet(valueA: any, valueB: any): boolean;
+    }
+    class DisjointSetItem<T> {
+        value: T;
+        keyCallback: any;
+        parent: DisjointSetItem<T>;
+        children: {};
+        /**
+         * @param {*} value
+         * @param {function(value: *)} [keyCallback]
+         */
+        constructor(value: T, keyCallback?: any);
+        /**
+         * @return {*}
+         */
+        getKey(): any;
+        /**
+         * @return {DisjointSetItem}
+         */
+        getRoot(): any;
+        /**
+         * @return {boolean}
+         */
+        isRoot(): boolean;
+        /**
+         * Rank basically means the number of all ancestors.
+         *
+         * @return {number}
+         */
+        getRank(): number;
+        /**
+         * @return {DisjointSetItem[]}
+         */
+        getChildren(): any[];
+        /**
+         * @param {DisjointSetItem} parentItem
+         * @param {boolean} forceSettingParentChild
+         * @return {DisjointSetItem}
+         */
+        setParent(parentItem: any, forceSettingParentChild?: boolean): this;
+        /**
+         * @param {DisjointSetItem} childItem
+         * @return {DisjointSetItem}
+         */
+        addChild(childItem: any): this;
+    }
+}
 declare namespace feng3d {
     var FMath: {
         /**
