@@ -1,11 +1,11 @@
 module ds
 {
     /**
-     * 优先队列
+     * 优先队列，自动按优先级排序
      * 
-     * 所有元素按优先级排序
+     * 基于数组实现
      */
-    export class PriorityQueue<T>
+    export class PriorityQueueByArray<T>
     {
         private items: T[] = [];
 

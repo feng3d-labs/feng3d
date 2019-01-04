@@ -40,6 +40,8 @@
         "src/ds/MinHeap.ts",
         "src/ds/HashTable.ts",
         "src/ds/PriorityQueue.ts",
+        "src/ds/PriorityQueueByArray.ts",
+        "src/ds/PriorityQueueByHeap.ts",
         // 数学相关程序
         "src/math/Math.ts",
         // 函数方程

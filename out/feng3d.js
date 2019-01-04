@@ -3518,8 +3518,9 @@ var ds;
 var ds;
 (function (ds) {
     /**
-     * 优先队列，自动按优先级排序
-     * 基于数组实现
+     * 优先队列
+     *
+     * 所有元素按优先级排序
      */
     var PriorityQueue = /** @class */ (function () {
         /**
@@ -3593,6 +3594,177 @@ var ds;
         return PriorityQueue;
     }());
     ds.PriorityQueue = PriorityQueue;
+})(ds || (ds = {}));
+var ds;
+(function (ds) {
+    /**
+     * 优先队列，自动按优先级排序
+     *
+     * 基于数组实现
+     */
+    var PriorityQueueByArray = /** @class */ (function () {
+        /**
+         * 构建优先数组
+         * @param   compare     比较函数
+         */
+        function PriorityQueueByArray(compare) {
+            this.items = [];
+            this.compare = compare;
+        }
+        Object.defineProperty(PriorityQueueByArray.prototype, "length", {
+            /**
+             * 队列长度
+             */
+            get: function () {
+                return this.items.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PriorityQueueByArray.prototype, "compare", {
+            /**
+             * 比较函数
+             */
+            get: function () {
+                return this._compare;
+            },
+            set: function (v) {
+                this._compare = v;
+                this.items.sort(this._compare);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 尾部添加元素（进队）
+         * @param items 元素列表
+         * @returns 长度
+         */
+        PriorityQueueByArray.prototype.push = function () {
+            var _this = this;
+            var items = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                items[_i] = arguments[_i];
+            }
+            items.forEach(function (item) {
+                var insert = ds.utils.binarySearchInsert(_this.items, item, _this._compare);
+                _this.items.splice(insert, 0, item);
+            });
+            return this.items.length;
+        };
+        /**
+         * 头部移除元素（出队）
+         */
+        PriorityQueueByArray.prototype.shift = function () {
+            return this.items.shift();
+        };
+        /**
+         * 转换为数组
+         */
+        PriorityQueueByArray.prototype.toArray = function () {
+            return this.items.concat();
+        };
+        /**
+         * 从数组初始化链表
+         */
+        PriorityQueueByArray.prototype.fromArray = function (array) {
+            this.items = array.concat();
+            this.items.sort(this._compare);
+        };
+        return PriorityQueueByArray;
+    }());
+    ds.PriorityQueueByArray = PriorityQueueByArray;
+})(ds || (ds = {}));
+var ds;
+(function (ds) {
+    /**
+     * 优先队列，自动按优先级排序
+     *
+     * 与最小堆相同，只是与元素比较时不同
+     * 我们考虑的不是元素的值，而是它的优先级。
+     */
+    var PriorityQueueByHeap = /** @class */ (function () {
+        /**
+         * 构建优先队列
+         */
+        function PriorityQueueByHeap() {
+            this.priorities = {};
+            this.minHeap = new ds.MinHeap(this.comparePriority.bind(this));
+        }
+        /**
+         * 新增元素
+         *
+         * @param item 元素
+         */
+        PriorityQueueByHeap.prototype.add = function (item, priority) {
+            if (priority === void 0) { priority = 0; }
+            this.priorities[item] = priority;
+            this.minHeap.add(item);
+            return this;
+        };
+        /**
+         * 移除指定元素
+         * @param item 元素
+         * @param customFindingComparator 自定义查找比较器
+         */
+        PriorityQueueByHeap.prototype.remove = function (item, customFindingComparator) {
+            this.minHeap.remove(item, customFindingComparator);
+            delete this.priorities[item];
+            return this;
+        };
+        /**
+         * 改变指定元素优先级
+         * @param item 元素
+         * @param priority 优先级
+         */
+        PriorityQueueByHeap.prototype.changePriority = function (item, priority) {
+            this.remove(item, new ds.Comparator(this.compareValue));
+            this.add(item, priority);
+            return this;
+        };
+        /**
+         * 查找指定元素索引
+         *
+         * @param item 元素
+         */
+        PriorityQueueByHeap.prototype.findByValue = function (item) {
+            return this.minHeap.find(item, new ds.Comparator(this.compareValue));
+        };
+        /**
+         * 是否拥有指定元素
+         *
+         * @param item 元素
+         */
+        PriorityQueueByHeap.prototype.hasValue = function (item) {
+            return this.findByValue(item).length > 0;
+        };
+        /**
+         * 比较两个元素优先级
+         *
+         * @param a 元素a
+         * @param b 元素b
+         */
+        PriorityQueueByHeap.prototype.comparePriority = function (a, b) {
+            if (this.priorities[a] === this.priorities[b]) {
+                return 0;
+            }
+            return this.priorities[a] < this.priorities[b] ? -1 : 1;
+        };
+        /**
+         * 比较两个元素
+         *
+         * @param a 元素a
+         * @param b 元素b
+         */
+        PriorityQueueByHeap.prototype.compareValue = function (a, b) {
+            if (a === b) {
+                return 0;
+            }
+            return a < b ? -1 : 1;
+        };
+        return PriorityQueueByHeap;
+    }());
+    ds.PriorityQueueByHeap = PriorityQueueByHeap;
 })(ds || (ds = {}));
 var feng3d;
 (function (feng3d) {

@@ -1938,8 +1938,9 @@ declare namespace ds {
 }
 declare module ds {
     /**
-     * 优先队列，自动按优先级排序
-     * 基于数组实现
+     * 优先队列
+     *
+     * 所有元素按优先级排序
      */
     class PriorityQueue<T> {
         private items;
@@ -1975,6 +1976,114 @@ declare module ds {
          * 从数组初始化链表
          */
         fromArray(array: T[]): void;
+    }
+}
+declare module ds {
+    /**
+     * 优先队列，自动按优先级排序
+     *
+     * 基于数组实现
+     */
+    class PriorityQueueByArray<T> {
+        private items;
+        /**
+         * 队列长度
+         */
+        readonly length: number;
+        /**
+         * 比较函数
+         */
+        compare: (a: T, b: T) => number;
+        private _compare;
+        /**
+         * 构建优先数组
+         * @param   compare     比较函数
+         */
+        constructor(compare: (a: T, b: T) => number);
+        /**
+         * 尾部添加元素（进队）
+         * @param items 元素列表
+         * @returns 长度
+         */
+        push(...items: T[]): number;
+        /**
+         * 头部移除元素（出队）
+         */
+        shift(): T;
+        /**
+         * 转换为数组
+         */
+        toArray(): T[];
+        /**
+         * 从数组初始化链表
+         */
+        fromArray(array: T[]): void;
+    }
+}
+declare module ds {
+    /**
+     * 优先队列，自动按优先级排序
+     *
+     * 与最小堆相同，只是与元素比较时不同
+     * 我们考虑的不是元素的值，而是它的优先级。
+     */
+    class PriorityQueueByHeap<T> {
+        /**
+         * 优先值Map
+         */
+        private priorities;
+        /**
+         * 最小堆
+         */
+        private minHeap;
+        /**
+         * 构建优先队列
+         */
+        constructor();
+        /**
+         * 新增元素
+         *
+         * @param item 元素
+         */
+        add(item: T, priority?: number): this;
+        /**
+         * 移除指定元素
+         * @param item 元素
+         * @param customFindingComparator 自定义查找比较器
+         */
+        remove(item: T, customFindingComparator: Comparator<T>): this;
+        /**
+         * 改变指定元素优先级
+         * @param item 元素
+         * @param priority 优先级
+         */
+        changePriority(item: T, priority: number): this;
+        /**
+         * 查找指定元素索引
+         *
+         * @param item 元素
+         */
+        findByValue(item: T): any[];
+        /**
+         * 是否拥有指定元素
+         *
+         * @param item 元素
+         */
+        hasValue(item: T): boolean;
+        /**
+         * 比较两个元素优先级
+         *
+         * @param a 元素a
+         * @param b 元素b
+         */
+        comparePriority(a: T, b: T): 0 | 1 | -1;
+        /**
+         * 比较两个元素
+         *
+         * @param a 元素a
+         * @param b 元素b
+         */
+        compareValue(a: T, b: T): 0 | 1 | -1;
     }
 }
 declare namespace feng3d {
