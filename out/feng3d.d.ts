@@ -1426,15 +1426,9 @@ declare namespace ds {
          */
         tail: LinkedListNode<T>;
         /**
-         * 比较器
-         */
-        private compare;
-        /**
          * 构建链表
-         *
-         * @param comparatorFunction 比较函数
          */
-        constructor(comparatorFunction?: CompareFunction<T>);
+        constructor();
         /**
          * 是否为空
          */
@@ -1459,20 +1453,16 @@ declare namespace ds {
          * 删除链表中所有与指定值相等的结点
          *
          * @param value 结点值
+         * @param equalFunc 判断是否相等函数
          */
-        delete(value: T): LinkedListNode<T>;
+        delete(value: T, equalFunc?: (a: T, b: T) => boolean): LinkedListNode<T>;
         /**
          * 查找与结点值相等的结点
          *
          * @param value 结点值
+         * @param equalFunc 判断是否相等函数
          */
-        find(value: T): LinkedListNode<T>;
-        /**
-         * 使用比较函数查找相等的结点
-         *
-         * @param compareFunc 比较函数
-         */
-        findByFunc(compareFunc: (value: T) => boolean): LinkedListNode<T>;
+        find(value: T, equalFunc?: (a: T, b: T) => boolean): LinkedListNode<T>;
         /**
          * 删除表头
          *

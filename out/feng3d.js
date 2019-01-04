@@ -2588,13 +2588,10 @@ var ds;
     var LinkedList = /** @class */ (function () {
         /**
          * 构建链表
-         *
-         * @param comparatorFunction 比较函数
          */
-        function LinkedList(comparatorFunction) {
+        function LinkedList() {
             this.head = null;
             this.tail = null;
-            this.compare = new ds.Comparator(comparatorFunction);
         }
         /**
          * 是否为空
@@ -2639,13 +2636,15 @@ var ds;
          * 删除链表中所有与指定值相等的结点
          *
          * @param value 结点值
+         * @param equalFunc 判断是否相等函数
          */
-        LinkedList.prototype.delete = function (value) {
+        LinkedList.prototype.delete = function (value, equalFunc) {
+            if (equalFunc === void 0) { equalFunc = function (a, b) { return a == b; }; }
             if (!this.head)
                 return null;
             var deletedNode = null;
             // 从表头删除结点
-            while (this.head && this.compare.equal(this.head.value, value)) {
+            while (this.head && equalFunc(this.head.value, value)) {
                 deletedNode = this.head;
                 this.head = this.head.next;
             }
@@ -2653,7 +2652,7 @@ var ds;
             if (currentNode !== null) {
                 // 删除相等的下一个结点
                 while (currentNode.next) {
-                    if (this.compare.equal(currentNode.next.value, value)) {
+                    if (equalFunc(currentNode.next.value, value)) {
                         deletedNode = currentNode.next;
                         currentNode.next = currentNode.next.next;
                     }
@@ -2663,7 +2662,7 @@ var ds;
                 }
             }
             // 判断表尾是否被删除
-            if (this.compare.equal(this.tail.value, value)) {
+            if (equalFunc(this.tail.value, value)) {
                 this.tail = currentNode;
             }
             return deletedNode;
@@ -2672,29 +2671,15 @@ var ds;
          * 查找与结点值相等的结点
          *
          * @param value 结点值
+         * @param equalFunc 判断是否相等函数
          */
-        LinkedList.prototype.find = function (value) {
+        LinkedList.prototype.find = function (value, equalFunc) {
+            if (equalFunc === void 0) { equalFunc = function (a, b) { return a == b; }; }
             if (!this.head)
                 return null;
             var currentNode = this.head;
             while (currentNode) {
-                if (this.compare.equal(currentNode.value, value))
-                    return currentNode;
-                currentNode = currentNode.next;
-            }
-            return null;
-        };
-        /**
-         * 使用比较函数查找相等的结点
-         *
-         * @param compareFunc 比较函数
-         */
-        LinkedList.prototype.findByFunc = function (compareFunc) {
-            if (!this.head)
-                return null;
-            var currentNode = this.head;
-            while (currentNode) {
-                if (compareFunc(currentNode.value))
+                if (equalFunc(currentNode.value, value))
                     return currentNode;
                 currentNode = currentNode.next;
             }
@@ -3461,12 +3446,13 @@ var ds;
          * @param value 值
          */
         HashTable.prototype.set = function (key, value) {
+            var keyValue = { key: key, value: value };
             var keyHash = this.hash(key);
             this.keys[key] = keyHash;
             var bucketLinkedList = this.buckets[keyHash];
-            var node = bucketLinkedList.findByFunc(function (nodeValue) { return nodeValue.key === key; });
+            var node = bucketLinkedList.find(keyValue, function (a, b) { return a.key === b.key; });
             if (!node) {
-                bucketLinkedList.addTail({ key: key, value: value });
+                bucketLinkedList.addTail(keyValue);
             }
             else {
                 node.value.value = value;
@@ -3481,7 +3467,7 @@ var ds;
             var keyHash = this.hash(key);
             delete this.keys[key];
             var bucketLinkedList = this.buckets[keyHash];
-            var node = bucketLinkedList.findByFunc(function (nodeValue) { return nodeValue.key === key; });
+            var node = bucketLinkedList.find({ key: key, value: 1 }, function (a, b) { return a.key === b.key; });
             if (node) {
                 return bucketLinkedList.delete(node.value);
             }
@@ -3494,7 +3480,7 @@ var ds;
          */
         HashTable.prototype.get = function (key) {
             var bucketLinkedList = this.buckets[this.hash(key)];
-            var node = bucketLinkedList.findByFunc(function (nodeValue) { return nodeValue.key === key; });
+            var node = bucketLinkedList.find({ key: key, value: 1 }, function (a, b) { return a.key === b.key; });
             return node ? node.value.value : undefined;
         };
         /**

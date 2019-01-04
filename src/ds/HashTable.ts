@@ -54,14 +54,16 @@ namespace ds
          */
         set(key: string, value: any)
         {
+            var keyValue = { key: key, value: value };
+
             const keyHash = this.hash(key);
             this.keys[key] = keyHash;
             const bucketLinkedList = this.buckets[keyHash];
-            const node = bucketLinkedList.findByFunc(nodeValue => nodeValue.key === key);
+            const node = bucketLinkedList.find(keyValue, (a, b) => a.key === b.key);
 
             if (!node)
             {
-                bucketLinkedList.addTail({ key, value });
+                bucketLinkedList.addTail(keyValue);
             } else
             {
                 node.value.value = value;
@@ -78,7 +80,7 @@ namespace ds
             const keyHash = this.hash(key);
             delete this.keys[key];
             const bucketLinkedList = this.buckets[keyHash];
-            const node = bucketLinkedList.findByFunc(nodeValue => nodeValue.key === key);
+            const node = bucketLinkedList.find({ key: key, value: 1 }, (a, b) => a.key === b.key);
 
             if (node)
             {
@@ -96,7 +98,7 @@ namespace ds
         get(key: string)
         {
             const bucketLinkedList = this.buckets[this.hash(key)];
-            const node = bucketLinkedList.findByFunc(nodeValue => nodeValue.key === key);
+            const node = bucketLinkedList.find({ key: key, value: 1 }, (a, b) => a.key === b.key);
 
             return node ? node.value.value : undefined;
         }
