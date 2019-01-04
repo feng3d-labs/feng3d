@@ -33,7 +33,7 @@ namespace ds
          * @param value 结点值
          * @param compareFunction 比较函数
          */
-        constructor(value: T = null, compareFunction: CompareFunction<T> = undefined)
+        constructor(value?: T, compareFunction?: CompareFunction<T>)
         {
             super(value);
 

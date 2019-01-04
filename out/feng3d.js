@@ -4699,8 +4699,6 @@ var ds;
          * @param compareFunction 比较函数
          */
         function BinarySearchTreeNode(value, compareFunction) {
-            if (value === void 0) { value = null; }
-            if (compareFunction === void 0) { compareFunction = undefined; }
             var _this = _super.call(this, value) || this;
             _this.compareFunction = compareFunction;
             _this.nodeValueComparator = new ds.Comparator(compareFunction);
@@ -4825,6 +4823,58 @@ var ds;
         return BinarySearchTreeNode;
     }(ds.BinaryTreeNode));
     ds.BinarySearchTreeNode = BinarySearchTreeNode;
+})(ds || (ds = {}));
+var ds;
+(function (ds) {
+    /**
+     * 二叉查找树
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/tree/binary-search-tree/BinarySearchTree.js
+     */
+    var BinarySearchTree = /** @class */ (function () {
+        /**
+         * 构建 二叉查找树
+         *
+         * @param nodeValueCompareFunction 结点值比较器
+         */
+        function BinarySearchTree(nodeValueCompareFunction) {
+            this.root = new ds.BinarySearchTreeNode(null, nodeValueCompareFunction);
+            // 从根节点中窃取节点比较器。
+            this.nodeComparator = this.root.nodeComparator;
+        }
+        /**
+         * 插入值
+         *
+         * @param value 值
+         */
+        BinarySearchTree.prototype.insert = function (value) {
+            return this.root.insert(value);
+        };
+        /**
+         * 是否包含指定值
+         *
+         * @param value 值
+         */
+        BinarySearchTree.prototype.contains = function (value) {
+            return this.root.contains(value);
+        };
+        /**
+         * 移除指定值
+         *
+         * @param value 值
+         */
+        BinarySearchTree.prototype.remove = function (value) {
+            return this.root.remove(value);
+        };
+        /**
+         * 转换为字符串
+         */
+        BinarySearchTree.prototype.toString = function () {
+            return this.root.toString();
+        };
+        return BinarySearchTree;
+    }());
+    ds.BinarySearchTree = BinarySearchTree;
 })(ds || (ds = {}));
 var feng3d;
 (function (feng3d) {

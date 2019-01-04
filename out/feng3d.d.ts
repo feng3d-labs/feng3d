@@ -2626,6 +2626,51 @@ declare namespace ds {
         findMin(): BinarySearchTreeNode<T>;
     }
 }
+declare namespace ds {
+    /**
+     * 二叉查找树
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/tree/binary-search-tree/BinarySearchTree.js
+     */
+    class BinarySearchTree<T> {
+        /**
+         * 根结点
+         */
+        root: BinarySearchTreeNode<T>;
+        /**
+         * 结点比较器
+         */
+        nodeComparator: Comparator<BinaryTreeNode<T>>;
+        /**
+         * 构建 二叉查找树
+         *
+         * @param nodeValueCompareFunction 结点值比较器
+         */
+        constructor(nodeValueCompareFunction?: CompareFunction<T>);
+        /**
+         * 插入值
+         *
+         * @param value 值
+         */
+        insert(value: T): any;
+        /**
+         * 是否包含指定值
+         *
+         * @param value 值
+         */
+        contains(value: T): boolean;
+        /**
+         * 移除指定值
+         *
+         * @param value 值
+         */
+        remove(value: T): boolean;
+        /**
+         * 转换为字符串
+         */
+        toString(): string;
+    }
+}
 declare namespace feng3d {
     var FMath: {
         /**

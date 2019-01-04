@@ -362,6 +362,76 @@ var feng3d;
         });
     });
 })(feng3d || (feng3d = {}));
+QUnit.module('BinarySearchTree', function () {
+    QUnit.test('should create binary search tree', function (assert) {
+        var bst = new ds.BinarySearchTree();
+        assert.deepEqual(bst.root.value, null);
+        assert.deepEqual(bst.root.left, null);
+        assert.deepEqual(bst.root.right, null);
+    });
+    QUnit.test('should insert values', function (assert) {
+        var bst = new ds.BinarySearchTree();
+        var insertedNode1 = bst.insert(10);
+        var insertedNode2 = bst.insert(20);
+        bst.insert(5);
+        assert.deepEqual(bst.toString(), '5,10,20');
+        assert.deepEqual(insertedNode1.value, 10);
+        assert.deepEqual(insertedNode2.value, 20);
+    });
+    QUnit.test('should check if value exists', function (assert) {
+        var bst = new ds.BinarySearchTree();
+        bst.insert(10);
+        bst.insert(20);
+        bst.insert(5);
+        assert.deepEqual(bst.contains(20), true);
+        assert.deepEqual(bst.contains(40), false);
+    });
+    QUnit.test('should remove nodes', function (assert) {
+        var bst = new ds.BinarySearchTree();
+        bst.insert(10);
+        bst.insert(20);
+        bst.insert(5);
+        assert.deepEqual(bst.toString(), '5,10,20');
+        var removed1 = bst.remove(5);
+        assert.deepEqual(bst.toString(), '10,20');
+        assert.deepEqual(removed1, true);
+        var removed2 = bst.remove(20);
+        assert.deepEqual(bst.toString(), '10');
+        assert.deepEqual(removed2, true);
+    });
+    QUnit.test('should insert object values', function (assert) {
+        var nodeValueCompareFunction = function (a, b) {
+            var normalizedA = a || { value: null };
+            var normalizedB = b || { value: null };
+            if (normalizedA.value === normalizedB.value) {
+                return 0;
+            }
+            return normalizedA.value < normalizedB.value ? -1 : 1;
+        };
+        var obj1 = { key: 'obj1', value: 1, toString: function () { return 'obj1'; } };
+        var obj2 = { key: 'obj2', value: 2, toString: function () { return 'obj2'; } };
+        var obj3 = { key: 'obj3', value: 3, toString: function () { return 'obj3'; } };
+        var bst = new ds.BinarySearchTree(nodeValueCompareFunction);
+        bst.insert(obj2);
+        bst.insert(obj3);
+        bst.insert(obj1);
+        assert.deepEqual(bst.toString(), 'obj1,obj2,obj3');
+    });
+    QUnit.test('should be traversed to sorted array', function (assert) {
+        var bst = new ds.BinarySearchTree();
+        bst.insert(10);
+        bst.insert(-10);
+        bst.insert(20);
+        bst.insert(-20);
+        bst.insert(25);
+        bst.insert(6);
+        assert.deepEqual(bst.toString(), '-20,-10,6,10,20,25');
+        assert.deepEqual(bst.root.height, 2);
+        bst.insert(4);
+        assert.deepEqual(bst.toString(), '-20,-10,4,6,10,20,25');
+        assert.deepEqual(bst.root.height, 3);
+    });
+});
 QUnit.module('BinarySearchTreeNode', function () {
     QUnit.test('should create binary search tree', function (assert) {
         var bstNode = new ds.BinarySearchTreeNode(2);
