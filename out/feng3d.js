@@ -2657,8 +2657,8 @@ var ds;
             var currentNode = this.head;
             if (!deletedNode && currentNode) {
                 // 删除相等的下一个结点
-                while (currentNode.next) {
-                    if (!deletedNode && equalFunc(currentNode.next.value, value)) {
+                while (!deletedNode && currentNode.next) {
+                    if (equalFunc(currentNode.next.value, value)) {
                         deletedNode = currentNode.next;
                         currentNode.next = currentNode.next.next;
                     }

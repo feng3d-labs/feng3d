@@ -99,9 +99,9 @@ namespace ds
             if (!deletedNode && currentNode)
             {
                 // 删除相等的下一个结点
-                while (currentNode.next)
+                while (!deletedNode && currentNode.next)
                 {
-                    if (!deletedNode && equalFunc(currentNode.next.value, value))
+                    if (equalFunc(currentNode.next.value, value))
                     {
                         deletedNode = currentNode.next;
                         currentNode.next = currentNode.next.next;

@@ -41,6 +41,53 @@ QUnit.module("LinkedList", () =>
         assert.deepEqual(ll.toArray(), arr);
     });
 
+    QUnit.test("delete", (assert) =>
+    {
+        var ll = new ds.LinkedList<number>();
+
+        var arr = ds.utils.createArray(10, () => Math.random());
+        arr = arr.concat(arr);
+        arr.forEach(element =>
+        {
+            ll.addTail(element);
+        });
+
+        assert.deepEqual(ll.toArray(), arr);
+
+        var deleteItem = arr[3];
+        arr.splice(arr.indexOf(deleteItem), 1);
+
+        ll.delete(deleteItem);
+
+        assert.deepEqual(ll.toArray(), arr);
+    });
+
+    QUnit.test("deleteAll", (assert) =>
+    {
+        var ll = new ds.LinkedList<number>();
+
+        var arr = ds.utils.createArray(10, () => Math.random());
+        arr = arr.concat(arr);
+        arr.forEach(element =>
+        {
+            ll.addTail(element);
+        });
+
+        assert.deepEqual(ll.toArray(), arr);
+
+        var deleteItem = arr[3];
+
+        var index = arr.indexOf(deleteItem);
+        while (index != -1)
+        {
+            arr.splice(index, 1);
+            index = arr.indexOf(deleteItem);
+        }
+        ll.deleteAll(deleteItem);
+
+        assert.deepEqual(ll.toArray(), arr);
+    });
+
     QUnit.test("deleteHead", (assert) =>
     {
         var ll = new ds.LinkedList<number>();
