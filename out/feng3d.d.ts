@@ -2582,6 +2582,10 @@ declare namespace ds {
          */
         right: BinarySearchTreeNode<T>;
         /**
+         * 父结点
+         */
+        parent: BinarySearchTreeNode<T>;
+        /**
          * 比较函数
          */
         private compareFunction;
@@ -2630,7 +2634,16 @@ declare namespace ds {
     /**
      * 二叉查找树
      *
+     * 二叉查找树（英语：Binary Search Tree），也称为二叉搜索树、有序二叉树（ordered binary tree）或排序二叉树（sorted binary tree），是指一棵空树或者具有下列性质的二叉树：
+     *
+     * 1. 若任意节点的左子树不空，则左子树上所有节点的值均小于它的根节点的值；
+     * 1. 若任意节点的右子树不空，则右子树上所有节点的值均大于它的根节点的值；
+     * 1. 任意节点的左、右子树也分别为二叉查找树；
+     * 1. 没有键值相等的节点。
+     *
      * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/tree/binary-search-tree/BinarySearchTree.js
+     * @see https://en.wikipedia.org/wiki/Binary_search_tree
+     * @see https://www.youtube.com/watch?v=wcIRPqTR3Kc&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8&index=9&t=0s
      */
     class BinarySearchTree<T> {
         /**
@@ -2669,6 +2682,49 @@ declare namespace ds {
          * 转换为字符串
          */
         toString(): string;
+    }
+}
+declare namespace ds {
+    /**
+     * 平衡二叉树
+     *
+     * AVL树（以发明者Adelson-Velsky和Landis 命名）是自平衡二叉搜索树。
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/tree/master/src/data-structures/tree/avl-tree
+     * @see https://en.wikipedia.org/wiki/AVL_tree
+     * @see https://www.tutorialspoint.com/data_structures_algorithms/avl_tree_algorithm.htm
+     * @see http://btechsmartclass.com/data_structures/avl-trees.html
+     */
+    class AvlTree<T> extends BinarySearchTree<T> {
+        /**
+         * @param {*} value
+         */
+        insert(value: T): void;
+        /**
+         * @param {*} value
+         * @return {boolean}
+         */
+        remove(value: T): boolean;
+        /**
+         * @param {BinarySearchTreeNode} node
+         */
+        balance(node: BinarySearchTreeNode<T>): void;
+        /**
+         * @param {BinarySearchTreeNode} rootNode
+         */
+        rotateLeftLeft(rootNode: BinarySearchTreeNode<T>): void;
+        /**
+         * @param {BinarySearchTreeNode} rootNode
+         */
+        rotateLeftRight(rootNode: BinarySearchTreeNode<T>): void;
+        /**
+         * @param {BinarySearchTreeNode} rootNode
+         */
+        rotateRightLeft(rootNode: BinarySearchTreeNode<T>): void;
+        /**
+         * @param {BinarySearchTreeNode} rootNode
+         */
+        rotateRightRight(rootNode: BinarySearchTreeNode<T>): void;
     }
 }
 declare namespace feng3d {

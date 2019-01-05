@@ -4829,7 +4829,16 @@ var ds;
     /**
      * 二叉查找树
      *
+     * 二叉查找树（英语：Binary Search Tree），也称为二叉搜索树、有序二叉树（ordered binary tree）或排序二叉树（sorted binary tree），是指一棵空树或者具有下列性质的二叉树：
+     *
+     * 1. 若任意节点的左子树不空，则左子树上所有节点的值均小于它的根节点的值；
+     * 1. 若任意节点的右子树不空，则右子树上所有节点的值均大于它的根节点的值；
+     * 1. 任意节点的左、右子树也分别为二叉查找树；
+     * 1. 没有键值相等的节点。
+     *
      * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/tree/binary-search-tree/BinarySearchTree.js
+     * @see https://en.wikipedia.org/wiki/Binary_search_tree
+     * @see https://www.youtube.com/watch?v=wcIRPqTR3Kc&list=PLLXdhg_r2hKA7DPDsunoDZ-Z769jWn4R8&index=9&t=0s
      */
     var BinarySearchTree = /** @class */ (function () {
         /**
@@ -4875,6 +4884,168 @@ var ds;
         return BinarySearchTree;
     }());
     ds.BinarySearchTree = BinarySearchTree;
+})(ds || (ds = {}));
+var ds;
+(function (ds) {
+    /**
+     * 平衡二叉树
+     *
+     * AVL树（以发明者Adelson-Velsky和Landis 命名）是自平衡二叉搜索树。
+     *
+     * @see https://github.com/trekhleb/javascript-algorithms/tree/master/src/data-structures/tree/avl-tree
+     * @see https://en.wikipedia.org/wiki/AVL_tree
+     * @see https://www.tutorialspoint.com/data_structures_algorithms/avl_tree_algorithm.htm
+     * @see http://btechsmartclass.com/data_structures/avl-trees.html
+     */
+    var AvlTree = /** @class */ (function (_super) {
+        __extends(AvlTree, _super);
+        function AvlTree() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        /**
+         * @param {*} value
+         */
+        AvlTree.prototype.insert = function (value) {
+            // Do the normal BST insert.
+            _super.prototype.insert.call(this, value);
+            // Let's move up to the root and check balance factors along the way.
+            var currentNode = this.root.find(value);
+            while (currentNode) {
+                this.balance(currentNode);
+                currentNode = currentNode.parent;
+            }
+        };
+        /**
+         * @param {*} value
+         * @return {boolean}
+         */
+        AvlTree.prototype.remove = function (value) {
+            // Do standard BST removal.
+            var result = _super.prototype.remove.call(this, value);
+            // Balance the tree starting from the root node.
+            this.balance(this.root);
+            return result;
+        };
+        /**
+         * @param {BinarySearchTreeNode} node
+         */
+        AvlTree.prototype.balance = function (node) {
+            // If balance factor is not OK then try to balance the node.
+            if (node.balanceFactor > 1) {
+                // Left rotation.
+                if (node.left.balanceFactor > 0) {
+                    // Left-Left rotation
+                    this.rotateLeftLeft(node);
+                }
+                else if (node.left.balanceFactor < 0) {
+                    // Left-Right rotation.
+                    this.rotateLeftRight(node);
+                }
+            }
+            else if (node.balanceFactor < -1) {
+                // Right rotation.
+                if (node.right.balanceFactor < 0) {
+                    // Right-Right rotation
+                    this.rotateRightRight(node);
+                }
+                else if (node.right.balanceFactor > 0) {
+                    // Right-Left rotation.
+                    this.rotateRightLeft(node);
+                }
+            }
+        };
+        /**
+         * @param {BinarySearchTreeNode} rootNode
+         */
+        AvlTree.prototype.rotateLeftLeft = function (rootNode) {
+            // Detach left node from root node.
+            var leftNode = rootNode.left;
+            rootNode.setLeft(null);
+            // Make left node to be a child of rootNode's parent.
+            if (rootNode.parent) {
+                rootNode.parent.setLeft(leftNode);
+            }
+            else if (rootNode === this.root) {
+                // If root node is root then make left node to be a new root.
+                this.root = leftNode;
+            }
+            // If left node has a right child then detach it and
+            // attach it as a left child for rootNode.
+            if (leftNode.right) {
+                rootNode.setLeft(leftNode.right);
+            }
+            // Attach rootNode to the right of leftNode.
+            leftNode.setRight(rootNode);
+        };
+        /**
+         * @param {BinarySearchTreeNode} rootNode
+         */
+        AvlTree.prototype.rotateLeftRight = function (rootNode) {
+            // Detach left node from rootNode since it is going to be replaced.
+            var leftNode = rootNode.left;
+            rootNode.setLeft(null);
+            // Detach right node from leftNode.
+            var leftRightNode = leftNode.right;
+            leftNode.setRight(null);
+            // Preserve leftRightNode's left subtree.
+            if (leftRightNode.left) {
+                leftNode.setRight(leftRightNode.left);
+                leftRightNode.setLeft(null);
+            }
+            // Attach leftRightNode to the rootNode.
+            rootNode.setLeft(leftRightNode);
+            // Attach leftNode as left node for leftRight node.
+            leftRightNode.setLeft(leftNode);
+            // Do left-left rotation.
+            this.rotateLeftLeft(rootNode);
+        };
+        /**
+         * @param {BinarySearchTreeNode} rootNode
+         */
+        AvlTree.prototype.rotateRightLeft = function (rootNode) {
+            // Detach right node from rootNode since it is going to be replaced.
+            var rightNode = rootNode.right;
+            rootNode.setRight(null);
+            // Detach left node from rightNode.
+            var rightLeftNode = rightNode.left;
+            rightNode.setLeft(null);
+            if (rightLeftNode.right) {
+                rightNode.setLeft(rightLeftNode.right);
+                rightLeftNode.setRight(null);
+            }
+            // Attach rightLeftNode to the rootNode.
+            rootNode.setRight(rightLeftNode);
+            // Attach rightNode as right node for rightLeft node.
+            rightLeftNode.setRight(rightNode);
+            // Do right-right rotation.
+            this.rotateRightRight(rootNode);
+        };
+        /**
+         * @param {BinarySearchTreeNode} rootNode
+         */
+        AvlTree.prototype.rotateRightRight = function (rootNode) {
+            // Detach right node from root node.
+            var rightNode = rootNode.right;
+            rootNode.setRight(null);
+            // Make right node to be a child of rootNode's parent.
+            if (rootNode.parent) {
+                rootNode.parent.setRight(rightNode);
+            }
+            else if (rootNode === this.root) {
+                // If root node is root then make right node to be a new root.
+                this.root = rightNode;
+            }
+            // If right node has a left child then detach it and
+            // attach it as a right child for rootNode.
+            if (rightNode.left) {
+                rootNode.setRight(rightNode.left);
+            }
+            // Attach rootNode to the left of rightNode.
+            rightNode.setLeft(rootNode);
+        };
+        return AvlTree;
+    }(ds.BinarySearchTree));
+    ds.AvlTree = AvlTree;
 })(ds || (ds = {}));
 var feng3d;
 (function (feng3d) {

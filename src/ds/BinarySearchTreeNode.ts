@@ -18,6 +18,11 @@ namespace ds
         right: BinarySearchTreeNode<T>;
 
         /**
+         * 父结点
+         */
+        parent: BinarySearchTreeNode<T>;
+
+        /**
          * 比较函数
          */
         private compareFunction: CompareFunction<T>;
