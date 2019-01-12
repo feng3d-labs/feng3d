@@ -9,7 +9,6 @@ namespace feng3d
          * 资源编号
          */
         @serialize
-        @watch("assetsIdChanged")
         assetsId: string;
 
         /**
@@ -25,53 +24,13 @@ namespace feng3d
         assetType: AssetExtension;
 
         /**
-         * 资源路径，由资源编号决定
+         * 资源路径
          */
         path: string;
 
         constructor()
         {
             super();
-        }
-
-        /**
-         * 删除资源
-         * @param readWriteAssets 可读写资源管理器
-         * @param callback 完成回调
-         */
-        delete(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any
-        {
-            if (this.assetsId)
-            {
-                Feng3dAssets["_lib"].delete(this.assetsId);
-                readWriteAssets.delete(Feng3dAssets.getAssetDir(this.assetsId), callback);
-            } else
-            {
-                callback && callback(null);
-            }
-        }
-
-        /**
-         * 保存资源
-         * @param readWriteAssets 
-         * @param callback  完成回调 
-         */
-        save(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any
-        {
-            if (!this.assetsId)
-            {
-                this.assetsId = FMath.uuid();
-                Feng3dAssets.setAssets(this);
-            }
-            readWriteAssets.writeObject(this.path, this, (err) =>
-            {
-                if (err)
-                {
-                    callback(err);
-                    return;
-                }
-                this.saveFile(readWriteAssets, callback);
-            });
         }
 
         /**
@@ -92,29 +51,6 @@ namespace feng3d
         protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void)
         {
             callback && callback(null);
-        }
-
-        protected assetsIdChanged()
-        {
-            this.path = Feng3dAssets.getPath(this.assetsId);
-        }
-
-        /**
-         * 获取资源所在文件夹
-         * @param assetsId 资源编号
-         */
-        static getAssetDir(assetsId: string)
-        {
-            return "Library/" + assetsId + "/";
-        }
-
-        /**
-         * 获取资源路径
-         * @param assetsId 资源编号
-         */
-        static getPath(assetsId: string)
-        {
-            return this.getAssetDir(assetsId) + ".json";
         }
 
         static setAssets(assets: Feng3dAssets)

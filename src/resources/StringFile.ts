@@ -13,7 +13,7 @@ namespace feng3d
 
         protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void)
         {
-            readWriteAssets.writeString(this.filePath, this.textContent, callback);
+            readWriteAssets.writeString(this.path, this.textContent, callback);
         }
 
         /**
@@ -23,7 +23,7 @@ namespace feng3d
          */
         protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void)
         {
-            readAssets.readString(this.filePath, (err, data) =>
+            readAssets.readString(this.path, (err, data) =>
             {
                 this.textContent = data;
                 callback && callback(err);

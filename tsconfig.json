@@ -3,6 +3,7 @@
         "target": "es5",
         "noImplicitAny": false,
         "sourceMap": true,
+        "declarationMap": true,
         "declaration": true,
         // "strict": true,
         "experimentalDecorators": true,

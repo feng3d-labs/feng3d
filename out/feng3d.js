@@ -2255,6 +2255,30 @@ var feng3d;
             return paths.join("/") + "/";
         };
         /**
+         * 获取子文件（非文件夹）路径
+         *
+         * @param parentPath 父文件夹路径
+         * @param childName 子文件名称
+         */
+        PathUtils.prototype.getChildFilePath = function (parentPath, childName) {
+            if (parentPath.charAt(parentPath.length - 1) != "/")
+                parentPath += "/";
+            return parentPath + childName;
+        };
+        /**
+         * 获取子文件夹路径
+         *
+         * @param parentPath 父文件夹路径
+         * @param childFolderName 子文件夹名称
+         */
+        PathUtils.prototype.getChildFolderPath = function (parentPath, childFolderName) {
+            if (parentPath.charAt(parentPath.length - 1) != "/")
+                parentPath += "/";
+            if (childFolderName.charAt(childFolderName.length - 1) != "/")
+                childFolderName += "/";
+            return parentPath + childFolderName;
+        };
+        /**
          * 是否文件夹
          * @param path 路径
          */
@@ -14248,7 +14272,7 @@ var feng3d;
                 callback(null, assets);
                 return;
             }
-            this.readObject(feng3d.Feng3dAssets.getPath(id), function (err, assets) {
+            this.readObject(assets.path, function (err, assets) {
                 if (assets)
                     feng3d.Feng3dAssets.setAssets(assets);
                 if (assets instanceof feng3d.Feng3dFile) {
@@ -14374,14 +14398,6 @@ var feng3d;
             var obj = feng3d.serialization.serialize(object);
             var str = JSON.stringify(obj, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
             this.writeString(path, str, callback);
-        };
-        /**
-         * 保存资源
-         * @param assets 资源
-         * @param callback 保存资源完成回调
-         */
-        ReadWriteAssets.prototype.writeAssets = function (assets, callback) {
-            assets.save(this, callback);
         };
         /**
          * 获取所有文件路径
@@ -14571,15 +14587,6 @@ var feng3d;
             }
         };
         /**
-         * 删除资源
-         * @param assetsId 资源编号
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.deleteAssets = function (assetsId, callback) {
-            var assets = feng3d.Feng3dAssets.getAssets(assetsId);
-            assets.delete(this, callback);
-        };
-        /**
          * 是否为文件夹
          * @param path 文件路径
          */
@@ -14698,39 +14705,6 @@ var feng3d;
             return _this;
         }
         /**
-         * 删除资源
-         * @param readWriteAssets 可读写资源管理器
-         * @param callback 完成回调
-         */
-        Feng3dAssets.prototype.delete = function (readWriteAssets, callback) {
-            if (this.assetsId) {
-                Feng3dAssets["_lib"].delete(this.assetsId);
-                readWriteAssets.delete(Feng3dAssets.getAssetDir(this.assetsId), callback);
-            }
-            else {
-                callback && callback(null);
-            }
-        };
-        /**
-         * 保存资源
-         * @param readWriteAssets
-         * @param callback  完成回调
-         */
-        Feng3dAssets.prototype.save = function (readWriteAssets, callback) {
-            var _this = this;
-            if (!this.assetsId) {
-                this.assetsId = feng3d.FMath.uuid();
-                Feng3dAssets.setAssets(this);
-            }
-            readWriteAssets.writeObject(this.path, this, function (err) {
-                if (err) {
-                    callback(err);
-                    return;
-                }
-                _this.saveFile(readWriteAssets, callback);
-            });
-        };
-        /**
          * 保存文件
          * @param readWriteAssets 可读写资源管理系统
          * @param callback 完成回调
@@ -14745,23 +14719,6 @@ var feng3d;
          */
         Feng3dAssets.prototype.readFile = function (readAssets, callback) {
             callback && callback(null);
-        };
-        Feng3dAssets.prototype.assetsIdChanged = function () {
-            this.path = Feng3dAssets.getPath(this.assetsId);
-        };
-        /**
-         * 获取资源所在文件夹
-         * @param assetsId 资源编号
-         */
-        Feng3dAssets.getAssetDir = function (assetsId) {
-            return "Library/" + assetsId + "/";
-        };
-        /**
-         * 获取资源路径
-         * @param assetsId 资源编号
-         */
-        Feng3dAssets.getPath = function (assetsId) {
-            return this.getAssetDir(assetsId) + ".json";
         };
         Feng3dAssets.setAssets = function (assets) {
             this._lib.set(assets.assetsId, assets);
@@ -14782,8 +14739,7 @@ var feng3d;
         };
         Feng3dAssets._lib = new Map();
         __decorate([
-            feng3d.serialize,
-            feng3d.watch("assetsIdChanged")
+            feng3d.serialize
         ], Feng3dAssets.prototype, "assetsId", void 0);
         __decorate([
             feng3d.oav(),
@@ -28895,17 +28851,6 @@ var feng3d;
         function Feng3dFile() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        Feng3dFile.prototype.fileNameChanged = function () {
-            this.filePath = "Library/" + this.assetsId + "/file/" + this.filename;
-        };
-        Feng3dFile.prototype.assetsIdChanged = function () {
-            _super.prototype.assetsIdChanged.call(this);
-            this.filePath = "Library/" + this.assetsId + "/file/" + this.filename;
-        };
-        __decorate([
-            feng3d.serialize,
-            feng3d.watch("fileNameChanged")
-        ], Feng3dFile.prototype, "filename", void 0);
         return Feng3dFile;
     }(feng3d.Feng3dAssets));
     feng3d.Feng3dFile = Feng3dFile;
@@ -28926,7 +28871,7 @@ var feng3d;
          * @param callback 完成回调
          */
         ArrayBufferFile.prototype.saveFile = function (readWriteAssets, callback) {
-            readWriteAssets.writeArrayBuffer(this.filePath, this.arraybuffer, callback);
+            readWriteAssets.writeArrayBuffer(this.path, this.arraybuffer, callback);
         };
         /**
          * 读取文件
@@ -28935,7 +28880,7 @@ var feng3d;
          */
         ArrayBufferFile.prototype.readFile = function (readAssets, callback) {
             var _this = this;
-            readAssets.readArrayBuffer(this.filePath, function (err, data) {
+            readAssets.readArrayBuffer(this.path, function (err, data) {
                 _this.arraybuffer = data;
                 callback && callback(err);
             });
@@ -28958,7 +28903,7 @@ var feng3d;
             return _super !== null && _super.apply(this, arguments) || this;
         }
         StringFile.prototype.saveFile = function (readWriteAssets, callback) {
-            readWriteAssets.writeString(this.filePath, this.textContent, callback);
+            readWriteAssets.writeString(this.path, this.textContent, callback);
         };
         /**
          * 读取文件
@@ -28967,7 +28912,7 @@ var feng3d;
          */
         StringFile.prototype.readFile = function (readAssets, callback) {
             var _this = this;
-            readAssets.readString(this.filePath, function (err, data) {
+            readAssets.readString(this.path, function (err, data) {
                 _this.textContent = data;
                 callback && callback(err);
             });
@@ -28994,7 +28939,7 @@ var feng3d;
         ScriptFile.prototype.onTextContentChanged = function () {
             // 获取脚本类名称
             var result = feng3d.regExps.classReg.exec(this.textContent);
-            feng3d.assert(result != null, "\u5728\u811A\u672C " + this.filePath + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
+            feng3d.assert(result != null, "\u5728\u811A\u672C " + this.path + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
             var script = result[3];
             if (result[5]) {
                 this.parentScriptName = result[5].split(".").pop();
@@ -29002,7 +28947,7 @@ var feng3d;
             // 获取导出类命名空间
             if (result[1]) {
                 result = feng3d.regExps.namespace.exec(this.textContent);
-                feng3d.assert(result != null, "\u83B7\u53D6\u811A\u672C " + this.filePath + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
+                feng3d.assert(result != null, "\u83B7\u53D6\u811A\u672C " + this.path + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
                 script = result[1] + "." + script;
             }
             this.scriptName = script;

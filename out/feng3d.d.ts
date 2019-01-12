@@ -1114,6 +1114,20 @@ declare namespace feng3d {
          */
         getParentPath(path: string): string;
         /**
+         * 获取子文件（非文件夹）路径
+         *
+         * @param parentPath 父文件夹路径
+         * @param childName 子文件名称
+         */
+        getChildFilePath(parentPath: string, childName: string): string;
+        /**
+         * 获取子文件夹路径
+         *
+         * @param parentPath 父文件夹路径
+         * @param childFolderName 子文件夹名称
+         */
+        getChildFolderPath(parentPath: string, childFolderName: string): string;
+        /**
          * 是否文件夹
          * @param path 路径
          */
@@ -7371,12 +7385,6 @@ declare namespace feng3d {
          */
         writeObject(path: string, object: Object, callback?: (err: Error) => void): void;
         /**
-         * 保存资源
-         * @param assets 资源
-         * @param callback 保存资源完成回调
-         */
-        writeAssets(assets: Feng3dAssets, callback?: (err: Error) => void): void;
-        /**
          * 获取所有文件路径
          * @param callback 回调函数
          */
@@ -7444,12 +7452,6 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         delete(path: string, callback?: (err: Error) => void): void;
-        /**
-         * 删除资源
-         * @param assetsId 资源编号
-         * @param callback 回调函数
-         */
-        deleteAssets(assetsId: string, callback?: (err: Error) => void): void;
         /**
          * 是否为文件夹
          * @param path 文件路径
@@ -7562,22 +7564,10 @@ declare namespace feng3d {
          */
         assetType: AssetExtension;
         /**
-         * 资源路径，由资源编号决定
+         * 资源路径
          */
         path: string;
         constructor();
-        /**
-         * 删除资源
-         * @param readWriteAssets 可读写资源管理器
-         * @param callback 完成回调
-         */
-        delete(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any;
-        /**
-         * 保存资源
-         * @param readWriteAssets
-         * @param callback  完成回调
-         */
-        save(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any;
         /**
          * 保存文件
          * @param readWriteAssets 可读写资源管理系统
@@ -7590,17 +7580,6 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void): void;
-        protected assetsIdChanged(): void;
-        /**
-         * 获取资源所在文件夹
-         * @param assetsId 资源编号
-         */
-        static getAssetDir(assetsId: string): string;
-        /**
-         * 获取资源路径
-         * @param assetsId 资源编号
-         */
-        static getPath(assetsId: string): string;
         static setAssets(assets: Feng3dAssets): void;
         /**
          * 获取资源
@@ -14623,16 +14602,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     class Feng3dFile extends Feng3dAssets {
-        /**
-         * 文件名称
-         */
-        filename: string;
-        /**
-         * 文件路径
-         */
-        filePath: string;
-        protected fileNameChanged(): void;
-        protected assetsIdChanged(): void;
     }
 }
 declare namespace feng3d {
@@ -15635,3 +15604,4 @@ declare namespace feng3d {
      */
     var debuger: boolean;
 }
+//# sourceMappingURL=feng3d.d.ts.map

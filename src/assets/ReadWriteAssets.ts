@@ -128,16 +128,6 @@ namespace feng3d
         }
 
         /**
-         * 保存资源
-         * @param assets 资源
-         * @param callback 保存资源完成回调
-         */
-        writeAssets(assets: Feng3dAssets, callback?: (err: Error) => void)
-        {
-            assets.save(this, callback);
-        }
-
-        /**
          * 获取所有文件路径
          * @param callback 回调函数
          */
@@ -361,17 +351,6 @@ namespace feng3d
             {
                 this.deleteFile(path, callback);
             }
-        }
-
-        /**
-         * 删除资源
-         * @param assetsId 资源编号
-         * @param callback 回调函数
-         */
-        deleteAssets(assetsId: string, callback?: (err: Error) => void)
-        {
-            var assets = Feng3dAssets.getAssets(assetsId);
-            assets.delete(this, callback);
         }
 
         /**

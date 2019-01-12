@@ -20,7 +20,7 @@ namespace feng3d
          */
         protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void)
         {
-            readWriteAssets.writeArrayBuffer(this.filePath, this.arraybuffer, callback);
+            readWriteAssets.writeArrayBuffer(this.path, this.arraybuffer, callback);
         }
 
         /**
@@ -30,7 +30,7 @@ namespace feng3d
          */
         protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void)
         {
-            readAssets.readArrayBuffer(this.filePath, (err, data) =>
+            readAssets.readArrayBuffer(this.path, (err, data) =>
             {
                 this.arraybuffer = data;
                 callback && callback(err);

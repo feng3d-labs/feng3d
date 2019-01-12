@@ -60,6 +60,32 @@ namespace feng3d
         }
 
         /**
+         * 获取子文件（非文件夹）路径
+         * 
+         * @param parentPath 父文件夹路径
+         * @param childName 子文件名称
+         */
+        getChildFilePath(parentPath: string, childName: string)
+        {
+            if (parentPath.charAt(parentPath.length - 1) != "/") parentPath += "/";
+            return parentPath + childName;
+        }
+
+        /**
+         * 获取子文件夹路径
+         * 
+         * @param parentPath 父文件夹路径
+         * @param childFolderName 子文件夹名称
+         */
+        getChildFolderPath(parentPath: string, childFolderName: string)
+        {
+            if (parentPath.charAt(parentPath.length - 1) != "/") parentPath += "/";
+            if (childFolderName.charAt(childFolderName.length - 1) != "/") childFolderName += "/";
+
+            return parentPath + childFolderName;
+        }
+
+        /**
          * 是否文件夹
          * @param path 路径
          */
