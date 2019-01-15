@@ -7548,6 +7548,72 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 资源编号与路径映射
+     */
+    var assetsIDPathMap: AssetsIDPathMap;
+    /**
+     * 资源编号与路径映射
+     */
+    class AssetsIDPathMap {
+        /**
+         * 编号映射到路径
+         */
+        private _IDToPath;
+        /**
+         * 路径映射到编号
+         */
+        private _PathToID;
+        /**
+         * 初始化
+         *
+         * @param map 资源编号到路径映射
+         */
+        init(map: {
+            [id: string]: string;
+        }): void;
+        /**
+         * 获取所有资源编号列表
+         */
+        getAllIDs(): string[];
+        /**
+         * 获取所有资源路径列表
+         */
+        getAllPaths(): string[];
+        /**
+         * 获取资源路径
+         *
+         * @param id 资源编号
+         */
+        getPath(id: string): string;
+        /**
+         * 获取资源编号
+         *
+         * @param path 资源路径
+         */
+        getID(path: string): string;
+        /**
+         * 新增资源编号路径映射
+         *
+         * @param id 资源编号
+         * @param path 资源路径
+         */
+        addIDPathMap(id: string, path: string): void;
+        /**
+         * 删除指定编号映射
+         *
+         * @param id 编号
+         */
+        deleteByID(id: string): void;
+        /**
+         * 删除指定路径资源映射
+         *
+         * @param path 资源编号
+         */
+        deleteByPath(path: string): void;
+    }
+}
+declare namespace feng3d {
+    /**
      * feng3d资源
      */
     class Feng3dAssets extends Feng3dObject {
@@ -7563,10 +7629,6 @@ declare namespace feng3d {
          * 资源类型，由具体对象类型决定
          */
         assetType: AssetExtension;
-        /**
-         * 资源路径
-         */
-        path: string;
         constructor();
         /**
          * 保存文件
@@ -14668,16 +14730,19 @@ declare namespace feng3d {
 declare namespace feng3d {
     class JSFile extends StringFile {
         assetType: AssetExtension;
+        textContent: string;
     }
 }
 declare namespace feng3d {
     class JsonFile extends StringFile {
         assetType: AssetExtension;
+        textContent: string;
     }
 }
 declare namespace feng3d {
     class TextFile extends StringFile {
         assetType: AssetExtension;
+        textContent: string;
     }
 }
 declare namespace feng3d {

@@ -23,11 +23,6 @@ namespace feng3d
          */
         assetType: AssetExtension;
 
-        /**
-         * 资源路径
-         */
-        path: string;
-
         constructor()
         {
             super();

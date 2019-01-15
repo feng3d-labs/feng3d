@@ -14272,7 +14272,8 @@ var feng3d;
                 callback(null, assets);
                 return;
             }
-            this.readObject(assets.path, function (err, assets) {
+            var assetsPath = feng3d.assetsIDPathMap.getPath(id);
+            this.readObject(assetsPath, function (err, assets) {
                 if (assets)
                     feng3d.Feng3dAssets.setAssets(assets);
                 if (assets instanceof feng3d.Feng3dFile) {
@@ -14688,6 +14689,104 @@ var feng3d;
          */
         AssetExtension["script"] = "script";
     })(AssetExtension = feng3d.AssetExtension || (feng3d.AssetExtension = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 资源编号与路径映射
+     */
+    var AssetsIDPathMap = /** @class */ (function () {
+        function AssetsIDPathMap() {
+            /**
+             * 编号映射到路径
+             */
+            this._IDToPath = {};
+            /**
+             * 路径映射到编号
+             */
+            this._PathToID = {};
+        }
+        /**
+         * 初始化
+         *
+         * @param map 资源编号到路径映射
+         */
+        AssetsIDPathMap.prototype.init = function (map) {
+            var _this = this;
+            this._IDToPath = {};
+            this._PathToID = {};
+            Object.keys(map).forEach(function (id) {
+                _this.addIDPathMap(id, map[id]);
+            });
+        };
+        /**
+         * 获取所有资源编号列表
+         */
+        AssetsIDPathMap.prototype.getAllIDs = function () {
+            return Object.keys(this._IDToPath);
+        };
+        /**
+         * 获取所有资源路径列表
+         */
+        AssetsIDPathMap.prototype.getAllPaths = function () {
+            return Object.keys(this._PathToID);
+        };
+        /**
+         * 获取资源路径
+         *
+         * @param id 资源编号
+         */
+        AssetsIDPathMap.prototype.getPath = function (id) {
+            return this._IDToPath[id];
+        };
+        /**
+         * 获取资源编号
+         *
+         * @param path 资源路径
+         */
+        AssetsIDPathMap.prototype.getID = function (path) {
+            return this._PathToID[path];
+        };
+        /**
+         * 新增资源编号路径映射
+         *
+         * @param id 资源编号
+         * @param path 资源路径
+         */
+        AssetsIDPathMap.prototype.addIDPathMap = function (id, path) {
+            feng3d.assert(!this._IDToPath[id], "\u65E0\u6CD5\u65B0\u589E\u5DF2\u5B58\u5728\u6307\u5B9A\u7F16\u53F7\u8D44\u6E90\u6620\u5C04");
+            feng3d.assert(!this._PathToID[path], "\u65E0\u6CD5\u65B0\u589E\u5DF2\u5B58\u5728\u6307\u5B9A\u8DEF\u5F84\u8D44\u6E90\u6620\u5C04");
+            this._IDToPath[id] = path;
+            this._PathToID[path] = id;
+        };
+        /**
+         * 删除指定编号映射
+         *
+         * @param id 编号
+         */
+        AssetsIDPathMap.prototype.deleteByID = function (id) {
+            var path = this._IDToPath[id];
+            feng3d.assert(!!path, "\u65E0\u6CD5\u5220\u9664\u4E0D\u5B58\u5728\u7F16\u53F7\u8D44\u6E90\u6620\u5C04");
+            feng3d.assert(!!this._PathToID[path], "\u65E0\u6CD5\u5220\u9664\u4E0D\u5B58\u5728\u8DEF\u5F84\u8D44\u6E90\u6620\u5C04");
+            delete this._IDToPath[id];
+            delete this._PathToID[path];
+        };
+        /**
+         * 删除指定路径资源映射
+         *
+         * @param path 资源编号
+         */
+        AssetsIDPathMap.prototype.deleteByPath = function (path) {
+            var id = this._PathToID[path];
+            feng3d.assert(!!id, "\u65E0\u6CD5\u5220\u9664\u4E0D\u5B58\u5728\u8DEF\u5F84\u8D44\u6E90\u6620\u5C04");
+            feng3d.assert(!!this._IDToPath[id], "\u65E0\u6CD5\u5220\u9664\u4E0D\u5B58\u5728\u7F16\u53F7\u8D44\u6E90\u6620\u5C04");
+            delete this._IDToPath[id];
+            delete this._PathToID[path];
+        };
+        return AssetsIDPathMap;
+    }());
+    feng3d.AssetsIDPathMap = AssetsIDPathMap;
+    feng3d.assetsIDPathMap = new AssetsIDPathMap();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -28871,7 +28970,8 @@ var feng3d;
          * @param callback 完成回调
          */
         ArrayBufferFile.prototype.saveFile = function (readWriteAssets, callback) {
-            readWriteAssets.writeArrayBuffer(this.path, this.arraybuffer, callback);
+            var assetsPath = feng3d.assetsIDPathMap.getPath(this.assetsId);
+            readWriteAssets.writeArrayBuffer(assetsPath, this.arraybuffer, callback);
         };
         /**
          * 读取文件
@@ -28880,7 +28980,8 @@ var feng3d;
          */
         ArrayBufferFile.prototype.readFile = function (readAssets, callback) {
             var _this = this;
-            readAssets.readArrayBuffer(this.path, function (err, data) {
+            var assetsPath = feng3d.assetsIDPathMap.getPath(this.assetsId);
+            readAssets.readArrayBuffer(assetsPath, function (err, data) {
                 _this.arraybuffer = data;
                 callback && callback(err);
             });
@@ -28903,7 +29004,8 @@ var feng3d;
             return _super !== null && _super.apply(this, arguments) || this;
         }
         StringFile.prototype.saveFile = function (readWriteAssets, callback) {
-            readWriteAssets.writeString(this.path, this.textContent, callback);
+            var assetsPath = feng3d.assetsIDPathMap.getPath(this.assetsId);
+            readWriteAssets.writeString(assetsPath, this.textContent, callback);
         };
         /**
          * 读取文件
@@ -28912,7 +29014,8 @@ var feng3d;
          */
         StringFile.prototype.readFile = function (readAssets, callback) {
             var _this = this;
-            readAssets.readString(this.path, function (err, data) {
+            var assetsPath = feng3d.assetsIDPathMap.getPath(this.assetsId);
+            readAssets.readString(assetsPath, function (err, data) {
                 _this.textContent = data;
                 callback && callback(err);
             });
@@ -28939,7 +29042,8 @@ var feng3d;
         ScriptFile.prototype.onTextContentChanged = function () {
             // 获取脚本类名称
             var result = feng3d.regExps.classReg.exec(this.textContent);
-            feng3d.assert(result != null, "\u5728\u811A\u672C " + this.path + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
+            var assetsPath = feng3d.assetsIDPathMap.getPath(this.assetsId);
+            feng3d.assert(result != null, "\u5728\u811A\u672C " + assetsPath + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
             var script = result[3];
             if (result[5]) {
                 this.parentScriptName = result[5].split(".").pop();
@@ -28947,7 +29051,7 @@ var feng3d;
             // 获取导出类命名空间
             if (result[1]) {
                 result = feng3d.regExps.namespace.exec(this.textContent);
-                feng3d.assert(result != null, "\u83B7\u53D6\u811A\u672C " + this.path + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
+                feng3d.assert(result != null, "\u83B7\u53D6\u811A\u672C " + assetsPath + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
                 script = result[1] + "." + script;
             }
             this.scriptName = script;
@@ -28983,6 +29087,7 @@ var feng3d;
         function JSFile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.assetType = feng3d.AssetExtension.js;
+            _this.textContent = "";
             return _this;
         }
         return JSFile;
@@ -28996,6 +29101,7 @@ var feng3d;
         function JsonFile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.assetType = feng3d.AssetExtension.json;
+            _this.textContent = "{}";
             return _this;
         }
         return JsonFile;
@@ -29009,6 +29115,7 @@ var feng3d;
         function TextFile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.assetType = feng3d.AssetExtension.txt;
+            _this.textContent = "";
             return _this;
         }
         return TextFile;

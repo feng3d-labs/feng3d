@@ -13,7 +13,8 @@ namespace feng3d
 
         protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void)
         {
-            readWriteAssets.writeString(this.path, this.textContent, callback);
+            var assetsPath = assetsIDPathMap.getPath(this.assetsId);
+            readWriteAssets.writeString(assetsPath, this.textContent, callback);
         }
 
         /**
@@ -23,7 +24,8 @@ namespace feng3d
          */
         protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void)
         {
-            readAssets.readString(this.path, (err, data) =>
+            var assetsPath = assetsIDPathMap.getPath(this.assetsId);
+            readAssets.readString(assetsPath, (err, data) =>
             {
                 this.textContent = data;
                 callback && callback(err);

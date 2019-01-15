@@ -108,6 +108,7 @@
         "src/assets/ReadAssets.ts",
         "src/assets/ReadWriteAssets.ts",
         "src/assets/AssetExtension.ts",
+        "src/assets/AssetsIDPathMap.ts",
         "src/assets/Feng3dAssets.ts",
         "src/assets/Resources.ts",
         // 快捷键
