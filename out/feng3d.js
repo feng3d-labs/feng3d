@@ -14715,6 +14715,8 @@ var feng3d;
             var _this = this;
             this._IDToPath = {};
             this._PathToID = {};
+            if (!map)
+                return;
             Object.keys(map).forEach(function (id) {
                 _this.addIDPathMap(id, map[id]);
             });

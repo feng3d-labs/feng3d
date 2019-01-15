@@ -7568,7 +7568,7 @@ declare namespace feng3d {
          *
          * @param map 资源编号到路径映射
          */
-        init(map: {
+        init(map?: {
             [id: string]: string;
         }): void;
         /**

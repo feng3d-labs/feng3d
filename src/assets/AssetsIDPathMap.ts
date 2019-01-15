@@ -25,10 +25,11 @@ namespace feng3d
          * 
          * @param map 资源编号到路径映射
          */
-        init(map: { [id: string]: string })
+        init(map?: { [id: string]: string })
         {
             this._IDToPath = {};
             this._PathToID = {};
+            if (!map) return;
             Object.keys(map).forEach(id =>
             {
                 this.addIDPathMap(id, map[id]);
