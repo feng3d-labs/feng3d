@@ -8,7 +8,7 @@ namespace feng3d
         name: string;
 
         @watch("onTextContentChanged")
-        textContent: string;
+        textContent: string = "";
 
         /**
          * 脚本父类名称
@@ -22,6 +22,13 @@ namespace feng3d
 
         private onTextContentChanged()
         {
+            if (!this.textContent)
+            {
+                this.scriptName = "";
+                this.name = "";
+                return;
+            }
+
             // 获取脚本类名称
             var result = regExps.classReg.exec(this.textContent);
             var assetsPath = assetsIDPathMap.getPath(this.assetsId);

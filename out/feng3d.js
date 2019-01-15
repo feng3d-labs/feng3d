@@ -29039,9 +29039,15 @@ var feng3d;
         function ScriptFile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.assetType = feng3d.AssetExtension.script;
+            _this.textContent = "";
             return _this;
         }
         ScriptFile.prototype.onTextContentChanged = function () {
+            if (!this.textContent) {
+                this.scriptName = "";
+                this.name = "";
+                return;
+            }
             // 获取脚本类名称
             var result = feng3d.regExps.classReg.exec(this.textContent);
             var assetsPath = feng3d.assetsIDPathMap.getPath(this.assetsId);
