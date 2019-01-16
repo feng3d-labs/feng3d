@@ -14147,6 +14147,10 @@ var feng3d;
              * 可读文件系统
              */
             this.fs = feng3d.httpFS;
+            /**
+             * 正在加载的资源路径
+             */
+            this._loadedCallbacks = {};
         }
         Object.defineProperty(ReadAssets.prototype, "type", {
             get: function () {
@@ -14165,10 +14169,12 @@ var feng3d;
         };
         /**
          * 读取文件
+         *
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
         ReadAssets.prototype.readArrayBuffer = function (path, callback) {
+            var _this = this;
             if (path == "" || path == null) {
                 callback(new Error("无效路径!"), null);
                 return;
@@ -14176,7 +14182,21 @@ var feng3d;
             var readFS = this.fs;
             if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1)
                 readFS = feng3d.httpFS;
-            readFS.readArrayBuffer(path, callback);
+            var callbacks = this._loadedCallbacks[path];
+            if (!callbacks) {
+                // 新建回调列表
+                this._loadedCallbacks[path] = [callback];
+                // 加载文件
+                readFS.readArrayBuffer(path, function (err, data) {
+                    var callbacks = _this._loadedCallbacks[path];
+                    callbacks.forEach(function (f) { return f(err, data); });
+                    delete _this._loadedCallbacks[path];
+                });
+            }
+            else {
+                // 正在加载中，新增到回调列表中
+                callbacks.push(callback);
+            }
         };
         /**
          * 读取文件为字符串

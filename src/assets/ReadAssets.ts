@@ -17,6 +17,11 @@ namespace feng3d
          */
         fs: ReadFS = httpFS;
 
+        /**
+         * 正在加载的资源路径
+         */
+        private _loadedCallbacks: { [path: string]: Function[] } = {};
+
         get type()
         {
             return this.fs.type;
@@ -34,6 +39,7 @@ namespace feng3d
 
         /**
          * 读取文件
+         * 
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
@@ -48,7 +54,24 @@ namespace feng3d
             if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1)
                 readFS = httpFS;
 
-            readFS.readArrayBuffer(path, callback);
+            var callbacks = this._loadedCallbacks[path];
+            if (!callbacks)
+            {
+                // 新建回调列表
+                this._loadedCallbacks[path] = [callback];
+
+                // 加载文件
+                readFS.readArrayBuffer(path, (err, data) =>
+                {
+                    var callbacks = this._loadedCallbacks[path];
+                    callbacks.forEach(f => f(err, data));
+                    delete this._loadedCallbacks[path];
+                });
+            } else
+            {
+                // 正在加载中，新增到回调列表中
+                callbacks.push(callback);
+            }
         }
 
         /**

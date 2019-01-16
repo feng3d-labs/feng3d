@@ -7275,6 +7275,10 @@ declare namespace feng3d {
          * 可读文件系统
          */
         fs: ReadFS;
+        /**
+         * 正在加载的资源路径
+         */
+        private _loadedCallbacks;
         readonly type: FSType;
         /**
          * 获取文件绝对路径
@@ -7284,6 +7288,7 @@ declare namespace feng3d {
         getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
         /**
          * 读取文件
+         *
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
