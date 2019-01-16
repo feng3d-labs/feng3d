@@ -7446,11 +7446,12 @@ declare namespace feng3d {
         rename(oldPath: string, newPath: string, callback?: (err: Error) => void): void;
         /**
          * 移动文件(夹)
+         *
          * @param src 源路径
          * @param dest 目标路径
          * @param callback 回调函数
          */
-        move(src: string, dest: string, callback?: (err: Error) => void): void;
+        move(src: string, dest: string, callback?: (err?: Error) => void): void;
         /**
          * 删除文件(夹)
          * @param path 路径
@@ -7596,6 +7597,18 @@ declare namespace feng3d {
          * @param path 资源路径
          */
         getID(path: string): string;
+        /**
+         * 是否存在指定编号的资源
+         *
+         * @param id 资源编号
+         */
+        existID(id: string): boolean;
+        /**
+         * 是否存在指定路径的资源
+         *
+         * @param path 资源路径
+         */
+        existPath(path: string): boolean;
         /**
          * 新增资源编号路径映射
          *

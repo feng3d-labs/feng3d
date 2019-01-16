@@ -73,6 +73,26 @@ namespace feng3d
         }
 
         /**
+         * 是否存在指定编号的资源
+         * 
+         * @param id 资源编号
+         */
+        existID(id: string)
+        {
+            return !!this._IDToPath[id];
+        }
+
+        /**
+         * 是否存在指定路径的资源
+         * 
+         * @param path 资源路径
+         */
+        existPath(path: string)
+        {
+            return !!this._PathToID[path];
+        }
+
+        /**
          * 新增资源编号路径映射
          * 
          * @param id 资源编号

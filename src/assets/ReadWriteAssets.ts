@@ -319,11 +319,12 @@ namespace feng3d
 
         /**
          * 移动文件(夹)
+         * 
          * @param src 源路径
          * @param dest 目标路径
          * @param callback 回调函数
          */
-        move(src: string, dest: string, callback?: (err: Error) => void): void
+        move(src: string, dest: string, callback?: (err?: Error) => void): void
         {
             this.rename(src, dest, callback);
         }

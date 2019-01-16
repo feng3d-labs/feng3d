@@ -14579,6 +14579,7 @@ var feng3d;
         };
         /**
          * 移动文件(夹)
+         *
          * @param src 源路径
          * @param dest 目标路径
          * @param callback 回调函数
@@ -14768,6 +14769,22 @@ var feng3d;
          */
         AssetsIDPathMap.prototype.getID = function (path) {
             return this._PathToID[path];
+        };
+        /**
+         * 是否存在指定编号的资源
+         *
+         * @param id 资源编号
+         */
+        AssetsIDPathMap.prototype.existID = function (id) {
+            return !!this._IDToPath[id];
+        };
+        /**
+         * 是否存在指定路径的资源
+         *
+         * @param path 资源路径
+         */
+        AssetsIDPathMap.prototype.existPath = function (path) {
+            return !!this._PathToID[path];
         };
         /**
          * 新增资源编号路径映射
