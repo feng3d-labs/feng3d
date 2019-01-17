@@ -7156,6 +7156,14 @@ declare namespace feng3d {
          */
         stat(path: string, callback: (err: Error, stats: FileStats) => void): void;
         /**
+         * 写（更新）文件状态信息
+         *
+         * @param path 文件路径
+         * @param stats 状态信息
+         * @param callback 完成回调
+         */
+        private _writeStats;
+        /**
          * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数

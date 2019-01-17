@@ -14145,9 +14145,23 @@ var feng3d;
                     callback(err, null);
                     return;
                 }
-                feng3d.dataTransform.arrayBufferToObject(data, function (obj) {
+                feng3d.dataTransform.arrayBufferToString(data, function (str) {
+                    var obj = JSON.parse(str);
                     callback(null, obj);
                 });
+            });
+        };
+        /**
+         * 写（更新）文件状态信息
+         *
+         * @param path 文件路径
+         * @param stats 状态信息
+         * @param callback 完成回调
+         */
+        IndexedDBfs.prototype._writeStats = function (path, stats, callback) {
+            var _this = this;
+            feng3d.dataTransform.stringToArrayBuffer(JSON.stringify(stats), function (arrayBuffer) {
+                _this.writeArrayBuffer(path + statSuffix, arrayBuffer, callback);
             });
         };
         /**
@@ -14156,8 +14170,8 @@ var feng3d;
          * @param callback 回调函数
          */
         IndexedDBfs.prototype.exists = function (path, callback) {
-            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
-                callback(!!data);
+            this.stat(path, function (err, stats) {
+                callback(!!stats);
             });
         };
         /**
@@ -14166,7 +14180,7 @@ var feng3d;
          * @param callback 回调函数
          */
         IndexedDBfs.prototype.readdir = function (path, callback) {
-            feng3d.storage.getAllKeys(this.DBname, this.projectname, function (err, allfilepaths) {
+            this.getAllPaths(function (err, allfilepaths) {
                 if (!allfilepaths) {
                     callback(err, null);
                     return;
@@ -14191,7 +14205,21 @@ var feng3d;
          * @param callback 回调函数
          */
         IndexedDBfs.prototype.mkdir = function (path, callback) {
-            feng3d.storage.set(this.DBname, this.projectname, path, new ArrayBuffer(0), callback);
+            var _this = this;
+            this.exists(path, function (exists) {
+                if (exists) {
+                    callback(new Error("\u6587\u4EF6\u5939" + path + "\u5DF2\u5B58\u5728\u65E0\u6CD5\u65B0\u5EFA"));
+                    return;
+                }
+                // 写状态文件
+                _this._writeStats(path, { isDirectory: true, birthtimeMs: Date.now(), mtimeMs: Date.now(), size: 0 }, function (err) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    feng3d.storage.set(_this.DBname, _this.projectname, path, new ArrayBuffer(0), callback);
+                });
+            });
         };
         /**
          * 删除文件
@@ -14199,7 +14227,12 @@ var feng3d;
          * @param callback 回调函数
          */
         IndexedDBfs.prototype.deleteFile = function (path, callback) {
-            feng3d.storage.delete(this.DBname, this.projectname, path, callback);
+            var _this = this;
+            // 删除状态文件
+            feng3d.storage.delete(this.DBname, this.projectname, path + statSuffix, function (err) {
+                // 删除文件
+                feng3d.storage.delete(_this.DBname, _this.projectname, path, callback);
+            });
         };
         /**
          * 写文件
@@ -14208,14 +14241,36 @@ var feng3d;
          * @param callback 回调函数
          */
         IndexedDBfs.prototype.writeArrayBuffer = function (path, data, callback) {
-            feng3d.storage.set(this.DBname, this.projectname, path, data, callback);
+            var _this = this;
+            this.stat(path, function (err, stats) {
+                if (!stats) {
+                    stats = { isDirectory: false, birthtimeMs: Date.now(), mtimeMs: Date.now(), size: 0 };
+                }
+                stats.size = data.byteLength;
+                stats.mtimeMs = Date.now();
+                _this._writeStats(path, stats, function (err) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    feng3d.storage.set(_this.DBname, _this.projectname, path, data, callback);
+                });
+            });
         };
         /**
          * 获取所有文件路径
          * @param callback 回调函数
          */
         IndexedDBfs.prototype.getAllPaths = function (callback) {
-            feng3d.storage.getAllKeys(this.DBname, this.projectname, callback);
+            feng3d.storage.getAllKeys(this.DBname, this.projectname, function (err, allPaths) {
+                if (err) {
+                    callback(err, allPaths);
+                    return;
+                }
+                // 除去状态描述文件
+                var paths = allPaths.filter(function (v) { return v.substr(-statSuffix.length) != statSuffix; });
+                callback(err, paths);
+            });
         };
         return IndexedDBfs;
     }());

@@ -24,6 +24,7 @@ namespace feng3d
          * 数据库名称
          */
         DBname: string;
+
         /**
          * 项目名称（表单名称）
          */
@@ -73,10 +74,26 @@ namespace feng3d
                     callback(err, null);
                     return;
                 }
-                dataTransform.arrayBufferToObject(data, (obj: FileStats) =>
+                dataTransform.arrayBufferToString(data, (str) =>
                 {
+                    var obj: FileStats = JSON.parse(str);
                     callback(null, obj);
                 });
+            });
+        }
+
+        /**
+         * 写（更新）文件状态信息
+         * 
+         * @param path 文件路径
+         * @param stats 状态信息
+         * @param callback 完成回调
+         */
+        private _writeStats(path: string, stats: FileStats, callback: (err: Error) => void)
+        {
+            dataTransform.stringToArrayBuffer(JSON.stringify(stats), (arrayBuffer) =>
+            {
+                this.writeArrayBuffer(path + statSuffix, arrayBuffer, callback);
             });
         }
 
@@ -87,9 +104,9 @@ namespace feng3d
          */
         exists(path: string, callback: (exists: boolean) => void): void
         {
-            storage.get(this.DBname, this.projectname, path, (err, data) =>
+            this.stat(path, (err, stats) =>
             {
-                callback(!!data);
+                callback(!!stats);
             });
         }
 
@@ -100,7 +117,7 @@ namespace feng3d
          */
         readdir(path: string, callback: (err: Error, files: string[]) => void): void
         {
-            storage.getAllKeys(this.DBname, this.projectname, (err, allfilepaths) =>
+            this.getAllPaths((err, allfilepaths) =>
             {
                 if (!allfilepaths)
                 {
@@ -131,7 +148,24 @@ namespace feng3d
          */
         mkdir(path: string, callback?: (err: Error) => void): void
         {
-            storage.set(this.DBname, this.projectname, path, new ArrayBuffer(0), callback);
+            this.exists(path, (exists) =>
+            {
+                if (exists)
+                {
+                    callback(new Error(`文件夹${path}已存在无法新建`));
+                    return;
+                }
+                // 写状态文件
+                this._writeStats(path, { isDirectory: true, birthtimeMs: Date.now(), mtimeMs: Date.now(), size: 0 }, (err) =>
+                {
+                    if (err)
+                    {
+                        callback && callback(err);
+                        return;
+                    }
+                    storage.set(this.DBname, this.projectname, path, new ArrayBuffer(0), callback);
+                });
+            });
         }
 
         /**
@@ -141,7 +175,12 @@ namespace feng3d
          */
         deleteFile(path: string, callback: (err: Error) => void)
         {
-            storage.delete(this.DBname, this.projectname, path, callback);
+            // 删除状态文件
+            storage.delete(this.DBname, this.projectname, path + statSuffix, (err) =>
+            {
+                // 删除文件
+                storage.delete(this.DBname, this.projectname, path, callback);
+            });
         }
 
         /**
@@ -152,7 +191,24 @@ namespace feng3d
          */
         writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void)
         {
-            storage.set(this.DBname, this.projectname, path, data, callback);
+            this.stat(path, (err, stats) =>
+            {
+                if (!stats)
+                {
+                    stats = { isDirectory: false, birthtimeMs: Date.now(), mtimeMs: Date.now(), size: 0 }
+                }
+                stats.size = data.byteLength;
+                stats.mtimeMs = Date.now();
+                this._writeStats(path, stats, (err) =>
+                {
+                    if (err)
+                    {
+                        callback && callback(err);
+                        return;
+                    }
+                    storage.set(this.DBname, this.projectname, path, data, callback);
+                });
+            });
         }
 
         /**
@@ -161,7 +217,17 @@ namespace feng3d
          */
         getAllPaths(callback: (err: Error, allPaths: string[]) => void)
         {
-            storage.getAllKeys(this.DBname, this.projectname, callback);
+            storage.getAllKeys(this.DBname, this.projectname, (err, allPaths) =>
+            {
+                if (err)
+                {
+                    callback(err, allPaths);
+                    return;
+                }
+                // 除去状态描述文件
+                var paths = allPaths.filter(v => v.substr(-statSuffix.length) != statSuffix);
+                callback(err, paths);
+            });
         }
     }
 
