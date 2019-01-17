@@ -1620,6 +1620,18 @@ var feng3d;
                 _this.blobToText(blob, callback);
             });
         };
+        /**
+         * ArrayBuffer 转换为 对象
+         *
+         * @param arrayBuffer
+         * @param callback
+         */
+        DataTransform.prototype.arrayBufferToObject = function (arrayBuffer, callback) {
+            this.arrayBufferToString(arrayBuffer, function (str) {
+                var obj = JSON.parse(str);
+                callback(obj);
+            });
+        };
         DataTransform.prototype.stringToUint8Array = function (str, callback) {
             var utf8 = unescape(encodeURIComponent(str));
             var uint8Array = new Uint8Array(utf8.split('').map(function (item) {
@@ -14083,6 +14095,10 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 文件（夹）状态文件后缀
+     */
+    var statSuffix = ".__stat";
+    /**
      * 索引数据文件系统
      */
     var IndexedDBfs = /** @class */ (function () {
@@ -14116,6 +14132,23 @@ var feng3d;
          */
         IndexedDBfs.prototype.getAbsolutePath = function (path, callback) {
             callback(null, path);
+        };
+        /**
+         * 获取文件状态。
+         *
+         * @param path 文件的路径。
+         * @param callback 完成回调。
+         */
+        IndexedDBfs.prototype.stat = function (path, callback) {
+            this.readArrayBuffer(path + statSuffix, function (err, data) {
+                if (err) {
+                    callback(err, null);
+                    return;
+                }
+                feng3d.dataTransform.arrayBufferToObject(data, function (obj) {
+                    callback(null, obj);
+                });
+            });
         };
         /**
          * 文件是否存在
@@ -14448,6 +14481,15 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        /**
+         * 获取文件状态。
+         *
+         * @param path 文件的路径。
+         * @param callback 完成回调。
+         */
+        ReadWriteAssets.prototype.stat = function (path, callback) {
+            this.fs.stat(path, callback);
+        };
         /**
          * 文件是否存在
          * @param path 文件路径

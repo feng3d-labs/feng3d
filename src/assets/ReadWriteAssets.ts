@@ -26,6 +26,17 @@ namespace feng3d
         }
 
         /**
+         * 获取文件状态。
+         * 
+         * @param path 文件的路径。
+         * @param callback 完成回调。
+         */
+        stat(path: string, callback: (err: Error, stats: FileStats) => void): void
+        {
+            this.fs.stat(path, callback);
+        }
+
+        /**
          * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数

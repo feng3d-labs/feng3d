@@ -251,6 +251,21 @@ namespace feng3d
             });
         }
 
+        /**
+         * ArrayBuffer 转换为 对象
+         * 
+         * @param arrayBuffer 
+         * @param callback 
+         */
+        arrayBufferToObject(arrayBuffer: ArrayBuffer, callback: (object: Object) => void)
+        {
+            this.arrayBufferToString(arrayBuffer, (str) =>
+            {
+                var obj = JSON.parse(str);
+                callback(obj);
+            });
+        }
+
         stringToUint8Array(str: string, callback: (uint8Array: Uint8Array) => void)
         {
             var utf8 = unescape(encodeURIComponent(str));

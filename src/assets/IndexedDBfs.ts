@@ -6,6 +6,11 @@ namespace feng3d
     export var indexedDBfs: IndexedDBfs;
 
     /**
+     * 文件（夹）状态文件后缀
+     */
+    const statSuffix = ".__stat";
+
+    /**
      * 索引数据文件系统
      */
     export class IndexedDBfs implements ReadWriteFS
@@ -51,6 +56,28 @@ namespace feng3d
         getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void
         {
             callback(null, path);
+        }
+
+        /**
+         * 获取文件状态。
+         * 
+         * @param path 文件的路径。
+         * @param callback 完成回调。
+         */
+        stat(path: string, callback: (err: Error, stats: FileStats) => void): void
+        {
+            this.readArrayBuffer(path + statSuffix, (err, data) =>
+            {
+                if (err)
+                {
+                    callback(err, null);
+                    return;
+                }
+                dataTransform.arrayBufferToObject(data, (obj: FileStats) =>
+                {
+                    callback(null, obj);
+                });
+            });
         }
 
         /**

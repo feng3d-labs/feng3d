@@ -897,6 +897,13 @@ declare namespace feng3d {
         blobToText(blob: Blob, callback: (content: string) => void): void;
         stringToArrayBuffer(str: string, callback: (arrayBuffer: ArrayBuffer) => void): void;
         arrayBufferToString(arrayBuffer: ArrayBuffer, callback: (content: string) => void): void;
+        /**
+         * ArrayBuffer 转换为 对象
+         *
+         * @param arrayBuffer
+         * @param callback
+         */
+        arrayBufferToObject(arrayBuffer: ArrayBuffer, callback: (object: Object) => void): void;
         stringToUint8Array(str: string, callback: (uint8Array: Uint8Array) => void): void;
         uint8ArrayToString(arr: Uint8Array, callback: (str: string) => void): void;
     }
@@ -7142,6 +7149,13 @@ declare namespace feng3d {
          */
         getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
         /**
+         * 获取文件状态。
+         *
+         * @param path 文件的路径。
+         * @param callback 完成回调。
+         */
+        stat(path: string, callback: (err: Error, stats: FileStats) => void): void;
+        /**
          * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数
@@ -7247,6 +7261,13 @@ declare namespace feng3d {
          */
         projectname: string;
         /**
+         * 获取文件状态。
+         *
+         * @param path 文件的路径。
+         * @param callback 完成回调。
+         */
+        stat(path: string, callback: (err: Error, stats: FileStats) => void): void;
+        /**
          * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数
@@ -7277,6 +7298,27 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+    }
+    /**
+     * 文件状态
+     */
+    interface FileStats {
+        /**
+         * 是否为文件夹，如果不是文件夹则为文件
+         */
+        isDirectory: boolean;
+        /**
+         * 文件大小
+         */
+        size: number;
+        /**
+         * 修改时间（单位为ms）
+         */
+        mtimeMs: number;
+        /**
+         * 创建时间（单位为ms）
+         */
+        birthtimeMs: number;
     }
 }
 declare namespace feng3d {
@@ -7355,6 +7397,13 @@ declare namespace feng3d {
         fs: ReadWriteFS;
         projectname: string;
         constructor(readWriteFS?: ReadWriteFS);
+        /**
+         * 获取文件状态。
+         *
+         * @param path 文件的路径。
+         * @param callback 完成回调。
+         */
+        stat(path: string, callback: (err: Error, stats: FileStats) => void): void;
         /**
          * 文件是否存在
          * @param path 文件路径
