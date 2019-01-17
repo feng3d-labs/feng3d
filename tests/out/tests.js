@@ -3223,6 +3223,22 @@ QUnit.module("HighFunction", function () {
         }
     });
 });
+QUnit.module("Path", function () {
+    QUnit.test("basename", function (assert) {
+        var result = [
+            ".",
+            "a/a.txt",
+            "a/b",
+            "a/b//",
+            "a",
+            "a.txt",
+            "a/",
+            "a.b/",
+            '/foo/bar//baz//asdf//quux.html'
+        ].map(function (e) { return feng3d.path.basename(e); });
+        assert.deepEqual(result, ['.', 'a.txt', 'b', 'b', 'a', 'a.txt', 'a', 'a.b', 'quux.html']);
+    });
+});
 QUnit.module("PathUtils", function () {
     QUnit.test("getName", function (assert) {
         assert.ok(feng3d.pathUtils.getNameWithExtension("a") == "a");

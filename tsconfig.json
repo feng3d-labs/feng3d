@@ -24,6 +24,7 @@
         "src/utils/ImageUtil.ts",
         "src/utils/Stats.ts",
         "src/utils/PathUtils.ts",
+        "src/utils/Path.ts",
         "src/utils/Lazy.ts",
         "src/utils/RegExps.ts",
         // 数据结构

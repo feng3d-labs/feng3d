@@ -1140,6 +1140,24 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    var path: WindowPath;
+    /**
+     * 路径
+     *
+     * @see http://nodejs.cn/api/path.html
+     * @see https://github.com/nodejs/node/blob/master/lib/path.js
+     */
+    class WindowPath {
+        /**
+         * 返回路径的最后一部分。类似于Unix basename命令。通常用于从完全限定的路径中提取文件名。
+         *
+         * @param path 求值的路径。
+         * @param ext 可选地，从结果中删除的扩展。
+         */
+        basename(path: string, ext?: string): string;
+    }
+}
+declare namespace feng3d {
     type Lazy<T> = T | (() => T);
     type LazyObject<T> = {
         [P in keyof T]: Lazy<T[P]>;
