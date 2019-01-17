@@ -93,7 +93,7 @@ namespace feng3d
         {
             dataTransform.stringToArrayBuffer(JSON.stringify(stats), (arrayBuffer) =>
             {
-                this.writeArrayBuffer(path + statSuffix, arrayBuffer, callback);
+                storage.set(this.DBname, this.projectname, path + statSuffix, arrayBuffer, callback);
             });
         }
 

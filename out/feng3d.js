@@ -14161,7 +14161,7 @@ var feng3d;
         IndexedDBfs.prototype._writeStats = function (path, stats, callback) {
             var _this = this;
             feng3d.dataTransform.stringToArrayBuffer(JSON.stringify(stats), function (arrayBuffer) {
-                _this.writeArrayBuffer(path + statSuffix, arrayBuffer, callback);
+                feng3d.storage.set(_this.DBname, _this.projectname, path + statSuffix, arrayBuffer, callback);
             });
         };
         /**
