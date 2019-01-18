@@ -104,7 +104,7 @@
         //
         "src/core/Feng3dObject.ts",
         //
-        "src/assets/Storage.ts",
+        "src/assets/_IndexedDB.ts",
         "src/assets/IndexedDBfs.ts",
         "src/assets/HttpFS.ts",
         "src/assets/Assets.ts",

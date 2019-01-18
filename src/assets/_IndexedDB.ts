@@ -13,6 +13,26 @@ namespace feng3d
     export class _IndexedDB
     {
         /**
+         * 数据库状态
+         */
+        private _dbStatus: {
+            [dbname: string]: {
+                /**
+                 * 状态
+                 */
+                status: DBStatus,
+                /**
+                 * 开启或者升级成功回调
+                 */
+                onsuccessCallbacks: ((err: Error, database: IDBDatabase) => void)[],
+                /**
+                 * 升级回调
+                 */
+                onupgradeneededCallbacks: ((newdatabase: IDBDatabase) => void)[],
+            }
+        } = {};
+
+        /**
          * 是否支持 indexedDB 
          */
         support()
@@ -42,17 +62,83 @@ namespace feng3d
                 callback(null, databases[dbname]);
                 return;
             }
-            var request = indexedDB.open(dbname);
-            request.onsuccess = function (event)
+
+            this._open(dbname, callback);
+        }
+
+        /**
+         * 打开或者升级数据库
+         * 
+         * @param dbname 数据库名称
+         * @param callback 完成回调
+         * @param upgrade 是否升级数据库
+         * @param onupgrade 升级回调
+         */
+        private _open(dbname: string, callback: (err: any, database: IDBDatabase) => void, upgrade = false, onupgrade?: (newdatabase: IDBDatabase) => void)
+        {
+            if (!this._dbStatus[dbname]) this._dbStatus[dbname] = { status: DBStatus.unOpen, onsuccessCallbacks: [], onupgradeneededCallbacks: [] };
+
+            this._dbStatus[dbname].onsuccessCallbacks.push(callback);
+            if (upgrade)
+            {
+                feng3d.assert(!!onupgrade);
+                this._dbStatus[dbname].onupgradeneededCallbacks.push(onupgrade);
+            }
+            if (this._dbStatus[dbname].status == DBStatus.opening || this._dbStatus[dbname].status == DBStatus.upgrading) return;
+
+            var request: IDBOpenDBRequest;
+            if (!upgrade)
+            {
+                request = indexedDB.open(dbname);
+                this._dbStatus[dbname].status = DBStatus.opening;
+            } else
+            {
+                var oldDatabase = databases[dbname];
+                oldDatabase.close();
+                delete databases[dbname];
+
+                request = indexedDB.open(dbname, oldDatabase.version + 1);
+                this._dbStatus[dbname].status = DBStatus.upgrading;
+            }
+
+            request.onupgradeneeded = (event) =>
+            {
+                var newdatabase: IDBDatabase = event.target["result"];
+                request.onupgradeneeded = null;
+
+                var callbacks = this._dbStatus[dbname].onupgradeneededCallbacks.concat();
+                this._dbStatus[dbname].onupgradeneededCallbacks.length = 0;
+                callbacks.forEach(element =>
+                {
+                    element(newdatabase);
+                });
+            }
+            request.onsuccess = (event) =>
             {
                 databases[dbname] = event.target["result"];
-                callback(null, databases[dbname]);
                 request.onsuccess = null;
+
+                this._dbStatus[dbname].status = DBStatus.opened;
+
+                var callbacks = this._dbStatus[dbname].onsuccessCallbacks.concat();
+                this._dbStatus[dbname].onsuccessCallbacks.length = 0;
+                callbacks.forEach(element =>
+                {
+                    element(null, databases[dbname]);
+                });
             };
-            request.onerror = function (event)
+            request.onerror = (event) =>
             {
-                callback(event, <any>null);
                 request.onerror = null;
+
+                this._dbStatus[dbname].status = DBStatus.error;
+
+                var callbacks = this._dbStatus[dbname].onsuccessCallbacks.concat();
+                this._dbStatus[dbname].onsuccessCallbacks.length = 0;
+                callbacks.forEach(element =>
+                {
+                    element(<any>event, <any>null);
+                });
             };
         }
 
@@ -128,31 +214,11 @@ namespace feng3d
                     callback && callback(null);
                     return;
                 }
-                database.close();
 
-                delete databases[dbname];
-
-                var request = indexedDB.open(database.name, database.version + 1);
-                request.onupgradeneeded = function (event)
+                this._open(dbname, callback, true, (newdatabase: IDBDatabase) =>
                 {
-                    var newdatabase: IDBDatabase = event.target["result"];
                     newdatabase.createObjectStore(objectStroreName);
-                    databases[newdatabase.name] = newdatabase;
-                    request.onupgradeneeded = null;
-                    callback && callback(null);
-                }
-                request.onsuccess = function (event)
-                {
-                    var newdatabase: IDBDatabase = event.target["result"];
-                    databases[newdatabase.name] = newdatabase;
-                    request.onsuccess = null;
-                    callback && callback(null);
-                }
-                request.onerror = function (event)
-                {
-                    request.onerror = null;
-                    callback && callback(event);
-                };
+                });
             });
         }
 
@@ -172,28 +238,10 @@ namespace feng3d
                     callback && callback(null);
                     return;
                 }
-                database.close();
-                delete databases[dbname];
-                var request = indexedDB.open(database.name, database.version + 1);
-                request.onupgradeneeded = function (event)
+                this._open(dbname, callback, true, (newdatabase: IDBDatabase) =>
                 {
-                    var newdatabase: IDBDatabase = event.target["result"];
                     newdatabase.deleteObjectStore(objectStroreName);
-                    request.onupgradeneeded = null;
-                    callback && callback(null);
-                }
-                request.onsuccess = function (event)
-                {
-                    var newdatabase: IDBDatabase = event.target["result"];
-                    databases[newdatabase.name] = newdatabase;
-                    request.onsuccess = null;
-                    callback && callback(event);
-                }
-                request.onerror = function (event)
-                {
-                    request.onerror = null;
-                    callback && callback(event);
-                };
+                });
             });
         }
 
@@ -338,4 +386,35 @@ namespace feng3d
     }
 
     _indexedDB = new _IndexedDB();
+
+    /**
+     * 数据库状态
+     */
+    enum DBStatus
+    {
+        /**
+         * 未开启
+         */
+        unOpen,
+
+        /**
+         * 正在开启中
+         */
+        opening,
+
+        /**
+         * 已开启
+         */
+        opened,
+
+        /**
+         * 正在升级中
+         */
+        upgrading,
+
+        /**
+         * 开启或者升级失败
+         */
+        error,
+    }
 }

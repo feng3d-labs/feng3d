@@ -7241,6 +7241,10 @@ declare namespace feng3d {
      */
     class _IndexedDB {
         /**
+         * 数据库状态
+         */
+        private _dbStatus;
+        /**
          * 是否支持 indexedDB
          */
         support(): boolean;
@@ -7251,6 +7255,15 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         getDatabase(dbname: string, callback: (err: any, database: IDBDatabase) => void): void;
+        /**
+         * 打开或者升级数据库
+         *
+         * @param dbname 数据库名称
+         * @param callback 完成回调
+         * @param upgrade 是否升级数据库
+         * @param onupgrade 升级回调
+         */
+        private _open;
         /**
          * 删除数据库
          *
