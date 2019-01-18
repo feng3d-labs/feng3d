@@ -7235,11 +7235,11 @@ declare namespace feng3d {
     /**
      *
      */
-    var storage: Storage;
+    var _indexedDB: _IndexedDB;
     /**
      *
      */
-    class Storage {
+    class _IndexedDB {
         /**
          * 是否支持 indexedDB
          */
@@ -7305,7 +7305,7 @@ declare namespace feng3d {
          * @param key 键
          * @param callback 完成回调
          */
-        get(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: ArrayBuffer) => void): void;
+        objectStoreGet(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: ArrayBuffer) => void): void;
         /**
          * 设置对象存储的键与值，如果不存在指定键则新增否则修改。
          *
@@ -7315,7 +7315,7 @@ declare namespace feng3d {
          * @param data 数据
          * @param callback 完成回调
          */
-        set(dbname: string, objectStroreName: string, key: string | number, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        objectStorePut(dbname: string, objectStroreName: string, key: string | number, data: ArrayBuffer, callback?: (err: Error) => void): void;
         /**
          * 删除对象存储中指定键以及对于数据
          *
@@ -7324,7 +7324,7 @@ declare namespace feng3d {
          * @param key 键
          * @param callback 完成回调
          */
-        delete(dbname: string, objectStroreName: string, key: string | number, callback?: (err?: Error) => void): void;
+        objectStoreDelete(dbname: string, objectStroreName: string, key: string | number, callback?: (err?: Error) => void): void;
         /**
          * 清空对象存储中数据
          *
@@ -7332,7 +7332,7 @@ declare namespace feng3d {
          * @param objectStroreName 对象存储名称
          * @param callback 完成回调
          */
-        clear(dbname: string, objectStroreName: string, callback?: (err?: Error) => void): void;
+        objectStoreClear(dbname: string, objectStroreName: string, callback?: (err?: Error) => void): void;
     }
 }
 declare namespace feng3d {

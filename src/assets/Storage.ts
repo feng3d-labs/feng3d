@@ -5,11 +5,12 @@ namespace feng3d
     /**
      * 
      */
-    export var storage: Storage;
+    export var _indexedDB: _IndexedDB;
+
     /**
      * 
      */
-    export class Storage
+    export class _IndexedDB
     {
         /**
          * 是否支持 indexedDB 
@@ -27,6 +28,7 @@ namespace feng3d
             }
             return true;
         }
+
         /**
          * 获取数据库，如果不存在则新建数据库
          * 
@@ -127,6 +129,9 @@ namespace feng3d
                     return;
                 }
                 database.close();
+
+                delete databases[dbname];
+
                 var request = indexedDB.open(database.name, database.version + 1);
                 request.onupgradeneeded = function (event)
                 {
@@ -168,6 +173,7 @@ namespace feng3d
                     return;
                 }
                 database.close();
+                delete databases[dbname];
                 var request = indexedDB.open(database.name, database.version + 1);
                 request.onupgradeneeded = function (event)
                 {
@@ -227,7 +233,7 @@ namespace feng3d
          * @param key 键
          * @param callback 完成回调
          */
-        get(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: ArrayBuffer) => void)
+        objectStoreGet(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: ArrayBuffer) => void)
         {
             this.getDatabase(dbname, (err, database) =>
             {
@@ -252,7 +258,7 @@ namespace feng3d
          * @param data 数据
          * @param callback 完成回调
          */
-        set(dbname: string, objectStroreName: string, key: string | number, data: ArrayBuffer, callback?: (err: Error) => void)
+        objectStorePut(dbname: string, objectStroreName: string, key: string | number, data: ArrayBuffer, callback?: (err: Error) => void)
         {
             this.getDatabase(dbname, (err, database) =>
             {
@@ -281,7 +287,7 @@ namespace feng3d
          * @param key 键
          * @param callback 完成回调
          */
-        delete(dbname: string, objectStroreName: string, key: string | number, callback?: (err?: Error) => void)
+        objectStoreDelete(dbname: string, objectStroreName: string, key: string | number, callback?: (err?: Error) => void)
         {
             this.getDatabase(dbname, (err, database) =>
             {
@@ -309,7 +315,7 @@ namespace feng3d
          * @param objectStroreName 对象存储名称
          * @param callback 完成回调
          */
-        clear(dbname: string, objectStroreName: string, callback?: (err?: Error) => void)
+        objectStoreClear(dbname: string, objectStroreName: string, callback?: (err?: Error) => void)
         {
             this.getDatabase(dbname, (err, database) =>
             {
@@ -331,5 +337,5 @@ namespace feng3d
         }
     }
 
-    storage = new Storage();
+    _indexedDB = new _IndexedDB();
 }

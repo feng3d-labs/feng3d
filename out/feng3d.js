@@ -15331,13 +15331,13 @@ var feng3d;
     /**
      *
      */
-    var Storage = /** @class */ (function () {
-        function Storage() {
+    var _IndexedDB = /** @class */ (function () {
+        function _IndexedDB() {
         }
         /**
          * 是否支持 indexedDB
          */
-        Storage.prototype.support = function () {
+        _IndexedDB.prototype.support = function () {
             if (typeof indexedDB == "undefined") {
                 indexedDB = window.indexedDB || window["mozIndexedDB"] || window["webkitIndexedDB"] || window["msIndexedDB"];
                 if (indexedDB == undefined) {
@@ -15352,7 +15352,7 @@ var feng3d;
          * @param dbname 数据库名称
          * @param callback 完成回调
          */
-        Storage.prototype.getDatabase = function (dbname, callback) {
+        _IndexedDB.prototype.getDatabase = function (dbname, callback) {
             if (databases[dbname]) {
                 callback(null, databases[dbname]);
                 return;
@@ -15374,7 +15374,7 @@ var feng3d;
          * @param dbname 数据库名称
          * @param callback 完成回调
          */
-        Storage.prototype.deleteDatabase = function (dbname, callback) {
+        _IndexedDB.prototype.deleteDatabase = function (dbname, callback) {
             var request = indexedDB.deleteDatabase(dbname);
             request.onsuccess = function (event) {
                 delete databases[dbname];
@@ -15393,7 +15393,7 @@ var feng3d;
          * @param objectStroreName 对象存储名称
          * @param callback 完成回调
          */
-        Storage.prototype.hasObjectStore = function (dbname, objectStroreName, callback) {
+        _IndexedDB.prototype.hasObjectStore = function (dbname, objectStroreName, callback) {
             this.getDatabase(dbname, function (err, database) {
                 callback(database.objectStoreNames.contains(objectStroreName));
             });
@@ -15404,7 +15404,7 @@ var feng3d;
          * @param dbname 数据库
          * @param callback 完成回调
          */
-        Storage.prototype.getObjectStoreNames = function (dbname, callback) {
+        _IndexedDB.prototype.getObjectStoreNames = function (dbname, callback) {
             this.getDatabase(dbname, function (err, database) {
                 var objectStoreNames = [];
                 for (var i = 0; i < database.objectStoreNames.length; i++) {
@@ -15420,13 +15420,14 @@ var feng3d;
          * @param objectStroreName 对象存储名称
          * @param callback 完成回调
          */
-        Storage.prototype.createObjectStore = function (dbname, objectStroreName, callback) {
+        _IndexedDB.prototype.createObjectStore = function (dbname, objectStroreName, callback) {
             this.getDatabase(dbname, function (err, database) {
                 if (database.objectStoreNames.contains(objectStroreName)) {
                     callback && callback(null);
                     return;
                 }
                 database.close();
+                delete databases[dbname];
                 var request = indexedDB.open(database.name, database.version + 1);
                 request.onupgradeneeded = function (event) {
                     var newdatabase = event.target["result"];
@@ -15454,13 +15455,14 @@ var feng3d;
          * @param objectStroreName 对象存储名称
          * @param callback 完成回调
          */
-        Storage.prototype.deleteObjectStore = function (dbname, objectStroreName, callback) {
+        _IndexedDB.prototype.deleteObjectStore = function (dbname, objectStroreName, callback) {
             this.getDatabase(dbname, function (err, database) {
                 if (!database.objectStoreNames.contains(objectStroreName)) {
                     callback && callback(null);
                     return;
                 }
                 database.close();
+                delete databases[dbname];
                 var request = indexedDB.open(database.name, database.version + 1);
                 request.onupgradeneeded = function (event) {
                     var newdatabase = event.target["result"];
@@ -15487,7 +15489,7 @@ var feng3d;
          * @param objectStroreName 对象存储名称
          * @param callback 完成回调
          */
-        Storage.prototype.getAllKeys = function (dbname, objectStroreName, callback) {
+        _IndexedDB.prototype.getAllKeys = function (dbname, objectStroreName, callback) {
             this.getDatabase(dbname, function (err, database) {
                 try {
                     var transaction = database.transaction([objectStroreName], 'readwrite');
@@ -15511,7 +15513,7 @@ var feng3d;
          * @param key 键
          * @param callback 完成回调
          */
-        Storage.prototype.get = function (dbname, objectStroreName, key, callback) {
+        _IndexedDB.prototype.objectStoreGet = function (dbname, objectStroreName, key, callback) {
             this.getDatabase(dbname, function (err, database) {
                 var transaction = database.transaction([objectStroreName], 'readwrite');
                 var objectStore = transaction.objectStore(objectStroreName);
@@ -15532,7 +15534,7 @@ var feng3d;
          * @param data 数据
          * @param callback 完成回调
          */
-        Storage.prototype.set = function (dbname, objectStroreName, key, data, callback) {
+        _IndexedDB.prototype.objectStorePut = function (dbname, objectStroreName, key, data, callback) {
             this.getDatabase(dbname, function (err, database) {
                 try {
                     var transaction = database.transaction([objectStroreName], 'readwrite');
@@ -15556,7 +15558,7 @@ var feng3d;
          * @param key 键
          * @param callback 完成回调
          */
-        Storage.prototype.delete = function (dbname, objectStroreName, key, callback) {
+        _IndexedDB.prototype.objectStoreDelete = function (dbname, objectStroreName, key, callback) {
             this.getDatabase(dbname, function (err, database) {
                 try {
                     var transaction = database.transaction([objectStroreName], 'readwrite');
@@ -15579,7 +15581,7 @@ var feng3d;
          * @param objectStroreName 对象存储名称
          * @param callback 完成回调
          */
-        Storage.prototype.clear = function (dbname, objectStroreName, callback) {
+        _IndexedDB.prototype.objectStoreClear = function (dbname, objectStroreName, callback) {
             this.getDatabase(dbname, function (err, database) {
                 try {
                     var transaction = database.transaction([objectStroreName], 'readwrite');
@@ -15595,10 +15597,10 @@ var feng3d;
                 }
             });
         };
-        return Storage;
+        return _IndexedDB;
     }());
-    feng3d.Storage = Storage;
-    feng3d.storage = new Storage();
+    feng3d._IndexedDB = _IndexedDB;
+    feng3d._indexedDB = new _IndexedDB();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -15629,7 +15631,7 @@ var feng3d;
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
         IndexedDBfs.prototype.readArrayBuffer = function (path, callback) {
-            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
+            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
                 callback(err, data);
             });
         };
@@ -15669,7 +15671,7 @@ var feng3d;
         IndexedDBfs.prototype._writeStats = function (path, stats, callback) {
             var _this = this;
             feng3d.dataTransform.stringToArrayBuffer(JSON.stringify(stats), function (arrayBuffer) {
-                feng3d.storage.set(_this.DBname, _this.projectname, path + statSuffix, arrayBuffer, callback);
+                feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, path + statSuffix, arrayBuffer, callback);
             });
         };
         /**
@@ -15725,7 +15727,7 @@ var feng3d;
                         callback && callback(err);
                         return;
                     }
-                    feng3d.storage.set(_this.DBname, _this.projectname, path, new ArrayBuffer(0), callback);
+                    feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, path, new ArrayBuffer(0), callback);
                 });
             });
         };
@@ -15737,9 +15739,9 @@ var feng3d;
         IndexedDBfs.prototype.deleteFile = function (path, callback) {
             var _this = this;
             // 删除状态文件
-            feng3d.storage.delete(this.DBname, this.projectname, path + statSuffix, function (err) {
+            feng3d._indexedDB.objectStoreDelete(this.DBname, this.projectname, path + statSuffix, function (err) {
                 // 删除文件
-                feng3d.storage.delete(_this.DBname, _this.projectname, path, callback);
+                feng3d._indexedDB.objectStoreDelete(_this.DBname, _this.projectname, path, callback);
             });
         };
         /**
@@ -15761,7 +15763,7 @@ var feng3d;
                         callback && callback(err);
                         return;
                     }
-                    feng3d.storage.set(_this.DBname, _this.projectname, path, data, callback);
+                    feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, path, data, callback);
                 });
             });
         };
@@ -15770,7 +15772,7 @@ var feng3d;
          * @param callback 回调函数
          */
         IndexedDBfs.prototype.getAllPaths = function (callback) {
-            feng3d.storage.getAllKeys(this.DBname, this.projectname, function (err, allPaths) {
+            feng3d._indexedDB.getAllKeys(this.DBname, this.projectname, function (err, allPaths) {
                 if (err) {
                     callback(err, allPaths);
                     return;

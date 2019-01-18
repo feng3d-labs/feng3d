@@ -43,7 +43,7 @@ namespace feng3d
          */
         readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void)
         {
-            storage.get(this.DBname, this.projectname, path, (err, data) =>
+            _indexedDB.objectStoreGet(this.DBname, this.projectname, path, (err, data) =>
             {
                 callback(err, data);
             });
@@ -93,7 +93,7 @@ namespace feng3d
         {
             dataTransform.stringToArrayBuffer(JSON.stringify(stats), (arrayBuffer) =>
             {
-                storage.set(this.DBname, this.projectname, path + statSuffix, arrayBuffer, callback);
+                _indexedDB.objectStorePut(this.DBname, this.projectname, path + statSuffix, arrayBuffer, callback);
             });
         }
 
@@ -163,7 +163,7 @@ namespace feng3d
                         callback && callback(err);
                         return;
                     }
-                    storage.set(this.DBname, this.projectname, path, new ArrayBuffer(0), callback);
+                    _indexedDB.objectStorePut(this.DBname, this.projectname, path, new ArrayBuffer(0), callback);
                 });
             });
         }
@@ -176,10 +176,10 @@ namespace feng3d
         deleteFile(path: string, callback: (err: Error) => void)
         {
             // 删除状态文件
-            storage.delete(this.DBname, this.projectname, path + statSuffix, (err) =>
+            _indexedDB.objectStoreDelete(this.DBname, this.projectname, path + statSuffix, (err) =>
             {
                 // 删除文件
-                storage.delete(this.DBname, this.projectname, path, callback);
+                _indexedDB.objectStoreDelete(this.DBname, this.projectname, path, callback);
             });
         }
 
@@ -206,7 +206,7 @@ namespace feng3d
                         callback && callback(err);
                         return;
                     }
-                    storage.set(this.DBname, this.projectname, path, data, callback);
+                    _indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
                 });
             });
         }
@@ -217,7 +217,7 @@ namespace feng3d
          */
         getAllPaths(callback: (err: Error, allPaths: string[]) => void)
         {
-            storage.getAllKeys(this.DBname, this.projectname, (err, allPaths) =>
+            _indexedDB.getAllKeys(this.DBname, this.projectname, (err, allPaths) =>
             {
                 if (err)
                 {
