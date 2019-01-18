@@ -14,6 +14,8 @@
         "src/autofiles/ShaderConfig.ts",
         // Polyfill
         "src/polyfill/String.ts",
+        "src/polyfill/Object.ts",
+        "src/polyfill/Map.ts",
         //基础工具
         "src/utils/debug.ts",
         "src/utils/Watcher.ts",
@@ -30,8 +32,6 @@
         "src/utils/Lazy.ts",
         "src/utils/RegExps.ts",
         // 数据结构
-        "src/ds/Object.ts",
-        "src/ds/Map.ts",
         //
         "src/ds/utils/Comparator.ts",
         "src/ds/Utils.ts",
