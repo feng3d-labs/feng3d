@@ -22,6 +22,141 @@ interface String {
      */
     endsWith(searchString: string, endPosition?: number): boolean;
 }
+interface ObjectConstructor {
+    /**
+     * Copy the values of all of the enumerable own properties from one or more source objects to a
+     * target object. Returns the target object.
+     * @param target The target object to copy to.
+     * @param source The source object from which to copy properties.
+     */
+    assign<T, U>(target: T, source: U): T & U;
+    /**
+     * Copy the values of all of the enumerable own properties from one or more source objects to a
+     * target object. Returns the target object.
+     * @param target The target object to copy to.
+     * @param source1 The first source object from which to copy properties.
+     * @param source2 The second source object from which to copy properties.
+     */
+    assign<T, U, V>(target: T, source1: U, source2: V): T & U & V;
+    /**
+     * Copy the values of all of the enumerable own properties from one or more source objects to a
+     * target object. Returns the target object.
+     * @param target The target object to copy to.
+     * @param source1 The first source object from which to copy properties.
+     * @param source2 The second source object from which to copy properties.
+     * @param source3 The third source object from which to copy properties.
+     */
+    assign<T, U, V, W>(target: T, source1: U, source2: V, source3: W): T & U & V & W;
+    /**
+     * Copy the values of all of the enumerable own properties from one or more source objects to a
+     * target object. Returns the target object.
+     * @param target The target object to copy to.
+     * @param sources One or more source objects from which to copy properties
+     */
+    assign(target: object, ...sources: any[]): any;
+    /**
+     * 从对象以及对象的原型中获取属性描述
+     * @param obj 对象
+     * @param property 属性名称
+     */
+    getPropertyDescriptor(obj: Object, property: string): PropertyDescriptor;
+    /**
+     * 属性是否可写
+     * @param obj 对象
+     * @param property 属性名称
+     */
+    propertyIsWritable(obj: Object, property: string): boolean;
+    /**
+     * 执行方法
+     *
+     * 用例：
+     * 1. 给一个新建的对象进行初始化
+     *
+     *  ``` startLifetime = Object.runFunc(new MinMaxCurve(), (obj) => { obj.mode = MinMaxCurveMode.Constant; (<MinMaxCurveConstant>obj.minMaxCurve).value = 5; }); ```
+     *
+     * @param obj 对象
+     * @param func 被执行的方法
+     */
+    runFunc<T>(obj: T, func: (obj: T) => void): T;
+    /**
+     * 给指定对象进行深度赋值
+     * @param obj 对象
+     * @param value 数据
+     */
+    setValue<T>(obj: T, value: gPartial<T>): T;
+    /**
+     * 深拷贝
+     * @param obj 被拷贝对象
+     */
+    deepClone<T>(obj: T): T;
+}
+interface Map<K, V> {
+    clear(): void;
+    delete(key: K): boolean;
+    forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any): void;
+    get(key: K): V | undefined;
+    has(key: K): boolean;
+    set(key: K, value: V): this;
+    readonly size: number;
+}
+interface MapConstructor {
+    new (): Map<any, any>;
+    new <K, V>(entries?: [K, V][]): Map<K, V>;
+    readonly prototype: Map<any, any>;
+}
+declare var Map: MapConstructor;
+interface ReadonlyMap<K, V> {
+    forEach(callbackfn: (value: V, key: K, map: ReadonlyMap<K, V>) => void, thisArg?: any): void;
+    get(key: K): V | undefined;
+    has(key: K): boolean;
+    readonly size: number;
+}
+interface WeakMap<K extends object, V> {
+    delete(key: K): boolean;
+    get(key: K): V | undefined;
+    has(key: K): boolean;
+    set(key: K, value: V): this;
+}
+interface WeakMapConstructor {
+    new (): WeakMap<object, any>;
+    new <K extends object, V>(entries?: [K, V][]): WeakMap<K, V>;
+    readonly prototype: WeakMap<object, any>;
+}
+declare var WeakMap: WeakMapConstructor;
+interface Set<T> {
+    add(value: T): this;
+    clear(): void;
+    delete(value: T): boolean;
+    forEach(callbackfn: (value: T, value2: T, set: Set<T>) => void, thisArg?: any): void;
+    has(value: T): boolean;
+    readonly size: number;
+}
+interface SetConstructor {
+    new (): Set<any>;
+    new <T>(values?: T[]): Set<T>;
+    readonly prototype: Set<any>;
+}
+declare var Set: SetConstructor;
+interface ReadonlySet<T> {
+    forEach(callbackfn: (value: T, value2: T, set: ReadonlySet<T>) => void, thisArg?: any): void;
+    has(value: T): boolean;
+    readonly size: number;
+}
+interface WeakSet<T> {
+    add(value: T): this;
+    delete(value: T): boolean;
+    has(value: T): boolean;
+}
+interface WeakSetConstructor {
+    new (): WeakSet<object>;
+    new <T extends object>(values?: T[]): WeakSet<T>;
+    readonly prototype: WeakSet<object>;
+}
+declare var WeakSet: WeakSetConstructor;
+interface Map<K, V> {
+    getKeys(): K[];
+    getValues(): V[];
+}
 declare namespace feng3d {
     /**
      * 测试代码运行时间
@@ -1346,141 +1481,6 @@ declare namespace feng3d {
          */
         classReg: RegExp;
     }
-}
-interface ObjectConstructor {
-    /**
-     * Copy the values of all of the enumerable own properties from one or more source objects to a
-     * target object. Returns the target object.
-     * @param target The target object to copy to.
-     * @param source The source object from which to copy properties.
-     */
-    assign<T, U>(target: T, source: U): T & U;
-    /**
-     * Copy the values of all of the enumerable own properties from one or more source objects to a
-     * target object. Returns the target object.
-     * @param target The target object to copy to.
-     * @param source1 The first source object from which to copy properties.
-     * @param source2 The second source object from which to copy properties.
-     */
-    assign<T, U, V>(target: T, source1: U, source2: V): T & U & V;
-    /**
-     * Copy the values of all of the enumerable own properties from one or more source objects to a
-     * target object. Returns the target object.
-     * @param target The target object to copy to.
-     * @param source1 The first source object from which to copy properties.
-     * @param source2 The second source object from which to copy properties.
-     * @param source3 The third source object from which to copy properties.
-     */
-    assign<T, U, V, W>(target: T, source1: U, source2: V, source3: W): T & U & V & W;
-    /**
-     * Copy the values of all of the enumerable own properties from one or more source objects to a
-     * target object. Returns the target object.
-     * @param target The target object to copy to.
-     * @param sources One or more source objects from which to copy properties
-     */
-    assign(target: object, ...sources: any[]): any;
-    /**
-     * 从对象以及对象的原型中获取属性描述
-     * @param obj 对象
-     * @param property 属性名称
-     */
-    getPropertyDescriptor(obj: Object, property: string): PropertyDescriptor;
-    /**
-     * 属性是否可写
-     * @param obj 对象
-     * @param property 属性名称
-     */
-    propertyIsWritable(obj: Object, property: string): boolean;
-    /**
-     * 执行方法
-     *
-     * 用例：
-     * 1. 给一个新建的对象进行初始化
-     *
-     *  ``` startLifetime = Object.runFunc(new MinMaxCurve(), (obj) => { obj.mode = MinMaxCurveMode.Constant; (<MinMaxCurveConstant>obj.minMaxCurve).value = 5; }); ```
-     *
-     * @param obj 对象
-     * @param func 被执行的方法
-     */
-    runFunc<T>(obj: T, func: (obj: T) => void): T;
-    /**
-     * 给指定对象进行深度赋值
-     * @param obj 对象
-     * @param value 数据
-     */
-    setValue<T>(obj: T, value: gPartial<T>): T;
-    /**
-     * 深拷贝
-     * @param obj 被拷贝对象
-     */
-    deepClone<T>(obj: T): T;
-}
-interface Map<K, V> {
-    clear(): void;
-    delete(key: K): boolean;
-    forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any): void;
-    get(key: K): V | undefined;
-    has(key: K): boolean;
-    set(key: K, value: V): this;
-    readonly size: number;
-}
-interface MapConstructor {
-    new (): Map<any, any>;
-    new <K, V>(entries?: [K, V][]): Map<K, V>;
-    readonly prototype: Map<any, any>;
-}
-declare var Map: MapConstructor;
-interface ReadonlyMap<K, V> {
-    forEach(callbackfn: (value: V, key: K, map: ReadonlyMap<K, V>) => void, thisArg?: any): void;
-    get(key: K): V | undefined;
-    has(key: K): boolean;
-    readonly size: number;
-}
-interface WeakMap<K extends object, V> {
-    delete(key: K): boolean;
-    get(key: K): V | undefined;
-    has(key: K): boolean;
-    set(key: K, value: V): this;
-}
-interface WeakMapConstructor {
-    new (): WeakMap<object, any>;
-    new <K extends object, V>(entries?: [K, V][]): WeakMap<K, V>;
-    readonly prototype: WeakMap<object, any>;
-}
-declare var WeakMap: WeakMapConstructor;
-interface Set<T> {
-    add(value: T): this;
-    clear(): void;
-    delete(value: T): boolean;
-    forEach(callbackfn: (value: T, value2: T, set: Set<T>) => void, thisArg?: any): void;
-    has(value: T): boolean;
-    readonly size: number;
-}
-interface SetConstructor {
-    new (): Set<any>;
-    new <T>(values?: T[]): Set<T>;
-    readonly prototype: Set<any>;
-}
-declare var Set: SetConstructor;
-interface ReadonlySet<T> {
-    forEach(callbackfn: (value: T, value2: T, set: ReadonlySet<T>) => void, thisArg?: any): void;
-    has(value: T): boolean;
-    readonly size: number;
-}
-interface WeakSet<T> {
-    add(value: T): this;
-    delete(value: T): boolean;
-    has(value: T): boolean;
-}
-interface WeakSetConstructor {
-    new (): WeakSet<object>;
-    new <T extends object>(values?: T[]): WeakSet<T>;
-    readonly prototype: WeakSet<object>;
-}
-declare var WeakSet: WeakSetConstructor;
-interface Map<K, V> {
-    getKeys(): K[];
-    getValues(): V[];
 }
 declare namespace ds {
     type CompareFunction<T> = (a: T, b: T) => number;
@@ -7231,9 +7231,6 @@ declare namespace feng3d {
         hideFlags: HideFlags;
     }
 }
-interface IDBObjectStore {
-    getAllKeys(): IDBRequest;
-}
 declare namespace feng3d {
     /**
      *
@@ -7247,16 +7244,94 @@ declare namespace feng3d {
          * 是否支持 indexedDB
          */
         support(): boolean;
+        /**
+         * 获取数据库，如果不存在则新建数据库
+         *
+         * @param dbname 数据库名称
+         * @param callback 完成回调
+         */
         getDatabase(dbname: string, callback: (err: any, database: IDBDatabase) => void): void;
+        /**
+         * 删除数据库
+         *
+         * @param dbname 数据库名称
+         * @param callback 完成回调
+         */
         deleteDatabase(dbname: string, callback?: (err: any) => void): void;
+        /**
+         * 是否存在指定的对象存储
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
         hasObjectStore(dbname: string, objectStroreName: string, callback: (has: boolean) => void): void;
+        /**
+         * 获取对象存储名称列表
+         *
+         * @param dbname 数据库
+         * @param callback 完成回调
+         */
         getObjectStoreNames(dbname: string, callback: (err: Error | null, objectStoreNames: string[]) => void): void;
+        /**
+         * 创建对象存储
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
         createObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void): void;
+        /**
+         * 删除对象存储
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
         deleteObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void): void;
+        /**
+         * 获取对象存储中所有键列表
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
         getAllKeys(dbname: string, objectStroreName: string, callback?: (err: Error, keys: string[]) => void): void;
+        /**
+         * 获取对象存储中指定键对应的数据
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param key 键
+         * @param callback 完成回调
+         */
         get(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: ArrayBuffer) => void): void;
+        /**
+         * 设置对象存储的键与值，如果不存在指定键则新增否则修改。
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param key 键
+         * @param data 数据
+         * @param callback 完成回调
+         */
         set(dbname: string, objectStroreName: string, key: string | number, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        /**
+         * 删除对象存储中指定键以及对于数据
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param key 键
+         * @param callback 完成回调
+         */
         delete(dbname: string, objectStroreName: string, key: string | number, callback?: (err?: Error) => void): void;
+        /**
+         * 清空对象存储中数据
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
         clear(dbname: string, objectStroreName: string, callback?: (err?: Error) => void): void;
     }
 }

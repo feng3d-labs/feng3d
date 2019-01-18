@@ -1,11 +1,7 @@
-interface IDBObjectStore
-{
-    getAllKeys(): IDBRequest;
-}
-
 namespace feng3d
 {
     var databases: { [name: string]: IDBDatabase } = {};
+
     /**
      * 
      */
@@ -31,6 +27,12 @@ namespace feng3d
             }
             return true;
         }
+        /**
+         * 获取数据库，如果不存在则新建数据库
+         * 
+         * @param dbname 数据库名称
+         * @param callback 完成回调
+         */
         getDatabase(dbname: string, callback: (err: any, database: IDBDatabase) => void)
         {
             if (databases[dbname])
@@ -51,6 +53,13 @@ namespace feng3d
                 request.onerror = null;
             };
         }
+
+        /**
+         * 删除数据库
+         * 
+         * @param dbname 数据库名称
+         * @param callback 完成回调
+         */
         deleteDatabase(dbname: string, callback?: (err: any) => void)
         {
             var request = indexedDB.deleteDatabase(dbname);
@@ -66,6 +75,14 @@ namespace feng3d
                 request.onerror = null;
             };
         }
+
+        /**
+         * 是否存在指定的对象存储
+         * 
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
         hasObjectStore(dbname: string, objectStroreName: string, callback: (has: boolean) => void)
         {
             this.getDatabase(dbname, (err, database) =>
@@ -73,6 +90,13 @@ namespace feng3d
                 callback(database.objectStoreNames.contains(objectStroreName));
             });
         }
+
+        /**
+         * 获取对象存储名称列表
+         * 
+         * @param dbname 数据库
+         * @param callback 完成回调
+         */
         getObjectStoreNames(dbname: string, callback: (err: Error | null, objectStoreNames: string[]) => void)
         {
             this.getDatabase(dbname, (err, database) =>
@@ -85,6 +109,14 @@ namespace feng3d
                 callback(null, objectStoreNames)
             });
         }
+
+        /**
+         * 创建对象存储
+         * 
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
         createObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void)
         {
             this.getDatabase(dbname, (err, database) =>
@@ -118,6 +150,14 @@ namespace feng3d
                 };
             });
         }
+
+        /**
+         * 删除对象存储
+         * 
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
         deleteObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void)
         {
             this.getDatabase(dbname, (err, database) =>
@@ -150,6 +190,14 @@ namespace feng3d
                 };
             });
         }
+
+        /**
+         * 获取对象存储中所有键列表
+         * 
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
         getAllKeys(dbname: string, objectStroreName: string, callback?: (err: Error, keys: string[]) => void)
         {
             this.getDatabase(dbname, (err, database) =>
@@ -170,6 +218,15 @@ namespace feng3d
                 }
             });
         }
+
+        /**
+         * 获取对象存储中指定键对应的数据
+         * 
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param key 键
+         * @param callback 完成回调
+         */
         get(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: ArrayBuffer) => void)
         {
             this.getDatabase(dbname, (err, database) =>
@@ -185,6 +242,16 @@ namespace feng3d
                 };
             });
         }
+
+        /**
+         * 设置对象存储的键与值，如果不存在指定键则新增否则修改。
+         * 
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param key 键
+         * @param data 数据
+         * @param callback 完成回调
+         */
         set(dbname: string, objectStroreName: string, key: string | number, data: ArrayBuffer, callback?: (err: Error) => void)
         {
             this.getDatabase(dbname, (err, database) =>
@@ -205,6 +272,15 @@ namespace feng3d
                 }
             });
         }
+
+        /**
+         * 删除对象存储中指定键以及对于数据
+         * 
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param key 键
+         * @param callback 完成回调
+         */
         delete(dbname: string, objectStroreName: string, key: string | number, callback?: (err?: Error) => void)
         {
             this.getDatabase(dbname, (err, database) =>
@@ -225,6 +301,14 @@ namespace feng3d
                 }
             });
         }
+
+        /**
+         * 清空对象存储中数据
+         * 
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
         clear(dbname: string, objectStroreName: string, callback?: (err?: Error) => void)
         {
             this.getDatabase(dbname, (err, database) =>

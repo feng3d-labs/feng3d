@@ -154,6 +154,77 @@ if (!String.prototype.endsWith) {
         return this.substring(this_len - search.length, this_len) === search;
     };
 }
+if (typeof Object.assign != 'function') {
+    // Must be writable: true, enumerable: false, configurable: true
+    Object.defineProperty(Object, "assign", {
+        value: function assign(target, varArgs) {
+            'use strict';
+            if (target == null) { // TypeError if undefined or null
+                throw new TypeError('Cannot convert undefined or null to object');
+            }
+            var to = Object(target);
+            for (var index = 1; index < arguments.length; index++) {
+                var nextSource = arguments[index];
+                if (nextSource != null) { // Skip over if undefined or null
+                    for (var nextKey in nextSource) {
+                        // Avoid bugs when hasOwnProperty is shadowed
+                        if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+                            to[nextKey] = nextSource[nextKey];
+                        }
+                    }
+                }
+            }
+            return to;
+        },
+        writable: true,
+        configurable: true
+    });
+}
+Object.getPropertyDescriptor = function (host, property) {
+    var data = Object.getOwnPropertyDescriptor(host, property);
+    if (data) {
+        return data;
+    }
+    var prototype = Object.getPrototypeOf(host);
+    if (prototype) {
+        return Object.getPropertyDescriptor(prototype, property);
+    }
+    return null;
+};
+Object.propertyIsWritable = function (host, property) {
+    var data = Object.getPropertyDescriptor(host, property);
+    if (!data)
+        return false;
+    if (data.get && !data.set)
+        return false;
+    return true;
+};
+Object.runFunc = function (obj, func) {
+    func(obj);
+    return obj;
+};
+Object.setValue = function (obj, value) {
+    feng3d.serialization.setValue(obj, value);
+    return obj;
+};
+Object.deepClone = function (obj) {
+    return feng3d.serialization.clone(obj);
+};
+//参考 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
+Map.prototype.getKeys = function () {
+    var keys = [];
+    this.forEach(function (v, k) {
+        keys.push(k);
+    });
+    return keys;
+};
+Map.prototype.getValues = function () {
+    var values = [];
+    this.forEach(function (v, k) {
+        values.push(v);
+    });
+    return values;
+};
 var feng3d;
 (function (feng3d) {
     /**
@@ -3897,77 +3968,6 @@ var feng3d;
     feng3d.RegExps = RegExps;
     feng3d.regExps = new RegExps();
 })(feng3d || (feng3d = {}));
-if (typeof Object.assign != 'function') {
-    // Must be writable: true, enumerable: false, configurable: true
-    Object.defineProperty(Object, "assign", {
-        value: function assign(target, varArgs) {
-            'use strict';
-            if (target == null) { // TypeError if undefined or null
-                throw new TypeError('Cannot convert undefined or null to object');
-            }
-            var to = Object(target);
-            for (var index = 1; index < arguments.length; index++) {
-                var nextSource = arguments[index];
-                if (nextSource != null) { // Skip over if undefined or null
-                    for (var nextKey in nextSource) {
-                        // Avoid bugs when hasOwnProperty is shadowed
-                        if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-                            to[nextKey] = nextSource[nextKey];
-                        }
-                    }
-                }
-            }
-            return to;
-        },
-        writable: true,
-        configurable: true
-    });
-}
-Object.getPropertyDescriptor = function (host, property) {
-    var data = Object.getOwnPropertyDescriptor(host, property);
-    if (data) {
-        return data;
-    }
-    var prototype = Object.getPrototypeOf(host);
-    if (prototype) {
-        return Object.getPropertyDescriptor(prototype, property);
-    }
-    return null;
-};
-Object.propertyIsWritable = function (host, property) {
-    var data = Object.getPropertyDescriptor(host, property);
-    if (!data)
-        return false;
-    if (data.get && !data.set)
-        return false;
-    return true;
-};
-Object.runFunc = function (obj, func) {
-    func(obj);
-    return obj;
-};
-Object.setValue = function (obj, value) {
-    feng3d.serialization.setValue(obj, value);
-    return obj;
-};
-Object.deepClone = function (obj) {
-    return feng3d.serialization.clone(obj);
-};
-//参考 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
-Map.prototype.getKeys = function () {
-    var keys = [];
-    this.forEach(function (v, k) {
-        keys.push(k);
-    });
-    return keys;
-};
-Map.prototype.getValues = function () {
-    var values = [];
-    this.forEach(function (v, k) {
-        values.push(v);
-    });
-    return values;
-};
 var ds;
 (function (ds) {
     /**
@@ -15346,6 +15346,12 @@ var feng3d;
             }
             return true;
         };
+        /**
+         * 获取数据库，如果不存在则新建数据库
+         *
+         * @param dbname 数据库名称
+         * @param callback 完成回调
+         */
         Storage.prototype.getDatabase = function (dbname, callback) {
             if (databases[dbname]) {
                 callback(null, databases[dbname]);
@@ -15362,6 +15368,12 @@ var feng3d;
                 request.onerror = null;
             };
         };
+        /**
+         * 删除数据库
+         *
+         * @param dbname 数据库名称
+         * @param callback 完成回调
+         */
         Storage.prototype.deleteDatabase = function (dbname, callback) {
             var request = indexedDB.deleteDatabase(dbname);
             request.onsuccess = function (event) {
@@ -15374,11 +15386,24 @@ var feng3d;
                 request.onerror = null;
             };
         };
+        /**
+         * 是否存在指定的对象存储
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
         Storage.prototype.hasObjectStore = function (dbname, objectStroreName, callback) {
             this.getDatabase(dbname, function (err, database) {
                 callback(database.objectStoreNames.contains(objectStroreName));
             });
         };
+        /**
+         * 获取对象存储名称列表
+         *
+         * @param dbname 数据库
+         * @param callback 完成回调
+         */
         Storage.prototype.getObjectStoreNames = function (dbname, callback) {
             this.getDatabase(dbname, function (err, database) {
                 var objectStoreNames = [];
@@ -15388,6 +15413,13 @@ var feng3d;
                 callback(null, objectStoreNames);
             });
         };
+        /**
+         * 创建对象存储
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
         Storage.prototype.createObjectStore = function (dbname, objectStroreName, callback) {
             this.getDatabase(dbname, function (err, database) {
                 if (database.objectStoreNames.contains(objectStroreName)) {
@@ -15415,6 +15447,13 @@ var feng3d;
                 };
             });
         };
+        /**
+         * 删除对象存储
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
         Storage.prototype.deleteObjectStore = function (dbname, objectStroreName, callback) {
             this.getDatabase(dbname, function (err, database) {
                 if (!database.objectStoreNames.contains(objectStroreName)) {
@@ -15441,6 +15480,13 @@ var feng3d;
                 };
             });
         };
+        /**
+         * 获取对象存储中所有键列表
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
         Storage.prototype.getAllKeys = function (dbname, objectStroreName, callback) {
             this.getDatabase(dbname, function (err, database) {
                 try {
@@ -15457,6 +15503,14 @@ var feng3d;
                 }
             });
         };
+        /**
+         * 获取对象存储中指定键对应的数据
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param key 键
+         * @param callback 完成回调
+         */
         Storage.prototype.get = function (dbname, objectStroreName, key, callback) {
             this.getDatabase(dbname, function (err, database) {
                 var transaction = database.transaction([objectStroreName], 'readwrite');
@@ -15469,6 +15523,15 @@ var feng3d;
                 };
             });
         };
+        /**
+         * 设置对象存储的键与值，如果不存在指定键则新增否则修改。
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param key 键
+         * @param data 数据
+         * @param callback 完成回调
+         */
         Storage.prototype.set = function (dbname, objectStroreName, key, data, callback) {
             this.getDatabase(dbname, function (err, database) {
                 try {
@@ -15485,6 +15548,14 @@ var feng3d;
                 }
             });
         };
+        /**
+         * 删除对象存储中指定键以及对于数据
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param key 键
+         * @param callback 完成回调
+         */
         Storage.prototype.delete = function (dbname, objectStroreName, key, callback) {
             this.getDatabase(dbname, function (err, database) {
                 try {
@@ -15501,6 +15572,13 @@ var feng3d;
                 }
             });
         };
+        /**
+         * 清空对象存储中数据
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
         Storage.prototype.clear = function (dbname, objectStroreName, callback) {
             this.getDatabase(dbname, function (err, database) {
                 try {
