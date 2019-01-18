@@ -20,7 +20,7 @@ namespace feng3d
 
         keyCode: number = 0;
 
-        wheelDelta: number = 0;
+        deltaY: number = 0;
 
         private listentypes: string[] = [];
 
@@ -166,7 +166,7 @@ namespace feng3d
 
             if (event instanceof WheelEvent)
             {
-                this.wheelDelta = event.wheelDelta;
+                this.deltaY = event.deltaY;
             }
 
             // 赋值上次鼠标事件值
@@ -188,7 +188,7 @@ namespace feng3d
             this.rightmouse = false;
             this.key = "";
             this.keyCode = 0;
-            this.wheelDelta = 0;
+            this.deltaY = 0;
         }
     }
 }

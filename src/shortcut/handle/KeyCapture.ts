@@ -42,7 +42,7 @@ namespace feng3d
 			{
 				windowEventProxy.on(<any>mouseEvents[i], this.onMouseOnce, this);
 			}
-			windowEventProxy.on("mousewheel", this.onMousewheel, this);
+			windowEventProxy.on("wheel", this.onMousewheel, this);
 		}
 
 		/**

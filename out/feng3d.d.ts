@@ -7078,7 +7078,7 @@ declare namespace feng3d {
         rightmouse: boolean;
         key: string;
         keyCode: number;
-        wheelDelta: number;
+        deltaY: number;
         private listentypes;
         target: EventTarget;
         private _target;

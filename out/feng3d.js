@@ -14751,7 +14751,7 @@ var feng3d;
             _this.rightmouse = false;
             _this.key = "";
             _this.keyCode = 0;
-            _this.wheelDelta = 0;
+            _this.deltaY = 0;
             _this.listentypes = [];
             /**
              * 处理鼠标按下时同时出发 "mousemove" 事件bug
@@ -14795,7 +14795,7 @@ var feng3d;
                     _this.key = event.key;
                 }
                 if (event instanceof WheelEvent) {
-                    _this.wheelDelta = event.wheelDelta;
+                    _this.deltaY = event.deltaY;
                 }
                 // 赋值上次鼠标事件值
                 // event.clientX = this.clientX;
@@ -14884,7 +14884,7 @@ var feng3d;
             this.rightmouse = false;
             this.key = "";
             this.keyCode = 0;
-            this.wheelDelta = 0;
+            this.deltaY = 0;
         };
         return EventProxy;
     }(feng3d.EventDispatcher));
@@ -16627,7 +16627,7 @@ var feng3d;
             for (var i = 0; i < mouseEvents.length; i++) {
                 feng3d.windowEventProxy.on(mouseEvents[i], this.onMouseOnce, this);
             }
-            feng3d.windowEventProxy.on("mousewheel", this.onMousewheel, this);
+            feng3d.windowEventProxy.on("wheel", this.onMousewheel, this);
         }
         /**
          * 鼠标事件
