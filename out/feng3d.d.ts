@@ -1,5 +1,27 @@
 declare namespace feng3d {
 }
+interface String {
+    /**
+     * Returns true if the sequence of elements of searchString converted to a String is the
+     * same as the corresponding elements of this object (converted to a String) starting at
+     * position. Otherwise returns false.
+     */
+    startsWith(searchString: string, position?: number): boolean;
+    /**
+     * Returns true if searchString appears as a substring of the result of converting this
+     * object to a String, at one or more positions that are
+     * greater than or equal to position; otherwise, returns false.
+     * @param searchString search string
+     * @param position If position is undefined, 0 is assumed, so as to search all of the String.
+     */
+    includes(searchString: string, position?: number): boolean;
+    /**
+     * Returns true if the sequence of elements of searchString converted to a String is the
+     * same as the corresponding elements of this object (converted to a String) starting at
+     * endPosition – length(this). Otherwise returns false.
+     */
+    endsWith(searchString: string, endPosition?: number): boolean;
+}
 declare namespace feng3d {
     /**
      * 测试代码运行时间
@@ -1147,21 +1169,142 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    var path: WindowPath;
     /**
      * 路径
+     *
+     * 从nodeJs的path移植
      *
      * @see http://nodejs.cn/api/path.html
      * @see https://github.com/nodejs/node/blob/master/lib/path.js
      */
-    class WindowPath {
+    var path: Path;
+    /**
+     * 路径
+     */
+    interface Path {
+        /**
+         * 规范化字符串路径，减少'.'和'.'的部分。当发现多个斜杠时，它们被单个斜杠替换;当路径包含尾部斜杠时，它将被保留。在Windows上使用反斜杠。
+         *
+         * @param p 要规范化的字符串路径。
+         */
+        normalize(p: string): string;
+        /**
+         * 将所有参数连接在一起，并规范化生成的路径。参数必须是字符串。在v0.8中，非字符串参数被悄悄地忽略。在v0.10及以上版本中，会抛出异常。
+         *
+         * @param paths 用于连接的路径列表
+         */
+        join(...paths: string[]): string;
+        /**
+         * 最右边的参数被认为是{to}。其他参数被认为是{from}的数组。
+         *
+         * 从最左边的{from}参数开始，将{to}解析为一个绝对路径。
+         *
+         * 如果{to}还不是绝对的，则{from}参数将按从右到左的顺序预先设置，直到找到绝对路径为止。如果在使用所有{from}路径之后仍然没有找到绝对路径，则还将使用当前工作目录。得到的路径是规范化的，除非路径被解析到根目录，否则尾部斜杠将被删除。
+         *
+         * @param pathSegments 要连接的字符串路径。非字符串参数将被忽略。
+         */
+        resolve(...pathSegments: string[]): string;
+        /**
+         * 确定{path}是否是一个绝对路径。无论工作目录如何，绝对路径总是解析到相同的位置。
+         *
+         * @param path 用于测试的路径。
+         */
+        isAbsolute(path: string): boolean;
+        /**
+         * 解决从{from}到{to}的相对路径。有时我们有两条绝对路径，我们需要推导出一条到另一条的相对路径。这实际上是path.resolve的逆变换。
+         *
+         * @param from 起始路径
+         * @param to 目标路径
+         */
+        relative(from: string, to: string): string;
+        /**
+         * 返回路径的目录名。类似于Unix的dirname命令。
+         *
+         * @param p 求值的路径。
+         */
+        dirname(p: string): string;
         /**
          * 返回路径的最后一部分。类似于Unix basename命令。通常用于从完全限定的路径中提取文件名。
          *
-         * @param path 求值的路径。
+         * @param p 求值的路径。
          * @param ext 可选地，从结果中删除的扩展。
          */
-        basename(path: string, ext?: string): string;
+        basename(p: string, ext?: string): string;
+        /**
+         * 返回路径的扩展名，在路径的最后一部分从最后一个'.'到字符串末尾。如果在路径的最后部分没有'.'或者最后一个字符时'.'则返回一个空字符串。
+         *
+         * @param p 求值的路径。
+         */
+        extname(p: string): string;
+        /**
+         * 特定平台的文件分隔符。'\\'或'/'。
+         */
+        sep: '\\' | '/';
+        /**
+         * 特定平台的文件分隔符。 ';' 或者 ':'.
+         */
+        delimiter: ';' | ':';
+        /**
+         * 从路径字符串返回一个对象 —— 与format()相反。
+         *
+         * @param pathString 路径字符串。
+         */
+        parse(pathString: string): ParsedPath;
+        /**
+         * 从对象返回路径字符串——与parse()相反。
+         *
+         * @param pathObject 路径对象。
+         */
+        format(pathObject: FormatInputPathObject): string;
+        win32: Path;
+        posix: Path;
+    }
+    /**
+     * 由path.parse()生成或由path.format()使用的已解析路径对象。
+     */
+    interface ParsedPath {
+        /**
+         * 路径的根，如'/'或'c:\'
+         */
+        root: string;
+        /**
+         * 完整的目录路径，如'/home/user/dir'或'c:\path\dir'
+         */
+        dir: string;
+        /**
+         * 包含扩展名(如有)的文件名，如'index.html'
+         */
+        base: string;
+        /**
+         * 文件扩展名(如果有)，如'.html'
+         */
+        ext: string;
+        /**
+         * 没有扩展名(如果有)的文件名，如'index'
+         */
+        name: string;
+    }
+    interface FormatInputPathObject {
+        /**
+         * 路径的根，如'/'或'c:\'
+         */
+        root?: string;
+        /**
+         * 完整的目录路径，如'/home/user/dir'或'c:\path\dir'
+         */
+        dir?: string;
+        /**
+         * 包含扩展名(如有)的文件名，如'index.html'
+         */
+        base?: string;
+        /**
+         * 文件扩展名(如果有)，如'.html'
+         */
+        ext?: string;
+        /**
+         * 没有扩展名(如果有)的文件名，如'index'
+         */
+        name?: string;
     }
 }
 declare namespace feng3d {

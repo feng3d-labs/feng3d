@@ -170,10 +170,10 @@ namespace feng3d
             }
 
             // 赋值上次鼠标事件值
-            event.clientX = this.clientX;
-            event.clientY = this.clientY;
-            event.pageX = this.pageX;
-            event.pageY = this.pageY;
+            // event.clientX = this.clientX;
+            // event.clientY = this.clientY;
+            // event.pageX = this.pageX;
+            // event.pageY = this.pageY;
 
             this.dispatchEvent(<any>event);
         }
