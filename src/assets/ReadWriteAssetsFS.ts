@@ -16,5 +16,17 @@ namespace feng3d
             super(readWriteFS);
             this._fs = new ReadWriteFS(readWriteFS);
         }
+
+        /**
+         * 写（保存）资源
+         * 
+         * @param assets 资源对象
+         * @param callback 完成回调
+         */
+        writeAssets(assets: Feng3dAssets, callback: (err: Error) => void)
+        {
+            var path = assetsIDPathMap.getPath(assets.assetsId);
+            this.fs.writeObject(path, assets, callback);
+        }
     }
 }

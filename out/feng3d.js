@@ -16527,6 +16527,16 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        /**
+         * 写（保存）资源
+         *
+         * @param assets 资源对象
+         * @param callback 完成回调
+         */
+        ReadWriteAssetsFS.prototype.writeAssets = function (assets, callback) {
+            var path = feng3d.assetsIDPathMap.getPath(assets.assetsId);
+            this.fs.writeObject(path, assets, callback);
+        };
         return ReadWriteAssetsFS;
     }(feng3d.ReadAssetsFS));
     feng3d.ReadWriteAssetsFS = ReadWriteAssetsFS;

@@ -7907,6 +7907,13 @@ declare namespace feng3d {
         readonly fs: ReadWriteFS;
         protected _fs: ReadWriteFS;
         constructor(readWriteFS?: IBaseReadWriteFS);
+        /**
+         * 写（保存）资源
+         *
+         * @param assets 资源对象
+         * @param callback 完成回调
+         */
+        writeAssets(assets: Feng3dAssets, callback: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
