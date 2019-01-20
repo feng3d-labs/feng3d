@@ -111,6 +111,7 @@
         "src/assets/ReadFS.ts",
         "src/assets/ReadWriteFS.ts",
         "src/assets/FileStats.ts",
+        "src/assets/AssetsMeta.ts",
         //
         "src/assets/IndexedDBFS.ts",
         "src/assets/HttpFS.ts",

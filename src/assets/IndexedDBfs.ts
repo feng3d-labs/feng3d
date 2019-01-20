@@ -175,10 +175,7 @@ namespace feng3d
          */
         stat(path: string, callback: (err: Error, stats: FileStats) => void): void
         {
-            _indexedDB.objectStoreGet(this.DBname, this.projectname, path + statSuffix, (err, data: FileStats) =>
-            {
-                callback(err, data);
-            });
+            _indexedDB.objectStoreGet(this.DBname, this.projectname, path + statSuffix, callback);
         }
 
         /**

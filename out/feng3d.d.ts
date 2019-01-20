@@ -7705,6 +7705,33 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 资源元标签
+     */
+    interface AssetsMeta {
+        /**
+         * 资源编号
+         */
+        guid: string;
+        /**
+         * 是否为文件夹，如果不是文件夹则为文件
+         */
+        isDirectory: boolean;
+        /**
+         * 修改时间（单位为ms）
+         */
+        mtimeMs: number;
+        /**
+         * 创建时间（单位为ms）
+         */
+        birthtimeMs: number;
+        /**
+         * 资源类型，由具体对象类型决定
+         */
+        assetType: AssetExtension;
+    }
+}
+declare namespace feng3d {
+    /**
      * 索引数据文件系统
      */
     var indexedDBFS: IndexedDBFS;
@@ -7921,8 +7948,36 @@ declare namespace feng3d {
          * @param assets 资源对象
          * @param callback 完成回调
          */
-        writeAssets(assets: Feng3dAssets, callback: (err: Error) => void): void;
+        writeAssets(assets: Feng3dAssets, callback?: (err: Error) => void): void;
+        /**
+         * 删除资源
+         *
+         * @param assets 资源对象
+         * @param callback 完成回调
+         */
         deleteAssets(assets: Feng3dAssets, callback?: (err: Error) => void): void;
+        /**
+         * 读取资源元标签
+         *
+         * @param path 资源路径
+         * @param callback 完成回调
+         */
+        private _readMeta;
+        /**
+         * 写资源元标签
+         *
+         * @param path 资源路径
+         * @param meta 资源元标签
+         * @param callback 完成回调
+         */
+        private _writeMeta;
+        /**
+         * 删除资源元标签
+         *
+         * @param path 资源路径
+         * @param callback 完成回调
+         */
+        private _deleteMeta;
     }
 }
 declare namespace feng3d {
