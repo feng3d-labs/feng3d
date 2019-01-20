@@ -7489,6 +7489,10 @@ declare namespace feng3d {
      * 针对基础文件系统进行扩展
      */
     class ReadFS implements IBaseReadFS {
+        /**
+         * 基础文件系统
+         */
+        readonly baseFS: IBaseReadFS;
         protected _fs: IBaseReadFS;
         /**
          * 文件系统类型
@@ -7535,6 +7539,10 @@ declare namespace feng3d {
      */
     class ReadWriteFS extends ReadFS implements IBaseReadWriteFS {
         projectname: string;
+        /**
+         * 基础文件系统
+         */
+        readonly baseFS: IBaseReadWriteFS;
         protected _fs: IBaseReadWriteFS;
         constructor(baseReadWriteFS: IBaseReadWriteFS);
         /**
@@ -7914,6 +7922,7 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         writeAssets(assets: Feng3dAssets, callback: (err: Error) => void): void;
+        deleteAssets(assets: Feng3dAssets, callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {

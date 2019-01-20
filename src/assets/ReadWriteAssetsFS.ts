@@ -28,5 +28,11 @@ namespace feng3d
             var path = assetsIDPathMap.getPath(assets.assetsId);
             this.fs.writeObject(path, assets, callback);
         }
+
+        deleteAssets(assets: Feng3dAssets, callback?: (err: Error) => void)
+        {
+            var path = assetsIDPathMap.getPath(assets.assetsId);
+            this.fs.deleteFile(path, callback);
+        }
     }
 }

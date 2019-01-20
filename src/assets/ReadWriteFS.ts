@@ -7,8 +7,20 @@ namespace feng3d
      */
     export class ReadWriteFS extends ReadFS implements IBaseReadWriteFS
     {
-        projectname: string;
+        get projectname()
+        {
+            return this._fs.projectname;
+        }
 
+        set projectname(v)
+        {
+            this._fs.projectname = v;
+        }
+
+        /**
+         * 基础文件系统
+         */
+        get baseFS() { return this._fs; }
         protected _fs: IBaseReadWriteFS;
 
         constructor(baseReadWriteFS: IBaseReadWriteFS)

@@ -7,6 +7,10 @@ namespace feng3d
      */
     export class ReadFS implements IBaseReadFS
     {
+        /**
+         * 基础文件系统
+         */
+        get baseFS() { return this._fs; }
         protected _fs: IBaseReadFS;
 
         /**

@@ -15686,6 +15686,14 @@ var feng3d;
         function ReadFS(baseReadFS) {
             this._fs = baseReadFS;
         }
+        Object.defineProperty(ReadFS.prototype, "baseFS", {
+            /**
+             * 基础文件系统
+             */
+            get: function () { return this._fs; },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ReadFS.prototype, "type", {
             /**
              * 文件系统类型
@@ -15754,6 +15762,24 @@ var feng3d;
             _this._fs = baseReadWriteFS;
             return _this;
         }
+        Object.defineProperty(ReadWriteFS.prototype, "projectname", {
+            get: function () {
+                return this._fs.projectname;
+            },
+            set: function (v) {
+                this._fs.projectname = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ReadWriteFS.prototype, "baseFS", {
+            /**
+             * 基础文件系统
+             */
+            get: function () { return this._fs; },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 获取文件状态。
          *
@@ -16536,6 +16562,10 @@ var feng3d;
         ReadWriteAssetsFS.prototype.writeAssets = function (assets, callback) {
             var path = feng3d.assetsIDPathMap.getPath(assets.assetsId);
             this.fs.writeObject(path, assets, callback);
+        };
+        ReadWriteAssetsFS.prototype.deleteAssets = function (assets, callback) {
+            var path = feng3d.assetsIDPathMap.getPath(assets.assetsId);
+            this.fs.deleteFile(path, callback);
         };
         return ReadWriteAssetsFS;
     }(feng3d.ReadAssetsFS));
