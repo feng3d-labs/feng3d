@@ -168,38 +168,15 @@ namespace feng3d
         }
 
         /**
-         * 获取文件状态。
-         * 
-         * @param path 文件的路径。
-         * @param callback 完成回调。
-         */
-        stat(path: string, callback: (err: Error, stats: FileStats) => void): void
-        {
-            _indexedDB.objectStoreGet(this.DBname, this.projectname, path + statSuffix, callback);
-        }
-
-        /**
-         * 写（更新）文件状态信息
-         * 
-         * @param path 文件路径
-         * @param stats 状态信息
-         * @param callback 完成回调
-         */
-        private _writeStats(path: string, stats: FileStats, callback: (err: Error) => void)
-        {
-            _indexedDB.objectStorePut(this.DBname, this.projectname, path + statSuffix, stats, callback);
-        }
-
-        /**
          * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数
          */
         exists(path: string, callback: (exists: boolean) => void): void
         {
-            this.stat(path, (err, stats) =>
+            _indexedDB.objectStoreGet(this.DBname, this.projectname, path, (err, data) =>
             {
-                callback(!!stats);
+                callback(!!data);
             });
         }
 
@@ -248,16 +225,7 @@ namespace feng3d
                     callback(new Error(`文件夹${path}已存在无法新建`));
                     return;
                 }
-                // 写状态文件
-                this._writeStats(path, { isDirectory: true, birthtimeMs: Date.now(), mtimeMs: Date.now(), size: 0 }, (err) =>
-                {
-                    if (err)
-                    {
-                        callback && callback(err);
-                        return;
-                    }
-                    _indexedDB.objectStorePut(this.DBname, this.projectname, path, new ArrayBuffer(0), callback);
-                });
+                _indexedDB.objectStorePut(this.DBname, this.projectname, path, new ArrayBuffer(0), callback);
             });
         }
 
@@ -284,24 +252,7 @@ namespace feng3d
          */
         writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void)
         {
-            this.stat(path, (err, stats) =>
-            {
-                if (!stats)
-                {
-                    stats = { isDirectory: false, birthtimeMs: Date.now(), mtimeMs: Date.now(), size: 0 }
-                }
-                stats.size = data.byteLength;
-                stats.mtimeMs = Date.now();
-                this._writeStats(path, stats, (err) =>
-                {
-                    if (err)
-                    {
-                        callback && callback(err);
-                        return;
-                    }
-                    _indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
-                });
-            });
+            _indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
         }
 
         /**
@@ -312,24 +263,7 @@ namespace feng3d
          */
         writeString(path: string, data: string, callback?: (err: Error) => void)
         {
-            this.stat(path, (err, stats) =>
-            {
-                if (!stats)
-                {
-                    stats = { isDirectory: false, birthtimeMs: Date.now(), mtimeMs: Date.now(), size: 0 }
-                }
-                stats.size = data.length;
-                stats.mtimeMs = Date.now();
-                this._writeStats(path, stats, (err) =>
-                {
-                    if (err)
-                    {
-                        callback && callback(err);
-                        return;
-                    }
-                    _indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
-                });
-            });
+            _indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
         }
 
         /**
@@ -340,29 +274,8 @@ namespace feng3d
          */
         writeObject(path: string, data: Object, callback?: (err: Error) => void)
         {
-            this.stat(path, (err, stats) =>
-            {
-                if (!stats)
-                {
-                    stats = { isDirectory: false, birthtimeMs: Date.now(), mtimeMs: Date.now(), size: 0 }
-                }
-
-                var obj = serialization.serialize(data);
-
-                var str = JSON.stringify(obj, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
-
-                stats.size = str.length;
-                stats.mtimeMs = Date.now();
-                this._writeStats(path, stats, (err) =>
-                {
-                    if (err)
-                    {
-                        callback && callback(err);
-                        return;
-                    }
-                    _indexedDB.objectStorePut(this.DBname, this.projectname, path, obj, callback);
-                });
-            });
+            var obj = serialization.serialize(data);
+            _indexedDB.objectStorePut(this.DBname, this.projectname, path, obj, callback);
         }
 
         /**

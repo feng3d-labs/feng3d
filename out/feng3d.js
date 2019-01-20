@@ -15781,15 +15781,6 @@ var feng3d;
             configurable: true
         });
         /**
-         * 获取文件状态。
-         *
-         * @param path 文件的路径。
-         * @param callback 完成回调。
-         */
-        ReadWriteFS.prototype.stat = function (path, callback) {
-            this._fs.stat(path, callback);
-        };
-        /**
          * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数
@@ -16180,32 +16171,13 @@ var feng3d;
             callback(null, path);
         };
         /**
-         * 获取文件状态。
-         *
-         * @param path 文件的路径。
-         * @param callback 完成回调。
-         */
-        IndexedDBFS.prototype.stat = function (path, callback) {
-            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path + statSuffix, callback);
-        };
-        /**
-         * 写（更新）文件状态信息
-         *
-         * @param path 文件路径
-         * @param stats 状态信息
-         * @param callback 完成回调
-         */
-        IndexedDBFS.prototype._writeStats = function (path, stats, callback) {
-            feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path + statSuffix, stats, callback);
-        };
-        /**
          * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数
          */
         IndexedDBFS.prototype.exists = function (path, callback) {
-            this.stat(path, function (err, stats) {
-                callback(!!stats);
+            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
+                callback(!!data);
             });
         };
         /**
@@ -16245,14 +16217,7 @@ var feng3d;
                     callback(new Error("\u6587\u4EF6\u5939" + path + "\u5DF2\u5B58\u5728\u65E0\u6CD5\u65B0\u5EFA"));
                     return;
                 }
-                // 写状态文件
-                _this._writeStats(path, { isDirectory: true, birthtimeMs: Date.now(), mtimeMs: Date.now(), size: 0 }, function (err) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
-                    }
-                    feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, path, new ArrayBuffer(0), callback);
-                });
+                feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, path, new ArrayBuffer(0), callback);
             });
         };
         /**
@@ -16275,21 +16240,7 @@ var feng3d;
          * @param callback 回调函数
          */
         IndexedDBFS.prototype.writeArrayBuffer = function (path, data, callback) {
-            var _this = this;
-            this.stat(path, function (err, stats) {
-                if (!stats) {
-                    stats = { isDirectory: false, birthtimeMs: Date.now(), mtimeMs: Date.now(), size: 0 };
-                }
-                stats.size = data.byteLength;
-                stats.mtimeMs = Date.now();
-                _this._writeStats(path, stats, function (err) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
-                    }
-                    feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, path, data, callback);
-                });
-            });
+            feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
         };
         /**
          * 写文件
@@ -16298,21 +16249,7 @@ var feng3d;
          * @param callback 回调函数
          */
         IndexedDBFS.prototype.writeString = function (path, data, callback) {
-            var _this = this;
-            this.stat(path, function (err, stats) {
-                if (!stats) {
-                    stats = { isDirectory: false, birthtimeMs: Date.now(), mtimeMs: Date.now(), size: 0 };
-                }
-                stats.size = data.length;
-                stats.mtimeMs = Date.now();
-                _this._writeStats(path, stats, function (err) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
-                    }
-                    feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, path, data, callback);
-                });
-            });
+            feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
         };
         /**
          * 写文件
@@ -16321,23 +16258,8 @@ var feng3d;
          * @param callback 回调函数
          */
         IndexedDBFS.prototype.writeObject = function (path, data, callback) {
-            var _this = this;
-            this.stat(path, function (err, stats) {
-                if (!stats) {
-                    stats = { isDirectory: false, birthtimeMs: Date.now(), mtimeMs: Date.now(), size: 0 };
-                }
-                var obj = feng3d.serialization.serialize(data);
-                var str = JSON.stringify(obj, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
-                stats.size = str.length;
-                stats.mtimeMs = Date.now();
-                _this._writeStats(path, stats, function (err) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
-                    }
-                    feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, path, obj, callback);
-                });
-            });
+            var obj = feng3d.serialization.serialize(data);
+            feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, obj, callback);
         };
         /**
          * 写图片

@@ -7415,13 +7415,6 @@ declare namespace feng3d {
          */
         projectname: string;
         /**
-         * 获取文件状态。
-         *
-         * @param path 文件的路径。
-         * @param callback 完成回调。
-         */
-        stat(path: string, callback: (err: Error, stats: FileStats) => void): void;
-        /**
          * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数
@@ -7545,13 +7538,6 @@ declare namespace feng3d {
         readonly baseFS: IBaseReadWriteFS;
         protected _fs: IBaseReadWriteFS;
         constructor(baseReadWriteFS: IBaseReadWriteFS);
-        /**
-         * 获取文件状态。
-         *
-         * @param path 文件的路径。
-         * @param callback 完成回调。
-         */
-        stat(path: string, callback: (err: Error, stats: FileStats) => void): void;
         /**
          * 文件是否存在
          * @param path 文件路径
@@ -7682,29 +7668,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 文件状态
-     */
-    interface FileStats {
-        /**
-         * 是否为文件夹，如果不是文件夹则为文件
-         */
-        isDirectory: boolean;
-        /**
-         * 文件大小
-         */
-        size: number;
-        /**
-         * 修改时间（单位为ms）
-         */
-        mtimeMs: number;
-        /**
-         * 创建时间（单位为ms）
-         */
-        birthtimeMs: number;
-    }
-}
-declare namespace feng3d {
-    /**
      * 资源元标签
      */
     interface AssetsMeta {
@@ -7779,21 +7742,6 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
-        /**
-         * 获取文件状态。
-         *
-         * @param path 文件的路径。
-         * @param callback 完成回调。
-         */
-        stat(path: string, callback: (err: Error, stats: FileStats) => void): void;
-        /**
-         * 写（更新）文件状态信息
-         *
-         * @param path 文件路径
-         * @param stats 状态信息
-         * @param callback 完成回调
-         */
-        private _writeStats;
         /**
          * 文件是否存在
          * @param path 文件路径
