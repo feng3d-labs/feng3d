@@ -7374,6 +7374,18 @@ declare namespace feng3d {
          */
         readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
         /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readString(path: string, callback: (err: Error, data: string) => void): void;
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readObject(path: string, callback: (err: Error, data: object) => void): void;
+        /**
          * 获取文件绝对路径
          * @param path （相对）路径
          * @param callback 回调函数
@@ -7426,6 +7438,20 @@ declare namespace feng3d {
          */
         writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
         /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeString(path: string, data: string, callback?: (err: Error) => void): void;
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeObject(path: string, data: Object, callback?: (err: Error) => void): void;
+        /**
          * 获取所有文件路径
          * @param callback 回调函数
          */
@@ -7454,6 +7480,18 @@ declare namespace feng3d {
          */
         readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
         /**
+         * 读取文件为字符串
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readString(path: string, callback: (err: Error, data: string) => void): void;
+        /**
+         * 读取文件为Object
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readObject(path: string, callback: (err: Error, data: Object) => void): void;
+        /**
          * 获取文件绝对路径
          * @param path （相对）路径
          * @param callback 回调函数
@@ -7479,11 +7517,23 @@ declare namespace feng3d {
          */
         readonly type: FSType;
         /**
-         * 读取文件
+         * 读取文件为ArrayBuffer
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
         readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): any;
+        /**
+         * 读取文件为字符串
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readString(path: string, callback: (err: Error, data: string) => void): any;
+        /**
+         * 读取文件为Object
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readObject(path: string, callback: (err: Error, data: Object) => void): any;
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
@@ -7531,12 +7581,26 @@ declare namespace feng3d {
          */
         deleteFile(path: string, callback?: (err: Error) => void): void;
         /**
-         * 写(新建)文件
+         * 写ArrayBuffer(新建)文件
          * @param path 文件路径
          * @param data 文件数据
          * @param callback 回调函数
          */
         writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        /**
+         * 写字符串到(新建)文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeString(path: string, data: string, callback?: (err: Error) => void): void;
+        /**
+         * 写Object到(新建)文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeObject(path: string, data: Object, callback?: (err: Error) => void): void;
     }
     /**
      * 文件状态
@@ -7595,7 +7659,7 @@ declare namespace feng3d {
         /**
          * 读取文件为字符串
          */
-        readString(path: string, callback: (err: Error | null, data: string | null) => void): void;
+        readString(path: string, callback: (err: Error, data: string) => void): void;
         /**
          * 加载图片
          * @param path 图片路径

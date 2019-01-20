@@ -45,7 +45,91 @@ namespace feng3d
         {
             _indexedDB.objectStoreGet(this.DBname, this.projectname, path, (err, data) =>
             {
-                callback(err, data);
+                if (err)
+                {
+                    callback(err, data);
+                    return;
+                }
+                if (data instanceof ArrayBuffer)
+                {
+                    callback(null, data);
+                } else if (data instanceof Object)
+                {
+                    var str = JSON.stringify(data);
+                    dataTransform.stringToArrayBuffer(str, (arraybuffer) =>
+                    {
+                        callback(null, arraybuffer);
+                    });
+                } else
+                {
+                    dataTransform.stringToArrayBuffer(data, (arraybuffer) =>
+                    {
+                        callback(null, arraybuffer);
+                    });
+                }
+            });
+        }
+
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readString(path: string, callback: (err: Error, data: string) => void)
+        {
+            _indexedDB.objectStoreGet(this.DBname, this.projectname, path, (err, data) =>
+            {
+                if (err)
+                {
+                    callback(err, data);
+                    return;
+                }
+                if (data instanceof ArrayBuffer)
+                {
+                    dataTransform.arrayBufferToString(data, (str) =>
+                    {
+                        callback(null, str);
+                    });
+                } else if (data instanceof Object)
+                {
+                    var str = JSON.stringify(data);
+                    callback(null, str);
+                } else
+                {
+                    callback(null, data);
+                }
+            });
+        }
+
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readObject(path: string, callback: (err: Error, data: object) => void)
+        {
+            _indexedDB.objectStoreGet(this.DBname, this.projectname, path, (err, data) =>
+            {
+                if (err)
+                {
+                    callback(err, data);
+                    return;
+                }
+                if (data instanceof ArrayBuffer)
+                {
+                    dataTransform.arrayBufferToString(data, (str) =>
+                    {
+                        var obj = JSON.parse(str);
+                        callback(null, obj);
+                    });
+                } else if (data instanceof Object)
+                {
+                    callback(null, data);
+                } else
+                {
+                    var obj = JSON.parse(data);
+                    callback(null, obj);
+                }
             });
         }
 
@@ -186,6 +270,65 @@ namespace feng3d
                     stats = { isDirectory: false, birthtimeMs: Date.now(), mtimeMs: Date.now(), size: 0 }
                 }
                 stats.size = data.byteLength;
+                stats.mtimeMs = Date.now();
+                this._writeStats(path, stats, (err) =>
+                {
+                    if (err)
+                    {
+                        callback && callback(err);
+                        return;
+                    }
+                    _indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
+                });
+            });
+        }
+
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeString(path: string, data: string, callback?: (err: Error) => void)
+        {
+            this.stat(path, (err, stats) =>
+            {
+                if (!stats)
+                {
+                    stats = { isDirectory: false, birthtimeMs: Date.now(), mtimeMs: Date.now(), size: 0 }
+                }
+                stats.size = data.length;
+                stats.mtimeMs = Date.now();
+                this._writeStats(path, stats, (err) =>
+                {
+                    if (err)
+                    {
+                        callback && callback(err);
+                        return;
+                    }
+                    _indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
+                });
+            });
+        }
+
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeObject(path: string, data: Object, callback?: (err: Error) => void)
+        {
+            this.stat(path, (err, stats) =>
+            {
+                if (!stats)
+                {
+                    stats = { isDirectory: false, birthtimeMs: Date.now(), mtimeMs: Date.now(), size: 0 }
+                }
+
+                var str = JSON.stringify(data, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
+
+                stats.size = str.length;
                 stats.mtimeMs = Date.now();
                 this._writeStats(path, stats, (err) =>
                 {

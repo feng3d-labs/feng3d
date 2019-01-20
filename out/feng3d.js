@@ -15683,7 +15683,75 @@ var feng3d;
          */
         IndexedDBfs.prototype.readArrayBuffer = function (path, callback) {
             feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
-                callback(err, data);
+                if (err) {
+                    callback(err, data);
+                    return;
+                }
+                if (data instanceof ArrayBuffer) {
+                    callback(null, data);
+                }
+                else if (data instanceof Object) {
+                    var str = JSON.stringify(data);
+                    feng3d.dataTransform.stringToArrayBuffer(str, function (arraybuffer) {
+                        callback(null, arraybuffer);
+                    });
+                }
+                else {
+                    feng3d.dataTransform.stringToArrayBuffer(data, function (arraybuffer) {
+                        callback(null, arraybuffer);
+                    });
+                }
+            });
+        };
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        IndexedDBfs.prototype.readString = function (path, callback) {
+            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
+                if (err) {
+                    callback(err, data);
+                    return;
+                }
+                if (data instanceof ArrayBuffer) {
+                    feng3d.dataTransform.arrayBufferToString(data, function (str) {
+                        callback(null, str);
+                    });
+                }
+                else if (data instanceof Object) {
+                    var str = JSON.stringify(data);
+                    callback(null, str);
+                }
+                else {
+                    callback(null, data);
+                }
+            });
+        };
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        IndexedDBfs.prototype.readObject = function (path, callback) {
+            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
+                if (err) {
+                    callback(err, data);
+                    return;
+                }
+                if (data instanceof ArrayBuffer) {
+                    feng3d.dataTransform.arrayBufferToString(data, function (str) {
+                        var obj = JSON.parse(str);
+                        callback(null, obj);
+                    });
+                }
+                else if (data instanceof Object) {
+                    callback(null, data);
+                }
+                else {
+                    var obj = JSON.parse(data);
+                    callback(null, obj);
+                }
             });
         };
         /**
@@ -15809,6 +15877,53 @@ var feng3d;
             });
         };
         /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.writeString = function (path, data, callback) {
+            var _this = this;
+            this.stat(path, function (err, stats) {
+                if (!stats) {
+                    stats = { isDirectory: false, birthtimeMs: Date.now(), mtimeMs: Date.now(), size: 0 };
+                }
+                stats.size = data.length;
+                stats.mtimeMs = Date.now();
+                _this._writeStats(path, stats, function (err) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, path, data, callback);
+                });
+            });
+        };
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        IndexedDBfs.prototype.writeObject = function (path, data, callback) {
+            var _this = this;
+            this.stat(path, function (err, stats) {
+                if (!stats) {
+                    stats = { isDirectory: false, birthtimeMs: Date.now(), mtimeMs: Date.now(), size: 0 };
+                }
+                var str = JSON.stringify(data, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
+                stats.size = str.length;
+                stats.mtimeMs = Date.now();
+                _this._writeStats(path, stats, function (err) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, path, data, callback);
+                });
+            });
+        };
+        /**
          * 获取所有文件路径
          * @param callback 回调函数
          */
@@ -15857,6 +15972,31 @@ var feng3d;
             // rootPath
             feng3d.loader.loadBinary(path, function (content) {
                 callback(null, content);
+            }, null, function (e) {
+                callback(e, null);
+            });
+        };
+        /**
+         * 读取文件为字符串
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        HttpFS.prototype.readString = function (path, callback) {
+            feng3d.loader.loadText(path, function (content) {
+                callback(null, content);
+            }, null, function (e) {
+                callback(e, null);
+            });
+        };
+        /**
+         * 读取文件为Object
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        HttpFS.prototype.readObject = function (path, callback) {
+            feng3d.loader.loadText(path, function (content) {
+                var obj = JSON.stringify(content);
+                callback(null, obj);
             }, null, function (e) {
                 callback(e, null);
             });
@@ -15953,15 +16093,7 @@ var feng3d;
          * 读取文件为字符串
          */
         ReadAssets.prototype.readString = function (path, callback) {
-            this.readArrayBuffer(path, function (err, data) {
-                if (err) {
-                    callback(err, null);
-                    return;
-                }
-                feng3d.dataTransform.arrayBufferToString(data, function (content) {
-                    callback(null, content);
-                });
-            });
+            this.fs.readString(path, callback);
         };
         /**
          * 加载图片
@@ -15977,7 +16109,7 @@ var feng3d;
                 img.src = path;
             }
             else {
-                this.readArrayBuffer(path, function (err, data) {
+                this.fs.readArrayBuffer(path, function (err, data) {
                     if (err) {
                         callback(err, null);
                         return;
@@ -15994,7 +16126,7 @@ var feng3d;
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
         ReadAssets.prototype.readDataURL = function (path, callback) {
-            this.readArrayBuffer(path, function (err, data) {
+            this.fs.readArrayBuffer(path, function (err, data) {
                 feng3d.dataTransform.arrayBufferToDataURL(data, function (dataurl) {
                     callback(null, dataurl);
                 });
@@ -16006,7 +16138,7 @@ var feng3d;
          * @param callback 读取完成回调
          */
         ReadAssets.prototype.readBlob = function (path, callback) {
-            feng3d.assets.readArrayBuffer(path, function (err, data) {
+            this.fs.readArrayBuffer(path, function (err, data) {
                 if (err) {
                     callback(err, null);
                     return;
@@ -16022,13 +16154,11 @@ var feng3d;
          * @param callback 读取完成回调
          */
         ReadAssets.prototype.readObject = function (path, callback) {
-            this.readString(path, function (err, str) {
-                if (err) {
-                    callback(err, null);
-                    return;
-                }
-                var object = feng3d.serialization.deserialize(JSON.parse(str));
-                callback(null, object);
+            this.fs.readObject(path, function (err, object) {
+                var obj = object;
+                if (obj)
+                    obj = feng3d.serialization.deserialize(obj);
+                callback(err, object);
             });
         };
         /**
@@ -16164,10 +16294,7 @@ var feng3d;
          * @param callback 完成回调
          */
         ReadWriteAssets.prototype.writeString = function (path, string, callback) {
-            var _this = this;
-            feng3d.dataTransform.stringToArrayBuffer(string, function (arrayBuffer) {
-                _this.writeArrayBuffer(path, arrayBuffer, callback);
-            });
+            this.writeString(path, string, callback);
         };
         /**
          * 保存对象到文件
@@ -16177,8 +16304,7 @@ var feng3d;
          */
         ReadWriteAssets.prototype.writeObject = function (path, object, callback) {
             var obj = feng3d.serialization.serialize(object);
-            var str = JSON.stringify(obj, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
-            this.writeString(path, str, callback);
+            this.fs.writeObject(path, obj, callback);
         };
         /**
          * 获取所有文件路径

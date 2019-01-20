@@ -77,20 +77,9 @@ namespace feng3d
         /**
          * 读取文件为字符串
          */
-        readString(path: string, callback: (err: Error | null, data: string | null) => void): void
+        readString(path: string, callback: (err: Error, data: string) => void): void
         {
-            this.readArrayBuffer(path, (err, data) =>
-            {
-                if (err)
-                {
-                    callback(err, null);
-                    return;
-                }
-                dataTransform.arrayBufferToString(data, (content) =>
-                {
-                    callback(null, content);
-                });
-            });
+            this.fs.readString(path, callback);
         }
 
         /**
@@ -110,7 +99,7 @@ namespace feng3d
                 img.src = path;
             } else
             {
-                this.readArrayBuffer(path, (err, data) =>
+                this.fs.readArrayBuffer(path, (err, data) =>
                 {
                     if (err)
                     {
@@ -132,7 +121,7 @@ namespace feng3d
          */
         readDataURL(path: string, callback: (err: Error, dataurl: string) => void)
         {
-            this.readArrayBuffer(path, (err, data) =>
+            this.fs.readArrayBuffer(path, (err, data) =>
             {
                 feng3d.dataTransform.arrayBufferToDataURL(data, (dataurl) =>
                 {
@@ -148,7 +137,7 @@ namespace feng3d
          */
         readBlob(path: string, callback: (err: Error, blob: Blob) => void)
         {
-            assets.readArrayBuffer(path, (err, data) =>
+            this.fs.readArrayBuffer(path, (err, data) =>
             {
                 if (err)
                 {
@@ -169,15 +158,12 @@ namespace feng3d
          */
         readObject(path: string, callback: (err: Error, object: Object) => void)
         {
-            this.readString(path, (err, str) =>
+            this.fs.readObject(path, (err, object) =>
             {
-                if (err)
-                {
-                    callback(err, null);
-                    return;
-                }
-                var object = serialization.deserialize(JSON.parse(str));
-                callback(null, object);
+                var obj = object;
+                if (obj)
+                    obj = serialization.deserialize(obj);
+                callback(err, object);
             });
         }
 

@@ -21,11 +21,25 @@ namespace feng3d
         readonly type: FSType;
 
         /**
-         * 读取文件
+         * 读取文件为ArrayBuffer
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
         readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void);
+
+        /**
+         * 读取文件为字符串
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readString(path: string, callback: (err: Error, data: string) => void);
+
+        /**
+         * 读取文件为Object
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readObject(path: string, callback: (err: Error, data: Object) => void);
 
         /**
          * 获取文件绝对路径
@@ -82,12 +96,28 @@ namespace feng3d
         deleteFile(path: string, callback?: (err: Error) => void): void;
 
         /**
-         * 写(新建)文件
+         * 写ArrayBuffer(新建)文件
          * @param path 文件路径
          * @param data 文件数据
          * @param callback 回调函数
          */
         writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+
+        /**
+         * 写字符串到(新建)文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeString(path: string, data: string, callback?: (err: Error) => void): void;
+
+        /**
+         * 写Object到(新建)文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeObject(path: string, data: Object, callback?: (err: Error) => void): void;
     }
 
     /**

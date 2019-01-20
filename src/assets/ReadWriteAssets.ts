@@ -119,10 +119,7 @@ namespace feng3d
          */
         writeString(path: string, string: string, callback?: (err: Error) => void)
         {
-            feng3d.dataTransform.stringToArrayBuffer(string, (arrayBuffer) =>
-            {
-                this.writeArrayBuffer(path, arrayBuffer, callback);
-            });
+            this.writeString(path, string, callback);
         }
 
         /**
@@ -133,9 +130,8 @@ namespace feng3d
          */
         writeObject(path: string, object: Object, callback?: (err: Error) => void)
         {
-            var obj = feng3d.serialization.serialize(object);
-            var str = JSON.stringify(obj, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
-            this.writeString(path, str, callback);
+            var obj = serialization.serialize(object);
+            this.fs.writeObject(path, obj, callback);
         }
 
         /**

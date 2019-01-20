@@ -46,6 +46,45 @@ namespace feng3d
         }
 
         /**
+         * 读取文件为字符串
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readString(path: string, callback: (err: Error, data: string) => void)
+        {
+            loader.loadText(path,
+                (content) =>
+                {
+                    callback(null, content);
+                },
+                null,
+                (e) =>
+                {
+                    callback(e, null);
+                });
+        }
+
+        /**
+         * 读取文件为Object
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readObject(path: string, callback: (err: Error, data: Object) => void)
+        {
+            loader.loadText(path,
+                (content) =>
+                {
+                    var obj = JSON.stringify(content);
+                    callback(null, obj);
+                },
+                null,
+                (e) =>
+                {
+                    callback(e, null);
+                });
+        }
+
+        /**
          * 获取文件绝对路径
          * @param path （相对）路径
          * @param callback 回调函数
