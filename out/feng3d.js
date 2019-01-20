@@ -15666,6 +15666,18 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 文件系统类型
+     */
+    var FSType;
+    (function (FSType) {
+        FSType["http"] = "http";
+        FSType["native"] = "native";
+        FSType["indexedDB"] = "indexedDB";
+    })(FSType = feng3d.FSType || (feng3d.FSType = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 文件（夹）状态文件后缀
      */
     var statSuffix = ".__stat";
@@ -16094,18 +16106,6 @@ var feng3d;
     }());
     feng3d.HttpFS = HttpFS;
     feng3d.httpFS = new HttpFS();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 文件系统类型
-     */
-    var FSType;
-    (function (FSType) {
-        FSType["http"] = "http";
-        FSType["native"] = "native";
-        FSType["indexedDB"] = "indexedDB";
-    })(FSType = feng3d.FSType || (feng3d.FSType = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

@@ -1,60 +1,5 @@
 namespace feng3d
 {
-    /**
-     * 文件系统类型
-     */
-    export enum FSType
-    {
-        http = "http",
-        native = "native",
-        indexedDB = "indexedDB"
-    }
-
-    /**
-     * 可读文件系统
-     */
-    export interface ReadFS
-    {
-        /**
-         * 文件系统类型
-         */
-        readonly type: FSType;
-
-        /**
-         * 读取文件为ArrayBuffer
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void);
-
-        /**
-         * 读取文件为字符串
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        readString(path: string, callback: (err: Error, data: string) => void);
-
-        /**
-         * 读取文件为Object
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        readObject(path: string, callback: (err: Error, data: Object) => void);
-
-        /**
-         * 加载图片
-         * @param path 图片路径
-         * @param callback 加载完成回调
-         */
-        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void);
-
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void
-    }
 
     /**
      * 可读写文件系统
@@ -141,28 +86,5 @@ namespace feng3d
          * @param callback 回调函数
          */
         copyFile(src: string, dest: string, callback?: (err: Error) => void);
-    }
-
-    /**
-     * 文件状态
-     */
-    export interface FileStats
-    {
-        /**
-         * 是否为文件夹，如果不是文件夹则为文件
-         */
-        isDirectory: boolean;
-        /**
-         * 文件大小
-         */
-        size: number;
-        /**
-         * 修改时间（单位为ms）
-         */
-        mtimeMs: number;
-        /**
-         * 创建时间（单位为ms）
-         */
-        birthtimeMs: number;
     }
 }

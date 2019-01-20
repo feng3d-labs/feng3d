@@ -105,9 +105,14 @@
         "src/core/Feng3dObject.ts",
         //
         "src/assets/_IndexedDB.ts",
+        "src/assets/FSType.ts",
+        "src/assets/ReadFS.ts",
+        "src/assets/ReadWriteFS.ts",
+        "src/assets/FileStats.ts",
+        //
         "src/assets/IndexedDBFS.ts",
         "src/assets/HttpFS.ts",
-        "src/assets/Assets.ts",
+        //
         "src/assets/ReadAssetsFS.ts",
         "src/assets/ReadWriteAssetsFS.ts",
         "src/assets/AssetExtension.ts",
