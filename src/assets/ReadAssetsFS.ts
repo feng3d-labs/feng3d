@@ -14,11 +14,12 @@ namespace feng3d
         /**
          * 可读文件系统
          */
-        fs: ReadFS;
+        get fs() { return this._fs; }
+        protected _fs: ReadFS;
 
-        constructor(readFS: ReadFS = httpFS)
+        constructor(readFS: IBaseReadFS = httpFS)
         {
-            this.fs = readFS;
+            this._fs = new ReadFS(readFS);
         }
 
         /**
@@ -35,7 +36,7 @@ namespace feng3d
                 return;
             }
             var assetsPath = assetsIDPathMap.getPath(id);
-            this.fs.readObject(assetsPath, (err, assets: Feng3dAssets) =>
+            this._fs.readObject(assetsPath, (err, assets: Feng3dAssets) =>
             {
                 if (assets) Feng3dAssets.setAssets(assets);
                 if (assets instanceof Feng3dFile)

@@ -8,7 +8,7 @@ namespace feng3d
     /**
      * Http可读文件系统
      */
-    export class HttpFS implements ReadFS
+    export class HttpFS implements IBaseReadFS
     {
         /**
          * 根路径

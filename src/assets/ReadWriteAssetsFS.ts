@@ -8,12 +8,13 @@ namespace feng3d
         /**
          * 可读写文件系统
          */
-        fs: ReadWriteFS;
+        get fs() { return this._fs; }
+        protected _fs: ReadWriteFS;
 
-        constructor(readWriteFS: ReadWriteFS = indexedDBFS)
+        constructor(readWriteFS: IBaseReadWriteFS = indexedDBFS)
         {
-            super();
-            this.fs = readWriteFS;
+            super(readWriteFS);
+            this._fs = new ReadWriteFS(readWriteFS);
         }
 
         /**
@@ -42,7 +43,7 @@ namespace feng3d
                 if (dirs.length > 0)
                 {
                     currentdir = dirs.shift();
-                    this.fs.readdir(currentdir, (err, files) =>
+                    this._fs.readdir(currentdir, (err, files) =>
                     {
                         files.forEach(element =>
                         {
@@ -69,14 +70,14 @@ namespace feng3d
          */
         moveFile(src: string, dest: string, callback?: (err: Error) => void)
         {
-            this.fs.copyFile(src, dest, (err) =>
+            this._fs.copyFile(src, dest, (err) =>
             {
                 if (err)
                 {
                     callback && callback(err);
                     return;
                 }
-                this.fs.deleteFile(src, callback);
+                this._fs.deleteFile(src, callback);
             });
         }
 
@@ -120,7 +121,7 @@ namespace feng3d
             if (copylists.length > 0)
             {
                 var copyitem: [string, string] = <any>copylists.shift();
-                this.fs.copyFile(copyitem[0], copyitem[1], (err) =>
+                this._fs.copyFile(copyitem[0], copyitem[1], (err) =>
                 {
                     if (err)
                     {
@@ -143,7 +144,7 @@ namespace feng3d
         {
             if (deletelists.length > 0)
             {
-                this.fs.deleteFile(<string>deletelists.shift(), (err) =>
+                this._fs.deleteFile(<string>deletelists.shift(), (err) =>
                 {
                     if (err)
                     {
@@ -220,7 +221,7 @@ namespace feng3d
                 });
             } else
             {
-                this.fs.deleteFile(path, callback);
+                this._fs.deleteFile(path, callback);
             }
         }
 

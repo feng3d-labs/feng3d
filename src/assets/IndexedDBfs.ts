@@ -13,7 +13,7 @@ namespace feng3d
     /**
      * 索引数据文件系统
      */
-    export class IndexedDBFS implements ReadWriteFS
+    export class IndexedDBFS implements IBaseReadWriteFS
     {
         get type()
         {
