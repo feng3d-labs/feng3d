@@ -1,13 +1,14 @@
 namespace feng3d
 {
-
-    export class ReadWriteAssets extends ReadAssets implements ReadWriteFS
+    /**
+     * 可读写资源文件系统
+     */
+    export class ReadWriteAssetsFS extends ReadAssetsFS implements ReadWriteFS
     {
         /**
          * 可读写文件系统
          */
-        fs: ReadWriteFS = indexedDBfs;
-        // fs = indexedDBfs;
+        fs: ReadWriteFS;
 
         get projectname()
         {
@@ -18,11 +19,10 @@ namespace feng3d
             this.fs.projectname = v;
         }
 
-        constructor(readWriteFS?: ReadWriteFS)
+        constructor(readWriteFS: ReadWriteFS = indexedDBfs)
         {
             super();
-            if (readWriteFS)
-                this.fs = <any>readWriteFS;
+            this.fs = readWriteFS;
         }
 
         /**

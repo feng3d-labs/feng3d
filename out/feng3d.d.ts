@@ -7626,14 +7626,15 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 资源系统
+     * 可读取资源文件系统
      */
-    var assets: ReadAssets;
+    var assets: ReadAssetsFS;
     /**
-     * 资源
+     * 可读取资源文件系统
+     *
      * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
      */
-    class ReadAssets implements ReadFS {
+    class ReadAssetsFS implements ReadFS {
         /**
          * 可读文件系统
          */
@@ -7643,6 +7644,7 @@ declare namespace feng3d {
          */
         private _loadedCallbacks;
         readonly type: FSType;
+        constructor(readFS?: ReadFS);
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
@@ -7693,7 +7695,10 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class ReadWriteAssets extends ReadAssets implements ReadWriteFS {
+    /**
+     * 可读写资源文件系统
+     */
+    class ReadWriteAssetsFS extends ReadAssetsFS implements ReadWriteFS {
         /**
          * 可读写文件系统
          */
@@ -8023,13 +8028,13 @@ declare namespace feng3d {
          * @param readWriteAssets 可读写资源管理系统
          * @param callback 完成回调
          */
-        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
+        protected saveFile(readWriteAssets: ReadWriteAssetsFS, callback?: (err: Error) => void): void;
         /**
          * 读取文件
          * @param readAssets 刻度资源管理系统
          * @param callback 完成回调
          */
-        protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void): void;
+        protected readFile(readAssets: ReadAssetsFS, callback?: (err: Error) => void): void;
         static setAssets(assets: Feng3dAssets): void;
         /**
          * 获取资源
@@ -13386,13 +13391,13 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         onLoadCompleted(callback: () => void): void;
-        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
+        protected saveFile(readWriteAssets: ReadWriteAssetsFS, callback?: (err: Error) => void): void;
         /**
          * 读取文件
          * @param readAssets 刻度资源管理系统
          * @param callback 完成回调
          */
-        protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void): void;
+        protected readFile(readAssets: ReadAssetsFS, callback?: (err: Error) => void): void;
         private imageChanged;
         private urlChanged;
         private onImageAssetsChanged;
@@ -15069,13 +15074,13 @@ declare namespace feng3d {
          * @param readWriteAssets 可读写资源管理系统
          * @param callback 完成回调
          */
-        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
+        protected saveFile(readWriteAssets: ReadWriteAssetsFS, callback?: (err: Error) => void): void;
         /**
          * 读取文件
          * @param readAssets 刻度资源管理系统
          * @param callback 完成回调
          */
-        protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void): void;
+        protected readFile(readAssets: ReadAssetsFS, callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
@@ -15085,13 +15090,13 @@ declare namespace feng3d {
     class StringFile extends Feng3dFile {
         name: string;
         textContent: string;
-        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
+        protected saveFile(readWriteAssets: ReadWriteAssetsFS, callback?: (err: Error) => void): void;
         /**
          * 读取文件
          * @param readAssets 刻度资源管理系统
          * @param callback 完成回调
          */
-        protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void): void;
+        protected readFile(readAssets: ReadAssetsFS, callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {

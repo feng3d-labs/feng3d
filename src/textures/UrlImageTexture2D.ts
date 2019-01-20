@@ -45,7 +45,7 @@ namespace feng3d
             else this.once("loadCompleted", callback);
         }
 
-        protected saveFile(readWriteAssets: ReadWriteAssets, callback = (err: Error) => { })
+        protected saveFile(readWriteAssets: ReadWriteAssetsFS, callback = (err: Error) => { })
         {
             readWriteAssets.writeImage(this.url, this.image, callback);
         }
@@ -55,7 +55,7 @@ namespace feng3d
          * @param readAssets 刻度资源管理系统
          * @param callback 完成回调
          */
-        protected readFile(readAssets: ReadAssets, callback = (err: Error) => { })
+        protected readFile(readAssets: ReadAssetsFS, callback = (err: Error) => { })
         {
             readAssets.readImage(this.url, (err, img) =>
             {

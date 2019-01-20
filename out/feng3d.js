@@ -16029,21 +16029,20 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 资源
+     * 可读取资源文件系统
+     *
      * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
      */
-    var ReadAssets = /** @class */ (function () {
-        function ReadAssets() {
-            /**
-             * 可读文件系统
-             */
-            this.fs = feng3d.httpFS;
+    var ReadAssetsFS = /** @class */ (function () {
+        function ReadAssetsFS(readFS) {
+            if (readFS === void 0) { readFS = feng3d.httpFS; }
             /**
              * 正在加载的资源路径
              */
             this._loadedCallbacks = {};
+            this.fs = readFS;
         }
-        Object.defineProperty(ReadAssets.prototype, "type", {
+        Object.defineProperty(ReadAssetsFS.prototype, "type", {
             get: function () {
                 return this.fs.type;
             },
@@ -16055,7 +16054,7 @@ var feng3d;
          * @param path （相对）路径
          * @param callback 回调函数
          */
-        ReadAssets.prototype.getAbsolutePath = function (path, callback) {
+        ReadAssetsFS.prototype.getAbsolutePath = function (path, callback) {
             this.fs.getAbsolutePath(path, callback);
         };
         /**
@@ -16064,7 +16063,7 @@ var feng3d;
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        ReadAssets.prototype.readArrayBuffer = function (path, callback) {
+        ReadAssetsFS.prototype.readArrayBuffer = function (path, callback) {
             var _this = this;
             if (path == "" || path == null) {
                 callback(new Error("无效路径!"), null);
@@ -16092,7 +16091,7 @@ var feng3d;
         /**
          * 读取文件为字符串
          */
-        ReadAssets.prototype.readString = function (path, callback) {
+        ReadAssetsFS.prototype.readString = function (path, callback) {
             this.fs.readString(path, callback);
         };
         /**
@@ -16100,7 +16099,7 @@ var feng3d;
          * @param path 图片路径
          * @param callback 加载完成回调
          */
-        ReadAssets.prototype.readImage = function (path, callback) {
+        ReadAssetsFS.prototype.readImage = function (path, callback) {
             if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1) {
                 var img = new Image();
                 img.onload = function () {
@@ -16125,7 +16124,7 @@ var feng3d;
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        ReadAssets.prototype.readDataURL = function (path, callback) {
+        ReadAssetsFS.prototype.readDataURL = function (path, callback) {
             this.fs.readArrayBuffer(path, function (err, data) {
                 feng3d.dataTransform.arrayBufferToDataURL(data, function (dataurl) {
                     callback(null, dataurl);
@@ -16137,7 +16136,7 @@ var feng3d;
          * @param path 资源路径
          * @param callback 读取完成回调
          */
-        ReadAssets.prototype.readBlob = function (path, callback) {
+        ReadAssetsFS.prototype.readBlob = function (path, callback) {
             this.fs.readArrayBuffer(path, function (err, data) {
                 if (err) {
                     callback(err, null);
@@ -16153,7 +16152,7 @@ var feng3d;
          * @param path 资源路径
          * @param callback 读取完成回调
          */
-        ReadAssets.prototype.readObject = function (path, callback) {
+        ReadAssetsFS.prototype.readObject = function (path, callback) {
             this.fs.readObject(path, function (err, object) {
                 var obj = object;
                 if (obj)
@@ -16166,7 +16165,7 @@ var feng3d;
          * @param id 资源编号
          * @param callback 读取完成回调
          */
-        ReadAssets.prototype.readAssets = function (id, callback) {
+        ReadAssetsFS.prototype.readAssets = function (id, callback) {
             var _this = this;
             var assets = feng3d.Feng3dAssets.getAssets(id);
             if (assets) {
@@ -16187,27 +16186,25 @@ var feng3d;
                 }
             });
         };
-        return ReadAssets;
+        return ReadAssetsFS;
     }());
-    feng3d.ReadAssets = ReadAssets;
-    feng3d.assets = new ReadAssets();
+    feng3d.ReadAssetsFS = ReadAssetsFS;
+    feng3d.assets = new ReadAssetsFS();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var ReadWriteAssets = /** @class */ (function (_super) {
-        __extends(ReadWriteAssets, _super);
-        function ReadWriteAssets(readWriteFS) {
+    /**
+     * 可读写资源文件系统
+     */
+    var ReadWriteAssetsFS = /** @class */ (function (_super) {
+        __extends(ReadWriteAssetsFS, _super);
+        function ReadWriteAssetsFS(readWriteFS) {
+            if (readWriteFS === void 0) { readWriteFS = feng3d.indexedDBfs; }
             var _this = _super.call(this) || this;
-            /**
-             * 可读写文件系统
-             */
-            _this.fs = feng3d.indexedDBfs;
-            if (readWriteFS)
-                _this.fs = readWriteFS;
+            _this.fs = readWriteFS;
             return _this;
         }
-        Object.defineProperty(ReadWriteAssets.prototype, "projectname", {
-            // fs = indexedDBfs;
+        Object.defineProperty(ReadWriteAssetsFS.prototype, "projectname", {
             get: function () {
                 return this.fs.projectname;
             },
@@ -16223,7 +16220,7 @@ var feng3d;
          * @param path 文件的路径。
          * @param callback 完成回调。
          */
-        ReadWriteAssets.prototype.stat = function (path, callback) {
+        ReadWriteAssetsFS.prototype.stat = function (path, callback) {
             this.fs.stat(path, callback);
         };
         /**
@@ -16231,7 +16228,7 @@ var feng3d;
          * @param path 文件路径
          * @param callback 回调函数
          */
-        ReadWriteAssets.prototype.exists = function (path, callback) {
+        ReadWriteAssetsFS.prototype.exists = function (path, callback) {
             this.fs.exists(path, callback);
         };
         /**
@@ -16239,7 +16236,7 @@ var feng3d;
          * @param path 路径
          * @param callback 回调函数
          */
-        ReadWriteAssets.prototype.readdir = function (path, callback) {
+        ReadWriteAssetsFS.prototype.readdir = function (path, callback) {
             feng3d.assert(this.isDir(path), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
             this.fs.readdir(path, callback);
         };
@@ -16248,7 +16245,7 @@ var feng3d;
          * @param path 文件夹路径
          * @param callback 回调函数
          */
-        ReadWriteAssets.prototype.mkdir = function (path, callback) {
+        ReadWriteAssetsFS.prototype.mkdir = function (path, callback) {
             feng3d.assert(this.isDir(path), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
             this.fs.mkdir(path, callback);
         };
@@ -16257,7 +16254,7 @@ var feng3d;
          * @param path 文件路径
          * @param callback 回调函数
          */
-        ReadWriteAssets.prototype.deleteFile = function (path, callback) {
+        ReadWriteAssetsFS.prototype.deleteFile = function (path, callback) {
             this.fs.deleteFile(path, callback);
         };
         /**
@@ -16266,7 +16263,7 @@ var feng3d;
          * @param data 文件数据
          * @param callback 回调函数
          */
-        ReadWriteAssets.prototype.writeArrayBuffer = function (path, data, callback) {
+        ReadWriteAssetsFS.prototype.writeArrayBuffer = function (path, data, callback) {
             if (this.isDir(path)) {
                 this.fs.mkdir(path, callback);
             }
@@ -16280,7 +16277,7 @@ var feng3d;
          * @param image 图片
          * @param callback 回调函数
          */
-        ReadWriteAssets.prototype.writeImage = function (path, image, callback) {
+        ReadWriteAssetsFS.prototype.writeImage = function (path, image, callback) {
             var _this = this;
             feng3d.dataTransform.imageToArrayBuffer(image, function (arraybuffer) {
                 _this.writeArrayBuffer(path, arraybuffer, callback);
@@ -16293,7 +16290,7 @@ var feng3d;
          * @param string 保存的字符串
          * @param callback 完成回调
          */
-        ReadWriteAssets.prototype.writeString = function (path, string, callback) {
+        ReadWriteAssetsFS.prototype.writeString = function (path, string, callback) {
             this.writeString(path, string, callback);
         };
         /**
@@ -16302,7 +16299,7 @@ var feng3d;
          * @param object 保存的对象
          * @param callback 完成回调
          */
-        ReadWriteAssets.prototype.writeObject = function (path, object, callback) {
+        ReadWriteAssetsFS.prototype.writeObject = function (path, object, callback) {
             var obj = feng3d.serialization.serialize(object);
             this.fs.writeObject(path, obj, callback);
         };
@@ -16310,13 +16307,13 @@ var feng3d;
          * 获取所有文件路径
          * @param callback 回调函数
          */
-        ReadWriteAssets.prototype.getAllPaths = function (callback) {
+        ReadWriteAssetsFS.prototype.getAllPaths = function (callback) {
             this.getAllfilepathInFolder("", callback);
         };
         /**
          * 获取指定文件下所有文件路径列表
          */
-        ReadWriteAssets.prototype.getAllfilepathInFolder = function (dirpath, callback) {
+        ReadWriteAssetsFS.prototype.getAllfilepathInFolder = function (dirpath, callback) {
             var _this = this;
             feng3d.assert(this.isDir(dirpath), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
             var dirs = [dirpath];
@@ -16348,7 +16345,7 @@ var feng3d;
          * @param dest    目标路径
          * @param callback 回调函数
          */
-        ReadWriteAssets.prototype.copyFile = function (src, dest, callback) {
+        ReadWriteAssetsFS.prototype.copyFile = function (src, dest, callback) {
             var _this = this;
             this.readArrayBuffer(src, function (err, data) {
                 if (err) {
@@ -16364,7 +16361,7 @@ var feng3d;
          * @param dest 目标路径
          * @param callback 回调函数
          */
-        ReadWriteAssets.prototype.moveFile = function (src, dest, callback) {
+        ReadWriteAssetsFS.prototype.moveFile = function (src, dest, callback) {
             var _this = this;
             this.copyFile(src, dest, function (err) {
                 if (err) {
@@ -16380,7 +16377,7 @@ var feng3d;
          * @param newPath 新路径
          * @param callback 回调函数
          */
-        ReadWriteAssets.prototype.renameFile = function (oldPath, newPath, callback) {
+        ReadWriteAssetsFS.prototype.renameFile = function (oldPath, newPath, callback) {
             this.moveFile(oldPath, newPath, callback);
         };
         /**
@@ -16388,7 +16385,7 @@ var feng3d;
          * @param movelists 移动列表
          * @param callback 回调函数
          */
-        ReadWriteAssets.prototype.moveFiles = function (movelists, callback) {
+        ReadWriteAssetsFS.prototype.moveFiles = function (movelists, callback) {
             var _this = this;
             this.copyFiles(movelists.concat(), function (err) {
                 if (err) {
@@ -16404,7 +16401,7 @@ var feng3d;
          * @param copylists 复制列表
          * @param callback 回调函数
          */
-        ReadWriteAssets.prototype.copyFiles = function (copylists, callback) {
+        ReadWriteAssetsFS.prototype.copyFiles = function (copylists, callback) {
             var _this = this;
             if (copylists.length > 0) {
                 var copyitem = copylists.shift();
@@ -16424,7 +16421,7 @@ var feng3d;
          * @param deletelists 删除列表
          * @param callback 回调函数
          */
-        ReadWriteAssets.prototype.deleteFiles = function (deletelists, callback) {
+        ReadWriteAssetsFS.prototype.deleteFiles = function (deletelists, callback) {
             var _this = this;
             if (deletelists.length > 0) {
                 this.deleteFile(deletelists.shift(), function (err) {
@@ -16444,7 +16441,7 @@ var feng3d;
          * @param newPath 新路径
          * @param callback 回调函数
          */
-        ReadWriteAssets.prototype.rename = function (oldPath, newPath, callback) {
+        ReadWriteAssetsFS.prototype.rename = function (oldPath, newPath, callback) {
             var _this = this;
             if (this.isDir(oldPath)) {
                 this.getAllfilepathInFolder(oldPath, function (err, filepaths) {
@@ -16470,7 +16467,7 @@ var feng3d;
          * @param dest 目标路径
          * @param callback 回调函数
          */
-        ReadWriteAssets.prototype.move = function (src, dest, callback) {
+        ReadWriteAssetsFS.prototype.move = function (src, dest, callback) {
             this.rename(src, dest, callback);
         };
         /**
@@ -16478,7 +16475,7 @@ var feng3d;
          * @param path 路径
          * @param callback 回调函数
          */
-        ReadWriteAssets.prototype.delete = function (path, callback) {
+        ReadWriteAssetsFS.prototype.delete = function (path, callback) {
             var _this = this;
             if (this.isDir(path)) {
                 this.getAllfilepathInFolder(path, function (err, filepaths) {
@@ -16498,14 +16495,14 @@ var feng3d;
          * 是否为文件夹
          * @param path 文件路径
          */
-        ReadWriteAssets.prototype.isDir = function (path) {
+        ReadWriteAssetsFS.prototype.isDir = function (path) {
             if (path == "")
                 return true;
             return path.charAt(path.length - 1) == "/";
         };
-        return ReadWriteAssets;
-    }(feng3d.ReadAssets));
-    feng3d.ReadWriteAssets = ReadWriteAssets;
+        return ReadWriteAssetsFS;
+    }(feng3d.ReadAssetsFS));
+    feng3d.ReadWriteAssetsFS = ReadWriteAssetsFS;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

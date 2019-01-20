@@ -2,20 +2,21 @@ namespace feng3d
 {
 
     /**
-     * 资源系统
+     * 可读取资源文件系统
      */
-    export var assets: ReadAssets;
+    export var assets: ReadAssetsFS;
 
     /**
-     * 资源
+     * 可读取资源文件系统
+     * 
      * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
      */
-    export class ReadAssets implements ReadFS
+    export class ReadAssetsFS implements ReadFS
     {
         /**
          * 可读文件系统
          */
-        fs: ReadFS = httpFS;
+        fs: ReadFS;
 
         /**
          * 正在加载的资源路径
@@ -25,6 +26,11 @@ namespace feng3d
         get type()
         {
             return this.fs.type;
+        }
+
+        constructor(readFS: ReadFS = httpFS)
+        {
+            this.fs = readFS;
         }
 
         /**
@@ -198,5 +204,5 @@ namespace feng3d
         }
     }
 
-    assets = new ReadAssets();
+    assets = new ReadAssetsFS();
 }
