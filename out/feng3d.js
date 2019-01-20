@@ -15701,15 +15701,8 @@ var feng3d;
          * @param callback 完成回调。
          */
         IndexedDBfs.prototype.stat = function (path, callback) {
-            this.readArrayBuffer(path + statSuffix, function (err, data) {
-                if (err) {
-                    callback(err, null);
-                    return;
-                }
-                feng3d.dataTransform.arrayBufferToString(data, function (str) {
-                    var obj = JSON.parse(str);
-                    callback(null, obj);
-                });
+            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path + statSuffix, function (err, data) {
+                callback(err, data);
             });
         };
         /**
@@ -15720,10 +15713,7 @@ var feng3d;
          * @param callback 完成回调
          */
         IndexedDBfs.prototype._writeStats = function (path, stats, callback) {
-            var _this = this;
-            feng3d.dataTransform.stringToArrayBuffer(JSON.stringify(stats), function (arrayBuffer) {
-                feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, path + statSuffix, arrayBuffer, callback);
-            });
+            feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path + statSuffix, stats, callback);
         };
         /**
          * 文件是否存在

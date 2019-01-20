@@ -7318,7 +7318,7 @@ declare namespace feng3d {
          * @param key 键
          * @param callback 完成回调
          */
-        objectStoreGet(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: ArrayBuffer) => void): void;
+        objectStoreGet(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: any) => void): void;
         /**
          * 设置对象存储的键与值，如果不存在指定键则新增否则修改。
          *
@@ -7328,7 +7328,7 @@ declare namespace feng3d {
          * @param data 数据
          * @param callback 完成回调
          */
-        objectStorePut(dbname: string, objectStroreName: string, key: string | number, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        objectStorePut(dbname: string, objectStroreName: string, key: string | number, data: any, callback?: (err: Error) => void): void;
         /**
          * 删除对象存储中指定键以及对于数据
          *

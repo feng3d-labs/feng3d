@@ -281,7 +281,7 @@ namespace feng3d
          * @param key 键
          * @param callback 完成回调
          */
-        objectStoreGet(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: ArrayBuffer) => void)
+        objectStoreGet(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: any) => void)
         {
             this.getDatabase(dbname, (err, database) =>
             {
@@ -306,7 +306,7 @@ namespace feng3d
          * @param data 数据
          * @param callback 完成回调
          */
-        objectStorePut(dbname: string, objectStroreName: string, key: string | number, data: ArrayBuffer, callback?: (err: Error) => void)
+        objectStorePut(dbname: string, objectStroreName: string, key: string | number, data: any, callback?: (err: Error) => void)
         {
             this.getDatabase(dbname, (err, database) =>
             {

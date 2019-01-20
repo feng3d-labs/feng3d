@@ -67,18 +67,9 @@ namespace feng3d
          */
         stat(path: string, callback: (err: Error, stats: FileStats) => void): void
         {
-            this.readArrayBuffer(path + statSuffix, (err, data) =>
+            _indexedDB.objectStoreGet(this.DBname, this.projectname, path + statSuffix, (err, data: FileStats) =>
             {
-                if (err)
-                {
-                    callback(err, null);
-                    return;
-                }
-                dataTransform.arrayBufferToString(data, (str) =>
-                {
-                    var obj: FileStats = JSON.parse(str);
-                    callback(null, obj);
-                });
+                callback(err, data);
             });
         }
 
@@ -91,10 +82,7 @@ namespace feng3d
          */
         private _writeStats(path: string, stats: FileStats, callback: (err: Error) => void)
         {
-            dataTransform.stringToArrayBuffer(JSON.stringify(stats), (arrayBuffer) =>
-            {
-                _indexedDB.objectStorePut(this.DBname, this.projectname, path + statSuffix, arrayBuffer, callback);
-            });
+            _indexedDB.objectStorePut(this.DBname, this.projectname, path + statSuffix, stats, callback);
         }
 
         /**
