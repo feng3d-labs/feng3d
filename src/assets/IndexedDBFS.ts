@@ -225,7 +225,7 @@ namespace feng3d
                     callback(new Error(`文件夹${path}已存在无法新建`));
                     return;
                 }
-                _indexedDB.objectStorePut(this.DBname, this.projectname, path, new ArrayBuffer(0), callback);
+                _indexedDB.objectStorePut(this.DBname, this.projectname, path, "", callback);
             });
         }
 

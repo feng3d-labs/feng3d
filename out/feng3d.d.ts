@@ -7668,6 +7668,10 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 资源元标签文件后缀
+     */
+    const metaSuffix = ".meta";
+    /**
      * 资源元标签
      */
     interface AssetsMeta {
@@ -7877,6 +7881,13 @@ declare namespace feng3d {
          * @param callback 读取完成回调
          */
         readAssets(id: string, callback: (err: Error, assets: Feng3dAssets) => void): void;
+        /**
+         * 读取资源元标签
+         *
+         * @param path 资源路径
+         * @param callback 完成回调
+         */
+        protected _readMeta(path: string, callback?: (err: Error, meta: AssetsMeta) => void): void;
     }
 }
 declare namespace feng3d {
@@ -7904,13 +7915,6 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         deleteAssets(assets: Feng3dAssets, callback?: (err: Error) => void): void;
-        /**
-         * 读取资源元标签
-         *
-         * @param path 资源路径
-         * @param callback 完成回调
-         */
-        private _readMeta;
         /**
          * 写资源元标签
          *

@@ -16045,6 +16045,13 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 资源元标签文件后缀
+     */
+    feng3d.metaSuffix = ".meta";
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 文件（夹）状态文件后缀
      */
     var statSuffix = ".__stat";
@@ -16217,7 +16224,7 @@ var feng3d;
                     callback(new Error("\u6587\u4EF6\u5939" + path + "\u5DF2\u5B58\u5728\u65E0\u6CD5\u65B0\u5EFA"));
                     return;
                 }
-                feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, path, new ArrayBuffer(0), callback);
+                feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, path, "", callback);
             });
         };
         /**
@@ -16433,19 +16440,41 @@ var feng3d;
                 callback(null, assets);
                 return;
             }
-            var assetsPath = feng3d.assetsIDPathMap.getPath(id);
-            this._fs.readObject(assetsPath, function (err, assets) {
-                if (assets)
-                    feng3d.Feng3dAssets.setAssets(assets);
-                if (assets instanceof feng3d.Feng3dFile) {
-                    assets["readFile"](_this, function (err) {
-                        callback(err, assets);
-                    });
+            var path = feng3d.assetsIDPathMap.getPath(id);
+            this._readMeta(path, function (err, meta) {
+                if (err) {
+                    callback(err, null);
+                    return;
+                }
+                if (meta.isDirectory) {
+                    var feng3dFolder = new feng3d.Feng3dFolder();
+                    feng3dFolder.assetsId = meta.guid;
+                    callback(null, feng3dFolder);
                 }
                 else {
-                    callback(err, assets);
+                    _this._fs.readObject(path, function (err, assets) {
+                        if (assets)
+                            feng3d.Feng3dAssets.setAssets(assets);
+                        if (assets instanceof feng3d.Feng3dFile) {
+                            assets["readFile"](_this, function (err) {
+                                callback(err, assets);
+                            });
+                        }
+                        else {
+                            callback(err, assets);
+                        }
+                    });
                 }
             });
+        };
+        /**
+         * 读取资源元标签
+         *
+         * @param path 资源路径
+         * @param callback 完成回调
+         */
+        ReadAssetsFS.prototype._readMeta = function (path, callback) {
+            this.fs.readObject(path + feng3d.metaSuffix, callback);
         };
         return ReadAssetsFS;
     }());
@@ -16454,10 +16483,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 资源元标签文件后缀
-     */
-    var metaSuffix = ".meta";
     /**
      * 可读写资源文件系统
      */
@@ -16498,7 +16523,12 @@ var feng3d;
                         callback && callback(err);
                         return;
                     }
-                    _this.fs.writeObject(path, assets, callback);
+                    if (assets instanceof feng3d.Feng3dFolder) {
+                        _this.fs.mkdir(path, callback);
+                    }
+                    else {
+                        _this.fs.writeObject(path, assets, callback);
+                    }
                 });
             });
         };
@@ -16520,15 +16550,6 @@ var feng3d;
             });
         };
         /**
-         * 读取资源元标签
-         *
-         * @param path 资源路径
-         * @param callback 完成回调
-         */
-        ReadWriteAssetsFS.prototype._readMeta = function (path, callback) {
-            this.fs.readObject(path + metaSuffix, callback);
-        };
-        /**
          * 写资源元标签
          *
          * @param path 资源路径
@@ -16536,7 +16557,7 @@ var feng3d;
          * @param callback 完成回调
          */
         ReadWriteAssetsFS.prototype._writeMeta = function (path, meta, callback) {
-            this.fs.writeObject(path + metaSuffix, meta, callback);
+            this.fs.writeObject(path + feng3d.metaSuffix, meta, callback);
         };
         /**
          * 删除资源元标签
@@ -16545,7 +16566,7 @@ var feng3d;
          * @param callback 完成回调
          */
         ReadWriteAssetsFS.prototype._deleteMeta = function (path, callback) {
-            this.fs.deleteFile(path + metaSuffix, callback);
+            this.fs.deleteFile(path + feng3d.metaSuffix, callback);
         };
         return ReadWriteAssetsFS;
     }(feng3d.ReadAssetsFS));

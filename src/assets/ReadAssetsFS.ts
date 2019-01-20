@@ -35,21 +35,49 @@ namespace feng3d
                 callback(null, assets);
                 return;
             }
-            var assetsPath = assetsIDPathMap.getPath(id);
-            this._fs.readObject(assetsPath, (err, assets: Feng3dAssets) =>
+            var path = assetsIDPathMap.getPath(id);
+            this._readMeta(path, (err, meta) =>
             {
-                if (assets) Feng3dAssets.setAssets(assets);
-                if (assets instanceof Feng3dFile)
+                if (err)
                 {
-                    assets["readFile"](this, err =>
-                    {
-                        callback(err, assets);
-                    });
+                    callback(err, null);
+                    return;
+                }
+                if (meta.isDirectory)
+                {
+                    var feng3dFolder = new Feng3dFolder();
+                    feng3dFolder.assetsId = meta.guid;
+
+                    callback(null, feng3dFolder);
                 } else
                 {
-                    callback(err, assets);
+                    this._fs.readObject(path, (err, assets: Feng3dAssets) =>
+                    {
+                        if (assets) Feng3dAssets.setAssets(assets);
+                        if (assets instanceof Feng3dFile)
+                        {
+                            assets["readFile"](this, err =>
+                            {
+                                callback(err, assets);
+                            });
+                        } else
+                        {
+                            callback(err, assets);
+                        }
+                    });
                 }
             });
+        }
+
+        /**
+         * 读取资源元标签
+         * 
+         * @param path 资源路径
+         * @param callback 完成回调 
+         */
+        protected _readMeta(path: string, callback?: (err: Error, meta: AssetsMeta) => void)
+        {
+            this.fs.readObject(path + metaSuffix, callback);
         }
     }
 

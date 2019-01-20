@@ -1,11 +1,6 @@
 namespace feng3d
 {
     /**
-     * 资源元标签文件后缀
-     */
-    const metaSuffix = ".meta";
-
-    /**
      * 可读写资源文件系统
      */
     export class ReadWriteAssetsFS extends ReadAssetsFS
@@ -47,7 +42,13 @@ namespace feng3d
                         callback && callback(err);
                         return;
                     }
-                    this.fs.writeObject(path, assets, callback);
+                    if (assets instanceof Feng3dFolder)
+                    {
+                        this.fs.mkdir(path, callback);
+                    } else
+                    {
+                        this.fs.writeObject(path, assets, callback);
+                    }
                 });
             });
         }
@@ -71,17 +72,6 @@ namespace feng3d
                 }
                 this.fs.deleteFile(path, callback);
             });
-        }
-
-        /**
-         * 读取资源元标签
-         * 
-         * @param path 资源路径
-         * @param callback 完成回调 
-         */
-        private _readMeta(path: string, callback?: (err: Error, meta: AssetsMeta) => void)
-        {
-            this.fs.readObject(path + metaSuffix, callback);
         }
 
         /**
