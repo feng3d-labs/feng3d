@@ -20,9 +20,13 @@ namespace feng3d
             return FSType.http;
         }
 
-        constructor()
+        constructor(rootPath = "")
         {
-            this.rootPath = document.URL.substring(0, document.URL.lastIndexOf("/") + 1);
+            this.rootPath = rootPath;
+            if (this.rootPath == "")
+            {
+                this.rootPath = document.URL.substring(0, document.URL.lastIndexOf("/") + 1);
+            }
         }
 
         /**
@@ -33,7 +37,7 @@ namespace feng3d
         readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void)
         {
             // rootPath
-            loader.loadBinary(path,
+            loader.loadBinary(this._getAbsolutePath(path),
                 (content) =>
                 {
                     callback(null, content);
@@ -52,7 +56,7 @@ namespace feng3d
          */
         readString(path: string, callback: (err: Error, data: string) => void)
         {
-            loader.loadText(path,
+            loader.loadText(this._getAbsolutePath(path),
                 (content) =>
                 {
                     callback(null, content);
@@ -71,11 +75,12 @@ namespace feng3d
          */
         readObject(path: string, callback: (err: Error, data: Object) => void)
         {
-            loader.loadText(path,
+            loader.loadText(this._getAbsolutePath(path),
                 (content) =>
                 {
                     var obj = JSON.stringify(content);
-                    callback(null, obj);
+                    var object = serialization.deserialize(obj);
+                    callback(null, object);
                 },
                 null,
                 (e) =>
@@ -85,13 +90,37 @@ namespace feng3d
         }
 
         /**
+         * 加载图片
+         * @param path 图片路径
+         * @param callback 加载完成回调
+         */
+        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
+        {
+            var img = new Image();
+            img.onload = function ()
+            {
+                callback(null, img);
+            };
+            img.onerror = (evt) =>
+            {
+                callback(new Error(`加载图片${path}失败`), null);
+            }
+            img.src = this._getAbsolutePath(path);
+        }
+
+        /**
          * 获取文件绝对路径
          * @param path （相对）路径
          * @param callback 回调函数
          */
         getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void
         {
-            callback(null, this.rootPath + path);
+            callback(null, this._getAbsolutePath(path));
+        }
+
+        private _getAbsolutePath(path: string)
+        {
+            return this.rootPath + path;
         }
     }
     httpFS = new HttpFS();

@@ -1258,6 +1258,12 @@ declare namespace feng3d {
      */
     class PathUtils {
         /**
+         * 是否为HTTP地址
+         *
+         * @param path 地址
+         */
+        isHttpURL(path: string): any;
+        /**
          * 获取不带后缀名称
          * @param path 路径
          */
@@ -7386,6 +7392,12 @@ declare namespace feng3d {
          */
         readObject(path: string, callback: (err: Error, data: object) => void): void;
         /**
+         * 加载图片
+         * @param path 图片路径
+         * @param callback 加载完成回调
+         */
+        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
+        /**
          * 获取文件绝对路径
          * @param path （相对）路径
          * @param callback 回调函数
@@ -7452,6 +7464,13 @@ declare namespace feng3d {
          */
         writeObject(path: string, data: Object, callback?: (err: Error) => void): void;
         /**
+         * 写图片
+         * @param path 图片路径
+         * @param image 图片
+         * @param callback 回调函数
+         */
+        writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void): void;
+        /**
          * 获取所有文件路径
          * @param callback 回调函数
          */
@@ -7472,7 +7491,7 @@ declare namespace feng3d {
          */
         rootPath: string;
         readonly type: FSType;
-        constructor();
+        constructor(rootPath?: string);
         /**
          * 读取文件
          * @param path 路径
@@ -7492,11 +7511,18 @@ declare namespace feng3d {
          */
         readObject(path: string, callback: (err: Error, data: Object) => void): void;
         /**
+         * 加载图片
+         * @param path 图片路径
+         * @param callback 加载完成回调
+         */
+        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
+        /**
          * 获取文件绝对路径
          * @param path （相对）路径
          * @param callback 回调函数
          */
         getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
+        private _getAbsolutePath;
     }
 }
 declare namespace feng3d {
@@ -7534,6 +7560,12 @@ declare namespace feng3d {
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
         readObject(path: string, callback: (err: Error, data: Object) => void): any;
+        /**
+         * 加载图片
+         * @param path 图片路径
+         * @param callback 加载完成回调
+         */
+        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): any;
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
@@ -7601,6 +7633,13 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         writeObject(path: string, data: Object, callback?: (err: Error) => void): void;
+        /**
+         * 写图片
+         * @param path 图片路径
+         * @param image 图片
+         * @param callback 回调函数
+         */
+        writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void): any;
     }
     /**
      * 文件状态
@@ -7631,55 +7670,14 @@ declare namespace feng3d {
     var assets: ReadAssetsFS;
     /**
      * 可读取资源文件系统
-     *
-     * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
      */
-    class ReadAssetsFS implements ReadFS {
+    class ReadAssetsFS {
         /**
          * 可读文件系统
          */
         fs: ReadFS;
-        /**
-         * 正在加载的资源路径
-         */
-        private _loadedCallbacks;
         readonly type: FSType;
         constructor(readFS?: ReadFS);
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
-        /**
-         * 读取文件
-         *
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
-        /**
-         * 读取文件为字符串
-         */
-        readString(path: string, callback: (err: Error, data: string) => void): void;
-        /**
-         * 加载图片
-         * @param path 图片路径
-         * @param callback 加载完成回调
-         */
-        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
-        /**
-         * 读取文件为DataURL
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        readDataURL(path: string, callback: (err: Error, dataurl: string) => void): void;
-        /**
-         * 读取文件为Blob
-         * @param path 资源路径
-         * @param callback 读取完成回调
-         */
-        readBlob(path: string, callback: (err: Error, blob: Blob) => void): void;
         /**
          * 读取文件为对象
          * @param path 资源路径
@@ -7698,72 +7696,13 @@ declare namespace feng3d {
     /**
      * 可读写资源文件系统
      */
-    class ReadWriteAssetsFS extends ReadAssetsFS implements ReadWriteFS {
+    class ReadWriteAssetsFS extends ReadAssetsFS {
         /**
          * 可读写文件系统
          */
         fs: ReadWriteFS;
         projectname: string;
         constructor(readWriteFS?: ReadWriteFS);
-        /**
-         * 获取文件状态。
-         *
-         * @param path 文件的路径。
-         * @param callback 完成回调。
-         */
-        stat(path: string, callback: (err: Error, stats: FileStats) => void): void;
-        /**
-         * 文件是否存在
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        exists(path: string, callback: (exists: boolean) => void): void;
-        /**
-         * 读取文件夹中文件列表
-         * @param path 路径
-         * @param callback 回调函数
-         */
-        readdir(path: string, callback: (err: Error, files: string[]) => void): void;
-        /**
-         * 新建文件夹
-         * @param path 文件夹路径
-         * @param callback 回调函数
-         */
-        mkdir(path: string, callback?: (err: Error) => void): void;
-        /**
-         * 删除文件
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        deleteFile(path: string, callback?: (err: Error) => void): void;
-        /**
-         * 写文件
-         * @param path 文件路径
-         * @param data 文件数据
-         * @param callback 回调函数
-         */
-        writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
-        /**
-         * 写图片
-         * @param path 图片路径
-         * @param image 图片
-         * @param callback 回调函数
-         */
-        writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void): void;
-        /**
-         * 保存字符串到文件
-         * @param path 文件路径
-         * @param string 保存的字符串
-         * @param callback 完成回调
-         */
-        writeString(path: string, string: string, callback?: (err: Error) => void): void;
-        /**
-         * 保存对象到文件
-         * @param path 文件路径
-         * @param object 保存的对象
-         * @param callback 完成回调
-         */
-        writeObject(path: string, object: Object, callback?: (err: Error) => void): void;
         /**
          * 获取所有文件路径
          * @param callback 回调函数

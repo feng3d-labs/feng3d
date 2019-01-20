@@ -42,6 +42,13 @@ namespace feng3d
         readObject(path: string, callback: (err: Error, data: Object) => void);
 
         /**
+         * 加载图片
+         * @param path 图片路径
+         * @param callback 加载完成回调
+         */
+        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void);
+
+        /**
          * 获取文件绝对路径
          * @param path （相对）路径
          * @param callback 回调函数
@@ -118,6 +125,14 @@ namespace feng3d
          * @param callback 回调函数
          */
         writeObject(path: string, data: Object, callback?: (err: Error) => void): void;
+
+        /**
+         * 写图片
+         * @param path 图片路径
+         * @param image 图片
+         * @param callback 回调函数
+         */
+        writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void)
     }
 
     /**

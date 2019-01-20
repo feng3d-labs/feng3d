@@ -120,16 +120,40 @@ namespace feng3d
                     dataTransform.arrayBufferToString(data, (str) =>
                     {
                         var obj = JSON.parse(str);
-                        callback(null, obj);
+                        var object = serialization.deserialize(obj);
+                        callback(null, object);
                     });
                 } else if (data instanceof Object)
                 {
-                    callback(null, data);
+                    var object = serialization.deserialize(data);
+                    callback(null, object);
                 } else
                 {
                     var obj = JSON.parse(data);
-                    callback(null, obj);
+                    var object = serialization.deserialize(obj);
+                    callback(null, object);
                 }
+            });
+        }
+
+        /**
+         * 加载图片
+         * @param path 图片路径
+         * @param callback 加载完成回调
+         */
+        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
+        {
+            this.readArrayBuffer(path, (err, data) =>
+            {
+                if (err)
+                {
+                    callback(err, null);
+                    return;
+                }
+                dataTransform.arrayBufferToImage(data, (img) =>
+                {
+                    callback(null, img);
+                });
             });
         }
 
@@ -326,7 +350,9 @@ namespace feng3d
                     stats = { isDirectory: false, birthtimeMs: Date.now(), mtimeMs: Date.now(), size: 0 }
                 }
 
-                var str = JSON.stringify(data, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
+                var obj = serialization.serialize(data);
+
+                var str = JSON.stringify(obj, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
 
                 stats.size = str.length;
                 stats.mtimeMs = Date.now();
@@ -337,8 +363,22 @@ namespace feng3d
                         callback && callback(err);
                         return;
                     }
-                    _indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
+                    _indexedDB.objectStorePut(this.DBname, this.projectname, path, obj, callback);
                 });
+            });
+        }
+
+        /**
+         * 写图片
+         * @param path 图片路径
+         * @param image 图片
+         * @param callback 回调函数
+         */
+        writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void)
+        {
+            dataTransform.imageToArrayBuffer(image, (arraybuffer) =>
+            {
+                this.writeArrayBuffer(path, arraybuffer, callback);
             });
         }
 

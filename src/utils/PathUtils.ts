@@ -10,6 +10,18 @@ namespace feng3d
     export class PathUtils
     {
         /**
+         * 是否为HTTP地址
+         * 
+         * @param path 地址
+         */
+        isHttpURL(path: string): any
+        {
+            if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1)
+                return true;
+            return false;
+        }
+
+        /**
          * 获取不带后缀名称
          * @param path 路径
          */
