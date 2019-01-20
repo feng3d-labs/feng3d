@@ -15672,14 +15672,14 @@ var feng3d;
     /**
      * 索引数据文件系统
      */
-    var IndexedDBfs = /** @class */ (function () {
-        function IndexedDBfs(DBname, projectname) {
+    var IndexedDBFS = /** @class */ (function () {
+        function IndexedDBFS(DBname, projectname) {
             if (DBname === void 0) { DBname = "feng3d-editor"; }
             if (projectname === void 0) { projectname = "testproject"; }
             this.DBname = DBname;
             this.projectname = projectname;
         }
-        Object.defineProperty(IndexedDBfs.prototype, "type", {
+        Object.defineProperty(IndexedDBFS.prototype, "type", {
             get: function () {
                 return feng3d.FSType.indexedDB;
             },
@@ -15691,7 +15691,7 @@ var feng3d;
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        IndexedDBfs.prototype.readArrayBuffer = function (path, callback) {
+        IndexedDBFS.prototype.readArrayBuffer = function (path, callback) {
             feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
                 if (err) {
                     callback(err, data);
@@ -15718,7 +15718,7 @@ var feng3d;
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        IndexedDBfs.prototype.readString = function (path, callback) {
+        IndexedDBFS.prototype.readString = function (path, callback) {
             feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
                 if (err) {
                     callback(err, data);
@@ -15743,7 +15743,7 @@ var feng3d;
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        IndexedDBfs.prototype.readObject = function (path, callback) {
+        IndexedDBFS.prototype.readObject = function (path, callback) {
             feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
                 if (err) {
                     callback(err, data);
@@ -15772,7 +15772,7 @@ var feng3d;
          * @param path 图片路径
          * @param callback 加载完成回调
          */
-        IndexedDBfs.prototype.readImage = function (path, callback) {
+        IndexedDBFS.prototype.readImage = function (path, callback) {
             this.readArrayBuffer(path, function (err, data) {
                 if (err) {
                     callback(err, null);
@@ -15788,7 +15788,7 @@ var feng3d;
          * @param path （相对）路径
          * @param callback 回调函数
          */
-        IndexedDBfs.prototype.getAbsolutePath = function (path, callback) {
+        IndexedDBFS.prototype.getAbsolutePath = function (path, callback) {
             callback(null, path);
         };
         /**
@@ -15797,7 +15797,7 @@ var feng3d;
          * @param path 文件的路径。
          * @param callback 完成回调。
          */
-        IndexedDBfs.prototype.stat = function (path, callback) {
+        IndexedDBFS.prototype.stat = function (path, callback) {
             feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path + statSuffix, function (err, data) {
                 callback(err, data);
             });
@@ -15809,7 +15809,7 @@ var feng3d;
          * @param stats 状态信息
          * @param callback 完成回调
          */
-        IndexedDBfs.prototype._writeStats = function (path, stats, callback) {
+        IndexedDBFS.prototype._writeStats = function (path, stats, callback) {
             feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path + statSuffix, stats, callback);
         };
         /**
@@ -15817,7 +15817,7 @@ var feng3d;
          * @param path 文件路径
          * @param callback 回调函数
          */
-        IndexedDBfs.prototype.exists = function (path, callback) {
+        IndexedDBFS.prototype.exists = function (path, callback) {
             this.stat(path, function (err, stats) {
                 callback(!!stats);
             });
@@ -15827,7 +15827,7 @@ var feng3d;
          * @param path 路径
          * @param callback 回调函数
          */
-        IndexedDBfs.prototype.readdir = function (path, callback) {
+        IndexedDBFS.prototype.readdir = function (path, callback) {
             this.getAllPaths(function (err, allfilepaths) {
                 if (!allfilepaths) {
                     callback(err, null);
@@ -15852,7 +15852,7 @@ var feng3d;
          * @param path 文件夹路径
          * @param callback 回调函数
          */
-        IndexedDBfs.prototype.mkdir = function (path, callback) {
+        IndexedDBFS.prototype.mkdir = function (path, callback) {
             var _this = this;
             this.exists(path, function (exists) {
                 if (exists) {
@@ -15874,7 +15874,7 @@ var feng3d;
          * @param path 文件路径
          * @param callback 回调函数
          */
-        IndexedDBfs.prototype.deleteFile = function (path, callback) {
+        IndexedDBFS.prototype.deleteFile = function (path, callback) {
             var _this = this;
             // 删除状态文件
             feng3d._indexedDB.objectStoreDelete(this.DBname, this.projectname, path + statSuffix, function (err) {
@@ -15888,7 +15888,7 @@ var feng3d;
          * @param data 文件数据
          * @param callback 回调函数
          */
-        IndexedDBfs.prototype.writeArrayBuffer = function (path, data, callback) {
+        IndexedDBFS.prototype.writeArrayBuffer = function (path, data, callback) {
             var _this = this;
             this.stat(path, function (err, stats) {
                 if (!stats) {
@@ -15911,7 +15911,7 @@ var feng3d;
          * @param data 文件数据
          * @param callback 回调函数
          */
-        IndexedDBfs.prototype.writeString = function (path, data, callback) {
+        IndexedDBFS.prototype.writeString = function (path, data, callback) {
             var _this = this;
             this.stat(path, function (err, stats) {
                 if (!stats) {
@@ -15934,7 +15934,7 @@ var feng3d;
          * @param data 文件数据
          * @param callback 回调函数
          */
-        IndexedDBfs.prototype.writeObject = function (path, data, callback) {
+        IndexedDBFS.prototype.writeObject = function (path, data, callback) {
             var _this = this;
             this.stat(path, function (err, stats) {
                 if (!stats) {
@@ -15959,17 +15959,33 @@ var feng3d;
          * @param image 图片
          * @param callback 回调函数
          */
-        IndexedDBfs.prototype.writeImage = function (path, image, callback) {
+        IndexedDBFS.prototype.writeImage = function (path, image, callback) {
             var _this = this;
             feng3d.dataTransform.imageToArrayBuffer(image, function (arraybuffer) {
                 _this.writeArrayBuffer(path, arraybuffer, callback);
             });
         };
         /**
+         * 复制文件
+         * @param src    源路径
+         * @param dest    目标路径
+         * @param callback 回调函数
+         */
+        IndexedDBFS.prototype.copyFile = function (src, dest, callback) {
+            var _this = this;
+            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, src, function (err, data) {
+                if (err) {
+                    callback(err);
+                    return;
+                }
+                feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, dest, data, callback);
+            });
+        };
+        /**
          * 获取所有文件路径
          * @param callback 回调函数
          */
-        IndexedDBfs.prototype.getAllPaths = function (callback) {
+        IndexedDBFS.prototype.getAllPaths = function (callback) {
             feng3d._indexedDB.getAllKeys(this.DBname, this.projectname, function (err, allPaths) {
                 if (err) {
                     callback(err, allPaths);
@@ -15980,10 +15996,10 @@ var feng3d;
                 callback(err, paths);
             });
         };
-        return IndexedDBfs;
+        return IndexedDBFS;
     }());
-    feng3d.IndexedDBfs = IndexedDBfs;
-    feng3d.indexedDBfs = new IndexedDBfs();
+    feng3d.IndexedDBFS = IndexedDBFS;
+    feng3d.indexedDBFS = new IndexedDBFS();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -16101,26 +16117,6 @@ var feng3d;
             if (readFS === void 0) { readFS = feng3d.httpFS; }
             this.fs = readFS;
         }
-        Object.defineProperty(ReadAssetsFS.prototype, "type", {
-            get: function () {
-                return this.fs.type;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 读取文件为对象
-         * @param path 资源路径
-         * @param callback 读取完成回调
-         */
-        ReadAssetsFS.prototype.readObject = function (path, callback) {
-            this.fs.readObject(path, function (err, object) {
-                var obj = object;
-                if (obj)
-                    obj = feng3d.serialization.deserialize(obj);
-                callback(err, object);
-            });
-        };
         /**
          * 读取文件为资源对象
          * @param id 资源编号
@@ -16134,7 +16130,7 @@ var feng3d;
                 return;
             }
             var assetsPath = feng3d.assetsIDPathMap.getPath(id);
-            this.readObject(assetsPath, function (err, assets) {
+            this.fs.readObject(assetsPath, function (err, assets) {
                 if (assets)
                     feng3d.Feng3dAssets.setAssets(assets);
                 if (assets instanceof feng3d.Feng3dFile) {
@@ -16160,21 +16156,11 @@ var feng3d;
     var ReadWriteAssetsFS = /** @class */ (function (_super) {
         __extends(ReadWriteAssetsFS, _super);
         function ReadWriteAssetsFS(readWriteFS) {
-            if (readWriteFS === void 0) { readWriteFS = feng3d.indexedDBfs; }
+            if (readWriteFS === void 0) { readWriteFS = feng3d.indexedDBFS; }
             var _this = _super.call(this) || this;
             _this.fs = readWriteFS;
             return _this;
         }
-        Object.defineProperty(ReadWriteAssetsFS.prototype, "projectname", {
-            get: function () {
-                return this.fs.projectname;
-            },
-            set: function (v) {
-                this.fs.projectname = v;
-            },
-            enumerable: true,
-            configurable: true
-        });
         /**
          * 获取所有文件路径
          * @param callback 回调函数
@@ -16212,22 +16198,6 @@ var feng3d;
             handle();
         };
         /**
-         * 复制文件
-         * @param src    源路径
-         * @param dest    目标路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssetsFS.prototype.copyFile = function (src, dest, callback) {
-            var _this = this;
-            this.fs.readArrayBuffer(src, function (err, data) {
-                if (err) {
-                    callback && callback(err);
-                    return;
-                }
-                _this.fs.writeArrayBuffer(dest, data, callback);
-            });
-        };
-        /**
          * 移动文件
          * @param src 源路径
          * @param dest 目标路径
@@ -16235,7 +16205,7 @@ var feng3d;
          */
         ReadWriteAssetsFS.prototype.moveFile = function (src, dest, callback) {
             var _this = this;
-            this.copyFile(src, dest, function (err) {
+            this.fs.copyFile(src, dest, function (err) {
                 if (err) {
                     callback && callback(err);
                     return;
@@ -16277,7 +16247,7 @@ var feng3d;
             var _this = this;
             if (copylists.length > 0) {
                 var copyitem = copylists.shift();
-                this.copyFile(copyitem[0], copyitem[1], function (err) {
+                this.fs.copyFile(copyitem[0], copyitem[1], function (err) {
                     if (err) {
                         callback && callback(err);
                         return;

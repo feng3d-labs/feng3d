@@ -16,30 +16,9 @@ namespace feng3d
          */
         fs: ReadFS;
 
-        get type()
-        {
-            return this.fs.type;
-        }
-
         constructor(readFS: ReadFS = httpFS)
         {
             this.fs = readFS;
-        }
-
-        /**
-         * 读取文件为对象
-         * @param path 资源路径
-         * @param callback 读取完成回调
-         */
-        readObject(path: string, callback: (err: Error, object: Object) => void)
-        {
-            this.fs.readObject(path, (err, object) =>
-            {
-                var obj = object;
-                if (obj)
-                    obj = serialization.deserialize(obj);
-                callback(err, object);
-            });
         }
 
         /**
@@ -56,7 +35,7 @@ namespace feng3d
                 return;
             }
             var assetsPath = assetsIDPathMap.getPath(id);
-            this.readObject(assetsPath, (err, assets: Feng3dAssets) =>
+            this.fs.readObject(assetsPath, (err, assets: Feng3dAssets) =>
             {
                 if (assets) Feng3dAssets.setAssets(assets);
                 if (assets instanceof Feng3dFile)

@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 索引数据文件系统
      */
-    export var indexedDBfs: IndexedDBfs;
+    export var indexedDBFS: IndexedDBFS;
 
     /**
      * 文件（夹）状态文件后缀
@@ -13,7 +13,7 @@ namespace feng3d
     /**
      * 索引数据文件系统
      */
-    export class IndexedDBfs implements ReadWriteFS
+    export class IndexedDBFS implements ReadWriteFS
     {
         get type()
         {
@@ -383,6 +383,25 @@ namespace feng3d
         }
 
         /**
+         * 复制文件
+         * @param src    源路径
+         * @param dest    目标路径
+         * @param callback 回调函数
+         */
+        copyFile(src: string, dest: string, callback?: (err: Error) => void)
+        {
+            _indexedDB.objectStoreGet(this.DBname, this.projectname, src, (err, data) =>
+            {
+                if (err)
+                {
+                    callback(err);
+                    return;
+                }
+                _indexedDB.objectStorePut(this.DBname, this.projectname, dest, data, callback);
+            });
+        }
+
+        /**
          * 获取所有文件路径
          * @param callback 回调函数
          */
@@ -402,5 +421,5 @@ namespace feng3d
         }
     }
 
-    indexedDBfs = new IndexedDBfs();
+    indexedDBFS = new IndexedDBFS();
 }

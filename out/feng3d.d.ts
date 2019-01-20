@@ -7358,11 +7358,11 @@ declare namespace feng3d {
     /**
      * 索引数据文件系统
      */
-    var indexedDBfs: IndexedDBfs;
+    var indexedDBFS: IndexedDBFS;
     /**
      * 索引数据文件系统
      */
-    class IndexedDBfs implements ReadWriteFS {
+    class IndexedDBFS implements ReadWriteFS {
         readonly type: FSType;
         /**
          * 数据库名称
@@ -7470,6 +7470,13 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void): void;
+        /**
+         * 复制文件
+         * @param src    源路径
+         * @param dest    目标路径
+         * @param callback 回调函数
+         */
+        copyFile(src: string, dest: string, callback?: (err: Error) => void): void;
         /**
          * 获取所有文件路径
          * @param callback 回调函数
@@ -7640,6 +7647,13 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void): any;
+        /**
+         * 复制文件
+         * @param src    源路径
+         * @param dest    目标路径
+         * @param callback 回调函数
+         */
+        copyFile(src: string, dest: string, callback?: (err: Error) => void): any;
     }
     /**
      * 文件状态
@@ -7676,14 +7690,7 @@ declare namespace feng3d {
          * 可读文件系统
          */
         fs: ReadFS;
-        readonly type: FSType;
         constructor(readFS?: ReadFS);
-        /**
-         * 读取文件为对象
-         * @param path 资源路径
-         * @param callback 读取完成回调
-         */
-        readObject(path: string, callback: (err: Error, object: Object) => void): void;
         /**
          * 读取文件为资源对象
          * @param id 资源编号
@@ -7701,7 +7708,6 @@ declare namespace feng3d {
          * 可读写文件系统
          */
         fs: ReadWriteFS;
-        projectname: string;
         constructor(readWriteFS?: ReadWriteFS);
         /**
          * 获取所有文件路径
@@ -7712,13 +7718,6 @@ declare namespace feng3d {
          * 获取指定文件下所有文件路径列表
          */
         getAllfilepathInFolder(dirpath: string, callback: (err: Error, filepaths: string[]) => void): void;
-        /**
-         * 复制文件
-         * @param src    源路径
-         * @param dest    目标路径
-         * @param callback 回调函数
-         */
-        copyFile(src: string, dest: string, callback?: (err: Error) => void): void;
         /**
          * 移动文件
          * @param src 源路径

@@ -10,16 +10,7 @@ namespace feng3d
          */
         fs: ReadWriteFS;
 
-        get projectname()
-        {
-            return this.fs.projectname;
-        }
-        set projectname(v)
-        {
-            this.fs.projectname = v;
-        }
-
-        constructor(readWriteFS: ReadWriteFS = indexedDBfs)
+        constructor(readWriteFS: ReadWriteFS = indexedDBFS)
         {
             super();
             this.fs = readWriteFS;
@@ -71,25 +62,6 @@ namespace feng3d
         }
 
         /**
-         * 复制文件
-         * @param src    源路径
-         * @param dest    目标路径
-         * @param callback 回调函数
-         */
-        copyFile(src: string, dest: string, callback?: (err: Error) => void)
-        {
-            this.fs.readArrayBuffer(src, (err, data) =>
-            {
-                if (err)
-                {
-                    callback && callback(err);
-                    return;
-                }
-                this.fs.writeArrayBuffer(dest, data, callback);
-            });
-        }
-
-        /**
          * 移动文件
          * @param src 源路径
          * @param dest 目标路径
@@ -97,7 +69,7 @@ namespace feng3d
          */
         moveFile(src: string, dest: string, callback?: (err: Error) => void)
         {
-            this.copyFile(src, dest, (err) =>
+            this.fs.copyFile(src, dest, (err) =>
             {
                 if (err)
                 {
@@ -148,7 +120,7 @@ namespace feng3d
             if (copylists.length > 0)
             {
                 var copyitem: [string, string] = <any>copylists.shift();
-                this.copyFile(copyitem[0], copyitem[1], (err) =>
+                this.fs.copyFile(copyitem[0], copyitem[1], (err) =>
                 {
                     if (err)
                     {
