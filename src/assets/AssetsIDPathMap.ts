@@ -13,26 +13,27 @@ namespace feng3d
         /**
          * 编号映射到路径
          */
-        private _IDToPath: { [id: string]: string } = {};
+        private _idMap: { [id: string]: { id: string, path: string, isDirectory: boolean } } = {};
 
         /**
          * 路径映射到编号
          */
-        private _PathToID: { [path: string]: string } = {};
+        private _pathMap: { [path: string]: { id: string, path: string, isDirectory: boolean } } = {};
 
         /**
          * 初始化
          * 
-         * @param map 资源编号到路径映射
+         * @param list 资源列表
          */
-        init(map?: { [id: string]: string })
+        init(list?: { id: string, path: string, isDirectory: boolean }[])
         {
-            this._IDToPath = {};
-            this._PathToID = {};
-            if (!map) return;
-            Object.keys(map).forEach(id =>
+            this._idMap = {};
+            this._pathMap = {};
+            if (!list) return;
+
+            list.forEach(item =>
             {
-                this.addIDPathMap(id, map[id]);
+                this.addItem(item);
             })
         }
 
@@ -41,7 +42,7 @@ namespace feng3d
          */
         getAllIDs()
         {
-            return Object.keys(this._IDToPath);
+            return Object.keys(this._idMap);
         }
 
         /**
@@ -49,7 +50,7 @@ namespace feng3d
          */
         getAllPaths()
         {
-            return Object.keys(this._PathToID);
+            return Object.keys(this._pathMap);
         }
 
         /**
@@ -59,7 +60,7 @@ namespace feng3d
          */
         getPath(id: string)
         {
-            return this._IDToPath[id];
+            return this._idMap[id] && this._idMap[id].path;
         }
 
         /**
@@ -69,7 +70,7 @@ namespace feng3d
          */
         getID(path: string)
         {
-            return this._PathToID[path];
+            return this._pathMap[path] && this._pathMap[path].id;
         }
 
         /**
@@ -79,7 +80,7 @@ namespace feng3d
          */
         existID(id: string)
         {
-            return !!this._IDToPath[id];
+            return !!this._idMap[id];
         }
 
         /**
@@ -89,22 +90,22 @@ namespace feng3d
          */
         existPath(path: string)
         {
-            return !!this._PathToID[path];
+            return !!this._pathMap[path];
         }
 
         /**
          * 新增资源编号路径映射
          * 
-         * @param id 资源编号
+         * @param item 资源编号
          * @param path 资源路径
          */
-        addIDPathMap(id: string, path: string)
+        addItem(item: { id: string, path: string, isDirectory: boolean })
         {
-            feng3d.assert(!this._IDToPath[id], `无法新增已存在指定编号资源映射`);
-            feng3d.assert(!this._PathToID[path], `无法新增已存在指定路径资源映射`);
+            feng3d.assert(!this._idMap[item.id], `无法新增已存在指定编号资源映射`);
+            feng3d.assert(!this._pathMap[item.path], `无法新增已存在指定路径资源映射`);
 
-            this._IDToPath[id] = path;
-            this._PathToID[path] = id;
+            this._idMap[item.id] = item;
+            this._pathMap[item.path] = item;
         }
 
         /**
@@ -114,12 +115,11 @@ namespace feng3d
          */
         deleteByID(id: string)
         {
-            var path = this._IDToPath[id]
-            assert(!!path, `无法删除不存在编号资源映射`);
-            assert(!!this._PathToID[path], `无法删除不存在路径资源映射`);
+            var item = this._idMap[id];
+            assert(!!item, `无法删除不存在编号资源映射`);
 
-            delete this._IDToPath[id];
-            delete this._PathToID[path];
+            delete this._idMap[id];
+            delete this._pathMap[item.path];
         }
 
         /**
@@ -129,12 +129,20 @@ namespace feng3d
          */
         deleteByPath(path: string)
         {
-            var id = this._PathToID[path]
-            assert(!!id, `无法删除不存在路径资源映射`);
-            assert(!!this._IDToPath[id], `无法删除不存在编号资源映射`);
+            var item = this._pathMap[path]
+            assert(!!item, `无法删除不存在路径资源映射`);
 
-            delete this._IDToPath[id];
-            delete this._PathToID[path];
+            delete this._idMap[item.id];
+            delete this._pathMap[path];
+        }
+
+        /**
+         * 输出为列表
+         */
+        toList()
+        {
+            var list = Object.keys(this._idMap).map(id => this._idMap[id]);
+            return list;
         }
     }
 

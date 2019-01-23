@@ -8031,19 +8031,21 @@ declare namespace feng3d {
         /**
          * 编号映射到路径
          */
-        private _IDToPath;
+        private _idMap;
         /**
          * 路径映射到编号
          */
-        private _PathToID;
+        private _pathMap;
         /**
          * 初始化
          *
-         * @param map 资源编号到路径映射
+         * @param list 资源列表
          */
-        init(map?: {
-            [id: string]: string;
-        }): void;
+        init(list?: {
+            id: string;
+            path: string;
+            isDirectory: boolean;
+        }[]): void;
         /**
          * 获取所有资源编号列表
          */
@@ -8079,10 +8081,14 @@ declare namespace feng3d {
         /**
          * 新增资源编号路径映射
          *
-         * @param id 资源编号
+         * @param item 资源编号
          * @param path 资源路径
          */
-        addIDPathMap(id: string, path: string): void;
+        addItem(item: {
+            id: string;
+            path: string;
+            isDirectory: boolean;
+        }): void;
         /**
          * 删除指定编号映射
          *
@@ -8095,6 +8101,14 @@ declare namespace feng3d {
          * @param path 资源编号
          */
         deleteByPath(path: string): void;
+        /**
+         * 输出为列表
+         */
+        toList(): {
+            id: string;
+            path: string;
+            isDirectory: boolean;
+        }[];
     }
 }
 declare namespace feng3d {

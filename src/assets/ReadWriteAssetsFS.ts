@@ -63,14 +63,48 @@ namespace feng3d
         {
             var path = assetsIDPathMap.getPath(assets.assetsId);
 
-            this._deleteMeta(path, (err) =>
+            this._readMeta(path, (err, meta) =>
             {
                 if (err)
                 {
                     callback && callback(err);
                     return;
                 }
-                this.fs.deleteFile(path, callback);
+                this._deleteMeta(path, (err) =>
+                {
+                    if (err)
+                    {
+                        callback && callback(err);
+                        return;
+                    }
+                    assetsIDPathMap.deleteByID(assets.assetsId);
+                    // 如果该资源为文件夹 则 删除该文件夹以及文件夹内所有资源
+                    if (meta.isDirectory)
+                    {
+                        this.fs.getAllfilepathInFolder(path, (err, filepaths) =>
+                        {
+                            if (err)
+                            {
+                                callback && callback(err);
+                                return;
+                            }
+                            var deleteIDs = filepaths.reduce((pv: string[], cv) =>
+                            {
+                                var cid = assetsIDPathMap.getID(cv);
+                                if (cid) pv.push(cid);
+                                return pv;
+                            }, []);
+                            deleteIDs.forEach(element =>
+                            {
+                                assetsIDPathMap.deleteByID(element);
+                            });
+                            this.fs.delete(path, callback);
+                        });
+                    } else
+                    {
+                        this.fs.deleteFile(path, callback);
+                    }
+                });
             });
         }
 

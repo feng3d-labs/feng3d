@@ -16541,12 +16541,40 @@ var feng3d;
         ReadWriteAssetsFS.prototype.deleteAssets = function (assets, callback) {
             var _this = this;
             var path = feng3d.assetsIDPathMap.getPath(assets.assetsId);
-            this._deleteMeta(path, function (err) {
+            this._readMeta(path, function (err, meta) {
                 if (err) {
                     callback && callback(err);
                     return;
                 }
-                _this.fs.deleteFile(path, callback);
+                _this._deleteMeta(path, function (err) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    feng3d.assetsIDPathMap.deleteByID(assets.assetsId);
+                    // 如果该资源为文件夹 则 删除该文件夹以及文件夹内所有资源
+                    if (meta.isDirectory) {
+                        _this.fs.getAllfilepathInFolder(path, function (err, filepaths) {
+                            if (err) {
+                                callback && callback(err);
+                                return;
+                            }
+                            var deleteIDs = filepaths.reduce(function (pv, cv) {
+                                var cid = feng3d.assetsIDPathMap.getID(cv);
+                                if (cid)
+                                    pv.push(cid);
+                                return pv;
+                            }, []);
+                            deleteIDs.forEach(function (element) {
+                                feng3d.assetsIDPathMap.deleteByID(element);
+                            });
+                            _this.fs.delete(path, callback);
+                        });
+                    }
+                    else {
+                        _this.fs.deleteFile(path, callback);
+                    }
+                });
             });
         };
         /**
@@ -16672,38 +16700,38 @@ var feng3d;
             /**
              * 编号映射到路径
              */
-            this._IDToPath = {};
+            this._idMap = {};
             /**
              * 路径映射到编号
              */
-            this._PathToID = {};
+            this._pathMap = {};
         }
         /**
          * 初始化
          *
-         * @param map 资源编号到路径映射
+         * @param list 资源列表
          */
-        AssetsIDPathMap.prototype.init = function (map) {
+        AssetsIDPathMap.prototype.init = function (list) {
             var _this = this;
-            this._IDToPath = {};
-            this._PathToID = {};
-            if (!map)
+            this._idMap = {};
+            this._pathMap = {};
+            if (!list)
                 return;
-            Object.keys(map).forEach(function (id) {
-                _this.addIDPathMap(id, map[id]);
+            list.forEach(function (item) {
+                _this.addItem(item);
             });
         };
         /**
          * 获取所有资源编号列表
          */
         AssetsIDPathMap.prototype.getAllIDs = function () {
-            return Object.keys(this._IDToPath);
+            return Object.keys(this._idMap);
         };
         /**
          * 获取所有资源路径列表
          */
         AssetsIDPathMap.prototype.getAllPaths = function () {
-            return Object.keys(this._PathToID);
+            return Object.keys(this._pathMap);
         };
         /**
          * 获取资源路径
@@ -16711,7 +16739,7 @@ var feng3d;
          * @param id 资源编号
          */
         AssetsIDPathMap.prototype.getPath = function (id) {
-            return this._IDToPath[id];
+            return this._idMap[id] && this._idMap[id].path;
         };
         /**
          * 获取资源编号
@@ -16719,7 +16747,7 @@ var feng3d;
          * @param path 资源路径
          */
         AssetsIDPathMap.prototype.getID = function (path) {
-            return this._PathToID[path];
+            return this._pathMap[path] && this._pathMap[path].id;
         };
         /**
          * 是否存在指定编号的资源
@@ -16727,7 +16755,7 @@ var feng3d;
          * @param id 资源编号
          */
         AssetsIDPathMap.prototype.existID = function (id) {
-            return !!this._IDToPath[id];
+            return !!this._idMap[id];
         };
         /**
          * 是否存在指定路径的资源
@@ -16735,19 +16763,19 @@ var feng3d;
          * @param path 资源路径
          */
         AssetsIDPathMap.prototype.existPath = function (path) {
-            return !!this._PathToID[path];
+            return !!this._pathMap[path];
         };
         /**
          * 新增资源编号路径映射
          *
-         * @param id 资源编号
+         * @param item 资源编号
          * @param path 资源路径
          */
-        AssetsIDPathMap.prototype.addIDPathMap = function (id, path) {
-            feng3d.assert(!this._IDToPath[id], "\u65E0\u6CD5\u65B0\u589E\u5DF2\u5B58\u5728\u6307\u5B9A\u7F16\u53F7\u8D44\u6E90\u6620\u5C04");
-            feng3d.assert(!this._PathToID[path], "\u65E0\u6CD5\u65B0\u589E\u5DF2\u5B58\u5728\u6307\u5B9A\u8DEF\u5F84\u8D44\u6E90\u6620\u5C04");
-            this._IDToPath[id] = path;
-            this._PathToID[path] = id;
+        AssetsIDPathMap.prototype.addItem = function (item) {
+            feng3d.assert(!this._idMap[item.id], "\u65E0\u6CD5\u65B0\u589E\u5DF2\u5B58\u5728\u6307\u5B9A\u7F16\u53F7\u8D44\u6E90\u6620\u5C04");
+            feng3d.assert(!this._pathMap[item.path], "\u65E0\u6CD5\u65B0\u589E\u5DF2\u5B58\u5728\u6307\u5B9A\u8DEF\u5F84\u8D44\u6E90\u6620\u5C04");
+            this._idMap[item.id] = item;
+            this._pathMap[item.path] = item;
         };
         /**
          * 删除指定编号映射
@@ -16755,11 +16783,10 @@ var feng3d;
          * @param id 编号
          */
         AssetsIDPathMap.prototype.deleteByID = function (id) {
-            var path = this._IDToPath[id];
-            feng3d.assert(!!path, "\u65E0\u6CD5\u5220\u9664\u4E0D\u5B58\u5728\u7F16\u53F7\u8D44\u6E90\u6620\u5C04");
-            feng3d.assert(!!this._PathToID[path], "\u65E0\u6CD5\u5220\u9664\u4E0D\u5B58\u5728\u8DEF\u5F84\u8D44\u6E90\u6620\u5C04");
-            delete this._IDToPath[id];
-            delete this._PathToID[path];
+            var item = this._idMap[id];
+            feng3d.assert(!!item, "\u65E0\u6CD5\u5220\u9664\u4E0D\u5B58\u5728\u7F16\u53F7\u8D44\u6E90\u6620\u5C04");
+            delete this._idMap[id];
+            delete this._pathMap[item.path];
         };
         /**
          * 删除指定路径资源映射
@@ -16767,11 +16794,18 @@ var feng3d;
          * @param path 资源编号
          */
         AssetsIDPathMap.prototype.deleteByPath = function (path) {
-            var id = this._PathToID[path];
-            feng3d.assert(!!id, "\u65E0\u6CD5\u5220\u9664\u4E0D\u5B58\u5728\u8DEF\u5F84\u8D44\u6E90\u6620\u5C04");
-            feng3d.assert(!!this._IDToPath[id], "\u65E0\u6CD5\u5220\u9664\u4E0D\u5B58\u5728\u7F16\u53F7\u8D44\u6E90\u6620\u5C04");
-            delete this._IDToPath[id];
-            delete this._PathToID[path];
+            var item = this._pathMap[path];
+            feng3d.assert(!!item, "\u65E0\u6CD5\u5220\u9664\u4E0D\u5B58\u5728\u8DEF\u5F84\u8D44\u6E90\u6620\u5C04");
+            delete this._idMap[item.id];
+            delete this._pathMap[path];
+        };
+        /**
+         * 输出为列表
+         */
+        AssetsIDPathMap.prototype.toList = function () {
+            var _this = this;
+            var list = Object.keys(this._idMap).map(function (id) { return _this._idMap[id]; });
+            return list;
         };
         return AssetsIDPathMap;
     }());
