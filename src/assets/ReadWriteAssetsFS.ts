@@ -27,7 +27,7 @@ namespace feng3d
         {
             var path = assetsIDPathMap.getPath(assets.assetsId);
 
-            this._readMeta(path, (err, meta) =>
+            this._readMeta(assets.assetsId, (err, meta) =>
             {
                 if (!meta) meta = {
                     guid: assets.assetsId, isDirectory: assets instanceof Feng3dFolder,
@@ -35,7 +35,7 @@ namespace feng3d
                 };
                 meta.mtimeMs = Date.now();
 
-                this._writeMeta(path, meta, (err) =>
+                this._writeMeta(assets.assetsId, meta, (err) =>
                 {
                     if (err)
                     {
@@ -63,14 +63,14 @@ namespace feng3d
         {
             var path = assetsIDPathMap.getPath(assets.assetsId);
 
-            this._readMeta(path, (err, meta) =>
+            this._readMeta(assets.assetsId, (err, meta) =>
             {
                 if (err)
                 {
                     callback && callback(err);
                     return;
                 }
-                this._deleteMeta(path, (err) =>
+                this._deleteMeta(assets.assetsId, (err) =>
                 {
                     if (err)
                     {
@@ -111,24 +111,24 @@ namespace feng3d
         /**
          * 写资源元标签
          * 
-         * @param path 资源路径
+         * @param id 资源编号
          * @param meta 资源元标签
          * @param callback 完成回调
          */
-        private _writeMeta(path: string, meta: AssetsMeta, callback?: (err: Error) => void)
+        private _writeMeta(id: string, meta: AssetsMeta, callback?: (err: Error) => void)
         {
-            this.fs.writeObject(path + metaSuffix, meta, callback);
+            this.fs.writeObject(metasFolder + id + metaSuffix, meta, callback);
         }
 
         /**
          * 删除资源元标签
          * 
-         * @param path 资源路径 
+         * @param id 资源编号 
          * @param callback 完成回调
          */
-        private _deleteMeta(path: string, callback?: (err: Error) => void)
+        private _deleteMeta(id: string, callback?: (err: Error) => void)
         {
-            this.fs.deleteFile(path + metaSuffix, callback);
+            this.fs.deleteFile(metasFolder + id + metaSuffix, callback);
         }
     }
 }

@@ -36,7 +36,7 @@ namespace feng3d
                 return;
             }
             var path = assetsIDPathMap.getPath(id);
-            this._readMeta(path, (err, meta) =>
+            this._readMeta(id, (err, meta) =>
             {
                 if (err)
                 {
@@ -72,12 +72,12 @@ namespace feng3d
         /**
          * 读取资源元标签
          * 
-         * @param path 资源路径
+         * @param id 资源编号
          * @param callback 完成回调 
          */
-        protected _readMeta(path: string, callback?: (err: Error, meta: AssetsMeta) => void)
+        protected _readMeta(id: string, callback?: (err: Error, meta: AssetsMeta) => void)
         {
-            this.fs.readObject(path + metaSuffix, callback);
+            this.fs.readObject(metasFolder + id + metaSuffix, callback);
         }
     }
 

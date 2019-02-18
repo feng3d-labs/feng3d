@@ -65,7 +65,6 @@ namespace feng3d
             //处理普通Object
             if (target.constructor === Object)
             {
-                object[CLASS_KEY] = "Object";
                 for (var key in target)
                 {
                     if (target.hasOwnProperty(key))
@@ -190,7 +189,7 @@ namespace feng3d
                 var target = {};
                 for (var key in object)
                 {
-                    target[key] = this.deserialize(object[key], tempInfo);
+                    if (key != CLASS_KEY) target[key] = this.deserialize(object[key], tempInfo);
                 }
                 return target;
             }
