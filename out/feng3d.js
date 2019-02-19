@@ -28281,6 +28281,8 @@ var feng3d;
     /**
      * 音量与距离算法
      * @see https://developer.mozilla.org/en-US/docs/Web/API/PannerNode/distanceModel
+     * @see https://mdn.github.io/webaudio-examples/panner-node/
+     * @see https://github.com/mdn/webaudio-examples
      */
     var DistanceModelType;
     (function (DistanceModelType) {
