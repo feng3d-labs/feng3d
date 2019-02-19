@@ -3,6 +3,7 @@
         "target": "es5",
         "noImplicitAny": false,
         "sourceMap": true,
+        "declarationMap": true,
         "declaration": true,
         // "strict": true,
         "experimentalDecorators": true,
@@ -11,6 +12,10 @@
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
         // 自动生成文件
         "src/autofiles/ShaderConfig.ts",
+        // Polyfill
+        "src/polyfill/String.ts",
+        "src/polyfill/Object.ts",
+        "src/polyfill/Map.ts",
         //基础工具
         "src/utils/debug.ts",
         "src/utils/Watcher.ts",
@@ -23,11 +28,10 @@
         "src/utils/ImageUtil.ts",
         "src/utils/Stats.ts",
         "src/utils/PathUtils.ts",
+        "src/utils/Path.ts",
         "src/utils/Lazy.ts",
         "src/utils/RegExps.ts",
         // 数据结构
-        "src/ds/Object.ts",
-        "src/ds/Map.ts",
         //
         "src/ds/utils/Comparator.ts",
         "src/ds/Utils.ts",
@@ -100,13 +104,21 @@
         //
         "src/core/Feng3dObject.ts",
         //
-        "src/assets/Storage.ts",
-        "src/assets/IndexedDBfs.ts",
+        "src/assets/_IndexedDB.ts",
+        "src/assets/FSType.ts",
+        "src/assets/IBaseReadFS.ts",
+        "src/assets/IBaseReadWriteFS.ts",
+        "src/assets/ReadFS.ts",
+        "src/assets/ReadWriteFS.ts",
+        "src/assets/AssetsMeta.ts",
+        //
+        "src/assets/IndexedDBFS.ts",
         "src/assets/HttpFS.ts",
-        "src/assets/Assets.ts",
-        "src/assets/ReadAssets.ts",
-        "src/assets/ReadWriteAssets.ts",
+        //
+        "src/assets/ReadAssetsFS.ts",
+        "src/assets/ReadWriteAssetsFS.ts",
         "src/assets/AssetExtension.ts",
+        "src/assets/AssetsIDPathMap.ts",
         "src/assets/Feng3dAssets.ts",
         "src/assets/Resources.ts",
         // 快捷键

@@ -124,6 +124,107 @@ var feng3d;
         }
     };
 })(feng3d || (feng3d = {}));
+if (!String.prototype.startsWith) {
+    Object.defineProperty(String.prototype, 'startsWith', {
+        value: function (search, pos) {
+            return this.substring(!pos || pos < 0 ? 0 : +pos, pos + search.length) === search;
+        }
+    });
+}
+if (!String.prototype.includes) {
+    Object.defineProperty(String.prototype, 'includes', {
+        value: function (search, start) {
+            if (typeof start !== 'number') {
+                start = 0;
+            }
+            if (start + search.length > this.length) {
+                return false;
+            }
+            else {
+                return this.indexOf(search, start) !== -1;
+            }
+        }
+    });
+}
+if (!String.prototype.endsWith) {
+    String.prototype.endsWith = function (search, this_len) {
+        if (this_len === undefined || this_len > this.length) {
+            this_len = this.length;
+        }
+        return this.substring(this_len - search.length, this_len) === search;
+    };
+}
+if (typeof Object.assign != 'function') {
+    // Must be writable: true, enumerable: false, configurable: true
+    Object.defineProperty(Object, "assign", {
+        value: function assign(target, varArgs) {
+            'use strict';
+            if (target == null) { // TypeError if undefined or null
+                throw new TypeError('Cannot convert undefined or null to object');
+            }
+            var to = Object(target);
+            for (var index = 1; index < arguments.length; index++) {
+                var nextSource = arguments[index];
+                if (nextSource != null) { // Skip over if undefined or null
+                    for (var nextKey in nextSource) {
+                        // Avoid bugs when hasOwnProperty is shadowed
+                        if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+                            to[nextKey] = nextSource[nextKey];
+                        }
+                    }
+                }
+            }
+            return to;
+        },
+        writable: true,
+        configurable: true
+    });
+}
+Object.getPropertyDescriptor = function (host, property) {
+    var data = Object.getOwnPropertyDescriptor(host, property);
+    if (data) {
+        return data;
+    }
+    var prototype = Object.getPrototypeOf(host);
+    if (prototype) {
+        return Object.getPropertyDescriptor(prototype, property);
+    }
+    return null;
+};
+Object.propertyIsWritable = function (host, property) {
+    var data = Object.getPropertyDescriptor(host, property);
+    if (!data)
+        return false;
+    if (data.get && !data.set)
+        return false;
+    return true;
+};
+Object.runFunc = function (obj, func) {
+    func(obj);
+    return obj;
+};
+Object.setValue = function (obj, value) {
+    feng3d.serialization.setValue(obj, value);
+    return obj;
+};
+Object.deepClone = function (obj) {
+    return feng3d.serialization.clone(obj);
+};
+//参考 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
+Map.prototype.getKeys = function () {
+    var keys = [];
+    this.forEach(function (v, k) {
+        keys.push(k);
+    });
+    return keys;
+};
+Map.prototype.getValues = function () {
+    var values = [];
+    this.forEach(function (v, k) {
+        values.push(v);
+    });
+    return values;
+};
 var feng3d;
 (function (feng3d) {
     /**
@@ -524,7 +625,6 @@ var feng3d;
             var object = {};
             //处理普通Object
             if (target.constructor === Object) {
-                object[CLASS_KEY] = "Object";
                 for (var key in target) {
                     if (target.hasOwnProperty(key)) {
                         if (target[key] !== undefined) {
@@ -626,7 +726,8 @@ var feng3d;
             if (className == "Object" || className == null) {
                 var target = {};
                 for (var key in object) {
-                    target[key] = this.deserialize(object[key], tempInfo);
+                    if (key != CLASS_KEY)
+                        target[key] = this.deserialize(object[key], tempInfo);
                 }
                 return target;
             }
@@ -1620,6 +1721,18 @@ var feng3d;
                 _this.blobToText(blob, callback);
             });
         };
+        /**
+         * ArrayBuffer 转换为 对象
+         *
+         * @param arrayBuffer
+         * @param callback
+         */
+        DataTransform.prototype.arrayBufferToObject = function (arrayBuffer, callback) {
+            this.arrayBufferToString(arrayBuffer, function (str) {
+                var obj = JSON.parse(str);
+                callback(obj);
+            });
+        };
         DataTransform.prototype.stringToUint8Array = function (str, callback) {
             var utf8 = unescape(encodeURIComponent(str));
             var uint8Array = new Uint8Array(utf8.split('').map(function (item) {
@@ -2213,6 +2326,16 @@ var feng3d;
         function PathUtils() {
         }
         /**
+         * 是否为HTTP地址
+         *
+         * @param path 地址
+         */
+        PathUtils.prototype.isHttpURL = function (path) {
+            if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1)
+                return true;
+            return false;
+        };
+        /**
          * 获取不带后缀名称
          * @param path 路径
          */
@@ -2255,6 +2378,30 @@ var feng3d;
             return paths.join("/") + "/";
         };
         /**
+         * 获取子文件（非文件夹）路径
+         *
+         * @param parentPath 父文件夹路径
+         * @param childName 子文件名称
+         */
+        PathUtils.prototype.getChildFilePath = function (parentPath, childName) {
+            if (parentPath.charAt(parentPath.length - 1) != "/")
+                parentPath += "/";
+            return parentPath + childName;
+        };
+        /**
+         * 获取子文件夹路径
+         *
+         * @param parentPath 父文件夹路径
+         * @param childFolderName 子文件夹名称
+         */
+        PathUtils.prototype.getChildFolderPath = function (parentPath, childFolderName) {
+            if (parentPath.charAt(parentPath.length - 1) != "/")
+                parentPath += "/";
+            if (childFolderName.charAt(childFolderName.length - 1) != "/")
+                childFolderName += "/";
+            return parentPath + childFolderName;
+        };
+        /**
          * 是否文件夹
          * @param path 路径
          */
@@ -2275,6 +2422,1518 @@ var feng3d;
     }());
     feng3d.PathUtils = PathUtils;
     feng3d.pathUtils = new PathUtils();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * .
+     */
+    var CHAR_DOT = 46;
+    /**
+     * :
+     */
+    var CHAR_COLON = 58;
+    /**
+     * ?
+     */
+    var CHAR_QUESTION_MARK = 63;
+    /**
+     * A
+     */
+    var CHAR_UPPERCASE_A = 65;
+    /**
+     * Z
+     */
+    var CHAR_UPPERCASE_Z = 90;
+    /**
+     * a
+     */
+    var CHAR_LOWERCASE_A = 97;
+    /**
+     * z
+     */
+    var CHAR_LOWERCASE_Z = 122;
+    /**
+     * /
+     */
+    var CHAR_FORWARD_SLASH = 47;
+    /**
+     * \
+     */
+    var CHAR_BACKWARD_SLASH = 92;
+    /**
+     * 未实现其功能
+     */
+    var process = {
+        platform: 'win32',
+        env: {},
+        cwd: function () { return ""; },
+    };
+    var ERR_INVALID_ARG_TYPE = /** @class */ (function (_super) {
+        __extends(ERR_INVALID_ARG_TYPE, _super);
+        function ERR_INVALID_ARG_TYPE(name, expected, actual) {
+            var _this = this;
+            assert(typeof name === 'string', "'name' must be a string");
+            // determiner: 'must be' or 'must not be'
+            var determiner;
+            if (typeof expected === 'string' && expected.startsWith('not ')) {
+                determiner = 'must not be';
+                expected = expected.replace(/^not /, '');
+            }
+            else {
+                determiner = 'must be';
+            }
+            var msg;
+            if (name.endsWith(' argument')) {
+                // For cases like 'first argument'
+                msg = "The " + name + " " + determiner + " " + oneOf(expected, 'type');
+            }
+            else {
+                var type = name.includes('.') ? 'property' : 'argument';
+                msg = "The \"" + name + "\" " + type + " " + determiner + " " + oneOf(expected, 'type');
+            }
+            // TODO(BridgeAR): Improve the output by showing `null` and similar.
+            msg += ". Received type " + typeof actual;
+            _this = _super.call(this, msg) || this;
+            return _this;
+        }
+        return ERR_INVALID_ARG_TYPE;
+    }(TypeError));
+    function oneOf(expected, thing) {
+        assert(typeof thing === 'string', '`thing` has to be of type string');
+        if (Array.isArray(expected)) {
+            var len = expected.length;
+            assert(len > 0, 'At least one expected value needs to be specified');
+            expected = expected.map(function (i) { return String(i); });
+            if (len > 2) {
+                return "one of " + thing + " " + expected.slice(0, len - 1).join(', ') + ", or " +
+                    expected[len - 1];
+            }
+            else if (len === 2) {
+                return "one of " + thing + " " + expected[0] + " or " + expected[1];
+            }
+            else {
+                return "of " + thing + " " + expected[0];
+            }
+        }
+        else {
+            return "of " + thing + " " + String(expected);
+        }
+    }
+    function assert(b, msg) {
+        if (!b)
+            throw msg;
+    }
+    function validateString(value, name) {
+        if (typeof value !== 'string')
+            throw new ERR_INVALID_ARG_TYPE(name, 'string', value);
+    }
+    function isPathSeparator(code) {
+        return code === CHAR_FORWARD_SLASH || code === CHAR_BACKWARD_SLASH;
+    }
+    function isPosixPathSeparator(code) {
+        return code === CHAR_FORWARD_SLASH;
+    }
+    function isWindowsDeviceRoot(code) {
+        return code >= CHAR_UPPERCASE_A && code <= CHAR_UPPERCASE_Z ||
+            code >= CHAR_LOWERCASE_A && code <= CHAR_LOWERCASE_Z;
+    }
+    // Resolves . and .. elements in a path with directory names
+    function normalizeString(path, allowAboveRoot, separator, isPathSeparator) {
+        var res = '';
+        var lastSegmentLength = 0;
+        var lastSlash = -1;
+        var dots = 0;
+        var code = -1;
+        for (var i = 0; i <= path.length; ++i) {
+            if (i < path.length)
+                code = path.charCodeAt(i);
+            else if (isPathSeparator(code))
+                break;
+            else
+                code = CHAR_FORWARD_SLASH;
+            if (isPathSeparator(code)) {
+                if (lastSlash === i - 1 || dots === 1) {
+                    // NOOP
+                }
+                else if (lastSlash !== i - 1 && dots === 2) {
+                    if (res.length < 2 || lastSegmentLength !== 2 ||
+                        res.charCodeAt(res.length - 1) !== CHAR_DOT ||
+                        res.charCodeAt(res.length - 2) !== CHAR_DOT) {
+                        if (res.length > 2) {
+                            var lastSlashIndex = res.lastIndexOf(separator);
+                            if (lastSlashIndex === -1) {
+                                res = '';
+                                lastSegmentLength = 0;
+                            }
+                            else {
+                                res = res.slice(0, lastSlashIndex);
+                                lastSegmentLength = res.length - 1 - res.lastIndexOf(separator);
+                            }
+                            lastSlash = i;
+                            dots = 0;
+                            continue;
+                        }
+                        else if (res.length === 2 || res.length === 1) {
+                            res = '';
+                            lastSegmentLength = 0;
+                            lastSlash = i;
+                            dots = 0;
+                            continue;
+                        }
+                    }
+                    if (allowAboveRoot) {
+                        if (res.length > 0)
+                            res += separator + "..";
+                        else
+                            res = '..';
+                        lastSegmentLength = 2;
+                    }
+                }
+                else {
+                    if (res.length > 0)
+                        res += separator + path.slice(lastSlash + 1, i);
+                    else
+                        res = path.slice(lastSlash + 1, i);
+                    lastSegmentLength = i - lastSlash - 1;
+                }
+                lastSlash = i;
+                dots = 0;
+            }
+            else if (code === CHAR_DOT && dots !== -1) {
+                ++dots;
+            }
+            else {
+                dots = -1;
+            }
+        }
+        return res;
+    }
+    function _format(sep, pathObject) {
+        var dir = pathObject.dir || pathObject.root;
+        var base = pathObject.base ||
+            ((pathObject.name || '') + (pathObject.ext || ''));
+        if (!dir) {
+            return base;
+        }
+        if (dir === pathObject.root) {
+            return dir + base;
+        }
+        return dir + sep + base;
+    }
+    var Win32Path = /** @class */ (function () {
+        function Win32Path() {
+            this.sep = '\\';
+            this.delimiter = ';';
+            this.win32 = null;
+            this.posix = null;
+        }
+        // path.resolve([from ...], to)
+        Win32Path.prototype.resolve = function () {
+            var pathSegments = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                pathSegments[_i] = arguments[_i];
+            }
+            var resolvedDevice = '';
+            var resolvedTail = '';
+            var resolvedAbsolute = false;
+            for (var i = arguments.length - 1; i >= -1; i--) {
+                var path;
+                if (i >= 0) {
+                    path = arguments[i];
+                }
+                else if (!resolvedDevice) {
+                    path = process.cwd();
+                }
+                else {
+                    // Windows has the concept of drive-specific current working
+                    // directories. If we've resolved a drive letter but not yet an
+                    // absolute path, get cwd for that drive, or the process cwd if
+                    // the drive cwd is not available. We're sure the device is not
+                    // a UNC path at this points, because UNC paths are always absolute.
+                    path = process.env['=' + resolvedDevice] || process.cwd();
+                    // Verify that a cwd was found and that it actually points
+                    // to our drive. If not, default to the drive's root.
+                    if (path === undefined ||
+                        path.slice(0, 3).toLowerCase() !==
+                            resolvedDevice.toLowerCase() + '\\') {
+                        path = resolvedDevice + '\\';
+                    }
+                }
+                validateString(path, 'path');
+                // Skip empty entries
+                if (path.length === 0) {
+                    continue;
+                }
+                var len = path.length;
+                var rootEnd = 0;
+                var device = '';
+                var isAbsolute = false;
+                var code = path.charCodeAt(0);
+                // Try to match a root
+                if (len > 1) {
+                    if (isPathSeparator(code)) {
+                        // Possible UNC root
+                        // If we started with a separator, we know we at least have an
+                        // absolute path of some kind (UNC or otherwise)
+                        isAbsolute = true;
+                        if (isPathSeparator(path.charCodeAt(1))) {
+                            // Matched double path separator at beginning
+                            var j = 2;
+                            var last = j;
+                            // Match 1 or more non-path separators
+                            for (; j < len; ++j) {
+                                if (isPathSeparator(path.charCodeAt(j)))
+                                    break;
+                            }
+                            if (j < len && j !== last) {
+                                var firstPart = path.slice(last, j);
+                                // Matched!
+                                last = j;
+                                // Match 1 or more path separators
+                                for (; j < len; ++j) {
+                                    if (!isPathSeparator(path.charCodeAt(j)))
+                                        break;
+                                }
+                                if (j < len && j !== last) {
+                                    // Matched!
+                                    last = j;
+                                    // Match 1 or more non-path separators
+                                    for (; j < len; ++j) {
+                                        if (isPathSeparator(path.charCodeAt(j)))
+                                            break;
+                                    }
+                                    if (j === len) {
+                                        // We matched a UNC root only
+                                        device = '\\\\' + firstPart + '\\' + path.slice(last);
+                                        rootEnd = j;
+                                    }
+                                    else if (j !== last) {
+                                        // We matched a UNC root with leftovers
+                                        device = '\\\\' + firstPart + '\\' + path.slice(last, j);
+                                        rootEnd = j;
+                                    }
+                                }
+                            }
+                        }
+                        else {
+                            rootEnd = 1;
+                        }
+                    }
+                    else if (isWindowsDeviceRoot(code)) {
+                        // Possible device root
+                        if (path.charCodeAt(1) === CHAR_COLON) {
+                            device = path.slice(0, 2);
+                            rootEnd = 2;
+                            if (len > 2) {
+                                if (isPathSeparator(path.charCodeAt(2))) {
+                                    // Treat separator following drive name as an absolute path
+                                    // indicator
+                                    isAbsolute = true;
+                                    rootEnd = 3;
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (isPathSeparator(code)) {
+                    // `path` contains just a path separator
+                    rootEnd = 1;
+                    isAbsolute = true;
+                }
+                if (device.length > 0 &&
+                    resolvedDevice.length > 0 &&
+                    device.toLowerCase() !== resolvedDevice.toLowerCase()) {
+                    // This path points to another device so it is not applicable
+                    continue;
+                }
+                if (resolvedDevice.length === 0 && device.length > 0) {
+                    resolvedDevice = device;
+                }
+                if (!resolvedAbsolute) {
+                    resolvedTail = path.slice(rootEnd) + '\\' + resolvedTail;
+                    resolvedAbsolute = isAbsolute;
+                }
+                if (resolvedDevice.length > 0 && resolvedAbsolute) {
+                    break;
+                }
+            }
+            // At this point the path should be resolved to a full absolute path,
+            // but handle relative paths to be safe (might happen when process.cwd()
+            // fails)
+            // Normalize the tail path
+            resolvedTail = normalizeString(resolvedTail, !resolvedAbsolute, '\\', isPathSeparator);
+            return (resolvedDevice + (resolvedAbsolute ? '\\' : '') + resolvedTail) ||
+                '.';
+        };
+        Win32Path.prototype.normalize = function (path) {
+            validateString(path, 'path');
+            var len = path.length;
+            if (len === 0)
+                return '.';
+            var rootEnd = 0;
+            var device;
+            var isAbsolute = false;
+            var code = path.charCodeAt(0);
+            // Try to match a root
+            if (len > 1) {
+                if (isPathSeparator(code)) {
+                    // Possible UNC root
+                    // If we started with a separator, we know we at least have an absolute
+                    // path of some kind (UNC or otherwise)
+                    isAbsolute = true;
+                    if (isPathSeparator(path.charCodeAt(1))) {
+                        // Matched double path separator at beginning
+                        var j = 2;
+                        var last = j;
+                        // Match 1 or more non-path separators
+                        for (; j < len; ++j) {
+                            if (isPathSeparator(path.charCodeAt(j)))
+                                break;
+                        }
+                        if (j < len && j !== last) {
+                            var firstPart = path.slice(last, j);
+                            // Matched!
+                            last = j;
+                            // Match 1 or more path separators
+                            for (; j < len; ++j) {
+                                if (!isPathSeparator(path.charCodeAt(j)))
+                                    break;
+                            }
+                            if (j < len && j !== last) {
+                                // Matched!
+                                last = j;
+                                // Match 1 or more non-path separators
+                                for (; j < len; ++j) {
+                                    if (isPathSeparator(path.charCodeAt(j)))
+                                        break;
+                                }
+                                if (j === len) {
+                                    // We matched a UNC root only
+                                    // Return the normalized version of the UNC root since there
+                                    // is nothing left to process
+                                    return '\\\\' + firstPart + '\\' + path.slice(last) + '\\';
+                                }
+                                else if (j !== last) {
+                                    // We matched a UNC root with leftovers
+                                    device = '\\\\' + firstPart + '\\' + path.slice(last, j);
+                                    rootEnd = j;
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        rootEnd = 1;
+                    }
+                }
+                else if (isWindowsDeviceRoot(code)) {
+                    // Possible device root
+                    if (path.charCodeAt(1) === CHAR_COLON) {
+                        device = path.slice(0, 2);
+                        rootEnd = 2;
+                        if (len > 2) {
+                            if (isPathSeparator(path.charCodeAt(2))) {
+                                // Treat separator following drive name as an absolute path
+                                // indicator
+                                isAbsolute = true;
+                                rootEnd = 3;
+                            }
+                        }
+                    }
+                }
+            }
+            else if (isPathSeparator(code)) {
+                // `path` contains just a path separator, exit early to avoid unnecessary
+                // work
+                return '\\';
+            }
+            var tail;
+            if (rootEnd < len) {
+                tail = normalizeString(path.slice(rootEnd), !isAbsolute, '\\', isPathSeparator);
+            }
+            else {
+                tail = '';
+            }
+            if (tail.length === 0 && !isAbsolute)
+                tail = '.';
+            if (tail.length > 0 && isPathSeparator(path.charCodeAt(len - 1)))
+                tail += '\\';
+            if (device === undefined) {
+                if (isAbsolute) {
+                    if (tail.length > 0)
+                        return '\\' + tail;
+                    else
+                        return '\\';
+                }
+                else if (tail.length > 0) {
+                    return tail;
+                }
+                else {
+                    return '';
+                }
+            }
+            else if (isAbsolute) {
+                if (tail.length > 0)
+                    return device + '\\' + tail;
+                else
+                    return device + '\\';
+            }
+            else if (tail.length > 0) {
+                return device + tail;
+            }
+            else {
+                return device;
+            }
+        };
+        Win32Path.prototype.isAbsolute = function (path) {
+            validateString(path, 'path');
+            var len = path.length;
+            if (len === 0)
+                return false;
+            var code = path.charCodeAt(0);
+            if (isPathSeparator(code)) {
+                return true;
+            }
+            else if (isWindowsDeviceRoot(code)) {
+                // Possible device root
+                if (len > 2 && path.charCodeAt(1) === CHAR_COLON) {
+                    if (isPathSeparator(path.charCodeAt(2)))
+                        return true;
+                }
+            }
+            return false;
+        };
+        Win32Path.prototype.join = function () {
+            if (arguments.length === 0)
+                return '.';
+            var joined;
+            var firstPart;
+            for (var i = 0; i < arguments.length; ++i) {
+                var arg = arguments[i];
+                validateString(arg, 'path');
+                if (arg.length > 0) {
+                    if (joined === undefined)
+                        joined = firstPart = arg;
+                    else
+                        joined += '\\' + arg;
+                }
+            }
+            if (joined === undefined)
+                return '.';
+            // Make sure that the joined path doesn't start with two slashes, because
+            // normalize() will mistake it for an UNC path then.
+            //
+            // This step is skipped when it is very clear that the user actually
+            // intended to point at an UNC path. This is assumed when the first
+            // non-empty string arguments starts with exactly two slashes followed by
+            // at least one more non-slash character.
+            //
+            // Note that for normalize() to treat a path as an UNC path it needs to
+            // have at least 2 components, so we don't filter for that here.
+            // This means that the user can use join to construct UNC paths from
+            // a server name and a share name; for example:
+            //   path.join('//server', 'share') -> '\\\\server\\share\\')
+            var needsReplace = true;
+            var slashCount = 0;
+            if (isPathSeparator(firstPart.charCodeAt(0))) {
+                ++slashCount;
+                var firstLen = firstPart.length;
+                if (firstLen > 1) {
+                    if (isPathSeparator(firstPart.charCodeAt(1))) {
+                        ++slashCount;
+                        if (firstLen > 2) {
+                            if (isPathSeparator(firstPart.charCodeAt(2)))
+                                ++slashCount;
+                            else {
+                                // We matched a UNC path in the first part
+                                needsReplace = false;
+                            }
+                        }
+                    }
+                }
+            }
+            if (needsReplace) {
+                // Find any more consecutive slashes we need to replace
+                for (; slashCount < joined.length; ++slashCount) {
+                    if (!isPathSeparator(joined.charCodeAt(slashCount)))
+                        break;
+                }
+                // Replace the slashes if needed
+                if (slashCount >= 2)
+                    joined = '\\' + joined.slice(slashCount);
+            }
+            return win32.normalize(joined);
+        };
+        // It will solve the relative path from `from` to `to`, for instance:
+        //  from = 'C:\\orandea\\test\\aaa'
+        //  to = 'C:\\orandea\\impl\\bbb'
+        // The output of the function should be: '..\\..\\impl\\bbb'
+        Win32Path.prototype.relative = function (from, to) {
+            validateString(from, 'from');
+            validateString(to, 'to');
+            if (from === to)
+                return '';
+            var fromOrig = win32.resolve(from);
+            var toOrig = win32.resolve(to);
+            if (fromOrig === toOrig)
+                return '';
+            from = fromOrig.toLowerCase();
+            to = toOrig.toLowerCase();
+            if (from === to)
+                return '';
+            // Trim any leading backslashes
+            var fromStart = 0;
+            for (; fromStart < from.length; ++fromStart) {
+                if (from.charCodeAt(fromStart) !== CHAR_BACKWARD_SLASH)
+                    break;
+            }
+            // Trim trailing backslashes (applicable to UNC paths only)
+            var fromEnd = from.length;
+            for (; fromEnd - 1 > fromStart; --fromEnd) {
+                if (from.charCodeAt(fromEnd - 1) !== CHAR_BACKWARD_SLASH)
+                    break;
+            }
+            var fromLen = (fromEnd - fromStart);
+            // Trim any leading backslashes
+            var toStart = 0;
+            for (; toStart < to.length; ++toStart) {
+                if (to.charCodeAt(toStart) !== CHAR_BACKWARD_SLASH)
+                    break;
+            }
+            // Trim trailing backslashes (applicable to UNC paths only)
+            var toEnd = to.length;
+            for (; toEnd - 1 > toStart; --toEnd) {
+                if (to.charCodeAt(toEnd - 1) !== CHAR_BACKWARD_SLASH)
+                    break;
+            }
+            var toLen = (toEnd - toStart);
+            // Compare paths to find the longest common path from root
+            var length = (fromLen < toLen ? fromLen : toLen);
+            var lastCommonSep = -1;
+            var i = 0;
+            for (; i <= length; ++i) {
+                if (i === length) {
+                    if (toLen > length) {
+                        if (to.charCodeAt(toStart + i) === CHAR_BACKWARD_SLASH) {
+                            // We get here if `from` is the exact base path for `to`.
+                            // For example: from='C:\\foo\\bar'; to='C:\\foo\\bar\\baz'
+                            return toOrig.slice(toStart + i + 1);
+                        }
+                        else if (i === 2) {
+                            // We get here if `from` is the device root.
+                            // For example: from='C:\\'; to='C:\\foo'
+                            return toOrig.slice(toStart + i);
+                        }
+                    }
+                    if (fromLen > length) {
+                        if (from.charCodeAt(fromStart + i) === CHAR_BACKWARD_SLASH) {
+                            // We get here if `to` is the exact base path for `from`.
+                            // For example: from='C:\\foo\\bar'; to='C:\\foo'
+                            lastCommonSep = i;
+                        }
+                        else if (i === 2) {
+                            // We get here if `to` is the device root.
+                            // For example: from='C:\\foo\\bar'; to='C:\\'
+                            lastCommonSep = 3;
+                        }
+                    }
+                    break;
+                }
+                var fromCode = from.charCodeAt(fromStart + i);
+                var toCode = to.charCodeAt(toStart + i);
+                if (fromCode !== toCode)
+                    break;
+                else if (fromCode === CHAR_BACKWARD_SLASH)
+                    lastCommonSep = i;
+            }
+            // We found a mismatch before the first common path separator was seen, so
+            // return the original `to`.
+            if (i !== length && lastCommonSep === -1) {
+                return toOrig;
+            }
+            var out = '';
+            if (lastCommonSep === -1)
+                lastCommonSep = 0;
+            // Generate the relative path based on the path difference between `to` and
+            // `from`
+            for (i = fromStart + lastCommonSep + 1; i <= fromEnd; ++i) {
+                if (i === fromEnd || from.charCodeAt(i) === CHAR_BACKWARD_SLASH) {
+                    if (out.length === 0)
+                        out += '..';
+                    else
+                        out += '\\..';
+                }
+            }
+            // Lastly, append the rest of the destination (`to`) path that comes after
+            // the common path parts
+            if (out.length > 0)
+                return out + toOrig.slice(toStart + lastCommonSep, toEnd);
+            else {
+                toStart += lastCommonSep;
+                if (toOrig.charCodeAt(toStart) === CHAR_BACKWARD_SLASH)
+                    ++toStart;
+                return toOrig.slice(toStart, toEnd);
+            }
+        };
+        Win32Path.prototype.toNamespacedPath = function (path) {
+            // Note: this will *probably* throw somewhere.
+            if (typeof path !== 'string')
+                return path;
+            if (path.length === 0) {
+                return '';
+            }
+            var resolvedPath = win32.resolve(path);
+            if (resolvedPath.length >= 3) {
+                if (resolvedPath.charCodeAt(0) === CHAR_BACKWARD_SLASH) {
+                    // Possible UNC root
+                    if (resolvedPath.charCodeAt(1) === CHAR_BACKWARD_SLASH) {
+                        var code = resolvedPath.charCodeAt(2);
+                        if (code !== CHAR_QUESTION_MARK && code !== CHAR_DOT) {
+                            // Matched non-long UNC root, convert the path to a long UNC path
+                            return '\\\\?\\UNC\\' + resolvedPath.slice(2);
+                        }
+                    }
+                }
+                else if (isWindowsDeviceRoot(resolvedPath.charCodeAt(0))) {
+                    // Possible device root
+                    if (resolvedPath.charCodeAt(1) === CHAR_COLON &&
+                        resolvedPath.charCodeAt(2) === CHAR_BACKWARD_SLASH) {
+                        // Matched device root, convert the path to a long UNC path
+                        return '\\\\?\\' + resolvedPath;
+                    }
+                }
+            }
+            return path;
+        };
+        Win32Path.prototype.dirname = function (path) {
+            validateString(path, 'path');
+            var len = path.length;
+            if (len === 0)
+                return '.';
+            var rootEnd = -1;
+            var end = -1;
+            var matchedSlash = true;
+            var offset = 0;
+            var code = path.charCodeAt(0);
+            // Try to match a root
+            if (len > 1) {
+                if (isPathSeparator(code)) {
+                    // Possible UNC root
+                    rootEnd = offset = 1;
+                    if (isPathSeparator(path.charCodeAt(1))) {
+                        // Matched double path separator at beginning
+                        var j = 2;
+                        var last = j;
+                        // Match 1 or more non-path separators
+                        for (; j < len; ++j) {
+                            if (isPathSeparator(path.charCodeAt(j)))
+                                break;
+                        }
+                        if (j < len && j !== last) {
+                            // Matched!
+                            last = j;
+                            // Match 1 or more path separators
+                            for (; j < len; ++j) {
+                                if (!isPathSeparator(path.charCodeAt(j)))
+                                    break;
+                            }
+                            if (j < len && j !== last) {
+                                // Matched!
+                                last = j;
+                                // Match 1 or more non-path separators
+                                for (; j < len; ++j) {
+                                    if (isPathSeparator(path.charCodeAt(j)))
+                                        break;
+                                }
+                                if (j === len) {
+                                    // We matched a UNC root only
+                                    return path;
+                                }
+                                if (j !== last) {
+                                    // We matched a UNC root with leftovers
+                                    // Offset by 1 to include the separator after the UNC root to
+                                    // treat it as a "normal root" on top of a (UNC) root
+                                    rootEnd = offset = j + 1;
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (isWindowsDeviceRoot(code)) {
+                    // Possible device root
+                    if (path.charCodeAt(1) === CHAR_COLON) {
+                        rootEnd = offset = 2;
+                        if (len > 2) {
+                            if (isPathSeparator(path.charCodeAt(2)))
+                                rootEnd = offset = 3;
+                        }
+                    }
+                }
+            }
+            else if (isPathSeparator(code)) {
+                // `path` contains just a path separator, exit early to avoid
+                // unnecessary work
+                return path;
+            }
+            for (var i = len - 1; i >= offset; --i) {
+                if (isPathSeparator(path.charCodeAt(i))) {
+                    if (!matchedSlash) {
+                        end = i;
+                        break;
+                    }
+                }
+                else {
+                    // We saw the first non-path separator
+                    matchedSlash = false;
+                }
+            }
+            if (end === -1) {
+                if (rootEnd === -1)
+                    return '.';
+                else
+                    end = rootEnd;
+            }
+            return path.slice(0, end);
+        };
+        Win32Path.prototype.basename = function (path, ext) {
+            if (ext !== undefined)
+                validateString(ext, 'ext');
+            validateString(path, 'path');
+            var start = 0;
+            var end = -1;
+            var matchedSlash = true;
+            var i;
+            // Check for a drive letter prefix so as not to mistake the following
+            // path separator as an extra separator at the end of the path that can be
+            // disregarded
+            if (path.length >= 2) {
+                var drive = path.charCodeAt(0);
+                if (isWindowsDeviceRoot(drive)) {
+                    if (path.charCodeAt(1) === CHAR_COLON)
+                        start = 2;
+                }
+            }
+            if (ext !== undefined && ext.length > 0 && ext.length <= path.length) {
+                if (ext.length === path.length && ext === path)
+                    return '';
+                var extIdx = ext.length - 1;
+                var firstNonSlashEnd = -1;
+                for (i = path.length - 1; i >= start; --i) {
+                    var code = path.charCodeAt(i);
+                    if (isPathSeparator(code)) {
+                        // If we reached a path separator that was not part of a set of path
+                        // separators at the end of the string, stop now
+                        if (!matchedSlash) {
+                            start = i + 1;
+                            break;
+                        }
+                    }
+                    else {
+                        if (firstNonSlashEnd === -1) {
+                            // We saw the first non-path separator, remember this index in case
+                            // we need it if the extension ends up not matching
+                            matchedSlash = false;
+                            firstNonSlashEnd = i + 1;
+                        }
+                        if (extIdx >= 0) {
+                            // Try to match the explicit extension
+                            if (code === ext.charCodeAt(extIdx)) {
+                                if (--extIdx === -1) {
+                                    // We matched the extension, so mark this as the end of our path
+                                    // component
+                                    end = i;
+                                }
+                            }
+                            else {
+                                // Extension does not match, so our result is the entire path
+                                // component
+                                extIdx = -1;
+                                end = firstNonSlashEnd;
+                            }
+                        }
+                    }
+                }
+                if (start === end)
+                    end = firstNonSlashEnd;
+                else if (end === -1)
+                    end = path.length;
+                return path.slice(start, end);
+            }
+            else {
+                for (i = path.length - 1; i >= start; --i) {
+                    if (isPathSeparator(path.charCodeAt(i))) {
+                        // If we reached a path separator that was not part of a set of path
+                        // separators at the end of the string, stop now
+                        if (!matchedSlash) {
+                            start = i + 1;
+                            break;
+                        }
+                    }
+                    else if (end === -1) {
+                        // We saw the first non-path separator, mark this as the end of our
+                        // path component
+                        matchedSlash = false;
+                        end = i + 1;
+                    }
+                }
+                if (end === -1)
+                    return '';
+                return path.slice(start, end);
+            }
+        };
+        Win32Path.prototype.extname = function (path) {
+            validateString(path, 'path');
+            var start = 0;
+            var startDot = -1;
+            var startPart = 0;
+            var end = -1;
+            var matchedSlash = true;
+            // Track the state of characters (if any) we see before our first dot and
+            // after any path separator we find
+            var preDotState = 0;
+            // Check for a drive letter prefix so as not to mistake the following
+            // path separator as an extra separator at the end of the path that can be
+            // disregarded
+            if (path.length >= 2 &&
+                path.charCodeAt(1) === CHAR_COLON &&
+                isWindowsDeviceRoot(path.charCodeAt(0))) {
+                start = startPart = 2;
+            }
+            for (var i = path.length - 1; i >= start; --i) {
+                var code = path.charCodeAt(i);
+                if (isPathSeparator(code)) {
+                    // If we reached a path separator that was not part of a set of path
+                    // separators at the end of the string, stop now
+                    if (!matchedSlash) {
+                        startPart = i + 1;
+                        break;
+                    }
+                    continue;
+                }
+                if (end === -1) {
+                    // We saw the first non-path separator, mark this as the end of our
+                    // extension
+                    matchedSlash = false;
+                    end = i + 1;
+                }
+                if (code === CHAR_DOT) {
+                    // If this is our first dot, mark it as the start of our extension
+                    if (startDot === -1)
+                        startDot = i;
+                    else if (preDotState !== 1)
+                        preDotState = 1;
+                }
+                else if (startDot !== -1) {
+                    // We saw a non-dot and non-path separator before our dot, so we should
+                    // have a good chance at having a non-empty extension
+                    preDotState = -1;
+                }
+            }
+            if (startDot === -1 ||
+                end === -1 ||
+                // We saw a non-dot character immediately before the dot
+                preDotState === 0 ||
+                // The (right-most) trimmed path component is exactly '..'
+                (preDotState === 1 &&
+                    startDot === end - 1 &&
+                    startDot === startPart + 1)) {
+                return '';
+            }
+            return path.slice(startDot, end);
+        };
+        Win32Path.prototype.format = function (pathObject) {
+            if (pathObject === null || typeof pathObject !== 'object') {
+                throw new ERR_INVALID_ARG_TYPE('pathObject', 'Object', pathObject);
+            }
+            return _format('\\', pathObject);
+        };
+        Win32Path.prototype.parse = function (path) {
+            validateString(path, 'path');
+            var ret = { root: '', dir: '', base: '', ext: '', name: '' };
+            if (path.length === 0)
+                return ret;
+            var len = path.length;
+            var rootEnd = 0;
+            var code = path.charCodeAt(0);
+            // Try to match a root
+            if (len > 1) {
+                if (isPathSeparator(code)) {
+                    // Possible UNC root
+                    rootEnd = 1;
+                    if (isPathSeparator(path.charCodeAt(1))) {
+                        // Matched double path separator at beginning
+                        var j = 2;
+                        var last = j;
+                        // Match 1 or more non-path separators
+                        for (; j < len; ++j) {
+                            if (isPathSeparator(path.charCodeAt(j)))
+                                break;
+                        }
+                        if (j < len && j !== last) {
+                            // Matched!
+                            last = j;
+                            // Match 1 or more path separators
+                            for (; j < len; ++j) {
+                                if (!isPathSeparator(path.charCodeAt(j)))
+                                    break;
+                            }
+                            if (j < len && j !== last) {
+                                // Matched!
+                                last = j;
+                                // Match 1 or more non-path separators
+                                for (; j < len; ++j) {
+                                    if (isPathSeparator(path.charCodeAt(j)))
+                                        break;
+                                }
+                                if (j === len) {
+                                    // We matched a UNC root only
+                                    rootEnd = j;
+                                }
+                                else if (j !== last) {
+                                    // We matched a UNC root with leftovers
+                                    rootEnd = j + 1;
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (isWindowsDeviceRoot(code)) {
+                    // Possible device root
+                    if (path.charCodeAt(1) === CHAR_COLON) {
+                        rootEnd = 2;
+                        if (len > 2) {
+                            if (isPathSeparator(path.charCodeAt(2))) {
+                                if (len === 3) {
+                                    // `path` contains just a drive root, exit early to avoid
+                                    // unnecessary work
+                                    ret.root = ret.dir = path;
+                                    return ret;
+                                }
+                                rootEnd = 3;
+                            }
+                        }
+                        else {
+                            // `path` contains just a drive root, exit early to avoid
+                            // unnecessary work
+                            ret.root = ret.dir = path;
+                            return ret;
+                        }
+                    }
+                }
+            }
+            else if (isPathSeparator(code)) {
+                // `path` contains just a path separator, exit early to avoid
+                // unnecessary work
+                ret.root = ret.dir = path;
+                return ret;
+            }
+            if (rootEnd > 0)
+                ret.root = path.slice(0, rootEnd);
+            var startDot = -1;
+            var startPart = rootEnd;
+            var end = -1;
+            var matchedSlash = true;
+            var i = path.length - 1;
+            // Track the state of characters (if any) we see before our first dot and
+            // after any path separator we find
+            var preDotState = 0;
+            // Get non-dir info
+            for (; i >= rootEnd; --i) {
+                code = path.charCodeAt(i);
+                if (isPathSeparator(code)) {
+                    // If we reached a path separator that was not part of a set of path
+                    // separators at the end of the string, stop now
+                    if (!matchedSlash) {
+                        startPart = i + 1;
+                        break;
+                    }
+                    continue;
+                }
+                if (end === -1) {
+                    // We saw the first non-path separator, mark this as the end of our
+                    // extension
+                    matchedSlash = false;
+                    end = i + 1;
+                }
+                if (code === CHAR_DOT) {
+                    // If this is our first dot, mark it as the start of our extension
+                    if (startDot === -1)
+                        startDot = i;
+                    else if (preDotState !== 1)
+                        preDotState = 1;
+                }
+                else if (startDot !== -1) {
+                    // We saw a non-dot and non-path separator before our dot, so we should
+                    // have a good chance at having a non-empty extension
+                    preDotState = -1;
+                }
+            }
+            if (startDot === -1 ||
+                end === -1 ||
+                // We saw a non-dot character immediately before the dot
+                preDotState === 0 ||
+                // The (right-most) trimmed path component is exactly '..'
+                (preDotState === 1 &&
+                    startDot === end - 1 &&
+                    startDot === startPart + 1)) {
+                if (end !== -1) {
+                    ret.base = ret.name = path.slice(startPart, end);
+                }
+            }
+            else {
+                ret.name = path.slice(startPart, startDot);
+                ret.base = path.slice(startPart, end);
+                ret.ext = path.slice(startDot, end);
+            }
+            // If the directory is the root, use the entire root as the `dir` including
+            // the trailing slash if any (`C:\abc` -> `C:\`). Otherwise, strip out the
+            // trailing slash (`C:\abc\def` -> `C:\abc`).
+            if (startPart > 0 && startPart !== rootEnd)
+                ret.dir = path.slice(0, startPart - 1);
+            else
+                ret.dir = ret.root;
+            return ret;
+        };
+        return Win32Path;
+    }());
+    ;
+    var PosixPath = /** @class */ (function () {
+        function PosixPath() {
+            this.sep = '/';
+            this.delimiter = ':';
+            this.win32 = null;
+            this.posix = null;
+        }
+        // path.resolve([from ...], to)
+        PosixPath.prototype.resolve = function () {
+            var pathSegments = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                pathSegments[_i] = arguments[_i];
+            }
+            var resolvedPath = '';
+            var resolvedAbsolute = false;
+            for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+                var path;
+                if (i >= 0)
+                    path = arguments[i];
+                else {
+                    path = process.cwd();
+                }
+                validateString(path, 'path');
+                // Skip empty entries
+                if (path.length === 0) {
+                    continue;
+                }
+                resolvedPath = path + '/' + resolvedPath;
+                resolvedAbsolute = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
+            }
+            // At this point the path should be resolved to a full absolute path, but
+            // handle relative paths to be safe (might happen when process.cwd() fails)
+            // Normalize the path
+            resolvedPath = normalizeString(resolvedPath, !resolvedAbsolute, '/', isPosixPathSeparator);
+            if (resolvedAbsolute) {
+                if (resolvedPath.length > 0)
+                    return '/' + resolvedPath;
+                else
+                    return '/';
+            }
+            else if (resolvedPath.length > 0) {
+                return resolvedPath;
+            }
+            else {
+                return '.';
+            }
+        };
+        PosixPath.prototype.normalize = function (path) {
+            validateString(path, 'path');
+            if (path.length === 0)
+                return '.';
+            var isAbsolute = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
+            var trailingSeparator = path.charCodeAt(path.length - 1) === CHAR_FORWARD_SLASH;
+            // Normalize the path
+            path = normalizeString(path, !isAbsolute, '/', isPosixPathSeparator);
+            if (path.length === 0 && !isAbsolute)
+                path = '.';
+            if (path.length > 0 && trailingSeparator)
+                path += '/';
+            if (isAbsolute)
+                return '/' + path;
+            return path;
+        };
+        PosixPath.prototype.isAbsolute = function (path) {
+            validateString(path, 'path');
+            return path.length > 0 && path.charCodeAt(0) === CHAR_FORWARD_SLASH;
+        };
+        PosixPath.prototype.join = function () {
+            if (arguments.length === 0)
+                return '.';
+            var joined;
+            for (var i = 0; i < arguments.length; ++i) {
+                var arg = arguments[i];
+                validateString(arg, 'path');
+                if (arg.length > 0) {
+                    if (joined === undefined)
+                        joined = arg;
+                    else
+                        joined += '/' + arg;
+                }
+            }
+            if (joined === undefined)
+                return '.';
+            return posix.normalize(joined);
+        };
+        PosixPath.prototype.relative = function (from, to) {
+            validateString(from, 'from');
+            validateString(to, 'to');
+            if (from === to)
+                return '';
+            from = posix.resolve(from);
+            to = posix.resolve(to);
+            if (from === to)
+                return '';
+            // Trim any leading backslashes
+            var fromStart = 1;
+            for (; fromStart < from.length; ++fromStart) {
+                if (from.charCodeAt(fromStart) !== CHAR_FORWARD_SLASH)
+                    break;
+            }
+            var fromEnd = from.length;
+            var fromLen = (fromEnd - fromStart);
+            // Trim any leading backslashes
+            var toStart = 1;
+            for (; toStart < to.length; ++toStart) {
+                if (to.charCodeAt(toStart) !== CHAR_FORWARD_SLASH)
+                    break;
+            }
+            var toEnd = to.length;
+            var toLen = (toEnd - toStart);
+            // Compare paths to find the longest common path from root
+            var length = (fromLen < toLen ? fromLen : toLen);
+            var lastCommonSep = -1;
+            var i = 0;
+            for (; i <= length; ++i) {
+                if (i === length) {
+                    if (toLen > length) {
+                        if (to.charCodeAt(toStart + i) === CHAR_FORWARD_SLASH) {
+                            // We get here if `from` is the exact base path for `to`.
+                            // For example: from='/foo/bar'; to='/foo/bar/baz'
+                            return to.slice(toStart + i + 1);
+                        }
+                        else if (i === 0) {
+                            // We get here if `from` is the root
+                            // For example: from='/'; to='/foo'
+                            return to.slice(toStart + i);
+                        }
+                    }
+                    else if (fromLen > length) {
+                        if (from.charCodeAt(fromStart + i) === CHAR_FORWARD_SLASH) {
+                            // We get here if `to` is the exact base path for `from`.
+                            // For example: from='/foo/bar/baz'; to='/foo/bar'
+                            lastCommonSep = i;
+                        }
+                        else if (i === 0) {
+                            // We get here if `to` is the root.
+                            // For example: from='/foo'; to='/'
+                            lastCommonSep = 0;
+                        }
+                    }
+                    break;
+                }
+                var fromCode = from.charCodeAt(fromStart + i);
+                var toCode = to.charCodeAt(toStart + i);
+                if (fromCode !== toCode)
+                    break;
+                else if (fromCode === CHAR_FORWARD_SLASH)
+                    lastCommonSep = i;
+            }
+            var out = '';
+            // Generate the relative path based on the path difference between `to`
+            // and `from`
+            for (i = fromStart + lastCommonSep + 1; i <= fromEnd; ++i) {
+                if (i === fromEnd || from.charCodeAt(i) === CHAR_FORWARD_SLASH) {
+                    if (out.length === 0)
+                        out += '..';
+                    else
+                        out += '/..';
+                }
+            }
+            // Lastly, append the rest of the destination (`to`) path that comes after
+            // the common path parts
+            if (out.length > 0)
+                return out + to.slice(toStart + lastCommonSep);
+            else {
+                toStart += lastCommonSep;
+                if (to.charCodeAt(toStart) === CHAR_FORWARD_SLASH)
+                    ++toStart;
+                return to.slice(toStart);
+            }
+        };
+        PosixPath.prototype.toNamespacedPath = function (path) {
+            // Non-op on posix systems
+            return path;
+        };
+        PosixPath.prototype.dirname = function (path) {
+            validateString(path, 'path');
+            if (path.length === 0)
+                return '.';
+            var hasRoot = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
+            var end = -1;
+            var matchedSlash = true;
+            for (var i = path.length - 1; i >= 1; --i) {
+                if (path.charCodeAt(i) === CHAR_FORWARD_SLASH) {
+                    if (!matchedSlash) {
+                        end = i;
+                        break;
+                    }
+                }
+                else {
+                    // We saw the first non-path separator
+                    matchedSlash = false;
+                }
+            }
+            if (end === -1)
+                return hasRoot ? '/' : '.';
+            if (hasRoot && end === 1)
+                return '//';
+            return path.slice(0, end);
+        };
+        PosixPath.prototype.basename = function (path, ext) {
+            if (ext !== undefined)
+                validateString(ext, 'ext');
+            validateString(path, 'path');
+            var start = 0;
+            var end = -1;
+            var matchedSlash = true;
+            var i;
+            if (ext !== undefined && ext.length > 0 && ext.length <= path.length) {
+                if (ext.length === path.length && ext === path)
+                    return '';
+                var extIdx = ext.length - 1;
+                var firstNonSlashEnd = -1;
+                for (i = path.length - 1; i >= 0; --i) {
+                    var code = path.charCodeAt(i);
+                    if (code === CHAR_FORWARD_SLASH) {
+                        // If we reached a path separator that was not part of a set of path
+                        // separators at the end of the string, stop now
+                        if (!matchedSlash) {
+                            start = i + 1;
+                            break;
+                        }
+                    }
+                    else {
+                        if (firstNonSlashEnd === -1) {
+                            // We saw the first non-path separator, remember this index in case
+                            // we need it if the extension ends up not matching
+                            matchedSlash = false;
+                            firstNonSlashEnd = i + 1;
+                        }
+                        if (extIdx >= 0) {
+                            // Try to match the explicit extension
+                            if (code === ext.charCodeAt(extIdx)) {
+                                if (--extIdx === -1) {
+                                    // We matched the extension, so mark this as the end of our path
+                                    // component
+                                    end = i;
+                                }
+                            }
+                            else {
+                                // Extension does not match, so our result is the entire path
+                                // component
+                                extIdx = -1;
+                                end = firstNonSlashEnd;
+                            }
+                        }
+                    }
+                }
+                if (start === end)
+                    end = firstNonSlashEnd;
+                else if (end === -1)
+                    end = path.length;
+                return path.slice(start, end);
+            }
+            else {
+                for (i = path.length - 1; i >= 0; --i) {
+                    if (path.charCodeAt(i) === CHAR_FORWARD_SLASH) {
+                        // If we reached a path separator that was not part of a set of path
+                        // separators at the end of the string, stop now
+                        if (!matchedSlash) {
+                            start = i + 1;
+                            break;
+                        }
+                    }
+                    else if (end === -1) {
+                        // We saw the first non-path separator, mark this as the end of our
+                        // path component
+                        matchedSlash = false;
+                        end = i + 1;
+                    }
+                }
+                if (end === -1)
+                    return '';
+                return path.slice(start, end);
+            }
+        };
+        PosixPath.prototype.extname = function (path) {
+            validateString(path, 'path');
+            var startDot = -1;
+            var startPart = 0;
+            var end = -1;
+            var matchedSlash = true;
+            // Track the state of characters (if any) we see before our first dot and
+            // after any path separator we find
+            var preDotState = 0;
+            for (var i = path.length - 1; i >= 0; --i) {
+                var code = path.charCodeAt(i);
+                if (code === CHAR_FORWARD_SLASH) {
+                    // If we reached a path separator that was not part of a set of path
+                    // separators at the end of the string, stop now
+                    if (!matchedSlash) {
+                        startPart = i + 1;
+                        break;
+                    }
+                    continue;
+                }
+                if (end === -1) {
+                    // We saw the first non-path separator, mark this as the end of our
+                    // extension
+                    matchedSlash = false;
+                    end = i + 1;
+                }
+                if (code === CHAR_DOT) {
+                    // If this is our first dot, mark it as the start of our extension
+                    if (startDot === -1)
+                        startDot = i;
+                    else if (preDotState !== 1)
+                        preDotState = 1;
+                }
+                else if (startDot !== -1) {
+                    // We saw a non-dot and non-path separator before our dot, so we should
+                    // have a good chance at having a non-empty extension
+                    preDotState = -1;
+                }
+            }
+            if (startDot === -1 ||
+                end === -1 ||
+                // We saw a non-dot character immediately before the dot
+                preDotState === 0 ||
+                // The (right-most) trimmed path component is exactly '..'
+                (preDotState === 1 &&
+                    startDot === end - 1 &&
+                    startDot === startPart + 1)) {
+                return '';
+            }
+            return path.slice(startDot, end);
+        };
+        PosixPath.prototype.format = function (pathObject) {
+            if (pathObject === null || typeof pathObject !== 'object') {
+                throw new ERR_INVALID_ARG_TYPE('pathObject', 'Object', pathObject);
+            }
+            return _format('/', pathObject);
+        };
+        PosixPath.prototype.parse = function (path) {
+            validateString(path, 'path');
+            var ret = { root: '', dir: '', base: '', ext: '', name: '' };
+            if (path.length === 0)
+                return ret;
+            var isAbsolute = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
+            var start;
+            if (isAbsolute) {
+                ret.root = '/';
+                start = 1;
+            }
+            else {
+                start = 0;
+            }
+            var startDot = -1;
+            var startPart = 0;
+            var end = -1;
+            var matchedSlash = true;
+            var i = path.length - 1;
+            // Track the state of characters (if any) we see before our first dot and
+            // after any path separator we find
+            var preDotState = 0;
+            // Get non-dir info
+            for (; i >= start; --i) {
+                var code = path.charCodeAt(i);
+                if (code === CHAR_FORWARD_SLASH) {
+                    // If we reached a path separator that was not part of a set of path
+                    // separators at the end of the string, stop now
+                    if (!matchedSlash) {
+                        startPart = i + 1;
+                        break;
+                    }
+                    continue;
+                }
+                if (end === -1) {
+                    // We saw the first non-path separator, mark this as the end of our
+                    // extension
+                    matchedSlash = false;
+                    end = i + 1;
+                }
+                if (code === CHAR_DOT) {
+                    // If this is our first dot, mark it as the start of our extension
+                    if (startDot === -1)
+                        startDot = i;
+                    else if (preDotState !== 1)
+                        preDotState = 1;
+                }
+                else if (startDot !== -1) {
+                    // We saw a non-dot and non-path separator before our dot, so we should
+                    // have a good chance at having a non-empty extension
+                    preDotState = -1;
+                }
+            }
+            if (startDot === -1 ||
+                end === -1 ||
+                // We saw a non-dot character immediately before the dot
+                preDotState === 0 ||
+                // The (right-most) trimmed path component is exactly '..'
+                (preDotState === 1 &&
+                    startDot === end - 1 &&
+                    startDot === startPart + 1)) {
+                if (end !== -1) {
+                    if (startPart === 0 && isAbsolute)
+                        ret.base = ret.name = path.slice(1, end);
+                    else
+                        ret.base = ret.name = path.slice(startPart, end);
+                }
+            }
+            else {
+                if (startPart === 0 && isAbsolute) {
+                    ret.name = path.slice(1, startDot);
+                    ret.base = path.slice(1, end);
+                }
+                else {
+                    ret.name = path.slice(startPart, startDot);
+                    ret.base = path.slice(startPart, end);
+                }
+                ret.ext = path.slice(startDot, end);
+            }
+            if (startPart > 0)
+                ret.dir = path.slice(0, startPart - 1);
+            else if (isAbsolute)
+                ret.dir = '/';
+            return ret;
+        };
+        return PosixPath;
+    }());
+    ;
+    var win32 = new Win32Path();
+    var posix = new PosixPath();
+    posix.win32 = win32.win32 = win32;
+    posix.posix = win32.posix = posix;
+    // Legacy internal API, docs-only deprecated: DEP0080
+    // win32._makeLong = win32.toNamespacedPath;
+    // posix._makeLong = posix.toNamespacedPath;
+    // if (process.platform === 'win32')
+    //     module.exports = win32;
+    // else
+    //     module.exports = posix;
+    // 
+    if (process.platform === 'win32')
+        feng3d.path = win32;
+    else
+        feng3d.path = posix;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -2319,77 +3978,6 @@ var feng3d;
     feng3d.RegExps = RegExps;
     feng3d.regExps = new RegExps();
 })(feng3d || (feng3d = {}));
-if (typeof Object.assign != 'function') {
-    // Must be writable: true, enumerable: false, configurable: true
-    Object.defineProperty(Object, "assign", {
-        value: function assign(target, varArgs) {
-            'use strict';
-            if (target == null) { // TypeError if undefined or null
-                throw new TypeError('Cannot convert undefined or null to object');
-            }
-            var to = Object(target);
-            for (var index = 1; index < arguments.length; index++) {
-                var nextSource = arguments[index];
-                if (nextSource != null) { // Skip over if undefined or null
-                    for (var nextKey in nextSource) {
-                        // Avoid bugs when hasOwnProperty is shadowed
-                        if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-                            to[nextKey] = nextSource[nextKey];
-                        }
-                    }
-                }
-            }
-            return to;
-        },
-        writable: true,
-        configurable: true
-    });
-}
-Object.getPropertyDescriptor = function (host, property) {
-    var data = Object.getOwnPropertyDescriptor(host, property);
-    if (data) {
-        return data;
-    }
-    var prototype = Object.getPrototypeOf(host);
-    if (prototype) {
-        return Object.getPropertyDescriptor(prototype, property);
-    }
-    return null;
-};
-Object.propertyIsWritable = function (host, property) {
-    var data = Object.getPropertyDescriptor(host, property);
-    if (!data)
-        return false;
-    if (data.get && !data.set)
-        return false;
-    return true;
-};
-Object.runFunc = function (obj, func) {
-    func(obj);
-    return obj;
-};
-Object.setValue = function (obj, value) {
-    feng3d.serialization.setValue(obj, value);
-    return obj;
-};
-Object.deepClone = function (obj) {
-    return feng3d.serialization.clone(obj);
-};
-//参考 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
-Map.prototype.getKeys = function () {
-    var keys = [];
-    this.forEach(function (v, k) {
-        keys.push(k);
-    });
-    return keys;
-};
-Map.prototype.getValues = function () {
-    var values = [];
-    this.forEach(function (v, k) {
-        values.push(v);
-    });
-    return values;
-};
 var ds;
 (function (ds) {
     /**
@@ -13173,7 +14761,7 @@ var feng3d;
             _this.rightmouse = false;
             _this.key = "";
             _this.keyCode = 0;
-            _this.wheelDelta = 0;
+            _this.deltaY = 0;
             _this.listentypes = [];
             /**
              * 处理鼠标按下时同时出发 "mousemove" 事件bug
@@ -13217,13 +14805,13 @@ var feng3d;
                     _this.key = event.key;
                 }
                 if (event instanceof WheelEvent) {
-                    _this.wheelDelta = event.wheelDelta;
+                    _this.deltaY = event.deltaY;
                 }
                 // 赋值上次鼠标事件值
-                event.clientX = _this.clientX;
-                event.clientY = _this.clientY;
-                event.pageX = _this.pageX;
-                event.pageY = _this.pageY;
+                // event.clientX = this.clientX;
+                // event.clientY = this.clientY;
+                // event.pageX = this.pageX;
+                // event.pageY = this.pageY;
                 _this.dispatchEvent(event);
             };
             _this.target = target;
@@ -13306,7 +14894,7 @@ var feng3d;
             this.rightmouse = false;
             this.key = "";
             this.keyCode = 0;
-            this.wheelDelta = 0;
+            this.deltaY = 0;
         };
         return EventProxy;
     }(feng3d.EventDispatcher));
@@ -13753,13 +15341,17 @@ var feng3d;
     /**
      *
      */
-    var Storage = /** @class */ (function () {
-        function Storage() {
+    var _IndexedDB = /** @class */ (function () {
+        function _IndexedDB() {
+            /**
+             * 数据库状态
+             */
+            this._dbStatus = {};
         }
         /**
          * 是否支持 indexedDB
          */
-        Storage.prototype.support = function () {
+        _IndexedDB.prototype.support = function () {
             if (typeof indexedDB == "undefined") {
                 indexedDB = window.indexedDB || window["mozIndexedDB"] || window["webkitIndexedDB"] || window["msIndexedDB"];
                 if (indexedDB == undefined) {
@@ -13768,23 +15360,87 @@ var feng3d;
             }
             return true;
         };
-        Storage.prototype.getDatabase = function (dbname, callback) {
+        /**
+         * 获取数据库，如果不存在则新建数据库
+         *
+         * @param dbname 数据库名称
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.getDatabase = function (dbname, callback) {
             if (databases[dbname]) {
                 callback(null, databases[dbname]);
                 return;
             }
-            var request = indexedDB.open(dbname);
+            this._open(dbname, callback);
+        };
+        /**
+         * 打开或者升级数据库
+         *
+         * @param dbname 数据库名称
+         * @param callback 完成回调
+         * @param upgrade 是否升级数据库
+         * @param onupgrade 升级回调
+         */
+        _IndexedDB.prototype._open = function (dbname, callback, upgrade, onupgrade) {
+            var _this = this;
+            if (upgrade === void 0) { upgrade = false; }
+            if (!this._dbStatus[dbname])
+                this._dbStatus[dbname] = { status: DBStatus.unOpen, onsuccessCallbacks: [], onupgradeneededCallbacks: [] };
+            this._dbStatus[dbname].onsuccessCallbacks.push(callback);
+            if (upgrade) {
+                feng3d.assert(!!onupgrade);
+                this._dbStatus[dbname].onupgradeneededCallbacks.push(onupgrade);
+            }
+            if (this._dbStatus[dbname].status == DBStatus.opening || this._dbStatus[dbname].status == DBStatus.upgrading)
+                return;
+            var request;
+            if (!upgrade) {
+                request = indexedDB.open(dbname);
+                this._dbStatus[dbname].status = DBStatus.opening;
+            }
+            else {
+                var oldDatabase = databases[dbname];
+                oldDatabase.close();
+                delete databases[dbname];
+                request = indexedDB.open(dbname, oldDatabase.version + 1);
+                this._dbStatus[dbname].status = DBStatus.upgrading;
+            }
+            request.onupgradeneeded = function (event) {
+                var newdatabase = event.target["result"];
+                request.onupgradeneeded = null;
+                var callbacks = _this._dbStatus[dbname].onupgradeneededCallbacks.concat();
+                _this._dbStatus[dbname].onupgradeneededCallbacks.length = 0;
+                callbacks.forEach(function (element) {
+                    element(newdatabase);
+                });
+            };
             request.onsuccess = function (event) {
                 databases[dbname] = event.target["result"];
-                callback(null, databases[dbname]);
                 request.onsuccess = null;
+                _this._dbStatus[dbname].status = DBStatus.opened;
+                var callbacks = _this._dbStatus[dbname].onsuccessCallbacks.concat();
+                _this._dbStatus[dbname].onsuccessCallbacks.length = 0;
+                callbacks.forEach(function (element) {
+                    element(null, databases[dbname]);
+                });
             };
             request.onerror = function (event) {
-                callback(event, null);
                 request.onerror = null;
+                _this._dbStatus[dbname].status = DBStatus.error;
+                var callbacks = _this._dbStatus[dbname].onsuccessCallbacks.concat();
+                _this._dbStatus[dbname].onsuccessCallbacks.length = 0;
+                callbacks.forEach(function (element) {
+                    element(event, null);
+                });
             };
         };
-        Storage.prototype.deleteDatabase = function (dbname, callback) {
+        /**
+         * 删除数据库
+         *
+         * @param dbname 数据库名称
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.deleteDatabase = function (dbname, callback) {
             var request = indexedDB.deleteDatabase(dbname);
             request.onsuccess = function (event) {
                 delete databases[dbname];
@@ -13796,12 +15452,25 @@ var feng3d;
                 request.onerror = null;
             };
         };
-        Storage.prototype.hasObjectStore = function (dbname, objectStroreName, callback) {
+        /**
+         * 是否存在指定的对象存储
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.hasObjectStore = function (dbname, objectStroreName, callback) {
             this.getDatabase(dbname, function (err, database) {
                 callback(database.objectStoreNames.contains(objectStroreName));
             });
         };
-        Storage.prototype.getObjectStoreNames = function (dbname, callback) {
+        /**
+         * 获取对象存储名称列表
+         *
+         * @param dbname 数据库
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.getObjectStoreNames = function (dbname, callback) {
             this.getDatabase(dbname, function (err, database) {
                 var objectStoreNames = [];
                 for (var i = 0; i < database.objectStoreNames.length; i++) {
@@ -13810,60 +15479,52 @@ var feng3d;
                 callback(null, objectStoreNames);
             });
         };
-        Storage.prototype.createObjectStore = function (dbname, objectStroreName, callback) {
+        /**
+         * 创建对象存储
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.createObjectStore = function (dbname, objectStroreName, callback) {
+            var _this = this;
             this.getDatabase(dbname, function (err, database) {
                 if (database.objectStoreNames.contains(objectStroreName)) {
                     callback && callback(null);
                     return;
                 }
-                database.close();
-                var request = indexedDB.open(database.name, database.version + 1);
-                request.onupgradeneeded = function (event) {
-                    var newdatabase = event.target["result"];
+                _this._open(dbname, callback, true, function (newdatabase) {
                     newdatabase.createObjectStore(objectStroreName);
-                    databases[newdatabase.name] = newdatabase;
-                    request.onupgradeneeded = null;
-                    callback && callback(null);
-                };
-                request.onsuccess = function (event) {
-                    var newdatabase = event.target["result"];
-                    databases[newdatabase.name] = newdatabase;
-                    request.onsuccess = null;
-                    callback && callback(null);
-                };
-                request.onerror = function (event) {
-                    request.onerror = null;
-                    callback && callback(event);
-                };
+                });
             });
         };
-        Storage.prototype.deleteObjectStore = function (dbname, objectStroreName, callback) {
+        /**
+         * 删除对象存储
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.deleteObjectStore = function (dbname, objectStroreName, callback) {
+            var _this = this;
             this.getDatabase(dbname, function (err, database) {
                 if (!database.objectStoreNames.contains(objectStroreName)) {
                     callback && callback(null);
                     return;
                 }
-                database.close();
-                var request = indexedDB.open(database.name, database.version + 1);
-                request.onupgradeneeded = function (event) {
-                    var newdatabase = event.target["result"];
+                _this._open(dbname, callback, true, function (newdatabase) {
                     newdatabase.deleteObjectStore(objectStroreName);
-                    request.onupgradeneeded = null;
-                    callback && callback(null);
-                };
-                request.onsuccess = function (event) {
-                    var newdatabase = event.target["result"];
-                    databases[newdatabase.name] = newdatabase;
-                    request.onsuccess = null;
-                    callback && callback(event);
-                };
-                request.onerror = function (event) {
-                    request.onerror = null;
-                    callback && callback(event);
-                };
+                });
             });
         };
-        Storage.prototype.getAllKeys = function (dbname, objectStroreName, callback) {
+        /**
+         * 获取对象存储中所有键列表
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.getAllKeys = function (dbname, objectStroreName, callback) {
             this.getDatabase(dbname, function (err, database) {
                 try {
                     var transaction = database.transaction([objectStroreName], 'readwrite');
@@ -13879,7 +15540,15 @@ var feng3d;
                 }
             });
         };
-        Storage.prototype.get = function (dbname, objectStroreName, key, callback) {
+        /**
+         * 获取对象存储中指定键对应的数据
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param key 键
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.objectStoreGet = function (dbname, objectStroreName, key, callback) {
             this.getDatabase(dbname, function (err, database) {
                 var transaction = database.transaction([objectStroreName], 'readwrite');
                 var objectStore = transaction.objectStore(objectStroreName);
@@ -13891,7 +15560,16 @@ var feng3d;
                 };
             });
         };
-        Storage.prototype.set = function (dbname, objectStroreName, key, data, callback) {
+        /**
+         * 设置对象存储的键与值，如果不存在指定键则新增否则修改。
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param key 键
+         * @param data 数据
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.objectStorePut = function (dbname, objectStroreName, key, data, callback) {
             this.getDatabase(dbname, function (err, database) {
                 try {
                     var transaction = database.transaction([objectStroreName], 'readwrite');
@@ -13907,7 +15585,15 @@ var feng3d;
                 }
             });
         };
-        Storage.prototype.delete = function (dbname, objectStroreName, key, callback) {
+        /**
+         * 删除对象存储中指定键以及对于数据
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param key 键
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.objectStoreDelete = function (dbname, objectStroreName, key, callback) {
             this.getDatabase(dbname, function (err, database) {
                 try {
                     var transaction = database.transaction([objectStroreName], 'readwrite');
@@ -13923,7 +15609,14 @@ var feng3d;
                 }
             });
         };
-        Storage.prototype.clear = function (dbname, objectStroreName, callback) {
+        /**
+         * 清空对象存储中数据
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
+        _IndexedDB.prototype.objectStoreClear = function (dbname, objectStroreName, callback) {
             this.getDatabase(dbname, function (err, database) {
                 try {
                     var transaction = database.transaction([objectStroreName], 'readwrite');
@@ -13939,24 +15632,441 @@ var feng3d;
                 }
             });
         };
-        return Storage;
+        return _IndexedDB;
     }());
-    feng3d.Storage = Storage;
-    feng3d.storage = new Storage();
+    feng3d._IndexedDB = _IndexedDB;
+    feng3d._indexedDB = new _IndexedDB();
+    /**
+     * 数据库状态
+     */
+    var DBStatus;
+    (function (DBStatus) {
+        /**
+         * 未开启
+         */
+        DBStatus[DBStatus["unOpen"] = 0] = "unOpen";
+        /**
+         * 正在开启中
+         */
+        DBStatus[DBStatus["opening"] = 1] = "opening";
+        /**
+         * 已开启
+         */
+        DBStatus[DBStatus["opened"] = 2] = "opened";
+        /**
+         * 正在升级中
+         */
+        DBStatus[DBStatus["upgrading"] = 3] = "upgrading";
+        /**
+         * 开启或者升级失败
+         */
+        DBStatus[DBStatus["error"] = 4] = "error";
+    })(DBStatus || (DBStatus = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
     /**
+     * 文件系统类型
+     */
+    var FSType;
+    (function (FSType) {
+        FSType["http"] = "http";
+        FSType["native"] = "native";
+        FSType["indexedDB"] = "indexedDB";
+    })(FSType = feng3d.FSType || (feng3d.FSType = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 可读文件系统
+     *
+     * 针对基础文件系统进行扩展
+     */
+    var ReadFS = /** @class */ (function () {
+        function ReadFS(baseReadFS) {
+            this._fs = baseReadFS;
+        }
+        Object.defineProperty(ReadFS.prototype, "baseFS", {
+            /**
+             * 基础文件系统
+             */
+            get: function () { return this._fs; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ReadFS.prototype, "type", {
+            /**
+             * 文件系统类型
+             */
+            get: function () {
+                return this._fs.type;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 读取文件为ArrayBuffer
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        ReadFS.prototype.readArrayBuffer = function (path, callback) {
+            this._fs.readArrayBuffer(path, callback);
+        };
+        /**
+         * 读取文件为字符串
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        ReadFS.prototype.readString = function (path, callback) {
+            this._fs.readString(path, callback);
+        };
+        /**
+         * 读取文件为Object
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        ReadFS.prototype.readObject = function (path, callback) {
+            this._fs.readObject(path, callback);
+        };
+        /**
+         * 加载图片
+         * @param path 图片路径
+         * @param callback 加载完成回调
+         */
+        ReadFS.prototype.readImage = function (path, callback) {
+            this._fs.readImage(path, callback);
+        };
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        ReadFS.prototype.getAbsolutePath = function (path, callback) {
+            this._fs.getAbsolutePath(path, callback);
+        };
+        return ReadFS;
+    }());
+    feng3d.ReadFS = ReadFS;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 可读写文件系统
+     *
+     * 扩展基础可读写文件系统
+     */
+    var ReadWriteFS = /** @class */ (function (_super) {
+        __extends(ReadWriteFS, _super);
+        function ReadWriteFS(baseReadWriteFS) {
+            var _this = _super.call(this, baseReadWriteFS) || this;
+            _this._fs = baseReadWriteFS;
+            return _this;
+        }
+        Object.defineProperty(ReadWriteFS.prototype, "projectname", {
+            get: function () {
+                return this._fs.projectname;
+            },
+            set: function (v) {
+                this._fs.projectname = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ReadWriteFS.prototype, "baseFS", {
+            /**
+             * 基础文件系统
+             */
+            get: function () { return this._fs; },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 文件是否存在
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        ReadWriteFS.prototype.exists = function (path, callback) {
+            this._fs.exists(path, callback);
+        };
+        /**
+         * 读取文件夹中文件列表
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        ReadWriteFS.prototype.readdir = function (path, callback) {
+            this._fs.readdir(path, callback);
+        };
+        /**
+         * 新建文件夹
+         * @param path 文件夹路径
+         * @param callback 回调函数
+         */
+        ReadWriteFS.prototype.mkdir = function (path, callback) {
+            this._fs.mkdir(path, callback);
+        };
+        /**
+         * 删除文件
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        ReadWriteFS.prototype.deleteFile = function (path, callback) {
+            this._fs.deleteFile(path, callback);
+        };
+        /**
+         * 写ArrayBuffer(新建)文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        ReadWriteFS.prototype.writeArrayBuffer = function (path, data, callback) {
+            this._fs.writeArrayBuffer(path, data, callback);
+        };
+        /**
+         * 写字符串到(新建)文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        ReadWriteFS.prototype.writeString = function (path, data, callback) {
+            this._fs.writeString(path, data, callback);
+        };
+        /**
+         * 写Object到(新建)文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        ReadWriteFS.prototype.writeObject = function (path, data, callback) {
+            this._fs.writeObject(path, data, callback);
+        };
+        /**
+         * 写图片
+         * @param path 图片路径
+         * @param image 图片
+         * @param callback 回调函数
+         */
+        ReadWriteFS.prototype.writeImage = function (path, image, callback) {
+            this._fs.writeImage(path, image, callback);
+        };
+        /**
+         * 复制文件
+         * @param src    源路径
+         * @param dest    目标路径
+         * @param callback 回调函数
+         */
+        ReadWriteFS.prototype.copyFile = function (src, dest, callback) {
+            this._fs.copyFile(src, dest, callback);
+        };
+        /**
+         * 获取所有文件路径
+         * @param callback 回调函数
+         */
+        ReadWriteFS.prototype.getAllPaths = function (callback) {
+            this.getAllfilepathInFolder("", callback);
+        };
+        /**
+         * 获取指定文件下所有文件路径列表
+         */
+        ReadWriteFS.prototype.getAllfilepathInFolder = function (dirpath, callback) {
+            var _this = this;
+            feng3d.assert(this.isDir(dirpath), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
+            var dirs = [dirpath];
+            var result = [];
+            var currentdir = "";
+            // 递归获取文件
+            var handle = function () {
+                if (dirs.length > 0) {
+                    currentdir = dirs.shift();
+                    _this._fs.readdir(currentdir, function (err, files) {
+                        files.forEach(function (element) {
+                            var childpath = currentdir + element;
+                            result.push(childpath);
+                            if (_this.isDir(childpath))
+                                dirs.push(childpath);
+                        });
+                        handle();
+                    });
+                }
+                else {
+                    callback(null, result);
+                }
+            };
+            handle();
+        };
+        /**
+         * 移动文件
+         * @param src 源路径
+         * @param dest 目标路径
+         * @param callback 回调函数
+         */
+        ReadWriteFS.prototype.moveFile = function (src, dest, callback) {
+            var _this = this;
+            this._fs.copyFile(src, dest, function (err) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                _this._fs.deleteFile(src, callback);
+            });
+        };
+        /**
+         * 重命名文件
+         * @param oldPath 老路径
+         * @param newPath 新路径
+         * @param callback 回调函数
+         */
+        ReadWriteFS.prototype.renameFile = function (oldPath, newPath, callback) {
+            this.moveFile(oldPath, newPath, callback);
+        };
+        /**
+         * 移动一组文件
+         * @param movelists 移动列表
+         * @param callback 回调函数
+         */
+        ReadWriteFS.prototype.moveFiles = function (movelists, callback) {
+            var _this = this;
+            this.copyFiles(movelists.concat(), function (err) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                var deletelists = movelists.reduce(function (value, current) { value.push(current[0]); return value; }, []);
+                _this.deleteFiles(deletelists, callback);
+            });
+        };
+        /**
+         * 复制一组文件
+         * @param copylists 复制列表
+         * @param callback 回调函数
+         */
+        ReadWriteFS.prototype.copyFiles = function (copylists, callback) {
+            var _this = this;
+            if (copylists.length > 0) {
+                var copyitem = copylists.shift();
+                this._fs.copyFile(copyitem[0], copyitem[1], function (err) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    _this.copyFiles(copylists, callback);
+                });
+                return;
+            }
+            callback && callback(null);
+        };
+        /**
+         * 删除一组文件
+         * @param deletelists 删除列表
+         * @param callback 回调函数
+         */
+        ReadWriteFS.prototype.deleteFiles = function (deletelists, callback) {
+            var _this = this;
+            if (deletelists.length > 0) {
+                this._fs.deleteFile(deletelists.shift(), function (err) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    _this.deleteFiles(deletelists, callback);
+                });
+                return;
+            }
+            callback && callback(null);
+        };
+        /**
+         * 重命名文件(夹)
+         * @param oldPath 老路径
+         * @param newPath 新路径
+         * @param callback 回调函数
+         */
+        ReadWriteFS.prototype.rename = function (oldPath, newPath, callback) {
+            var _this = this;
+            if (this.isDir(oldPath)) {
+                this.getAllfilepathInFolder(oldPath, function (err, filepaths) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    var renamelists = [[oldPath, newPath]];
+                    filepaths.forEach(function (element) {
+                        renamelists.push([element, element.replace(oldPath, newPath)]);
+                    });
+                    _this.moveFiles(renamelists, callback);
+                });
+            }
+            else {
+                this.renameFile(oldPath, newPath, callback);
+            }
+        };
+        /**
+         * 移动文件(夹)
+         *
+         * @param src 源路径
+         * @param dest 目标路径
+         * @param callback 回调函数
+         */
+        ReadWriteFS.prototype.move = function (src, dest, callback) {
+            this.rename(src, dest, callback);
+        };
+        /**
+         * 删除文件(夹)
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        ReadWriteFS.prototype.delete = function (path, callback) {
+            var _this = this;
+            if (this.isDir(path)) {
+                this.getAllfilepathInFolder(path, function (err, filepaths) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    var removelists = filepaths.concat(path);
+                    _this.deleteFiles(removelists, callback);
+                });
+            }
+            else {
+                this._fs.deleteFile(path, callback);
+            }
+        };
+        /**
+         * 是否为文件夹
+         * @param path 文件路径
+         */
+        ReadWriteFS.prototype.isDir = function (path) {
+            if (path == "")
+                return true;
+            return path.charAt(path.length - 1) == "/";
+        };
+        return ReadWriteFS;
+    }(feng3d.ReadFS));
+    feng3d.ReadWriteFS = ReadWriteFS;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 资源元标签文件后缀
+     */
+    feng3d.metaSuffix = ".meta";
+    feng3d.metasFolder = "metas/";
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 文件（夹）状态文件后缀
+     */
+    var statSuffix = ".__stat";
+    /**
      * 索引数据文件系统
      */
-    var IndexedDBfs = /** @class */ (function () {
-        function IndexedDBfs(DBname, projectname) {
+    var IndexedDBFS = /** @class */ (function () {
+        function IndexedDBFS(DBname, projectname) {
             if (DBname === void 0) { DBname = "feng3d-editor"; }
             if (projectname === void 0) { projectname = "testproject"; }
             this.DBname = DBname;
             this.projectname = projectname;
         }
-        Object.defineProperty(IndexedDBfs.prototype, "type", {
+        Object.defineProperty(IndexedDBFS.prototype, "type", {
             get: function () {
                 return feng3d.FSType.indexedDB;
             },
@@ -13968,9 +16078,96 @@ var feng3d;
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        IndexedDBfs.prototype.readArrayBuffer = function (path, callback) {
-            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
-                callback(err, data);
+        IndexedDBFS.prototype.readArrayBuffer = function (path, callback) {
+            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
+                if (err) {
+                    callback(err, data);
+                    return;
+                }
+                if (data instanceof ArrayBuffer) {
+                    callback(null, data);
+                }
+                else if (data instanceof Object) {
+                    var str = JSON.stringify(data);
+                    feng3d.dataTransform.stringToArrayBuffer(str, function (arraybuffer) {
+                        callback(null, arraybuffer);
+                    });
+                }
+                else {
+                    feng3d.dataTransform.stringToArrayBuffer(data, function (arraybuffer) {
+                        callback(null, arraybuffer);
+                    });
+                }
+            });
+        };
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        IndexedDBFS.prototype.readString = function (path, callback) {
+            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
+                if (err) {
+                    callback(err, data);
+                    return;
+                }
+                if (data instanceof ArrayBuffer) {
+                    feng3d.dataTransform.arrayBufferToString(data, function (str) {
+                        callback(null, str);
+                    });
+                }
+                else if (data instanceof Object) {
+                    var str = JSON.stringify(data);
+                    callback(null, str);
+                }
+                else {
+                    callback(null, data);
+                }
+            });
+        };
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        IndexedDBFS.prototype.readObject = function (path, callback) {
+            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
+                if (err) {
+                    callback(err, data);
+                    return;
+                }
+                if (data instanceof ArrayBuffer) {
+                    feng3d.dataTransform.arrayBufferToString(data, function (str) {
+                        var obj = JSON.parse(str);
+                        var object = feng3d.serialization.deserialize(obj);
+                        callback(null, object);
+                    });
+                }
+                else if (data instanceof Object) {
+                    var object = feng3d.serialization.deserialize(data);
+                    callback(null, object);
+                }
+                else {
+                    var obj = JSON.parse(data);
+                    var object = feng3d.serialization.deserialize(obj);
+                    callback(null, object);
+                }
+            });
+        };
+        /**
+         * 加载图片
+         * @param path 图片路径
+         * @param callback 加载完成回调
+         */
+        IndexedDBFS.prototype.readImage = function (path, callback) {
+            this.readArrayBuffer(path, function (err, data) {
+                if (err) {
+                    callback(err, null);
+                    return;
+                }
+                feng3d.dataTransform.arrayBufferToImage(data, function (img) {
+                    callback(null, img);
+                });
             });
         };
         /**
@@ -13978,7 +16175,7 @@ var feng3d;
          * @param path （相对）路径
          * @param callback 回调函数
          */
-        IndexedDBfs.prototype.getAbsolutePath = function (path, callback) {
+        IndexedDBFS.prototype.getAbsolutePath = function (path, callback) {
             callback(null, path);
         };
         /**
@@ -13986,8 +16183,8 @@ var feng3d;
          * @param path 文件路径
          * @param callback 回调函数
          */
-        IndexedDBfs.prototype.exists = function (path, callback) {
-            feng3d.storage.get(this.DBname, this.projectname, path, function (err, data) {
+        IndexedDBFS.prototype.exists = function (path, callback) {
+            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, path, function (err, data) {
                 callback(!!data);
             });
         };
@@ -13996,8 +16193,8 @@ var feng3d;
          * @param path 路径
          * @param callback 回调函数
          */
-        IndexedDBfs.prototype.readdir = function (path, callback) {
-            feng3d.storage.getAllKeys(this.DBname, this.projectname, function (err, allfilepaths) {
+        IndexedDBFS.prototype.readdir = function (path, callback) {
+            this.getAllPaths(function (err, allfilepaths) {
                 if (!allfilepaths) {
                     callback(err, null);
                     return;
@@ -14021,16 +16218,28 @@ var feng3d;
          * @param path 文件夹路径
          * @param callback 回调函数
          */
-        IndexedDBfs.prototype.mkdir = function (path, callback) {
-            feng3d.storage.set(this.DBname, this.projectname, path, new ArrayBuffer(0), callback);
+        IndexedDBFS.prototype.mkdir = function (path, callback) {
+            var _this = this;
+            this.exists(path, function (exists) {
+                if (exists) {
+                    callback(new Error("\u6587\u4EF6\u5939" + path + "\u5DF2\u5B58\u5728\u65E0\u6CD5\u65B0\u5EFA"));
+                    return;
+                }
+                feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, path, "", callback);
+            });
         };
         /**
          * 删除文件
          * @param path 文件路径
          * @param callback 回调函数
          */
-        IndexedDBfs.prototype.deleteFile = function (path, callback) {
-            feng3d.storage.delete(this.DBname, this.projectname, path, callback);
+        IndexedDBFS.prototype.deleteFile = function (path, callback) {
+            var _this = this;
+            // 删除状态文件
+            feng3d._indexedDB.objectStoreDelete(this.DBname, this.projectname, path + statSuffix, function (err) {
+                // 删除文件
+                feng3d._indexedDB.objectStoreDelete(_this.DBname, _this.projectname, path, callback);
+            });
         };
         /**
          * 写文件
@@ -14038,20 +16247,75 @@ var feng3d;
          * @param data 文件数据
          * @param callback 回调函数
          */
-        IndexedDBfs.prototype.writeArrayBuffer = function (path, data, callback) {
-            feng3d.storage.set(this.DBname, this.projectname, path, data, callback);
+        IndexedDBFS.prototype.writeArrayBuffer = function (path, data, callback) {
+            feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
+        };
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        IndexedDBFS.prototype.writeString = function (path, data, callback) {
+            feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
+        };
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        IndexedDBFS.prototype.writeObject = function (path, data, callback) {
+            var obj = feng3d.serialization.serialize(data);
+            feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, obj, callback);
+        };
+        /**
+         * 写图片
+         * @param path 图片路径
+         * @param image 图片
+         * @param callback 回调函数
+         */
+        IndexedDBFS.prototype.writeImage = function (path, image, callback) {
+            var _this = this;
+            feng3d.dataTransform.imageToArrayBuffer(image, function (arraybuffer) {
+                _this.writeArrayBuffer(path, arraybuffer, callback);
+            });
+        };
+        /**
+         * 复制文件
+         * @param src    源路径
+         * @param dest    目标路径
+         * @param callback 回调函数
+         */
+        IndexedDBFS.prototype.copyFile = function (src, dest, callback) {
+            var _this = this;
+            feng3d._indexedDB.objectStoreGet(this.DBname, this.projectname, src, function (err, data) {
+                if (err) {
+                    callback(err);
+                    return;
+                }
+                feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, dest, data, callback);
+            });
         };
         /**
          * 获取所有文件路径
          * @param callback 回调函数
          */
-        IndexedDBfs.prototype.getAllPaths = function (callback) {
-            feng3d.storage.getAllKeys(this.DBname, this.projectname, callback);
+        IndexedDBFS.prototype.getAllPaths = function (callback) {
+            feng3d._indexedDB.getAllKeys(this.DBname, this.projectname, function (err, allPaths) {
+                if (err) {
+                    callback(err, allPaths);
+                    return;
+                }
+                // 除去状态描述文件
+                var paths = allPaths.filter(function (v) { return v.substr(-statSuffix.length) != statSuffix; });
+                callback(err, paths);
+            });
         };
-        return IndexedDBfs;
+        return IndexedDBFS;
     }());
-    feng3d.IndexedDBfs = IndexedDBfs;
-    feng3d.indexedDBfs = new IndexedDBfs();
+    feng3d.IndexedDBFS = IndexedDBFS;
+    feng3d.indexedDBFS = new IndexedDBFS();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -14059,12 +16323,16 @@ var feng3d;
      * Http可读文件系统
      */
     var HttpFS = /** @class */ (function () {
-        function HttpFS() {
+        function HttpFS(rootPath) {
+            if (rootPath === void 0) { rootPath = ""; }
             /**
              * 根路径
              */
             this.rootPath = "";
-            this.rootPath = document.URL.substring(0, document.URL.lastIndexOf("/") + 1);
+            this.rootPath = rootPath;
+            if (this.rootPath == "") {
+                this.rootPath = document.URL.substring(0, document.URL.lastIndexOf("/") + 1);
+            }
         }
         Object.defineProperty(HttpFS.prototype, "type", {
             get: function () {
@@ -14080,11 +16348,52 @@ var feng3d;
          */
         HttpFS.prototype.readArrayBuffer = function (path, callback) {
             // rootPath
-            feng3d.loader.loadBinary(path, function (content) {
+            feng3d.loader.loadBinary(this._getAbsolutePath(path), function (content) {
                 callback(null, content);
             }, null, function (e) {
                 callback(e, null);
             });
+        };
+        /**
+         * 读取文件为字符串
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        HttpFS.prototype.readString = function (path, callback) {
+            feng3d.loader.loadText(this._getAbsolutePath(path), function (content) {
+                callback(null, content);
+            }, null, function (e) {
+                callback(e, null);
+            });
+        };
+        /**
+         * 读取文件为Object
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        HttpFS.prototype.readObject = function (path, callback) {
+            feng3d.loader.loadText(this._getAbsolutePath(path), function (content) {
+                var obj = JSON.stringify(content);
+                var object = feng3d.serialization.deserialize(obj);
+                callback(null, object);
+            }, null, function (e) {
+                callback(e, null);
+            });
+        };
+        /**
+         * 加载图片
+         * @param path 图片路径
+         * @param callback 加载完成回调
+         */
+        HttpFS.prototype.readImage = function (path, callback) {
+            var img = new Image();
+            img.onload = function () {
+                callback(null, img);
+            };
+            img.onerror = function (evt) {
+                callback(new Error("\u52A0\u8F7D\u56FE\u7247" + path + "\u5931\u8D25"), null);
+            };
+            img.src = this._getAbsolutePath(path);
         };
         /**
          * 获取文件绝对路径
@@ -14092,7 +16401,10 @@ var feng3d;
          * @param callback 回调函数
          */
         HttpFS.prototype.getAbsolutePath = function (path, callback) {
-            callback(null, this.rootPath + path);
+            callback(null, this._getAbsolutePath(path));
+        };
+        HttpFS.prototype._getAbsolutePath = function (path) {
+            return this.rootPath + path;
         };
         return HttpFS;
     }());
@@ -14102,495 +16414,192 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 文件系统类型
+     * 可读取资源文件系统
      */
-    var FSType;
-    (function (FSType) {
-        FSType["http"] = "http";
-        FSType["native"] = "native";
-        FSType["indexedDB"] = "indexedDB";
-    })(FSType = feng3d.FSType || (feng3d.FSType = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 资源
-     * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
-     */
-    var ReadAssets = /** @class */ (function () {
-        function ReadAssets() {
+    var ReadAssetsFS = /** @class */ (function () {
+        function ReadAssetsFS(readFS) {
+            if (readFS === void 0) { readFS = feng3d.httpFS; }
+            this._fs = new feng3d.ReadFS(readFS);
+        }
+        Object.defineProperty(ReadAssetsFS.prototype, "fs", {
             /**
              * 可读文件系统
              */
-            this.fs = feng3d.httpFS;
-        }
-        Object.defineProperty(ReadAssets.prototype, "type", {
-            get: function () {
-                return this.fs.type;
-            },
+            get: function () { return this._fs; },
             enumerable: true,
             configurable: true
         });
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        ReadAssets.prototype.getAbsolutePath = function (path, callback) {
-            this.fs.getAbsolutePath(path, callback);
-        };
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        ReadAssets.prototype.readArrayBuffer = function (path, callback) {
-            if (path == "" || path == null) {
-                callback(new Error("无效路径!"), null);
-                return;
-            }
-            var readFS = this.fs;
-            if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1)
-                readFS = feng3d.httpFS;
-            readFS.readArrayBuffer(path, callback);
-        };
-        /**
-         * 读取文件为字符串
-         */
-        ReadAssets.prototype.readString = function (path, callback) {
-            this.readArrayBuffer(path, function (err, data) {
-                if (err) {
-                    callback(err, null);
-                    return;
-                }
-                feng3d.dataTransform.arrayBufferToString(data, function (content) {
-                    callback(null, content);
-                });
-            });
-        };
-        /**
-         * 加载图片
-         * @param path 图片路径
-         * @param callback 加载完成回调
-         */
-        ReadAssets.prototype.readImage = function (path, callback) {
-            if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1) {
-                var img = new Image();
-                img.onload = function () {
-                    callback(null, img);
-                };
-                img.src = path;
-            }
-            else {
-                this.readArrayBuffer(path, function (err, data) {
-                    if (err) {
-                        callback(err, null);
-                        return;
-                    }
-                    feng3d.dataTransform.arrayBufferToImage(data, function (img) {
-                        callback(null, img);
-                    });
-                });
-            }
-        };
-        /**
-         * 读取文件为DataURL
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        ReadAssets.prototype.readDataURL = function (path, callback) {
-            this.readArrayBuffer(path, function (err, data) {
-                feng3d.dataTransform.arrayBufferToDataURL(data, function (dataurl) {
-                    callback(null, dataurl);
-                });
-            });
-        };
-        /**
-         * 读取文件为Blob
-         * @param path 资源路径
-         * @param callback 读取完成回调
-         */
-        ReadAssets.prototype.readBlob = function (path, callback) {
-            feng3d.assets.readArrayBuffer(path, function (err, data) {
-                if (err) {
-                    callback(err, null);
-                    return;
-                }
-                feng3d.dataTransform.arrayBufferToBlob(data, function (blob) {
-                    callback(null, blob);
-                });
-            });
-        };
-        /**
-         * 读取文件为对象
-         * @param path 资源路径
-         * @param callback 读取完成回调
-         */
-        ReadAssets.prototype.readObject = function (path, callback) {
-            this.readString(path, function (err, str) {
-                if (err) {
-                    callback(err, null);
-                    return;
-                }
-                var object = feng3d.serialization.deserialize(JSON.parse(str));
-                callback(null, object);
-            });
-        };
         /**
          * 读取文件为资源对象
          * @param id 资源编号
          * @param callback 读取完成回调
          */
-        ReadAssets.prototype.readAssets = function (id, callback) {
+        ReadAssetsFS.prototype.readAssets = function (id, callback) {
             var _this = this;
             var assets = feng3d.Feng3dAssets.getAssets(id);
             if (assets) {
                 callback(null, assets);
                 return;
             }
-            this.readObject(feng3d.Feng3dAssets.getPath(id), function (err, assets) {
-                if (assets)
-                    feng3d.Feng3dAssets.setAssets(assets);
-                if (assets instanceof feng3d.Feng3dFile) {
-                    assets["readFile"](_this, function (err) {
-                        callback(err, assets);
-                    });
+            var path = feng3d.assetsIDPathMap.getPath(id);
+            this._readMeta(id, function (err, meta) {
+                if (err) {
+                    callback(err, null);
+                    return;
+                }
+                if (meta.isDirectory) {
+                    var feng3dFolder = new feng3d.Feng3dFolder();
+                    feng3dFolder.assetsId = meta.guid;
+                    callback(null, feng3dFolder);
                 }
                 else {
-                    callback(err, assets);
+                    _this._fs.readObject(path, function (err, assets) {
+                        if (assets)
+                            feng3d.Feng3dAssets.setAssets(assets);
+                        if (assets instanceof feng3d.Feng3dFile) {
+                            assets["readFile"](_this, function (err) {
+                                callback(err, assets);
+                            });
+                        }
+                        else {
+                            callback(err, assets);
+                        }
+                    });
                 }
             });
         };
-        return ReadAssets;
+        /**
+         * 读取资源元标签
+         *
+         * @param id 资源编号
+         * @param callback 完成回调
+         */
+        ReadAssetsFS.prototype._readMeta = function (id, callback) {
+            this.fs.readObject(feng3d.metasFolder + id + feng3d.metaSuffix, callback);
+        };
+        return ReadAssetsFS;
     }());
-    feng3d.ReadAssets = ReadAssets;
-    feng3d.assets = new ReadAssets();
+    feng3d.ReadAssetsFS = ReadAssetsFS;
+    feng3d.assets = new ReadAssetsFS();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var ReadWriteAssets = /** @class */ (function (_super) {
-        __extends(ReadWriteAssets, _super);
-        function ReadWriteAssets(readWriteFS) {
-            var _this = _super.call(this) || this;
+    /**
+     * 可读写资源文件系统
+     */
+    var ReadWriteAssetsFS = /** @class */ (function (_super) {
+        __extends(ReadWriteAssetsFS, _super);
+        function ReadWriteAssetsFS(readWriteFS) {
+            if (readWriteFS === void 0) { readWriteFS = feng3d.indexedDBFS; }
+            var _this = _super.call(this, readWriteFS) || this;
+            _this._fs = new feng3d.ReadWriteFS(readWriteFS);
+            return _this;
+        }
+        Object.defineProperty(ReadWriteAssetsFS.prototype, "fs", {
             /**
              * 可读写文件系统
              */
-            _this.fs = feng3d.indexedDBfs;
-            if (readWriteFS)
-                _this.fs = readWriteFS;
-            return _this;
-        }
-        Object.defineProperty(ReadWriteAssets.prototype, "projectname", {
-            // fs = indexedDBfs;
-            get: function () {
-                return this.fs.projectname;
-            },
-            set: function (v) {
-                this.fs.projectname = v;
-            },
+            get: function () { return this._fs; },
             enumerable: true,
             configurable: true
         });
         /**
-         * 文件是否存在
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.exists = function (path, callback) {
-            this.fs.exists(path, callback);
-        };
-        /**
-         * 读取文件夹中文件列表
-         * @param path 路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.readdir = function (path, callback) {
-            feng3d.assert(this.isDir(path), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
-            this.fs.readdir(path, callback);
-        };
-        /**
-         * 新建文件夹
-         * @param path 文件夹路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.mkdir = function (path, callback) {
-            feng3d.assert(this.isDir(path), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
-            this.fs.mkdir(path, callback);
-        };
-        /**
-         * 删除文件
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.deleteFile = function (path, callback) {
-            this.fs.deleteFile(path, callback);
-        };
-        /**
-         * 写文件
-         * @param path 文件路径
-         * @param data 文件数据
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.writeArrayBuffer = function (path, data, callback) {
-            if (this.isDir(path)) {
-                this.fs.mkdir(path, callback);
-            }
-            else {
-                this.fs.writeArrayBuffer(path, data, callback);
-            }
-        };
-        /**
-         * 写图片
-         * @param path 图片路径
-         * @param image 图片
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.writeImage = function (path, image, callback) {
-            var _this = this;
-            feng3d.dataTransform.imageToArrayBuffer(image, function (arraybuffer) {
-                _this.writeArrayBuffer(path, arraybuffer, callback);
-            });
-        };
-        ///--------------------------
-        /**
-         * 保存字符串到文件
-         * @param path 文件路径
-         * @param string 保存的字符串
+         * 写（保存）资源
+         *
+         * @param assets 资源对象
          * @param callback 完成回调
          */
-        ReadWriteAssets.prototype.writeString = function (path, string, callback) {
+        ReadWriteAssetsFS.prototype.writeAssets = function (assets, callback) {
             var _this = this;
-            feng3d.dataTransform.stringToArrayBuffer(string, function (arrayBuffer) {
-                _this.writeArrayBuffer(path, arrayBuffer, callback);
-            });
-        };
-        /**
-         * 保存对象到文件
-         * @param path 文件路径
-         * @param object 保存的对象
-         * @param callback 完成回调
-         */
-        ReadWriteAssets.prototype.writeObject = function (path, object, callback) {
-            var obj = feng3d.serialization.serialize(object);
-            var str = JSON.stringify(obj, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
-            this.writeString(path, str, callback);
-        };
-        /**
-         * 保存资源
-         * @param assets 资源
-         * @param callback 保存资源完成回调
-         */
-        ReadWriteAssets.prototype.writeAssets = function (assets, callback) {
-            assets.save(this, callback);
-        };
-        /**
-         * 获取所有文件路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.getAllPaths = function (callback) {
-            this.getAllfilepathInFolder("", callback);
-        };
-        /**
-         * 获取指定文件下所有文件路径列表
-         */
-        ReadWriteAssets.prototype.getAllfilepathInFolder = function (dirpath, callback) {
-            var _this = this;
-            feng3d.assert(this.isDir(dirpath), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
-            var dirs = [dirpath];
-            var result = [];
-            var currentdir = "";
-            // 递归获取文件
-            var handle = function () {
-                if (dirs.length > 0) {
-                    currentdir = dirs.shift();
-                    _this.readdir(currentdir, function (err, files) {
-                        files.forEach(function (element) {
-                            var childpath = currentdir + element;
-                            result.push(childpath);
-                            if (_this.isDir(childpath))
-                                dirs.push(childpath);
-                        });
-                        handle();
-                    });
-                }
-                else {
-                    callback(null, result);
-                }
-            };
-            handle();
-        };
-        /**
-         * 复制文件
-         * @param src    源路径
-         * @param dest    目标路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.copyFile = function (src, dest, callback) {
-            var _this = this;
-            this.readArrayBuffer(src, function (err, data) {
-                if (err) {
-                    callback && callback(err);
-                    return;
-                }
-                _this.writeArrayBuffer(dest, data, callback);
-            });
-        };
-        /**
-         * 移动文件
-         * @param src 源路径
-         * @param dest 目标路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.moveFile = function (src, dest, callback) {
-            var _this = this;
-            this.copyFile(src, dest, function (err) {
-                if (err) {
-                    callback && callback(err);
-                    return;
-                }
-                _this.deleteFile(src, callback);
-            });
-        };
-        /**
-         * 重命名文件
-         * @param oldPath 老路径
-         * @param newPath 新路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.renameFile = function (oldPath, newPath, callback) {
-            this.moveFile(oldPath, newPath, callback);
-        };
-        /**
-         * 移动一组文件
-         * @param movelists 移动列表
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.moveFiles = function (movelists, callback) {
-            var _this = this;
-            this.copyFiles(movelists.concat(), function (err) {
-                if (err) {
-                    callback && callback(err);
-                    return;
-                }
-                var deletelists = movelists.reduce(function (value, current) { value.push(current[0]); return value; }, []);
-                _this.deleteFiles(deletelists, callback);
-            });
-        };
-        /**
-         * 复制一组文件
-         * @param copylists 复制列表
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.copyFiles = function (copylists, callback) {
-            var _this = this;
-            if (copylists.length > 0) {
-                var copyitem = copylists.shift();
-                this.copyFile(copyitem[0], copyitem[1], function (err) {
+            var path = feng3d.assetsIDPathMap.getPath(assets.assetsId);
+            this._readMeta(assets.assetsId, function (err, meta) {
+                if (!meta)
+                    meta = {
+                        guid: assets.assetsId, isDirectory: assets instanceof feng3d.Feng3dFolder,
+                        mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: assets.assetType,
+                    };
+                meta.mtimeMs = Date.now();
+                _this._writeMeta(assets.assetsId, meta, function (err) {
                     if (err) {
                         callback && callback(err);
                         return;
                     }
-                    _this.copyFiles(copylists, callback);
-                });
-                return;
-            }
-            callback && callback(null);
-        };
-        /**
-         * 删除一组文件
-         * @param deletelists 删除列表
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.deleteFiles = function (deletelists, callback) {
-            var _this = this;
-            if (deletelists.length > 0) {
-                this.deleteFile(deletelists.shift(), function (err) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
+                    if (assets instanceof feng3d.Feng3dFolder) {
+                        _this.fs.mkdir(path, callback);
                     }
-                    _this.deleteFiles(deletelists, callback);
-                });
-                return;
-            }
-            callback && callback(null);
-        };
-        /**
-         * 重命名文件(夹)
-         * @param oldPath 老路径
-         * @param newPath 新路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.rename = function (oldPath, newPath, callback) {
-            var _this = this;
-            if (this.isDir(oldPath)) {
-                this.getAllfilepathInFolder(oldPath, function (err, filepaths) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
+                    else {
+                        _this.fs.writeObject(path, assets, callback);
                     }
-                    var renamelists = [[oldPath, newPath]];
-                    filepaths.forEach(function (element) {
-                        renamelists.push([element, element.replace(oldPath, newPath)]);
-                    });
-                    _this.moveFiles(renamelists, callback);
                 });
-            }
-            else {
-                this.renameFile(oldPath, newPath, callback);
-            }
-        };
-        /**
-         * 移动文件(夹)
-         * @param src 源路径
-         * @param dest 目标路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.move = function (src, dest, callback) {
-            this.rename(src, dest, callback);
-        };
-        /**
-         * 删除文件(夹)
-         * @param path 路径
-         * @param callback 回调函数
-         */
-        ReadWriteAssets.prototype.delete = function (path, callback) {
-            var _this = this;
-            if (this.isDir(path)) {
-                this.getAllfilepathInFolder(path, function (err, filepaths) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
-                    }
-                    var removelists = filepaths.concat(path);
-                    _this.deleteFiles(removelists, callback);
-                });
-            }
-            else {
-                this.deleteFile(path, callback);
-            }
+            });
         };
         /**
          * 删除资源
-         * @param assetsId 资源编号
-         * @param callback 回调函数
+         *
+         * @param assets 资源对象
+         * @param callback 完成回调
          */
-        ReadWriteAssets.prototype.deleteAssets = function (assetsId, callback) {
-            var assets = feng3d.Feng3dAssets.getAssets(assetsId);
-            assets.delete(this, callback);
+        ReadWriteAssetsFS.prototype.deleteAssets = function (assets, callback) {
+            var _this = this;
+            var path = feng3d.assetsIDPathMap.getPath(assets.assetsId);
+            this._readMeta(assets.assetsId, function (err, meta) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                _this._deleteMeta(assets.assetsId, function (err) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    feng3d.assetsIDPathMap.deleteByID(assets.assetsId);
+                    // 如果该资源为文件夹 则 删除该文件夹以及文件夹内所有资源
+                    if (meta.isDirectory) {
+                        _this.fs.getAllfilepathInFolder(path, function (err, filepaths) {
+                            if (err) {
+                                callback && callback(err);
+                                return;
+                            }
+                            var deleteIDs = filepaths.reduce(function (pv, cv) {
+                                var cid = feng3d.assetsIDPathMap.getID(cv);
+                                if (cid)
+                                    pv.push(cid);
+                                return pv;
+                            }, []);
+                            deleteIDs.forEach(function (element) {
+                                feng3d.assetsIDPathMap.deleteByID(element);
+                            });
+                            _this.fs.delete(path, callback);
+                        });
+                    }
+                    else {
+                        _this.fs.deleteFile(path, callback);
+                    }
+                });
+            });
         };
         /**
-         * 是否为文件夹
-         * @param path 文件路径
+         * 写资源元标签
+         *
+         * @param id 资源编号
+         * @param meta 资源元标签
+         * @param callback 完成回调
          */
-        ReadWriteAssets.prototype.isDir = function (path) {
-            if (path == "")
-                return true;
-            return path.charAt(path.length - 1) == "/";
+        ReadWriteAssetsFS.prototype._writeMeta = function (id, meta, callback) {
+            this.fs.writeObject(feng3d.metasFolder + id + feng3d.metaSuffix, meta, callback);
         };
-        return ReadWriteAssets;
-    }(feng3d.ReadAssets));
-    feng3d.ReadWriteAssets = ReadWriteAssets;
+        /**
+         * 删除资源元标签
+         *
+         * @param id 资源编号
+         * @param callback 完成回调
+         */
+        ReadWriteAssetsFS.prototype._deleteMeta = function (id, callback) {
+            this.fs.deleteFile(feng3d.metasFolder + id + feng3d.metaSuffix, callback);
+        };
+        return ReadWriteAssetsFS;
+    }(feng3d.ReadAssetsFS));
+    feng3d.ReadWriteAssetsFS = ReadWriteAssetsFS;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -14685,6 +16694,128 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 资源编号与路径映射
+     */
+    var AssetsIDPathMap = /** @class */ (function () {
+        function AssetsIDPathMap() {
+            /**
+             * 编号映射到路径
+             */
+            this._idMap = {};
+            /**
+             * 路径映射到编号
+             */
+            this._pathMap = {};
+        }
+        /**
+         * 初始化
+         *
+         * @param list 资源列表
+         */
+        AssetsIDPathMap.prototype.init = function (list) {
+            var _this = this;
+            this._idMap = {};
+            this._pathMap = {};
+            if (!list)
+                return;
+            list.forEach(function (item) {
+                _this.addItem(item);
+            });
+        };
+        /**
+         * 获取所有资源编号列表
+         */
+        AssetsIDPathMap.prototype.getAllIDs = function () {
+            return Object.keys(this._idMap);
+        };
+        /**
+         * 获取所有资源路径列表
+         */
+        AssetsIDPathMap.prototype.getAllPaths = function () {
+            return Object.keys(this._pathMap);
+        };
+        /**
+         * 获取资源路径
+         *
+         * @param id 资源编号
+         */
+        AssetsIDPathMap.prototype.getPath = function (id) {
+            return this._idMap[id] && this._idMap[id].path;
+        };
+        /**
+         * 获取资源编号
+         *
+         * @param path 资源路径
+         */
+        AssetsIDPathMap.prototype.getID = function (path) {
+            return this._pathMap[path] && this._pathMap[path].id;
+        };
+        /**
+         * 是否存在指定编号的资源
+         *
+         * @param id 资源编号
+         */
+        AssetsIDPathMap.prototype.existID = function (id) {
+            return !!this._idMap[id];
+        };
+        /**
+         * 是否存在指定路径的资源
+         *
+         * @param path 资源路径
+         */
+        AssetsIDPathMap.prototype.existPath = function (path) {
+            return !!this._pathMap[path];
+        };
+        /**
+         * 新增资源编号路径映射
+         *
+         * @param item 资源编号
+         * @param path 资源路径
+         */
+        AssetsIDPathMap.prototype.addItem = function (item) {
+            feng3d.assert(!this._idMap[item.id], "\u65E0\u6CD5\u65B0\u589E\u5DF2\u5B58\u5728\u6307\u5B9A\u7F16\u53F7\u8D44\u6E90\u6620\u5C04");
+            feng3d.assert(!this._pathMap[item.path], "\u65E0\u6CD5\u65B0\u589E\u5DF2\u5B58\u5728\u6307\u5B9A\u8DEF\u5F84\u8D44\u6E90\u6620\u5C04");
+            this._idMap[item.id] = item;
+            this._pathMap[item.path] = item;
+        };
+        /**
+         * 删除指定编号映射
+         *
+         * @param id 编号
+         */
+        AssetsIDPathMap.prototype.deleteByID = function (id) {
+            var item = this._idMap[id];
+            feng3d.assert(!!item, "\u65E0\u6CD5\u5220\u9664\u4E0D\u5B58\u5728\u7F16\u53F7\u8D44\u6E90\u6620\u5C04");
+            delete this._idMap[id];
+            delete this._pathMap[item.path];
+        };
+        /**
+         * 删除指定路径资源映射
+         *
+         * @param path 资源编号
+         */
+        AssetsIDPathMap.prototype.deleteByPath = function (path) {
+            var item = this._pathMap[path];
+            feng3d.assert(!!item, "\u65E0\u6CD5\u5220\u9664\u4E0D\u5B58\u5728\u8DEF\u5F84\u8D44\u6E90\u6620\u5C04");
+            delete this._idMap[item.id];
+            delete this._pathMap[path];
+        };
+        /**
+         * 输出为列表
+         */
+        AssetsIDPathMap.prototype.toList = function () {
+            var _this = this;
+            var list = Object.keys(this._idMap).map(function (id) { return _this._idMap[id]; });
+            return list;
+        };
+        return AssetsIDPathMap;
+    }());
+    feng3d.AssetsIDPathMap = AssetsIDPathMap;
+    feng3d.assetsIDPathMap = new AssetsIDPathMap();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * feng3d资源
      */
     var Feng3dAssets = /** @class */ (function (_super) {
@@ -14697,39 +16828,6 @@ var feng3d;
             _this.name = "";
             return _this;
         }
-        /**
-         * 删除资源
-         * @param readWriteAssets 可读写资源管理器
-         * @param callback 完成回调
-         */
-        Feng3dAssets.prototype.delete = function (readWriteAssets, callback) {
-            if (this.assetsId) {
-                Feng3dAssets["_lib"].delete(this.assetsId);
-                readWriteAssets.delete(Feng3dAssets.getAssetDir(this.assetsId), callback);
-            }
-            else {
-                callback && callback(null);
-            }
-        };
-        /**
-         * 保存资源
-         * @param readWriteAssets
-         * @param callback  完成回调
-         */
-        Feng3dAssets.prototype.save = function (readWriteAssets, callback) {
-            var _this = this;
-            if (!this.assetsId) {
-                this.assetsId = feng3d.FMath.uuid();
-                Feng3dAssets.setAssets(this);
-            }
-            readWriteAssets.writeObject(this.path, this, function (err) {
-                if (err) {
-                    callback(err);
-                    return;
-                }
-                _this.saveFile(readWriteAssets, callback);
-            });
-        };
         /**
          * 保存文件
          * @param readWriteAssets 可读写资源管理系统
@@ -14745,23 +16843,6 @@ var feng3d;
          */
         Feng3dAssets.prototype.readFile = function (readAssets, callback) {
             callback && callback(null);
-        };
-        Feng3dAssets.prototype.assetsIdChanged = function () {
-            this.path = Feng3dAssets.getPath(this.assetsId);
-        };
-        /**
-         * 获取资源所在文件夹
-         * @param assetsId 资源编号
-         */
-        Feng3dAssets.getAssetDir = function (assetsId) {
-            return "Library/" + assetsId + "/";
-        };
-        /**
-         * 获取资源路径
-         * @param assetsId 资源编号
-         */
-        Feng3dAssets.getPath = function (assetsId) {
-            return this.getAssetDir(assetsId) + ".json";
         };
         Feng3dAssets.setAssets = function (assets) {
             this._lib.set(assets.assetsId, assets);
@@ -14782,8 +16863,7 @@ var feng3d;
         };
         Feng3dAssets._lib = new Map();
         __decorate([
-            feng3d.serialize,
-            feng3d.watch("assetsIdChanged")
+            feng3d.serialize
         ], Feng3dAssets.prototype, "assetsId", void 0);
         __decorate([
             feng3d.oav(),
@@ -14894,7 +16974,7 @@ var feng3d;
             for (var i = 0; i < mouseEvents.length; i++) {
                 feng3d.windowEventProxy.on(mouseEvents[i], this.onMouseOnce, this);
             }
-            feng3d.windowEventProxy.on("mousewheel", this.onMousewheel, this);
+            feng3d.windowEventProxy.on("wheel", this.onMousewheel, this);
         }
         /**
          * 鼠标事件
@@ -24426,7 +26506,7 @@ var feng3d;
         };
         UrlImageTexture2D.prototype.saveFile = function (readWriteAssets, callback) {
             if (callback === void 0) { callback = function (err) { }; }
-            readWriteAssets.writeImage(this.url, this.image, callback);
+            readWriteAssets.fs.writeImage(this.url, this.image, callback);
         };
         /**
          * 读取文件
@@ -24436,7 +26516,7 @@ var feng3d;
         UrlImageTexture2D.prototype.readFile = function (readAssets, callback) {
             var _this = this;
             if (callback === void 0) { callback = function (err) { }; }
-            readAssets.readImage(this.url, function (err, img) {
+            readAssets.fs.readImage(this.url, function (err, img) {
                 _this.image = img;
                 callback && callback(err);
             });
@@ -24453,18 +26533,36 @@ var feng3d;
                 this.invalidate();
                 return;
             }
-            feng3d.assets.readImage(url, function (err, img) {
-                if (url == _this.url) {
-                    if (err) {
-                        feng3d.error(err);
-                        _this.image = null;
-                    }
-                    else
+            if (feng3d.pathUtils.isHttpURL(url)) {
+                feng3d.loader.loadImage(url, function (img) {
+                    if (url == _this.url) {
                         _this.image = img;
-                    _this.invalidate();
-                    _this.dispatch("loadCompleted");
-                }
-            });
+                        _this.invalidate();
+                        _this.dispatch("loadCompleted");
+                    }
+                }, null, function (e) {
+                    if (url == _this.url) {
+                        feng3d.error(e);
+                        _this.image = null;
+                        _this.invalidate();
+                        _this.dispatch("loadCompleted");
+                    }
+                });
+            }
+            else {
+                feng3d.assets.fs.readImage(url, function (err, img) {
+                    if (url == _this.url) {
+                        if (err) {
+                            feng3d.error(err);
+                            _this.image = null;
+                        }
+                        else
+                            _this.image = img;
+                        _this.invalidate();
+                        _this.dispatch("loadCompleted");
+                    }
+                });
+            }
         };
         UrlImageTexture2D.prototype.onImageAssetsChanged = function (e) {
             if (this.url == e.data.url)
@@ -24588,7 +26686,7 @@ var feng3d;
             var index = ["positive_x_url", "positive_y_url", "positive_z_url", "negative_x_url", "negative_y_url", "negative_z_url"].indexOf(property);
             feng3d.assert(index != -1);
             this.loadingNum++;
-            feng3d.assets.readImage(newValue, function (err, img) {
+            feng3d.assets.fs.readImage(newValue, function (err, img) {
                 if (err) {
                     // error(err);
                     _this._pixels[index] = null;
@@ -26416,7 +28514,7 @@ var feng3d;
             this.stop();
             if (this.url) {
                 var url = this.url;
-                feng3d.assets.readArrayBuffer(this.url, function (err, data) {
+                feng3d.assets.fs.readArrayBuffer(this.url, function (err, data) {
                     if (err) {
                         feng3d.warn(err);
                         return;
@@ -26742,7 +28840,7 @@ var feng3d;
                 this.invalidateGeometry();
                 return;
             }
-            feng3d.assets.readImage(this.heightMap.url, function (err, img) {
+            feng3d.assets.fs.readImage(this.heightMap.url, function (err, img) {
                 if (img) {
                     _this._heightImageData = feng3d.ImageUtil.fromImage(img).imageData;
                     _this.invalidateGeometry();
@@ -28895,17 +30993,6 @@ var feng3d;
         function Feng3dFile() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        Feng3dFile.prototype.fileNameChanged = function () {
-            this.filePath = "Library/" + this.assetsId + "/file/" + this.filename;
-        };
-        Feng3dFile.prototype.assetsIdChanged = function () {
-            _super.prototype.assetsIdChanged.call(this);
-            this.filePath = "Library/" + this.assetsId + "/file/" + this.filename;
-        };
-        __decorate([
-            feng3d.serialize,
-            feng3d.watch("fileNameChanged")
-        ], Feng3dFile.prototype, "filename", void 0);
         return Feng3dFile;
     }(feng3d.Feng3dAssets));
     feng3d.Feng3dFile = Feng3dFile;
@@ -28926,7 +31013,8 @@ var feng3d;
          * @param callback 完成回调
          */
         ArrayBufferFile.prototype.saveFile = function (readWriteAssets, callback) {
-            readWriteAssets.writeArrayBuffer(this.filePath, this.arraybuffer, callback);
+            var assetsPath = feng3d.assetsIDPathMap.getPath(this.assetsId);
+            readWriteAssets.fs.writeArrayBuffer(assetsPath, this.arraybuffer, callback);
         };
         /**
          * 读取文件
@@ -28935,7 +31023,8 @@ var feng3d;
          */
         ArrayBufferFile.prototype.readFile = function (readAssets, callback) {
             var _this = this;
-            readAssets.readArrayBuffer(this.filePath, function (err, data) {
+            var assetsPath = feng3d.assetsIDPathMap.getPath(this.assetsId);
+            readAssets.fs.readArrayBuffer(assetsPath, function (err, data) {
                 _this.arraybuffer = data;
                 callback && callback(err);
             });
@@ -28958,7 +31047,8 @@ var feng3d;
             return _super !== null && _super.apply(this, arguments) || this;
         }
         StringFile.prototype.saveFile = function (readWriteAssets, callback) {
-            readWriteAssets.writeString(this.filePath, this.textContent, callback);
+            var assetsPath = feng3d.assetsIDPathMap.getPath(this.assetsId);
+            readWriteAssets.fs.writeString(assetsPath, this.textContent, callback);
         };
         /**
          * 读取文件
@@ -28967,7 +31057,8 @@ var feng3d;
          */
         StringFile.prototype.readFile = function (readAssets, callback) {
             var _this = this;
-            readAssets.readString(this.filePath, function (err, data) {
+            var assetsPath = feng3d.assetsIDPathMap.getPath(this.assetsId);
+            readAssets.fs.readString(assetsPath, function (err, data) {
                 _this.textContent = data;
                 callback && callback(err);
             });
@@ -28989,12 +31080,19 @@ var feng3d;
         function ScriptFile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.assetType = feng3d.AssetExtension.script;
+            _this.textContent = "";
             return _this;
         }
         ScriptFile.prototype.onTextContentChanged = function () {
+            if (!this.textContent) {
+                this.scriptName = "";
+                this.name = "";
+                return;
+            }
             // 获取脚本类名称
             var result = feng3d.regExps.classReg.exec(this.textContent);
-            feng3d.assert(result != null, "\u5728\u811A\u672C " + this.filePath + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
+            var assetsPath = feng3d.assetsIDPathMap.getPath(this.assetsId);
+            feng3d.assert(result != null, "\u5728\u811A\u672C " + assetsPath + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
             var script = result[3];
             if (result[5]) {
                 this.parentScriptName = result[5].split(".").pop();
@@ -29002,7 +31100,7 @@ var feng3d;
             // 获取导出类命名空间
             if (result[1]) {
                 result = feng3d.regExps.namespace.exec(this.textContent);
-                feng3d.assert(result != null, "\u83B7\u53D6\u811A\u672C " + this.filePath + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
+                feng3d.assert(result != null, "\u83B7\u53D6\u811A\u672C " + assetsPath + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
                 script = result[1] + "." + script;
             }
             this.scriptName = script;
@@ -29038,6 +31136,7 @@ var feng3d;
         function JSFile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.assetType = feng3d.AssetExtension.js;
+            _this.textContent = "";
             return _this;
         }
         return JSFile;
@@ -29051,6 +31150,7 @@ var feng3d;
         function JsonFile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.assetType = feng3d.AssetExtension.json;
+            _this.textContent = "{}";
             return _this;
         }
         return JsonFile;
@@ -29064,6 +31164,7 @@ var feng3d;
         function TextFile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.assetType = feng3d.AssetExtension.txt;
+            _this.textContent = "";
             return _this;
         }
         return TextFile;
@@ -31931,7 +34032,7 @@ var feng3d;
          * @param completed 加载完成回调
          */
         MTLLoader.prototype.load = function (path, completed) {
-            feng3d.assets.readString(path, function (err, content) {
+            feng3d.assets.fs.readString(path, function (err, content) {
                 if (err) {
                     completed(err, null);
                     return;
@@ -31959,7 +34060,7 @@ var feng3d;
          */
         ObjLoader.prototype.load = function (url, completed) {
             var root = url.substring(0, url.lastIndexOf("/") + 1);
-            feng3d.assets.readString(url, function (err, content) {
+            feng3d.assets.fs.readString(url, function (err, content) {
                 var objData = feng3d.objParser.parser(content);
                 objData.name = feng3d.pathUtils.getName(url);
                 var mtl = objData.mtl;
@@ -31992,7 +34093,7 @@ var feng3d;
          * @param completed 加载完成回调
          */
         MD5Loader.prototype.load = function (url, completed) {
-            feng3d.assets.readString(url, function (err, content) {
+            feng3d.assets.fs.readString(url, function (err, content) {
                 var md5MeshData = feng3d.md5MeshParser.parse(content);
                 md5MeshData.name = feng3d.pathUtils.getName(url);
                 feng3d.md5MeshConverter.convert(md5MeshData, completed);
@@ -32004,7 +34105,7 @@ var feng3d;
          * @param completed 加载完成回调
          */
         MD5Loader.prototype.loadAnim = function (url, completed) {
-            feng3d.assets.readString(url, function (err, content) {
+            feng3d.assets.fs.readString(url, function (err, content) {
                 var md5AnimData = feng3d.md5AnimParser.parse(content);
                 md5AnimData.name = feng3d.pathUtils.getName(url);
                 feng3d.md5AnimConverter.convert(md5AnimData, completed);
@@ -32029,7 +34130,7 @@ var feng3d;
          * @param callback 加载完成回调
          */
         MDLLoader.prototype.load = function (mdlurl, callback) {
-            feng3d.assets.readString(mdlurl, function (err, content) {
+            feng3d.assets.fs.readString(mdlurl, function (err, content) {
                 feng3d.war3.mdlParser.parse(content, function (war3Model) {
                     var showMesh = war3Model.getMesh();
                     var gameObject = Object.setValue(new feng3d.GameObject(), { name: feng3d.pathUtils.getName(mdlurl), children: [showMesh] });

@@ -69,7 +69,7 @@ namespace feng3d
          */
         uint8ToArrayBuffer(uint8Array: Uint8Array, callback: (arrayBuffer: ArrayBuffer) => void)
         {
-            var buffer = uint8Array.buffer;
+            var buffer = <ArrayBuffer>uint8Array.buffer;
             callback(buffer);
         }
 
@@ -80,7 +80,7 @@ namespace feng3d
         arrayToArrayBuffer(array: number[], callback: (arrayBuffer: ArrayBuffer) => void)
         {
             var uint8 = new Uint8Array(array);
-            var buffer = uint8.buffer;
+            var buffer = <ArrayBuffer>uint8.buffer;
             callback(buffer);
         }
 
@@ -248,6 +248,21 @@ namespace feng3d
             this.arrayBufferToBlob(arrayBuffer, (blob) =>
             {
                 this.blobToText(blob, callback);
+            });
+        }
+
+        /**
+         * ArrayBuffer 转换为 对象
+         * 
+         * @param arrayBuffer 
+         * @param callback 
+         */
+        arrayBufferToObject(arrayBuffer: ArrayBuffer, callback: (object: Object) => void)
+        {
+            this.arrayBufferToString(arrayBuffer, (str) =>
+            {
+                var obj = JSON.parse(str);
+                callback(obj);
             });
         }
 

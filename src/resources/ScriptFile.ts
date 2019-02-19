@@ -8,7 +8,7 @@ namespace feng3d
         name: string;
 
         @watch("onTextContentChanged")
-        textContent: string;
+        textContent: string = "";
 
         /**
          * 脚本父类名称
@@ -22,9 +22,17 @@ namespace feng3d
 
         private onTextContentChanged()
         {
+            if (!this.textContent)
+            {
+                this.scriptName = "";
+                this.name = "";
+                return;
+            }
+
             // 获取脚本类名称
             var result = regExps.classReg.exec(this.textContent);
-            feng3d.assert(result != null, `在脚本 ${this.filePath} 中没有找到 脚本类定义`);
+            var assetsPath = assetsIDPathMap.getPath(this.assetsId);
+            feng3d.assert(result != null, `在脚本 ${assetsPath} 中没有找到 脚本类定义`);
             var script = result[3];
             if (result[5])
             {
@@ -34,7 +42,7 @@ namespace feng3d
             if (result[1])
             {
                 result = regExps.namespace.exec(this.textContent);
-                feng3d.assert(result != null, `获取脚本 ${this.filePath} 命名空间失败`);
+                feng3d.assert(result != null, `获取脚本 ${assetsPath} 命名空间失败`);
                 script = result[1] + "." + script;
             }
 

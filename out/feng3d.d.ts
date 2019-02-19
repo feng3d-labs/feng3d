@@ -1,5 +1,162 @@
 declare namespace feng3d {
 }
+interface String {
+    /**
+     * Returns true if the sequence of elements of searchString converted to a String is the
+     * same as the corresponding elements of this object (converted to a String) starting at
+     * position. Otherwise returns false.
+     */
+    startsWith(searchString: string, position?: number): boolean;
+    /**
+     * Returns true if searchString appears as a substring of the result of converting this
+     * object to a String, at one or more positions that are
+     * greater than or equal to position; otherwise, returns false.
+     * @param searchString search string
+     * @param position If position is undefined, 0 is assumed, so as to search all of the String.
+     */
+    includes(searchString: string, position?: number): boolean;
+    /**
+     * Returns true if the sequence of elements of searchString converted to a String is the
+     * same as the corresponding elements of this object (converted to a String) starting at
+     * endPosition – length(this). Otherwise returns false.
+     */
+    endsWith(searchString: string, endPosition?: number): boolean;
+}
+interface ObjectConstructor {
+    /**
+     * Copy the values of all of the enumerable own properties from one or more source objects to a
+     * target object. Returns the target object.
+     * @param target The target object to copy to.
+     * @param source The source object from which to copy properties.
+     */
+    assign<T, U>(target: T, source: U): T & U;
+    /**
+     * Copy the values of all of the enumerable own properties from one or more source objects to a
+     * target object. Returns the target object.
+     * @param target The target object to copy to.
+     * @param source1 The first source object from which to copy properties.
+     * @param source2 The second source object from which to copy properties.
+     */
+    assign<T, U, V>(target: T, source1: U, source2: V): T & U & V;
+    /**
+     * Copy the values of all of the enumerable own properties from one or more source objects to a
+     * target object. Returns the target object.
+     * @param target The target object to copy to.
+     * @param source1 The first source object from which to copy properties.
+     * @param source2 The second source object from which to copy properties.
+     * @param source3 The third source object from which to copy properties.
+     */
+    assign<T, U, V, W>(target: T, source1: U, source2: V, source3: W): T & U & V & W;
+    /**
+     * Copy the values of all of the enumerable own properties from one or more source objects to a
+     * target object. Returns the target object.
+     * @param target The target object to copy to.
+     * @param sources One or more source objects from which to copy properties
+     */
+    assign(target: object, ...sources: any[]): any;
+    /**
+     * 从对象以及对象的原型中获取属性描述
+     * @param obj 对象
+     * @param property 属性名称
+     */
+    getPropertyDescriptor(obj: Object, property: string): PropertyDescriptor;
+    /**
+     * 属性是否可写
+     * @param obj 对象
+     * @param property 属性名称
+     */
+    propertyIsWritable(obj: Object, property: string): boolean;
+    /**
+     * 执行方法
+     *
+     * 用例：
+     * 1. 给一个新建的对象进行初始化
+     *
+     *  ``` startLifetime = Object.runFunc(new MinMaxCurve(), (obj) => { obj.mode = MinMaxCurveMode.Constant; (<MinMaxCurveConstant>obj.minMaxCurve).value = 5; }); ```
+     *
+     * @param obj 对象
+     * @param func 被执行的方法
+     */
+    runFunc<T>(obj: T, func: (obj: T) => void): T;
+    /**
+     * 给指定对象进行深度赋值
+     * @param obj 对象
+     * @param value 数据
+     */
+    setValue<T>(obj: T, value: gPartial<T>): T;
+    /**
+     * 深拷贝
+     * @param obj 被拷贝对象
+     */
+    deepClone<T>(obj: T): T;
+}
+interface Map<K, V> {
+    clear(): void;
+    delete(key: K): boolean;
+    forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any): void;
+    get(key: K): V | undefined;
+    has(key: K): boolean;
+    set(key: K, value: V): this;
+    readonly size: number;
+}
+interface MapConstructor {
+    new (): Map<any, any>;
+    new <K, V>(entries?: [K, V][]): Map<K, V>;
+    readonly prototype: Map<any, any>;
+}
+declare var Map: MapConstructor;
+interface ReadonlyMap<K, V> {
+    forEach(callbackfn: (value: V, key: K, map: ReadonlyMap<K, V>) => void, thisArg?: any): void;
+    get(key: K): V | undefined;
+    has(key: K): boolean;
+    readonly size: number;
+}
+interface WeakMap<K extends object, V> {
+    delete(key: K): boolean;
+    get(key: K): V | undefined;
+    has(key: K): boolean;
+    set(key: K, value: V): this;
+}
+interface WeakMapConstructor {
+    new (): WeakMap<object, any>;
+    new <K extends object, V>(entries?: [K, V][]): WeakMap<K, V>;
+    readonly prototype: WeakMap<object, any>;
+}
+declare var WeakMap: WeakMapConstructor;
+interface Set<T> {
+    add(value: T): this;
+    clear(): void;
+    delete(value: T): boolean;
+    forEach(callbackfn: (value: T, value2: T, set: Set<T>) => void, thisArg?: any): void;
+    has(value: T): boolean;
+    readonly size: number;
+}
+interface SetConstructor {
+    new (): Set<any>;
+    new <T>(values?: T[]): Set<T>;
+    readonly prototype: Set<any>;
+}
+declare var Set: SetConstructor;
+interface ReadonlySet<T> {
+    forEach(callbackfn: (value: T, value2: T, set: ReadonlySet<T>) => void, thisArg?: any): void;
+    has(value: T): boolean;
+    readonly size: number;
+}
+interface WeakSet<T> {
+    add(value: T): this;
+    delete(value: T): boolean;
+    has(value: T): boolean;
+}
+interface WeakSetConstructor {
+    new (): WeakSet<object>;
+    new <T extends object>(values?: T[]): WeakSet<T>;
+    readonly prototype: WeakSet<object>;
+}
+declare var WeakSet: WeakSetConstructor;
+interface Map<K, V> {
+    getKeys(): K[];
+    getValues(): V[];
+}
 declare namespace feng3d {
     /**
      * 测试代码运行时间
@@ -897,6 +1054,13 @@ declare namespace feng3d {
         blobToText(blob: Blob, callback: (content: string) => void): void;
         stringToArrayBuffer(str: string, callback: (arrayBuffer: ArrayBuffer) => void): void;
         arrayBufferToString(arrayBuffer: ArrayBuffer, callback: (content: string) => void): void;
+        /**
+         * ArrayBuffer 转换为 对象
+         *
+         * @param arrayBuffer
+         * @param callback
+         */
+        arrayBufferToObject(arrayBuffer: ArrayBuffer, callback: (object: Object) => void): void;
         stringToUint8Array(str: string, callback: (uint8Array: Uint8Array) => void): void;
         uint8ArrayToString(arr: Uint8Array, callback: (str: string) => void): void;
     }
@@ -1094,6 +1258,12 @@ declare namespace feng3d {
      */
     class PathUtils {
         /**
+         * 是否为HTTP地址
+         *
+         * @param path 地址
+         */
+        isHttpURL(path: string): any;
+        /**
          * 获取不带后缀名称
          * @param path 路径
          */
@@ -1114,6 +1284,20 @@ declare namespace feng3d {
          */
         getParentPath(path: string): string;
         /**
+         * 获取子文件（非文件夹）路径
+         *
+         * @param parentPath 父文件夹路径
+         * @param childName 子文件名称
+         */
+        getChildFilePath(parentPath: string, childName: string): string;
+        /**
+         * 获取子文件夹路径
+         *
+         * @param parentPath 父文件夹路径
+         * @param childFolderName 子文件夹名称
+         */
+        getChildFolderPath(parentPath: string, childFolderName: string): string;
+        /**
          * 是否文件夹
          * @param path 路径
          */
@@ -1123,6 +1307,145 @@ declare namespace feng3d {
          * @param path 路径
          */
         getDirDepth(path: string): number;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 路径
+     *
+     * 从nodeJs的path移植
+     *
+     * @see http://nodejs.cn/api/path.html
+     * @see https://github.com/nodejs/node/blob/master/lib/path.js
+     */
+    var path: Path;
+    /**
+     * 路径
+     */
+    interface Path {
+        /**
+         * 规范化字符串路径，减少'.'和'.'的部分。当发现多个斜杠时，它们被单个斜杠替换;当路径包含尾部斜杠时，它将被保留。在Windows上使用反斜杠。
+         *
+         * @param p 要规范化的字符串路径。
+         */
+        normalize(p: string): string;
+        /**
+         * 将所有参数连接在一起，并规范化生成的路径。参数必须是字符串。在v0.8中，非字符串参数被悄悄地忽略。在v0.10及以上版本中，会抛出异常。
+         *
+         * @param paths 用于连接的路径列表
+         */
+        join(...paths: string[]): string;
+        /**
+         * 最右边的参数被认为是{to}。其他参数被认为是{from}的数组。
+         *
+         * 从最左边的{from}参数开始，将{to}解析为一个绝对路径。
+         *
+         * 如果{to}还不是绝对的，则{from}参数将按从右到左的顺序预先设置，直到找到绝对路径为止。如果在使用所有{from}路径之后仍然没有找到绝对路径，则还将使用当前工作目录。得到的路径是规范化的，除非路径被解析到根目录，否则尾部斜杠将被删除。
+         *
+         * @param pathSegments 要连接的字符串路径。非字符串参数将被忽略。
+         */
+        resolve(...pathSegments: string[]): string;
+        /**
+         * 确定{path}是否是一个绝对路径。无论工作目录如何，绝对路径总是解析到相同的位置。
+         *
+         * @param path 用于测试的路径。
+         */
+        isAbsolute(path: string): boolean;
+        /**
+         * 解决从{from}到{to}的相对路径。有时我们有两条绝对路径，我们需要推导出一条到另一条的相对路径。这实际上是path.resolve的逆变换。
+         *
+         * @param from 起始路径
+         * @param to 目标路径
+         */
+        relative(from: string, to: string): string;
+        /**
+         * 返回路径的目录名。类似于Unix的dirname命令。
+         *
+         * @param p 求值的路径。
+         */
+        dirname(p: string): string;
+        /**
+         * 返回路径的最后一部分。类似于Unix basename命令。通常用于从完全限定的路径中提取文件名。
+         *
+         * @param p 求值的路径。
+         * @param ext 可选地，从结果中删除的扩展。
+         */
+        basename(p: string, ext?: string): string;
+        /**
+         * 返回路径的扩展名，在路径的最后一部分从最后一个'.'到字符串末尾。如果在路径的最后部分没有'.'或者最后一个字符时'.'则返回一个空字符串。
+         *
+         * @param p 求值的路径。
+         */
+        extname(p: string): string;
+        /**
+         * 特定平台的文件分隔符。'\\'或'/'。
+         */
+        sep: '\\' | '/';
+        /**
+         * 特定平台的文件分隔符。 ';' 或者 ':'.
+         */
+        delimiter: ';' | ':';
+        /**
+         * 从路径字符串返回一个对象 —— 与format()相反。
+         *
+         * @param pathString 路径字符串。
+         */
+        parse(pathString: string): ParsedPath;
+        /**
+         * 从对象返回路径字符串——与parse()相反。
+         *
+         * @param pathObject 路径对象。
+         */
+        format(pathObject: FormatInputPathObject): string;
+        win32: Path;
+        posix: Path;
+    }
+    /**
+     * 由path.parse()生成或由path.format()使用的已解析路径对象。
+     */
+    interface ParsedPath {
+        /**
+         * 路径的根，如'/'或'c:\'
+         */
+        root: string;
+        /**
+         * 完整的目录路径，如'/home/user/dir'或'c:\path\dir'
+         */
+        dir: string;
+        /**
+         * 包含扩展名(如有)的文件名，如'index.html'
+         */
+        base: string;
+        /**
+         * 文件扩展名(如果有)，如'.html'
+         */
+        ext: string;
+        /**
+         * 没有扩展名(如果有)的文件名，如'index'
+         */
+        name: string;
+    }
+    interface FormatInputPathObject {
+        /**
+         * 路径的根，如'/'或'c:\'
+         */
+        root?: string;
+        /**
+         * 完整的目录路径，如'/home/user/dir'或'c:\path\dir'
+         */
+        dir?: string;
+        /**
+         * 包含扩展名(如有)的文件名，如'index.html'
+         */
+        base?: string;
+        /**
+         * 文件扩展名(如果有)，如'.html'
+         */
+        ext?: string;
+        /**
+         * 没有扩展名(如果有)的文件名，如'index'
+         */
+        name?: string;
     }
 }
 declare namespace feng3d {
@@ -1164,141 +1487,6 @@ declare namespace feng3d {
          */
         classReg: RegExp;
     }
-}
-interface ObjectConstructor {
-    /**
-     * Copy the values of all of the enumerable own properties from one or more source objects to a
-     * target object. Returns the target object.
-     * @param target The target object to copy to.
-     * @param source The source object from which to copy properties.
-     */
-    assign<T, U>(target: T, source: U): T & U;
-    /**
-     * Copy the values of all of the enumerable own properties from one or more source objects to a
-     * target object. Returns the target object.
-     * @param target The target object to copy to.
-     * @param source1 The first source object from which to copy properties.
-     * @param source2 The second source object from which to copy properties.
-     */
-    assign<T, U, V>(target: T, source1: U, source2: V): T & U & V;
-    /**
-     * Copy the values of all of the enumerable own properties from one or more source objects to a
-     * target object. Returns the target object.
-     * @param target The target object to copy to.
-     * @param source1 The first source object from which to copy properties.
-     * @param source2 The second source object from which to copy properties.
-     * @param source3 The third source object from which to copy properties.
-     */
-    assign<T, U, V, W>(target: T, source1: U, source2: V, source3: W): T & U & V & W;
-    /**
-     * Copy the values of all of the enumerable own properties from one or more source objects to a
-     * target object. Returns the target object.
-     * @param target The target object to copy to.
-     * @param sources One or more source objects from which to copy properties
-     */
-    assign(target: object, ...sources: any[]): any;
-    /**
-     * 从对象以及对象的原型中获取属性描述
-     * @param obj 对象
-     * @param property 属性名称
-     */
-    getPropertyDescriptor(obj: Object, property: string): PropertyDescriptor;
-    /**
-     * 属性是否可写
-     * @param obj 对象
-     * @param property 属性名称
-     */
-    propertyIsWritable(obj: Object, property: string): boolean;
-    /**
-     * 执行方法
-     *
-     * 用例：
-     * 1. 给一个新建的对象进行初始化
-     *
-     *  ``` startLifetime = Object.runFunc(new MinMaxCurve(), (obj) => { obj.mode = MinMaxCurveMode.Constant; (<MinMaxCurveConstant>obj.minMaxCurve).value = 5; }); ```
-     *
-     * @param obj 对象
-     * @param func 被执行的方法
-     */
-    runFunc<T>(obj: T, func: (obj: T) => void): T;
-    /**
-     * 给指定对象进行深度赋值
-     * @param obj 对象
-     * @param value 数据
-     */
-    setValue<T>(obj: T, value: gPartial<T>): T;
-    /**
-     * 深拷贝
-     * @param obj 被拷贝对象
-     */
-    deepClone<T>(obj: T): T;
-}
-interface Map<K, V> {
-    clear(): void;
-    delete(key: K): boolean;
-    forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any): void;
-    get(key: K): V | undefined;
-    has(key: K): boolean;
-    set(key: K, value: V): this;
-    readonly size: number;
-}
-interface MapConstructor {
-    new (): Map<any, any>;
-    new <K, V>(entries?: [K, V][]): Map<K, V>;
-    readonly prototype: Map<any, any>;
-}
-declare var Map: MapConstructor;
-interface ReadonlyMap<K, V> {
-    forEach(callbackfn: (value: V, key: K, map: ReadonlyMap<K, V>) => void, thisArg?: any): void;
-    get(key: K): V | undefined;
-    has(key: K): boolean;
-    readonly size: number;
-}
-interface WeakMap<K extends object, V> {
-    delete(key: K): boolean;
-    get(key: K): V | undefined;
-    has(key: K): boolean;
-    set(key: K, value: V): this;
-}
-interface WeakMapConstructor {
-    new (): WeakMap<object, any>;
-    new <K extends object, V>(entries?: [K, V][]): WeakMap<K, V>;
-    readonly prototype: WeakMap<object, any>;
-}
-declare var WeakMap: WeakMapConstructor;
-interface Set<T> {
-    add(value: T): this;
-    clear(): void;
-    delete(value: T): boolean;
-    forEach(callbackfn: (value: T, value2: T, set: Set<T>) => void, thisArg?: any): void;
-    has(value: T): boolean;
-    readonly size: number;
-}
-interface SetConstructor {
-    new (): Set<any>;
-    new <T>(values?: T[]): Set<T>;
-    readonly prototype: Set<any>;
-}
-declare var Set: SetConstructor;
-interface ReadonlySet<T> {
-    forEach(callbackfn: (value: T, value2: T, set: ReadonlySet<T>) => void, thisArg?: any): void;
-    has(value: T): boolean;
-    readonly size: number;
-}
-interface WeakSet<T> {
-    add(value: T): this;
-    delete(value: T): boolean;
-    has(value: T): boolean;
-}
-interface WeakSetConstructor {
-    new (): WeakSet<object>;
-    new <T extends object>(values?: T[]): WeakSet<T>;
-    readonly prototype: WeakSet<object>;
-}
-declare var WeakSet: WeakSetConstructor;
-interface Map<K, V> {
-    getKeys(): K[];
-    getValues(): V[];
 }
 declare namespace ds {
     type CompareFunction<T> = (a: T, b: T) => number;
@@ -6896,7 +7084,7 @@ declare namespace feng3d {
         rightmouse: boolean;
         key: string;
         keyCode: number;
-        wheelDelta: number;
+        deltaY: number;
         private listentypes;
         target: EventTarget;
         private _target;
@@ -7049,131 +7237,121 @@ declare namespace feng3d {
         hideFlags: HideFlags;
     }
 }
-interface IDBObjectStore {
-    getAllKeys(): IDBRequest;
-}
 declare namespace feng3d {
     /**
      *
      */
-    var storage: Storage;
+    var _indexedDB: _IndexedDB;
     /**
      *
      */
-    class Storage {
+    class _IndexedDB {
+        /**
+         * 数据库状态
+         */
+        private _dbStatus;
         /**
          * 是否支持 indexedDB
          */
         support(): boolean;
+        /**
+         * 获取数据库，如果不存在则新建数据库
+         *
+         * @param dbname 数据库名称
+         * @param callback 完成回调
+         */
         getDatabase(dbname: string, callback: (err: any, database: IDBDatabase) => void): void;
+        /**
+         * 打开或者升级数据库
+         *
+         * @param dbname 数据库名称
+         * @param callback 完成回调
+         * @param upgrade 是否升级数据库
+         * @param onupgrade 升级回调
+         */
+        private _open;
+        /**
+         * 删除数据库
+         *
+         * @param dbname 数据库名称
+         * @param callback 完成回调
+         */
         deleteDatabase(dbname: string, callback?: (err: any) => void): void;
+        /**
+         * 是否存在指定的对象存储
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
         hasObjectStore(dbname: string, objectStroreName: string, callback: (has: boolean) => void): void;
+        /**
+         * 获取对象存储名称列表
+         *
+         * @param dbname 数据库
+         * @param callback 完成回调
+         */
         getObjectStoreNames(dbname: string, callback: (err: Error | null, objectStoreNames: string[]) => void): void;
+        /**
+         * 创建对象存储
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
         createObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void): void;
+        /**
+         * 删除对象存储
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
         deleteObjectStore(dbname: string, objectStroreName: string, callback?: (err: any) => void): void;
+        /**
+         * 获取对象存储中所有键列表
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
+         */
         getAllKeys(dbname: string, objectStroreName: string, callback?: (err: Error, keys: string[]) => void): void;
-        get(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: ArrayBuffer) => void): void;
-        set(dbname: string, objectStroreName: string, key: string | number, data: ArrayBuffer, callback?: (err: Error) => void): void;
-        delete(dbname: string, objectStroreName: string, key: string | number, callback?: (err?: Error) => void): void;
-        clear(dbname: string, objectStroreName: string, callback?: (err?: Error) => void): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 索引数据文件系统
-     */
-    var indexedDBfs: IndexedDBfs;
-    /**
-     * 索引数据文件系统
-     */
-    class IndexedDBfs implements ReadWriteFS {
-        readonly type: FSType;
         /**
-         * 数据库名称
+         * 获取对象存储中指定键对应的数据
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param key 键
+         * @param callback 完成回调
          */
-        DBname: string;
+        objectStoreGet(dbname: string, objectStroreName: string, key: string | number, callback?: (err: Error, data: any) => void): void;
         /**
-         * 项目名称（表单名称）
+         * 设置对象存储的键与值，如果不存在指定键则新增否则修改。
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param key 键
+         * @param data 数据
+         * @param callback 完成回调
          */
-        projectname: string;
-        constructor(DBname?: string, projectname?: string);
+        objectStorePut(dbname: string, objectStroreName: string, key: string | number, data: any, callback?: (err: Error) => void): void;
         /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
+         * 删除对象存储中指定键以及对于数据
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param key 键
+         * @param callback 完成回调
          */
-        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
+        objectStoreDelete(dbname: string, objectStroreName: string, key: string | number, callback?: (err?: Error) => void): void;
         /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
+         * 清空对象存储中数据
+         *
+         * @param dbname 数据库名称
+         * @param objectStroreName 对象存储名称
+         * @param callback 完成回调
          */
-        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
-        /**
-         * 文件是否存在
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        exists(path: string, callback: (exists: boolean) => void): void;
-        /**
-         * 读取文件夹中文件列表
-         * @param path 路径
-         * @param callback 回调函数
-         */
-        readdir(path: string, callback: (err: Error, files: string[]) => void): void;
-        /**
-         * 新建文件夹
-         * @param path 文件夹路径
-         * @param callback 回调函数
-         */
-        mkdir(path: string, callback?: (err: Error) => void): void;
-        /**
-         * 删除文件
-         * @param path 文件路径
-         * @param callback 回调函数
-         */
-        deleteFile(path: string, callback: (err: Error) => void): void;
-        /**
-         * 写文件
-         * @param path 文件路径
-         * @param data 文件数据
-         * @param callback 回调函数
-         */
-        writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
-        /**
-         * 获取所有文件路径
-         * @param callback 回调函数
-         */
-        getAllPaths(callback: (err: Error, allPaths: string[]) => void): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * Http可读文件系统
-     */
-    var httpFS: HttpFS;
-    /**
-     * Http可读文件系统
-     */
-    class HttpFS implements ReadFS {
-        /**
-         * 根路径
-         */
-        rootPath: string;
-        readonly type: FSType;
-        constructor();
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
+        objectStoreClear(dbname: string, objectStroreName: string, callback?: (err?: Error) => void): void;
     }
 }
 declare namespace feng3d {
@@ -7185,20 +7363,40 @@ declare namespace feng3d {
         native = "native",
         indexedDB = "indexedDB"
     }
+}
+declare namespace feng3d {
     /**
-     * 可读文件系统
+     * 基础可读文件系统接口
      */
-    interface ReadFS {
+    interface IBaseReadFS {
         /**
          * 文件系统类型
          */
         readonly type: FSType;
         /**
-         * 读取文件
+         * 读取文件为ArrayBuffer
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
         readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): any;
+        /**
+         * 读取文件为字符串
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readString(path: string, callback: (err: Error, data: string) => void): any;
+        /**
+         * 读取文件为Object
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readObject(path: string, callback: (err: Error, data: Object) => void): any;
+        /**
+         * 加载图片
+         * @param path 图片路径
+         * @param callback 加载完成回调
+         */
+        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): any;
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
@@ -7206,10 +7404,12 @@ declare namespace feng3d {
          */
         getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
     }
+}
+declare namespace feng3d {
     /**
-     * 可读写文件系统
+     * 基础可读写文件系统接口
      */
-    interface ReadWriteFS extends ReadFS {
+    interface IBaseReadWriteFS extends IBaseReadFS {
         /**
          * 项目名称
          */
@@ -7239,45 +7439,77 @@ declare namespace feng3d {
          */
         deleteFile(path: string, callback?: (err: Error) => void): void;
         /**
-         * 写(新建)文件
+         * 写ArrayBuffer(新建)文件
          * @param path 文件路径
          * @param data 文件数据
          * @param callback 回调函数
          */
         writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        /**
+         * 写字符串到(新建)文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeString(path: string, data: string, callback?: (err: Error) => void): void;
+        /**
+         * 写Object到(新建)文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeObject(path: string, data: Object, callback?: (err: Error) => void): void;
+        /**
+         * 写图片
+         * @param path 图片路径
+         * @param image 图片
+         * @param callback 回调函数
+         */
+        writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void): any;
+        /**
+         * 复制文件
+         * @param src    源路径
+         * @param dest    目标路径
+         * @param callback 回调函数
+         */
+        copyFile(src: string, dest: string, callback?: (err: Error) => void): any;
     }
 }
 declare namespace feng3d {
     /**
-     * 资源系统
+     * 可读文件系统
+     *
+     * 针对基础文件系统进行扩展
      */
-    var assets: ReadAssets;
-    /**
-     * 资源
-     * 在可读文件系统上进行加工，比如把读取数据转换为图片或者文本
-     */
-    class ReadAssets implements ReadFS {
+    class ReadFS implements IBaseReadFS {
         /**
-         * 可读文件系统
+         * 基础文件系统
          */
-        fs: ReadFS;
+        readonly baseFS: IBaseReadFS;
+        protected _fs: IBaseReadFS;
+        /**
+         * 文件系统类型
+         */
         readonly type: FSType;
+        constructor(baseReadFS: IBaseReadFS);
         /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
-        /**
-         * 读取文件
+         * 读取文件为ArrayBuffer
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
         readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
         /**
          * 读取文件为字符串
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readString(path: string, callback: (err: Error | null, data: string | null) => void): void;
+        readString(path: string, callback: (err: Error, data: string) => void): void;
+        /**
+         * 读取文件为Object
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readObject(path: string, callback: (err: Error, data: Object) => void): void;
         /**
          * 加载图片
          * @param path 图片路径
@@ -7285,39 +7517,27 @@ declare namespace feng3d {
          */
         readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
         /**
-         * 读取文件为DataURL
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
          */
-        readDataURL(path: string, callback: (err: Error, dataurl: string) => void): void;
-        /**
-         * 读取文件为Blob
-         * @param path 资源路径
-         * @param callback 读取完成回调
-         */
-        readBlob(path: string, callback: (err: Error, blob: Blob) => void): void;
-        /**
-         * 读取文件为对象
-         * @param path 资源路径
-         * @param callback 读取完成回调
-         */
-        readObject(path: string, callback: (err: Error, object: Object) => void): void;
-        /**
-         * 读取文件为资源对象
-         * @param id 资源编号
-         * @param callback 读取完成回调
-         */
-        readAssets(id: string, callback: (err: Error, assets: Feng3dAssets) => void): void;
+        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
     }
 }
 declare namespace feng3d {
-    class ReadWriteAssets extends ReadAssets implements ReadWriteFS {
-        /**
-         * 可读写文件系统
-         */
-        fs: ReadWriteFS;
+    /**
+     * 可读写文件系统
+     *
+     * 扩展基础可读写文件系统
+     */
+    class ReadWriteFS extends ReadFS implements IBaseReadWriteFS {
         projectname: string;
-        constructor(readWriteFS?: ReadWriteFS);
+        /**
+         * 基础文件系统
+         */
+        readonly baseFS: IBaseReadWriteFS;
+        protected _fs: IBaseReadWriteFS;
+        constructor(baseReadWriteFS: IBaseReadWriteFS);
         /**
          * 文件是否存在
          * @param path 文件路径
@@ -7343,12 +7563,26 @@ declare namespace feng3d {
          */
         deleteFile(path: string, callback?: (err: Error) => void): void;
         /**
-         * 写文件
+         * 写ArrayBuffer(新建)文件
          * @param path 文件路径
          * @param data 文件数据
          * @param callback 回调函数
          */
         writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        /**
+         * 写字符串到(新建)文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeString(path: string, data: string, callback?: (err: Error) => void): void;
+        /**
+         * 写Object到(新建)文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeObject(path: string, data: Object, callback?: (err: Error) => void): void;
         /**
          * 写图片
          * @param path 图片路径
@@ -7357,25 +7591,12 @@ declare namespace feng3d {
          */
         writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void): void;
         /**
-         * 保存字符串到文件
-         * @param path 文件路径
-         * @param string 保存的字符串
-         * @param callback 完成回调
+         * 复制文件
+         * @param src    源路径
+         * @param dest    目标路径
+         * @param callback 回调函数
          */
-        writeString(path: string, string: string, callback?: (err: Error) => void): void;
-        /**
-         * 保存对象到文件
-         * @param path 文件路径
-         * @param object 保存的对象
-         * @param callback 完成回调
-         */
-        writeObject(path: string, object: Object, callback?: (err: Error) => void): void;
-        /**
-         * 保存资源
-         * @param assets 资源
-         * @param callback 保存资源完成回调
-         */
-        writeAssets(assets: Feng3dAssets, callback?: (err: Error) => void): void;
+        copyFile(src: string, dest: string, callback?: (err: Error) => void): void;
         /**
          * 获取所有文件路径
          * @param callback 回调函数
@@ -7385,13 +7606,6 @@ declare namespace feng3d {
          * 获取指定文件下所有文件路径列表
          */
         getAllfilepathInFolder(dirpath: string, callback: (err: Error, filepaths: string[]) => void): void;
-        /**
-         * 复制文件
-         * @param src    源路径
-         * @param dest    目标路径
-         * @param callback 回调函数
-         */
-        copyFile(src: string, dest: string, callback?: (err: Error) => void): void;
         /**
          * 移动文件
          * @param src 源路径
@@ -7433,11 +7647,12 @@ declare namespace feng3d {
         rename(oldPath: string, newPath: string, callback?: (err: Error) => void): void;
         /**
          * 移动文件(夹)
+         *
          * @param src 源路径
          * @param dest 目标路径
          * @param callback 回调函数
          */
-        move(src: string, dest: string, callback?: (err: Error) => void): void;
+        move(src: string, dest: string, callback?: (err?: Error) => void): void;
         /**
          * 删除文件(夹)
          * @param path 路径
@@ -7445,16 +7660,277 @@ declare namespace feng3d {
          */
         delete(path: string, callback?: (err: Error) => void): void;
         /**
-         * 删除资源
-         * @param assetsId 资源编号
-         * @param callback 回调函数
-         */
-        deleteAssets(assetsId: string, callback?: (err: Error) => void): void;
-        /**
          * 是否为文件夹
          * @param path 文件路径
          */
         isDir(path: string): boolean;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 资源元标签文件后缀
+     */
+    const metaSuffix = ".meta";
+    const metasFolder = "metas/";
+    /**
+     * 资源元标签
+     */
+    interface AssetsMeta {
+        /**
+         * 资源编号
+         */
+        guid: string;
+        /**
+         * 是否为文件夹，如果不是文件夹则为文件
+         */
+        isDirectory: boolean;
+        /**
+         * 修改时间（单位为ms）
+         */
+        mtimeMs: number;
+        /**
+         * 创建时间（单位为ms）
+         */
+        birthtimeMs: number;
+        /**
+         * 资源类型，由具体对象类型决定
+         */
+        assetType: AssetExtension;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 索引数据文件系统
+     */
+    var indexedDBFS: IndexedDBFS;
+    /**
+     * 索引数据文件系统
+     */
+    class IndexedDBFS implements IBaseReadWriteFS {
+        readonly type: FSType;
+        /**
+         * 数据库名称
+         */
+        DBname: string;
+        /**
+         * 项目名称（表单名称）
+         */
+        projectname: string;
+        constructor(DBname?: string, projectname?: string);
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readString(path: string, callback: (err: Error, data: string) => void): void;
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readObject(path: string, callback: (err: Error, data: object) => void): void;
+        /**
+         * 加载图片
+         * @param path 图片路径
+         * @param callback 加载完成回调
+         */
+        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
+        /**
+         * 文件是否存在
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        exists(path: string, callback: (exists: boolean) => void): void;
+        /**
+         * 读取文件夹中文件列表
+         * @param path 路径
+         * @param callback 回调函数
+         */
+        readdir(path: string, callback: (err: Error, files: string[]) => void): void;
+        /**
+         * 新建文件夹
+         * @param path 文件夹路径
+         * @param callback 回调函数
+         */
+        mkdir(path: string, callback?: (err: Error) => void): void;
+        /**
+         * 删除文件
+         * @param path 文件路径
+         * @param callback 回调函数
+         */
+        deleteFile(path: string, callback: (err: Error) => void): void;
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeString(path: string, data: string, callback?: (err: Error) => void): void;
+        /**
+         * 写文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeObject(path: string, data: Object, callback?: (err: Error) => void): void;
+        /**
+         * 写图片
+         * @param path 图片路径
+         * @param image 图片
+         * @param callback 回调函数
+         */
+        writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void): void;
+        /**
+         * 复制文件
+         * @param src    源路径
+         * @param dest    目标路径
+         * @param callback 回调函数
+         */
+        copyFile(src: string, dest: string, callback?: (err: Error) => void): void;
+        /**
+         * 获取所有文件路径
+         * @param callback 回调函数
+         */
+        getAllPaths(callback: (err: Error, allPaths: string[]) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * Http可读文件系统
+     */
+    var httpFS: HttpFS;
+    /**
+     * Http可读文件系统
+     */
+    class HttpFS implements IBaseReadFS {
+        /**
+         * 根路径
+         */
+        rootPath: string;
+        readonly type: FSType;
+        constructor(rootPath?: string);
+        /**
+         * 读取文件
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
+        /**
+         * 读取文件为字符串
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readString(path: string, callback: (err: Error, data: string) => void): void;
+        /**
+         * 读取文件为Object
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readObject(path: string, callback: (err: Error, data: Object) => void): void;
+        /**
+         * 加载图片
+         * @param path 图片路径
+         * @param callback 加载完成回调
+         */
+        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
+        /**
+         * 获取文件绝对路径
+         * @param path （相对）路径
+         * @param callback 回调函数
+         */
+        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
+        private _getAbsolutePath;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 可读取资源文件系统
+     */
+    var assets: ReadAssetsFS;
+    /**
+     * 可读取资源文件系统
+     */
+    class ReadAssetsFS {
+        /**
+         * 可读文件系统
+         */
+        readonly fs: ReadFS;
+        protected _fs: ReadFS;
+        constructor(readFS?: IBaseReadFS);
+        /**
+         * 读取文件为资源对象
+         * @param id 资源编号
+         * @param callback 读取完成回调
+         */
+        readAssets(id: string, callback: (err: Error, assets: Feng3dAssets) => void): void;
+        /**
+         * 读取资源元标签
+         *
+         * @param id 资源编号
+         * @param callback 完成回调
+         */
+        protected _readMeta(id: string, callback?: (err: Error, meta: AssetsMeta) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 可读写资源文件系统
+     */
+    class ReadWriteAssetsFS extends ReadAssetsFS {
+        /**
+         * 可读写文件系统
+         */
+        readonly fs: ReadWriteFS;
+        protected _fs: ReadWriteFS;
+        constructor(readWriteFS?: IBaseReadWriteFS);
+        /**
+         * 写（保存）资源
+         *
+         * @param assets 资源对象
+         * @param callback 完成回调
+         */
+        writeAssets(assets: Feng3dAssets, callback?: (err: Error) => void): void;
+        /**
+         * 删除资源
+         *
+         * @param assets 资源对象
+         * @param callback 完成回调
+         */
+        deleteAssets(assets: Feng3dAssets, callback?: (err: Error) => void): void;
+        /**
+         * 写资源元标签
+         *
+         * @param id 资源编号
+         * @param meta 资源元标签
+         * @param callback 完成回调
+         */
+        private _writeMeta;
+        /**
+         * 删除资源元标签
+         *
+         * @param id 资源编号
+         * @param callback 完成回调
+         */
+        private _deleteMeta;
     }
 }
 declare namespace feng3d {
@@ -7546,6 +8022,98 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 资源编号与路径映射
+     */
+    var assetsIDPathMap: AssetsIDPathMap;
+    /**
+     * 资源编号与路径映射
+     */
+    class AssetsIDPathMap {
+        /**
+         * 编号映射到路径
+         */
+        private _idMap;
+        /**
+         * 路径映射到编号
+         */
+        private _pathMap;
+        /**
+         * 初始化
+         *
+         * @param list 资源列表
+         */
+        init(list?: {
+            id: string;
+            path: string;
+            isDirectory: boolean;
+        }[]): void;
+        /**
+         * 获取所有资源编号列表
+         */
+        getAllIDs(): string[];
+        /**
+         * 获取所有资源路径列表
+         */
+        getAllPaths(): string[];
+        /**
+         * 获取资源路径
+         *
+         * @param id 资源编号
+         */
+        getPath(id: string): string;
+        /**
+         * 获取资源编号
+         *
+         * @param path 资源路径
+         */
+        getID(path: string): string;
+        /**
+         * 是否存在指定编号的资源
+         *
+         * @param id 资源编号
+         */
+        existID(id: string): boolean;
+        /**
+         * 是否存在指定路径的资源
+         *
+         * @param path 资源路径
+         */
+        existPath(path: string): boolean;
+        /**
+         * 新增资源编号路径映射
+         *
+         * @param item 资源编号
+         * @param path 资源路径
+         */
+        addItem(item: {
+            id: string;
+            path: string;
+            isDirectory: boolean;
+        }): void;
+        /**
+         * 删除指定编号映射
+         *
+         * @param id 编号
+         */
+        deleteByID(id: string): void;
+        /**
+         * 删除指定路径资源映射
+         *
+         * @param path 资源编号
+         */
+        deleteByPath(path: string): void;
+        /**
+         * 输出为列表
+         */
+        toList(): {
+            id: string;
+            path: string;
+            isDirectory: boolean;
+        }[];
+    }
+}
+declare namespace feng3d {
+    /**
      * feng3d资源
      */
     class Feng3dAssets extends Feng3dObject {
@@ -7561,46 +8129,19 @@ declare namespace feng3d {
          * 资源类型，由具体对象类型决定
          */
         assetType: AssetExtension;
-        /**
-         * 资源路径，由资源编号决定
-         */
-        path: string;
         constructor();
-        /**
-         * 删除资源
-         * @param readWriteAssets 可读写资源管理器
-         * @param callback 完成回调
-         */
-        delete(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any;
-        /**
-         * 保存资源
-         * @param readWriteAssets
-         * @param callback  完成回调
-         */
-        save(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): any;
         /**
          * 保存文件
          * @param readWriteAssets 可读写资源管理系统
          * @param callback 完成回调
          */
-        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
+        protected saveFile(readWriteAssets: ReadWriteAssetsFS, callback?: (err: Error) => void): void;
         /**
          * 读取文件
          * @param readAssets 刻度资源管理系统
          * @param callback 完成回调
          */
-        protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void): void;
-        protected assetsIdChanged(): void;
-        /**
-         * 获取资源所在文件夹
-         * @param assetsId 资源编号
-         */
-        static getAssetDir(assetsId: string): string;
-        /**
-         * 获取资源路径
-         * @param assetsId 资源编号
-         */
-        static getPath(assetsId: string): string;
+        protected readFile(readAssets: ReadAssetsFS, callback?: (err: Error) => void): void;
         static setAssets(assets: Feng3dAssets): void;
         /**
          * 获取资源
@@ -12957,13 +13498,13 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         onLoadCompleted(callback: () => void): void;
-        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
+        protected saveFile(readWriteAssets: ReadWriteAssetsFS, callback?: (err: Error) => void): void;
         /**
          * 读取文件
          * @param readAssets 刻度资源管理系统
          * @param callback 完成回调
          */
-        protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void): void;
+        protected readFile(readAssets: ReadAssetsFS, callback?: (err: Error) => void): void;
         private imageChanged;
         private urlChanged;
         private onImageAssetsChanged;
@@ -14623,16 +15164,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     class Feng3dFile extends Feng3dAssets {
-        /**
-         * 文件名称
-         */
-        filename: string;
-        /**
-         * 文件路径
-         */
-        filePath: string;
-        protected fileNameChanged(): void;
-        protected assetsIdChanged(): void;
     }
 }
 declare namespace feng3d {
@@ -14650,13 +15181,13 @@ declare namespace feng3d {
          * @param readWriteAssets 可读写资源管理系统
          * @param callback 完成回调
          */
-        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
+        protected saveFile(readWriteAssets: ReadWriteAssetsFS, callback?: (err: Error) => void): void;
         /**
          * 读取文件
          * @param readAssets 刻度资源管理系统
          * @param callback 完成回调
          */
-        protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void): void;
+        protected readFile(readAssets: ReadAssetsFS, callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
@@ -14666,13 +15197,13 @@ declare namespace feng3d {
     class StringFile extends Feng3dFile {
         name: string;
         textContent: string;
-        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void): void;
+        protected saveFile(readWriteAssets: ReadWriteAssetsFS, callback?: (err: Error) => void): void;
         /**
          * 读取文件
          * @param readAssets 刻度资源管理系统
          * @param callback 完成回调
          */
-        protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void): void;
+        protected readFile(readAssets: ReadAssetsFS, callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
@@ -14699,16 +15230,19 @@ declare namespace feng3d {
 declare namespace feng3d {
     class JSFile extends StringFile {
         assetType: AssetExtension;
+        textContent: string;
     }
 }
 declare namespace feng3d {
     class JsonFile extends StringFile {
         assetType: AssetExtension;
+        textContent: string;
     }
 }
 declare namespace feng3d {
     class TextFile extends StringFile {
         assetType: AssetExtension;
+        textContent: string;
     }
 }
 declare namespace feng3d {
@@ -15635,3 +16169,4 @@ declare namespace feng3d {
      */
     var debuger: boolean;
 }
+//# sourceMappingURL=feng3d.d.ts.map

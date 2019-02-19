@@ -18,9 +18,10 @@ namespace feng3d
          * @param readWriteAssets 可读写资源管理系统
          * @param callback 完成回调
          */
-        protected saveFile(readWriteAssets: ReadWriteAssets, callback?: (err: Error) => void)
+        protected saveFile(readWriteAssets: ReadWriteAssetsFS, callback?: (err: Error) => void)
         {
-            readWriteAssets.writeArrayBuffer(this.filePath, this.arraybuffer, callback);
+            var assetsPath = assetsIDPathMap.getPath(this.assetsId);
+            readWriteAssets.fs.writeArrayBuffer(assetsPath, this.arraybuffer, callback);
         }
 
         /**
@@ -28,9 +29,10 @@ namespace feng3d
          * @param readAssets 刻度资源管理系统
          * @param callback 完成回调
          */
-        protected readFile(readAssets: ReadAssets, callback?: (err: Error) => void)
+        protected readFile(readAssets: ReadAssetsFS, callback?: (err: Error) => void)
         {
-            readAssets.readArrayBuffer(this.filePath, (err, data) =>
+            var assetsPath = assetsIDPathMap.getPath(this.assetsId);
+            readAssets.fs.readArrayBuffer(assetsPath, (err, data) =>
             {
                 this.arraybuffer = data;
                 callback && callback(err);

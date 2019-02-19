@@ -45,9 +45,9 @@ namespace feng3d
             else this.once("loadCompleted", callback);
         }
 
-        protected saveFile(readWriteAssets: ReadWriteAssets, callback = (err: Error) => { })
+        protected saveFile(readWriteAssets: ReadWriteAssetsFS, callback = (err: Error) => { })
         {
-            readWriteAssets.writeImage(this.url, this.image, callback);
+            readWriteAssets.fs.writeImage(this.url, this.image, callback);
         }
 
         /**
@@ -55,9 +55,9 @@ namespace feng3d
          * @param readAssets 刻度资源管理系统
          * @param callback 完成回调
          */
-        protected readFile(readAssets: ReadAssets, callback = (err: Error) => { })
+        protected readFile(readAssets: ReadAssetsFS, callback = (err: Error) => { })
         {
-            readAssets.readImage(this.url, (err, img) =>
+            readAssets.fs.readImage(this.url, (err, img) =>
             {
                 this.image = img;
                 callback && callback(err);
@@ -79,20 +79,45 @@ namespace feng3d
                 this.invalidate();
                 return;
             }
-            assets.readImage(url, (err, img) =>
+            if (pathUtils.isHttpURL(url))
             {
-                if (url == this.url)
+                loader.loadImage(url, (img) =>
                 {
-                    if (err)
+                    if (url == this.url)
                     {
-                        error(err);
-                        this.image = null;
-                    } else
                         this.image = img;
-                    this.invalidate();
-                    this.dispatch("loadCompleted");
-                }
-            });
+                        this.invalidate();
+                        this.dispatch("loadCompleted");
+                    }
+                }, null,
+                    (e) =>
+                    {
+                        if (url == this.url)
+                        {
+                            error(e);
+                            this.image = null;
+                            this.invalidate();
+                            this.dispatch("loadCompleted");
+                        }
+                    });
+            } else
+            {
+                assets.fs.readImage(url, (err, img) =>
+                {
+                    if (url == this.url)
+                    {
+                        if (err)
+                        {
+                            error(err);
+                            this.image = null;
+                        } else
+                            this.image = img;
+                        this.invalidate();
+                        this.dispatch("loadCompleted");
+                    }
+                });
+            }
+
         }
 
         private onImageAssetsChanged(e: Event<{ url: string; }>)

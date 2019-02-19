@@ -1,44 +1,10 @@
 namespace feng3d
 {
-    /**
-     * 文件系统类型
-     */
-    export enum FSType
-    {
-        http = "http",
-        native = "native",
-        indexedDB = "indexedDB"
-    }
 
     /**
-     * 可读文件系统
+     * 基础可读写文件系统接口
      */
-    export interface ReadFS
-    {
-        /**
-         * 文件系统类型
-         */
-        readonly type: FSType;
-
-        /**
-         * 读取文件
-         * @param path 路径
-         * @param callback 读取完成回调 当err不为null时表示读取失败
-         */
-        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void);
-
-        /**
-         * 获取文件绝对路径
-         * @param path （相对）路径
-         * @param callback 回调函数
-         */
-        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void
-    }
-
-    /**
-     * 可读写文件系统
-     */
-    export interface ReadWriteFS extends ReadFS
+    export interface IBaseReadWriteFS extends IBaseReadFS
     {
         /**
          * 项目名称
@@ -74,11 +40,43 @@ namespace feng3d
         deleteFile(path: string, callback?: (err: Error) => void): void;
 
         /**
-         * 写(新建)文件
+         * 写ArrayBuffer(新建)文件
          * @param path 文件路径
          * @param data 文件数据
          * @param callback 回调函数
          */
         writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+
+        /**
+         * 写字符串到(新建)文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeString(path: string, data: string, callback?: (err: Error) => void): void;
+
+        /**
+         * 写Object到(新建)文件
+         * @param path 文件路径
+         * @param data 文件数据
+         * @param callback 回调函数
+         */
+        writeObject(path: string, data: Object, callback?: (err: Error) => void): void;
+
+        /**
+         * 写图片
+         * @param path 图片路径
+         * @param image 图片
+         * @param callback 回调函数
+         */
+        writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void)
+
+        /**
+         * 复制文件
+         * @param src    源路径
+         * @param dest    目标路径
+         * @param callback 回调函数
+         */
+        copyFile(src: string, dest: string, callback?: (err: Error) => void);
     }
 }
