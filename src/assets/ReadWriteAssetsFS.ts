@@ -96,6 +96,7 @@ namespace feng3d
                             }, []);
                             deleteIDs.forEach(element =>
                             {
+                                this._deleteMeta(element);
                                 assetsIDPathMap.deleteByID(element);
                             });
                             this.fs.delete(path, callback);

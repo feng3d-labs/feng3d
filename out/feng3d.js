@@ -16567,6 +16567,7 @@ var feng3d;
                                 return pv;
                             }, []);
                             deleteIDs.forEach(function (element) {
+                                _this._deleteMeta(element);
                                 feng3d.assetsIDPathMap.deleteByID(element);
                             });
                             _this.fs.delete(path, callback);
