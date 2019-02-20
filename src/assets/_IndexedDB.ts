@@ -291,7 +291,7 @@ namespace feng3d
                 request.onsuccess = function (event)
                 {
                     var result = event.target["result"];
-                    callback && callback(result ? null : new Error(`没有找到资源 ${key}`), result);
+                    callback && callback(result != null ? null : new Error(`没有找到资源 ${key}`), result);
                     request.onsuccess = null;
                 };
             });

@@ -15555,7 +15555,7 @@ var feng3d;
                 var request = objectStore.get(key);
                 request.onsuccess = function (event) {
                     var result = event.target["result"];
-                    callback && callback(result ? null : new Error("\u6CA1\u6709\u627E\u5230\u8D44\u6E90 " + key), result);
+                    callback && callback(result != null ? null : new Error("\u6CA1\u6709\u627E\u5230\u8D44\u6E90 " + key), result);
                     request.onsuccess = null;
                 };
             });
