@@ -35,7 +35,7 @@ namespace feng3d
                 };
                 meta.mtimeMs = Date.now();
 
-                this._writeMeta(assets.assetsId, meta, (err) =>
+                this._writeMeta(path, meta, (err) =>
                 {
                     if (err)
                     {
@@ -96,7 +96,6 @@ namespace feng3d
                             }, []);
                             deleteIDs.forEach(element =>
                             {
-                                this._deleteMeta(element);
                                 assetsIDPathMap.deleteByID(element);
                             });
                             this.fs.delete(path, callback);
@@ -112,24 +111,24 @@ namespace feng3d
         /**
          * 写资源元标签
          * 
-         * @param id 资源编号
+         * @param path 资源路径
          * @param meta 资源元标签
          * @param callback 完成回调
          */
-        private _writeMeta(id: string, meta: AssetsMeta, callback?: (err: Error) => void)
+        private _writeMeta(path: string, meta: AssetsMeta, callback?: (err: Error) => void)
         {
-            this.fs.writeObject(metasFolder + id + metaSuffix, meta, callback);
+            this.fs.writeObject(path + metaSuffix, meta, callback);
         }
 
         /**
          * 删除资源元标签
          * 
-         * @param id 资源编号 
+         * @param path 资源路径
          * @param callback 完成回调
          */
-        private _deleteMeta(id: string, callback?: (err: Error) => void)
+        private _deleteMeta(path: string, callback?: (err: Error) => void)
         {
-            this.fs.deleteFile(metasFolder + id + metaSuffix, callback);
+            this.fs.deleteFile(path + metaSuffix, callback);
         }
     }
 }

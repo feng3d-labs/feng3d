@@ -4,7 +4,6 @@ namespace feng3d
      * 资源元标签文件后缀
      */
     export const metaSuffix = ".meta";
-    export const metasFolder = "metas/";
 
     /**
      * 资源元标签
