@@ -16778,6 +16778,14 @@ var feng3d;
             this._pathMap[item.path] = item;
         };
         /**
+         * 获取资源映射
+         *
+         * @param id 资源编号
+         */
+        AssetsIDPathMap.prototype.getItem = function (id) {
+            return this._idMap[id];
+        };
+        /**
          * 删除指定编号映射
          *
          * @param id 编号

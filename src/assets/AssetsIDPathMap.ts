@@ -109,6 +109,16 @@ namespace feng3d
         }
 
         /**
+         * 获取资源映射
+         * 
+         * @param id 资源编号
+         */
+        getItem(id: string)
+        {
+            return this._idMap[id];
+        }
+
+        /**
          * 删除指定编号映射
          * 
          * @param id 编号

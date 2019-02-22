@@ -8090,6 +8090,16 @@ declare namespace feng3d {
             isDirectory: boolean;
         }): void;
         /**
+         * 获取资源映射
+         *
+         * @param id 资源编号
+         */
+        getItem(id: string): {
+            id: string;
+            path: string;
+            isDirectory: boolean;
+        };
+        /**
          * 删除指定编号映射
          *
          * @param id 编号
