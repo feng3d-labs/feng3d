@@ -76,7 +76,7 @@ namespace feng3d
          * @param b1 第二个区间起始值
          * @param b2 第二个区间起始值
          */
-        mapLinear: function (x, a1, a2, b1, b2)
+        mapLinear: function (x: number, a1: number, a2: number, b1: number, b2: number)
         {
             return b1 + (x - a1) * (b2 - b1) / (a2 - a1);
         },
@@ -251,5 +251,19 @@ namespace feng3d
             if (b) while ((a %= b) && (b %= a));
             return a + b;
         },
+        /**
+         * 计算最小公倍数
+         * Least common multiple
+         * 
+         * @param a 整数a
+         * @param b 整数b
+         * 
+         * @see https://en.wikipedia.org/wiki/Least_common_multiple
+         */
+        lcm(a: number, b: number)
+        {
+            return a * b / FMath.gcd(a, b);
+        },
+
     };
 }

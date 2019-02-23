@@ -2959,7 +2959,7 @@ declare namespace feng3d {
          * @param b1 第二个区间起始值
          * @param b2 第二个区间起始值
          */
-        mapLinear: (x: any, a1: any, a2: any, b1: any, b2: any) => any;
+        mapLinear: (x: number, a1: number, a2: number, b1: number, b2: number) => number;
         /**
          * 线性插值
          *
@@ -3069,6 +3069,16 @@ declare namespace feng3d {
          * @see https://en.wikipedia.org/wiki/Greatest_common_divisor
          */
         gcd(a: number, b: number): number;
+        /**
+         * 计算最小公倍数
+         * Least common multiple
+         *
+         * @param a 整数a
+         * @param b 整数b
+         *
+         * @see https://en.wikipedia.org/wiki/Least_common_multiple
+         */
+        lcm(a: number, b: number): number;
     };
 }
 declare namespace feng3d {
@@ -6352,7 +6362,7 @@ declare namespace feng3d {
          * 获取透明度
          * @param time 时间
          */
-        getAlpha(time: number): any;
+        getAlpha(time: number): number;
         /**
          * 获取透明度
          * @param time 时间

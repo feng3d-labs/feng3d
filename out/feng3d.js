@@ -6873,6 +6873,18 @@ var feng3d;
                     ;
             return a + b;
         },
+        /**
+         * 计算最小公倍数
+         * Least common multiple
+         *
+         * @param a 整数a
+         * @param b 整数b
+         *
+         * @see https://en.wikipedia.org/wiki/Least_common_multiple
+         */
+        lcm: function (a, b) {
+            return a * b / feng3d.FMath.gcd(a, b);
+        },
     };
 })(feng3d || (feng3d = {}));
 var feng3d;
