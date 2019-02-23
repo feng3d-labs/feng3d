@@ -16547,23 +16547,23 @@ var feng3d;
         /**
          * 删除资源
          *
-         * @param assets 资源对象
+         * @param assetsId 资源编号
          * @param callback 完成回调
          */
-        ReadWriteAssetsFS.prototype.deleteAssets = function (assets, callback) {
+        ReadWriteAssetsFS.prototype.deleteAssets = function (assetsId, callback) {
             var _this = this;
-            var path = feng3d.assetsIDPathMap.getPath(assets.assetsId);
-            this._readMeta(assets.assetsId, function (err, meta) {
+            var path = feng3d.assetsIDPathMap.getPath(assetsId);
+            this._readMeta(path, function (err, meta) {
                 if (err) {
                     callback && callback(err);
                     return;
                 }
-                _this._deleteMeta(assets.assetsId, function (err) {
+                _this._deleteMeta(path, function (err) {
                     if (err) {
                         callback && callback(err);
                         return;
                     }
-                    feng3d.assetsIDPathMap.deleteByID(assets.assetsId);
+                    feng3d.assetsIDPathMap.deleteByID(assetsId);
                     // 如果该资源为文件夹 则 删除该文件夹以及文件夹内所有资源
                     if (meta.isDirectory) {
                         _this.fs.getAllfilepathInFolder(path, function (err, filepaths) {

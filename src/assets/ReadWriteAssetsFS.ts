@@ -56,28 +56,28 @@ namespace feng3d
         /**
          * 删除资源
          * 
-         * @param assets 资源对象
+         * @param assetsId 资源编号
          * @param callback 完成回调
          */
-        deleteAssets(assets: Feng3dAssets, callback?: (err: Error) => void)
+        deleteAssets(assetsId: string, callback?: (err: Error) => void)
         {
-            var path = assetsIDPathMap.getPath(assets.assetsId);
+            var path = assetsIDPathMap.getPath(assetsId);
 
-            this._readMeta(assets.assetsId, (err, meta) =>
+            this._readMeta(path, (err, meta) =>
             {
                 if (err)
                 {
                     callback && callback(err);
                     return;
                 }
-                this._deleteMeta(assets.assetsId, (err) =>
+                this._deleteMeta(path, (err) =>
                 {
                     if (err)
                     {
                         callback && callback(err);
                         return;
                     }
-                    assetsIDPathMap.deleteByID(assets.assetsId);
+                    assetsIDPathMap.deleteByID(assetsId);
                     // 如果该资源为文件夹 则 删除该文件夹以及文件夹内所有资源
                     if (meta.isDirectory)
                     {

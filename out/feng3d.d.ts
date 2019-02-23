@@ -7921,10 +7921,10 @@ declare namespace feng3d {
         /**
          * 删除资源
          *
-         * @param assets 资源对象
+         * @param assetsId 资源编号
          * @param callback 完成回调
          */
-        deleteAssets(assets: Feng3dAssets, callback?: (err: Error) => void): void;
+        deleteAssets(assetsId: string, callback?: (err: Error) => void): void;
         /**
          * 写资源元标签
          *
