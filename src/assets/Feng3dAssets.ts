@@ -19,6 +19,15 @@ namespace feng3d
         name = "";
 
         /**
+         * 资源路径
+         */
+        get assetsPath()
+        {
+            if (!this.assetsId) return "";
+            return assetsIDPathMap.getPath(this.assetsId);
+        }
+
+        /**
          * 资源类型，由具体对象类型决定
          */
         assetType: AssetExtension;

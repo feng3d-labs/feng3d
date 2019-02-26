@@ -5,19 +5,8 @@ namespace feng3d
      */
     export class StringFile extends Feng3dFile
     {
-        @oav()
-        name: string;
-
         @oav({ component: "OAVMultiText" })
         textContent: string;
-
-        /**
-         * 资源路径
-         */
-        get assetsPath()
-        {
-            return assetsIDPathMap.getPath(this.assetsId);
-        }
 
         protected saveFile(readWriteAssets: ReadWriteAssetsFS, callback?: (err: Error) => void)
         {

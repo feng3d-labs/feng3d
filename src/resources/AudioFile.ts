@@ -4,4 +4,6 @@ namespace feng3d
     {
         assetType = AssetExtension.audio;
     }
+
+    Feng3dAssets.assetTypeClassMap[AssetExtension.audio] = AudioFile;
 }

@@ -29,10 +29,10 @@ namespace feng3d
          */
         readAssets(id: string, callback: (err: Error, assets: Feng3dAssets) => void)
         {
-            var assets = Feng3dAssets.getAssets(id);
-            if (assets)
+            var feng3dAsset = Feng3dAssets.getAssets(id);
+            if (feng3dAsset)
             {
-                callback(null, assets);
+                callback(null, feng3dAsset);
                 return;
             }
             var path = assetsIDPathMap.getPath(id);
@@ -44,12 +44,13 @@ namespace feng3d
                     return;
                 }
                 var cls = Feng3dAssets.assetTypeClassMap[meta.assetType];
-                var assets: Feng3dAssets = new cls();
-                feng3d.assert(assets.assetType == meta.assetType);
+                var newFeng3dAsset: Feng3dAssets = new cls();
+                newFeng3dAsset.assetsId = meta.guid;
+                feng3d.assert(newFeng3dAsset.assetType == meta.assetType);
 
-                assets["readFile"](this, err =>
+                newFeng3dAsset["readFile"](this, err =>
                 {
-                    callback(err, assets);
+                    callback(err, newFeng3dAsset);
                 });
             });
         }

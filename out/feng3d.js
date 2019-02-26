@@ -16447,9 +16447,9 @@ var feng3d;
          */
         ReadAssetsFS.prototype.readAssets = function (id, callback) {
             var _this = this;
-            var assets = feng3d.Feng3dAssets.getAssets(id);
-            if (assets) {
-                callback(null, assets);
+            var feng3dAsset = feng3d.Feng3dAssets.getAssets(id);
+            if (feng3dAsset) {
+                callback(null, feng3dAsset);
                 return;
             }
             var path = feng3d.assetsIDPathMap.getPath(id);
@@ -16459,10 +16459,11 @@ var feng3d;
                     return;
                 }
                 var cls = feng3d.Feng3dAssets.assetTypeClassMap[meta.assetType];
-                var assets = new cls();
-                feng3d.assert(assets.assetType == meta.assetType);
-                assets["readFile"](_this, function (err) {
-                    callback(err, assets);
+                var newFeng3dAsset = new cls();
+                newFeng3dAsset.assetsId = meta.guid;
+                feng3d.assert(newFeng3dAsset.assetType == meta.assetType);
+                newFeng3dAsset["readFile"](_this, function (err) {
+                    callback(err, newFeng3dAsset);
                 });
             });
         };
@@ -16831,6 +16832,18 @@ var feng3d;
             _this.name = "";
             return _this;
         }
+        Object.defineProperty(Feng3dAssets.prototype, "assetsPath", {
+            /**
+             * 资源路径
+             */
+            get: function () {
+                if (!this.assetsId)
+                    return "";
+                return feng3d.assetsIDPathMap.getPath(this.assetsId);
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 保存文件
          * @param readWriteAssets 可读写资源管理系统
@@ -31007,11 +31020,32 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * feng3d 资源文件
+     */
     var Feng3dFile = /** @class */ (function (_super) {
         __extends(Feng3dFile, _super);
         function Feng3dFile() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
+        Object.defineProperty(Feng3dFile.prototype, "assetName", {
+            /**
+             * 资源名称
+             */
+            get: function () {
+                if (!this.assetsPath)
+                    return "";
+                return feng3d.pathUtils.getName(this.assetsPath);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        __decorate([
+            feng3d.oav({ exclude: true })
+        ], Feng3dFile.prototype, "name", void 0);
+        __decorate([
+            feng3d.oav()
+        ], Feng3dFile.prototype, "assetName", null);
         return Feng3dFile;
     }(feng3d.Feng3dAssets));
     feng3d.Feng3dFile = Feng3dFile;
@@ -31065,16 +31099,6 @@ var feng3d;
         function StringFile() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        Object.defineProperty(StringFile.prototype, "assetsPath", {
-            /**
-             * 资源路径
-             */
-            get: function () {
-                return feng3d.assetsIDPathMap.getPath(this.assetsId);
-            },
-            enumerable: true,
-            configurable: true
-        });
         StringFile.prototype.saveFile = function (readWriteAssets, callback) {
             readWriteAssets.fs.writeString(this.assetsPath, this.textContent, callback);
         };
@@ -31090,9 +31114,6 @@ var feng3d;
                 callback && callback(err);
             });
         };
-        __decorate([
-            feng3d.oav()
-        ], StringFile.prototype, "name", void 0);
         __decorate([
             feng3d.oav({ component: "OAVMultiText" })
         ], StringFile.prototype, "textContent", void 0);
@@ -31118,8 +31139,7 @@ var feng3d;
             }
             // 获取脚本类名称
             var result = feng3d.regExps.classReg.exec(this.textContent);
-            var assetsPath = feng3d.assetsIDPathMap.getPath(this.assetsId);
-            feng3d.assert(result != null, "\u5728\u811A\u672C " + assetsPath + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
+            feng3d.assert(result != null, "\u5728\u811A\u672C " + this.assetsPath + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
             var script = result[3];
             if (result[5]) {
                 this.parentScriptName = result[5].split(".").pop();
@@ -31127,7 +31147,7 @@ var feng3d;
             // 获取导出类命名空间
             if (result[1]) {
                 result = feng3d.regExps.namespace.exec(this.textContent);
-                feng3d.assert(result != null, "\u83B7\u53D6\u811A\u672C " + assetsPath + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
+                feng3d.assert(result != null, "\u83B7\u53D6\u811A\u672C " + this.assetsPath + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
                 script = result[1] + "." + script;
             }
             this.scriptName = script;
@@ -31142,6 +31162,7 @@ var feng3d;
         return ScriptFile;
     }(feng3d.StringFile));
     feng3d.ScriptFile = ScriptFile;
+    feng3d.Feng3dAssets.assetTypeClassMap[feng3d.AssetExtension.script] = ScriptFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -31155,6 +31176,7 @@ var feng3d;
         return ShaderFile;
     }(feng3d.ScriptFile));
     feng3d.ShaderFile = ShaderFile;
+    feng3d.Feng3dAssets.assetTypeClassMap[feng3d.AssetExtension.shader] = ShaderFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -31169,6 +31191,7 @@ var feng3d;
         return JSFile;
     }(feng3d.StringFile));
     feng3d.JSFile = JSFile;
+    feng3d.Feng3dAssets.assetTypeClassMap[feng3d.AssetExtension.js] = JSFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -31183,6 +31206,7 @@ var feng3d;
         return JsonFile;
     }(feng3d.StringFile));
     feng3d.JsonFile = JsonFile;
+    feng3d.Feng3dAssets.assetTypeClassMap[feng3d.AssetExtension.json] = JsonFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -31211,6 +31235,7 @@ var feng3d;
         return AudioFile;
     }(feng3d.Feng3dFile));
     feng3d.AudioFile = AudioFile;
+    feng3d.Feng3dAssets.assetTypeClassMap[feng3d.AssetExtension.audio] = AudioFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

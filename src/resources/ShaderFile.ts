@@ -4,4 +4,5 @@ namespace feng3d
     {
         assetType = AssetExtension.shader;
     }
+    Feng3dAssets.assetTypeClassMap[AssetExtension.shader] = ShaderFile;
 }

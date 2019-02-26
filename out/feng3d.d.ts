@@ -8145,6 +8145,10 @@ declare namespace feng3d {
          */
         name: string;
         /**
+         * 资源路径
+         */
+        readonly assetsPath: string;
+        /**
          * 资源类型，由具体对象类型决定
          */
         assetType: AssetExtension;
@@ -15196,7 +15200,15 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * feng3d 资源文件
+     */
     class Feng3dFile extends Feng3dAssets {
+        name: string;
+        /**
+         * 资源名称
+         */
+        readonly assetName: string;
     }
 }
 declare namespace feng3d {
@@ -15228,12 +15240,7 @@ declare namespace feng3d {
      * 字符串文件
      */
     class StringFile extends Feng3dFile {
-        name: string;
         textContent: string;
-        /**
-         * 资源路径
-         */
-        readonly assetsPath: string;
         protected saveFile(readWriteAssets: ReadWriteAssetsFS, callback?: (err: Error) => void): void;
         /**
          * 读取文件
