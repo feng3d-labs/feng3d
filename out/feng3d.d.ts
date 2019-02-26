@@ -8173,6 +8173,9 @@ declare namespace feng3d {
          */
         static getAssetsByType<T extends Feng3dAssets>(type: Constructor<T>): T[];
         private static _lib;
+        static assetTypeClassMap: {
+            [type: string]: Constructor<Feng3dAssets>;
+        };
     }
 }
 declare namespace feng3d {
@@ -15178,9 +15181,18 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * 文件夹资源
+     */
     class Feng3dFolder extends Feng3dAssets {
         name: string;
         assetType: AssetExtension;
+        /**
+         * 保存文件
+         * @param readWriteAssets 可读写资源管理系统
+         * @param callback 完成回调
+         */
+        protected saveFile(readWriteAssets: ReadWriteAssetsFS, callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
@@ -15218,6 +15230,10 @@ declare namespace feng3d {
     class StringFile extends Feng3dFile {
         name: string;
         textContent: string;
+        /**
+         * 资源路径
+         */
+        readonly assetsPath: string;
         protected saveFile(readWriteAssets: ReadWriteAssetsFS, callback?: (err: Error) => void): void;
         /**
          * 读取文件

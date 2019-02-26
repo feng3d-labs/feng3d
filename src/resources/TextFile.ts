@@ -6,4 +6,6 @@ namespace feng3d
 
         textContent = "";
     }
+
+    Feng3dAssets.assetTypeClassMap[AssetExtension.txt] = TextFile;
 }

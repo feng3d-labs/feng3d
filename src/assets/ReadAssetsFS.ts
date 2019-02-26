@@ -43,29 +43,14 @@ namespace feng3d
                     callback(err, null);
                     return;
                 }
-                if (meta.isDirectory)
-                {
-                    var feng3dFolder = new Feng3dFolder();
-                    feng3dFolder.assetsId = meta.guid;
+                var cls = Feng3dAssets.assetTypeClassMap[meta.assetType];
+                var assets: Feng3dAssets = new cls();
+                feng3d.assert(assets.assetType == meta.assetType);
 
-                    callback(null, feng3dFolder);
-                } else
+                assets["readFile"](this, err =>
                 {
-                    this._fs.readObject(path, (err, assets: Feng3dAssets) =>
-                    {
-                        if (assets) Feng3dAssets.setAssets(assets);
-                        if (assets instanceof Feng3dFile)
-                        {
-                            assets["readFile"](this, err =>
-                            {
-                                callback(err, assets);
-                            });
-                        } else
-                        {
-                            callback(err, assets);
-                        }
-                    });
-                }
+                    callback(err, assets);
+                });
             });
         }
 

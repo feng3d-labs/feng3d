@@ -42,13 +42,11 @@ namespace feng3d
                         callback && callback(err);
                         return;
                     }
-                    if (assets instanceof Feng3dFolder)
+
+                    assets["saveFile"](this, err =>
                     {
-                        this.fs.mkdir(path, callback);
-                    } else
-                    {
-                        this.fs.writeObject(path, assets, callback);
-                    }
+                        callback && callback(err);
+                    });
                 });
             });
         }

@@ -11,10 +11,17 @@ namespace feng3d
         @oav({ component: "OAVMultiText" })
         textContent: string;
 
+        /**
+         * 资源路径
+         */
+        get assetsPath()
+        {
+            return assetsIDPathMap.getPath(this.assetsId);
+        }
+
         protected saveFile(readWriteAssets: ReadWriteAssetsFS, callback?: (err: Error) => void)
         {
-            var assetsPath = assetsIDPathMap.getPath(this.assetsId);
-            readWriteAssets.fs.writeString(assetsPath, this.textContent, callback);
+            readWriteAssets.fs.writeString(this.assetsPath, this.textContent, callback);
         }
 
         /**
@@ -24,8 +31,7 @@ namespace feng3d
          */
         protected readFile(readAssets: ReadAssetsFS, callback?: (err: Error) => void)
         {
-            var assetsPath = assetsIDPathMap.getPath(this.assetsId);
-            readAssets.fs.readString(assetsPath, (err, data) =>
+            readAssets.fs.readString(this.assetsPath, (err, data) =>
             {
                 this.textContent = data;
                 callback && callback(err);
