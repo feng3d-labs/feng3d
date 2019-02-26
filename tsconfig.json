@@ -309,6 +309,8 @@
         "src/resources/JsonFile.ts",
         "src/resources/TextFile.ts",
         "src/resources/AudioFile.ts",
+        "src/resources/TextureFile.ts",
+        "src/resources/MaterialFile.ts",
         // 模型解析
         "src/assets/parsers/OBJParser.ts",
         "src/assets/parsers/MTLParser.ts",

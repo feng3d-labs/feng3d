@@ -16461,6 +16461,7 @@ var feng3d;
                 var cls = feng3d.Feng3dAssets.assetTypeClassMap[meta.assetType];
                 var newFeng3dAsset = new cls();
                 newFeng3dAsset.assetsId = meta.guid;
+                feng3d.Feng3dAssets.setAssets(newFeng3dAsset);
                 feng3d.assert(newFeng3dAsset.assetType == meta.assetType);
                 newFeng3dAsset["readFile"](_this, function (err) {
                     callback(err, newFeng3dAsset);
@@ -31236,6 +31237,60 @@ var feng3d;
     }(feng3d.Feng3dFile));
     feng3d.AudioFile = AudioFile;
     feng3d.Feng3dAssets.assetTypeClassMap[feng3d.AssetExtension.audio] = AudioFile;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 纹理文件
+     */
+    var TextureFile = /** @class */ (function (_super) {
+        __extends(TextureFile, _super);
+        function TextureFile() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.assetType = feng3d.AssetExtension.texture;
+            return _this;
+        }
+        return TextureFile;
+    }(feng3d.JsonFile));
+    feng3d.TextureFile = TextureFile;
+    feng3d.Feng3dAssets.assetTypeClassMap[feng3d.AssetExtension.texture] = TextureFile;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 材质文件
+     */
+    var MaterialFile = /** @class */ (function (_super) {
+        __extends(MaterialFile, _super);
+        function MaterialFile() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.assetType = feng3d.AssetExtension.material;
+            return _this;
+        }
+        MaterialFile.prototype.saveFile = function (readWriteAssets, callback) {
+            this.material.assetsId = this.assetsId;
+            readWriteAssets.fs.writeObject(this.assetsPath, this.material, callback);
+        };
+        /**
+         * 读取文件
+         * @param readAssets 刻度资源管理系统
+         * @param callback 完成回调
+         */
+        MaterialFile.prototype.readFile = function (readAssets, callback) {
+            var _this = this;
+            readAssets.fs.readObject(this.assetsPath, function (err, data) {
+                _this.material = data;
+                _this.material.assetsId = _this.assetsId;
+                callback && callback(err);
+            });
+        };
+        __decorate([
+            feng3d.oav()
+        ], MaterialFile.prototype, "material", void 0);
+        return MaterialFile;
+    }(feng3d.Feng3dFile));
+    feng3d.MaterialFile = MaterialFile;
+    feng3d.Feng3dAssets.assetTypeClassMap[feng3d.AssetExtension.material] = MaterialFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

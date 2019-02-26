@@ -46,6 +46,7 @@ namespace feng3d
                 var cls = Feng3dAssets.assetTypeClassMap[meta.assetType];
                 var newFeng3dAsset: Feng3dAssets = new cls();
                 newFeng3dAsset.assetsId = meta.guid;
+                Feng3dAssets.setAssets(newFeng3dAsset);
                 feng3d.assert(newFeng3dAsset.assetType == meta.assetType);
 
                 newFeng3dAsset["readFile"](this, err =>

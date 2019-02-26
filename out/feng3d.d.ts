@@ -15296,6 +15296,37 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 纹理文件
+     */
+    class TextureFile extends JsonFile {
+        /**
+         * 材质
+         */
+        material: Texture2D;
+        assetType: AssetExtension;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 材质文件
+     */
+    class MaterialFile extends Feng3dFile {
+        /**
+         * 材质
+         */
+        material: Material;
+        assetType: AssetExtension;
+        protected saveFile(readWriteAssets: ReadWriteAssetsFS, callback?: (err: Error) => void): void;
+        /**
+         * 读取文件
+         * @param readAssets 刻度资源管理系统
+         * @param callback 完成回调
+         */
+        protected readFile(readAssets: ReadAssetsFS, callback?: (err: Error) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
      * OBJ模型解析器
      */
     var objParser: OBJParser;
