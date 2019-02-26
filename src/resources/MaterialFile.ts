@@ -8,7 +8,7 @@ namespace feng3d
         /**
          * 材质
          */
-        @oav()
+        @oav({ component: "OAVObjectView" })
         material: Material;
 
         assetType = AssetExtension.material;

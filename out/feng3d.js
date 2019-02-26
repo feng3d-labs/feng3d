@@ -31247,11 +31247,51 @@ var feng3d;
         __extends(TextureFile, _super);
         function TextureFile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * 材质
+             */
+            _this.texture = new feng3d.UrlImageTexture2D();
             _this.assetType = feng3d.AssetExtension.texture;
             return _this;
         }
+        Object.defineProperty(TextureFile.prototype, "image", {
+            /**
+             * 图片
+             */
+            get: function () {
+                return this.texture["_pixels"];
+            },
+            set: function (v) {
+                this.texture["_pixels"] = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        TextureFile.prototype.saveFile = function (readWriteAssets, callback) {
+            this.texture.assetsId = this.assetsId;
+            this.texture.url = this.assetsPath;
+            readWriteAssets.fs.writeImage(this.assetsPath, this.image, callback);
+        };
+        /**
+         * 读取文件
+         * @param readAssets 刻度资源管理系统
+         * @param callback 完成回调
+         */
+        TextureFile.prototype.readFile = function (readAssets, callback) {
+            var _this = this;
+            readAssets.fs.readImage(this.assetsPath, function (err, data) {
+                _this.image = data;
+                _this.texture["_pixels"] = data;
+                _this.texture.assetsId = _this.assetsId;
+                _this.texture.url = _this.assetsPath;
+                callback && callback(err);
+            });
+        };
+        __decorate([
+            feng3d.oav({ component: "OAVObjectView" })
+        ], TextureFile.prototype, "texture", void 0);
         return TextureFile;
-    }(feng3d.JsonFile));
+    }(feng3d.Feng3dFile));
     feng3d.TextureFile = TextureFile;
     feng3d.Feng3dAssets.assetTypeClassMap[feng3d.AssetExtension.texture] = TextureFile;
 })(feng3d || (feng3d = {}));
@@ -31285,7 +31325,7 @@ var feng3d;
             });
         };
         __decorate([
-            feng3d.oav()
+            feng3d.oav({ component: "OAVObjectView" })
         ], MaterialFile.prototype, "material", void 0);
         return MaterialFile;
     }(feng3d.Feng3dFile));

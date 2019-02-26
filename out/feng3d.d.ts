@@ -15298,12 +15298,23 @@ declare namespace feng3d {
     /**
      * 纹理文件
      */
-    class TextureFile extends JsonFile {
+    class TextureFile extends Feng3dFile {
         /**
          * 材质
          */
-        material: Texture2D;
+        texture: UrlImageTexture2D;
+        /**
+         * 图片
+         */
+        image: HTMLImageElement;
         assetType: AssetExtension;
+        protected saveFile(readWriteAssets: ReadWriteAssetsFS, callback?: (err: Error) => void): void;
+        /**
+         * 读取文件
+         * @param readAssets 刻度资源管理系统
+         * @param callback 完成回调
+         */
+        protected readFile(readAssets: ReadAssetsFS, callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
