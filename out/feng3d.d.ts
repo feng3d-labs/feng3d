@@ -7690,10 +7690,6 @@ declare namespace feng3d {
          */
         guid: string;
         /**
-         * 是否为文件夹，如果不是文件夹则为文件
-         */
-        isDirectory: boolean;
-        /**
          * 修改时间（单位为ms）
          */
         mtimeMs: number;
@@ -7702,7 +7698,7 @@ declare namespace feng3d {
          */
         birthtimeMs: number;
         /**
-         * 资源类型，由具体对象类型决定
+         * 资源类型，由具体对象类型决定；AssetExtension.folder 时为文件夹
          */
         assetType: AssetExtension;
     }
@@ -8054,7 +8050,7 @@ declare namespace feng3d {
         init(list?: {
             id: string;
             path: string;
-            isDirectory: boolean;
+            assetType: AssetExtension;
         }[]): void;
         /**
          * 获取所有资源编号列表
@@ -8097,7 +8093,7 @@ declare namespace feng3d {
         addItem(item: {
             id: string;
             path: string;
-            isDirectory: boolean;
+            assetType: AssetExtension;
         }): void;
         /**
          * 获取资源映射
@@ -8107,7 +8103,7 @@ declare namespace feng3d {
         getItem(id: string): {
             id: string;
             path: string;
-            isDirectory: boolean;
+            assetType: AssetExtension;
         };
         /**
          * 删除指定编号映射
@@ -8127,7 +8123,7 @@ declare namespace feng3d {
         toList(): {
             id: string;
             path: string;
-            isDirectory: boolean;
+            assetType: AssetExtension;
         }[];
     }
 }

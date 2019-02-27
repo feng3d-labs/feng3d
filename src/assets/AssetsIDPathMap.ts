@@ -13,19 +13,19 @@ namespace feng3d
         /**
          * 编号映射到路径
          */
-        private _idMap: { [id: string]: { id: string, path: string, isDirectory: boolean } } = {};
+        private _idMap: { [id: string]: { id: string, path: string, assetType: AssetExtension } } = {};
 
         /**
          * 路径映射到编号
          */
-        private _pathMap: { [path: string]: { id: string, path: string, isDirectory: boolean } } = {};
+        private _pathMap: { [path: string]: { id: string, path: string, assetType: AssetExtension } } = {};
 
         /**
          * 初始化
          * 
          * @param list 资源列表
          */
-        init(list?: { id: string, path: string, isDirectory: boolean }[])
+        init(list?: { id: string, path: string, assetType: AssetExtension }[])
         {
             this._idMap = {};
             this._pathMap = {};
@@ -99,7 +99,7 @@ namespace feng3d
          * @param item 资源编号
          * @param path 资源路径
          */
-        addItem(item: { id: string, path: string, isDirectory: boolean })
+        addItem(item: { id: string, path: string, assetType: AssetExtension })
         {
             feng3d.assert(!this._idMap[item.id], `无法新增已存在指定编号资源映射`);
             feng3d.assert(!this._pathMap[item.path], `无法新增已存在指定路径资源映射`);

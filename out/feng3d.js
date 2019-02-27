@@ -16541,7 +16541,7 @@ var feng3d;
                 }
                 feng3d.assetsIDPathMap.deleteByID(assetsId);
                 // 如果该资源为文件夹 则 删除该文件夹以及文件夹内所有资源
-                if (item.isDirectory) {
+                if (item.assetType == feng3d.AssetExtension.folder) {
                     _this.fs.getAllfilepathInFolder(path, function (err, filepaths) {
                         if (err) {
                             callback && callback(err);

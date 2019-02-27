@@ -16,11 +16,6 @@ namespace feng3d
         guid: string;
 
         /**
-         * 是否为文件夹，如果不是文件夹则为文件
-         */
-        isDirectory: boolean;
-
-        /**
          * 修改时间（单位为ms）
          */
         mtimeMs: number;
@@ -31,7 +26,7 @@ namespace feng3d
         birthtimeMs: number;
 
         /**
-         * 资源类型，由具体对象类型决定
+         * 资源类型，由具体对象类型决定；AssetExtension.folder 时为文件夹
          */
         assetType: AssetExtension;
     }

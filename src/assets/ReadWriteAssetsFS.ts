@@ -63,7 +63,7 @@ namespace feng3d
                 }
                 assetsIDPathMap.deleteByID(assetsId);
                 // 如果该资源为文件夹 则 删除该文件夹以及文件夹内所有资源
-                if (item.isDirectory)
+                if (item.assetType == AssetExtension.folder)
                 {
                     this.fs.getAllfilepathInFolder(path, (err, filepaths) =>
                     {
