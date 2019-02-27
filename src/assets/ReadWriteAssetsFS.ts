@@ -27,26 +27,18 @@ namespace feng3d
         {
             var path = assetsIDPathMap.getPath(assets.assetsId);
 
-            this._readMeta(assets.assetsId, (err, meta) =>
+            assets.meta.mtimeMs = Date.now();
+            this._writeMeta(path, assets.meta, (err) =>
             {
-                if (!meta) meta = {
-                    guid: assets.assetsId, isDirectory: assets instanceof Feng3dFolder,
-                    mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: assets.assetType,
-                };
-                meta.mtimeMs = Date.now();
-
-                this._writeMeta(path, meta, (err) =>
+                if (err)
                 {
-                    if (err)
-                    {
-                        callback && callback(err);
-                        return;
-                    }
+                    callback && callback(err);
+                    return;
+                }
 
-                    assets["saveFile"](this, err =>
-                    {
-                        callback && callback(err);
-                    });
+                assets["saveFile"](this, err =>
+                {
+                    callback && callback(err);
                 });
             });
         }
@@ -59,50 +51,43 @@ namespace feng3d
          */
         deleteAssets(assetsId: string, callback?: (err: Error) => void)
         {
-            var path = assetsIDPathMap.getPath(assetsId);
+            var item = assetsIDPathMap.getItem(assetsId);
+            var path = item.path;
 
-            this._readMeta(path, (err, meta) =>
+            this._deleteMeta(path, (err) =>
             {
                 if (err)
                 {
                     callback && callback(err);
                     return;
                 }
-                this._deleteMeta(path, (err) =>
+                assetsIDPathMap.deleteByID(assetsId);
+                // 如果该资源为文件夹 则 删除该文件夹以及文件夹内所有资源
+                if (item.isDirectory)
                 {
-                    if (err)
+                    this.fs.getAllfilepathInFolder(path, (err, filepaths) =>
                     {
-                        callback && callback(err);
-                        return;
-                    }
-                    assetsIDPathMap.deleteByID(assetsId);
-                    // 如果该资源为文件夹 则 删除该文件夹以及文件夹内所有资源
-                    if (meta.isDirectory)
-                    {
-                        this.fs.getAllfilepathInFolder(path, (err, filepaths) =>
+                        if (err)
                         {
-                            if (err)
-                            {
-                                callback && callback(err);
-                                return;
-                            }
-                            var deleteIDs = filepaths.reduce((pv: string[], cv) =>
-                            {
-                                var cid = assetsIDPathMap.getID(cv);
-                                if (cid) pv.push(cid);
-                                return pv;
-                            }, []);
-                            deleteIDs.forEach(element =>
-                            {
-                                assetsIDPathMap.deleteByID(element);
-                            });
-                            this.fs.delete(path, callback);
+                            callback && callback(err);
+                            return;
+                        }
+                        var deleteIDs = filepaths.reduce((pv: string[], cv) =>
+                        {
+                            var cid = assetsIDPathMap.getID(cv);
+                            if (cid) pv.push(cid);
+                            return pv;
+                        }, []);
+                        deleteIDs.forEach(element =>
+                        {
+                            assetsIDPathMap.deleteByID(element);
                         });
-                    } else
-                    {
-                        this.fs.deleteFile(path, callback);
-                    }
-                });
+                        this.fs.delete(path, callback);
+                    });
+                } else
+                {
+                    this.fs.deleteFile(path, callback);
+                }
             });
         }
 

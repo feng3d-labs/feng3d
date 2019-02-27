@@ -8145,6 +8145,10 @@ declare namespace feng3d {
          */
         name: string;
         /**
+         * 资源元标签
+         */
+        meta: AssetsMeta;
+        /**
          * 资源路径
          */
         readonly assetsPath: string;

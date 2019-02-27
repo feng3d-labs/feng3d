@@ -19,6 +19,11 @@ namespace feng3d
         name = "";
 
         /**
+         * 资源元标签
+         */
+        meta: AssetsMeta;
+
+        /**
          * 资源路径
          */
         get assetsPath()

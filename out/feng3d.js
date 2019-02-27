@@ -16460,6 +16460,7 @@ var feng3d;
                 }
                 var cls = feng3d.Feng3dAssets.assetTypeClassMap[meta.assetType];
                 var newFeng3dAsset = new cls();
+                newFeng3dAsset.meta = meta;
                 newFeng3dAsset.assetsId = meta.guid;
                 feng3d.Feng3dAssets.setAssets(newFeng3dAsset);
                 feng3d.assert(newFeng3dAsset.assetType == meta.assetType);
@@ -16512,21 +16513,14 @@ var feng3d;
         ReadWriteAssetsFS.prototype.writeAssets = function (assets, callback) {
             var _this = this;
             var path = feng3d.assetsIDPathMap.getPath(assets.assetsId);
-            this._readMeta(assets.assetsId, function (err, meta) {
-                if (!meta)
-                    meta = {
-                        guid: assets.assetsId, isDirectory: assets instanceof feng3d.Feng3dFolder,
-                        mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: assets.assetType,
-                    };
-                meta.mtimeMs = Date.now();
-                _this._writeMeta(path, meta, function (err) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
-                    }
-                    assets["saveFile"](_this, function (err) {
-                        callback && callback(err);
-                    });
+            assets.meta.mtimeMs = Date.now();
+            this._writeMeta(path, assets.meta, function (err) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                assets["saveFile"](_this, function (err) {
+                    callback && callback(err);
                 });
             });
         };
@@ -16538,41 +16532,36 @@ var feng3d;
          */
         ReadWriteAssetsFS.prototype.deleteAssets = function (assetsId, callback) {
             var _this = this;
-            var path = feng3d.assetsIDPathMap.getPath(assetsId);
-            this._readMeta(path, function (err, meta) {
+            var item = feng3d.assetsIDPathMap.getItem(assetsId);
+            var path = item.path;
+            this._deleteMeta(path, function (err) {
                 if (err) {
                     callback && callback(err);
                     return;
                 }
-                _this._deleteMeta(path, function (err) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
-                    }
-                    feng3d.assetsIDPathMap.deleteByID(assetsId);
-                    // 如果该资源为文件夹 则 删除该文件夹以及文件夹内所有资源
-                    if (meta.isDirectory) {
-                        _this.fs.getAllfilepathInFolder(path, function (err, filepaths) {
-                            if (err) {
-                                callback && callback(err);
-                                return;
-                            }
-                            var deleteIDs = filepaths.reduce(function (pv, cv) {
-                                var cid = feng3d.assetsIDPathMap.getID(cv);
-                                if (cid)
-                                    pv.push(cid);
-                                return pv;
-                            }, []);
-                            deleteIDs.forEach(function (element) {
-                                feng3d.assetsIDPathMap.deleteByID(element);
-                            });
-                            _this.fs.delete(path, callback);
+                feng3d.assetsIDPathMap.deleteByID(assetsId);
+                // 如果该资源为文件夹 则 删除该文件夹以及文件夹内所有资源
+                if (item.isDirectory) {
+                    _this.fs.getAllfilepathInFolder(path, function (err, filepaths) {
+                        if (err) {
+                            callback && callback(err);
+                            return;
+                        }
+                        var deleteIDs = filepaths.reduce(function (pv, cv) {
+                            var cid = feng3d.assetsIDPathMap.getID(cv);
+                            if (cid)
+                                pv.push(cid);
+                            return pv;
+                        }, []);
+                        deleteIDs.forEach(function (element) {
+                            feng3d.assetsIDPathMap.deleteByID(element);
                         });
-                    }
-                    else {
-                        _this.fs.deleteFile(path, callback);
-                    }
-                });
+                        _this.fs.delete(path, callback);
+                    });
+                }
+                else {
+                    _this.fs.deleteFile(path, callback);
+                }
             });
         };
         /**
