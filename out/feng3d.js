@@ -16456,7 +16456,7 @@ var feng3d;
                 newFeng3dAsset.assetsId = meta.guid;
                 feng3d.Feng3dAssets.setAssets(newFeng3dAsset);
                 feng3d.assert(newFeng3dAsset.assetType == meta.assetType);
-                newFeng3dAsset["readFile"](_this, function (err) {
+                newFeng3dAsset["readFile"](_this.fs, function (err) {
                     callback(err, newFeng3dAsset);
                 });
             });
@@ -16511,7 +16511,7 @@ var feng3d;
                     callback && callback(err);
                     return;
                 }
-                assets["saveFile"](_this, function (err) {
+                assets["saveFile"](_this.fs, function (err) {
                     callback && callback(err);
                 });
             });
@@ -16828,18 +16828,18 @@ var feng3d;
         });
         /**
          * 保存文件
-         * @param readWriteAssets 可读写资源管理系统
+         * @param fs 可读写资源管理系统
          * @param callback 完成回调
          */
-        Feng3dAssets.prototype.saveFile = function (readWriteAssets, callback) {
+        Feng3dAssets.prototype.saveFile = function (fs, callback) {
             callback && callback(null);
         };
         /**
          * 读取文件
-         * @param readAssets 刻度资源管理系统
+         * @param fs 刻度资源管理系统
          * @param callback 完成回调
          */
-        Feng3dAssets.prototype.readFile = function (readAssets, callback) {
+        Feng3dAssets.prototype.readFile = function (fs, callback) {
             callback && callback(null);
         };
         Feng3dAssets.setAssets = function (assets) {
@@ -26503,19 +26503,19 @@ var feng3d;
             else
                 this.once("loadCompleted", callback);
         };
-        UrlImageTexture2D.prototype.saveFile = function (readWriteAssets, callback) {
+        UrlImageTexture2D.prototype.saveFile = function (fs, callback) {
             if (callback === void 0) { callback = function (err) { }; }
-            readWriteAssets.fs.writeImage(this.url, this.image, callback);
+            fs.writeImage(this.url, this.image, callback);
         };
         /**
          * 读取文件
-         * @param readAssets 刻度资源管理系统
+         * @param fs 刻度资源管理系统
          * @param callback 完成回调
          */
-        UrlImageTexture2D.prototype.readFile = function (readAssets, callback) {
+        UrlImageTexture2D.prototype.readFile = function (fs, callback) {
             var _this = this;
             if (callback === void 0) { callback = function (err) { }; }
-            readAssets.fs.readImage(this.url, function (err, img) {
+            fs.readImage(this.url, function (err, img) {
                 _this.image = img;
                 callback && callback(err);
             });
@@ -30985,12 +30985,12 @@ var feng3d;
         }
         /**
          * 保存文件
-         * @param readWriteAssets 可读写资源管理系统
+         * @param fs 可读写资源管理系统
          * @param callback 完成回调
          */
-        Feng3dFolder.prototype.saveFile = function (readWriteAssets, callback) {
+        Feng3dFolder.prototype.saveFile = function (fs, callback) {
             var assetsPath = feng3d.assetsIDPathMap.getPath(this.assetsId);
-            readWriteAssets.fs.mkdir(assetsPath, callback);
+            fs.mkdir(assetsPath, callback);
         };
         __decorate([
             feng3d.oav()
@@ -31044,22 +31044,22 @@ var feng3d;
         }
         /**
          * 保存文件
-         * @param readWriteAssets 可读写资源管理系统
+         * @param fs 可读写资源管理系统
          * @param callback 完成回调
          */
-        ArrayBufferFile.prototype.saveFile = function (readWriteAssets, callback) {
+        ArrayBufferFile.prototype.saveFile = function (fs, callback) {
             var assetsPath = feng3d.assetsIDPathMap.getPath(this.assetsId);
-            readWriteAssets.fs.writeArrayBuffer(assetsPath, this.arraybuffer, callback);
+            fs.writeArrayBuffer(assetsPath, this.arraybuffer, callback);
         };
         /**
          * 读取文件
-         * @param readAssets 刻度资源管理系统
+         * @param fs 刻度资源管理系统
          * @param callback 完成回调
          */
-        ArrayBufferFile.prototype.readFile = function (readAssets, callback) {
+        ArrayBufferFile.prototype.readFile = function (fs, callback) {
             var _this = this;
             var assetsPath = feng3d.assetsIDPathMap.getPath(this.assetsId);
-            readAssets.fs.readArrayBuffer(assetsPath, function (err, data) {
+            fs.readArrayBuffer(assetsPath, function (err, data) {
                 _this.arraybuffer = data;
                 callback && callback(err);
             });
@@ -31081,17 +31081,17 @@ var feng3d;
         function StringFile() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        StringFile.prototype.saveFile = function (readWriteAssets, callback) {
-            readWriteAssets.fs.writeString(this.assetsPath, this.textContent, callback);
+        StringFile.prototype.saveFile = function (fs, callback) {
+            fs.writeString(this.assetsPath, this.textContent, callback);
         };
         /**
          * 读取文件
-         * @param readAssets 刻度资源管理系统
+         * @param fs 刻度资源管理系统
          * @param callback 完成回调
          */
-        StringFile.prototype.readFile = function (readAssets, callback) {
+        StringFile.prototype.readFile = function (fs, callback) {
             var _this = this;
-            readAssets.fs.readString(this.assetsPath, function (err, data) {
+            fs.readString(this.assetsPath, function (err, data) {
                 _this.textContent = data;
                 callback && callback(err);
             });
@@ -31248,20 +31248,20 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        TextureFile.prototype.saveFile = function (readWriteAssets, callback) {
+        TextureFile.prototype.saveFile = function (fs, callback) {
             this.texture.assetsId = this.assetsId;
-            readWriteAssets.fs.writeImage(this.assetsPath, this.image, function (err) {
+            fs.writeImage(this.assetsPath, this.image, function (err) {
                 callback && callback(err);
             });
         };
         /**
          * 读取文件
-         * @param readAssets 刻度资源管理系统
+         * @param fs 刻度资源管理系统
          * @param callback 完成回调
          */
-        TextureFile.prototype.readFile = function (readAssets, callback) {
+        TextureFile.prototype.readFile = function (fs, callback) {
             var _this = this;
-            readAssets.fs.readImage(this.assetsPath, function (err, img) {
+            fs.readImage(this.assetsPath, function (err, img) {
                 _this.image = img;
                 _this.texture.assetsId = _this.assetsId;
                 callback && callback(err);
@@ -31287,18 +31287,18 @@ var feng3d;
             _this.assetType = feng3d.AssetExtension.material;
             return _this;
         }
-        MaterialFile.prototype.saveFile = function (readWriteAssets, callback) {
+        MaterialFile.prototype.saveFile = function (fs, callback) {
             this.material.assetsId = this.assetsId;
-            readWriteAssets.fs.writeObject(this.assetsPath, this.material, callback);
+            fs.writeObject(this.assetsPath, this.material, callback);
         };
         /**
          * 读取文件
-         * @param readAssets 刻度资源管理系统
+         * @param fs 刻度资源管理系统
          * @param callback 完成回调
          */
-        MaterialFile.prototype.readFile = function (readAssets, callback) {
+        MaterialFile.prototype.readFile = function (fs, callback) {
             var _this = this;
-            readAssets.fs.readObject(this.assetsPath, function (err, data) {
+            fs.readObject(this.assetsPath, function (err, data) {
                 _this.material = data;
                 _this.material.assetsId = _this.assetsId;
                 callback && callback(err);

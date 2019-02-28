@@ -36,7 +36,7 @@ namespace feng3d
                     return;
                 }
 
-                assets["saveFile"](this, err =>
+                assets["saveFile"](this.fs, err =>
                 {
                     callback && callback(err);
                 });

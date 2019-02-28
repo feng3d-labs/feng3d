@@ -50,7 +50,7 @@ namespace feng3d
                 Feng3dAssets.setAssets(newFeng3dAsset);
                 feng3d.assert(newFeng3dAsset.assetType == meta.assetType);
 
-                newFeng3dAsset["readFile"](this, err =>
+                newFeng3dAsset["readFile"](this.fs, err =>
                 {
                     callback(err, newFeng3dAsset);
                 });
