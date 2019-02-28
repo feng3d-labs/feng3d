@@ -113,8 +113,6 @@
         "src/assets/IndexedDBFS.ts",
         "src/assets/HttpFS.ts",
         //
-        "src/assets/ReadAssetsFS.ts",
-        "src/assets/ReadWriteAssetsFS.ts",
         "src/assets/AssetExtension.ts",
         "src/assets/AssetsIDPathMap.ts",
         "src/assets/Feng3dAssets.ts",
