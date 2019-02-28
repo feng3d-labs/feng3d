@@ -29,9 +29,12 @@ namespace feng3d
         protected saveFile(readWriteAssets: ReadWriteAssetsFS, callback?: (err: Error) => void)
         {
             this.texture.assetsId = this.assetsId;
-            this.texture.url = this.assetsPath;
 
-            readWriteAssets.fs.writeImage(this.assetsPath, this.image, callback);
+            readWriteAssets.fs.writeImage(this.assetsPath, this.image, (err) =>
+            {
+                this.texture.url = this.assetsPath;
+                callback && callback(err);
+            });
         }
 
         /**

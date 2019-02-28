@@ -31257,9 +31257,12 @@ var feng3d;
             configurable: true
         });
         TextureFile.prototype.saveFile = function (readWriteAssets, callback) {
+            var _this = this;
             this.texture.assetsId = this.assetsId;
-            this.texture.url = this.assetsPath;
-            readWriteAssets.fs.writeImage(this.assetsPath, this.image, callback);
+            readWriteAssets.fs.writeImage(this.assetsPath, this.image, function (err) {
+                _this.texture.url = _this.assetsPath;
+                callback && callback(err);
+            });
         };
         /**
          * 读取文件
