@@ -31239,7 +31239,7 @@ var feng3d;
             /**
              * 材质
              */
-            _this.texture = new feng3d.UrlImageTexture2D();
+            _this.texture = new feng3d.Texture2D();
             _this.assetType = feng3d.AssetExtension.texture;
             return _this;
         }
@@ -31257,10 +31257,8 @@ var feng3d;
             configurable: true
         });
         TextureFile.prototype.saveFile = function (readWriteAssets, callback) {
-            var _this = this;
             this.texture.assetsId = this.assetsId;
             readWriteAssets.fs.writeImage(this.assetsPath, this.image, function (err) {
-                _this.texture.url = _this.assetsPath;
                 callback && callback(err);
             });
         };
@@ -31271,11 +31269,9 @@ var feng3d;
          */
         TextureFile.prototype.readFile = function (readAssets, callback) {
             var _this = this;
-            readAssets.fs.readImage(this.assetsPath, function (err, data) {
-                _this.image = data;
-                _this.texture["_pixels"] = data;
+            readAssets.fs.readImage(this.assetsPath, function (err, img) {
+                _this.image = img;
                 _this.texture.assetsId = _this.assetsId;
-                _this.texture.url = _this.assetsPath;
                 callback && callback(err);
             });
         };

@@ -9,7 +9,7 @@ namespace feng3d
          * 材质
          */
         @oav({ component: "OAVObjectView" })
-        texture = new UrlImageTexture2D();
+        texture = new Texture2D();
 
         /**
          * 图片
@@ -32,7 +32,6 @@ namespace feng3d
 
             readWriteAssets.fs.writeImage(this.assetsPath, this.image, (err) =>
             {
-                this.texture.url = this.assetsPath;
                 callback && callback(err);
             });
         }
@@ -44,12 +43,10 @@ namespace feng3d
          */
         protected readFile(readAssets: ReadAssetsFS, callback?: (err: Error) => void)
         {
-            readAssets.fs.readImage(this.assetsPath, (err, data: HTMLImageElement) =>
+            readAssets.fs.readImage(this.assetsPath, (err, img: HTMLImageElement) =>
             {
-                this.image = data;
-                this.texture["_pixels"] = data;
+                this.image = img;
                 this.texture.assetsId = this.assetsId;
-                this.texture.url = this.assetsPath;
                 callback && callback(err);
             });
         }

@@ -15302,7 +15302,7 @@ declare namespace feng3d {
         /**
          * 材质
          */
-        texture: UrlImageTexture2D;
+        texture: Texture2D;
         /**
          * 图片
          */
