@@ -15035,6 +15035,14 @@ declare namespace feng3d {
          */
         writeAssets(assets: Feng3dAssets, callback?: (err: Error) => void): void;
         /**
+         * 移动资源到指定文件夹
+         *
+         * @param asset 被移动资源
+         * @param folder 目标文件夹
+         * @param callback 完成回调
+         */
+        moveAssets(asset: Feng3dAssets, folder: Feng3dFolder, callback?: (err: Error) => void): void;
+        /**
          * 写资源元标签
          *
          * @param path 资源路径

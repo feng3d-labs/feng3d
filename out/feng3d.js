@@ -30927,6 +30927,97 @@ var feng3d;
             });
         };
         /**
+         * 移动资源到指定文件夹
+         *
+         * @param asset 被移动资源
+         * @param folder 目标文件夹
+         * @param callback 完成回调
+         */
+        ReadWriteRS.prototype.moveAssets = function (asset, folder, callback) {
+            var _this = this;
+            var filename = asset.name + asset.extenson;
+            var cnames = folder.childrenAssets.map(function (v) { return v.name + v.extenson; });
+            if (cnames.indexOf(filename) != -1) {
+                callback && callback(new Error("\u76EE\u6807\u6587\u4EF6\u5939\u4E2D\u5B58\u5728\u540C\u540D\u6587\u4EF6\uFF08\u5939\uFF09\uFF0C\u65E0\u6CD5\u79FB\u52A8"));
+                return;
+            }
+            var fp = folder;
+            while (fp) {
+                if (fp == asset) {
+                    callback && callback(new Error("\u65E0\u6CD5\u79FB\u52A8\u8FBE\u5230\u5B50\u6587\u4EF6\u5939\u4E2D"));
+                    return;
+                }
+                fp = fp.parentAsset;
+            }
+            // 重新设置父子资源关系
+            var index = asset.parentAsset.childrenAssets.indexOf(asset);
+            asset.parentAsset.childrenAssets.splice(index, 1);
+            folder.childrenAssets.push(asset);
+            asset.parentAsset = folder;
+            // 获取需要移动的资源列表
+            var assets = [asset];
+            var index = 0;
+            while (index < assets.length) {
+                var ca = assets[index];
+                if (ca instanceof feng3d.Feng3dFolder) {
+                    assets = assets.concat(ca.childrenAssets);
+                }
+                index++;
+            }
+            // 最后根据 parentAsset 修复 childrenAssets
+            var copyassets = assets.concat();
+            // 移动最后一个资源
+            var moveLastAssets = function () {
+                if (assets.length == 0) {
+                    // 修复 childrenAssets
+                    copyassets.forEach(function (v) {
+                        v.parentAsset.childrenAssets.push(v);
+                    });
+                    callback && callback(null);
+                    return;
+                }
+                var la = assets.pop();
+                // 读取资源
+                _this.readAssets(la.assetsId, function (err, a) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    // 备份父资源
+                    var pla = la.parentAsset;
+                    // 从原路径上删除资源
+                    _this.deleteAssets(la.assetsId, function (err) {
+                        if (err) {
+                            callback && callback(err);
+                            return;
+                        }
+                        // 修复删除资源时破坏的父资源引用
+                        la.parentAsset = pla;
+                        // 计算资源新路径
+                        var np = la.name + la.extenson;
+                        var p = la.parentAsset;
+                        while (p) {
+                            np = p.name + "/" + np;
+                            p = p.parentAsset;
+                        }
+                        la.assetsPath = np;
+                        // 新增映射
+                        _this.idMap[la.assetsId] = la;
+                        _this.pathMap[la.assetsPath] = la;
+                        // 保存资源到新路径
+                        _this.writeAssets(la, function (err) {
+                            if (err) {
+                                callback && callback(err);
+                                return;
+                            }
+                            moveLastAssets();
+                        });
+                    });
+                });
+            };
+            moveLastAssets();
+        };
+        /**
          * 写资源元标签
          *
          * @param path 资源路径
@@ -30944,35 +31035,45 @@ var feng3d;
          */
         ReadWriteRS.prototype.deleteAssets = function (assetsId, callback) {
             var _this = this;
-            var assets = this.idMap[assetsId];
-            this._deleteMeta(assets.assetsPath, function (err) {
-                if (err) {
-                    callback && callback(err);
+            var asset = this.idMap[assetsId];
+            // 获取需要移动的资源列表
+            var assets = [asset];
+            var index = 0;
+            while (index < assets.length) {
+                var ca = assets[index];
+                if (ca instanceof feng3d.Feng3dFolder) {
+                    assets = assets.concat(ca.childrenAssets);
+                }
+                index++;
+            }
+            // 删除最后一个资源
+            var deleteLastAssets = function () {
+                if (assets.length == 0) {
+                    callback && callback(null);
                     return;
                 }
-                // 如果该资源为文件夹 则 删除该文件夹以及文件夹内所有资源
-                if (assets.assetType == feng3d.AssetExtension.folder) {
-                    _this.fs.getAllfilepathInFolder(assets.assetsPath, function (err, filepaths) {
-                        if (err) {
-                            callback && callback(err);
-                            return;
+                var la = assets.pop();
+                // 删除 meta 文件
+                _this._deleteMeta(la.assetsPath, function (err) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    _this.fs.deleteFile(la.assetsPath, function (err) {
+                        // 删除父子资源关系
+                        if (la.parentAsset) {
+                            var index = la.parentAsset.childrenAssets.indexOf(la.parentAsset);
+                            la.parentAsset.childrenAssets.splice(index, 1);
+                            la.parentAsset = null;
                         }
-                        filepaths.forEach(function (v) {
-                            var cid = _this.pathMap[v];
-                            if (cid) {
-                                delete _this.idMap[cid.assetsId];
-                                delete _this.pathMap[cid.assetsPath];
-                            }
-                        });
-                        _this.fs.delete(assets.assetsPath, callback);
+                        // 删除映射
+                        delete _this.idMap[la.assetsId];
+                        delete _this.pathMap[la.assetsPath];
+                        deleteLastAssets();
                     });
-                }
-                else {
-                    _this.fs.deleteFile(assets.assetsPath, callback);
-                }
-                delete _this.idMap[assets.assetsId];
-                delete _this.pathMap[assets.assetsPath];
-            });
+                });
+            };
+            deleteLastAssets();
         };
         /**
          * 删除资源元标签
