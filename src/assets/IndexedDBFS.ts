@@ -56,16 +56,12 @@ namespace feng3d
                 } else if (data instanceof Object)
                 {
                     var str = JSON.stringify(data);
-                    dataTransform.stringToArrayBuffer(str, (arraybuffer) =>
-                    {
-                        callback(null, arraybuffer);
-                    });
+                    var arraybuffer = dataTransform.stringToArrayBuffer(str);
+                    callback(null, arraybuffer);
                 } else
                 {
-                    dataTransform.stringToArrayBuffer(data, (arraybuffer) =>
-                    {
-                        callback(null, arraybuffer);
-                    });
+                    var arraybuffer = dataTransform.stringToArrayBuffer(data);
+                    callback(null, arraybuffer);
                 }
             });
         }

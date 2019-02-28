@@ -1002,22 +1002,22 @@ declare namespace feng3d {
         /**
          * ArrayBuffer to Blob
          */
-        arrayBufferToBlob(arrayBuffer: ArrayBuffer, callback: (blob: Blob) => void): void;
+        arrayBufferToBlob(arrayBuffer: ArrayBuffer): Blob;
         /**
          * ArrayBuffer to Uint8
          * Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
          */
-        arrayBufferToUint8(arrayBuffer: ArrayBuffer, callback: (uint8Array: Uint8Array) => void): void;
+        arrayBufferToUint8(arrayBuffer: ArrayBuffer): Uint8Array;
         /**
          * Uint8 to ArrayBuffer
          * 我们Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
          */
-        uint8ToArrayBuffer(uint8Array: Uint8Array, callback: (arrayBuffer: ArrayBuffer) => void): void;
+        uint8ToArrayBuffer(uint8Array: Uint8Array): ArrayBuffer;
         /**
          * Array to ArrayBuffer
          * @param array 例如：[0x15, 0xFF, 0x01, 0x00, 0x34, 0xAB, 0x11];
          */
-        arrayToArrayBuffer(array: number[], callback: (arrayBuffer: ArrayBuffer) => void): void;
+        arrayToArrayBuffer(array: number[]): ArrayBuffer;
         /**
          * TypeArray to Array
          */
@@ -1052,7 +1052,7 @@ declare namespace feng3d {
         imagedataToImage(imageData: ImageData, callback: (img: HTMLImageElement) => void): void;
         arrayBufferToImage(arrayBuffer: ArrayBuffer, callback: (img: HTMLImageElement) => void): void;
         blobToText(blob: Blob, callback: (content: string) => void): void;
-        stringToArrayBuffer(str: string, callback: (arrayBuffer: ArrayBuffer) => void): void;
+        stringToArrayBuffer(str: string): ArrayBuffer;
         arrayBufferToString(arrayBuffer: ArrayBuffer, callback: (content: string) => void): void;
         /**
          * ArrayBuffer 转换为 对象
@@ -1061,7 +1061,7 @@ declare namespace feng3d {
          * @param callback
          */
         arrayBufferToObject(arrayBuffer: ArrayBuffer, callback: (object: Object) => void): void;
-        stringToUint8Array(str: string, callback: (uint8Array: Uint8Array) => void): void;
+        stringToUint8Array(str: string): Uint8Array;
         uint8ArrayToString(arr: Uint8Array, callback: (str: string) => void): void;
     }
 }

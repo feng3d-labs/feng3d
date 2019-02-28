@@ -1565,35 +1565,34 @@ var feng3d;
         /**
          * ArrayBuffer to Blob
          */
-        DataTransform.prototype.arrayBufferToBlob = function (arrayBuffer, callback) {
+        DataTransform.prototype.arrayBufferToBlob = function (arrayBuffer) {
             var blob = new Blob([arrayBuffer]); // 注意必须包裹[]
-            callback(blob);
+            return blob;
         };
         /**
          * ArrayBuffer to Uint8
          * Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
          */
-        DataTransform.prototype.arrayBufferToUint8 = function (arrayBuffer, callback) {
-            var buffer = new ArrayBuffer(32);
+        DataTransform.prototype.arrayBufferToUint8 = function (arrayBuffer) {
             var u8 = new Uint8Array(arrayBuffer);
-            callback(u8);
+            return u8;
         };
         /**
          * Uint8 to ArrayBuffer
          * 我们Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
          */
-        DataTransform.prototype.uint8ToArrayBuffer = function (uint8Array, callback) {
+        DataTransform.prototype.uint8ToArrayBuffer = function (uint8Array) {
             var buffer = uint8Array.buffer;
-            callback(buffer);
+            return buffer;
         };
         /**
          * Array to ArrayBuffer
          * @param array 例如：[0x15, 0xFF, 0x01, 0x00, 0x34, 0xAB, 0x11];
          */
-        DataTransform.prototype.arrayToArrayBuffer = function (array, callback) {
+        DataTransform.prototype.arrayToArrayBuffer = function (array) {
             var uint8 = new Uint8Array(array);
             var buffer = uint8.buffer;
-            callback(buffer);
+            return buffer;
         };
         /**
          * TypeArray to Array
@@ -1652,10 +1651,8 @@ var feng3d;
             this.blobToArrayBuffer(blob, callback);
         };
         DataTransform.prototype.arrayBufferToDataURL = function (arrayBuffer, callback) {
-            var _this = this;
-            this.arrayBufferToBlob(arrayBuffer, function (blob) {
-                _this.blobToDataURL(blob, callback);
-            });
+            var blob = this.arrayBufferToBlob(arrayBuffer);
+            this.blobToDataURL(blob, callback);
         };
         DataTransform.prototype.dataURLToImage = function (dataurl, callback) {
             var img = new Image();
@@ -1709,17 +1706,14 @@ var feng3d;
             a.onload = function (e) { callback(e.target["result"]); };
             a.readAsText(blob);
         };
-        DataTransform.prototype.stringToArrayBuffer = function (str, callback) {
-            var _this = this;
-            this.stringToUint8Array(str, function (unit8Array) {
-                _this.uint8ToArrayBuffer(unit8Array, callback);
-            });
+        DataTransform.prototype.stringToArrayBuffer = function (str) {
+            var uint8Array = this.stringToUint8Array(str);
+            var buffer = this.uint8ToArrayBuffer(uint8Array);
+            return buffer;
         };
         DataTransform.prototype.arrayBufferToString = function (arrayBuffer, callback) {
-            var _this = this;
-            this.arrayBufferToBlob(arrayBuffer, function (blob) {
-                _this.blobToText(blob, callback);
-            });
+            var blob = this.arrayBufferToBlob(arrayBuffer);
+            this.blobToText(blob, callback);
         };
         /**
          * ArrayBuffer 转换为 对象
@@ -1733,12 +1727,12 @@ var feng3d;
                 callback(obj);
             });
         };
-        DataTransform.prototype.stringToUint8Array = function (str, callback) {
+        DataTransform.prototype.stringToUint8Array = function (str) {
             var utf8 = unescape(encodeURIComponent(str));
             var uint8Array = new Uint8Array(utf8.split('').map(function (item) {
                 return item.charCodeAt(0);
             }));
-            callback(uint8Array);
+            return uint8Array;
         };
         DataTransform.prototype.uint8ArrayToString = function (arr, callback) {
             // or [].slice.apply(arr)
@@ -16100,14 +16094,12 @@ var feng3d;
                 }
                 else if (data instanceof Object) {
                     var str = JSON.stringify(data);
-                    feng3d.dataTransform.stringToArrayBuffer(str, function (arraybuffer) {
-                        callback(null, arraybuffer);
-                    });
+                    var arraybuffer = feng3d.dataTransform.stringToArrayBuffer(str);
+                    callback(null, arraybuffer);
                 }
                 else {
-                    feng3d.dataTransform.stringToArrayBuffer(data, function (arraybuffer) {
-                        callback(null, arraybuffer);
-                    });
+                    var arraybuffer = feng3d.dataTransform.stringToArrayBuffer(data);
+                    callback(null, arraybuffer);
                 }
             });
         };

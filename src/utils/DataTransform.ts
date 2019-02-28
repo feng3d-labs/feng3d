@@ -46,42 +46,41 @@ namespace feng3d
         /**
          * ArrayBuffer to Blob
          */
-        arrayBufferToBlob(arrayBuffer: ArrayBuffer, callback: (blob: Blob) => void)
+        arrayBufferToBlob(arrayBuffer: ArrayBuffer)
         {
             var blob = new Blob([arrayBuffer]);       // 注意必须包裹[]
-            callback(blob);
+            return blob;
         }
 
         /**
          * ArrayBuffer to Uint8
          * Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
          */
-        arrayBufferToUint8(arrayBuffer: ArrayBuffer, callback: (uint8Array: Uint8Array) => void)
+        arrayBufferToUint8(arrayBuffer: ArrayBuffer)
         {
-            var buffer = new ArrayBuffer(32);
             var u8 = new Uint8Array(arrayBuffer);
-            callback(u8);
+            return u8;
         }
 
         /**
          * Uint8 to ArrayBuffer
          * 我们Uint8数组可以直观的看到ArrayBuffer中每个字节（1字节 == 8位）的值。一般我们要将ArrayBuffer转成Uint类型数组后才能对其中的字节进行存取操作。
          */
-        uint8ToArrayBuffer(uint8Array: Uint8Array, callback: (arrayBuffer: ArrayBuffer) => void)
+        uint8ToArrayBuffer(uint8Array: Uint8Array)
         {
             var buffer = <ArrayBuffer>uint8Array.buffer;
-            callback(buffer);
+            return buffer;
         }
 
         /**
          * Array to ArrayBuffer
          * @param array 例如：[0x15, 0xFF, 0x01, 0x00, 0x34, 0xAB, 0x11];
          */
-        arrayToArrayBuffer(array: number[], callback: (arrayBuffer: ArrayBuffer) => void)
+        arrayToArrayBuffer(array: number[])
         {
             var uint8 = new Uint8Array(array);
             var buffer = <ArrayBuffer>uint8.buffer;
-            callback(buffer);
+            return buffer;
         }
 
         /**
@@ -157,10 +156,8 @@ namespace feng3d
 
         arrayBufferToDataURL(arrayBuffer: ArrayBuffer, callback: (dataurl: string) => void)
         {
-            this.arrayBufferToBlob(arrayBuffer, (blob) =>
-            {
-                this.blobToDataURL(blob, callback);
-            });
+            var blob = this.arrayBufferToBlob(arrayBuffer);
+            this.blobToDataURL(blob, callback);
         }
 
         dataURLToImage(dataurl: string, callback: (img: HTMLImageElement) => void)
@@ -234,21 +231,17 @@ namespace feng3d
             a.readAsText(blob);
         }
 
-        stringToArrayBuffer(str: string, callback: (arrayBuffer: ArrayBuffer) => void)
+        stringToArrayBuffer(str: string)
         {
-            this.stringToUint8Array(str, (unit8Array) =>
-            {
-                this.uint8ToArrayBuffer(unit8Array, callback);
-            });
-
+            var uint8Array = this.stringToUint8Array(str);
+            var buffer = this.uint8ToArrayBuffer(uint8Array);
+            return buffer
         }
 
         arrayBufferToString(arrayBuffer: ArrayBuffer, callback: (content: string) => void)
         {
-            this.arrayBufferToBlob(arrayBuffer, (blob) =>
-            {
-                this.blobToText(blob, callback);
-            });
+            var blob = this.arrayBufferToBlob(arrayBuffer);
+            this.blobToText(blob, callback);
         }
 
         /**
@@ -266,14 +259,14 @@ namespace feng3d
             });
         }
 
-        stringToUint8Array(str: string, callback: (uint8Array: Uint8Array) => void)
+        stringToUint8Array(str: string)
         {
             var utf8 = unescape(encodeURIComponent(str));
             var uint8Array = new Uint8Array(utf8.split('').map(function (item)
             {
                 return item.charCodeAt(0);
             }));
-            callback(uint8Array);
+            return uint8Array;
         }
 
         uint8ArrayToString(arr: Uint8Array, callback: (str: string) => void)
