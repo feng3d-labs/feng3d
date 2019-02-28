@@ -16842,6 +16842,120 @@ var feng3d;
         Feng3dAssets.prototype.readFile = function (fs, callback) {
             callback && callback(null);
         };
+        /**
+         * 读取文件为资源对象
+         * @param id 资源编号
+         * @param callback 读取完成回调
+         */
+        Feng3dAssets.readAssets = function (fs, id, callback) {
+            var feng3dAsset = Feng3dAssets.getAssets(id);
+            if (feng3dAsset) {
+                callback(null, feng3dAsset);
+                return;
+            }
+            var path = feng3d.assetsIDPathMap.getPath(id);
+            this._readMeta(fs, path, function (err, meta) {
+                if (err) {
+                    callback(err, null);
+                    return;
+                }
+                var cls = Feng3dAssets.assetTypeClassMap[meta.assetType];
+                var newFeng3dAsset = new cls();
+                newFeng3dAsset.meta = meta;
+                newFeng3dAsset.assetsId = meta.guid;
+                Feng3dAssets.setAssets(newFeng3dAsset);
+                feng3d.assert(newFeng3dAsset.assetType == meta.assetType);
+                newFeng3dAsset.readFile(fs, function (err) {
+                    callback(err, newFeng3dAsset);
+                });
+            });
+        };
+        /**
+         * 写（保存）资源
+         *
+         * @param assets 资源对象
+         * @param callback 完成回调
+         */
+        Feng3dAssets.writeAssets = function (fs, assets, callback) {
+            var path = feng3d.assetsIDPathMap.getPath(assets.assetsId);
+            assets.meta.mtimeMs = Date.now();
+            this._writeMeta(fs, path, assets.meta, function (err) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                assets.saveFile(fs, function (err) {
+                    callback && callback(err);
+                });
+            });
+        };
+        /**
+         * 删除资源
+         *
+         * @param assetsId 资源编号
+         * @param callback 完成回调
+         */
+        Feng3dAssets.deleteAssets = function (fs, assetsId, callback) {
+            var item = feng3d.assetsIDPathMap.getItem(assetsId);
+            var path = item.path;
+            this._deleteMeta(fs, path, function (err) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                feng3d.assetsIDPathMap.deleteByID(assetsId);
+                // 如果该资源为文件夹 则 删除该文件夹以及文件夹内所有资源
+                if (item.assetType == feng3d.AssetExtension.folder) {
+                    fs.getAllfilepathInFolder(path, function (err, filepaths) {
+                        if (err) {
+                            callback && callback(err);
+                            return;
+                        }
+                        var deleteIDs = filepaths.reduce(function (pv, cv) {
+                            var cid = feng3d.assetsIDPathMap.getID(cv);
+                            if (cid)
+                                pv.push(cid);
+                            return pv;
+                        }, []);
+                        deleteIDs.forEach(function (element) {
+                            feng3d.assetsIDPathMap.deleteByID(element);
+                        });
+                        fs.delete(path, callback);
+                    });
+                }
+                else {
+                    fs.deleteFile(path, callback);
+                }
+            });
+        };
+        /**
+         * 读取资源元标签
+         *
+         * @param path 资源路径
+         * @param callback 完成回调
+         */
+        Feng3dAssets._readMeta = function (fs, path, callback) {
+            fs.readObject(path + feng3d.metaSuffix, callback);
+        };
+        /**
+         * 写资源元标签
+         *
+         * @param path 资源路径
+         * @param meta 资源元标签
+         * @param callback 完成回调
+         */
+        Feng3dAssets._writeMeta = function (fs, path, meta, callback) {
+            fs.writeObject(path + feng3d.metaSuffix, meta, callback);
+        };
+        /**
+         * 删除资源元标签
+         *
+         * @param path 资源路径
+         * @param callback 完成回调
+         */
+        Feng3dAssets._deleteMeta = function (fs, path, callback) {
+            fs.deleteFile(path + feng3d.metaSuffix, callback);
+        };
         Feng3dAssets.setAssets = function (assets) {
             this._lib.set(assets.assetsId, assets);
         };

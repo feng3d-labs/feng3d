@@ -8165,6 +8165,48 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         protected readFile(fs: ReadFS, callback?: (err: Error) => void): void;
+        /**
+         * 读取文件为资源对象
+         * @param id 资源编号
+         * @param callback 读取完成回调
+         */
+        static readAssets(fs: ReadFS, id: string, callback: (err: Error, assets: Feng3dAssets) => void): void;
+        /**
+         * 写（保存）资源
+         *
+         * @param assets 资源对象
+         * @param callback 完成回调
+         */
+        static writeAssets(fs: ReadWriteFS, assets: Feng3dAssets, callback?: (err: Error) => void): void;
+        /**
+         * 删除资源
+         *
+         * @param assetsId 资源编号
+         * @param callback 完成回调
+         */
+        static deleteAssets(fs: ReadWriteFS, assetsId: string, callback?: (err: Error) => void): void;
+        /**
+         * 读取资源元标签
+         *
+         * @param path 资源路径
+         * @param callback 完成回调
+         */
+        private static _readMeta;
+        /**
+         * 写资源元标签
+         *
+         * @param path 资源路径
+         * @param meta 资源元标签
+         * @param callback 完成回调
+         */
+        private static _writeMeta;
+        /**
+         * 删除资源元标签
+         *
+         * @param path 资源路径
+         * @param callback 完成回调
+         */
+        private static _deleteMeta;
         static setAssets(assets: Feng3dAssets): void;
         /**
          * 获取资源
