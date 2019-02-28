@@ -30808,6 +30808,11 @@ var feng3d;
      * 可读资源系统
      */
     var ReadRS = /** @class */ (function () {
+        /**
+         * 构建可读资源系统
+         *
+         * @param fs 可读文件系统
+         */
         function ReadRS(fs) {
             /**
              * 资源编号映射
@@ -30919,13 +30924,53 @@ var feng3d;
             // 新增映射
             this.idMap[asset.assetsId] = asset;
             this.pathMap[asset._assetsPath] = asset;
-            callback(null, asset);
+            callback && callback(null, asset);
         };
         return ReadRS;
     }());
     feng3d.ReadRS = ReadRS;
     var resource = "resource.json";
     feng3d.rs = new ReadRS(feng3d.fs);
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 可读写资源系统
+     */
+    var ReadWriteRS = /** @class */ (function (_super) {
+        __extends(ReadWriteRS, _super);
+        /**
+         * 构建可读写资源系统
+         *
+         * @param fs 可读写文件系统
+         */
+        function ReadWriteRS(fs) {
+            return _super.call(this, fs) || this;
+        }
+        /**
+         * 新建资源
+         *
+         * @param cls 资源类定义
+         * @param value 初始数据
+         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
+         * @param callback 完成回调函数
+         */
+        ReadWriteRS.prototype.createAsset = function (cls, value, parent, callback) {
+            var _this = this;
+            _super.prototype.createAsset.call(this, cls, value, parent, function (err, asset) {
+                if (asset) {
+                    feng3d.Feng3dAssets.writeAssets(_this.fs, asset, function (err) {
+                        callback && callback(err, asset);
+                    });
+                }
+                else {
+                    callback && callback(err, null);
+                }
+            });
+        };
+        return ReadWriteRS;
+    }(feng3d.ReadRS));
+    feng3d.ReadWriteRS = ReadWriteRS;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

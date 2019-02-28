@@ -32,6 +32,11 @@ namespace feng3d
          */
         pathMap: { [path: string]: Feng3dAssets } = {};
 
+        /**
+         * 构建可读资源系统
+         * 
+         * @param fs 可读文件系统
+         */
         constructor(fs: ReadFS)
         {
             this._fs = fs;
@@ -97,7 +102,7 @@ namespace feng3d
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends Feng3dAssets>(cls: new () => T, value: gPartial<T>, parent: Feng3dFolder, callback: (err: Error, asset: T) => void)
+        createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: Feng3dFolder, callback?: (err: Error, asset: T) => void)
         {
             parent = parent || this._root;
             //
@@ -130,7 +135,7 @@ namespace feng3d
             // 新增映射
             this.idMap[asset.assetsId] = asset;
             this.pathMap[asset._assetsPath] = asset;
-            callback(null, asset);
+            callback && callback(null, asset);
         }
     }
     var resource = "resource.json";

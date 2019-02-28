@@ -15096,6 +15096,11 @@ declare namespace feng3d {
         pathMap: {
             [path: string]: Feng3dAssets;
         };
+        /**
+         * 构建可读资源系统
+         *
+         * @param fs 可读文件系统
+         */
         constructor(fs: ReadFS);
         /**
          * 初始化
@@ -15111,7 +15116,33 @@ declare namespace feng3d {
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends Feng3dAssets>(cls: new () => T, value: gPartial<T>, parent: Feng3dFolder, callback: (err: Error, asset: T) => void): void;
+        createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: Feng3dFolder, callback?: (err: Error, asset: T) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 可读写资源系统
+     */
+    class ReadWriteRS extends ReadRS {
+        /**
+         * 文件系统
+         */
+        fs: ReadWriteFS;
+        /**
+         * 构建可读写资源系统
+         *
+         * @param fs 可读写文件系统
+         */
+        constructor(fs: ReadWriteFS);
+        /**
+         * 新建资源
+         *
+         * @param cls 资源类定义
+         * @param value 初始数据
+         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
+         * @param callback 完成回调函数
+         */
+        createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: Feng3dFolder, callback?: (err: Error, asset: T) => void): void;
     }
 }
 declare namespace feng3d {
