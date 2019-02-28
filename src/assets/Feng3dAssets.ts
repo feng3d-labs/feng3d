@@ -37,9 +37,47 @@ namespace feng3d
          */
         assetType: AssetExtension;
 
-        constructor()
+        /**
+         * 缩略图
+         */
+        private _thumbnail: HTMLImageElement;
+
+        /**
+         * 读取资源缩略图标
+         * 
+         * @param fs 可读资源管理系统
+         * @param callback 完成回调
+         */
+        readThumbnail(fs: ReadFS, callback: (err: Error, image: HTMLImageElement) => void)
         {
-            super();
+            if (this._thumbnail)
+            {
+                callback(null, this._thumbnail);
+                return;
+            }
+            fs.readImage("assetsIcon/" + this.assetsId + ".png", (err, image) =>
+            {
+                this._thumbnail = image;
+                callback(err, image);
+            });
+        }
+
+        /**
+         * 读取资源缩略图标
+         * 
+         * @param fs 可读写资源管理系统
+         * @param image 缩略图
+         * @param callback 完成回调
+         */
+        writeThumbnail(fs: ReadWriteFS, image: HTMLImageElement, callback: (err: Error) => void)
+        {
+            if (this._thumbnail == image)
+            {
+                callback(null);
+                return;
+            }
+            this._thumbnail = image;
+            fs.writeImage("assetsIcon/" + this.assetsId + ".png", image, callback);
         }
 
         /**

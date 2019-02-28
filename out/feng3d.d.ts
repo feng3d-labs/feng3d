@@ -7960,7 +7960,25 @@ declare namespace feng3d {
          * 资源类型，由具体对象类型决定
          */
         assetType: AssetExtension;
-        constructor();
+        /**
+         * 缩略图
+         */
+        private _thumbnail;
+        /**
+         * 读取资源缩略图标
+         *
+         * @param fs 可读资源管理系统
+         * @param callback 完成回调
+         */
+        readThumbnail(fs: ReadFS, callback: (err: Error, image: HTMLImageElement) => void): void;
+        /**
+         * 读取资源缩略图标
+         *
+         * @param fs 可读写资源管理系统
+         * @param image 缩略图
+         * @param callback 完成回调
+         */
+        writeThumbnail(fs: ReadWriteFS, image: HTMLImageElement, callback: (err: Error) => void): void;
         /**
          * 保存文件
          * @param fs 可读写资源管理系统

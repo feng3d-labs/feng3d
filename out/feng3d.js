@@ -16482,7 +16482,7 @@ var feng3d;
     var Feng3dAssets = /** @class */ (function (_super) {
         __extends(Feng3dAssets, _super);
         function Feng3dAssets() {
-            var _this = _super.call(this) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             /**
              * 名称
              */
@@ -16501,6 +16501,38 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        /**
+         * 读取资源缩略图标
+         *
+         * @param fs 可读资源管理系统
+         * @param callback 完成回调
+         */
+        Feng3dAssets.prototype.readThumbnail = function (fs, callback) {
+            var _this = this;
+            if (this._thumbnail) {
+                callback(null, this._thumbnail);
+                return;
+            }
+            fs.readImage("assetsIcon/" + this.assetsId + ".png", function (err, image) {
+                _this._thumbnail = image;
+                callback(err, image);
+            });
+        };
+        /**
+         * 读取资源缩略图标
+         *
+         * @param fs 可读写资源管理系统
+         * @param image 缩略图
+         * @param callback 完成回调
+         */
+        Feng3dAssets.prototype.writeThumbnail = function (fs, image, callback) {
+            if (this._thumbnail == image) {
+                callback(null);
+                return;
+            }
+            this._thumbnail = image;
+            fs.writeImage("assetsIcon/" + this.assetsId + ".png", image, callback);
+        };
         /**
          * 保存文件
          * @param fs 可读写资源管理系统
