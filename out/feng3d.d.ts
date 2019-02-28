@@ -7376,6 +7376,10 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 默认文件系统
+     */
+    var fs: ReadFS;
+    /**
      * 可读文件系统
      *
      * 针对基础文件系统进行扩展
@@ -7702,10 +7706,6 @@ declare namespace feng3d {
     /**
      * Http可读文件系统
      */
-    var httpFS: HttpFS;
-    /**
-     * Http可读文件系统
-     */
     class HttpFS extends ReadFS {
         /**
          * 根路径
@@ -7953,13 +7953,26 @@ declare namespace feng3d {
          */
         meta: AssetsMeta;
         /**
+         * 所属资源系统
+         */
+        rs: ReadRS;
+        /**
+         * 父资源
+         */
+        parentAsset: Feng3dFolder;
+        /**
          * 资源路径
          */
         readonly assetsPath: string;
+        _assetsPath: string;
         /**
          * 资源类型，由具体对象类型决定
          */
         assetType: AssetExtension;
+        /**
+         * 文件后缀
+         */
+        extenson: string;
         /**
          * 缩略图
          */
@@ -15054,11 +15067,53 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 默认资源系统
+     */
+    var rs: ReadRS;
+    /**
+     * 可读资源系统
+     */
+    class ReadRS {
+        /**
+         * 文件系统
+         */
+        readonly fs: ReadFS;
+        private _fs;
+        /**
+         * 根文件夹
+         */
+        readonly root: Feng3dFolder;
+        private _root;
+        constructor(fs: ReadFS);
+        /**
+         * 初始化
+         *
+         * @param callback 完成回调
+         */
+        init(callback?: () => void): void;
+        /**
+         * 新建资源
+         *
+         * @param cls 资源类定义
+         * @param value 初始数据
+         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
+         * @param callback 完成回调函数
+         */
+        createAsset<T extends Feng3dAssets>(cls: new () => T, value: gPartial<T>, parent: Feng3dFolder, callback: (err: Error, asset: T) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
      * 文件夹资源
      */
     class Feng3dFolder extends Feng3dAssets {
         name: string;
         assetType: AssetExtension;
+        /**
+         * 子资源列表
+         */
+        childrenAssets: Feng3dAssets[];
+        extenson: string;
         /**
          * 保存文件
          * @param fs 可读写资源管理系统
@@ -15122,6 +15177,7 @@ declare namespace feng3d {
     class ScriptFile extends StringFile {
         assetType: AssetExtension;
         name: string;
+        extenson: string;
         textContent: string;
         /**
          * 脚本父类名称
@@ -15137,29 +15193,34 @@ declare namespace feng3d {
 declare namespace feng3d {
     class ShaderFile extends ScriptFile {
         assetType: AssetExtension;
+        extenson: string;
     }
 }
 declare namespace feng3d {
     class JSFile extends StringFile {
         assetType: AssetExtension;
+        extenson: string;
         textContent: string;
     }
 }
 declare namespace feng3d {
     class JsonFile extends StringFile {
         assetType: AssetExtension;
+        extenson: string;
         textContent: string;
     }
 }
 declare namespace feng3d {
     class TextFile extends StringFile {
         assetType: AssetExtension;
+        extenson: string;
         textContent: string;
     }
 }
 declare namespace feng3d {
     class AudioFile extends Feng3dFile {
         assetType: AssetExtension;
+        extenson: ".ogg" | ".mp3" | ".wav";
     }
 }
 declare namespace feng3d {
@@ -15171,6 +15232,7 @@ declare namespace feng3d {
          * 材质
          */
         texture: Texture2D;
+        extenson: ".jpg" | ".png" | ".jpeg" | ".gif";
         /**
          * 图片
          */
@@ -15195,6 +15257,7 @@ declare namespace feng3d {
          */
         material: Material;
         assetType: AssetExtension;
+        extenson: string;
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void): void;
         /**
          * 读取文件
@@ -16122,9 +16185,5 @@ declare namespace feng3d {
      * 是否开启调试(主要用于断言)
      */
     var debuger: boolean;
-    /**
-     * 默认文件系统
-     */
-    var fs: ReadFS;
 }
 //# sourceMappingURL=feng3d.d.ts.map

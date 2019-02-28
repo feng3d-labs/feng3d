@@ -14,10 +14,5 @@ namespace feng3d
      */
     export var debuger = true;
 
-    /**
-     * 默认文件系统
-     */
-    export var fs: ReadFS = httpFS;
-
     log(`feng3d version ${revision}`)
 }

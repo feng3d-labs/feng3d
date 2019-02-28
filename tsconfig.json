@@ -295,6 +295,7 @@
         "src/animation/AnimationClip.ts",
         "src/animation/Animation.ts",
         //
+        "src/resources/ReadRS.ts",
         "src/resources/Feng3dFolder.ts",
         "src/resources/Feng3dFile.ts",
         "src/resources/ArrayBufferFile.ts",

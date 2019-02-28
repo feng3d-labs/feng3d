@@ -11,6 +11,8 @@ namespace feng3d
         @oav({ component: "OAVObjectView" })
         texture = new Texture2D();
 
+        extenson: ".jpg" | ".png" | ".jpeg" | ".gif" = ".png";
+
         /**
          * 图片
          */

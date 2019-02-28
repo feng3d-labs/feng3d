@@ -16252,7 +16252,7 @@ var feng3d;
         return HttpFS;
     }(feng3d.ReadFS));
     feng3d.HttpFS = HttpFS;
-    feng3d.httpFS = new HttpFS();
+    feng3d.fs = new HttpFS();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -16487,16 +16487,26 @@ var feng3d;
              * 名称
              */
             _this.name = "";
+            /**
+             * 文件后缀
+             */
+            _this.extenson = "";
             return _this;
         }
         Object.defineProperty(Feng3dAssets.prototype, "assetsPath", {
+            // get parentAsset()
+            // {
+            // }
             /**
              * 资源路径
              */
             get: function () {
-                if (!this.assetsId)
-                    return "";
-                return feng3d.assetsIDPathMap.getPath(this.assetsId);
+                if (!this._assetsPath) {
+                    if (!this.assetsId)
+                        return "";
+                    this._assetsPath = feng3d.assetsIDPathMap.getPath(this.assetsId);
+                }
+                return this._assetsPath;
             },
             enumerable: true,
             configurable: true
@@ -30795,6 +30805,98 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 可读资源系统
+     */
+    var ReadRS = /** @class */ (function () {
+        function ReadRS(fs) {
+            this._fs = fs;
+        }
+        Object.defineProperty(ReadRS.prototype, "fs", {
+            /**
+             * 文件系统
+             */
+            get: function () { return this._fs; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ReadRS.prototype, "root", {
+            /**
+             * 根文件夹
+             */
+            get: function () { return this._root; },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 初始化
+         *
+         * @param callback 完成回调
+         */
+        ReadRS.prototype.init = function (callback) {
+            var _this = this;
+            this._fs.readObject(resource, function (err, data) {
+                if (data) {
+                    _this._root = data;
+                    callback && callback();
+                }
+                else {
+                    _this.createAsset(feng3d.Feng3dFolder, { name: "Assets" }, null, function (err, asset) {
+                        _this._root = asset;
+                        callback && callback();
+                    });
+                }
+            });
+        };
+        /**
+         * 新建资源
+         *
+         * @param cls 资源类定义
+         * @param value 初始数据
+         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
+         * @param callback 完成回调函数
+         */
+        ReadRS.prototype.createAsset = function (cls, value, parent, callback) {
+            parent = parent || this._root;
+            //
+            var asset = new cls();
+            asset.meta = { guid: feng3d.FMath.uuid(), mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
+            asset.rs = this;
+            Object.setValue(asset, value);
+            // 设置默认名称
+            asset.name = asset.name || "new " + asset.assetType;
+            if (parent) {
+                // 计算有效名称
+                var childrenNames = parent.childrenAssets.map(function (v) { return v.name; });
+                var baseName = asset.name;
+                var newName = baseName;
+                var index = 1;
+                while (childrenNames.indexOf(newName) != -1) {
+                    newName = baseName + index;
+                }
+                asset.name = newName;
+                // 处理资源父子关系
+                parent.childrenAssets.push(asset);
+                asset.parentAsset = parent;
+            }
+            // 计算路径
+            var path = asset.name + asset.extenson;
+            var p = parent;
+            while (p) {
+                path = p.name + "/" + path;
+                p = p.parentAsset;
+            }
+            asset._assetsPath = path;
+            callback(null, asset);
+        };
+        return ReadRS;
+    }());
+    feng3d.ReadRS = ReadRS;
+    var resource = "resource.json";
+    feng3d.rs = new ReadRS(feng3d.fs);
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 文件夹资源
      */
     var Feng3dFolder = /** @class */ (function (_super) {
@@ -30802,6 +30904,11 @@ var feng3d;
         function Feng3dFolder() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.assetType = feng3d.AssetExtension.folder;
+            /**
+             * 子资源列表
+             */
+            _this.childrenAssets = [];
+            _this.extenson = "";
             return _this;
         }
         /**
@@ -30931,6 +31038,7 @@ var feng3d;
         function ScriptFile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.assetType = feng3d.AssetExtension.script;
+            _this.extenson = ".ts";
             _this.textContent = "";
             return _this;
         }
@@ -30974,6 +31082,7 @@ var feng3d;
         function ShaderFile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.assetType = feng3d.AssetExtension.shader;
+            _this.extenson = ".ts";
             return _this;
         }
         return ShaderFile;
@@ -30988,6 +31097,7 @@ var feng3d;
         function JSFile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.assetType = feng3d.AssetExtension.js;
+            _this.extenson = ".js";
             _this.textContent = "";
             return _this;
         }
@@ -31003,6 +31113,7 @@ var feng3d;
         function JsonFile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.assetType = feng3d.AssetExtension.json;
+            _this.extenson = ".json";
             _this.textContent = "{}";
             return _this;
         }
@@ -31018,6 +31129,7 @@ var feng3d;
         function TextFile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.assetType = feng3d.AssetExtension.txt;
+            _this.extenson = ".txt";
             _this.textContent = "";
             return _this;
         }
@@ -31033,6 +31145,7 @@ var feng3d;
         function AudioFile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.assetType = feng3d.AssetExtension.audio;
+            _this.extenson = ".mp3";
             return _this;
         }
         return AudioFile;
@@ -31053,6 +31166,7 @@ var feng3d;
              * 材质
              */
             _this.texture = new feng3d.Texture2D();
+            _this.extenson = ".png";
             _this.assetType = feng3d.AssetExtension.texture;
             return _this;
         }
@@ -31106,6 +31220,7 @@ var feng3d;
         function MaterialFile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.assetType = feng3d.AssetExtension.material;
+            _this.extenson = ".json";
             return _this;
         }
         MaterialFile.prototype.saveFile = function (fs, callback) {
@@ -34426,10 +34541,6 @@ var feng3d;
      * 是否开启调试(主要用于断言)
      */
     feng3d.debuger = true;
-    /**
-     * 默认文件系统
-     */
-    feng3d.fs = feng3d.httpFS;
     feng3d.log("feng3d version " + feng3d.revision);
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map

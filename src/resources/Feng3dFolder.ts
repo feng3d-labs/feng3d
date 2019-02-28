@@ -11,6 +11,13 @@ namespace feng3d
         assetType = AssetExtension.folder;
 
         /**
+         * 子资源列表
+         */
+        childrenAssets: Feng3dAssets[] = [];
+
+        extenson = "";
+
+        /**
          * 保存文件
          * @param fs 可读写资源管理系统
          * @param callback 完成回调

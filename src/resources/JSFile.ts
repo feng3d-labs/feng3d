@@ -4,8 +4,10 @@ namespace feng3d
     {
         assetType = AssetExtension.js;
 
+        extenson = ".js";
+
         textContent = "";
     }
-    
+
     Feng3dAssets.assetTypeClassMap[AssetExtension.js] = JSFile;
 }

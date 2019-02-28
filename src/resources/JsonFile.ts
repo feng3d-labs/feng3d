@@ -4,6 +4,8 @@ namespace feng3d
     {
         assetType = AssetExtension.json;
 
+        extenson = ".json";
+
         textContent = "{}";
     }
 

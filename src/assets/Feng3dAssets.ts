@@ -24,18 +24,43 @@ namespace feng3d
         meta: AssetsMeta;
 
         /**
+         * 所属资源系统
+         */
+        rs: ReadRS;
+
+        /**
+         * 父资源
+         */
+        parentAsset: Feng3dFolder;
+
+        // get parentAsset()
+        // {
+
+        // }
+
+        /**
          * 资源路径
          */
         get assetsPath()
         {
-            if (!this.assetsId) return "";
-            return assetsIDPathMap.getPath(this.assetsId);
+            if (!this._assetsPath) 
+            {
+                if (!this.assetsId) return "";
+                this._assetsPath = assetsIDPathMap.getPath(this.assetsId);
+            }
+            return this._assetsPath;
         }
+        _assetsPath: string;
 
         /**
          * 资源类型，由具体对象类型决定
          */
         assetType: AssetExtension;
+
+        /**
+         * 文件后缀
+         */
+        extenson = "";
 
         /**
          * 缩略图

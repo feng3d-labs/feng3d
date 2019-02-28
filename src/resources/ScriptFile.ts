@@ -7,6 +7,8 @@ namespace feng3d
         @oav({ editable: false, priority: -1 })
         name: string;
 
+        extenson = ".ts";
+
         @watch("onTextContentChanged")
         textContent: string = "";
 

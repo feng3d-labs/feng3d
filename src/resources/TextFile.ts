@@ -4,6 +4,8 @@ namespace feng3d
     {
         assetType = AssetExtension.txt;
 
+        extenson = ".txt";
+
         textContent = "";
     }
 

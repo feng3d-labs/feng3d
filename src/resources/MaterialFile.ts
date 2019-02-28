@@ -13,6 +13,8 @@ namespace feng3d
 
         assetType = AssetExtension.material;
 
+        extenson = ".json";
+
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void)
         {
             this.material.assetsId = this.assetsId;
