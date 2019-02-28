@@ -33,6 +33,11 @@ namespace feng3d
         pathMap: { [path: string]: Feng3dAssets } = {};
 
         /**
+         * 资源树保存路径
+         */
+        protected resources = "resource.json";
+
+        /**
          * 构建可读资源系统
          * 
          * @param fs 可读文件系统
@@ -59,7 +64,7 @@ namespace feng3d
          */
         init(callback?: () => void)
         {
-            this._fs.readObject(resource, (err, data: Feng3dFolder) =>
+            this._fs.readObject(this.resources, (err, data: Feng3dFolder) =>
             {
                 if (data)
                 {
@@ -192,6 +197,5 @@ namespace feng3d
             this.fs.readObject(path + metaSuffix, callback);
         }
     }
-    var resource = "resource.json";
     rs = new ReadRS(fs);
 }

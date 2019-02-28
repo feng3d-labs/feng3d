@@ -30701,6 +30701,10 @@ var feng3d;
              * 资源路径映射
              */
             this.pathMap = {};
+            /**
+             * 资源树保存路径
+             */
+            this.resources = "resource.json";
             this._fs = fs;
         }
         Object.defineProperty(ReadRS.prototype, "fs", {
@@ -30734,7 +30738,7 @@ var feng3d;
          */
         ReadRS.prototype.init = function (callback) {
             var _this = this;
-            this._fs.readObject(resource, function (err, data) {
+            this._fs.readObject(this.resources, function (err, data) {
                 if (data) {
                     _this._root = data;
                     //
@@ -30852,7 +30856,6 @@ var feng3d;
         return ReadRS;
     }());
     feng3d.ReadRS = ReadRS;
-    var resource = "resource.json";
     feng3d.rs = new ReadRS(feng3d.fs);
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -30871,6 +30874,14 @@ var feng3d;
             if (fs === void 0) { fs = feng3d.indexedDBFS; }
             return _super.call(this, fs) || this;
         }
+        /**
+         * 保存
+         *
+         * @param callback 完成回调
+         */
+        ReadWriteRS.prototype.save = function (callback) {
+            this.fs.writeObject(this.resources, this.root, callback);
+        };
         /**
          * 新建资源
          *

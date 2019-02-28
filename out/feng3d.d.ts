@@ -14952,6 +14952,10 @@ declare namespace feng3d {
             [path: string]: Feng3dAssets;
         };
         /**
+         * 资源树保存路径
+         */
+        protected resources: string;
+        /**
          * 构建可读资源系统
          *
          * @param fs 可读文件系统
@@ -15008,6 +15012,12 @@ declare namespace feng3d {
          * @param fs 可读写文件系统
          */
         constructor(fs?: ReadWriteFS);
+        /**
+         * 保存
+         *
+         * @param callback 完成回调
+         */
+        save(callback?: (err: Error) => void): void;
         /**
          * 新建资源
          *

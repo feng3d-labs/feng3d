@@ -21,6 +21,16 @@ namespace feng3d
         }
 
         /**
+         * 保存
+         * 
+         * @param callback 完成回调
+         */
+        save(callback?: (err: Error) => void)
+        {
+            this.fs.writeObject(this.resources, this.root, callback)
+        }
+
+        /**
          * 新建资源
          * 
          * @param cls 资源类定义
