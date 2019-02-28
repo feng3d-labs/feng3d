@@ -122,7 +122,8 @@ namespace feng3d
             parent = parent || this._root;
             //
             var asset = new cls();
-            asset.meta = { guid: feng3d.FMath.uuid(), mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
+            asset.assetsId = feng3d.FMath.uuid();
+            asset.meta = { guid: asset.assetsId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
             asset.rs = this;
             Object.setValue(asset, value);
             // 设置默认名称

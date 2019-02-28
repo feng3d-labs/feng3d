@@ -16578,6 +16578,9 @@ var feng3d;
             feng3d.oav(),
             feng3d.serialize
         ], Feng3dAssets.prototype, "name", void 0);
+        __decorate([
+            feng3d.serialize
+        ], Feng3dAssets.prototype, "extenson", void 0);
         return Feng3dAssets;
     }(feng3d.Feng3dObject));
     feng3d.Feng3dAssets = Feng3dAssets;
@@ -30788,7 +30791,8 @@ var feng3d;
             parent = parent || this._root;
             //
             var asset = new cls();
-            asset.meta = { guid: feng3d.FMath.uuid(), mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
+            asset.assetsId = feng3d.FMath.uuid();
+            asset.meta = { guid: asset.assetsId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
             asset.rs = this;
             Object.setValue(asset, value);
             // 设置默认名称
@@ -31011,6 +31015,9 @@ var feng3d;
         __decorate([
             feng3d.oav()
         ], Feng3dFolder.prototype, "name", void 0);
+        __decorate([
+            feng3d.serialize
+        ], Feng3dFolder.prototype, "childrenAssets", void 0);
         return Feng3dFolder;
     }(feng3d.Feng3dAssets));
     feng3d.Feng3dFolder = Feng3dFolder;

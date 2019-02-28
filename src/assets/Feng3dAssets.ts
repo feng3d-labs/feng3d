@@ -51,6 +51,7 @@ namespace feng3d
         /**
          * 文件后缀
          */
+        @serialize
         extenson = "";
 
         /**

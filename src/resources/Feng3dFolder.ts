@@ -13,6 +13,7 @@ namespace feng3d
         /**
          * 子资源列表
          */
+        @serialize
         childrenAssets: Feng3dAssets[] = [];
 
         extenson = "";
