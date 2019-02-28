@@ -18,7 +18,7 @@ namespace feng3d
         {
             var root = url.substring(0, url.lastIndexOf("/") + 1);
 
-            assets.fs.readString(url, (err, content) =>
+            fs.readString(url, (err, content) =>
             {
                 var objData = objParser.parser(content);
                 objData.name = feng3d.pathUtils.getName(url);

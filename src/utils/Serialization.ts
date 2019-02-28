@@ -239,7 +239,7 @@ namespace feng3d
                         if (typeof object[property] == "string")
                         {
                             tempInfo.loadingNum++;
-                            assets.readAssets(<any>object[property], (err, feng3dAssets) =>
+                            Feng3dAssets.readAssets(fs, <any>object[property], (err, feng3dAssets) =>
                             {
                                 target[property] = <any>feng3dAssets;
                                 tempInfo.loadingNum--;

@@ -102,7 +102,7 @@ namespace feng3d
                     });
             } else
             {
-                assets.fs.readImage(url, (err, img) =>
+                fs.readImage(url, (err, img) =>
                 {
                     if (url == this.url)
                     {

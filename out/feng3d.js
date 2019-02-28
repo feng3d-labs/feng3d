@@ -766,7 +766,7 @@ var feng3d;
                     if (serializeAssets.indexOf(property) != -1) {
                         if (typeof object[property] == "string") {
                             tempInfo.loadingNum++;
-                            feng3d.assets.readAssets(object[property], function (err, feng3dAssets) {
+                            feng3d.Feng3dAssets.readAssets(feng3d.fs, object[property], function (err, feng3dAssets) {
                                 target[property] = feng3dAssets;
                                 tempInfo.loadingNum--;
                                 if (tempInfo.loadingNum == 0) {
@@ -16259,6 +16259,10 @@ var feng3d;
     /**
      * 可读取资源文件系统
      */
+    // export var assets: ReadAssetsFS;
+    /**
+     * 可读取资源文件系统
+     */
     var ReadAssetsFS = /** @class */ (function () {
         function ReadAssetsFS(readFS) {
             if (readFS === void 0) { readFS = feng3d.httpFS; }
@@ -16313,7 +16317,7 @@ var feng3d;
         return ReadAssetsFS;
     }());
     feng3d.ReadAssetsFS = ReadAssetsFS;
-    feng3d.assets = new ReadAssetsFS();
+    // assets = new ReadAssetsFS();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -26503,7 +26507,7 @@ var feng3d;
                 });
             }
             else {
-                feng3d.assets.fs.readImage(url, function (err, img) {
+                feng3d.fs.readImage(url, function (err, img) {
                     if (url == _this.url) {
                         if (err) {
                             feng3d.error(err);
@@ -26639,7 +26643,7 @@ var feng3d;
             var index = ["positive_x_url", "positive_y_url", "positive_z_url", "negative_x_url", "negative_y_url", "negative_z_url"].indexOf(property);
             feng3d.assert(index != -1);
             this.loadingNum++;
-            feng3d.assets.fs.readImage(newValue, function (err, img) {
+            feng3d.fs.readImage(newValue, function (err, img) {
                 if (err) {
                     // error(err);
                     _this._pixels[index] = null;
@@ -28469,7 +28473,7 @@ var feng3d;
             this.stop();
             if (this.url) {
                 var url = this.url;
-                feng3d.assets.fs.readArrayBuffer(this.url, function (err, data) {
+                feng3d.fs.readArrayBuffer(this.url, function (err, data) {
                     if (err) {
                         feng3d.warn(err);
                         return;
@@ -28795,7 +28799,7 @@ var feng3d;
                 this.invalidateGeometry();
                 return;
             }
-            feng3d.assets.fs.readImage(this.heightMap.url, function (err, img) {
+            feng3d.fs.readImage(this.heightMap.url, function (err, img) {
                 if (img) {
                     _this._heightImageData = feng3d.ImageUtil.fromImage(img).imageData;
                     _this.invalidateGeometry();
@@ -34114,7 +34118,7 @@ var feng3d;
          * @param completed 加载完成回调
          */
         MTLLoader.prototype.load = function (path, completed) {
-            feng3d.assets.fs.readString(path, function (err, content) {
+            feng3d.fs.readString(path, function (err, content) {
                 if (err) {
                     completed(err, null);
                     return;
@@ -34142,7 +34146,7 @@ var feng3d;
          */
         ObjLoader.prototype.load = function (url, completed) {
             var root = url.substring(0, url.lastIndexOf("/") + 1);
-            feng3d.assets.fs.readString(url, function (err, content) {
+            feng3d.fs.readString(url, function (err, content) {
                 var objData = feng3d.objParser.parser(content);
                 objData.name = feng3d.pathUtils.getName(url);
                 var mtl = objData.mtl;
@@ -34175,7 +34179,7 @@ var feng3d;
          * @param completed 加载完成回调
          */
         MD5Loader.prototype.load = function (url, completed) {
-            feng3d.assets.fs.readString(url, function (err, content) {
+            feng3d.fs.readString(url, function (err, content) {
                 var md5MeshData = feng3d.md5MeshParser.parse(content);
                 md5MeshData.name = feng3d.pathUtils.getName(url);
                 feng3d.md5MeshConverter.convert(md5MeshData, completed);
@@ -34187,7 +34191,7 @@ var feng3d;
          * @param completed 加载完成回调
          */
         MD5Loader.prototype.loadAnim = function (url, completed) {
-            feng3d.assets.fs.readString(url, function (err, content) {
+            feng3d.fs.readString(url, function (err, content) {
                 var md5AnimData = feng3d.md5AnimParser.parse(content);
                 md5AnimData.name = feng3d.pathUtils.getName(url);
                 feng3d.md5AnimConverter.convert(md5AnimData, completed);
@@ -34212,7 +34216,7 @@ var feng3d;
          * @param callback 加载完成回调
          */
         MDLLoader.prototype.load = function (mdlurl, callback) {
-            feng3d.assets.fs.readString(mdlurl, function (err, content) {
+            feng3d.fs.readString(mdlurl, function (err, content) {
                 feng3d.war3.mdlParser.parse(content, function (war3Model) {
                     var showMesh = war3Model.getMesh();
                     var gameObject = Object.setValue(new feng3d.GameObject(), { name: feng3d.pathUtils.getName(mdlurl), children: [showMesh] });
@@ -34559,6 +34563,10 @@ var feng3d;
      * 是否开启调试(主要用于断言)
      */
     feng3d.debuger = true;
+    /**
+     * 默认文件系统
+     */
+    feng3d.fs = feng3d.httpFS;
     feng3d.log("feng3d version " + feng3d.revision);
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map

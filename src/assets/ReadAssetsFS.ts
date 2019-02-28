@@ -4,7 +4,7 @@ namespace feng3d
     /**
      * 可读取资源文件系统
      */
-    export var assets: ReadAssetsFS;
+    // export var assets: ReadAssetsFS;
 
     /**
      * 可读取资源文件系统
@@ -69,5 +69,5 @@ namespace feng3d
         }
     }
 
-    assets = new ReadAssetsFS();
+    // assets = new ReadAssetsFS();
 }

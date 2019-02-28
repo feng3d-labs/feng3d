@@ -91,7 +91,7 @@ namespace feng3d
                 this.invalidateGeometry();
                 return;
             }
-            assets.fs.readImage(this.heightMap.url, (err, img) =>
+            fs.readImage(this.heightMap.url, (err, img) =>
             {
                 if (img)
                 {

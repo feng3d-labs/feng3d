@@ -7750,7 +7750,6 @@ declare namespace feng3d {
     /**
      * 可读取资源文件系统
      */
-    var assets: ReadAssetsFS;
     /**
      * 可读取资源文件系统
      */
@@ -16176,5 +16175,9 @@ declare namespace feng3d {
      * 是否开启调试(主要用于断言)
      */
     var debuger: boolean;
+    /**
+     * 默认文件系统
+     */
+    var fs: ReadFS;
 }
 //# sourceMappingURL=feng3d.d.ts.map

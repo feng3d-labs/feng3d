@@ -17,7 +17,7 @@ namespace feng3d
          */
         load(mdlurl: string, callback?: (gameObject: GameObject) => void)
         {
-            assets.fs.readString(mdlurl, (err, content) =>
+            fs.readString(mdlurl, (err, content) =>
             {
                 war3.mdlParser.parse(content, (war3Model) =>
                 {

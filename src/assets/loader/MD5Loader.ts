@@ -18,7 +18,7 @@ namespace feng3d
          */
         load(url: string, completed?: (gameObject: GameObject) => void)
         {
-            assets.fs.readString(url, (err, content) =>
+            fs.readString(url, (err, content) =>
             {
                 var md5MeshData = md5MeshParser.parse(content);
                 md5MeshData.name = feng3d.pathUtils.getName(url);
@@ -33,7 +33,7 @@ namespace feng3d
          */
         loadAnim(url: string, completed?: (animationClip: AnimationClip) => void)
         {
-            assets.fs.readString(url, (err, content) =>
+            fs.readString(url, (err, content) =>
             {
                 var md5AnimData = md5AnimParser.parse(content);
                 md5AnimData.name = feng3d.pathUtils.getName(url);

@@ -17,7 +17,7 @@ namespace feng3d
          */
         load(path: string, completed?: (err: Error, materials: { [name: string]: Material; }) => void)
         {
-            assets.fs.readString(path, (err, content) =>
+            fs.readString(path, (err, content) =>
             {
                 if (err)
                 {
