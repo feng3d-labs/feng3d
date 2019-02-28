@@ -106,8 +106,6 @@
         //
         "src/assets/_IndexedDB.ts",
         "src/assets/FSType.ts",
-        "src/assets/IBaseReadFS.ts",
-        "src/assets/IBaseReadWriteFS.ts",
         "src/assets/ReadFS.ts",
         "src/assets/ReadWriteFS.ts",
         "src/assets/AssetsMeta.ts",
