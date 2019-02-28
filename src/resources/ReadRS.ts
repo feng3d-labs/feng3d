@@ -43,6 +43,16 @@ namespace feng3d
         }
 
         /**
+         * 获取资源路径
+         * 
+         * @param id 资源编号
+         */
+        getPath(id: string)
+        {
+            return this.idMap[id].assetsPath;
+        }
+
+        /**
          * 初始化
          * 
          * @param callback 完成回调
@@ -63,10 +73,10 @@ namespace feng3d
                         // 计算路径
                         var path = asset.name + asset.extenson;
                         if (asset.parentAsset) path = asset.parentAsset.assetsPath + "/" + path;
-                        asset._assetsPath = path;
+                        asset.assetsPath = path;
                         // 新增映射
                         this.idMap[asset.assetsId] = asset;
-                        this.pathMap[asset._assetsPath] = asset;
+                        this.pathMap[asset.assetsPath] = asset;
                         // 
                         if (asset instanceof Feng3dFolder)
                         {
@@ -131,11 +141,55 @@ namespace feng3d
             // 计算路径
             var path = asset.name + asset.extenson;
             if (asset.parentAsset) path = asset.parentAsset.assetsPath + "/" + path;
-            asset._assetsPath = path;
+            asset.assetsPath = path;
             // 新增映射
             this.idMap[asset.assetsId] = asset;
-            this.pathMap[asset._assetsPath] = asset;
+            this.pathMap[asset.assetsPath] = asset;
             callback && callback(null, asset);
+        }
+
+        /**
+         * 读取文件为资源对象
+         * @param id 资源编号
+         * @param callback 读取完成回调
+         */
+        readAssets(id: string, callback: (err: Error, assets: Feng3dAssets) => void)
+        {
+            var feng3dAsset = this.idMap[id];
+            if (!feng3dAsset)
+            {
+                callback(new Error(`不存在资源 ${id}`), null);
+                return;
+            }
+            if (feng3dAsset.meta)
+            {
+                callback(null, feng3dAsset);
+                return;
+            }
+            this._readMeta(feng3dAsset.assetsPath, (err, meta) =>
+            {
+                if (err)
+                {
+                    callback(err, feng3dAsset);
+                    return;
+                }
+                feng3dAsset.meta = meta;
+                feng3dAsset["readFile"](this.fs, err =>
+                {
+                    callback(err, feng3dAsset);
+                });
+            });
+        }
+
+        /**
+         * 读取资源元标签
+         * 
+         * @param path 资源路径
+         * @param callback 完成回调 
+         */
+        private _readMeta(path: string, callback?: (err: Error, meta: AssetsMeta) => void)
+        {
+            this.fs.readObject(path + metaSuffix, callback);
         }
     }
     var resource = "resource.json";

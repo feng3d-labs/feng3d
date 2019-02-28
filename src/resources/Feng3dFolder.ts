@@ -24,8 +24,7 @@ namespace feng3d
          */
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void)
         {
-            var assetsPath = assetsIDPathMap.getPath(this.assetsId);
-            fs.mkdir(assetsPath, callback);
+            fs.mkdir(this.assetsPath, callback);
         }
     }
 

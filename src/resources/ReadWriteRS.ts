@@ -15,7 +15,7 @@ namespace feng3d
          * 
          * @param fs 可读写文件系统
          */
-        constructor(fs: ReadWriteFS)
+        constructor(fs: ReadWriteFS = feng3d.indexedDBFS)
         {
             super(fs);
         }
@@ -34,7 +34,7 @@ namespace feng3d
             {
                 if (asset)
                 {
-                    Feng3dAssets.writeAssets(this.fs, asset, (err) =>
+                    this.writeAssets(asset, (err) =>
                     {
                         callback && callback(err, asset);
                     });
@@ -43,6 +43,101 @@ namespace feng3d
                     callback && callback(err, null);
                 }
             });
+        }
+
+        /**
+         * 写（保存）资源
+         * 
+         * @param assets 资源对象
+         * @param callback 完成回调
+         */
+        writeAssets(assets: Feng3dAssets, callback?: (err: Error) => void)
+        {
+            assets.meta.mtimeMs = Date.now();
+            this._writeMeta(assets.assetsPath, assets.meta, (err) =>
+            {
+                if (err)
+                {
+                    callback && callback(err);
+                    return;
+                }
+
+                assets["saveFile"](this.fs, err =>
+                {
+                    callback && callback(err);
+                });
+            });
+        }
+
+        /**
+         * 写资源元标签
+         * 
+         * @param path 资源路径
+         * @param meta 资源元标签
+         * @param callback 完成回调
+         */
+        private _writeMeta(path: string, meta: AssetsMeta, callback?: (err: Error) => void)
+        {
+            this.fs.writeObject(path + metaSuffix, meta, callback);
+        }
+
+        /**
+         * 删除资源
+         * 
+         * @param assetsId 资源编号
+         * @param callback 完成回调
+         */
+        deleteAssets(assetsId: string, callback?: (err: Error) => void)
+        {
+            var assets = this.idMap[assetsId];
+
+            this._deleteMeta(assets.assetsPath, (err) =>
+            {
+                if (err)
+                {
+                    callback && callback(err);
+                    return;
+                }
+                // 如果该资源为文件夹 则 删除该文件夹以及文件夹内所有资源
+                if (assets.assetType == AssetExtension.folder)
+                {
+                    this.fs.getAllfilepathInFolder(assets.assetsPath, (err, filepaths) =>
+                    {
+                        if (err)
+                        {
+                            callback && callback(err);
+                            return;
+                        }
+                        filepaths.forEach(v =>
+                        {
+                            var cid = this.pathMap[v];
+                            if (cid)
+                            {
+                                delete this.idMap[cid.assetsId];
+                                delete this.pathMap[cid.assetsPath];
+                            }
+                        });
+
+                        this.fs.delete(assets.assetsPath, callback);
+                    });
+                } else
+                {
+                    this.fs.deleteFile(assets.assetsPath, callback);
+                }
+                delete this.idMap[assets.assetsId];
+                delete this.pathMap[assets.assetsPath];
+            });
+        }
+
+        /**
+         * 删除资源元标签
+         * 
+         * @param path 资源路径
+         * @param callback 完成回调
+         */
+        private _deleteMeta(path: string, callback?: (err: Error) => void)
+        {
+            this.fs.deleteFile(path + metaSuffix, callback);
         }
     }
 }

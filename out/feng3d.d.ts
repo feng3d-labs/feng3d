@@ -7835,108 +7835,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 资源编号与路径映射
-     */
-    var assetsIDPathMap: AssetsIDPathMap;
-    /**
-     * 资源编号与路径映射
-     */
-    class AssetsIDPathMap {
-        /**
-         * 编号映射到路径
-         */
-        private _idMap;
-        /**
-         * 路径映射到编号
-         */
-        private _pathMap;
-        /**
-         * 初始化
-         *
-         * @param list 资源列表
-         */
-        init(list?: {
-            id: string;
-            path: string;
-            assetType: AssetExtension;
-        }[]): void;
-        /**
-         * 获取所有资源编号列表
-         */
-        getAllIDs(): string[];
-        /**
-         * 获取所有资源路径列表
-         */
-        getAllPaths(): string[];
-        /**
-         * 获取资源路径
-         *
-         * @param id 资源编号
-         */
-        getPath(id: string): string;
-        /**
-         * 获取资源编号
-         *
-         * @param path 资源路径
-         */
-        getID(path: string): string;
-        /**
-         * 是否存在指定编号的资源
-         *
-         * @param id 资源编号
-         */
-        existID(id: string): boolean;
-        /**
-         * 是否存在指定路径的资源
-         *
-         * @param path 资源路径
-         */
-        existPath(path: string): boolean;
-        /**
-         * 新增资源编号路径映射
-         *
-         * @param item 资源编号
-         * @param path 资源路径
-         */
-        addItem(item: {
-            id: string;
-            path: string;
-            assetType: AssetExtension;
-        }): void;
-        /**
-         * 获取资源映射
-         *
-         * @param id 资源编号
-         */
-        getItem(id: string): {
-            id: string;
-            path: string;
-            assetType: AssetExtension;
-        };
-        /**
-         * 删除指定编号映射
-         *
-         * @param id 编号
-         */
-        deleteByID(id: string): void;
-        /**
-         * 删除指定路径资源映射
-         *
-         * @param path 资源编号
-         */
-        deleteByPath(path: string): void;
-        /**
-         * 输出为列表
-         */
-        toList(): {
-            id: string;
-            path: string;
-            assetType: AssetExtension;
-        }[];
-    }
-}
-declare namespace feng3d {
-    /**
      * feng3d资源
      */
     class Feng3dAssets extends Feng3dObject {
@@ -7963,8 +7861,7 @@ declare namespace feng3d {
         /**
          * 资源路径
          */
-        readonly assetsPath: string;
-        _assetsPath: string;
+        assetsPath: string;
         /**
          * 资源类型，由具体对象类型决定
          */
@@ -8004,48 +7901,6 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         protected readFile(fs: ReadFS, callback?: (err: Error) => void): void;
-        /**
-         * 读取文件为资源对象
-         * @param id 资源编号
-         * @param callback 读取完成回调
-         */
-        static readAssets(fs: ReadFS, id: string, callback: (err: Error, assets: Feng3dAssets) => void): void;
-        /**
-         * 写（保存）资源
-         *
-         * @param assets 资源对象
-         * @param callback 完成回调
-         */
-        static writeAssets(fs: ReadWriteFS, assets: Feng3dAssets, callback?: (err: Error) => void): void;
-        /**
-         * 删除资源
-         *
-         * @param assetsId 资源编号
-         * @param callback 完成回调
-         */
-        static deleteAssets(fs: ReadWriteFS, assetsId: string, callback?: (err: Error) => void): void;
-        /**
-         * 读取资源元标签
-         *
-         * @param path 资源路径
-         * @param callback 完成回调
-         */
-        private static _readMeta;
-        /**
-         * 写资源元标签
-         *
-         * @param path 资源路径
-         * @param meta 资源元标签
-         * @param callback 完成回调
-         */
-        private static _writeMeta;
-        /**
-         * 删除资源元标签
-         *
-         * @param path 资源路径
-         * @param callback 完成回调
-         */
-        private static _deleteMeta;
         static setAssets(assets: Feng3dAssets): void;
         /**
          * 获取资源
@@ -15103,6 +14958,12 @@ declare namespace feng3d {
          */
         constructor(fs: ReadFS);
         /**
+         * 获取资源路径
+         *
+         * @param id 资源编号
+         */
+        getPath(id: string): string;
+        /**
          * 初始化
          *
          * @param callback 完成回调
@@ -15117,6 +14978,19 @@ declare namespace feng3d {
          * @param callback 完成回调函数
          */
         createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: Feng3dFolder, callback?: (err: Error, asset: T) => void): void;
+        /**
+         * 读取文件为资源对象
+         * @param id 资源编号
+         * @param callback 读取完成回调
+         */
+        readAssets(id: string, callback: (err: Error, assets: Feng3dAssets) => void): void;
+        /**
+         * 读取资源元标签
+         *
+         * @param path 资源路径
+         * @param callback 完成回调
+         */
+        private _readMeta;
     }
 }
 declare namespace feng3d {
@@ -15133,7 +15007,7 @@ declare namespace feng3d {
          *
          * @param fs 可读写文件系统
          */
-        constructor(fs: ReadWriteFS);
+        constructor(fs?: ReadWriteFS);
         /**
          * 新建资源
          *
@@ -15143,6 +15017,35 @@ declare namespace feng3d {
          * @param callback 完成回调函数
          */
         createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: Feng3dFolder, callback?: (err: Error, asset: T) => void): void;
+        /**
+         * 写（保存）资源
+         *
+         * @param assets 资源对象
+         * @param callback 完成回调
+         */
+        writeAssets(assets: Feng3dAssets, callback?: (err: Error) => void): void;
+        /**
+         * 写资源元标签
+         *
+         * @param path 资源路径
+         * @param meta 资源元标签
+         * @param callback 完成回调
+         */
+        private _writeMeta;
+        /**
+         * 删除资源
+         *
+         * @param assetsId 资源编号
+         * @param callback 完成回调
+         */
+        deleteAssets(assetsId: string, callback?: (err: Error) => void): void;
+        /**
+         * 删除资源元标签
+         *
+         * @param path 资源路径
+         * @param callback 完成回调
+         */
+        private _deleteMeta;
     }
 }
 declare namespace feng3d {

@@ -20,8 +20,7 @@ namespace feng3d
          */
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void)
         {
-            var assetsPath = assetsIDPathMap.getPath(this.assetsId);
-            fs.writeArrayBuffer(assetsPath, this.arraybuffer, callback);
+            fs.writeArrayBuffer(this.assetsPath, this.arraybuffer, callback);
         }
 
         /**
@@ -31,8 +30,7 @@ namespace feng3d
          */
         protected readFile(fs: ReadFS, callback?: (err: Error) => void)
         {
-            var assetsPath = assetsIDPathMap.getPath(this.assetsId);
-            fs.readArrayBuffer(assetsPath, (err, data) =>
+            fs.readArrayBuffer(this.assetsPath, (err, data) =>
             {
                 this.arraybuffer = data;
                 callback && callback(err);
