@@ -11,10 +11,10 @@ namespace feng3d
         get fs() { return this._fs; }
         protected _fs: ReadWriteFS;
 
-        constructor(readWriteFS: IBaseReadWriteFS = indexedDBFS)
+        constructor(readWriteFS: ReadWriteFS = indexedDBFS)
         {
             super(readWriteFS);
-            this._fs = new ReadWriteFS(readWriteFS);
+            this._fs = readWriteFS;
         }
 
         /**

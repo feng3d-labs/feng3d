@@ -6,14 +6,9 @@ namespace feng3d
     export var indexedDBFS: IndexedDBFS;
 
     /**
-     * 文件（夹）状态文件后缀
-     */
-    const statSuffix = ".__stat";
-
-    /**
      * 索引数据文件系统
      */
-    export class IndexedDBFS implements IBaseReadWriteFS
+    export class IndexedDBFS extends ReadWriteFS
     {
         get type()
         {
@@ -32,6 +27,7 @@ namespace feng3d
 
         constructor(DBname = "feng3d-editor", projectname = "testproject")
         {
+            super();
             this.DBname = DBname;
             this.projectname = projectname;
         }
@@ -232,12 +228,8 @@ namespace feng3d
          */
         deleteFile(path: string, callback: (err: Error) => void)
         {
-            // 删除状态文件
-            _indexedDB.objectStoreDelete(this.DBname, this.projectname, path + statSuffix, (err) =>
-            {
-                // 删除文件
-                _indexedDB.objectStoreDelete(this.DBname, this.projectname, path, callback);
-            });
+            // 删除文件
+            _indexedDB.objectStoreDelete(this.DBname, this.projectname, path, callback);
         }
 
         /**
@@ -320,9 +312,7 @@ namespace feng3d
                     callback(err, allPaths);
                     return;
                 }
-                // 除去状态描述文件
-                var paths = allPaths.filter(v => v.substr(-statSuffix.length) != statSuffix);
-                callback(err, paths);
+                callback(err, allPaths);
             });
         }
     }

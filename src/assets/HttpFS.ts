@@ -8,7 +8,7 @@ namespace feng3d
     /**
      * Http可读文件系统
      */
-    export class HttpFS implements IBaseReadFS
+    export class HttpFS extends ReadFS
     {
         /**
          * 根路径
@@ -22,6 +22,7 @@ namespace feng3d
 
         constructor(rootPath = "")
         {
+            super();
             this.rootPath = rootPath;
             if (this.rootPath == "")
             {

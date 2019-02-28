@@ -17,9 +17,9 @@ namespace feng3d
         get fs() { return this._fs; }
         protected _fs: ReadFS;
 
-        constructor(readFS: IBaseReadFS = httpFS)
+        constructor(readFS: ReadFS = httpFS)
         {
-            this._fs = new ReadFS(readFS);
+            this._fs = readFS;
         }
 
         /**

@@ -5,69 +5,40 @@ namespace feng3d
      * 
      * 扩展基础可读写文件系统
      */
-    export class ReadWriteFS extends ReadFS implements IBaseReadWriteFS
+    export abstract class ReadWriteFS extends ReadFS
     {
-        get projectname()
-        {
-            return this._fs.projectname;
-        }
-
-        set projectname(v)
-        {
-            this._fs.projectname = v;
-        }
-
         /**
-         * 基础文件系统
+         * 项目名称（表单名称）
          */
-        get baseFS() { return this._fs; }
-        protected _fs: IBaseReadWriteFS;
-
-        constructor(baseReadWriteFS: IBaseReadWriteFS)
-        {
-            super(baseReadWriteFS);
-            this._fs = baseReadWriteFS;
-        }
+        projectname: string;
 
         /**
          * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数
          */
-        exists(path: string, callback: (exists: boolean) => void): void
-        {
-            this._fs.exists(path, callback);
-        }
+        abstract exists(path: string, callback: (exists: boolean) => void): void;
 
         /**
          * 读取文件夹中文件列表
          * @param path 路径
          * @param callback 回调函数
          */
-        readdir(path: string, callback: (err: Error, files: string[]) => void): void
-        {
-            this._fs.readdir(path, callback);
-        }
+        abstract readdir(path: string, callback: (err: Error, files: string[]) => void): void;
 
         /**
          * 新建文件夹
          * @param path 文件夹路径
          * @param callback 回调函数
          */
-        mkdir(path: string, callback?: (err: Error) => void): void
-        {
-            this._fs.mkdir(path, callback);
-        }
+        abstract mkdir(path: string, callback?: (err: Error) => void): void;
 
         /**
          * 删除文件
          * @param path 文件路径
          * @param callback 回调函数
          */
-        deleteFile(path: string, callback?: (err: Error) => void): void
-        {
-            this._fs.deleteFile(path, callback);
-        }
+        abstract deleteFile(path: string, callback?: (err: Error) => void): void;
 
         /**
          * 写ArrayBuffer(新建)文件
@@ -75,10 +46,7 @@ namespace feng3d
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void
-        {
-            this._fs.writeArrayBuffer(path, data, callback);
-        }
+        abstract writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
 
         /**
          * 写字符串到(新建)文件
@@ -86,10 +54,7 @@ namespace feng3d
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeString(path: string, data: string, callback?: (err: Error) => void): void
-        {
-            this._fs.writeString(path, data, callback);
-        }
+        abstract writeString(path: string, data: string, callback?: (err: Error) => void): void;
 
         /**
          * 写Object到(新建)文件
@@ -97,10 +62,7 @@ namespace feng3d
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeObject(path: string, data: Object, callback?: (err: Error) => void): void
-        {
-            this._fs.writeObject(path, data, callback);
-        }
+        abstract writeObject(path: string, data: Object, callback?: (err: Error) => void): void;
 
         /**
          * 写图片
@@ -108,10 +70,7 @@ namespace feng3d
          * @param image 图片
          * @param callback 回调函数
          */
-        writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void)
-        {
-            this._fs.writeImage(path, image, callback);
-        }
+        abstract writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void): void;
 
         /**
          * 复制文件
@@ -119,11 +78,7 @@ namespace feng3d
          * @param dest    目标路径
          * @param callback 回调函数
          */
-        copyFile(src: string, dest: string, callback?: (err: Error) => void)
-        {
-            this._fs.copyFile(src, dest, callback);
-        }
-
+        abstract copyFile(src: string, dest: string, callback?: (err: Error) => void): void
 
         /**
          * 获取所有文件路径
@@ -151,7 +106,7 @@ namespace feng3d
                 if (dirs.length > 0)
                 {
                     currentdir = dirs.shift();
-                    this._fs.readdir(currentdir, (err, files) =>
+                    this.readdir(currentdir, (err, files) =>
                     {
                         files.forEach(element =>
                         {
@@ -178,14 +133,14 @@ namespace feng3d
          */
         moveFile(src: string, dest: string, callback?: (err: Error) => void)
         {
-            this._fs.copyFile(src, dest, (err) =>
+            this.copyFile(src, dest, (err) =>
             {
                 if (err)
                 {
                     callback && callback(err);
                     return;
                 }
-                this._fs.deleteFile(src, callback);
+                this.deleteFile(src, callback);
             });
         }
 
@@ -229,7 +184,7 @@ namespace feng3d
             if (copylists.length > 0)
             {
                 var copyitem: [string, string] = <any>copylists.shift();
-                this._fs.copyFile(copyitem[0], copyitem[1], (err) =>
+                this.copyFile(copyitem[0], copyitem[1], (err) =>
                 {
                     if (err)
                     {
@@ -252,7 +207,7 @@ namespace feng3d
         {
             if (deletelists.length > 0)
             {
-                this._fs.deleteFile(<string>deletelists.shift(), (err) =>
+                this.deleteFile(<string>deletelists.shift(), (err) =>
                 {
                     if (err)
                     {
@@ -329,7 +284,7 @@ namespace feng3d
                 });
             } else
             {
-                this._fs.deleteFile(path, callback);
+                this.deleteFile(path, callback);
             }
         }
 

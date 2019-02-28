@@ -7491,47 +7491,41 @@ declare namespace feng3d {
      *
      * 针对基础文件系统进行扩展
      */
-    class ReadFS implements IBaseReadFS {
-        /**
-         * 基础文件系统
-         */
-        readonly baseFS: IBaseReadFS;
-        protected _fs: IBaseReadFS;
+    abstract class ReadFS {
         /**
          * 文件系统类型
          */
         readonly type: FSType;
-        constructor(baseReadFS: IBaseReadFS);
         /**
          * 读取文件为ArrayBuffer
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
+        abstract readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
         /**
          * 读取文件为字符串
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readString(path: string, callback: (err: Error, data: string) => void): void;
+        abstract readString(path: string, callback: (err: Error, data: string) => void): void;
         /**
          * 读取文件为Object
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        readObject(path: string, callback: (err: Error, data: Object) => void): void;
+        abstract readObject(path: string, callback: (err: Error, data: Object) => void): void;
         /**
          * 加载图片
          * @param path 图片路径
          * @param callback 加载完成回调
          */
-        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
+        abstract readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
          * @param callback 回调函数
          */
-        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
+        abstract getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
     }
 }
 declare namespace feng3d {
@@ -7540,73 +7534,70 @@ declare namespace feng3d {
      *
      * 扩展基础可读写文件系统
      */
-    class ReadWriteFS extends ReadFS implements IBaseReadWriteFS {
-        projectname: string;
+    abstract class ReadWriteFS extends ReadFS {
         /**
-         * 基础文件系统
+         * 项目名称（表单名称）
          */
-        readonly baseFS: IBaseReadWriteFS;
-        protected _fs: IBaseReadWriteFS;
-        constructor(baseReadWriteFS: IBaseReadWriteFS);
+        projectname: string;
         /**
          * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数
          */
-        exists(path: string, callback: (exists: boolean) => void): void;
+        abstract exists(path: string, callback: (exists: boolean) => void): void;
         /**
          * 读取文件夹中文件列表
          * @param path 路径
          * @param callback 回调函数
          */
-        readdir(path: string, callback: (err: Error, files: string[]) => void): void;
+        abstract readdir(path: string, callback: (err: Error, files: string[]) => void): void;
         /**
          * 新建文件夹
          * @param path 文件夹路径
          * @param callback 回调函数
          */
-        mkdir(path: string, callback?: (err: Error) => void): void;
+        abstract mkdir(path: string, callback?: (err: Error) => void): void;
         /**
          * 删除文件
          * @param path 文件路径
          * @param callback 回调函数
          */
-        deleteFile(path: string, callback?: (err: Error) => void): void;
+        abstract deleteFile(path: string, callback?: (err: Error) => void): void;
         /**
          * 写ArrayBuffer(新建)文件
          * @param path 文件路径
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        abstract writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
         /**
          * 写字符串到(新建)文件
          * @param path 文件路径
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeString(path: string, data: string, callback?: (err: Error) => void): void;
+        abstract writeString(path: string, data: string, callback?: (err: Error) => void): void;
         /**
          * 写Object到(新建)文件
          * @param path 文件路径
          * @param data 文件数据
          * @param callback 回调函数
          */
-        writeObject(path: string, data: Object, callback?: (err: Error) => void): void;
+        abstract writeObject(path: string, data: Object, callback?: (err: Error) => void): void;
         /**
          * 写图片
          * @param path 图片路径
          * @param image 图片
          * @param callback 回调函数
          */
-        writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void): void;
+        abstract writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void): void;
         /**
          * 复制文件
          * @param src    源路径
          * @param dest    目标路径
          * @param callback 回调函数
          */
-        copyFile(src: string, dest: string, callback?: (err: Error) => void): void;
+        abstract copyFile(src: string, dest: string, callback?: (err: Error) => void): void;
         /**
          * 获取所有文件路径
          * @param callback 回调函数
@@ -7711,7 +7702,7 @@ declare namespace feng3d {
     /**
      * 索引数据文件系统
      */
-    class IndexedDBFS implements IBaseReadWriteFS {
+    class IndexedDBFS extends ReadWriteFS {
         readonly type: FSType;
         /**
          * 数据库名称
@@ -7826,7 +7817,7 @@ declare namespace feng3d {
     /**
      * Http可读文件系统
      */
-    class HttpFS implements IBaseReadFS {
+    class HttpFS extends ReadFS {
         /**
          * 根路径
          */
@@ -7880,7 +7871,7 @@ declare namespace feng3d {
          */
         readonly fs: ReadFS;
         protected _fs: ReadFS;
-        constructor(readFS?: IBaseReadFS);
+        constructor(readFS?: ReadFS);
         /**
          * 读取文件为资源对象
          * @param id 资源编号
@@ -7906,7 +7897,7 @@ declare namespace feng3d {
          */
         readonly fs: ReadWriteFS;
         protected _fs: ReadWriteFS;
-        constructor(readWriteFS?: IBaseReadWriteFS);
+        constructor(readWriteFS?: ReadWriteFS);
         /**
          * 写（保存）资源
          *
