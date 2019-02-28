@@ -22,6 +22,16 @@ namespace feng3d
         get root() { return this._root; }
         private _root: Feng3dFolder;
 
+        /**
+         * 资源编号映射
+         */
+        idMap: { [id: string]: Feng3dAssets } = {};
+
+        /**
+         * 资源路径映射
+         */
+        pathMap: { [path: string]: Feng3dAssets } = {};
+
         constructor(fs: ReadFS)
         {
             this._fs = fs;
@@ -39,6 +49,34 @@ namespace feng3d
                 if (data)
                 {
                     this._root = data;
+                    //
+                    var assets: Feng3dAssets[] = [data];
+                    var index = 0;
+                    while (index < assets.length)
+                    {
+                        var asset = assets[index];
+                        // 计算路径
+                        var path = asset.name + asset.extenson;
+                        if (asset.parentAsset) path = asset.parentAsset.assetsPath + "/" + path;
+                        asset._assetsPath = path;
+                        // 新增映射
+                        this.idMap[asset.assetsId] = asset;
+                        this.pathMap[asset._assetsPath] = asset;
+                        // 
+                        if (asset instanceof Feng3dFolder)
+                        {
+                            for (var i = 0; i < asset.childrenAssets.length; i++)
+                            {
+                                var v = asset.childrenAssets[i];
+                                // 处理资源父子关系
+                                v.parentAsset = asset;
+                                //
+                                assets.push(v);
+                            }
+                        }
+                        index++;
+                    }
+
                     callback && callback();
                 } else
                 {
@@ -87,13 +125,11 @@ namespace feng3d
             }
             // 计算路径
             var path = asset.name + asset.extenson;
-            var p = parent;
-            while (p)
-            {
-                path = p.name + "/" + path;
-                p = p.parentAsset;
-            }
+            if (asset.parentAsset) path = asset.parentAsset.assetsPath + "/" + path;
             asset._assetsPath = path;
+            // 新增映射
+            this.idMap[asset.assetsId] = asset;
+            this.pathMap[asset._assetsPath] = asset;
             callback(null, asset);
         }
     }

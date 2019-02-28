@@ -15084,6 +15084,18 @@ declare namespace feng3d {
          */
         readonly root: Feng3dFolder;
         private _root;
+        /**
+         * 资源编号映射
+         */
+        idMap: {
+            [id: string]: Feng3dAssets;
+        };
+        /**
+         * 资源路径映射
+         */
+        pathMap: {
+            [path: string]: Feng3dAssets;
+        };
         constructor(fs: ReadFS);
         /**
          * 初始化

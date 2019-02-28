@@ -30809,6 +30809,14 @@ var feng3d;
      */
     var ReadRS = /** @class */ (function () {
         function ReadRS(fs) {
+            /**
+             * 资源编号映射
+             */
+            this.idMap = {};
+            /**
+             * 资源路径映射
+             */
+            this.pathMap = {};
             this._fs = fs;
         }
         Object.defineProperty(ReadRS.prototype, "fs", {
@@ -30837,6 +30845,31 @@ var feng3d;
             this._fs.readObject(resource, function (err, data) {
                 if (data) {
                     _this._root = data;
+                    //
+                    var assets = [data];
+                    var index = 0;
+                    while (index < assets.length) {
+                        var asset = assets[index];
+                        // 计算路径
+                        var path = asset.name + asset.extenson;
+                        if (asset.parentAsset)
+                            path = asset.parentAsset.assetsPath + "/" + path;
+                        asset._assetsPath = path;
+                        // 新增映射
+                        _this.idMap[asset.assetsId] = asset;
+                        _this.pathMap[asset._assetsPath] = asset;
+                        // 
+                        if (asset instanceof feng3d.Feng3dFolder) {
+                            for (var i = 0; i < asset.childrenAssets.length; i++) {
+                                var v = asset.childrenAssets[i];
+                                // 处理资源父子关系
+                                v.parentAsset = asset;
+                                //
+                                assets.push(v);
+                            }
+                        }
+                        index++;
+                    }
                     callback && callback();
                 }
                 else {
@@ -30880,12 +30913,12 @@ var feng3d;
             }
             // 计算路径
             var path = asset.name + asset.extenson;
-            var p = parent;
-            while (p) {
-                path = p.name + "/" + path;
-                p = p.parentAsset;
-            }
+            if (asset.parentAsset)
+                path = asset.parentAsset.assetsPath + "/" + path;
             asset._assetsPath = path;
+            // 新增映射
+            this.idMap[asset.assetsId] = asset;
+            this.pathMap[asset._assetsPath] = asset;
             callback(null, asset);
         };
         return ReadRS;
