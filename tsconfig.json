@@ -109,7 +109,7 @@
         "src/assets/fs/FSType.ts",
         "src/assets/fs/ReadFS.ts",
         "src/assets/fs/ReadWriteFS.ts",
-        "src/assets/AssetsMeta.ts",
+        "src/assets/AssetMeta.ts",
         //
         "src/assets/fs/IndexedDBFS.ts",
         "src/assets/fs/HttpFS.ts",

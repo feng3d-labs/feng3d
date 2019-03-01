@@ -7856,7 +7856,7 @@ declare namespace feng3d {
     /**
      * feng3d资源
      */
-    class FileAsset extends Feng3dObject {
+    class FileAsset {
         /**
          * 资源编号
          */

@@ -16363,19 +16363,16 @@ var feng3d;
     /**
      * feng3d资源
      */
-    var FileAsset = /** @class */ (function (_super) {
-        __extends(FileAsset, _super);
+    var FileAsset = /** @class */ (function () {
         function FileAsset() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
             /**
              * 名称
              */
-            _this.name = "";
+            this.name = "";
             /**
              * 文件后缀
              */
-            _this.extenson = "";
-            return _this;
+            this.extenson = "";
         }
         /**
          * 读取资源缩略图标
@@ -16436,7 +16433,7 @@ var feng3d;
             feng3d.serialize
         ], FileAsset.prototype, "extenson", void 0);
         return FileAsset;
-    }(feng3d.Feng3dObject));
+    }());
     feng3d.FileAsset = FileAsset;
 })(feng3d || (feng3d = {}));
 var feng3d;

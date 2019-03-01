@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * feng3d资源
      */
-    export class FileAsset extends Feng3dObject
+    export class FileAsset
     {
         /**
          * 资源编号
