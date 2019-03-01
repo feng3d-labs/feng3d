@@ -433,5 +433,5 @@ namespace feng3d
         }
     }
 
-    Feng3dAssets.setAssets(Geometry.cylinder = Object.setValue(new CylinderGeometry(), { name: "Cylinder", assetsId: "Cylinder", hideFlags: HideFlags.NotEditable }));
+    rs.setDefaultAssets(Geometry.cylinder = Object.setValue(new CylinderGeometry(), { name: "Cylinder", assetsId: "Cylinder", hideFlags: HideFlags.NotEditable }));
 }

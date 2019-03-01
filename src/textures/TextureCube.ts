@@ -91,5 +91,5 @@ namespace feng3d
         static default: TextureCube;
     }
 
-    Feng3dAssets.setAssets(TextureCube.default = Object.setValue(new TextureCube(), { name: "Default-TextureCube", assetsId: "Default-TextureCube", hideFlags: HideFlags.NotEditable }));
+    rs.setDefaultAssets(TextureCube.default = Object.setValue(new TextureCube(), { name: "Default-TextureCube", assetsId: "Default-TextureCube", hideFlags: HideFlags.NotEditable }));
 }

@@ -115,7 +115,8 @@
         //
         "src/assets/AssetExtension.ts",
         "src/assets/Feng3dAssets.ts",
-        "src/assets/Resources.ts",
+        "src/resources/ReadRS.ts",
+        "src/resources/ReadWriteRS.ts",
         // 快捷键
         "src/shortcut/Keyboard.ts",
         "src/shortcut/handle/KeyCapture.ts",
@@ -294,8 +295,6 @@
         "src/animation/AnimationClip.ts",
         "src/animation/Animation.ts",
         //
-        "src/resources/ReadRS.ts",
-        "src/resources/ReadWriteRS.ts",
         "src/resources/Feng3dFolder.ts",
         "src/resources/Feng3dFile.ts",
         "src/resources/ArrayBufferFile.ts",

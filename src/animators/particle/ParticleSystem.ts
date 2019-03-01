@@ -395,5 +395,5 @@ namespace feng3d
         }
     }
 
-    Feng3dAssets.setAssets(Geometry.billboard = Object.setValue(new PlaneGeometry(), { name: "Billboard", assetsId: "Billboard-Geometry", yUp: false, hideFlags: HideFlags.NotEditable }));
+    rs.setDefaultAssets(Geometry.billboard = Object.setValue(new PlaneGeometry(), { name: "Billboard", assetsId: "Billboard-Geometry", yUp: false, hideFlags: HideFlags.NotEditable }));
 }

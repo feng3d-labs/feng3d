@@ -7901,18 +7901,6 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         protected readFile(fs: ReadFS, callback?: (err: Error) => void): void;
-        static setAssets(assets: Feng3dAssets): void;
-        /**
-         * 获取资源
-         * @param assetsId 资源编号
-         */
-        static getAssets(assetsId: string): Feng3dAssets;
-        /**
-         * 获取指定类型资源
-         * @param type 资源类型
-         */
-        static getAssetsByType<T extends Feng3dAssets>(type: Constructor<T>): T[];
-        private static _lib;
     }
 }
 declare namespace feng3d {
@@ -7928,6 +7916,173 @@ declare namespace feng3d {
          * 卸载没有被使用的资源
          */
         unloadUnusedAssets(): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 默认资源系统
+     */
+    var rs: ReadRS;
+    /**
+     * 可读资源系统
+     */
+    class ReadRS {
+        /**
+         * 文件系统
+         */
+        readonly fs: ReadFS;
+        private _fs;
+        /**
+         * 根文件夹
+         */
+        readonly root: Feng3dFolder;
+        private _root;
+        /**
+         * 资源编号映射
+         */
+        idMap: {
+            [id: string]: Feng3dAssets;
+        };
+        /**
+         * 资源路径映射
+         */
+        pathMap: {
+            [path: string]: Feng3dAssets;
+        };
+        /**
+         * 资源树保存路径
+         */
+        protected resources: string;
+        /**
+         * 构建可读资源系统
+         *
+         * @param fs 可读文件系统
+         */
+        constructor(fs: ReadFS);
+        /**
+         * 初始化
+         *
+         * @param callback 完成回调
+         */
+        init(callback?: () => void): void;
+        /**
+         * 新建资源
+         *
+         * @param cls 资源类定义
+         * @param value 初始数据
+         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
+         * @param callback 完成回调函数
+         */
+        createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: Feng3dFolder, callback?: (err: Error, asset: T) => void): void;
+        /**
+         * 获取有效子文件名称
+         *
+         * @param parent 父文件夹
+         * @param name 名称
+         */
+        getValidChildName(parent: Feng3dFolder, name: string): string;
+        /**
+         * 读取文件为资源对象
+         * @param id 资源编号
+         * @param callback 读取完成回调
+         */
+        readAssets(id: string, callback: (err: Error, assets: Feng3dAssets) => void): void;
+        /**
+         * 获取指定类型资源
+         *
+         * @param type 资源类型
+         */
+        getAssetsByType<T extends Feng3dAssets>(type: Constructor<T>): T[];
+        setDefaultAssets(assets: Feng3dAssets): void;
+        /**
+         * 获取资源
+         * @param assetsId 资源编号
+         */
+        getAssets(assetsId: string): Feng3dAssets;
+        /**
+         * 读取资源元标签
+         *
+         * @param path 资源路径
+         * @param callback 完成回调
+         */
+        private _readMeta;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 可读写资源系统
+     */
+    class ReadWriteRS extends ReadRS {
+        /**
+         * 文件系统
+         */
+        fs: ReadWriteFS;
+        /**
+         * 延迟保存执行函数
+         */
+        private laterSaveFunc;
+        /**
+         * 延迟保存，避免多次操作时频繁调用保存
+         */
+        private laterSave;
+        /**
+         * 构建可读写资源系统
+         *
+         * @param fs 可读写文件系统
+         */
+        constructor(fs?: ReadWriteFS);
+        /**
+         * 在更改资源结构（新增，移动，删除）时会自动保存
+         *
+         * @param callback 完成回调
+         */
+        private save;
+        /**
+         * 新建资源
+         *
+         * @param cls 资源类定义
+         * @param value 初始数据
+         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
+         * @param callback 完成回调函数
+         */
+        createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: Feng3dFolder, callback?: (err: Error, asset: T) => void): void;
+        /**
+         * 写（保存）资源
+         *
+         * @param assets 资源对象
+         * @param callback 完成回调
+         */
+        writeAssets(assets: Feng3dAssets, callback?: (err: Error) => void): void;
+        /**
+         * 移动资源到指定文件夹
+         *
+         * @param asset 被移动资源
+         * @param folder 目标文件夹
+         * @param callback 完成回调
+         */
+        moveAssets(asset: Feng3dAssets, folder: Feng3dFolder, callback?: (err: Error) => void): void;
+        /**
+         * 写资源元标签
+         *
+         * @param path 资源路径
+         * @param meta 资源元标签
+         * @param callback 完成回调
+         */
+        private _writeMeta;
+        /**
+         * 删除资源
+         *
+         * @param assetsId 资源编号
+         * @param callback 完成回调
+         */
+        deleteAssets(assetsId: string, callback?: (err: Error) => void): void;
+        /**
+         * 删除资源元标签
+         *
+         * @param path 资源路径
+         * @param callback 完成回调
+         */
+        private _deleteMeta;
     }
 }
 declare namespace feng3d {
@@ -14915,161 +15070,6 @@ declare namespace feng3d {
         private getPropertyHost;
         private onAnimationChanged;
         private onTimeChanged;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 默认资源系统
-     */
-    var rs: ReadRS;
-    /**
-     * 可读资源系统
-     */
-    class ReadRS {
-        /**
-         * 文件系统
-         */
-        readonly fs: ReadFS;
-        private _fs;
-        /**
-         * 根文件夹
-         */
-        readonly root: Feng3dFolder;
-        private _root;
-        /**
-         * 资源编号映射
-         */
-        idMap: {
-            [id: string]: Feng3dAssets;
-        };
-        /**
-         * 资源路径映射
-         */
-        pathMap: {
-            [path: string]: Feng3dAssets;
-        };
-        /**
-         * 资源树保存路径
-         */
-        protected resources: string;
-        /**
-         * 构建可读资源系统
-         *
-         * @param fs 可读文件系统
-         */
-        constructor(fs: ReadFS);
-        /**
-         * 初始化
-         *
-         * @param callback 完成回调
-         */
-        init(callback?: () => void): void;
-        /**
-         * 新建资源
-         *
-         * @param cls 资源类定义
-         * @param value 初始数据
-         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
-         * @param callback 完成回调函数
-         */
-        createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: Feng3dFolder, callback?: (err: Error, asset: T) => void): void;
-        /**
-         * 获取有效子文件名称
-         *
-         * @param parent 父文件夹
-         * @param name 名称
-         */
-        getValidChildName(parent: Feng3dFolder, name: string): string;
-        /**
-         * 读取文件为资源对象
-         * @param id 资源编号
-         * @param callback 读取完成回调
-         */
-        readAssets(id: string, callback: (err: Error, assets: Feng3dAssets) => void): void;
-        /**
-         * 读取资源元标签
-         *
-         * @param path 资源路径
-         * @param callback 完成回调
-         */
-        private _readMeta;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 可读写资源系统
-     */
-    class ReadWriteRS extends ReadRS {
-        /**
-         * 文件系统
-         */
-        fs: ReadWriteFS;
-        /**
-         * 延迟保存执行函数
-         */
-        private laterSaveFunc;
-        /**
-         * 延迟保存，避免多次操作时频繁调用保存
-         */
-        private laterSave;
-        /**
-         * 构建可读写资源系统
-         *
-         * @param fs 可读写文件系统
-         */
-        constructor(fs?: ReadWriteFS);
-        /**
-         * 在更改资源结构（新增，移动，删除）时会自动保存
-         *
-         * @param callback 完成回调
-         */
-        private save;
-        /**
-         * 新建资源
-         *
-         * @param cls 资源类定义
-         * @param value 初始数据
-         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
-         * @param callback 完成回调函数
-         */
-        createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: Feng3dFolder, callback?: (err: Error, asset: T) => void): void;
-        /**
-         * 写（保存）资源
-         *
-         * @param assets 资源对象
-         * @param callback 完成回调
-         */
-        writeAssets(assets: Feng3dAssets, callback?: (err: Error) => void): void;
-        /**
-         * 移动资源到指定文件夹
-         *
-         * @param asset 被移动资源
-         * @param folder 目标文件夹
-         * @param callback 完成回调
-         */
-        moveAssets(asset: Feng3dAssets, folder: Feng3dFolder, callback?: (err: Error) => void): void;
-        /**
-         * 写资源元标签
-         *
-         * @param path 资源路径
-         * @param meta 资源元标签
-         * @param callback 完成回调
-         */
-        private _writeMeta;
-        /**
-         * 删除资源
-         *
-         * @param assetsId 资源编号
-         * @param callback 完成回调
-         */
-        deleteAssets(assetsId: string, callback?: (err: Error) => void): void;
-        /**
-         * 删除资源元标签
-         *
-         * @param path 资源路径
-         * @param callback 完成回调
-         */
-        private _deleteMeta;
     }
 }
 declare namespace feng3d {

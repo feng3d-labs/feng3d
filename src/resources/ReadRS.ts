@@ -189,6 +189,33 @@ namespace feng3d
         }
 
         /**
+         * 获取指定类型资源
+         * 
+         * @param type 资源类型
+         */
+        getAssetsByType<T extends Feng3dAssets>(type: Constructor<T>): T[]
+        {
+            var assets = Object.keys(this.idMap).map(v => this.idMap[v]);
+            var assets1 = Object.keys(defaultAssets).map(v => this.idMap[v]);
+            assets = assets.concat(assets1);
+            return <any>assets.filter(v => v instanceof type);
+        }
+
+        setDefaultAssets(assets: Feng3dAssets)
+        {
+            defaultAssets[assets.assetsId] = assets;
+        }
+
+        /**
+         * 获取资源
+         * @param assetsId 资源编号
+         */
+        getAssets(assetsId: string)
+        {
+            return this.idMap[assetsId] || defaultAssets[assetsId];
+        }
+
+        /**
          * 读取资源元标签
          * 
          * @param path 资源路径
@@ -199,5 +226,9 @@ namespace feng3d
             this.fs.readObject(path + metaSuffix, callback);
         }
     }
+    /**
+     * 默认资源，该类资源不会保存到文件系统中
+     */
+    var defaultAssets: { [id: string]: Feng3dAssets } = {};
     rs = new ReadRS(fs);
 }

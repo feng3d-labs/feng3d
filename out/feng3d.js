@@ -16411,24 +16411,6 @@ var feng3d;
         Feng3dAssets.prototype.readFile = function (fs, callback) {
             callback && callback(null);
         };
-        Feng3dAssets.setAssets = function (assets) {
-            this._lib.set(assets.assetsId, assets);
-        };
-        /**
-         * 获取资源
-         * @param assetsId 资源编号
-         */
-        Feng3dAssets.getAssets = function (assetsId) {
-            return this._lib.get(assetsId);
-        };
-        /**
-         * 获取指定类型资源
-         * @param type 资源类型
-         */
-        Feng3dAssets.getAssetsByType = function (type) {
-            return this._lib.getValues().filter(function (v) { return v instanceof type; });
-        };
-        Feng3dAssets._lib = new Map();
         __decorate([
             feng3d.serialize
         ], Feng3dAssets.prototype, "assetsId", void 0);
@@ -16460,6 +16442,454 @@ var feng3d;
     }());
     feng3d.Resources = Resources;
     feng3d.resources = new Resources();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 可读资源系统
+     */
+    var ReadRS = /** @class */ (function () {
+        /**
+         * 构建可读资源系统
+         *
+         * @param fs 可读文件系统
+         */
+        function ReadRS(fs) {
+            /**
+             * 资源编号映射
+             */
+            this.idMap = {};
+            /**
+             * 资源路径映射
+             */
+            this.pathMap = {};
+            /**
+             * 资源树保存路径
+             */
+            this.resources = "resource.json";
+            this._fs = fs;
+        }
+        Object.defineProperty(ReadRS.prototype, "fs", {
+            /**
+             * 文件系统
+             */
+            get: function () { return this._fs; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ReadRS.prototype, "root", {
+            /**
+             * 根文件夹
+             */
+            get: function () { return this._root; },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 初始化
+         *
+         * @param callback 完成回调
+         */
+        ReadRS.prototype.init = function (callback) {
+            var _this = this;
+            this._fs.readObject(this.resources, function (err, data) {
+                if (data) {
+                    _this._root = data;
+                    //
+                    var assets = [data];
+                    var index = 0;
+                    while (index < assets.length) {
+                        var asset = assets[index];
+                        // 计算路径
+                        var path = asset.name + asset.extenson;
+                        if (asset.parentAsset)
+                            path = asset.parentAsset.assetsPath + "/" + path;
+                        asset.assetsPath = path;
+                        // 新增映射
+                        _this.idMap[asset.assetsId] = asset;
+                        _this.pathMap[asset.assetsPath] = asset;
+                        // 
+                        if (asset instanceof feng3d.Feng3dFolder) {
+                            for (var i = 0; i < asset.childrenAssets.length; i++) {
+                                var v = asset.childrenAssets[i];
+                                // 处理资源父子关系
+                                v.parentAsset = asset;
+                                //
+                                assets.push(v);
+                            }
+                        }
+                        index++;
+                    }
+                    callback && callback();
+                }
+                else {
+                    _this.createAsset(feng3d.Feng3dFolder, { name: "Assets" }, null, function (err, asset) {
+                        _this._root = asset;
+                        callback && callback();
+                    });
+                }
+            });
+        };
+        /**
+         * 新建资源
+         *
+         * @param cls 资源类定义
+         * @param value 初始数据
+         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
+         * @param callback 完成回调函数
+         */
+        ReadRS.prototype.createAsset = function (cls, value, parent, callback) {
+            parent = parent || this._root;
+            //
+            var asset = new cls();
+            asset.assetsId = feng3d.FMath.uuid();
+            asset.meta = { guid: asset.assetsId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
+            asset.rs = this;
+            Object.setValue(asset, value);
+            // 设置默认名称
+            asset.name = asset.name || "new " + asset.assetType;
+            if (parent) {
+                // 计算有效名称
+                asset.name = this.getValidChildName(parent, asset.name);
+                // 处理资源父子关系
+                parent.childrenAssets.push(asset);
+                asset.parentAsset = parent;
+            }
+            // 计算路径
+            var path = asset.name + asset.extenson;
+            if (asset.parentAsset)
+                path = asset.parentAsset.assetsPath + "/" + path;
+            asset.assetsPath = path;
+            // 新增映射
+            this.idMap[asset.assetsId] = asset;
+            this.pathMap[asset.assetsPath] = asset;
+            callback && callback(null, asset);
+        };
+        /**
+         * 获取有效子文件名称
+         *
+         * @param parent 父文件夹
+         * @param name 名称
+         */
+        ReadRS.prototype.getValidChildName = function (parent, name) {
+            var childrenNames = parent.childrenAssets.map(function (v) { return v.name; });
+            var newName = name;
+            var index = 1;
+            while (childrenNames.indexOf(newName) != -1) {
+                newName = name + index;
+                index++;
+            }
+            return newName;
+        };
+        /**
+         * 读取文件为资源对象
+         * @param id 资源编号
+         * @param callback 读取完成回调
+         */
+        ReadRS.prototype.readAssets = function (id, callback) {
+            var _this = this;
+            var feng3dAsset = this.idMap[id];
+            if (!feng3dAsset) {
+                callback(new Error("\u4E0D\u5B58\u5728\u8D44\u6E90 " + id), null);
+                return;
+            }
+            if (feng3dAsset.meta) {
+                callback(null, feng3dAsset);
+                return;
+            }
+            this._readMeta(feng3dAsset.assetsPath, function (err, meta) {
+                if (err) {
+                    callback(err, feng3dAsset);
+                    return;
+                }
+                feng3dAsset.meta = meta;
+                feng3dAsset["readFile"](_this.fs, function (err) {
+                    callback(err, feng3dAsset);
+                });
+            });
+        };
+        /**
+         * 获取指定类型资源
+         *
+         * @param type 资源类型
+         */
+        ReadRS.prototype.getAssetsByType = function (type) {
+            var _this = this;
+            var assets = Object.keys(this.idMap).map(function (v) { return _this.idMap[v]; });
+            var assets1 = Object.keys(defaultAssets).map(function (v) { return _this.idMap[v]; });
+            assets = assets.concat(assets1);
+            return assets.filter(function (v) { return v instanceof type; });
+        };
+        ReadRS.prototype.setDefaultAssets = function (assets) {
+            defaultAssets[assets.assetsId] = assets;
+        };
+        /**
+         * 获取资源
+         * @param assetsId 资源编号
+         */
+        ReadRS.prototype.getAssets = function (assetsId) {
+            return this.idMap[assetsId] || defaultAssets[assetsId];
+        };
+        /**
+         * 读取资源元标签
+         *
+         * @param path 资源路径
+         * @param callback 完成回调
+         */
+        ReadRS.prototype._readMeta = function (path, callback) {
+            this.fs.readObject(path + feng3d.metaSuffix, callback);
+        };
+        return ReadRS;
+    }());
+    feng3d.ReadRS = ReadRS;
+    /**
+     * 默认资源，该类资源不会保存到文件系统中
+     */
+    var defaultAssets = {};
+    feng3d.rs = new ReadRS(feng3d.fs);
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 可读写资源系统
+     */
+    var ReadWriteRS = /** @class */ (function (_super) {
+        __extends(ReadWriteRS, _super);
+        /**
+         * 构建可读写资源系统
+         *
+         * @param fs 可读写文件系统
+         */
+        function ReadWriteRS(fs) {
+            if (fs === void 0) { fs = feng3d.indexedDBFS; }
+            var _this = _super.call(this, fs) || this;
+            /**
+             * 延迟保存执行函数
+             */
+            _this.laterSaveFunc = function (interval) { _this.save(); };
+            /**
+             * 延迟保存，避免多次操作时频繁调用保存
+             */
+            _this.laterSave = function () { feng3d.ticker.nextframe(_this.laterSaveFunc, _this); };
+            return _this;
+        }
+        /**
+         * 在更改资源结构（新增，移动，删除）时会自动保存
+         *
+         * @param callback 完成回调
+         */
+        ReadWriteRS.prototype.save = function (callback) {
+            this.fs.writeObject(this.resources, this.root, callback);
+        };
+        /**
+         * 新建资源
+         *
+         * @param cls 资源类定义
+         * @param value 初始数据
+         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
+         * @param callback 完成回调函数
+         */
+        ReadWriteRS.prototype.createAsset = function (cls, value, parent, callback) {
+            var _this = this;
+            // 新建资源
+            _super.prototype.createAsset.call(this, cls, value, parent, function (err, asset) {
+                if (asset) {
+                    // 保存资源
+                    _this.writeAssets(asset, function (err) {
+                        callback && callback(err, asset);
+                        // 保存资源库
+                        _this.laterSave();
+                    });
+                }
+                else {
+                    callback && callback(err, null);
+                }
+            });
+        };
+        /**
+         * 写（保存）资源
+         *
+         * @param assets 资源对象
+         * @param callback 完成回调
+         */
+        ReadWriteRS.prototype.writeAssets = function (assets, callback) {
+            var _this = this;
+            assets.meta.mtimeMs = Date.now();
+            this._writeMeta(assets.assetsPath, assets.meta, function (err) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                assets["saveFile"](_this.fs, function (err) {
+                    callback && callback(err);
+                });
+            });
+        };
+        /**
+         * 移动资源到指定文件夹
+         *
+         * @param asset 被移动资源
+         * @param folder 目标文件夹
+         * @param callback 完成回调
+         */
+        ReadWriteRS.prototype.moveAssets = function (asset, folder, callback) {
+            var _this = this;
+            var filename = asset.name + asset.extenson;
+            var cnames = folder.childrenAssets.map(function (v) { return v.name + v.extenson; });
+            if (cnames.indexOf(filename) != -1) {
+                callback && callback(new Error("\u76EE\u6807\u6587\u4EF6\u5939\u4E2D\u5B58\u5728\u540C\u540D\u6587\u4EF6\uFF08\u5939\uFF09\uFF0C\u65E0\u6CD5\u79FB\u52A8"));
+                return;
+            }
+            var fp = folder;
+            while (fp) {
+                if (fp == asset) {
+                    callback && callback(new Error("\u65E0\u6CD5\u79FB\u52A8\u8FBE\u5230\u5B50\u6587\u4EF6\u5939\u4E2D"));
+                    return;
+                }
+                fp = fp.parentAsset;
+            }
+            // 重新设置父子资源关系
+            var index = asset.parentAsset.childrenAssets.indexOf(asset);
+            asset.parentAsset.childrenAssets.splice(index, 1);
+            folder.childrenAssets.push(asset);
+            asset.parentAsset = folder;
+            // 获取需要移动的资源列表
+            var assets = [asset];
+            var index = 0;
+            while (index < assets.length) {
+                var ca = assets[index];
+                if (ca instanceof feng3d.Feng3dFolder) {
+                    assets = assets.concat(ca.childrenAssets);
+                }
+                index++;
+            }
+            // 最后根据 parentAsset 修复 childrenAssets
+            var copyassets = assets.concat();
+            // 移动最后一个资源
+            var moveLastAssets = function () {
+                if (assets.length == 0) {
+                    // 修复 childrenAssets
+                    copyassets.forEach(function (v) {
+                        v.parentAsset.childrenAssets.push(v);
+                    });
+                    callback && callback(null);
+                    // 保存资源库
+                    _this.laterSave();
+                    return;
+                }
+                var la = assets.pop();
+                // 读取资源
+                _this.readAssets(la.assetsId, function (err, a) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    // 备份父资源
+                    var pla = la.parentAsset;
+                    // 从原路径上删除资源
+                    _this.deleteAssets(la.assetsId, function (err) {
+                        if (err) {
+                            callback && callback(err);
+                            return;
+                        }
+                        // 修复删除资源时破坏的父资源引用
+                        la.parentAsset = pla;
+                        // 计算资源新路径
+                        var np = la.name + la.extenson;
+                        var p = la.parentAsset;
+                        while (p) {
+                            np = p.name + "/" + np;
+                            p = p.parentAsset;
+                        }
+                        la.assetsPath = np;
+                        // 新增映射
+                        _this.idMap[la.assetsId] = la;
+                        _this.pathMap[la.assetsPath] = la;
+                        // 保存资源到新路径
+                        _this.writeAssets(la, function (err) {
+                            if (err) {
+                                callback && callback(err);
+                                return;
+                            }
+                            moveLastAssets();
+                        });
+                    });
+                });
+            };
+            moveLastAssets();
+        };
+        /**
+         * 写资源元标签
+         *
+         * @param path 资源路径
+         * @param meta 资源元标签
+         * @param callback 完成回调
+         */
+        ReadWriteRS.prototype._writeMeta = function (path, meta, callback) {
+            this.fs.writeObject(path + feng3d.metaSuffix, meta, callback);
+        };
+        /**
+         * 删除资源
+         *
+         * @param assetsId 资源编号
+         * @param callback 完成回调
+         */
+        ReadWriteRS.prototype.deleteAssets = function (assetsId, callback) {
+            var _this = this;
+            var asset = this.idMap[assetsId];
+            // 获取需要移动的资源列表
+            var assets = [asset];
+            var index = 0;
+            while (index < assets.length) {
+                var ca = assets[index];
+                if (ca instanceof feng3d.Feng3dFolder) {
+                    assets = assets.concat(ca.childrenAssets);
+                }
+                index++;
+            }
+            // 删除最后一个资源
+            var deleteLastAssets = function () {
+                if (assets.length == 0) {
+                    callback && callback(null);
+                    // 保存资源库
+                    _this.laterSave();
+                    return;
+                }
+                var la = assets.pop();
+                // 删除 meta 文件
+                _this._deleteMeta(la.assetsPath, function (err) {
+                    if (err) {
+                        callback && callback(err);
+                        return;
+                    }
+                    _this.fs.deleteFile(la.assetsPath, function (err) {
+                        // 删除父子资源关系
+                        if (la.parentAsset) {
+                            var index = la.parentAsset.childrenAssets.indexOf(la.parentAsset);
+                            la.parentAsset.childrenAssets.splice(index, 1);
+                            la.parentAsset = null;
+                        }
+                        // 删除映射
+                        delete _this.idMap[la.assetsId];
+                        delete _this.pathMap[la.assetsPath];
+                        deleteLastAssets();
+                    });
+                });
+            };
+            deleteLastAssets();
+        };
+        /**
+         * 删除资源元标签
+         *
+         * @param path 资源路径
+         * @param callback 完成回调
+         */
+        ReadWriteRS.prototype._deleteMeta = function (path, callback) {
+            this.fs.deleteFile(path + feng3d.metaSuffix, callback);
+        };
+        return ReadWriteRS;
+    }(feng3d.ReadRS));
+    feng3d.ReadWriteRS = ReadWriteRS;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -23731,7 +24161,7 @@ var feng3d;
         return PointGeometry;
     }(feng3d.Geometry));
     feng3d.PointGeometry = PointGeometry;
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.point = Object.setValue(new PointGeometry(), { name: "PointGeometry", assetsId: "PointGeometry", points: [], hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.rs.setDefaultAssets(feng3d.Geometry.point = Object.setValue(new PointGeometry(), { name: "PointGeometry", assetsId: "PointGeometry", points: [], hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -24579,7 +25009,7 @@ var feng3d;
         return PlaneGeometry;
     }(feng3d.Geometry));
     feng3d.PlaneGeometry = PlaneGeometry;
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.plane = Object.setValue(new PlaneGeometry(), { name: "Plane", assetsId: "Plane", width: 10, height: 10, hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.rs.setDefaultAssets(feng3d.Geometry.plane = Object.setValue(new PlaneGeometry(), { name: "Plane", assetsId: "Plane", width: 10, height: 10, hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -25005,7 +25435,7 @@ var feng3d;
         return CubeGeometry;
     }(feng3d.Geometry));
     feng3d.CubeGeometry = CubeGeometry;
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.cube = Object.setValue(new CubeGeometry(), { name: "Cube", assetsId: "Cube", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.rs.setDefaultAssets(feng3d.Geometry.cube = Object.setValue(new CubeGeometry(), { name: "Cube", assetsId: "Cube", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -25192,7 +25622,7 @@ var feng3d;
         return SphereGeometry;
     }(feng3d.Geometry));
     feng3d.SphereGeometry = SphereGeometry;
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.sphere = Object.setValue(new SphereGeometry(), { name: "Sphere", assetsId: "Sphere", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.rs.setDefaultAssets(feng3d.Geometry.sphere = Object.setValue(new SphereGeometry(), { name: "Sphere", assetsId: "Sphere", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -25388,7 +25818,7 @@ var feng3d;
         return CapsuleGeometry;
     }(feng3d.Geometry));
     feng3d.CapsuleGeometry = CapsuleGeometry;
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.capsule = Object.setValue(new CapsuleGeometry(), { name: "Capsule", assetsId: "Capsule", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.rs.setDefaultAssets(feng3d.Geometry.capsule = Object.setValue(new CapsuleGeometry(), { name: "Capsule", assetsId: "Capsule", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -25743,7 +26173,7 @@ var feng3d;
         return CylinderGeometry;
     }(feng3d.Geometry));
     feng3d.CylinderGeometry = CylinderGeometry;
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.cylinder = Object.setValue(new CylinderGeometry(), { name: "Cylinder", assetsId: "Cylinder", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.rs.setDefaultAssets(feng3d.Geometry.cylinder = Object.setValue(new CylinderGeometry(), { name: "Cylinder", assetsId: "Cylinder", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -25774,7 +26204,7 @@ var feng3d;
         return ConeGeometry;
     }(feng3d.CylinderGeometry));
     feng3d.ConeGeometry = ConeGeometry;
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.cone = Object.setValue(new ConeGeometry(), { name: "Cone", assetsId: "Cone", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.rs.setDefaultAssets(feng3d.Geometry.cone = Object.setValue(new ConeGeometry(), { name: "Cone", assetsId: "Cone", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -25969,7 +26399,7 @@ var feng3d;
         return TorusGeometry;
     }(feng3d.Geometry));
     feng3d.TorusGeometry = TorusGeometry;
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.torus = Object.setValue(new TorusGeometry(), { name: "Torus", assetsId: "Torus", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.rs.setDefaultAssets(feng3d.Geometry.torus = Object.setValue(new TorusGeometry(), { name: "Torus", assetsId: "Torus", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -26149,9 +26579,9 @@ var feng3d;
         return UrlImageTexture2D;
     }(feng3d.Texture2D));
     feng3d.UrlImageTexture2D = UrlImageTexture2D;
-    feng3d.Feng3dAssets.setAssets(UrlImageTexture2D.default = Object.setValue(new UrlImageTexture2D(), { name: "Default-Texture", assetsId: "Default-Texture", hideFlags: feng3d.HideFlags.NotEditable }));
-    feng3d.Feng3dAssets.setAssets(UrlImageTexture2D.defaultNormal = Object.setValue(new UrlImageTexture2D(), { name: "Default-NormalTexture", assetsId: "Default-NormalTexture", noPixels: feng3d.ImageDatas.defaultNormal, hideFlags: feng3d.HideFlags.NotEditable }));
-    feng3d.Feng3dAssets.setAssets(UrlImageTexture2D.defaultParticle = Object.setValue(new UrlImageTexture2D(), { name: "Default-ParticleTexture", assetsId: "Default-ParticleTexture", noPixels: feng3d.ImageDatas.defaultParticle, format: feng3d.TextureFormat.RGBA, hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.rs.setDefaultAssets(UrlImageTexture2D.default = Object.setValue(new UrlImageTexture2D(), { name: "Default-Texture", assetsId: "Default-Texture", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.rs.setDefaultAssets(UrlImageTexture2D.defaultNormal = Object.setValue(new UrlImageTexture2D(), { name: "Default-NormalTexture", assetsId: "Default-NormalTexture", noPixels: feng3d.ImageDatas.defaultNormal, hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.rs.setDefaultAssets(UrlImageTexture2D.defaultParticle = Object.setValue(new UrlImageTexture2D(), { name: "Default-ParticleTexture", assetsId: "Default-ParticleTexture", noPixels: feng3d.ImageDatas.defaultParticle, format: feng3d.TextureFormat.RGBA, hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -26322,7 +26752,7 @@ var feng3d;
         return TextureCube;
     }(feng3d.TextureInfo));
     feng3d.TextureCube = TextureCube;
-    feng3d.Feng3dAssets.setAssets(TextureCube.default = Object.setValue(new TextureCube(), { name: "Default-TextureCube", assetsId: "Default-TextureCube", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.rs.setDefaultAssets(TextureCube.default = Object.setValue(new TextureCube(), { name: "Default-TextureCube", assetsId: "Default-TextureCube", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -26690,7 +27120,7 @@ var feng3d;
     }());
     feng3d.StandardUniforms = StandardUniforms;
     feng3d.shaderConfig.shaders["standard"].cls = StandardUniforms;
-    feng3d.Feng3dAssets.setAssets(feng3d.Material.default = Object.setValue(new feng3d.Material(), { name: "Default-Material", assetsId: "Default-Material", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.rs.setDefaultAssets(feng3d.Material.default = Object.setValue(new feng3d.Material(), { name: "Default-Material", assetsId: "Default-Material", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -28354,7 +28784,7 @@ var feng3d;
     }());
     feng3d.WaterUniforms = WaterUniforms;
     feng3d.shaderConfig.shaders["water"].cls = WaterUniforms;
-    feng3d.Feng3dAssets.setAssets(feng3d.Material.water = Object.setValue(new feng3d.Material(), { name: "Water-Material", assetsId: "Water-Material", shaderName: "water", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.rs.setDefaultAssets(feng3d.Material.water = Object.setValue(new feng3d.Material(), { name: "Water-Material", assetsId: "Water-Material", shaderName: "water", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -28576,7 +29006,7 @@ var feng3d;
      * 默认高度图
      */
     var defaultHeightMap = new feng3d.ImageUtil(1024, 1024, new feng3d.Color4(0, 0, 0, 0)).imageData;
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.terrain = Object.setValue(new TerrainGeometry(), { name: "Terrain-Geometry", assetsId: "Terrain-Geometry", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.rs.setDefaultAssets(feng3d.Geometry.terrain = Object.setValue(new TerrainGeometry(), { name: "Terrain-Geometry", assetsId: "Terrain-Geometry", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -28616,7 +29046,7 @@ var feng3d;
     }(feng3d.StandardUniforms));
     feng3d.TerrainUniforms = TerrainUniforms;
     feng3d.shaderConfig.shaders["terrain"].cls = TerrainUniforms;
-    feng3d.Feng3dAssets.setAssets(feng3d.Material.terrain = Object.setValue(new feng3d.Material(), { name: "Terrain-Material", assetsId: "Terrain-Material", shaderName: "terrain", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.rs.setDefaultAssets(feng3d.Material.terrain = Object.setValue(new feng3d.Material(), { name: "Terrain-Material", assetsId: "Terrain-Material", shaderName: "terrain", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -28885,7 +29315,7 @@ var feng3d;
     }(feng3d.StandardUniforms));
     feng3d.ParticleUniforms = ParticleUniforms;
     feng3d.shaderConfig.shaders["particle"].cls = ParticleUniforms;
-    feng3d.Feng3dAssets.setAssets(feng3d.Material.particle = Object.setValue(new feng3d.Material(), {
+    feng3d.rs.setDefaultAssets(feng3d.Material.particle = Object.setValue(new feng3d.Material(), {
         name: "Particle-Material", assetsId: "Particle-Material", shaderName: "particle",
         renderParams: { enableBlend: true, depthMask: false },
         hideFlags: feng3d.HideFlags.NotEditable,
@@ -29229,7 +29659,7 @@ var feng3d;
         return ParticleSystem;
     }(feng3d.Model));
     feng3d.ParticleSystem = ParticleSystem;
-    feng3d.Feng3dAssets.setAssets(feng3d.Geometry.billboard = Object.setValue(new feng3d.PlaneGeometry(), { name: "Billboard", assetsId: "Billboard-Geometry", yUp: false, hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.rs.setDefaultAssets(feng3d.Geometry.billboard = Object.setValue(new feng3d.PlaneGeometry(), { name: "Billboard", assetsId: "Billboard-Geometry", yUp: false, hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -30541,428 +30971,6 @@ var feng3d;
     }(feng3d.Behaviour));
     feng3d.Animation = Animation;
     var autoobjectCacheID = 1;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 可读资源系统
-     */
-    var ReadRS = /** @class */ (function () {
-        /**
-         * 构建可读资源系统
-         *
-         * @param fs 可读文件系统
-         */
-        function ReadRS(fs) {
-            /**
-             * 资源编号映射
-             */
-            this.idMap = {};
-            /**
-             * 资源路径映射
-             */
-            this.pathMap = {};
-            /**
-             * 资源树保存路径
-             */
-            this.resources = "resource.json";
-            this._fs = fs;
-        }
-        Object.defineProperty(ReadRS.prototype, "fs", {
-            /**
-             * 文件系统
-             */
-            get: function () { return this._fs; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ReadRS.prototype, "root", {
-            /**
-             * 根文件夹
-             */
-            get: function () { return this._root; },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 初始化
-         *
-         * @param callback 完成回调
-         */
-        ReadRS.prototype.init = function (callback) {
-            var _this = this;
-            this._fs.readObject(this.resources, function (err, data) {
-                if (data) {
-                    _this._root = data;
-                    //
-                    var assets = [data];
-                    var index = 0;
-                    while (index < assets.length) {
-                        var asset = assets[index];
-                        // 计算路径
-                        var path = asset.name + asset.extenson;
-                        if (asset.parentAsset)
-                            path = asset.parentAsset.assetsPath + "/" + path;
-                        asset.assetsPath = path;
-                        // 新增映射
-                        _this.idMap[asset.assetsId] = asset;
-                        _this.pathMap[asset.assetsPath] = asset;
-                        // 
-                        if (asset instanceof feng3d.Feng3dFolder) {
-                            for (var i = 0; i < asset.childrenAssets.length; i++) {
-                                var v = asset.childrenAssets[i];
-                                // 处理资源父子关系
-                                v.parentAsset = asset;
-                                //
-                                assets.push(v);
-                            }
-                        }
-                        index++;
-                    }
-                    callback && callback();
-                }
-                else {
-                    _this.createAsset(feng3d.Feng3dFolder, { name: "Assets" }, null, function (err, asset) {
-                        _this._root = asset;
-                        callback && callback();
-                    });
-                }
-            });
-        };
-        /**
-         * 新建资源
-         *
-         * @param cls 资源类定义
-         * @param value 初始数据
-         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
-         * @param callback 完成回调函数
-         */
-        ReadRS.prototype.createAsset = function (cls, value, parent, callback) {
-            parent = parent || this._root;
-            //
-            var asset = new cls();
-            asset.assetsId = feng3d.FMath.uuid();
-            asset.meta = { guid: asset.assetsId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
-            asset.rs = this;
-            Object.setValue(asset, value);
-            // 设置默认名称
-            asset.name = asset.name || "new " + asset.assetType;
-            if (parent) {
-                // 计算有效名称
-                asset.name = this.getValidChildName(parent, asset.name);
-                // 处理资源父子关系
-                parent.childrenAssets.push(asset);
-                asset.parentAsset = parent;
-            }
-            // 计算路径
-            var path = asset.name + asset.extenson;
-            if (asset.parentAsset)
-                path = asset.parentAsset.assetsPath + "/" + path;
-            asset.assetsPath = path;
-            // 新增映射
-            this.idMap[asset.assetsId] = asset;
-            this.pathMap[asset.assetsPath] = asset;
-            callback && callback(null, asset);
-        };
-        /**
-         * 获取有效子文件名称
-         *
-         * @param parent 父文件夹
-         * @param name 名称
-         */
-        ReadRS.prototype.getValidChildName = function (parent, name) {
-            var childrenNames = parent.childrenAssets.map(function (v) { return v.name; });
-            var newName = name;
-            var index = 1;
-            while (childrenNames.indexOf(newName) != -1) {
-                newName = name + index;
-                index++;
-            }
-            return newName;
-        };
-        /**
-         * 读取文件为资源对象
-         * @param id 资源编号
-         * @param callback 读取完成回调
-         */
-        ReadRS.prototype.readAssets = function (id, callback) {
-            var _this = this;
-            var feng3dAsset = this.idMap[id];
-            if (!feng3dAsset) {
-                callback(new Error("\u4E0D\u5B58\u5728\u8D44\u6E90 " + id), null);
-                return;
-            }
-            if (feng3dAsset.meta) {
-                callback(null, feng3dAsset);
-                return;
-            }
-            this._readMeta(feng3dAsset.assetsPath, function (err, meta) {
-                if (err) {
-                    callback(err, feng3dAsset);
-                    return;
-                }
-                feng3dAsset.meta = meta;
-                feng3dAsset["readFile"](_this.fs, function (err) {
-                    callback(err, feng3dAsset);
-                });
-            });
-        };
-        /**
-         * 读取资源元标签
-         *
-         * @param path 资源路径
-         * @param callback 完成回调
-         */
-        ReadRS.prototype._readMeta = function (path, callback) {
-            this.fs.readObject(path + feng3d.metaSuffix, callback);
-        };
-        return ReadRS;
-    }());
-    feng3d.ReadRS = ReadRS;
-    feng3d.rs = new ReadRS(feng3d.fs);
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 可读写资源系统
-     */
-    var ReadWriteRS = /** @class */ (function (_super) {
-        __extends(ReadWriteRS, _super);
-        /**
-         * 构建可读写资源系统
-         *
-         * @param fs 可读写文件系统
-         */
-        function ReadWriteRS(fs) {
-            if (fs === void 0) { fs = feng3d.indexedDBFS; }
-            var _this = _super.call(this, fs) || this;
-            /**
-             * 延迟保存执行函数
-             */
-            _this.laterSaveFunc = function (interval) { _this.save(); };
-            /**
-             * 延迟保存，避免多次操作时频繁调用保存
-             */
-            _this.laterSave = function () { feng3d.ticker.nextframe(_this.laterSaveFunc, _this); };
-            return _this;
-        }
-        /**
-         * 在更改资源结构（新增，移动，删除）时会自动保存
-         *
-         * @param callback 完成回调
-         */
-        ReadWriteRS.prototype.save = function (callback) {
-            this.fs.writeObject(this.resources, this.root, callback);
-        };
-        /**
-         * 新建资源
-         *
-         * @param cls 资源类定义
-         * @param value 初始数据
-         * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
-         * @param callback 完成回调函数
-         */
-        ReadWriteRS.prototype.createAsset = function (cls, value, parent, callback) {
-            var _this = this;
-            // 新建资源
-            _super.prototype.createAsset.call(this, cls, value, parent, function (err, asset) {
-                if (asset) {
-                    // 保存资源
-                    _this.writeAssets(asset, function (err) {
-                        callback && callback(err, asset);
-                        // 保存资源库
-                        _this.laterSave();
-                    });
-                }
-                else {
-                    callback && callback(err, null);
-                }
-            });
-        };
-        /**
-         * 写（保存）资源
-         *
-         * @param assets 资源对象
-         * @param callback 完成回调
-         */
-        ReadWriteRS.prototype.writeAssets = function (assets, callback) {
-            var _this = this;
-            assets.meta.mtimeMs = Date.now();
-            this._writeMeta(assets.assetsPath, assets.meta, function (err) {
-                if (err) {
-                    callback && callback(err);
-                    return;
-                }
-                assets["saveFile"](_this.fs, function (err) {
-                    callback && callback(err);
-                });
-            });
-        };
-        /**
-         * 移动资源到指定文件夹
-         *
-         * @param asset 被移动资源
-         * @param folder 目标文件夹
-         * @param callback 完成回调
-         */
-        ReadWriteRS.prototype.moveAssets = function (asset, folder, callback) {
-            var _this = this;
-            var filename = asset.name + asset.extenson;
-            var cnames = folder.childrenAssets.map(function (v) { return v.name + v.extenson; });
-            if (cnames.indexOf(filename) != -1) {
-                callback && callback(new Error("\u76EE\u6807\u6587\u4EF6\u5939\u4E2D\u5B58\u5728\u540C\u540D\u6587\u4EF6\uFF08\u5939\uFF09\uFF0C\u65E0\u6CD5\u79FB\u52A8"));
-                return;
-            }
-            var fp = folder;
-            while (fp) {
-                if (fp == asset) {
-                    callback && callback(new Error("\u65E0\u6CD5\u79FB\u52A8\u8FBE\u5230\u5B50\u6587\u4EF6\u5939\u4E2D"));
-                    return;
-                }
-                fp = fp.parentAsset;
-            }
-            // 重新设置父子资源关系
-            var index = asset.parentAsset.childrenAssets.indexOf(asset);
-            asset.parentAsset.childrenAssets.splice(index, 1);
-            folder.childrenAssets.push(asset);
-            asset.parentAsset = folder;
-            // 获取需要移动的资源列表
-            var assets = [asset];
-            var index = 0;
-            while (index < assets.length) {
-                var ca = assets[index];
-                if (ca instanceof feng3d.Feng3dFolder) {
-                    assets = assets.concat(ca.childrenAssets);
-                }
-                index++;
-            }
-            // 最后根据 parentAsset 修复 childrenAssets
-            var copyassets = assets.concat();
-            // 移动最后一个资源
-            var moveLastAssets = function () {
-                if (assets.length == 0) {
-                    // 修复 childrenAssets
-                    copyassets.forEach(function (v) {
-                        v.parentAsset.childrenAssets.push(v);
-                    });
-                    callback && callback(null);
-                    // 保存资源库
-                    _this.laterSave();
-                    return;
-                }
-                var la = assets.pop();
-                // 读取资源
-                _this.readAssets(la.assetsId, function (err, a) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
-                    }
-                    // 备份父资源
-                    var pla = la.parentAsset;
-                    // 从原路径上删除资源
-                    _this.deleteAssets(la.assetsId, function (err) {
-                        if (err) {
-                            callback && callback(err);
-                            return;
-                        }
-                        // 修复删除资源时破坏的父资源引用
-                        la.parentAsset = pla;
-                        // 计算资源新路径
-                        var np = la.name + la.extenson;
-                        var p = la.parentAsset;
-                        while (p) {
-                            np = p.name + "/" + np;
-                            p = p.parentAsset;
-                        }
-                        la.assetsPath = np;
-                        // 新增映射
-                        _this.idMap[la.assetsId] = la;
-                        _this.pathMap[la.assetsPath] = la;
-                        // 保存资源到新路径
-                        _this.writeAssets(la, function (err) {
-                            if (err) {
-                                callback && callback(err);
-                                return;
-                            }
-                            moveLastAssets();
-                        });
-                    });
-                });
-            };
-            moveLastAssets();
-        };
-        /**
-         * 写资源元标签
-         *
-         * @param path 资源路径
-         * @param meta 资源元标签
-         * @param callback 完成回调
-         */
-        ReadWriteRS.prototype._writeMeta = function (path, meta, callback) {
-            this.fs.writeObject(path + feng3d.metaSuffix, meta, callback);
-        };
-        /**
-         * 删除资源
-         *
-         * @param assetsId 资源编号
-         * @param callback 完成回调
-         */
-        ReadWriteRS.prototype.deleteAssets = function (assetsId, callback) {
-            var _this = this;
-            var asset = this.idMap[assetsId];
-            // 获取需要移动的资源列表
-            var assets = [asset];
-            var index = 0;
-            while (index < assets.length) {
-                var ca = assets[index];
-                if (ca instanceof feng3d.Feng3dFolder) {
-                    assets = assets.concat(ca.childrenAssets);
-                }
-                index++;
-            }
-            // 删除最后一个资源
-            var deleteLastAssets = function () {
-                if (assets.length == 0) {
-                    callback && callback(null);
-                    // 保存资源库
-                    _this.laterSave();
-                    return;
-                }
-                var la = assets.pop();
-                // 删除 meta 文件
-                _this._deleteMeta(la.assetsPath, function (err) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
-                    }
-                    _this.fs.deleteFile(la.assetsPath, function (err) {
-                        // 删除父子资源关系
-                        if (la.parentAsset) {
-                            var index = la.parentAsset.childrenAssets.indexOf(la.parentAsset);
-                            la.parentAsset.childrenAssets.splice(index, 1);
-                            la.parentAsset = null;
-                        }
-                        // 删除映射
-                        delete _this.idMap[la.assetsId];
-                        delete _this.pathMap[la.assetsPath];
-                        deleteLastAssets();
-                    });
-                });
-            };
-            deleteLastAssets();
-        };
-        /**
-         * 删除资源元标签
-         *
-         * @param path 资源路径
-         * @param callback 完成回调
-         */
-        ReadWriteRS.prototype._deleteMeta = function (path, callback) {
-            this.fs.deleteFile(path + feng3d.metaSuffix, callback);
-        };
-        return ReadWriteRS;
-    }(feng3d.ReadRS));
-    feng3d.ReadWriteRS = ReadWriteRS;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
