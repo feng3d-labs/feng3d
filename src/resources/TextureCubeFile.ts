@@ -9,7 +9,7 @@ namespace feng3d
          * 材质
          */
         @oav({ component: "OAVObjectView" })
-        textureCube = new TextureCube();
+        data = new TextureCube();
 
         extenson = ".json";
 
@@ -17,9 +17,9 @@ namespace feng3d
 
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void)
         {
-            this.textureCube.assetsId = this.assetsId;
+            this.data.assetsId = this.assetsId;
 
-            fs.writeObject(this.assetsPath, this.textureCube, (err) =>
+            fs.writeObject(this.assetsPath, this.data, (err) =>
             {
                 callback && callback(err);
             });
@@ -34,8 +34,8 @@ namespace feng3d
         {
             fs.readObject(this.assetsPath, (err, textureCube: TextureCube) =>
             {
-                this.textureCube = textureCube;
-                this.textureCube.assetsId = this.assetsId;
+                this.data = textureCube;
+                this.data.assetsId = this.assetsId;
                 callback && callback(err);
             });
         }

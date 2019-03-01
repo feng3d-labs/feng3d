@@ -15204,7 +15204,7 @@ declare namespace feng3d {
         /**
          * 材质
          */
-        texture: Texture2D;
+        data: Texture2D;
         extenson: ".jpg" | ".png" | ".jpeg" | ".gif";
         /**
          * 图片
@@ -15228,7 +15228,7 @@ declare namespace feng3d {
         /**
          * 材质
          */
-        textureCube: TextureCube;
+        data: TextureCube;
         extenson: string;
         assetType: AssetExtension;
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void): void;
@@ -15248,7 +15248,7 @@ declare namespace feng3d {
         /**
          * 几何体
          */
-        geometry: Geometry;
+        data: Geometry;
         assetType: AssetExtension;
         extenson: string;
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void): void;
@@ -15269,6 +15269,26 @@ declare namespace feng3d {
          * 材质
          */
         data: Material;
+        assetType: AssetExtension;
+        extenson: string;
+        protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void): void;
+        /**
+         * 读取文件
+         * @param fs 刻度资源管理系统
+         * @param callback 完成回调
+         */
+        protected readFile(fs: ReadFS, callback?: (err: Error) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 游戏对象文件
+     */
+    class GameObjectFile extends Feng3dFile {
+        /**
+         * 材质
+         */
+        data: GameObject;
         assetType: AssetExtension;
         extenson: string;
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void): void;

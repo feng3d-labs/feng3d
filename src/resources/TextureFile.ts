@@ -9,7 +9,7 @@ namespace feng3d
          * 材质
          */
         @oav({ component: "OAVObjectView" })
-        texture = new Texture2D();
+        data = new Texture2D();
 
         extenson: ".jpg" | ".png" | ".jpeg" | ".gif" = ".png";
 
@@ -18,19 +18,19 @@ namespace feng3d
          */
         get image()
         {
-            return <HTMLImageElement>this.texture["_pixels"];
+            return <HTMLImageElement>this.data["_pixels"];
         }
 
         set image(v: HTMLImageElement)
         {
-            this.texture["_pixels"] = v;
+            this.data["_pixels"] = v;
         }
 
         assetType = AssetExtension.texture;
 
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void)
         {
-            this.texture.assetsId = this.assetsId;
+            this.data.assetsId = this.assetsId;
 
             fs.writeImage(this.assetsPath, this.image, (err) =>
             {
@@ -48,7 +48,7 @@ namespace feng3d
             fs.readImage(this.assetsPath, (err, img: HTMLImageElement) =>
             {
                 this.image = img;
-                this.texture.assetsId = this.assetsId;
+                this.data.assetsId = this.assetsId;
                 callback && callback(err);
             });
         }
