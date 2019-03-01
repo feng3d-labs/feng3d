@@ -17,7 +17,7 @@ namespace feng3d
         /**
          * 延迟保存，避免多次操作时频繁调用保存
          */
-        private laterSave = () => { ticker.nextframe(this.laterSaveFunc, this); console.log("ReadWriteRS.laterSave"); };
+        private laterSave = () => { ticker.nextframe(this.laterSaveFunc, this); };
 
         /**
          * 构建可读写资源系统
@@ -37,7 +37,6 @@ namespace feng3d
         private save(callback?: (err: Error) => void)
         {
             this.fs.writeObject(this.resources, this.root, callback)
-            console.log("ReadWriteRS.save");
         }
 
         /**

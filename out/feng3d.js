@@ -30743,7 +30743,7 @@ var feng3d;
             /**
              * 延迟保存，避免多次操作时频繁调用保存
              */
-            _this.laterSave = function () { feng3d.ticker.nextframe(_this.laterSaveFunc, _this); console.log("ReadWriteRS.laterSave"); };
+            _this.laterSave = function () { feng3d.ticker.nextframe(_this.laterSaveFunc, _this); };
             return _this;
         }
         /**
@@ -30753,7 +30753,6 @@ var feng3d;
          */
         ReadWriteRS.prototype.save = function (callback) {
             this.fs.writeObject(this.resources, this.root, callback);
-            console.log("ReadWriteRS.save");
         };
         /**
          * 新建资源
