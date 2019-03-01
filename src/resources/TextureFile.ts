@@ -53,6 +53,4 @@ namespace feng3d
             });
         }
     }
-
-    Feng3dAssets.assetTypeClassMap[AssetExtension.texture] = TextureFile;
 }

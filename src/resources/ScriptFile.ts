@@ -52,6 +52,4 @@ namespace feng3d
         }
 
     }
-
-    Feng3dAssets.assetTypeClassMap[AssetExtension.script] = ScriptFile;
 }

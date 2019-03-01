@@ -16429,7 +16429,6 @@ var feng3d;
             return this._lib.getValues().filter(function (v) { return v instanceof type; });
         };
         Feng3dAssets._lib = new Map();
-        Feng3dAssets.assetTypeClassMap = {};
         __decorate([
             feng3d.serialize
         ], Feng3dAssets.prototype, "assetsId", void 0);
@@ -31000,7 +30999,6 @@ var feng3d;
         return Feng3dFolder;
     }(feng3d.Feng3dAssets));
     feng3d.Feng3dFolder = Feng3dFolder;
-    feng3d.Feng3dAssets.assetTypeClassMap[feng3d.AssetExtension.folder] = Feng3dFolder;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -31145,7 +31143,6 @@ var feng3d;
         return ScriptFile;
     }(feng3d.StringFile));
     feng3d.ScriptFile = ScriptFile;
-    feng3d.Feng3dAssets.assetTypeClassMap[feng3d.AssetExtension.script] = ScriptFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -31160,7 +31157,6 @@ var feng3d;
         return ShaderFile;
     }(feng3d.ScriptFile));
     feng3d.ShaderFile = ShaderFile;
-    feng3d.Feng3dAssets.assetTypeClassMap[feng3d.AssetExtension.shader] = ShaderFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -31176,7 +31172,6 @@ var feng3d;
         return JSFile;
     }(feng3d.StringFile));
     feng3d.JSFile = JSFile;
-    feng3d.Feng3dAssets.assetTypeClassMap[feng3d.AssetExtension.js] = JSFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -31192,7 +31187,6 @@ var feng3d;
         return JsonFile;
     }(feng3d.StringFile));
     feng3d.JsonFile = JsonFile;
-    feng3d.Feng3dAssets.assetTypeClassMap[feng3d.AssetExtension.json] = JsonFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -31208,7 +31202,6 @@ var feng3d;
         return TextFile;
     }(feng3d.StringFile));
     feng3d.TextFile = TextFile;
-    feng3d.Feng3dAssets.assetTypeClassMap[feng3d.AssetExtension.txt] = TextFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -31223,7 +31216,6 @@ var feng3d;
         return AudioFile;
     }(feng3d.Feng3dFile));
     feng3d.AudioFile = AudioFile;
-    feng3d.Feng3dAssets.assetTypeClassMap[feng3d.AssetExtension.audio] = AudioFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -31280,7 +31272,6 @@ var feng3d;
         return TextureFile;
     }(feng3d.Feng3dFile));
     feng3d.TextureFile = TextureFile;
-    feng3d.Feng3dAssets.assetTypeClassMap[feng3d.AssetExtension.texture] = TextureFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -31318,7 +31309,6 @@ var feng3d;
         return MaterialFile;
     }(feng3d.Feng3dFile));
     feng3d.MaterialFile = MaterialFile;
-    feng3d.Feng3dAssets.assetTypeClassMap[feng3d.AssetExtension.material] = MaterialFile;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

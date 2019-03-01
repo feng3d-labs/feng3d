@@ -6,5 +6,4 @@ namespace feng3d
 
         extenson = ".ts";
     }
-    Feng3dAssets.assetTypeClassMap[AssetExtension.shader] = ShaderFile;
 }

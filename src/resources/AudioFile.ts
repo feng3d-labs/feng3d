@@ -6,6 +6,4 @@ namespace feng3d
 
         extenson: ".ogg" | ".mp3" | ".wav" = ".mp3";
     }
-
-    Feng3dAssets.assetTypeClassMap[AssetExtension.audio] = AudioFile;
 }

@@ -136,7 +136,5 @@ namespace feng3d
         }
 
         private static _lib = new Map<string, Feng3dAssets>();
-
-        static assetTypeClassMap: { [type: string]: Constructor<Feng3dAssets> } = {};
     }
 }

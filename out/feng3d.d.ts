@@ -7913,9 +7913,6 @@ declare namespace feng3d {
          */
         static getAssetsByType<T extends Feng3dAssets>(type: Constructor<T>): T[];
         private static _lib;
-        static assetTypeClassMap: {
-            [type: string]: Constructor<Feng3dAssets>;
-        };
     }
 }
 declare namespace feng3d {

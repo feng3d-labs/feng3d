@@ -28,6 +28,4 @@ namespace feng3d
             fs.mkdir(this.assetsPath, callback);
         }
     }
-
-    Feng3dAssets.assetTypeClassMap[AssetExtension.folder] = Feng3dFolder;
 }
