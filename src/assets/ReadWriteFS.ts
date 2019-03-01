@@ -43,26 +43,26 @@ namespace feng3d
         /**
          * 写ArrayBuffer(新建)文件
          * @param path 文件路径
-         * @param data 文件数据
+         * @param arraybuffer 文件数据
          * @param callback 回调函数
          */
-        abstract writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        abstract writeArrayBuffer(path: string, arraybuffer: ArrayBuffer, callback?: (err: Error) => void): void;
 
         /**
          * 写字符串到(新建)文件
          * @param path 文件路径
-         * @param data 文件数据
+         * @param str 文件数据
          * @param callback 回调函数
          */
-        abstract writeString(path: string, data: string, callback?: (err: Error) => void): void;
+        abstract writeString(path: string, str: string, callback?: (err: Error) => void): void;
 
         /**
          * 写Object到(新建)文件
          * @param path 文件路径
-         * @param data 文件数据
+         * @param object 文件数据
          * @param callback 回调函数
          */
-        abstract writeObject(path: string, data: Object, callback?: (err: Error) => void): void;
+        abstract writeObject(path: string, object: Object, callback?: (err: Error) => void): void;
 
         /**
          * 写图片

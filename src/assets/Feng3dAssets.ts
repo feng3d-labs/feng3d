@@ -33,11 +33,6 @@ namespace feng3d
          */
         parentAsset: Feng3dFolder;
 
-        // get parentAsset()
-        // {
-
-        // }
-
         /**
          * 资源路径
          */

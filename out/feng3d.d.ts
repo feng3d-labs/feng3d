@@ -7394,19 +7394,19 @@ declare namespace feng3d {
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        abstract readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
+        abstract readArrayBuffer(path: string, callback: (err: Error, arraybuffer: ArrayBuffer) => void): void;
         /**
          * 读取文件为字符串
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        abstract readString(path: string, callback: (err: Error, data: string) => void): void;
+        abstract readString(path: string, callback: (err: Error, str: string) => void): void;
         /**
          * 读取文件为Object
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        abstract readObject(path: string, callback: (err: Error, data: Object) => void): void;
+        abstract readObject(path: string, callback: (err: Error, object: Object) => void): void;
         /**
          * 加载图片
          * @param path 图片路径
@@ -7459,24 +7459,24 @@ declare namespace feng3d {
         /**
          * 写ArrayBuffer(新建)文件
          * @param path 文件路径
-         * @param data 文件数据
+         * @param arraybuffer 文件数据
          * @param callback 回调函数
          */
-        abstract writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void): void;
+        abstract writeArrayBuffer(path: string, arraybuffer: ArrayBuffer, callback?: (err: Error) => void): void;
         /**
          * 写字符串到(新建)文件
          * @param path 文件路径
-         * @param data 文件数据
+         * @param str 文件数据
          * @param callback 回调函数
          */
-        abstract writeString(path: string, data: string, callback?: (err: Error) => void): void;
+        abstract writeString(path: string, str: string, callback?: (err: Error) => void): void;
         /**
          * 写Object到(新建)文件
          * @param path 文件路径
-         * @param data 文件数据
+         * @param object 文件数据
          * @param callback 回调函数
          */
-        abstract writeObject(path: string, data: Object, callback?: (err: Error) => void): void;
+        abstract writeObject(path: string, object: Object, callback?: (err: Error) => void): void;
         /**
          * 写图片
          * @param path 图片路径
@@ -14962,12 +14962,6 @@ declare namespace feng3d {
          */
         constructor(fs: ReadFS);
         /**
-         * 获取资源路径
-         *
-         * @param id 资源编号
-         */
-        getPath(id: string): string;
-        /**
          * 初始化
          *
          * @param callback 完成回调
@@ -14982,6 +14976,13 @@ declare namespace feng3d {
          * @param callback 完成回调函数
          */
         createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: Feng3dFolder, callback?: (err: Error, asset: T) => void): void;
+        /**
+         * 获取有效子文件名称
+         *
+         * @param parent 父文件夹
+         * @param name 名称
+         */
+        getValidChildName(parent: Feng3dFolder, name: string): string;
         /**
          * 读取文件为资源对象
          * @param id 资源编号

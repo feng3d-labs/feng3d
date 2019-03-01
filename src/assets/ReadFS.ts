@@ -21,21 +21,21 @@ namespace feng3d
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        abstract readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void): void;
+        abstract readArrayBuffer(path: string, callback: (err: Error, arraybuffer: ArrayBuffer) => void): void;
 
         /**
          * 读取文件为字符串
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        abstract readString(path: string, callback: (err: Error, data: string) => void): void;
+        abstract readString(path: string, callback: (err: Error, str: string) => void): void;
 
         /**
          * 读取文件为Object
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        abstract readObject(path: string, callback: (err: Error, data: Object) => void): void;
+        abstract readObject(path: string, callback: (err: Error, object: Object) => void): void;
 
         /**
          * 加载图片

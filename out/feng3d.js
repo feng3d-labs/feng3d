@@ -30727,14 +30727,6 @@ var feng3d;
             configurable: true
         });
         /**
-         * 获取资源路径
-         *
-         * @param id 资源编号
-         */
-        ReadRS.prototype.getPath = function (id) {
-            return this.idMap[id].assetsPath;
-        };
-        /**
          * 初始化
          *
          * @param callback 完成回调
@@ -30799,15 +30791,7 @@ var feng3d;
             asset.name = asset.name || "new " + asset.assetType;
             if (parent) {
                 // 计算有效名称
-                var childrenNames = parent.childrenAssets.map(function (v) { return v.name; });
-                var baseName = asset.name;
-                var newName = baseName;
-                var index = 1;
-                while (childrenNames.indexOf(newName) != -1) {
-                    newName = baseName + index;
-                    index++;
-                }
-                asset.name = newName;
+                asset.name = this.getValidChildName(parent, asset.name);
                 // 处理资源父子关系
                 parent.childrenAssets.push(asset);
                 asset.parentAsset = parent;
@@ -30821,6 +30805,22 @@ var feng3d;
             this.idMap[asset.assetsId] = asset;
             this.pathMap[asset.assetsPath] = asset;
             callback && callback(null, asset);
+        };
+        /**
+         * 获取有效子文件名称
+         *
+         * @param parent 父文件夹
+         * @param name 名称
+         */
+        ReadRS.prototype.getValidChildName = function (parent, name) {
+            var childrenNames = parent.childrenAssets.map(function (v) { return v.name; });
+            var newName = name;
+            var index = 1;
+            while (childrenNames.indexOf(newName) != -1) {
+                newName = name + index;
+                index++;
+            }
+            return newName;
         };
         /**
          * 读取文件为资源对象

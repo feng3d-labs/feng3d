@@ -48,16 +48,6 @@ namespace feng3d
         }
 
         /**
-         * 获取资源路径
-         * 
-         * @param id 资源编号
-         */
-        getPath(id: string)
-        {
-            return this.idMap[id].assetsPath;
-        }
-
-        /**
          * 初始化
          * 
          * @param callback 完成回调
@@ -131,16 +121,7 @@ namespace feng3d
             if (parent) 
             {
                 // 计算有效名称
-                var childrenNames = parent.childrenAssets.map(v => v.name);
-                var baseName = asset.name;
-                var newName = baseName;
-                var index = 1;
-                while (childrenNames.indexOf(newName) != -1)
-                {
-                    newName = baseName + index;
-                    index++;
-                }
-                asset.name = newName;
+                asset.name = this.getValidChildName(parent, asset.name);
                 // 处理资源父子关系
                 parent.childrenAssets.push(asset);
                 asset.parentAsset = parent;
@@ -153,6 +134,25 @@ namespace feng3d
             this.idMap[asset.assetsId] = asset;
             this.pathMap[asset.assetsPath] = asset;
             callback && callback(null, asset);
+        }
+
+        /**
+         * 获取有效子文件名称
+         * 
+         * @param parent 父文件夹
+         * @param name 名称
+         */
+        getValidChildName(parent: Feng3dFolder, name: string)
+        {
+            var childrenNames = parent.childrenAssets.map(v => v.name);
+            var newName = name;
+            var index = 1;
+            while (childrenNames.indexOf(newName) != -1)
+            {
+                newName = name + index;
+                index++;
+            }
+            return newName;
         }
 
         /**
