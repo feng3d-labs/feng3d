@@ -7,7 +7,7 @@ namespace feng3d
     /**
      * feng3d的版本号
      */
-    export var revision: string = "2018.08.22";
+    export var revision: string = "2019.03.01";
 
     /**
      * 是否开启调试(主要用于断言)

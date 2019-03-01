@@ -16216,7 +16216,7 @@ var feng3d;
          */
         HttpFS.prototype.readObject = function (path, callback) {
             feng3d.loader.loadText(this._getAbsolutePath(path), function (content) {
-                var obj = JSON.stringify(content);
+                var obj = JSON.parse(content);
                 var object = feng3d.serialization.deserialize(obj);
                 callback(null, object);
             }, null, function (e) {
@@ -34708,7 +34708,7 @@ var feng3d;
     /**
      * feng3d的版本号
      */
-    feng3d.revision = "2018.08.22";
+    feng3d.revision = "2019.03.01";
     /**
      * 是否开启调试(主要用于断言)
      */

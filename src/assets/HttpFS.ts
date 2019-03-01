@@ -74,7 +74,7 @@ namespace feng3d
             loader.loadText(this._getAbsolutePath(path),
                 (content) =>
                 {
-                    var obj = JSON.stringify(content);
+                    var obj = JSON.parse(content);
                     var object = serialization.deserialize(obj);
                     callback(null, object);
                 },
