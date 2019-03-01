@@ -11,12 +11,6 @@ namespace feng3d
     {
         __class__: "feng3d.Material" = "feng3d.Material";
 
-        /**
-         * 资源编号
-         */
-        @serialize
-        assetsId: string;
-
         @oav({ component: "OAVFeng3dPreView" })
         private preview = "";
 
@@ -48,7 +42,7 @@ namespace feng3d
         constructor()
         {
             super();
-            feng3dDispatcher.on("assets.shaderChanged", this.onShaderChanged, this);
+            feng3dDispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
         }
 
         beforeRender(renderAtomic: RenderAtomic)

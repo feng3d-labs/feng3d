@@ -67,11 +67,11 @@ namespace feng3d
                         var asset = assets[index];
                         // 计算路径
                         var path = asset.name + asset.extenson;
-                        if (asset.parentAsset) path = asset.parentAsset.assetsPath + "/" + path;
-                        asset.assetsPath = path;
+                        if (asset.parentAsset) path = asset.parentAsset.assetPath + "/" + path;
+                        asset.assetPath = path;
                         // 新增映射
-                        this.idMap[asset.assetsId] = asset;
-                        this.pathMap[asset.assetsPath] = asset;
+                        this.idMap[asset.assetId] = asset;
+                        this.pathMap[asset.assetPath] = asset;
                         // 
                         if (asset instanceof FolderAsset)
                         {
@@ -112,8 +112,8 @@ namespace feng3d
             parent = parent || this._root;
             //
             var asset = new cls();
-            asset.assetsId = feng3d.FMath.uuid();
-            asset.meta = { guid: asset.assetsId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
+            asset.assetId = feng3d.FMath.uuid();
+            asset.meta = { guid: asset.assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
             asset.rs = this;
             Object.setValue(asset, value);
             // 设置默认名称
@@ -128,11 +128,11 @@ namespace feng3d
             }
             // 计算路径
             var path = asset.name + asset.extenson;
-            if (asset.parentAsset) path = asset.parentAsset.assetsPath + "/" + path;
-            asset.assetsPath = path;
+            if (asset.parentAsset) path = asset.parentAsset.assetPath + "/" + path;
+            asset.assetPath = path;
             // 新增映射
-            this.idMap[asset.assetsId] = asset;
-            this.pathMap[asset.assetsPath] = asset;
+            this.idMap[asset.assetId] = asset;
+            this.pathMap[asset.assetPath] = asset;
             callback && callback(null, asset);
         }
 
@@ -160,7 +160,7 @@ namespace feng3d
          * @param id 资源编号
          * @param callback 读取完成回调
          */
-        readAssets(id: string, callback: (err: Error, assets: FileAsset) => void)
+        readAsset(id: string, callback: (err: Error, assets: FileAsset) => void)
         {
             var feng3dAsset = this.idMap[id];
             if (!feng3dAsset)
@@ -173,7 +173,7 @@ namespace feng3d
                 callback(null, feng3dAsset);
                 return;
             }
-            this._readMeta(feng3dAsset.assetsPath, (err, meta) =>
+            this._readMeta(feng3dAsset.assetPath, (err, meta) =>
             {
                 if (err)
                 {
@@ -217,17 +217,17 @@ namespace feng3d
          */
         setDefaultAssetData(assetData: AssetData)
         {
-            defaultAssets[assetData.assetsId] = assetData;
+            defaultAssets[assetData.assetId] = assetData;
         }
 
         /**
          * 获取资源
          * 
-         * @param assetsId 资源编号
+         * @param assetId 资源编号
          */
-        getAssets(assetsId: string)
+        getAsset(assetId: string)
         {
-            return this.idMap[assetsId];
+            return this.idMap[assetId];
         }
 
         /**
@@ -255,7 +255,7 @@ namespace feng3d
          * @param path 资源路径
          * @param callback 完成回调 
          */
-        private _readMeta(path: string, callback?: (err: Error, meta: AssetsMeta) => void)
+        private _readMeta(path: string, callback?: (err: Error, meta: AssetMeta) => void)
         {
             this.fs.readObject(path + metaSuffix, callback);
         }

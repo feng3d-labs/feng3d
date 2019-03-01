@@ -287,7 +287,7 @@ declare namespace feng3d {
      * @param {*} target                序列化原型
      * @param {string} propertyKey      序列化属性
      */
-    function serializeAssets(target: any, propertyKey: string): void;
+    function serializeAsset(target: any, propertyKey: string): void;
     /**
      * 序列化
      */
@@ -7160,21 +7160,21 @@ declare namespace feng3d {
         /**
          * shader资源发生变化
          */
-        "assets.shaderChanged": any;
+        "asset.shaderChanged": any;
         /**
          * 脚本发生变化
          */
-        "assets.scriptChanged": any;
+        "asset.scriptChanged": any;
         /**
          * 图片资源发生变化
          */
-        "assets.imageAssetsChanged": {
+        "asset.imageAssetChanged": {
             url: string;
         };
         /**
          * 解析出资源
          */
-        "assets.parsed": any;
+        "asset.parsed": any;
     }
     interface Feng3dDispatcher {
         once<K extends keyof Feng3dEventMap>(type: K, listener: (event: Event<Feng3dEventMap[K]>) => void, thisObject?: any, priority?: number): void;
@@ -7261,7 +7261,7 @@ declare namespace feng3d {
         /**
          * 资源编号
          */
-        assetsId: string;
+        assetId: string;
         /**
          * 资源类型，由具体对象类型决定
          */
@@ -7587,7 +7587,7 @@ declare namespace feng3d {
     /**
      * 资源元标签
      */
-    interface AssetsMeta {
+    interface AssetMeta {
         /**
          * 资源编号
          */
@@ -7860,7 +7860,7 @@ declare namespace feng3d {
         /**
          * 资源编号
          */
-        assetsId: string;
+        assetId: string;
         /**
          * 名称
          */
@@ -7868,7 +7868,7 @@ declare namespace feng3d {
         /**
          * 资源元标签
          */
-        meta: AssetsMeta;
+        meta: AssetMeta;
         /**
          * 所属资源系统
          */
@@ -7880,7 +7880,7 @@ declare namespace feng3d {
         /**
          * 资源路径
          */
-        assetsPath: string;
+        assetPath: string;
         /**
          * 资源类型，由具体对象类型决定
          */
@@ -7994,7 +7994,7 @@ declare namespace feng3d {
          * @param id 资源编号
          * @param callback 读取完成回调
          */
-        readAssets(id: string, callback: (err: Error, assets: FileAsset) => void): void;
+        readAsset(id: string, callback: (err: Error, assets: FileAsset) => void): void;
         /**
          * 获取指定类型资源
          *
@@ -8016,9 +8016,9 @@ declare namespace feng3d {
         /**
          * 获取资源
          *
-         * @param assetsId 资源编号
+         * @param assetId 资源编号
          */
-        getAssets(assetsId: string): FileAsset;
+        getAsset(assetId: string): FileAsset;
         /**
          * 获取资源数据
          *
@@ -8079,10 +8079,10 @@ declare namespace feng3d {
         /**
          * 写（保存）资源
          *
-         * @param assets 资源对象
+         * @param asset 资源对象
          * @param callback 完成回调
          */
-        writeAssets(assets: FileAsset, callback?: (err: Error) => void): void;
+        writeAsset(asset: FileAsset, callback?: (err: Error) => void): void;
         /**
          * 移动资源到指定文件夹
          *
@@ -8090,7 +8090,7 @@ declare namespace feng3d {
          * @param folder 目标文件夹
          * @param callback 完成回调
          */
-        moveAssets(asset: FileAsset, folder: FolderAsset, callback?: (err: Error) => void): void;
+        moveAsset(asset: FileAsset, folder: FolderAsset, callback?: (err: Error) => void): void;
         /**
          * 写资源元标签
          *
@@ -8102,10 +8102,10 @@ declare namespace feng3d {
         /**
          * 删除资源
          *
-         * @param assetsId 资源编号
+         * @param assetId 资源编号
          * @param callback 完成回调
          */
-        deleteAssets(assetsId: string, callback?: (err: Error) => void): void;
+        deleteAsset(assetId: string, callback?: (err: Error) => void): void;
         /**
          * 删除资源元标签
          *
@@ -11627,7 +11627,7 @@ declare namespace feng3d {
         /**
          * 资源编号
          */
-        assetsId: string;
+        assetId: string;
         readonly renderAtomic: RenderAtomic;
         /**
          * 游戏对象池
@@ -12356,7 +12356,7 @@ declare namespace feng3d {
         /**
          * 资源编号
          */
-        assetsId: string;
+        assetId: string;
         assetType: AssetExtension;
         /**
          * 几何体信息
@@ -13459,7 +13459,7 @@ declare namespace feng3d {
         protected readFile(fs: ReadFS, callback?: (err: Error) => void): void;
         private imageChanged;
         private urlChanged;
-        private onImageAssetsChanged;
+        private onImageAssetChanged;
         /**
          * 默认贴图
          */
@@ -13545,10 +13545,6 @@ declare namespace feng3d {
      */
     class Material extends AssetData {
         __class__: "feng3d.Material";
-        /**
-         * 资源编号
-         */
-        assetsId: string;
         private preview;
         /**
          * shader名称

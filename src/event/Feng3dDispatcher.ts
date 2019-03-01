@@ -10,19 +10,19 @@ namespace feng3d
         /**
          * shader资源发生变化
          */
-        "assets.shaderChanged"
+        "asset.shaderChanged"
         /**
          * 脚本发生变化
          */
-        "assets.scriptChanged"
+        "asset.scriptChanged"
         /**
          * 图片资源发生变化
          */
-        "assets.imageAssetsChanged": { url: string }
+        "asset.imageAssetChanged": { url: string }
         /**
          * 解析出资源
          */
-        "assets.parsed"
+        "asset.parsed"
     }
 
     export interface Feng3dDispatcher

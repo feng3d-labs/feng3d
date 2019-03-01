@@ -26,7 +26,7 @@ namespace feng3d
         /**
          * 漫反射纹理
          */
-        @serializeAssets
+        @serializeAsset
         @oav({ block: "diffuse" })
         s_diffuse = UrlImageTexture2D.default;
 
@@ -47,14 +47,14 @@ namespace feng3d
         /**
          * 漫反射纹理
          */
-        @serializeAssets
+        @serializeAsset
         @oav({ block: "normalMethod" })
         s_normal = UrlImageTexture2D.defaultNormal;
 
         /**
          * 镜面反射光泽图
          */
-        @serializeAssets
+        @serializeAsset
         @oav({ block: "specular" })
         s_specular = UrlImageTexture2D.default;
 
@@ -75,7 +75,7 @@ namespace feng3d
         /**
          * 环境纹理
          */
-        @serializeAssets
+        @serializeAsset
         @oav({ block: "ambient" })
         s_ambient = UrlImageTexture2D.default;
 
@@ -89,7 +89,7 @@ namespace feng3d
         /**
          * 环境映射贴图
          */
-        @serializeAssets
+        @serializeAsset
         @oav({ component: "OAVPick", block: "envMap", componentParam: { accepttype: "texturecube", datatype: "texturecube" } })
         s_envMap = TextureCube.default;
 
@@ -135,5 +135,5 @@ namespace feng3d
 
     shaderConfig.shaders["standard"].cls = StandardUniforms;
 
-    rs.setDefaultAssetData(Material.default = Object.setValue(new Material(), { name: "Default-Material", assetsId: "Default-Material", hideFlags: HideFlags.NotEditable }));
+    rs.setDefaultAssetData(Material.default = Object.setValue(new Material(), { name: "Default-Material", assetId: "Default-Material", hideFlags: HideFlags.NotEditable }));
 }

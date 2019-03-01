@@ -9,7 +9,7 @@ namespace feng3d
          * 资源编号
          */
         @serialize
-        assetsId: string;
+        assetId: string;
 
         /**
          * 名称
@@ -21,7 +21,7 @@ namespace feng3d
         /**
          * 资源元标签
          */
-        meta: AssetsMeta;
+        meta: AssetMeta;
 
         /**
          * 所属资源系统
@@ -36,7 +36,7 @@ namespace feng3d
         /**
          * 资源路径
          */
-        assetsPath: string;
+        assetPath: string;
 
         /**
          * 资源类型，由具体对象类型决定
@@ -72,7 +72,7 @@ namespace feng3d
                 callback(null, this._thumbnail);
                 return;
             }
-            fs.readImage("assetsIcon/" + this.assetsId + ".png", (err, image) =>
+            fs.readImage("assetIcon/" + this.assetId + ".png", (err, image) =>
             {
                 this._thumbnail = image;
                 callback(err, image);
@@ -94,7 +94,7 @@ namespace feng3d
                 return;
             }
             this._thumbnail = image;
-            fs.writeImage("assetsIcon/" + this.assetsId + ".png", image, callback);
+            fs.writeImage("assetIcon/" + this.assetId + ".png", image, callback);
         }
 
         /**

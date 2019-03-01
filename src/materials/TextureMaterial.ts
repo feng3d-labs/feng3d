@@ -16,7 +16,7 @@ namespace feng3d
          * 纹理数据
          */
         @oav()
-        @serializeAssets
+        @serializeAsset
         s_texture = UrlImageTexture2D.default;
     }
 

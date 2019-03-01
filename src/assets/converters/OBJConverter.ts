@@ -28,7 +28,7 @@ namespace feng3d
                 object.addChild(gameObject);
             }
 
-            feng3dDispatcher.dispatch("assets.parsed", object);
+            feng3dDispatcher.dispatch("asset.parsed", object);
 
             completed && completed(object);
         }
@@ -88,7 +88,7 @@ namespace feng3d
         if (uvs.length > 0)
             geometry.setVAData("a_uv", uvs, 2);
 
-        feng3dDispatcher.dispatch("assets.parsed", geometry);
+        feng3dDispatcher.dispatch("asset.parsed", geometry);
 
         return gameObject;
 

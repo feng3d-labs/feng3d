@@ -395,5 +395,5 @@ namespace feng3d
         }
     }
 
-    rs.setDefaultAssetData(Geometry.billboard = Object.setValue(new PlaneGeometry(), { name: "Billboard", assetsId: "Billboard-Geometry", yUp: false, hideFlags: HideFlags.NotEditable }));
+    rs.setDefaultAssetData(Geometry.billboard = Object.setValue(new PlaneGeometry(), { name: "Billboard", assetId: "Billboard-Geometry", yUp: false, hideFlags: HideFlags.NotEditable }));
 }

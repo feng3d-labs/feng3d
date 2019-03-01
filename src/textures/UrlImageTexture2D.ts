@@ -18,7 +18,7 @@ namespace feng3d
         {
             super();
             //
-            feng3dDispatcher.on("assets.imageAssetsChanged", this.onImageAssetsChanged, this);
+            feng3dDispatcher.on("asset.imageAssetChanged", this.onImageAssetChanged, this);
             this.urlChanged();
         }
 
@@ -120,7 +120,7 @@ namespace feng3d
 
         }
 
-        private onImageAssetsChanged(e: Event<{ url: string; }>)
+        private onImageAssetChanged(e: Event<{ url: string; }>)
         {
             if (this.url == e.data.url)
                 this.urlChanged();
@@ -142,7 +142,7 @@ namespace feng3d
         static defaultParticle: UrlImageTexture2D;
     }
 
-    rs.setDefaultAssetData(UrlImageTexture2D.default = Object.setValue(new UrlImageTexture2D(), { name: "Default-Texture", assetsId: "Default-Texture", hideFlags: HideFlags.NotEditable }));
-    rs.setDefaultAssetData(UrlImageTexture2D.defaultNormal = Object.setValue(new UrlImageTexture2D(), { name: "Default-NormalTexture", assetsId: "Default-NormalTexture", noPixels: ImageDatas.defaultNormal, hideFlags: HideFlags.NotEditable }));
-    rs.setDefaultAssetData(UrlImageTexture2D.defaultParticle = Object.setValue(new UrlImageTexture2D(), { name: "Default-ParticleTexture", assetsId: "Default-ParticleTexture", noPixels: ImageDatas.defaultParticle, format: TextureFormat.RGBA, hideFlags: HideFlags.NotEditable }));
+    rs.setDefaultAssetData(UrlImageTexture2D.default = Object.setValue(new UrlImageTexture2D(), { name: "Default-Texture", assetId: "Default-Texture", hideFlags: HideFlags.NotEditable }));
+    rs.setDefaultAssetData(UrlImageTexture2D.defaultNormal = Object.setValue(new UrlImageTexture2D(), { name: "Default-NormalTexture", assetId: "Default-NormalTexture", noPixels: ImageDatas.defaultNormal, hideFlags: HideFlags.NotEditable }));
+    rs.setDefaultAssetData(UrlImageTexture2D.defaultParticle = Object.setValue(new UrlImageTexture2D(), { name: "Default-ParticleTexture", assetId: "Default-ParticleTexture", noPixels: ImageDatas.defaultParticle, format: TextureFormat.RGBA, hideFlags: HideFlags.NotEditable }));
 }

@@ -220,5 +220,5 @@ namespace feng3d
         }
     }
 
-    rs.setDefaultAssetData(Geometry.sphere = Object.setValue(new SphereGeometry(), { name: "Sphere", assetsId: "Sphere", hideFlags: HideFlags.NotEditable }));
+    rs.setDefaultAssetData(Geometry.sphere = Object.setValue(new SphereGeometry(), { name: "Sphere", assetId: "Sphere", hideFlags: HideFlags.NotEditable }));
 }

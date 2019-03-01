@@ -55,7 +55,7 @@ namespace feng3d
                 if (asset)
                 {
                     // 保存资源
-                    this.writeAssets(asset, (err) =>
+                    this.writeAsset(asset, (err) =>
                     {
                         callback && callback(err, asset);
 
@@ -72,13 +72,13 @@ namespace feng3d
         /**
          * 写（保存）资源
          * 
-         * @param assets 资源对象
+         * @param asset 资源对象
          * @param callback 完成回调
          */
-        writeAssets(assets: FileAsset, callback?: (err: Error) => void)
+        writeAsset(asset: FileAsset, callback?: (err: Error) => void)
         {
-            assets.meta.mtimeMs = Date.now();
-            this._writeMeta(assets.assetsPath, assets.meta, (err) =>
+            asset.meta.mtimeMs = Date.now();
+            this._writeMeta(asset.assetPath, asset.meta, (err) =>
             {
                 if (err)
                 {
@@ -86,7 +86,7 @@ namespace feng3d
                     return;
                 }
 
-                assets["saveFile"](this.fs, err =>
+                asset["saveFile"](this.fs, err =>
                 {
                     callback && callback(err);
                 });
@@ -100,7 +100,7 @@ namespace feng3d
          * @param folder 目标文件夹
          * @param callback 完成回调
          */
-        moveAssets(asset: FileAsset, folder: FolderAsset, callback?: (err: Error) => void)
+        moveAsset(asset: FileAsset, folder: FolderAsset, callback?: (err: Error) => void)
         {
             var filename = asset.name + asset.extenson
 
@@ -143,7 +143,7 @@ namespace feng3d
             var copyassets = assets.concat();
 
             // 移动最后一个资源
-            var moveLastAssets = () =>
+            var moveLastAsset = () =>
             {
                 if (assets.length == 0)
                 {
@@ -159,7 +159,7 @@ namespace feng3d
                 }
                 var la = assets.pop();
                 // 读取资源
-                this.readAssets(la.assetsId, (err, a) =>
+                this.readAsset(la.assetId, (err, a) =>
                 {
                     if (err)
                     {
@@ -169,7 +169,7 @@ namespace feng3d
                     // 备份父资源
                     var pla = la.parentAsset;
                     // 从原路径上删除资源
-                    this.deleteAssets(la.assetsId, (err) =>
+                    this.deleteAsset(la.assetId, (err) =>
                     {
                         if (err)
                         {
@@ -186,24 +186,24 @@ namespace feng3d
                             np = p.name + "/" + np;
                             p = p.parentAsset;
                         }
-                        la.assetsPath = np;
+                        la.assetPath = np;
                         // 新增映射
-                        this.idMap[la.assetsId] = la;
-                        this.pathMap[la.assetsPath] = la;
+                        this.idMap[la.assetId] = la;
+                        this.pathMap[la.assetPath] = la;
                         // 保存资源到新路径
-                        this.writeAssets(la, (err) =>
+                        this.writeAsset(la, (err) =>
                         {
                             if (err)
                             {
                                 callback && callback(err);
                                 return;
                             }
-                            moveLastAssets();
+                            moveLastAsset();
                         });
                     });
                 });
             }
-            moveLastAssets();
+            moveLastAsset();
         }
 
         /**
@@ -213,7 +213,7 @@ namespace feng3d
          * @param meta 资源元标签
          * @param callback 完成回调
          */
-        private _writeMeta(path: string, meta: AssetsMeta, callback?: (err: Error) => void)
+        private _writeMeta(path: string, meta: AssetMeta, callback?: (err: Error) => void)
         {
             this.fs.writeObject(path + metaSuffix, meta, callback);
         }
@@ -221,12 +221,12 @@ namespace feng3d
         /**
          * 删除资源
          * 
-         * @param assetsId 资源编号
+         * @param assetId 资源编号
          * @param callback 完成回调
          */
-        deleteAssets(assetsId: string, callback?: (err: Error) => void)
+        deleteAsset(assetId: string, callback?: (err: Error) => void)
         {
-            var asset = this.idMap[assetsId];
+            var asset = this.idMap[assetId];
             // 获取需要移动的资源列表
             var assets = [asset];
             var index = 0;
@@ -241,7 +241,7 @@ namespace feng3d
             }
 
             // 删除最后一个资源
-            var deleteLastAssets = () =>
+            var deleteLastAsset = () =>
             {
                 if (assets.length == 0)
                 {
@@ -253,14 +253,14 @@ namespace feng3d
                 var la = assets.pop();
 
                 // 删除 meta 文件
-                this._deleteMeta(la.assetsPath, (err) =>
+                this._deleteMeta(la.assetPath, (err) =>
                 {
                     if (err)
                     {
                         callback && callback(err);
                         return;
                     }
-                    this.fs.deleteFile(la.assetsPath, (err) =>
+                    this.fs.deleteFile(la.assetPath, (err) =>
                     {
                         // 删除父子资源关系
                         if (la.parentAsset)
@@ -270,15 +270,15 @@ namespace feng3d
                             la.parentAsset = null;
                         }
                         // 删除映射
-                        delete this.idMap[la.assetsId];
-                        delete this.pathMap[la.assetsPath];
+                        delete this.idMap[la.assetId];
+                        delete this.pathMap[la.assetPath];
 
-                        deleteLastAssets();
+                        deleteLastAsset();
                     });
                 });
 
             };
-            deleteLastAssets();
+            deleteLastAsset();
 
 
         }

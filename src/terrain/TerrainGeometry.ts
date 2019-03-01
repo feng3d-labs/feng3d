@@ -10,7 +10,7 @@ namespace feng3d
         /**
          * 高度图路径
          */
-        @serializeAssets
+        @serializeAsset
         @oav()
         @watch("onHeightMapChanged")
         heightMap = UrlImageTexture2D.default;
@@ -246,5 +246,5 @@ namespace feng3d
      */
     var defaultHeightMap = new ImageUtil(1024, 1024, new Color4(0, 0, 0, 0)).imageData;
 
-    rs.setDefaultAssetData(Geometry.terrain = Object.setValue(new TerrainGeometry(), { name: "Terrain-Geometry", assetsId: "Terrain-Geometry", hideFlags: HideFlags.NotEditable }));
+    rs.setDefaultAssetData(Geometry.terrain = Object.setValue(new TerrainGeometry(), { name: "Terrain-Geometry", assetId: "Terrain-Geometry", hideFlags: HideFlags.NotEditable }));
 }

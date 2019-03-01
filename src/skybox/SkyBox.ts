@@ -9,7 +9,7 @@ namespace feng3d
     {
         __class__: "feng3d.SkyBox" = "feng3d.SkyBox";
 
-        @serializeAssets
+        @serializeAsset
         @oav({ component: "OAVPick", componentParam: { accepttype: "texturecube", datatype: "texturecube" } })
         s_skyboxTexture = TextureCube.default;
 

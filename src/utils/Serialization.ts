@@ -21,10 +21,10 @@ namespace feng3d
      * @param {*} target                序列化原型
      * @param {string} propertyKey      序列化属性
      */
-    export function serializeAssets(target: any, propertyKey: string)
+    export function serializeAsset(target: any, propertyKey: string)
     {
         var serializeInfo = getSerializeInfo(target);
-        serializeInfo.propertys.push({ property: propertyKey, assets: true });
+        serializeInfo.propertys.push({ property: propertyKey, asset: true });
     }
 
     /**
@@ -114,12 +114,12 @@ namespace feng3d
             for (var i = 0; i < serializableMembers.length; i++)
             {
                 var property = serializableMembers[i].property;
-                var assets = serializableMembers[i].assets;
-                if (assets && target[property] instanceof FileAsset && target[property].assetsId)
+                var asset = serializableMembers[i].asset;
+                if (asset && target[property] instanceof FileAsset && (<FileAsset>target[property]).assetId)
                 {
-                    var assetsId0 = target[property] && (<FileAsset>target[property]).assetsId;
-                    var assetsId1 = defaultInstance[property] && (<FileAsset>defaultInstance[property]).assetsId;
-                    if (assetsId0 != assetsId1) different[property] = assetsId0;
+                    var assetId0 = target[property] && (<FileAsset>target[property]).assetId;
+                    var assetId1 = defaultInstance[property] && (<FileAsset>defaultInstance[property]).assetId;
+                    if (assetId0 != assetId1) different[property] = assetId0;
                     continue;
                 }
 
@@ -229,7 +229,7 @@ namespace feng3d
 
             tempInfo = initTempInfo(tempInfo);
 
-            var serializeAssets = getSerializableMembers(target).reduce((pv: string[], cv) => { if (cv.assets) pv.push(cv.property); return pv; }, []);
+            var serializeAssets = getSerializableMembers(target).reduce((pv: string[], cv) => { if (cv.asset) pv.push(cv.property); return pv; }, []);
             for (const property in object)
             {
                 if (object.hasOwnProperty(property))
@@ -240,9 +240,9 @@ namespace feng3d
                         {
                             tempInfo.loadingNum++;
 
-                            rs.readAssets(<any>object[property], (err, feng3dAssets) =>
+                            rs.readAsset(<any>object[property], (err, asset) =>
                             {
-                                target[property] = <any>feng3dAssets.data;
+                                target[property] = <any>asset.data;
                                 tempInfo.loadingNum--;
                                 if (tempInfo.loadingNum == 0)
                                 {
@@ -343,7 +343,7 @@ namespace feng3d
 
     interface SerializeInfo
     {
-        propertys: { property: string, assets?: boolean }[];
+        propertys: { property: string, asset?: boolean }[];
         default: Object;
     }
 
@@ -397,7 +397,7 @@ namespace feng3d
     /**
      * 获取序列化属性列表
      */
-    function getSerializableMembers(object: Object, serializableMembers?: { property: string; assets?: boolean; }[])
+    function getSerializableMembers(object: Object, serializableMembers?: { property: string; asset?: boolean; }[])
     {
         serializableMembers = serializableMembers || [];
         if (object["__proto__"])

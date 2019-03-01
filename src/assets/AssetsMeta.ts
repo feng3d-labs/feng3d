@@ -8,7 +8,7 @@ namespace feng3d
     /**
      * 资源元标签
      */
-    export interface AssetsMeta
+    export interface AssetMeta
     {
         /**
          * 资源编号

@@ -28,7 +28,7 @@ namespace feng3d
         init(gameObject: GameObject)
         {
             super.init(gameObject);
-            feng3d.feng3dDispatcher.on("assets.scriptChanged", this.onScriptChanged, this);
+            feng3d.feng3dDispatcher.on("asset.scriptChanged", this.onScriptChanged, this);
         }
 
         private scriptChanged(property, oldValue: Script, newValue: Script)
@@ -88,7 +88,7 @@ namespace feng3d
             }
             super.dispose();
 
-            feng3d.feng3dDispatcher.off("assets.scriptChanged", this.onScriptChanged, this);
+            feng3d.feng3dDispatcher.off("asset.scriptChanged", this.onScriptChanged, this);
         }
     }
 }

@@ -30,7 +30,7 @@ namespace feng3d
         u_waterColor = new Color3().fromUnit(0x555555);
 
         @oav()
-        @serializeAssets
+        @serializeAsset
         @oav({ tooltip: "水体法线图" })
         s_normalSampler = UrlImageTexture2D.default;
 
@@ -48,5 +48,5 @@ namespace feng3d
 
     shaderConfig.shaders["water"].cls = WaterUniforms;
 
-    rs.setDefaultAssetData(Material.water = Object.setValue(new Material(), { name: "Water-Material", assetsId: "Water-Material", shaderName: "water", hideFlags: HideFlags.NotEditable }));
+    rs.setDefaultAssetData(Material.water = Object.setValue(new Material(), { name: "Water-Material", assetId: "Water-Material", shaderName: "water", hideFlags: HideFlags.NotEditable }));
 }

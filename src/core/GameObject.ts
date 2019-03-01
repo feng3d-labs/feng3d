@@ -69,7 +69,7 @@ namespace feng3d
          * 资源编号
          */
         @serialize
-        assetsId: string;
+        assetId: string;
 
         readonly renderAtomic = new RenderAtomic();
 

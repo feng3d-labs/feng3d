@@ -6,19 +6,19 @@ namespace feng3d
     {
         __class__: "feng3d.TerrainUniforms" = "feng3d.TerrainUniforms";
 
-        @serializeAssets
+        @serializeAsset
         @oav({ block: "terrain" })
         s_splatTexture1 = UrlImageTexture2D.default;
 
-        @serializeAssets
+        @serializeAsset
         @oav({ block: "terrain" })
         s_splatTexture2 = UrlImageTexture2D.default;
 
-        @serializeAssets
+        @serializeAsset
         @oav({ block: "terrain" })
         s_splatTexture3 = UrlImageTexture2D.default;
 
-        @serializeAssets
+        @serializeAsset
         @oav({ block: "terrain" })
         s_blendTexture = UrlImageTexture2D.default;
 
@@ -29,5 +29,5 @@ namespace feng3d
 
     shaderConfig.shaders["terrain"].cls = TerrainUniforms;
 
-    rs.setDefaultAssetData(Material.terrain = Object.setValue(new Material(), { name: "Terrain-Material", assetsId: "Terrain-Material", shaderName: "terrain", hideFlags: HideFlags.NotEditable }));
+    rs.setDefaultAssetData(Material.terrain = Object.setValue(new Material(), { name: "Terrain-Material", assetId: "Terrain-Material", shaderName: "terrain", hideFlags: HideFlags.NotEditable }));
 }

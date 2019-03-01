@@ -22,7 +22,7 @@ namespace feng3d
          */
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void)
         {
-            fs.mkdir(this.assetsPath, callback);
+            fs.mkdir(this.assetPath, callback);
         }
     }
 }
