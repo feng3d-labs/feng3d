@@ -103,6 +103,7 @@
         "src/assets/fs/base/load.ts",
         //
         "src/core/Feng3dObject.ts",
+        "src/core/AssetData.ts",
         //
         "src/assets/fs/base/_IndexedDB.ts",
         "src/assets/fs/FSType.ts",

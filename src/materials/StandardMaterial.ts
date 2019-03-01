@@ -135,5 +135,5 @@ namespace feng3d
 
     shaderConfig.shaders["standard"].cls = StandardUniforms;
 
-    rs.setDefaultAssets(Material.default = Object.setValue(new Material(), { name: "Default-Material", assetsId: "Default-Material", hideFlags: HideFlags.NotEditable }));
+    rs.setDefaultAssetData(Material.default = Object.setValue(new Material(), { name: "Default-Material", assetsId: "Default-Material", hideFlags: HideFlags.NotEditable }));
 }

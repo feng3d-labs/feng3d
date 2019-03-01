@@ -196,8 +196,17 @@ namespace feng3d
         getAssetsByType<T extends FileAsset>(type: Constructor<T>): T[]
         {
             var assets = Object.keys(this.idMap).map(v => this.idMap[v]);
-            var assets1 = Object.keys(defaultAssets).map(v => this.idMap[v]);
-            assets = assets.concat(assets1);
+            return <any>assets.filter(v => v instanceof type);
+        }
+
+        /**
+         * 获取指定类型资源数据
+         * 
+         * @param type 资源类型
+         */
+        getAssetDatasByType<T extends AssetData>(type: Constructor<T>): T[]
+        {
+            var assets = Object.keys(this.idMap).map(v => this.idMap[v].data);
             return <any>assets.filter(v => v instanceof type);
         }
 
@@ -206,18 +215,29 @@ namespace feng3d
          * 
          * @param assets 资源
          */
-        setDefaultAssets(assets: FileAsset)
+        setDefaultAssetData(assetData: AssetData)
         {
-            defaultAssets[assets.assetsId] = assets;
+            defaultAssets[assetData.assetsId] = assetData;
         }
 
         /**
          * 获取资源
+         * 
          * @param assetsId 资源编号
          */
         getAssets(assetsId: string)
         {
-            return this.idMap[assetsId] || defaultAssets[assetsId];
+            return this.idMap[assetsId];
+        }
+
+        /**
+         * 获取资源数据
+         * 
+         * @param assetId 资源编号
+         */
+        getAssetData(assetId: string)
+        {
+            return defaultAssets[assetId] || this.idMap[assetId].data;
         }
 
         /**
@@ -241,8 +261,8 @@ namespace feng3d
         }
     }
     /**
-     * 默认资源，该类资源不会保存到文件系统中
+     * 默认资源数据，该类资源不会保存到文件系统中
      */
-    var defaultAssets: { [id: string]: FileAsset } = {};
+    var defaultAssets: { [id: string]: AssetData } = {};
     rs = new ReadRS();
 }

@@ -5,9 +5,6 @@ namespace feng3d
      */
     export class FolderAsset extends FileAsset
     {
-        @oav()
-        name: string;
-
         assetType = AssetExtension.folder;
 
         /**

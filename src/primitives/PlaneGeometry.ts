@@ -249,5 +249,5 @@ namespace feng3d
         }
     }
 
-    rs.setDefaultAssets(Geometry.plane = Object.setValue(new PlaneGeometry(), { name: "Plane", assetsId: "Plane", width: 10, height: 10, hideFlags: HideFlags.NotEditable }));
+    rs.setDefaultAssetData(Geometry.plane = Object.setValue(new PlaneGeometry(), { name: "Plane", assetsId: "Plane", width: 10, height: 10, hideFlags: HideFlags.NotEditable }));
 }

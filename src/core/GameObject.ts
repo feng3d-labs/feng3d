@@ -58,12 +58,18 @@ namespace feng3d
     /**
      * 游戏对象，场景唯一存在的对象类型
      */
-    export class GameObject extends Feng3dObject
+    export class GameObject extends AssetData
     {
 
         __class__: "feng3d.GameObject" = "feng3d.GameObject";
 
         assetType = AssetExtension.gameobject;
+
+        /**
+         * 资源编号
+         */
+        @serialize
+        assetsId: string;
 
         readonly renderAtomic = new RenderAtomic();
 

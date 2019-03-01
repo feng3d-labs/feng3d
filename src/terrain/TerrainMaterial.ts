@@ -29,5 +29,5 @@ namespace feng3d
 
     shaderConfig.shaders["terrain"].cls = TerrainUniforms;
 
-    rs.setDefaultAssets(Material.terrain = Object.setValue(new Material(), { name: "Terrain-Material", assetsId: "Terrain-Material", shaderName: "terrain", hideFlags: HideFlags.NotEditable }));
+    rs.setDefaultAssetData(Material.terrain = Object.setValue(new Material(), { name: "Terrain-Material", assetsId: "Terrain-Material", shaderName: "terrain", hideFlags: HideFlags.NotEditable }));
 }

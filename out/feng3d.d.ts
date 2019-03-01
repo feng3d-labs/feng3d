@@ -7249,6 +7249,27 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 资源数据
+     *
+     * 该对象可由资源文件中读取，或者保存为资源
+     */
+    class AssetData extends Feng3dObject {
+        /**
+         * 资源名称
+         */
+        name: string;
+        /**
+         * 资源编号
+         */
+        assetsId: string;
+        /**
+         * 资源类型，由具体对象类型决定
+         */
+        assetType: AssetExtension;
+    }
+}
+declare namespace feng3d {
+    /**
      *
      */
     var _indexedDB: _IndexedDB;
@@ -7833,15 +7854,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 资源数据
-     */
-    interface IAssetData {
-        /**
-         * 资源编号
-         */
-        assetsId: string;
-    }
-    /**
      * feng3d资源
      */
     class FileAsset extends Feng3dObject {
@@ -7880,7 +7892,7 @@ declare namespace feng3d {
         /**
          * 资源对象
          */
-        data: IAssetData;
+        data: AssetData;
         /**
          * 缩略图
          */
@@ -7990,16 +8002,29 @@ declare namespace feng3d {
          */
         getAssetsByType<T extends FileAsset>(type: Constructor<T>): T[];
         /**
+         * 获取指定类型资源数据
+         *
+         * @param type 资源类型
+         */
+        getAssetDatasByType<T extends AssetData>(type: Constructor<T>): T[];
+        /**
          * 设置默认资源，该类资源不会保存到文件系统中
          *
          * @param assets 资源
          */
-        setDefaultAssets(assets: FileAsset): void;
+        setDefaultAssetData(assetData: AssetData): void;
         /**
          * 获取资源
+         *
          * @param assetsId 资源编号
          */
         getAssets(assetsId: string): FileAsset;
+        /**
+         * 获取资源数据
+         *
+         * @param assetId 资源编号
+         */
+        getAssetData(assetId: string): AssetData;
         /**
          * 获取所有资源
          */
@@ -10710,7 +10735,7 @@ declare namespace feng3d {
     /**
      * 纹理信息
      */
-    abstract class TextureInfo extends Feng3dObject {
+    abstract class TextureInfo extends AssetData {
         /**
          * 纹理类型
          */
@@ -11596,9 +11621,13 @@ declare namespace feng3d {
     /**
      * 游戏对象，场景唯一存在的对象类型
      */
-    class GameObject extends Feng3dObject {
+    class GameObject extends AssetData {
         __class__: "feng3d.GameObject";
         assetType: AssetExtension;
+        /**
+         * 资源编号
+         */
+        assetsId: string;
         readonly renderAtomic: RenderAtomic;
         /**
          * 游戏对象池
@@ -12281,7 +12310,7 @@ declare namespace feng3d {
     /**
      * 几何体
      */
-    class Geometry extends Feng3dObject {
+    class Geometry extends AssetData {
         /**
          * 立（长）方体几何体
          */
@@ -12324,6 +12353,10 @@ declare namespace feng3d {
         static billboard: PlaneGeometry;
         private preview;
         name: string;
+        /**
+         * 资源编号
+         */
+        assetsId: string;
         assetType: AssetExtension;
         /**
          * 几何体信息
@@ -13510,9 +13543,12 @@ declare namespace feng3d {
     /**
      * 材质
      */
-    class Material extends Feng3dObject {
+    class Material extends AssetData {
         __class__: "feng3d.Material";
-        assetType: AssetExtension;
+        /**
+         * 资源编号
+         */
+        assetsId: string;
         private preview;
         /**
          * shader名称
@@ -15082,7 +15118,6 @@ declare namespace feng3d {
      * 文件夹资源
      */
     class FolderAsset extends FileAsset {
-        name: string;
         assetType: AssetExtension;
         /**
          * 子资源列表

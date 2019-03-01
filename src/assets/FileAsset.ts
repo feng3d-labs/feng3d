@@ -1,17 +1,6 @@
 namespace feng3d
 {
     /**
-     * 资源数据
-     */
-    export interface IAssetData
-    {
-        /**
-         * 资源编号
-         */
-        assetsId: string;
-    }
-
-    /**
      * feng3d资源
      */
     export class FileAsset extends Feng3dObject
@@ -63,7 +52,7 @@ namespace feng3d
         /**
          * 资源对象
          */
-        data: IAssetData;
+        data: AssetData;
 
         /**
          * 缩略图

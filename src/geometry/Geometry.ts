@@ -24,7 +24,7 @@ namespace feng3d
     /**
      * 几何体
      */
-    export class Geometry extends Feng3dObject
+    export class Geometry extends AssetData
     {
 
         /**
@@ -82,6 +82,11 @@ namespace feng3d
 
         @oav()
         name: string;
+
+        /**
+         * 资源编号
+         */
+        assetsId: string;
 
         assetType = AssetExtension.geometry;
 

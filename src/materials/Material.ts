@@ -7,11 +7,15 @@ namespace feng3d
     /**
      * 材质
      */
-    export class Material extends Feng3dObject
+    export class Material extends AssetData
     {
         __class__: "feng3d.Material" = "feng3d.Material";
 
-        assetType = AssetExtension.material;
+        /**
+         * 资源编号
+         */
+        @serialize
+        assetsId: string;
 
         @oav({ component: "OAVFeng3dPreView" })
         private preview = "";

@@ -66,5 +66,5 @@ namespace feng3d
         uv?: Vector2;
     }
 
-    rs.setDefaultAssets(Geometry.point = Object.setValue(new PointGeometry(), { name: "PointGeometry", assetsId: "PointGeometry", points: [], hideFlags: HideFlags.NotEditable }));
+    rs.setDefaultAssetData(Geometry.point = Object.setValue(new PointGeometry(), { name: "PointGeometry", assetsId: "PointGeometry", points: [], hideFlags: HideFlags.NotEditable }));
 }

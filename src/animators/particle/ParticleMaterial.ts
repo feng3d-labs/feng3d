@@ -12,7 +12,7 @@ namespace feng3d
 
     shaderConfig.shaders["particle"].cls = ParticleUniforms;
 
-    rs.setDefaultAssets(Material.particle = Object.setValue(new Material(), {
+    rs.setDefaultAssetData(Material.particle = Object.setValue(new Material(), {
         name: "Particle-Material", assetsId: "Particle-Material", shaderName: "particle",
         renderParams: { enableBlend: true, depthMask: false },
         hideFlags: HideFlags.NotEditable,
