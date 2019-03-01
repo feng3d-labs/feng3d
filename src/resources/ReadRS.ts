@@ -13,7 +13,7 @@ namespace feng3d
         /**
          * 文件系统
          */
-        get fs() { return this._fs; }
+        get fs() { return this._fs || fs; }
         private _fs: ReadFS;
 
         /**
@@ -42,7 +42,7 @@ namespace feng3d
          * 
          * @param fs 可读文件系统
          */
-        constructor(fs: ReadFS)
+        constructor(fs?: ReadFS)
         {
             this._fs = fs;
         }
@@ -54,7 +54,7 @@ namespace feng3d
          */
         init(callback?: () => void)
         {
-            this._fs.readObject(this.resources, (err, data: Feng3dFolder) =>
+            this.fs.readObject(this.resources, (err, data: Feng3dFolder) =>
             {
                 if (data)
                 {
@@ -244,5 +244,5 @@ namespace feng3d
      * 默认资源，该类资源不会保存到文件系统中
      */
     var defaultAssets: { [id: string]: Feng3dAssets } = {};
-    rs = new ReadRS(fs);
+    rs = new ReadRS();
 }

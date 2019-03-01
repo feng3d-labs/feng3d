@@ -7956,7 +7956,7 @@ declare namespace feng3d {
          *
          * @param fs 可读文件系统
          */
-        constructor(fs: ReadFS);
+        constructor(fs?: ReadFS);
         /**
          * 初始化
          *

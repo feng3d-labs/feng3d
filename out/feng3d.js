@@ -16455,7 +16455,7 @@ var feng3d;
             /**
              * 文件系统
              */
-            get: function () { return this._fs; },
+            get: function () { return this._fs || feng3d.fs; },
             enumerable: true,
             configurable: true
         });
@@ -16474,7 +16474,7 @@ var feng3d;
          */
         ReadRS.prototype.init = function (callback) {
             var _this = this;
-            this._fs.readObject(this.resources, function (err, data) {
+            this.fs.readObject(this.resources, function (err, data) {
                 if (data) {
                     _this._root = data;
                     //
@@ -16641,7 +16641,7 @@ var feng3d;
      * 默认资源，该类资源不会保存到文件系统中
      */
     var defaultAssets = {};
-    feng3d.rs = new ReadRS(feng3d.fs);
+    feng3d.rs = new ReadRS();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -16656,7 +16656,6 @@ var feng3d;
          * @param fs 可读写文件系统
          */
         function ReadWriteRS(fs) {
-            if (fs === void 0) { fs = feng3d.indexedDBFS; }
             var _this = _super.call(this, fs) || this;
             /**
              * 延迟保存执行函数

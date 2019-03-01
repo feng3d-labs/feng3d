@@ -24,7 +24,7 @@ namespace feng3d
          * 
          * @param fs 可读写文件系统
          */
-        constructor(fs: ReadWriteFS = feng3d.indexedDBFS)
+        constructor(fs?: ReadWriteFS)
         {
             super(fs);
         }
