@@ -30805,6 +30805,7 @@ var feng3d;
                 var index = 1;
                 while (childrenNames.indexOf(newName) != -1) {
                     newName = baseName + index;
+                    index++;
                 }
                 asset.name = newName;
                 // 处理资源父子关系
@@ -30876,15 +30877,25 @@ var feng3d;
          */
         function ReadWriteRS(fs) {
             if (fs === void 0) { fs = feng3d.indexedDBFS; }
-            return _super.call(this, fs) || this;
+            var _this = _super.call(this, fs) || this;
+            /**
+             * 延迟保存执行函数
+             */
+            _this.laterSaveFunc = function (interval) { _this.save(); };
+            /**
+             * 延迟保存，避免多次操作时频繁调用保存
+             */
+            _this.laterSave = function () { feng3d.ticker.nextframe(_this.laterSaveFunc, _this); console.log("ReadWriteRS.laterSave"); };
+            return _this;
         }
         /**
-         * 保存
+         * 在更改资源结构（新增，移动，删除）时会自动保存
          *
          * @param callback 完成回调
          */
         ReadWriteRS.prototype.save = function (callback) {
             this.fs.writeObject(this.resources, this.root, callback);
+            console.log("ReadWriteRS.save");
         };
         /**
          * 新建资源
@@ -30896,10 +30907,14 @@ var feng3d;
          */
         ReadWriteRS.prototype.createAsset = function (cls, value, parent, callback) {
             var _this = this;
+            // 新建资源
             _super.prototype.createAsset.call(this, cls, value, parent, function (err, asset) {
                 if (asset) {
+                    // 保存资源
                     _this.writeAssets(asset, function (err) {
                         callback && callback(err, asset);
+                        // 保存资源库
+                        _this.laterSave();
                     });
                 }
                 else {
@@ -30974,6 +30989,8 @@ var feng3d;
                         v.parentAsset.childrenAssets.push(v);
                     });
                     callback && callback(null);
+                    // 保存资源库
+                    _this.laterSave();
                     return;
                 }
                 var la = assets.pop();
@@ -31050,6 +31067,8 @@ var feng3d;
             var deleteLastAssets = function () {
                 if (assets.length == 0) {
                     callback && callback(null);
+                    // 保存资源库
+                    _this.laterSave();
                     return;
                 }
                 var la = assets.pop();

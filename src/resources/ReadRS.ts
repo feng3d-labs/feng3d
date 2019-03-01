@@ -138,6 +138,7 @@ namespace feng3d
                 while (childrenNames.indexOf(newName) != -1)
                 {
                     newName = baseName + index;
+                    index++;
                 }
                 asset.name = newName;
                 // 处理资源父子关系

@@ -15007,17 +15007,25 @@ declare namespace feng3d {
          */
         fs: ReadWriteFS;
         /**
+         * 延迟保存执行函数
+         */
+        private laterSaveFunc;
+        /**
+         * 延迟保存，避免多次操作时频繁调用保存
+         */
+        private laterSave;
+        /**
          * 构建可读写资源系统
          *
          * @param fs 可读写文件系统
          */
         constructor(fs?: ReadWriteFS);
         /**
-         * 保存
+         * 在更改资源结构（新增，移动，删除）时会自动保存
          *
          * @param callback 完成回调
          */
-        save(callback?: (err: Error) => void): void;
+        private save;
         /**
          * 新建资源
          *

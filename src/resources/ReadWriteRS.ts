@@ -11,6 +11,15 @@ namespace feng3d
         fs: ReadWriteFS;
 
         /**
+         * 延迟保存执行函数
+         */
+        private laterSaveFunc = (interval: number) => { this.save(); };
+        /**
+         * 延迟保存，避免多次操作时频繁调用保存
+         */
+        private laterSave = () => { ticker.nextframe(this.laterSaveFunc, this); console.log("ReadWriteRS.laterSave"); };
+
+        /**
          * 构建可读写资源系统
          * 
          * @param fs 可读写文件系统
@@ -21,13 +30,14 @@ namespace feng3d
         }
 
         /**
-         * 保存
+         * 在更改资源结构（新增，移动，删除）时会自动保存
          * 
          * @param callback 完成回调
          */
-        save(callback?: (err: Error) => void)
+        private save(callback?: (err: Error) => void)
         {
             this.fs.writeObject(this.resources, this.root, callback)
+            console.log("ReadWriteRS.save");
         }
 
         /**
@@ -40,13 +50,18 @@ namespace feng3d
          */
         createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: Feng3dFolder, callback?: (err: Error, asset: T) => void)
         {
+            // 新建资源
             super.createAsset(cls, value, parent, (err, asset) =>
             {
                 if (asset)
                 {
+                    // 保存资源
                     this.writeAssets(asset, (err) =>
                     {
                         callback && callback(err, asset);
+
+                        // 保存资源库
+                        this.laterSave();
                     });
                 } else
                 {
@@ -139,6 +154,8 @@ namespace feng3d
                         v.parentAsset.childrenAssets.push(v);
                     });
                     callback && callback(null);
+                    // 保存资源库
+                    this.laterSave();
                     return;
                 }
                 var la = assets.pop();
@@ -230,6 +247,8 @@ namespace feng3d
                 if (assets.length == 0)
                 {
                     callback && callback(null);
+                    // 保存资源库
+                    this.laterSave();
                     return;
                 }
                 var la = assets.pop();
