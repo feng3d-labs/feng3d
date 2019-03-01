@@ -242,7 +242,7 @@ namespace feng3d
 
                             rs.readAssets(<any>object[property], (err, feng3dAssets) =>
                             {
-                                target[property] = <any>feng3dAssets;
+                                target[property] = <any>feng3dAssets.data;
                                 tempInfo.loadingNum--;
                                 if (tempInfo.loadingNum == 0)
                                 {

@@ -25,12 +25,12 @@ namespace feng3d
         /**
          * 资源编号映射
          */
-        idMap: { [id: string]: Feng3dAssets } = {};
+        protected idMap: { [id: string]: Feng3dAssets } = {};
 
         /**
          * 资源路径映射
          */
-        pathMap: { [path: string]: Feng3dAssets } = {};
+        protected pathMap: { [path: string]: Feng3dAssets } = {};
 
         /**
          * 资源树保存路径
@@ -201,6 +201,11 @@ namespace feng3d
             return <any>assets.filter(v => v instanceof type);
         }
 
+        /**
+         * 设置默认资源，该类资源不会保存到文件系统中
+         * 
+         * @param assets 资源
+         */
         setDefaultAssets(assets: Feng3dAssets)
         {
             defaultAssets[assets.assetsId] = assets;
@@ -213,6 +218,15 @@ namespace feng3d
         getAssets(assetsId: string)
         {
             return this.idMap[assetsId] || defaultAssets[assetsId];
+        }
+
+        /**
+         * 获取所有资源
+         */
+        getAllAssets()
+        {
+            var assets = Object.keys(this.idMap).map(v => this.idMap[v]);
+            return assets;
         }
 
         /**

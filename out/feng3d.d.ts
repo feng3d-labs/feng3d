@@ -7835,6 +7835,15 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 资源数据
+     */
+    interface IAssetData {
+        /**
+         * 资源编号
+         */
+        assetsId: string;
+    }
+    /**
      * feng3d资源
      */
     class Feng3dAssets extends Feng3dObject {
@@ -7871,6 +7880,10 @@ declare namespace feng3d {
          */
         extenson: string;
         /**
+         * 资源对象
+         */
+        data: IAssetData;
+        /**
          * 缩略图
          */
         private _thumbnail;
@@ -7905,21 +7918,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 资源
-     */
-    var resources: Resources;
-    /**
-     * 资源
-     */
-    class Resources {
-        /**
-         * 卸载没有被使用的资源
-         */
-        unloadUnusedAssets(): void;
-    }
-}
-declare namespace feng3d {
-    /**
      * 默认资源系统
      */
     var rs: ReadRS;
@@ -7940,13 +7938,13 @@ declare namespace feng3d {
         /**
          * 资源编号映射
          */
-        idMap: {
+        protected idMap: {
             [id: string]: Feng3dAssets;
         };
         /**
          * 资源路径映射
          */
-        pathMap: {
+        protected pathMap: {
             [path: string]: Feng3dAssets;
         };
         /**
@@ -7993,12 +7991,21 @@ declare namespace feng3d {
          * @param type 资源类型
          */
         getAssetsByType<T extends Feng3dAssets>(type: Constructor<T>): T[];
+        /**
+         * 设置默认资源，该类资源不会保存到文件系统中
+         *
+         * @param assets 资源
+         */
         setDefaultAssets(assets: Feng3dAssets): void;
         /**
          * 获取资源
          * @param assetsId 资源编号
          */
         getAssets(assetsId: string): Feng3dAssets;
+        /**
+         * 获取所有资源
+         */
+        getAllAssets(): Feng3dAssets[];
         /**
          * 读取资源元标签
          *
@@ -15098,10 +15105,6 @@ declare namespace feng3d {
      */
     class Feng3dFile extends Feng3dAssets {
         name: string;
-        /**
-         * 资源名称
-         */
-        readonly assetName: string;
     }
 }
 declare namespace feng3d {
@@ -15265,7 +15268,7 @@ declare namespace feng3d {
         /**
          * 材质
          */
-        material: Material;
+        data: Material;
         assetType: AssetExtension;
         extenson: string;
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void): void;

@@ -767,7 +767,7 @@ var feng3d;
                         if (typeof object[property] == "string") {
                             tempInfo.loadingNum++;
                             feng3d.rs.readAssets(object[property], function (err, feng3dAssets) {
-                                target[property] = feng3dAssets;
+                                target[property] = feng3dAssets.data;
                                 tempInfo.loadingNum--;
                                 if (tempInfo.loadingNum == 0) {
                                     tempInfo.onLoaded && tempInfo.onLoaded();
@@ -16428,24 +16428,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 资源
-     */
-    var Resources = /** @class */ (function () {
-        function Resources() {
-        }
-        /**
-         * 卸载没有被使用的资源
-         */
-        Resources.prototype.unloadUnusedAssets = function () {
-        };
-        return Resources;
-    }());
-    feng3d.Resources = Resources;
-    feng3d.resources = new Resources();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 可读资源系统
      */
     var ReadRS = /** @class */ (function () {
@@ -16620,6 +16602,11 @@ var feng3d;
             assets = assets.concat(assets1);
             return assets.filter(function (v) { return v instanceof type; });
         };
+        /**
+         * 设置默认资源，该类资源不会保存到文件系统中
+         *
+         * @param assets 资源
+         */
         ReadRS.prototype.setDefaultAssets = function (assets) {
             defaultAssets[assets.assetsId] = assets;
         };
@@ -16629,6 +16616,14 @@ var feng3d;
          */
         ReadRS.prototype.getAssets = function (assetsId) {
             return this.idMap[assetsId] || defaultAssets[assetsId];
+        };
+        /**
+         * 获取所有资源
+         */
+        ReadRS.prototype.getAllAssets = function () {
+            var _this = this;
+            var assets = Object.keys(this.idMap).map(function (v) { return _this.idMap[v]; });
+            return assets;
         };
         /**
          * 读取资源元标签
@@ -31017,24 +31012,9 @@ var feng3d;
         function Feng3dFile() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        Object.defineProperty(Feng3dFile.prototype, "assetName", {
-            /**
-             * 资源名称
-             */
-            get: function () {
-                if (!this.assetsPath)
-                    return "";
-                return feng3d.pathUtils.getName(this.assetsPath);
-            },
-            enumerable: true,
-            configurable: true
-        });
         __decorate([
             feng3d.oav({ exclude: true })
         ], Feng3dFile.prototype, "name", void 0);
-        __decorate([
-            feng3d.oav()
-        ], Feng3dFile.prototype, "assetName", null);
         return Feng3dFile;
     }(feng3d.Feng3dAssets));
     feng3d.Feng3dFile = Feng3dFile;
@@ -31371,14 +31351,14 @@ var feng3d;
             /**
              * 材质
              */
-            _this.material = new feng3d.Material();
+            _this.data = new feng3d.Material();
             _this.assetType = feng3d.AssetExtension.material;
             _this.extenson = ".json";
             return _this;
         }
         MaterialFile.prototype.saveFile = function (fs, callback) {
-            this.material.assetsId = this.assetsId;
-            fs.writeObject(this.assetsPath, this.material, callback);
+            this.data.assetsId = this.assetsId;
+            fs.writeObject(this.assetsPath, this.data, callback);
         };
         /**
          * 读取文件
@@ -31388,14 +31368,14 @@ var feng3d;
         MaterialFile.prototype.readFile = function (fs, callback) {
             var _this = this;
             fs.readObject(this.assetsPath, function (err, data) {
-                _this.material = data;
-                _this.material.assetsId = _this.assetsId;
+                _this.data = data;
+                _this.data.assetsId = _this.assetsId;
                 callback && callback(err);
             });
         };
         __decorate([
             feng3d.oav({ component: "OAVObjectView" })
-        ], MaterialFile.prototype, "material", void 0);
+        ], MaterialFile.prototype, "data", void 0);
         return MaterialFile;
     }(feng3d.Feng3dFile));
     feng3d.MaterialFile = MaterialFile;

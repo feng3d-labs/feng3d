@@ -9,7 +9,7 @@ namespace feng3d
          * 材质
          */
         @oav({ component: "OAVObjectView" })
-        material = new Material();
+        data = new Material();
 
         assetType = AssetExtension.material;
 
@@ -17,8 +17,8 @@ namespace feng3d
 
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void)
         {
-            this.material.assetsId = this.assetsId;
-            fs.writeObject(this.assetsPath, this.material, callback);
+            this.data.assetsId = this.assetsId;
+            fs.writeObject(this.assetsPath, this.data, callback);
         }
 
         /**
@@ -30,8 +30,8 @@ namespace feng3d
         {
             fs.readObject(this.assetsPath, (err, data: Material) =>
             {
-                this.material = data;
-                this.material.assetsId = this.assetsId;
+                this.data = data;
+                this.data.assetsId = this.assetsId;
                 callback && callback(err);
             });
         }

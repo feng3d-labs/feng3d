@@ -1,6 +1,17 @@
 namespace feng3d
 {
     /**
+     * 资源数据
+     */
+    export interface IAssetData
+    {
+        /**
+         * 资源编号
+         */
+        assetsId: string;
+    }
+
+    /**
      * feng3d资源
      */
     export class Feng3dAssets extends Feng3dObject
@@ -48,6 +59,11 @@ namespace feng3d
          */
         @serialize
         extenson = "";
+
+        /**
+         * 资源对象
+         */
+        data: IAssetData;
 
         /**
          * 缩略图
