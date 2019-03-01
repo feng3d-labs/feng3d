@@ -48,7 +48,6 @@ namespace feng3d
             }
 
             this.scriptName = script;
-            this.name = script;
         }
 
     }

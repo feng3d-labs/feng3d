@@ -31132,7 +31132,6 @@ var feng3d;
                 script = result[1] + "." + script;
             }
             this.scriptName = script;
-            this.name = script;
         };
         __decorate([
             feng3d.oav({ editable: false, priority: -1 })
@@ -31276,12 +31275,59 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 纹理文件
+     */
+    var TextureCubeFile = /** @class */ (function (_super) {
+        __extends(TextureCubeFile, _super);
+        function TextureCubeFile() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * 材质
+             */
+            _this.textureCube = new feng3d.TextureCube();
+            _this.extenson = ".json";
+            _this.assetType = feng3d.AssetExtension.texturecube;
+            return _this;
+        }
+        TextureCubeFile.prototype.saveFile = function (fs, callback) {
+            this.textureCube.assetsId = this.assetsId;
+            fs.writeObject(this.assetsPath, this.textureCube, function (err) {
+                callback && callback(err);
+            });
+        };
+        /**
+         * 读取文件
+         * @param fs 刻度资源管理系统
+         * @param callback 完成回调
+         */
+        TextureCubeFile.prototype.readFile = function (fs, callback) {
+            var _this = this;
+            fs.readObject(this.assetsPath, function (err, textureCube) {
+                _this.textureCube = textureCube;
+                _this.textureCube.assetsId = _this.assetsId;
+                callback && callback(err);
+            });
+        };
+        __decorate([
+            feng3d.oav({ component: "OAVObjectView" })
+        ], TextureCubeFile.prototype, "textureCube", void 0);
+        return TextureCubeFile;
+    }(feng3d.Feng3dFile));
+    feng3d.TextureCubeFile = TextureCubeFile;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 材质文件
      */
     var MaterialFile = /** @class */ (function (_super) {
         __extends(MaterialFile, _super);
         function MaterialFile() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * 材质
+             */
+            _this.material = new feng3d.Material();
             _this.assetType = feng3d.AssetExtension.material;
             _this.extenson = ".json";
             return _this;

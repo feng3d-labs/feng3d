@@ -15219,6 +15219,26 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 纹理文件
+     */
+    class TextureCubeFile extends Feng3dFile {
+        /**
+         * 材质
+         */
+        textureCube: TextureCube;
+        extenson: string;
+        assetType: AssetExtension;
+        protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void): void;
+        /**
+         * 读取文件
+         * @param fs 刻度资源管理系统
+         * @param callback 完成回调
+         */
+        protected readFile(fs: ReadFS, callback?: (err: Error) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
      * 材质文件
      */
     class MaterialFile extends Feng3dFile {

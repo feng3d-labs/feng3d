@@ -307,6 +307,7 @@
         "src/resources/TextFile.ts",
         "src/resources/AudioFile.ts",
         "src/resources/TextureFile.ts",
+        "src/resources/TextureCubeFile.ts",
         "src/resources/MaterialFile.ts",
         // 模型解析
         "src/assets/parsers/OBJParser.ts",

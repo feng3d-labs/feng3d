@@ -1,24 +1,28 @@
 namespace feng3d
 {
     /**
-     * 材质文件
+     * 纹理文件
      */
-    export class MaterialFile extends Feng3dFile
+    export class TextureCubeFile extends Feng3dFile
     {
         /**
          * 材质
          */
         @oav({ component: "OAVObjectView" })
-        material = new Material();
-
-        assetType = AssetExtension.material;
+        textureCube = new TextureCube();
 
         extenson = ".json";
 
+        assetType = AssetExtension.texturecube;
+
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void)
         {
-            this.material.assetsId = this.assetsId;
-            fs.writeObject(this.assetsPath, this.material, callback);
+            this.textureCube.assetsId = this.assetsId;
+
+            fs.writeObject(this.assetsPath, this.textureCube, (err) =>
+            {
+                callback && callback(err);
+            });
         }
 
         /**
@@ -28,10 +32,10 @@ namespace feng3d
          */
         protected readFile(fs: ReadFS, callback?: (err: Error) => void)
         {
-            fs.readObject(this.assetsPath, (err, data: Material) =>
+            fs.readObject(this.assetsPath, (err, textureCube: TextureCube) =>
             {
-                this.material = data;
-                this.material.assetsId = this.assetsId;
+                this.textureCube = textureCube;
+                this.textureCube.assetsId = this.assetsId;
                 callback && callback(err);
             });
         }
