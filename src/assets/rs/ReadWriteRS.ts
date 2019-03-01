@@ -47,7 +47,7 @@ namespace feng3d
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: Feng3dFolder, callback?: (err: Error, asset: T) => void)
+        createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void)
         {
             // 新建资源
             super.createAsset(cls, value, parent, (err, asset) =>
@@ -100,7 +100,7 @@ namespace feng3d
          * @param folder 目标文件夹
          * @param callback 完成回调
          */
-        moveAssets(asset: Feng3dAssets, folder: Feng3dFolder, callback?: (err: Error) => void)
+        moveAssets(asset: Feng3dAssets, folder: FolderAsset, callback?: (err: Error) => void)
         {
             var filename = asset.name + asset.extenson
 
@@ -132,7 +132,7 @@ namespace feng3d
             while (index < assets.length)
             {
                 var ca = assets[index];
-                if (ca instanceof Feng3dFolder)
+                if (ca instanceof FolderAsset)
                 {
                     assets = assets.concat(ca.childrenAssets);
                 }
@@ -233,7 +233,7 @@ namespace feng3d
             while (index < assets.length)
             {
                 var ca = assets[index];
-                if (ca instanceof Feng3dFolder)
+                if (ca instanceof FolderAsset)
                 {
                     assets = assets.concat(ca.childrenAssets);
                 }

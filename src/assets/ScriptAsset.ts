@@ -1,6 +1,9 @@
 namespace feng3d
 {
-    export class ScriptFile extends StringFile
+    /**
+     * 脚本资源
+     */
+    export class ScriptAsset extends StringAsset
     {
         assetType = AssetExtension.script
 

@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 文件夹资源
      */
-    export class Feng3dFolder extends Feng3dAssets
+    export class FolderAsset extends Feng3dAssets
     {
         @oav()
         name: string;

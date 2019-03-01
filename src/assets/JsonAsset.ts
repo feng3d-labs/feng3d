@@ -1,6 +1,9 @@
 namespace feng3d
 {
-    export class JsonFile extends StringFile
+    /**
+     * JSON 资源
+     */
+    export class JsonAsset extends StringAsset
     {
         assetType = AssetExtension.json;
 

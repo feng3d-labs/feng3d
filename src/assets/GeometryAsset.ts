@@ -1,17 +1,17 @@
 namespace feng3d
 {
     /**
-     * 游戏对象文件
+     * 几何体资源
      */
-    export class GameObjectFile extends Feng3dFile
+    export class GeometryAsset extends FileAsset
     {
         /**
-         * 材质
+         * 几何体
          */
         @oav({ component: "OAVObjectView" })
-        data = new GameObject();
+        data: Geometry;
 
-        assetType = AssetExtension.gameobject;
+        assetType = AssetExtension.geometry;
 
         extenson = ".json";
 

@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 二进制文件
      */
-    export class ArrayBufferFile extends Feng3dFile
+    export class ArrayBufferAsset extends FileAsset
     {
         @oav()
         name: string;

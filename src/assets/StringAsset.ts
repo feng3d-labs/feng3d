@@ -1,9 +1,9 @@
 namespace feng3d
 {
     /**
-     * 字符串文件
+     * 字符串 资源
      */
-    export class StringFile extends Feng3dFile
+    export abstract class StringAsset extends FileAsset
     {
         @oav({ component: "OAVMultiText" })
         textContent: string;

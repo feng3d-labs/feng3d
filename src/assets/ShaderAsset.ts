@@ -1,6 +1,9 @@
 namespace feng3d
 {
-    export class ShaderFile extends ScriptFile
+    /**
+     * 着色器 资源
+     */
+    export class ShaderAsset extends ScriptAsset
     {
         assetType = AssetExtension.shader;
 

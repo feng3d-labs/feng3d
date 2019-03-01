@@ -42,7 +42,7 @@ namespace feng3d
         /**
          * 父资源
          */
-        parentAsset: Feng3dFolder;
+        parentAsset: FolderAsset;
 
         /**
          * 资源路径

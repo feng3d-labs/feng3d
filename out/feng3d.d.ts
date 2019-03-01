@@ -7864,7 +7864,7 @@ declare namespace feng3d {
         /**
          * 父资源
          */
-        parentAsset: Feng3dFolder;
+        parentAsset: FolderAsset;
         /**
          * 资源路径
          */
@@ -7931,7 +7931,7 @@ declare namespace feng3d {
         /**
          * 根文件夹
          */
-        readonly root: Feng3dFolder;
+        readonly root: FolderAsset;
         private _root;
         /**
          * 资源编号映射
@@ -7969,14 +7969,14 @@ declare namespace feng3d {
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: Feng3dFolder, callback?: (err: Error, asset: T) => void): void;
+        createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
         /**
          * 获取有效子文件名称
          *
          * @param parent 父文件夹
          * @param name 名称
          */
-        getValidChildName(parent: Feng3dFolder, name: string): string;
+        getValidChildName(parent: FolderAsset, name: string): string;
         /**
          * 读取文件为资源对象
          * @param id 资源编号
@@ -8050,7 +8050,7 @@ declare namespace feng3d {
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: Feng3dFolder, callback?: (err: Error, asset: T) => void): void;
+        createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
         /**
          * 写（保存）资源
          *
@@ -8065,7 +8065,7 @@ declare namespace feng3d {
          * @param folder 目标文件夹
          * @param callback 完成回调
          */
-        moveAssets(asset: Feng3dAssets, folder: Feng3dFolder, callback?: (err: Error) => void): void;
+        moveAssets(asset: Feng3dAssets, folder: FolderAsset, callback?: (err: Error) => void): void;
         /**
          * 写资源元标签
          *
@@ -15081,7 +15081,7 @@ declare namespace feng3d {
     /**
      * 文件夹资源
      */
-    class Feng3dFolder extends Feng3dAssets {
+    class FolderAsset extends Feng3dAssets {
         name: string;
         assetType: AssetExtension;
         /**
@@ -15099,9 +15099,9 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * feng3d 资源文件
+     * 文件资源
      */
-    class Feng3dFile extends Feng3dAssets {
+    class FileAsset extends Feng3dAssets {
         name: string;
     }
 }
@@ -15109,7 +15109,7 @@ declare namespace feng3d {
     /**
      * 二进制文件
      */
-    class ArrayBufferFile extends Feng3dFile {
+    class ArrayBufferAsset extends FileAsset {
         name: string;
         /**
          * 文件数据
@@ -15131,9 +15131,9 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 字符串文件
+     * 字符串 资源
      */
-    class StringFile extends Feng3dFile {
+    abstract class StringAsset extends FileAsset {
         textContent: string;
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void): void;
         /**
@@ -15145,7 +15145,10 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class ScriptFile extends StringFile {
+    /**
+     * 脚本资源
+     */
+    class ScriptAsset extends StringAsset {
         assetType: AssetExtension;
         name: string;
         extenson: string;
@@ -15162,34 +15165,46 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class ShaderFile extends ScriptFile {
+    /**
+     * 着色器 资源
+     */
+    class ShaderAsset extends ScriptAsset {
         assetType: AssetExtension;
         extenson: string;
     }
 }
 declare namespace feng3d {
-    class JSFile extends StringFile {
-        assetType: AssetExtension;
-        extenson: string;
-        textContent: string;
-    }
-}
-declare namespace feng3d {
-    class JsonFile extends StringFile {
-        assetType: AssetExtension;
-        extenson: string;
-        textContent: string;
-    }
-}
-declare namespace feng3d {
-    class TextFile extends StringFile {
+    /**
+     * JS资源
+     */
+    class JSAsset extends StringAsset {
         assetType: AssetExtension;
         extenson: string;
         textContent: string;
     }
 }
 declare namespace feng3d {
-    class AudioFile extends Feng3dFile {
+    /**
+     * JSON 资源
+     */
+    class JsonAsset extends StringAsset {
+        assetType: AssetExtension;
+        extenson: string;
+        textContent: string;
+    }
+}
+declare namespace feng3d {
+    class TextAsset extends StringAsset {
+        assetType: AssetExtension;
+        extenson: string;
+        textContent: string;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 音效资源
+     */
+    class AudioAsset extends FileAsset {
         assetType: AssetExtension;
         extenson: ".ogg" | ".mp3" | ".wav";
     }
@@ -15198,7 +15213,7 @@ declare namespace feng3d {
     /**
      * 纹理文件
      */
-    class TextureFile extends Feng3dFile {
+    class TextureAsset extends FileAsset {
         /**
          * 材质
          */
@@ -15220,9 +15235,9 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 纹理文件
+     * 立方体纹理资源
      */
-    class TextureCubeFile extends Feng3dFile {
+    class TextureCubeAsset extends FileAsset {
         /**
          * 材质
          */
@@ -15240,9 +15255,9 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 几何体资源文件
+     * 几何体资源
      */
-    class GeometryFile extends Feng3dFile {
+    class GeometryAsset extends FileAsset {
         /**
          * 几何体
          */
@@ -15260,9 +15275,9 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 材质文件
+     * 材质资源
      */
-    class MaterialFile extends Feng3dFile {
+    class MaterialAsset extends FileAsset {
         /**
          * 材质
          */
@@ -15280,9 +15295,9 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 游戏对象文件
+     * 游戏对象资源
      */
-    class GameObjectFile extends Feng3dFile {
+    class GameObjectAsset extends FileAsset {
         /**
          * 材质
          */

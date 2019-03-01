@@ -1,17 +1,17 @@
 namespace feng3d
 {
     /**
-     * 材质文件
+     * 游戏对象资源
      */
-    export class MaterialFile extends Feng3dFile
+    export class GameObjectAsset extends FileAsset
     {
         /**
          * 材质
          */
         @oav({ component: "OAVObjectView" })
-        data = new Material();
+        data = new GameObject();
 
-        assetType = AssetExtension.material;
+        assetType = AssetExtension.gameobject;
 
         extenson = ".json";
 
@@ -28,9 +28,9 @@ namespace feng3d
          */
         protected readFile(fs: ReadFS, callback?: (err: Error) => void)
         {
-            fs.readObject(this.assetsPath, (err, data: Material) =>
+            fs.readObject(this.assetsPath, (err, data) =>
             {
-                this.data = data;
+                this.data = <any>data;
                 this.data.assetsId = this.assetsId;
                 callback && callback(err);
             });

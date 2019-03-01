@@ -20,7 +20,7 @@ namespace feng3d
          * 根文件夹
          */
         get root() { return this._root; }
-        private _root: Feng3dFolder;
+        private _root: FolderAsset;
 
         /**
          * 资源编号映射
@@ -54,7 +54,7 @@ namespace feng3d
          */
         init(callback?: () => void)
         {
-            this.fs.readObject(this.resources, (err, data: Feng3dFolder) =>
+            this.fs.readObject(this.resources, (err, data: FolderAsset) =>
             {
                 if (data)
                 {
@@ -73,7 +73,7 @@ namespace feng3d
                         this.idMap[asset.assetsId] = asset;
                         this.pathMap[asset.assetsPath] = asset;
                         // 
-                        if (asset instanceof Feng3dFolder)
+                        if (asset instanceof FolderAsset)
                         {
                             for (var i = 0; i < asset.childrenAssets.length; i++)
                             {
@@ -90,7 +90,7 @@ namespace feng3d
                     callback && callback();
                 } else
                 {
-                    this.createAsset(Feng3dFolder, { name: "Assets" }, null, (err, asset) =>
+                    this.createAsset(FolderAsset, { name: "Assets" }, null, (err, asset) =>
                     {
                         this._root = asset;
                         callback && callback();
@@ -107,7 +107,7 @@ namespace feng3d
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: Feng3dFolder, callback?: (err: Error, asset: T) => void)
+        createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void)
         {
             parent = parent || this._root;
             //
@@ -142,7 +142,7 @@ namespace feng3d
          * @param parent 父文件夹
          * @param name 名称
          */
-        getValidChildName(parent: Feng3dFolder, name: string)
+        getValidChildName(parent: FolderAsset, name: string)
         {
             var childrenNames = parent.childrenAssets.map(v => v.name);
             var newName = name;

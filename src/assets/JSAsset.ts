@@ -1,6 +1,9 @@
 namespace feng3d
 {
-    export class JSFile extends StringFile
+    /**
+     * JS资源
+     */
+    export class JSAsset extends StringAsset
     {
         assetType = AssetExtension.js;
 
