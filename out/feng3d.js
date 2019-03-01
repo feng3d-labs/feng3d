@@ -31318,6 +31318,43 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 几何体资源文件
+     */
+    var GeometryFile = /** @class */ (function (_super) {
+        __extends(GeometryFile, _super);
+        function GeometryFile() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.assetType = feng3d.AssetExtension.geometry;
+            _this.extenson = ".json";
+            return _this;
+        }
+        GeometryFile.prototype.saveFile = function (fs, callback) {
+            this.geometry.assetsId = this.assetsId;
+            fs.writeObject(this.assetsPath, this.geometry, callback);
+        };
+        /**
+         * 读取文件
+         * @param fs 刻度资源管理系统
+         * @param callback 完成回调
+         */
+        GeometryFile.prototype.readFile = function (fs, callback) {
+            var _this = this;
+            fs.readObject(this.assetsPath, function (err, data) {
+                _this.geometry = data;
+                _this.geometry.assetsId = _this.assetsId;
+                callback && callback(err);
+            });
+        };
+        __decorate([
+            feng3d.oav({ component: "OAVObjectView" })
+        ], GeometryFile.prototype, "geometry", void 0);
+        return GeometryFile;
+    }(feng3d.Feng3dFile));
+    feng3d.GeometryFile = GeometryFile;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 材质文件
      */
     var MaterialFile = /** @class */ (function (_super) {
