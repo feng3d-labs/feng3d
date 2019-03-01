@@ -15685,8 +15685,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 可读文件系统
-     *
-     * 针对基础文件系统进行扩展
      */
     var ReadFS = /** @class */ (function () {
         function ReadFS() {

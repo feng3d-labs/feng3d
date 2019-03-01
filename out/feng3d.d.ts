@@ -7381,8 +7381,6 @@ declare namespace feng3d {
     var fs: ReadFS;
     /**
      * 可读文件系统
-     *
-     * 针对基础文件系统进行扩展
      */
     abstract class ReadFS {
         /**

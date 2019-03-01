@@ -6,8 +6,6 @@ namespace feng3d
     export var fs: ReadFS;
     /**
      * 可读文件系统
-     * 
-     * 针对基础文件系统进行扩展
      */
     export abstract class ReadFS
     {
