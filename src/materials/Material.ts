@@ -7,7 +7,7 @@ namespace feng3d
     /**
      * 材质
      */
-    export class Material extends Feng3dAssets
+    export class Material extends Feng3dObject
     {
         __class__: "feng3d.Material" = "feng3d.Material";
 

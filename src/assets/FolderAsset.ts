@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 文件夹资源
      */
-    export class FolderAsset extends Feng3dAssets
+    export class FolderAsset extends FileAsset
     {
         @oav()
         name: string;
@@ -14,7 +14,7 @@ namespace feng3d
          * 子资源列表
          */
         @serialize
-        childrenAssets: Feng3dAssets[] = [];
+        childrenAssets: FileAsset[] = [];
 
         extenson = "";
 

@@ -664,7 +664,7 @@ var feng3d;
             for (var i = 0; i < serializableMembers.length; i++) {
                 var property = serializableMembers[i].property;
                 var assets = serializableMembers[i].assets;
-                if (assets && target[property] instanceof feng3d.Feng3dAssets && target[property].assetsId) {
+                if (assets && target[property] instanceof feng3d.FileAsset && target[property].assetsId) {
                     var assetsId0 = target[property] && target[property].assetsId;
                     var assetsId1 = defaultInstance[property] && defaultInstance[property].assetsId;
                     if (assetsId0 != assetsId1)
@@ -16347,9 +16347,9 @@ var feng3d;
     /**
      * feng3d资源
      */
-    var Feng3dAssets = /** @class */ (function (_super) {
-        __extends(Feng3dAssets, _super);
-        function Feng3dAssets() {
+    var FileAsset = /** @class */ (function (_super) {
+        __extends(FileAsset, _super);
+        function FileAsset() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             /**
              * 名称
@@ -16367,7 +16367,7 @@ var feng3d;
          * @param fs 可读资源管理系统
          * @param callback 完成回调
          */
-        Feng3dAssets.prototype.readThumbnail = function (fs, callback) {
+        FileAsset.prototype.readThumbnail = function (fs, callback) {
             var _this = this;
             if (this._thumbnail) {
                 callback(null, this._thumbnail);
@@ -16385,7 +16385,7 @@ var feng3d;
          * @param image 缩略图
          * @param callback 完成回调
          */
-        Feng3dAssets.prototype.writeThumbnail = function (fs, image, callback) {
+        FileAsset.prototype.writeThumbnail = function (fs, image, callback) {
             if (this._thumbnail == image) {
                 callback(null);
                 return;
@@ -16398,7 +16398,7 @@ var feng3d;
          * @param fs 可读写资源管理系统
          * @param callback 完成回调
          */
-        Feng3dAssets.prototype.saveFile = function (fs, callback) {
+        FileAsset.prototype.saveFile = function (fs, callback) {
             callback && callback(null);
         };
         /**
@@ -16406,22 +16406,22 @@ var feng3d;
          * @param fs 刻度资源管理系统
          * @param callback 完成回调
          */
-        Feng3dAssets.prototype.readFile = function (fs, callback) {
+        FileAsset.prototype.readFile = function (fs, callback) {
             callback && callback(null);
         };
         __decorate([
             feng3d.serialize
-        ], Feng3dAssets.prototype, "assetsId", void 0);
+        ], FileAsset.prototype, "assetsId", void 0);
         __decorate([
             feng3d.oav(),
             feng3d.serialize
-        ], Feng3dAssets.prototype, "name", void 0);
+        ], FileAsset.prototype, "name", void 0);
         __decorate([
             feng3d.serialize
-        ], Feng3dAssets.prototype, "extenson", void 0);
-        return Feng3dAssets;
+        ], FileAsset.prototype, "extenson", void 0);
+        return FileAsset;
     }(feng3d.Feng3dObject));
-    feng3d.Feng3dAssets = Feng3dAssets;
+    feng3d.FileAsset = FileAsset;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -19266,7 +19266,7 @@ var feng3d;
             feng3d.watch("invalidate")
         ], TextureInfo.prototype, "OFFSCREEN_HEIGHT", void 0);
         return TextureInfo;
-    }(feng3d.Feng3dAssets));
+    }(feng3d.Feng3dObject));
     feng3d.TextureInfo = TextureInfo;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -21997,7 +21997,7 @@ var feng3d;
             feng3d.oav({ component: "OAVComponentList" })
         ], GameObject.prototype, "components", null);
         return GameObject;
-    }(feng3d.Feng3dAssets));
+    }(feng3d.Feng3dObject));
     feng3d.GameObject = GameObject;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -23516,7 +23516,7 @@ var feng3d;
             feng3d.oav({ component: "OAVMultiText", priority: 10 })
         ], Geometry.prototype, "geometryInfo", null);
         return Geometry;
-    }(feng3d.Feng3dAssets));
+    }(feng3d.Feng3dObject));
     feng3d.Geometry = Geometry;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -26860,7 +26860,7 @@ var feng3d;
             feng3d.oav({ block: "渲染参数", component: "OAVObjectView" })
         ], Material.prototype, "renderParams", void 0);
         return Material;
-    }(feng3d.Feng3dAssets));
+    }(feng3d.Feng3dObject));
     feng3d.Material = Material;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -30832,7 +30832,7 @@ var feng3d;
             feng3d.serialize
         ], AnimationClip.prototype, "propertyClips", void 0);
         return AnimationClip;
-    }(feng3d.Feng3dAssets));
+    }(feng3d.Feng3dObject));
     feng3d.AnimationClip = AnimationClip;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -30996,25 +30996,8 @@ var feng3d;
             feng3d.serialize
         ], FolderAsset.prototype, "childrenAssets", void 0);
         return FolderAsset;
-    }(feng3d.Feng3dAssets));
+    }(feng3d.FileAsset));
     feng3d.FolderAsset = FolderAsset;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 文件资源
-     */
-    var FileAsset = /** @class */ (function (_super) {
-        __extends(FileAsset, _super);
-        function FileAsset() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        __decorate([
-            feng3d.oav({ exclude: true })
-        ], FileAsset.prototype, "name", void 0);
-        return FileAsset;
-    }(feng3d.Feng3dAssets));
-    feng3d.FileAsset = FileAsset;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

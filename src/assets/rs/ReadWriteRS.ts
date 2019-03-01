@@ -47,7 +47,7 @@ namespace feng3d
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void)
+        createAsset<T extends FileAsset>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void)
         {
             // 新建资源
             super.createAsset(cls, value, parent, (err, asset) =>
@@ -75,7 +75,7 @@ namespace feng3d
          * @param assets 资源对象
          * @param callback 完成回调
          */
-        writeAssets(assets: Feng3dAssets, callback?: (err: Error) => void)
+        writeAssets(assets: FileAsset, callback?: (err: Error) => void)
         {
             assets.meta.mtimeMs = Date.now();
             this._writeMeta(assets.assetsPath, assets.meta, (err) =>
@@ -100,7 +100,7 @@ namespace feng3d
          * @param folder 目标文件夹
          * @param callback 完成回调
          */
-        moveAssets(asset: Feng3dAssets, folder: FolderAsset, callback?: (err: Error) => void)
+        moveAssets(asset: FileAsset, folder: FolderAsset, callback?: (err: Error) => void)
         {
             var filename = asset.name + asset.extenson
 

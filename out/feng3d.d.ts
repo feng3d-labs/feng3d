@@ -7844,7 +7844,7 @@ declare namespace feng3d {
     /**
      * feng3d资源
      */
-    class Feng3dAssets extends Feng3dObject {
+    class FileAsset extends Feng3dObject {
         /**
          * 资源编号
          */
@@ -7937,13 +7937,13 @@ declare namespace feng3d {
          * 资源编号映射
          */
         protected idMap: {
-            [id: string]: Feng3dAssets;
+            [id: string]: FileAsset;
         };
         /**
          * 资源路径映射
          */
         protected pathMap: {
-            [path: string]: Feng3dAssets;
+            [path: string]: FileAsset;
         };
         /**
          * 资源树保存路径
@@ -7969,7 +7969,7 @@ declare namespace feng3d {
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
+        createAsset<T extends FileAsset>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
         /**
          * 获取有效子文件名称
          *
@@ -7982,28 +7982,28 @@ declare namespace feng3d {
          * @param id 资源编号
          * @param callback 读取完成回调
          */
-        readAssets(id: string, callback: (err: Error, assets: Feng3dAssets) => void): void;
+        readAssets(id: string, callback: (err: Error, assets: FileAsset) => void): void;
         /**
          * 获取指定类型资源
          *
          * @param type 资源类型
          */
-        getAssetsByType<T extends Feng3dAssets>(type: Constructor<T>): T[];
+        getAssetsByType<T extends FileAsset>(type: Constructor<T>): T[];
         /**
          * 设置默认资源，该类资源不会保存到文件系统中
          *
          * @param assets 资源
          */
-        setDefaultAssets(assets: Feng3dAssets): void;
+        setDefaultAssets(assets: FileAsset): void;
         /**
          * 获取资源
          * @param assetsId 资源编号
          */
-        getAssets(assetsId: string): Feng3dAssets;
+        getAssets(assetsId: string): FileAsset;
         /**
          * 获取所有资源
          */
-        getAllAssets(): Feng3dAssets[];
+        getAllAssets(): FileAsset[];
         /**
          * 读取资源元标签
          *
@@ -8050,14 +8050,14 @@ declare namespace feng3d {
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
+        createAsset<T extends FileAsset>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
         /**
          * 写（保存）资源
          *
          * @param assets 资源对象
          * @param callback 完成回调
          */
-        writeAssets(assets: Feng3dAssets, callback?: (err: Error) => void): void;
+        writeAssets(assets: FileAsset, callback?: (err: Error) => void): void;
         /**
          * 移动资源到指定文件夹
          *
@@ -8065,7 +8065,7 @@ declare namespace feng3d {
          * @param folder 目标文件夹
          * @param callback 完成回调
          */
-        moveAssets(asset: Feng3dAssets, folder: FolderAsset, callback?: (err: Error) => void): void;
+        moveAssets(asset: FileAsset, folder: FolderAsset, callback?: (err: Error) => void): void;
         /**
          * 写资源元标签
          *
@@ -10710,7 +10710,7 @@ declare namespace feng3d {
     /**
      * 纹理信息
      */
-    abstract class TextureInfo extends Feng3dAssets {
+    abstract class TextureInfo extends Feng3dObject {
         /**
          * 纹理类型
          */
@@ -11596,7 +11596,7 @@ declare namespace feng3d {
     /**
      * 游戏对象，场景唯一存在的对象类型
      */
-    class GameObject extends Feng3dAssets {
+    class GameObject extends Feng3dObject {
         __class__: "feng3d.GameObject";
         assetType: AssetExtension;
         readonly renderAtomic: RenderAtomic;
@@ -12281,7 +12281,7 @@ declare namespace feng3d {
     /**
      * 几何体
      */
-    class Geometry extends Feng3dAssets {
+    class Geometry extends Feng3dObject {
         /**
          * 立（长）方体几何体
          */
@@ -13510,7 +13510,7 @@ declare namespace feng3d {
     /**
      * 材质
      */
-    class Material extends Feng3dAssets {
+    class Material extends Feng3dObject {
         __class__: "feng3d.Material";
         assetType: AssetExtension;
         private preview;
@@ -15034,7 +15034,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class AnimationClip extends Feng3dAssets {
+    class AnimationClip extends Feng3dObject {
         assetType: AssetExtension;
         name: string;
         /**
@@ -15081,13 +15081,13 @@ declare namespace feng3d {
     /**
      * 文件夹资源
      */
-    class FolderAsset extends Feng3dAssets {
+    class FolderAsset extends FileAsset {
         name: string;
         assetType: AssetExtension;
         /**
          * 子资源列表
          */
-        childrenAssets: Feng3dAssets[];
+        childrenAssets: FileAsset[];
         extenson: string;
         /**
          * 保存文件
@@ -15095,14 +15095,6 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 文件资源
-     */
-    class FileAsset extends Feng3dAssets {
-        name: string;
     }
 }
 declare namespace feng3d {

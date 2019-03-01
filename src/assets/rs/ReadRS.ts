@@ -25,12 +25,12 @@ namespace feng3d
         /**
          * 资源编号映射
          */
-        protected idMap: { [id: string]: Feng3dAssets } = {};
+        protected idMap: { [id: string]: FileAsset } = {};
 
         /**
          * 资源路径映射
          */
-        protected pathMap: { [path: string]: Feng3dAssets } = {};
+        protected pathMap: { [path: string]: FileAsset } = {};
 
         /**
          * 资源树保存路径
@@ -60,7 +60,7 @@ namespace feng3d
                 {
                     this._root = data;
                     //
-                    var assets: Feng3dAssets[] = [data];
+                    var assets: FileAsset[] = [data];
                     var index = 0;
                     while (index < assets.length)
                     {
@@ -107,7 +107,7 @@ namespace feng3d
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends Feng3dAssets>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void)
+        createAsset<T extends FileAsset>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void)
         {
             parent = parent || this._root;
             //
@@ -160,7 +160,7 @@ namespace feng3d
          * @param id 资源编号
          * @param callback 读取完成回调
          */
-        readAssets(id: string, callback: (err: Error, assets: Feng3dAssets) => void)
+        readAssets(id: string, callback: (err: Error, assets: FileAsset) => void)
         {
             var feng3dAsset = this.idMap[id];
             if (!feng3dAsset)
@@ -193,7 +193,7 @@ namespace feng3d
          * 
          * @param type 资源类型
          */
-        getAssetsByType<T extends Feng3dAssets>(type: Constructor<T>): T[]
+        getAssetsByType<T extends FileAsset>(type: Constructor<T>): T[]
         {
             var assets = Object.keys(this.idMap).map(v => this.idMap[v]);
             var assets1 = Object.keys(defaultAssets).map(v => this.idMap[v]);
@@ -206,7 +206,7 @@ namespace feng3d
          * 
          * @param assets 资源
          */
-        setDefaultAssets(assets: Feng3dAssets)
+        setDefaultAssets(assets: FileAsset)
         {
             defaultAssets[assets.assetsId] = assets;
         }
@@ -243,6 +243,6 @@ namespace feng3d
     /**
      * 默认资源，该类资源不会保存到文件系统中
      */
-    var defaultAssets: { [id: string]: Feng3dAssets } = {};
+    var defaultAssets: { [id: string]: FileAsset } = {};
     rs = new ReadRS();
 }

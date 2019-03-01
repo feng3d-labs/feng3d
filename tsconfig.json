@@ -114,7 +114,7 @@
         "src/assets/fs/HttpFS.ts",
         //
         "src/assets/AssetExtension.ts",
-        "src/assets/Feng3dAssets.ts",
+        "src/assets/FileAsset.ts",
         "src/assets/rs/ReadRS.ts",
         "src/assets/rs/ReadWriteRS.ts",
         // 快捷键
@@ -296,7 +296,6 @@
         "src/animation/Animation.ts",
         //
         "src/assets/FolderAsset.ts",
-        "src/assets/FileAsset.ts",
         "src/assets/ArrayBufferAsset.ts",
         "src/assets/StringAsset.ts",
         "src/assets/ScriptAsset.ts",

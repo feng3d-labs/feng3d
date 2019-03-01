@@ -58,7 +58,7 @@ namespace feng3d
     /**
      * 游戏对象，场景唯一存在的对象类型
      */
-    export class GameObject extends Feng3dAssets
+    export class GameObject extends Feng3dObject
     {
 
         __class__: "feng3d.GameObject" = "feng3d.GameObject";
