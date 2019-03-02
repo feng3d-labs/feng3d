@@ -31031,7 +31031,7 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 二进制文件
+     * 二进制 资源
      */
     var ArrayBufferAsset = /** @class */ (function (_super) {
         __extends(ArrayBufferAsset, _super);

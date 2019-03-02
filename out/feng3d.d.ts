@@ -15130,7 +15130,7 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 二进制文件
+     * 二进制 资源
      */
     class ArrayBufferAsset extends FileAsset {
         name: string;

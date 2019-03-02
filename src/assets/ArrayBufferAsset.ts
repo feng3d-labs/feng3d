@@ -1,7 +1,7 @@
 namespace feng3d
 {
     /**
-     * 二进制文件
+     * 二进制 资源
      */
     export class ArrayBufferAsset extends FileAsset
     {
