@@ -7,7 +7,7 @@ namespace feng3d
     {
         __class__: "feng3d.ParticleUniforms" = "feng3d.ParticleUniforms";
 
-        s_diffuse = UrlImageTexture2D.defaultParticle;
+        s_diffuse = Texture2D.defaultParticle;
     }
 
     shaderConfig.shaders["particle"].cls = ParticleUniforms;

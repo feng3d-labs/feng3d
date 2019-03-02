@@ -13,7 +13,7 @@ namespace feng3d
         @serializeAsset
         @oav()
         @watch("onHeightMapChanged")
-        heightMap = UrlImageTexture2D.default;
+        heightMap = Texture2D.default;
 
         /**
          * 地形宽度
@@ -85,20 +85,15 @@ namespace feng3d
 
         private onHeightMapChanged()
         {
-            if (!this.heightMap.url) 
+            if (!this.heightMap["_pixels"]) 
             {
                 this._heightImageData = defaultHeightMap;
                 this.invalidateGeometry();
                 return;
             }
-            fs.readImage(this.heightMap.url, (err, img) =>
-            {
-                if (img)
-                {
-                    this._heightImageData = ImageUtil.fromImage(img).imageData;
-                    this.invalidateGeometry();
-                }
-            });
+            var img = <HTMLImageElement>this.heightMap["_pixels"];
+            this._heightImageData = ImageUtil.fromImage(img).imageData;
+            this.invalidateGeometry();
         }
 
 		/**

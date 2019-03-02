@@ -16688,7 +16688,9 @@ var feng3d;
          */
         ReadRS.prototype.getAssetDatasByType = function (type) {
             var _this = this;
+            var defaults = Object.keys(defaultAssets).map(function (v) { return defaultAssets[v]; });
             var assets = Object.keys(this.idMap).map(function (v) { return _this.idMap[v].data; });
+            assets = defaults.concat(assets);
             return assets.filter(function (v) { return v instanceof type; });
         };
         /**
@@ -26507,6 +26509,9 @@ var feng3d;
         return Texture2D;
     }(feng3d.TextureInfo));
     feng3d.Texture2D = Texture2D;
+    feng3d.rs.setDefaultAssetData(Texture2D.default = Object.setValue(new Texture2D(), { name: "Default-Texture", assetId: "Default-Texture", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.rs.setDefaultAssetData(Texture2D.defaultNormal = Object.setValue(new Texture2D(), { name: "Default-NormalTexture", assetId: "Default-NormalTexture", noPixels: ImageDatas.defaultNormal, hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.rs.setDefaultAssetData(Texture2D.defaultParticle = Object.setValue(new Texture2D(), { name: "Default-ParticleTexture", assetId: "Default-ParticleTexture", noPixels: ImageDatas.defaultParticle, format: feng3d.TextureFormat.RGBA, hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -26643,9 +26648,6 @@ var feng3d;
         return UrlImageTexture2D;
     }(feng3d.Texture2D));
     feng3d.UrlImageTexture2D = UrlImageTexture2D;
-    feng3d.rs.setDefaultAssetData(UrlImageTexture2D.default = Object.setValue(new UrlImageTexture2D(), { name: "Default-Texture", assetId: "Default-Texture", hideFlags: feng3d.HideFlags.NotEditable }));
-    feng3d.rs.setDefaultAssetData(UrlImageTexture2D.defaultNormal = Object.setValue(new UrlImageTexture2D(), { name: "Default-NormalTexture", assetId: "Default-NormalTexture", noPixels: feng3d.ImageDatas.defaultNormal, hideFlags: feng3d.HideFlags.NotEditable }));
-    feng3d.rs.setDefaultAssetData(UrlImageTexture2D.defaultParticle = Object.setValue(new UrlImageTexture2D(), { name: "Default-ParticleTexture", assetId: "Default-ParticleTexture", noPixels: feng3d.ImageDatas.defaultParticle, format: feng3d.TextureFormat.RGBA, hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -26920,7 +26922,8 @@ var feng3d;
             feng3d.watch("onShaderChanged")
         ], Material.prototype, "shaderName", void 0);
         __decorate([
-            feng3d.oav({ editable: false })
+            feng3d.oav({ editable: false }),
+            feng3d.serialize
         ], Material.prototype, "name", void 0);
         __decorate([
             feng3d.serialize,
@@ -27015,7 +27018,7 @@ var feng3d;
             /**
              * 纹理数据
              */
-            this.s_texture = feng3d.UrlImageTexture2D.default;
+            this.s_texture = feng3d.Texture2D.default;
         }
         __decorate([
             feng3d.serialize,
@@ -27052,7 +27055,7 @@ var feng3d;
             /**
              * 漫反射纹理
              */
-            this.s_diffuse = feng3d.UrlImageTexture2D.default;
+            this.s_diffuse = feng3d.Texture2D.default;
             /**
              * 基本颜色
              */
@@ -27064,11 +27067,11 @@ var feng3d;
             /**
              * 漫反射纹理
              */
-            this.s_normal = feng3d.UrlImageTexture2D.defaultNormal;
+            this.s_normal = feng3d.Texture2D.defaultNormal;
             /**
              * 镜面反射光泽图
              */
-            this.s_specular = feng3d.UrlImageTexture2D.default;
+            this.s_specular = feng3d.Texture2D.default;
             /**
              * 镜面反射颜色
              */
@@ -27080,7 +27083,7 @@ var feng3d;
             /**
              * 环境纹理
              */
-            this.s_ambient = feng3d.UrlImageTexture2D.default;
+            this.s_ambient = feng3d.Texture2D.default;
             /**
              * 颜色
              */
@@ -28808,12 +28811,12 @@ var feng3d;
             this.u_size = 10.0;
             this.u_distortionScale = 20.0;
             this.u_waterColor = new feng3d.Color3().fromUnit(0x555555);
-            this.s_normalSampler = feng3d.UrlImageTexture2D.default;
+            this.s_normalSampler = feng3d.Texture2D.default;
             /**
              * 镜面反射贴图
              */
             // s_mirrorSampler = new RenderTargetTexture2D();
-            this.s_mirrorSampler = feng3d.UrlImageTexture2D.default;
+            this.s_mirrorSampler = feng3d.Texture2D.default;
             this.u_textureMatrix = new feng3d.Matrix4x4();
             this.u_sunColor = new feng3d.Color3().fromUnit(0x7F7F7F);
             this.u_sunDirection = new feng3d.Vector3(0.70707, 0.70707, 0);
@@ -28864,7 +28867,7 @@ var feng3d;
             /**
              * 高度图路径
              */
-            _this.heightMap = feng3d.UrlImageTexture2D.default;
+            _this.heightMap = feng3d.Texture2D.default;
             /**
              * 地形宽度
              */
@@ -28899,18 +28902,14 @@ var feng3d;
             return _this;
         }
         TerrainGeometry.prototype.onHeightMapChanged = function () {
-            var _this = this;
-            if (!this.heightMap.url) {
+            if (!this.heightMap["_pixels"]) {
                 this._heightImageData = defaultHeightMap;
                 this.invalidateGeometry();
                 return;
             }
-            feng3d.fs.readImage(this.heightMap.url, function (err, img) {
-                if (img) {
-                    _this._heightImageData = feng3d.ImageUtil.fromImage(img).imageData;
-                    _this.invalidateGeometry();
-                }
-            });
+            var img = this.heightMap["_pixels"];
+            this._heightImageData = feng3d.ImageUtil.fromImage(img).imageData;
+            this.invalidateGeometry();
         };
         /**
          * 创建顶点坐标
@@ -29078,10 +29077,10 @@ var feng3d;
         function TerrainUniforms() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.TerrainUniforms";
-            _this.s_splatTexture1 = feng3d.UrlImageTexture2D.default;
-            _this.s_splatTexture2 = feng3d.UrlImageTexture2D.default;
-            _this.s_splatTexture3 = feng3d.UrlImageTexture2D.default;
-            _this.s_blendTexture = feng3d.UrlImageTexture2D.default;
+            _this.s_splatTexture1 = feng3d.Texture2D.default;
+            _this.s_splatTexture2 = feng3d.Texture2D.default;
+            _this.s_splatTexture3 = feng3d.Texture2D.default;
+            _this.s_blendTexture = feng3d.Texture2D.default;
             _this.u_splatRepeats = new feng3d.Vector4(1, 1, 1, 1);
             return _this;
         }
@@ -29123,8 +29122,8 @@ var feng3d;
          */
         function TerrainMergeMethod() {
             var _this = _super.call(this) || this;
-            _this.splatMergeTexture = feng3d.UrlImageTexture2D.default;
-            _this.blendTexture = feng3d.UrlImageTexture2D.default;
+            _this.splatMergeTexture = feng3d.Texture2D.default;
+            _this.blendTexture = feng3d.Texture2D.default;
             _this.splatRepeats = new feng3d.Vector4(1, 1, 1, 1);
             _this.splatMergeTexture.minFilter = feng3d.TextureMinFilter.NEAREST;
             _this.splatMergeTexture.magFilter = feng3d.TextureMagFilter.NEAREST;
@@ -29371,7 +29370,7 @@ var feng3d;
         function ParticleUniforms() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.ParticleUniforms";
-            _this.s_diffuse = feng3d.UrlImageTexture2D.defaultParticle;
+            _this.s_diffuse = feng3d.Texture2D.defaultParticle;
             return _this;
         }
         return ParticleUniforms;
@@ -31171,6 +31170,9 @@ var feng3d;
                 callback && callback(err);
             });
         };
+        __decorate([
+            feng3d.oav({ exclude: true })
+        ], ObjectAsset.prototype, "name", void 0);
         __decorate([
             feng3d.oav({ component: "OAVObjectView" })
         ], ObjectAsset.prototype, "data", void 0);

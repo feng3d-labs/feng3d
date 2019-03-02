@@ -35,5 +35,24 @@ namespace feng3d
          * 纹理类型
          */
         protected _textureType = TextureType.TEXTURE_2D;
+
+        /**
+         * 默认贴图
+         */
+        static default: Texture2D;
+
+        /**
+         * 默认法线贴图
+         */
+        static defaultNormal: Texture2D;
+
+        /**
+         * 默认粒子贴图
+         */
+        static defaultParticle: Texture2D;
     }
+
+    rs.setDefaultAssetData(Texture2D.default = Object.setValue(new Texture2D(), { name: "Default-Texture", assetId: "Default-Texture", hideFlags: HideFlags.NotEditable }));
+    rs.setDefaultAssetData(Texture2D.defaultNormal = Object.setValue(new Texture2D(), { name: "Default-NormalTexture", assetId: "Default-NormalTexture", noPixels: ImageDatas.defaultNormal, hideFlags: HideFlags.NotEditable }));
+    rs.setDefaultAssetData(Texture2D.defaultParticle = Object.setValue(new Texture2D(), { name: "Default-ParticleTexture", assetId: "Default-ParticleTexture", noPixels: ImageDatas.defaultParticle, format: TextureFormat.RGBA, hideFlags: HideFlags.NotEditable }));
 }

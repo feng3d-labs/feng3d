@@ -211,7 +211,9 @@ namespace feng3d
          */
         getAssetDatasByType<T extends AssetData>(type: Constructor<T>): T[]
         {
+            var defaults = Object.keys(defaultAssets).map(v => defaultAssets[v]);
             var assets = Object.keys(this.idMap).map(v => this.idMap[v].data);
+            assets = defaults.concat(assets);
             return <any>assets.filter(v => v instanceof type);
         }
 

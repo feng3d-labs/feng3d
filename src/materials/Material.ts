@@ -23,6 +23,7 @@ namespace feng3d
         shaderName: ShaderNames = "standard";
 
         @oav({ editable: false })
+        @serialize
         name = "";
 
         /**

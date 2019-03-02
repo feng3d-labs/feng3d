@@ -8,19 +8,19 @@ namespace feng3d
 
         @serializeAsset
         @oav({ block: "terrain" })
-        s_splatTexture1 = UrlImageTexture2D.default;
+        s_splatTexture1 = Texture2D.default;
 
         @serializeAsset
         @oav({ block: "terrain" })
-        s_splatTexture2 = UrlImageTexture2D.default;
+        s_splatTexture2 = Texture2D.default;
 
         @serializeAsset
         @oav({ block: "terrain" })
-        s_splatTexture3 = UrlImageTexture2D.default;
+        s_splatTexture3 = Texture2D.default;
 
         @serializeAsset
         @oav({ block: "terrain" })
-        s_blendTexture = UrlImageTexture2D.default;
+        s_blendTexture = Texture2D.default;
 
         @serialize
         @oav({ block: "terrain" })

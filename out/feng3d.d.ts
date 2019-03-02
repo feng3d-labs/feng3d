@@ -13455,6 +13455,18 @@ declare namespace feng3d {
          * 纹理类型
          */
         protected _textureType: TextureType;
+        /**
+         * 默认贴图
+         */
+        static default: Texture2D;
+        /**
+         * 默认法线贴图
+         */
+        static defaultNormal: Texture2D;
+        /**
+         * 默认粒子贴图
+         */
+        static defaultParticle: Texture2D;
     }
 }
 declare namespace feng3d {
@@ -13493,18 +13505,6 @@ declare namespace feng3d {
         private imageChanged;
         private urlChanged;
         private onImageAssetChanged;
-        /**
-         * 默认贴图
-         */
-        static default: UrlImageTexture2D;
-        /**
-         * 默认法线贴图
-         */
-        static defaultNormal: UrlImageTexture2D;
-        /**
-         * 默认粒子贴图
-         */
-        static defaultParticle: UrlImageTexture2D;
     }
 }
 declare namespace feng3d {
@@ -13679,7 +13679,7 @@ declare namespace feng3d {
         /**
          * 纹理数据
          */
-        s_texture: UrlImageTexture2D;
+        s_texture: Texture2D;
     }
 }
 declare namespace feng3d {
@@ -13704,7 +13704,7 @@ declare namespace feng3d {
         /**
          * 漫反射纹理
          */
-        s_diffuse: UrlImageTexture2D;
+        s_diffuse: Texture2D;
         /**
          * 基本颜色
          */
@@ -13716,11 +13716,11 @@ declare namespace feng3d {
         /**
          * 漫反射纹理
          */
-        s_normal: UrlImageTexture2D;
+        s_normal: Texture2D;
         /**
          * 镜面反射光泽图
          */
-        s_specular: UrlImageTexture2D;
+        s_specular: Texture2D;
         /**
          * 镜面反射颜色
          */
@@ -13732,7 +13732,7 @@ declare namespace feng3d {
         /**
          * 环境纹理
          */
-        s_ambient: UrlImageTexture2D;
+        s_ambient: Texture2D;
         /**
          * 颜色
          */
@@ -14314,11 +14314,11 @@ declare namespace feng3d {
         u_size: number;
         u_distortionScale: number;
         u_waterColor: Color3;
-        s_normalSampler: UrlImageTexture2D;
+        s_normalSampler: Texture2D;
         /**
          * 镜面反射贴图
          */
-        s_mirrorSampler: UrlImageTexture2D;
+        s_mirrorSampler: Texture2D;
         u_textureMatrix: Matrix4x4;
         u_sunColor: Color3;
         u_sunDirection: Vector3;
@@ -14335,7 +14335,7 @@ declare namespace feng3d {
         /**
          * 高度图路径
          */
-        heightMap: UrlImageTexture2D;
+        heightMap: Texture2D;
         /**
          * 地形宽度
          */
@@ -14397,10 +14397,10 @@ declare namespace feng3d {
     }
     class TerrainUniforms extends StandardUniforms {
         __class__: "feng3d.TerrainUniforms";
-        s_splatTexture1: UrlImageTexture2D;
-        s_splatTexture2: UrlImageTexture2D;
-        s_splatTexture3: UrlImageTexture2D;
-        s_blendTexture: UrlImageTexture2D;
+        s_splatTexture1: Texture2D;
+        s_splatTexture2: Texture2D;
+        s_splatTexture3: Texture2D;
+        s_blendTexture: Texture2D;
         u_splatRepeats: Vector4;
     }
 }
@@ -14409,8 +14409,8 @@ declare namespace feng3d {
      * 地形材质
      */
     class TerrainMergeMethod extends EventDispatcher {
-        splatMergeTexture: UrlImageTexture2D;
-        blendTexture: UrlImageTexture2D;
+        splatMergeTexture: Texture2D;
+        blendTexture: Texture2D;
         splatRepeats: Vector4;
         /**
          * 构建材质
@@ -14518,7 +14518,7 @@ declare namespace feng3d {
     }
     class ParticleUniforms extends StandardUniforms {
         __class__: "feng3d.ParticleUniforms";
-        s_diffuse: UrlImageTexture2D;
+        s_diffuse: Texture2D;
     }
 }
 declare namespace feng3d {
@@ -15209,6 +15209,10 @@ declare namespace feng3d {
      * 对象资源
      */
     abstract class ObjectAsset extends FileAsset {
+        /**
+         * 名称
+         */
+        name: string;
         /**
          * 资源对象
          */

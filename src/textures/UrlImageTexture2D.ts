@@ -125,24 +125,5 @@ namespace feng3d
             if (this.url == e.data.url)
                 this.urlChanged();
         }
-
-        /**
-         * 默认贴图
-         */
-        static default: UrlImageTexture2D;
-
-        /**
-         * 默认法线贴图
-         */
-        static defaultNormal: UrlImageTexture2D;
-
-        /**
-         * 默认粒子贴图
-         */
-        static defaultParticle: UrlImageTexture2D;
     }
-
-    rs.setDefaultAssetData(UrlImageTexture2D.default = Object.setValue(new UrlImageTexture2D(), { name: "Default-Texture", assetId: "Default-Texture", hideFlags: HideFlags.NotEditable }));
-    rs.setDefaultAssetData(UrlImageTexture2D.defaultNormal = Object.setValue(new UrlImageTexture2D(), { name: "Default-NormalTexture", assetId: "Default-NormalTexture", noPixels: ImageDatas.defaultNormal, hideFlags: HideFlags.NotEditable }));
-    rs.setDefaultAssetData(UrlImageTexture2D.defaultParticle = Object.setValue(new UrlImageTexture2D(), { name: "Default-ParticleTexture", assetId: "Default-ParticleTexture", noPixels: ImageDatas.defaultParticle, format: TextureFormat.RGBA, hideFlags: HideFlags.NotEditable }));
 }

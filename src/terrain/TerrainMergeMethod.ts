@@ -6,9 +6,9 @@ namespace feng3d
      */
     export class TerrainMergeMethod extends EventDispatcher
     {
-        splatMergeTexture = UrlImageTexture2D.default;
+        splatMergeTexture = Texture2D.default;
 
-        blendTexture = UrlImageTexture2D.default;
+        blendTexture = Texture2D.default;
 
         splatRepeats = new Vector4(1, 1, 1, 1);
 
