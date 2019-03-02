@@ -15206,6 +15206,24 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 对象资源
+     */
+    abstract class ObjectAsset extends FileAsset {
+        /**
+         * 资源对象
+         */
+        data: AssetData;
+        saveFile(callback?: (err: Error) => void): void;
+        /**
+         * 读取文件
+         *
+         * @param callback 完成回调
+         */
+        readFile(callback?: (err: Error) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
      * 脚本资源
      */
     class ScriptAsset extends StringAsset {
@@ -15320,80 +15338,52 @@ declare namespace feng3d {
     /**
      * 立方体纹理资源
      */
-    class TextureCubeAsset extends FileAsset {
+    class TextureCubeAsset extends ObjectAsset {
         /**
          * 材质
          */
         data: TextureCube;
         extenson: string;
         assetType: AssetType;
-        saveFile(callback?: (err: Error) => void): void;
-        /**
-         * 读取文件
-         *
-         * @param callback 完成回调
-         */
-        readFile(callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
     /**
      * 几何体资源
      */
-    class GeometryAsset extends FileAsset {
+    class GeometryAsset extends ObjectAsset {
         /**
          * 几何体
          */
         data: Geometry;
         assetType: AssetType;
         extenson: string;
-        saveFile(callback?: (err: Error) => void): void;
-        /**
-         * 读取文件
-         *
-         * @param callback 完成回调
-         */
-        readFile(callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
     /**
      * 材质资源
      */
-    class MaterialAsset extends FileAsset {
+    class MaterialAsset extends ObjectAsset {
         /**
          * 材质
          */
         data: Material;
         assetType: AssetType;
         extenson: string;
-        saveFile(callback?: (err: Error) => void): void;
-        /**
-         * 读取文件
-         * @param fs 刻度资源管理系统
-         * @param callback 完成回调
-         */
-        readFile(callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
     /**
      * 游戏对象资源
      */
-    class GameObjectAsset extends FileAsset {
+    class GameObjectAsset extends ObjectAsset {
         /**
          * 材质
          */
         data: GameObject;
         assetType: AssetType;
         extenson: string;
-        saveFile(callback?: (err: Error) => void): void;
-        /**
-         * 读取文件
-         *
-         * @param callback 完成回调
-         */
-        readFile(callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {

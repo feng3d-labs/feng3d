@@ -31145,6 +31145,42 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 对象资源
+     */
+    var ObjectAsset = /** @class */ (function (_super) {
+        __extends(ObjectAsset, _super);
+        function ObjectAsset() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        ObjectAsset.prototype.saveFile = function (callback) {
+            this.data.assetId = this.assetId;
+            this.rs.fs.writeObject(this.assetPath, this.data, function (err) {
+                callback && callback(err);
+            });
+        };
+        /**
+         * 读取文件
+         *
+         * @param callback 完成回调
+         */
+        ObjectAsset.prototype.readFile = function (callback) {
+            var _this = this;
+            this.rs.fs.readObject(this.assetPath, function (err, data) {
+                _this.data = data;
+                _this.data.assetId = _this.assetId;
+                callback && callback(err);
+            });
+        };
+        __decorate([
+            feng3d.oav({ component: "OAVObjectView" })
+        ], ObjectAsset.prototype, "data", void 0);
+        return ObjectAsset;
+    }(feng3d.FileAsset));
+    feng3d.ObjectAsset = ObjectAsset;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 脚本资源
      */
     var ScriptAsset = /** @class */ (function (_super) {
@@ -31375,30 +31411,11 @@ var feng3d;
             _this.assetType = feng3d.AssetType.texturecube;
             return _this;
         }
-        TextureCubeAsset.prototype.saveFile = function (callback) {
-            this.data.assetId = this.assetId;
-            this.rs.fs.writeObject(this.assetPath, this.data, function (err) {
-                callback && callback(err);
-            });
-        };
-        /**
-         * 读取文件
-         *
-         * @param callback 完成回调
-         */
-        TextureCubeAsset.prototype.readFile = function (callback) {
-            var _this = this;
-            this.rs.fs.readObject(this.assetPath, function (err, textureCube) {
-                _this.data = textureCube;
-                _this.data.assetId = _this.assetId;
-                callback && callback(err);
-            });
-        };
         __decorate([
             feng3d.oav({ component: "OAVObjectView" })
         ], TextureCubeAsset.prototype, "data", void 0);
         return TextureCubeAsset;
-    }(feng3d.FileAsset));
+    }(feng3d.ObjectAsset));
     feng3d.TextureCubeAsset = TextureCubeAsset;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -31414,28 +31431,11 @@ var feng3d;
             _this.extenson = ".json";
             return _this;
         }
-        GeometryAsset.prototype.saveFile = function (callback) {
-            this.data.assetId = this.assetId;
-            this.rs.fs.writeObject(this.assetPath, this.data, callback);
-        };
-        /**
-         * 读取文件
-         *
-         * @param callback 完成回调
-         */
-        GeometryAsset.prototype.readFile = function (callback) {
-            var _this = this;
-            this.rs.fs.readObject(this.assetPath, function (err, data) {
-                _this.data = data;
-                _this.data.assetId = _this.assetId;
-                callback && callback(err);
-            });
-        };
         __decorate([
             feng3d.oav({ component: "OAVObjectView" })
         ], GeometryAsset.prototype, "data", void 0);
         return GeometryAsset;
-    }(feng3d.FileAsset));
+    }(feng3d.ObjectAsset));
     feng3d.GeometryAsset = GeometryAsset;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -31451,28 +31451,11 @@ var feng3d;
             _this.extenson = ".json";
             return _this;
         }
-        MaterialAsset.prototype.saveFile = function (callback) {
-            this.data.assetId = this.assetId;
-            this.rs.fs.writeObject(this.assetPath, this.data, callback);
-        };
-        /**
-         * 读取文件
-         * @param fs 刻度资源管理系统
-         * @param callback 完成回调
-         */
-        MaterialAsset.prototype.readFile = function (callback) {
-            var _this = this;
-            this.rs.fs.readObject(this.assetPath, function (err, data) {
-                _this.data = data;
-                _this.data.assetId = _this.assetId;
-                callback && callback(err);
-            });
-        };
         __decorate([
             feng3d.oav({ component: "OAVObjectView" })
         ], MaterialAsset.prototype, "data", void 0);
         return MaterialAsset;
-    }(feng3d.FileAsset));
+    }(feng3d.ObjectAsset));
     feng3d.MaterialAsset = MaterialAsset;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -31492,28 +31475,11 @@ var feng3d;
             _this.extenson = ".json";
             return _this;
         }
-        GameObjectAsset.prototype.saveFile = function (callback) {
-            this.data.assetId = this.assetId;
-            this.rs.fs.writeObject(this.assetPath, this.data, callback);
-        };
-        /**
-         * 读取文件
-         *
-         * @param callback 完成回调
-         */
-        GameObjectAsset.prototype.readFile = function (callback) {
-            var _this = this;
-            this.rs.fs.readObject(this.assetPath, function (err, data) {
-                _this.data = data;
-                _this.data.assetId = _this.assetId;
-                callback && callback(err);
-            });
-        };
         __decorate([
             feng3d.oav({ component: "OAVObjectView" })
         ], GameObjectAsset.prototype, "data", void 0);
         return GameObjectAsset;
-    }(feng3d.FileAsset));
+    }(feng3d.ObjectAsset));
     feng3d.GameObjectAsset = GameObjectAsset;
 })(feng3d || (feng3d = {}));
 var feng3d;

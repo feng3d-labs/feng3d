@@ -298,7 +298,8 @@
         //
         "src/assets/FolderAsset.ts",
         "src/assets/ArrayBufferAsset.ts",
-        "src/assets/assets/StringAsset.ts",
+        "src/assets/StringAsset.ts",
+        "src/assets/ObjectAsset.ts",
         "src/assets/assets/ScriptAsset.ts",
         "src/assets/assets/ShaderAsset.ts",
         "src/assets/assets/JSAsset.ts",
