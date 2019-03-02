@@ -7864,6 +7864,8 @@ declare namespace feng3d {
         private _name;
         /**
          * 资源元标签，该对象也用来判断资源是否被加载，值为null表示未加载，否则已加载。
+         *
+         * 并且该对象还会用于存储主文件无法存储的数据，比如 TextureAsset 中存储了 Texture2D 信息
          */
         meta: AssetMeta;
         /**
