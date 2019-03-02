@@ -17,12 +17,13 @@ namespace feng3d
 
         /**
          * 保存文件
-         * @param fs 可读写资源管理系统
          * @param callback 完成回调
          */
-        protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void)
+        protected saveFile(callback?: (err: Error) => void)
         {
-            fs.mkdir(this.assetPath, callback);
+            if (!(this.rs.fs instanceof ReadWriteFS)) return;
+
+            this.rs.fs.mkdir(this.assetPath, callback);
         }
     }
 }

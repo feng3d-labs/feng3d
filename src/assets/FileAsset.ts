@@ -24,7 +24,9 @@ namespace feng3d
         meta: AssetMeta;
 
         /**
-         * 所属资源系统
+         * 资源系统
+         * 
+         * 加载或者创建该资源的资源系统
          */
         rs: ReadRS;
 
@@ -55,24 +57,18 @@ namespace feng3d
         data: AssetData;
 
         /**
-         * 缩略图
-         */
-        private _thumbnail: HTMLImageElement;
-
-        /**
          * 读取资源缩略图标
          * 
-         * @param fs 可读资源管理系统
          * @param callback 完成回调
          */
-        readThumbnail(fs: ReadFS, callback: (err: Error, image: HTMLImageElement) => void)
+        readThumbnail(callback: (err: Error, image: HTMLImageElement) => void)
         {
             if (this._thumbnail)
             {
                 callback(null, this._thumbnail);
                 return;
             }
-            fs.readImage("assetIcon/" + this.assetId + ".png", (err, image) =>
+            this.rs.fs.readImage(this.thumbnailPath, (err, image) =>
             {
                 this._thumbnail = image;
                 callback(err, image);
@@ -82,7 +78,6 @@ namespace feng3d
         /**
          * 读取资源缩略图标
          * 
-         * @param fs 可读写资源管理系统
          * @param image 缩略图
          * @param callback 完成回调
          */
@@ -96,27 +91,38 @@ namespace feng3d
                 return;
             }
             this._thumbnail = image;
-            this.rs.fs.writeImage("assetIcon/" + this.assetId + ".png", image, callback);
+            this.rs.fs.writeImage(this.thumbnailPath, image, callback);
         }
 
         /**
          * 保存文件
-         * @param fs 可读写资源管理系统
          * @param callback 完成回调
          */
-        protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void)
+        protected saveFile(callback?: (err: Error) => void)
         {
             callback && callback(null);
         }
 
         /**
          * 读取文件
-         * @param fs 刻度资源管理系统
          * @param callback 完成回调
          */
-        protected readFile(fs: ReadFS, callback?: (err: Error) => void)
+        protected readFile(callback?: (err: Error) => void)
         {
             callback && callback(null);
+        }
+
+        /**
+         * 缩略图
+         */
+        private _thumbnail: HTMLImageElement;
+
+        /**
+         * 缩略图路径
+         */
+        private get thumbnailPath()
+        {
+            return "assetIcons/" + this.assetId + ".png";
         }
     }
 }

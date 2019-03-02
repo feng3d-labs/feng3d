@@ -65,6 +65,7 @@ namespace feng3d
                     while (index < assets.length)
                     {
                         var asset = assets[index];
+                        asset.rs = this;
                         // 计算路径
                         var path = asset.name + asset.extenson;
                         if (asset.parentAsset) path = asset.parentAsset.assetPath + "/" + path;
@@ -181,7 +182,7 @@ namespace feng3d
                     return;
                 }
                 feng3dAsset.meta = meta;
-                feng3dAsset["readFile"](this.fs, err =>
+                feng3dAsset["readFile"](err =>
                 {
                     callback(err, feng3dAsset);
                 });

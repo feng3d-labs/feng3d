@@ -15,11 +15,11 @@ namespace feng3d
 
         assetType = AssetType.texturecube;
 
-        protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void)
+        protected saveFile(callback?: (err: Error) => void)
         {
+            if (!(this.rs.fs instanceof ReadWriteFS)) return;
             this.data.assetId = this.assetId;
-
-            fs.writeObject(this.assetPath, this.data, (err) =>
+            this.rs.fs.writeObject(this.assetPath, this.data, (err) =>
             {
                 callback && callback(err);
             });
@@ -27,12 +27,12 @@ namespace feng3d
 
         /**
          * 读取文件
-         * @param fs 刻度资源管理系统
+         * 
          * @param callback 完成回调
          */
-        protected readFile(fs: ReadFS, callback?: (err: Error) => void)
+        protected readFile(callback?: (err: Error) => void)
         {
-            fs.readObject(this.assetPath, (err, textureCube: TextureCube) =>
+            this.rs.fs.readObject(this.assetPath, (err, textureCube: TextureCube) =>
             {
                 this.data = textureCube;
                 this.data.assetId = this.assetId;

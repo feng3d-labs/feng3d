@@ -8,19 +8,20 @@ namespace feng3d
         @oav({ component: "OAVMultiText" })
         textContent: string;
 
-        protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void)
+        protected saveFile(callback?: (err: Error) => void)
         {
-            fs.writeString(this.assetPath, this.textContent, callback);
+            if (!(this.rs.fs instanceof ReadWriteFS)) return;
+            this.rs.fs.writeString(this.assetPath, this.textContent, callback);
         }
 
         /**
          * 读取文件
-         * @param fs 刻度资源管理系统
+         * 
          * @param callback 完成回调
          */
-        protected readFile(fs: ReadFS, callback?: (err: Error) => void)
+        protected readFile(callback?: (err: Error) => void)
         {
-            fs.readString(this.assetPath, (err, data) =>
+            this.rs.fs.readString(this.assetPath, (err, data) =>
             {
                 this.textContent = data;
                 callback && callback(err);
