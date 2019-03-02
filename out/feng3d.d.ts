@@ -7581,10 +7581,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 资源元标签文件后缀
-     */
-    const metaSuffix = ".meta";
-    /**
      * 资源元标签
      */
     interface AssetMeta {
@@ -7908,6 +7904,12 @@ declare namespace feng3d {
          */
         write(callback: (err: Error) => void): void;
         /**
+         * 删除资源
+         *
+         * @param callback 完成回调
+         */
+        delete(callback: (err?: Error) => void): void;
+        /**
          * 读取资源缩略图标
          *
          * @param callback 完成回调
@@ -7930,6 +7932,12 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         protected abstract readFile(callback?: (err: Error) => void): void;
+        /**
+         * 删除文件
+         *
+         * @param callback 完成回调
+         */
+        protected deleteFile(callback?: (err: Error) => void): void;
         /**
          * 缩略图
          */
@@ -7955,6 +7963,12 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         private _writeMeta;
+        /**
+         * 删除元标签
+         *
+         * @param callback 完成回调
+         */
+        private _deleteMeta;
     }
 }
 declare namespace feng3d {
@@ -7979,13 +7993,13 @@ declare namespace feng3d {
         /**
          * 资源编号映射
          */
-        protected idMap: {
+        idMap: {
             [id: string]: FileAsset;
         };
         /**
          * 资源路径映射
          */
-        protected pathMap: {
+        pathMap: {
             [path: string]: FileAsset;
         };
         /**
@@ -8122,13 +8136,6 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         deleteAsset(assetId: string, callback?: (err: Error) => void): void;
-        /**
-         * 删除资源元标签
-         *
-         * @param path 资源路径
-         * @param callback 完成回调
-         */
-        private _deleteMeta;
     }
 }
 declare namespace feng3d {

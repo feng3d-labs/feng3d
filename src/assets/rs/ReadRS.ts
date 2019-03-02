@@ -25,12 +25,12 @@ namespace feng3d
         /**
          * 资源编号映射
          */
-        protected idMap: { [id: string]: FileAsset } = {};
+        idMap: { [id: string]: FileAsset } = {};
 
         /**
          * 资源路径映射
          */
-        protected pathMap: { [path: string]: FileAsset } = {};
+        pathMap: { [path: string]: FileAsset } = {};
 
         /**
          * 资源树保存路径

@@ -103,6 +103,38 @@ namespace feng3d
         }
 
         /**
+         * 删除资源
+         * 
+         * @param callback 完成回调
+         */
+        delete(callback: (err?: Error) => void)
+        {
+            // 删除 meta 文件
+            this._deleteMeta((err) =>
+            {
+                if (err)
+                {
+                    callback && callback(err);
+                    return;
+                }
+                this.deleteFile((err) =>
+                {
+                    // 删除父子资源关系
+                    if (this.parentAsset)
+                    {
+                        var index = this.parentAsset.childrenAssets.indexOf(this.parentAsset);
+                        this.parentAsset.childrenAssets.splice(index, 1);
+                        this.parentAsset = null;
+                    }
+                    // 删除映射
+                    delete this.rs.idMap[this.assetId];
+                    delete this.rs.pathMap[this.assetPath];
+                    callback && callback();
+                });
+            });
+        }
+
+        /**
          * 读取资源缩略图标
          * 
          * @param callback 完成回调
@@ -151,6 +183,16 @@ namespace feng3d
         protected abstract readFile(callback?: (err: Error) => void): void;
 
         /**
+         * 删除文件
+         * 
+         * @param callback 完成回调
+         */
+        protected deleteFile(callback?: (err: Error) => void)
+        {
+            this.rs.fs.deleteFile(this.assetPath, callback);
+        }
+
+        /**
          * 缩略图
          */
         private _thumbnail: HTMLImageElement;
@@ -168,7 +210,7 @@ namespace feng3d
          */
         private get metaPath()
         {
-            return this.assetPath + metaSuffix;
+            return this.assetPath + ".meta";
         }
 
         /**
@@ -193,7 +235,17 @@ namespace feng3d
          */
         private _writeMeta(callback?: (err: Error) => void)
         {
-            this.rs.fs.writeObject(this.assetPath + metaSuffix, this.meta, callback);
+            this.rs.fs.writeObject(this.metaPath, this.meta, callback);
+        }
+
+        /**
+         * 删除元标签
+         * 
+         * @param callback 完成回调
+         */
+        private _deleteMeta(callback?: (err: Error) => void)
+        {
+            this.rs.fs.deleteFile(this.metaPath, callback);
         }
     }
 }
