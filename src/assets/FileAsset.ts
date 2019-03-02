@@ -16,7 +16,9 @@ namespace feng3d
          */
         @oav()
         @serialize
-        name = "";
+        get name() { return this._name; }
+        set name(v) { this._name = v; if (this.data) this.data.name = v; }
+        private _name = "";
 
         /**
          * 资源元标签，该对象也用来判断资源是否被加载，值为null表示未加载，否则已加载。
@@ -129,7 +131,6 @@ namespace feng3d
          */
         deleteThumbnail(callback?: (err: Error) => void)
         {
-            this._thumbnail = null;
             this.rs.fs.deleteFile(this.thumbnailPath, callback);
         }
 
@@ -155,6 +156,15 @@ namespace feng3d
         protected deleteFile(callback?: (err: Error) => void)
         {
             this.rs.fs.deleteFile(this.assetPath, callback);
+
+            // 延迟一帧判断该资源是否被删除，排除移动文件时出现的临时删除情况
+            ticker.nextframe(() =>
+            {
+                if (this.rs.getAsset(this.assetId) == null)
+                {
+                    this.deleteThumbnail();
+                }
+            });
         }
 
         /**

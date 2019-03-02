@@ -16356,15 +16356,22 @@ var feng3d;
      */
     var FileAsset = /** @class */ (function () {
         function FileAsset() {
-            /**
-             * 名称
-             */
-            this.name = "";
+            this._name = "";
             /**
              * 文件后缀
              */
             this.extenson = "";
         }
+        Object.defineProperty(FileAsset.prototype, "name", {
+            /**
+             * 名称
+             */
+            get: function () { return this._name; },
+            set: function (v) { this._name = v; if (this.data)
+                this.data.name = v; },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 读取资源
          *
@@ -16425,7 +16432,6 @@ var feng3d;
          * @param callback 完成回调
          */
         FileAsset.prototype.deleteThumbnail = function (callback) {
-            this._thumbnail = null;
             this.rs.fs.deleteFile(this.thumbnailPath, callback);
         };
         /**
@@ -16434,7 +16440,14 @@ var feng3d;
          * @param callback 完成回调
          */
         FileAsset.prototype.deleteFile = function (callback) {
+            var _this = this;
             this.rs.fs.deleteFile(this.assetPath, callback);
+            // 延迟一帧判断该资源是否被删除，排除移动文件时出现的临时删除情况
+            feng3d.ticker.nextframe(function () {
+                if (_this.rs.getAsset(_this.assetId) == null) {
+                    _this.deleteThumbnail();
+                }
+            });
         };
         Object.defineProperty(FileAsset.prototype, "thumbnailPath", {
             /**
@@ -16452,7 +16465,7 @@ var feng3d;
         __decorate([
             feng3d.oav(),
             feng3d.serialize
-        ], FileAsset.prototype, "name", void 0);
+        ], FileAsset.prototype, "name", null);
         __decorate([
             feng3d.serialize
         ], FileAsset.prototype, "extenson", void 0);
@@ -26911,7 +26924,7 @@ var feng3d;
             feng3d.watch("onShaderChanged")
         ], Material.prototype, "shaderName", void 0);
         __decorate([
-            feng3d.oav()
+            feng3d.oav({ editable: false })
         ], Material.prototype, "name", void 0);
         __decorate([
             feng3d.serialize,

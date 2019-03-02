@@ -7865,6 +7865,7 @@ declare namespace feng3d {
          * 名称
          */
         name: string;
+        private _name;
         /**
          * 资源元标签，该对象也用来判断资源是否被加载，值为null表示未加载，否则已加载。
          */
