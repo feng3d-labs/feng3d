@@ -156,7 +156,7 @@ namespace feng3d
                     // 备份父资源
                     var pla = la.parentAsset;
                     // 从原路径上删除资源
-                    this.deleteAsset(la.assetId, (err) =>
+                    this.deleteAsset(la, (err) =>
                     {
                         if (err)
                         {
@@ -196,12 +196,11 @@ namespace feng3d
         /**
          * 删除资源
          * 
-         * @param assetId 资源编号
+         * @param asset 资源
          * @param callback 完成回调
          */
-        deleteAsset(assetId: string, callback?: (err: Error) => void)
+        deleteAsset(asset: FileAsset, callback?: (err: Error) => void)
         {
-            var asset = this.idMap[assetId];
             // 获取需要移动的资源列表
             var assets = [asset];
             var index = 0;

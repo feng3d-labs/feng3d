@@ -16833,7 +16833,7 @@ var feng3d;
                     // 备份父资源
                     var pla = la.parentAsset;
                     // 从原路径上删除资源
-                    _this.deleteAsset(la.assetId, function (err) {
+                    _this.deleteAsset(la, function (err) {
                         if (err) {
                             callback && callback(err);
                             return;
@@ -16867,12 +16867,11 @@ var feng3d;
         /**
          * 删除资源
          *
-         * @param assetId 资源编号
+         * @param asset 资源
          * @param callback 完成回调
          */
-        ReadWriteRS.prototype.deleteAsset = function (assetId, callback) {
+        ReadWriteRS.prototype.deleteAsset = function (asset, callback) {
             var _this = this;
-            var asset = this.idMap[assetId];
             // 获取需要移动的资源列表
             var assets = [asset];
             var index = 0;

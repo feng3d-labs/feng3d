@@ -8118,10 +8118,10 @@ declare namespace feng3d {
         /**
          * 删除资源
          *
-         * @param assetId 资源编号
+         * @param asset 资源
          * @param callback 完成回调
          */
-        deleteAsset(assetId: string, callback?: (err: Error) => void): void;
+        deleteAsset(asset: FileAsset, callback?: (err: Error) => void): void;
         /**
          * 删除资源元标签
          *
