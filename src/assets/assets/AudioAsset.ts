@@ -5,9 +5,8 @@ namespace feng3d
      */
     export class AudioAsset extends FileAsset
     {
-        assetType = AssetType.audio;
-
-        extenson: ".ogg" | ".mp3" | ".wav" = ".mp3";
+        readonly assetType = AssetType.audio;
+        readonly extenson: ".ogg" | ".mp3" | ".wav" = ".mp3";
 
         /**
          * 保存文件

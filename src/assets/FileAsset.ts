@@ -28,7 +28,18 @@ namespace feng3d
          * 
          * 加载或者创建该资源的资源系统
          */
-        rs: ReadWriteRS;
+        readonly rs: ReadWriteRS;
+
+        /**
+         * 资源类型，由具体对象类型决定
+         */
+        readonly assetType: AssetType;
+
+        /**
+         * 文件后缀
+         */
+        @serialize
+        readonly extenson: string = "";
 
         /**
          * 父资源
@@ -41,20 +52,14 @@ namespace feng3d
         assetPath: string;
 
         /**
-         * 资源类型，由具体对象类型决定
-         */
-        assetType: AssetType;
-
-        /**
-         * 文件后缀
-         */
-        @serialize
-        extenson = "";
-
-        /**
          * 资源对象
          */
         data: AssetData;
+
+        constructor(rs: ReadWriteRS)
+        {
+            this.rs = rs;
+        }
 
         /**
          * 读取资源

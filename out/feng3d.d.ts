@@ -265,8 +265,8 @@ getset平均耗时比 17.3
          * @param handler
          * @param thisObject
          */
-        watch<T extends Object>(host: T, property: keyof T, handler: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
-        unwatch<T extends Object>(host: T, property: keyof T, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
+        watch<T, K extends keyof T, V extends T[K]>(host: T, property: K, handler: (host: T, property: string, oldvalue: V) => void, thisObject?: any): void;
+        unwatch<T, K extends keyof T, V extends T[K]>(host: T, property: K, handler?: (host: T, property: string, oldvalue: V) => void, thisObject?: any): void;
         watchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
         unwatchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
     }
@@ -7261,11 +7261,11 @@ declare namespace feng3d {
         /**
          * 资源编号
          */
-        assetId: string;
+        readonly assetId: string;
         /**
          * 资源类型，由具体对象类型决定
          */
-        assetType: AssetType;
+        readonly assetType: AssetType;
     }
 }
 declare namespace feng3d {
@@ -7874,7 +7874,15 @@ declare namespace feng3d {
          *
          * 加载或者创建该资源的资源系统
          */
-        rs: ReadWriteRS;
+        readonly rs: ReadWriteRS;
+        /**
+         * 资源类型，由具体对象类型决定
+         */
+        readonly assetType: AssetType;
+        /**
+         * 文件后缀
+         */
+        readonly extenson: string;
         /**
          * 父资源
          */
@@ -7884,17 +7892,10 @@ declare namespace feng3d {
          */
         assetPath: string;
         /**
-         * 资源类型，由具体对象类型决定
-         */
-        assetType: AssetType;
-        /**
-         * 文件后缀
-         */
-        extenson: string;
-        /**
          * 资源对象
          */
         data: AssetData;
+        constructor(rs: ReadWriteRS);
         /**
          * 读取资源
          *
@@ -8012,7 +8013,7 @@ declare namespace feng3d {
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends FileAsset>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
+        createAsset<T extends FileAsset>(cls: new (rs: ReadWriteRS) => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
         /**
          * 获取有效子文件名称
          *
@@ -8099,7 +8100,7 @@ declare namespace feng3d {
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends FileAsset>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
+        createAsset<T extends FileAsset>(cls: new (rs: ReadWriteRS) => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
         /**
          * 写（保存）资源
          *
@@ -15082,8 +15083,8 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class AnimationClip extends Feng3dObject {
-        assetType: AssetType;
+    class AnimationClip extends AssetData {
+        readonly assetType: AssetType;
         name: string;
         /**
          * 动画时长，单位ms
@@ -15131,11 +15132,11 @@ declare namespace feng3d {
      */
     class FolderAsset extends FileAsset {
         assetType: AssetType;
+        extenson: string;
         /**
          * 子资源列表
          */
         childrenAssets: FileAsset[];
-        extenson: string;
         /**
          * 保存文件
          * @param callback 完成回调
@@ -15248,8 +15249,8 @@ declare namespace feng3d {
      * 音效资源
      */
     class AudioAsset extends FileAsset {
-        assetType: AssetType;
-        extenson: ".ogg" | ".mp3" | ".wav";
+        readonly assetType: AssetType;
+        readonly extenson: ".ogg" | ".mp3" | ".wav";
         /**
          * 保存文件
          * @param callback 完成回调

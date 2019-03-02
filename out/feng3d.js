@@ -16364,7 +16364,7 @@ var feng3d;
      * feng3d资源
      */
     var FileAsset = /** @class */ (function () {
-        function FileAsset() {
+        function FileAsset(rs) {
             /**
              * 名称
              */
@@ -16373,6 +16373,7 @@ var feng3d;
              * 文件后缀
              */
             this.extenson = "";
+            this.rs = rs;
         }
         /**
          * 读取资源
@@ -16553,7 +16554,8 @@ var feng3d;
                     var index = 0;
                     while (index < assets.length) {
                         var asset = assets[index];
-                        asset.rs = _this;
+                        // 强制赋值资源系统，并检测代码是否正确
+                        feng3d.assert((asset["" + "rs"] = _this) && asset.rs == _this);
                         // 计算路径
                         var path = asset.name + asset.extenson;
                         if (asset.parentAsset)
@@ -16595,10 +16597,9 @@ var feng3d;
         ReadRS.prototype.createAsset = function (cls, value, parent, callback) {
             parent = parent || this._root;
             //
-            var asset = new cls();
+            var asset = new cls(this);
             asset.assetId = feng3d.FMath.uuid();
             asset.meta = { guid: asset.assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
-            asset.rs = this;
             Object.setValue(asset, value);
             // 设置默认名称
             asset.name = asset.name || "new " + asset.assetType;
@@ -30883,7 +30884,7 @@ var feng3d;
             feng3d.serialize
         ], AnimationClip.prototype, "propertyClips", void 0);
         return AnimationClip;
-    }(feng3d.Feng3dObject));
+    }(feng3d.AssetData));
     feng3d.AnimationClip = AnimationClip;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -31025,11 +31026,11 @@ var feng3d;
         function FolderAsset() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.assetType = feng3d.AssetType.folder;
+            _this.extenson = "";
             /**
              * 子资源列表
              */
             _this.childrenAssets = [];
-            _this.extenson = "";
             return _this;
         }
         /**
@@ -31412,7 +31413,7 @@ var feng3d;
             return _this;
         }
         MaterialAsset.prototype.saveFile = function (callback) {
-            this.data.assetId = this.assetId;
+            assign(this.data, "assetId", this.assetId);
             this.rs.fs.writeObject(this.assetPath, this.data, callback);
         };
         /**
@@ -31424,7 +31425,8 @@ var feng3d;
             var _this = this;
             this.rs.fs.readObject(this.assetPath, function (err, data) {
                 _this.data = data;
-                _this.data.assetId = _this.assetId;
+                Object.setValue(_this.data, { assetId: _this.assetId });
+                assign(_this.data, "assetId", _this.assetId);
                 callback && callback(err);
             });
         };
@@ -31434,6 +31436,18 @@ var feng3d;
         return MaterialAsset;
     }(feng3d.FileAsset));
     feng3d.MaterialAsset = MaterialAsset;
+    /**
+     * 给指定对象属性赋值
+     *
+     * 可用于给只读对象赋值而不被编译器报错
+     *
+     * @param host 被赋值对象
+     * @param property 被赋值属性
+     * @param value 属性值
+     */
+    function assign(host, property, value) {
+        host[property] = value;
+    }
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

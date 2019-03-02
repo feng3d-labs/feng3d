@@ -47,7 +47,7 @@ namespace feng3d
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends FileAsset>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void)
+        createAsset<T extends FileAsset>(cls: new (rs: ReadWriteRS) => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void)
         {
             // 新建资源
             super.createAsset(cls, value, parent, (err, asset) =>

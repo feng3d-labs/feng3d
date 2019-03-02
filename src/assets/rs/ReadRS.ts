@@ -65,7 +65,8 @@ namespace feng3d
                     while (index < assets.length)
                     {
                         var asset = assets[index];
-                        asset.rs = <any>this;
+                        // 强制赋值资源系统，并检测代码是否正确
+                        feng3d.assert((asset["" + "rs"] = <any>this) && asset.rs == <any>this);
                         // 计算路径
                         var path = asset.name + asset.extenson;
                         if (asset.parentAsset) path = asset.parentAsset.assetPath + "/" + path;
@@ -108,14 +109,13 @@ namespace feng3d
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends FileAsset>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void)
+        createAsset<T extends FileAsset>(cls: new (rs: ReadWriteRS) => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void)
         {
             parent = parent || this._root;
             //
-            var asset = new cls();
+            var asset = new cls(<any>this);
             asset.assetId = feng3d.FMath.uuid();
             asset.meta = { guid: asset.assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
-            asset.rs = <any>this;
             Object.setValue(asset, value);
             // 设置默认名称
             asset.name = asset.name || "new " + asset.assetType;

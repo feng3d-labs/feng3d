@@ -111,7 +111,7 @@ getset平均耗时比 17.3
          * @param handler 
          * @param thisObject 
          */
-        watch<T extends Object>(host: T, property: keyof T, handler: (host: any, property: string, oldvalue: any) => void, thisObject?: any)
+        watch<T, K extends keyof T, V extends T[K]>(host: T, property: K, handler: (host: T, property: string, oldvalue: V) => void, thisObject?: any)
         {
             if (!Object.getOwnPropertyDescriptor(host, bindables))
             {
@@ -173,7 +173,7 @@ getset平均耗时比 17.3
                 propertywatchs.handlers.push({ handler: handler, thisObject: thisObject });
         }
 
-        unwatch<T extends Object>(host: T, property: keyof T, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any)
+        unwatch<T, K extends keyof T, V extends T[K]>(host: T, property: K, handler?: (host: T, property: string, oldvalue: V) => void, thisObject?: any)
         {
             var watchs: Watchs = host[bindables];
             if (!watchs) return;

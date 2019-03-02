@@ -7,13 +7,13 @@ namespace feng3d
     {
         assetType = AssetType.folder;
 
+        extenson = "";
+
         /**
          * 子资源列表
          */
         @serialize
         childrenAssets: FileAsset[] = [];
-
-        extenson = "";
 
         /**
          * 保存文件
