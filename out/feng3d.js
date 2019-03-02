@@ -31305,10 +31305,6 @@ var feng3d;
         __extends(TextureCubeAsset, _super);
         function TextureCubeAsset() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            /**
-             * 材质
-             */
-            _this.data = new feng3d.TextureCube();
             _this.extenson = ".json";
             _this.assetType = feng3d.AssetType.texturecube;
             return _this;
@@ -31389,10 +31385,6 @@ var feng3d;
         __extends(MaterialAsset, _super);
         function MaterialAsset() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            /**
-             * 材质
-             */
-            _this.data = new feng3d.Material();
             _this.assetType = feng3d.AssetType.material;
             _this.extenson = ".json";
             return _this;
