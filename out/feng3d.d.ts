@@ -7502,7 +7502,7 @@ declare namespace feng3d {
          * @param image 图片
          * @param callback 回调函数
          */
-        abstract writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void): void;
+        abstract writeImage(path: string, image: HTMLImageElement, callback?: (err: Error) => void): void;
         /**
          * 复制文件
          * @param src    源路径
@@ -7706,7 +7706,7 @@ declare namespace feng3d {
          * @param image 图片
          * @param callback 回调函数
          */
-        writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void): void;
+        writeImage(path: string, image: HTMLImageElement, callback?: (err: Error) => void): void;
         /**
          * 复制文件
          * @param src    源路径
@@ -7911,7 +7911,7 @@ declare namespace feng3d {
          * @param image 缩略图
          * @param callback 完成回调
          */
-        writeThumbnail(fs: ReadWriteFS, image: HTMLImageElement, callback: (err: Error) => void): void;
+        writeThumbnail(image: HTMLImageElement, callback?: (err: Error) => void): void;
         /**
          * 保存文件
          * @param fs 可读写资源管理系统

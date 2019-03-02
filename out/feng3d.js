@@ -16398,13 +16398,15 @@ var feng3d;
          * @param image 缩略图
          * @param callback 完成回调
          */
-        FileAsset.prototype.writeThumbnail = function (fs, image, callback) {
+        FileAsset.prototype.writeThumbnail = function (image, callback) {
+            if (!(this.rs.fs instanceof feng3d.ReadWriteFS))
+                return;
             if (this._thumbnail == image) {
-                callback(null);
+                callback && callback(null);
                 return;
             }
             this._thumbnail = image;
-            fs.writeImage("assetIcon/" + this.assetId + ".png", image, callback);
+            this.rs.fs.writeImage("assetIcon/" + this.assetId + ".png", image, callback);
         };
         /**
          * 保存文件
@@ -26530,7 +26532,6 @@ var feng3d;
                 this.once("loadCompleted", callback);
         };
         UrlImageTexture2D.prototype.saveFile = function (fs, callback) {
-            if (callback === void 0) { callback = function (err) { }; }
             fs.writeImage(this.url, this.image, callback);
         };
         /**

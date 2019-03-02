@@ -86,15 +86,17 @@ namespace feng3d
          * @param image 缩略图
          * @param callback 完成回调
          */
-        writeThumbnail(fs: ReadWriteFS, image: HTMLImageElement, callback: (err: Error) => void)
+        writeThumbnail(image: HTMLImageElement, callback?: (err: Error) => void)
         {
+            if (!(this.rs.fs instanceof ReadWriteFS)) return;
+
             if (this._thumbnail == image)
             {
-                callback(null);
+                callback && callback(null);
                 return;
             }
             this._thumbnail = image;
-            fs.writeImage("assetIcon/" + this.assetId + ".png", image, callback);
+            this.rs.fs.writeImage("assetIcon/" + this.assetId + ".png", image, callback);
         }
 
         /**

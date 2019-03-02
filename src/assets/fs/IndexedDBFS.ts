@@ -272,7 +272,7 @@ namespace feng3d
          * @param image 图片
          * @param callback 回调函数
          */
-        writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void)
+        writeImage(path: string, image: HTMLImageElement, callback?: (err: Error) => void)
         {
             dataTransform.imageToArrayBuffer(image, (arraybuffer) =>
             {

@@ -70,7 +70,7 @@ namespace feng3d
          * @param image 图片
          * @param callback 回调函数
          */
-        abstract writeImage(path: string, image: HTMLImageElement, callback: (err: Error) => void): void;
+        abstract writeImage(path: string, image: HTMLImageElement, callback?: (err: Error) => void): void;
 
         /**
          * 复制文件

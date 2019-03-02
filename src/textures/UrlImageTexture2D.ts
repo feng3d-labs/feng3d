@@ -45,7 +45,7 @@ namespace feng3d
             else this.once("loadCompleted", callback);
         }
 
-        protected saveFile(fs: ReadWriteFS, callback = (err: Error) => { })
+        protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void)
         {
             fs.writeImage(this.url, this.image, callback);
         }
