@@ -260,17 +260,6 @@ namespace feng3d
                     }
                 }
             }
-
-            // var serializableMembers = getSerializableMembers(target);
-            // for (var i = 0; i < serializableMembers.length; i++)
-            // {
-            //     var property = serializableMembers[i];
-
-            //     if (object[property] !== undefined)
-            //     {
-            //         this.setPropertyValue(target, object, property);
-            //     }
-            // }
         }
 
         /**

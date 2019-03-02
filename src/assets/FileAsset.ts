@@ -21,7 +21,7 @@ namespace feng3d
         /**
          * 资源元标签
          */
-        meta: AssetMeta;
+        readonly meta: AssetMeta;
 
         /**
          * 资源系统
@@ -44,12 +44,12 @@ namespace feng3d
         /**
          * 父资源
          */
-        parentAsset: FolderAsset;
+        readonly parentAsset: FolderAsset;
 
         /**
          * 资源路径
          */
-        assetPath: string;
+        readonly assetPath: string;
 
         /**
          * 资源对象
@@ -179,9 +179,9 @@ namespace feng3d
          */
         private _readMeta(callback?: (err?: Error) => void)
         {
-            this.rs.fs.readObject(this.metaPath, (err, meta) =>
+            this.rs.fs.readObject(this.metaPath, (err, meta: AssetMeta) =>
             {
-                this.meta = <any>meta;
+                Object.setValue(<FileAsset>this, { meta: meta })
                 callback(err);
             });
         }

@@ -7868,7 +7868,7 @@ declare namespace feng3d {
         /**
          * 资源元标签
          */
-        meta: AssetMeta;
+        readonly meta: AssetMeta;
         /**
          * 资源系统
          *
@@ -7886,11 +7886,11 @@ declare namespace feng3d {
         /**
          * 父资源
          */
-        parentAsset: FolderAsset;
+        readonly parentAsset: FolderAsset;
         /**
          * 资源路径
          */
-        assetPath: string;
+        readonly assetPath: string;
         /**
          * 资源对象
          */
@@ -15130,12 +15130,12 @@ declare namespace feng3d {
      * 文件夹资源
      */
     class FolderAsset extends FileAsset {
-        assetType: AssetType;
-        extenson: string;
+        readonly assetType: AssetType;
+        readonly extenson: string;
         /**
          * 子资源列表
          */
-        childrenAssets: FileAsset[];
+        readonly childrenAssets: FileAsset[];
         /**
          * 保存文件
          * @param callback 完成回调

@@ -5,15 +5,14 @@ namespace feng3d
      */
     export class FolderAsset extends FileAsset
     {
-        assetType = AssetType.folder;
-
-        extenson = "";
+        readonly assetType = AssetType.folder;
+        readonly extenson = "";
 
         /**
          * 子资源列表
          */
         @serialize
-        childrenAssets: FileAsset[] = [];
+        readonly childrenAssets: FileAsset[] = [];
 
         /**
          * 保存文件

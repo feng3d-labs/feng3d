@@ -70,7 +70,7 @@ namespace feng3d
                         // 计算路径
                         var path = asset.name + asset.extenson;
                         if (asset.parentAsset) path = asset.parentAsset.assetPath + "/" + path;
-                        asset.assetPath = path;
+                        Object.setValue(asset, { assetPath: path });
                         // 新增映射
                         this.idMap[asset.assetId] = asset;
                         this.pathMap[asset.assetPath] = asset;
@@ -81,7 +81,7 @@ namespace feng3d
                             {
                                 var v = asset.childrenAssets[i];
                                 // 处理资源父子关系
-                                v.parentAsset = asset;
+                                Object.setValue(v, { parentAsset: asset });
                                 //
                                 assets.push(v);
                             }
@@ -113,10 +113,13 @@ namespace feng3d
         {
             parent = parent || this._root;
             //
-            var asset = new cls();
-            Object.setValue(<FileAsset>asset, { rs: this, assetId: feng3d.FMath.uuid() });
+            var asset: FileAsset = new cls();
+            var assetId = feng3d.FMath.uuid()
+
+            // 初始化
+            Object.setValue(asset, { rs: this, assetId: assetId, meta: { guid: assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType } });
             Object.setValue(asset, value);
-            asset.meta = { guid: asset.assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
+
             // 设置默认名称
             asset.name = asset.name || "new " + asset.assetType;
             if (parent) 
@@ -125,16 +128,16 @@ namespace feng3d
                 asset.name = this.getValidChildName(parent, asset.name);
                 // 处理资源父子关系
                 parent.childrenAssets.push(asset);
-                asset.parentAsset = parent;
+                Object.setValue(asset, { parentAsset: parent })
             }
             // 计算路径
             var path = asset.name + asset.extenson;
             if (asset.parentAsset) path = asset.parentAsset.assetPath + "/" + path;
-            asset.assetPath = path;
+            Object.setValue(asset, { assetPath: path });
             // 新增映射
             this.idMap[asset.assetId] = asset;
             this.pathMap[asset.assetPath] = asset;
-            callback && callback(null, asset);
+            callback && callback(null, <T>asset);
         }
 
         /**

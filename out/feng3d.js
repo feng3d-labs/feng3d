@@ -787,15 +787,6 @@ var feng3d;
             for (var property in object) {
                 _loop_1(property);
             }
-            // var serializableMembers = getSerializableMembers(target);
-            // for (var i = 0; i < serializableMembers.length; i++)
-            // {
-            //     var property = serializableMembers[i];
-            //     if (object[property] !== undefined)
-            //     {
-            //         this.setPropertyValue(target, object, property);
-            //     }
-            // }
         };
         /**
          * 给目标对象的指定属性赋值
@@ -16470,7 +16461,7 @@ var feng3d;
         FileAsset.prototype._readMeta = function (callback) {
             var _this = this;
             this.rs.fs.readObject(this.metaPath, function (err, meta) {
-                _this.meta = meta;
+                Object.setValue(_this, { meta: meta });
                 callback(err);
             });
         };
@@ -16559,7 +16550,7 @@ var feng3d;
                         var path = asset.name + asset.extenson;
                         if (asset.parentAsset)
                             path = asset.parentAsset.assetPath + "/" + path;
-                        asset.assetPath = path;
+                        Object.setValue(asset, { assetPath: path });
                         // 新增映射
                         _this.idMap[asset.assetId] = asset;
                         _this.pathMap[asset.assetPath] = asset;
@@ -16568,7 +16559,7 @@ var feng3d;
                             for (var i = 0; i < asset.childrenAssets.length; i++) {
                                 var v = asset.childrenAssets[i];
                                 // 处理资源父子关系
-                                v.parentAsset = asset;
+                                Object.setValue(v, { parentAsset: asset });
                                 //
                                 assets.push(v);
                             }
@@ -16597,9 +16588,10 @@ var feng3d;
             parent = parent || this._root;
             //
             var asset = new cls();
-            Object.setValue(asset, { rs: this, assetId: feng3d.FMath.uuid() });
+            var assetId = feng3d.FMath.uuid();
+            // 初始化
+            Object.setValue(asset, { rs: this, assetId: assetId, meta: { guid: assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType } });
             Object.setValue(asset, value);
-            asset.meta = { guid: asset.assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
             // 设置默认名称
             asset.name = asset.name || "new " + asset.assetType;
             if (parent) {
@@ -16607,13 +16599,13 @@ var feng3d;
                 asset.name = this.getValidChildName(parent, asset.name);
                 // 处理资源父子关系
                 parent.childrenAssets.push(asset);
-                asset.parentAsset = parent;
+                Object.setValue(asset, { parentAsset: parent });
             }
             // 计算路径
             var path = asset.name + asset.extenson;
             if (asset.parentAsset)
                 path = asset.parentAsset.assetPath + "/" + path;
-            asset.assetPath = path;
+            Object.setValue(asset, { assetPath: path });
             // 新增映射
             this.idMap[asset.assetId] = asset;
             this.pathMap[asset.assetPath] = asset;
@@ -16804,7 +16796,7 @@ var feng3d;
             var index = asset.parentAsset.childrenAssets.indexOf(asset);
             asset.parentAsset.childrenAssets.splice(index, 1);
             folder.childrenAssets.push(asset);
-            asset.parentAsset = folder;
+            Object.setValue(asset, { parentAsset: folder });
             // 获取需要移动的资源列表
             var assets = [asset];
             var index = 0;
@@ -16845,7 +16837,7 @@ var feng3d;
                             return;
                         }
                         // 修复删除资源时破坏的父资源引用
-                        la.parentAsset = pla;
+                        Object.setValue(la, { parentAsset: pla });
                         // 计算资源新路径
                         var np = la.name + la.extenson;
                         var p = la.parentAsset;
@@ -16853,7 +16845,7 @@ var feng3d;
                             np = p.name + "/" + np;
                             p = p.parentAsset;
                         }
-                        la.assetPath = np;
+                        Object.setValue(la, { assetPath: np });
                         // 新增映射
                         _this.idMap[la.assetId] = la;
                         _this.pathMap[la.assetPath] = la;
@@ -16909,7 +16901,7 @@ var feng3d;
                         if (la.parentAsset) {
                             var index = la.parentAsset.childrenAssets.indexOf(la.parentAsset);
                             la.parentAsset.childrenAssets.splice(index, 1);
-                            la.parentAsset = null;
+                            Object.setValue(la, { parentAsset: null });
                         }
                         // 删除映射
                         delete _this.idMap[la.assetId];

@@ -112,7 +112,7 @@ namespace feng3d
             var index = asset.parentAsset.childrenAssets.indexOf(asset);
             asset.parentAsset.childrenAssets.splice(index, 1);
             folder.childrenAssets.push(asset);
-            asset.parentAsset = folder;
+            Object.setValue(asset, { parentAsset: folder });
             // 获取需要移动的资源列表
             var assets = [asset];
             var index = 0;
@@ -164,7 +164,7 @@ namespace feng3d
                             return;
                         }
                         // 修复删除资源时破坏的父资源引用
-                        la.parentAsset = pla;
+                        Object.setValue(la, { parentAsset: pla });
                         // 计算资源新路径
                         var np = la.name + la.extenson;
                         var p = la.parentAsset;
@@ -173,7 +173,7 @@ namespace feng3d
                             np = p.name + "/" + np;
                             p = p.parentAsset;
                         }
-                        la.assetPath = np;
+                        Object.setValue(la, { assetPath: np });
                         // 新增映射
                         this.idMap[la.assetId] = la;
                         this.pathMap[la.assetPath] = la;
@@ -242,7 +242,7 @@ namespace feng3d
                         {
                             var index = la.parentAsset.childrenAssets.indexOf(la.parentAsset);
                             la.parentAsset.childrenAssets.splice(index, 1);
-                            la.parentAsset = null;
+                            Object.setValue(la, { parentAsset: null });
                         }
                         // 删除映射
                         delete this.idMap[la.assetId];
