@@ -1,6 +1,11 @@
 namespace feng3d
 {
     /**
+     * 资源元标签文件后缀
+     */
+    export const metaSuffix = ".meta";
+
+    /**
      * 资源元标签
      */
     export interface AssetMeta
