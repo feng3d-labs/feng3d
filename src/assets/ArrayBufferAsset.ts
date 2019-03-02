@@ -18,7 +18,7 @@ namespace feng3d
          * 
          * @param callback 完成回调
          */
-        protected saveFile(callback?: (err: Error) => void)
+        saveFile(callback?: (err: Error) => void)
         {
             this.rs.fs.writeArrayBuffer(this.assetPath, this.arraybuffer, callback);
         }
@@ -28,7 +28,7 @@ namespace feng3d
          * 
          * @param callback 完成回调
          */
-        protected readFile(callback?: (err: Error) => void)
+        readFile(callback?: (err: Error) => void)
         {
             this.rs.fs.readArrayBuffer(this.assetPath, (err, data) =>
             {

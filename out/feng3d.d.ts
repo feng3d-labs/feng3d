@@ -7581,10 +7581,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 资源元标签文件后缀
-     */
-    const metaSuffix = ".meta";
-    /**
      * 资源元标签
      */
     interface AssetMeta {
@@ -7938,19 +7934,41 @@ declare namespace feng3d {
          *
          * @param callback 完成回调
          */
-        protected abstract readFile(callback?: (err: Error) => void): void;
+        abstract readFile(callback?: (err: Error) => void): void;
         /**
          * 保存文件
          *
          * @param callback 完成回调
          */
-        protected abstract saveFile(callback?: (err: Error) => void): void;
+        abstract saveFile(callback?: (err: Error) => void): void;
         /**
          * 删除文件
          *
          * @param callback 完成回调
          */
-        protected deleteFile(callback?: (err: Error) => void): void;
+        deleteFile(callback?: (err: Error) => void): void;
+        /**
+         * 元标签路径
+         */
+        protected readonly metaPath: string;
+        /**
+         * 读取元标签
+         *
+         * @param callback 完成回调
+         */
+        readMeta(callback?: (err?: Error) => void): void;
+        /**
+         * 写元标签
+         *
+         * @param callback 完成回调
+         */
+        writeMeta(callback?: (err: Error) => void): void;
+        /**
+         * 删除元标签
+         *
+         * @param callback 完成回调
+         */
+        deleteMeta(callback?: (err: Error) => void): void;
         /**
          * 缩略图
          */
@@ -8064,17 +8082,6 @@ declare namespace feng3d {
          * 获取所有资源
          */
         getAllAssets(): FileAsset[];
-        /**
-         * 元标签路径
-         */
-        private getMetaPath;
-        /**
-         * 读取资源元标签
-         *
-         * @param path 资源路径
-         * @param callback 完成回调
-         */
-        private _readMeta;
     }
 }
 declare namespace feng3d {
@@ -8137,19 +8144,6 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         deleteAsset(asset: FileAsset, callback?: (err: Error) => void): void;
-        /**
-         * 删除资源元标签
-         *
-         * @param path 资源路径
-         * @param callback 完成回调
-         */
-        private _deleteMeta;
-        /**
-         * 写资源元标签
-         *
-         * @param callback 完成回调
-         */
-        private _writeMeta;
     }
 }
 declare namespace feng3d {
@@ -15161,12 +15155,12 @@ declare namespace feng3d {
          * 保存文件
          * @param callback 完成回调
          */
-        protected saveFile(callback?: (err: Error) => void): void;
+        saveFile(callback?: (err: Error) => void): void;
         /**
          * 读取文件
          * @param callback 完成回调
          */
-        protected readFile(callback?: (err: Error) => void): void;
+        readFile(callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
@@ -15184,13 +15178,13 @@ declare namespace feng3d {
          *
          * @param callback 完成回调
          */
-        protected saveFile(callback?: (err: Error) => void): void;
+        saveFile(callback?: (err: Error) => void): void;
         /**
          * 读取文件
          *
          * @param callback 完成回调
          */
-        protected readFile(callback?: (err: Error) => void): void;
+        readFile(callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
@@ -15199,13 +15193,13 @@ declare namespace feng3d {
      */
     abstract class StringAsset extends FileAsset {
         textContent: string;
-        protected saveFile(callback?: (err: Error) => void): void;
+        saveFile(callback?: (err: Error) => void): void;
         /**
          * 读取文件
          *
          * @param callback 完成回调
          */
-        protected readFile(callback?: (err: Error) => void): void;
+        readFile(callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
@@ -15275,12 +15269,12 @@ declare namespace feng3d {
          * 保存文件
          * @param callback 完成回调
          */
-        protected saveFile(callback?: (err: Error) => void): void;
+        saveFile(callback?: (err: Error) => void): void;
         /**
          * 读取文件
          * @param callback 完成回调
          */
-        protected readFile(callback?: (err: Error) => void): void;
+        readFile(callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
@@ -15299,13 +15293,13 @@ declare namespace feng3d {
         image: HTMLImageElement;
         private _image;
         assetType: AssetType;
-        protected saveFile(callback?: (err: Error) => void): void;
+        saveFile(callback?: (err: Error) => void): void;
         /**
          * 读取文件
          *
          * @param callback 完成回调
          */
-        protected readFile(callback?: (err: Error) => void): void;
+        readFile(callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
@@ -15319,13 +15313,13 @@ declare namespace feng3d {
         data: TextureCube;
         extenson: string;
         assetType: AssetType;
-        protected saveFile(callback?: (err: Error) => void): void;
+        saveFile(callback?: (err: Error) => void): void;
         /**
          * 读取文件
          *
          * @param callback 完成回调
          */
-        protected readFile(callback?: (err: Error) => void): void;
+        readFile(callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
@@ -15339,13 +15333,13 @@ declare namespace feng3d {
         data: Geometry;
         assetType: AssetType;
         extenson: string;
-        protected saveFile(callback?: (err: Error) => void): void;
+        saveFile(callback?: (err: Error) => void): void;
         /**
          * 读取文件
          *
          * @param callback 完成回调
          */
-        protected readFile(callback?: (err: Error) => void): void;
+        readFile(callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
@@ -15359,13 +15353,13 @@ declare namespace feng3d {
         data: Material;
         assetType: AssetType;
         extenson: string;
-        protected saveFile(callback?: (err: Error) => void): void;
+        saveFile(callback?: (err: Error) => void): void;
         /**
          * 读取文件
          * @param fs 刻度资源管理系统
          * @param callback 完成回调
          */
-        protected readFile(callback?: (err: Error) => void): void;
+        readFile(callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {
@@ -15379,13 +15373,13 @@ declare namespace feng3d {
         data: GameObject;
         assetType: AssetType;
         extenson: string;
-        protected saveFile(callback?: (err: Error) => void): void;
+        saveFile(callback?: (err: Error) => void): void;
         /**
          * 读取文件
          *
          * @param callback 完成回调
          */
-        protected readFile(callback?: (err: Error) => void): void;
+        readFile(callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {

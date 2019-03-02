@@ -27,7 +27,7 @@ namespace feng3d
 
         assetType = AssetType.texture;
 
-        protected saveFile(callback?: (err: Error) => void)
+        saveFile(callback?: (err: Error) => void)
         {
             this.data.assetId = this.assetId;
             this.rs.fs.writeImage(this.assetPath, this.image, (err) =>
@@ -41,7 +41,7 @@ namespace feng3d
          * 
          * @param callback 完成回调
          */
-        protected readFile(callback?: (err: Error) => void)
+        readFile(callback?: (err: Error) => void)
         {
             this.rs.fs.readImage(this.assetPath, (err, img: HTMLImageElement) =>
             {

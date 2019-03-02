@@ -15900,13 +15900,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 资源元标签文件后缀
-     */
-    feng3d.metaSuffix = ".meta";
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 索引数据文件系统
      */
     var IndexedDBFS = /** @class */ (function (_super) {
@@ -16443,11 +16436,49 @@ var feng3d;
             var _this = this;
             this.rs.fs.deleteFile(this.assetPath, callback);
             // 延迟一帧判断该资源是否被删除，排除移动文件时出现的临时删除情况
-            feng3d.ticker.nextframe(function () {
+            feng3d.ticker.once(1000, function () {
                 if (_this.rs.getAsset(_this.assetId) == null) {
                     _this.deleteThumbnail();
                 }
             });
+        };
+        Object.defineProperty(FileAsset.prototype, "metaPath", {
+            /**
+             * 元标签路径
+             */
+            get: function () {
+                return this.assetPath + ".meta";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 读取元标签
+         *
+         * @param callback 完成回调
+         */
+        FileAsset.prototype.readMeta = function (callback) {
+            var _this = this;
+            this.rs.fs.readObject(this.metaPath, function (err, meta) {
+                _this.meta = meta;
+                callback(err);
+            });
+        };
+        /**
+         * 写元标签
+         *
+         * @param callback 完成回调
+         */
+        FileAsset.prototype.writeMeta = function (callback) {
+            this.rs.fs.writeObject(this.metaPath, this.meta, callback);
+        };
+        /**
+         * 删除元标签
+         *
+         * @param callback 完成回调
+         */
+        FileAsset.prototype.deleteMeta = function (callback) {
+            this.rs.fs.deleteFile(this.metaPath, callback);
         };
         Object.defineProperty(FileAsset.prototype, "thumbnailPath", {
             /**
@@ -16630,12 +16661,12 @@ var feng3d;
                 callback(null, asset);
                 return;
             }
-            this._readMeta(asset, function (err) {
+            asset.readMeta(function (err) {
                 if (err) {
                     callback(err, asset);
                     return;
                 }
-                asset["readFile"](function (err) {
+                asset.readFile(function (err) {
                     callback(err, asset);
                 });
             });
@@ -16691,24 +16722,6 @@ var feng3d;
             var _this = this;
             var assets = Object.keys(this.idMap).map(function (v) { return _this.idMap[v]; });
             return assets;
-        };
-        /**
-         * 元标签路径
-         */
-        ReadRS.prototype.getMetaPath = function (asset) {
-            return asset.assetPath + feng3d.metaSuffix;
-        };
-        /**
-         * 读取资源元标签
-         *
-         * @param path 资源路径
-         * @param callback 完成回调
-         */
-        ReadRS.prototype._readMeta = function (asset, callback) {
-            this.fs.readObject(this.getMetaPath(asset), function (err, meta) {
-                asset.meta = meta;
-                callback(err);
-            });
         };
         return ReadRS;
     }());
@@ -16784,12 +16797,12 @@ var feng3d;
          */
         ReadWriteRS.prototype.writeAsset = function (asset, callback) {
             asset.meta.mtimeMs = Date.now();
-            this._writeMeta(asset, function (err) {
+            asset.writeMeta(function (err) {
                 if (err) {
                     callback && callback(err);
                     return;
                 }
-                asset["saveFile"](function (err) {
+                asset.saveFile(function (err) {
                     callback && callback(err);
                 });
             });
@@ -16915,15 +16928,15 @@ var feng3d;
                 }
                 var la = assets.pop();
                 // 删除 meta 文件
-                _this._deleteMeta(la.assetPath, function (err) {
+                la.deleteMeta(function (err) {
                     if (err) {
                         callback && callback(err);
                         return;
                     }
-                    la["deleteFile"](function (err) {
+                    la.deleteFile(function (err) {
                         // 删除父子资源关系
                         if (la.parentAsset) {
-                            var index = la.parentAsset.childrenAssets.indexOf(la.parentAsset);
+                            var index = la.parentAsset.childrenAssets.indexOf(la);
                             la.parentAsset.childrenAssets.splice(index, 1);
                             la.parentAsset = null;
                         }
@@ -16935,23 +16948,6 @@ var feng3d;
                 });
             };
             deleteLastAsset();
-        };
-        /**
-         * 删除资源元标签
-         *
-         * @param path 资源路径
-         * @param callback 完成回调
-         */
-        ReadWriteRS.prototype._deleteMeta = function (path, callback) {
-            this.fs.deleteFile(path + feng3d.metaSuffix, callback);
-        };
-        /**
-         * 写资源元标签
-         *
-         * @param callback 完成回调
-         */
-        ReadWriteRS.prototype._writeMeta = function (asset, callback) {
-            this.fs.writeObject(asset.assetPath + feng3d.metaSuffix, asset.meta, callback);
         };
         return ReadWriteRS;
     }(feng3d.ReadRS));

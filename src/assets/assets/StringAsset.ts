@@ -8,7 +8,7 @@ namespace feng3d
         @oav({ component: "OAVMultiText" })
         textContent: string;
 
-        protected saveFile(callback?: (err: Error) => void)
+        saveFile(callback?: (err: Error) => void)
         {
             this.rs.fs.writeString(this.assetPath, this.textContent, callback);
         }
@@ -18,7 +18,7 @@ namespace feng3d
          * 
          * @param callback 完成回调
          */
-        protected readFile(callback?: (err: Error) => void)
+        readFile(callback?: (err: Error) => void)
         {
             this.rs.fs.readString(this.assetPath, (err, data) =>
             {

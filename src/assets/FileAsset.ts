@@ -139,32 +139,74 @@ namespace feng3d
          * 
          * @param callback 完成回调
          */
-        protected abstract readFile(callback?: (err: Error) => void): void;
+        abstract readFile(callback?: (err: Error) => void): void;
 
         /**
          * 保存文件
          * 
          * @param callback 完成回调
          */
-        protected abstract saveFile(callback?: (err: Error) => void): void;
+        abstract saveFile(callback?: (err: Error) => void): void;
 
         /**
          * 删除文件
          * 
          * @param callback 完成回调
          */
-        protected deleteFile(callback?: (err: Error) => void)
+        deleteFile(callback?: (err: Error) => void)
         {
             this.rs.fs.deleteFile(this.assetPath, callback);
 
             // 延迟一帧判断该资源是否被删除，排除移动文件时出现的临时删除情况
-            ticker.nextframe(() =>
+            ticker.once(1000, () =>
             {
                 if (this.rs.getAsset(this.assetId) == null)
                 {
                     this.deleteThumbnail();
                 }
             });
+        }
+
+        /**
+         * 元标签路径
+         */
+        protected get metaPath()
+        {
+            return this.assetPath + ".meta";
+        }
+
+        /**
+         * 读取元标签
+         * 
+         * @param callback 完成回调 
+         */
+        readMeta(callback?: (err?: Error) => void)
+        {
+            this.rs.fs.readObject(this.metaPath, (err, meta: AssetMeta) =>
+            {
+                this.meta = meta;
+                callback(err);
+            });
+        }
+
+        /**
+         * 写元标签
+         * 
+         * @param callback 完成回调
+         */
+        writeMeta(callback?: (err: Error) => void)
+        {
+            this.rs.fs.writeObject(this.metaPath, this.meta, callback);
+        }
+
+        /**
+         * 删除元标签
+         * 
+         * @param callback 完成回调
+         */
+        deleteMeta(callback?: (err: Error) => void)
+        {
+            this.rs.fs.deleteFile(this.metaPath, callback);
         }
 
         /**

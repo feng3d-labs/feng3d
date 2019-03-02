@@ -12,7 +12,7 @@ namespace feng3d
          * 保存文件
          * @param callback 完成回调
          */
-        protected saveFile(callback?: (err: Error) => void)
+        saveFile(callback?: (err: Error) => void)
         {
             callback && callback(null);
         }
@@ -21,7 +21,7 @@ namespace feng3d
          * 读取文件
          * @param callback 完成回调
          */
-        protected readFile(callback?: (err: Error) => void)
+        readFile(callback?: (err: Error) => void)
         {
             callback && callback(null);
         }

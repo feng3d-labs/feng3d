@@ -78,15 +78,14 @@ namespace feng3d
         writeAsset(asset: FileAsset, callback?: (err: Error) => void)
         {
             asset.meta.mtimeMs = Date.now();
-            this._writeMeta(asset, (err) =>
+            asset.writeMeta((err) =>
             {
                 if (err)
                 {
                     callback && callback(err);
                     return;
                 }
-
-                asset["saveFile"](err =>
+                asset.saveFile(err =>
                 {
                     callback && callback(err);
                 });
@@ -113,7 +112,7 @@ namespace feng3d
             var fp = folder;
             while (fp)
             {
-                if (fp == asset)
+                if (fp == <any>asset)
                 {
                     callback && callback(new Error(`无法移动达到子文件夹中`));
                     return;
@@ -240,7 +239,7 @@ namespace feng3d
                 var la = assets.pop();
 
                 // 删除 meta 文件
-                this._deleteMeta(la.assetPath, (err) =>
+                la.deleteMeta((err) =>
                 {
                     if (err)
                     {
@@ -248,12 +247,12 @@ namespace feng3d
                         return;
                     }
 
-                    la["deleteFile"]((err) =>
+                    la.deleteFile((err) =>
                     {
                         // 删除父子资源关系
                         if (la.parentAsset)
                         {
-                            var index = la.parentAsset.childrenAssets.indexOf(la.parentAsset);
+                            var index = la.parentAsset.childrenAssets.indexOf(la);
                             la.parentAsset.childrenAssets.splice(index, 1);
                             la.parentAsset = null;
                         }
@@ -267,27 +266,6 @@ namespace feng3d
 
             };
             deleteLastAsset();
-        }
-
-        /**
-         * 删除资源元标签
-         * 
-         * @param path 资源路径
-         * @param callback 完成回调
-         */
-        private _deleteMeta(path: string, callback?: (err: Error) => void)
-        {
-            this.fs.deleteFile(path + metaSuffix, callback);
-        }
-
-        /**
-         * 写资源元标签
-         * 
-         * @param callback 完成回调
-         */
-        private _writeMeta(asset: FileAsset, callback?: (err: Error) => void)
-        {
-            this.fs.writeObject(asset.assetPath + metaSuffix, asset.meta, callback);
         }
     }
 }

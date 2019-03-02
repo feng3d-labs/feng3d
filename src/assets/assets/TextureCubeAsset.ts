@@ -15,7 +15,7 @@ namespace feng3d
 
         assetType = AssetType.texturecube;
 
-        protected saveFile(callback?: (err: Error) => void)
+        saveFile(callback?: (err: Error) => void)
         {
             this.data.assetId = this.assetId;
             this.rs.fs.writeObject(this.assetPath, this.data, (err) =>
@@ -29,7 +29,7 @@ namespace feng3d
          * 
          * @param callback 完成回调
          */
-        protected readFile(callback?: (err: Error) => void)
+        readFile(callback?: (err: Error) => void)
         {
             this.rs.fs.readObject(this.assetPath, (err, textureCube: TextureCube) =>
             {

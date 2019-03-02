@@ -15,7 +15,7 @@ namespace feng3d
 
         extenson = ".json";
 
-        protected saveFile(callback?: (err: Error) => void)
+        saveFile(callback?: (err: Error) => void)
         {
             this.data.assetId = this.assetId;
             this.rs.fs.writeObject(this.assetPath, this.data, callback);
@@ -26,7 +26,7 @@ namespace feng3d
          * @param fs 刻度资源管理系统
          * @param callback 完成回调
          */
-        protected readFile(callback?: (err: Error) => void)
+        readFile(callback?: (err: Error) => void)
         {
             this.rs.fs.readObject(this.assetPath, (err, data: Material) =>
             {
