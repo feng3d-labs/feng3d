@@ -185,7 +185,7 @@ namespace feng3d
             this.rs.fs.readObject(this.metaPath, (err, meta: AssetMeta) =>
             {
                 this.meta = meta;
-                callback(err);
+                callback && callback(err);
             });
         }
 

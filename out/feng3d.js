@@ -16461,7 +16461,7 @@ var feng3d;
             var _this = this;
             this.rs.fs.readObject(this.metaPath, function (err, meta) {
                 _this.meta = meta;
-                callback(err);
+                callback && callback(err);
             });
         };
         /**
@@ -31333,6 +31333,27 @@ var feng3d;
                 _this.data.assetId = _this.assetId;
                 callback && callback(err);
             });
+        };
+        /**
+         * 读取元标签
+         *
+         * @param callback 完成回调
+         */
+        TextureAsset.prototype.readMeta = function (callback) {
+            var _this = this;
+            _super.prototype.readMeta.call(this, function (err) {
+                _this.data = feng3d.serialization.deserialize(_this.meta["texture"]);
+                callback && callback(err);
+            });
+        };
+        /**
+         * 写元标签
+         *
+         * @param callback 完成回调
+         */
+        TextureAsset.prototype.writeMeta = function (callback) {
+            this.meta["texture"] = feng3d.serialization.serialize(this.data);
+            this.rs.fs.writeObject(this.metaPath, this.meta, callback);
         };
         __decorate([
             feng3d.oav({ component: "OAVObjectView" })

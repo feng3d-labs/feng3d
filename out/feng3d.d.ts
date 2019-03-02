@@ -15300,6 +15300,18 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         readFile(callback?: (err: Error) => void): void;
+        /**
+         * 读取元标签
+         *
+         * @param callback 完成回调
+         */
+        readMeta(callback?: (err?: Error) => void): void;
+        /**
+         * 写元标签
+         *
+         * @param callback 完成回调
+         */
+        writeMeta(callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {

@@ -50,5 +50,30 @@ namespace feng3d
                 callback && callback(err);
             });
         }
+
+        /**
+         * 读取元标签
+         * 
+         * @param callback 完成回调 
+         */
+        readMeta(callback?: (err?: Error) => void)
+        {
+            super.readMeta((err) =>
+            {
+                this.data = serialization.deserialize(this.meta["texture"]);
+                callback && callback(err);
+            });
+        }
+
+        /**
+         * 写元标签
+         * 
+         * @param callback 完成回调
+         */
+        writeMeta(callback?: (err: Error) => void)
+        {
+            this.meta["texture"] = serialization.serialize(this.data);
+            this.rs.fs.writeObject(this.metaPath, this.meta, callback);
+        }
     }
 }
