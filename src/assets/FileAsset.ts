@@ -9,7 +9,7 @@ namespace feng3d
          * 资源编号
          */
         @serialize
-        assetId: string;
+        readonly assetId: string;
 
         /**
          * 名称
@@ -55,11 +55,6 @@ namespace feng3d
          * 资源对象
          */
         data: AssetData;
-
-        constructor(rs: ReadWriteRS)
-        {
-            this.rs = rs;
-        }
 
         /**
          * 读取资源

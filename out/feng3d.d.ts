@@ -7860,7 +7860,7 @@ declare namespace feng3d {
         /**
          * 资源编号
          */
-        assetId: string;
+        readonly assetId: string;
         /**
          * 名称
          */
@@ -7895,7 +7895,6 @@ declare namespace feng3d {
          * 资源对象
          */
         data: AssetData;
-        constructor(rs: ReadWriteRS);
         /**
          * 读取资源
          *
@@ -8013,7 +8012,7 @@ declare namespace feng3d {
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends FileAsset>(cls: new (rs: ReadWriteRS) => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
+        createAsset<T extends FileAsset>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
         /**
          * 获取有效子文件名称
          *
@@ -8100,7 +8099,7 @@ declare namespace feng3d {
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends FileAsset>(cls: new (rs: ReadWriteRS) => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
+        createAsset<T extends FileAsset>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
         /**
          * 写（保存）资源
          *

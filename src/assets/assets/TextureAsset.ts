@@ -30,7 +30,7 @@ namespace feng3d
 
         protected saveFile(callback?: (err: Error) => void)
         {
-            this.data.assetId = this.assetId;
+            Object.setValue(this.data, { assetId: this.assetId });
             this.rs.fs.writeImage(this.assetPath, this.image, (err) =>
             {
                 callback && callback(err);
@@ -47,7 +47,7 @@ namespace feng3d
             this.rs.fs.readImage(this.assetPath, (err, img: HTMLImageElement) =>
             {
                 this.image = img;
-                this.data.assetId = this.assetId;
+                Object.setValue(this.data, { assetId: this.assetId });
                 callback && callback(err);
             });
         }

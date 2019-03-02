@@ -16364,7 +16364,7 @@ var feng3d;
      * feng3d资源
      */
     var FileAsset = /** @class */ (function () {
-        function FileAsset(rs) {
+        function FileAsset() {
             /**
              * 名称
              */
@@ -16373,7 +16373,6 @@ var feng3d;
              * 文件后缀
              */
             this.extenson = "";
-            this.rs = rs;
         }
         /**
          * 读取资源
@@ -16554,8 +16553,8 @@ var feng3d;
                     var index = 0;
                     while (index < assets.length) {
                         var asset = assets[index];
-                        // 强制赋值资源系统，并检测代码是否正确
-                        feng3d.assert((asset["" + "rs"] = _this) && asset.rs == _this);
+                        // 设置资源系统
+                        Object.setValue(asset, { rs: _this });
                         // 计算路径
                         var path = asset.name + asset.extenson;
                         if (asset.parentAsset)
@@ -16597,10 +16596,10 @@ var feng3d;
         ReadRS.prototype.createAsset = function (cls, value, parent, callback) {
             parent = parent || this._root;
             //
-            var asset = new cls(this);
-            asset.assetId = feng3d.FMath.uuid();
-            asset.meta = { guid: asset.assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
+            var asset = new cls();
+            Object.setValue(asset, { rs: this, assetId: feng3d.FMath.uuid() });
             Object.setValue(asset, value);
+            asset.meta = { guid: asset.assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
             // 设置默认名称
             asset.name = asset.name || "new " + asset.assetType;
             if (parent) {
@@ -31298,7 +31297,7 @@ var feng3d;
             configurable: true
         });
         TextureAsset.prototype.saveFile = function (callback) {
-            this.data.assetId = this.assetId;
+            Object.setValue(this.data, { assetId: this.assetId });
             this.rs.fs.writeImage(this.assetPath, this.image, function (err) {
                 callback && callback(err);
             });
@@ -31312,7 +31311,7 @@ var feng3d;
             var _this = this;
             this.rs.fs.readImage(this.assetPath, function (err, img) {
                 _this.image = img;
-                _this.data.assetId = _this.assetId;
+                Object.setValue(_this.data, { assetId: _this.assetId });
                 callback && callback(err);
             });
         };
@@ -31337,7 +31336,7 @@ var feng3d;
             return _this;
         }
         TextureCubeAsset.prototype.saveFile = function (callback) {
-            this.data.assetId = this.assetId;
+            Object.setValue(this.data, { assetId: this.assetId });
             this.rs.fs.writeObject(this.assetPath, this.data, function (err) {
                 callback && callback(err);
             });
@@ -31351,7 +31350,7 @@ var feng3d;
             var _this = this;
             this.rs.fs.readObject(this.assetPath, function (err, textureCube) {
                 _this.data = textureCube;
-                _this.data.assetId = _this.assetId;
+                Object.setValue(_this.data, { assetId: _this.assetId });
                 callback && callback(err);
             });
         };
@@ -31413,7 +31412,7 @@ var feng3d;
             return _this;
         }
         MaterialAsset.prototype.saveFile = function (callback) {
-            assign(this.data, "assetId", this.assetId);
+            Object.setValue(this.data, { assetId: this.assetId });
             this.rs.fs.writeObject(this.assetPath, this.data, callback);
         };
         /**
@@ -31426,7 +31425,6 @@ var feng3d;
             this.rs.fs.readObject(this.assetPath, function (err, data) {
                 _this.data = data;
                 Object.setValue(_this.data, { assetId: _this.assetId });
-                assign(_this.data, "assetId", _this.assetId);
                 callback && callback(err);
             });
         };
@@ -31436,18 +31434,6 @@ var feng3d;
         return MaterialAsset;
     }(feng3d.FileAsset));
     feng3d.MaterialAsset = MaterialAsset;
-    /**
-     * 给指定对象属性赋值
-     *
-     * 可用于给只读对象赋值而不被编译器报错
-     *
-     * @param host 被赋值对象
-     * @param property 被赋值属性
-     * @param value 属性值
-     */
-    function assign(host, property, value) {
-        host[property] = value;
-    }
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
