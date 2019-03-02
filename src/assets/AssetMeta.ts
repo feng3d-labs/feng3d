@@ -28,6 +28,6 @@ namespace feng3d
         /**
          * 资源类型，由具体对象类型决定；AssetExtension.folder 时为文件夹
          */
-        assetType: AssetExtension;
+        assetType: AssetType;
     }
 }

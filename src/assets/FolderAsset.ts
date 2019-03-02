@@ -5,7 +5,7 @@ namespace feng3d
      */
     export class FolderAsset extends FileAsset
     {
-        assetType = AssetExtension.folder;
+        assetType = AssetType.folder;
 
         /**
          * 子资源列表

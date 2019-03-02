@@ -13,7 +13,7 @@ namespace feng3d
 
         extenson = ".json";
 
-        assetType = AssetExtension.texturecube;
+        assetType = AssetType.texturecube;
 
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void)
         {

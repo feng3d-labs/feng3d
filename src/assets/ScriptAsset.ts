@@ -5,7 +5,7 @@ namespace feng3d
      */
     export class ScriptAsset extends StringAsset
     {
-        assetType = AssetExtension.script
+        assetType = AssetType.script
 
         @oav({ editable: false, priority: -1 })
         name: string;

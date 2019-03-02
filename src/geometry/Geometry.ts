@@ -88,7 +88,7 @@ namespace feng3d
          */
         assetId: string;
 
-        assetType = AssetExtension.geometry;
+        assetType = AssetType.geometry;
 
         /**
          * 几何体信息

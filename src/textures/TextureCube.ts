@@ -7,7 +7,7 @@ namespace feng3d
     {
         __class__: "feng3d.TextureCube" = "feng3d.TextureCube";
 
-        assetType = AssetExtension.texturecube;
+        assetType = AssetType.texturecube;
 
         @oav({ component: "OAVCubeMap", priority: -1 })
         @serialize

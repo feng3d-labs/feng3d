@@ -5,7 +5,7 @@ namespace feng3d
      */
     export class JSAsset extends StringAsset
     {
-        assetType = AssetExtension.js;
+        assetType = AssetType.js;
 
         extenson = ".js";
 

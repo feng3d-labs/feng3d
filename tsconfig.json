@@ -114,7 +114,7 @@
         "src/assets/fs/IndexedDBFS.ts",
         "src/assets/fs/HttpFS.ts",
         //
-        "src/assets/AssetExtension.ts",
+        "src/assets/AssetType.ts",
         "src/assets/FileAsset.ts",
         "src/assets/rs/ReadRS.ts",
         "src/assets/rs/ReadWriteRS.ts",

@@ -26,7 +26,7 @@ namespace feng3d
             this.data["_pixels"] = v;
         }
 
-        assetType = AssetExtension.texture;
+        assetType = AssetType.texture;
 
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void)
         {

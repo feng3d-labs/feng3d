@@ -7265,7 +7265,7 @@ declare namespace feng3d {
         /**
          * 资源类型，由具体对象类型决定
          */
-        assetType: AssetExtension;
+        assetType: AssetType;
     }
 }
 declare namespace feng3d {
@@ -7603,7 +7603,7 @@ declare namespace feng3d {
         /**
          * 资源类型，由具体对象类型决定；AssetExtension.folder 时为文件夹
          */
-        assetType: AssetExtension;
+        assetType: AssetType;
     }
 }
 declare namespace feng3d {
@@ -7769,7 +7769,7 @@ declare namespace feng3d {
     /**
      * 资源扩展名
      */
-    enum AssetExtension {
+    enum AssetType {
         /**
          * 文件夹
          */
@@ -7884,7 +7884,7 @@ declare namespace feng3d {
         /**
          * 资源类型，由具体对象类型决定
          */
-        assetType: AssetExtension;
+        assetType: AssetType;
         /**
          * 文件后缀
          */
@@ -11623,7 +11623,7 @@ declare namespace feng3d {
      */
     class GameObject extends AssetData {
         __class__: "feng3d.GameObject";
-        assetType: AssetExtension;
+        assetType: AssetType;
         /**
          * 资源编号
          */
@@ -12357,7 +12357,7 @@ declare namespace feng3d {
          * 资源编号
          */
         assetId: string;
-        assetType: AssetExtension;
+        assetType: AssetType;
         /**
          * 几何体信息
          */
@@ -13437,7 +13437,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     class UrlImageTexture2D extends Texture2D {
         __class__: "feng3d.UrlImageTexture2D";
-        assetType: AssetExtension;
+        assetType: AssetType;
         url: string;
         protected image: HTMLImageElement;
         constructor();
@@ -13511,7 +13511,7 @@ declare namespace feng3d {
      */
     class TextureCube extends TextureInfo {
         __class__: "feng3d.TextureCube";
-        assetType: AssetExtension;
+        assetType: AssetType;
         positive_x_url: string;
         positive_y_url: string;
         positive_z_url: string;
@@ -15067,7 +15067,7 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     class AnimationClip extends Feng3dObject {
-        assetType: AssetExtension;
+        assetType: AssetType;
         name: string;
         /**
          * 动画时长，单位ms
@@ -15114,7 +15114,7 @@ declare namespace feng3d {
      * 文件夹资源
      */
     class FolderAsset extends FileAsset {
-        assetType: AssetExtension;
+        assetType: AssetType;
         /**
          * 子资源列表
          */
@@ -15172,7 +15172,7 @@ declare namespace feng3d {
      * 脚本资源
      */
     class ScriptAsset extends StringAsset {
-        assetType: AssetExtension;
+        assetType: AssetType;
         name: string;
         extenson: string;
         textContent: string;
@@ -15192,7 +15192,7 @@ declare namespace feng3d {
      * 着色器 资源
      */
     class ShaderAsset extends ScriptAsset {
-        assetType: AssetExtension;
+        assetType: AssetType;
         extenson: string;
     }
 }
@@ -15201,7 +15201,7 @@ declare namespace feng3d {
      * JS资源
      */
     class JSAsset extends StringAsset {
-        assetType: AssetExtension;
+        assetType: AssetType;
         extenson: string;
         textContent: string;
     }
@@ -15211,14 +15211,14 @@ declare namespace feng3d {
      * JSON 资源
      */
     class JsonAsset extends StringAsset {
-        assetType: AssetExtension;
+        assetType: AssetType;
         extenson: string;
         textContent: string;
     }
 }
 declare namespace feng3d {
     class TextAsset extends StringAsset {
-        assetType: AssetExtension;
+        assetType: AssetType;
         extenson: string;
         textContent: string;
     }
@@ -15228,7 +15228,7 @@ declare namespace feng3d {
      * 音效资源
      */
     class AudioAsset extends FileAsset {
-        assetType: AssetExtension;
+        assetType: AssetType;
         extenson: ".ogg" | ".mp3" | ".wav";
     }
 }
@@ -15246,7 +15246,7 @@ declare namespace feng3d {
          * 图片
          */
         image: HTMLImageElement;
-        assetType: AssetExtension;
+        assetType: AssetType;
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void): void;
         /**
          * 读取文件
@@ -15266,7 +15266,7 @@ declare namespace feng3d {
          */
         data: TextureCube;
         extenson: string;
-        assetType: AssetExtension;
+        assetType: AssetType;
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void): void;
         /**
          * 读取文件
@@ -15285,7 +15285,7 @@ declare namespace feng3d {
          * 几何体
          */
         data: Geometry;
-        assetType: AssetExtension;
+        assetType: AssetType;
         extenson: string;
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void): void;
         /**
@@ -15305,7 +15305,7 @@ declare namespace feng3d {
          * 材质
          */
         data: Material;
-        assetType: AssetExtension;
+        assetType: AssetType;
         extenson: string;
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void): void;
         /**
@@ -15325,7 +15325,7 @@ declare namespace feng3d {
          * 材质
          */
         data: GameObject;
-        assetType: AssetExtension;
+        assetType: AssetType;
         extenson: string;
         protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void): void;
         /**

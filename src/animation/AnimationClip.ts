@@ -2,7 +2,7 @@ namespace feng3d
 {
     export class AnimationClip extends Feng3dObject
     {
-        assetType = AssetExtension.anim;
+        assetType = AssetType.anim;
 
         @oav()
         @serialize

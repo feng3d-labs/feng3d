@@ -11,7 +11,7 @@ namespace feng3d
         @oav({ component: "OAVObjectView" })
         data = new GameObject();
 
-        assetType = AssetExtension.gameobject;
+        assetType = AssetType.gameobject;
 
         extenson = ".json";
 

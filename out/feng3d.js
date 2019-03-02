@@ -16273,90 +16273,90 @@ var feng3d;
     /**
      * 资源扩展名
      */
-    var AssetExtension;
-    (function (AssetExtension) {
+    var AssetType;
+    (function (AssetType) {
         /**
          * 文件夹
          */
-        AssetExtension["folder"] = "folder";
+        AssetType["folder"] = "folder";
         /**
          * 音频
          */
-        AssetExtension["audio"] = "audio";
+        AssetType["audio"] = "audio";
         /**
          * ts文件
          */
-        AssetExtension["ts"] = "ts";
+        AssetType["ts"] = "ts";
         /**
          * js文件
          */
-        AssetExtension["js"] = "js";
+        AssetType["js"] = "js";
         /**
          * 文本文件
          */
-        AssetExtension["txt"] = "txt";
+        AssetType["txt"] = "txt";
         /**
          * json文件
          */
-        AssetExtension["json"] = "json";
+        AssetType["json"] = "json";
         /**
          * OBJ模型资源附带的材质文件
          */
-        AssetExtension["mtl"] = "mtl";
+        AssetType["mtl"] = "mtl";
         /**
          * OBJ模型文件
          */
-        AssetExtension["obj"] = "obj";
+        AssetType["obj"] = "obj";
         /**
          * MD5模型文件
          */
-        AssetExtension["md5mesh"] = "md5mesh";
+        AssetType["md5mesh"] = "md5mesh";
         /**
          * MD5动画
          */
-        AssetExtension["md5anim"] = "md5anim";
+        AssetType["md5anim"] = "md5anim";
         /**
          * 魔兽MDL模型
          */
-        AssetExtension["mdl"] = "mdl";
+        AssetType["mdl"] = "mdl";
         // -- feng3d中的类型
         /**
          * 纹理
          */
-        AssetExtension["texture"] = "texture";
+        AssetType["texture"] = "texture";
         /**
          * 立方体纹理
          */
-        AssetExtension["texturecube"] = "texturecube";
+        AssetType["texturecube"] = "texturecube";
         /**
          * 材质
          */
-        AssetExtension["material"] = "material";
+        AssetType["material"] = "material";
         /**
          * 几何体
          */
-        AssetExtension["geometry"] = "geometry";
+        AssetType["geometry"] = "geometry";
         /**
          * 游戏对象
          */
-        AssetExtension["gameobject"] = "gameobject";
+        AssetType["gameobject"] = "gameobject";
         /**
          * 场景
          */
-        AssetExtension["scene"] = "scene";
+        AssetType["scene"] = "scene";
         /**
          * 动画
          */
-        AssetExtension["anim"] = "anim";
+        AssetType["anim"] = "anim";
         /**
          * 着色器
          */
-        AssetExtension["shader"] = "shader";
+        AssetType["shader"] = "shader";
         /**
          * 脚本
          */
-        AssetExtension["script"] = "script";
-    })(AssetExtension = feng3d.AssetExtension || (feng3d.AssetExtension = {}));
+        AssetType["script"] = "script";
+    })(AssetType = feng3d.AssetType || (feng3d.AssetType = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -21406,7 +21406,7 @@ var feng3d;
         function GameObject() {
             var _this = _super.call(this) || this;
             _this.__class__ = "feng3d.GameObject";
-            _this.assetType = feng3d.AssetExtension.gameobject;
+            _this.assetType = feng3d.AssetType.gameobject;
             _this.renderAtomic = new feng3d.RenderAtomic();
             /**
              * 是否显示
@@ -23144,7 +23144,7 @@ var feng3d;
         function Geometry() {
             var _this = _super.call(this) || this;
             _this.preview = "";
-            _this.assetType = feng3d.AssetExtension.geometry;
+            _this.assetType = feng3d.AssetType.geometry;
             /**
              * 属性数据列表
              */
@@ -26498,7 +26498,7 @@ var feng3d;
         function UrlImageTexture2D() {
             var _this = _super.call(this) || this;
             _this.__class__ = "feng3d.UrlImageTexture2D";
-            _this.assetType = feng3d.AssetExtension.texture;
+            _this.assetType = feng3d.AssetType.texture;
             _this.url = "";
             //
             feng3d.feng3dDispatcher.on("asset.imageAssetChanged", _this.onImageAssetChanged, _this);
@@ -26699,7 +26699,7 @@ var feng3d;
         function TextureCube() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.TextureCube";
-            _this.assetType = feng3d.AssetExtension.texturecube;
+            _this.assetType = feng3d.AssetType.texturecube;
             _this.noPixels = [feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white];
             _this._pixels = [null, null, null, null, null, null];
             _this._textureType = feng3d.TextureType.TEXTURE_CUBE_MAP;
@@ -30845,7 +30845,7 @@ var feng3d;
         __extends(AnimationClip, _super);
         function AnimationClip() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.assetType = feng3d.AssetExtension.anim;
+            _this.assetType = feng3d.AssetType.anim;
             _this.loop = true;
             return _this;
         }
@@ -31005,7 +31005,7 @@ var feng3d;
         __extends(FolderAsset, _super);
         function FolderAsset() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.assetType = feng3d.AssetExtension.folder;
+            _this.assetType = feng3d.AssetType.folder;
             /**
              * 子资源列表
              */
@@ -31106,7 +31106,7 @@ var feng3d;
         __extends(ScriptAsset, _super);
         function ScriptAsset() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.assetType = feng3d.AssetExtension.script;
+            _this.assetType = feng3d.AssetType.script;
             _this.extenson = ".ts";
             _this.textContent = "";
             return _this;
@@ -31151,7 +31151,7 @@ var feng3d;
         __extends(ShaderAsset, _super);
         function ShaderAsset() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.assetType = feng3d.AssetExtension.shader;
+            _this.assetType = feng3d.AssetType.shader;
             _this.extenson = ".ts";
             return _this;
         }
@@ -31168,7 +31168,7 @@ var feng3d;
         __extends(JSAsset, _super);
         function JSAsset() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.assetType = feng3d.AssetExtension.js;
+            _this.assetType = feng3d.AssetType.js;
             _this.extenson = ".js";
             _this.textContent = "";
             return _this;
@@ -31186,7 +31186,7 @@ var feng3d;
         __extends(JsonAsset, _super);
         function JsonAsset() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.assetType = feng3d.AssetExtension.json;
+            _this.assetType = feng3d.AssetType.json;
             _this.extenson = ".json";
             _this.textContent = "{}";
             return _this;
@@ -31201,7 +31201,7 @@ var feng3d;
         __extends(TextAsset, _super);
         function TextAsset() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.assetType = feng3d.AssetExtension.txt;
+            _this.assetType = feng3d.AssetType.txt;
             _this.extenson = ".txt";
             _this.textContent = "";
             return _this;
@@ -31219,7 +31219,7 @@ var feng3d;
         __extends(AudioAsset, _super);
         function AudioAsset() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.assetType = feng3d.AssetExtension.audio;
+            _this.assetType = feng3d.AssetType.audio;
             _this.extenson = ".mp3";
             return _this;
         }
@@ -31241,7 +31241,7 @@ var feng3d;
              */
             _this.data = new feng3d.Texture2D();
             _this.extenson = ".png";
-            _this.assetType = feng3d.AssetExtension.texture;
+            _this.assetType = feng3d.AssetType.texture;
             return _this;
         }
         Object.defineProperty(TextureAsset.prototype, "image", {
@@ -31297,7 +31297,7 @@ var feng3d;
              */
             _this.data = new feng3d.TextureCube();
             _this.extenson = ".json";
-            _this.assetType = feng3d.AssetExtension.texturecube;
+            _this.assetType = feng3d.AssetType.texturecube;
             return _this;
         }
         TextureCubeAsset.prototype.saveFile = function (fs, callback) {
@@ -31335,7 +31335,7 @@ var feng3d;
         __extends(GeometryAsset, _super);
         function GeometryAsset() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.assetType = feng3d.AssetExtension.geometry;
+            _this.assetType = feng3d.AssetType.geometry;
             _this.extenson = ".json";
             return _this;
         }
@@ -31376,7 +31376,7 @@ var feng3d;
              * 材质
              */
             _this.data = new feng3d.Material();
-            _this.assetType = feng3d.AssetExtension.material;
+            _this.assetType = feng3d.AssetType.material;
             _this.extenson = ".json";
             return _this;
         }
@@ -31417,7 +31417,7 @@ var feng3d;
              * 材质
              */
             _this.data = new feng3d.GameObject();
-            _this.assetType = feng3d.AssetExtension.gameobject;
+            _this.assetType = feng3d.AssetType.gameobject;
             _this.extenson = ".json";
             return _this;
         }

@@ -11,7 +11,7 @@ namespace feng3d
         @oav({ component: "OAVObjectView" })
         data: Geometry;
 
-        assetType = AssetExtension.geometry;
+        assetType = AssetType.geometry;
 
         extenson = ".json";
 

@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 资源扩展名
      */
-    export enum AssetExtension
+    export enum AssetType
     {
         /**
          * 文件夹

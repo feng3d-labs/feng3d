@@ -4,7 +4,7 @@ namespace feng3d
     {
         __class__: "feng3d.UrlImageTexture2D" = "feng3d.UrlImageTexture2D";
 
-        assetType = AssetExtension.texture;
+        assetType = AssetType.texture;
 
         @serialize
         @watch("urlChanged")

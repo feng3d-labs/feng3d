@@ -2,7 +2,7 @@ namespace feng3d
 {
     export class TextAsset extends StringAsset
     {
-        assetType = AssetExtension.txt;
+        assetType = AssetType.txt;
 
         extenson = ".txt";
 

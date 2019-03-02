@@ -63,7 +63,7 @@ namespace feng3d
 
         __class__: "feng3d.GameObject" = "feng3d.GameObject";
 
-        assetType = AssetExtension.gameobject;
+        assetType = AssetType.gameobject;
 
         /**
          * 资源编号

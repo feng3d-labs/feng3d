@@ -5,7 +5,7 @@ namespace feng3d
      */
     export class ShaderAsset extends ScriptAsset
     {
-        assetType = AssetExtension.shader;
+        assetType = AssetType.shader;
 
         extenson = ".ts";
     }

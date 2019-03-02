@@ -41,7 +41,7 @@ namespace feng3d
         /**
          * 资源类型，由具体对象类型决定
          */
-        assetType: AssetExtension;
+        assetType: AssetType;
 
         /**
          * 文件后缀
