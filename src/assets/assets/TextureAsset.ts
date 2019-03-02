@@ -30,7 +30,6 @@ namespace feng3d
 
         protected saveFile(callback?: (err: Error) => void)
         {
-            if (!(this.rs.fs instanceof ReadWriteFS)) return;
             this.data.assetId = this.assetId;
             this.rs.fs.writeImage(this.assetPath, this.image, (err) =>
             {

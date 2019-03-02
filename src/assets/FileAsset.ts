@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * feng3d资源
      */
-    export class FileAsset
+    export abstract class FileAsset
     {
         /**
          * 资源编号
@@ -28,7 +28,7 @@ namespace feng3d
          * 
          * 加载或者创建该资源的资源系统
          */
-        rs: ReadRS;
+        rs: ReadWriteRS;
 
         /**
          * 父资源
@@ -57,6 +57,52 @@ namespace feng3d
         data: AssetData;
 
         /**
+         * 读取资源
+         * 
+         * @param callback 完成回调
+         */
+        read(callback: (err: Error) => void)
+        {
+            if (this.meta)
+            {
+                callback(null);
+                return;
+            }
+            this._readMeta((err) =>
+            {
+                if (err)
+                {
+                    callback(err);
+                    return;
+                }
+                this.readFile(callback);
+            });
+        }
+
+        /**
+         * 写入资源
+         * 
+         * @param callback 完成回调
+         */
+        write(callback: (err: Error) => void)
+        {
+            this.meta.mtimeMs = Date.now();
+            this._writeMeta((err) =>
+            {
+                if (err)
+                {
+                    callback && callback(err);
+                    return;
+                }
+
+                this.saveFile(err =>
+                {
+                    callback && callback(err);
+                });
+            });
+        }
+
+        /**
          * 读取资源缩略图标
          * 
          * @param callback 完成回调
@@ -83,8 +129,6 @@ namespace feng3d
          */
         writeThumbnail(image: HTMLImageElement, callback?: (err: Error) => void)
         {
-            if (!(this.rs.fs instanceof ReadWriteFS)) return;
-
             if (this._thumbnail == image)
             {
                 callback && callback(null);
@@ -98,19 +142,13 @@ namespace feng3d
          * 保存文件
          * @param callback 完成回调
          */
-        protected saveFile(callback?: (err: Error) => void)
-        {
-            callback && callback(null);
-        }
+        protected abstract saveFile(callback?: (err: Error) => void): void;
 
         /**
          * 读取文件
          * @param callback 完成回调
          */
-        protected readFile(callback?: (err: Error) => void)
-        {
-            callback && callback(null);
-        }
+        protected abstract readFile(callback?: (err: Error) => void): void;
 
         /**
          * 缩略图
@@ -123,6 +161,39 @@ namespace feng3d
         private get thumbnailPath()
         {
             return "assetIcons/" + this.assetId + ".png";
+        }
+
+        /**
+         * 元标签路径
+         */
+        private get metaPath()
+        {
+            return this.assetPath + metaSuffix;
+        }
+
+        /**
+         * 读取资源元标签
+         * 
+         * @param path 资源路径
+         * @param callback 完成回调 
+         */
+        private _readMeta(callback?: (err?: Error) => void)
+        {
+            this.rs.fs.readObject(this.metaPath, (err, meta) =>
+            {
+                this.meta = <any>meta;
+                callback(err);
+            });
+        }
+
+        /**
+         * 写资源元标签
+         * 
+         * @param callback 完成回调
+         */
+        private _writeMeta(callback?: (err: Error) => void)
+        {
+            this.rs.fs.writeObject(this.assetPath + metaSuffix, this.meta, callback);
         }
     }
 }

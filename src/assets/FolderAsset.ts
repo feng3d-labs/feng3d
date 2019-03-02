@@ -21,9 +21,16 @@ namespace feng3d
          */
         protected saveFile(callback?: (err: Error) => void)
         {
-            if (!(this.rs.fs instanceof ReadWriteFS)) return;
-
             this.rs.fs.mkdir(this.assetPath, callback);
+        }
+
+        /**
+         * 读取文件
+         * @param callback 完成回调
+         */
+        protected readFile(callback?: (err: Error) => void)
+        {
+            callback && callback(null);
         }
     }
 }

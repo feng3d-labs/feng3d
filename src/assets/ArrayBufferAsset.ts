@@ -20,7 +20,6 @@ namespace feng3d
          */
         protected saveFile(callback?: (err: Error) => void)
         {
-            if (!(this.rs.fs instanceof ReadWriteFS)) return;
             this.rs.fs.writeArrayBuffer(this.assetPath, this.arraybuffer, callback);
         }
 

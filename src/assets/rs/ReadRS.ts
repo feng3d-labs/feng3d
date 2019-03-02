@@ -65,7 +65,7 @@ namespace feng3d
                     while (index < assets.length)
                     {
                         var asset = assets[index];
-                        asset.rs = this;
+                        asset.rs = <any>this;
                         // 计算路径
                         var path = asset.name + asset.extenson;
                         if (asset.parentAsset) path = asset.parentAsset.assetPath + "/" + path;
@@ -115,7 +115,7 @@ namespace feng3d
             var asset = new cls();
             asset.assetId = feng3d.FMath.uuid();
             asset.meta = { guid: asset.assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
-            asset.rs = this;
+            asset.rs = <any>this;
             Object.setValue(asset, value);
             // 设置默认名称
             asset.name = asset.name || "new " + asset.assetType;
@@ -161,7 +161,7 @@ namespace feng3d
          * @param id 资源编号
          * @param callback 读取完成回调
          */
-        readAsset(id: string, callback: (err: Error, assets: FileAsset) => void)
+        readAsset(id: string, callback: (err: Error, asset: FileAsset) => void)
         {
             var feng3dAsset = this.idMap[id];
             if (!feng3dAsset)
@@ -169,23 +169,9 @@ namespace feng3d
                 callback(new Error(`不存在资源 ${id}`), null);
                 return;
             }
-            if (feng3dAsset.meta)
+            feng3dAsset.read((err) =>
             {
-                callback(null, feng3dAsset);
-                return;
-            }
-            this._readMeta(feng3dAsset.assetPath, (err, meta) =>
-            {
-                if (err)
-                {
-                    callback(err, feng3dAsset);
-                    return;
-                }
-                feng3dAsset.meta = meta;
-                feng3dAsset["readFile"](err =>
-                {
-                    callback(err, feng3dAsset);
-                });
+                callback(err, feng3dAsset);
             });
         }
 
@@ -248,17 +234,6 @@ namespace feng3d
         {
             var assets = Object.keys(this.idMap).map(v => this.idMap[v]);
             return assets;
-        }
-
-        /**
-         * 读取资源元标签
-         * 
-         * @param path 资源路径
-         * @param callback 完成回调 
-         */
-        private _readMeta(path: string, callback?: (err: Error, meta: AssetMeta) => void)
-        {
-            this.fs.readObject(path + metaSuffix, callback);
         }
     }
     /**
