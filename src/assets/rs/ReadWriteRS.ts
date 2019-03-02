@@ -247,7 +247,8 @@ namespace feng3d
                         callback && callback(err);
                         return;
                     }
-                    this.fs.deleteFile(la.assetPath, (err) =>
+
+                    la["deleteFile"]((err) =>
                     {
                         // 删除父子资源关系
                         if (la.parentAsset)

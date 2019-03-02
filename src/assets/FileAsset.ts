@@ -19,7 +19,7 @@ namespace feng3d
         name = "";
 
         /**
-         * 资源元标签
+         * 资源元标签，该对象也用来判断资源是否被加载，值为null表示未加载，否则已加载。
          */
         meta: AssetMeta;
 
@@ -77,6 +77,16 @@ namespace feng3d
         }
 
         /**
+         * 删除资源
+         * 
+         * @param callback 完成回调
+         */
+        delete(callback?: (err: Error) => void)
+        {
+            this.rs.deleteAsset(this, callback);
+        }
+
+        /**
          * 读取资源缩略图标
          * 
          * @param callback 完成回调
@@ -113,16 +123,39 @@ namespace feng3d
         }
 
         /**
+         * 删除资源缩略图标
+         * 
+         * @param callback 完成回调
+         */
+        deleteThumbnail(callback?: (err: Error) => void)
+        {
+            this._thumbnail = null;
+            this.rs.fs.deleteFile(this.thumbnailPath, callback);
+        }
+
+        /**
+         * 读取文件
+         * 
+         * @param callback 完成回调
+         */
+        protected abstract readFile(callback?: (err: Error) => void): void;
+
+        /**
          * 保存文件
+         * 
          * @param callback 完成回调
          */
         protected abstract saveFile(callback?: (err: Error) => void): void;
 
         /**
-         * 读取文件
+         * 删除文件
+         * 
          * @param callback 完成回调
          */
-        protected abstract readFile(callback?: (err: Error) => void): void;
+        protected deleteFile(callback?: (err: Error) => void)
+        {
+            this.rs.fs.deleteFile(this.assetPath, callback);
+        }
 
         /**
          * 缩略图

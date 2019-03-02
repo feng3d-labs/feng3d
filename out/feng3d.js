@@ -16382,6 +16382,14 @@ var feng3d;
             this.rs.writeAsset(this, callback);
         };
         /**
+         * 删除资源
+         *
+         * @param callback 完成回调
+         */
+        FileAsset.prototype.delete = function (callback) {
+            this.rs.deleteAsset(this, callback);
+        };
+        /**
          * 读取资源缩略图标
          *
          * @param callback 完成回调
@@ -16410,6 +16418,23 @@ var feng3d;
             }
             this._thumbnail = image;
             this.rs.fs.writeImage(this.thumbnailPath, image, callback);
+        };
+        /**
+         * 删除资源缩略图标
+         *
+         * @param callback 完成回调
+         */
+        FileAsset.prototype.deleteThumbnail = function (callback) {
+            this._thumbnail = null;
+            this.rs.fs.deleteFile(this.thumbnailPath, callback);
+        };
+        /**
+         * 删除文件
+         *
+         * @param callback 完成回调
+         */
+        FileAsset.prototype.deleteFile = function (callback) {
+            this.rs.fs.deleteFile(this.assetPath, callback);
         };
         Object.defineProperty(FileAsset.prototype, "thumbnailPath", {
             /**
@@ -16882,7 +16907,7 @@ var feng3d;
                         callback && callback(err);
                         return;
                     }
-                    _this.fs.deleteFile(la.assetPath, function (err) {
+                    la["deleteFile"](function (err) {
                         // 删除父子资源关系
                         if (la.parentAsset) {
                             var index = la.parentAsset.childrenAssets.indexOf(la.parentAsset);
