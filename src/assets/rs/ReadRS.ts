@@ -168,15 +168,28 @@ namespace feng3d
          */
         readAsset(id: string, callback: (err: Error, asset: FileAsset) => void)
         {
-            var feng3dAsset = this.idMap[id];
-            if (!feng3dAsset)
+            var asset = this.idMap[id];
+            if (!asset)
             {
-                callback(new Error(`不存在资源 ${id}`), null);
+                callback(new Error(`不存在资源 ${id}`), asset);
                 return;
             }
-            feng3dAsset.read((err) =>
+            if (asset.meta)
             {
-                callback(err, feng3dAsset);
+                callback(null, asset);
+                return;
+            }
+            this._readMeta(asset, (err) =>
+            {
+                if (err)
+                {
+                    callback(err, asset);
+                    return;
+                }
+                asset["readFile"]((err) =>
+                {
+                    callback(err, asset);
+                });
             });
         }
 
@@ -239,6 +252,29 @@ namespace feng3d
         {
             var assets = Object.keys(this.idMap).map(v => this.idMap[v]);
             return assets;
+        }
+
+        /**
+         * 元标签路径
+         */
+        private getMetaPath(asset: FileAsset)
+        {
+            return asset.assetPath + metaSuffix;
+        }
+
+        /**
+         * 读取资源元标签
+         * 
+         * @param path 资源路径
+         * @param callback 完成回调 
+         */
+        private _readMeta(asset: FileAsset, callback?: (err?: Error) => void)
+        {
+            this.fs.readObject(this.getMetaPath(asset), (err, meta: AssetMeta) =>
+            {
+                asset.meta = meta;
+                callback(err);
+            });
         }
     }
     /**

@@ -7939,17 +7939,6 @@ declare namespace feng3d {
          */
         private readonly thumbnailPath;
         /**
-         * 元标签路径
-         */
-        private readonly metaPath;
-        /**
-         * 读取资源元标签
-         *
-         * @param path 资源路径
-         * @param callback 完成回调
-         */
-        private _readMeta;
-        /**
          * 写资源元标签
          *
          * @param callback 完成回调
@@ -8060,6 +8049,17 @@ declare namespace feng3d {
          * 获取所有资源
          */
         getAllAssets(): FileAsset[];
+        /**
+         * 元标签路径
+         */
+        private getMetaPath;
+        /**
+         * 读取资源元标签
+         *
+         * @param path 资源路径
+         * @param callback 完成回调
+         */
+        private _readMeta;
     }
 }
 declare namespace feng3d {

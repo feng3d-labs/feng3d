@@ -16371,18 +16371,7 @@ var feng3d;
          * @param callback 完成回调
          */
         FileAsset.prototype.read = function (callback) {
-            var _this = this;
-            if (this.meta) {
-                callback(null);
-                return;
-            }
-            this._readMeta(function (err) {
-                if (err) {
-                    callback(err);
-                    return;
-                }
-                _this.readFile(callback);
-            });
+            this.rs.readAsset(this.assetId, callback);
         };
         /**
          * 写入资源
@@ -16442,29 +16431,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(FileAsset.prototype, "metaPath", {
-            /**
-             * 元标签路径
-             */
-            get: function () {
-                return this.assetPath + feng3d.metaSuffix;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 读取资源元标签
-         *
-         * @param path 资源路径
-         * @param callback 完成回调
-         */
-        FileAsset.prototype._readMeta = function (callback) {
-            var _this = this;
-            this.rs.fs.readObject(this.metaPath, function (err, meta) {
-                _this.meta = meta;
-                callback(err);
-            });
-        };
         /**
          * 写资源元标签
          *
@@ -16635,13 +16601,23 @@ var feng3d;
          * @param callback 读取完成回调
          */
         ReadRS.prototype.readAsset = function (id, callback) {
-            var feng3dAsset = this.idMap[id];
-            if (!feng3dAsset) {
-                callback(new Error("\u4E0D\u5B58\u5728\u8D44\u6E90 " + id), null);
+            var asset = this.idMap[id];
+            if (!asset) {
+                callback(new Error("\u4E0D\u5B58\u5728\u8D44\u6E90 " + id), asset);
                 return;
             }
-            feng3dAsset.read(function (err) {
-                callback(err, feng3dAsset);
+            if (asset.meta) {
+                callback(null, asset);
+                return;
+            }
+            this._readMeta(asset, function (err) {
+                if (err) {
+                    callback(err, asset);
+                    return;
+                }
+                asset["readFile"](function (err) {
+                    callback(err, asset);
+                });
             });
         };
         /**
@@ -16695,6 +16671,24 @@ var feng3d;
             var _this = this;
             var assets = Object.keys(this.idMap).map(function (v) { return _this.idMap[v]; });
             return assets;
+        };
+        /**
+         * 元标签路径
+         */
+        ReadRS.prototype.getMetaPath = function (asset) {
+            return asset.assetPath + feng3d.metaSuffix;
+        };
+        /**
+         * 读取资源元标签
+         *
+         * @param path 资源路径
+         * @param callback 完成回调
+         */
+        ReadRS.prototype._readMeta = function (asset, callback) {
+            this.fs.readObject(this.getMetaPath(asset), function (err, meta) {
+                asset.meta = meta;
+                callback(err);
+            });
         };
         return ReadRS;
     }());

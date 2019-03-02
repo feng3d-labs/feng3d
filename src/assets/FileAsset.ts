@@ -63,20 +63,7 @@ namespace feng3d
          */
         read(callback: (err: Error) => void)
         {
-            if (this.meta)
-            {
-                callback(null);
-                return;
-            }
-            this._readMeta((err) =>
-            {
-                if (err)
-                {
-                    callback(err);
-                    return;
-                }
-                this.readFile(callback);
-            });
+            this.rs.readAsset(this.assetId, callback);
         }
 
         /**
@@ -161,29 +148,6 @@ namespace feng3d
         private get thumbnailPath()
         {
             return "assetIcons/" + this.assetId + ".png";
-        }
-
-        /**
-         * 元标签路径
-         */
-        private get metaPath()
-        {
-            return this.assetPath + metaSuffix;
-        }
-
-        /**
-         * 读取资源元标签
-         * 
-         * @param path 资源路径
-         * @param callback 完成回调 
-         */
-        private _readMeta(callback?: (err?: Error) => void)
-        {
-            this.rs.fs.readObject(this.metaPath, (err, meta: AssetMeta) =>
-            {
-                this.meta = meta;
-                callback(err);
-            });
         }
 
         /**
