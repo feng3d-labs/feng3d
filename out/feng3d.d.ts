@@ -7906,7 +7906,7 @@ declare namespace feng3d {
          *
          * @param callback 完成回调
          */
-        write(callback: (err: Error) => void): void;
+        write(callback?: (err: Error) => void): void;
         /**
          * 读取资源缩略图标
          *
@@ -7938,12 +7938,6 @@ declare namespace feng3d {
          * 缩略图路径
          */
         private readonly thumbnailPath;
-        /**
-         * 写资源元标签
-         *
-         * @param callback 完成回调
-         */
-        private _writeMeta;
     }
 }
 declare namespace feng3d {
@@ -8129,6 +8123,12 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         private _deleteMeta;
+        /**
+         * 写资源元标签
+         *
+         * @param callback 完成回调
+         */
+        private _writeMeta;
     }
 }
 declare namespace feng3d {

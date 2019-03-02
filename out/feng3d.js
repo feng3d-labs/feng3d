@@ -16379,17 +16379,7 @@ var feng3d;
          * @param callback 完成回调
          */
         FileAsset.prototype.write = function (callback) {
-            var _this = this;
-            this.meta.mtimeMs = Date.now();
-            this._writeMeta(function (err) {
-                if (err) {
-                    callback && callback(err);
-                    return;
-                }
-                _this.saveFile(function (err) {
-                    callback && callback(err);
-                });
-            });
+            this.rs.writeAsset(this, callback);
         };
         /**
          * 读取资源缩略图标
@@ -16431,14 +16421,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        /**
-         * 写资源元标签
-         *
-         * @param callback 完成回调
-         */
-        FileAsset.prototype._writeMeta = function (callback) {
-            this.rs.fs.writeObject(this.assetPath + feng3d.metaSuffix, this.meta, callback);
-        };
         __decorate([
             feng3d.serialize
         ], FileAsset.prototype, "assetId", void 0);
@@ -16763,7 +16745,16 @@ var feng3d;
          * @param callback 完成回调
          */
         ReadWriteRS.prototype.writeAsset = function (asset, callback) {
-            asset.write(callback);
+            asset.meta.mtimeMs = Date.now();
+            this._writeMeta(asset, function (err) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                asset["saveFile"](function (err) {
+                    callback && callback(err);
+                });
+            });
         };
         /**
          * 移动资源到指定文件夹
@@ -16915,6 +16906,14 @@ var feng3d;
          */
         ReadWriteRS.prototype._deleteMeta = function (path, callback) {
             this.fs.deleteFile(path + feng3d.metaSuffix, callback);
+        };
+        /**
+         * 写资源元标签
+         *
+         * @param callback 完成回调
+         */
+        ReadWriteRS.prototype._writeMeta = function (asset, callback) {
+            this.fs.writeObject(asset.assetPath + feng3d.metaSuffix, asset.meta, callback);
         };
         return ReadWriteRS;
     }(feng3d.ReadRS));

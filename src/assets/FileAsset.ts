@@ -71,22 +71,9 @@ namespace feng3d
          * 
          * @param callback 完成回调
          */
-        write(callback: (err: Error) => void)
+        write(callback?: (err: Error) => void)
         {
-            this.meta.mtimeMs = Date.now();
-            this._writeMeta((err) =>
-            {
-                if (err)
-                {
-                    callback && callback(err);
-                    return;
-                }
-
-                this.saveFile(err =>
-                {
-                    callback && callback(err);
-                });
-            });
+            this.rs.writeAsset(this, callback);
         }
 
         /**
@@ -148,16 +135,6 @@ namespace feng3d
         private get thumbnailPath()
         {
             return "assetIcons/" + this.assetId + ".png";
-        }
-
-        /**
-         * 写资源元标签
-         * 
-         * @param callback 完成回调
-         */
-        private _writeMeta(callback?: (err: Error) => void)
-        {
-            this.rs.fs.writeObject(this.assetPath + metaSuffix, this.meta, callback);
         }
     }
 }

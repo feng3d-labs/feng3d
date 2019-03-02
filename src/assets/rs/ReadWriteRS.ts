@@ -77,7 +77,20 @@ namespace feng3d
          */
         writeAsset(asset: FileAsset, callback?: (err: Error) => void)
         {
-            asset.write(callback);
+            asset.meta.mtimeMs = Date.now();
+            this._writeMeta(asset, (err) =>
+            {
+                if (err)
+                {
+                    callback && callback(err);
+                    return;
+                }
+
+                asset["saveFile"](err =>
+                {
+                    callback && callback(err);
+                });
+            });
         }
 
         /**
@@ -264,6 +277,16 @@ namespace feng3d
         private _deleteMeta(path: string, callback?: (err: Error) => void)
         {
             this.fs.deleteFile(path + metaSuffix, callback);
+        }
+
+        /**
+         * 写资源元标签
+         * 
+         * @param callback 完成回调
+         */
+        private _writeMeta(asset: FileAsset, callback?: (err: Error) => void)
+        {
+            this.fs.writeObject(asset.assetPath + metaSuffix, asset.meta, callback);
         }
     }
 }
