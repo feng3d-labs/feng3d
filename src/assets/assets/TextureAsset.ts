@@ -16,15 +16,14 @@ namespace feng3d
         /**
          * 图片
          */
-        get image()
-        {
-            return <HTMLImageElement>this.data["_pixels"];
-        }
+        get image() { return this._image; }
 
         set image(v: HTMLImageElement)
         {
+            this._image = v;
             this.data["_pixels"] = v;
         }
+        private _image: HTMLImageElement;
 
         assetType = AssetType.texture;
 

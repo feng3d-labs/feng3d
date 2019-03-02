@@ -31311,10 +31311,9 @@ var feng3d;
             /**
              * 图片
              */
-            get: function () {
-                return this.data["_pixels"];
-            },
+            get: function () { return this._image; },
             set: function (v) {
+                this._image = v;
                 this.data["_pixels"] = v;
             },
             enumerable: true,

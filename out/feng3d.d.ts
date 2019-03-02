@@ -15297,6 +15297,7 @@ declare namespace feng3d {
          * 图片
          */
         image: HTMLImageElement;
+        private _image;
         assetType: AssetType;
         protected saveFile(callback?: (err: Error) => void): void;
         /**
