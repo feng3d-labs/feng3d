@@ -9,7 +9,7 @@ namespace feng3d
          * 资源编号
          */
         @serialize
-        readonly assetId: string;
+        assetId: string;
 
         /**
          * 名称
@@ -21,35 +21,35 @@ namespace feng3d
         /**
          * 资源元标签
          */
-        readonly meta: AssetMeta;
+        meta: AssetMeta;
 
         /**
          * 资源系统
          * 
          * 加载或者创建该资源的资源系统
          */
-        readonly rs: ReadWriteRS;
+        rs: ReadWriteRS;
 
         /**
          * 资源类型，由具体对象类型决定
          */
-        readonly assetType: AssetType;
+        assetType: AssetType;
 
         /**
          * 文件后缀
          */
         @serialize
-        readonly extenson: string = "";
+        extenson: string = "";
 
         /**
          * 父资源
          */
-        readonly parentAsset: FolderAsset;
+        parentAsset: FolderAsset;
 
         /**
          * 资源路径
          */
-        readonly assetPath: string;
+        assetPath: string;
 
         /**
          * 资源对象
@@ -181,7 +181,7 @@ namespace feng3d
         {
             this.rs.fs.readObject(this.metaPath, (err, meta: AssetMeta) =>
             {
-                Object.setValue(<FileAsset>this, { meta: meta })
+                this.meta = meta;
                 callback(err);
             });
         }

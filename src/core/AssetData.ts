@@ -15,11 +15,11 @@ namespace feng3d
         /**
          * 资源编号
          */
-        readonly assetId: string;
+        assetId: string;
 
         /**
          * 资源类型，由具体对象类型决定
          */
-        readonly assetType: AssetType;
+        assetType: AssetType;
     }
 }

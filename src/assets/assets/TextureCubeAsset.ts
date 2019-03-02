@@ -17,7 +17,7 @@ namespace feng3d
 
         protected saveFile(callback?: (err: Error) => void)
         {
-            Object.setValue(this.data, { assetId: this.assetId });
+            this.data.assetId = this.assetId;
             this.rs.fs.writeObject(this.assetPath, this.data, (err) =>
             {
                 callback && callback(err);
@@ -34,7 +34,7 @@ namespace feng3d
             this.rs.fs.readObject(this.assetPath, (err, textureCube: TextureCube) =>
             {
                 this.data = textureCube;
-                Object.setValue(this.data, { assetId: this.assetId });
+                this.data.assetId = this.assetId;
                 callback && callback(err);
             });
         }

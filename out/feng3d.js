@@ -16461,7 +16461,7 @@ var feng3d;
         FileAsset.prototype._readMeta = function (callback) {
             var _this = this;
             this.rs.fs.readObject(this.metaPath, function (err, meta) {
-                Object.setValue(_this, { meta: meta });
+                _this.meta = meta;
                 callback(err);
             });
         };
@@ -16545,12 +16545,12 @@ var feng3d;
                     while (index < assets.length) {
                         var asset = assets[index];
                         // 设置资源系统
-                        Object.setValue(asset, { rs: _this });
+                        asset.rs = _this;
                         // 计算路径
                         var path = asset.name + asset.extenson;
                         if (asset.parentAsset)
                             path = asset.parentAsset.assetPath + "/" + path;
-                        Object.setValue(asset, { assetPath: path });
+                        asset.assetPath = path;
                         // 新增映射
                         _this.idMap[asset.assetId] = asset;
                         _this.pathMap[asset.assetPath] = asset;
@@ -16559,7 +16559,7 @@ var feng3d;
                             for (var i = 0; i < asset.childrenAssets.length; i++) {
                                 var v = asset.childrenAssets[i];
                                 // 处理资源父子关系
-                                Object.setValue(v, { parentAsset: asset });
+                                v.parentAsset = asset;
                                 //
                                 assets.push(v);
                             }
@@ -16590,7 +16590,9 @@ var feng3d;
             var asset = new cls();
             var assetId = feng3d.FMath.uuid();
             // 初始化
-            Object.setValue(asset, { rs: this, assetId: assetId, meta: { guid: assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType } });
+            asset.rs = this;
+            asset.assetId = assetId;
+            asset.meta = { guid: assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
             Object.setValue(asset, value);
             // 设置默认名称
             asset.name = asset.name || "new " + asset.assetType;
@@ -16599,13 +16601,13 @@ var feng3d;
                 asset.name = this.getValidChildName(parent, asset.name);
                 // 处理资源父子关系
                 parent.childrenAssets.push(asset);
-                Object.setValue(asset, { parentAsset: parent });
+                asset.parentAsset = parent;
             }
             // 计算路径
             var path = asset.name + asset.extenson;
             if (asset.parentAsset)
                 path = asset.parentAsset.assetPath + "/" + path;
-            Object.setValue(asset, { assetPath: path });
+            asset.assetPath = path;
             // 新增映射
             this.idMap[asset.assetId] = asset;
             this.pathMap[asset.assetPath] = asset;
@@ -16796,7 +16798,7 @@ var feng3d;
             var index = asset.parentAsset.childrenAssets.indexOf(asset);
             asset.parentAsset.childrenAssets.splice(index, 1);
             folder.childrenAssets.push(asset);
-            Object.setValue(asset, { parentAsset: folder });
+            asset.parentAsset = folder;
             // 获取需要移动的资源列表
             var assets = [asset];
             var index = 0;
@@ -16837,7 +16839,7 @@ var feng3d;
                             return;
                         }
                         // 修复删除资源时破坏的父资源引用
-                        Object.setValue(la, { parentAsset: pla });
+                        la.parentAsset = pla;
                         // 计算资源新路径
                         var np = la.name + la.extenson;
                         var p = la.parentAsset;
@@ -16845,7 +16847,7 @@ var feng3d;
                             np = p.name + "/" + np;
                             p = p.parentAsset;
                         }
-                        Object.setValue(la, { assetPath: np });
+                        la.assetPath = np;
                         // 新增映射
                         _this.idMap[la.assetId] = la;
                         _this.pathMap[la.assetPath] = la;
@@ -16901,7 +16903,7 @@ var feng3d;
                         if (la.parentAsset) {
                             var index = la.parentAsset.childrenAssets.indexOf(la.parentAsset);
                             la.parentAsset.childrenAssets.splice(index, 1);
-                            Object.setValue(la, { parentAsset: null });
+                            la.parentAsset = null;
                         }
                         // 删除映射
                         delete _this.idMap[la.assetId];
@@ -31289,7 +31291,7 @@ var feng3d;
             configurable: true
         });
         TextureAsset.prototype.saveFile = function (callback) {
-            Object.setValue(this.data, { assetId: this.assetId });
+            this.data.assetId = this.assetId;
             this.rs.fs.writeImage(this.assetPath, this.image, function (err) {
                 callback && callback(err);
             });
@@ -31303,7 +31305,7 @@ var feng3d;
             var _this = this;
             this.rs.fs.readImage(this.assetPath, function (err, img) {
                 _this.image = img;
-                Object.setValue(_this.data, { assetId: _this.assetId });
+                _this.data.assetId = _this.assetId;
                 callback && callback(err);
             });
         };
@@ -31328,7 +31330,7 @@ var feng3d;
             return _this;
         }
         TextureCubeAsset.prototype.saveFile = function (callback) {
-            Object.setValue(this.data, { assetId: this.assetId });
+            this.data.assetId = this.assetId;
             this.rs.fs.writeObject(this.assetPath, this.data, function (err) {
                 callback && callback(err);
             });
@@ -31342,7 +31344,7 @@ var feng3d;
             var _this = this;
             this.rs.fs.readObject(this.assetPath, function (err, textureCube) {
                 _this.data = textureCube;
-                Object.setValue(_this.data, { assetId: _this.assetId });
+                _this.data.assetId = _this.assetId;
                 callback && callback(err);
             });
         };
@@ -31404,7 +31406,7 @@ var feng3d;
             return _this;
         }
         MaterialAsset.prototype.saveFile = function (callback) {
-            Object.setValue(this.data, { assetId: this.assetId });
+            this.data.assetId = this.assetId;
             this.rs.fs.writeObject(this.assetPath, this.data, callback);
         };
         /**
@@ -31416,7 +31418,7 @@ var feng3d;
             var _this = this;
             this.rs.fs.readObject(this.assetPath, function (err, data) {
                 _this.data = data;
-                Object.setValue(_this.data, { assetId: _this.assetId });
+                _this.data.assetId = _this.assetId;
                 callback && callback(err);
             });
         };
