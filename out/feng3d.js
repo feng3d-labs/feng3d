@@ -20350,9 +20350,11 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * Base class for everything attached to GameObjects.
+     * 组件
      *
-     * Note that your code will never directly create a Component. Instead, you write script code, and attach the script to a GameObject. See Also: ScriptableObject as a way to create scripts that do not attach to any GameObject.
+     * 所有附加到GameObjects的基类。
+     *
+     * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到GameObject(游戏物体)上。
      */
     var Component = /** @class */ (function (_super) {
         __extends(Component, _super);
@@ -20372,7 +20374,7 @@ var feng3d;
             // Variables
             //------------------------------------------
             /**
-             * The game object this component is attached to. A component is always attached to a game object.
+             * 此组件附加到的游戏对象。组件总是附加到游戏对象上。
              */
             get: function () {
                 return this._gameObject;
@@ -20686,9 +20688,9 @@ var feng3d;
 (function (feng3d) {
     var fixedNum = 6;
     /**
-     * Position, rotation and scale of an object.
+     * 物体的位置、旋转和比例。
      *
-     * Every object in a scene has a Transform. It's used to store and manipulate the position, rotation and scale of the object. Every Transform can have a parent, which allows you to apply position, rotation and scale hierarchically. This is the hierarchy seen in the Hierarchy pane.
+     * 场景中的每个对象都有一个变换。它用于存储和操作对象的位置、旋转和缩放。每个转换都可以有一个父元素，它允许您分层应用位置、旋转和缩放
      */
     var Transform = /** @class */ (function (_super) {
         __extends(Transform, _super);
@@ -20741,7 +20743,7 @@ var feng3d;
         });
         Object.defineProperty(Transform.prototype, "localToWorldMatrix", {
             /**
-             * Matrix that transforms a point from local space into world space.
+             * 将一个点从局部空间变换到世界空间的矩阵。
              */
             get: function () {
                 if (!this._localToWorldMatrix)
@@ -20772,7 +20774,7 @@ var feng3d;
         });
         Object.defineProperty(Transform.prototype, "worldToLocalMatrix", {
             /**
-             * Matrix that transforms a point from world space into local space (Read Only).
+             * 将一个点从世界空间转换为局部空间的矩阵。
              */
             get: function () {
                 if (!this._worldToLocalMatrix)
@@ -20804,7 +20806,7 @@ var feng3d;
             configurable: true
         });
         /**
-         * Transforms direction from local space to world space.
+         * 将方向从局部空间转换到世界空间。
          */
         Transform.prototype.transformDirection = function (direction) {
             if (!this.parent)
@@ -20814,7 +20816,7 @@ var feng3d;
             return direction;
         };
         /**
-         * Transforms position from local space to world space.
+         * 将位置从局部空间转换为世界空间。
          */
         Transform.prototype.transformPoint = function (position) {
             if (!this.parent)
@@ -20824,7 +20826,7 @@ var feng3d;
             return position;
         };
         /**
-         * Transforms vector from local space to world space.
+         * 将向量从局部空间变换到世界空间。
          */
         Transform.prototype.transformVector = function (vector) {
             if (!this.parent)
@@ -20834,7 +20836,7 @@ var feng3d;
             return vector;
         };
         /**
-         * Transforms a direction from world space to local space. The opposite of Transform.TransformDirection.
+         * 将一个方向从世界空间转换到局部空间。
          */
         Transform.prototype.inverseTransformDirection = function (direction) {
             if (!this.parent)
@@ -20844,7 +20846,7 @@ var feng3d;
             return direction;
         };
         /**
-         * Transforms position from world space to local space.
+         * 将位置从世界空间转换为局部空间。
          */
         Transform.prototype.inverseTransformPoint = function (position) {
             if (!this.parent)
@@ -20854,7 +20856,7 @@ var feng3d;
             return position;
         };
         /**
-         * Transforms a vector from world space to local space. The opposite of Transform.TransformVector.
+         * 将向量从世界空间转换为局部空间
          */
         Transform.prototype.inverseTransformVector = function (vector) {
             if (!this.parent)

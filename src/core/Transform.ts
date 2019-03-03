@@ -22,9 +22,9 @@ namespace feng3d
     export interface ComponentMap { Transfrom: Transform; }
 
 	/**
-	 * Position, rotation and scale of an object.
+	 * 物体的位置、旋转和比例。
      * 
-	 * Every object in a scene has a Transform. It's used to store and manipulate the position, rotation and scale of the object. Every Transform can have a parent, which allows you to apply position, rotation and scale hierarchically. This is the hierarchy seen in the Hierarchy pane.
+	 * 场景中的每个对象都有一个变换。它用于存储和操作对象的位置、旋转和缩放。每个转换都可以有一个父元素，它允许您分层应用位置、旋转和缩放
 	 */
     @ov({ component: "OVTransform" })
     export class Transform extends Component
@@ -57,7 +57,7 @@ namespace feng3d
         }
 
         /**
-         * Matrix that transforms a point from local space into world space.
+         * 将一个点从局部空间变换到世界空间的矩阵。
          */
         get localToWorldMatrix(): Matrix4x4
         {
@@ -87,7 +87,7 @@ namespace feng3d
         }
 
         /**
-         * Matrix that transforms a point from world space into local space (Read Only).
+         * 将一个点从世界空间转换为局部空间的矩阵。
          */
         get worldToLocalMatrix(): Matrix4x4
         {
@@ -115,7 +115,7 @@ namespace feng3d
         }
 
         /**
-         * Transforms direction from local space to world space.
+         * 将方向从局部空间转换到世界空间。
          */
         transformDirection(direction: Vector3)
         {
@@ -127,7 +127,7 @@ namespace feng3d
         }
 
         /**
-         * Transforms position from local space to world space.
+         * 将位置从局部空间转换为世界空间。
          */
         transformPoint(position: Vector3)
         {
@@ -139,7 +139,7 @@ namespace feng3d
         }
 
         /**
-         * Transforms vector from local space to world space.
+         * 将向量从局部空间变换到世界空间。
          */
         transformVector(vector: Vector3)
         {
@@ -151,7 +151,7 @@ namespace feng3d
         }
 
         /**
-         * Transforms a direction from world space to local space. The opposite of Transform.TransformDirection.
+         * 将一个方向从世界空间转换到局部空间。
          */
         inverseTransformDirection(direction: Vector3)
         {
@@ -163,7 +163,7 @@ namespace feng3d
         }
 
         /**
-         * Transforms position from world space to local space.
+         * 将位置从世界空间转换为局部空间。
          */
         inverseTransformPoint(position: Vector3)
         {
@@ -175,7 +175,7 @@ namespace feng3d
         }
 
         /**
-         * Transforms a vector from world space to local space. The opposite of Transform.TransformVector.
+         * 将向量从世界空间转换为局部空间
          */
         inverseTransformVector(vector: Vector3)
         {

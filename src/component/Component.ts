@@ -13,9 +13,11 @@ namespace feng3d
     }
 
 	/**
-     * Base class for everything attached to GameObjects.
+     * 组件
      * 
-     * Note that your code will never directly create a Component. Instead, you write script code, and attach the script to a GameObject. See Also: ScriptableObject as a way to create scripts that do not attach to any GameObject.
+     * 所有附加到GameObjects的基类。
+     * 
+     * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到GameObject(游戏物体)上。
 	 */
     export class Component extends Feng3dObject
     {
@@ -23,7 +25,7 @@ namespace feng3d
         // Variables
         //------------------------------------------
         /**
-         * The game object this component is attached to. A component is always attached to a game object.
+         * 此组件附加到的游戏对象。组件总是附加到游戏对象上。
          */
         get gameObject()
         {
@@ -31,7 +33,7 @@ namespace feng3d
         }
 
         /**
-         * The tag of this game object.
+         * 标签
          */
         @serialize
         tag: string;

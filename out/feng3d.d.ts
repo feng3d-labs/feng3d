@@ -11245,17 +11245,19 @@ declare namespace feng3d {
         off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): any;
     }
     /**
-     * Base class for everything attached to GameObjects.
+     * 组件
      *
-     * Note that your code will never directly create a Component. Instead, you write script code, and attach the script to a GameObject. See Also: ScriptableObject as a way to create scripts that do not attach to any GameObject.
+     * 所有附加到GameObjects的基类。
+     *
+     * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到GameObject(游戏物体)上。
      */
     class Component extends Feng3dObject {
         /**
-         * The game object this component is attached to. A component is always attached to a game object.
+         * 此组件附加到的游戏对象。组件总是附加到游戏对象上。
          */
         readonly gameObject: GameObject;
         /**
-         * The tag of this game object.
+         * 标签
          */
         tag: string;
         /**
@@ -11469,9 +11471,9 @@ declare namespace feng3d {
         Transfrom: Transform;
     }
     /**
-     * Position, rotation and scale of an object.
+     * 物体的位置、旋转和比例。
      *
-     * Every object in a scene has a Transform. It's used to store and manipulate the position, rotation and scale of the object. Every Transform can have a parent, which allows you to apply position, rotation and scale hierarchically. This is the hierarchy seen in the Hierarchy pane.
+     * 场景中的每个对象都有一个变换。它用于存储和操作对象的位置、旋转和缩放。每个转换都可以有一个父元素，它允许您分层应用位置、旋转和缩放
      */
     class Transform extends Component {
         __class__: "feng3d.Transform";
@@ -11484,7 +11486,7 @@ declare namespace feng3d {
         readonly scenePosition: Vector3;
         readonly parent: Transform;
         /**
-         * Matrix that transforms a point from local space into world space.
+         * 将一个点从局部空间变换到世界空间的矩阵。
          */
         localToWorldMatrix: Matrix4x4;
         /**
@@ -11492,33 +11494,33 @@ declare namespace feng3d {
          */
         readonly ITlocalToWorldMatrix: Matrix4x4;
         /**
-         * Matrix that transforms a point from world space into local space (Read Only).
+         * 将一个点从世界空间转换为局部空间的矩阵。
          */
         readonly worldToLocalMatrix: Matrix4x4;
         readonly localToWorldRotationMatrix: Matrix4x4;
         readonly worldToLocalRotationMatrix: Matrix4x4;
         /**
-         * Transforms direction from local space to world space.
+         * 将方向从局部空间转换到世界空间。
          */
         transformDirection(direction: Vector3): Vector3;
         /**
-         * Transforms position from local space to world space.
+         * 将位置从局部空间转换为世界空间。
          */
         transformPoint(position: Vector3): Vector3;
         /**
-         * Transforms vector from local space to world space.
+         * 将向量从局部空间变换到世界空间。
          */
         transformVector(vector: Vector3): Vector3;
         /**
-         * Transforms a direction from world space to local space. The opposite of Transform.TransformDirection.
+         * 将一个方向从世界空间转换到局部空间。
          */
         inverseTransformDirection(direction: Vector3): Vector3;
         /**
-         * Transforms position from world space to local space.
+         * 将位置从世界空间转换为局部空间。
          */
         inverseTransformPoint(position: Vector3): Vector3;
         /**
-         * Transforms a vector from world space to local space. The opposite of Transform.TransformVector.
+         * 将向量从世界空间转换为局部空间
          */
         inverseTransformVector(vector: Vector3): Vector3;
         dispose(): void;
