@@ -7190,6 +7190,38 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * 所有feng3d对象的基类
+     */
+    class Feng3dObject extends EventDispatcher {
+        /**
+         * 隐藏标记，用于控制是否在层级面板、检查器显示，是否保存
+         */
+        hideFlags: HideFlags;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 资源数据
+     *
+     * 该对象可由资源文件中读取，或者保存为资源
+     */
+    class AssetData extends Feng3dObject {
+        /**
+         * 资源名称
+         */
+        name: string;
+        /**
+         * 资源编号
+         */
+        assetId: string;
+        /**
+         * 资源类型，由具体对象类型决定
+         */
+        assetType: AssetType;
+    }
+}
+declare namespace feng3d {
     var loadjs: {
         load: typeof load;
         ready: typeof ready;
@@ -7235,38 +7267,6 @@ declare namespace feng3d {
         success?: () => void;
         error?: (pathsNotFound?: string[]) => void;
     }): void;
-}
-declare namespace feng3d {
-    /**
-     * 所有feng3d对象的基类
-     */
-    class Feng3dObject extends EventDispatcher {
-        /**
-         * 隐藏标记，用于控制是否在层级面板、检查器显示，是否保存
-         */
-        hideFlags: HideFlags;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 资源数据
-     *
-     * 该对象可由资源文件中读取，或者保存为资源
-     */
-    class AssetData extends Feng3dObject {
-        /**
-         * 资源名称
-         */
-        name: string;
-        /**
-         * 资源编号
-         */
-        assetId: string;
-        /**
-         * 资源类型，由具体对象类型决定
-         */
-        assetType: AssetType;
-    }
 }
 declare namespace feng3d {
     /**
@@ -13451,6 +13451,7 @@ declare namespace feng3d {
          * 当贴图数据未加载好等情况时代替使用
          */
         noPixels: ImageDatas;
+        source: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap);
         /**
          * 纹理类型
          */
@@ -13467,6 +13468,13 @@ declare namespace feng3d {
          * 默认粒子贴图
          */
         static defaultParticle: Texture2D;
+        /**
+         * 从图片路径初始化纹理
+         *
+         * @param url 路径
+         * @param callback 加载完成回调
+         */
+        static fromImageUrl(url: string, callback?: (err: Error, texture: Texture2D) => void): Texture2D;
     }
 }
 declare namespace feng3d {

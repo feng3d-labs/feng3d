@@ -14929,6 +14929,41 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 所有feng3d对象的基类
+     */
+    var Feng3dObject = /** @class */ (function (_super) {
+        __extends(Feng3dObject, _super);
+        function Feng3dObject() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * 隐藏标记，用于控制是否在层级面板、检查器显示，是否保存
+             */
+            _this.hideFlags = feng3d.HideFlags.None;
+            return _this;
+        }
+        return Feng3dObject;
+    }(feng3d.EventDispatcher));
+    feng3d.Feng3dObject = Feng3dObject;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 资源数据
+     *
+     * 该对象可由资源文件中读取，或者保存为资源
+     */
+    var AssetData = /** @class */ (function (_super) {
+        __extends(AssetData, _super);
+        function AssetData() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return AssetData;
+    }(feng3d.Feng3dObject));
+    feng3d.AssetData = AssetData;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     feng3d.loadjs = {
         load: load,
         ready: ready,
@@ -15312,41 +15347,6 @@ var feng3d;
         { reg: /(\.png\b)/i, type: types.image },
         { reg: /(\.jpg\b)/i, type: types.image },
     ];
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 所有feng3d对象的基类
-     */
-    var Feng3dObject = /** @class */ (function (_super) {
-        __extends(Feng3dObject, _super);
-        function Feng3dObject() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            /**
-             * 隐藏标记，用于控制是否在层级面板、检查器显示，是否保存
-             */
-            _this.hideFlags = feng3d.HideFlags.None;
-            return _this;
-        }
-        return Feng3dObject;
-    }(feng3d.EventDispatcher));
-    feng3d.Feng3dObject = Feng3dObject;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 资源数据
-     *
-     * 该对象可由资源文件中读取，或者保存为资源
-     */
-    var AssetData = /** @class */ (function (_super) {
-        __extends(AssetData, _super);
-        function AssetData() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return AssetData;
-    }(feng3d.Feng3dObject));
-    feng3d.AssetData = AssetData;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -26506,6 +26506,31 @@ var feng3d;
             _this._textureType = feng3d.TextureType.TEXTURE_2D;
             return _this;
         }
+        Object.defineProperty(Texture2D.prototype, "source", {
+            set: function (v) {
+                this._pixels = v;
+                this.invalidate();
+                this.dispatch("loadCompleted");
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 从图片路径初始化纹理
+         *
+         * @param url 路径
+         * @param callback 加载完成回调
+         */
+        Texture2D.fromImageUrl = function (url, callback) {
+            var texture = new Texture2D();
+            feng3d.loader.loadImage(url, function (img) {
+                texture.source = img;
+                callback && callback(null, texture);
+            }, null, function (e) {
+                callback && callback(e, texture);
+            });
+            return texture;
+        };
         return Texture2D;
     }(feng3d.TextureInfo));
     feng3d.Texture2D = Texture2D;

@@ -15,7 +15,7 @@ namespace feng3d
          * 加载文本
          * @param url   路径
          */
-        loadText(url: string, onCompleted?: (content: string) => void, onRequestProgress?: () => void, onError?: (e) => void)
+        loadText(url: string, onCompleted?: (content: string) => void, onRequestProgress?: () => void, onError?: (e: Error) => void)
         {
             xmlHttpRequestLoad({ url: url, dataFormat: LoaderDataFormat.TEXT, onCompleted: <any>onCompleted, onProgress: onRequestProgress, onError: onError });
         }
@@ -24,7 +24,7 @@ namespace feng3d
          * 加载二进制
          * @param url   路径
          */
-        loadBinary(url: string, onCompleted?: (content: ArrayBuffer) => void, onRequestProgress?: () => void, onError?: (e) => void)
+        loadBinary(url: string, onCompleted?: (content: ArrayBuffer) => void, onRequestProgress?: () => void, onError?: (e: Error) => void)
         {
             xmlHttpRequestLoad({ url: url, dataFormat: LoaderDataFormat.BINARY, onCompleted: <any>onCompleted, onProgress: onRequestProgress, onError: onError });
         }
@@ -33,7 +33,7 @@ namespace feng3d
          * 加载图片
          * @param url   路径
          */
-        loadImage(url: string, onCompleted?: (content: HTMLImageElement) => void, onRequestProgress?: () => void, onError?: (e) => void)
+        loadImage(url: string, onCompleted?: (content: HTMLImageElement) => void, onRequestProgress?: () => void, onError?: (e: Error) => void)
         {
             var image = new Image();
             image.crossOrigin = "Anonymous";

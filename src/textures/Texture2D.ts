@@ -21,15 +21,70 @@ namespace feng3d
         defaultParticle: new ImageUtil().drawDefaultParticle().imageData,
     }
 
+    export interface Texture2DEventMap
+    {
+        /**
+		 * 添加子组件事件
+		 */
+        loadCompleted: any;
+    }
+
+    export interface Texture2D
+    {
+        once<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof Texture2DEventMap>(type: K, data?: Texture2DEventMap[K], bubbles?: boolean): Event<Texture2DEventMap[K]>;
+        has<K extends keyof Texture2DEventMap>(type: K): boolean;
+        on<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof Texture2DEventMap>(type?: K, listener?: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any);
+    }
+
     /**
      * 2D纹理
      */
     export class Texture2D extends TextureInfo
     {
+        __class__: "feng3d.Texture2D" = "feng3d.Texture2D";
+
+        assetType = AssetType.texture;
+
         /**
          * 当贴图数据未加载好等情况时代替使用
          */
         noPixels = ImageDatas.white;
+
+        /**
+         * 用于表示初始化纹理的数据来源
+         */
+        @serialize
+        get source()
+        {
+            return this._source;
+        }
+        set source(v)
+        {
+            this._source = v;
+            if (!v)
+            {
+                this._pixels = null;
+                this.invalidate();
+                return;
+            }
+            if (v.url)
+            {
+                loader.loadImage(v.url, (img) =>
+                {
+                    this._pixels = img;
+                    this.invalidate();
+                    this.dispatch("loadCompleted");
+                }, null,
+                    (e) =>
+                    {
+                        feng3d.error(e)
+                        this.dispatch("loadCompleted");
+                    });
+            }
+        }
+        private _source: { url: string };
 
         /**
          * 纹理类型

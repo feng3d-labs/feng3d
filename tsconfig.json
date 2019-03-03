@@ -100,11 +100,11 @@
         "src/event/EventProxy.ts",
         "src/event/WindowEventProxy.ts",
         "src/event/Feng3dDispatcher.ts",
-        "src/assets/fs/base/load.ts",
         //
         "src/core/Feng3dObject.ts",
         "src/core/AssetData.ts",
         //
+        "src/assets/fs/base/load.ts",
         "src/assets/fs/base/_IndexedDB.ts",
         "src/assets/fs/FSType.ts",
         "src/assets/fs/ReadFS.ts",
@@ -222,7 +222,6 @@
         // 纹理
         "src/textures/Texture2D.ts",
         "src/textures/ImageTexture2D.ts",
-        "src/textures/UrlImageTexture2D.ts",
         "src/textures/ImageDataTexture2D.ts",
         "src/textures/CanvasTexture2D.ts",
         "src/textures/VideoTexture2D.ts",
