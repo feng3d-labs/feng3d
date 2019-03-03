@@ -8501,17 +8501,17 @@ declare namespace feng3d {
          * 加载文本
          * @param url   路径
          */
-        loadText(url: string, onCompleted?: (content: string) => void, onRequestProgress?: () => void, onError?: (e: any) => void): void;
+        loadText(url: string, onCompleted?: (content: string) => void, onRequestProgress?: () => void, onError?: (e: Error) => void): void;
         /**
          * 加载二进制
          * @param url   路径
          */
-        loadBinary(url: string, onCompleted?: (content: ArrayBuffer) => void, onRequestProgress?: () => void, onError?: (e: any) => void): void;
+        loadBinary(url: string, onCompleted?: (content: ArrayBuffer) => void, onRequestProgress?: () => void, onError?: (e: Error) => void): void;
         /**
          * 加载图片
          * @param url   路径
          */
-        loadImage(url: string, onCompleted?: (content: HTMLImageElement) => void, onRequestProgress?: () => void, onError?: (e: any) => void): void;
+        loadImage(url: string, onCompleted?: (content: HTMLImageElement) => void, onRequestProgress?: () => void, onError?: (e: Error) => void): void;
     }
 }
 declare namespace feng3d {
@@ -12134,7 +12134,6 @@ declare namespace feng3d {
     }
     /**
      * 3d对象脚本
-
      */
     class ScriptComponent extends Behaviour {
         runEnvironment: RunEnvironment;
@@ -13443,15 +13442,40 @@ declare namespace feng3d {
         defaultNormal: ImageData;
         defaultParticle: ImageData;
     };
+    interface Texture2DEventMap {
+        /**
+         * 加载完成
+         */
+        loadCompleted: any;
+    }
+    interface Texture2D {
+        once<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof Texture2DEventMap>(type: K, data?: Texture2DEventMap[K], bubbles?: boolean): Event<Texture2DEventMap[K]>;
+        has<K extends keyof Texture2DEventMap>(type: K): boolean;
+        on<K extends keyof Texture2DEventMap>(type: K, listener: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof Texture2DEventMap>(type?: K, listener?: (event: Event<Texture2DEventMap[K]>) => any, thisObject?: any): any;
+    }
     /**
      * 2D纹理
      */
     class Texture2D extends TextureInfo {
+        __class__: "feng3d.Texture2D";
+        assetType: AssetType;
         /**
          * 当贴图数据未加载好等情况时代替使用
          */
         noPixels: ImageDatas;
-        source: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap);
+        /**
+         * 是否加载
+         */
+        isLoaded: boolean;
+        /**
+         * 用于表示初始化纹理的数据来源
+         */
+        source: {
+            url: string;
+        };
+        private _source;
         /**
          * 纹理类型
          */
@@ -13468,13 +13492,6 @@ declare namespace feng3d {
          * 默认粒子贴图
          */
         static defaultParticle: Texture2D;
-        /**
-         * 从图片路径初始化纹理
-         *
-         * @param url 路径
-         * @param callback 加载完成回调
-         */
-        static fromImageUrl(url: string, callback?: (err: Error, texture: Texture2D) => void): Texture2D;
     }
 }
 declare namespace feng3d {
@@ -13482,37 +13499,8 @@ declare namespace feng3d {
      * 2D纹理
      */
     class ImageTexture2D extends Texture2D {
-        __class__: "feng3d.ImageTexture2D";
         image: HTMLImageElement;
         private imageChanged;
-    }
-}
-declare namespace feng3d {
-    class UrlImageTexture2D extends Texture2D {
-        __class__: "feng3d.UrlImageTexture2D";
-        assetType: AssetType;
-        url: string;
-        protected image: HTMLImageElement;
-        constructor();
-        /**
-         * 是否加载完成
-         */
-        readonly isLoaded: boolean;
-        /**
-         * 已加载完成或者加载完成时立即调用
-         * @param callback 完成回调
-         */
-        onLoadCompleted(callback: () => void): void;
-        protected saveFile(fs: ReadWriteFS, callback?: (err: Error) => void): void;
-        /**
-         * 读取文件
-         * @param fs 刻度资源管理系统
-         * @param callback 完成回调
-         */
-        protected readFile(fs: ReadFS, callback?: (err: Error) => void): void;
-        private imageChanged;
-        private urlChanged;
-        private onImageAssetChanged;
     }
 }
 declare namespace feng3d {
@@ -13547,6 +13535,19 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface TextureCubeEventMap {
+        /**
+         * 加载完成
+         */
+        loadCompleted: any;
+    }
+    interface TextureCube {
+        once<K extends keyof TextureCubeEventMap>(type: K, listener: (event: Event<TextureCubeEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof TextureCubeEventMap>(type: K, data?: TextureCubeEventMap[K], bubbles?: boolean): Event<TextureCubeEventMap[K]>;
+        has<K extends keyof TextureCubeEventMap>(type: K): boolean;
+        on<K extends keyof TextureCubeEventMap>(type: K, listener: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
+        off<K extends keyof TextureCubeEventMap>(type?: K, listener?: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any): any;
+    }
     /**
      * 立方体纹理
      */

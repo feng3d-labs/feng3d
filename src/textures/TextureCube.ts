@@ -1,5 +1,22 @@
 namespace feng3d
 {
+    export interface TextureCubeEventMap
+    {
+        /**
+		 * 加载完成
+		 */
+        loadCompleted: any;
+    }
+
+    export interface TextureCube
+    {
+        once<K extends keyof TextureCubeEventMap>(type: K, listener: (event: Event<TextureCubeEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof TextureCubeEventMap>(type: K, data?: TextureCubeEventMap[K], bubbles?: boolean): Event<TextureCubeEventMap[K]>;
+        has<K extends keyof TextureCubeEventMap>(type: K): boolean;
+        on<K extends keyof TextureCubeEventMap>(type: K, listener: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
+        off<K extends keyof TextureCubeEventMap>(type?: K, listener?: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any);
+    }
+
     /**
      * 立方体纹理
      */

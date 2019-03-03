@@ -22699,7 +22699,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 3d对象脚本
-
      */
     var ScriptComponent = /** @class */ (function (_super) {
         __extends(ScriptComponent, _super);
@@ -26496,10 +26495,16 @@ var feng3d;
         __extends(Texture2D, _super);
         function Texture2D() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.Texture2D";
+            _this.assetType = feng3d.AssetType.texture;
             /**
              * 当贴图数据未加载好等情况时代替使用
              */
             _this.noPixels = ImageDatas.white;
+            /**
+             * 是否加载
+             */
+            _this.isLoaded = true;
             /**
              * 纹理类型
              */
@@ -26507,30 +26512,40 @@ var feng3d;
             return _this;
         }
         Object.defineProperty(Texture2D.prototype, "source", {
+            /**
+             * 用于表示初始化纹理的数据来源
+             */
+            get: function () {
+                return this._source;
+            },
             set: function (v) {
-                this._pixels = v;
-                this.invalidate();
-                this.dispatch("loadCompleted");
+                var _this = this;
+                this._source = v;
+                if (!v) {
+                    this._pixels = null;
+                    this.invalidate();
+                    return;
+                }
+                if (v.url) {
+                    this.isLoaded = false;
+                    feng3d.loader.loadImage(v.url, function (img) {
+                        _this._pixels = img;
+                        _this.invalidate();
+                        _this.isLoaded = true;
+                        _this.dispatch("loadCompleted");
+                    }, null, function (e) {
+                        feng3d.error(e);
+                        _this.isLoaded = true;
+                        _this.dispatch("loadCompleted");
+                    });
+                }
             },
             enumerable: true,
             configurable: true
         });
-        /**
-         * 从图片路径初始化纹理
-         *
-         * @param url 路径
-         * @param callback 加载完成回调
-         */
-        Texture2D.fromImageUrl = function (url, callback) {
-            var texture = new Texture2D();
-            feng3d.loader.loadImage(url, function (img) {
-                texture.source = img;
-                callback && callback(null, texture);
-            }, null, function (e) {
-                callback && callback(e, texture);
-            });
-            return texture;
-        };
+        __decorate([
+            feng3d.serialize
+        ], Texture2D.prototype, "source", null);
         return Texture2D;
     }(feng3d.TextureInfo));
     feng3d.Texture2D = Texture2D;
@@ -26546,9 +26561,7 @@ var feng3d;
     var ImageTexture2D = /** @class */ (function (_super) {
         __extends(ImageTexture2D, _super);
         function ImageTexture2D() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.ImageTexture2D";
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         ImageTexture2D.prototype.imageChanged = function () {
             this._pixels = this.image;
@@ -26560,119 +26573,6 @@ var feng3d;
         return ImageTexture2D;
     }(feng3d.Texture2D));
     feng3d.ImageTexture2D = ImageTexture2D;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var UrlImageTexture2D = /** @class */ (function (_super) {
-        __extends(UrlImageTexture2D, _super);
-        function UrlImageTexture2D() {
-            var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.UrlImageTexture2D";
-            _this.assetType = feng3d.AssetType.texture;
-            _this.url = "";
-            //
-            feng3d.feng3dDispatcher.on("asset.imageAssetChanged", _this.onImageAssetChanged, _this);
-            _this.urlChanged();
-            return _this;
-        }
-        Object.defineProperty(UrlImageTexture2D.prototype, "isLoaded", {
-            /**
-             * 是否加载完成
-             */
-            get: function () {
-                if (this.url == "" || this.image)
-                    return true;
-                return false;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 已加载完成或者加载完成时立即调用
-         * @param callback 完成回调
-         */
-        UrlImageTexture2D.prototype.onLoadCompleted = function (callback) {
-            if (this.isLoaded) {
-                callback();
-                return;
-            }
-            else
-                this.once("loadCompleted", callback);
-        };
-        UrlImageTexture2D.prototype.saveFile = function (fs, callback) {
-            fs.writeImage(this.url, this.image, callback);
-        };
-        /**
-         * 读取文件
-         * @param fs 刻度资源管理系统
-         * @param callback 完成回调
-         */
-        UrlImageTexture2D.prototype.readFile = function (fs, callback) {
-            var _this = this;
-            if (callback === void 0) { callback = function (err) { }; }
-            fs.readImage(this.url, function (err, img) {
-                _this.image = img;
-                callback && callback(err);
-            });
-        };
-        UrlImageTexture2D.prototype.imageChanged = function () {
-            this._pixels = this.image;
-            this.invalidate();
-        };
-        UrlImageTexture2D.prototype.urlChanged = function () {
-            var _this = this;
-            var url = this.url;
-            if (url == "") {
-                this.image = null;
-                this.invalidate();
-                return;
-            }
-            if (feng3d.pathUtils.isHttpURL(url)) {
-                feng3d.loader.loadImage(url, function (img) {
-                    if (url == _this.url) {
-                        _this.image = img;
-                        _this.invalidate();
-                        _this.dispatch("loadCompleted");
-                    }
-                }, null, function (e) {
-                    if (url == _this.url) {
-                        feng3d.error(e);
-                        _this.image = null;
-                        _this.invalidate();
-                        _this.dispatch("loadCompleted");
-                    }
-                });
-            }
-            else {
-                feng3d.fs.readImage(url, function (err, img) {
-                    if (url == _this.url) {
-                        if (err) {
-                            feng3d.error(err);
-                            _this.image = null;
-                        }
-                        else
-                            _this.image = img;
-                        _this.invalidate();
-                        _this.dispatch("loadCompleted");
-                    }
-                });
-            }
-        };
-        UrlImageTexture2D.prototype.onImageAssetChanged = function (e) {
-            if (this.url == e.data.url)
-                this.urlChanged();
-        };
-        __decorate([
-            feng3d.serialize,
-            feng3d.watch("urlChanged"),
-            feng3d.oav({ component: "OAVImage", priority: -1 })
-        ], UrlImageTexture2D.prototype, "url", void 0);
-        __decorate([
-            feng3d.watch("imageChanged")
-        ], UrlImageTexture2D.prototype, "image", void 0);
-        return UrlImageTexture2D;
-    }(feng3d.Texture2D));
-    feng3d.UrlImageTexture2D = UrlImageTexture2D;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -26892,7 +26792,7 @@ var feng3d;
                 var uniforms = this.uniforms;
                 for (var key in uniforms) {
                     var texture = uniforms[key];
-                    if (texture instanceof feng3d.UrlImageTexture2D || texture instanceof feng3d.TextureCube) {
+                    if (texture instanceof feng3d.Texture2D || texture instanceof feng3d.TextureCube) {
                         if (!texture.isLoaded)
                             return false;
                     }
@@ -26911,10 +26811,10 @@ var feng3d;
             var uniforms = this.uniforms;
             for (var key in uniforms) {
                 var texture = uniforms[key];
-                if (texture instanceof feng3d.UrlImageTexture2D || texture instanceof feng3d.TextureCube) {
+                if (texture instanceof feng3d.Texture2D || texture instanceof feng3d.TextureCube) {
                     if (!texture.isLoaded) {
                         loadingNum++;
-                        texture.onLoadCompleted(function () {
+                        texture.on("loadCompleted", function () {
                             loadingNum--;
                             if (loadingNum == 0)
                                 callback();
@@ -28927,9 +28827,15 @@ var feng3d;
             return _this;
         }
         TerrainGeometry.prototype.onHeightMapChanged = function () {
+            var _this = this;
             if (!this.heightMap["_pixels"]) {
                 this._heightImageData = defaultHeightMap;
                 this.invalidateGeometry();
+                this.heightMap.once("loadCompleted", function () {
+                    var img = _this.heightMap["_pixels"];
+                    _this._heightImageData = feng3d.ImageUtil.fromImage(img).imageData;
+                    _this.invalidateGeometry();
+                });
                 return;
             }
             var img = this.heightMap["_pixels"];

@@ -5,7 +5,6 @@ namespace feng3d
 
     /**
      * 3d对象脚本
-
      */
     export class ScriptComponent extends Behaviour
     {

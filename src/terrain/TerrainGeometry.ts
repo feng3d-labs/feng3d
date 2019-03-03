@@ -89,6 +89,13 @@ namespace feng3d
             {
                 this._heightImageData = defaultHeightMap;
                 this.invalidateGeometry();
+
+                this.heightMap.once("loadCompleted", () =>
+                {
+                    var img = <HTMLImageElement>this.heightMap["_pixels"];
+                    this._heightImageData = ImageUtil.fromImage(img).imageData;
+                    this.invalidateGeometry();
+                });
                 return;
             }
             var img = <HTMLImageElement>this.heightMap["_pixels"];

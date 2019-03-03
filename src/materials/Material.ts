@@ -73,7 +73,7 @@ namespace feng3d
             for (const key in uniforms)
             {
                 var texture = uniforms[key];
-                if (texture instanceof UrlImageTexture2D || texture instanceof TextureCube)
+                if (texture instanceof Texture2D || texture instanceof TextureCube)
                 {
                     if (!texture.isLoaded) return false;
                 }
@@ -92,12 +92,12 @@ namespace feng3d
             for (const key in uniforms)
             {
                 var texture = uniforms[key];
-                if (texture instanceof UrlImageTexture2D || texture instanceof TextureCube)
+                if (texture instanceof Texture2D || texture instanceof TextureCube)
                 {
                     if (!texture.isLoaded)
                     {
                         loadingNum++;
-                        texture.onLoadCompleted(() =>
+                        texture.on("loadCompleted", () =>
                         {
                             loadingNum--;
                             if (loadingNum == 0) callback();

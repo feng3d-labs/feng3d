@@ -24,7 +24,7 @@ namespace feng3d
     export interface Texture2DEventMap
     {
         /**
-		 * 添加子组件事件
+		 * 加载完成
 		 */
         loadCompleted: any;
     }
@@ -53,6 +53,11 @@ namespace feng3d
         noPixels = ImageDatas.white;
 
         /**
+         * 是否加载
+         */
+        isLoaded = true;
+
+        /**
          * 用于表示初始化纹理的数据来源
          */
         @serialize
@@ -71,15 +76,18 @@ namespace feng3d
             }
             if (v.url)
             {
+                this.isLoaded = false;
                 loader.loadImage(v.url, (img) =>
                 {
                     this._pixels = img;
                     this.invalidate();
+                    this.isLoaded = true;
                     this.dispatch("loadCompleted");
                 }, null,
                     (e) =>
                     {
                         feng3d.error(e)
+                        this.isLoaded = true;
                         this.dispatch("loadCompleted");
                     });
             }
