@@ -38,6 +38,7 @@ namespace feng3d
                 this.scriptInstance.dispose();
                 this.scriptInstance = null;
             }
+            if (!this.scriptName) return;
 
             var cls = classUtils.getDefinitionByName(this.scriptName, false);
             if (cls)
