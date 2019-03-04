@@ -10,11 +10,13 @@ namespace feng3d
         /**
          * 资源名称
          */
+        @serialize
         name: string;
 
         /**
          * 资源编号
          */
+        @serialize
         assetId: string;
 
         /**

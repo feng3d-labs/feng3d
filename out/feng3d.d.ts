@@ -8051,6 +8051,13 @@ declare namespace feng3d {
          */
         readAsset(id: string, callback: (err: Error, asset: FileAsset) => void): void;
         /**
+         * 读取资源数据
+         *
+         * @param id 资源编号
+         * @param callback 完成回调
+         */
+        readAssetData(id: string, callback: (err: Error, data: AssetData) => void): void;
+        /**
          * 获取指定类型资源
          *
          * @param type 资源类型

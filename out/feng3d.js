@@ -664,7 +664,7 @@ var feng3d;
             for (var i = 0; i < serializableMembers.length; i++) {
                 var property = serializableMembers[i].property;
                 var asset = serializableMembers[i].asset;
-                if (asset && target[property] instanceof feng3d.FileAsset && target[property].assetId) {
+                if (asset && target[property] instanceof feng3d.AssetData && target[property].assetId) {
                     var assetId0 = target[property] && target[property].assetId;
                     var assetId1 = defaultInstance[property] && defaultInstance[property].assetId;
                     if (assetId0 != assetId1)
@@ -766,8 +766,8 @@ var feng3d;
                     if (serializeAssets.indexOf(property) != -1) {
                         if (typeof object[property] == "string") {
                             tempInfo.loadingNum++;
-                            feng3d.rs.readAsset(object[property], function (err, asset) {
-                                target[property] = asset.data;
+                            feng3d.rs.readAssetData(object[property], function (err, data) {
+                                target[property] = data;
                                 tempInfo.loadingNum--;
                                 if (tempInfo.loadingNum == 0) {
                                     tempInfo.onLoaded && tempInfo.onLoaded();
@@ -14958,6 +14958,12 @@ var feng3d;
         function AssetData() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
+        __decorate([
+            feng3d.serialize
+        ], AssetData.prototype, "name", void 0);
+        __decorate([
+            feng3d.serialize
+        ], AssetData.prototype, "assetId", void 0);
         return AssetData;
     }(feng3d.Feng3dObject));
     feng3d.AssetData = AssetData;
@@ -16669,6 +16675,21 @@ var feng3d;
                 asset.readFile(function (err) {
                     callback(err, asset);
                 });
+            });
+        };
+        /**
+         * 读取资源数据
+         *
+         * @param id 资源编号
+         * @param callback 完成回调
+         */
+        ReadRS.prototype.readAssetData = function (id, callback) {
+            if (defaultAssets[id]) {
+                callback(null, defaultAssets[id]);
+                return;
+            }
+            this.readAsset(id, function (err, asset) {
+                callback(err, asset && asset.data);
             });
         };
         /**

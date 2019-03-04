@@ -115,10 +115,10 @@ namespace feng3d
             {
                 var property = serializableMembers[i].property;
                 var asset = serializableMembers[i].asset;
-                if (asset && target[property] instanceof FileAsset && (<FileAsset>target[property]).assetId)
+                if (asset && target[property] instanceof AssetData && (<AssetData>target[property]).assetId)
                 {
-                    var assetId0 = target[property] && (<FileAsset>target[property]).assetId;
-                    var assetId1 = defaultInstance[property] && (<FileAsset>defaultInstance[property]).assetId;
+                    var assetId0 = target[property] && (<AssetData>target[property]).assetId;
+                    var assetId1 = defaultInstance[property] && (<AssetData>defaultInstance[property]).assetId;
                     if (assetId0 != assetId1) different[property] = assetId0;
                     continue;
                 }
@@ -240,9 +240,9 @@ namespace feng3d
                         {
                             tempInfo.loadingNum++;
 
-                            rs.readAsset(<any>object[property], (err, asset) =>
+                            rs.readAssetData(<any>object[property], (err, data) =>
                             {
-                                target[property] = <any>asset.data;
+                                target[property] = <any>data;
                                 tempInfo.loadingNum--;
                                 if (tempInfo.loadingNum == 0)
                                 {

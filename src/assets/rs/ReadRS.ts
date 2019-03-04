@@ -194,6 +194,25 @@ namespace feng3d
         }
 
         /**
+         * 读取资源数据
+         * 
+         * @param id 资源编号
+         * @param callback 完成回调
+         */
+        readAssetData(id: string, callback: (err: Error, data: AssetData) => void)
+        {
+            if (defaultAssets[id])
+            {
+                callback(null, defaultAssets[id]);
+                return;
+            }
+            this.readAsset(id, (err, asset) =>
+            {
+                callback(err, asset && asset.data);
+            });
+        }
+
+        /**
          * 获取指定类型资源
          * 
          * @param type 资源类型
