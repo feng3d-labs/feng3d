@@ -47,5 +47,12 @@ namespace feng3d
          * @param path （相对）路径
          */
         abstract getAbsolutePath(path: string): string;
+
+        /**
+         * 获取项目列表
+         * 
+         * @param callback 完成回调
+         */
+        abstract getProjectList(callback: (err: Error, projects: string[]) => void): void;
     }
 }

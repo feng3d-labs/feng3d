@@ -113,6 +113,16 @@ namespace feng3d
         {
             return this.rootPath + path;
         }
+
+        /**
+         * 获取项目列表
+         * 
+         * @param callback 完成回调
+         */
+        getProjectList(callback: (err: Error, projects: string[]) => void)
+        {
+            throw `未实现`;
+        }
     }
 
     fs = new HttpFS();

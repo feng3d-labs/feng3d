@@ -7437,6 +7437,12 @@ declare namespace feng3d {
          * @param path （相对）路径
          */
         abstract getAbsolutePath(path: string): string;
+        /**
+         * 获取项目列表
+         *
+         * @param callback 完成回调
+         */
+        abstract getProjectList(callback: (err: Error, projects: string[]) => void): void;
     }
 }
 declare namespace feng3d {
@@ -7723,6 +7729,12 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         getAllPaths(callback: (err: Error, allPaths: string[]) => void): void;
+        /**
+         * 获取项目列表
+         *
+         * @param callback 完成回调
+         */
+        getProjectList(callback: (err: Error, projects: string[]) => void): void;
     }
 }
 declare namespace feng3d {
@@ -7766,6 +7778,12 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         getAbsolutePath(path: string): string;
+        /**
+         * 获取项目列表
+         *
+         * @param callback 完成回调
+         */
+        getProjectList(callback: (err: Error, projects: string[]) => void): void;
     }
 }
 declare namespace feng3d {

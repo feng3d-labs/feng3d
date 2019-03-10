@@ -16172,6 +16172,14 @@ var feng3d;
                 callback(err, allPaths);
             });
         };
+        /**
+         * 获取项目列表
+         *
+         * @param callback 完成回调
+         */
+        IndexedDBFS.prototype.getProjectList = function (callback) {
+            feng3d._indexedDB.getObjectStoreNames(this.DBname, callback);
+        };
         return IndexedDBFS;
     }(feng3d.ReadWriteFS));
     feng3d.IndexedDBFS = IndexedDBFS;
@@ -16265,6 +16273,14 @@ var feng3d;
          */
         HttpFS.prototype.getAbsolutePath = function (path) {
             return this.rootPath + path;
+        };
+        /**
+         * 获取项目列表
+         *
+         * @param callback 完成回调
+         */
+        HttpFS.prototype.getProjectList = function (callback) {
+            throw "\u672A\u5B9E\u73B0";
         };
         return HttpFS;
     }(feng3d.ReadFS));

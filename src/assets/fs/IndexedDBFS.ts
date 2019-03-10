@@ -333,6 +333,16 @@ namespace feng3d
                 callback(err, allPaths);
             });
         }
+
+        /**
+         * 获取项目列表
+         * 
+         * @param callback 完成回调
+         */
+        getProjectList(callback: (err: Error, projects: string[]) => void)
+        {
+            feng3d._indexedDB.getObjectStoreNames(this.DBname, callback);
+        }
     }
 
     indexedDBFS = new IndexedDBFS();
