@@ -16025,8 +16025,8 @@ var feng3d;
          * @param path （相对）路径
          * @param callback 回调函数
          */
-        IndexedDBFS.prototype.getAbsolutePath = function (path, callback) {
-            callback(null, path);
+        IndexedDBFS.prototype.getAbsolutePath = function (path) {
+            return path;
         };
         /**
          * 文件是否存在
@@ -16195,7 +16195,7 @@ var feng3d;
          */
         HttpFS.prototype.readArrayBuffer = function (path, callback) {
             // rootPath
-            feng3d.loader.loadBinary(this._getAbsolutePath(path), function (content) {
+            feng3d.loader.loadBinary(this.getAbsolutePath(path), function (content) {
                 callback(null, content);
             }, null, function (e) {
                 callback(e, null);
@@ -16207,7 +16207,7 @@ var feng3d;
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
         HttpFS.prototype.readString = function (path, callback) {
-            feng3d.loader.loadText(this._getAbsolutePath(path), function (content) {
+            feng3d.loader.loadText(this.getAbsolutePath(path), function (content) {
                 callback(null, content);
             }, null, function (e) {
                 callback(e, null);
@@ -16219,7 +16219,7 @@ var feng3d;
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
         HttpFS.prototype.readObject = function (path, callback) {
-            feng3d.loader.loadText(this._getAbsolutePath(path), function (content) {
+            feng3d.loader.loadText(this.getAbsolutePath(path), function (content) {
                 var obj = JSON.parse(content);
                 var object = feng3d.serialization.deserialize(obj);
                 callback(null, object);
@@ -16240,17 +16240,14 @@ var feng3d;
             img.onerror = function (evt) {
                 callback(new Error("\u52A0\u8F7D\u56FE\u7247" + path + "\u5931\u8D25"), null);
             };
-            img.src = this._getAbsolutePath(path);
+            img.src = this.getAbsolutePath(path);
         };
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
          * @param callback 回调函数
          */
-        HttpFS.prototype.getAbsolutePath = function (path, callback) {
-            callback(null, this._getAbsolutePath(path));
-        };
-        HttpFS.prototype._getAbsolutePath = function (path) {
+        HttpFS.prototype.getAbsolutePath = function (path) {
             return this.rootPath + path;
         };
         return HttpFS;

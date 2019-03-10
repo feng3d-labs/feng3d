@@ -33,7 +33,7 @@ namespace feng3d
         readArrayBuffer(path: string, callback: (err: Error, data: ArrayBuffer) => void)
         {
             // rootPath
-            loader.loadBinary(this._getAbsolutePath(path),
+            loader.loadBinary(this.getAbsolutePath(path),
                 (content) =>
                 {
                     callback(null, content);
@@ -52,7 +52,7 @@ namespace feng3d
          */
         readString(path: string, callback: (err: Error, data: string) => void)
         {
-            loader.loadText(this._getAbsolutePath(path),
+            loader.loadText(this.getAbsolutePath(path),
                 (content) =>
                 {
                     callback(null, content);
@@ -71,7 +71,7 @@ namespace feng3d
          */
         readObject(path: string, callback: (err: Error, data: Object) => void)
         {
-            loader.loadText(this._getAbsolutePath(path),
+            loader.loadText(this.getAbsolutePath(path),
                 (content) =>
                 {
                     var obj = JSON.parse(content);
@@ -101,7 +101,7 @@ namespace feng3d
             {
                 callback(new Error(`加载图片${path}失败`), null);
             }
-            img.src = this._getAbsolutePath(path);
+            img.src = this.getAbsolutePath(path);
         }
 
         /**
@@ -109,12 +109,7 @@ namespace feng3d
          * @param path （相对）路径
          * @param callback 回调函数
          */
-        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void
-        {
-            callback(null, this._getAbsolutePath(path));
-        }
-
-        private _getAbsolutePath(path: string)
+        getAbsolutePath(path: string)
         {
             return this.rootPath + path;
         }

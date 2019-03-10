@@ -154,9 +154,9 @@ namespace feng3d
          * @param path （相对）路径
          * @param callback 回调函数
          */
-        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void
+        getAbsolutePath(path: string)
         {
-            callback(null, path);
+            return path;
         }
 
         /**

@@ -7435,9 +7435,8 @@ declare namespace feng3d {
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
-         * @param callback 回调函数
          */
-        abstract getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
+        abstract getAbsolutePath(path: string): string;
     }
 }
 declare namespace feng3d {
@@ -7650,7 +7649,7 @@ declare namespace feng3d {
          * @param path （相对）路径
          * @param callback 回调函数
          */
-        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
+        getAbsolutePath(path: string): string;
         /**
          * 文件是否存在
          * @param path 文件路径
@@ -7757,8 +7756,7 @@ declare namespace feng3d {
          * @param path （相对）路径
          * @param callback 回调函数
          */
-        getAbsolutePath(path: string, callback: (err: Error, absolutePath: string) => void): void;
-        private _getAbsolutePath;
+        getAbsolutePath(path: string): string;
     }
 }
 declare namespace feng3d {
