@@ -94,8 +94,6 @@ namespace feng3d
          */
         getAllfilepathInFolder(dirpath: string, callback: (err: Error, filepaths: string[]) => void): void
         {
-            assert(this.isDir(dirpath), `文件夹路径必须以 / 结尾！`)
-
             var dirs = [dirpath];
             var result = [];
             var currentdir = "";
@@ -108,14 +106,23 @@ namespace feng3d
                     currentdir = dirs.shift();
                     this.readdir(currentdir, (err, files) =>
                     {
-                        files.forEach(element =>
+                        // 获取子文件路径
+                        var getChildPath = () =>
                         {
-                            var childpath = currentdir + element;
+                            if (files.length == 0)
+                            {
+                                handle();
+                                return;
+                            }
+                            var childpath = currentdir + (currentdir == "" ? "" : "/") + files.shift();
                             result.push(childpath);
-                            if (this.isDir(childpath))
-                                dirs.push(childpath);
-                        });
-                        handle();
+                            this.isDirectory(childpath, result =>
+                            {
+                                if (result) dirs.push(childpath);
+                                getChildPath();
+                            });
+                        };
+                        getChildPath();
                     });
                 } else
                 {
@@ -229,26 +236,30 @@ namespace feng3d
          */
         rename(oldPath: string, newPath: string, callback?: (err: Error) => void): void
         {
-            if (this.isDir(oldPath))
+            this.isDirectory(oldPath, result =>
             {
-                this.getAllfilepathInFolder(oldPath, (err, filepaths) =>
+                if (result)
                 {
-                    if (err)
+                    this.getAllfilepathInFolder(oldPath, (err, filepaths) =>
                     {
-                        callback && callback(err);
-                        return;
-                    }
-                    var renamelists: [string, string][] = [[oldPath, newPath]];
-                    filepaths.forEach(element =>
-                    {
-                        renamelists.push([element, element.replace(oldPath, newPath)]);
+                        if (err)
+                        {
+                            callback && callback(err);
+                            return;
+                        }
+                        var renamelists: [string, string][] = [[oldPath, newPath]];
+                        filepaths.forEach(element =>
+                        {
+                            renamelists.push([element, element.replace(oldPath, newPath)]);
+                        });
+                        this.moveFiles(renamelists, callback);
                     });
-                    this.moveFiles(renamelists, callback);
-                });
-            } else
-            {
-                this.renameFile(oldPath, newPath, callback);
-            }
+                } else
+                {
+                    this.renameFile(oldPath, newPath, callback);
+                }
+            });
+
         }
 
         /**
@@ -270,32 +281,33 @@ namespace feng3d
          */
         delete(path: string, callback?: (err: Error) => void): void
         {
-            if (this.isDir(path))
+            this.isDirectory(path, result =>
             {
-                this.getAllfilepathInFolder(path, (err, filepaths) =>
+                if (result)
                 {
-                    if (err)
+                    this.getAllfilepathInFolder(path, (err, filepaths) =>
                     {
-                        callback && callback(err);
-                        return;
-                    }
-                    var removelists: string[] = filepaths.concat(path);
-                    this.deleteFiles(removelists, callback);
-                });
-            } else
-            {
-                this.deleteFile(path, callback);
-            }
+                        if (err)
+                        {
+                            callback && callback(err);
+                            return;
+                        }
+                        var removelists: string[] = filepaths.concat(path);
+                        this.deleteFiles(removelists, callback);
+                    });
+                } else
+                {
+                    this.deleteFile(path, callback);
+                }
+            });
         }
 
         /**
          * 是否为文件夹
+         *
          * @param path 文件路径
+         * @param callback 完成回调
          */
-        isDir(path: string)
-        {
-            if (path == "") return true;
-            return path.charAt(path.length - 1) == "/";
-        }
+        abstract isDirectory(path: string, callback: (result: boolean) => void): void;
     }
 }

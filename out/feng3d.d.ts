@@ -7573,9 +7573,11 @@ declare namespace feng3d {
         delete(path: string, callback?: (err: Error) => void): void;
         /**
          * 是否为文件夹
+         *
          * @param path 文件路径
+         * @param callback 完成回调
          */
-        isDir(path: string): boolean;
+        abstract isDirectory(path: string, callback: (result: boolean) => void): void;
     }
 }
 declare namespace feng3d {
@@ -7650,6 +7652,13 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         getAbsolutePath(path: string): string;
+        /**
+         * 是否为文件夹
+         *
+         * @param path 文件路径
+         * @param callback 完成回调
+         */
+        isDirectory(path: string, callback: (result: boolean) => void): void;
         /**
          * 文件是否存在
          * @param path 文件路径

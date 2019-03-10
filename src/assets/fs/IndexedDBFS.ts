@@ -6,6 +6,11 @@ namespace feng3d
     export var indexedDBFS: IndexedDBFS;
 
     /**
+     * 用于是否为文件夹
+     */
+    const directorytoken = "!!!___directory___!!!";
+
+    /**
      * 索引数据文件系统
      */
     export class IndexedDBFS extends ReadWriteFS
@@ -160,6 +165,20 @@ namespace feng3d
         }
 
         /**
+         * 是否为文件夹
+         *
+         * @param path 文件路径
+         * @param callback 完成回调
+         */
+        isDirectory(path: string, callback: (result: boolean) => void)
+        {
+            this.readString(path, (err, data) =>
+            {
+                callback(data == directorytoken);
+            });
+        }
+
+        /**
          * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数
@@ -189,13 +208,12 @@ namespace feng3d
                 var subfilemap = {};
                 allfilepaths.forEach(element =>
                 {
-                    if (element.substr(0, path.length) == path && element != path)
+                    var dirp = path == "" ? path : (path + "/");
+                    if (element.substr(0, dirp.length) == dirp && element != path)
                     {
-                        var result = element.substr(path.length);
-                        var index = result.indexOf("/");
-                        if (index != -1)
-                            result = result.substring(0, index + 1);
-                        subfilemap[result] = 1;
+                        var result = element.substr(dirp.length);
+                        var subfile = result.split("/").shift();
+                        subfilemap[subfile] = 1;
                     }
                 });
                 var files = Object.keys(subfilemap);
@@ -217,7 +235,7 @@ namespace feng3d
                     callback(new Error(`文件夹${path}已存在无法新建`));
                     return;
                 }
-                _indexedDB.objectStorePut(this.DBname, this.projectname, path, "", callback);
+                _indexedDB.objectStorePut(this.DBname, this.projectname, path, directorytoken, callback);
             });
         }
 

@@ -15730,7 +15730,6 @@ var feng3d;
          */
         ReadWriteFS.prototype.getAllfilepathInFolder = function (dirpath, callback) {
             var _this = this;
-            feng3d.assert(this.isDir(dirpath), "\u6587\u4EF6\u5939\u8DEF\u5F84\u5FC5\u987B\u4EE5 / \u7ED3\u5C3E\uFF01");
             var dirs = [dirpath];
             var result = [];
             var currentdir = "";
@@ -15739,13 +15738,21 @@ var feng3d;
                 if (dirs.length > 0) {
                     currentdir = dirs.shift();
                     _this.readdir(currentdir, function (err, files) {
-                        files.forEach(function (element) {
-                            var childpath = currentdir + element;
+                        // 获取子文件路径
+                        var getChildPath = function () {
+                            if (files.length == 0) {
+                                handle();
+                                return;
+                            }
+                            var childpath = currentdir + (currentdir == "" ? "" : "/") + files.shift();
                             result.push(childpath);
-                            if (_this.isDir(childpath))
-                                dirs.push(childpath);
-                        });
-                        handle();
+                            _this.isDirectory(childpath, function (result) {
+                                if (result)
+                                    dirs.push(childpath);
+                                getChildPath();
+                            });
+                        };
+                        getChildPath();
                     });
                 }
                 else {
@@ -15842,22 +15849,24 @@ var feng3d;
          */
         ReadWriteFS.prototype.rename = function (oldPath, newPath, callback) {
             var _this = this;
-            if (this.isDir(oldPath)) {
-                this.getAllfilepathInFolder(oldPath, function (err, filepaths) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
-                    }
-                    var renamelists = [[oldPath, newPath]];
-                    filepaths.forEach(function (element) {
-                        renamelists.push([element, element.replace(oldPath, newPath)]);
+            this.isDirectory(oldPath, function (result) {
+                if (result) {
+                    _this.getAllfilepathInFolder(oldPath, function (err, filepaths) {
+                        if (err) {
+                            callback && callback(err);
+                            return;
+                        }
+                        var renamelists = [[oldPath, newPath]];
+                        filepaths.forEach(function (element) {
+                            renamelists.push([element, element.replace(oldPath, newPath)]);
+                        });
+                        _this.moveFiles(renamelists, callback);
                     });
-                    _this.moveFiles(renamelists, callback);
-                });
-            }
-            else {
-                this.renameFile(oldPath, newPath, callback);
-            }
+                }
+                else {
+                    _this.renameFile(oldPath, newPath, callback);
+                }
+            });
         };
         /**
          * 移动文件(夹)
@@ -15876,28 +15885,21 @@ var feng3d;
          */
         ReadWriteFS.prototype.delete = function (path, callback) {
             var _this = this;
-            if (this.isDir(path)) {
-                this.getAllfilepathInFolder(path, function (err, filepaths) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
-                    }
-                    var removelists = filepaths.concat(path);
-                    _this.deleteFiles(removelists, callback);
-                });
-            }
-            else {
-                this.deleteFile(path, callback);
-            }
-        };
-        /**
-         * 是否为文件夹
-         * @param path 文件路径
-         */
-        ReadWriteFS.prototype.isDir = function (path) {
-            if (path == "")
-                return true;
-            return path.charAt(path.length - 1) == "/";
+            this.isDirectory(path, function (result) {
+                if (result) {
+                    _this.getAllfilepathInFolder(path, function (err, filepaths) {
+                        if (err) {
+                            callback && callback(err);
+                            return;
+                        }
+                        var removelists = filepaths.concat(path);
+                        _this.deleteFiles(removelists, callback);
+                    });
+                }
+                else {
+                    _this.deleteFile(path, callback);
+                }
+            });
         };
         return ReadWriteFS;
     }(feng3d.ReadFS));
@@ -15905,6 +15907,10 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 用于是否为文件夹
+     */
+    var directorytoken = "!!!___directory___!!!";
     /**
      * 索引数据文件系统
      */
@@ -16029,6 +16035,17 @@ var feng3d;
             return path;
         };
         /**
+         * 是否为文件夹
+         *
+         * @param path 文件路径
+         * @param callback 完成回调
+         */
+        IndexedDBFS.prototype.isDirectory = function (path, callback) {
+            this.readString(path, function (err, data) {
+                callback(data == directorytoken);
+            });
+        };
+        /**
          * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数
@@ -16051,12 +16068,11 @@ var feng3d;
                 }
                 var subfilemap = {};
                 allfilepaths.forEach(function (element) {
-                    if (element.substr(0, path.length) == path && element != path) {
-                        var result = element.substr(path.length);
-                        var index = result.indexOf("/");
-                        if (index != -1)
-                            result = result.substring(0, index + 1);
-                        subfilemap[result] = 1;
+                    var dirp = path == "" ? path : (path + "/");
+                    if (element.substr(0, dirp.length) == dirp && element != path) {
+                        var result = element.substr(dirp.length);
+                        var subfile = result.split("/").shift();
+                        subfilemap[subfile] = 1;
                     }
                 });
                 var files = Object.keys(subfilemap);
@@ -16075,7 +16091,7 @@ var feng3d;
                     callback(new Error("\u6587\u4EF6\u5939" + path + "\u5DF2\u5B58\u5728\u65E0\u6CD5\u65B0\u5EFA"));
                     return;
                 }
-                feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, path, "", callback);
+                feng3d._indexedDB.objectStorePut(_this.DBname, _this.projectname, path, directorytoken, callback);
             });
         };
         /**
