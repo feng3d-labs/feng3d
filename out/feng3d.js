@@ -15946,7 +15946,7 @@ var feng3d;
                     callback(null, data);
                 }
                 else if (data instanceof Object) {
-                    var str = JSON.stringify(data);
+                    var str = JSON.stringify(data, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
                     var arraybuffer = feng3d.dataTransform.stringToArrayBuffer(str);
                     callback(null, arraybuffer);
                 }
@@ -15973,7 +15973,7 @@ var feng3d;
                     });
                 }
                 else if (data instanceof Object) {
-                    var str = JSON.stringify(data);
+                    var str = JSON.stringify(data, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
                     callback(null, str);
                 }
                 else {

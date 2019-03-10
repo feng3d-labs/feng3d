@@ -56,7 +56,7 @@ namespace feng3d
                     callback(null, data);
                 } else if (data instanceof Object)
                 {
-                    var str = JSON.stringify(data);
+                    var str = JSON.stringify(data, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1')
                     var arraybuffer = dataTransform.stringToArrayBuffer(str);
                     callback(null, arraybuffer);
                 } else
@@ -89,7 +89,7 @@ namespace feng3d
                     });
                 } else if (data instanceof Object)
                 {
-                    var str = JSON.stringify(data);
+                    var str = JSON.stringify(data, null, '\t').replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1')
                     callback(null, str);
                 } else
                 {
