@@ -93,7 +93,7 @@ namespace feng3d
          * @param projectname 项目名称
          * @param callback 回调函数
          */
-        abstract initproject(projectname: string, callback: () => void): void;
+        abstract initproject(projectname: string, callback: (err: Error) => void): void;
 
         /**
          * 获取项目列表
