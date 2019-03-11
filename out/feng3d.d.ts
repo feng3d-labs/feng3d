@@ -7516,6 +7516,31 @@ declare namespace feng3d {
          */
         abstract copyFile(src: string, dest: string, callback?: (err: Error) => void): void;
         /**
+         * 是否为文件夹
+         *
+         * @param path 文件路径
+         * @param callback 完成回调
+         */
+        abstract isDirectory(path: string, callback: (result: boolean) => void): void;
+        /**
+         * 初始化项目
+         * @param projectname 项目名称
+         * @param callback 回调函数
+         */
+        abstract initproject(projectname: string, callback: () => void): void;
+        /**
+         * 获取项目列表
+         *
+         * @param callback 完成回调
+         */
+        abstract getProjectList(callback: (err: Error, projects: string[]) => void): void;
+        /**
+         * 是否存在指定项目
+         * @param projectname 项目名称
+         * @param callback 回调函数
+         */
+        hasProject(projectname: string, callback: (has: boolean) => void): void;
+        /**
          * 获取所有文件路径
          * @param callback 回调函数
          */
@@ -7577,13 +7602,6 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         delete(path: string, callback?: (err: Error) => void): void;
-        /**
-         * 是否为文件夹
-         *
-         * @param path 文件路径
-         * @param callback 完成回调
-         */
-        abstract isDirectory(path: string, callback: (result: boolean) => void): void;
     }
 }
 declare namespace feng3d {
@@ -7735,6 +7753,12 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         getProjectList(callback: (err: Error, projects: string[]) => void): void;
+        /**
+         * 初始化项目
+         * @param projectname 项目名称
+         * @param callback 回调函数
+         */
+        initproject(projectname: string, callback: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {

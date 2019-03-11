@@ -343,6 +343,17 @@ namespace feng3d
         {
             feng3d._indexedDB.getObjectStoreNames(this.DBname, callback);
         }
+
+        /**
+         * 初始化项目
+         * @param projectname 项目名称
+         * @param callback 回调函数
+         */
+        initproject(projectname: string, callback: (err: Error) => void)
+        {
+            this.projectname = projectname;
+            feng3d._indexedDB.createObjectStore(this.DBname, projectname, callback);
+        }
     }
 
     indexedDBFS = new IndexedDBFS();
