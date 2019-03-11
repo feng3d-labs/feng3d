@@ -15725,8 +15725,11 @@ var feng3d;
          */
         ReadWriteFS.prototype.hasProject = function (projectname, callback) {
             this.getProjectList(function (err, projects) {
-                if (err)
-                    throw err;
+                if (err) {
+                    callback(false);
+                    return;
+                }
+                ;
                 callback(projects.indexOf(projectname) != -1);
             });
         };

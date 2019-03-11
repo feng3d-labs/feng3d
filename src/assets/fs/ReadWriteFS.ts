@@ -111,7 +111,7 @@ namespace feng3d
         {
             this.getProjectList((err, projects) =>
             {
-                if (err) throw err;
+                if (err) { callback(false); return; };
                 callback(projects.indexOf(projectname) != -1);
             });
         }
