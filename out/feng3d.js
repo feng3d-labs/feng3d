@@ -15719,21 +15719,6 @@ var feng3d;
             return _super !== null && _super.apply(this, arguments) || this;
         }
         /**
-         * 是否存在指定项目
-         * @param projectname 项目名称
-         * @param callback 回调函数
-         */
-        ReadWriteFS.prototype.hasProject = function (projectname, callback) {
-            this.getProjectList(function (err, projects) {
-                if (err) {
-                    callback(false);
-                    return;
-                }
-                ;
-                callback(projects.indexOf(projectname) != -1);
-            });
-        };
-        /**
          * 获取所有文件路径
          * @param callback 回调函数
          */
@@ -16188,12 +16173,18 @@ var feng3d;
             });
         };
         /**
-         * 获取项目列表
-         *
-         * @param callback 完成回调
+         * 是否存在指定项目
+         * @param projectname 项目名称
+         * @param callback 回调函数
          */
-        IndexedDBFS.prototype.getProjectList = function (callback) {
-            feng3d._indexedDB.getObjectStoreNames(this.DBname, callback);
+        IndexedDBFS.prototype.hasProject = function (projectname, callback) {
+            feng3d._indexedDB.getObjectStoreNames(this.DBname, function (err, objectStoreNames) {
+                if (err) {
+                    callback(false);
+                    return;
+                }
+                callback(objectStoreNames.indexOf(projectname) != -1);
+            });
         };
         /**
          * 初始化项目
@@ -16297,14 +16288,6 @@ var feng3d;
          */
         HttpFS.prototype.getAbsolutePath = function (path) {
             return this.rootPath + path;
-        };
-        /**
-         * 获取项目列表
-         *
-         * @param callback 完成回调
-         */
-        HttpFS.prototype.getProjectList = function (callback) {
-            throw "\u672A\u5B9E\u73B0";
         };
         return HttpFS;
     }(feng3d.ReadFS));

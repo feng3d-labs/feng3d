@@ -7437,12 +7437,6 @@ declare namespace feng3d {
          * @param path （相对）路径
          */
         abstract getAbsolutePath(path: string): string;
-        /**
-         * 获取项目列表
-         *
-         * @param callback 完成回调
-         */
-        abstract getProjectList(callback: (err: Error, projects: string[]) => void): void;
     }
 }
 declare namespace feng3d {
@@ -7529,17 +7523,11 @@ declare namespace feng3d {
          */
         abstract initproject(projectname: string, callback: (err: Error) => void): void;
         /**
-         * 获取项目列表
-         *
-         * @param callback 完成回调
-         */
-        abstract getProjectList(callback: (err: Error, projects: string[]) => void): void;
-        /**
          * 是否存在指定项目
          * @param projectname 项目名称
          * @param callback 回调函数
          */
-        hasProject(projectname: string, callback: (has: boolean) => void): void;
+        abstract hasProject(projectname: string, callback: (has: boolean) => void): void;
         /**
          * 获取所有文件路径
          * @param callback 回调函数
@@ -7748,11 +7736,11 @@ declare namespace feng3d {
          */
         getAllPaths(callback: (err: Error, allPaths: string[]) => void): void;
         /**
-         * 获取项目列表
-         *
-         * @param callback 完成回调
+         * 是否存在指定项目
+         * @param projectname 项目名称
+         * @param callback 回调函数
          */
-        getProjectList(callback: (err: Error, projects: string[]) => void): void;
+        hasProject(projectname: string, callback: (has: boolean) => void): void;
         /**
          * 初始化项目
          * @param projectname 项目名称
@@ -7802,12 +7790,6 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         getAbsolutePath(path: string): string;
-        /**
-         * 获取项目列表
-         *
-         * @param callback 完成回调
-         */
-        getProjectList(callback: (err: Error, projects: string[]) => void): void;
     }
 }
 declare namespace feng3d {

@@ -335,15 +335,18 @@ namespace feng3d
         }
 
         /**
-         * 获取项目列表
-         * 
-         * @param callback 完成回调
+         * 是否存在指定项目
+         * @param projectname 项目名称
+         * @param callback 回调函数
          */
-        getProjectList(callback: (err: Error, projects: string[]) => void)
+        hasProject(projectname: string, callback: (has: boolean) => void)
         {
-            feng3d._indexedDB.getObjectStoreNames(this.DBname, callback);
+            feng3d._indexedDB.getObjectStoreNames(this.DBname, (err, objectStoreNames) =>
+            {
+                if (err) { callback(false); return; }
+                callback(objectStoreNames.indexOf(projectname) != -1);
+            });
         }
-
         /**
          * 初始化项目
          * @param projectname 项目名称
