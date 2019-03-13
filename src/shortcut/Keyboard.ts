@@ -14,9 +14,6 @@ namespace feng3d
 
     export class KeyBoard
     {
-        
-        
-        
 		/**
 		 * 获取键盘按键名称
          * @param code   按键值

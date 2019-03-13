@@ -17124,8 +17124,14 @@ var feng3d;
             if (!feng3d.shortcut.enable)
                 return;
             var boardKey = feng3d.KeyBoard.getKey(event.keyCode);
-            if (boardKey != null)
+            boardKey = boardKey || event.key;
+            if (boardKey) {
+                boardKey = boardKey.toLocaleLowerCase();
                 this._keyState.pressKey(boardKey, event);
+            }
+            else {
+                feng3d.error("\u65E0\u6CD5\u8BC6\u522B\u6309\u94AE " + event.key);
+            }
         };
         /**
          * 键盘弹起事件
@@ -17134,8 +17140,14 @@ var feng3d;
             if (!feng3d.shortcut.enable)
                 return;
             var boardKey = feng3d.KeyBoard.getKey(event.keyCode);
-            if (boardKey)
+            boardKey = boardKey || event.key;
+            if (boardKey) {
+                boardKey = boardKey.toLocaleLowerCase();
                 this._keyState.releaseKey(boardKey, event);
+            }
+            else {
+                feng3d.error("\u65E0\u6CD5\u8BC6\u522B\u6309\u94AE " + event.key);
+            }
         };
         return KeyCapture;
     }());

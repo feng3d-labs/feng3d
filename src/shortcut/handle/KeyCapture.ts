@@ -77,8 +77,15 @@ namespace feng3d
 			if (!shortcut.enable)
 				return;
 			var boardKey: string = KeyBoard.getKey(event.keyCode);
-			if (boardKey != null)
+			boardKey = boardKey || event.key;
+			if (boardKey)
+			{
+				boardKey = boardKey.toLocaleLowerCase();
 				this._keyState.pressKey(boardKey, event);
+			} else
+			{
+				feng3d.error(`无法识别按钮 ${event.key}`);
+			}
 		}
 
 		/**
@@ -89,8 +96,15 @@ namespace feng3d
 			if (!shortcut.enable)
 				return;
 			var boardKey: string = KeyBoard.getKey(event.keyCode);
+			boardKey = boardKey || event.key;
 			if (boardKey)
+			{
+				boardKey = boardKey.toLocaleLowerCase();
 				this._keyState.releaseKey(boardKey, event);
+			} else
+			{
+				feng3d.error(`无法识别按钮 ${event.key}`);
+			}
 		}
 	}
 }
