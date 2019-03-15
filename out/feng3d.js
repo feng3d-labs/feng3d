@@ -14765,7 +14765,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 代理 EventTarget, 处理js事件中this关键字问题
-
      */
     var EventProxy = /** @class */ (function (_super) {
         __extends(EventProxy, _super);
@@ -20450,7 +20449,7 @@ var feng3d;
          */
         function Component() {
             var _this = _super.call(this) || this;
-            feng3d.event.onAll(_this, _this._onAllListener, _this);
+            _this.onAll(_this._onAllListener, _this);
             return _this;
         }
         Object.defineProperty(Component.prototype, "gameObject", {
@@ -21565,7 +21564,7 @@ var feng3d;
             _this.guid = feng3d.FMath.uuid();
             //
             GameObject.pool.set(_this.guid, _this);
-            feng3d.event.onAll(_this, _this._onAllListener, _this);
+            _this.onAll(_this._onAllListener, _this);
             return _this;
         }
         Object.defineProperty(GameObject.prototype, "transform", {

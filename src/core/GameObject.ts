@@ -213,7 +213,7 @@ namespace feng3d
             //
             GameObject.pool.set(this.guid, this);
 
-            event.onAll(this, this._onAllListener, this);
+            this.onAll(this._onAllListener, this);
         }
 
         find(name: string): GameObject

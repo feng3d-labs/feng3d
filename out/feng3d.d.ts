@@ -7104,7 +7104,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 代理 EventTarget, 处理js事件中this关键字问题
-
      */
     class EventProxy extends EventDispatcher {
         pageX: number;
