@@ -22229,13 +22229,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Engine.prototype, "mouseinview", {
-            get: function () {
-                return this.viewRect.contains(feng3d.windowEventProxy.clientX, feng3d.windowEventProxy.clientY);
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Engine.prototype, "viewRect", {
             get: function () {
                 var clientRect = this.canvas.getBoundingClientRect();

@@ -11946,7 +11946,6 @@ declare namespace feng3d {
          * 鼠标在3D视图中的位置
          */
         readonly mousePos: Vector2;
-        readonly mouseinview: boolean;
         readonly viewRect: Rectangle;
         /**
          * 鼠标事件管理

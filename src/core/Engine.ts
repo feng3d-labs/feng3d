@@ -64,11 +64,6 @@ namespace feng3d
             return new Vector2(windowEventProxy.clientX - this.canvas.clientLeft, windowEventProxy.clientY - this.canvas.clientTop);
         }
 
-        get mouseinview()
-        {
-            return this.viewRect.contains(windowEventProxy.clientX, windowEventProxy.clientY);
-        }
-
         get viewRect()
         {
             var clientRect = this.canvas.getBoundingClientRect();
