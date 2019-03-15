@@ -51,8 +51,8 @@ namespace feng3d
         once<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
         has<K extends keyof T>(type: K): boolean;
-        on<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => any, thisObject?: any, priority?: number, once?: boolean);
-        off<K extends keyof T>(type?: K, listener?: (event: Event<T[K]>) => any, thisObject?: any);
+        on<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof T>(type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): void;
     }
 
 	/**
@@ -69,7 +69,7 @@ namespace feng3d
          */
         once(type: string, listener: (event: any) => void, thisObject = null, priority = 0)
         {
-            fevent.on(this, type, listener, thisObject, priority, true);
+            event.on(this, type, listener, thisObject, priority, true);
         }
 
         /**
@@ -82,7 +82,7 @@ namespace feng3d
          */
         dispatchEvent(e: Event<any>)
         {
-            return fevent.dispatchEvent(this, e);
+            return event.dispatchEvent(this, e);
         }
 
         /**
@@ -93,7 +93,7 @@ namespace feng3d
          */
         dispatch(type: string, data?: any, bubbles = false)
         {
-            return fevent.dispatch(this, type, data, bubbles);
+            return event.dispatch(this, type, data, bubbles);
         }
 
         /**
@@ -104,7 +104,7 @@ namespace feng3d
          */
         has(type: string): boolean
         {
-            return fevent.has(this, type);
+            return event.has(this, type);
         }
 
         /**
@@ -113,9 +113,9 @@ namespace feng3d
 		 * @param listener					处理事件的侦听器函数。
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        on(type: string, listener: (event: any) => any, thisObject?: any, priority = 0, once = false)
+        on(type: string, listener: (event: any) => void, thisObject?: any, priority = 0, once = false)
         {
-            fevent.on(this, type, listener, thisObject, priority, once);
+            event.on(this, type, listener, thisObject, priority, once);
         }
 
         /**
@@ -124,9 +124,32 @@ namespace feng3d
 		 * @param type						事件的类型。
 		 * @param listener					要删除的侦听器对象。
          */
-        off(type?: string, listener?: (event: any) => any, thisObject?: any)
+        off(type?: string, listener?: (event: any) => void, thisObject?: any)
         {
-            fevent.off(this, type, listener, thisObject);
+            event.off(this, type, listener, thisObject);
+        }
+
+        /**
+         * 监听对象的所有事件
+         * @param obj 被监听对象
+         * @param listener 回调函数
+         * @param thisObject 回调函数 this 指针
+         * @param priority 优先级
+         */
+        onAll(listener: (event: any) => void, thisObject?: any, priority = 0)
+        {
+            event.onAll(this, listener, thisObject, priority);
+        }
+
+        /**
+         * 移除监听对象的所有事件
+         * @param obj 被监听对象
+         * @param listener 回调函数
+         * @param thisObject 回调函数 this 指针
+         */
+        offAll(listener?: (event: any) => void, thisObject?: any)
+        {
+            event.offAll(this, listener, thisObject);
         }
 
         /**
@@ -135,7 +158,7 @@ namespace feng3d
          */
         protected handleEvent(e: Event<any>)
         {
-            fevent["handleEvent"](this, e);
+            event["handleEvent"](this, e);
         }
 
         /**
@@ -144,7 +167,7 @@ namespace feng3d
          */
         protected handelEventBubbles(e: Event<any>)
         {
-            fevent["handelEventBubbles"](this, e);
+            event["handelEventBubbles"](this, e);
         }
     }
 }

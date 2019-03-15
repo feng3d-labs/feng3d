@@ -6898,8 +6898,16 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    var fevent: FEvent;
+    /**
+     * 事件
+     */
+    var event: FEvent;
+    /**
+     * 事件
+     */
     class FEvent {
+        private feventMap;
+        private getBubbleTargets;
         /**
          * 监听一次事件后将会被移除
          * @param type						事件的类型。
@@ -6952,14 +6960,14 @@ declare namespace feng3d {
          * @param thisObject 回调函数 this 指针
          * @param priority 优先级
          */
-        onAll(obj: Object, listener: (event: any) => any, thisObject?: any, priority?: number): void;
+        onAll(obj: Object, listener: (event: any) => void, thisObject?: any, priority?: number): void;
         /**
          * 移除监听对象的所有事件
          * @param obj 被监听对象
          * @param listener 回调函数
          * @param thisObject 回调函数 this 指针
          */
-        offAll(obj: Object, listener?: (event: any) => any, thisObject?: any): void;
+        offAll(obj: Object, listener?: (event: any) => void, thisObject?: any): void;
         /**
          * 处理事件
          * @param e 事件
@@ -7014,8 +7022,8 @@ declare namespace feng3d {
         once<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
         has<K extends keyof T>(type: K): boolean;
-        on<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof T>(type?: K, listener?: (event: Event<T[K]>) => any, thisObject?: any): any;
+        on<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof T>(type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): void;
     }
     /**
      * 事件适配器
@@ -7058,14 +7066,29 @@ declare namespace feng3d {
          * @param listener					处理事件的侦听器函数。
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        on(type: string, listener: (event: any) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        on(type: string, listener: (event: any) => void, thisObject?: any, priority?: number, once?: boolean): void;
         /**
          * 移除监听
          * @param dispatcher 派发器
          * @param type						事件的类型。
          * @param listener					要删除的侦听器对象。
          */
-        off(type?: string, listener?: (event: any) => any, thisObject?: any): void;
+        off(type?: string, listener?: (event: any) => void, thisObject?: any): void;
+        /**
+         * 监听对象的所有事件
+         * @param obj 被监听对象
+         * @param listener 回调函数
+         * @param thisObject 回调函数 this 指针
+         * @param priority 优先级
+         */
+        onAll(listener: (event: any) => void, thisObject?: any, priority?: number): void;
+        /**
+         * 移除监听对象的所有事件
+         * @param obj 被监听对象
+         * @param listener 回调函数
+         * @param thisObject 回调函数 this 指针
+         */
+        offAll(listener?: (event: any) => void, thisObject?: any): void;
         /**
          * 处理事件
          * @param e 事件
@@ -7155,7 +7178,7 @@ declare namespace feng3d {
     /**
      * 全局事件
      */
-    var feng3dDispatcher: Feng3dDispatcher;
+    var feng3dDispatcher: IEventDispatcher<Feng3dEventMap>;
     interface Feng3dEventMap {
         /**
          * shader资源发生变化
@@ -7175,18 +7198,6 @@ declare namespace feng3d {
          * 解析出资源
          */
         "asset.parsed": any;
-    }
-    interface Feng3dDispatcher {
-        once<K extends keyof Feng3dEventMap>(type: K, listener: (event: Event<Feng3dEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof Feng3dEventMap>(type: K, data?: Feng3dEventMap[K], bubbles?: boolean): Event<Feng3dEventMap[K]>;
-        has<K extends keyof Feng3dEventMap>(type: K): boolean;
-        on<K extends keyof Feng3dEventMap>(type: K, listener: (event: Event<Feng3dEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof Feng3dEventMap>(type?: K, listener?: (event: Event<Feng3dEventMap[K]>) => any, thisObject?: any): any;
-    }
-    /**
-     * 全局事件
-     */
-    class Feng3dDispatcher extends EventDispatcher {
     }
 }
 declare namespace feng3d {

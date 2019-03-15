@@ -188,7 +188,7 @@ namespace feng3d
                 return null;
             if (!this.catchMouseMove && type == "mousemove")
                 return null;
-            return fevent.dispatch(this, type, data, bubbles);
+            return super.dispatch(type, data, bubbles);
         }
 
         /**

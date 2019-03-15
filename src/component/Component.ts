@@ -63,7 +63,7 @@ namespace feng3d
         constructor()
         {
             super();
-            fevent.onAll(this, this._onAllListener, this);
+            event.onAll(this, this._onAllListener, this);
         }
 
         init(gameObject: GameObject)

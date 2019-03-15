@@ -14424,13 +14424,16 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var feventMap = new Map();
-    function getBubbleTargets(target) {
-        return [target["parent"]];
-    }
+    /**
+     * 事件
+     */
     var FEvent = /** @class */ (function () {
         function FEvent() {
+            this.feventMap = new Map();
         }
+        FEvent.prototype.getBubbleTargets = function (target) {
+            return [target["parent"]];
+        };
         /**
          * 监听一次事件后将会被移除
          * @param type						事件的类型。
@@ -14479,7 +14482,7 @@ var feng3d;
          * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
          */
         FEvent.prototype.has = function (obj, type) {
-            return !!(feventMap.get(obj) && feventMap.get(obj)[type] && feventMap.get(obj)[type].length);
+            return !!(this.feventMap.get(obj) && this.feventMap.get(obj)[type] && this.feventMap.get(obj)[type].length);
         };
         /**
          * 添加监听
@@ -14490,9 +14493,9 @@ var feng3d;
         FEvent.prototype.on = function (obj, type, listener, thisObject, priority, once) {
             if (priority === void 0) { priority = 0; }
             if (once === void 0) { once = false; }
-            var objectListener = feventMap.get(obj);
+            var objectListener = this.feventMap.get(obj);
             if (!objectListener)
-                (feventMap.set(obj, objectListener = {}));
+                (this.feventMap.set(obj, objectListener = {}));
             var listeners = objectListener[type] = objectListener[type] || [];
             for (var i = 0; i < listeners.length; i++) {
                 var element = listeners[i];
@@ -14517,15 +14520,15 @@ var feng3d;
          */
         FEvent.prototype.off = function (obj, type, listener, thisObject) {
             if (!type) {
-                feventMap.delete(obj);
+                this.feventMap.delete(obj);
                 return;
             }
             if (!listener) {
-                if (feventMap.get(obj))
-                    delete feventMap.get(obj)[type];
+                if (this.feventMap.get(obj))
+                    delete this.feventMap.get(obj)[type];
                 return;
             }
-            var listeners = feventMap.get(obj) && feventMap.get(obj)[type];
+            var listeners = this.feventMap.get(obj) && this.feventMap.get(obj)[type];
             if (listeners) {
                 for (var i = listeners.length - 1; i >= 0; i--) {
                     var element = listeners[i];
@@ -14534,7 +14537,7 @@ var feng3d;
                     }
                 }
                 if (listeners.length == 0) {
-                    delete feventMap.get(obj)[type];
+                    delete this.feventMap.get(obj)[type];
                 }
             }
         };
@@ -14547,9 +14550,9 @@ var feng3d;
          */
         FEvent.prototype.onAll = function (obj, listener, thisObject, priority) {
             if (priority === void 0) { priority = 0; }
-            var objectListener = feventMap.get(obj);
+            var objectListener = this.feventMap.get(obj);
             if (!objectListener)
-                (feventMap.set(obj, objectListener = {}));
+                (this.feventMap.set(obj, objectListener = {}));
             var listeners = objectListener.__allEventType__ = objectListener.__allEventType__ || [];
             for (var i = 0; i < listeners.length; i++) {
                 var element = listeners[i];
@@ -14574,11 +14577,11 @@ var feng3d;
          */
         FEvent.prototype.offAll = function (obj, listener, thisObject) {
             if (!listener) {
-                if (feventMap.get(obj))
-                    delete feventMap.get(obj).__allEventType__;
+                if (this.feventMap.get(obj))
+                    delete this.feventMap.get(obj).__allEventType__;
                 return;
             }
-            var listeners = feventMap.get(obj) && feventMap.get(obj).__allEventType__;
+            var listeners = this.feventMap.get(obj) && this.feventMap.get(obj).__allEventType__;
             if (listeners) {
                 for (var i = listeners.length - 1; i >= 0; i--) {
                     var element = listeners[i];
@@ -14587,7 +14590,7 @@ var feng3d;
                     }
                 }
                 if (listeners.length == 0) {
-                    delete feventMap.get(obj).__allEventType__;
+                    delete this.feventMap.get(obj).__allEventType__;
                 }
             }
         };
@@ -14603,7 +14606,7 @@ var feng3d;
                 e.currentTarget = obj;
             }
             catch (error) { }
-            var listeners = feventMap.get(obj) && feventMap.get(obj)[e.type];
+            var listeners = this.feventMap.get(obj) && this.feventMap.get(obj)[e.type];
             if (listeners) {
                 //遍历调用事件回调函数
                 for (var i = 0; i < listeners.length && !e.isStop; i++) {
@@ -14614,10 +14617,10 @@ var feng3d;
                         listeners.splice(i, 1);
                 }
                 if (listeners.length == 0)
-                    delete feventMap.get(obj)[e.type];
+                    delete this.feventMap.get(obj)[e.type];
             }
             // All_EVENT_Type
-            listeners = feventMap.get(obj) && feventMap.get(obj).__allEventType__;
+            listeners = this.feventMap.get(obj) && this.feventMap.get(obj).__allEventType__;
             if (listeners) {
                 //遍历调用事件回调函数
                 for (var i = 0; i < listeners.length && !e.isStop; i++) {
@@ -14628,7 +14631,7 @@ var feng3d;
                         listeners.splice(i, 1);
                 }
                 if (listeners.length == 0)
-                    delete feventMap.get(obj).__allEventType__;
+                    delete this.feventMap.get(obj).__allEventType__;
             }
         };
         /**
@@ -14637,7 +14640,7 @@ var feng3d;
          */
         FEvent.prototype.handelEventBubbles = function (obj, e) {
             if (e.bubbles && !e.isStopBubbles) {
-                var bubbleTargets = getBubbleTargets(obj);
+                var bubbleTargets = this.getBubbleTargets(obj);
                 for (var i = 0, n = bubbleTargets.length; i < n; i++) {
                     var bubbleTarget = bubbleTargets[i];
                     if (!e.isStop && bubbleTarget instanceof feng3d.EventDispatcher)
@@ -14648,7 +14651,7 @@ var feng3d;
         return FEvent;
     }());
     feng3d.FEvent = FEvent;
-    feng3d.fevent = new FEvent();
+    feng3d.event = new FEvent();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -14668,7 +14671,7 @@ var feng3d;
         EventDispatcher.prototype.once = function (type, listener, thisObject, priority) {
             if (thisObject === void 0) { thisObject = null; }
             if (priority === void 0) { priority = 0; }
-            feng3d.fevent.on(this, type, listener, thisObject, priority, true);
+            feng3d.event.on(this, type, listener, thisObject, priority, true);
         };
         /**
          * 派发事件
@@ -14679,7 +14682,7 @@ var feng3d;
          * @returns 返回事件是否被该对象处理
          */
         EventDispatcher.prototype.dispatchEvent = function (e) {
-            return feng3d.fevent.dispatchEvent(this, e);
+            return feng3d.event.dispatchEvent(this, e);
         };
         /**
          * 将事件调度到事件流中. 事件目标是对其调用 dispatchEvent() 方法的 IEvent 对象。
@@ -14689,7 +14692,7 @@ var feng3d;
          */
         EventDispatcher.prototype.dispatch = function (type, data, bubbles) {
             if (bubbles === void 0) { bubbles = false; }
-            return feng3d.fevent.dispatch(this, type, data, bubbles);
+            return feng3d.event.dispatch(this, type, data, bubbles);
         };
         /**
          * 检查 Event 对象是否为特定事件类型注册了任何侦听器.
@@ -14698,7 +14701,7 @@ var feng3d;
          * @return 			如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
          */
         EventDispatcher.prototype.has = function (type) {
-            return feng3d.fevent.has(this, type);
+            return feng3d.event.has(this, type);
         };
         /**
          * 添加监听
@@ -14709,7 +14712,7 @@ var feng3d;
         EventDispatcher.prototype.on = function (type, listener, thisObject, priority, once) {
             if (priority === void 0) { priority = 0; }
             if (once === void 0) { once = false; }
-            feng3d.fevent.on(this, type, listener, thisObject, priority, once);
+            feng3d.event.on(this, type, listener, thisObject, priority, once);
         };
         /**
          * 移除监听
@@ -14718,21 +14721,41 @@ var feng3d;
          * @param listener					要删除的侦听器对象。
          */
         EventDispatcher.prototype.off = function (type, listener, thisObject) {
-            feng3d.fevent.off(this, type, listener, thisObject);
+            feng3d.event.off(this, type, listener, thisObject);
+        };
+        /**
+         * 监听对象的所有事件
+         * @param obj 被监听对象
+         * @param listener 回调函数
+         * @param thisObject 回调函数 this 指针
+         * @param priority 优先级
+         */
+        EventDispatcher.prototype.onAll = function (listener, thisObject, priority) {
+            if (priority === void 0) { priority = 0; }
+            feng3d.event.onAll(this, listener, thisObject, priority);
+        };
+        /**
+         * 移除监听对象的所有事件
+         * @param obj 被监听对象
+         * @param listener 回调函数
+         * @param thisObject 回调函数 this 指针
+         */
+        EventDispatcher.prototype.offAll = function (listener, thisObject) {
+            feng3d.event.offAll(this, listener, thisObject);
         };
         /**
          * 处理事件
          * @param e 事件
          */
         EventDispatcher.prototype.handleEvent = function (e) {
-            feng3d.fevent["handleEvent"](this, e);
+            feng3d.event["handleEvent"](this, e);
         };
         /**
          * 处理事件冒泡
          * @param e 事件
          */
         EventDispatcher.prototype.handelEventBubbles = function (e) {
-            feng3d.fevent["handelEventBubbles"](this, e);
+            feng3d.event["handelEventBubbles"](this, e);
         };
         return EventDispatcher;
     }());
@@ -14917,15 +14940,7 @@ var feng3d;
     /**
      * 全局事件
      */
-    var Feng3dDispatcher = /** @class */ (function (_super) {
-        __extends(Feng3dDispatcher, _super);
-        function Feng3dDispatcher() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return Feng3dDispatcher;
-    }(feng3d.EventDispatcher));
-    feng3d.Feng3dDispatcher = Feng3dDispatcher;
-    feng3d.feng3dDispatcher = new Feng3dDispatcher();
+    feng3d.feng3dDispatcher = new feng3d.EventDispatcher();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -20435,7 +20450,7 @@ var feng3d;
          */
         function Component() {
             var _this = _super.call(this) || this;
-            feng3d.fevent.onAll(_this, _this._onAllListener, _this);
+            feng3d.event.onAll(_this, _this._onAllListener, _this);
             return _this;
         }
         Object.defineProperty(Component.prototype, "gameObject", {
@@ -21550,7 +21565,7 @@ var feng3d;
             _this.guid = feng3d.FMath.uuid();
             //
             GameObject.pool.set(_this.guid, _this);
-            feng3d.fevent.onAll(_this, _this._onAllListener, _this);
+            feng3d.event.onAll(_this, _this._onAllListener, _this);
             return _this;
         }
         Object.defineProperty(GameObject.prototype, "transform", {
@@ -34699,7 +34714,7 @@ var feng3d;
                 return null;
             if (!this.catchMouseMove && type == "mousemove")
                 return null;
-            return feng3d.fevent.dispatch(this, type, data, bubbles);
+            return _super.prototype.dispatch.call(this, type, data, bubbles);
         };
         /**
          * 派发事件
