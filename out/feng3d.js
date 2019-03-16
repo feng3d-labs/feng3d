@@ -15710,6 +15710,29 @@ var feng3d;
     var ReadFS = /** @class */ (function () {
         function ReadFS() {
         }
+        /**
+         * 读取文件列表为字符串列表
+         *
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        ReadFS.prototype.readStrings = function (paths, callback) {
+            var _this = this;
+            var strs = [];
+            var index = 0;
+            var _readString = function () {
+                if (index >= paths.length) {
+                    callback(strs);
+                    return;
+                }
+                _this.readString(paths[index], function (err, str) {
+                    strs[index] = err || str;
+                    index++;
+                    _readString();
+                });
+            };
+            _readString();
+        };
         return ReadFS;
     }());
     feng3d.ReadFS = ReadFS;

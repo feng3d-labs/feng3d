@@ -7452,6 +7452,13 @@ declare namespace feng3d {
          * @param path （相对）路径
          */
         abstract getAbsolutePath(path: string): string;
+        /**
+         * 读取文件列表为字符串列表
+         *
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readStrings(paths: string[], callback: (strs: (string | Error)[]) => void): void;
     }
 }
 declare namespace feng3d {

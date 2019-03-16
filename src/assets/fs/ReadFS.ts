@@ -47,5 +47,32 @@ namespace feng3d
          * @param path （相对）路径
          */
         abstract getAbsolutePath(path: string): string;
+
+        /**
+         * 读取文件列表为字符串列表
+         * 
+         * @param path 路径
+         * @param callback 读取完成回调 当err不为null时表示读取失败
+         */
+        readStrings(paths: string[], callback: (strs: (string | Error)[]) => void)
+        {
+            var strs: (string | Error)[] = [];
+            var index = 0;
+            var _readString = () =>
+            {
+                if (index >= paths.length)
+                {
+                    callback(strs);
+                    return;
+                }
+                this.readString(paths[index], (err, str) =>
+                {
+                    strs[index] = err || str;
+                    index++;
+                    _readString();
+                });
+            };
+            _readString();
+        }
     }
 }
