@@ -29,24 +29,26 @@ namespace feng3d
     export class Task
     {
         /**
-         * 前置任务
-         */
-        preTasks?: Task[];
-
-        /**
          * 默认初始状态，未开始，状态不可逆
          */
         status = TaskStatus.None;
 
         /**
-         * 任务自身内容，回调带回结果保存在 result.value 中
-         */
-        content?: (callback: (result?: any) => void) => void;
-
-        /**
          * 任务自身内容回调带回结果
          */
         result: any;
+
+        /**
+         * 构建任务
+         * 
+         * @param content 任务自身内容，回调带回结果保存在 result.value 中
+         * @param preTasks 前置任务列表
+         */
+        constructor(private content?: (callback: (result?: any) => void) => void, private preTasks?: Task[])
+        {
+            this.preTasks = this.preTasks || [];
+            this.content = this.content || ((callback: () => void) => { callback(); });
+        }
 
         do(callback?: () => void)
         {
@@ -77,10 +79,6 @@ namespace feng3d
                 }
                 return;
             }
-
-            // 设置默认值
-            this.preTasks = this.preTasks || [];
-            this.content = this.content || ((callback: () => void) => { callback(); });
 
             // 执行前置任务函数
             var doPreTasks = (callback: () => void) =>
@@ -120,7 +118,7 @@ namespace feng3d
 		 * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        once<T extends "done">(type: T, listener: (event: any) => void, thisObject = null, priority = 0)
+        once<K extends "done">(type: K, listener: (event: Event<any>) => void, thisObject?: any, priority?: number)
         {
             event.on(this, type, listener, thisObject, priority, true);
         }
@@ -134,14 +132,11 @@ namespace feng3d
          */
         static createTasks<P, R>(params: P[], taskFunc: (param: P, callback: (result: R) => void) => void, onComplete: (results: R[]) => void)
         {
-            var task = new Task();
-            task.preTasks = params.map(p =>
+            var task = new Task(null, params.map(p =>
             {
-                let t = new Task();
-                t.content = (callback) => { taskFunc(p, callback); };
-                return t;
-            });
-            task.once("done", () =>
+                return new Task((callback) => { taskFunc(p, callback); });
+            }));
+            task.once("done", (e) =>
             {
                 var results = task.preTasks.map(v => v.result);
                 onComplete(results);

@@ -14963,68 +14963,21 @@ var feng3d;
      * 任务，用于处理多件可能有依赖或者嵌套的事情
      */
     var Task = /** @class */ (function () {
-        function Task() {
+        /**
+         * 构建任务
+         *
+         * @param content 任务自身内容，回调带回结果保存在 result.value 中
+         * @param preTasks 前置任务列表
+         */
+        function Task(content, preTasks) {
+            this.content = content;
+            this.preTasks = preTasks;
             /**
              * 默认初始状态，未开始，状态不可逆
              */
             this.status = TaskStatus.None;
-            // do<T, K>(tasks: ITask<T, K>)
-            // {
-            //     // tasks
-            //     // 
-            //     task.status = TaskStatus.Doing;
-            //     /**
-            //      * 执行前置任务
-            //      */
-            //     var doPreTasks = (callback: () => void) =>
-            //     {
-            //         var undos = tasks.filter(v => v.status == TaskStatus.Undo);
-            //         var doings = tasks.filter(v => v.status == TaskStatus.Doing);
-            //         if (undos.length == 0 && doings.length == 0)
-            //         {
-            //             // 前置任务全部完成
-            //             callback();
-            //             return;
-            //         }
-            //     };
-            //     /**
-            //      * 执行自身任务
-            //      */
-            //     var doContent = (callback) =>
-            //     {
-            //     };
-            //     /**
-            //      * 检查任务，执行未开始任务，等待全部完成
-            //      */
-            //     var checkTask = () =>
-            //     {
-            //         var undos = task.preTask.filter(v => (v.status == undefined || v.status == TaskStatus.Undo));
-            //         var doings = task.preTask.filter(v => v.status == TaskStatus.Doing);
-            //         if (undos.length + doings.length > 0)
-            //         {
-            //             undos.forEach(v =>
-            //             {
-            //                 this.do(v)
-            //             });
-            //             return;
-            //         }
-            //     }
-            //     checkTask();
-            // // 执行前置任务
-            // doPreTasks(() =>
-            // {
-            //     // 执行自身任务
-            //     doContent(() =>
-            //     {
-            //     });
-            // });
-            // var index = 0;
-            // if (index >= task.preTask.length)
-            // {
-            //     task.preTask[index]
-            // }
-            // // task.preTask
-            // }
+            this.preTasks = this.preTasks || [];
+            this.content = this.content || (function (callback) { callback(); });
         }
         Task.prototype.do = function (callback) {
             var _this = this;
@@ -15054,9 +15007,6 @@ var feng3d;
                 }
                 return;
             }
-            // 设置默认值
-            this.preTasks = this.preTasks || [];
-            this.content = this.content || (function (callback) { callback(); });
             // 执行前置任务函数
             var doPreTasks = function (callback) {
                 var preTasks = (_this.preTasks || []).concat();
@@ -15090,8 +15040,6 @@ var feng3d;
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
         Task.prototype.once = function (type, listener, thisObject, priority) {
-            if (thisObject === void 0) { thisObject = null; }
-            if (priority === void 0) { priority = 0; }
             feng3d.event.on(this, type, listener, thisObject, priority, true);
         };
         /**
@@ -15102,13 +15050,10 @@ var feng3d;
          * @param onComplete 完成回调
          */
         Task.createTasks = function (params, taskFunc, onComplete) {
-            var task = new Task();
-            task.preTasks = params.map(function (p) {
-                var t = new Task();
-                t.content = function (callback) { taskFunc(p, callback); };
-                return t;
-            });
-            task.once("done", function () {
+            var task = new Task(null, params.map(function (p) {
+                return new Task(function (callback) { taskFunc(p, callback); });
+            }));
+            task.once("done", function (e) {
                 var results = task.preTasks.map(function (v) { return v.result; });
                 onComplete(results);
             });

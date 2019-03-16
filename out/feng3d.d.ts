@@ -7230,22 +7230,23 @@ declare namespace feng3d {
      * 任务，用于处理多件可能有依赖或者嵌套的事情
      */
     class Task {
-        /**
-         * 前置任务
-         */
-        preTasks?: Task[];
+        private content?;
+        private preTasks?;
         /**
          * 默认初始状态，未开始，状态不可逆
          */
         status: TaskStatus;
         /**
-         * 任务自身内容，回调带回结果保存在 result.value 中
-         */
-        content?: (callback: (result?: any) => void) => void;
-        /**
          * 任务自身内容回调带回结果
          */
         result: any;
+        /**
+         * 构建任务
+         *
+         * @param content 任务自身内容，回调带回结果保存在 result.value 中
+         * @param preTasks 前置任务列表
+         */
+        constructor(content?: (callback: (result?: any) => void) => void, preTasks?: Task[]);
         do(callback?: () => void): void;
         /**
          * 监听一次事件后将会被移除
@@ -7254,7 +7255,7 @@ declare namespace feng3d {
          * @param thisObject                listener函数作用域
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
-        once<T extends "done">(type: T, listener: (event: any) => void, thisObject?: any, priority?: number): void;
+        once<K extends "done">(type: K, listener: (event: Event<any>) => void, thisObject?: any, priority?: number): void;
         /**
          * 创建一组同类任务，例如加载一组资源
          *
