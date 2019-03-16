@@ -7255,6 +7255,15 @@ declare namespace feng3d {
          * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
          */
         once<T extends "done">(type: T, listener: (event: any) => void, thisObject?: any, priority?: number): void;
+        /**
+         * 创建一组同类任务，例如加载一组资源
+         *
+         * @param params 一组参数
+         * @param taskFunc 单一任务函数
+         * @param onComplete 完成回调
+         */
+        static createTasks<P, R>(params: P[], taskFunc: (param: P, callback: (result: R) => void) => void, onComplete: (results: R[]) => void): Task;
+        static testCreateTasks(): void;
         static test(): void;
     }
 }

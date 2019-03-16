@@ -15094,6 +15094,33 @@ var feng3d;
             if (priority === void 0) { priority = 0; }
             feng3d.event.on(this, type, listener, thisObject, priority, true);
         };
+        /**
+         * 创建一组同类任务，例如加载一组资源
+         *
+         * @param params 一组参数
+         * @param taskFunc 单一任务函数
+         * @param onComplete 完成回调
+         */
+        Task.createTasks = function (params, taskFunc, onComplete) {
+            var task = new Task();
+            task.preTasks = params.map(function (p) {
+                var t = new Task();
+                t.content = function (callback) { taskFunc(p, callback); };
+                return t;
+            });
+            task.once("done", function () {
+                var results = task.preTasks.map(function (v) { return v.result; });
+                onComplete(results);
+            });
+            return task;
+        };
+        Task.testCreateTasks = function () {
+            this.createTasks([1, 2, 3, 4, 5], function (p, callback) {
+                callback(p);
+            }, function (rs) {
+                console.log(rs);
+            }).do();
+        };
         Task.test = function () {
             var starttime = Date.now();
             var task = new feng3d.Task();
@@ -15902,22 +15929,12 @@ var feng3d;
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
         ReadFS.prototype.readStrings = function (paths, callback) {
-            // Task.do(task, callback);
             var _this = this;
-            var strs = [];
-            var index = 0;
-            var _readString = function () {
-                if (index >= paths.length) {
-                    callback(strs);
-                    return;
-                }
-                _this.readString(paths[index], function (err, str) {
-                    strs[index] = err || str;
-                    index++;
-                    _readString();
+            feng3d.Task.createTasks(paths, function (path, callback) {
+                _this.readString(path, function (err, str) {
+                    callback(err || str);
                 });
-            };
-            _readString();
+            }, callback).do();
         };
         return ReadFS;
     }());

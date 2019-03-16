@@ -56,26 +56,13 @@ namespace feng3d
          */
         readStrings(paths: string[], callback: (strs: (string | Error)[]) => void)
         {
-            // Task.do(task, callback);
-
-
-            var strs: (string | Error)[] = [];
-            var index = 0;
-            var _readString = () =>
+            Task.createTasks(paths, (path, callback) =>
             {
-                if (index >= paths.length)
+                this.readString(path, (err, str) =>
                 {
-                    callback(strs);
-                    return;
-                }
-                this.readString(paths[index], (err, str) =>
-                {
-                    strs[index] = err || str;
-                    index++;
-                    _readString();
+                    callback(err || str);
                 });
-            };
-            _readString();
+            }, callback).do();
         }
     }
 }

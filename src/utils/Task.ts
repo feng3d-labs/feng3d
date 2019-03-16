@@ -125,6 +125,41 @@ namespace feng3d
             event.on(this, type, listener, thisObject, priority, true);
         }
 
+        /**
+         * 创建一组同类任务，例如加载一组资源
+         * 
+         * @param params 一组参数
+         * @param taskFunc 单一任务函数
+         * @param onComplete 完成回调
+         */
+        static createTasks<P, R>(params: P[], taskFunc: (param: P, callback: (result: R) => void) => void, onComplete: (results: R[]) => void)
+        {
+            var task = new Task();
+            task.preTasks = params.map(p =>
+            {
+                let t = new Task();
+                t.content = (callback) => { taskFunc(p, callback); };
+                return t;
+            });
+            task.once("done", () =>
+            {
+                var results = task.preTasks.map(v => v.result);
+                onComplete(results);
+            });
+            return task;
+        }
+
+        static testCreateTasks()
+        {
+            this.createTasks([1, 2, 3, 4, 5], (p, callback) =>
+            {
+                callback(p);
+            }, (rs) =>
+                {
+                    console.log(rs);
+                }).do();
+        }
+
         static test()
         {
             var starttime = Date.now();
