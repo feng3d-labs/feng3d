@@ -6982,6 +6982,30 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 全局事件
+     */
+    var dispatcher: IEventDispatcher<GlobalEvents>;
+    interface GlobalEvents {
+        /**
+         * shader资源发生变化
+         */
+        "asset.shaderChanged": any;
+        /**
+         * 脚本发生变化
+         */
+        "asset.scriptChanged": any;
+        /**
+         * 图片资源发生变化
+         */
+        "asset.imageAssetChanged": {
+            url: string;
+        };
+        /**
+         * 解析出资源
+         */
+        "asset.parsed": any;
+    }
+    /**
      * 事件
      */
     interface Event<T> {
@@ -7163,41 +7187,22 @@ declare namespace feng3d {
         once<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof WindowEventMap>(type: K, data?: WindowEventMap[K], bubbles?: boolean): any;
         has<K extends keyof WindowEventMap>(type: K): boolean;
-        on<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean): any;
-        off<K extends keyof WindowEventMap>(type?: K, listener?: (event: WindowEventMap[K]) => any, thisObject?: any): any;
+        on<K extends keyof WindowEventMap>(type: K, listener: (event: WindowEventMap[K]) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof WindowEventMap>(type?: K, listener?: (event: WindowEventMap[K]) => any, thisObject?: any): void;
+    }
+    interface IEventProxy<T> {
+        once<K extends keyof T>(type: K, listener: (event: T[K]) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): any;
+        has<K extends keyof T>(type: K): boolean;
+        on<K extends keyof T>(type: K, listener: (event: T[K]) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof T>(type?: K, listener?: (event: T[K]) => any, thisObject?: any): void;
     }
     class WindowEventProxy extends EventProxy {
     }
     /**
      * 键盘鼠标输入
      */
-    var windowEventProxy: WindowEventProxy;
-}
-declare namespace feng3d {
-    /**
-     * 全局事件
-     */
-    var feng3dDispatcher: IEventDispatcher<Feng3dEventMap>;
-    interface Feng3dEventMap {
-        /**
-         * shader资源发生变化
-         */
-        "asset.shaderChanged": any;
-        /**
-         * 脚本发生变化
-         */
-        "asset.scriptChanged": any;
-        /**
-         * 图片资源发生变化
-         */
-        "asset.imageAssetChanged": {
-            url: string;
-        };
-        /**
-         * 解析出资源
-         */
-        "asset.parsed": any;
-    }
+    var windowEventProxy: IEventProxy<WindowEventMap> & EventProxy;
 }
 declare namespace feng3d {
     /**

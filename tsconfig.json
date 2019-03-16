@@ -99,7 +99,6 @@
         "src/event/EventDispatcher.ts",
         "src/event/EventProxy.ts",
         "src/event/WindowEventProxy.ts",
-        "src/event/Feng3dDispatcher.ts",
         //
         "src/core/Feng3dObject.ts",
         "src/core/AssetData.ts",

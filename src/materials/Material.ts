@@ -43,7 +43,7 @@ namespace feng3d
         constructor()
         {
             super();
-            feng3dDispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
+            dispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
         }
 
         beforeRender(renderAtomic: RenderAtomic)

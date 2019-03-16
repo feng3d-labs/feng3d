@@ -25,7 +25,7 @@ namespace feng3d
 
                     var gameObject = Object.setValue(new GameObject(), { name: pathUtils.getName(mdlurl), children: [showMesh] })
 
-                    feng3dDispatcher.dispatch("asset.parsed", gameObject);
+                    dispatcher.dispatch("asset.parsed", gameObject);
                     callback && callback(gameObject);
                 });
             });

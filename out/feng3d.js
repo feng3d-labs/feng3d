@@ -14760,6 +14760,7 @@ var feng3d;
         return EventDispatcher;
     }());
     feng3d.EventDispatcher = EventDispatcher;
+    feng3d.dispatcher = new EventDispatcher();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -14933,13 +14934,6 @@ var feng3d;
         feng3d.windowEventProxy = new WindowEventProxy(global);
     else
         feng3d.windowEventProxy = new WindowEventProxy(window);
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 全局事件
-     */
-    feng3d.feng3dDispatcher = new feng3d.EventDispatcher();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -18472,7 +18466,7 @@ var feng3d;
             this.macroInvalid = true;
             this.map = new Map();
             this.shaderName = shaderName;
-            feng3d.feng3dDispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
+            feng3d.dispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
         }
         /**
          * 激活渲染程序
@@ -19677,7 +19671,7 @@ var feng3d;
     var ShaderLib = /** @class */ (function () {
         function ShaderLib() {
             this._shaderCache = {};
-            feng3d.feng3dDispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
+            feng3d.dispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
         }
         Object.defineProperty(ShaderLib.prototype, "shaderConfig", {
             get: function () {
@@ -22788,7 +22782,7 @@ var feng3d;
         }
         ScriptComponent.prototype.init = function (gameObject) {
             _super.prototype.init.call(this, gameObject);
-            feng3d.feng3dDispatcher.on("asset.scriptChanged", this.onScriptChanged, this);
+            feng3d.dispatcher.on("asset.scriptChanged", this.onScriptChanged, this);
         };
         ScriptComponent.prototype.scriptChanged = function (property, oldValue, newValue) {
             if (this.scriptInstance) {
@@ -22835,7 +22829,7 @@ var feng3d;
                 this.scriptInstance = null;
             }
             _super.prototype.dispose.call(this);
-            feng3d.feng3dDispatcher.off("asset.scriptChanged", this.onScriptChanged, this);
+            feng3d.dispatcher.off("asset.scriptChanged", this.onScriptChanged, this);
         };
         __decorate([
             feng3d.serialize,
@@ -26849,7 +26843,7 @@ var feng3d;
              * 渲染参数
              */
             _this.renderParams = new feng3d.RenderParams();
-            feng3d.feng3dDispatcher.on("asset.shaderChanged", _this.onShaderChanged, _this);
+            feng3d.dispatcher.on("asset.shaderChanged", _this.onShaderChanged, _this);
             return _this;
         }
         Material.prototype.beforeRender = function (renderAtomic) {
@@ -32533,9 +32527,9 @@ var feng3d;
                         // image += ".JPG";
                         material.material = model.material = Object.setValue(new feng3d.Material(), { name: image, renderParams: { cullFace: feng3d.CullFace.FRONT } });
                         // }
-                        feng3d.feng3dDispatcher.dispatch("asset.parsed", material.material);
+                        feng3d.dispatcher.dispatch("asset.parsed", material.material);
                     }
-                    feng3d.feng3dDispatcher.dispatch("asset.parsed", geometry);
+                    feng3d.dispatcher.dispatch("asset.parsed", geometry);
                     model.geometry = geometry;
                     model.skinSkeleton = skinSkeleton;
                     container.addChild(mesh);
@@ -32647,7 +32641,7 @@ var feng3d;
                 war3Model.bones.forEach(function (bone) {
                     bone.buildAnimationclip(animationclip, __chache__, sequence.interval.start, sequence.interval.end);
                 });
-                feng3d.feng3dDispatcher.dispatch("asset.parsed", animationclip);
+                feng3d.dispatcher.dispatch("asset.parsed", animationclip);
                 animationclips.push(animationclip);
             }
             return animationclips;
@@ -33907,7 +33901,7 @@ var feng3d;
                         u_specular: { r: materialInfo.ks[0], g: materialInfo.ks[1], b: materialInfo.ks[2], },
                     },
                 });
-                feng3d.feng3dDispatcher.dispatch("asset.parsed", material);
+                feng3d.dispatcher.dispatch("asset.parsed", material);
             }
             completed && completed(null, materials);
         };
@@ -33939,7 +33933,7 @@ var feng3d;
                 var gameObject = createSubObj(objData, obj, materials);
                 object.addChild(gameObject);
             }
-            feng3d.feng3dDispatcher.dispatch("asset.parsed", object);
+            feng3d.dispatcher.dispatch("asset.parsed", object);
             completed && completed(object);
         };
         return OBJConverter;
@@ -33987,7 +33981,7 @@ var feng3d;
             geometry.setVAData("a_normal", normals, 3);
         if (uvs.length > 0)
             geometry.setVAData("a_uv", uvs, 2);
-        feng3d.feng3dDispatcher.dispatch("asset.parsed", geometry);
+        feng3d.dispatcher.dispatch("asset.parsed", geometry);
         return gameObject;
         function translateVertexData(face, vertexIndex, vertices, uvs, indices, normals, obj) {
             var index;
@@ -34061,7 +34055,7 @@ var feng3d;
                 skinnedModel.skinSkeleton = skinSkeleton;
                 gameObject.addChild(skeletonGameObject);
             }
-            feng3d.feng3dDispatcher.dispatch("asset.parsed", gameObject);
+            feng3d.dispatcher.dispatch("asset.parsed", gameObject);
             completed && completed(gameObject);
         };
         /**
@@ -34243,7 +34237,7 @@ var feng3d;
             for (var i = 0; i < md5AnimData.numFrames; ++i) {
                 translatePose(md5AnimData, md5AnimData.frame[i], animationClip);
             }
-            feng3d.feng3dDispatcher.dispatch("asset.parsed", animationClip);
+            feng3d.dispatcher.dispatch("asset.parsed", animationClip);
             completed && completed(animationClip);
             /**
              * 将一个关键帧数据转换为SkeletonPose
@@ -34445,7 +34439,7 @@ var feng3d;
                 feng3d.war3.mdlParser.parse(content, function (war3Model) {
                     var showMesh = war3Model.getMesh();
                     var gameObject = Object.setValue(new feng3d.GameObject(), { name: feng3d.pathUtils.getName(mdlurl), children: [showMesh] });
-                    feng3d.feng3dDispatcher.dispatch("asset.parsed", gameObject);
+                    feng3d.dispatcher.dispatch("asset.parsed", gameObject);
                     callback && callback(gameObject);
                 });
             });
