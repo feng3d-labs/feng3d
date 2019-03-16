@@ -26,7 +26,7 @@ namespace feng3d
     /**
      * 任务，用于处理多件可能有依赖或者嵌套的事情
      */
-    export class Task extends EventDispatcher
+    export class Task
     {
         /**
          * 前置任务
@@ -50,10 +50,10 @@ namespace feng3d
 
         do(callback?: () => void)
         {
-            if (this.status == TaskStatus.Done) { callback(); return; }
+            if (this.status == TaskStatus.Done) { callback && callback(); return; }
 
             // 回调添加到完成事件中
-            this.once("done", callback);
+            if (callback) this.once("done", callback);
 
             // 任务正在执行 直接返回
             if (this.status == TaskStatus.Doing) return;
@@ -108,8 +108,47 @@ namespace feng3d
                 {
                     this.status = TaskStatus.Done;
                     this.result = result;
-                    this.dispatch("done");
+                    event.dispatch(this, "done");
                 });
+            });
+        }
+
+        /**
+         * 监听一次事件后将会被移除
+		 * @param type						事件的类型。
+		 * @param listener					处理事件的侦听器函数。
+		 * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        once<T extends "done">(type: T, listener: (event: any) => void, thisObject = null, priority = 0)
+        {
+            event.on(this, type, listener, thisObject, priority, true);
+        }
+
+        static test()
+        {
+            var starttime = Date.now();
+            var task = new feng3d.Task();
+            task.preTasks = ["https://www.tslang.cn/docs/handbook/gulp.html", "https://www.baidu.com/s?ie=utf-8&f=3&rsv_bp=0&rsv_idx=1&tn=baidu&wd=typescript&rsv_pq=d9a9ff640009fa54&rsv_t=b4c0a9U66FHSonWRPWnDU%2B1spxVJyiTo0ydjnB1LU994vtRz09x5KB2kOi8&rqlang=cn&rsv_enter=1&rsv_sug3=5&rsv_sug1=5&rsv_sug7=100&rsv_sug2=0&prefixsug=types&rsp=1&inputT=1972&rsv_sug4=1973&rsv_sug=1",
+                "https://www.baidu.com"].map(v =>
+                {
+                    var t = new feng3d.Task();
+                    t.content = (callback) =>
+                    {
+                        var sleep = 5000 * Math.random();
+                        setTimeout(() =>
+                        {
+                            callback(sleep)
+                        }, sleep);
+                    };
+                    return t;
+                });
+            task.preTasks.forEach((v, i, arr) => { if (i > 0) arr[i].preTasks = [arr[i - 1]]; })
+            task.do(() =>
+            {
+                var result = task.preTasks.map(v => v.result);
+                console.log(`消耗时间 ${Date.now() - starttime}， 子任务分别消耗 ${result.toString()}`);
+                console.log("succeed");
             });
         }
 

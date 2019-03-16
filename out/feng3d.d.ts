@@ -7229,7 +7229,7 @@ declare namespace feng3d {
     /**
      * 任务，用于处理多件可能有依赖或者嵌套的事情
      */
-    class Task extends EventDispatcher {
+    class Task {
         /**
          * 前置任务
          */
@@ -7247,6 +7247,15 @@ declare namespace feng3d {
          */
         result: any;
         do(callback?: () => void): void;
+        /**
+         * 监听一次事件后将会被移除
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        once<T extends "done">(type: T, listener: (event: any) => void, thisObject?: any, priority?: number): void;
+        static test(): void;
     }
 }
 declare namespace feng3d {

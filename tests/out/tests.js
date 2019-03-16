@@ -4144,9 +4144,6 @@ QUnit.module("PathUtils", function () {
 });
 QUnit.module("Task", function () {
     QUnit.test("do", function (assert) {
-        var task = new feng3d.Task();
-        // task.
-        task.do;
         // assert.ok(feng3d.pathUtils.getNameWithExtension("a") == "a");
         // assert.ok(feng3d.pathUtils.getNameWithExtension("a.txt") == "a.txt");
         // assert.ok(feng3d.pathUtils.getNameWithExtension("a/") == "a");

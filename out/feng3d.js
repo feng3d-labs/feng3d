@@ -14962,15 +14962,12 @@ var feng3d;
     /**
      * 任务，用于处理多件可能有依赖或者嵌套的事情
      */
-    var Task = /** @class */ (function (_super) {
-        __extends(Task, _super);
+    var Task = /** @class */ (function () {
         function Task() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
             /**
              * 默认初始状态，未开始，状态不可逆
              */
-            _this.status = TaskStatus.None;
-            return _this;
+            this.status = TaskStatus.None;
             // do<T, K>(tasks: ITask<T, K>)
             // {
             //     // tasks
@@ -15032,11 +15029,12 @@ var feng3d;
         Task.prototype.do = function (callback) {
             var _this = this;
             if (this.status == TaskStatus.Done) {
-                callback();
+                callback && callback();
                 return;
             }
             // 回调添加到完成事件中
-            this.once("done", callback);
+            if (callback)
+                this.once("done", callback);
             // 任务正在执行 直接返回
             if (this.status == TaskStatus.Doing)
                 return;
@@ -15080,12 +15078,46 @@ var feng3d;
                 _this.content(function (result) {
                     _this.status = TaskStatus.Done;
                     _this.result = result;
-                    _this.dispatch("done");
+                    feng3d.event.dispatch(_this, "done");
                 });
             });
         };
+        /**
+         * 监听一次事件后将会被移除
+         * @param type						事件的类型。
+         * @param listener					处理事件的侦听器函数。
+         * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        Task.prototype.once = function (type, listener, thisObject, priority) {
+            if (thisObject === void 0) { thisObject = null; }
+            if (priority === void 0) { priority = 0; }
+            feng3d.event.on(this, type, listener, thisObject, priority, true);
+        };
+        Task.test = function () {
+            var starttime = Date.now();
+            var task = new feng3d.Task();
+            task.preTasks = ["https://www.tslang.cn/docs/handbook/gulp.html", "https://www.baidu.com/s?ie=utf-8&f=3&rsv_bp=0&rsv_idx=1&tn=baidu&wd=typescript&rsv_pq=d9a9ff640009fa54&rsv_t=b4c0a9U66FHSonWRPWnDU%2B1spxVJyiTo0ydjnB1LU994vtRz09x5KB2kOi8&rqlang=cn&rsv_enter=1&rsv_sug3=5&rsv_sug1=5&rsv_sug7=100&rsv_sug2=0&prefixsug=types&rsp=1&inputT=1972&rsv_sug4=1973&rsv_sug=1",
+                "https://www.baidu.com"].map(function (v) {
+                var t = new feng3d.Task();
+                t.content = function (callback) {
+                    var sleep = 5000 * Math.random();
+                    setTimeout(function () {
+                        callback(sleep);
+                    }, sleep);
+                };
+                return t;
+            });
+            task.preTasks.forEach(function (v, i, arr) { if (i > 0)
+                arr[i].preTasks = [arr[i - 1]]; });
+            task.do(function () {
+                var result = task.preTasks.map(function (v) { return v.result; });
+                console.log("\u6D88\u8017\u65F6\u95F4 " + (Date.now() - starttime) + "\uFF0C \u5B50\u4EFB\u52A1\u5206\u522B\u6D88\u8017 " + result.toString());
+                console.log("succeed");
+            });
+        };
         return Task;
-    }(feng3d.EventDispatcher));
+    }());
     feng3d.Task = Task;
 })(feng3d || (feng3d = {}));
 var feng3d;
