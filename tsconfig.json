@@ -100,6 +100,8 @@
         "src/event/EventProxy.ts",
         "src/event/WindowEventProxy.ts",
         //
+        "src/utils/Task.ts",
+        //
         "src/core/Feng3dObject.ts",
         "src/core/AssetData.ts",
         //

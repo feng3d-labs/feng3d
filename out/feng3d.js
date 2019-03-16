@@ -14938,6 +14938,159 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 任务状态
+     */
+    var TaskStatus;
+    (function (TaskStatus) {
+        /**
+         * 初始状态，未开始
+         */
+        TaskStatus[TaskStatus["None"] = 0] = "None";
+        /**
+         * 等待状态，等待到依赖任务执行完成
+         */
+        TaskStatus[TaskStatus["Waiting"] = 1] = "Waiting";
+        /**
+         * 执行状态，进行中
+         */
+        TaskStatus[TaskStatus["Doing"] = 2] = "Doing";
+        /**
+         * 完成状态，已完成
+         */
+        TaskStatus[TaskStatus["Done"] = 3] = "Done";
+    })(TaskStatus = feng3d.TaskStatus || (feng3d.TaskStatus = {}));
+    /**
+     * 任务，用于处理多件可能有依赖或者嵌套的事情
+     */
+    var Task = /** @class */ (function (_super) {
+        __extends(Task, _super);
+        function Task() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * 默认初始状态，未开始，状态不可逆
+             */
+            _this.status = TaskStatus.None;
+            return _this;
+            // do<T, K>(tasks: ITask<T, K>)
+            // {
+            //     // tasks
+            //     // 
+            //     task.status = TaskStatus.Doing;
+            //     /**
+            //      * 执行前置任务
+            //      */
+            //     var doPreTasks = (callback: () => void) =>
+            //     {
+            //         var undos = tasks.filter(v => v.status == TaskStatus.Undo);
+            //         var doings = tasks.filter(v => v.status == TaskStatus.Doing);
+            //         if (undos.length == 0 && doings.length == 0)
+            //         {
+            //             // 前置任务全部完成
+            //             callback();
+            //             return;
+            //         }
+            //     };
+            //     /**
+            //      * 执行自身任务
+            //      */
+            //     var doContent = (callback) =>
+            //     {
+            //     };
+            //     /**
+            //      * 检查任务，执行未开始任务，等待全部完成
+            //      */
+            //     var checkTask = () =>
+            //     {
+            //         var undos = task.preTask.filter(v => (v.status == undefined || v.status == TaskStatus.Undo));
+            //         var doings = task.preTask.filter(v => v.status == TaskStatus.Doing);
+            //         if (undos.length + doings.length > 0)
+            //         {
+            //             undos.forEach(v =>
+            //             {
+            //                 this.do(v)
+            //             });
+            //             return;
+            //         }
+            //     }
+            //     checkTask();
+            // // 执行前置任务
+            // doPreTasks(() =>
+            // {
+            //     // 执行自身任务
+            //     doContent(() =>
+            //     {
+            //     });
+            // });
+            // var index = 0;
+            // if (index >= task.preTask.length)
+            // {
+            //     task.preTask[index]
+            // }
+            // // task.preTask
+            // }
+        }
+        Task.prototype.do = function (callback) {
+            var _this = this;
+            if (this.status == TaskStatus.Done) {
+                callback();
+                return;
+            }
+            // 回调添加到完成事件中
+            this.once("done", callback);
+            // 任务正在执行 直接返回
+            if (this.status == TaskStatus.Doing)
+                return;
+            if (this.status == TaskStatus.Waiting) {
+                //判断是否出现等待死锁；例如A前置任务为B，B前置任务为A
+                var waitings = this.preTasks.filter(function (v) { return v.status == TaskStatus.Waiting; });
+                var index = 0;
+                while (index < waitings.length) {
+                    var item = waitings[index];
+                    if (item == this) {
+                        console.log(waitings.slice(0, index + 1));
+                        feng3d.error("\u51FA\u73B0\u5FAA\u73AF\u5F15\u7528\u4EFB\u52A1");
+                        return;
+                    }
+                    waitings = waitings.concat(item.preTasks.filter(function (v) { return v.status == TaskStatus.Waiting; }));
+                    index++;
+                }
+                return;
+            }
+            // 设置默认值
+            this.preTasks = this.preTasks || [];
+            this.content = this.content || (function (callback) { callback(); });
+            // 执行前置任务函数
+            var doPreTasks = function (callback) {
+                var preTasks = (_this.preTasks || []).concat();
+                var waitNum = preTasks.length;
+                if (waitNum == 0)
+                    callback();
+                preTasks.forEach(function (v) { return v.once("done", function () {
+                    waitNum--;
+                    if (waitNum == 0)
+                        callback();
+                }); });
+                preTasks.forEach(function (v) { return v.do(); });
+            };
+            this.status = TaskStatus.Waiting;
+            // 执行前置任务
+            doPreTasks(function () {
+                _this.status = TaskStatus.Doing;
+                // 执行任务自身
+                _this.content(function (result) {
+                    _this.status = TaskStatus.Done;
+                    _this.result = result;
+                    _this.dispatch("done");
+                });
+            });
+        };
+        return Task;
+    }(feng3d.EventDispatcher));
+    feng3d.Task = Task;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 所有feng3d对象的基类
      */
     var Feng3dObject = /** @class */ (function (_super) {
@@ -15717,6 +15870,7 @@ var feng3d;
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
         ReadFS.prototype.readStrings = function (paths, callback) {
+            // Task.do(task, callback);
             var _this = this;
             var strs = [];
             var index = 0;

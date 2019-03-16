@@ -7206,6 +7206,51 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 任务状态
+     */
+    enum TaskStatus {
+        /**
+         * 初始状态，未开始
+         */
+        None = 0,
+        /**
+         * 等待状态，等待到依赖任务执行完成
+         */
+        Waiting = 1,
+        /**
+         * 执行状态，进行中
+         */
+        Doing = 2,
+        /**
+         * 完成状态，已完成
+         */
+        Done = 3
+    }
+    /**
+     * 任务，用于处理多件可能有依赖或者嵌套的事情
+     */
+    class Task extends EventDispatcher {
+        /**
+         * 前置任务
+         */
+        preTasks?: Task[];
+        /**
+         * 默认初始状态，未开始，状态不可逆
+         */
+        status: TaskStatus;
+        /**
+         * 任务自身内容，回调带回结果保存在 result.value 中
+         */
+        content?: (callback: (result?: any) => void) => void;
+        /**
+         * 任务自身内容回调带回结果
+         */
+        result: any;
+        do(callback?: () => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
      * 所有feng3d对象的基类
      */
     class Feng3dObject extends EventDispatcher {

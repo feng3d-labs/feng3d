@@ -4142,6 +4142,17 @@ QUnit.module("PathUtils", function () {
         assert.ok(feng3d.pathUtils.getDirDepth("a/b/a/") == 2);
     });
 });
+QUnit.module("Task", function () {
+    QUnit.test("do", function (assert) {
+        var task = new feng3d.Task();
+        // task.
+        task.do;
+        // assert.ok(feng3d.pathUtils.getNameWithExtension("a") == "a");
+        // assert.ok(feng3d.pathUtils.getNameWithExtension("a.txt") == "a.txt");
+        // assert.ok(feng3d.pathUtils.getNameWithExtension("a/") == "a");
+        // assert.ok(feng3d.pathUtils.getNameWithExtension("a.b/") == "a.b");
+    });
+});
 QUnit.module("watcher", function () {
     QUnit.test("watch Object", function (assert) {
         var o = { a: 1 };
