@@ -24,6 +24,31 @@ namespace feng3d
     }
 
     /**
+     * 任务结点
+     */
+    export interface TaskNode<T>
+    {
+        /**
+         * 任务名称
+         */
+        name?: string;
+
+        /**
+         * 携带自定义数据
+         * 
+         * 例如执行函数时用到的参数，或者是函数执行中间结果
+         */
+        data?: T;
+
+        /**
+         * 任务函数体
+         * 
+         * @param done 完成回调
+         */
+        func(done: (error?: Error) => void): void;
+    }
+
+    /**
      * 任务，用于处理多件可能有依赖或者嵌套的事情
      */
     export class Task
@@ -34,17 +59,12 @@ namespace feng3d
         status = TaskStatus.None;
 
         /**
-         * 任务自身内容回调带回结果
-         */
-        result: any;
-
-        /**
          * 构建任务
          * 
-         * @param content 任务自身内容，回调带回结果保存在 result.value 中
+         * @param content 任务自身内容
          * @param preTasks 前置任务列表
          */
-        constructor(private content?: (callback: (result?: any) => void) => void, private preTasks?: Task[])
+        constructor(private content?: (callback: (err?: Error) => void) => void, private preTasks?: Task[])
         {
             this.preTasks = this.preTasks || [];
             this.content = this.content || ((callback: () => void) => { callback(); });
@@ -95,17 +115,19 @@ namespace feng3d
             };
 
             this.status = TaskStatus.Waiting;
+            event.dispatch(this, "waiting");
 
             // 执行前置任务
             doPreTasks(() =>
             {
                 this.status = TaskStatus.Doing;
+                event.dispatch(this, "doing");
 
                 // 执行任务自身
-                this.content((result) =>
+                this.content((err) =>
                 {
+                    if (err) event.dispatch(this, "error", err);
                     this.status = TaskStatus.Done;
-                    this.result = result;
                     event.dispatch(this, "done");
                 });
             });

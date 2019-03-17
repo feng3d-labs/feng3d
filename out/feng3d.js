@@ -14967,7 +14967,7 @@ var feng3d;
         /**
          * 构建任务
          *
-         * @param content 任务自身内容，回调带回结果保存在 result.value 中
+         * @param content 任务自身内容
          * @param preTasks 前置任务列表
          */
         function Task(content, preTasks) {
@@ -15022,13 +15022,16 @@ var feng3d;
                 preTasks.forEach(function (v) { return v.do(); });
             };
             this.status = TaskStatus.Waiting;
+            feng3d.event.dispatch(this, "waiting");
             // 执行前置任务
             doPreTasks(function () {
                 _this.status = TaskStatus.Doing;
+                feng3d.event.dispatch(_this, "doing");
                 // 执行任务自身
-                _this.content(function (result) {
+                _this.content(function (err) {
+                    if (err)
+                        feng3d.event.dispatch(_this, "error", err);
                     _this.status = TaskStatus.Done;
-                    _this.result = result;
                     feng3d.event.dispatch(_this, "done");
                 });
             });
@@ -15875,7 +15878,10 @@ var feng3d;
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
         ReadFS.prototype.readStrings = function (paths, callback) {
+            // var func = <TaskFunction<{ path: string, result: string | Error }>><any>callback;
+            // func.data
             var _this = this;
+            // var taskNodes: TaskNode<{ path: string}>[] = paths.map(v => { return { data: { path: v }, func: callback }; });
             feng3d.Task.createTasks(paths, function (path, callback) {
                 _this.readString(path, function (err, str) {
                     callback(err || str);
