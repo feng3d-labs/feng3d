@@ -7234,37 +7234,22 @@ declare namespace feng3d {
      * 任务函数
      */
     interface TaskFunction {
-        (done: (result?: any) => void): void;
-    }
-    /**
-     * 任务结点
-     */
-    class TaskNode {
-        content?: TaskFunction;
-        preTasks?: TaskNode[];
         /**
          * 默认初始状态，未开始，状态不可逆
          */
-        status: TaskStatus;
+        status?: TaskStatus;
         /**
          * 任务自身内容回调带回结果
          */
-        result: any;
+        result?: any;
         /**
-         * 构建任务
-         *
-         * @param content 任务自身内容，回调带回结果保存在 result.value 中
-         * @param preTasks 前置任务列表
+         * 前置任务列表
          */
-        constructor(content?: TaskFunction, preTasks?: TaskNode[]);
+        preTasks?: TaskFunction[];
         /**
-         * 监听一次事件后将会被移除
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         * 任务函数自身
          */
-        once<K extends "done">(type: K, listener: (event: Event<any>) => void, thisObject?: any, priority?: number): void;
+        (done: (result?: any) => void): void;
     }
     /**
      * 任务，用于处理多件可能有依赖或者嵌套的事情
@@ -7302,7 +7287,6 @@ declare namespace feng3d {
          */
         seriesResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void): (done: (rs: R[]) => void) => void;
         testParallelResults(): void;
-        test(): void;
         testSeriesResults(): void;
         testParallel(): void;
         testSeries(): void;

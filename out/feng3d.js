@@ -14960,39 +14960,31 @@ var feng3d;
          */
         TaskStatus[TaskStatus["Done"] = 3] = "Done";
     })(TaskStatus = feng3d.TaskStatus || (feng3d.TaskStatus = {}));
-    /**
-     * 任务结点
-     */
-    var TaskNode = /** @class */ (function () {
-        /**
-         * 构建任务
-         *
-         * @param content 任务自身内容，回调带回结果保存在 result.value 中
-         * @param preTasks 前置任务列表
-         */
-        function TaskNode(content, preTasks) {
-            this.content = content;
-            this.preTasks = preTasks;
-            /**
-             * 默认初始状态，未开始，状态不可逆
-             */
-            this.status = TaskStatus.None;
-            this.preTasks = this.preTasks || [];
-            this.content = this.content || (function (done) { done(); });
-        }
-        /**
-         * 监听一次事件后将会被移除
-         * @param type						事件的类型。
-         * @param listener					处理事件的侦听器函数。
-         * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        TaskNode.prototype.once = function (type, listener, thisObject, priority) {
-            feng3d.event.on(this, type, listener, thisObject, priority, true);
-        };
-        return TaskNode;
-    }());
-    feng3d.TaskNode = TaskNode;
+    // /**
+    //  * 任务结点
+    //  */
+    // export class TaskNode
+    // {
+    //     /**
+    //      * 默认初始状态，未开始，状态不可逆
+    //      */
+    //     status = TaskStatus.None;
+    //     /**
+    //      * 任务自身内容回调带回结果
+    //      */
+    //     result: any;
+    //     /**
+    //      * 构建任务
+    //      * 
+    //      * @param content 任务自身内容，回调带回结果保存在 result.value 中
+    //      * @param preTasks 前置任务列表
+    //      */
+    //     constructor(public content?: TaskFunction, public preTasks?: TaskNode[])
+    //     {
+    //         this.preTasks = this.preTasks || [];
+    //         this.content = this.content || ((done: () => void) => { done(); });
+    //     }
+    // }
     /**
      * 执行任务
      *
@@ -15005,7 +14997,7 @@ var feng3d;
         }
         // 回调添加到完成事件中
         if (done)
-            task.once("done", done);
+            feng3d.event.once(task, "done", done);
         // 任务正在执行 直接返回
         if (task.status == TaskStatus.Doing)
             return;
@@ -15020,29 +15012,34 @@ var feng3d;
                     feng3d.error("\u51FA\u73B0\u5FAA\u73AF\u5F15\u7528\u4EFB\u52A1");
                     return;
                 }
-                waitings = waitings.concat(item.preTasks.filter(function (v) { return v.status == TaskStatus.Waiting; }));
+                if (item.preTasks)
+                    waitings = waitings.concat(item.preTasks.filter(function (v) { return v.status == TaskStatus.Waiting; }));
                 index++;
             }
             return;
         }
         // 执行前置任务函数
         var doPreTasks = function (callback) {
-            var preTasks = (task.preTasks || []).concat();
-            var waitNum = preTasks.length;
+            if (!task.preTasks) {
+                callback();
+                return;
+            }
+            var waitNum = task.preTasks.length;
             if (waitNum == 0)
                 callback();
-            preTasks.forEach(function (v) { return doTask(v, function () {
+            task.preTasks.forEach(function (v) { return doTask(v, function () {
                 waitNum--;
                 if (waitNum == 0)
                     callback();
             }); });
         };
+        //
         task.status = TaskStatus.Waiting;
         // 执行前置任务
         doPreTasks(function () {
             task.status = TaskStatus.Doing;
             // 执行任务自身
-            task.content(function (result) {
+            task(function (result) {
                 task.status = TaskStatus.Done;
                 task.result = result;
                 feng3d.event.dispatch(task, "done");
@@ -15065,8 +15062,8 @@ var feng3d;
          */
         Task.prototype.parallel = function (fns) {
             // 构建一组任务
-            var preTasks = fns.map(function (v) { return new TaskNode(v); });
-            var task = new TaskNode(null, preTasks);
+            var task = (function (done) { done(); });
+            task.preTasks = fns;
             // 完成时提取结果
             var result = function (done) {
                 doTask(task, function () {
@@ -15083,11 +15080,11 @@ var feng3d;
          */
         Task.prototype.series = function (fns) {
             // 构建一组任务
-            var preTasks = fns.map(function (v) { return new TaskNode(v); });
+            var task = (function (done) { done(); });
+            task.preTasks = fns;
             // 串联任务
-            preTasks.forEach(function (v, i, arr) { if (i > 0)
+            fns.forEach(function (v, i, arr) { if (i > 0)
                 arr[i].preTasks = [arr[i - 1]]; });
-            var task = new TaskNode(null, preTasks);
             // 完成时提取结果
             var result = function (done) {
                 doTask(task, function () {
@@ -15105,10 +15102,10 @@ var feng3d;
          */
         Task.prototype.parallelResults = function (ps, fn) {
             // 构建一组任务
-            var preTasks = ps.map(function (p) {
-                return new TaskNode(function (callback) { fn(p, callback); });
+            var task = (function (done) { done(); });
+            task.preTasks = ps.map(function (p) {
+                return function (callback) { fn(p, callback); };
             });
-            var task = new TaskNode(null, preTasks);
             // 完成时提取结果
             var result = function (done) {
                 doTask(task, function () {
@@ -15127,14 +15124,13 @@ var feng3d;
          */
         Task.prototype.seriesResults = function (ps, fn) {
             // 构建一组任务
-            var preTasks = ps.map(function (p) {
-                return new TaskNode(function (callback) { fn(p, callback); });
+            var task = (function (done) { done(); });
+            task.preTasks = ps.map(function (p) {
+                return function (callback) { fn(p, callback); };
             });
             // 串联任务
-            preTasks.forEach(function (v, i, arr) { if (i > 0)
+            task.preTasks.forEach(function (v, i, arr) { if (i > 0)
                 arr[i].preTasks = [arr[i - 1]]; });
-            // 
-            var task = new TaskNode(null, preTasks);
             // 完成时提取结果
             var result = function (done) {
                 doTask(task, function () {
@@ -15149,29 +15145,6 @@ var feng3d;
                 callback(p);
             })(function (rs) {
                 console.log(rs);
-            });
-        };
-        Task.prototype.test = function () {
-            var starttime = Date.now();
-            var task = new feng3d.TaskNode();
-            task.preTasks = ["https://www.tslang.cn/docs/handbook/gulp.html", "https://www.baidu.com/s?ie=utf-8&f=3&rsv_bp=0&rsv_idx=1&tn=baidu&wd=typescript&rsv_pq=d9a9ff640009fa54&rsv_t=b4c0a9U66FHSonWRPWnDU%2B1spxVJyiTo0ydjnB1LU994vtRz09x5KB2kOi8&rqlang=cn&rsv_enter=1&rsv_sug3=5&rsv_sug1=5&rsv_sug7=100&rsv_sug2=0&prefixsug=types&rsp=1&inputT=1972&rsv_sug4=1973&rsv_sug=1",
-                "https://www.baidu.com"].map(function (v) {
-                var t = new feng3d.TaskNode();
-                t.content = function (callback) {
-                    var sleep = 1000 * Math.random();
-                    sleep = ~~sleep;
-                    setTimeout(function () {
-                        callback(sleep);
-                    }, sleep);
-                };
-                return t;
-            });
-            task.preTasks.forEach(function (v, i, arr) { if (i > 0)
-                arr[i].preTasks = [arr[i - 1]]; });
-            doTask(task, function () {
-                var result = task.preTasks.map(function (v) { return v.result; });
-                console.log("\u6D88\u8017\u65F6\u95F4 " + (Date.now() - starttime) + "\uFF0C \u5B50\u4EFB\u52A1\u5206\u522B\u6D88\u8017 " + result.toString());
-                console.log("succeed");
             });
         };
         Task.prototype.testSeriesResults = function () {
