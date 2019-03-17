@@ -7281,9 +7281,9 @@ declare namespace feng3d {
          * 创建一组并行任务，所有任务同时进行
          *
          * @param fns 任务函数列表
-         * @param done 完成回调
+         * @returns 返回函数的函数
          */
-        parallel(fns: TaskFunction[], done: () => void): TaskNode;
+        parallel(fns: TaskFunction[]): TaskFunction;
         /**
          * 创建一组串联任务，只有上个任务完成后才执行下个任务
          *

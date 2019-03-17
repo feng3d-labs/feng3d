@@ -15063,15 +15063,20 @@ var feng3d;
          * 创建一组并行任务，所有任务同时进行
          *
          * @param fns 任务函数列表
-         * @param done 完成回调
+         * @returns 返回函数的函数
          */
-        Task.prototype.parallel = function (fns, done) {
+        Task.prototype.parallel = function (fns) {
             // 构建一组任务
             var preTasks = fns.map(function (v) { return new TaskNode(v); });
             var task = new TaskNode(null, preTasks);
             // 完成时提取结果
-            task.once("done", done);
-            return task;
+            var result = function (done) {
+                task.once("done", function () {
+                    done(task.result);
+                });
+                task.do();
+            };
+            return result;
         };
         /**
          * 创建一组串联任务，只有上个任务完成后才执行下个任务
@@ -15192,11 +15197,11 @@ var feng3d;
                     callback();
                 }, sleep);
             }; });
-            this.parallel(funcs, function () {
+            this.parallel(funcs)(function () {
                 console.log("done");
                 console.timeEnd("task");
                 // console.timeStamp(`task`);
-            }).do();
+            });
         };
         Task.prototype.testSeries = function () {
             console.time("task");
@@ -16005,7 +16010,7 @@ var feng3d;
          */
         ReadFS.prototype.readStrings = function (paths, callback) {
             var _this = this;
-            feng3d.Task.parallel(paths, function (path, callback) {
+            feng3d.task.parallelResults(paths, function (path, callback) {
                 _this.readString(path, function (err, str) {
                     callback(err || str);
                 });

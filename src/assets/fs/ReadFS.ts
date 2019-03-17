@@ -56,7 +56,7 @@ namespace feng3d
          */
         readStrings(paths: string[], callback: (strs: (string | Error)[]) => void)
         {
-            Task.parallel(paths, (path, callback) =>
+            task.parallelResults(paths, (path, callback) =>
             {
                 this.readString(path, (err, str) =>
                 {

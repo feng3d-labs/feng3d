@@ -156,16 +156,23 @@ namespace feng3d
          * 创建一组并行任务，所有任务同时进行
          * 
          * @param fns 任务函数列表
-         * @param done 完成回调
+         * @returns 返回函数的函数
          */
-        parallel(fns: TaskFunction[], done: () => void)
+        parallel(fns: TaskFunction[]): TaskFunction
         {
             // 构建一组任务
             var preTasks = fns.map(v => new TaskNode(v));
             var task = new TaskNode(null, preTasks);
             // 完成时提取结果
-            task.once("done", done);
-            return task;
+            var result = (done: (result?: any) => void) =>
+            {
+                task.once("done", () =>
+                {
+                    done(task.result);
+                });
+                task.do();
+            };
+            return result;
         }
 
         /**
@@ -313,13 +320,12 @@ namespace feng3d
                     callback();
                 }, sleep);
             });
-            this.parallel(funcs, () =>
+            this.parallel(funcs)(() =>
             {
                 console.log(`done`);
                 console.timeEnd(`task`);
                 // console.timeStamp(`task`);
-            }).do();
-
+            });
         }
 
         testSeries()
