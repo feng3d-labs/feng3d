@@ -6639,12 +6639,13 @@ var feng3d;
          * 获取唯一标识符
          * @see http://www.broofa.com/Tools/Math.uuid.htm
          */
-        uuid: function () {
+        uuid: function (length) {
+            if (length === void 0) { length = 36; }
             var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
-            var id = new Array(36);
+            var id = new Array(length);
             var rnd = 0, r = 0;
             return function generateUUID() {
-                for (var i = 0; i < 36; i++) {
+                for (var i = 0; i < length; i++) {
                     if (i === 8 || i === 13 || i === 18 || i === 23) {
                         id[i] = '-';
                     }
