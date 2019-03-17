@@ -28,110 +28,7 @@ namespace feng3d
      */
     export interface TaskFunction
     {
-        /**
-         * 默认初始状态，未开始，状态不可逆
-         */
-        status?: TaskStatus;
-
-        /**
-         * 任务自身内容回调带回结果
-         */
-        result?: any;
-
-        /**
-         * 执行函数
-         */
-        do?: (done?: () => void) => void;
-
-        /**
-         * 前置任务列表
-         */
-        preTasks?: TaskFunction[];
-
-        /**
-         * 任务函数
-         */
         (done: (result?: any) => void): void;
-
-        /**
-         * 监听一次事件后将会被移除
-		 * @param type						事件的类型。
-		 * @param listener					处理事件的侦听器函数。
-		 * @param thisObject                listener函数作用域
-         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
-         */
-        once?<K extends "done">(type: K, listener: (event: Event<any>) => void, thisObject?: any, priority?: number): void;
-        // {
-        //     event.on(this, type, listener, thisObject, priority, true);
-        // }
-    }
-
-    /**
-     * 执行任务
-     * 
-     * @param done 完成回调
-     */
-    function doTask(done?: () => void)
-    {
-        var _this: TaskFunction = this;
-
-        if (_this.status == TaskStatus.Done) { done && done(); return; }
-
-        // 回调添加到完成事件中
-        if (done) _this.once("done", done);
-
-        // 任务正在执行 直接返回
-        if (_this.status == TaskStatus.Doing) return;
-
-        if (_this.status == TaskStatus.Waiting)
-        {
-            //判断是否出现等待死锁；例如A前置任务为B，B前置任务为A
-            var waitings = _this.preTasks.filter(v => v.status == TaskStatus.Waiting);
-            var index = 0;
-            while (index < waitings.length)
-            {
-                var item = waitings[index];
-                if (item == _this)
-                {
-                    console.log(waitings.slice(0, index + 1));
-                    feng3d.error(`出现循环引用任务`);
-                    return;
-                }
-                waitings = waitings.concat(item.preTasks.filter(v => v.status == TaskStatus.Waiting));
-                index++;
-            }
-            return;
-        }
-
-        // 执行前置任务函数
-        var doPreTasks = (callback: () => void) =>
-        {
-            var preTasks = (_this.preTasks || []).concat();
-            var waitNum = preTasks.length;
-            if (waitNum == 0) callback();
-            preTasks.forEach(v => v.once("done", () =>
-            {
-                waitNum--;
-                if (waitNum == 0) callback();
-            }));
-            preTasks.forEach(v => v.do());
-        };
-
-        _this.status = TaskStatus.Waiting;
-
-        // 执行前置任务
-        doPreTasks(() =>
-        {
-            _this.status = TaskStatus.Doing;
-
-            // 执行任务自身
-            _this((result) =>
-            {
-                _this.status = TaskStatus.Done;
-                _this.result = result;
-                event.dispatch(_this, "done");
-            });
-        });
     }
 
     /**
@@ -140,17 +37,98 @@ namespace feng3d
     export class Task
     {
         /**
+         * 默认初始状态，未开始，状态不可逆
+         */
+        status = TaskStatus.None;
+
+        /**
+         * 任务自身内容回调带回结果
+         */
+        result: any;
+
+        /**
          * 构建任务
          * 
          * @param content 任务自身内容，回调带回结果保存在 result.value 中
          * @param preTasks 前置任务列表
          */
-        init(content?: TaskFunction, preTasks?: TaskFunction[])
+        constructor(private content?: TaskFunction, private preTasks?: Task[])
         {
-            content = content || ((done: () => void) => { done(); });
-            content.preTasks = content.preTasks || [];
-            content.do = doTask;
-            return content;
+            this.preTasks = this.preTasks || [];
+            this.content = this.content || ((done: () => void) => { done(); });
+        }
+
+        do(done?: () => void)
+        {
+            if (this.status == TaskStatus.Done) { done && done(); return; }
+
+            // 回调添加到完成事件中
+            if (done) this.once("done", done);
+
+            // 任务正在执行 直接返回
+            if (this.status == TaskStatus.Doing) return;
+
+            if (this.status == TaskStatus.Waiting)
+            {
+                //判断是否出现等待死锁；例如A前置任务为B，B前置任务为A
+                var waitings = this.preTasks.filter(v => v.status == TaskStatus.Waiting);
+                var index = 0;
+                while (index < waitings.length)
+                {
+                    var item = waitings[index];
+                    if (item == this)
+                    {
+                        console.log(waitings.slice(0, index + 1));
+                        feng3d.error(`出现循环引用任务`)
+                        return;
+                    }
+                    waitings = waitings.concat(item.preTasks.filter(v => v.status == TaskStatus.Waiting));
+                    index++;
+                }
+                return;
+            }
+
+            // 执行前置任务函数
+            var doPreTasks = (callback: () => void) =>
+            {
+                var preTasks = (this.preTasks || []).concat();
+                var waitNum = preTasks.length;
+                if (waitNum == 0) callback();
+                preTasks.forEach(v => v.once("done", () =>
+                {
+                    waitNum--;
+                    if (waitNum == 0) callback();
+                }));
+                preTasks.forEach(v => v.do());
+            };
+
+            this.status = TaskStatus.Waiting;
+
+            // 执行前置任务
+            doPreTasks(() =>
+            {
+                this.status = TaskStatus.Doing;
+
+                // 执行任务自身
+                this.content((result) =>
+                {
+                    this.status = TaskStatus.Done;
+                    this.result = result;
+                    event.dispatch(this, "done");
+                });
+            });
+        }
+
+        /**
+         * 监听一次事件后将会被移除
+		 * @param type						事件的类型。
+		 * @param listener					处理事件的侦听器函数。
+		 * @param thisObject                listener函数作用域
+         * @param priority					事件侦听器的优先级。数字越大，优先级越高。默认优先级为 0。
+         */
+        once<K extends "done">(type: K, listener: (event: Event<any>) => void, thisObject?: any, priority?: number)
+        {
+            event.on(this, type, listener, thisObject, priority, true);
         }
 
         /**
@@ -171,7 +149,7 @@ namespace feng3d
             // 完成时提取结果
             task.once("done", (e) =>
             {
-                var results = task.preTasks.map(v => v.content.result);
+                var results = task.preTasks.map(v => v.result);
                 done(results);
             });
             return task;
@@ -198,7 +176,7 @@ namespace feng3d
             // 完成时提取结果
             task.once("done", (e) =>
             {
-                var results = task.preTasks.map(v => v.content.result);
+                var results = task.preTasks.map(v => v.result);
                 done(results);
             });
             return task;
@@ -276,7 +254,7 @@ namespace feng3d
             task.preTasks.forEach((v, i, arr) => { if (i > 0) arr[i].preTasks = [arr[i - 1]]; })
             task.do(() =>
             {
-                var result = task.preTasks.map(v => v.content.result);
+                var result = task.preTasks.map(v => v.result);
                 console.log(`消耗时间 ${Date.now() - starttime}， 子任务分别消耗 ${result.toString()}`);
                 console.log("succeed");
             });
