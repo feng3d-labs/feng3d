@@ -54,34 +54,6 @@ namespace feng3d
         (done: (result?: any) => void): void;
     }
 
-    // /**
-    //  * 任务结点
-    //  */
-    // export class TaskNode
-    // {
-    //     /**
-    //      * 默认初始状态，未开始，状态不可逆
-    //      */
-    //     status = TaskStatus.None;
-
-    //     /**
-    //      * 任务自身内容回调带回结果
-    //      */
-    //     result: any;
-
-    //     /**
-    //      * 构建任务
-    //      * 
-    //      * @param content 任务自身内容，回调带回结果保存在 result.value 中
-    //      * @param preTasks 前置任务列表
-    //      */
-    //     constructor(public content?: TaskFunction, public preTasks?: TaskNode[])
-    //     {
-    //         this.preTasks = this.preTasks || [];
-    //         this.content = this.content || ((done: () => void) => { done(); });
-    //     }
-    // }
-
     /**
      * 执行任务
      * 
