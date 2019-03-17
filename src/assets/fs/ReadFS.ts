@@ -56,11 +56,6 @@ namespace feng3d
          */
         readStrings(paths: string[], callback: (strs: (string | Error)[]) => void)
         {
-            // var func = <TaskFunction<{ path: string, result: string | Error }>><any>callback;
-            // func.data
-
-            // var taskNodes: TaskNode<{ path: string}>[] = paths.map(v => { return { data: { path: v }, func: callback }; });
-
             Task.createTasks(paths, (path, callback) =>
             {
                 this.readString(path, (err, str) =>
