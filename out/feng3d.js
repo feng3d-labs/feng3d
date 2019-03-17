@@ -14980,6 +14980,11 @@ var feng3d;
             this.preTasks = this.preTasks || [];
             this.content = this.content || (function (done) { done(); });
         }
+        /**
+         * 执行任务
+         *
+         * @param done 完成回调
+         */
         TaskNode.prototype.do = function (done) {
             var _this = this;
             if (this.status == TaskStatus.Done) {
@@ -15052,14 +15057,47 @@ var feng3d;
     var Task = /** @class */ (function () {
         function Task() {
         }
+        Task.prototype.task = function (taskName, fn) {
+        };
         /**
-         * 创建一组并行同类任务，例如同时加载一组资源
+         * 创建一组并行任务，所有任务同时进行
+         *
+         * @param fns 任务函数列表
+         * @param done 完成回调
+         */
+        Task.prototype.parallel = function (fns, done) {
+            // 构建一组任务
+            var preTasks = fns.map(function (v) { return new TaskNode(v); });
+            var task = new TaskNode(null, preTasks);
+            // 完成时提取结果
+            task.once("done", done);
+            return task;
+        };
+        /**
+         * 创建一组串联任务，只有上个任务完成后才执行下个任务
+         *
+         * @param fns 任务函数列表
+         * @param onComplete 完成回调
+         */
+        Task.prototype.series = function (fns, onComplete) {
+            // 构建一组任务
+            var preTasks = fns.map(function (v) { return new TaskNode(v); });
+            // 串联任务
+            preTasks.forEach(function (v, i, arr) { if (i > 0)
+                arr[i].preTasks = [arr[i - 1]]; });
+            var task = new TaskNode(null, preTasks);
+            // 完成时提取结果
+            task.once("done", onComplete);
+            return task;
+        };
+        /**
+         * 创建一组并行同类任务，例如同时加载一组资源，并在回调中返回结果数组
          *
          * @param ps 一组参数
          * @param fn 单一任务函数
          * @param done 完成回调
          */
-        Task.parallel = function (ps, fn, done) {
+        Task.prototype.parallelResults = function (ps, fn, done) {
             // 构建一组任务
             var preTasks = ps.map(function (p) {
                 return new TaskNode(function (callback) { fn(p, callback); });
@@ -15079,7 +15117,7 @@ var feng3d;
          * @param fn 单一任务函数
          * @param done 完成回调
          */
-        Task.series = function (ps, fn, done) {
+        Task.prototype.seriesResults = function (ps, fn, done) {
             // 构建一组任务
             var preTasks = ps.map(function (p) {
                 return new TaskNode(function (callback) { fn(p, callback); });
@@ -15096,47 +15134,14 @@ var feng3d;
             });
             return task;
         };
-        /**
-         * 创建一组并行任务，所有任务同时进行
-         *
-         * @param fns 任务函数列表
-         * @param done 完成回调
-         */
-        Task.parallelTask = function (fns, done) {
-            // 构建一组任务
-            var preTasks = fns.map(function (v) { return new TaskNode(v); });
-            var task = new TaskNode(null, preTasks);
-            // 完成时提取结果
-            task.once("done", done);
-            return task;
-        };
-        /**
-         * 创建一组串联任务，只有上个任务完成后才执行下个任务
-         *
-         * @param fns 任务函数列表
-         * @param onComplete 完成回调
-         */
-        Task.seriesTask = function (fns, onComplete) {
-            // 构建一组任务
-            var preTasks = fns.map(function (v) { return new TaskNode(v); });
-            // 串联任务
-            preTasks.forEach(function (v, i, arr) { if (i > 0)
-                arr[i].preTasks = [arr[i - 1]]; });
-            var task = new TaskNode(null, preTasks);
-            // 完成时提取结果
-            task.once("done", onComplete);
-            return task;
-        };
-        Task.task = function (taskName, fn) {
-        };
-        Task.testParallel = function () {
-            this.parallel([1, 2, 3, 4, 5], function (p, callback) {
+        Task.prototype.testParallelResults = function () {
+            this.parallelResults([1, 2, 3, 4, 5], function (p, callback) {
                 callback(p);
             }, function (rs) {
                 console.log(rs);
             }).do();
         };
-        Task.test = function () {
+        Task.prototype.test = function () {
             var starttime = Date.now();
             var task = new feng3d.TaskNode();
             task.preTasks = ["https://www.tslang.cn/docs/handbook/gulp.html", "https://www.baidu.com/s?ie=utf-8&f=3&rsv_bp=0&rsv_idx=1&tn=baidu&wd=typescript&rsv_pq=d9a9ff640009fa54&rsv_t=b4c0a9U66FHSonWRPWnDU%2B1spxVJyiTo0ydjnB1LU994vtRz09x5KB2kOi8&rqlang=cn&rsv_enter=1&rsv_sug3=5&rsv_sug1=5&rsv_sug7=100&rsv_sug2=0&prefixsug=types&rsp=1&inputT=1972&rsv_sug4=1973&rsv_sug=1",
@@ -15159,8 +15164,8 @@ var feng3d;
                 console.log("succeed");
             });
         };
-        Task.testSeries = function () {
-            var task = this.series(["tsconfig.json", "index.html",
+        Task.prototype.testSeriesResults = function () {
+            var task = this.seriesResults(["tsconfig.json", "index.html",
                 "app.js"], function (p, callback) {
                 feng3d.fs.readString(p, function (err, str) {
                     callback(str);
@@ -15174,7 +15179,7 @@ var feng3d;
             var starttime = Date.now();
             task.do();
         };
-        Task.testParallelTask = function () {
+        Task.prototype.testParallel = function () {
             console.time("task");
             // console.timeStamp(`task`);
             var funcs = [1, 2, 3, 4].map(function (v) { return function (callback) {
@@ -15187,13 +15192,13 @@ var feng3d;
                     callback();
                 }, sleep);
             }; });
-            this.parallelTask(funcs, function () {
+            this.parallel(funcs, function () {
                 console.log("done");
                 console.timeEnd("task");
                 // console.timeStamp(`task`);
             }).do();
         };
-        Task.testSeriesTask = function () {
+        Task.prototype.testSeries = function () {
             console.time("task");
             // console.timeStamp(`task`);
             var funcs = [1, 2, 3, 4].map(function (v) { return function (callback) {
@@ -15206,7 +15211,7 @@ var feng3d;
                     callback();
                 }, sleep);
             }; });
-            this.seriesTask(funcs, function () {
+            this.series(funcs, function () {
                 console.log("done");
                 console.timeEnd("task");
                 // console.timeStamp(`task`);
@@ -15215,6 +15220,7 @@ var feng3d;
         return Task;
     }());
     feng3d.Task = Task;
+    feng3d.task = new Task();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

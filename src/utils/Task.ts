@@ -1,6 +1,11 @@
 namespace feng3d
 {
     /**
+     * 任务，用于处理任务之间依赖
+     */
+    export var task: Task;
+
+    /**
      * 任务状态
      */
     export enum TaskStatus
@@ -58,6 +63,11 @@ namespace feng3d
             this.content = this.content || ((done: () => void) => { done(); });
         }
 
+        /**
+         * 执行任务
+         * 
+         * @param done 完成回调
+         */
         do(done?: () => void)
         {
             if (this.status == TaskStatus.Done) { done && done(); return; }
@@ -137,14 +147,53 @@ namespace feng3d
      */
     export class Task
     {
+        task(taskName: string, fn: TaskFunction)
+        {
+
+        }
+
         /**
-         * 创建一组并行同类任务，例如同时加载一组资源
+         * 创建一组并行任务，所有任务同时进行
+         * 
+         * @param fns 任务函数列表
+         * @param done 完成回调
+         */
+        parallel(fns: TaskFunction[], done: () => void)
+        {
+            // 构建一组任务
+            var preTasks = fns.map(v => new TaskNode(v));
+            var task = new TaskNode(null, preTasks);
+            // 完成时提取结果
+            task.once("done", done);
+            return task;
+        }
+
+        /**
+         * 创建一组串联任务，只有上个任务完成后才执行下个任务
+         * 
+         * @param fns 任务函数列表
+         * @param onComplete 完成回调
+         */
+        series(fns: TaskFunction[], onComplete: () => void)
+        {
+            // 构建一组任务
+            var preTasks = fns.map(v => new TaskNode(v));
+            // 串联任务
+            preTasks.forEach((v, i, arr) => { if (i > 0) arr[i].preTasks = [arr[i - 1]]; });
+            var task = new TaskNode(null, preTasks);
+            // 完成时提取结果
+            task.once("done", onComplete);
+            return task;
+        }
+
+        /**
+         * 创建一组并行同类任务，例如同时加载一组资源，并在回调中返回结果数组
          * 
          * @param ps 一组参数
          * @param fn 单一任务函数
          * @param done 完成回调
          */
-        static parallel<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void)
+        parallelResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void)
         {
             // 构建一组任务
             var preTasks = ps.map(p =>
@@ -168,7 +217,7 @@ namespace feng3d
          * @param fn 单一任务函数
          * @param done 完成回调
          */
-        static series<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void)
+        seriesResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void)
         {
             // 构建一组任务
             var preTasks = ps.map(p =>
@@ -188,48 +237,9 @@ namespace feng3d
             return task;
         }
 
-        /**
-         * 创建一组并行任务，所有任务同时进行
-         * 
-         * @param fns 任务函数列表
-         * @param done 完成回调
-         */
-        static parallelTask(fns: TaskFunction[], done: () => void)
+        testParallelResults()
         {
-            // 构建一组任务
-            var preTasks = fns.map(v => new TaskNode(v));
-            var task = new TaskNode(null, preTasks);
-            // 完成时提取结果
-            task.once("done", done);
-            return task;
-        }
-
-        /**
-         * 创建一组串联任务，只有上个任务完成后才执行下个任务
-         * 
-         * @param fns 任务函数列表
-         * @param onComplete 完成回调
-         */
-        static seriesTask(fns: TaskFunction[], onComplete: () => void)
-        {
-            // 构建一组任务
-            var preTasks = fns.map(v => new TaskNode(v));
-            // 串联任务
-            preTasks.forEach((v, i, arr) => { if (i > 0) arr[i].preTasks = [arr[i - 1]]; });
-            var task = new TaskNode(null, preTasks);
-            // 完成时提取结果
-            task.once("done", onComplete);
-            return task;
-        }
-
-        static task(taskName: string, fn: TaskFunction)
-        {
-
-        }
-
-        static testParallel()
-        {
-            this.parallel([1, 2, 3, 4, 5], (p, callback: (r: number) => void) =>
+            this.parallelResults([1, 2, 3, 4, 5], (p, callback: (r: number) => void) =>
             {
                 callback(p);
             }, (rs) =>
@@ -238,7 +248,7 @@ namespace feng3d
                 }).do();
         }
 
-        static test()
+        test()
         {
             var starttime = Date.now();
             var task = new feng3d.TaskNode();
@@ -266,9 +276,9 @@ namespace feng3d
             });
         }
 
-        static testSeries()
+        testSeriesResults()
         {
-            var task = this.series(["tsconfig.json", "index.html",
+            var task = this.seriesResults(["tsconfig.json", "index.html",
                 "app.js"], (p, callback) =>
                 {
                     fs.readString(p, (err, str) =>
@@ -287,7 +297,7 @@ namespace feng3d
             task.do();
         }
 
-        static testParallelTask()
+        testParallel()
         {
             console.time(`task`);
             // console.timeStamp(`task`);
@@ -303,7 +313,7 @@ namespace feng3d
                     callback();
                 }, sleep);
             });
-            this.parallelTask(funcs, () =>
+            this.parallel(funcs, () =>
             {
                 console.log(`done`);
                 console.timeEnd(`task`);
@@ -312,7 +322,7 @@ namespace feng3d
 
         }
 
-        static testSeriesTask()
+        testSeries()
         {
             console.time(`task`);
             // console.timeStamp(`task`);
@@ -328,7 +338,7 @@ namespace feng3d
                     callback();
                 }, sleep);
             });
-            this.seriesTask(funcs, () =>
+            this.series(funcs, () =>
             {
                 console.log(`done`);
                 console.timeEnd(`task`);
@@ -336,6 +346,7 @@ namespace feng3d
             }).do();
 
         }
-
     }
+
+    task = new Task();
 }
