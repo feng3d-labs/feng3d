@@ -28,7 +28,7 @@ namespace feng3d
      */
     export interface TaskFunction
     {
-        (done: (error?: Error) => void): void;
+        (done: (result?: any) => void): void;
     }
 
     /**
@@ -52,18 +52,18 @@ namespace feng3d
          * @param content 任务自身内容，回调带回结果保存在 result.value 中
          * @param preTasks 前置任务列表
          */
-        constructor(private content?: (callback: (result?: any) => void) => void, private preTasks?: Task[])
+        constructor(private content?: TaskFunction, private preTasks?: Task[])
         {
             this.preTasks = this.preTasks || [];
-            this.content = this.content || ((callback: () => void) => { callback(); });
+            this.content = this.content || ((done: () => void) => { done(); });
         }
 
-        do(callback?: () => void)
+        do(done?: () => void)
         {
-            if (this.status == TaskStatus.Done) { callback && callback(); return; }
+            if (this.status == TaskStatus.Done) { done && done(); return; }
 
             // 回调添加到完成事件中
-            if (callback) this.once("done", callback);
+            if (done) this.once("done", done);
 
             // 任务正在执行 直接返回
             if (this.status == TaskStatus.Doing) return;
@@ -134,23 +134,23 @@ namespace feng3d
         /**
          * 创建一组并行同类任务，例如同时加载一组资源
          * 
-         * @param params 一组参数
-         * @param taskFunc 单一任务函数
-         * @param onComplete 完成回调
+         * @param ps 一组参数
+         * @param fn 单一任务函数
+         * @param done 完成回调
          */
-        static parallel<P, R>(params: P[], taskFunc: (param: P, callback: (result: R) => void) => void, onComplete: (results: R[]) => void)
+        static parallel<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void)
         {
             // 构建一组任务
-            var preTasks = params.map(p =>
+            var preTasks = ps.map(p =>
             {
-                return new Task((callback) => { taskFunc(p, callback); });
+                return new Task((callback) => { fn(p, callback); });
             });
             var task = new Task(null, preTasks);
             // 完成时提取结果
             task.once("done", (e) =>
             {
                 var results = task.preTasks.map(v => v.result);
-                onComplete(results);
+                done(results);
             });
             return task;
         }
@@ -158,16 +158,16 @@ namespace feng3d
         /**
          * 创建一组串联同类任务，例如排序加载一组资源
          * 
-         * @param params 一组参数
-         * @param taskFunc 单一任务函数
-         * @param onComplete 完成回调
+         * @param ps 一组参数
+         * @param fn 单一任务函数
+         * @param done 完成回调
          */
-        static series<P, R>(params: P[], taskFunc: (param: P, callback: (result: R) => void) => void, onComplete: (results: R[]) => void)
+        static series<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void)
         {
             // 构建一组任务
-            var preTasks = params.map(p =>
+            var preTasks = ps.map(p =>
             {
-                return new Task((callback) => { taskFunc(p, callback); });
+                return new Task((callback) => { fn(p, callback); });
             });
             // 串联任务
             preTasks.forEach((v, i, arr) => { if (i > 0) arr[i].preTasks = [arr[i - 1]]; });
@@ -177,7 +177,7 @@ namespace feng3d
             task.once("done", (e) =>
             {
                 var results = task.preTasks.map(v => v.result);
-                onComplete(results);
+                done(results);
             });
             return task;
         }
@@ -185,35 +185,40 @@ namespace feng3d
         /**
          * 创建一组并行任务，所有任务同时进行
          * 
-         * @param taskFuncs 任务函数列表
-         * @param onComplete 完成回调
+         * @param fns 任务函数列表
+         * @param done 完成回调
          */
-        static parallelTask(taskFuncs: TaskFunction[], onComplete: () => void)
+        static parallelTask(fns: TaskFunction[], done: () => void)
         {
             // 构建一组任务
-            var preTasks = taskFuncs.map(v => new Task(v));
+            var preTasks = fns.map(v => new Task(v));
             var task = new Task(null, preTasks);
             // 完成时提取结果
-            task.once("done", onComplete);
+            task.once("done", done);
             return task;
         }
 
         /**
          * 创建一组串联任务，只有上个任务完成后才执行下个任务
          * 
-         * @param taskFuncs 任务函数列表
+         * @param fns 任务函数列表
          * @param onComplete 完成回调
          */
-        static seriesTask(taskFuncs: TaskFunction[], onComplete: () => void)
+        static seriesTask(fns: TaskFunction[], onComplete: () => void)
         {
             // 构建一组任务
-            var preTasks = taskFuncs.map(v => new Task(v));
+            var preTasks = fns.map(v => new Task(v));
             // 串联任务
             preTasks.forEach((v, i, arr) => { if (i > 0) arr[i].preTasks = [arr[i - 1]]; });
             var task = new Task(null, preTasks);
             // 完成时提取结果
             task.once("done", onComplete);
             return task;
+        }
+
+        static task(taskName: string, fn: TaskFunction)
+        {
+
         }
 
         static testParallel()
@@ -237,7 +242,7 @@ namespace feng3d
                     var t = new feng3d.Task();
                     t.content = (callback) =>
                     {
-                        var sleep = 5000 * Math.random();
+                        var sleep = 1000 * Math.random();
                         sleep = ~~sleep;
                         setTimeout(() =>
                         {
@@ -282,7 +287,7 @@ namespace feng3d
             // console.timeStamp(`task`);
             var funcs: TaskFunction[] = [1, 2, 3, 4].map(v => (callback) =>
             {
-                var sleep = 5000 * Math.random();
+                var sleep = 1000 * Math.random();
                 sleep = ~~sleep;
                 console.time(`${sleep}`);
                 setTimeout(() =>
@@ -307,7 +312,7 @@ namespace feng3d
             // console.timeStamp(`task`);
             var funcs: TaskFunction[] = [1, 2, 3, 4].map(v => (callback) =>
             {
-                var sleep = 5000 * Math.random();
+                var sleep = 1000 * Math.random();
                 sleep = ~~sleep;
                 console.time(`${sleep}`);
                 setTimeout(() =>

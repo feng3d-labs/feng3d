@@ -14978,17 +14978,17 @@ var feng3d;
              */
             this.status = TaskStatus.None;
             this.preTasks = this.preTasks || [];
-            this.content = this.content || (function (callback) { callback(); });
+            this.content = this.content || (function (done) { done(); });
         }
-        Task.prototype.do = function (callback) {
+        Task.prototype.do = function (done) {
             var _this = this;
             if (this.status == TaskStatus.Done) {
-                callback && callback();
+                done && done();
                 return;
             }
             // 回调添加到完成事件中
-            if (callback)
-                this.once("done", callback);
+            if (done)
+                this.once("done", done);
             // 任务正在执行 直接返回
             if (this.status == TaskStatus.Doing)
                 return;
@@ -15046,34 +15046,34 @@ var feng3d;
         /**
          * 创建一组并行同类任务，例如同时加载一组资源
          *
-         * @param params 一组参数
-         * @param taskFunc 单一任务函数
-         * @param onComplete 完成回调
+         * @param ps 一组参数
+         * @param fn 单一任务函数
+         * @param done 完成回调
          */
-        Task.parallel = function (params, taskFunc, onComplete) {
+        Task.parallel = function (ps, fn, done) {
             // 构建一组任务
-            var preTasks = params.map(function (p) {
-                return new Task(function (callback) { taskFunc(p, callback); });
+            var preTasks = ps.map(function (p) {
+                return new Task(function (callback) { fn(p, callback); });
             });
             var task = new Task(null, preTasks);
             // 完成时提取结果
             task.once("done", function (e) {
                 var results = task.preTasks.map(function (v) { return v.result; });
-                onComplete(results);
+                done(results);
             });
             return task;
         };
         /**
          * 创建一组串联同类任务，例如排序加载一组资源
          *
-         * @param params 一组参数
-         * @param taskFunc 单一任务函数
-         * @param onComplete 完成回调
+         * @param ps 一组参数
+         * @param fn 单一任务函数
+         * @param done 完成回调
          */
-        Task.series = function (params, taskFunc, onComplete) {
+        Task.series = function (ps, fn, done) {
             // 构建一组任务
-            var preTasks = params.map(function (p) {
-                return new Task(function (callback) { taskFunc(p, callback); });
+            var preTasks = ps.map(function (p) {
+                return new Task(function (callback) { fn(p, callback); });
             });
             // 串联任务
             preTasks.forEach(function (v, i, arr) { if (i > 0)
@@ -15083,33 +15083,33 @@ var feng3d;
             // 完成时提取结果
             task.once("done", function (e) {
                 var results = task.preTasks.map(function (v) { return v.result; });
-                onComplete(results);
+                done(results);
             });
             return task;
         };
         /**
          * 创建一组并行任务，所有任务同时进行
          *
-         * @param taskFuncs 任务函数列表
-         * @param onComplete 完成回调
+         * @param fns 任务函数列表
+         * @param done 完成回调
          */
-        Task.parallelTask = function (taskFuncs, onComplete) {
+        Task.parallelTask = function (fns, done) {
             // 构建一组任务
-            var preTasks = taskFuncs.map(function (v) { return new Task(v); });
+            var preTasks = fns.map(function (v) { return new Task(v); });
             var task = new Task(null, preTasks);
             // 完成时提取结果
-            task.once("done", onComplete);
+            task.once("done", done);
             return task;
         };
         /**
          * 创建一组串联任务，只有上个任务完成后才执行下个任务
          *
-         * @param taskFuncs 任务函数列表
+         * @param fns 任务函数列表
          * @param onComplete 完成回调
          */
-        Task.seriesTask = function (taskFuncs, onComplete) {
+        Task.seriesTask = function (fns, onComplete) {
             // 构建一组任务
-            var preTasks = taskFuncs.map(function (v) { return new Task(v); });
+            var preTasks = fns.map(function (v) { return new Task(v); });
             // 串联任务
             preTasks.forEach(function (v, i, arr) { if (i > 0)
                 arr[i].preTasks = [arr[i - 1]]; });
@@ -15117,6 +15117,8 @@ var feng3d;
             // 完成时提取结果
             task.once("done", onComplete);
             return task;
+        };
+        Task.task = function (taskName, fn) {
         };
         Task.testParallel = function () {
             this.parallel([1, 2, 3, 4, 5], function (p, callback) {
@@ -15132,7 +15134,7 @@ var feng3d;
                 "https://www.baidu.com"].map(function (v) {
                 var t = new feng3d.Task();
                 t.content = function (callback) {
-                    var sleep = 5000 * Math.random();
+                    var sleep = 1000 * Math.random();
                     sleep = ~~sleep;
                     setTimeout(function () {
                         callback(sleep);
@@ -15167,7 +15169,7 @@ var feng3d;
             console.time("task");
             // console.timeStamp(`task`);
             var funcs = [1, 2, 3, 4].map(function (v) { return function (callback) {
-                var sleep = 5000 * Math.random();
+                var sleep = 1000 * Math.random();
                 sleep = ~~sleep;
                 console.time("" + sleep);
                 setTimeout(function () {
@@ -15186,7 +15188,7 @@ var feng3d;
             console.time("task");
             // console.timeStamp(`task`);
             var funcs = [1, 2, 3, 4].map(function (v) { return function (callback) {
-                var sleep = 5000 * Math.random();
+                var sleep = 1000 * Math.random();
                 sleep = ~~sleep;
                 console.time("" + sleep);
                 setTimeout(function () {

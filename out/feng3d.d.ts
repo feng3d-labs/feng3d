@@ -7230,7 +7230,7 @@ declare namespace feng3d {
      * 任务函数
      */
     interface TaskFunction {
-        (done: (error?: Error) => void): void;
+        (done: (result?: any) => void): void;
     }
     /**
      * 任务，用于处理多件可能有依赖或者嵌套的事情
@@ -7252,8 +7252,8 @@ declare namespace feng3d {
          * @param content 任务自身内容，回调带回结果保存在 result.value 中
          * @param preTasks 前置任务列表
          */
-        constructor(content?: (callback: (result?: any) => void) => void, preTasks?: Task[]);
-        do(callback?: () => void): void;
+        constructor(content?: TaskFunction, preTasks?: Task[]);
+        do(done?: () => void): void;
         /**
          * 监听一次事件后将会被移除
          * @param type						事件的类型。
@@ -7265,33 +7265,34 @@ declare namespace feng3d {
         /**
          * 创建一组并行同类任务，例如同时加载一组资源
          *
-         * @param params 一组参数
-         * @param taskFunc 单一任务函数
-         * @param onComplete 完成回调
+         * @param ps 一组参数
+         * @param fn 单一任务函数
+         * @param done 完成回调
          */
-        static parallel<P, R>(params: P[], taskFunc: (param: P, callback: (result: R) => void) => void, onComplete: (results: R[]) => void): Task;
+        static parallel<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void): Task;
         /**
          * 创建一组串联同类任务，例如排序加载一组资源
          *
-         * @param params 一组参数
-         * @param taskFunc 单一任务函数
-         * @param onComplete 完成回调
+         * @param ps 一组参数
+         * @param fn 单一任务函数
+         * @param done 完成回调
          */
-        static series<P, R>(params: P[], taskFunc: (param: P, callback: (result: R) => void) => void, onComplete: (results: R[]) => void): Task;
+        static series<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void): Task;
         /**
          * 创建一组并行任务，所有任务同时进行
          *
-         * @param taskFuncs 任务函数列表
-         * @param onComplete 完成回调
+         * @param fns 任务函数列表
+         * @param done 完成回调
          */
-        static parallelTask(taskFuncs: TaskFunction[], onComplete: () => void): Task;
+        static parallelTask(fns: TaskFunction[], done: () => void): Task;
         /**
          * 创建一组串联任务，只有上个任务完成后才执行下个任务
          *
-         * @param taskFuncs 任务函数列表
+         * @param fns 任务函数列表
          * @param onComplete 完成回调
          */
-        static seriesTask(taskFuncs: TaskFunction[], onComplete: () => void): Task;
+        static seriesTask(fns: TaskFunction[], onComplete: () => void): Task;
+        static task(taskName: string, fn: TaskFunction): void;
         static testParallel(): void;
         static test(): void;
         static testSeries(): void;
