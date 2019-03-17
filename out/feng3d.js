@@ -14981,64 +14981,6 @@ var feng3d;
             this.content = this.content || (function (done) { done(); });
         }
         /**
-         * 执行任务
-         *
-         * @param done 完成回调
-         */
-        TaskNode.prototype.do = function (done) {
-            var _this = this;
-            if (this.status == TaskStatus.Done) {
-                done && done();
-                return;
-            }
-            // 回调添加到完成事件中
-            if (done)
-                this.once("done", done);
-            // 任务正在执行 直接返回
-            if (this.status == TaskStatus.Doing)
-                return;
-            if (this.status == TaskStatus.Waiting) {
-                //判断是否出现等待死锁；例如A前置任务为B，B前置任务为A
-                var waitings = this.preTasks.filter(function (v) { return v.status == TaskStatus.Waiting; });
-                var index = 0;
-                while (index < waitings.length) {
-                    var item = waitings[index];
-                    if (item == this) {
-                        console.log(waitings.slice(0, index + 1));
-                        feng3d.error("\u51FA\u73B0\u5FAA\u73AF\u5F15\u7528\u4EFB\u52A1");
-                        return;
-                    }
-                    waitings = waitings.concat(item.preTasks.filter(function (v) { return v.status == TaskStatus.Waiting; }));
-                    index++;
-                }
-                return;
-            }
-            // 执行前置任务函数
-            var doPreTasks = function (callback) {
-                var preTasks = (_this.preTasks || []).concat();
-                var waitNum = preTasks.length;
-                if (waitNum == 0)
-                    callback();
-                preTasks.forEach(function (v) { return v.once("done", function () {
-                    waitNum--;
-                    if (waitNum == 0)
-                        callback();
-                }); });
-                preTasks.forEach(function (v) { return v.do(); });
-            };
-            this.status = TaskStatus.Waiting;
-            // 执行前置任务
-            doPreTasks(function () {
-                _this.status = TaskStatus.Doing;
-                // 执行任务自身
-                _this.content(function (result) {
-                    _this.status = TaskStatus.Done;
-                    _this.result = result;
-                    feng3d.event.dispatch(_this, "done");
-                });
-            });
-        };
-        /**
          * 监听一次事件后将会被移除
          * @param type						事件的类型。
          * @param listener					处理事件的侦听器函数。
@@ -15052,6 +14994,62 @@ var feng3d;
     }());
     feng3d.TaskNode = TaskNode;
     /**
+     * 执行任务
+     *
+     * @param done 完成回调
+     */
+    function doTask(task, done) {
+        if (task.status == TaskStatus.Done) {
+            done && done();
+            return;
+        }
+        // 回调添加到完成事件中
+        if (done)
+            task.once("done", done);
+        // 任务正在执行 直接返回
+        if (task.status == TaskStatus.Doing)
+            return;
+        if (task.status == TaskStatus.Waiting) {
+            //判断是否出现等待死锁；例如A前置任务为B，B前置任务为A
+            var waitings = task.preTasks.filter(function (v) { return v.status == TaskStatus.Waiting; });
+            var index = 0;
+            while (index < waitings.length) {
+                var item = waitings[index];
+                if (item == task) {
+                    console.log(waitings.slice(0, index + 1));
+                    feng3d.error("\u51FA\u73B0\u5FAA\u73AF\u5F15\u7528\u4EFB\u52A1");
+                    return;
+                }
+                waitings = waitings.concat(item.preTasks.filter(function (v) { return v.status == TaskStatus.Waiting; }));
+                index++;
+            }
+            return;
+        }
+        // 执行前置任务函数
+        var doPreTasks = function (callback) {
+            var preTasks = (task.preTasks || []).concat();
+            var waitNum = preTasks.length;
+            if (waitNum == 0)
+                callback();
+            preTasks.forEach(function (v) { return doTask(v, function () {
+                waitNum--;
+                if (waitNum == 0)
+                    callback();
+            }); });
+        };
+        task.status = TaskStatus.Waiting;
+        // 执行前置任务
+        doPreTasks(function () {
+            task.status = TaskStatus.Doing;
+            // 执行任务自身
+            task.content(function (result) {
+                task.status = TaskStatus.Done;
+                task.result = result;
+                feng3d.event.dispatch(task, "done");
+            });
+        });
+    }
+    /**
      * 任务，用于处理多件可能有依赖或者嵌套的事情
      */
     var Task = /** @class */ (function () {
@@ -15060,10 +15058,10 @@ var feng3d;
         Task.prototype.task = function (taskName, fn) {
         };
         /**
-         * 创建一组并行任务，所有任务同时进行
+         * 把一组无序任务函数并联成一个任务函数
          *
          * @param fns 任务函数列表
-         * @returns 返回函数的函数
+         * @returns 组合后的任务函数
          */
         Task.prototype.parallel = function (fns) {
             // 构建一组任务
@@ -15071,20 +15069,19 @@ var feng3d;
             var task = new TaskNode(null, preTasks);
             // 完成时提取结果
             var result = function (done) {
-                task.once("done", function () {
+                doTask(task, function () {
                     done(task.result);
                 });
-                task.do();
             };
             return result;
         };
         /**
-         * 创建一组串联任务，只有上个任务完成后才执行下个任务
+         * 把一组有序任务函数并联成一个任务函数
          *
          * @param fns 任务函数列表
-         * @param onComplete 完成回调
+         * @param 组合后的任务函数
          */
-        Task.prototype.series = function (fns, onComplete) {
+        Task.prototype.series = function (fns) {
             // 构建一组任务
             var preTasks = fns.map(function (v) { return new TaskNode(v); });
             // 串联任务
@@ -15092,8 +15089,12 @@ var feng3d;
                 arr[i].preTasks = [arr[i - 1]]; });
             var task = new TaskNode(null, preTasks);
             // 完成时提取结果
-            task.once("done", onComplete);
-            return task;
+            var result = function (done) {
+                doTask(task, function () {
+                    done(task.result);
+                });
+            };
+            return result;
         };
         /**
          * 创建一组并行同类任务，例如同时加载一组资源，并在回调中返回结果数组
@@ -15102,18 +15103,20 @@ var feng3d;
          * @param fn 单一任务函数
          * @param done 完成回调
          */
-        Task.prototype.parallelResults = function (ps, fn, done) {
+        Task.prototype.parallelResults = function (ps, fn) {
             // 构建一组任务
             var preTasks = ps.map(function (p) {
                 return new TaskNode(function (callback) { fn(p, callback); });
             });
             var task = new TaskNode(null, preTasks);
             // 完成时提取结果
-            task.once("done", function (e) {
-                var results = task.preTasks.map(function (v) { return v.result; });
-                done(results);
-            });
-            return task;
+            var result = function (done) {
+                doTask(task, function () {
+                    var results = task.preTasks.map(function (v) { return v.result; });
+                    done(results);
+                });
+            };
+            return result;
         };
         /**
          * 创建一组串联同类任务，例如排序加载一组资源
@@ -15122,7 +15125,7 @@ var feng3d;
          * @param fn 单一任务函数
          * @param done 完成回调
          */
-        Task.prototype.seriesResults = function (ps, fn, done) {
+        Task.prototype.seriesResults = function (ps, fn) {
             // 构建一组任务
             var preTasks = ps.map(function (p) {
                 return new TaskNode(function (callback) { fn(p, callback); });
@@ -15133,18 +15136,20 @@ var feng3d;
             // 
             var task = new TaskNode(null, preTasks);
             // 完成时提取结果
-            task.once("done", function (e) {
-                var results = task.preTasks.map(function (v) { return v.result; });
-                done(results);
-            });
-            return task;
+            var result = function (done) {
+                doTask(task, function () {
+                    var results = task.preTasks.map(function (v) { return v.result; });
+                    done(results);
+                });
+            };
+            return result;
         };
         Task.prototype.testParallelResults = function () {
             this.parallelResults([1, 2, 3, 4, 5], function (p, callback) {
                 callback(p);
-            }, function (rs) {
+            })(function (rs) {
                 console.log(rs);
-            }).do();
+            });
         };
         Task.prototype.test = function () {
             var starttime = Date.now();
@@ -15163,26 +15168,25 @@ var feng3d;
             });
             task.preTasks.forEach(function (v, i, arr) { if (i > 0)
                 arr[i].preTasks = [arr[i - 1]]; });
-            task.do(function () {
+            doTask(task, function () {
                 var result = task.preTasks.map(function (v) { return v.result; });
                 console.log("\u6D88\u8017\u65F6\u95F4 " + (Date.now() - starttime) + "\uFF0C \u5B50\u4EFB\u52A1\u5206\u522B\u6D88\u8017 " + result.toString());
                 console.log("succeed");
             });
         };
         Task.prototype.testSeriesResults = function () {
-            var task = this.seriesResults(["tsconfig.json", "index.html",
+            var starttime = Date.now();
+            this.seriesResults(["tsconfig.json", "index.html",
                 "app.js"], function (p, callback) {
                 feng3d.fs.readString(p, function (err, str) {
                     callback(str);
                 });
-            }, function (results) {
+            })(function (results) {
                 console.log("\u6D88\u8017\u65F6\u95F4 " + (Date.now() - starttime));
                 console.log("succeed");
                 console.log("\u7ED3\u679C:");
                 console.log(results);
             });
-            var starttime = Date.now();
-            task.do();
         };
         Task.prototype.testParallel = function () {
             console.time("task");
@@ -15216,11 +15220,11 @@ var feng3d;
                     callback();
                 }, sleep);
             }; });
-            this.series(funcs, function () {
+            this.series(funcs)(function () {
                 console.log("done");
                 console.timeEnd("task");
                 // console.timeStamp(`task`);
-            }).do();
+            });
         };
         return Task;
     }());
@@ -16014,7 +16018,7 @@ var feng3d;
                 _this.readString(path, function (err, str) {
                     callback(err || str);
                 });
-            }, callback).do();
+            })(callback);
         };
         return ReadFS;
     }());

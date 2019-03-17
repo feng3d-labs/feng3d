@@ -7258,12 +7258,6 @@ declare namespace feng3d {
          */
         constructor(content?: TaskFunction, preTasks?: TaskNode[]);
         /**
-         * 执行任务
-         *
-         * @param done 完成回调
-         */
-        do(done?: () => void): void;
-        /**
          * 监听一次事件后将会被移除
          * @param type						事件的类型。
          * @param listener					处理事件的侦听器函数。
@@ -7278,19 +7272,19 @@ declare namespace feng3d {
     class Task {
         task(taskName: string, fn: TaskFunction): void;
         /**
-         * 创建一组并行任务，所有任务同时进行
+         * 把一组无序任务函数并联成一个任务函数
          *
          * @param fns 任务函数列表
-         * @returns 返回函数的函数
+         * @returns 组合后的任务函数
          */
         parallel(fns: TaskFunction[]): TaskFunction;
         /**
-         * 创建一组串联任务，只有上个任务完成后才执行下个任务
+         * 把一组有序任务函数并联成一个任务函数
          *
          * @param fns 任务函数列表
-         * @param onComplete 完成回调
+         * @param 组合后的任务函数
          */
-        series(fns: TaskFunction[], onComplete: () => void): TaskNode;
+        series(fns: TaskFunction[]): (done: (result?: any) => void) => void;
         /**
          * 创建一组并行同类任务，例如同时加载一组资源，并在回调中返回结果数组
          *
@@ -7298,7 +7292,7 @@ declare namespace feng3d {
          * @param fn 单一任务函数
          * @param done 完成回调
          */
-        parallelResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void): TaskNode;
+        parallelResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void): (done: (rs: R[]) => void) => void;
         /**
          * 创建一组串联同类任务，例如排序加载一组资源
          *
@@ -7306,7 +7300,7 @@ declare namespace feng3d {
          * @param fn 单一任务函数
          * @param done 完成回调
          */
-        seriesResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void): TaskNode;
+        seriesResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void): (done: (rs: R[]) => void) => void;
         testParallelResults(): void;
         test(): void;
         testSeriesResults(): void;

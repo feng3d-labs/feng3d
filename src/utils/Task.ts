@@ -64,72 +64,6 @@ namespace feng3d
         }
 
         /**
-         * 执行任务
-         * 
-         * @param done 完成回调
-         */
-        do(done?: () => void)
-        {
-            if (this.status == TaskStatus.Done) { done && done(); return; }
-
-            // 回调添加到完成事件中
-            if (done) this.once("done", done);
-
-            // 任务正在执行 直接返回
-            if (this.status == TaskStatus.Doing) return;
-
-            if (this.status == TaskStatus.Waiting)
-            {
-                //判断是否出现等待死锁；例如A前置任务为B，B前置任务为A
-                var waitings = this.preTasks.filter(v => v.status == TaskStatus.Waiting);
-                var index = 0;
-                while (index < waitings.length)
-                {
-                    var item = waitings[index];
-                    if (item == this)
-                    {
-                        console.log(waitings.slice(0, index + 1));
-                        feng3d.error(`出现循环引用任务`)
-                        return;
-                    }
-                    waitings = waitings.concat(item.preTasks.filter(v => v.status == TaskStatus.Waiting));
-                    index++;
-                }
-                return;
-            }
-
-            // 执行前置任务函数
-            var doPreTasks = (callback: () => void) =>
-            {
-                var preTasks = (this.preTasks || []).concat();
-                var waitNum = preTasks.length;
-                if (waitNum == 0) callback();
-                preTasks.forEach(v => v.once("done", () =>
-                {
-                    waitNum--;
-                    if (waitNum == 0) callback();
-                }));
-                preTasks.forEach(v => v.do());
-            };
-
-            this.status = TaskStatus.Waiting;
-
-            // 执行前置任务
-            doPreTasks(() =>
-            {
-                this.status = TaskStatus.Doing;
-
-                // 执行任务自身
-                this.content((result) =>
-                {
-                    this.status = TaskStatus.Done;
-                    this.result = result;
-                    event.dispatch(this, "done");
-                });
-            });
-        }
-
-        /**
          * 监听一次事件后将会被移除
 		 * @param type						事件的类型。
 		 * @param listener					处理事件的侦听器函数。
@@ -140,6 +74,72 @@ namespace feng3d
         {
             event.on(this, type, listener, thisObject, priority, true);
         }
+    }
+
+
+    /**
+     * 执行任务
+     * 
+     * @param done 完成回调
+     */
+    function doTask(task: TaskNode, done?: () => void)
+    {
+        if (task.status == TaskStatus.Done) { done && done(); return; }
+
+        // 回调添加到完成事件中
+        if (done) task.once("done", done);
+
+        // 任务正在执行 直接返回
+        if (task.status == TaskStatus.Doing) return;
+
+        if (task.status == TaskStatus.Waiting)
+        {
+            //判断是否出现等待死锁；例如A前置任务为B，B前置任务为A
+            var waitings = task.preTasks.filter(v => v.status == TaskStatus.Waiting);
+            var index = 0;
+            while (index < waitings.length)
+            {
+                var item = waitings[index];
+                if (item == task)
+                {
+                    console.log(waitings.slice(0, index + 1));
+                    feng3d.error(`出现循环引用任务`)
+                    return;
+                }
+                waitings = waitings.concat(item.preTasks.filter(v => v.status == TaskStatus.Waiting));
+                index++;
+            }
+            return;
+        }
+
+        // 执行前置任务函数
+        var doPreTasks = (callback: () => void) =>
+        {
+            var preTasks = (task.preTasks || []).concat();
+            var waitNum = preTasks.length;
+            if (waitNum == 0) callback();
+            preTasks.forEach(v => doTask(v, () =>
+            {
+                waitNum--;
+                if (waitNum == 0) callback();
+            }));
+        };
+
+        task.status = TaskStatus.Waiting;
+
+        // 执行前置任务
+        doPreTasks(() =>
+        {
+            task.status = TaskStatus.Doing;
+
+            // 执行任务自身
+            task.content((result) =>
+            {
+                task.status = TaskStatus.Done;
+                task.result = result;
+                event.dispatch(task, "done");
+            });
+        });
     }
 
     /**
@@ -153,10 +153,10 @@ namespace feng3d
         }
 
         /**
-         * 创建一组并行任务，所有任务同时进行
+         * 把一组无序任务函数并联成一个任务函数
          * 
          * @param fns 任务函数列表
-         * @returns 返回函数的函数
+         * @returns 组合后的任务函数
          */
         parallel(fns: TaskFunction[]): TaskFunction
         {
@@ -166,22 +166,21 @@ namespace feng3d
             // 完成时提取结果
             var result = (done: (result?: any) => void) =>
             {
-                task.once("done", () =>
+                doTask(task, () =>
                 {
                     done(task.result);
                 });
-                task.do();
             };
             return result;
         }
 
         /**
-         * 创建一组串联任务，只有上个任务完成后才执行下个任务
+         * 把一组有序任务函数并联成一个任务函数
          * 
          * @param fns 任务函数列表
-         * @param onComplete 完成回调
+         * @param 组合后的任务函数
          */
-        series(fns: TaskFunction[], onComplete: () => void)
+        series(fns: TaskFunction[])
         {
             // 构建一组任务
             var preTasks = fns.map(v => new TaskNode(v));
@@ -189,8 +188,14 @@ namespace feng3d
             preTasks.forEach((v, i, arr) => { if (i > 0) arr[i].preTasks = [arr[i - 1]]; });
             var task = new TaskNode(null, preTasks);
             // 完成时提取结果
-            task.once("done", onComplete);
-            return task;
+            var result = (done: (result?: any) => void) =>
+            {
+                doTask(task, () =>
+                {
+                    done(task.result);
+                });
+            };
+            return result;
         }
 
         /**
@@ -200,7 +205,7 @@ namespace feng3d
          * @param fn 单一任务函数
          * @param done 完成回调
          */
-        parallelResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void)
+        parallelResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void): (done: (rs: R[]) => void) => void
         {
             // 构建一组任务
             var preTasks = ps.map(p =>
@@ -209,12 +214,15 @@ namespace feng3d
             });
             var task = new TaskNode(null, preTasks);
             // 完成时提取结果
-            task.once("done", (e) =>
+            var result = (done: (rs: R[]) => void) =>
             {
-                var results = task.preTasks.map(v => v.result);
-                done(results);
-            });
-            return task;
+                doTask(task, () =>
+                {
+                    var results = task.preTasks.map(v => v.result);
+                    done(results);
+                });
+            };
+            return result;
         }
 
         /**
@@ -224,7 +232,7 @@ namespace feng3d
          * @param fn 单一任务函数
          * @param done 完成回调
          */
-        seriesResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void)
+        seriesResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void): (done: (rs: R[]) => void) => void
         {
             // 构建一组任务
             var preTasks = ps.map(p =>
@@ -236,12 +244,15 @@ namespace feng3d
             // 
             var task = new TaskNode(null, preTasks);
             // 完成时提取结果
-            task.once("done", (e) =>
+            var result = (done: (rs: R[]) => void) =>
             {
-                var results = task.preTasks.map(v => v.result);
-                done(results);
-            });
-            return task;
+                doTask(task, () =>
+                {
+                    var results = task.preTasks.map(v => v.result);
+                    done(results);
+                });
+            };
+            return result;
         }
 
         testParallelResults()
@@ -249,10 +260,10 @@ namespace feng3d
             this.parallelResults([1, 2, 3, 4, 5], (p, callback: (r: number) => void) =>
             {
                 callback(p);
-            }, (rs) =>
-                {
-                    console.log(rs);
-                }).do();
+            })((rs) =>
+            {
+                console.log(rs);
+            });
         }
 
         test()
@@ -275,7 +286,7 @@ namespace feng3d
                     return t;
                 });
             task.preTasks.forEach((v, i, arr) => { if (i > 0) arr[i].preTasks = [arr[i - 1]]; })
-            task.do(() =>
+            doTask(task, () =>
             {
                 var result = task.preTasks.map(v => v.result);
                 console.log(`消耗时间 ${Date.now() - starttime}， 子任务分别消耗 ${result.toString()}`);
@@ -285,23 +296,22 @@ namespace feng3d
 
         testSeriesResults()
         {
-            var task = this.seriesResults(["tsconfig.json", "index.html",
+
+            var starttime = Date.now();
+            this.seriesResults(["tsconfig.json", "index.html",
                 "app.js"], (p, callback) =>
                 {
                     fs.readString(p, (err, str) =>
                     {
                         callback(str);
                     });
-                }, (results: string[]) =>
+                })((results: string[]) =>
                 {
                     console.log(`消耗时间 ${Date.now() - starttime}`);
                     console.log("succeed");
                     console.log(`结果:`);
                     console.log(results);
                 });
-
-            var starttime = Date.now();
-            task.do();
         }
 
         testParallel()
@@ -344,12 +354,12 @@ namespace feng3d
                     callback();
                 }, sleep);
             });
-            this.series(funcs, () =>
+            this.series(funcs)(() =>
             {
                 console.log(`done`);
                 console.timeEnd(`task`);
                 // console.timeStamp(`task`);
-            }).do();
+            });
 
         }
     }
