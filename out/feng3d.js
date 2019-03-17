@@ -14967,7 +14967,7 @@ var feng3d;
         /**
          * 构建任务
          *
-         * @param content 任务自身内容
+         * @param content 任务自身内容，回调带回结果保存在 result.value 中
          * @param preTasks 前置任务列表
          */
         function Task(content, preTasks) {
@@ -15022,16 +15022,13 @@ var feng3d;
                 preTasks.forEach(function (v) { return v.do(); });
             };
             this.status = TaskStatus.Waiting;
-            feng3d.event.dispatch(this, "waiting");
             // 执行前置任务
             doPreTasks(function () {
                 _this.status = TaskStatus.Doing;
-                feng3d.event.dispatch(_this, "doing");
                 // 执行任务自身
-                _this.content(function (err) {
-                    if (err)
-                        feng3d.event.dispatch(_this, "error", err);
+                _this.content(function (result) {
                     _this.status = TaskStatus.Done;
+                    _this.result = result;
                     feng3d.event.dispatch(_this, "done");
                 });
             });
@@ -15047,24 +15044,51 @@ var feng3d;
             feng3d.event.on(this, type, listener, thisObject, priority, true);
         };
         /**
-         * 创建一组同类任务，例如加载一组资源
+         * 创建一组并行同类任务，例如同时加载一组资源
          *
          * @param params 一组参数
          * @param taskFunc 单一任务函数
          * @param onComplete 完成回调
          */
-        Task.createTasks = function (params, taskFunc, onComplete) {
-            var task = new Task(null, params.map(function (p) {
+        Task.parallel = function (params, taskFunc, onComplete) {
+            // 构建一组任务
+            var preTasks = params.map(function (p) {
                 return new Task(function (callback) { taskFunc(p, callback); });
-            }));
+            });
+            var task = new Task(null, preTasks);
+            // 完成时提取结果
             task.once("done", function (e) {
                 var results = task.preTasks.map(function (v) { return v.result; });
                 onComplete(results);
             });
             return task;
         };
-        Task.testCreateTasks = function () {
-            this.createTasks([1, 2, 3, 4, 5], function (p, callback) {
+        /**
+         * 创建一组串联同类任务，例如排序加载一组资源
+         *
+         * @param params 一组参数
+         * @param taskFunc 单一任务函数
+         * @param onComplete 完成回调
+         */
+        Task.series = function (params, taskFunc, onComplete) {
+            // 构建一组任务
+            var preTasks = params.map(function (p) {
+                return new Task(function (callback) { taskFunc(p, callback); });
+            });
+            // 串联任务
+            preTasks.forEach(function (v, i, arr) { if (i > 0)
+                arr[i].preTasks = [arr[i - 1]]; });
+            // 
+            var task = new Task(null, preTasks);
+            // 完成时提取结果
+            task.once("done", function (e) {
+                var results = task.preTasks.map(function (v) { return v.result; });
+                onComplete(results);
+            });
+            return task;
+        };
+        Task.testParallel = function () {
+            this.parallel([1, 2, 3, 4, 5], function (p, callback) {
                 callback(p);
             }, function (rs) {
                 console.log(rs);
@@ -15078,6 +15102,7 @@ var feng3d;
                 var t = new feng3d.Task();
                 t.content = function (callback) {
                     var sleep = 5000 * Math.random();
+                    sleep = ~~sleep;
                     setTimeout(function () {
                         callback(sleep);
                     }, sleep);
@@ -15091,6 +15116,21 @@ var feng3d;
                 console.log("\u6D88\u8017\u65F6\u95F4 " + (Date.now() - starttime) + "\uFF0C \u5B50\u4EFB\u52A1\u5206\u522B\u6D88\u8017 " + result.toString());
                 console.log("succeed");
             });
+        };
+        Task.testSeries = function () {
+            var task = this.series(["tsconfig.json", "index.html",
+                "app.js"], function (p, callback) {
+                feng3d.fs.readString(p, function (err, str) {
+                    callback(str);
+                });
+            }, function (results) {
+                console.log("\u6D88\u8017\u65F6\u95F4 " + (Date.now() - starttime));
+                console.log("succeed");
+                console.log("\u7ED3\u679C:");
+                console.log(results);
+            });
+            var starttime = Date.now();
+            task.do();
         };
         return Task;
     }());
@@ -15878,11 +15918,8 @@ var feng3d;
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
         ReadFS.prototype.readStrings = function (paths, callback) {
-            // var func = <TaskFunction<{ path: string, result: string | Error }>><any>callback;
-            // func.data
             var _this = this;
-            // var taskNodes: TaskNode<{ path: string}>[] = paths.map(v => { return { data: { path: v }, func: callback }; });
-            feng3d.Task.createTasks(paths, function (path, callback) {
+            feng3d.Task.parallel(paths, function (path, callback) {
                 _this.readString(path, function (err, str) {
                     callback(err || str);
                 });
@@ -17796,6 +17833,7 @@ var feng3d;
     function xmlHttpRequestLoad(loadItem) {
         var request = new XMLHttpRequest();
         request.open('Get', loadItem.url, true);
+        request.setRequestHeader("Access-Control-Allow-Origin", "*");
         request.responseType = loadItem.dataFormat == feng3d.LoaderDataFormat.BINARY ? "arraybuffer" : "";
         request.onreadystatechange = onRequestReadystatechange(request, loadItem);
         request.onprogress = onRequestProgress(request, loadItem);
@@ -17823,6 +17861,7 @@ var feng3d;
                 else {
                     var err = new Error(loadItem.url + " 加载失败！");
                     loadItem.onError && loadItem.onError(err);
+                    loadItem.onCompleted && loadItem.onCompleted(null);
                 }
             }
         };

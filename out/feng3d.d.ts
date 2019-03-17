@@ -7227,27 +7227,6 @@ declare namespace feng3d {
         Done = 3
     }
     /**
-     * 任务结点
-     */
-    interface TaskNode<T> {
-        /**
-         * 任务名称
-         */
-        name?: string;
-        /**
-         * 携带自定义数据
-         *
-         * 例如执行函数时用到的参数，或者是函数执行中间结果
-         */
-        data?: T;
-        /**
-         * 任务函数体
-         *
-         * @param done 完成回调
-         */
-        func(done: (error?: Error) => void): void;
-    }
-    /**
      * 任务，用于处理多件可能有依赖或者嵌套的事情
      */
     class Task {
@@ -7258,12 +7237,16 @@ declare namespace feng3d {
          */
         status: TaskStatus;
         /**
+         * 任务自身内容回调带回结果
+         */
+        result: any;
+        /**
          * 构建任务
          *
-         * @param content 任务自身内容
+         * @param content 任务自身内容，回调带回结果保存在 result.value 中
          * @param preTasks 前置任务列表
          */
-        constructor(content?: (callback: (err?: Error) => void) => void, preTasks?: Task[]);
+        constructor(content?: (callback: (result?: any) => void) => void, preTasks?: Task[]);
         do(callback?: () => void): void;
         /**
          * 监听一次事件后将会被移除
@@ -7274,15 +7257,24 @@ declare namespace feng3d {
          */
         once<K extends "done">(type: K, listener: (event: Event<any>) => void, thisObject?: any, priority?: number): void;
         /**
-         * 创建一组同类任务，例如加载一组资源
+         * 创建一组并行同类任务，例如同时加载一组资源
          *
          * @param params 一组参数
          * @param taskFunc 单一任务函数
          * @param onComplete 完成回调
          */
-        static createTasks<P, R>(params: P[], taskFunc: (param: P, callback: (result: R) => void) => void, onComplete: (results: R[]) => void): Task;
-        static testCreateTasks(): void;
+        static parallel<P, R>(params: P[], taskFunc: (param: P, callback: (result: R) => void) => void, onComplete: (results: R[]) => void): Task;
+        /**
+         * 创建一组串联同类任务，例如排序加载一组资源
+         *
+         * @param params 一组参数
+         * @param taskFunc 单一任务函数
+         * @param onComplete 完成回调
+         */
+        static series<P, R>(params: P[], taskFunc: (param: P, callback: (result: R) => void) => void, onComplete: (results: R[]) => void): Task;
+        static testParallel(): void;
         static test(): void;
+        static testSeries(): void;
     }
 }
 declare namespace feng3d {

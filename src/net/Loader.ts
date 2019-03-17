@@ -74,6 +74,7 @@ namespace feng3d
     {
         var request = new XMLHttpRequest();
         request.open('Get', loadItem.url, true);
+        request.setRequestHeader("Access-Control-Allow-Origin", "*");
         request.responseType = loadItem.dataFormat == LoaderDataFormat.BINARY ? "arraybuffer" : "";
         request.onreadystatechange = onRequestReadystatechange(request, loadItem);
         request.onprogress = onRequestProgress(request, loadItem);
@@ -111,6 +112,7 @@ namespace feng3d
                 {
                     var err = new Error(loadItem.url + " 加载失败！");
                     loadItem.onError && loadItem.onError(err);
+                    loadItem.onCompleted && loadItem.onCompleted(null);
                 }
             }
         }
