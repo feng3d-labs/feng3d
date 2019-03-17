@@ -7227,6 +7227,12 @@ declare namespace feng3d {
         Done = 3
     }
     /**
+     * 任务函数
+     */
+    interface TaskFunction {
+        (done: (error?: Error) => void): void;
+    }
+    /**
      * 任务，用于处理多件可能有依赖或者嵌套的事情
      */
     class Task {
@@ -7272,9 +7278,25 @@ declare namespace feng3d {
          * @param onComplete 完成回调
          */
         static series<P, R>(params: P[], taskFunc: (param: P, callback: (result: R) => void) => void, onComplete: (results: R[]) => void): Task;
+        /**
+         * 创建一组并行任务，所有任务同时进行
+         *
+         * @param taskFuncs 任务函数列表
+         * @param onComplete 完成回调
+         */
+        static parallelTask(taskFuncs: TaskFunction[], onComplete: () => void): Task;
+        /**
+         * 创建一组串联任务，只有上个任务完成后才执行下个任务
+         *
+         * @param taskFuncs 任务函数列表
+         * @param onComplete 完成回调
+         */
+        static seriesTask(taskFuncs: TaskFunction[], onComplete: () => void): Task;
         static testParallel(): void;
         static test(): void;
         static testSeries(): void;
+        static testParallelTask(): void;
+        static testSeriesTask(): void;
     }
 }
 declare namespace feng3d {

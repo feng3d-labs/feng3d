@@ -24,6 +24,14 @@ namespace feng3d
     }
 
     /**
+     * 任务函数
+     */
+    export interface TaskFunction
+    {
+        (done: (error?: Error) => void): void;
+    }
+
+    /**
      * 任务，用于处理多件可能有依赖或者嵌套的事情
      */
     export class Task
@@ -174,7 +182,39 @@ namespace feng3d
             return task;
         }
 
+        /**
+         * 创建一组并行任务，所有任务同时进行
+         * 
+         * @param taskFuncs 任务函数列表
+         * @param onComplete 完成回调
+         */
+        static parallelTask(taskFuncs: TaskFunction[], onComplete: () => void)
+        {
+            // 构建一组任务
+            var preTasks = taskFuncs.map(v => new Task(v));
+            var task = new Task(null, preTasks);
+            // 完成时提取结果
+            task.once("done", onComplete);
+            return task;
+        }
 
+        /**
+         * 创建一组串联任务，只有上个任务完成后才执行下个任务
+         * 
+         * @param taskFuncs 任务函数列表
+         * @param onComplete 完成回调
+         */
+        static seriesTask(taskFuncs: TaskFunction[], onComplete: () => void)
+        {
+            // 构建一组任务
+            var preTasks = taskFuncs.map(v => new Task(v));
+            // 串联任务
+            preTasks.forEach((v, i, arr) => { if (i > 0) arr[i].preTasks = [arr[i - 1]]; });
+            var task = new Task(null, preTasks);
+            // 完成时提取结果
+            task.once("done", onComplete);
+            return task;
+        }
 
         static testParallel()
         {
@@ -234,6 +274,56 @@ namespace feng3d
 
             var starttime = Date.now();
             task.do();
+        }
+
+        static testParallelTask()
+        {
+            console.time(`task`);
+            // console.timeStamp(`task`);
+            var funcs: TaskFunction[] = [1, 2, 3, 4].map(v => (callback) =>
+            {
+                var sleep = 5000 * Math.random();
+                sleep = ~~sleep;
+                console.time(`${sleep}`);
+                setTimeout(() =>
+                {
+                    console.log(v);
+                    console.timeEnd(`${sleep}`);
+                    callback();
+                }, sleep);
+            });
+            this.parallelTask(funcs, () =>
+            {
+                console.log(`done`);
+                console.timeEnd(`task`);
+                // console.timeStamp(`task`);
+            }).do();
+
+        }
+
+        static testSeriesTask()
+        {
+            console.time(`task`);
+            // console.timeStamp(`task`);
+            var funcs: TaskFunction[] = [1, 2, 3, 4].map(v => (callback) =>
+            {
+                var sleep = 5000 * Math.random();
+                sleep = ~~sleep;
+                console.time(`${sleep}`);
+                setTimeout(() =>
+                {
+                    console.log(v);
+                    console.timeEnd(`${sleep}`);
+                    callback();
+                }, sleep);
+            });
+            this.seriesTask(funcs, () =>
+            {
+                console.log(`done`);
+                console.timeEnd(`task`);
+                // console.timeStamp(`task`);
+            }).do();
+
         }
 
     }

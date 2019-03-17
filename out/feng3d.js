@@ -15087,6 +15087,37 @@ var feng3d;
             });
             return task;
         };
+        /**
+         * 创建一组并行任务，所有任务同时进行
+         *
+         * @param taskFuncs 任务函数列表
+         * @param onComplete 完成回调
+         */
+        Task.parallelTask = function (taskFuncs, onComplete) {
+            // 构建一组任务
+            var preTasks = taskFuncs.map(function (v) { return new Task(v); });
+            var task = new Task(null, preTasks);
+            // 完成时提取结果
+            task.once("done", onComplete);
+            return task;
+        };
+        /**
+         * 创建一组串联任务，只有上个任务完成后才执行下个任务
+         *
+         * @param taskFuncs 任务函数列表
+         * @param onComplete 完成回调
+         */
+        Task.seriesTask = function (taskFuncs, onComplete) {
+            // 构建一组任务
+            var preTasks = taskFuncs.map(function (v) { return new Task(v); });
+            // 串联任务
+            preTasks.forEach(function (v, i, arr) { if (i > 0)
+                arr[i].preTasks = [arr[i - 1]]; });
+            var task = new Task(null, preTasks);
+            // 完成时提取结果
+            task.once("done", onComplete);
+            return task;
+        };
         Task.testParallel = function () {
             this.parallel([1, 2, 3, 4, 5], function (p, callback) {
                 callback(p);
@@ -15131,6 +15162,44 @@ var feng3d;
             });
             var starttime = Date.now();
             task.do();
+        };
+        Task.testParallelTask = function () {
+            console.time("task");
+            // console.timeStamp(`task`);
+            var funcs = [1, 2, 3, 4].map(function (v) { return function (callback) {
+                var sleep = 5000 * Math.random();
+                sleep = ~~sleep;
+                console.time("" + sleep);
+                setTimeout(function () {
+                    console.log(v);
+                    console.timeEnd("" + sleep);
+                    callback();
+                }, sleep);
+            }; });
+            this.parallelTask(funcs, function () {
+                console.log("done");
+                console.timeEnd("task");
+                // console.timeStamp(`task`);
+            }).do();
+        };
+        Task.testSeriesTask = function () {
+            console.time("task");
+            // console.timeStamp(`task`);
+            var funcs = [1, 2, 3, 4].map(function (v) { return function (callback) {
+                var sleep = 5000 * Math.random();
+                sleep = ~~sleep;
+                console.time("" + sleep);
+                setTimeout(function () {
+                    console.log(v);
+                    console.timeEnd("" + sleep);
+                    callback();
+                }, sleep);
+            }; });
+            this.seriesTask(funcs, function () {
+                console.log("done");
+                console.timeEnd("task");
+                // console.timeStamp(`task`);
+            }).do();
         };
         return Task;
     }());
