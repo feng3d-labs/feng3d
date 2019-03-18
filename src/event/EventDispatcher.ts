@@ -23,6 +23,14 @@ namespace feng3d
          * 解析出资源
          */
         "asset.parsed"
+        /**
+         * 删除文件
+         */
+        "fs.delete": string;
+        /**
+         * 写文件
+         */
+        "fs.write": string;
     }
 
 	/**

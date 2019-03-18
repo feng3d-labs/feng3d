@@ -16368,6 +16368,7 @@ var feng3d;
         IndexedDBFS.prototype.deleteFile = function (path, callback) {
             // 删除文件
             feng3d._indexedDB.objectStoreDelete(this.DBname, this.projectname, path, callback);
+            feng3d.dispatcher.dispatch("fs.delete", path);
         };
         /**
          * 写文件
@@ -16377,6 +16378,7 @@ var feng3d;
          */
         IndexedDBFS.prototype.writeArrayBuffer = function (path, data, callback) {
             feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
+            feng3d.dispatcher.dispatch("fs.write", path);
         };
         /**
          * 写文件
@@ -16386,6 +16388,7 @@ var feng3d;
          */
         IndexedDBFS.prototype.writeString = function (path, data, callback) {
             feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
+            feng3d.dispatcher.dispatch("fs.write", path);
         };
         /**
          * 写文件
@@ -16396,6 +16399,7 @@ var feng3d;
         IndexedDBFS.prototype.writeObject = function (path, data, callback) {
             var obj = feng3d.serialization.serialize(data);
             feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, obj, callback);
+            feng3d.dispatcher.dispatch("fs.write", path);
         };
         /**
          * 写图片
@@ -16407,6 +16411,7 @@ var feng3d;
             var _this = this;
             feng3d.dataTransform.imageToArrayBuffer(image, function (arraybuffer) {
                 _this.writeArrayBuffer(path, arraybuffer, callback);
+                feng3d.dispatcher.dispatch("fs.write", path);
             });
         };
         /**

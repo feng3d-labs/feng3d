@@ -248,6 +248,7 @@ namespace feng3d
         {
             // 删除文件
             _indexedDB.objectStoreDelete(this.DBname, this.projectname, path, callback);
+            dispatcher.dispatch("fs.delete", path);
         }
 
         /**
@@ -259,6 +260,7 @@ namespace feng3d
         writeArrayBuffer(path: string, data: ArrayBuffer, callback?: (err: Error) => void)
         {
             _indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
+            dispatcher.dispatch("fs.write", path);
         }
 
         /**
@@ -270,6 +272,7 @@ namespace feng3d
         writeString(path: string, data: string, callback?: (err: Error) => void)
         {
             _indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
+            dispatcher.dispatch("fs.write", path);
         }
 
         /**
@@ -282,6 +285,7 @@ namespace feng3d
         {
             var obj = serialization.serialize(data);
             _indexedDB.objectStorePut(this.DBname, this.projectname, path, obj, callback);
+            dispatcher.dispatch("fs.write", path);
         }
 
         /**
@@ -295,6 +299,7 @@ namespace feng3d
             dataTransform.imageToArrayBuffer(image, (arraybuffer) =>
             {
                 this.writeArrayBuffer(path, arraybuffer, callback);
+                dispatcher.dispatch("fs.write", path);
             });
         }
 

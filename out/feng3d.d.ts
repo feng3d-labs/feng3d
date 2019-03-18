@@ -7004,6 +7004,14 @@ declare namespace feng3d {
          * 解析出资源
          */
         "asset.parsed": any;
+        /**
+         * 删除文件
+         */
+        "fs.delete": string;
+        /**
+         * 写文件
+         */
+        "fs.write": string;
     }
     /**
      * 事件
