@@ -54,6 +54,68 @@ namespace feng3d
         (done: (result?: any) => void): void;
     }
 
+    export interface TF
+    {
+        (callback: () => void): void;
+    }
+
+    /**
+     * 串联
+     * @param fns 
+     */
+    export function parallel(fns: TF[]): TF
+    {
+        var result = (callback) =>
+        {
+            var index = 0;
+
+            var next = (callback) =>
+            {
+                if (index >= fns.length)
+                {
+                    callback && callback();
+                    return;
+                }
+                var fn = fns[index];
+                index++;
+                fn(() =>
+                {
+                    next(callback);
+                });
+            }
+            next(callback);
+        };
+        return result;
+    }
+
+    /**
+     * 串联
+     * @param fns 
+     */
+    export function series(fns: TF[]): TF
+    {
+        var result = (callback) =>
+        {
+            var index = 0;
+            var next = (callback) =>
+            {
+                if (index >= fns.length)
+                {
+                    callback && callback();
+                    return;
+                }
+                var fn = fns[index];
+                index++;
+                fn(() =>
+                {
+                    next(callback);
+                });
+            }
+            next(callback);
+        };
+        return result;
+    }
+
     /**
      * 执行任务
      * 
@@ -330,14 +392,54 @@ namespace feng3d
                     console.log(v);
                     console.timeEnd(`${sleep}`);
                     callback();
+                    callback();
                 }, sleep);
             });
-            this.series(funcs)(() =>
+            var fn = this.series(funcs);
+            fn(() =>
             {
                 console.log(`done`);
                 console.timeEnd(`task`);
                 // console.timeStamp(`task`);
             });
+            fn(() =>
+            {
+                console.log(`done`);
+                console.timeEnd(`task`);
+                // console.timeStamp(`task`);
+            });
+        }
+
+        testSeries1()
+        {
+            console.time(`task`);
+            // console.timeStamp(`task`);
+            var funcs: TaskFunction[] = [1, 2, 3, 4].map(v => (callback) =>
+            {
+                var sleep = 1000 * Math.random();
+                sleep = ~~sleep;
+                console.time(`${sleep}`);
+                setTimeout(() =>
+                {
+                    console.log(v);
+                    console.timeEnd(`${sleep}`);
+                    callback();
+                    callback();
+                }, sleep);
+            });
+            var fn = series(funcs);
+            fn(() =>
+            {
+                console.log(`done`);
+                console.timeEnd(`task`);
+                // console.timeStamp(`task`);
+            });
+            // fn(() =>
+            // {
+            //     console.log(`done`);
+            //     console.timeEnd(`task`);
+            //     // console.timeStamp(`task`);
+            // });
 
         }
 

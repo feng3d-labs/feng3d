@@ -7259,6 +7259,19 @@ declare namespace feng3d {
          */
         (done: (result?: any) => void): void;
     }
+    interface TF {
+        (callback: () => void): void;
+    }
+    /**
+     * 串联
+     * @param fns
+     */
+    function parallel(fns: TF[]): TF;
+    /**
+     * 串联
+     * @param fns
+     */
+    function series(fns: TF[]): TF;
     /**
      * 任务，用于处理多件可能有依赖或者嵌套的事情
      */
@@ -7308,6 +7321,7 @@ declare namespace feng3d {
         testSeriesResults(): void;
         testParallel(): void;
         testSeries(): void;
+        testSeries1(): void;
         testTask(): void;
     }
 }

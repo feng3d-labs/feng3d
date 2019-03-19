@@ -14961,6 +14961,52 @@ var feng3d;
         TaskStatus[TaskStatus["Done"] = 3] = "Done";
     })(TaskStatus = feng3d.TaskStatus || (feng3d.TaskStatus = {}));
     /**
+     * 串联
+     * @param fns
+     */
+    function parallel(fns) {
+        var result = function (callback) {
+            var index = 0;
+            var next = function (callback) {
+                if (index >= fns.length) {
+                    callback && callback();
+                    return;
+                }
+                var fn = fns[index];
+                index++;
+                fn(function () {
+                    next(callback);
+                });
+            };
+            next(callback);
+        };
+        return result;
+    }
+    feng3d.parallel = parallel;
+    /**
+     * 串联
+     * @param fns
+     */
+    function series(fns) {
+        var result = function (callback) {
+            var index = 0;
+            var next = function (callback) {
+                if (index >= fns.length) {
+                    callback && callback();
+                    return;
+                }
+                var fn = fns[index];
+                index++;
+                fn(function () {
+                    next(callback);
+                });
+            };
+            next(callback);
+        };
+        return result;
+    }
+    feng3d.series = series;
+    /**
      * 执行任务
      *
      * @param done 完成回调
@@ -15187,13 +15233,47 @@ var feng3d;
                     console.log(v);
                     console.timeEnd("" + sleep);
                     callback();
+                    callback();
                 }, sleep);
             }; });
-            this.series(funcs)(function () {
+            var fn = this.series(funcs);
+            fn(function () {
                 console.log("done");
                 console.timeEnd("task");
                 // console.timeStamp(`task`);
             });
+            fn(function () {
+                console.log("done");
+                console.timeEnd("task");
+                // console.timeStamp(`task`);
+            });
+        };
+        Task.prototype.testSeries1 = function () {
+            console.time("task");
+            // console.timeStamp(`task`);
+            var funcs = [1, 2, 3, 4].map(function (v) { return function (callback) {
+                var sleep = 1000 * Math.random();
+                sleep = ~~sleep;
+                console.time("" + sleep);
+                setTimeout(function () {
+                    console.log(v);
+                    console.timeEnd("" + sleep);
+                    callback();
+                    callback();
+                }, sleep);
+            }; });
+            var fn = series(funcs);
+            fn(function () {
+                console.log("done");
+                console.timeEnd("task");
+                // console.timeStamp(`task`);
+            });
+            // fn(() =>
+            // {
+            //     console.log(`done`);
+            //     console.timeEnd(`task`);
+            //     // console.timeStamp(`task`);
+            // });
         };
         Task.prototype.testTask = function () {
             var fn = function () {
