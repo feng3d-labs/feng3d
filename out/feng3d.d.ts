@@ -7263,21 +7263,31 @@ declare namespace feng3d {
      * 任务，用于处理多件可能有依赖或者嵌套的事情
      */
     class Task {
-        task(taskName: string, fn: TaskFunction): void;
+        private registerTasks;
+        private tasks;
         /**
-         * 把一组无序任务函数并联成一个任务函数
+         * 映射任务名称以及依赖列表
+         *
+         * @param taskName 任务名称
+         * @param dependencies 依赖任务名称列表
+         * @param fn 任务函数
+         */
+        task(taskName: string, dependencies: string[], fn: TaskFunction): void;
+        getTask(taskName: string): TaskFunction;
+        /**
+         * 把一组无序任务函数并联成一个任务函数，任务之间无依赖关系
          *
          * @param fns 任务函数列表
          * @returns 组合后的任务函数
          */
         parallel(fns: TaskFunction[]): TaskFunction;
         /**
-         * 把一组有序任务函数并联成一个任务函数
+         * 把一组有序任务函数串联成一个任务函数，后面函数只在前面函数执行完成后调用
          *
          * @param fns 任务函数列表
          * @param 组合后的任务函数
          */
-        series(fns: TaskFunction[]): (done: (result?: any) => void) => void;
+        series(fns: TaskFunction[]): TaskFunction;
         /**
          * 创建一组并行同类任务，例如同时加载一组资源，并在回调中返回结果数组
          *
@@ -7298,6 +7308,7 @@ declare namespace feng3d {
         testSeriesResults(): void;
         testParallel(): void;
         testSeries(): void;
+        testTask(): void;
     }
 }
 declare namespace feng3d {

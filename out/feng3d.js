@@ -15026,11 +15026,32 @@ var feng3d;
      */
     var Task = /** @class */ (function () {
         function Task() {
+            this.registerTasks = {};
+            this.tasks = {};
         }
-        Task.prototype.task = function (taskName, fn) {
+        /**
+         * 映射任务名称以及依赖列表
+         *
+         * @param taskName 任务名称
+         * @param dependencies 依赖任务名称列表
+         * @param fn 任务函数
+         */
+        Task.prototype.task = function (taskName, dependencies, fn) {
+            this.registerTasks[taskName] = { dependencies: dependencies, fn: fn };
+        };
+        Task.prototype.getTask = function (taskName) {
+            var _this = this;
+            if (!this.tasks[taskName]) {
+                var item = this.registerTasks[taskName];
+                // 获取依赖函数
+                var dependenciesFns = item.dependencies.map(function (v) { return _this.getTask(v); });
+                // 
+                this.tasks[taskName] = this.series([this.parallel(dependenciesFns), item.fn]);
+            }
+            return this.tasks[taskName];
         };
         /**
-         * 把一组无序任务函数并联成一个任务函数
+         * 把一组无序任务函数并联成一个任务函数，任务之间无依赖关系
          *
          * @param fns 任务函数列表
          * @returns 组合后的任务函数
@@ -15048,7 +15069,7 @@ var feng3d;
             return result;
         };
         /**
-         * 把一组有序任务函数并联成一个任务函数
+         * 把一组有序任务函数串联成一个任务函数，后面函数只在前面函数执行完成后调用
          *
          * @param fns 任务函数列表
          * @param 组合后的任务函数
@@ -15173,6 +15194,18 @@ var feng3d;
                 console.timeEnd("task");
                 // console.timeStamp(`task`);
             });
+        };
+        Task.prototype.testTask = function () {
+            var fn = function () {
+                console.log("fn");
+            };
+            this.task("copy-html", [], fn);
+            this.getTask("copy-html")(function () { });
+            this.getTask("copy-html")(function () { });
+            var fn1 = this.getTask("copy-html");
+            var fn2 = this.getTask("copy-html");
+            console.log(fn == fn1);
+            console.log(fn2 == fn1);
         };
         return Task;
     }());

@@ -130,13 +130,37 @@ namespace feng3d
      */
     export class Task
     {
-        task(taskName: string, fn: TaskFunction)
-        {
+        private registerTasks: { [name: string]: { dependencies: string[], fn: TaskFunction } } = {};
+        private tasks: { [name: string]: TaskFunction } = {};
 
+        /**
+         * 映射任务名称以及依赖列表
+         * 
+         * @param taskName 任务名称
+         * @param dependencies 依赖任务名称列表
+         * @param fn 任务函数
+         */
+        task(taskName: string, dependencies: string[], fn: TaskFunction)
+        {
+            this.registerTasks[taskName] = { dependencies: dependencies, fn: fn };
+        }
+
+        getTask(taskName: string)
+        {
+            if (!this.tasks[taskName]) 
+            {
+                var item = this.registerTasks[taskName];
+                // 获取依赖函数
+                var dependenciesFns = item.dependencies.map(v => this.getTask(v));
+                // 
+                this.tasks[taskName] = this.series([this.parallel(dependenciesFns), item.fn]);
+            }
+
+            return this.tasks[taskName];
         }
 
         /**
-         * 把一组无序任务函数并联成一个任务函数
+         * 把一组无序任务函数并联成一个任务函数，任务之间无依赖关系
          * 
          * @param fns 任务函数列表
          * @returns 组合后的任务函数
@@ -158,12 +182,12 @@ namespace feng3d
         }
 
         /**
-         * 把一组有序任务函数并联成一个任务函数
+         * 把一组有序任务函数串联成一个任务函数，后面函数只在前面函数执行完成后调用
          * 
          * @param fns 任务函数列表
          * @param 组合后的任务函数
          */
-        series(fns: TaskFunction[])
+        series(fns: TaskFunction[]): TaskFunction
         {
             // 构建一组任务
             var task: TaskFunction = ((done: () => void) => { done(); });
@@ -315,6 +339,26 @@ namespace feng3d
                 // console.timeStamp(`task`);
             });
 
+        }
+
+        testTask()
+        {
+
+            var fn = function ()
+            {
+                console.log("fn");
+            };
+
+            this.task("copy-html", [], fn);
+
+            this.getTask("copy-html")(() => { });
+            this.getTask("copy-html")(() => { });
+
+            var fn1 = this.getTask("copy-html");
+            var fn2 = this.getTask("copy-html");
+
+            console.log(fn == fn1);
+            console.log(fn2 == fn1);
         }
     }
 
