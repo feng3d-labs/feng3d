@@ -14610,8 +14610,9 @@ var feng3d;
             var listeners = this.feventMap.get(obj) && this.feventMap.get(obj)[e.type];
             if (listeners) {
                 //遍历调用事件回调函数
-                for (var i = 0; i < listeners.length && !e.isStop; i++) {
-                    listeners[i].listener.call(listeners[i].thisObject, e);
+                var listeners0 = listeners.concat();
+                for (var i = 0; i < listeners0.length && !e.isStop; i++) {
+                    listeners0[i].listener.call(listeners0[i].thisObject, e); //此处可能会删除当前事件，所以上面必须拷贝
                 }
                 for (var i = listeners.length - 1; i >= 0; i--) {
                     if (listeners[i].once)
@@ -14624,8 +14625,9 @@ var feng3d;
             listeners = this.feventMap.get(obj) && this.feventMap.get(obj).__allEventType__;
             if (listeners) {
                 //遍历调用事件回调函数
-                for (var i = 0; i < listeners.length && !e.isStop; i++) {
-                    listeners[i].listener.call(listeners[i].thisObject, e);
+                var listeners0 = listeners.concat();
+                for (var i = 0; i < listeners0.length && !e.isStop; i++) {
+                    listeners0[i].listener.call(listeners0[i].thisObject, e); //此处可能会删除当前事件，所以上面必须拷贝
                 }
                 for (var i = listeners.length - 1; i >= 0; i--) {
                     if (listeners[i].once)

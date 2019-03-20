@@ -227,9 +227,10 @@ namespace feng3d
             if (listeners)
             {
                 //遍历调用事件回调函数
-                for (var i = 0; i < listeners.length && !e.isStop; i++)
+                var listeners0 = listeners.concat();
+                for (var i = 0; i < listeners0.length && !e.isStop; i++)
                 {
-                    listeners[i].listener.call(listeners[i].thisObject, e);
+                    listeners0[i].listener.call(listeners0[i].thisObject, e);//此处可能会删除当前事件，所以上面必须拷贝
                 }
                 for (var i = listeners.length - 1; i >= 0; i--)
                 {
@@ -244,9 +245,10 @@ namespace feng3d
             if (listeners)
             {
                 //遍历调用事件回调函数
-                for (var i = 0; i < listeners.length && !e.isStop; i++)
+                var listeners0 = listeners.concat();
+                for (var i = 0; i < listeners0.length && !e.isStop; i++)
                 {
-                    listeners[i].listener.call(listeners[i].thisObject, e);
+                    listeners0[i].listener.call(listeners0[i].thisObject, e);//此处可能会删除当前事件，所以上面必须拷贝
                 }
                 for (var i = listeners.length - 1; i >= 0; i--)
                 {
