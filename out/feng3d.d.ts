@@ -7232,6 +7232,8 @@ declare namespace feng3d {
     }
     /**
      * 任务
+     *
+     * 处理 异步任务(函数)串联并联执行功能
      */
     class Task {
         /**
@@ -7250,6 +7252,22 @@ declare namespace feng3d {
          * @param fns 一组异步函数
          */
         series(fns: TaskFunction[]): TaskFunction;
+        /**
+         * 创建一组并行同类任务，例如同时加载一组资源，并在回调中返回结果数组
+         *
+         * @param ps 一组参数
+         * @param fn 单一任务函数
+         * @param done 完成回调
+         */
+        parallelResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void): void;
+        /**
+         * 创建一组串联同类任务，例如排序加载一组资源
+         *
+         * @param ps 一组参数
+         * @param fn 单一任务函数
+         * @param done 完成回调
+         */
+        seriesResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void): void;
     }
 }
 declare namespace feng3d {

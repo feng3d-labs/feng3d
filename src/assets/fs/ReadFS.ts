@@ -56,21 +56,13 @@ namespace feng3d
          */
         readStrings(paths: string[], callback: (strs: (string | Error)[]) => void)
         {
-            var result: { [path: string]: (string | Error) } = {};
-
-            var fns = paths.map(p => (callback: () => void) =>
+            task.parallelResults(paths, (path, callback) =>
             {
-                this.readString(p, (err, str) =>
+                this.readString(path, (err, str) =>
                 {
-                    result[p] = err || str;
-                    callback();
-                })
-            });
-            task.parallel(fns)(() =>
-            {
-                var results = paths.map(p => result[p]);
-                callback(results);
-            });
+                    callback(err || str);
+                });
+            }, callback);
         }
     }
 }

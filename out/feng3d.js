@@ -14940,6 +14940,8 @@ var feng3d;
 (function (feng3d) {
     /**
      * 任务
+     *
+     * 处理 异步任务(函数)串联并联执行功能
      */
     var Task = /** @class */ (function () {
         function Task() {
@@ -15012,6 +15014,48 @@ var feng3d;
                 next();
             };
             return result;
+        };
+        /**
+         * 创建一组并行同类任务，例如同时加载一组资源，并在回调中返回结果数组
+         *
+         * @param ps 一组参数
+         * @param fn 单一任务函数
+         * @param done 完成回调
+         */
+        Task.prototype.parallelResults = function (ps, fn, done) {
+            var map = new Map();
+            // 包装函数
+            var fns = ps.map(function (p) { return function (callback) {
+                fn(p, function (r) {
+                    map.set(p, r);
+                    callback();
+                });
+            }; });
+            this.parallel(fns)(function () {
+                var results = ps.map(function (p) { return map.get(p); });
+                done(results);
+            });
+        };
+        /**
+         * 创建一组串联同类任务，例如排序加载一组资源
+         *
+         * @param ps 一组参数
+         * @param fn 单一任务函数
+         * @param done 完成回调
+         */
+        Task.prototype.seriesResults = function (ps, fn, done) {
+            var map = new Map();
+            // 包装函数
+            var fns = ps.map(function (p) { return function (callback) {
+                fn(p, function (r) {
+                    map.set(p, r);
+                    callback();
+                });
+            }; });
+            this.series(fns)(function () {
+                var results = ps.map(function (p) { return map.get(p); });
+                done(results);
+            });
         };
         return Task;
     }());
@@ -15800,17 +15844,11 @@ var feng3d;
          */
         ReadFS.prototype.readStrings = function (paths, callback) {
             var _this = this;
-            var result = {};
-            var fns = paths.map(function (p) { return function (callback) {
-                _this.readString(p, function (err, str) {
-                    result[p] = err || str;
-                    callback();
+            feng3d.task.parallelResults(paths, function (path, callback) {
+                _this.readString(path, function (err, str) {
+                    callback(err || str);
                 });
-            }; });
-            feng3d.task.parallel(fns)(function () {
-                var results = paths.map(function (p) { return result[p]; });
-                callback(results);
-            });
+            }, callback);
         };
         return ReadFS;
     }());
