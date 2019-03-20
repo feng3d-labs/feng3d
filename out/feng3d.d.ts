@@ -7218,111 +7218,38 @@ declare namespace feng3d {
      */
     var task: Task;
     /**
-     * 任务状态
-     */
-    enum TaskStatus {
-        /**
-         * 初始状态，未开始
-         */
-        None = 0,
-        /**
-         * 等待状态，等待到依赖任务执行完成
-         */
-        Waiting = 1,
-        /**
-         * 执行状态，进行中
-         */
-        Doing = 2,
-        /**
-         * 完成状态，已完成
-         */
-        Done = 3
-    }
-    /**
      * 任务函数
      */
     interface TaskFunction {
         /**
-         * 默认初始状态，未开始，状态不可逆
+         * 函数自身名称
          */
-        status?: TaskStatus;
+        readonly name?: string;
         /**
-         * 任务自身内容回调带回结果
+         * 函数自身
          */
-        result?: any;
-        /**
-         * 前置任务列表
-         */
-        preTasks?: TaskFunction[];
-        /**
-         * 任务函数自身
-         */
-        (done: (result?: any) => void): void;
-    }
-    interface TF {
         (callback: () => void): void;
     }
     /**
-     * 串联
-     * @param fns
-     */
-    function parallel(fns: TF[]): TF;
-    /**
-     * 串联
-     * @param fns
-     */
-    function series(fns: TF[]): TF;
-    /**
-     * 任务，用于处理多件可能有依赖或者嵌套的事情
+     * 任务
      */
     class Task {
-        private registerTasks;
-        private tasks;
         /**
-         * 映射任务名称以及依赖列表
+         * 并联多个异步函数为一个函数
          *
-         * @param taskName 任务名称
-         * @param dependencies 依赖任务名称列表
-         * @param fn 任务函数
-         */
-        task(taskName: string, dependencies: string[], fn: TaskFunction): void;
-        getTask(taskName: string): TaskFunction;
-        /**
-         * 把一组无序任务函数并联成一个任务函数，任务之间无依赖关系
+         * 这些异步函数同时执行
          *
-         * @param fns 任务函数列表
-         * @returns 组合后的任务函数
+         * @param fns 一组异步函数
          */
         parallel(fns: TaskFunction[]): TaskFunction;
         /**
-         * 把一组有序任务函数串联成一个任务函数，后面函数只在前面函数执行完成后调用
+         * 串联多个异步函数为一个函数
          *
-         * @param fns 任务函数列表
-         * @param 组合后的任务函数
+         * 这些异步函数按顺序依次执行，等待前一个异步函数执行完调用回调后才执行下一个异步函数。
+         *
+         * @param fns 一组异步函数
          */
         series(fns: TaskFunction[]): TaskFunction;
-        /**
-         * 创建一组并行同类任务，例如同时加载一组资源，并在回调中返回结果数组
-         *
-         * @param ps 一组参数
-         * @param fn 单一任务函数
-         * @param done 完成回调
-         */
-        parallelResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void): (done: (rs: R[]) => void) => void;
-        /**
-         * 创建一组串联同类任务，例如排序加载一组资源
-         *
-         * @param ps 一组参数
-         * @param fn 单一任务函数
-         * @param done 完成回调
-         */
-        seriesResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void): (done: (rs: R[]) => void) => void;
-        testParallelResults(): void;
-        testSeriesResults(): void;
-        testParallel(): void;
-        testSeries(): void;
-        testSeries1(): void;
-        testTask(): void;
     }
 }
 declare namespace feng3d {
