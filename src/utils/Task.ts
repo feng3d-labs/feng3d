@@ -106,9 +106,12 @@ namespace feng3d
                 }
                 var fn = fns[index];
                 index++;
+                var callNum = 0;
                 fn(() =>
                 {
-                    next(callback);
+                    callNum++;
+                    if (callNum == 1) next(callback);
+                    else { console.warn(`${fn.name ? "函数" + fn.name : "匿名函数"} 多次调用回调函数，当前次数 ${callNum}`); }
                 });
             }
             next(callback);

@@ -14997,8 +14997,14 @@ var feng3d;
                 }
                 var fn = fns[index];
                 index++;
+                var callNum = 0;
                 fn(function () {
-                    next(callback);
+                    callNum++;
+                    if (callNum == 1)
+                        next(callback);
+                    else {
+                        console.warn((fn.name ? "函数" + fn.name : "匿名函数") + " \u591A\u6B21\u8C03\u7528\u56DE\u8C03\u51FD\u6570\uFF0C\u5F53\u524D\u6B21\u6570 " + callNum);
+                    }
                 });
             };
             next(callback);
