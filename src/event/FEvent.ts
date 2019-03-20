@@ -45,6 +45,8 @@ namespace feng3d
                 return false;
             targets.push(obj);
 
+            e.handles = [];
+
             this.handleEvent(obj, e);
 
             this.handelEventBubbles(obj, e);
@@ -60,7 +62,7 @@ namespace feng3d
          */
         dispatch(obj: Object, type: string, data?: any, bubbles = false)
         {
-            var e: Event<any> = { type: type, data: data, bubbles: bubbles, target: null, currentTarget: null, isStop: false, isStopBubbles: false, targets: [] };
+            var e: Event<any> = { type: type, data: data, bubbles: bubbles, target: null, currentTarget: null, isStop: false, isStopBubbles: false, targets: [], handles: [] };
             this.dispatchEvent(obj, e);
             return e;
         }
@@ -231,6 +233,7 @@ namespace feng3d
                 for (var i = 0; i < listeners0.length && !e.isStop; i++)
                 {
                     listeners0[i].listener.call(listeners0[i].thisObject, e);//此处可能会删除当前事件，所以上面必须拷贝
+                    e.handles.push(listeners0[i]);
                 }
                 for (var i = listeners.length - 1; i >= 0; i--)
                 {
@@ -286,6 +289,57 @@ namespace feng3d
     {
         [type: string]: ListenerVO[];
         __allEventType__?: ListenerVO[];
+    }
+
+	/**
+	 * 事件
+	 */
+    export interface Event<T>
+    {
+		/**
+		 * 事件的类型。类型区分大小写。
+		 */
+        type: string;
+
+        /**
+         * 事件携带的自定义数据
+         */
+        data: T;
+
+		/**
+		 * 表示事件是否为冒泡事件。如果事件可以冒泡，则此值为 true；否则为 false。
+		 */
+        bubbles: boolean
+
+		/**
+		 * 事件目标。
+		 */
+        target: any;
+
+		/**
+		 * 当前正在使用某个事件侦听器处理 Event 对象的对象。
+		 */
+        currentTarget: any;
+
+        /**
+         * 是否停止处理事件监听器
+         */
+        isStop: boolean
+
+        /**
+         * 是否停止冒泡
+         */
+        isStopBubbles: boolean
+
+        /**
+         * 事件流过的对象列表，事件路径
+         */
+        targets: any[];
+
+        /**
+         * 处理列表
+         */
+        handles: ListenerVO[];
     }
 
     /**

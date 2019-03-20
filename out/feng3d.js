@@ -14460,6 +14460,7 @@ var feng3d;
             if (targets.indexOf(obj) != -1)
                 return false;
             targets.push(obj);
+            e.handles = [];
             this.handleEvent(obj, e);
             this.handelEventBubbles(obj, e);
             return true;
@@ -14472,7 +14473,7 @@ var feng3d;
          */
         FEvent.prototype.dispatch = function (obj, type, data, bubbles) {
             if (bubbles === void 0) { bubbles = false; }
-            var e = { type: type, data: data, bubbles: bubbles, target: null, currentTarget: null, isStop: false, isStopBubbles: false, targets: [] };
+            var e = { type: type, data: data, bubbles: bubbles, target: null, currentTarget: null, isStop: false, isStopBubbles: false, targets: [], handles: [] };
             this.dispatchEvent(obj, e);
             return e;
         };
@@ -14613,6 +14614,7 @@ var feng3d;
                 var listeners0 = listeners.concat();
                 for (var i = 0; i < listeners0.length && !e.isStop; i++) {
                     listeners0[i].listener.call(listeners0[i].thisObject, e); //此处可能会删除当前事件，所以上面必须拷贝
+                    e.handles.push(listeners0[i]);
                 }
                 for (var i = listeners.length - 1; i >= 0; i--) {
                     if (listeners[i].once)

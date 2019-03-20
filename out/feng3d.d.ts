@@ -6979,40 +6979,6 @@ declare namespace feng3d {
          */
         protected handelEventBubbles(obj: Object, e: Event<any>): void;
     }
-}
-declare namespace feng3d {
-    /**
-     * 全局事件
-     */
-    var dispatcher: IEventDispatcher<GlobalEvents>;
-    interface GlobalEvents {
-        /**
-         * shader资源发生变化
-         */
-        "asset.shaderChanged": any;
-        /**
-         * 脚本发生变化
-         */
-        "asset.scriptChanged": any;
-        /**
-         * 图片资源发生变化
-         */
-        "asset.imageAssetChanged": {
-            url: string;
-        };
-        /**
-         * 解析出资源
-         */
-        "asset.parsed": any;
-        /**
-         * 删除文件
-         */
-        "fs.delete": string;
-        /**
-         * 写文件
-         */
-        "fs.write": string;
-    }
     /**
      * 事件
      */
@@ -7049,6 +7015,65 @@ declare namespace feng3d {
          * 事件流过的对象列表，事件路径
          */
         targets: any[];
+        /**
+         * 处理列表
+         */
+        handles: ListenerVO[];
+    }
+    /**
+     * 监听数据
+     */
+    interface ListenerVO {
+        /**
+         * 监听函数
+         */
+        listener: (event: Event<any>) => void;
+        /**
+         * 监听函数作用域
+         */
+        thisObject: any;
+        /**
+         * 优先级
+         */
+        priority: number;
+        /**
+         * 是否只监听一次
+         */
+        once: boolean;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 全局事件
+     */
+    var dispatcher: IEventDispatcher<GlobalEvents>;
+    interface GlobalEvents {
+        /**
+         * shader资源发生变化
+         */
+        "asset.shaderChanged": any;
+        /**
+         * 脚本发生变化
+         */
+        "asset.scriptChanged": any;
+        /**
+         * 图片资源发生变化
+         */
+        "asset.imageAssetChanged": {
+            url: string;
+        };
+        /**
+         * 解析出资源
+         */
+        "asset.parsed": any;
+        /**
+         * 删除文件
+         */
+        "fs.delete": string;
+        /**
+         * 写文件
+         */
+        "fs.write": string;
     }
     interface IEventDispatcher<T> {
         once<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
