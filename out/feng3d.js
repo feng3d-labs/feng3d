@@ -14460,6 +14460,7 @@ var feng3d;
             if (targets.indexOf(obj) != -1)
                 return false;
             targets.push(obj);
+            e.handles = [];
             this.handleEvent(obj, e);
             this.handelEventBubbles(obj, e);
             return true;
@@ -14472,7 +14473,7 @@ var feng3d;
          */
         FEvent.prototype.dispatch = function (obj, type, data, bubbles) {
             if (bubbles === void 0) { bubbles = false; }
-            var e = { type: type, data: data, bubbles: bubbles, target: null, currentTarget: null, isStop: false, isStopBubbles: false, targets: [] };
+            var e = { type: type, data: data, bubbles: bubbles, target: null, currentTarget: null, isStop: false, isStopBubbles: false, targets: [], handles: [] };
             this.dispatchEvent(obj, e);
             return e;
         };
@@ -14610,8 +14611,10 @@ var feng3d;
             var listeners = this.feventMap.get(obj) && this.feventMap.get(obj)[e.type];
             if (listeners) {
                 //遍历调用事件回调函数
-                for (var i = 0; i < listeners.length && !e.isStop; i++) {
-                    listeners[i].listener.call(listeners[i].thisObject, e);
+                var listeners0 = listeners.concat();
+                for (var i = 0; i < listeners0.length && !e.isStop; i++) {
+                    listeners0[i].listener.call(listeners0[i].thisObject, e); //此处可能会删除当前事件，所以上面必须拷贝
+                    e.handles.push(listeners0[i]);
                 }
                 for (var i = listeners.length - 1; i >= 0; i--) {
                     if (listeners[i].once)
@@ -14624,8 +14627,9 @@ var feng3d;
             listeners = this.feventMap.get(obj) && this.feventMap.get(obj).__allEventType__;
             if (listeners) {
                 //遍历调用事件回调函数
-                for (var i = 0; i < listeners.length && !e.isStop; i++) {
-                    listeners[i].listener.call(listeners[i].thisObject, e);
+                var listeners0 = listeners.concat();
+                for (var i = 0; i < listeners0.length && !e.isStop; i++) {
+                    listeners0[i].listener.call(listeners0[i].thisObject, e); //此处可能会删除当前事件，所以上面必须拷贝
                 }
                 for (var i = listeners.length - 1; i >= 0; i--) {
                     if (listeners[i].once)
@@ -14939,205 +14943,79 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 任务状态
-     */
-    var TaskStatus;
-    (function (TaskStatus) {
-        /**
-         * 初始状态，未开始
-         */
-        TaskStatus[TaskStatus["None"] = 0] = "None";
-        /**
-         * 等待状态，等待到依赖任务执行完成
-         */
-        TaskStatus[TaskStatus["Waiting"] = 1] = "Waiting";
-        /**
-         * 执行状态，进行中
-         */
-        TaskStatus[TaskStatus["Doing"] = 2] = "Doing";
-        /**
-         * 完成状态，已完成
-         */
-        TaskStatus[TaskStatus["Done"] = 3] = "Done";
-    })(TaskStatus = feng3d.TaskStatus || (feng3d.TaskStatus = {}));
-    /**
-     * 串联
-     * @param fns
-     */
-    function parallel(fns) {
-        var result = function (callback) {
-            var index = 0;
-            var next = function (callback) {
-                if (index >= fns.length) {
-                    callback && callback();
-                    return;
-                }
-                var fn = fns[index];
-                index++;
-                fn(function () {
-                    next(callback);
-                });
-            };
-            next(callback);
-        };
-        return result;
-    }
-    feng3d.parallel = parallel;
-    /**
-     * 串联
-     * @param fns
-     */
-    function series(fns) {
-        var result = function (callback) {
-            var index = 0;
-            var next = function (callback) {
-                if (index >= fns.length) {
-                    callback && callback();
-                    return;
-                }
-                var fn = fns[index];
-                index++;
-                var callNum = 0;
-                fn(function () {
-                    callNum++;
-                    if (callNum == 1)
-                        next(callback);
-                    else {
-                        console.warn((fn.name ? "函数" + fn.name : "匿名函数") + " \u591A\u6B21\u8C03\u7528\u56DE\u8C03\u51FD\u6570\uFF0C\u5F53\u524D\u6B21\u6570 " + callNum);
-                    }
-                });
-            };
-            next(callback);
-        };
-        return result;
-    }
-    feng3d.series = series;
-    /**
-     * 执行任务
+     * 任务
      *
-     * @param done 完成回调
-     */
-    function doTask(task, done) {
-        if (task.status == TaskStatus.Done) {
-            done && done();
-            return;
-        }
-        // 回调添加到完成事件中
-        if (done)
-            feng3d.event.once(task, "done", done);
-        // 任务正在执行 直接返回
-        if (task.status == TaskStatus.Doing)
-            return;
-        if (task.status == TaskStatus.Waiting) {
-            //判断是否出现等待死锁；例如A前置任务为B，B前置任务为A
-            var waitings = task.preTasks.filter(function (v) { return v.status == TaskStatus.Waiting; });
-            var index = 0;
-            while (index < waitings.length) {
-                var item = waitings[index];
-                if (item == task) {
-                    console.log(waitings.slice(0, index + 1));
-                    feng3d.error("\u51FA\u73B0\u5FAA\u73AF\u5F15\u7528\u4EFB\u52A1");
-                    return;
-                }
-                if (item.preTasks)
-                    waitings = waitings.concat(item.preTasks.filter(function (v) { return v.status == TaskStatus.Waiting; }));
-                index++;
-            }
-            return;
-        }
-        // 执行前置任务函数
-        var doPreTasks = function (callback) {
-            if (!task.preTasks) {
-                callback();
-                return;
-            }
-            var waitNum = task.preTasks.length;
-            if (waitNum == 0)
-                callback();
-            task.preTasks.forEach(function (v) { return doTask(v, function () {
-                waitNum--;
-                if (waitNum == 0)
-                    callback();
-            }); });
-        };
-        //
-        task.status = TaskStatus.Waiting;
-        // 执行前置任务
-        doPreTasks(function () {
-            task.status = TaskStatus.Doing;
-            // 执行任务自身
-            task(function (result) {
-                task.status = TaskStatus.Done;
-                task.result = result;
-                feng3d.event.dispatch(task, "done");
-            });
-        });
-    }
-    /**
-     * 任务，用于处理多件可能有依赖或者嵌套的事情
+     * 处理 异步任务(函数)串联并联执行功能
      */
     var Task = /** @class */ (function () {
         function Task() {
-            this.registerTasks = {};
-            this.tasks = {};
         }
         /**
-         * 映射任务名称以及依赖列表
+         * 并联多个异步函数为一个函数
          *
-         * @param taskName 任务名称
-         * @param dependencies 依赖任务名称列表
-         * @param fn 任务函数
-         */
-        Task.prototype.task = function (taskName, dependencies, fn) {
-            this.registerTasks[taskName] = { dependencies: dependencies, fn: fn };
-        };
-        Task.prototype.getTask = function (taskName) {
-            var _this = this;
-            if (!this.tasks[taskName]) {
-                var item = this.registerTasks[taskName];
-                // 获取依赖函数
-                var dependenciesFns = item.dependencies.map(function (v) { return _this.getTask(v); });
-                // 
-                this.tasks[taskName] = this.series([this.parallel(dependenciesFns), item.fn]);
-            }
-            return this.tasks[taskName];
-        };
-        /**
-         * 把一组无序任务函数并联成一个任务函数，任务之间无依赖关系
+         * 这些异步函数同时执行
          *
-         * @param fns 任务函数列表
-         * @returns 组合后的任务函数
+         * @param fns 一组异步函数
          */
         Task.prototype.parallel = function (fns) {
-            // 构建一组任务
-            var task = (function (done) { done(); });
-            task.preTasks = fns;
-            // 完成时提取结果
-            var result = function (done) {
-                doTask(task, function () {
-                    done(task.result);
+            var result = function (callback) {
+                if (fns.length == 0) {
+                    callback();
+                    return;
+                }
+                var index = 0;
+                fns.forEach(function (fn) {
+                    var callbackNum = 0;
+                    fn(function () {
+                        callbackNum++;
+                        if (callbackNum == 1) {
+                            index++;
+                            if (index == fns.length) {
+                                callback();
+                            }
+                        }
+                        else {
+                            console.warn((fn.name ? "函数" + fn.name : "匿名函数") + " \u591A\u6B21\u8C03\u7528\u56DE\u8C03\u51FD\u6570\uFF0C\u5F53\u524D\u6B21\u6570 " + callbackNum);
+                        }
+                    });
                 });
             };
             return result;
         };
         /**
-         * 把一组有序任务函数串联成一个任务函数，后面函数只在前面函数执行完成后调用
+         * 串联多个异步函数为一个函数
          *
-         * @param fns 任务函数列表
-         * @param 组合后的任务函数
+         * 这些异步函数按顺序依次执行，等待前一个异步函数执行完调用回调后才执行下一个异步函数。
+         *
+         * @param fns 一组异步函数
          */
         Task.prototype.series = function (fns) {
-            // 构建一组任务
-            var task = (function (done) { done(); });
-            task.preTasks = fns;
-            // 串联任务
-            fns.forEach(function (v, i, arr) { if (i > 0)
-                arr[i].preTasks = [arr[i - 1]]; });
-            // 完成时提取结果
-            var result = function (done) {
-                doTask(task, function () {
-                    done(task.result);
-                });
+            var result = function (callback) {
+                if (fns.length == 0) {
+                    callback();
+                    return;
+                }
+                var index = 0;
+                var next = function () {
+                    var fn = fns[index];
+                    var callbackNum = 0;
+                    fn(function () {
+                        callbackNum++;
+                        if (callbackNum == 1) {
+                            index++;
+                            if (index < fns.length) {
+                                next();
+                            }
+                            else {
+                                callback && callback();
+                            }
+                        }
+                        else {
+                            console.warn((fn.name ? "函数" + fn.name : "匿名函数") + " \u591A\u6B21\u8C03\u7528\u56DE\u8C03\u51FD\u6570\uFF0C\u5F53\u524D\u6B21\u6570 " + callbackNum);
+                        }
+                    });
+                };
+                next();
             };
             return result;
         };
@@ -15148,20 +15026,19 @@ var feng3d;
          * @param fn 单一任务函数
          * @param done 完成回调
          */
-        Task.prototype.parallelResults = function (ps, fn) {
-            // 构建一组任务
-            var task = (function (done) { done(); });
-            task.preTasks = ps.map(function (p) {
-                return function (callback) { fn(p, callback); };
-            });
-            // 完成时提取结果
-            var result = function (done) {
-                doTask(task, function () {
-                    var results = task.preTasks.map(function (v) { return v.result; });
-                    done(results);
+        Task.prototype.parallelResults = function (ps, fn, done) {
+            var map = new Map();
+            // 包装函数
+            var fns = ps.map(function (p) { return function (callback) {
+                fn(p, function (r) {
+                    map.set(p, r);
+                    callback();
                 });
-            };
-            return result;
+            }; });
+            this.parallel(fns)(function () {
+                var results = ps.map(function (p) { return map.get(p); });
+                done(results);
+            });
         };
         /**
          * 创建一组串联同类任务，例如排序加载一组资源
@@ -15170,132 +15047,22 @@ var feng3d;
          * @param fn 单一任务函数
          * @param done 完成回调
          */
-        Task.prototype.seriesResults = function (ps, fn) {
-            // 构建一组任务
-            var task = (function (done) { done(); });
-            task.preTasks = ps.map(function (p) {
-                return function (callback) { fn(p, callback); };
-            });
-            // 串联任务
-            task.preTasks.forEach(function (v, i, arr) { if (i > 0)
-                arr[i].preTasks = [arr[i - 1]]; });
-            // 完成时提取结果
-            var result = function (done) {
-                doTask(task, function () {
-                    var results = task.preTasks.map(function (v) { return v.result; });
-                    done(results);
+        Task.prototype.seriesResults = function (ps, fn, done) {
+            var map = new Map();
+            // 包装函数
+            var fns = ps.map(function (p) { return function (callback) {
+                fn(p, function (r) {
+                    map.set(p, r);
+                    callback();
                 });
-            };
-            return result;
-        };
-        Task.prototype.testParallelResults = function () {
-            this.parallelResults([1, 2, 3, 4, 5], function (p, callback) {
-                callback(p);
-            })(function (rs) {
-                console.log(rs);
-            });
-        };
-        Task.prototype.testSeriesResults = function () {
-            var starttime = Date.now();
-            this.seriesResults(["tsconfig.json", "index.html",
-                "app.js"], function (p, callback) {
-                feng3d.fs.readString(p, function (err, str) {
-                    callback(str);
-                });
-            })(function (results) {
-                console.log("\u6D88\u8017\u65F6\u95F4 " + (Date.now() - starttime));
-                console.log("succeed");
-                console.log("\u7ED3\u679C:");
-                console.log(results);
-            });
-        };
-        Task.prototype.testParallel = function () {
-            console.time("task");
-            // console.timeStamp(`task`);
-            var funcs = [1, 2, 3, 4].map(function (v) { return function (callback) {
-                var sleep = 1000 * Math.random();
-                sleep = ~~sleep;
-                console.time("" + sleep);
-                setTimeout(function () {
-                    console.log(v);
-                    console.timeEnd("" + sleep);
-                    callback();
-                }, sleep);
             }; });
-            this.parallel(funcs)(function () {
-                console.log("done");
-                console.timeEnd("task");
-                // console.timeStamp(`task`);
+            this.series(fns)(function () {
+                var results = ps.map(function (p) { return map.get(p); });
+                done(results);
             });
-        };
-        Task.prototype.testSeries = function () {
-            console.time("task");
-            // console.timeStamp(`task`);
-            var funcs = [1, 2, 3, 4].map(function (v) { return function (callback) {
-                var sleep = 1000 * Math.random();
-                sleep = ~~sleep;
-                console.time("" + sleep);
-                setTimeout(function () {
-                    console.log(v);
-                    console.timeEnd("" + sleep);
-                    callback();
-                    callback();
-                }, sleep);
-            }; });
-            var fn = this.series(funcs);
-            fn(function () {
-                console.log("done");
-                console.timeEnd("task");
-                // console.timeStamp(`task`);
-            });
-            fn(function () {
-                console.log("done");
-                console.timeEnd("task");
-                // console.timeStamp(`task`);
-            });
-        };
-        Task.prototype.testSeries1 = function () {
-            console.time("task");
-            // console.timeStamp(`task`);
-            var funcs = [1, 2, 3, 4].map(function (v) { return function (callback) {
-                var sleep = 1000 * Math.random();
-                sleep = ~~sleep;
-                console.time("" + sleep);
-                setTimeout(function () {
-                    console.log(v);
-                    console.timeEnd("" + sleep);
-                    callback();
-                    callback();
-                }, sleep);
-            }; });
-            var fn = series(funcs);
-            fn(function () {
-                console.log("done");
-                console.timeEnd("task");
-                // console.timeStamp(`task`);
-            });
-            // fn(() =>
-            // {
-            //     console.log(`done`);
-            //     console.timeEnd(`task`);
-            //     // console.timeStamp(`task`);
-            // });
-        };
-        Task.prototype.testTask = function () {
-            var fn = function () {
-                console.log("fn");
-            };
-            this.task("copy-html", [], fn);
-            this.getTask("copy-html")(function () { });
-            this.getTask("copy-html")(function () { });
-            var fn1 = this.getTask("copy-html");
-            var fn2 = this.getTask("copy-html");
-            console.log(fn == fn1);
-            console.log(fn2 == fn1);
         };
         return Task;
     }());
-    feng3d.Task = Task;
     feng3d.task = new Task();
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -16085,7 +15852,7 @@ var feng3d;
                 _this.readString(path, function (err, str) {
                     callback(err || str);
                 });
-            })(callback);
+            }, callback);
         };
         return ReadFS;
     }());

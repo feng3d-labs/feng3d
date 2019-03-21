@@ -62,7 +62,7 @@ namespace feng3d
                 {
                     callback(err || str);
                 });
-            })(callback);
+            }, callback);
         }
     }
 }
