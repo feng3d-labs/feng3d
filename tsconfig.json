@@ -175,6 +175,7 @@
         "src/render/renderer/WireframeRenderer.ts",
         // 组件模块
         "src/component/Component.ts",
+        "src/component/Graphics.ts",
         "src/component/Behaviour.ts",
         // 天空盒
         "src/skybox/Skybox.ts",
