@@ -106,6 +106,15 @@ namespace feng3d
         }
 
         /**
+         * canvas转换为图片
+         */
+        canvasToImage(canvas: HTMLCanvasElement, type: "png" | "jpeg" = "png", callback: (img: HTMLImageElement) => void)
+        {
+            var dataURL = this.canvasToDataURL(canvas, type);
+            this.dataURLToImage(dataURL, callback);
+        }
+
+        /**
          * File、Blob对象转换为dataURL
          * File对象也是一个Blob对象，二者的处理相同。
          */

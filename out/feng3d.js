@@ -1605,6 +1605,14 @@ var feng3d;
             return canvas.toDataURL("image/jpeg", 0.8);
         };
         /**
+         * canvas转换为图片
+         */
+        DataTransform.prototype.canvasToImage = function (canvas, type, callback) {
+            if (type === void 0) { type = "png"; }
+            var dataURL = this.canvasToDataURL(canvas, type);
+            this.dataURLToImage(dataURL, callback);
+        };
+        /**
          * File、Blob对象转换为dataURL
          * File对象也是一个Blob对象，二者的处理相同。
          */
@@ -20687,6 +20695,66 @@ var feng3d;
     }(feng3d.Feng3dObject));
     feng3d.Component = Component;
 })(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Graphics 类包含一组可用来创建矢量形状的方法。
+     */
+    var Graphics = /** @class */ (function (_super) {
+        __extends(Graphics, _super);
+        function Graphics() {
+            var _this = _super.call(this) || this;
+            _this.__class__ = "feng3d.Graphics";
+            _this.canvas = document.createElement("canvas");
+            _this.canvas.width = _this.width;
+            _this.canvas.height = _this.height;
+            _this.context2D = _this.canvas.getContext('2d');
+            //
+            _this.watch(_this.context2D);
+            return _this;
+        }
+        Graphics.prototype.draw = function (width, height, callback) {
+            var _this = this;
+            var canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            var ctxt = canvas.getContext('2d');
+            callback(ctxt);
+            feng3d.dataTransform.canvasToImage(canvas, "png", function (img) {
+                _this.image = img;
+            });
+            return this;
+        };
+        return Graphics;
+    }(feng3d.Component));
+    feng3d.Graphics = Graphics;
+    function watchContext2D(context2D, watchFuncs) {
+        if (watchFuncs === void 0) { watchFuncs = ["rect"]; }
+        watchFuncs.forEach(function (v) {
+            var oldFunc = context2D[v];
+            context2D[v] = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                oldFunc.apply(context2D, args);
+                // 标记更改
+                context2D["__changed"] = true;
+            };
+        });
+    }
+    feng3d.watchContext2D = watchContext2D;
+})(feng3d || (feng3d = {}));
+// var ctxts = [];
+// var num = 100;
+// for (var i = 0; i < num; i++)
+// {
+//     var canvas = document.createElement("canvas");
+//     canvas.width = 100;
+//     canvas.height = 100;
+//     var ctxt = canvas.getContext('2d');
+//     ctxts.push(ctxt);
+// }
 var feng3d;
 (function (feng3d) {
     /**

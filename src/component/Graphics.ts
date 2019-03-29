@@ -7,45 +7,64 @@ namespace feng3d
     {
         __class__: "feng3d.Graphics" = "feng3d.Graphics";
 
-        pen = new Pen();
+        private image: HTMLImageElement
+        private context2D: CanvasRenderingContext2D;
+        private canvas: HTMLCanvasElement;
+        private width: number;
+        private height: number;
 
         constructor()
         {
             super();
 
+            this.canvas = document.createElement("canvas");
+            this.canvas.width = this.width;
+            this.canvas.height = this.height;
+            this.context2D = this.canvas.getContext('2d');
 
+            //
+            this.watch(this.context2D);
+        }
+
+
+
+        draw(width: number, height: number, callback: (context2D: CanvasRenderingContext2D) => void)
+        {
+            var canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            var ctxt = canvas.getContext('2d');
+            callback(ctxt);
+            dataTransform.canvasToImage(canvas, "png", (img) =>
+            {
+                this.image = img;
+            });
+            return this;
         }
     }
 
-    interface Pen extends CanvasRenderingContext2D 
+    export function watchContext2D(context2D: CanvasRenderingContext2D, watchFuncs = ["rect"])
     {
-        restore(): void;
-        save(): void;
-        getTransform(): DOMMatrix;
-        resetTransform(): void;
-        rotate(angle: number): void;
-        scale(x: number, y: number): void;
-        setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void;
-        setTransform(transform?: DOMMatrix2DInit): void;
-        transform(a: number, b: number, c: number, d: number, e: number, f: number): void;
-        translate(x: number, y: number): void;
-        globalAlpha: number;
-        globalCompositeOperation: string;
-        imageSmoothingEnabled: boolean;
-        imageSmoothingQuality: ImageSmoothingQuality;
-        fillStyle: string | CanvasGradient | CanvasPattern;
-        strokeStyle: string | CanvasGradient | CanvasPattern;
-        createLinearGradient(x0: number, y0: number, x1: number, y1: number): CanvasGradient;
-        createPattern(image: CanvasImageSource, repetition: string): CanvasPattern | null;
-        createRadialGradient(x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): CanvasGradient;
-        shadowBlur: number;
-        shadowColor: string;
-        shadowOffsetX: number;
-        shadowOffsetY: number;
-        filter: string;
-    }
-
-    class Pen 
-    {
+        watchFuncs.forEach(v =>
+        {
+            var oldFunc = context2D[v];
+            context2D[v] = function (...args): void
+            {
+                oldFunc.apply(context2D, args);
+                // 标记更改
+                context2D["__changed"] = true;
+            }
+        });
     }
 }
+
+// var ctxts = [];
+// var num = 100;
+// for (var i = 0; i < num; i++)
+// {
+//     var canvas = document.createElement("canvas");
+//     canvas.width = 100;
+//     canvas.height = 100;
+//     var ctxt = canvas.getContext('2d');
+//     ctxts.push(ctxt);
+// }

@@ -1027,6 +1027,10 @@ declare namespace feng3d {
          */
         canvasToDataURL(canvas: HTMLCanvasElement, type?: "png" | "jpeg"): string;
         /**
+         * canvas转换为图片
+         */
+        canvasToImage(canvas: HTMLCanvasElement, type: "png" | "jpeg", callback: (img: HTMLImageElement) => void): void;
+        /**
          * File、Blob对象转换为dataURL
          * File对象也是一个Blob对象，二者的处理相同。
          */
@@ -11462,6 +11466,22 @@ declare namespace feng3d {
         private _onAllListener;
         protected _gameObject: GameObject;
     }
+}
+declare namespace feng3d {
+    /**
+     * Graphics 类包含一组可用来创建矢量形状的方法。
+     */
+    class Graphics extends Component {
+        __class__: "feng3d.Graphics";
+        private image;
+        private context2D;
+        private canvas;
+        private width;
+        private height;
+        constructor();
+        draw(width: number, height: number, callback: (context2D: CanvasRenderingContext2D) => void): this;
+    }
+    function watchContext2D(context2D: CanvasRenderingContext2D, watchFuncs?: string[]): void;
 }
 declare namespace feng3d {
     interface ComponentMap {
