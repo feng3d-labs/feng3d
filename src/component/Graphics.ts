@@ -23,7 +23,7 @@ namespace feng3d
             this.context2D = this.canvas.getContext('2d');
 
             //
-            this.watch(this.context2D);
+            watchContext2D(this.context2D);
         }
 
 

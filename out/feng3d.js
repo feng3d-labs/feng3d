@@ -20710,7 +20710,7 @@ var feng3d;
             _this.canvas.height = _this.height;
             _this.context2D = _this.canvas.getContext('2d');
             //
-            _this.watch(_this.context2D);
+            watchContext2D(_this.context2D);
             return _this;
         }
         Graphics.prototype.draw = function (width, height, callback) {
