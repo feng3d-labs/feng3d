@@ -4396,6 +4396,10 @@ declare namespace feng3d {
          */
         bottomRight: Vector2;
         /**
+         * 中心点
+         */
+        readonly center: Vector2;
+        /**
          * 将源 Rectangle 对象中的所有矩形数据复制到调用方 Rectangle 对象中。
          * @param sourceRect 要从中复制数据的 Rectangle 对象。
          */

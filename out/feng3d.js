@@ -9117,6 +9117,16 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Rectangle.prototype, "center", {
+            /**
+             * 中心点
+             */
+            get: function () {
+                return new feng3d.Vector2(this.x + this.width / 2, this.y + this.height / 2);
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 将源 Rectangle 对象中的所有矩形数据复制到调用方 Rectangle 对象中。
          * @param sourceRect 要从中复制数据的 Rectangle 对象。
