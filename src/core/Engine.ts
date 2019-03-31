@@ -137,6 +137,14 @@ namespace feng3d
         }
 
         /**
+		 * 获取鼠标射线（与鼠标重叠的摄像机射线）
+		 */
+        getMouseRay3D(): Ray3D
+        {
+            return this.camera.getRay3D(windowEventProxy.clientX - this.viewRect.x, windowEventProxy.clientY - this.viewRect.y);
+        }
+
+        /**
          * 绘制场景
          */
         render(interval?: number)
@@ -159,7 +167,7 @@ namespace feng3d
             this.gl.enable(this.gl.DEPTH_TEST);
 
             //鼠标拾取渲染
-            this.selectedObject = this.mouse3DManager.pick(this.scene, this.camera);
+            this.selectedObject = this.mouse3DManager.pick(this, this.scene, this.camera);
             //绘制阴影图
             shadowRenderer.draw(this.gl, this.scene, this.camera);
             skyboxRenderer.draw(this.gl, this.scene, this.camera);

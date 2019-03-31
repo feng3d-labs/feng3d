@@ -22497,6 +22497,12 @@ var feng3d;
             this.mouse3DManager.selectedGameObject = this.selectedObject;
         };
         /**
+         * 获取鼠标射线（与鼠标重叠的摄像机射线）
+         */
+        Engine.prototype.getMouseRay3D = function () {
+            return this.camera.getRay3D(feng3d.windowEventProxy.clientX - this.viewRect.x, feng3d.windowEventProxy.clientY - this.viewRect.y);
+        };
+        /**
          * 绘制场景
          */
         Engine.prototype.render = function (interval) {
@@ -22513,7 +22519,7 @@ var feng3d;
             this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
             this.gl.enable(this.gl.DEPTH_TEST);
             //鼠标拾取渲染
-            this.selectedObject = this.mouse3DManager.pick(this.scene, this.camera);
+            this.selectedObject = this.mouse3DManager.pick(this, this.scene, this.camera);
             //绘制阴影图
             feng3d.shadowRenderer.draw(this.gl, this.scene, this.camera);
             feng3d.skyboxRenderer.draw(this.gl, this.scene, this.camera);
@@ -25015,12 +25021,6 @@ var feng3d;
             //
             this.on("scenetransformChanged", this.onScenetransformChanged, this);
             this._viewProjectionInvalid = true;
-        };
-        /**
-         * 获取鼠标射线（与鼠标重叠的摄像机射线）
-         */
-        Camera.prototype.getMouseRay3D = function () {
-            return this.getRay3D(feng3d.windowEventProxy.clientX - this.viewRect.x, feng3d.windowEventProxy.clientY - this.viewRect.y);
         };
         /**
          * 获取与坐标重叠的射线
@@ -34817,11 +34817,11 @@ var feng3d;
          * @param scene3d 场景
          * @param camera 摄像机
          */
-        Mouse3DManager.prototype.pick = function (scene3d, camera) {
+        Mouse3DManager.prototype.pick = function (engine, scene3d, camera) {
             if (this._mouseEventTypes.length == 0)
                 return;
             //计算得到鼠标射线相交的物体
-            var pickingCollisionVO = feng3d.raycaster.pick(camera.getMouseRay3D(), scene3d.mouseCheckObjects);
+            var pickingCollisionVO = feng3d.raycaster.pick(engine.getMouseRay3D(), scene3d.mouseCheckObjects);
             var gameobject = pickingCollisionVO && pickingCollisionVO.gameObject;
             return gameobject;
         };

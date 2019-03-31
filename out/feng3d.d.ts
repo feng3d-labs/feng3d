@@ -12105,6 +12105,10 @@ declare namespace feng3d {
         stop(): void;
         update(interval?: number): void;
         /**
+         * 获取鼠标射线（与鼠标重叠的摄像机射线）
+         */
+        getMouseRay3D(): Ray3D;
+        /**
          * 绘制场景
          */
         render(interval?: number): void;
@@ -13130,10 +13134,6 @@ declare namespace feng3d {
          * 创建一个摄像机
          */
         init(gameObject: GameObject): void;
-        /**
-         * 获取鼠标射线（与鼠标重叠的摄像机射线）
-         */
-        getMouseRay3D(): Ray3D;
         /**
          * 获取与坐标重叠的射线
          * @param x view3D上的X坐标
@@ -16323,7 +16323,7 @@ declare namespace feng3d {
          * @param scene3d 场景
          * @param camera 摄像机
          */
-        pick(scene3d: Scene3D, camera: Camera): GameObject;
+        pick(engine: Engine, scene3d: Scene3D, camera: Camera): GameObject;
         constructor(mouseInput: MouseInput, viewport?: Lazy<Rectangle>);
         private _selectedGameObject;
         private _mouseEventTypes;

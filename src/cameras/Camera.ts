@@ -76,14 +76,6 @@ namespace feng3d
         }
 
         /**
-		 * 获取鼠标射线（与鼠标重叠的摄像机射线）
-		 */
-        getMouseRay3D(): Ray3D
-        {
-            return this.getRay3D(windowEventProxy.clientX - this.viewRect.x, windowEventProxy.clientY - this.viewRect.y);
-        }
-
-        /**
 		 * 获取与坐标重叠的射线
 		 * @param x view3D上的X坐标
 		 * @param y view3D上的X坐标
