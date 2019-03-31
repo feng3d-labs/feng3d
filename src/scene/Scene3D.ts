@@ -44,6 +44,11 @@ namespace feng3d
         runEnvironment = RunEnvironment.feng3d;
 
         /**
+         * 鼠标射线，在渲染时被设置
+         */
+        mouseRay3D: Ray3D;
+
+        /**
          * 构造3D场景
          */
         init(gameObject: GameObject)

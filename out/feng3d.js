@@ -22514,6 +22514,8 @@ var feng3d;
             var viewRect = this.viewRect;
             this.camera.viewRect = viewRect;
             this.camera.lens.aspect = viewRect.width / viewRect.height;
+            // 设置鼠标射线
+            this.scene.mouseRay3D = this.getMouseRay3D();
             // 默认渲染
             this.gl.clearColor(this.scene.background.r, this.scene.background.g, this.scene.background.b, this.scene.background.a);
             this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
