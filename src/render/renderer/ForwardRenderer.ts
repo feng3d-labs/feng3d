@@ -29,7 +29,7 @@ namespace feng3d
             uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
             uniforms.u_cameraPos = camera.transform.scenePosition;
             uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
-            uniforms.u_scaleByDepth = camera.getScaleByDepth(1).y;
+            uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
             uniforms.u_sceneAmbientColor = scene3d.ambientColor;
 
             unblenditems.concat(blenditems).forEach(model =>

@@ -59,7 +59,7 @@ namespace feng3d
             {
                 var depthScale = this.getDepthScale(this.camera);
                 var vec = _localToWorldMatrix.decompose();
-                vec[2].scaleNumber(depthScale.y);
+                vec[2].scaleNumber(depthScale * this.holdSize);
                 _localToWorldMatrix.recompose(vec);
 
                 debuger && assert(!isNaN(_localToWorldMatrix.rawData[0]));
@@ -75,7 +75,7 @@ namespace feng3d
             var depth = distance.dot(cameraTranform.forward);
             var scale = camera.getScaleByDepth(depth);
             //限制在放大缩小100倍之间，否则容易出现矩阵不可逆问题
-            scale.y = Math.max(Math.min(100, scale.y), 0.01);
+            scale = Math.max(Math.min(100, scale), 0.01);
             return scale;
         }
     }

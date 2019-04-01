@@ -12133,7 +12133,7 @@ declare namespace feng3d {
          * 获取单位像素在指定深度映射的大小
          * @param   depth   深度
          */
-        getScaleByDepth(depth: number): Vector2;
+        getScaleByDepth(depth: number, dir?: Vector2): number;
         /**
          * 获取鼠标射线（与鼠标重叠的摄像机射线）
          */
@@ -13187,7 +13187,7 @@ declare namespace feng3d {
          *
          * @param   depth   深度
          */
-        getScaleByDepth(depth: number): Vector2;
+        getScaleByDepth(depth: number, dir?: Vector2): number;
         /**
          * 是否与盒子相交
          * @param box 盒子

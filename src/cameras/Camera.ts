@@ -110,11 +110,11 @@ namespace feng3d
          * 
          * @param   depth   深度
          */
-        getScaleByDepth(depth: number)
+        getScaleByDepth(depth: number, dir = new Vector2(0, 1))
         {
-            var lt = this.unproject(- 0.5, - 0.5, depth);
-            var rb = this.unproject(+ 0.5, + 0.5, depth);
-            var scale = lt.subTo(rb).toVector2();
+            var lt = this.unproject(- 0.5 * dir.x, - 0.5 * dir.y, depth);
+            var rb = this.unproject(+ 0.5 * dir.x, + 0.5 * dir.y, depth);
+            var scale = lt.subTo(rb).length;
             return scale;
         }
 

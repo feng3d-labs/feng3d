@@ -20197,7 +20197,7 @@ var feng3d;
             uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
             uniforms.u_cameraPos = camera.transform.scenePosition;
             uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
-            uniforms.u_scaleByDepth = camera.getScaleByDepth(1).y;
+            uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
             uniforms.u_sceneAmbientColor = scene3d.ambientColor;
             unblenditems.concat(blenditems).forEach(function (model) {
                 //绘制
@@ -20565,7 +20565,7 @@ var feng3d;
             uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
             uniforms.u_cameraPos = camera.transform.scenePosition;
             uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
-            uniforms.u_scaleByDepth = camera.getScaleByDepth(1).y;
+            uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
             //
             this.renderAtomic.next = renderAtomic;
             //
@@ -22566,10 +22566,10 @@ var feng3d;
          * 获取单位像素在指定深度映射的大小
          * @param   depth   深度
          */
-        Engine.prototype.getScaleByDepth = function (depth) {
-            var scale = this.camera.getScaleByDepth(depth);
-            scale.x = scale.x / this.viewRect.width;
-            scale.y = scale.y / this.viewRect.height;
+        Engine.prototype.getScaleByDepth = function (depth, dir) {
+            if (dir === void 0) { dir = new feng3d.Vector2(0, 1); }
+            var scale = this.camera.getScaleByDepth(depth, dir);
+            scale = scale / new feng3d.Vector2(this.viewRect.width * dir.x, this.viewRect.height * dir.y).length;
             return scale;
         };
         /**
@@ -22656,7 +22656,7 @@ var feng3d;
             if (this.holdSize && this.camera && _localToWorldMatrix) {
                 var depthScale = this.getDepthScale(this.camera);
                 var vec = _localToWorldMatrix.decompose();
-                vec[2].scaleNumber(depthScale.y);
+                vec[2].scaleNumber(depthScale * this.holdSize);
                 _localToWorldMatrix.recompose(vec);
                 feng3d.debuger && feng3d.assert(!isNaN(_localToWorldMatrix.rawData[0]));
             }
@@ -22669,7 +22669,7 @@ var feng3d;
             var depth = distance.dot(cameraTranform.forward);
             var scale = camera.getScaleByDepth(depth);
             //限制在放大缩小100倍之间，否则容易出现矩阵不可逆问题
-            scale.y = Math.max(Math.min(100, scale.y), 0.01);
+            scale = Math.max(Math.min(100, scale), 0.01);
             return scale;
         };
         __decorate([
@@ -25107,10 +25107,11 @@ var feng3d;
          *
          * @param   depth   深度
          */
-        Camera.prototype.getScaleByDepth = function (depth) {
-            var lt = this.unproject(-0.5, -0.5, depth);
-            var rb = this.unproject(+0.5, +0.5, depth);
-            var scale = lt.subTo(rb).toVector2();
+        Camera.prototype.getScaleByDepth = function (depth, dir) {
+            if (dir === void 0) { dir = new feng3d.Vector2(0, 1); }
+            var lt = this.unproject(-0.5 * dir.x, -0.5 * dir.y, depth);
+            var rb = this.unproject(+0.5 * dir.x, +0.5 * dir.y, depth);
+            var scale = lt.subTo(rb).length;
             return scale;
         };
         /**

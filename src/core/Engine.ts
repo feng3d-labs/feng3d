@@ -193,7 +193,7 @@ namespace feng3d
 		 */
         project(point3d: Vector3): Vector3
         {
-            var v: Vector3 =  this.camera.project(point3d);
+            var v: Vector3 = this.camera.project(point3d);
             v.x = (v.x + 1.0) * this.viewRect.width / 2.0;
             v.y = (1.0 - v.y) * this.viewRect.height / 2.0;
             return v;
@@ -217,11 +217,10 @@ namespace feng3d
          * 获取单位像素在指定深度映射的大小
          * @param   depth   深度
          */
-        getScaleByDepth(depth: number)
+        getScaleByDepth(depth: number, dir = new Vector2(0, 1))
         {
-            var scale = this.camera.getScaleByDepth(depth);
-            scale.x = scale.x / this.viewRect.width;
-            scale.y = scale.y / this.viewRect.height;
+            var scale = this.camera.getScaleByDepth(depth, dir);
+            scale = scale / new Vector2(this.viewRect.width * dir.x, this.viewRect.height * dir.y).length;
             return scale;
         }
 
