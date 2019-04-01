@@ -12088,6 +12088,7 @@ declare namespace feng3d {
          * 鼠标事件管理
          */
         mouse3DManager: Mouse3DManager;
+        protected contextLost: boolean;
         /**
          * 构建3D视图
          * @param canvas    画布

@@ -22397,6 +22397,7 @@ var feng3d;
          */
         function Engine(canvas, scene, camera) {
             var _this = this;
+            this.contextLost = false;
             if (!canvas) {
                 canvas = document.createElement("canvas");
                 canvas.id = "glcanvas";
@@ -22409,6 +22410,19 @@ var feng3d;
             }
             feng3d.debuger && feng3d.assert(canvas instanceof HTMLCanvasElement, "canvas\u53C2\u6570\u5FC5\u987B\u4E3A HTMLCanvasElement \u7C7B\u578B\uFF01");
             this.canvas = canvas;
+            canvas.addEventListener("webglcontextlost", function (event) {
+                event.preventDefault();
+                _this.contextLost = true;
+                // #ifdef DEBUG
+                console.log('pc.GraphicsDevice: WebGL context lost.');
+                // #endif
+            }, false);
+            canvas.addEventListener("webglcontextrestored", function () {
+                _this.contextLost = false;
+                // #ifdef DEBUG
+                console.log('pc.GraphicsDevice: WebGL context restored.');
+                // #endif
+            }, false);
             this.scene = scene || Object.setValue(new feng3d.GameObject(), { name: "scene" }).addComponent(feng3d.Scene3D);
             this.camera = camera;
             this.start();
@@ -22501,6 +22515,8 @@ var feng3d;
          */
         Engine.prototype.render = function (interval) {
             if (!this.scene)
+                return;
+            if (this.contextLost)
                 return;
             this.scene.update(interval);
             this.canvas.width = this.canvas.clientWidth;

@@ -76,6 +76,8 @@ namespace feng3d
          */
         mouse3DManager: Mouse3DManager;
 
+        protected contextLost = false;
+
         /**
          * 构建3D视图
          * @param canvas    画布
@@ -98,6 +100,23 @@ namespace feng3d
             debuger && assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
 
             this.canvas = canvas;
+
+            canvas.addEventListener("webglcontextlost", (event) =>
+            {
+                event.preventDefault();
+                this.contextLost = true;
+                // #ifdef DEBUG
+                console.log('pc.GraphicsDevice: WebGL context lost.');
+                // #endif
+            }, false);
+
+            canvas.addEventListener("webglcontextrestored", () =>
+            {
+                this.contextLost = false;
+                // #ifdef DEBUG
+                console.log('pc.GraphicsDevice: WebGL context restored.');
+                // #endif
+            }, false);
 
             this.scene = scene || Object.setValue(new GameObject(), { name: "scene" }).addComponent(Scene3D);
             this.camera = camera;
@@ -141,8 +160,9 @@ namespace feng3d
          */
         render(interval?: number)
         {
-            if (!this.scene)
-                return;
+            if (!this.scene) return;
+            if (this.contextLost) return;
+
             this.scene.update(interval);
 
             this.canvas.width = this.canvas.clientWidth;
