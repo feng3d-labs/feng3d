@@ -12433,6 +12433,10 @@ declare namespace feng3d {
          */
         mouseRay3D: Ray3D;
         /**
+         * 上次渲染时用的摄像机
+         */
+        camera: Camera;
+        /**
          * 构造3D场景
          */
         init(gameObject: GameObject): void;

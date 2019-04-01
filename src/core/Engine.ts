@@ -155,6 +155,7 @@ namespace feng3d
 
             // 设置鼠标射线
             this.scene.mouseRay3D = this.getMouseRay3D();
+            this.scene.camera = this.camera;
 
             // 默认渲染
             this.gl.clearColor(this.scene.background.r, this.scene.background.g, this.scene.background.b, this.scene.background.a);
@@ -256,12 +257,12 @@ namespace feng3d
                 {
                     var include = m.selfWorldBounds.toPoints().every(pos =>
                     {
-                        var p = this.camera.project(pos);
+                        var p = this.project(pos);
                         return rect.contains(p.x, p.y);
                     })
                     return include;
                 }
-                var p = this.camera.project(t.scenePosition);
+                var p = this.project(t.scenePosition);
                 return rect.contains(p.x, p.y);
             }).map(t => t.gameObject);
             return gs;

@@ -22512,6 +22512,7 @@ var feng3d;
             this.camera.lens.aspect = viewRect.width / viewRect.height;
             // 设置鼠标射线
             this.scene.mouseRay3D = this.getMouseRay3D();
+            this.scene.camera = this.camera;
             // 默认渲染
             this.gl.clearColor(this.scene.background.r, this.scene.background.g, this.scene.background.b, this.scene.background.a);
             this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
@@ -22600,12 +22601,12 @@ var feng3d;
                 var m = t.getComponent(feng3d.Model);
                 if (m) {
                     var include = m.selfWorldBounds.toPoints().every(function (pos) {
-                        var p = _this.camera.project(pos);
+                        var p = _this.project(pos);
                         return rect.contains(p.x, p.y);
                     });
                     return include;
                 }
-                var p = _this.camera.project(t.scenePosition);
+                var p = _this.project(t.scenePosition);
                 return rect.contains(p.x, p.y);
             }).map(function (t) { return t.gameObject; });
             return gs;
