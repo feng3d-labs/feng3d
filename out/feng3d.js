@@ -1033,7 +1033,7 @@ var feng3d;
                 }
             }
             var cls = this.OVComponent[classConfig.component];
-            feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + classConfig.component + " \u5BF9\u5E94\u7684\u5BF9\u8C61\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + classConfig.component + " \u4E2D\u4F7F\u7528@OVComponent()\u6807\u8BB0");
+            feng3d.debuger && feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + classConfig.component + " \u5BF9\u5E94\u7684\u5BF9\u8C61\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + classConfig.component + " \u4E2D\u4F7F\u7528@OVComponent()\u6807\u8BB0");
             var view = new cls(classConfig);
             return view;
         };
@@ -1060,7 +1060,7 @@ var feng3d;
                 attributeViewInfo.component = this.defaultObjectAttributeViewClass;
             }
             var cls = this.OAVComponent[attributeViewInfo.component];
-            feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + attributeViewInfo.component + " \u5BF9\u5E94\u7684\u5C5E\u6027\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + attributeViewInfo.component + " \u4E2D\u4F7F\u7528@OVAComponent()\u6807\u8BB0");
+            feng3d.debuger && feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + attributeViewInfo.component + " \u5BF9\u5E94\u7684\u5C5E\u6027\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + attributeViewInfo.component + " \u4E2D\u4F7F\u7528@OVAComponent()\u6807\u8BB0");
             var view = new cls(attributeViewInfo);
             return view;
         };
@@ -1079,7 +1079,7 @@ var feng3d;
                 blockViewInfo.component = this.defaultObjectAttributeBlockView;
             }
             var cls = this.OBVComponent[blockViewInfo.component];
-            feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + blockViewInfo.component + " \u5BF9\u5E94\u7684\u5757\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + blockViewInfo.component + " \u4E2D\u4F7F\u7528@OVBComponent()\u6807\u8BB0");
+            feng3d.debuger && feng3d.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + blockViewInfo.component + " \u5BF9\u5E94\u7684\u5757\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + blockViewInfo.component + " \u4E2D\u4F7F\u7528@OVBComponent()\u6807\u8BB0");
             var view = new cls(blockViewInfo);
             return view;
         };
@@ -1897,7 +1897,7 @@ var feng3d;
             canvasImg.width = image.width;
             canvasImg.height = image.height;
             var ctxt = canvasImg.getContext('2d');
-            feng3d.assert(!!ctxt);
+            feng3d.debuger && feng3d.assert(!!ctxt);
             ctxt.drawImage(image, 0, 0);
             this.imageData = ctxt.getImageData(0, 0, image.width, image.height); //读取整张图片的像素。
             return this;
@@ -2466,7 +2466,7 @@ var feng3d;
         __extends(ERR_INVALID_ARG_TYPE, _super);
         function ERR_INVALID_ARG_TYPE(name, expected, actual) {
             var _this = this;
-            assert(typeof name === 'string', "'name' must be a string");
+            feng3d.debuger && assert(typeof name === 'string', "'name' must be a string");
             // determiner: 'must be' or 'must not be'
             var determiner;
             if (typeof expected === 'string' && expected.startsWith('not ')) {
@@ -2493,10 +2493,10 @@ var feng3d;
         return ERR_INVALID_ARG_TYPE;
     }(TypeError));
     function oneOf(expected, thing) {
-        assert(typeof thing === 'string', '`thing` has to be of type string');
+        feng3d.debuger && assert(typeof thing === 'string', '`thing` has to be of type string');
         if (Array.isArray(expected)) {
             var len = expected.length;
-            assert(len > 0, 'At least one expected value needs to be specified');
+            feng3d.debuger && assert(len > 0, 'At least one expected value needs to be specified');
             expected = expected.map(function (i) { return String(i); });
             if (len > 2) {
                 return "one of " + thing + " " + expected.slice(0, len - 1).join(', ') + ", or " +
@@ -14229,7 +14229,7 @@ var feng3d;
             }
             if (keys.length == 0)
                 return new feng3d.AnimationCurveKeyframe({ time: t, value: 0, tangent: 0 });
-            feng3d.assert(isfind);
+            feng3d.debuger && feng3d.assert(isfind);
             return new feng3d.AnimationCurveKeyframe({ time: t, value: value, tangent: tangent });
         };
         /**
@@ -15563,7 +15563,7 @@ var feng3d;
                 this._dbStatus[dbname] = { status: DBStatus.unOpen, onsuccessCallbacks: [], onupgradeneededCallbacks: [] };
             this._dbStatus[dbname].onsuccessCallbacks.push(callback);
             if (upgrade) {
-                feng3d.assert(!!onupgrade);
+                feng3d.debuger && feng3d.assert(!!onupgrade);
                 this._dbStatus[dbname].onupgradeneededCallbacks.push(onupgrade);
             }
             if (this._dbStatus[dbname].status == DBStatus.opening || this._dbStatus[dbname].status == DBStatus.upgrading)
@@ -18492,7 +18492,7 @@ var feng3d;
      */
     var GLExtension = /** @class */ (function () {
         function GLExtension(gl) {
-            feng3d.assert(!gl.extensions, gl + " " + gl.extensions + " \u5B58\u5728\uFF01");
+            feng3d.debuger && feng3d.assert(!gl.extensions, gl + " " + gl.extensions + " \u5B58\u5728\uFF01");
             gl.extensions = this;
             this.initExtensions(gl);
             this.cacheGLQuery(gl);
@@ -18758,7 +18758,7 @@ var feng3d;
                 var name = activeInfo.name;
                 var names = [name];
                 if (activeInfo.size > 1) {
-                    feng3d.assert(name.substr(-3, 3) == "[0]");
+                    feng3d.debuger && feng3d.assert(name.substr(-3, 3) == "[0]");
                     var baseName = name.substring(0, name.length - 3);
                     for (var j = 1; j < activeInfo.size; j++) {
                         names[j] = baseName + ("[" + j + "]");
@@ -19919,7 +19919,7 @@ var feng3d;
      */
     var Renderer = /** @class */ (function () {
         function Renderer(gl) {
-            feng3d.assert(!gl.renderer, gl + " " + gl.renderer + " \u5B58\u5728\uFF01");
+            feng3d.debuger && feng3d.assert(!gl.renderer, gl + " " + gl.renderer + " \u5B58\u5728\uFF01");
             gl.renderer = this;
             this.draw = function (renderAtomic1) {
                 var instanceCount = renderAtomic1.getInstanceCount();
@@ -21185,6 +21185,7 @@ var feng3d;
             if (this.parent)
                 this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
             this.dispatch("updateLocalToWorldMatrix");
+            feng3d.debuger && feng3d.assert(!isNaN(this._localToWorldMatrix.rawData[0]));
             return this._localToWorldMatrix;
         };
         //------------------------------------------
@@ -22511,6 +22512,8 @@ var feng3d;
             this.scene.update(interval);
             this.canvas.width = this.canvas.clientWidth;
             this.canvas.height = this.canvas.clientHeight;
+            if (this.canvas.width * this.canvas.height == 0)
+                return;
             var viewRect = this.viewRect;
             this.camera.viewRect = viewRect;
             this.camera.lens.aspect = viewRect.width / viewRect.height;
@@ -22609,6 +22612,7 @@ var feng3d;
                 var vec = _localToWorldMatrix.decompose();
                 vec[2].scaleNumber(depthScale);
                 _localToWorldMatrix.recompose(vec);
+                feng3d.debuger && feng3d.assert(!isNaN(_localToWorldMatrix.rawData[0]));
             }
         };
         HoldSizeComponent.prototype.getDepthScale = function (camera) {
@@ -24752,6 +24756,7 @@ var feng3d;
          * 投影矩阵失效
          */
         LensBase.prototype.invalidate = function () {
+            feng3d.debuger && feng3d.assert(!isNaN(this.aspect));
             this._matrixInvalid = true;
             this._invertMatrixInvalid = true;
             this._viewBoxInvalid = true;
@@ -26980,7 +26985,7 @@ var feng3d;
         TextureCube.prototype.urlChanged = function (property, oldValue, newValue) {
             var _this = this;
             var index = ["positive_x_url", "positive_y_url", "positive_z_url", "negative_x_url", "negative_y_url", "negative_z_url"].indexOf(property);
-            feng3d.assert(index != -1);
+            feng3d.debuger && feng3d.assert(index != -1);
             this.loadingNum++;
             feng3d.fs.readImage(newValue, function (err, img) {
                 if (err) {
@@ -31438,7 +31443,7 @@ var feng3d;
             }
             // 获取脚本类名称
             var result = feng3d.regExps.classReg.exec(this.textContent);
-            feng3d.assert(result != null, "\u5728\u811A\u672C " + this.assetPath + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
+            feng3d.debuger && feng3d.assert(result != null, "\u5728\u811A\u672C " + this.assetPath + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
             var script = result[3];
             if (result[5]) {
                 this.parentScriptName = result[5].split(".").pop();
@@ -31446,7 +31451,7 @@ var feng3d;
             // 获取导出类命名空间
             if (result[1]) {
                 result = feng3d.regExps.namespace.exec(this.textContent);
-                feng3d.assert(result != null, "\u83B7\u53D6\u811A\u672C " + this.assetPath + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
+                feng3d.debuger && feng3d.assert(result != null, "\u83B7\u53D6\u811A\u672C " + this.assetPath + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
                 script = result[1] + "." + script;
             }
             this.scriptName = script;

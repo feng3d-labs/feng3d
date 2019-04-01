@@ -155,6 +155,7 @@ namespace feng3d
 
             this.canvas.width = this.canvas.clientWidth;
             this.canvas.height = this.canvas.clientHeight;
+            if (this.canvas.width * this.canvas.height == 0) return;
 
             var viewRect = this.viewRect;
 

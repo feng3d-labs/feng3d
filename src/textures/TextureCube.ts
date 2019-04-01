@@ -62,7 +62,7 @@ namespace feng3d
         private urlChanged(property: string, oldValue: string, newValue: string)
         {
             var index = ["positive_x_url", "positive_y_url", "positive_z_url", "negative_x_url", "negative_y_url", "negative_z_url"].indexOf(property);
-            assert(index != -1);
+            debuger && assert(index != -1);
             this.loadingNum++;
             fs.readImage(newValue, (err, img) =>
             {

@@ -163,6 +163,8 @@ namespace feng3d
 		 */
 		protected invalidate()
 		{
+			debuger && assert(!isNaN(this.aspect));
+
 			this._matrixInvalid = true;
 			this._invertMatrixInvalid = true;
 			this._viewBoxInvalid = true;

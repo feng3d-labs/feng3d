@@ -191,7 +191,7 @@ namespace feng3d
                 var names = [name];
                 if (activeInfo.size > 1)
                 {
-                    assert(name.substr(-3, 3) == "[0]");
+                    debuger && assert(name.substr(-3, 3) == "[0]");
                     var baseName = name.substring(0, name.length - 3);
                     for (var j = 1; j < activeInfo.size; j++)
                     {
