@@ -1485,15 +1485,14 @@ var feng3d;
         for (var i = tickerFuncs.length - 1; i >= 0; i--) {
             var element = tickerFuncs[i];
             if (element.runtime < currenttime) {
-                // try
-                // {
-                element.func.call(element.thisObject, feng3d.lazy.getvalue(element.interval));
-                // } catch (error)
-                // {
-                //     warn(`${element.func} 方法执行错误，从 ticker 中移除`, error)
-                //     tickerFuncs.splice(i, 1);
-                //     continue;
-                // }
+                try {
+                    element.func.call(element.thisObject, feng3d.lazy.getvalue(element.interval));
+                }
+                catch (error) {
+                    feng3d.warn(element.func + " \u65B9\u6CD5\u6267\u884C\u9519\u8BEF\uFF0C\u4ECE ticker \u4E2D\u79FB\u9664", error);
+                    tickerFuncs.splice(i, 1);
+                    continue;
+                }
                 if (element.once) {
                     tickerFuncs.splice(i, 1);
                     continue;

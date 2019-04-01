@@ -230,15 +230,15 @@ namespace feng3d
             var element = tickerFuncs[i];
             if (<number>element.runtime < currenttime)
             {
-                // try
-                // {
-                element.func.call(element.thisObject, lazy.getvalue(element.interval));
-                // } catch (error)
-                // {
-                //     warn(`${element.func} 方法执行错误，从 ticker 中移除`, error)
-                //     tickerFuncs.splice(i, 1);
-                //     continue;
-                // }
+                try
+                {
+                    element.func.call(element.thisObject, lazy.getvalue(element.interval));
+                } catch (error)
+                {
+                    warn(`${element.func} 方法执行错误，从 ticker 中移除`, error)
+                    tickerFuncs.splice(i, 1);
+                    continue;
+                }
                 if (element.once)
                 {
                     tickerFuncs.splice(i, 1);
