@@ -137,14 +137,6 @@ namespace feng3d
         }
 
         /**
-		 * 获取鼠标射线（与鼠标重叠的摄像机射线）
-		 */
-        getMouseRay3D(): Ray3D
-        {
-            return this.camera.getRay3D(windowEventProxy.clientX - this.viewRect.x, windowEventProxy.clientY - this.viewRect.y);
-        }
-
-        /**
          * 绘制场景
          */
         render(interval?: number)
@@ -159,7 +151,6 @@ namespace feng3d
 
             var viewRect = this.viewRect;
 
-            this.camera.viewRect = viewRect;
             this.camera.lens.aspect = viewRect.width / viewRect.height;
 
             // 设置鼠标射线
@@ -179,6 +170,68 @@ namespace feng3d
             forwardRenderer.draw(this.gl, this.scene, this.camera);
             outlineRenderer.draw(this.gl, this.scene, this.camera);
             wireframeRenderer.draw(this.gl, this.scene, this.camera);
+        }
+
+        /**
+		 * 屏幕坐标转GPU坐标
+		 * @param screenPos 屏幕坐标 (x: [0-width], y: [0 - height])
+		 * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
+		 */
+        screenToGpuPosition(screenPos: Vector2): Vector2
+        {
+            var gpuPos: Vector2 = new Vector2();
+            gpuPos.x = (screenPos.x * 2 - this.viewRect.width) / this.viewRect.width;
+            // 屏幕坐标与gpu中使用的坐标Y轴方向相反
+            gpuPos.y = - (screenPos.y * 2 - this.viewRect.height) / this.viewRect.height;
+            return gpuPos;
+        }
+
+		/**
+		 * 投影坐标（世界坐标转换为3D视图坐标）
+		 * @param point3d 世界坐标
+		 * @return 屏幕的绝对坐标
+		 */
+        project(point3d: Vector3): Vector3
+        {
+            var v: Vector3 =  this.camera.project(point3d);
+            v.x = (v.x + 1.0) * this.viewRect.width / 2.0;
+            v.y = (1.0 - v.y) * this.viewRect.height / 2.0;
+            return v;
+        }
+
+        /**
+		 * 屏幕坐标投影到场景坐标
+		 * @param nX 屏幕坐标X ([0-width])
+		 * @param nY 屏幕坐标Y ([0-height])
+		 * @param sZ 到屏幕的距离
+		 * @param v 场景坐标（输出）
+		 * @return 场景坐标
+		 */
+        unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
+        {
+            var gpuPos: Vector2 = this.screenToGpuPosition(new Vector2(sX, sY));
+            return this.camera.unproject(gpuPos.x, gpuPos.y, sZ, v);
+        }
+
+        /**
+         * 获取单位像素在指定深度映射的大小
+         * @param   depth   深度
+         */
+        getScaleByDepth(depth: number)
+        {
+            var scale = this.camera.getScaleByDepth(depth);
+            scale.x = scale.x / this.viewRect.width;
+            scale.y = scale.y / this.viewRect.height;
+            return scale;
+        }
+
+        /**
+		 * 获取鼠标射线（与鼠标重叠的摄像机射线）
+		 */
+        getMouseRay3D(): Ray3D
+        {
+            var gpuPos: Vector2 = this.screenToGpuPosition(new Vector2(windowEventProxy.clientX - this.viewRect.x, windowEventProxy.clientY - this.viewRect.y));
+            return this.camera.getRay3D(gpuPos.x, gpuPos.y);
         }
 
         /**

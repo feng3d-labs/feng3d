@@ -21,11 +21,6 @@ namespace feng3d
         projection = Projection.Perspective;
 
         /**
-         * 视窗矩形
-         */
-        viewRect = new Rectangle(0, 0, 1, 1);
-
-        /**
 		 * 镜头
 		 */
         @serialize
@@ -83,8 +78,7 @@ namespace feng3d
 		 */
         getRay3D(x: number, y: number, ray3D = new Ray3D()): Ray3D
         {
-            var gpuPos: Vector2 = this.screenToGpuPosition(new Vector2(x, y));
-            return this.lens.unprojectRay(gpuPos.x, gpuPos.y, ray3D).applyMatri4x4(this.transform.localToWorldMatrix);
+            return this.lens.unprojectRay(x, y, ray3D).applyMatri4x4(this.transform.localToWorldMatrix);
         }
 
 		/**
@@ -95,8 +89,6 @@ namespace feng3d
         project(point3d: Vector3): Vector3
         {
             var v: Vector3 = this.lens.project(this.transform.worldToLocalMatrix.transformVector(point3d));
-            v.x = (v.x + 1.0) * this.viewRect.width / 2.0;
-            v.y = (1.0 - v.y) * this.viewRect.height / 2.0;
             return v;
         }
 
@@ -110,35 +102,19 @@ namespace feng3d
 		 */
         unproject(sX: number, sY: number, sZ: number, v = new Vector3()): Vector3
         {
-            var gpuPos: Vector2 = this.screenToGpuPosition(new Vector2(sX, sY));
-            return this.transform.localToWorldMatrix.transformVector(this.lens.unprojectWithDepth(gpuPos.x, gpuPos.y, sZ, v), v);
+            return this.transform.localToWorldMatrix.transformVector(this.lens.unprojectWithDepth(sX, sY, sZ, v), v);
         }
 
         /**
-		 * 屏幕坐标转GPU坐标
-		 * @param screenPos 屏幕坐标 (x: [0-width], y: [0 - height])
-		 * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
-		 */
-        screenToGpuPosition(screenPos: Vector2): Vector2
-        {
-            var gpuPos: Vector2 = new Vector2();
-            gpuPos.x = (screenPos.x * 2 - this.viewRect.width) / this.viewRect.width;
-            // 屏幕坐标与gpu中使用的坐标Y轴方向相反
-            gpuPos.y = - (screenPos.y * 2 - this.viewRect.height) / this.viewRect.height;
-            return gpuPos;
-        }
-
-        /**
-         * 获取单位像素在指定深度映射的大小
+         * 获取摄像机能够在指定深度处的视野；镜头在指定深度的尺寸。
+         * 
          * @param   depth   深度
          */
         getScaleByDepth(depth: number)
         {
-            var centerX = this.viewRect.width / 2;
-            var centerY = this.viewRect.height / 2;
-            var lt = this.unproject(centerX - 0.5, centerY - 0.5, depth);
-            var rb = this.unproject(centerX + 0.5, centerY + 0.5, depth);
-            var scale = lt.subTo(rb).length;
+            var lt = this.unproject(- 0.5, - 0.5, depth);
+            var rb = this.unproject(+ 0.5, + 0.5, depth);
+            var scale = lt.subTo(rb).toVector2();
             return scale;
         }
 

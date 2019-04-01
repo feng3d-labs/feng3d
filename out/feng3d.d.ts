@@ -12105,13 +12105,39 @@ declare namespace feng3d {
         stop(): void;
         update(interval?: number): void;
         /**
-         * 获取鼠标射线（与鼠标重叠的摄像机射线）
-         */
-        getMouseRay3D(): Ray3D;
-        /**
          * 绘制场景
          */
         render(interval?: number): void;
+        /**
+         * 屏幕坐标转GPU坐标
+         * @param screenPos 屏幕坐标 (x: [0-width], y: [0 - height])
+         * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
+         */
+        screenToGpuPosition(screenPos: Vector2): Vector2;
+        /**
+         * 投影坐标（世界坐标转换为3D视图坐标）
+         * @param point3d 世界坐标
+         * @return 屏幕的绝对坐标
+         */
+        project(point3d: Vector3): Vector3;
+        /**
+         * 屏幕坐标投影到场景坐标
+         * @param nX 屏幕坐标X ([0-width])
+         * @param nY 屏幕坐标Y ([0-height])
+         * @param sZ 到屏幕的距离
+         * @param v 场景坐标（输出）
+         * @return 场景坐标
+         */
+        unproject(sX: number, sY: number, sZ: number, v?: Vector3): Vector3;
+        /**
+         * 获取单位像素在指定深度映射的大小
+         * @param   depth   深度
+         */
+        getScaleByDepth(depth: number): Vector2;
+        /**
+         * 获取鼠标射线（与鼠标重叠的摄像机射线）
+         */
+        getMouseRay3D(): Ray3D;
         /**
          * 获取屏幕区域内所有游戏对象
          * @param start 起点
@@ -13119,10 +13145,6 @@ declare namespace feng3d {
         readonly single: boolean;
         projection: Projection;
         /**
-         * 视窗矩形
-         */
-        viewRect: Rectangle;
-        /**
          * 镜头
          */
         lens: LensBase;
@@ -13161,16 +13183,11 @@ declare namespace feng3d {
          */
         unproject(sX: number, sY: number, sZ: number, v?: Vector3): Vector3;
         /**
-         * 屏幕坐标转GPU坐标
-         * @param screenPos 屏幕坐标 (x: [0-width], y: [0 - height])
-         * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
-         */
-        screenToGpuPosition(screenPos: Vector2): Vector2;
-        /**
-         * 获取单位像素在指定深度映射的大小
+         * 获取摄像机能够在指定深度处的视野；镜头在指定深度的尺寸。
+         *
          * @param   depth   深度
          */
-        getScaleByDepth(depth: number): number;
+        getScaleByDepth(depth: number): Vector2;
         /**
          * 是否与盒子相交
          * @param box 盒子

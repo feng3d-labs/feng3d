@@ -20197,7 +20197,7 @@ var feng3d;
             uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
             uniforms.u_cameraPos = camera.transform.scenePosition;
             uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
-            uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
+            uniforms.u_scaleByDepth = camera.getScaleByDepth(1).y;
             uniforms.u_sceneAmbientColor = scene3d.ambientColor;
             unblenditems.concat(blenditems).forEach(function (model) {
                 //绘制
@@ -20565,7 +20565,7 @@ var feng3d;
             uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
             uniforms.u_cameraPos = camera.transform.scenePosition;
             uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
-            uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
+            uniforms.u_scaleByDepth = camera.getScaleByDepth(1).y;
             //
             this.renderAtomic.next = renderAtomic;
             //
@@ -22498,12 +22498,6 @@ var feng3d;
             this.mouse3DManager.selectedGameObject = this.selectedObject;
         };
         /**
-         * 获取鼠标射线（与鼠标重叠的摄像机射线）
-         */
-        Engine.prototype.getMouseRay3D = function () {
-            return this.camera.getRay3D(feng3d.windowEventProxy.clientX - this.viewRect.x, feng3d.windowEventProxy.clientY - this.viewRect.y);
-        };
-        /**
          * 绘制场景
          */
         Engine.prototype.render = function (interval) {
@@ -22515,7 +22509,6 @@ var feng3d;
             if (this.canvas.width * this.canvas.height == 0)
                 return;
             var viewRect = this.viewRect;
-            this.camera.viewRect = viewRect;
             this.camera.lens.aspect = viewRect.width / viewRect.height;
             // 设置鼠标射线
             this.scene.mouseRay3D = this.getMouseRay3D();
@@ -22532,6 +22525,59 @@ var feng3d;
             feng3d.forwardRenderer.draw(this.gl, this.scene, this.camera);
             feng3d.outlineRenderer.draw(this.gl, this.scene, this.camera);
             feng3d.wireframeRenderer.draw(this.gl, this.scene, this.camera);
+        };
+        /**
+         * 屏幕坐标转GPU坐标
+         * @param screenPos 屏幕坐标 (x: [0-width], y: [0 - height])
+         * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
+         */
+        Engine.prototype.screenToGpuPosition = function (screenPos) {
+            var gpuPos = new feng3d.Vector2();
+            gpuPos.x = (screenPos.x * 2 - this.viewRect.width) / this.viewRect.width;
+            // 屏幕坐标与gpu中使用的坐标Y轴方向相反
+            gpuPos.y = -(screenPos.y * 2 - this.viewRect.height) / this.viewRect.height;
+            return gpuPos;
+        };
+        /**
+         * 投影坐标（世界坐标转换为3D视图坐标）
+         * @param point3d 世界坐标
+         * @return 屏幕的绝对坐标
+         */
+        Engine.prototype.project = function (point3d) {
+            var v = this.camera.project(point3d);
+            v.x = (v.x + 1.0) * this.viewRect.width / 2.0;
+            v.y = (1.0 - v.y) * this.viewRect.height / 2.0;
+            return v;
+        };
+        /**
+         * 屏幕坐标投影到场景坐标
+         * @param nX 屏幕坐标X ([0-width])
+         * @param nY 屏幕坐标Y ([0-height])
+         * @param sZ 到屏幕的距离
+         * @param v 场景坐标（输出）
+         * @return 场景坐标
+         */
+        Engine.prototype.unproject = function (sX, sY, sZ, v) {
+            if (v === void 0) { v = new feng3d.Vector3(); }
+            var gpuPos = this.screenToGpuPosition(new feng3d.Vector2(sX, sY));
+            return this.camera.unproject(gpuPos.x, gpuPos.y, sZ, v);
+        };
+        /**
+         * 获取单位像素在指定深度映射的大小
+         * @param   depth   深度
+         */
+        Engine.prototype.getScaleByDepth = function (depth) {
+            var scale = this.camera.getScaleByDepth(depth);
+            scale.x = scale.x / this.viewRect.width;
+            scale.y = scale.y / this.viewRect.height;
+            return scale;
+        };
+        /**
+         * 获取鼠标射线（与鼠标重叠的摄像机射线）
+         */
+        Engine.prototype.getMouseRay3D = function () {
+            var gpuPos = this.screenToGpuPosition(new feng3d.Vector2(feng3d.windowEventProxy.clientX - this.viewRect.x, feng3d.windowEventProxy.clientY - this.viewRect.y));
+            return this.camera.getRay3D(gpuPos.x, gpuPos.y);
         };
         /**
          * 获取屏幕区域内所有游戏对象
@@ -22610,7 +22656,7 @@ var feng3d;
             if (this.holdSize && this.camera && _localToWorldMatrix) {
                 var depthScale = this.getDepthScale(this.camera);
                 var vec = _localToWorldMatrix.decompose();
-                vec[2].scaleNumber(depthScale);
+                vec[2].scaleNumber(depthScale.y);
                 _localToWorldMatrix.recompose(vec);
                 feng3d.debuger && feng3d.assert(!isNaN(_localToWorldMatrix.rawData[0]));
             }
@@ -22623,7 +22669,7 @@ var feng3d;
             var depth = distance.dot(cameraTranform.forward);
             var scale = camera.getScaleByDepth(depth);
             //限制在放大缩小100倍之间，否则容易出现矩阵不可逆问题
-            scale = Math.max(Math.min(100, scale), 0.01);
+            scale.y = Math.max(Math.min(100, scale.y), 0.01);
             return scale;
         };
         __decorate([
@@ -24972,10 +25018,6 @@ var feng3d;
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.Camera";
             _this.projection = feng3d.Projection.Perspective;
-            /**
-             * 视窗矩形
-             */
-            _this.viewRect = new feng3d.Rectangle(0, 0, 1, 1);
             _this._viewProjection = new feng3d.Matrix4x4();
             _this._viewProjectionInvalid = true;
             _this._viewBox = new feng3d.Box();
@@ -25037,8 +25079,7 @@ var feng3d;
          */
         Camera.prototype.getRay3D = function (x, y, ray3D) {
             if (ray3D === void 0) { ray3D = new feng3d.Ray3D(); }
-            var gpuPos = this.screenToGpuPosition(new feng3d.Vector2(x, y));
-            return this.lens.unprojectRay(gpuPos.x, gpuPos.y, ray3D).applyMatri4x4(this.transform.localToWorldMatrix);
+            return this.lens.unprojectRay(x, y, ray3D).applyMatri4x4(this.transform.localToWorldMatrix);
         };
         /**
          * 投影坐标（世界坐标转换为3D视图坐标）
@@ -25047,8 +25088,6 @@ var feng3d;
          */
         Camera.prototype.project = function (point3d) {
             var v = this.lens.project(this.transform.worldToLocalMatrix.transformVector(point3d));
-            v.x = (v.x + 1.0) * this.viewRect.width / 2.0;
-            v.y = (1.0 - v.y) * this.viewRect.height / 2.0;
             return v;
         };
         /**
@@ -25061,31 +25100,17 @@ var feng3d;
          */
         Camera.prototype.unproject = function (sX, sY, sZ, v) {
             if (v === void 0) { v = new feng3d.Vector3(); }
-            var gpuPos = this.screenToGpuPosition(new feng3d.Vector2(sX, sY));
-            return this.transform.localToWorldMatrix.transformVector(this.lens.unprojectWithDepth(gpuPos.x, gpuPos.y, sZ, v), v);
+            return this.transform.localToWorldMatrix.transformVector(this.lens.unprojectWithDepth(sX, sY, sZ, v), v);
         };
         /**
-         * 屏幕坐标转GPU坐标
-         * @param screenPos 屏幕坐标 (x: [0-width], y: [0 - height])
-         * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
-         */
-        Camera.prototype.screenToGpuPosition = function (screenPos) {
-            var gpuPos = new feng3d.Vector2();
-            gpuPos.x = (screenPos.x * 2 - this.viewRect.width) / this.viewRect.width;
-            // 屏幕坐标与gpu中使用的坐标Y轴方向相反
-            gpuPos.y = -(screenPos.y * 2 - this.viewRect.height) / this.viewRect.height;
-            return gpuPos;
-        };
-        /**
-         * 获取单位像素在指定深度映射的大小
+         * 获取摄像机能够在指定深度处的视野；镜头在指定深度的尺寸。
+         *
          * @param   depth   深度
          */
         Camera.prototype.getScaleByDepth = function (depth) {
-            var centerX = this.viewRect.width / 2;
-            var centerY = this.viewRect.height / 2;
-            var lt = this.unproject(centerX - 0.5, centerY - 0.5, depth);
-            var rb = this.unproject(centerX + 0.5, centerY + 0.5, depth);
-            var scale = lt.subTo(rb).length;
+            var lt = this.unproject(-0.5, -0.5, depth);
+            var rb = this.unproject(+0.5, +0.5, depth);
+            var scale = lt.subTo(rb).toVector2();
             return scale;
         };
         /**
