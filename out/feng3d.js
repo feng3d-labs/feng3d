@@ -21888,6 +21888,11 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        /**
+         * 根据名称查找对象
+         *
+         * @param name 对象名称
+         */
         GameObject.prototype.find = function (name) {
             if (this.name == name)
                 return this;
@@ -21898,6 +21903,11 @@ var feng3d;
             }
             return null;
         };
+        /**
+         * 是否包含指定对象
+         *
+         * @param child 可能的子孙对象
+         */
         GameObject.prototype.contains = function (child) {
             var checkitem = child;
             do {
@@ -21907,18 +21917,37 @@ var feng3d;
             } while (checkitem);
             return false;
         };
+        /**
+         * 添加子对象
+         *
+         * @param child 子对象
+         */
         GameObject.prototype.addChild = function (child) {
             if (child == null)
                 return;
-            if (child.contains(this))
-                throw "无法添加到自身中!";
-            if (child._parent)
-                child._parent.removeChild(child);
-            child._setParent(this);
-            this._children.push(child);
-            this.dispatch("addChild", child, true);
+            if (child.parent == this) {
+                // 把子对象移动到最后
+                var childIndex = this._children.indexOf(child);
+                if (childIndex != -1)
+                    this._children.splice(childIndex, 1);
+                this._children.push(child);
+            }
+            else {
+                if (child.contains(this))
+                    throw "无法添加到自身中!";
+                if (child._parent)
+                    child._parent.removeChild(child);
+                child._setParent(this);
+                this._children.push(child);
+                this.dispatch("addChild", child, true);
+            }
             return child;
         };
+        /**
+         * 添加子对象
+         *
+         * @param childarray 子对象
+         */
         GameObject.prototype.addChildren = function () {
             var childarray = [];
             for (var _i = 0; _i < arguments.length; _i++) {
@@ -21936,6 +21965,11 @@ var feng3d;
             if (this.parent)
                 this.parent.removeChild(this);
         };
+        /**
+         * 移除子对象
+         *
+         * @param child 子对象
+         */
         GameObject.prototype.removeChild = function (child) {
             if (child == null)
                 throw new Error("Parameter child cannot be null").message;
@@ -21944,10 +21978,20 @@ var feng3d;
                 throw new Error("Parameter is not a child of the caller").message;
             this.removeChildInternal(childIndex, child);
         };
+        /**
+         * 删除指定位置的子对象
+         *
+         * @param index 需要删除子对象的所有
+         */
         GameObject.prototype.removeChildAt = function (index) {
             var child = this._children[index];
-            this.removeChildInternal(index, child);
+            return this.removeChildInternal(index, child);
         };
+        /**
+         * 获取指定位置的子对象
+         *
+         * @param index
+         */
         GameObject.prototype.getChildAt = function (index) {
             index = index;
             return this._children[index];
@@ -22269,6 +22313,16 @@ var feng3d;
             if (loadingNum == 0)
                 callback();
         };
+        /**
+         * 渲染前执行函数
+         *
+         * 可用于渲染前收集渲染数据，或者更新显示效果等
+         *
+         * @param gl
+         * @param renderAtomic
+         * @param scene3d
+         * @param camera
+         */
         GameObject.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
             this._components.forEach(function (element) {
                 element.beforeRender(gl, renderAtomic, scene3d, camera);

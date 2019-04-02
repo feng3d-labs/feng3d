@@ -11889,16 +11889,51 @@ declare namespace feng3d {
          * 构建3D对象
          */
         constructor();
+        /**
+         * 根据名称查找对象
+         *
+         * @param name 对象名称
+         */
         find(name: string): GameObject;
+        /**
+         * 是否包含指定对象
+         *
+         * @param child 可能的子孙对象
+         */
         contains(child: GameObject): boolean;
+        /**
+         * 添加子对象
+         *
+         * @param child 子对象
+         */
         addChild(child: GameObject): GameObject;
+        /**
+         * 添加子对象
+         *
+         * @param childarray 子对象
+         */
         addChildren(...childarray: GameObject[]): void;
         /**
          * 移除自身
          */
         remove(): void;
+        /**
+         * 移除子对象
+         *
+         * @param child 子对象
+         */
         removeChild(child: GameObject): void;
+        /**
+         * 删除指定位置的子对象
+         *
+         * @param index 需要删除子对象的所有
+         */
         removeChildAt(index: number): void;
+        /**
+         * 获取指定位置的子对象
+         *
+         * @param index
+         */
         getChildAt(index: number): GameObject;
         /**
          * 获取子对象列表（备份）
@@ -12024,6 +12059,16 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         onLoadCompleted(callback: () => void): void;
+        /**
+         * 渲染前执行函数
+         *
+         * 可用于渲染前收集渲染数据，或者更新显示效果等
+         *
+         * @param gl
+         * @param renderAtomic
+         * @param scene3d
+         * @param camera
+         */
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
         /**
          * Finds a game object by name and returns it.
