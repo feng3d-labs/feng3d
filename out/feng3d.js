@@ -225,6 +225,17 @@ Map.prototype.getValues = function () {
     });
     return values;
 };
+Array.prototype.unique = function (compare) {
+    if (compare === void 0) { compare = function (a, b) { return a == b; }; }
+    var arr = this;
+    for (var i = 0; i < arr.length; i++) {
+        for (var j = arr.length - 1; j > i; j--) {
+            if (compare(arr[i], arr[j]))
+                arr.splice(j, 1);
+        }
+    }
+    return this;
+};
 var feng3d;
 (function (feng3d) {
     /**
@@ -1453,7 +1464,7 @@ var feng3d;
             affers.push([addTickerFunc, [item]]);
             return;
         }
-        removeTickerFunc(item);
+        // removeTickerFunc(item);
         if (item.priority == undefined)
             item.priority = 0;
         item.runtime = Date.now() + feng3d.lazy.getvalue(item.interval);
@@ -1482,17 +1493,11 @@ var feng3d;
             return a.priority - b.priority;
         });
         var currenttime = Date.now();
+        var needTickerFuncItems = [];
         for (var i = tickerFuncs.length - 1; i >= 0; i--) {
             var element = tickerFuncs[i];
             if (element.runtime < currenttime) {
-                try {
-                    element.func.call(element.thisObject, feng3d.lazy.getvalue(element.interval));
-                }
-                catch (error) {
-                    feng3d.warn(element.func + " \u65B9\u6CD5\u6267\u884C\u9519\u8BEF\uFF0C\u4ECE ticker \u4E2D\u79FB\u9664", error);
-                    tickerFuncs.splice(i, 1);
-                    continue;
-                }
+                needTickerFuncItems.push(element);
                 if (element.once) {
                     tickerFuncs.splice(i, 1);
                     continue;
@@ -1500,6 +1505,20 @@ var feng3d;
                 element.runtime = nextRuntime(element.runtime, feng3d.lazy.getvalue(element.interval));
             }
         }
+        needTickerFuncItems.reverse();
+        // 相同的函数只执行一个
+        needTickerFuncItems.unique(function (a, b) { return (a.func == b.func && a.thisObject == b.thisObject); });
+        needTickerFuncItems.forEach(function (v) {
+            try {
+                v.func.call(v.thisObject, feng3d.lazy.getvalue(v.interval));
+            }
+            catch (error) {
+                feng3d.warn(v.func + " \u65B9\u6CD5\u6267\u884C\u9519\u8BEF\uFF0C\u4ECE ticker \u4E2D\u79FB\u9664", error);
+                var index = tickerFuncs.indexOf(v);
+                if (index != -1)
+                    tickerFuncs.splice(index, 1);
+            }
+        });
         running = false;
         for (var i = 0; i < affers.length; i++) {
             var affer = affers[i];

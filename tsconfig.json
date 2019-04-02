@@ -16,6 +16,7 @@
         "src/polyfill/String.ts",
         "src/polyfill/Object.ts",
         "src/polyfill/Map.ts",
+        "src/polyfill/Array.ts",
         //基础工具
         "src/utils/debug.ts",
         "src/utils/Watcher.ts",

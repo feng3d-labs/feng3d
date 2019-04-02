@@ -157,6 +157,14 @@ interface Map<K, V> {
     getKeys(): K[];
     getValues(): V[];
 }
+interface Array<T> {
+    /**
+     * 使数组变得唯一，不存在两个相等的元素
+     *
+     * @param compare 比较函数
+     */
+    unique(compare?: (a: T, b: T) => boolean): this;
+}
 declare namespace feng3d {
     /**
      * 测试代码运行时间
