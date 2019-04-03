@@ -7,8 +7,8 @@
         "declaration": true,
         // "strict": true,
         "experimentalDecorators": true,
-        "outFile": "out/feng3d.js"
-        // "outDir": "debug"
+        // "outFile": "out/feng3d.js"
+        "outDir": "debug"
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
         // 自动生成文件
