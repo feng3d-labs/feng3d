@@ -140,6 +140,8 @@ namespace feng3d
          */
         readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
         {
+            if (this._images[path]) return this._images[path];
+            
             this.readArrayBuffer(path, (err, data) =>
             {
                 if (err)
@@ -149,6 +151,7 @@ namespace feng3d
                 }
                 dataTransform.arrayBufferToImage(data, (img) =>
                 {
+                    this._images[path] = img;
                     callback(null, img);
                 });
             });

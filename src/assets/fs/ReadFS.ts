@@ -64,5 +64,16 @@ namespace feng3d
                 });
             }, callback);
         }
+
+        /**
+         * 获取已经加载的图片，如果未加载则返回null
+         * 
+         * @param path 图片路径
+         */
+        getImage(path: string)
+        {
+            return this._images[path];
+        }
+        protected _images: { [path: string]: HTMLImageElement } = {};
     }
 }
