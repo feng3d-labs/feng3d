@@ -92,9 +92,12 @@ namespace feng3d
          */
         readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
         {
+            if (this._images[path]) return this._images[path];
+
             var img = new Image();
-            img.onload = function ()
+            img.onload = () =>
             {
+                this._images[path] = img;
                 callback(null, img);
             };
             img.onerror = (evt) =>

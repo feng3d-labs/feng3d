@@ -186,7 +186,7 @@ namespace feng3d
             affers.push([addTickerFunc, [item]]);
             return;
         }
-        removeTickerFunc(item);
+        // removeTickerFunc(item);
         if (item.priority == undefined)
             item.priority = 0;
         item.runtime = Date.now() + lazy.getvalue(item.interval);
@@ -225,20 +225,13 @@ namespace feng3d
             return <number>a.priority - <number>b.priority;
         });
         var currenttime = Date.now();
+        var needTickerFuncItems: TickerFuncItem[] = [];
         for (let i = tickerFuncs.length - 1; i >= 0; i--)
         {
             var element = tickerFuncs[i];
             if (<number>element.runtime < currenttime)
             {
-                // try
-                // {
-                element.func.call(element.thisObject, lazy.getvalue(element.interval));
-                // } catch (error)
-                // {
-                //     warn(`${element.func} 方法执行错误，从 ticker 中移除`, error)
-                //     tickerFuncs.splice(i, 1);
-                //     continue;
-                // }
+                needTickerFuncItems.push(element);
                 if (element.once)
                 {
                     tickerFuncs.splice(i, 1);
@@ -247,7 +240,21 @@ namespace feng3d
                 element.runtime = nextRuntime(<number>element.runtime, lazy.getvalue(element.interval));
             }
         }
-
+        needTickerFuncItems.reverse();
+        // 相同的函数只执行一个
+        needTickerFuncItems.unique((a, b) => { return (a.func == b.func && a.thisObject == b.thisObject) });
+        needTickerFuncItems.forEach(v =>
+        {
+            try
+            {
+                v.func.call(v.thisObject, lazy.getvalue(v.interval));
+            } catch (error)
+            {
+                warn(`${v.func} 方法执行错误，从 ticker 中移除`, error)
+                var index = tickerFuncs.indexOf(v);
+                if (index != -1) tickerFuncs.splice(index, 1);
+            }
+        });
         running = false;
 
         for (let i = 0; i < affers.length; i++)

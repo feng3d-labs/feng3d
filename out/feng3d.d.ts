@@ -166,6 +166,14 @@ interface Map<K, V> {
     getKeys(): K[];
     getValues(): V[];
 }
+interface Array<T> {
+    /**
+     * 使数组变得唯一，不存在两个相等的元素
+     *
+     * @param compare 比较函数
+     */
+    unique(compare?: (a: T, b: T) => boolean): this;
+}
 declare namespace feng3d {
     /**
      * 是否开启调试(主要用于断言)
@@ -11902,16 +11910,51 @@ declare namespace feng3d {
          * 构建3D对象
          */
         constructor();
+        /**
+         * 根据名称查找对象
+         *
+         * @param name 对象名称
+         */
         find(name: string): GameObject;
+        /**
+         * 是否包含指定对象
+         *
+         * @param child 可能的子孙对象
+         */
         contains(child: GameObject): boolean;
+        /**
+         * 添加子对象
+         *
+         * @param child 子对象
+         */
         addChild(child: GameObject): GameObject;
+        /**
+         * 添加子对象
+         *
+         * @param childarray 子对象
+         */
         addChildren(...childarray: GameObject[]): void;
         /**
          * 移除自身
          */
         remove(): void;
+        /**
+         * 移除子对象
+         *
+         * @param child 子对象
+         */
         removeChild(child: GameObject): void;
+        /**
+         * 删除指定位置的子对象
+         *
+         * @param index 需要删除子对象的所有
+         */
         removeChildAt(index: number): void;
+        /**
+         * 获取指定位置的子对象
+         *
+         * @param index
+         */
         getChildAt(index: number): GameObject;
         /**
          * 获取子对象列表（备份）
@@ -12037,6 +12080,16 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         onLoadCompleted(callback: () => void): void;
+        /**
+         * 渲染前执行函数
+         *
+         * 可用于渲染前收集渲染数据，或者更新显示效果等
+         *
+         * @param gl
+         * @param renderAtomic
+         * @param scene3d
+         * @param camera
+         */
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
         /**
          * Finds a game object by name and returns it.
@@ -12101,6 +12154,7 @@ declare namespace feng3d {
          * 鼠标事件管理
          */
         mouse3DManager: Mouse3DManager;
+        protected contextLost: boolean;
         /**
          * 构建3D视图
          * @param canvas    画布
@@ -12118,13 +12172,39 @@ declare namespace feng3d {
         stop(): void;
         update(interval?: number): void;
         /**
-         * 获取鼠标射线（与鼠标重叠的摄像机射线）
-         */
-        getMouseRay3D(): Ray3D;
-        /**
          * 绘制场景
          */
         render(interval?: number): void;
+        /**
+         * 屏幕坐标转GPU坐标
+         * @param screenPos 屏幕坐标 (x: [0-width], y: [0 - height])
+         * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
+         */
+        screenToGpuPosition(screenPos: Vector2): Vector2;
+        /**
+         * 投影坐标（世界坐标转换为3D视图坐标）
+         * @param point3d 世界坐标
+         * @return 屏幕的绝对坐标
+         */
+        project(point3d: Vector3): Vector3;
+        /**
+         * 屏幕坐标投影到场景坐标
+         * @param nX 屏幕坐标X ([0-width])
+         * @param nY 屏幕坐标Y ([0-height])
+         * @param sZ 到屏幕的距离
+         * @param v 场景坐标（输出）
+         * @return 场景坐标
+         */
+        unproject(sX: number, sY: number, sZ: number, v?: Vector3): Vector3;
+        /**
+         * 获取单位像素在指定深度映射的大小
+         * @param   depth   深度
+         */
+        getScaleByDepth(depth: number, dir?: Vector2): number;
+        /**
+         * 获取鼠标射线（与鼠标重叠的摄像机射线）
+         */
+        getMouseRay3D(): Ray3D;
         /**
          * 获取屏幕区域内所有游戏对象
          * @param start 起点
@@ -12419,6 +12499,10 @@ declare namespace feng3d {
          * 鼠标射线，在渲染时被设置
          */
         mouseRay3D: Ray3D;
+        /**
+         * 上次渲染时用的摄像机
+         */
+        camera: Camera;
         /**
          * 构造3D场景
          */
@@ -13132,10 +13216,6 @@ declare namespace feng3d {
         readonly single: boolean;
         projection: Projection;
         /**
-         * 视窗矩形
-         */
-        viewRect: Rectangle;
-        /**
          * 镜头
          */
         lens: LensBase;
@@ -13174,16 +13254,11 @@ declare namespace feng3d {
          */
         unproject(sX: number, sY: number, sZ: number, v?: Vector3): Vector3;
         /**
-         * 屏幕坐标转GPU坐标
-         * @param screenPos 屏幕坐标 (x: [0-width], y: [0 - height])
-         * @return GPU坐标 (x: [-1, 1], y: [-1, 1])
-         */
-        screenToGpuPosition(screenPos: Vector2): Vector2;
-        /**
-         * 获取单位像素在指定深度映射的大小
+         * 获取摄像机能够在指定深度处的视野；镜头在指定深度的尺寸。
+         *
          * @param   depth   深度
          */
-        getScaleByDepth(depth: number): number;
+        getScaleByDepth(depth: number, dir?: Vector2): number;
         /**
          * 是否与盒子相交
          * @param box 盒子

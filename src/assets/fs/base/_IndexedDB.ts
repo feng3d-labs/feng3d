@@ -81,7 +81,7 @@ namespace feng3d
             this._dbStatus[dbname].onsuccessCallbacks.push(callback);
             if (upgrade)
             {
-                feng3d.assert(!!onupgrade);
+                debuger && assert(!!onupgrade);
                 this._dbStatus[dbname].onupgradeneededCallbacks.push(onupgrade);
             }
             if (this._dbStatus[dbname].status == DBStatus.opening || this._dbStatus[dbname].status == DBStatus.upgrading) return;

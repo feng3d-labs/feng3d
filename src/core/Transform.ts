@@ -205,6 +205,7 @@ namespace feng3d
             if (this.parent)
                 this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
             this.dispatch("updateLocalToWorldMatrix");
+            debuger && assert(!isNaN(this._localToWorldMatrix.rawData[0]));
             return this._localToWorldMatrix;
         }
 

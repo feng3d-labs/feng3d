@@ -9,5 +9,13 @@
 1. 支持自定义材质，只需要你提供shader代码以及所有到的数据结构就可以实现你想要的任何渲染效果（目前高级效果除外）。
 
 ## 文档
+    http://feng3d.com
 
-http://feng3d.com/
+## Issues
+    https://github.com/feng3d-labs/editor/issues
+
+## 在线版本
+    http://feng3d.com/editor/index.html
+
+## 本地版本
+    https://github.com/feng3d-labs/editor/releases

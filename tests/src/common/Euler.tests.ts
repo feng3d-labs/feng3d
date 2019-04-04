@@ -11,7 +11,7 @@ namespace feng3d
     //         euler.rotate(Vector3.X_AXIS, rotation.x);
     //         euler.rotate(Vector3.Y_AXIS, rotation.y);
     //         euler.rotate(Vector3.Z_AXIS, rotation.z);
-    //         assert(euler.equals(rotation, 0.01));
+    //         debuger && assert(euler.equals(rotation, 0.01));
     //     }
     // }
 
@@ -25,7 +25,7 @@ namespace feng3d
     //         euler.rotate(axis, angle);
     //         rotateMatrix3d.appendRotation(axis, angle);
     //         var eulerMatrix3d = euler.toMatrix3D();
-    //         assert(eulerMatrix3d.equals(rotateMatrix3d));
+    //         debuger && assert(eulerMatrix3d.equals(rotateMatrix3d));
     //     }
     // }
 
@@ -41,7 +41,7 @@ namespace feng3d
     //         var resultRotation2 = new Vector3();
     //         euler.transformRotation(randomRotation, resultRotation1);
     //         rotateMatrix3d.transformRotation(randomRotation, resultRotation2);
-    //         assert(resultRotation1.equals(resultRotation2));
+    //         debuger && assert(resultRotation1.equals(resultRotation2));
     //     }
     // }
 
@@ -58,7 +58,7 @@ namespace feng3d
     //         rotateMatrix3d.append(Matrix4x4.fromRotation(changeRotation));
 
     //         var eulerMatrix3d = euler.toMatrix3D();
-    //         assert(eulerMatrix3d.equals(rotateMatrix3d));
+    //         debuger && assert(eulerMatrix3d.equals(rotateMatrix3d));
     //     }
     // }
 
@@ -72,18 +72,18 @@ namespace feng3d
     //         euler.rotate(Vector3.X_AXIS, rotation.x);
     //         euler.rotate(Vector3.Y_AXIS, rotation.y);
     //         euler.rotate(Vector3.Z_AXIS, rotation.z);
-    //         assert(euler.equals(rotation, 0.001));
+    //         debuger && assert(euler.equals(rotation, 0.001));
 
     //         euler.rotate(Vector3.Z_AXIS, -rotation.z);
     //         euler.rotate(Vector3.Y_AXIS, -rotation.y);
     //         euler.rotate(Vector3.X_AXIS, -rotation.x);
-    //         assert(euler.equals(new Vector3()));
+    //         debuger && assert(euler.equals(new Vector3()));
 
     //         var euler1 = new Euler();
     //         euler1.rotate(Vector3.X_AXIS, rotation.x);
     //         euler1.rotate(Vector3.Y_AXIS, rotation.y);
     //         euler1.rotate(Vector3.Z_AXIS, rotation.z);
-    //         assert(euler1.equals(rotation, 0.001));
+    //         debuger && assert(euler1.equals(rotation, 0.001));
 
     //         var euler2 = new Euler();
     //         euler2.rotate(Vector3.Z_AXIS, -rotation.z);
@@ -92,7 +92,7 @@ namespace feng3d
 
     //         var mergeEuler = euler1.clone();
     //         mergeEuler.append(euler2);
-    //         assert(mergeEuler.equals(new Vector3()));
+    //         debuger && assert(mergeEuler.equals(new Vector3()));
 
     //         // euler.copyFrom(rotation);
     //         // var inverteuler = euler.clone();
@@ -100,7 +100,7 @@ namespace feng3d
 
     //         // var result = euler.clone();
     //         // result.append(inverteuler);
-    //         // assert(result.equals(new Vector3(), 0.0001));
+    //         // debuger && assert(result.equals(new Vector3(), 0.0001));
 
     //         var euler = new Euler(0, 0, 0);
     //         euler.append(new Euler().rotate(Vector3.X_AXIS, rotation.x));
@@ -110,7 +110,7 @@ namespace feng3d
     //         euler1.append(new Euler().rotate(Vector3.Z_AXIS, rotation.z));
 
     //         euler.append(euler1);
-    //         assert(euler.equals(rotation, 0.0001));
+    //         debuger && assert(euler.equals(rotation, 0.0001));
 
     //     }
     // }
@@ -140,10 +140,10 @@ namespace feng3d
     //         var euler = new Euler(rotation);
     //         euler.append(changeEuler);
     //         euler.appendInvert(changeEuler);
-    //         assert(euler.equals(rotation, 0.001));
+    //         debuger && assert(euler.equals(rotation, 0.001));
 
     //         euler.appendInvert(euler);
-    //         assert(euler.equals(new Vector3()));
+    //         debuger && assert(euler.equals(new Vector3()));
     //     }
     // }
 
@@ -165,7 +165,7 @@ namespace feng3d
     //         log(matrix3d1.decompose()[2])
     //         log(matrix3d2.decompose()[2])
 
-    //         assert(matrix3d1.equals(matrix3d2));
+    //         debuger && assert(matrix3d1.equals(matrix3d2));
     //     }
     // }
 
@@ -184,7 +184,7 @@ namespace feng3d
     //         // matrix3d2.appendRotation(matrix3d2.right, rotation.x);
     //         // matrix3d2.appendRotation(matrix3d2.forward, rotation.z);
 
-    //         // assert(matrix3d1.equals(matrix3d2));
+    //         // debuger && assert(matrix3d1.equals(matrix3d2));
 
     //         // log(rotation, matrix3d1.decompose()[1].scale(180 / Math.PI));
     //     }

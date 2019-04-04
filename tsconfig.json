@@ -7,7 +7,8 @@
         "declaration": true,
         // "strict": true,
         "experimentalDecorators": true,
-        "outFile": "out/feng3d.js"
+        // "outFile": "out/feng3d.js"
+        "outDir": "debug"
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
         //
@@ -18,6 +19,7 @@
         "src/polyfill/String.ts",
         "src/polyfill/Object.ts",
         "src/polyfill/Map.ts",
+        "src/polyfill/Array.ts",
         //基础工具
         "src/utils/debug.ts",
         "src/utils/Watcher.ts",

@@ -57,6 +57,11 @@ namespace feng3d
          */
         isLoaded = true;
 
+        get image(): HTMLImageElement
+        {
+            return <any>this._pixels;
+        }
+
         /**
          * 用于表示初始化纹理的数据来源
          */

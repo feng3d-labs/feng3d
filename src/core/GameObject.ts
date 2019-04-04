@@ -216,6 +216,11 @@ namespace feng3d
             this.onAll(this._onAllListener, this);
         }
 
+        /**
+         * 根据名称查找对象
+         * 
+         * @param name 对象名称
+         */
         find(name: string): GameObject
         {
             if (this.name == name)
@@ -229,6 +234,11 @@ namespace feng3d
             return null;
         }
 
+        /**
+         * 是否包含指定对象
+         * 
+         * @param child 可能的子孙对象
+         */
         contains(child: GameObject)
         {
             var checkitem = child;
@@ -241,20 +251,39 @@ namespace feng3d
             return false;
         }
 
+        /**
+         * 添加子对象
+         * 
+         * @param child 子对象
+         */
         addChild(child: GameObject)
         {
             if (child == null)
                 return;
-            if (child.contains(this))
-                throw "无法添加到自身中!";
-            if (child._parent)
-                child._parent.removeChild(child);
-            child._setParent(this);
-            this._children.push(child);
-            this.dispatch("addChild", child, true);
+            if (child.parent == this)
+            {
+                // 把子对象移动到最后
+                var childIndex = this._children.indexOf(child);
+                if (childIndex != -1) this._children.splice(childIndex, 1);
+                this._children.push(child);
+            } else
+            {
+                if (child.contains(this))
+                    throw "无法添加到自身中!";
+                if (child._parent)
+                    child._parent.removeChild(child);
+                child._setParent(this);
+                this._children.push(child);
+                this.dispatch("addChild", child, true);
+            }
             return child;
         }
 
+        /**
+         * 添加子对象
+         * 
+         * @param childarray 子对象
+         */
         addChildren(...childarray: GameObject[])
         {
             for (var child_key_a in childarray)
@@ -273,6 +302,11 @@ namespace feng3d
                 this.parent.removeChild(this);
         }
 
+        /**
+         * 移除子对象
+         * 
+         * @param child 子对象
+         */
         removeChild(child: GameObject)
         {
             if (child == null)
@@ -283,12 +317,22 @@ namespace feng3d
             this.removeChildInternal(childIndex, child);
         }
 
+        /**
+         * 删除指定位置的子对象
+         * 
+         * @param index 需要删除子对象的所有
+         */
         removeChildAt(index: number)
         {
             var child = this._children[index];
-            this.removeChildInternal(index, child);
+            return this.removeChildInternal(index, child);
         }
 
+        /**
+         * 获取指定位置的子对象
+         * 
+         * @param index 
+         */
         getChildAt(index: number)
         {
             index = index;
@@ -670,6 +714,16 @@ namespace feng3d
             if (loadingNum == 0) callback();
         }
 
+        /**
+         * 渲染前执行函数
+         * 
+         * 可用于渲染前收集渲染数据，或者更新显示效果等
+         * 
+         * @param gl 
+         * @param renderAtomic 
+         * @param scene3d 
+         * @param camera 
+         */
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
             this._components.forEach(element =>

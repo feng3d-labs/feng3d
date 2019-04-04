@@ -159,7 +159,7 @@ namespace feng3d
 
             if (keys.length == 0) return new AnimationCurveKeyframe({ time: t, value: 0, tangent: 0 });
 
-            assert(isfind);
+            debuger && assert(isfind);
             return new AnimationCurveKeyframe({ time: t, value: value, tangent: tangent });
         }
 

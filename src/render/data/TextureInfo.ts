@@ -184,7 +184,7 @@ namespace feng3d
         /**
          * 使纹理失效
          */
-        protected invalidate()
+        invalidate()
         {
             this._invalid = true;
         }

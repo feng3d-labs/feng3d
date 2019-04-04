@@ -17,6 +17,8 @@ namespace feng3d
         off<K extends keyof TextureCubeEventMap>(type?: K, listener?: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any);
     }
 
+    export type TextureCubeImageName = "positive_x_url" | "positive_y_url" | "positive_z_url" | "negative_x_url" | "negative_y_url" | "negative_z_url";
+
     /**
      * 立方体纹理
      */
@@ -26,30 +28,17 @@ namespace feng3d
 
         assetType = AssetType.texturecube;
 
+        static ImageNames: TextureCubeImageName[] = ["positive_x_url", "positive_y_url", "positive_z_url", "negative_x_url", "negative_y_url", "negative_z_url"];
+
         @oav({ component: "OAVCubeMap", priority: -1 })
-        @serialize
-        @watch("urlChanged")
-        positive_x_url: string;
+        OAVCubeMap: string = "";
 
+        /**
+         * 原始数据
+         */
         @serialize
-        @watch("urlChanged")
-        positive_y_url: string;
-
-        @serialize
-        @watch("urlChanged")
-        positive_z_url: string;
-
-        @serialize
-        @watch("urlChanged")
-        negative_x_url: string;
-
-        @serialize
-        @watch("urlChanged")
-        negative_y_url: string;
-
-        @serialize
-        @watch("urlChanged")
-        negative_z_url: string;
+        @watch("rawDataChanged")
+        private rawData: { type: "texture", textures: Texture2D[] } | { type: "path", paths: string[] };
 
         noPixels = [ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white];
 
@@ -57,38 +46,150 @@ namespace feng3d
 
         protected _textureType = TextureType.TEXTURE_CUBE_MAP;
 
-        private loadingNum = 0;
-
-        private urlChanged(property: string, oldValue: string, newValue: string)
-        {
-            var index = ["positive_x_url", "positive_y_url", "positive_z_url", "negative_x_url", "negative_y_url", "negative_z_url"].indexOf(property);
-            assert(index != -1);
-            this.loadingNum++;
-            fs.readImage(newValue, (err, img) =>
-            {
-                if (err)
-                {
-                    // error(err);
-                    this._pixels[index] = null;
-                }
-                else
-                    this._pixels[index] = img;
-                this.loadingNum--;
-                this.invalidate();
-                if (this.loadingNum == 0)
-                {
-                    this.dispatch("loadCompleted");
-                }
-            });
-        }
-
+        /**
+         * 是否正在加载
+         */
+        private _isloading = false;
         /**
          * 是否加载完成
          */
-        get isLoaded()
+        get isLoaded() { return this._isLoaded; }
+        private _isLoaded = false;
+
+        setTexture2D(pos: TextureCubeImageName, texture: Texture2D)
         {
-            if (this.loadingNum == 0) return true;
-            return false;
+            if (this.rawData == null || this.rawData.type != "texture")
+            {
+                this.rawData = { type: "texture", textures: [] };
+            }
+            var index = TextureCube.ImageNames.indexOf(pos);
+            this.rawData.textures[index] = texture;
+            if (texture.isLoaded)
+            {
+                this.invalidate();
+            } else 
+            {
+                this._isLoaded = false;
+                this._isloading = true;
+                texture.once("loadCompleted", () =>
+                {
+                    this.invalidate();
+                });
+            }
+        }
+
+        setTexture2DPath(pos: TextureCubeImageName, path: string)
+        {
+            if (this.rawData == null || this.rawData.type != "path")
+            {
+                this.rawData = { type: "path", paths: [] };
+            }
+            var index = TextureCube.ImageNames.indexOf(pos);
+            this.rawData.paths[index] = path;
+            this._isloading = true;
+            this._isLoaded = false;
+            fs.readImage(path, () =>
+            {
+                this.invalidate();
+            });
+        }
+
+        getTextureImage(pos: TextureCubeImageName, callback: (img: HTMLImageElement) => void)
+        {
+            if (!this.rawData) { callback(null); return; }
+            var index = TextureCube.ImageNames.indexOf(pos);
+            if (this.rawData.type == "texture")
+            {
+                var texture = this.rawData.textures[index];
+                if (!texture) callback(null);
+                if (texture.isLoaded)
+                {
+                    callback(texture.image);
+                } else
+                {
+                    texture.once("loadCompleted", () =>
+                    {
+                        callback(texture.image);
+                    });
+                }
+            } else if (this.rawData.type == "path")
+            {
+                fs.readImage(this.rawData.paths[index], (err: Error, img: HTMLImageElement) =>
+                {
+                    callback(img);
+                });
+            }
+        }
+
+        private rawDataChanged()
+        {
+            if (!this.rawData) return;
+
+            this._isloading = true;
+            this._isLoaded = false;
+            if (this.rawData.type == "texture")
+            {
+                this.rawData.textures.forEach(v =>
+                {
+                    if (!v.isLoaded)
+                    {
+                        v.once("loadCompleted", () =>
+                        {
+                            this.invalidate();
+                        });
+                    }
+                });
+                this.invalidate();
+            } else if (this.rawData.type == "path")
+            {
+                this.rawData.paths.forEach(v =>
+                {
+                    fs.readImage(v, () =>
+                    {
+                        this.invalidate();
+                    });
+                });
+            }
+        }
+
+        /**
+         * 使纹理失效
+         */
+        invalidate()
+        {
+            super.invalidate();
+
+            if (!this.rawData) return;
+
+            var isLoaded = true;
+            for (let i = 0; i < TextureCube.ImageNames.length; i++)
+            {
+                if (this.rawData.type == "texture")
+                {
+                    if (this.rawData.textures[i] != null && this.rawData.textures[i].image != null)
+                    {
+                        this._pixels[i] = this.rawData.textures[i].image;
+                    } else
+                    {
+                        isLoaded = false;
+                    }
+                } else if (this.rawData.type == "path")
+                {
+                    if (this.rawData.paths[i] != null && fs.getImage(this.rawData.paths[i]))
+                    {
+                        this._pixels[i] = fs.getImage(this.rawData.paths[i]);
+                    } else
+                    {
+                        isLoaded = false;
+                    }
+                }
+            }
+            if (this._isloading && isLoaded)
+            {
+                this._isloading = false;
+                this._isLoaded = true;
+                this.dispatch("loadCompleted");
+            }
         }
 
         /**
@@ -97,12 +198,12 @@ namespace feng3d
          */
         onLoadCompleted(callback: () => void)
         {
-            if (this.loadingNum == 0)
+            if (this._isLoaded)
             {
                 callback();
                 return;
             }
-            else this.once("loadCompleted", callback);
+            this.once("loadCompleted", callback);
         }
 
         static default: TextureCube;
