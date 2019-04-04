@@ -4143,11 +4143,21 @@ QUnit.module("PathUtils", function () {
     });
 });
 QUnit.module("Task", function () {
-    QUnit.test("do", function (assert) {
-        // assert.ok(feng3d.pathUtils.getNameWithExtension("a") == "a");
-        // assert.ok(feng3d.pathUtils.getNameWithExtension("a.txt") == "a.txt");
-        // assert.ok(feng3d.pathUtils.getNameWithExtension("a/") == "a");
-        // assert.ok(feng3d.pathUtils.getNameWithExtension("a.b/") == "a.b");
+    QUnit.test("series", function (assert) {
+        var result = [];
+        var arr = [1, 2, 3, 4, 5];
+        var funcs = arr.map(function (v) {
+            return function (callback) {
+                result.push(v);
+                setTimeout(function () {
+                    callback();
+                }, 1000);
+            };
+        });
+        feng3d.task.series(funcs)(function () {
+            feng3d.assert(JSON.stringify(arr) == JSON.stringify(result));
+        });
+        assert.ok(true);
     });
 });
 QUnit.module("watcher", function () {

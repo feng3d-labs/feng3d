@@ -23,7 +23,7 @@ var feng3d;
      * feng3d的版本号
      */
     feng3d.revision = "2019.04.04.00";
-    feng3d.log("feng3d version " + feng3d.revision);
+    console.log("feng3d version " + feng3d.revision);
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -243,6 +243,13 @@ Array.prototype.unique = function (compare) {
         }
     }
     return this;
+};
+Array.prototype.delete = function (item) {
+    var arr = this;
+    var index = arr.indexOf(item);
+    if (index != -1)
+        arr.splice(index, 1);
+    return index;
 };
 var feng3d;
 (function (feng3d) {
@@ -14704,7 +14711,7 @@ var feng3d;
         return FEvent;
     }());
     feng3d.FEvent = FEvent;
-    feng3d.event = new FEvent();
+    feng3d.objectevent = feng3d.event = new FEvent();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -15887,6 +15894,7 @@ var feng3d;
      */
     var ReadFS = /** @class */ (function () {
         function ReadFS() {
+            this._images = {};
         }
         /**
          * 读取文件列表为字符串列表
@@ -15901,6 +15909,14 @@ var feng3d;
                     callback(err || str);
                 });
             }, callback);
+        };
+        /**
+         * 获取已经加载的图片，如果未加载则返回null
+         *
+         * @param path 图片路径
+         */
+        ReadFS.prototype.getImage = function (path) {
+            return this._images[path];
         };
         return ReadFS;
     }());
@@ -16216,12 +16232,16 @@ var feng3d;
          * @param callback 加载完成回调
          */
         IndexedDBFS.prototype.readImage = function (path, callback) {
+            var _this = this;
+            if (this._images[path])
+                return this._images[path];
             this.readArrayBuffer(path, function (err, data) {
                 if (err) {
                     callback(err, null);
                     return;
                 }
                 feng3d.dataTransform.arrayBufferToImage(data, function (img) {
+                    _this._images[path] = img;
                     callback(null, img);
                 });
             });
@@ -16477,8 +16497,12 @@ var feng3d;
          * @param callback 加载完成回调
          */
         HttpFS.prototype.readImage = function (path, callback) {
+            var _this = this;
+            if (this._images[path])
+                return this._images[path];
             var img = new Image();
             img.onload = function () {
+                _this._images[path] = img;
                 callback(null, img);
             };
             img.onerror = function (evt) {
@@ -26938,16 +26962,28 @@ var feng3d;
              * 当贴图数据未加载好等情况时代替使用
              */
             _this.noPixels = ImageDatas.white;
-            /**
-             * 是否加载
-             */
-            _this.isLoaded = true;
+            _this._loadings = [];
             /**
              * 纹理类型
              */
             _this._textureType = feng3d.TextureType.TEXTURE_2D;
             return _this;
         }
+        Object.defineProperty(Texture2D.prototype, "isLoaded", {
+            /**
+             * 是否已加载
+             */
+            get: function () { return this._loadings.length == 0; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Texture2D.prototype, "image", {
+            get: function () {
+                return this._pixels;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Texture2D.prototype, "source", {
             /**
              * 用于表示初始化纹理的数据来源
@@ -26964,22 +27000,37 @@ var feng3d;
                     return;
                 }
                 if (v.url) {
-                    this.isLoaded = false;
+                    this._loadings.push(v.url);
                     feng3d.loader.loadImage(v.url, function (img) {
                         _this._pixels = img;
                         _this.invalidate();
-                        _this.isLoaded = true;
-                        _this.dispatch("loadCompleted");
+                        _this._loadings.delete(v.url);
+                        _this.onItemLoadCompleted();
                     }, null, function (e) {
                         feng3d.error(e);
-                        _this.isLoaded = true;
-                        _this.dispatch("loadCompleted");
+                        _this._loadings.delete(v.url);
+                        _this.onItemLoadCompleted();
                     });
                 }
             },
             enumerable: true,
             configurable: true
         });
+        Texture2D.prototype.onItemLoadCompleted = function () {
+            if (this._loadings.length == 0)
+                this.dispatch("loadCompleted");
+        };
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        Texture2D.prototype.onLoadCompleted = function (callback) {
+            if (this.isLoaded) {
+                callback();
+                return;
+            }
+            this.once("loadCompleted", callback);
+        };
         __decorate([
             feng3d.serialize
         ], Texture2D.prototype, "source", null);
@@ -27103,80 +27154,144 @@ var feng3d;
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.TextureCube";
             _this.assetType = feng3d.AssetType.texturecube;
+            _this.OAVCubeMap = "";
             _this.noPixels = [feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white];
             _this._pixels = [null, null, null, null, null, null];
             _this._textureType = feng3d.TextureType.TEXTURE_CUBE_MAP;
-            _this.loadingNum = 0;
+            _this._loading = [];
             return _this;
         }
-        TextureCube.prototype.urlChanged = function (property, oldValue, newValue) {
-            var _this = this;
-            var index = ["positive_x_url", "positive_y_url", "positive_z_url", "negative_x_url", "negative_y_url", "negative_z_url"].indexOf(property);
-            feng3d.debuger && feng3d.assert(index != -1);
-            this.loadingNum++;
-            feng3d.fs.readImage(newValue, function (err, img) {
-                if (err) {
-                    // error(err);
-                    _this._pixels[index] = null;
-                }
-                else
-                    _this._pixels[index] = img;
-                _this.loadingNum--;
-                _this.invalidate();
-                if (_this.loadingNum == 0) {
-                    _this.dispatch("loadCompleted");
-                }
-            });
-        };
         Object.defineProperty(TextureCube.prototype, "isLoaded", {
             /**
              * 是否加载完成
              */
-            get: function () {
-                if (this.loadingNum == 0)
-                    return true;
-                return false;
-            },
+            get: function () { return this._loading.length == 0; },
             enumerable: true,
             configurable: true
         });
+        TextureCube.prototype.setTexture2D = function (pos, texture) {
+            if (this.rawData == null || this.rawData.type != "texture") {
+                this.rawData = { type: "texture", textures: [] };
+            }
+            var index = TextureCube.ImageNames.indexOf(pos);
+            this.rawData.textures[index] = texture;
+            this._loadItemTexture(texture, index);
+        };
+        TextureCube.prototype.setTexture2DPath = function (pos, path) {
+            if (this.rawData == null || this.rawData.type != "path") {
+                this.rawData = { type: "path", paths: [] };
+            }
+            var index = TextureCube.ImageNames.indexOf(pos);
+            this.rawData.paths[index] = path;
+            this._loadItemImagePath(path, index);
+        };
+        TextureCube.prototype.getTextureImage = function (pos, callback) {
+            if (!this.rawData) {
+                callback();
+                return;
+            }
+            var index = TextureCube.ImageNames.indexOf(pos);
+            if (this.rawData.type == "texture") {
+                var texture = this.rawData.textures[index];
+                if (!texture) {
+                    callback();
+                    return;
+                }
+                ;
+                texture.onLoadCompleted(function () {
+                    callback(texture.image);
+                });
+            }
+            else if (this.rawData.type == "path") {
+                var path_1 = this.rawData.paths[index];
+                if (!path_1) {
+                    callback();
+                    return;
+                }
+                feng3d.fs.readImage(path_1, function (err, img) {
+                    callback(img);
+                });
+            }
+        };
+        TextureCube.prototype._rawDataChanged = function () {
+            var _this = this;
+            if (!this.rawData)
+                return;
+            if (this.rawData.type == "texture") {
+                this.rawData.textures.forEach(function (v, index) {
+                    _this._loadItemTexture(v, index);
+                });
+                this.invalidate();
+            }
+            else if (this.rawData.type == "path") {
+                this.rawData.paths.forEach(function (v, index) {
+                    _this._loadItemImagePath(v, index);
+                });
+            }
+        };
+        /**
+         * 加载单个贴图
+         *
+         * @param texture 贴图
+         * @param index 索引
+         */
+        TextureCube.prototype._loadItemTexture = function (texture, index) {
+            var _this = this;
+            if (texture == null)
+                return;
+            this._loading.push(texture);
+            texture.onLoadCompleted(function () {
+                if (_this.rawData.type == "texture" && _this.rawData.textures[index] == texture) {
+                    _this._pixels[index] = texture.image;
+                    _this.invalidate();
+                }
+                _this._loading.delete(texture);
+                _this._onItemLoadCompleted();
+            });
+        };
+        /**
+         * 加载单个图片
+         *
+         * @param imagepath 图片路径
+         * @param index 索引
+         */
+        TextureCube.prototype._loadItemImagePath = function (imagepath, index) {
+            var _this = this;
+            if (imagepath == null)
+                return;
+            this._loading.push(imagepath);
+            feng3d.fs.readImage(imagepath, function (err, img) {
+                if (img != null && _this.rawData.type == "path" && _this.rawData.paths[index] == imagepath) {
+                    _this._pixels[index] = img;
+                    _this.invalidate();
+                }
+                _this._loading.delete(imagepath);
+                _this._onItemLoadCompleted();
+            });
+        };
+        TextureCube.prototype._onItemLoadCompleted = function () {
+            if (this._loading.length == 0)
+                this.dispatch("loadCompleted");
+        };
         /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调
          */
         TextureCube.prototype.onLoadCompleted = function (callback) {
-            if (this.loadingNum == 0) {
+            if (this.isLoaded) {
                 callback();
                 return;
             }
-            else
-                this.once("loadCompleted", callback);
+            this.once("loadCompleted", callback);
         };
+        TextureCube.ImageNames = ["positive_x_url", "positive_y_url", "positive_z_url", "negative_x_url", "negative_y_url", "negative_z_url"];
         __decorate([
-            feng3d.oav({ component: "OAVCubeMap", priority: -1 }),
-            feng3d.serialize,
-            feng3d.watch("urlChanged")
-        ], TextureCube.prototype, "positive_x_url", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.watch("urlChanged")
-        ], TextureCube.prototype, "positive_y_url", void 0);
+            feng3d.oav({ component: "OAVCubeMap", priority: -1 })
+        ], TextureCube.prototype, "OAVCubeMap", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.watch("urlChanged")
-        ], TextureCube.prototype, "positive_z_url", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.watch("urlChanged")
-        ], TextureCube.prototype, "negative_x_url", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.watch("urlChanged")
-        ], TextureCube.prototype, "negative_y_url", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.watch("urlChanged")
-        ], TextureCube.prototype, "negative_z_url", void 0);
+            feng3d.watch("_rawDataChanged")
+        ], TextureCube.prototype, "rawData", void 0);
         return TextureCube;
     }(feng3d.TextureInfo));
     feng3d.TextureCube = TextureCube;
@@ -31534,15 +31649,22 @@ var feng3d;
             var _this = this;
             this.rs.fs.readObject(this.assetPath, function (err, data) {
                 _this.data = data;
-                _this.data.assetId = _this.assetId;
+                feng3d.debuger && feng3d.assert(_this.data.assetId == _this.assetId);
                 callback && callback(err);
             });
+        };
+        ObjectAsset.prototype._dataChanged = function (property, oldValue, newValue) {
+            if (oldValue) {
+                feng3d.event.off(oldValue);
+                oldValue;
+            }
         };
         __decorate([
             feng3d.oav({ exclude: true })
         ], ObjectAsset.prototype, "name", void 0);
         __decorate([
-            feng3d.oav({ component: "OAVObjectView" })
+            feng3d.oav({ component: "OAVObjectView" }),
+            feng3d.watch("_dataChanged")
         ], ObjectAsset.prototype, "data", void 0);
         return ObjectAsset;
     }(feng3d.FileAsset));

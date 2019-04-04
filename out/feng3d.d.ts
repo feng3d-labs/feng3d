@@ -173,6 +173,13 @@ interface Array<T> {
      * @param compare 比较函数
      */
     unique(compare?: (a: T, b: T) => boolean): this;
+    /**
+     * 删除元素
+     *
+     * @param item 被删除元素
+     * @returns 被删除元素在数组中的位置
+     */
+    delete(item: T): number;
 }
 declare namespace feng3d {
     /**
@@ -6932,6 +6939,33 @@ declare namespace feng3d {
      */
     var event: FEvent;
     /**
+     * 只针对Object的事件
+     */
+    var objectevent: ObjectEventDispatcher<Object, ObjectEventType>;
+    /**
+     * Object 事件类型
+     */
+    interface ObjectEventType {
+        /**
+         * 属性值变化
+         */
+        propertyValueChanged: {
+            property: string;
+            oldValue: any;
+            newValue: any;
+        };
+    }
+    /**
+     * 用于适配不同对象对于的事件
+     */
+    interface ObjectEventDispatcher<O, T> {
+        once<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof T>(target: O, type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
+        has<K extends keyof T>(target: O, type: K): boolean;
+        on<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof T>(target: O, type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): void;
+    }
+    /**
      * 事件
      */
     class FEvent {
@@ -7579,6 +7613,15 @@ declare namespace feng3d {
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
         readStrings(paths: string[], callback: (strs: (string | Error)[]) => void): void;
+        /**
+         * 获取已经加载的图片，如果未加载则返回null
+         *
+         * @param path 图片路径
+         */
+        getImage(path: string): HTMLImageElement;
+        protected _images: {
+            [path: string]: HTMLImageElement;
+        };
     }
 }
 declare namespace feng3d {
@@ -7799,7 +7842,7 @@ declare namespace feng3d {
          * @param path 图片路径
          * @param callback 加载完成回调
          */
-        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
+        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): HTMLImageElement;
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
@@ -7925,7 +7968,7 @@ declare namespace feng3d {
          * @param path 图片路径
          * @param callback 加载完成回调
          */
-        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
+        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): HTMLImageElement;
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
@@ -11029,7 +11072,7 @@ declare namespace feng3d {
         /**
          * 使纹理失效
          */
-        protected invalidate(): void;
+        invalidate(): void;
         readonly activePixels: HTMLCanvasElement | ImageData | HTMLImageElement | HTMLVideoElement | ImageBitmap | (HTMLCanvasElement | ImageData | HTMLImageElement | HTMLVideoElement | ImageBitmap)[];
         /**
          *
@@ -13734,15 +13777,23 @@ declare namespace feng3d {
          */
         noPixels: ImageDatas;
         /**
-         * 是否加载
+         * 是否已加载
          */
-        isLoaded: boolean;
+        readonly isLoaded: boolean;
+        private _loadings;
+        readonly image: HTMLImageElement;
         /**
          * 用于表示初始化纹理的数据来源
          */
         source: {
             url: string;
         };
+        private onItemLoadCompleted;
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        onLoadCompleted(callback: () => void): void;
         private _source;
         /**
          * 纹理类型
@@ -13816,27 +13867,46 @@ declare namespace feng3d {
         on<K extends keyof TextureCubeEventMap>(type: K, listener: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
         off<K extends keyof TextureCubeEventMap>(type?: K, listener?: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any): any;
     }
+    type TextureCubeImageName = "positive_x_url" | "positive_y_url" | "positive_z_url" | "negative_x_url" | "negative_y_url" | "negative_z_url";
     /**
      * 立方体纹理
      */
     class TextureCube extends TextureInfo {
         __class__: "feng3d.TextureCube";
         assetType: AssetType;
-        positive_x_url: string;
-        positive_y_url: string;
-        positive_z_url: string;
-        negative_x_url: string;
-        negative_y_url: string;
-        negative_z_url: string;
+        static ImageNames: TextureCubeImageName[];
+        OAVCubeMap: string;
+        /**
+         * 原始数据
+         */
+        private rawData;
         noPixels: ImageDatas[];
         protected _pixels: any[];
         protected _textureType: TextureType;
-        private loadingNum;
-        private urlChanged;
         /**
          * 是否加载完成
          */
         readonly isLoaded: boolean;
+        private _loading;
+        setTexture2D(pos: TextureCubeImageName, texture: Texture2D): void;
+        setTexture2DPath(pos: TextureCubeImageName, path: string): void;
+        getTextureImage(pos: TextureCubeImageName, callback: (img?: HTMLImageElement) => void): void;
+        private _rawDataChanged;
+        /**
+         * 加载单个贴图
+         *
+         * @param texture 贴图
+         * @param index 索引
+         */
+        private _loadItemTexture;
+        /**
+         * 加载单个图片
+         *
+         * @param imagepath 图片路径
+         * @param index 索引
+         */
+        private _loadItemImagePath;
+        private _onItemLoadCompleted;
         /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调
@@ -15501,6 +15571,7 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         readFile(callback?: (err: Error) => void): void;
+        private _dataChanged;
     }
 }
 declare namespace feng3d {
