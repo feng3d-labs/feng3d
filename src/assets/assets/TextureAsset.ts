@@ -9,7 +9,7 @@ namespace feng3d
          * 材质
          */
         @oav({ component: "OAVObjectView" })
-        data = new Texture2D();
+        data: Texture2D;
 
         extenson: ".jpg" | ".png" | ".jpeg" | ".gif" = ".png";
 
@@ -22,6 +22,7 @@ namespace feng3d
         {
             this._image = v;
             this.data["_pixels"] = v;
+            this.saveFile();
         }
         private _image: HTMLImageElement;
 
@@ -46,6 +47,7 @@ namespace feng3d
             this.rs.fs.readImage(this.assetPath, (err, img: HTMLImageElement) =>
             {
                 this.image = img;
+                this.data.source = { url: this.assetPath };
                 this.data.assetId = this.assetId;
                 callback && callback(err);
             });
@@ -72,6 +74,9 @@ namespace feng3d
          */
         writeMeta(callback?: (err: Error) => void)
         {
+            this.data = this.data || new Texture2D();
+            this.data.assetId = this.assetId;
+            this.data.source = { url: this.assetPath };
             this.meta["texture"] = serialization.serialize(this.data);
             this.rs.fs.writeObject(this.metaPath, this.meta, callback);
         }

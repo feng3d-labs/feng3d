@@ -26955,7 +26955,7 @@ var feng3d;
     var Texture2D = /** @class */ (function (_super) {
         __extends(Texture2D, _super);
         function Texture2D() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.call(this) || this;
             _this.__class__ = "feng3d.Texture2D";
             _this.assetType = feng3d.AssetType.texture;
             /**
@@ -31655,9 +31655,14 @@ var feng3d;
         };
         ObjectAsset.prototype._dataChanged = function (property, oldValue, newValue) {
             if (oldValue) {
-                feng3d.event.off(oldValue);
-                oldValue;
+                feng3d.objectevent.off(oldValue, "propertyValueChanged", this._onDataChanged, this);
             }
+            if (newValue) {
+                feng3d.objectevent.on(newValue, "propertyValueChanged", this._onDataChanged, this);
+            }
+        };
+        ObjectAsset.prototype._onDataChanged = function () {
+            this.write();
         };
         __decorate([
             feng3d.oav({ exclude: true })
@@ -31823,10 +31828,6 @@ var feng3d;
         __extends(TextureAsset, _super);
         function TextureAsset() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            /**
-             * 材质
-             */
-            _this.data = new feng3d.Texture2D();
             _this.extenson = ".png";
             _this.assetType = feng3d.AssetType.texture;
             return _this;
@@ -31839,6 +31840,7 @@ var feng3d;
             set: function (v) {
                 this._image = v;
                 this.data["_pixels"] = v;
+                this.saveFile();
             },
             enumerable: true,
             configurable: true
@@ -31858,6 +31860,7 @@ var feng3d;
             var _this = this;
             this.rs.fs.readImage(this.assetPath, function (err, img) {
                 _this.image = img;
+                _this.data.source = { url: _this.assetPath };
                 _this.data.assetId = _this.assetId;
                 callback && callback(err);
             });
@@ -31880,6 +31883,9 @@ var feng3d;
          * @param callback 完成回调
          */
         TextureAsset.prototype.writeMeta = function (callback) {
+            this.data = this.data || new feng3d.Texture2D();
+            this.data.assetId = this.assetId;
+            this.data.source = { url: this.assetPath };
             this.meta["texture"] = feng3d.serialization.serialize(this.data);
             this.rs.fs.writeObject(this.metaPath, this.meta, callback);
         };

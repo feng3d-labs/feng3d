@@ -46,9 +46,17 @@ namespace feng3d
         {
             if (oldValue)
             {
-                event.off(oldValue,)
-                oldValue
+                objectevent.off(oldValue, "propertyValueChanged", this._onDataChanged, this);
             }
+            if (newValue)
+            {
+                objectevent.on(newValue, "propertyValueChanged", this._onDataChanged, this);
+            }
+        }
+
+        private _onDataChanged()
+        {
+            this.write();
         }
     }
 }

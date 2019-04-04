@@ -13788,6 +13788,7 @@ declare namespace feng3d {
         source: {
             url: string;
         };
+        constructor();
         private onItemLoadCompleted;
         /**
          * 已加载完成或者加载完成时立即调用
@@ -15572,6 +15573,7 @@ declare namespace feng3d {
          */
         readFile(callback?: (err: Error) => void): void;
         private _dataChanged;
+        private _onDataChanged;
     }
 }
 declare namespace feng3d {

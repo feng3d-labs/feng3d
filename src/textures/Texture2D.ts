@@ -99,6 +99,11 @@ namespace feng3d
             }
         }
 
+        constructor()
+        {
+            super();
+        }
+
         private onItemLoadCompleted()
         {
             if (this._loadings.length == 0) this.dispatch("loadCompleted");
