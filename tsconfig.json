@@ -11,6 +11,8 @@
         "outDir": "debug"
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
+        //
+        "src/Feng3d.ts",
         // 自动生成文件
         "src/autofiles/ShaderConfig.ts",
         // Polyfill
@@ -336,8 +338,6 @@
         //
         "src/utils/GameObjectFactory.ts",
         //
-        "src/core/Mouse3DManager.ts",
-        //
-        "src/Feng3d.ts"
+        "src/core/Mouse3DManager.ts"
     ]
 }

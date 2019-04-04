@@ -1,6 +1,11 @@
 namespace feng3d
 {
     /**
+     * 是否开启调试(主要用于断言)
+     */
+    export var debuger = true;
+
+    /**
      * 测试代码运行时间
      * @param fn 被测试的方法
      * @param labal 标签

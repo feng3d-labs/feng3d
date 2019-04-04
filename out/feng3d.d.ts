@@ -1,3 +1,12 @@
+declare type gPartial<T> = {
+    [P in keyof T]?: gPartial<T[P]>;
+};
+declare namespace feng3d {
+    /**
+     * feng3d的版本号
+     */
+    var revision: string;
+}
 declare namespace feng3d {
 }
 interface String {
@@ -166,6 +175,10 @@ interface Array<T> {
     unique(compare?: (a: T, b: T) => boolean): this;
 }
 declare namespace feng3d {
+    /**
+     * 是否开启调试(主要用于断言)
+     */
+    var debuger: boolean;
     /**
      * 测试代码运行时间
      * @param fn 被测试的方法
@@ -16559,18 +16572,5 @@ declare namespace feng3d {
             clientY: number;
         };
     }
-}
-declare type gPartial<T> = {
-    [P in keyof T]?: gPartial<T[P]>;
-};
-declare namespace feng3d {
-    /**
-     * feng3d的版本号
-     */
-    var revision: string;
-    /**
-     * 是否开启调试(主要用于断言)
-     */
-    var debuger: boolean;
 }
 //# sourceMappingURL=feng3d.d.ts.map
