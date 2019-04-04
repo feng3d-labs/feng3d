@@ -9,5 +9,5 @@ namespace feng3d
      */
     export var revision: string = "2019.04.04.00";
 
-    log(`feng3d version ${revision}`)
+    console.log(`feng3d version ${revision}`)
 }

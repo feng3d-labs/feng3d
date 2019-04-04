@@ -101,6 +101,7 @@
         // 事件
         "src/event/FEvent.ts",
         "src/event/EventDispatcher.ts",
+        "src/event/ObjectEvent.ts",
         "src/event/EventProxy.ts",
         "src/event/WindowEventProxy.ts",
         //

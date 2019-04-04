@@ -15,6 +15,7 @@ namespace feng3d
          * 资源对象
          */
         @oav({ component: "OAVObjectView" })
+        @watch("_dataChanged")
         data: AssetData;
 
         saveFile(callback?: (err: Error) => void)
@@ -36,9 +37,18 @@ namespace feng3d
             this.rs.fs.readObject(this.assetPath, (err, data: AssetData) =>
             {
                 this.data = data;
-                this.data.assetId = this.assetId;
+                debuger && assert(this.data.assetId == this.assetId);
                 callback && callback(err);
             });
+        }
+
+        private _dataChanged(property, oldValue, newValue)
+        {
+            if (oldValue)
+            {
+                event.off(oldValue,)
+                oldValue
+            }
         }
     }
 }

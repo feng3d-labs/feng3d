@@ -53,9 +53,10 @@ namespace feng3d
         noPixels = ImageDatas.white;
 
         /**
-         * 是否加载
+         * 是否已加载
          */
-        isLoaded = true;
+        get isLoaded() { return this._loadings.length == 0; }
+        private _loadings = [];
 
         get image(): HTMLImageElement
         {
@@ -81,22 +82,38 @@ namespace feng3d
             }
             if (v.url)
             {
-                this.isLoaded = false;
+                this._loadings.push(v.url);
                 loader.loadImage(v.url, (img) =>
                 {
                     this._pixels = img;
                     this.invalidate();
-                    this.isLoaded = true;
-                    this.dispatch("loadCompleted");
+                    this._loadings.delete(v.url);
+                    this.onItemLoadCompleted();
                 }, null,
                     (e) =>
                     {
-                        feng3d.error(e)
-                        this.isLoaded = true;
-                        this.dispatch("loadCompleted");
+                        feng3d.error(e);
+                        this._loadings.delete(v.url);
+                        this.onItemLoadCompleted();
                     });
             }
         }
+
+        private onItemLoadCompleted()
+        {
+            if (this._loadings.length == 0) this.dispatch("loadCompleted");
+        }
+
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        onLoadCompleted(callback: () => void)
+        {
+            if (this.isLoaded) { callback(); return; }
+            this.once("loadCompleted", callback);
+        }
+
         private _source: { url: string };
 
         /**
