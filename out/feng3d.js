@@ -19,6 +19,14 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var feng3d;
 (function (feng3d) {
+    /**
+     * feng3d的版本号
+     */
+    feng3d.revision = "2019.04.04.00";
+    feng3d.log("feng3d version " + feng3d.revision);
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     feng3d.shaderConfig = {
         "shaders": {
             "color": {
@@ -227,6 +235,10 @@ Map.prototype.getValues = function () {
 };
 var feng3d;
 (function (feng3d) {
+    /**
+     * 是否开启调试(主要用于断言)
+     */
+    feng3d.debuger = true;
     /**
      * 测试代码运行时间
      * @param fn 被测试的方法
@@ -35002,17 +35014,5 @@ var feng3d;
         return WindowMouseInput;
     }(MouseInput));
     feng3d.WindowMouseInput = WindowMouseInput;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * feng3d的版本号
-     */
-    feng3d.revision = "2019.03.01";
-    /**
-     * 是否开启调试(主要用于断言)
-     */
-    feng3d.debuger = true;
-    feng3d.log("feng3d version " + feng3d.revision);
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
