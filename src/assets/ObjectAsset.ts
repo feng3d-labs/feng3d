@@ -6,12 +6,6 @@ namespace feng3d
     export abstract class ObjectAsset extends FileAsset
     {
         /**
-         * 名称
-         */
-        @oav({ exclude: true })
-        name: string;
-
-        /**
          * 资源对象
          */
         @oav({ component: "OAVObjectView" })

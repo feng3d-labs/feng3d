@@ -13,6 +13,6 @@ namespace feng3d
 
         assetType = AssetType.gameobject;
 
-        extenson = ".json";
+        static extenson = ".json";
     }
 }

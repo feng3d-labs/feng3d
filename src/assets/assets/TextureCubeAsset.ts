@@ -5,13 +5,14 @@ namespace feng3d
      */
     export class TextureCubeAsset extends ObjectAsset
     {
+        static extenson = ".json";
+
         /**
          * 材质
          */
         @oav({ component: "OAVObjectView" })
         data: TextureCube;
 
-        extenson = ".json";
 
         assetType = AssetType.texturecube;
     }

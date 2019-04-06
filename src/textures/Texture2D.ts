@@ -73,6 +73,13 @@ namespace feng3d
         }
         set source(v)
         {
+            if (this.assetId)
+            {
+                // 来源于资源
+                console.log(`来源于资源，不可修改！`)
+                return;
+            }
+
             this._source = v;
             if (!v)
             {

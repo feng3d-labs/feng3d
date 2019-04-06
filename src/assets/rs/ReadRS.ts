@@ -68,7 +68,7 @@ namespace feng3d
                         // 设置资源系统
                         asset.rs = <any>this;
                         // 计算路径
-                        var path = asset.name + asset.extenson;
+                        var path = asset.fileName + asset.extenson;
                         if (asset.parentAsset) path = asset.parentAsset.assetPath + "/" + path;
                         asset.assetPath = path;
                         // 新增映射
@@ -92,7 +92,7 @@ namespace feng3d
                     callback && callback();
                 } else
                 {
-                    this.createAsset(FolderAsset, { name: "Assets" }, null, (err, asset) =>
+                    this.createAsset(FolderAsset, "Assets", null, null, (err, asset) =>
                     {
                         this._root = asset;
                         callback && callback();
@@ -105,11 +105,12 @@ namespace feng3d
          * 新建资源
          * 
          * @param cls 资源类定义
+         * @param fileName 文件名称
          * @param value 初始数据
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends FileAsset>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void)
+        createAsset<T extends FileAsset>(cls: new () => T, fileName?: string, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void)
         {
             parent = parent || this._root;
             //
@@ -123,17 +124,19 @@ namespace feng3d
             Object.setValue(<T>asset, value);
 
             // 设置默认名称
-            asset.name = asset.name || "new " + asset.assetType;
+            fileName = fileName || "new " + asset.assetType;
             if (parent) 
             {
                 // 计算有效名称
-                asset.name = this.getValidChildName(parent, asset.name);
+                fileName = this.getValidChildName(parent, fileName);
                 // 处理资源父子关系
                 parent.childrenAssets.push(asset);
                 asset.parentAsset = parent;
             }
             // 计算路径
-            var path = asset.name + asset.extenson;
+            var extenson = cls["extenson"];
+            debuger && assert(extenson != undefined, `对象 ${cls} 没有设置 extenson 值，参考 FolderAsset.extenson`);
+            var path = fileName + extenson;
             if (asset.parentAsset) path = asset.parentAsset.assetPath + "/" + path;
             asset.assetPath = path;
             // 新增映射
@@ -146,16 +149,16 @@ namespace feng3d
          * 获取有效子文件名称
          * 
          * @param parent 父文件夹
-         * @param name 名称
+         * @param fileName 文件名称
          */
-        getValidChildName(parent: FolderAsset, name: string)
+        getValidChildName(parent: FolderAsset, fileName: string)
         {
-            var childrenNames = parent.childrenAssets.map(v => v.name);
-            var newName = name;
+            var childrenNames = parent.childrenAssets.map(v => v.fileName);
+            var newName = fileName;
             var index = 1;
             while (childrenNames.indexOf(newName) != -1)
             {
-                newName = name + index;
+                newName = fileName + index;
                 index++;
             }
             return newName;

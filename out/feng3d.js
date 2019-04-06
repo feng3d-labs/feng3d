@@ -26993,6 +26993,11 @@ var feng3d;
             },
             set: function (v) {
                 var _this = this;
+                if (this.assetId) {
+                    // 来源于资源
+                    console.log("\u6765\u6E90\u4E8E\u8D44\u6E90\uFF0C\u4E0D\u53EF\u4FEE\u6539\uFF01");
+                    return;
+                }
                 this._source = v;
                 if (!v) {
                     this._pixels = null;
@@ -31832,6 +31837,25 @@ var feng3d;
             _this.assetType = feng3d.AssetType.texture;
             return _this;
         }
+        Object.defineProperty(TextureAsset.prototype, "data", {
+            /**
+             * 材质
+             */
+            get: function () {
+                if (!this._texture2D) {
+                    this._texture2D = new feng3d.Texture2D();
+                    this._texture2D.assetId = this.assetId;
+                }
+                return this._texture2D;
+            },
+            set: function (v) {
+                feng3d.debuger && feng3d.assert(!v.assetId, "初始资源不应该有资源编号");
+                this._texture2D = v;
+                this._texture2D.assetId = this.assetId;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(TextureAsset.prototype, "image", {
             /**
              * 图片
@@ -31846,7 +31870,6 @@ var feng3d;
             configurable: true
         });
         TextureAsset.prototype.saveFile = function (callback) {
-            this.data.assetId = this.assetId;
             this.rs.fs.writeImage(this.assetPath, this.image, function (err) {
                 callback && callback(err);
             });
@@ -31859,9 +31882,9 @@ var feng3d;
         TextureAsset.prototype.readFile = function (callback) {
             var _this = this;
             this.rs.fs.readImage(this.assetPath, function (err, img) {
-                _this.image = img;
-                _this.data.source = { url: _this.assetPath };
-                _this.data.assetId = _this.assetId;
+                console.log("readFile" + _this.data.assetId);
+                _this._image = img;
+                _this.data["_pixels"] = img;
                 callback && callback(err);
             });
         };
@@ -31873,7 +31896,8 @@ var feng3d;
         TextureAsset.prototype.readMeta = function (callback) {
             var _this = this;
             _super.prototype.readMeta.call(this, function (err) {
-                _this.data = feng3d.serialization.deserialize(_this.meta["texture"]);
+                _this._texture2D = feng3d.serialization.deserialize(_this.meta["texture"]);
+                console.log("readMeta" + _this.data.assetId);
                 callback && callback(err);
             });
         };
@@ -31883,15 +31907,12 @@ var feng3d;
          * @param callback 完成回调
          */
         TextureAsset.prototype.writeMeta = function (callback) {
-            this.data = this.data || new feng3d.Texture2D();
-            this.data.assetId = this.assetId;
-            this.data.source = { url: this.assetPath };
             this.meta["texture"] = feng3d.serialization.serialize(this.data);
             this.rs.fs.writeObject(this.metaPath, this.meta, callback);
         };
         __decorate([
             feng3d.oav({ component: "OAVObjectView" })
-        ], TextureAsset.prototype, "data", void 0);
+        ], TextureAsset.prototype, "data", null);
         return TextureAsset;
     }(feng3d.FileAsset));
     feng3d.TextureAsset = TextureAsset;

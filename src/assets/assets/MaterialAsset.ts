@@ -5,6 +5,8 @@ namespace feng3d
      */
     export class MaterialAsset extends ObjectAsset
     {
+        static extenson = ".json";
+
         /**
          * 材质
          */
@@ -13,6 +15,5 @@ namespace feng3d
 
         assetType = AssetType.material;
 
-        extenson = ".json";
     }
 }

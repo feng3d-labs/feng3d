@@ -5,13 +5,28 @@ namespace feng3d
      */
     export class TextureAsset extends FileAsset
     {
+        static extenson: ".jpg" | ".png" | ".jpeg" | ".gif" = ".png";
+
         /**
          * 材质
          */
         @oav({ component: "OAVObjectView" })
-        data: Texture2D;
-
-        extenson: ".jpg" | ".png" | ".jpeg" | ".gif" = ".png";
+        get data()
+        {
+            if (!this._texture2D)
+            {
+                this._texture2D = new Texture2D();
+                this._texture2D.assetId = this.assetId;
+            }
+            return this._texture2D;
+        }
+        set data(v)
+        {
+            debuger && assert(!v.assetId, "初始资源不应该有资源编号");
+            this._texture2D = v;
+            this._texture2D.assetId = this.assetId;
+        }
+        private _texture2D: Texture2D;
 
         /**
          * 图片
@@ -30,7 +45,6 @@ namespace feng3d
 
         saveFile(callback?: (err: Error) => void)
         {
-            this.data.assetId = this.assetId;
             this.rs.fs.writeImage(this.assetPath, this.image, (err) =>
             {
                 callback && callback(err);
@@ -46,9 +60,8 @@ namespace feng3d
         {
             this.rs.fs.readImage(this.assetPath, (err, img: HTMLImageElement) =>
             {
-                this.image = img;
-                this.data.source = { url: this.assetPath };
-                this.data.assetId = this.assetId;
+                this._image = img;
+                this.data["_pixels"] = img;
                 callback && callback(err);
             });
         }
@@ -62,7 +75,7 @@ namespace feng3d
         {
             super.readMeta((err) =>
             {
-                this.data = serialization.deserialize(this.meta["texture"]);
+                this._texture2D = serialization.deserialize(this.meta["texture"]);
                 callback && callback(err);
             });
         }
@@ -74,9 +87,6 @@ namespace feng3d
          */
         writeMeta(callback?: (err: Error) => void)
         {
-            this.data = this.data || new Texture2D();
-            this.data.assetId = this.assetId;
-            this.data.source = { url: this.assetPath };
             this.meta["texture"] = serialization.serialize(this.data);
             this.rs.fs.writeObject(this.metaPath, this.meta, callback);
         }

@@ -12,15 +12,6 @@ namespace feng3d
         assetId: string;
 
         /**
-         * 名称
-         */
-        @oav()
-        @serialize
-        get name() { return this._name; }
-        set name(v) { this._name = v; if (this.data) this.data.name = v; }
-        private _name = "";
-
-        /**
          * 资源元标签，该对象也用来判断资源是否被加载，值为null表示未加载，否则已加载。
          * 
          * 并且该对象还会用于存储主文件无法存储的数据，比如 TextureAsset 中存储了 Texture2D 信息
@@ -42,8 +33,13 @@ namespace feng3d
         /**
          * 文件后缀
          */
-        @serialize
-        extenson: string = "";
+
+        get extenson()
+        {
+            debuger && assert(!!this.assetPath);
+            var ext = pathUtils.getExtension(this.assetPath);
+            return ext;
+        }
 
         /**
          * 父资源
@@ -51,8 +47,21 @@ namespace feng3d
         parentAsset: FolderAsset;
 
         /**
+         * 文件名称
+         * 
+         * 不包含后缀
+         */
+        get fileName()
+        {
+            debuger && assert(!!this.assetPath);
+            var fn = pathUtils.getName(this.assetPath);
+            return fn;
+        }
+
+        /**
          * 资源路径
          */
+        @serialize
         assetPath: string;
 
         /**

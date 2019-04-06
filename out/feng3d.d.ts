@@ -15660,6 +15660,7 @@ declare namespace feng3d {
          * 材质
          */
         data: Texture2D;
+        private _texture2D;
         extenson: ".jpg" | ".png" | ".jpeg" | ".gif";
         /**
          * 图片
