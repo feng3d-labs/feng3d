@@ -11,14 +11,26 @@ namespace feng3d
         defaultParticle = "defaultParticle",
     }
 
-    export var imageDatas = {
-        black: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.black)).imageData,
-        white: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.white)).imageData,
-        red: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.red)).imageData,
-        green: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.green)).imageData,
-        blue: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.blue)).imageData,
-        defaultNormal: new ImageUtil(1, 1, Color4.fromUnit24(0x8080ff)).imageData,
-        defaultParticle: new ImageUtil().drawDefaultParticle().imageData,
+    export var imageDatas: {
+        black: ImageData;
+        white: ImageData;
+        red: ImageData;
+        green: ImageData;
+        blue: ImageData;
+        defaultNormal: ImageData;
+        defaultParticle: ImageData;
+    }
+    if (typeof document != "undefined")
+    {
+        imageDatas = {
+            black: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.black)).imageData,
+            white: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.white)).imageData,
+            red: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.red)).imageData,
+            green: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.green)).imageData,
+            blue: new ImageUtil(1, 1, Color4.fromUnit24(ColorKeywords.blue)).imageData,
+            defaultNormal: new ImageUtil(1, 1, Color4.fromUnit24(0x8080ff)).imageData,
+            defaultParticle: new ImageUtil().drawDefaultParticle().imageData,
+        }
     }
 
     export interface Texture2DEventMap

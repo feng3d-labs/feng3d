@@ -4281,3 +4281,24 @@ QUnit.module("watcher", function () {
     });
 });
 //# sourceMappingURL=tests.js.map
+
+(function universalModuleDefinition(root, factory)
+{
+    if (root && root["feng3d"])
+    {
+        return;
+    }
+    if (typeof exports === 'object' && typeof module === 'object')
+        module.exports = factory();
+    else if (typeof define === 'function' && define.amd)
+        define([], factory);
+    else if (typeof exports === 'object')
+        exports["feng3d"] = factory();
+    else
+    {
+        root["feng3d"] = factory();
+    }
+})(this, function ()
+{
+    return feng3d;
+});

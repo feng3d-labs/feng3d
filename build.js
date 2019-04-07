@@ -38,7 +38,7 @@ function watchProject(project)
     {
         data = data.trim();
         if (data.length > 10) console.log(data);
-        if (data.indexOf("Compilation complete") != -1)
+        if (data.indexOf("Compilation complete") != -1 || data.indexOf("Watching for file changes") != -1)
         {
             //在编译完成后处理 模块导出
             var tsconfig = readTsConfig(readFile(project + "/tsconfig.json"));

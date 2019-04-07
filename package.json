@@ -1,6 +1,6 @@
 {
   "name": "feng3d",
-  "version": "2019.04.04.00",
+  "version": "2019.04.07.00",
   "description": "webgl 3d engine",
   "main": "out/feng3d.js",
   "types": "out/feng3d.d.ts",

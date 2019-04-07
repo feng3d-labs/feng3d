@@ -1,3 +1,6 @@
+declare module 'feng3d' {
+    export = feng3d;
+}
 declare type gPartial<T> = {
     [P in keyof T]?: gPartial<T[P]>;
 };
@@ -7579,6 +7582,15 @@ declare namespace feng3d {
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
         readStrings(paths: string[], callback: (strs: (string | Error)[]) => void): void;
+        /**
+         * 获取已经加载的图片，如果未加载则返回null
+         *
+         * @param path 图片路径
+         */
+        getImage(path: string): HTMLImageElement;
+        protected _images: {
+            [path: string]: HTMLImageElement;
+        };
     }
 }
 declare namespace feng3d {
@@ -7799,7 +7811,7 @@ declare namespace feng3d {
          * @param path 图片路径
          * @param callback 加载完成回调
          */
-        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
+        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): HTMLImageElement;
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
@@ -7925,7 +7937,7 @@ declare namespace feng3d {
          * @param path 图片路径
          * @param callback 加载完成回调
          */
-        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
+        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): HTMLImageElement;
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
@@ -11029,7 +11041,7 @@ declare namespace feng3d {
         /**
          * 使纹理失效
          */
-        protected invalidate(): void;
+        invalidate(): void;
         readonly activePixels: HTMLCanvasElement | ImageData | HTMLImageElement | HTMLVideoElement | ImageBitmap | (HTMLCanvasElement | ImageData | HTMLImageElement | HTMLVideoElement | ImageBitmap)[];
         /**
          *
@@ -13737,6 +13749,7 @@ declare namespace feng3d {
          * 是否加载
          */
         isLoaded: boolean;
+        readonly image: HTMLImageElement;
         /**
          * 用于表示初始化纹理的数据来源
          */
@@ -13816,27 +13829,39 @@ declare namespace feng3d {
         on<K extends keyof TextureCubeEventMap>(type: K, listener: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): any;
         off<K extends keyof TextureCubeEventMap>(type?: K, listener?: (event: Event<TextureCubeEventMap[K]>) => any, thisObject?: any): any;
     }
+    type TextureCubeImageName = "positive_x_url" | "positive_y_url" | "positive_z_url" | "negative_x_url" | "negative_y_url" | "negative_z_url";
     /**
      * 立方体纹理
      */
     class TextureCube extends TextureInfo {
         __class__: "feng3d.TextureCube";
         assetType: AssetType;
-        positive_x_url: string;
-        positive_y_url: string;
-        positive_z_url: string;
-        negative_x_url: string;
-        negative_y_url: string;
-        negative_z_url: string;
+        static ImageNames: TextureCubeImageName[];
+        OAVCubeMap: string;
+        /**
+         * 原始数据
+         */
+        private rawData;
         noPixels: ImageDatas[];
         protected _pixels: any[];
         protected _textureType: TextureType;
-        private loadingNum;
-        private urlChanged;
+        /**
+         * 是否正在加载
+         */
+        private _isloading;
         /**
          * 是否加载完成
          */
         readonly isLoaded: boolean;
+        private _isLoaded;
+        setTexture2D(pos: TextureCubeImageName, texture: Texture2D): void;
+        setTexture2DPath(pos: TextureCubeImageName, path: string): void;
+        getTextureImage(pos: TextureCubeImageName, callback: (img: HTMLImageElement) => void): void;
+        private rawDataChanged;
+        /**
+         * 使纹理失效
+         */
+        invalidate(): void;
         /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调

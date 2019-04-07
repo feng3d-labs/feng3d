@@ -275,19 +275,25 @@ namespace feng3d
     var localrequestAnimationFrame: (callback: FrameRequestCallback) => number;
     if (typeof requestAnimationFrame == "undefined")
     {
+        var _global: Window;
         if (typeof window != "undefined")
         {
+            _global = window;
             localrequestAnimationFrame =
                 window["requestAnimationFrame"] ||
                 window["webkitRequestAnimationFrame"] ||
                 window["mozRequestAnimationFrame"] ||
                 window["oRequestAnimationFrame"] ||
                 window["msRequestAnimationFrame"];
-        } else
+        } else if (typeof global != "undefined")
+        {
+            _global = <any>global;
+        }
+        if (localrequestAnimationFrame == undefined)
         {
             localrequestAnimationFrame = function (callback)
             {
-                return window.setTimeout(callback, 1000 / ticker.frameRate);
+                return _global.setTimeout(callback, 1000 / ticker.frameRate);
             };
         }
     } else
