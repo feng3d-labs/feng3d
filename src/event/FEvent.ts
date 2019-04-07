@@ -7,6 +7,34 @@ namespace feng3d
     export var event: FEvent;
 
     /**
+     * 只针对Object的事件
+     */
+    export var objectevent: ObjectEventDispatcher<Object, ObjectEventType>;
+
+    /**
+     * Object 事件类型
+     */
+    export interface ObjectEventType
+    {
+        /**
+         * 属性值变化
+         */
+        propertyValueChanged: { property: string, oldValue: any, newValue: any };
+    }
+
+    /**
+     * 用于适配不同对象对于的事件
+     */
+    export interface ObjectEventDispatcher<O, T>
+    {
+        once<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof T>(target: O, type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
+        has<K extends keyof T>(target: O, type: K): boolean;
+        on<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof T>(target: O, type?: K, listener?: (event: Event<T[K]>) => void, thisObject?: any): void;
+    }
+
+    /**
      * 事件
      */
     export class FEvent
@@ -283,7 +311,7 @@ namespace feng3d
 
     }
 
-    event = new FEvent();
+    objectevent = event = new FEvent();
 
     interface ObjectListener
     {

@@ -5,12 +5,9 @@ namespace feng3d
      */
     export class ScriptAsset extends StringAsset
     {
+        static extenson = ".ts";
+
         assetType = AssetType.script
-
-        @oav({ editable: false, priority: -1 })
-        name: string;
-
-        extenson = ".ts";
 
         @watch("onTextContentChanged")
         textContent: string = "";
@@ -30,7 +27,6 @@ namespace feng3d
             if (!this.textContent)
             {
                 this.scriptName = "";
-                this.name = "";
                 return;
             }
 

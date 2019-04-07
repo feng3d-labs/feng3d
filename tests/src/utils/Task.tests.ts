@@ -1,10 +1,23 @@
 QUnit.module("Task", () =>
 {
-    QUnit.test("do", (assert) =>
+    QUnit.test("series", (assert) =>
     {
-        // assert.ok(feng3d.pathUtils.getNameWithExtension("a") == "a");
-        // assert.ok(feng3d.pathUtils.getNameWithExtension("a.txt") == "a.txt");
-        // assert.ok(feng3d.pathUtils.getNameWithExtension("a/") == "a");
-        // assert.ok(feng3d.pathUtils.getNameWithExtension("a.b/") == "a.b");
+        var result: number[] = [];
+        var arr = [1, 2, 3, 4, 5];
+        var funcs = arr.map(v =>
+        {
+            return (callback: () => void) =>
+            {
+                result.push(v); setTimeout(() =>
+                {
+                    callback();
+                }, 1000);
+            };
+        });
+        feng3d.task.series(funcs)(() =>
+        {
+            feng3d.assert(JSON.stringify(arr) == JSON.stringify(result));
+        });
+        assert.ok(true);
     });
 });

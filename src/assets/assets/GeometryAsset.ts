@@ -5,6 +5,8 @@ namespace feng3d
      */
     export class GeometryAsset extends ObjectAsset
     {
+        static extenson = ".json";
+
         /**
          * 几何体
          */
@@ -13,6 +15,5 @@ namespace feng3d
 
         assetType = AssetType.geometry;
 
-        extenson = ".json";
     }
 }

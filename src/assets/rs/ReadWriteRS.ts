@@ -43,14 +43,15 @@ namespace feng3d
          * 新建资源
          * 
          * @param cls 资源类定义
+         * @param fileName 文件名称
          * @param value 初始数据
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends FileAsset>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void)
+        createAsset<T extends FileAsset>(cls: new () => T, fileName?: string, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void)
         {
             // 新建资源
-            super.createAsset(cls, value, parent, (err, asset) =>
+            super.createAsset(cls, fileName, value, parent, (err, asset) =>
             {
                 if (asset)
                 {
@@ -101,9 +102,9 @@ namespace feng3d
          */
         moveAsset(asset: FileAsset, folder: FolderAsset, callback?: (err: Error) => void)
         {
-            var filename = asset.name + asset.extenson
+            var filename = asset.fileName + asset.extenson
 
-            var cnames = folder.childrenAssets.map(v => v.name + v.extenson);
+            var cnames = folder.childrenAssets.map(v => v.fileName + v.extenson);
             if (cnames.indexOf(filename) != -1)
             {
                 callback && callback(new Error(`目标文件夹中存在同名文件（夹），无法移动`));
@@ -178,11 +179,11 @@ namespace feng3d
                         // 修复删除资源时破坏的父资源引用
                         la.parentAsset = pla;
                         // 计算资源新路径
-                        var np = la.name + la.extenson;
+                        var np = la.fileName + la.extenson;
                         var p = la.parentAsset;
                         while (p)
                         {
-                            np = p.name + "/" + np;
+                            np = p.fileName + "/" + np;
                             p = p.parentAsset;
                         }
                         la.assetPath = np;

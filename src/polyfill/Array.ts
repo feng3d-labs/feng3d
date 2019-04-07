@@ -6,6 +6,14 @@ interface Array<T>
      * @param compare 比较函数
      */
     unique(compare?: (a: T, b: T) => boolean): this;
+
+    /**
+     * 删除元素
+     * 
+     * @param item 被删除元素
+     * @returns 被删除元素在数组中的位置
+     */
+    delete(item: T): number;
 }
 
 Array.prototype.unique = function (compare = (a, b) => a == b)
@@ -20,3 +28,12 @@ Array.prototype.unique = function (compare = (a, b) => a == b)
     }
     return this;
 }
+
+Array.prototype.delete = function (item): number
+{
+    var arr: any[] = this;
+    var index = arr.indexOf(item);
+    if (index != -1) arr.splice(index, 1);
+    return index;
+}
+

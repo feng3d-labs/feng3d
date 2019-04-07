@@ -5,9 +5,6 @@ namespace feng3d
      */
     export class ArrayBufferAsset extends FileAsset
     {
-        @oav()
-        name: string;
-
         /**
          * 文件数据
          */

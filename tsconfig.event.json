@@ -1,0 +1,12 @@
+{
+    "extends": "./tsconfig.settings.json",
+    "compilerOptions": {
+        "outFile": "out/modules/event.js"
+    },
+    "include": [
+        "src/polyfill/Map.ts",
+        //
+        "src/event/FEvent.ts",
+        "src/event/EventDispatcher.ts"
+    ]
+}
