@@ -28,8 +28,6 @@ namespace feng3d
     // export var windowEventProxy: WindowEventProxy;
     export var windowEventProxy: IEventProxy<WindowEventMap> & EventProxy;
 
-    if (typeof global != "undefined")
-        windowEventProxy = new WindowEventProxy(global);
-    else
+    if (typeof window != "undefined")
         windowEventProxy = new WindowEventProxy(window);
 }

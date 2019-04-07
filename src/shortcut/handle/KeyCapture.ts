@@ -25,6 +25,10 @@ namespace feng3d
 		{
 			this._keyState = shortCut.keyState;
 			//
+			if (!windowEventProxy)
+			{
+				return;
+			}
 			windowEventProxy.on("keydown", this.onKeydown, this);
 			windowEventProxy.on("keyup", this.onKeyup, this);
 

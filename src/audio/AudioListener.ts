@@ -84,6 +84,8 @@ namespace feng3d
 
 (() =>
 {
+    if (typeof window == "undefined") return;
+
     window["AudioContext"] = window["AudioContext"] || window["webkitAudioContext"];
 
     var audioCtx = feng3d.audioCtx = new AudioContext();

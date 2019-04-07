@@ -89,7 +89,15 @@ namespace feng3d
     classUtils = new ClassUtils();
 
     var _definitionCache = {};
-    var _global = window;
+    var _global: Window;
+    if (typeof window != "undefined")
+    {
+        _global = window;
+    } else if (typeof global != "undefined")
+    {
+        _global = <any>global;
+    }
+
     var _classNameSpaces = ["feng3d"];
 
 

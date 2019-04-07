@@ -21,7 +21,10 @@ namespace feng3d
             this.rootPath = rootPath;
             if (this.rootPath == "")
             {
-                this.rootPath = document.URL.substring(0, document.URL.lastIndexOf("/") + 1);
+                if (typeof document != "undefined")
+                {
+                    this.rootPath = document.URL.substring(0, document.URL.lastIndexOf("/") + 1);
+                }
             }
         }
 

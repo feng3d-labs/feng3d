@@ -36,6 +36,8 @@ namespace feng3d
          */
         init(width = 1, height = 1, fillcolor = new Color4(0, 0, 0, 0))
         {
+            if (typeof document == "undefined") return;
+
             var canvas = document.createElement('canvas');
             canvas.width = width;
             canvas.height = height;
