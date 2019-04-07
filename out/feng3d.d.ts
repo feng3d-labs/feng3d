@@ -8268,6 +8268,7 @@ declare namespace feng3d {
          * @param fileName 文件名称
          */
         getValidChildName(parent: FolderAsset, fileName: string): string;
+        private _assetStatus;
         /**
          * 读取文件为资源对象
          * @param id 资源编号
@@ -15663,7 +15664,6 @@ declare namespace feng3d {
          * 材质
          */
         data: Texture2D;
-        private _texture2D;
         /**
          * 图片
          */

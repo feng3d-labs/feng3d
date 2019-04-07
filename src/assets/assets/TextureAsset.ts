@@ -11,22 +11,7 @@ namespace feng3d
          * 材质
          */
         @oav({ component: "OAVObjectView" })
-        get data()
-        {
-            if (!this._texture2D)
-            {
-                this._texture2D = new Texture2D();
-                this._texture2D.assetId = this.assetId;
-            }
-            return this._texture2D;
-        }
-        set data(v)
-        {
-            debuger && assert(!v.assetId, "初始资源不应该有资源编号");
-            this._texture2D = v;
-            this._texture2D.assetId = this.assetId;
-        }
-        private _texture2D: Texture2D;
+        data: Texture2D;
 
         /**
          * 图片
@@ -36,7 +21,7 @@ namespace feng3d
         set image(v: HTMLImageElement)
         {
             this._image = v;
-            this.data["_pixels"] = v;
+            if (this.data) this.data["_pixels"] = v;
             this.saveFile();
         }
         private _image: HTMLImageElement;
@@ -75,7 +60,7 @@ namespace feng3d
         {
             super.readMeta((err) =>
             {
-                this._texture2D = this.meta["texture"];
+                this.data = this.meta["texture"];
                 callback && callback(err);
             });
         }
@@ -87,6 +72,15 @@ namespace feng3d
          */
         writeMeta(callback?: (err: Error) => void)
         {
+            if (this.data == undefined)
+            {
+                this.data = new Texture2D();
+                this.data["_pixels"] = this._image;
+            }
+            if (this.data.assetId == undefined) this.data.assetId = this.assetId;
+
+            debuger && assert(this.data.assetId == this.assetId);
+
             this.meta["texture"] = this.data;
             this.rs.fs.writeObject(this.metaPath, this.meta, callback);
         }

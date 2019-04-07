@@ -16865,6 +16865,7 @@ var feng3d;
              */
             this.resources = "resource.json";
             this._status = { isiniting: false, isinit: false };
+            this._assetStatus = {};
             this._fs = fs;
         }
         Object.defineProperty(ReadRS.prototype, "fs", {
@@ -16894,7 +16895,8 @@ var feng3d;
                 callback && callback();
                 return;
             }
-            feng3d.event.once(this, "init", function () { callback && callback(); });
+            var eventtype = "init";
+            feng3d.event.once(this, eventtype, function () { callback && callback(); });
             if (this._status.isiniting)
                 return;
             this._status.isiniting = true;
@@ -16923,12 +16925,12 @@ var feng3d;
                         }
                         index++;
                     }
-                    feng3d.event.dispatch(_this, "init");
+                    feng3d.event.dispatch(_this, eventtype);
                 }
                 else {
                     _this.createAsset(feng3d.FolderAsset, "Assets", null, null, function (err, asset) {
                         _this._root = asset;
-                        feng3d.event.dispatch(_this, "init");
+                        feng3d.event.dispatch(_this, eventtype);
                     });
                 }
             });
@@ -16999,22 +17001,29 @@ var feng3d;
          * @param callback 读取完成回调
          */
         ReadRS.prototype.readAsset = function (id, callback) {
+            var _this = this;
             var asset = this.idMap[id];
             if (!asset) {
                 callback(new Error("\u4E0D\u5B58\u5728\u8D44\u6E90 " + id), asset);
                 return;
             }
-            if (asset.meta) {
+            var status = this._assetStatus[id] = this._assetStatus[id] || { isLoaded: false, isLoading: false };
+            if (status.isLoaded) {
                 callback(null, asset);
                 return;
             }
+            var eventtype = "load_" + id;
+            feng3d.event.once(this, eventtype, function () { callback(null, asset); });
+            if (status.isLoading)
+                return;
+            status.isLoading = true;
             asset.readMeta(function (err) {
                 if (err) {
-                    callback(err, asset);
+                    feng3d.event.dispatch(_this, eventtype);
                     return;
                 }
                 asset.readFile(function (err) {
-                    callback(err, asset);
+                    feng3d.event.dispatch(_this, eventtype);
                 });
             });
         };
@@ -31910,25 +31919,6 @@ var feng3d;
             _this.assetType = feng3d.AssetType.texture;
             return _this;
         }
-        Object.defineProperty(TextureAsset.prototype, "data", {
-            /**
-             * 材质
-             */
-            get: function () {
-                if (!this._texture2D) {
-                    this._texture2D = new feng3d.Texture2D();
-                    this._texture2D.assetId = this.assetId;
-                }
-                return this._texture2D;
-            },
-            set: function (v) {
-                feng3d.debuger && feng3d.assert(!v.assetId, "初始资源不应该有资源编号");
-                this._texture2D = v;
-                this._texture2D.assetId = this.assetId;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(TextureAsset.prototype, "image", {
             /**
              * 图片
@@ -31936,7 +31926,8 @@ var feng3d;
             get: function () { return this._image; },
             set: function (v) {
                 this._image = v;
-                this.data["_pixels"] = v;
+                if (this.data)
+                    this.data["_pixels"] = v;
                 this.saveFile();
             },
             enumerable: true,
@@ -31968,7 +31959,7 @@ var feng3d;
         TextureAsset.prototype.readMeta = function (callback) {
             var _this = this;
             _super.prototype.readMeta.call(this, function (err) {
-                _this._texture2D = _this.meta["texture"];
+                _this.data = _this.meta["texture"];
                 callback && callback(err);
             });
         };
@@ -31978,13 +31969,20 @@ var feng3d;
          * @param callback 完成回调
          */
         TextureAsset.prototype.writeMeta = function (callback) {
+            if (this.data == undefined) {
+                this.data = new feng3d.Texture2D();
+                this.data["_pixels"] = this._image;
+            }
+            if (this.data.assetId == undefined)
+                this.data.assetId = this.assetId;
+            feng3d.debuger && feng3d.assert(this.data.assetId == this.assetId);
             this.meta["texture"] = this.data;
             this.rs.fs.writeObject(this.metaPath, this.meta, callback);
         };
         TextureAsset.extenson = ".png";
         __decorate([
             feng3d.oav({ component: "OAVObjectView" })
-        ], TextureAsset.prototype, "data", null);
+        ], TextureAsset.prototype, "data", void 0);
         return TextureAsset;
     }(feng3d.FileAsset));
     feng3d.TextureAsset = TextureAsset;

@@ -57,7 +57,9 @@ namespace feng3d
         init(callback?: () => void)
         {
             if (this._status.isinit) { callback && callback(); return; }
-            event.once(this, "init", () => { callback && callback(); });
+
+            var eventtype = "init";
+            event.once(this, eventtype, () => { callback && callback(); });
             if (this._status.isiniting) return;
             this._status.isiniting = true;
 
@@ -91,13 +93,13 @@ namespace feng3d
                         }
                         index++;
                     }
-                    event.dispatch(this, "init");
+                    event.dispatch(this, eventtype);
                 } else
                 {
                     this.createAsset(FolderAsset, "Assets", null, null, (err, asset) =>
                     {
                         this._root = asset;
-                        event.dispatch(this, "init");
+                        event.dispatch(this, eventtype);
                     });
                 }
             });
@@ -170,6 +172,8 @@ namespace feng3d
             return newName;
         }
 
+        private _assetStatus: { [id: string]: { isLoaded: boolean, isLoading: boolean } } = {};
+
         /**
          * 读取文件为资源对象
          * @param id 资源编号
@@ -183,21 +187,27 @@ namespace feng3d
                 callback(new Error(`不存在资源 ${id}`), asset);
                 return;
             }
-            if (asset.meta)
+            var status = this._assetStatus[id] = this._assetStatus[id] || { isLoaded: false, isLoading: false };
+            if (status.isLoaded)
             {
                 callback(null, asset);
                 return;
             }
+            var eventtype = `load_${id}`;
+            event.once(this, eventtype, () => { callback(null, asset); });
+            if (status.isLoading) return;
+
+            status.isLoading = true;
             asset.readMeta((err) =>
             {
                 if (err)
                 {
-                    callback(err, asset);
+                    event.dispatch(this, eventtype);
                     return;
                 }
                 asset.readFile((err) =>
                 {
-                    callback(err, asset);
+                    event.dispatch(this, eventtype);
                 });
             });
         }
