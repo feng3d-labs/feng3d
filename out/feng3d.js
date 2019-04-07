@@ -2408,8 +2408,10 @@ var feng3d;
          */
         PathUtils.prototype.getExtension = function (path) {
             var name = this.getNameWithExtension(path);
-            var extension = name.split(".").slice(1).join(".");
-            return extension;
+            var index = name.indexOf(".");
+            if (index == -1)
+                return name;
+            return name.substr(index);
         };
         /**
          * 父路径
@@ -15164,9 +15166,25 @@ var feng3d;
         function AssetData() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
+        Object.defineProperty(AssetData.prototype, "name", {
+            /**
+             * 资源名称
+             */
+            get: function () {
+                if (!this._name) {
+                    var asset = feng3d.rs.getAsset(this.assetId);
+                    if (asset)
+                        return asset.fileName;
+                }
+                return this._name;
+            },
+            set: function (v) { this._name = v; },
+            enumerable: true,
+            configurable: true
+        });
         __decorate([
             feng3d.serialize
-        ], AssetData.prototype, "name", void 0);
+        ], AssetData.prototype, "name", null);
         __decorate([
             feng3d.serialize
         ], AssetData.prototype, "assetId", void 0);
@@ -16821,6 +16839,7 @@ var feng3d;
              * 资源树保存路径
              */
             this.resources = "resource.json";
+            this._status = { isiniting: false, isinit: false };
             this._fs = fs;
         }
         Object.defineProperty(ReadRS.prototype, "fs", {
@@ -16846,6 +16865,14 @@ var feng3d;
          */
         ReadRS.prototype.init = function (callback) {
             var _this = this;
+            if (this._status.isinit) {
+                callback && callback();
+                return;
+            }
+            feng3d.event.once(this, "init", function () { callback && callback(); });
+            if (this._status.isiniting)
+                return;
+            this._status.isiniting = true;
             this.fs.readObject(this.resources, function (err, data) {
                 if (data) {
                     _this._root = data;
@@ -16856,11 +16883,6 @@ var feng3d;
                         var asset = assets[index];
                         // 设置资源系统
                         asset.rs = _this;
-                        // 计算路径
-                        var path = asset.fileName + asset.extenson;
-                        if (asset.parentAsset)
-                            path = asset.parentAsset.assetPath + "/" + path;
-                        asset.assetPath = path;
                         // 新增映射
                         _this.idMap[asset.assetId] = asset;
                         _this.pathMap[asset.assetPath] = asset;
@@ -16876,12 +16898,12 @@ var feng3d;
                         }
                         index++;
                     }
-                    callback && callback();
+                    feng3d.event.dispatch(_this, "init");
                 }
                 else {
                     _this.createAsset(feng3d.FolderAsset, "Assets", null, null, function (err, asset) {
                         _this._root = asset;
-                        callback && callback();
+                        feng3d.event.dispatch(_this, "init");
                     });
                 }
             });

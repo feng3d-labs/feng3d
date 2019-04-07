@@ -37,6 +37,8 @@ namespace feng3d
          */
         protected resources = "resource.json";
 
+        private _status = { isiniting: false, isinit: false };
+
         /**
          * 构建可读资源系统
          * 
@@ -54,6 +56,11 @@ namespace feng3d
          */
         init(callback?: () => void)
         {
+            if (this._status.isinit) { callback && callback(); return; }
+            event.once(this, "init", () => { callback && callback(); });
+            if (this._status.isiniting) return;
+            this._status.isiniting = true;
+
             this.fs.readObject(this.resources, (err, data: FolderAsset) =>
             {
                 if (data)
@@ -67,10 +74,6 @@ namespace feng3d
                         var asset = assets[index];
                         // 设置资源系统
                         asset.rs = <any>this;
-                        // 计算路径
-                        var path = asset.fileName + asset.extenson;
-                        if (asset.parentAsset) path = asset.parentAsset.assetPath + "/" + path;
-                        asset.assetPath = path;
                         // 新增映射
                         this.idMap[asset.assetId] = asset;
                         this.pathMap[asset.assetPath] = asset;
@@ -88,14 +91,13 @@ namespace feng3d
                         }
                         index++;
                     }
-
-                    callback && callback();
+                    event.dispatch(this, "init");
                 } else
                 {
                     this.createAsset(FolderAsset, "Assets", null, null, (err, asset) =>
                     {
                         this._root = asset;
-                        callback && callback();
+                        event.dispatch(this, "init");
                     });
                 }
             });

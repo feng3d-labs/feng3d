@@ -54,8 +54,9 @@ namespace feng3d
         getExtension(path: string)
         {
             var name = this.getNameWithExtension(path);
-            var extension = name.split(".").slice(1).join(".");
-            return extension;
+            var index = name.indexOf(".");
+            if (index == -1) return name;
+            return name.substr(index);
         }
 
         /**
