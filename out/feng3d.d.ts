@@ -13783,9 +13783,10 @@ declare namespace feng3d {
          */
         noPixels: ImageDatas;
         /**
-         * 是否加载
+         * 是否已加载
          */
-        isLoaded: boolean;
+        readonly isLoaded: boolean;
+        private _loadings;
         readonly image: HTMLImageElement;
         /**
          * 用于表示初始化纹理的数据来源
@@ -13793,6 +13794,13 @@ declare namespace feng3d {
         source: {
             url: string;
         };
+        constructor();
+        private onItemLoadCompleted;
+        /**
+         * 已加载完成或者加载完成时立即调用
+         * @param callback 完成回调
+         */
+        onLoadCompleted(callback: () => void): void;
         private _source;
         /**
          * 纹理类型
