@@ -27,7 +27,19 @@ namespace feng3d
          * 资源编号
          */
         @serialize
-        assetId: string;
+        get assetId()
+        {
+            return this._assetId;
+        }
+        set assetId(v)
+        {
+            if (this._assetId == v) return;
+
+            if (this._assetId != undefined) { debuger && feng3d.error(`不允许修改 assetId`); return; }
+
+            this._assetId = v;
+        }
+        private _assetId: string;
 
         /**
          * 资源类型，由具体对象类型决定

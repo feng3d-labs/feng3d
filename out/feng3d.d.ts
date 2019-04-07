@@ -7388,6 +7388,7 @@ declare namespace feng3d {
          * 资源编号
          */
         assetId: string;
+        private _assetId;
         /**
          * 资源类型，由具体对象类型决定
          */

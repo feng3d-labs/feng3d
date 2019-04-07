@@ -75,7 +75,7 @@ namespace feng3d
         {
             super.readMeta((err) =>
             {
-                this._texture2D = serialization.deserialize(this.meta["texture"]);
+                this._texture2D = this.meta["texture"];
                 callback && callback(err);
             });
         }
@@ -87,7 +87,7 @@ namespace feng3d
          */
         writeMeta(callback?: (err: Error) => void)
         {
-            this.meta["texture"] = serialization.serialize(this.data);
+            this.meta["texture"] = this.data;
             this.rs.fs.writeObject(this.metaPath, this.meta, callback);
         }
     }

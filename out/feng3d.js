@@ -2385,6 +2385,7 @@ var feng3d;
          * @param path 路径
          */
         PathUtils.prototype.getName = function (path) {
+            feng3d.debuger && feng3d.assert(path != undefined);
             var name = this.getNameWithExtension(path);
             if (this.isDirectory(path))
                 return name;
@@ -2396,6 +2397,7 @@ var feng3d;
          * @param path 路径
          */
         PathUtils.prototype.getNameWithExtension = function (path) {
+            feng3d.debuger && feng3d.assert(path != undefined);
             var paths = path.split("/");
             var name = paths.pop();
             if (name == "")
@@ -2407,10 +2409,11 @@ var feng3d;
          * @param path 路径
          */
         PathUtils.prototype.getExtension = function (path) {
+            feng3d.debuger && feng3d.assert(path != undefined);
             var name = this.getNameWithExtension(path);
             var index = name.indexOf(".");
             if (index == -1)
-                return name;
+                return "";
             return name.substr(index);
         };
         /**
@@ -2418,6 +2421,7 @@ var feng3d;
          * @param path 路径
          */
         PathUtils.prototype.getParentPath = function (path) {
+            feng3d.debuger && feng3d.assert(path != undefined);
             var paths = path.split("/");
             if (this.isDirectory(path))
                 paths.pop();
@@ -2431,6 +2435,8 @@ var feng3d;
          * @param childName 子文件名称
          */
         PathUtils.prototype.getChildFilePath = function (parentPath, childName) {
+            feng3d.debuger && feng3d.assert(parentPath != undefined);
+            feng3d.debuger && feng3d.assert(childName != undefined);
             if (parentPath.charAt(parentPath.length - 1) != "/")
                 parentPath += "/";
             return parentPath + childName;
@@ -15182,12 +15188,31 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(AssetData.prototype, "assetId", {
+            /**
+             * 资源编号
+             */
+            get: function () {
+                return this._assetId;
+            },
+            set: function (v) {
+                if (this._assetId == v)
+                    return;
+                if (this._assetId != undefined) {
+                    feng3d.debuger && feng3d.error("\u4E0D\u5141\u8BB8\u4FEE\u6539 assetId");
+                    return;
+                }
+                this._assetId = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
         __decorate([
             feng3d.serialize
         ], AssetData.prototype, "name", null);
         __decorate([
             feng3d.serialize
-        ], AssetData.prototype, "assetId", void 0);
+        ], AssetData.prototype, "assetId", null);
         return AssetData;
     }(feng3d.Feng3dObject));
     feng3d.AssetData = AssetData;
@@ -16927,6 +16952,9 @@ var feng3d;
             asset.assetId = assetId;
             asset.meta = { guid: assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
             Object.setValue(asset, value);
+            //
+            var extenson = feng3d.pathUtils.getExtension(fileName);
+            fileName = feng3d.pathUtils.getName(fileName);
             // 设置默认名称
             fileName = fileName || "new " + asset.assetType;
             if (parent) {
@@ -16937,7 +16965,8 @@ var feng3d;
                 asset.parentAsset = parent;
             }
             // 计算路径
-            var extenson = cls["extenson"];
+            if (extenson == "")
+                extenson = cls["extenson"];
             feng3d.debuger && feng3d.assert(extenson != undefined, "\u5BF9\u8C61 " + cls + " \u6CA1\u6709\u8BBE\u7F6E extenson \u503C\uFF0C\u53C2\u8003 FolderAsset.extenson");
             var path = fileName + extenson;
             if (asset.parentAsset)
@@ -17048,7 +17077,7 @@ var feng3d;
          * @param assetId 资源编号
          */
         ReadRS.prototype.getAssetData = function (assetId) {
-            return defaultAssets[assetId] || this.idMap[assetId].data;
+            return defaultAssets[assetId] || (this.idMap[assetId] && this.idMap[assetId].data);
         };
         /**
          * 获取所有资源
@@ -31939,7 +31968,7 @@ var feng3d;
         TextureAsset.prototype.readMeta = function (callback) {
             var _this = this;
             _super.prototype.readMeta.call(this, function (err) {
-                _this._texture2D = feng3d.serialization.deserialize(_this.meta["texture"]);
+                _this._texture2D = _this.meta["texture"];
                 callback && callback(err);
             });
         };
@@ -31949,7 +31978,7 @@ var feng3d;
          * @param callback 完成回调
          */
         TextureAsset.prototype.writeMeta = function (callback) {
-            this.meta["texture"] = feng3d.serialization.serialize(this.data);
+            this.meta["texture"] = this.data;
             this.rs.fs.writeObject(this.metaPath, this.meta, callback);
         };
         TextureAsset.extenson = ".png";

@@ -125,6 +125,10 @@ namespace feng3d
             asset.meta = { guid: assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
             Object.setValue(<T>asset, value);
 
+            //
+            var extenson = pathUtils.getExtension(fileName);
+            fileName = pathUtils.getName(fileName);
+
             // 设置默认名称
             fileName = fileName || "new " + asset.assetType;
             if (parent) 
@@ -136,7 +140,7 @@ namespace feng3d
                 asset.parentAsset = parent;
             }
             // 计算路径
-            var extenson = cls["extenson"];
+            if (extenson == "") extenson = cls["extenson"];
             debuger && assert(extenson != undefined, `对象 ${cls} 没有设置 extenson 值，参考 FolderAsset.extenson`);
             var path = fileName + extenson;
             if (asset.parentAsset) path = asset.parentAsset.assetPath + "/" + path;
@@ -268,7 +272,7 @@ namespace feng3d
          */
         getAssetData(assetId: string)
         {
-            return defaultAssets[assetId] || this.idMap[assetId].data;
+            return defaultAssets[assetId] || (this.idMap[assetId] && this.idMap[assetId].data);
         }
 
         /**
