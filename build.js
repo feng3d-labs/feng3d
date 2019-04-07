@@ -91,10 +91,6 @@ function getUniversalModuleDefinition(moduleName)
     return `
 (function universalModuleDefinition(root, factory)
 {
-    if (root && root["${moduleName}"])
-    {
-        return;
-    }
     if (typeof exports === 'object' && typeof module === 'object')
         module.exports = factory();
     else if (typeof define === 'function' && define.amd)
@@ -102,13 +98,14 @@ function getUniversalModuleDefinition(moduleName)
     else if (typeof exports === 'object')
         exports["${moduleName}"] = factory();
     else
-    {
         root["${moduleName}"] = factory();
-    }
+    var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
+    globalObject["${moduleName}"] = factory();
 })(this, function ()
 {
     return ${moduleName};
-});`
+});
+`
 }
 
 function writeFile(filePath, content)

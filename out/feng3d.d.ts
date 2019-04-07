@@ -1,3 +1,6 @@
+declare module 'feng3d' {
+    export = feng3d;
+}
 declare type gPartial<T> = {
     [P in keyof T]?: gPartial<T[P]>;
 };
@@ -8074,11 +8077,6 @@ declare namespace feng3d {
          */
         assetId: string;
         /**
-         * 名称
-         */
-        name: string;
-        private _name;
-        /**
          * 资源元标签，该对象也用来判断资源是否被加载，值为null表示未加载，否则已加载。
          *
          * 并且该对象还会用于存储主文件无法存储的数据，比如 TextureAsset 中存储了 Texture2D 信息
@@ -8097,11 +8095,17 @@ declare namespace feng3d {
         /**
          * 文件后缀
          */
-        extenson: string;
+        readonly extenson: string;
         /**
          * 父资源
          */
         parentAsset: FolderAsset;
+        /**
+         * 文件名称
+         *
+         * 不包含后缀
+         */
+        readonly fileName: string;
         /**
          * 资源路径
          */
@@ -8248,18 +8252,19 @@ declare namespace feng3d {
          * 新建资源
          *
          * @param cls 资源类定义
+         * @param fileName 文件名称
          * @param value 初始数据
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends FileAsset>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
+        createAsset<T extends FileAsset>(cls: new () => T, fileName?: string, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
         /**
          * 获取有效子文件名称
          *
          * @param parent 父文件夹
-         * @param name 名称
+         * @param fileName 文件名称
          */
-        getValidChildName(parent: FolderAsset, name: string): string;
+        getValidChildName(parent: FolderAsset, fileName: string): string;
         /**
          * 读取文件为资源对象
          * @param id 资源编号
@@ -8342,11 +8347,12 @@ declare namespace feng3d {
          * 新建资源
          *
          * @param cls 资源类定义
+         * @param fileName 文件名称
          * @param value 初始数据
          * @param parent 所在文件夹，如果值为null时默认添加到根文件夹中
          * @param callback 完成回调函数
          */
-        createAsset<T extends FileAsset>(cls: new () => T, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
+        createAsset<T extends FileAsset>(cls: new () => T, fileName?: string, value?: gPartial<T>, parent?: FolderAsset, callback?: (err: Error, asset: T) => void): void;
         /**
          * 写（保存）资源
          *
@@ -15495,8 +15501,8 @@ declare namespace feng3d {
      * 文件夹资源
      */
     class FolderAsset extends FileAsset {
+        static extenson: string;
         assetType: AssetType;
-        extenson: string;
         /**
          * 子资源列表
          */
@@ -15518,7 +15524,6 @@ declare namespace feng3d {
      * 二进制 资源
      */
     class ArrayBufferAsset extends FileAsset {
-        name: string;
         /**
          * 文件数据
          */
@@ -15558,10 +15563,6 @@ declare namespace feng3d {
      */
     abstract class ObjectAsset extends FileAsset {
         /**
-         * 名称
-         */
-        name: string;
-        /**
          * 资源对象
          */
         data: AssetData;
@@ -15581,9 +15582,8 @@ declare namespace feng3d {
      * 脚本资源
      */
     class ScriptAsset extends StringAsset {
+        static extenson: string;
         assetType: AssetType;
-        name: string;
-        extenson: string;
         textContent: string;
         /**
          * 脚本父类名称
@@ -15601,8 +15601,8 @@ declare namespace feng3d {
      * 着色器 资源
      */
     class ShaderAsset extends ScriptAsset {
+        static extenson: string;
         assetType: AssetType;
-        extenson: string;
     }
 }
 declare namespace feng3d {
@@ -15610,8 +15610,8 @@ declare namespace feng3d {
      * JS资源
      */
     class JSAsset extends StringAsset {
+        static extenson: string;
         assetType: AssetType;
-        extenson: string;
         textContent: string;
     }
 }
@@ -15620,15 +15620,15 @@ declare namespace feng3d {
      * JSON 资源
      */
     class JsonAsset extends StringAsset {
+        static extenson: string;
         assetType: AssetType;
-        extenson: string;
         textContent: string;
     }
 }
 declare namespace feng3d {
     class TextAsset extends StringAsset {
+        static extenson: string;
         assetType: AssetType;
-        extenson: string;
         textContent: string;
     }
 }
@@ -15638,7 +15638,6 @@ declare namespace feng3d {
      */
     class AudioAsset extends FileAsset {
         readonly assetType: AssetType;
-        readonly extenson: ".ogg" | ".mp3" | ".wav";
         /**
          * 保存文件
          * @param callback 完成回调
@@ -15656,12 +15655,12 @@ declare namespace feng3d {
      * 纹理文件
      */
     class TextureAsset extends FileAsset {
+        static extenson: ".jpg" | ".png" | ".jpeg" | ".gif";
         /**
          * 材质
          */
         data: Texture2D;
         private _texture2D;
-        extenson: ".jpg" | ".png" | ".jpeg" | ".gif";
         /**
          * 图片
          */
@@ -15694,11 +15693,11 @@ declare namespace feng3d {
      * 立方体纹理资源
      */
     class TextureCubeAsset extends ObjectAsset {
+        static extenson: string;
         /**
          * 材质
          */
         data: TextureCube;
-        extenson: string;
         assetType: AssetType;
     }
 }
@@ -15707,12 +15706,12 @@ declare namespace feng3d {
      * 几何体资源
      */
     class GeometryAsset extends ObjectAsset {
+        static extenson: string;
         /**
          * 几何体
          */
         data: Geometry;
         assetType: AssetType;
-        extenson: string;
     }
 }
 declare namespace feng3d {
@@ -15720,12 +15719,12 @@ declare namespace feng3d {
      * 材质资源
      */
     class MaterialAsset extends ObjectAsset {
+        static extenson: string;
         /**
          * 材质
          */
         data: Material;
         assetType: AssetType;
-        extenson: string;
     }
 }
 declare namespace feng3d {
@@ -15738,7 +15737,7 @@ declare namespace feng3d {
          */
         data: GameObject;
         assetType: AssetType;
-        extenson: string;
+        static extenson: string;
     }
 }
 declare namespace feng3d {
