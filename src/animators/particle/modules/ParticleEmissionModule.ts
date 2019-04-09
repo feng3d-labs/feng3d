@@ -10,7 +10,7 @@ namespace feng3d
          */
         @serialize
         @oav({ tooltip: "每秒发射粒子数量" })
-        rate = Object.setValue(new MinMaxCurve(), { between0And1: true, constant: 10, constant1: 10 });
+        rate = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 10, constant1: 10 });
         // rate = 10;
 
         /**

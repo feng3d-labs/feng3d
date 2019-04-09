@@ -34,28 +34,28 @@ namespace feng3d
          */
         @serialize
         @oav({ tooltip: "起始寿命为秒，粒子寿命为0时死亡。" })
-        startLifetime = Object.setValue(new MinMaxCurve(), { between0And1: true, constant: 5, constant1: 5 });
+        startLifetime = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 5, constant1: 5 });
 
         /**
          * 粒子的起始速度，应用于起始方向。
          */
         @serialize
         @oav({ tooltip: "粒子的起始速度，应用于起始方向。" })
-        startSpeed = Object.setValue(new MinMaxCurve(), { constant: 5, constant1: 5 });
+        startSpeed = serialization.setValue(new MinMaxCurve(), { constant: 5, constant1: 5 });
 
         /**
          * 粒子的起始缩放。
          */
         @serialize
         @oav({ tooltip: "粒子的起始缩放。" })
-        startScale = Object.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
+        startScale = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
 
         /**
          * 粒子的起始旋转角度。
          */
         @serialize
         @oav({ tooltip: "粒子的起始旋转角度。" })
-        startRotation = Object.setValue(new MinMaxCurveVector3(), { xCurve: { curveMultiplier: 180 }, yCurve: { curveMultiplier: 180 }, zCurve: { curveMultiplier: 180 } });
+        startRotation = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { curveMultiplier: 180 }, yCurve: { curveMultiplier: 180 }, zCurve: { curveMultiplier: 180 } });
 
         /**
          * 粒子的起始颜色。

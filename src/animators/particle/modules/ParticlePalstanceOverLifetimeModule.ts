@@ -7,7 +7,7 @@ namespace feng3d
     {
         @serialize
         @oav({ tooltip: "角速度" })
-        palstance = Object.setValue(new MinMaxCurveVector3(), { xCurve: { constant: 45, constant1: 45, curveMultiplier: 45 }, yCurve: { constant: 45, constant1: 45, curveMultiplier: 45 }, zCurve: { constant: 45, constant1: 45, curveMultiplier: 45 } });
+        palstance = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { constant: 45, constant1: 45, curveMultiplier: 45 }, yCurve: { constant: 45, constant1: 45, curveMultiplier: 45 }, zCurve: { constant: 45, constant1: 45, curveMultiplier: 45 } });
 
         /**
          * 更新粒子状态

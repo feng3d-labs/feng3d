@@ -336,7 +336,7 @@ var feng3d;
         // @see https://gitee.com/feng3d/feng3d/issues/IK27X
         // 测试Component配发的事件会先传递到GameObject中然后传递到组件中
         QUnit.test("dispatchEvent", function (assert) {
-            var c = Object.setValue(new feng3d.GameObject(), { name: "t" }).addComponent(feng3d.Camera);
+            var c = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "t" }).addComponent(feng3d.Camera);
             var e = c.dispatch("lensChanged");
             c.dispatchEvent(e);
             assert.ok(e.targets[0] == c);
@@ -352,7 +352,7 @@ var feng3d;
         // @see https://gitee.com/feng3d/feng3d/issues/IK27X
         // 测试GameObject配发的事件会先处理自身然后传递到组件中
         QUnit.test("dispatchEvent", function (assert) {
-            var g = Object.setValue(new feng3d.GameObject(), { name: "t" });
+            var g = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "t" });
             var e = g.dispatch("click");
             g.dispatchEvent(e);
             assert.ok(e.targets[0] == g);

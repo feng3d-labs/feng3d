@@ -6,12 +6,12 @@ namespace feng3d
     {
         createGameObject(name = "GameObject")
         {
-            return Object.setValue(new GameObject(), { name: name });
+            return serialization.setValue(new GameObject(), { name: name });
         }
 
         createCube(name = "cube")
         {
-            return Object.setValue(new GameObject(), {
+            return serialization.setValue(new GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.cube },]
             });
@@ -19,7 +19,7 @@ namespace feng3d
 
         createPlane(name = "plane")
         {
-            return Object.setValue(new GameObject(), {
+            return serialization.setValue(new GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.plane },]
             });
@@ -27,7 +27,7 @@ namespace feng3d
 
         createCylinder(name = "cylinder")
         {
-            return Object.setValue(new GameObject(), {
+            return serialization.setValue(new GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.cylinder },]
             });
@@ -35,7 +35,7 @@ namespace feng3d
 
         createCone(name = "Cone")
         {
-            return Object.setValue(new GameObject(), {
+            return serialization.setValue(new GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.cone },]
             });
@@ -43,7 +43,7 @@ namespace feng3d
 
         createTorus(name = "Torus")
         {
-            return Object.setValue(new GameObject(), {
+            return serialization.setValue(new GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.torus },]
             });
@@ -51,7 +51,7 @@ namespace feng3d
 
         createSphere(name = "sphere")
         {
-            return Object.setValue(new GameObject(), {
+            return serialization.setValue(new GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.sphere },]
             });
@@ -59,7 +59,7 @@ namespace feng3d
 
         createCapsule(name = "capsule")
         {
-            return Object.setValue(new GameObject(), {
+            return serialization.setValue(new GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.capsule },]
             });
@@ -67,7 +67,7 @@ namespace feng3d
 
         createTerrain(name = "Terrain")
         {
-            return Object.setValue(new GameObject(), {
+            return serialization.setValue(new GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.Terrain" },]
             });
@@ -75,7 +75,7 @@ namespace feng3d
 
         createCamera(name = "Camera")
         {
-            return Object.setValue(new GameObject(), {
+            return serialization.setValue(new GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.Camera" },]
             });
@@ -83,7 +83,7 @@ namespace feng3d
 
         createPointLight(name = "PointLight")
         {
-            return Object.setValue(new GameObject(), {
+            return serialization.setValue(new GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.PointLight" },]
             });
@@ -91,7 +91,7 @@ namespace feng3d
 
         createDirectionalLight(name = "DirectionalLight")
         {
-            return Object.setValue(new GameObject(), {
+            return serialization.setValue(new GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.DirectionalLight" },]
             });
@@ -99,7 +99,7 @@ namespace feng3d
 
         createSpotLight(name = "SpotLight")
         {
-            return Object.setValue(new GameObject(), {
+            return serialization.setValue(new GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.SpotLight" },]
             });
@@ -107,7 +107,7 @@ namespace feng3d
 
         createParticle(name = "Particle")
         {
-            return Object.setValue(new GameObject(), {
+            return serialization.setValue(new GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.Transform", rx: -90 }, { __class__: "feng3d.ParticleSystem" },],
             });
@@ -115,7 +115,7 @@ namespace feng3d
 
         createWater(name = "water")
         {
-            return Object.setValue(new GameObject(), {
+            return serialization.setValue(new GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.Water" },],
             });

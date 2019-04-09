@@ -33,7 +33,7 @@ namespace feng3d
          * 曲线1
          */
         @serialize
-        curve1 = Object.setValue(new AnimationCurve(), { keys: [{ time: 0, value: 0, tangent: 0 }, { time: 1, value: 1, tangent: 0 }] });
+        curve1 = serialization.setValue(new AnimationCurve(), { keys: [{ time: 0, value: 0, tangent: 0 }, { time: 1, value: 1, tangent: 0 }] });
 
         /**
          * 曲线缩放比

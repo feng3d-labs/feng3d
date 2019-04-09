@@ -225,7 +225,7 @@ namespace feng3d
          */
         setValue<T>(target: T, object: gPartial<T>, tempInfo?: SerializationTempInfo)
         {
-            if (!object) return;
+            if (!object) return target;
 
             tempInfo = initTempInfo(tempInfo);
 
@@ -260,6 +260,7 @@ namespace feng3d
                     }
                 }
             }
+            return target;
         }
 
         /**

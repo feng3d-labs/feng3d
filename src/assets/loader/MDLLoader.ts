@@ -23,7 +23,7 @@ namespace feng3d
                 {
                     var showMesh = war3Model.getMesh();
 
-                    var gameObject = Object.setValue(new GameObject(), { name: pathUtils.getName(mdlurl), children: [showMesh] })
+                    var gameObject = serialization.setValue(new GameObject(), { name: pathUtils.getName(mdlurl), children: [showMesh] })
 
                     dispatcher.dispatch("asset.parsed", gameObject);
                     callback && callback(gameObject);

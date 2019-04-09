@@ -26,5 +26,5 @@ namespace feng3d
 		surfaceClosed = true;
 	}
 
-	rs.setDefaultAssetData(Geometry.cone = Object.setValue(new ConeGeometry(), { name: "Cone", assetId: "Cone", hideFlags: HideFlags.NotEditable }));
+	rs.setDefaultAssetData(Geometry.cone = serialization.setValue(new ConeGeometry(), { name: "Cone", assetId: "Cone", hideFlags: HideFlags.NotEditable }));
 }

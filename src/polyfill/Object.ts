@@ -63,13 +63,6 @@ interface ObjectConstructor
     runFunc<T>(obj: T, func: (obj: T) => void): T;
 
     /**
-     * 给指定对象进行深度赋值
-     * @param obj 对象
-     * @param value 数据
-     */
-    setValue<T>(obj: T, value: gPartial<T>): T;
-
-    /**
      * 深拷贝
      * @param obj 被拷贝对象
      */
@@ -139,12 +132,6 @@ Object.propertyIsWritable = function (host: any, property: string): boolean
 Object.runFunc = function (obj, func)
 {
     func(obj);
-    return obj;
-}
-
-Object.setValue = function (obj, value)
-{
-    feng3d.serialization.setValue(obj, value);
     return obj;
 }
 

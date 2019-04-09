@@ -125,7 +125,7 @@ namespace feng3d
             asset.rs = <any>this;
             asset.assetId = assetId;
             asset.meta = { guid: assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
-            Object.setValue(<T>asset, value);
+            serialization.setValue(<T>asset, value);
 
             //
             var extenson = pathUtils.getExtension(fileName);

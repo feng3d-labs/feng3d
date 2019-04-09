@@ -55,7 +55,7 @@ namespace feng3d
             if (this.scriptInstance instanceof cls) return;
 
             var newInstance = new cls();
-            Object.setValue(newInstance, <any>this.scriptInstance);
+            serialization.setValue(newInstance, <any>this.scriptInstance);
             this.scriptInstance = newInstance;
         }
 

@@ -7,7 +7,7 @@ namespace feng3d
     {
         @serialize
         @oav()
-        scale = Object.setValue(new MinMaxCurveVector3(), { xCurve: { constant: 1, constant1: 1, curveMultiplier: 1 }, yCurve: { constant: 1, constant1: 1, curveMultiplier: 1 }, zCurve: { constant: 1, constant1: 1, curveMultiplier: 1 } });
+        scale = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { constant: 1, constant1: 1, curveMultiplier: 1 }, yCurve: { constant: 1, constant1: 1, curveMultiplier: 1 }, zCurve: { constant: 1, constant1: 1, curveMultiplier: 1 } });
 
         /**
          * 更新粒子状态

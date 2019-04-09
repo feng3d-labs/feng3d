@@ -37,7 +37,7 @@ namespace feng3d
 
     function createSubObj(objData: OBJ_OBJData, obj: OBJ_OBJ, materials: { [name: string]: Material; })
     {
-        var gameObject = Object.setValue(new GameObject(), { name: obj.name });
+        var gameObject = serialization.setValue(new GameObject(), { name: obj.name });
 
         var subObjs = obj.subObjs;
         for (var i = 0; i < subObjs.length; i++)

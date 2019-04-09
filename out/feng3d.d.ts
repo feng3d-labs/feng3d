@@ -1,6 +1,3 @@
-declare module 'feng3d' {
-    export = feng3d;
-}
 declare type gPartial<T> = {
     [P in keyof T]?: gPartial<T[P]>;
 };
@@ -90,12 +87,6 @@ interface ObjectConstructor {
      * @param func 被执行的方法
      */
     runFunc<T>(obj: T, func: (obj: T) => void): T;
-    /**
-     * 给指定对象进行深度赋值
-     * @param obj 对象
-     * @param value 数据
-     */
-    setValue<T>(obj: T, value: gPartial<T>): T;
     /**
      * 深拷贝
      * @param obj 被拷贝对象
@@ -348,7 +339,7 @@ declare namespace feng3d {
          * @param target 目标对象
          * @param object 数据对象
          */
-        setValue<T>(target: T, object: gPartial<T>, tempInfo?: SerializationTempInfo): void;
+        setValue<T>(target: T, object: gPartial<T>, tempInfo?: SerializationTempInfo): T;
         /**
          * 给目标对象的指定属性赋值
          * @param target 目标对象

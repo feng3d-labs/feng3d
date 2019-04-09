@@ -155,7 +155,7 @@ namespace feng3d
                 var jointGameobject = parentGameobject.find(skeletonJoint.name);
                 if (!jointGameobject)
                 {
-                    jointGameobject = Object.setValue(new GameObject(), { name: skeletonJoint.name, hideFlags: feng3d.HideFlags.DontSave });
+                    jointGameobject = serialization.setValue(new GameObject(), { name: skeletonJoint.name, hideFlags: feng3d.HideFlags.DontSave });
                     parentGameobject.addChild(jointGameobject);
                 }
 

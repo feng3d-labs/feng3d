@@ -248,5 +248,5 @@ namespace feng3d
      */
     var defaultHeightMap = new ImageUtil(1024, 1024, new Color4(0, 0, 0, 0)).imageData;
 
-    rs.setDefaultAssetData(Geometry.terrain = Object.setValue(new TerrainGeometry(), { name: "Terrain-Geometry", assetId: "Terrain-Geometry", hideFlags: HideFlags.NotEditable }));
+    rs.setDefaultAssetData(Geometry.terrain = serialization.setValue(new TerrainGeometry(), { name: "Terrain-Geometry", assetId: "Terrain-Geometry", hideFlags: HideFlags.NotEditable }));
 }
