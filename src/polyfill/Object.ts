@@ -61,12 +61,6 @@ interface ObjectConstructor
      * @param func 被执行的方法
      */
     runFunc<T>(obj: T, func: (obj: T) => void): T;
-
-    /**
-     * 深拷贝
-     * @param obj 被拷贝对象
-     */
-    deepClone<T>(obj: T): T;
 }
 
 if (typeof Object.assign != 'function')
@@ -133,9 +127,4 @@ Object.runFunc = function (obj, func)
 {
     func(obj);
     return obj;
-}
-
-Object.deepClone = function (obj)
-{
-    return feng3d.serialization.clone(obj);
 }
