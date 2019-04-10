@@ -15,7 +15,9 @@ namespace feng3d
         saveFile(callback?: (err: Error) => void)
         {
             this.data.assetId = this.assetId;
-            this.rs.fs.writeObject(this.assetPath, this.data, (err) =>
+            var d = serialization.serialize(this.data);
+            delete d[CLASS_KEY];
+            this.rs.fs.writeObject(this.assetPath, d, (err) =>
             {
                 callback && callback(err);
             });
@@ -30,7 +32,7 @@ namespace feng3d
         {
             this.rs.fs.readObject(this.assetPath, (err, data: AssetData) =>
             {
-                this.data = data;
+                serialization.setValue(this.data, data);
                 debuger && assert(this.data.assetId == this.assetId);
                 callback && callback(err);
             });

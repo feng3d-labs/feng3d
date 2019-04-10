@@ -11,7 +11,7 @@ namespace feng3d
          * 材质
          */
         @oav({ component: "OAVObjectView" })
-        data: Material;
+        data = new Material();
 
         assetType = AssetType.material;
 

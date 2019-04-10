@@ -15662,7 +15662,9 @@ declare namespace feng3d {
         /**
          * 材质
          */
-        data: Texture2D;
+        readonly data: Texture2D;
+        private _data;
+        assetId: string;
         /**
          * 图片
          */

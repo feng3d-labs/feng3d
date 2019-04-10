@@ -52,14 +52,6 @@ namespace feng3d
 
             var object = <any>{};
 
-            // 处理资源
-            if (target instanceof AssetData && target.assetId != undefined)
-            {
-                object[CLASS_KEY] = classUtils.getQualifiedClassName(target);
-                object.assetId = target.assetId;
-                return object;
-            }
-
             //处理普通Object
             if (target.constructor === Object)
             {
@@ -111,11 +103,6 @@ namespace feng3d
                 different = this.serialize(target);
                 return different;
             }
-            if (target instanceof AssetData)
-            {
-                different = this.serialize(target);
-                return different;
-            }
             var serializableMembers = getSerializableMembers(target);
             if (target.constructor == Object)
                 serializableMembers = Object.keys(target).map(v => { return { property: v } });
@@ -151,6 +138,15 @@ namespace feng3d
                     different[property] = this.serialize(target[property]);
                     continue;
                 }
+                // 处理资源
+                if (target[property] instanceof AssetData && target[property].assetId != undefined)
+                {
+                    var diff0 = <any>{};
+                    diff0[CLASS_KEY] = classUtils.getQualifiedClassName(target[property]);
+                    diff0.assetId = target[property].assetId;
+                    different[property] = diff0;
+                    continue;
+                }
                 var diff = this.different(target[property], defaultInstance[property]);
                 if (Object.keys(diff).length > 0)
                     different[property] = diff;
@@ -171,7 +167,7 @@ namespace feng3d
             //基础类型
             if (isBaseType(object)) return object;
 
-            if (debuger)
+            if (debuger && object.constructor == Object)
             {
                 let assetids = this.getAssets(object);
                 var assets = assetids.reduce((pv, cv) => { var r = rs.getAssetData(cv); if (r) pv.push(r); return pv; }, []);
@@ -292,6 +288,12 @@ namespace feng3d
                 {
                     this.setValue(target[property], objvalue);
                 }
+                return;
+            }
+            // 处理资源
+            if (target[property] instanceof AssetData)
+            {
+                target[property] = this.deserialize(objvalue);
                 return;
             }
             var targetClassName = classUtils.getQualifiedClassName(target[property]);
