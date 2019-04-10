@@ -160,10 +160,13 @@ namespace feng3d
 
         /**
          * 反序列化
+         * 
+         * 注意！ 如果反序列前需要把包含的资源提前加载，否则会报错！
+         * 
          * @param object 换为Json的对象
          * @returns 反序列化后的数据
          */
-        deserialize(object, callback?: (result: any) => void, tempInfo?: SerializationTempInfo)
+        deserialize(object, tempInfo?: SerializationTempInfo)
         {
             tempInfo = initTempInfo(tempInfo);
 
@@ -173,7 +176,7 @@ namespace feng3d
             //处理数组
             if (object instanceof Array)
             {
-                var arr = object.map(v => this.deserialize(v, null, tempInfo));
+                var arr = object.map(v => this.deserialize(v, tempInfo));
                 return arr;
             }
             if (object.constructor != Object)
@@ -188,7 +191,7 @@ namespace feng3d
                 var target = {};
                 for (var key in object)
                 {
-                    if (key != CLASS_KEY) target[key] = this.deserialize(object[key], null, tempInfo);
+                    if (key != CLASS_KEY) target[key] = this.deserialize(object[key], tempInfo);
                 }
                 return target;
             }
@@ -211,18 +214,7 @@ namespace feng3d
             // 处理资源
             if (target instanceof AssetData && object.assetId != undefined)
             {
-                var result: AssetData;
-                tempInfo.loadingNum++;
-                rs.readAssetData(object.assetId, (err, data) =>
-                {
-                    result = data;
-                    callback && callback(result);
-                    tempInfo.loadingNum--;
-                    if (tempInfo.loadingNum == 0)
-                    {
-                        tempInfo.onLoaded && tempInfo.onLoaded();
-                    }
-                });
+                var result = rs.getAssetData(object.assetId);
                 debuger && assert(!!result)
                 return result;
             }
@@ -250,7 +242,7 @@ namespace feng3d
             {
                 if (object.hasOwnProperty(property))
                 {
-                    this.setPropertyValue(target, object, property, tempInfo);
+                    this.setPropertyValue(target, object, property);
                 }
             }
             return target;
@@ -262,20 +254,16 @@ namespace feng3d
          * @param object 数据对象
          * @param property 属性名称
          */
-        private setPropertyValue<T>(target: T, object: gPartial<T>, property: string, tempInfo?: SerializationTempInfo)
+        private setPropertyValue<T>(target: T, object: gPartial<T>, property: string)
         {
             if (target[property] == object[property])
                 return;
-            tempInfo = initTempInfo(tempInfo);
 
             var objvalue = object[property];
             // 当原值等于null时直接反序列化赋值
             if (target[property] == null)
             {
-                target[property] = this.deserialize(objvalue, (result) =>
-                {
-                    target[property] = result;
-                }, tempInfo);
+                target[property] = this.deserialize(objvalue);
                 return;
             }
             if (isBaseType(objvalue))
@@ -285,7 +273,7 @@ namespace feng3d
             }
             if (objvalue.constructor == Array)
             {
-                target[property] = this.deserialize(objvalue, null, tempInfo);
+                target[property] = this.deserialize(objvalue);
                 return;
             }
             // 处理同为Object类型
@@ -295,21 +283,21 @@ namespace feng3d
                 {
                     for (const key in objvalue)
                     {
-                        this.setPropertyValue(target[property], objvalue, key, tempInfo);
+                        this.setPropertyValue(target[property], objvalue, key);
                     }
                 } else
                 {
-                    this.setValue(target[property], objvalue, tempInfo);
+                    this.setValue(target[property], objvalue);
                 }
                 return;
             }
             var targetClassName = classUtils.getQualifiedClassName(target[property]);
             if (targetClassName == objvalue[CLASS_KEY])
             {
-                this.setValue(target[property], objvalue, tempInfo);
+                this.setValue(target[property], objvalue);
             } else
             {
-                target[property] = this.deserialize(objvalue, null, tempInfo);
+                target[property] = this.deserialize(objvalue);
             }
         }
 
