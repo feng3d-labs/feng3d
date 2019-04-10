@@ -638,7 +638,7 @@ var feng3d;
             var object = {};
             // 处理资源
             if (target instanceof feng3d.AssetData && target.assetId != undefined) {
-                object[CLASS_KEY] = feng3d.classUtils.getQualifiedClassName(target);
+                object[feng3d.CLASS_KEY] = feng3d.classUtils.getQualifiedClassName(target);
                 object.assetId = target.assetId;
                 return object;
             }
@@ -655,11 +655,11 @@ var feng3d;
             }
             //处理方法
             if (typeof target == "function") {
-                object[CLASS_KEY] = "function";
+                object[feng3d.CLASS_KEY] = "function";
                 object.data = target.toString();
                 return object;
             }
-            object[CLASS_KEY] = feng3d.classUtils.getQualifiedClassName(target);
+            object[feng3d.CLASS_KEY] = feng3d.classUtils.getQualifiedClassName(target);
             if (target["serialize"])
                 return target["serialize"](object);
             //使用默认序列化
@@ -749,12 +749,12 @@ var feng3d;
                 return object;
             }
             // 获取类型
-            var className = object[CLASS_KEY];
+            var className = object[feng3d.CLASS_KEY];
             // 处理普通Object
             if (className == "Object" || className == null) {
                 var target = {};
                 for (var key in object) {
-                    if (key != CLASS_KEY)
+                    if (key != feng3d.CLASS_KEY)
                         target[key] = this.deserialize(object[key]);
                 }
                 return target;
@@ -823,7 +823,7 @@ var feng3d;
                 return;
             }
             // 处理同为Object类型
-            if (objvalue[CLASS_KEY] == undefined) {
+            if (objvalue[feng3d.CLASS_KEY] == undefined) {
                 if (target[property].constructor == Object) {
                     for (var key in objvalue) {
                         this.setPropertyValue(target[property], objvalue, key);
@@ -835,7 +835,7 @@ var feng3d;
                 return;
             }
             var targetClassName = feng3d.classUtils.getQualifiedClassName(target[property]);
-            if (targetClassName == objvalue[CLASS_KEY]) {
+            if (targetClassName == objvalue[feng3d.CLASS_KEY]) {
                 this.setValue(target[property], objvalue);
             }
             else {
@@ -857,11 +857,11 @@ var feng3d;
                 return assetids;
             }
             // 获取类型
-            var className = object[CLASS_KEY];
+            var className = object[feng3d.CLASS_KEY];
             // 处理普通Object
             if (className == "Object" || className == null) {
                 for (var key in object) {
-                    if (key != CLASS_KEY)
+                    if (key != feng3d.CLASS_KEY)
                         this.getAssets(object[key], assetids);
                 }
                 return assetids;
@@ -913,7 +913,7 @@ var feng3d;
         return Serialization;
     }());
     feng3d.Serialization = Serialization;
-    var CLASS_KEY = "__class__";
+    feng3d.CLASS_KEY = "__class__";
     var SERIALIZE_KEY = "_serialize__";
     /**
      * 判断是否为基础类型（在序列化中不发生变化的对象）
@@ -16221,22 +16221,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 资源元标签
-     */
-    var AssetMeta = /** @class */ (function () {
-        function AssetMeta(asset) {
-            this.guid = asset.assetId;
-            this.mtimeMs = Date.now();
-            this.birthtimeMs = Date.now();
-            this.assetType = asset.assetType;
-        }
-        return AssetMeta;
-    }());
-    feng3d.AssetMeta = AssetMeta;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 用于是否为文件夹
      */
     var directorytoken = "!!!___directory___!!!";
@@ -16762,9 +16746,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        FileAsset.prototype.initMeta = function () {
-            this.meta = new feng3d.AssetMeta(this);
-        };
         /**
          * 读取资源
          *
@@ -17012,7 +16993,7 @@ var feng3d;
             // 初始化
             asset.rs = this;
             asset.assetId = assetId;
-            asset.initMeta();
+            asset.meta = { guid: assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
             feng3d.serialization.setValue(asset, value);
             //
             var extenson = feng3d.pathUtils.getExtension(fileName);
@@ -31976,6 +31957,10 @@ var feng3d;
         __extends(TextureAsset, _super);
         function TextureAsset() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * 材质
+             */
+            _this.data = new feng3d.Texture2D();
             _this.assetType = feng3d.AssetType.texture;
             return _this;
         }
@@ -31983,19 +31968,14 @@ var feng3d;
             /**
              * 图片
              */
-            get: function () { return this._image; },
+            get: function () { return this.data["_pixels"]; },
             set: function (v) {
-                this._image = v;
-                if (this.data)
-                    this.data["_pixels"] = v;
+                this.data["_pixels"] = v;
                 this.saveFile();
             },
             enumerable: true,
             configurable: true
         });
-        TextureAsset.prototype.initMeta = function () {
-            this.meta = new TextureAssetMeta(this);
-        };
         TextureAsset.prototype.saveFile = function (callback) {
             this.rs.fs.writeImage(this.assetPath, this.image, function (err) {
                 callback && callback(err);
@@ -32009,7 +31989,6 @@ var feng3d;
         TextureAsset.prototype.readFile = function (callback) {
             var _this = this;
             this.rs.fs.readImage(this.assetPath, function (err, img) {
-                _this._image = img;
                 _this.data["_pixels"] = img;
                 callback && callback(err);
             });
@@ -32022,7 +32001,7 @@ var feng3d;
         TextureAsset.prototype.readMeta = function (callback) {
             var _this = this;
             _super.prototype.readMeta.call(this, function (err) {
-                _this.data = _this.meta.texture;
+                feng3d.serialization.setValue(_this.data, _this.meta.texture);
                 callback && callback(err);
             });
         };
@@ -32032,14 +32011,9 @@ var feng3d;
          * @param callback 完成回调
          */
         TextureAsset.prototype.writeMeta = function (callback) {
-            if (this.data == undefined) {
-                this.data = new feng3d.Texture2D();
-                this.data["_pixels"] = this._image;
-            }
-            if (this.data.assetId == undefined)
-                this.data.assetId = this.assetId;
-            feng3d.debuger && feng3d.assert(this.data.assetId == this.assetId);
-            this.meta.texture = this.data;
+            var texture = feng3d.serialization.serialize(this.data);
+            delete texture[feng3d.CLASS_KEY];
+            this.meta.texture = texture;
             this.rs.fs.writeObject(this.metaPath, this.meta, callback);
         };
         TextureAsset.extenson = ".png";
@@ -32049,14 +32023,6 @@ var feng3d;
         return TextureAsset;
     }(feng3d.FileAsset));
     feng3d.TextureAsset = TextureAsset;
-    var TextureAssetMeta = /** @class */ (function (_super) {
-        __extends(TextureAssetMeta, _super);
-        function TextureAssetMeta() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return TextureAssetMeta;
-    }(feng3d.AssetMeta));
-    feng3d.TextureAssetMeta = TextureAssetMeta;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

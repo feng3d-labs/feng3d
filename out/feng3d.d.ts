@@ -359,6 +359,7 @@ declare namespace feng3d {
          */
         clone<T>(target: T): T;
     }
+    var CLASS_KEY: string;
     interface SerializationTempInfo {
         loadingNum?: number;
         onLoaded?: () => void;
@@ -7784,7 +7785,7 @@ declare namespace feng3d {
     /**
      * 资源元标签
      */
-    class AssetMeta {
+    interface AssetMeta {
         /**
          * 资源编号
          */
@@ -7801,7 +7802,6 @@ declare namespace feng3d {
          * 资源类型，由具体对象类型决定；AssetExtension.folder 时为文件夹
          */
         assetType: AssetType;
-        constructor(asset: FileAsset);
     }
 }
 declare namespace feng3d {
@@ -8115,7 +8115,6 @@ declare namespace feng3d {
          * 资源对象
          */
         data: AssetData;
-        initMeta(): void;
         /**
          * 读取资源
          *
@@ -15668,10 +15667,8 @@ declare namespace feng3d {
          * 图片
          */
         image: HTMLImageElement;
-        private _image;
         meta: TextureAssetMeta;
         assetType: AssetType;
-        initMeta(): void;
         saveFile(callback?: (err: Error) => void): void;
         /**
          * 读取文件
@@ -15692,8 +15689,8 @@ declare namespace feng3d {
          */
         writeMeta(callback?: (err: Error) => void): void;
     }
-    class TextureAssetMeta extends AssetMeta {
-        texture: Texture2D;
+    interface TextureAssetMeta extends AssetMeta {
+        texture: gPartial<Texture2D>;
     }
 }
 declare namespace feng3d {

@@ -11,29 +11,25 @@ namespace feng3d
          * 材质
          */
         @oav({ component: "OAVObjectView" })
-        data: Texture2D;
+        get data() { return this._data; }
+        private _data = new Texture2D();
+
+        get assetId() { return this._data.assetId; }
+        set assetId(v) { debuger && assert(this._data.assetId == undefined); this._data.assetId = v; }
 
         /**
          * 图片
          */
-        get image() { return this._image; }
-
+        get image() { return <any>this.data["_pixels"]; }
         set image(v: HTMLImageElement)
         {
-            this._image = v;
-            if (this.data) this.data["_pixels"] = v;
+            this.data["_pixels"] = v;
             this.saveFile();
         }
-        private _image: HTMLImageElement;
 
         meta: TextureAssetMeta;
 
         assetType = AssetType.texture;
-
-        initMeta()
-        {
-            this.meta = new TextureAssetMeta(this);
-        }
 
         saveFile(callback?: (err: Error) => void)
         {
@@ -52,7 +48,6 @@ namespace feng3d
         {
             this.rs.fs.readImage(this.assetPath, (err, img: HTMLImageElement) =>
             {
-                this._image = img;
                 this.data["_pixels"] = img;
                 callback && callback(err);
             });
@@ -67,7 +62,7 @@ namespace feng3d
         {
             super.readMeta((err) =>
             {
-                this.data = this.meta.texture;
+                serialization.setValue(this.data, this.meta.texture);
                 callback && callback(err);
             });
         }
@@ -79,22 +74,16 @@ namespace feng3d
          */
         writeMeta(callback?: (err: Error) => void)
         {
-            if (this.data == undefined)
-            {
-                this.data = new Texture2D();
-                this.data["_pixels"] = this._image;
-            }
-            if (this.data.assetId == undefined) this.data.assetId = this.assetId;
+            var texture = serialization.serialize(this.data);
+            delete texture[CLASS_KEY];
 
-            debuger && assert(this.data.assetId == this.assetId);
-
-            this.meta.texture = this.data;
+            this.meta.texture = texture;
             this.rs.fs.writeObject(this.metaPath, this.meta, callback);
         }
     }
 
-    export class TextureAssetMeta extends AssetMeta
+    export interface TextureAssetMeta extends AssetMeta
     {
-        texture: Texture2D;
+        texture: gPartial<Texture2D>;
     }
 }

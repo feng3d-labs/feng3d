@@ -69,11 +69,6 @@ namespace feng3d
          */
         data: AssetData;
 
-        initMeta()
-        {
-            this.meta = new AssetMeta(this);
-        }
-
         /**
          * 读取资源
          * 
