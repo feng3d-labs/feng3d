@@ -166,17 +166,15 @@ namespace feng3d
          * @param object 换为Json的对象
          * @returns 反序列化后的数据
          */
-        deserialize(object, tempInfo?: SerializationTempInfo)
+        deserialize(object)
         {
-            tempInfo = initTempInfo(tempInfo);
-
             //基础类型
             if (isBaseType(object)) return object;
 
             //处理数组
             if (object instanceof Array)
             {
-                var arr = object.map(v => this.deserialize(v, tempInfo));
+                var arr = object.map(v => this.deserialize(v));
                 return arr;
             }
             if (object.constructor != Object)
@@ -191,7 +189,7 @@ namespace feng3d
                 var target = {};
                 for (var key in object)
                 {
-                    if (key != CLASS_KEY) target[key] = this.deserialize(object[key], tempInfo);
+                    if (key != CLASS_KEY) target[key] = this.deserialize(object[key]);
                 }
                 return target;
             }
@@ -223,7 +221,7 @@ namespace feng3d
                 return target["deserialize"](object);
 
             //默认反序列
-            this.setValue(target, object, tempInfo);
+            this.setValue(target, object);
             return target;
         }
 
@@ -232,11 +230,9 @@ namespace feng3d
          * @param target 目标对象
          * @param object 数据对象
          */
-        setValue<T>(target: T, object: gPartial<T>, tempInfo?: SerializationTempInfo)
+        setValue<T>(target: T, object: gPartial<T>)
         {
             if (!object) return target;
-
-            tempInfo = initTempInfo(tempInfo);
 
             for (const property in object)
             {
@@ -299,6 +295,25 @@ namespace feng3d
             {
                 target[property] = this.deserialize(objvalue);
             }
+        }
+
+        /**
+         * 获取需要反序列化对象中的资源id列表
+         */
+        getAssets(object: any)
+        {
+
+        }
+
+        /**
+         * 反序列化包含资源的对象
+         * 
+         * @param object 
+         * @param callback 完成回调
+         */
+        deserializeWithAssets(object, callback: () => void)
+        {
+
         }
 
         /**
