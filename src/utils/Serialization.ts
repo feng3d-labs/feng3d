@@ -51,6 +51,15 @@ namespace feng3d
             }
 
             var object = <any>{};
+
+            // 处理资源
+            if (target instanceof AssetData && target.assetId != undefined)
+            {
+                object[CLASS_KEY] = classUtils.getQualifiedClassName(target);
+                object.assetId = target.assetId;
+                return object;
+            }
+
             //处理普通Object
             if (target.constructor === Object)
             {
@@ -75,8 +84,7 @@ namespace feng3d
                 return object;
             }
 
-            var className = classUtils.getQualifiedClassName(target);
-            object[CLASS_KEY] = className;
+            object[CLASS_KEY] = classUtils.getQualifiedClassName(target);
 
             if (target["serialize"])
                 return target["serialize"](object);
@@ -97,21 +105,23 @@ namespace feng3d
         different(target: Object, defaultInstance: Object, different?: Object)
         {
             different = different || {};
+            if (target == defaultInstance) return different;
+            if (defaultInstance == null)
+            {
+                different = this.serialize(target);
+                return different;
+            }
+            if (target instanceof AssetData)
+            {
+                different = this.serialize(target);
+                return different;
+            }
             var serializableMembers = getSerializableMembers(target);
             if (target.constructor == Object)
                 serializableMembers = Object.keys(target).map(v => { return { property: v } });
             for (var i = 0; i < serializableMembers.length; i++)
             {
                 var property = serializableMembers[i].property;
-                var asset = serializableMembers[i].asset;
-                if (asset && target[property] instanceof AssetData && (<AssetData>target[property]).assetId)
-                {
-                    var assetId0 = target[property] && (<AssetData>target[property]).assetId;
-                    var assetId1 = defaultInstance[property] && (<AssetData>defaultInstance[property]).assetId;
-                    if (assetId0 != assetId1) different[property] = assetId0;
-                    continue;
-                }
-
                 if (target[property] === defaultInstance[property])
                     continue;
                 if (isBaseType(target[property]))
@@ -153,7 +163,7 @@ namespace feng3d
          * @param object 换为Json的对象
          * @returns 反序列化后的数据
          */
-        deserialize(object, tempInfo?: SerializationTempInfo)
+        deserialize(object, callback?: (result: any) => void, tempInfo?: SerializationTempInfo)
         {
             tempInfo = initTempInfo(tempInfo);
 
@@ -163,7 +173,7 @@ namespace feng3d
             //处理数组
             if (object instanceof Array)
             {
-                var arr = object.map(v => this.deserialize(v, tempInfo));
+                var arr = object.map(v => this.deserialize(v, null, tempInfo));
                 return arr;
             }
             if (object.constructor != Object)
@@ -178,7 +188,7 @@ namespace feng3d
                 var target = {};
                 for (var key in object)
                 {
-                    if (key != CLASS_KEY) target[key] = this.deserialize(object[key], tempInfo);
+                    if (key != CLASS_KEY) target[key] = this.deserialize(object[key], null, tempInfo);
                 }
                 return target;
             }
@@ -198,6 +208,24 @@ namespace feng3d
                 return undefined;
             }
             target = new cls();
+            // 处理资源
+            if (target instanceof AssetData && object.assetId != undefined)
+            {
+                var result: AssetData;
+                tempInfo.loadingNum++;
+                rs.readAssetData(object.assetId, (err, data) =>
+                {
+                    result = data;
+                    callback && callback(result);
+                    tempInfo.loadingNum--;
+                    if (tempInfo.loadingNum == 0)
+                    {
+                        tempInfo.onLoaded && tempInfo.onLoaded();
+                    }
+                });
+                debuger && assert(!!result)
+                return result;
+            }
             //处理自定义反序列化对象
             if (target["deserialize"])
                 return target["deserialize"](object);
@@ -218,35 +246,11 @@ namespace feng3d
 
             tempInfo = initTempInfo(tempInfo);
 
-            var serializeAssets = getSerializableMembers(target).reduce((pv: string[], cv) => { if (cv.asset) pv.push(cv.property); return pv; }, []);
             for (const property in object)
             {
                 if (object.hasOwnProperty(property))
                 {
-                    if (serializeAssets.indexOf(property) != -1)
-                    {
-                        if (typeof object[property] == "string")
-                        {
-                            tempInfo.loadingNum++;
-
-                            rs.readAssetData(<any>object[property], (err, data) =>
-                            {
-                                target[property] = <any>data;
-                                tempInfo.loadingNum--;
-                                if (tempInfo.loadingNum == 0)
-                                {
-                                    tempInfo.onLoaded && tempInfo.onLoaded();
-                                }
-                            });
-                        } else
-                        {
-                            target[property] = this.deserialize(object[property], tempInfo);
-                        }
-                    }
-                    else
-                    {
-                        this.setPropertyValue(target, object, property, tempInfo);
-                    }
+                    this.setPropertyValue(target, object, property, tempInfo);
                 }
             }
             return target;
@@ -268,7 +272,10 @@ namespace feng3d
             // 当原值等于null时直接反序列化赋值
             if (target[property] == null)
             {
-                target[property] = this.deserialize(objvalue, tempInfo);
+                target[property] = this.deserialize(objvalue, (result) =>
+                {
+                    target[property] = result;
+                }, tempInfo);
                 return;
             }
             if (isBaseType(objvalue))
@@ -278,7 +285,7 @@ namespace feng3d
             }
             if (objvalue.constructor == Array)
             {
-                target[property] = this.deserialize(objvalue, tempInfo);
+                target[property] = this.deserialize(objvalue, null, tempInfo);
                 return;
             }
             // 处理同为Object类型
@@ -302,7 +309,7 @@ namespace feng3d
                 this.setValue(target[property], objvalue, tempInfo);
             } else
             {
-                target[property] = this.deserialize(objvalue, tempInfo);
+                target[property] = this.deserialize(objvalue, null, tempInfo);
             }
         }
 
