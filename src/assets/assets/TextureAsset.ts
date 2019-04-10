@@ -26,7 +26,14 @@ namespace feng3d
         }
         private _image: HTMLImageElement;
 
+        meta: TextureAssetMeta;
+
         assetType = AssetType.texture;
+
+        initMeta()
+        {
+            this.meta = new TextureAssetMeta(this);
+        }
 
         saveFile(callback?: (err: Error) => void)
         {
@@ -60,7 +67,7 @@ namespace feng3d
         {
             super.readMeta((err) =>
             {
-                this.data = this.meta["texture"];
+                this.data = this.meta.texture;
                 callback && callback(err);
             });
         }
@@ -81,8 +88,13 @@ namespace feng3d
 
             debuger && assert(this.data.assetId == this.assetId);
 
-            this.meta["texture"] = this.data;
+            this.meta.texture = this.data;
             this.rs.fs.writeObject(this.metaPath, this.meta, callback);
         }
+    }
+
+    export class TextureAssetMeta extends AssetMeta
+    {
+        texture: Texture2D;
     }
 }

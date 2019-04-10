@@ -345,14 +345,14 @@ declare namespace feng3d {
         /**
          * 获取需要反序列化对象中的资源id列表
          */
-        getAssets(object: any): void;
+        getAssets(object: any, assetids?: string[]): string[];
         /**
          * 反序列化包含资源的对象
          *
-         * @param object
+         * @param object 反序列化的对象
          * @param callback 完成回调
          */
-        deserializeWithAssets(object: any, callback: () => void): void;
+        deserializeWithAssets(object: any, callback: (result: any) => void): void;
         /**
          * 克隆
          * @param target 被克隆对象
@@ -7784,7 +7784,7 @@ declare namespace feng3d {
     /**
      * 资源元标签
      */
-    interface AssetMeta {
+    class AssetMeta {
         /**
          * 资源编号
          */
@@ -7801,6 +7801,7 @@ declare namespace feng3d {
          * 资源类型，由具体对象类型决定；AssetExtension.folder 时为文件夹
          */
         assetType: AssetType;
+        constructor(asset: FileAsset);
     }
 }
 declare namespace feng3d {
@@ -8114,6 +8115,7 @@ declare namespace feng3d {
          * 资源对象
          */
         data: AssetData;
+        initMeta(): void;
         /**
          * 读取资源
          *
@@ -15667,7 +15669,9 @@ declare namespace feng3d {
          */
         image: HTMLImageElement;
         private _image;
+        meta: TextureAssetMeta;
         assetType: AssetType;
+        initMeta(): void;
         saveFile(callback?: (err: Error) => void): void;
         /**
          * 读取文件
@@ -15687,6 +15691,9 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         writeMeta(callback?: (err: Error) => void): void;
+    }
+    class TextureAssetMeta extends AssetMeta {
+        texture: Texture2D;
     }
 }
 declare namespace feng3d {

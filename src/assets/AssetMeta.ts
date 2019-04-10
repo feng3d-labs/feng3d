@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 资源元标签
      */
-    export interface AssetMeta
+    export class AssetMeta
     {
         /**
          * 资源编号
@@ -24,5 +24,13 @@ namespace feng3d
          * 资源类型，由具体对象类型决定；AssetExtension.folder 时为文件夹
          */
         assetType: AssetType;
+
+        constructor(asset: FileAsset)
+        {
+            this.guid = asset.assetId;
+            this.mtimeMs = Date.now();
+            this.birthtimeMs = Date.now();
+            this.assetType = asset.assetType;
+        }
     }
 }

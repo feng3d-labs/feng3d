@@ -171,6 +171,13 @@ namespace feng3d
             //基础类型
             if (isBaseType(object)) return object;
 
+            if (debuger)
+            {
+                let assetids = this.getAssets(object);
+                var assets = assetids.reduce((pv, cv) => { var r = rs.getAssetData(cv); if (r) pv.push(r); return pv; }, []);
+                feng3d.assert(assetids.length == assets.length, `存在资源未加载，请使用 deserializeWithAssets 进行反序列化`)
+            }
+
             //处理数组
             if (object instanceof Array)
             {
@@ -300,20 +307,71 @@ namespace feng3d
         /**
          * 获取需要反序列化对象中的资源id列表
          */
-        getAssets(object: any)
+        getAssets(object: any, assetids: string[] = [])
         {
+            //基础类型
+            if (isBaseType(object)) return assetids;
 
+            //处理数组
+            if (object instanceof Array)
+            {
+                object.forEach(v => this.getAssets(v, assetids));
+                return assetids;
+            }
+
+            // 获取类型
+            var className: string = object[CLASS_KEY];
+            // 处理普通Object
+            if (className == "Object" || className == null)
+            {
+                for (var key in object)
+                {
+                    if (key != CLASS_KEY) this.getAssets(object[key], assetids);
+                }
+                return assetids;
+            }
+            //处理方法
+            if (className == "function") return assetids;
+
+            var cls = classUtils.getDefinitionByName(className);
+            if (!cls)
+            {
+                warn(`无法序列号对象 ${className}`);
+                return assetids;
+            }
+            var target = new cls();
+            // 处理资源
+            if (target instanceof AssetData && object.assetId != undefined)
+            {
+                assetids.push(object.assetId);
+                return assetids;
+            }
+            return assetids;
         }
 
         /**
          * 反序列化包含资源的对象
          * 
-         * @param object 
+         * @param object 反序列化的对象
          * @param callback 完成回调
          */
-        deserializeWithAssets(object, callback: () => void)
+        deserializeWithAssets(object, callback: (result: any) => void)
         {
-
+            var assetids = this.getAssets(object);
+            var result = [];
+            var fns = assetids.map(v => (callback) =>
+            {
+                rs.readAssetData(v, (err, data) =>
+                {
+                    result.push(data);
+                });
+            });
+            task.parallel(fns)(() =>
+            {
+                debuger && assert(assetids.length == result.filter(v => v != null).length);
+                var r = this.deserialize(object);
+                callback(r);
+            });
         }
 
         /**
