@@ -211,9 +211,6 @@ Object.runFunc = function (obj, func) {
     func(obj);
     return obj;
 };
-Object.deepClone = function (obj) {
-    return feng3d.serialization.clone(obj);
-};
 //参考 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
 Map.prototype.getKeys = function () {
     var keys = [];
@@ -610,16 +607,6 @@ var feng3d;
     }
     feng3d.serialize = serialize;
     /**
-     * 序列化资源装饰器，被装饰属性将被序列化为资源编号
-     * @param {*} target                序列化原型
-     * @param {string} propertyKey      序列化属性
-     */
-    function serializeAsset(target, propertyKey) {
-        var serializeInfo = getSerializeInfo(target);
-        serializeInfo.propertys.push({ property: propertyKey, asset: true });
-    }
-    feng3d.serializeAsset = serializeAsset;
-    /**
      * 序列化
      */
     var Serialization = /** @class */ (function () {
@@ -649,6 +636,12 @@ var feng3d;
                 return arr;
             }
             var object = {};
+            // 处理资源
+            if (target instanceof feng3d.AssetData && target.assetId != undefined) {
+                object[CLASS_KEY] = feng3d.classUtils.getQualifiedClassName(target);
+                object.assetId = target.assetId;
+                return object;
+            }
             //处理普通Object
             if (target.constructor === Object) {
                 for (var key in target) {
@@ -666,8 +659,7 @@ var feng3d;
                 object.data = target.toString();
                 return object;
             }
-            var className = feng3d.classUtils.getQualifiedClassName(target);
-            object[CLASS_KEY] = className;
+            object[CLASS_KEY] = feng3d.classUtils.getQualifiedClassName(target);
             if (target["serialize"])
                 return target["serialize"](object);
             //使用默认序列化
@@ -684,19 +676,21 @@ var feng3d;
          */
         Serialization.prototype.different = function (target, defaultInstance, different) {
             different = different || {};
+            if (target == defaultInstance)
+                return different;
+            if (defaultInstance == null) {
+                different = this.serialize(target);
+                return different;
+            }
+            if (target instanceof feng3d.AssetData) {
+                different = this.serialize(target);
+                return different;
+            }
             var serializableMembers = getSerializableMembers(target);
             if (target.constructor == Object)
                 serializableMembers = Object.keys(target).map(function (v) { return { property: v }; });
             for (var i = 0; i < serializableMembers.length; i++) {
                 var property = serializableMembers[i].property;
-                var asset = serializableMembers[i].asset;
-                if (asset && target[property] instanceof feng3d.AssetData && target[property].assetId) {
-                    var assetId0 = target[property] && target[property].assetId;
-                    var assetId1 = defaultInstance[property] && defaultInstance[property].assetId;
-                    if (assetId0 != assetId1)
-                        different[property] = assetId0;
-                    continue;
-                }
                 if (target[property] === defaultInstance[property])
                     continue;
                 if (isBaseType(target[property])) {
@@ -729,18 +723,20 @@ var feng3d;
         };
         /**
          * 反序列化
+         *
+         * 注意！ 如果反序列前需要把包含的资源提前加载，否则会报错！
+         *
          * @param object 换为Json的对象
          * @returns 反序列化后的数据
          */
-        Serialization.prototype.deserialize = function (object, tempInfo) {
+        Serialization.prototype.deserialize = function (object) {
             var _this = this;
-            tempInfo = initTempInfo(tempInfo);
             //基础类型
             if (isBaseType(object))
                 return object;
             //处理数组
             if (object instanceof Array) {
-                var arr = object.map(function (v) { return _this.deserialize(v, tempInfo); });
+                var arr = object.map(function (v) { return _this.deserialize(v); });
                 return arr;
             }
             if (object.constructor != Object) {
@@ -753,7 +749,7 @@ var feng3d;
                 var target = {};
                 for (var key in object) {
                     if (key != CLASS_KEY)
-                        target[key] = this.deserialize(object[key], tempInfo);
+                        target[key] = this.deserialize(object[key]);
                 }
                 return target;
             }
@@ -769,11 +765,17 @@ var feng3d;
                 return undefined;
             }
             target = new cls();
+            // 处理资源
+            if (target instanceof feng3d.AssetData && object.assetId != undefined) {
+                var result = feng3d.rs.getAssetData(object.assetId);
+                feng3d.debuger && feng3d.assert(!!result);
+                return result;
+            }
             //处理自定义反序列化对象
             if (target["deserialize"])
                 return target["deserialize"](object);
             //默认反序列
-            this.setValue(target, object, tempInfo);
+            this.setValue(target, object);
             return target;
         };
         /**
@@ -781,37 +783,13 @@ var feng3d;
          * @param target 目标对象
          * @param object 数据对象
          */
-        Serialization.prototype.setValue = function (target, object, tempInfo) {
+        Serialization.prototype.setValue = function (target, object) {
             if (!object)
                 return target;
-            tempInfo = initTempInfo(tempInfo);
-            var serializeAssets = getSerializableMembers(target).reduce(function (pv, cv) { if (cv.asset)
-                pv.push(cv.property); return pv; }, []);
-            var _loop_1 = function (property) {
-                if (object.hasOwnProperty(property)) {
-                    if (serializeAssets.indexOf(property) != -1) {
-                        if (typeof object[property] == "string") {
-                            tempInfo.loadingNum++;
-                            feng3d.rs.readAssetData(object[property], function (err, data) {
-                                target[property] = data;
-                                tempInfo.loadingNum--;
-                                if (tempInfo.loadingNum == 0) {
-                                    tempInfo.onLoaded && tempInfo.onLoaded();
-                                }
-                            });
-                        }
-                        else {
-                            target[property] = this_1.deserialize(object[property], tempInfo);
-                        }
-                    }
-                    else {
-                        this_1.setPropertyValue(target, object, property, tempInfo);
-                    }
-                }
-            };
-            var this_1 = this;
             for (var property in object) {
-                _loop_1(property);
+                if (object.hasOwnProperty(property)) {
+                    this.setPropertyValue(target, object, property);
+                }
             }
             return target;
         };
@@ -821,14 +799,13 @@ var feng3d;
          * @param object 数据对象
          * @param property 属性名称
          */
-        Serialization.prototype.setPropertyValue = function (target, object, property, tempInfo) {
+        Serialization.prototype.setPropertyValue = function (target, object, property) {
             if (target[property] == object[property])
                 return;
-            tempInfo = initTempInfo(tempInfo);
             var objvalue = object[property];
             // 当原值等于null时直接反序列化赋值
             if (target[property] == null) {
-                target[property] = this.deserialize(objvalue, tempInfo);
+                target[property] = this.deserialize(objvalue);
                 return;
             }
             if (isBaseType(objvalue)) {
@@ -836,28 +813,41 @@ var feng3d;
                 return;
             }
             if (objvalue.constructor == Array) {
-                target[property] = this.deserialize(objvalue, tempInfo);
+                target[property] = this.deserialize(objvalue);
                 return;
             }
             // 处理同为Object类型
             if (objvalue[CLASS_KEY] == undefined) {
                 if (target[property].constructor == Object) {
                     for (var key in objvalue) {
-                        this.setPropertyValue(target[property], objvalue, key, tempInfo);
+                        this.setPropertyValue(target[property], objvalue, key);
                     }
                 }
                 else {
-                    this.setValue(target[property], objvalue, tempInfo);
+                    this.setValue(target[property], objvalue);
                 }
                 return;
             }
             var targetClassName = feng3d.classUtils.getQualifiedClassName(target[property]);
             if (targetClassName == objvalue[CLASS_KEY]) {
-                this.setValue(target[property], objvalue, tempInfo);
+                this.setValue(target[property], objvalue);
             }
             else {
-                target[property] = this.deserialize(objvalue, tempInfo);
+                target[property] = this.deserialize(objvalue);
             }
+        };
+        /**
+         * 获取需要反序列化对象中的资源id列表
+         */
+        Serialization.prototype.getAssets = function (object) {
+        };
+        /**
+         * 反序列化包含资源的对象
+         *
+         * @param object
+         * @param callback 完成回调
+         */
+        Serialization.prototype.deserializeWithAssets = function (object, callback) {
         };
         /**
          * 克隆
@@ -20973,7 +20963,7 @@ var feng3d;
             renderAtomic.uniforms.s_skyboxTexture = function () { return _this.s_skyboxTexture; };
         };
         __decorate([
-            feng3d.serializeAsset,
+            feng3d.serialize,
             feng3d.oav({ component: "OAVPick", componentParam: { accepttype: "texturecube", datatype: "texturecube" } })
         ], SkyBox.prototype, "s_skyboxTexture", void 0);
         return SkyBox;
@@ -23232,12 +23222,12 @@ var feng3d;
         };
         __decorate([
             feng3d.oav({ component: "OAVPick", tooltip: "几何体，提供模型以形状", componentParam: { accepttype: "geometry", datatype: "geometry" } }),
-            feng3d.serializeAsset,
+            feng3d.serialize,
             feng3d.watch("onGeometryChanged")
         ], Model.prototype, "geometry", void 0);
         __decorate([
             feng3d.oav({ component: "OAVPick", tooltip: "材质，提供模型以皮肤", componentParam: { accepttype: "material", datatype: "material" } }),
-            feng3d.serializeAsset,
+            feng3d.serialize,
             feng3d.watch("onMaterialChanged")
         ], Model.prototype, "material", void 0);
         __decorate([
@@ -24560,7 +24550,7 @@ var feng3d;
          * @param geometrys 几何体列表
          */
         GeometryUtils.prototype.mergeGeometry = function (geometrys) {
-            var result = Object.deepClone(geometrys[0]);
+            var result = feng3d.serialization.clone(geometrys[0]);
             for (var i = 1; i < geometrys.length; i++) {
                 var geometry = geometrys[i];
                 var startIndex = result.positions.length / 3;
@@ -27596,7 +27586,7 @@ var feng3d;
         ], TextureUniforms.prototype, "u_color", void 0);
         __decorate([
             feng3d.oav(),
-            feng3d.serializeAsset
+            feng3d.serialize
         ], TextureUniforms.prototype, "s_texture", void 0);
         return TextureUniforms;
     }());
@@ -27689,7 +27679,7 @@ var feng3d;
             feng3d.oav()
         ], StandardUniforms.prototype, "u_PointSize", void 0);
         __decorate([
-            feng3d.serializeAsset,
+            feng3d.serialize,
             feng3d.oav({ block: "diffuse" })
         ], StandardUniforms.prototype, "s_diffuse", void 0);
         __decorate([
@@ -27701,11 +27691,11 @@ var feng3d;
             feng3d.oav({ block: "diffuse" })
         ], StandardUniforms.prototype, "u_alphaThreshold", void 0);
         __decorate([
-            feng3d.serializeAsset,
+            feng3d.serialize,
             feng3d.oav({ block: "normalMethod" })
         ], StandardUniforms.prototype, "s_normal", void 0);
         __decorate([
-            feng3d.serializeAsset,
+            feng3d.serialize,
             feng3d.oav({ block: "specular" })
         ], StandardUniforms.prototype, "s_specular", void 0);
         __decorate([
@@ -27717,7 +27707,7 @@ var feng3d;
             feng3d.oav({ block: "specular" })
         ], StandardUniforms.prototype, "u_glossiness", void 0);
         __decorate([
-            feng3d.serializeAsset,
+            feng3d.serialize,
             feng3d.oav({ block: "ambient" })
         ], StandardUniforms.prototype, "s_ambient", void 0);
         __decorate([
@@ -27725,7 +27715,7 @@ var feng3d;
             feng3d.oav({ block: "ambient" })
         ], StandardUniforms.prototype, "u_ambient", void 0);
         __decorate([
-            feng3d.serializeAsset,
+            feng3d.serialize,
             feng3d.oav({ component: "OAVPick", block: "envMap", componentParam: { accepttype: "texturecube", datatype: "texturecube" } })
         ], StandardUniforms.prototype, "s_envMap", void 0);
         __decorate([
@@ -29411,7 +29401,7 @@ var feng3d;
         ], WaterUniforms.prototype, "u_waterColor", void 0);
         __decorate([
             feng3d.oav(),
-            feng3d.serializeAsset,
+            feng3d.serialize,
             feng3d.oav({ tooltip: "水体法线图" })
         ], WaterUniforms.prototype, "s_normalSampler", void 0);
         __decorate([
@@ -29600,7 +29590,7 @@ var feng3d;
             return blue;
         };
         __decorate([
-            feng3d.serializeAsset,
+            feng3d.serialize,
             feng3d.oav(),
             feng3d.watch("onHeightMapChanged")
         ], TerrainGeometry.prototype, "heightMap", void 0);
@@ -29663,19 +29653,19 @@ var feng3d;
             return _this;
         }
         __decorate([
-            feng3d.serializeAsset,
+            feng3d.serialize,
             feng3d.oav({ block: "terrain" })
         ], TerrainUniforms.prototype, "s_splatTexture1", void 0);
         __decorate([
-            feng3d.serializeAsset,
+            feng3d.serialize,
             feng3d.oav({ block: "terrain" })
         ], TerrainUniforms.prototype, "s_splatTexture2", void 0);
         __decorate([
-            feng3d.serializeAsset,
+            feng3d.serialize,
             feng3d.oav({ block: "terrain" })
         ], TerrainUniforms.prototype, "s_splatTexture3", void 0);
         __decorate([
-            feng3d.serializeAsset,
+            feng3d.serialize,
             feng3d.oav({ block: "terrain" })
         ], TerrainUniforms.prototype, "s_blendTexture", void 0);
         __decorate([
@@ -35352,3 +35342,20 @@ var feng3d;
     feng3d.WindowMouseInput = WindowMouseInput;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+
+(function universalModuleDefinition(root, factory)
+{
+    if (typeof exports === 'object' && typeof module === 'object')
+        module.exports = factory();
+    else if (typeof define === 'function' && define.amd)
+        define([], factory);
+    else if (typeof exports === 'object')
+        exports["feng3d"] = factory();
+    else
+        root["feng3d"] = factory();
+    var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
+    globalObject["feng3d"] = factory();
+})(this, function ()
+{
+    return feng3d;
+});

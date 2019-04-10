@@ -1,3 +1,6 @@
+declare module 'feng3d' {
+    export = feng3d;
+}
 declare type gPartial<T> = {
     [P in keyof T]?: gPartial<T[P]>;
 };
@@ -87,11 +90,6 @@ interface ObjectConstructor {
      * @param func 被执行的方法
      */
     runFunc<T>(obj: T, func: (obj: T) => void): T;
-    /**
-     * 深拷贝
-     * @param obj 被拷贝对象
-     */
-    deepClone<T>(obj: T): T;
 }
 interface Map<K, V> {
     clear(): void;
@@ -305,12 +303,6 @@ declare namespace feng3d {
      */
     function serialize(target: any, propertyKey: string): void;
     /**
-     * 序列化资源装饰器，被装饰属性将被序列化为资源编号
-     * @param {*} target                序列化原型
-     * @param {string} propertyKey      序列化属性
-     */
-    function serializeAsset(target: any, propertyKey: string): void;
-    /**
      * 序列化
      */
     class Serialization {
@@ -330,16 +322,19 @@ declare namespace feng3d {
         different(target: Object, defaultInstance: Object, different?: Object): Object;
         /**
          * 反序列化
+         *
+         * 注意！ 如果反序列前需要把包含的资源提前加载，否则会报错！
+         *
          * @param object 换为Json的对象
          * @returns 反序列化后的数据
          */
-        deserialize(object: any, tempInfo?: SerializationTempInfo): any;
+        deserialize(object: any): any;
         /**
          * 从数据对象中提取数据给目标对象赋值
          * @param target 目标对象
          * @param object 数据对象
          */
-        setValue<T>(target: T, object: gPartial<T>, tempInfo?: SerializationTempInfo): T;
+        setValue<T>(target: T, object: gPartial<T>): T;
         /**
          * 给目标对象的指定属性赋值
          * @param target 目标对象
@@ -347,6 +342,17 @@ declare namespace feng3d {
          * @param property 属性名称
          */
         private setPropertyValue;
+        /**
+         * 获取需要反序列化对象中的资源id列表
+         */
+        getAssets(object: any): void;
+        /**
+         * 反序列化包含资源的对象
+         *
+         * @param object
+         * @param callback 完成回调
+         */
+        deserializeWithAssets(object: any, callback: () => void): void;
         /**
          * 克隆
          * @param target 被克隆对象
@@ -1118,6 +1124,7 @@ declare namespace feng3d {
         addClassNameSpace(namespace: string): void;
     }
 }
+declare var global: any;
 declare namespace feng3d {
     /**
      * 图片相关工具
