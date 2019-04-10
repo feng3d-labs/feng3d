@@ -10,7 +10,7 @@ namespace feng3d
         /**
          * 高度图路径
          */
-        @serializeAsset
+        @serialize
         @oav()
         @watch("onHeightMapChanged")
         heightMap = Texture2D.default;

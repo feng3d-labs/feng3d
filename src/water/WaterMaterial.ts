@@ -30,7 +30,7 @@ namespace feng3d
         u_waterColor = new Color3().fromUnit(0x555555);
 
         @oav()
-        @serializeAsset
+        @serialize
         @oav({ tooltip: "水体法线图" })
         s_normalSampler = Texture2D.default;
 

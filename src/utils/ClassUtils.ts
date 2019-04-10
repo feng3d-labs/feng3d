@@ -116,3 +116,4 @@ namespace feng3d
         });
     }
 }
+declare var global: any;

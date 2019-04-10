@@ -17,17 +17,6 @@ namespace feng3d
     }
 
     /**
-     * 序列化资源装饰器，被装饰属性将被序列化为资源编号
-     * @param {*} target                序列化原型
-     * @param {string} propertyKey      序列化属性
-     */
-    export function serializeAsset(target: any, propertyKey: string)
-    {
-        var serializeInfo = getSerializeInfo(target);
-        serializeInfo.propertys.push({ property: propertyKey, asset: true });
-    }
-
-    /**
      * 序列化
      */
     export class Serialization

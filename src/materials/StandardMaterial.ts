@@ -26,7 +26,7 @@ namespace feng3d
         /**
          * 漫反射纹理
          */
-        @serializeAsset
+        @serialize
         @oav({ block: "diffuse" })
         s_diffuse = Texture2D.default;
 
@@ -47,14 +47,14 @@ namespace feng3d
         /**
          * 漫反射纹理
          */
-        @serializeAsset
+        @serialize
         @oav({ block: "normalMethod" })
         s_normal = Texture2D.defaultNormal;
 
         /**
          * 镜面反射光泽图
          */
-        @serializeAsset
+        @serialize
         @oav({ block: "specular" })
         s_specular = Texture2D.default;
 
@@ -75,7 +75,7 @@ namespace feng3d
         /**
          * 环境纹理
          */
-        @serializeAsset
+        @serialize
         @oav({ block: "ambient" })
         s_ambient = Texture2D.default;
 
@@ -89,7 +89,7 @@ namespace feng3d
         /**
          * 环境映射贴图
          */
-        @serializeAsset
+        @serialize
         @oav({ component: "OAVPick", block: "envMap", componentParam: { accepttype: "texturecube", datatype: "texturecube" } })
         s_envMap = TextureCube.default;
 

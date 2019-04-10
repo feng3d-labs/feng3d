@@ -6,19 +6,19 @@ namespace feng3d
     {
         __class__: "feng3d.TerrainUniforms" = "feng3d.TerrainUniforms";
 
-        @serializeAsset
+        @serialize
         @oav({ block: "terrain" })
         s_splatTexture1 = Texture2D.default;
 
-        @serializeAsset
+        @serialize
         @oav({ block: "terrain" })
         s_splatTexture2 = Texture2D.default;
 
-        @serializeAsset
+        @serialize
         @oav({ block: "terrain" })
         s_splatTexture3 = Texture2D.default;
 
-        @serializeAsset
+        @serialize
         @oav({ block: "terrain" })
         s_blendTexture = Texture2D.default;
 

@@ -12,7 +12,7 @@ namespace feng3d
          * 几何体
          */
         @oav({ component: "OAVPick", tooltip: "几何体，提供模型以形状", componentParam: { accepttype: "geometry", datatype: "geometry" } })
-        @serializeAsset
+        @serialize
         @watch("onGeometryChanged")
         geometry: Geometrys = Geometry.cube;
 
@@ -20,7 +20,7 @@ namespace feng3d
          * 材质
          */
         @oav({ component: "OAVPick", tooltip: "材质，提供模型以皮肤", componentParam: { accepttype: "material", datatype: "material" } })
-        @serializeAsset
+        @serialize
         @watch("onMaterialChanged")
         material: Material = Material.default;
 
