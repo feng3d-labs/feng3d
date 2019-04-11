@@ -11737,6 +11737,7 @@ declare namespace feng3d {
     class Transform extends Component {
         __class__: "feng3d.Transform";
         readonly single: boolean;
+        private renderAtomic;
         /**
          * 创建一个实体，该类为虚类
          */

@@ -33,12 +33,17 @@ namespace feng3d
 
         get single() { return true; }
 
+        private renderAtomic = new RenderAtomic();
+
 		/**
 		 * 创建一个实体，该类为虚类
 		 */
         constructor()
         {
             super();
+
+            this.renderAtomic.uniforms.u_modelMatrix = () => this.localToWorldMatrix;
+            this.renderAtomic.uniforms.u_ITModelMatrix = () => this.ITlocalToWorldMatrix;
         }
 
         init(gameObject: GameObject)
@@ -190,8 +195,6 @@ namespace feng3d
         {
             renderAtomic.uniforms.u_modelMatrix = () => this.localToWorldMatrix;
             renderAtomic.uniforms.u_ITModelMatrix = () => this.ITlocalToWorldMatrix;
-            renderAtomic.uniforms.u_mvMatrix = () => lazy.getvalue(renderAtomic.uniforms.u_modelMatrix).clone().append(lazy.getvalue(renderAtomic.uniforms.u_viewMatrix));
-            renderAtomic.uniforms.u_ITMVMatrix = () => lazy.getvalue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose();
         }
 
         dispose()

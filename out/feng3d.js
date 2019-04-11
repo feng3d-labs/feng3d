@@ -20067,6 +20067,14 @@ var feng3d;
                 var shaderResult = shader.activeShaderProgram(gl);
                 if (!shaderResult)
                     return;
+                //
+                renderAtomic1.uniforms.u_mvMatrix = function () {
+                    return feng3d.lazy.getvalue(renderAtomic1.uniforms.u_modelMatrix).clone().append(feng3d.lazy.getvalue(renderAtomic1.uniforms.u_viewMatrix));
+                };
+                renderAtomic1.uniforms.u_ITMVMatrix = function () {
+                    return feng3d.lazy.getvalue(renderAtomic1.uniforms.u_mvMatrix).clone().invert().transpose();
+                };
+                //
                 var renderAtomic = checkRenderData(renderAtomic1);
                 if (!renderAtomic)
                     return;
@@ -21147,6 +21155,7 @@ var feng3d;
         function Transform() {
             var _this = _super.call(this) || this;
             _this.__class__ = "feng3d.Transform";
+            _this.renderAtomic = new feng3d.RenderAtomic();
             //------------------------------------------
             // Private Properties
             //------------------------------------------
@@ -21164,6 +21173,8 @@ var feng3d;
             _this._sx = 1;
             _this._sy = 1;
             _this._sz = 1;
+            _this.renderAtomic.uniforms.u_modelMatrix = function () { return _this.localToWorldMatrix; };
+            _this.renderAtomic.uniforms.u_ITModelMatrix = function () { return _this.ITlocalToWorldMatrix; };
             return _this;
         }
         Object.defineProperty(Transform.prototype, "single", {
@@ -21316,8 +21327,6 @@ var feng3d;
             var _this = this;
             renderAtomic.uniforms.u_modelMatrix = function () { return _this.localToWorldMatrix; };
             renderAtomic.uniforms.u_ITModelMatrix = function () { return _this.ITlocalToWorldMatrix; };
-            renderAtomic.uniforms.u_mvMatrix = function () { return feng3d.lazy.getvalue(renderAtomic.uniforms.u_modelMatrix).clone().append(feng3d.lazy.getvalue(renderAtomic.uniforms.u_viewMatrix)); };
-            renderAtomic.uniforms.u_ITMVMatrix = function () { return feng3d.lazy.getvalue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose(); };
         };
         Transform.prototype.dispose = function () {
             _super.prototype.dispose.call(this);
