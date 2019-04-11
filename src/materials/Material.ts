@@ -11,6 +11,9 @@ namespace feng3d
     {
         __class__: "feng3d.Material" = "feng3d.Material";
 
+        //
+        private renderAtomic = new RenderAtomic();
+
         @oav({ component: "OAVFeng3dPreView" })
         private preview = "";
 
@@ -30,6 +33,7 @@ namespace feng3d
          * Uniform数据
          */
         @serialize
+        @watch("onUniformsChanged")
         @oav({ component: "OAVObjectView" })
         uniforms: UniformsData = new StandardUniforms();
 
@@ -37,6 +41,7 @@ namespace feng3d
          * 渲染参数
          */
         @serialize
+        @watch("onRenderParamsChanged")
         @oav({ block: "渲染参数", component: "OAVObjectView" })
         renderParams = new RenderParams();
 
@@ -48,16 +53,10 @@ namespace feng3d
 
         beforeRender(renderAtomic: RenderAtomic)
         {
-            for (const key in this.uniforms)
-            {
-                if (this.uniforms.hasOwnProperty(key))
-                {
-                    renderAtomic.uniforms[<any>key] = this.uniforms[key];
-                }
-            }
+            Object.assign(renderAtomic.uniforms, this.uniforms);
             if (!renderAtomic.shader || renderAtomic.shader["shaderName"] != this.shaderName)
             {
-                renderAtomic.shader = new Shader(this.shaderName);
+                renderAtomic.shader = this.renderAtomic.shader;
             }
             renderAtomic.renderParams = this.renderParams;
 
@@ -116,13 +115,24 @@ namespace feng3d
                 if (this.uniforms == null || this.uniforms.constructor != cls)
                 {
                     var newuniforms = new cls();
-                    // serialization.setValue(newuniforms, <any>this.uniforms);
+                    Object.assign(newuniforms, this.uniforms);
                     this.uniforms = newuniforms;
                 }
             } else
             {
                 this.uniforms = <any>{};
             }
+            this.renderAtomic.shader = new Shader(this.shaderName);
+        }
+
+        private onUniformsChanged()
+        {
+            this.renderAtomic.uniforms = <any>this.uniforms;
+        }
+
+        private onRenderParamsChanged()
+        {
+            this.renderAtomic.renderParams = this.renderParams;
         }
 
         /**

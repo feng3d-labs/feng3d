@@ -19088,10 +19088,12 @@ var feng3d;
             feng3d.oav({ tooltip: "是否开启深度标记" })
         ], RenderParams.prototype, "depthMask", void 0);
         __decorate([
-            feng3d.oav({ tooltip: "绘制在画布上的区域" })
+            feng3d.oav({ tooltip: "绘制在画布上的区域" }),
+            feng3d.serialize
         ], RenderParams.prototype, "viewRect", void 0);
         __decorate([
-            feng3d.oav({ tooltip: "是否使用 viewRect" })
+            feng3d.oav({ tooltip: "是否使用 viewRect" }),
+            feng3d.serialize
         ], RenderParams.prototype, "useViewRect", void 0);
         return RenderParams;
     }());
@@ -27395,6 +27397,8 @@ var feng3d;
         function Material() {
             var _this = _super.call(this) || this;
             _this.__class__ = "feng3d.Material";
+            //
+            _this.renderAtomic = new feng3d.RenderAtomic();
             _this.preview = "";
             /**
              * shader名称
@@ -27413,13 +27417,9 @@ var feng3d;
             return _this;
         }
         Material.prototype.beforeRender = function (renderAtomic) {
-            for (var key in this.uniforms) {
-                if (this.uniforms.hasOwnProperty(key)) {
-                    renderAtomic.uniforms[key] = this.uniforms[key];
-                }
-            }
+            Object.assign(renderAtomic.uniforms, this.uniforms);
             if (!renderAtomic.shader || renderAtomic.shader["shaderName"] != this.shaderName) {
-                renderAtomic.shader = new feng3d.Shader(this.shaderName);
+                renderAtomic.shader = this.renderAtomic.shader;
             }
             renderAtomic.renderParams = this.renderParams;
             renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode == feng3d.RenderMode.POINTS;
@@ -27470,13 +27470,20 @@ var feng3d;
             if (cls) {
                 if (this.uniforms == null || this.uniforms.constructor != cls) {
                     var newuniforms = new cls();
-                    // serialization.setValue(newuniforms, <any>this.uniforms);
+                    Object.assign(newuniforms, this.uniforms);
                     this.uniforms = newuniforms;
                 }
             }
             else {
                 this.uniforms = {};
             }
+            this.renderAtomic.shader = new feng3d.Shader(this.shaderName);
+        };
+        Material.prototype.onUniformsChanged = function () {
+            this.renderAtomic.uniforms = this.uniforms;
+        };
+        Material.prototype.onRenderParamsChanged = function () {
+            this.renderAtomic.renderParams = this.renderParams;
         };
         __decorate([
             feng3d.oav({ component: "OAVFeng3dPreView" })
@@ -27492,10 +27499,12 @@ var feng3d;
         ], Material.prototype, "name", void 0);
         __decorate([
             feng3d.serialize,
+            feng3d.watch("onUniformsChanged"),
             feng3d.oav({ component: "OAVObjectView" })
         ], Material.prototype, "uniforms", void 0);
         __decorate([
             feng3d.serialize,
+            feng3d.watch("onRenderParamsChanged"),
             feng3d.oav({ block: "渲染参数", component: "OAVObjectView" })
         ], Material.prototype, "renderParams", void 0);
         return Material;

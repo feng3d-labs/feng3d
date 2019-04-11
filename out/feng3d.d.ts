@@ -13934,6 +13934,7 @@ declare namespace feng3d {
      */
     class Material extends AssetData {
         __class__: "feng3d.Material";
+        private renderAtomic;
         private preview;
         /**
          * shader名称
@@ -13960,6 +13961,8 @@ declare namespace feng3d {
          */
         onLoadCompleted(callback: () => void): void;
         private onShaderChanged;
+        private onUniformsChanged;
+        private onRenderParamsChanged;
         /**
          * 默认材质
          */

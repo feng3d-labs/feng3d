@@ -24,7 +24,7 @@ namespace feng3d
         cullFace = CullFace.BACK;
 
         @serialize
-        @oav({ component: "OAVEnum",tooltip:"正面方向，默认FrontFace.CW 顺时针为正面", componentParam: { enumClass: FrontFace } })
+        @oav({ component: "OAVEnum", tooltip: "正面方向，默认FrontFace.CW 顺时针为正面", componentParam: { enumClass: FrontFace } })
         frontFace = FrontFace.CW;
 
         /**
@@ -62,7 +62,7 @@ namespace feng3d
         @serialize
         @oav({ tooltip: "是否开启深度检查" })
         depthtest = true;
-        
+
         @serialize
         @oav({ component: "OAVEnum", tooltip: "深度检测方法", componentParam: { enumClass: DepthFunc } })
         depthFunc = DepthFunc.LESS;
@@ -78,12 +78,14 @@ namespace feng3d
          * 绘制在画布上的区域
          */
         @oav({ tooltip: "绘制在画布上的区域" })
+        @serialize
         viewRect = new Rectangle(0, 0, 100, 100);
 
         /**
          * 是否使用 viewRect
          */
         @oav({ tooltip: "是否使用 viewRect" })
+        @serialize
         useViewRect = false;
 
         constructor(raw?: gPartial<RenderParams>)
