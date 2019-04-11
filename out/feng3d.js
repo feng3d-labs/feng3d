@@ -308,7 +308,7 @@ var feng3d;
     /**
      * feng3d的版本号
      */
-    feng3d.revision = "2019.04.04.00";
+    feng3d.revision = "2019.04.11.00";
     console.log("feng3d version " + feng3d.revision);
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -35407,24 +35407,6 @@ var feng3d;
     feng3d.WindowMouseInput = WindowMouseInput;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-
-(function universalModuleDefinition(root, factory)
-{
-    if (typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory();
-    else if (typeof define === 'function' && define.amd)
-        define([], factory);
-    else if (typeof exports === 'object')
-        exports["feng3d"] = factory();
-    else
-        root["feng3d"] = factory();
-    var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
-    globalObject["feng3d"] = factory();
-})(this, function ()
-{
-    return feng3d;
-});
-
 
 (function universalModuleDefinition(root, factory)
 {

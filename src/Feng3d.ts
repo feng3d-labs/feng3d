@@ -7,7 +7,7 @@ namespace feng3d
     /**
      * feng3d的版本号
      */
-    export var revision: string = "2019.04.04.00";
+    export var revision: string = "2019.04.11.00";
 
     console.log(`feng3d version ${revision}`)
 }
