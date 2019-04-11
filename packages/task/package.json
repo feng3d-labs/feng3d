@@ -1,6 +1,6 @@
 {
   "name": "@feng3d/task",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "串联或并联一组异步函数为一个异步函数",
   "main": "out/index.js",
   "types": "out/index.d.ts",

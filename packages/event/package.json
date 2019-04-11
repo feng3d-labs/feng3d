@@ -1,6 +1,6 @@
 {
   "name": "@feng3d/event",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "feng3d相关类库",
   "main": "out/index.js",
   "types": "out/index.d.ts",

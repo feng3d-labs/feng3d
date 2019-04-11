@@ -1,6 +1,6 @@
 {
   "name": "@feng3d/ds",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "数据结构",
   "main": "out/index.js",
   "types": "out/index.d.ts",
