@@ -193,8 +193,7 @@ namespace feng3d
 
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
-            renderAtomic.uniforms.u_modelMatrix = () => this.localToWorldMatrix;
-            renderAtomic.uniforms.u_ITModelMatrix = () => this.ITlocalToWorldMatrix;
+            Object.assign(renderAtomic.uniforms, this.renderAtomic.uniforms);
         }
 
         dispose()

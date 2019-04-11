@@ -21324,9 +21324,7 @@ var feng3d;
             return vector;
         };
         Transform.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
-            var _this = this;
-            renderAtomic.uniforms.u_modelMatrix = function () { return _this.localToWorldMatrix; };
-            renderAtomic.uniforms.u_ITModelMatrix = function () { return _this.ITlocalToWorldMatrix; };
+            Object.assign(renderAtomic.uniforms, this.renderAtomic.uniforms);
         };
         Transform.prototype.dispose = function () {
             _super.prototype.dispose.call(this);
