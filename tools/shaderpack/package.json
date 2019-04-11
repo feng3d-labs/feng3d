@@ -1,6 +1,6 @@
 {
   "name": "@feng3d/shaderpack",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "main": "index.js",
   "types": "out/index.d.ts",
