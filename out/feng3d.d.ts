@@ -10824,9 +10824,11 @@ declare namespace feng3d {
          */
         renderParams: RenderParams;
         getIndexBuffer(): Index;
+        getAttributes(attributes?: Attributes): Attributes;
         getAttributeByKey(key: string): Attribute;
+        getUniforms(uniforms?: LazyUniforms): LazyObject<Uniforms>;
         getUniformByKey(key: string): Uniforms;
-        getInstanceCount(): any;
+        getInstanceCount(): number;
         getShader(): Shader;
         getRenderParams(renderParams?: RenderParams): RenderParams;
         getShaderMacro(shaderMacro?: ShaderMacro): ShaderMacro;

@@ -51,10 +51,24 @@ namespace feng3d
             return (this.next && this.next.getIndexBuffer());
         }
 
+        getAttributes(attributes: Attributes = <any>{})
+        {
+            this.next && this.next.getAttributes(attributes);
+            Object.assign(attributes, this.attributes);
+            return attributes;
+        }
+
         getAttributeByKey(key: string): Attribute
         {
             if (this.attributes[key] != undefined) return this.attributes[key];
             return (this.next && this.next.getAttributeByKey(key));
+        }
+
+        getUniforms(uniforms: LazyUniforms = <any>{})
+        {
+            this.next && this.next.getUniforms(uniforms);
+            Object.assign(uniforms, this.uniforms);
+            return uniforms;
         }
 
         getUniformByKey(key: string): Uniforms
@@ -63,16 +77,16 @@ namespace feng3d
             return (this.next && this.next.getUniformByKey(key));
         }
 
-        getInstanceCount()
+        getInstanceCount(): number
         {
             if (this.instanceCount != undefined) return lazy.getvalue(this.instanceCount);
             return this.next && this.next.getInstanceCount();
         }
 
-        getShader()
+        getShader(): Shader
         {
             if (this.shader != undefined) return this.shader;
-            return this.next && this.shader;
+            return this.next && this.next.getShader();
         }
 
         getRenderParams(renderParams: RenderParams = <any>{})

@@ -19126,10 +19126,22 @@ var feng3d;
                 return this.indexBuffer;
             return (this.next && this.next.getIndexBuffer());
         };
+        RenderAtomic.prototype.getAttributes = function (attributes) {
+            if (attributes === void 0) { attributes = {}; }
+            this.next && this.next.getAttributes(attributes);
+            Object.assign(attributes, this.attributes);
+            return attributes;
+        };
         RenderAtomic.prototype.getAttributeByKey = function (key) {
             if (this.attributes[key] != undefined)
                 return this.attributes[key];
             return (this.next && this.next.getAttributeByKey(key));
+        };
+        RenderAtomic.prototype.getUniforms = function (uniforms) {
+            if (uniforms === void 0) { uniforms = {}; }
+            this.next && this.next.getUniforms(uniforms);
+            Object.assign(uniforms, this.uniforms);
+            return uniforms;
         };
         RenderAtomic.prototype.getUniformByKey = function (key) {
             if (this.uniforms[key] != undefined)
@@ -19144,7 +19156,7 @@ var feng3d;
         RenderAtomic.prototype.getShader = function () {
             if (this.shader != undefined)
                 return this.shader;
-            return this.next && this.shader;
+            return this.next && this.next.getShader();
         };
         RenderAtomic.prototype.getRenderParams = function (renderParams) {
             if (renderParams === void 0) { renderParams = {}; }
