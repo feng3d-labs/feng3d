@@ -4,6 +4,8 @@
   "description": "webgl 3d engine",
   "main": "out/tests.js",
   "files": [
+    "node_modules/feng3d/out",
+    "node_modules/feng3d/src",
     "libs",
     "out",
     "src"

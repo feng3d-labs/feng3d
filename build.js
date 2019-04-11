@@ -12,7 +12,11 @@ var toolsPath = path.join(__dirname, "tools");
 var tools = fs.readdirSync(toolsPath);
 var toolsProject = tools.map(v => { return { path: path.join(toolsPath, v) } });
 
-var projectPaths = packagesProject.concat(toolsProject).concat({ path: path.join(__dirname, "bundles/feng3d"), moduleName: `feng3d`, globalModule: "feng3d" });
+var bundlesPath = path.join(__dirname, "bundles");
+var bundles = fs.readdirSync(bundlesPath);
+var bundlesProject = bundles.map(v => { return { path: path.join(bundlesPath, v), moduleName: `feng3d`, globalModule: "feng3d" } });
+
+var projectPaths = packagesProject.concat(toolsProject).concat(bundlesProject);
 
 /**
  * Watch for changes in TypeScript

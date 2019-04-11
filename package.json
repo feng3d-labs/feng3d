@@ -6,11 +6,12 @@
   "types": "out/feng3d.d.ts",
   "scripts": {
     "server": "http-server",
-    "prebuild": "rimraf out",
     "build": "node build.js",
+    "clean:build": "rimraf \"{bundles,packages}/*/{out}\"",
+    "preclean": "npm run clean:build",
+    "clean": "lerna clean",
     "postinstall": "npm run bootstrap",
     "bootstrap": "lerna bootstrap --hoist --no-ci",
-    "lerna:clean": "lerna clean",
     "lerna": "lerna",
     "lerna:init": "lerna init --independent",
     "publish": "lerna publish"

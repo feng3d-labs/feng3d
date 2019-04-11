@@ -10,11 +10,11 @@ QUnit.module("PathUtils", () =>
 
     QUnit.test("getExtension", (assert) =>
     {
-        assert.ok(feng3d.pathUtils.getExtension("a.txt") == "txt");
+        assert.ok(feng3d.pathUtils.getExtension("a.txt") == ".txt");
         assert.ok(feng3d.pathUtils.getExtension("a") == "");
         assert.ok(feng3d.pathUtils.getExtension("a.b/b") == "");
-        assert.ok(feng3d.pathUtils.getExtension("a.b/b.txt") == "txt");
-        assert.ok(feng3d.pathUtils.getExtension("a.b/.txt") == "txt");
+        assert.ok(feng3d.pathUtils.getExtension("a.b/b.txt") == ".txt");
+        assert.ok(feng3d.pathUtils.getExtension("a.b/.txt") == ".txt");
     });
 
     QUnit.test("getParentPath", (assert) =>

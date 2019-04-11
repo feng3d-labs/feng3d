@@ -4116,11 +4116,11 @@ QUnit.module("PathUtils", function () {
         assert.ok(feng3d.pathUtils.getNameWithExtension("a.b/") == "a.b");
     });
     QUnit.test("getExtension", function (assert) {
-        assert.ok(feng3d.pathUtils.getExtension("a.txt") == "txt");
+        assert.ok(feng3d.pathUtils.getExtension("a.txt") == ".txt");
         assert.ok(feng3d.pathUtils.getExtension("a") == "");
         assert.ok(feng3d.pathUtils.getExtension("a.b/b") == "");
-        assert.ok(feng3d.pathUtils.getExtension("a.b/b.txt") == "txt");
-        assert.ok(feng3d.pathUtils.getExtension("a.b/.txt") == "txt");
+        assert.ok(feng3d.pathUtils.getExtension("a.b/b.txt") == ".txt");
+        assert.ok(feng3d.pathUtils.getExtension("a.b/.txt") == ".txt");
     });
     QUnit.test("getParentPath", function (assert) {
         assert.ok(feng3d.pathUtils.getParentPath("a/a.txt") == "a/");
@@ -4291,7 +4291,6 @@ QUnit.module("watcher", function () {
     });
 });
 //# sourceMappingURL=tests.js.map
-
 (function universalModuleDefinition(root, factory)
 {
     if (typeof exports === 'object' && typeof module === 'object')
@@ -4302,6 +4301,7 @@ QUnit.module("watcher", function () {
         exports["feng3d"] = factory();
     else
         root["feng3d"] = factory();
+    
     var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
     globalObject["feng3d"] = factory();
 })(this, function ()
