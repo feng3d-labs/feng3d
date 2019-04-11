@@ -27804,7 +27804,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 灯光
-
      */
     var Light = /** @class */ (function (_super) {
         __extends(Light, _super);
@@ -35039,6 +35038,17 @@ var feng3d;
     }());
     feng3d.MDLLoader = MDLLoader;
     feng3d.mdlLoader = new MDLLoader();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var UIImage = /** @class */ (function (_super) {
+        __extends(UIImage, _super);
+        function UIImage() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return UIImage;
+    }(feng3d.Model));
+    feng3d.UIImage = UIImage;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

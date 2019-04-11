@@ -14166,7 +14166,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 灯光
-
      */
     class Light extends Behaviour {
         /**
@@ -16456,6 +16455,11 @@ declare namespace feng3d {
          * @param callback 加载完成回调
          */
         load(mdlurl: string, callback?: (gameObject: GameObject) => void): void;
+    }
+}
+declare namespace feng3d {
+    class UIImage extends Model {
+        source: any;
     }
 }
 declare namespace feng3d {

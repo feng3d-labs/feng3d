@@ -336,6 +336,8 @@
         "src/assets/loader/MD5Loader.ts",
         "src/assets/loader/MDLLoader.ts",
         //
+        "src/ui/Image.ts",
+        //
         "src/utils/GameObjectFactory.ts",
         //
         "src/core/Mouse3DManager.ts"

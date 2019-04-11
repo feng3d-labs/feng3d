@@ -2,7 +2,6 @@ namespace feng3d
 {
     /**
      * 灯光
-
      */
     export class Light extends Behaviour
     {
