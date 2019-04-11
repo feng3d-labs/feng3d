@@ -6,12 +6,14 @@
         // "declaration": true,
         "strict": true,
         "experimentalDecorators": true,
+        "types": [
+            "feng3d"
+        ],
         // "outDir": "./debug"
         "outFile": "./out/tests.js",
     },
     "include": [
         //
-        "node_modules/feng3d/out/feng3d.d.ts",
         "libs/qunit/qunit.d.ts",
         //
         "src/**/*.ts",
