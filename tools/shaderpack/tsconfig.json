@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "noImplicitAny": false,
+    "sourceMap": true,
+    "declarationMap": true,
+    "declaration": true,
+    "experimentalDecorators": true,
+    // "lib": ["es2015"],
+    // "outFile": "out/index.js"
+    "outDir": "out"
+  },
+  "include": [
+    "src"
+  ]
+}
