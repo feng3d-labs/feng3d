@@ -28,7 +28,7 @@ namespace feng3d
                 var shaderResult = shader.activeShaderProgram(gl);
                 if (!shaderResult) return;
 
-                var renderAtomic = checkRenderData(renderAtomic1);
+                var renderAtomic: RenderAtomicData = checkRenderData(renderAtomic1);
                 if (!renderAtomic) return;
                 //
                 gl.useProgram(shaderResult.program);
@@ -41,8 +41,6 @@ namespace feng3d
 
             function checkRenderData(renderAtomic: RenderAtomic)
             {
-                var atomic = new RenderAtomic();
-
                 var shader = renderAtomic.getShader();
                 var shaderResult = shader.activeShaderProgram(gl);
                 if (!shaderResult)
@@ -50,8 +48,8 @@ namespace feng3d
                     warn(`缺少着色器，无法渲染!`)
                     return null;
                 }
-                atomic.shader = shader;
 
+                var attributes: { [name: string]: Attribute; } = {};
                 for (const key in shaderResult.attributes)
                 {
                     var attribute = renderAtomic.getAttributeByKey(key);
@@ -60,9 +58,10 @@ namespace feng3d
                         warn(`缺少顶点 attribute 数据 ${key} ，无法渲染!`)
                         return null;
                     }
-                    atomic.attributes[key] = attribute;
+                    attributes[key] = attribute;
                 }
 
+                var uniforms: { [name: string]: Uniforms; } = {};
                 for (var key in shaderResult.uniforms)
                 {
                     var activeInfo = shaderResult.uniforms[key];
@@ -76,20 +75,23 @@ namespace feng3d
                         warn(`缺少 uniform 数据 ${key} ,无法渲染！`)
                         return null;
                     }
-                    atomic.uniforms[key] = uniform;
+                    uniforms[key] = uniform;
                 }
 
-                atomic.renderParams = renderAtomic.getRenderParams();
-
-                atomic.indexBuffer = renderAtomic.getIndexBuffer();
-                if (!atomic.indexBuffer) 
+                var indexBuffer = renderAtomic.getIndexBuffer();
+                if (!indexBuffer) 
                 {
                     warn(`确实顶点索引数据，无法渲染！`);
                     return null;
                 }
-                atomic.instanceCount = renderAtomic.getInstanceCount();
-
-                return atomic;
+                return {
+                    shader: shader,
+                    attributes: attributes,
+                    uniforms: uniforms,
+                    renderParams: renderAtomic.getRenderParams(),
+                    indexBuffer: indexBuffer,
+                    instanceCount: renderAtomic.getInstanceCount(),
+                };
             }
 
             function activeShaderParams(shaderParams: RenderParams)
@@ -147,7 +149,7 @@ namespace feng3d
             /**
              * 激活属性
              */
-            function activeAttributes(renderAtomic: RenderAtomic, attributeInfos: { [name: string]: AttributeInfo })
+            function activeAttributes(renderAtomic: RenderAtomicData, attributeInfos: { [name: string]: AttributeInfo })
             {
                 for (var name in attributeInfos)
                 {
@@ -172,7 +174,7 @@ namespace feng3d
             /**
              * 激活常量
              */
-            function activeUniforms(renderAtomic: RenderAtomic, uniformInfos: { [name: string]: UniformInfo })
+            function activeUniforms(renderAtomic: RenderAtomicData, uniformInfos: { [name: string]: UniformInfo })
             {
                 var uniforms = renderAtomic.uniforms;
                 for (var name in uniformInfos)
@@ -248,7 +250,7 @@ namespace feng3d
 
             /**
              */
-            function dodraw(renderAtomic: RenderAtomic, renderMode: number)
+            function dodraw(renderAtomic: RenderAtomicData, renderMode: number)
             {
                 var instanceCount = ~~lazy.getvalue(renderAtomic.instanceCount);
 

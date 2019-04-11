@@ -43,7 +43,7 @@ namespace feng3d
         /**
          * 渲染参数
          */
-        renderParams = new RenderParams();
+        renderParams: Partial<RenderParams> = {};
 
         getIndexBuffer(): Index
         {
@@ -89,7 +89,7 @@ namespace feng3d
             return this.next && this.next.getShader();
         }
 
-        getRenderParams(renderParams: RenderParams = <any>{})
+        getRenderParams(renderParams = new RenderParams())
         {
             this.next && this.next.getRenderParams(renderParams);
             Object.assign(renderParams, this.renderParams);
@@ -102,5 +102,15 @@ namespace feng3d
             Object.assign(shaderMacro, this.shaderMacro);
             return shaderMacro;
         }
+    }
+
+    export interface RenderAtomicData
+    {
+        shader: Shader;
+        attributes: { [name: string]: Attribute; };
+        uniforms: { [name: string]: Uniforms; };
+        renderParams: RenderParams;
+        indexBuffer: Index;
+        instanceCount: number;
     }
 }

@@ -53,13 +53,13 @@ namespace feng3d
 
         beforeRender(renderAtomic: RenderAtomic)
         {
-            Object.assign(renderAtomic.uniforms, this.uniforms);
-            if (!renderAtomic.shader || renderAtomic.shader["shaderName"] != this.shaderName)
+            Object.assign(renderAtomic.uniforms, this.renderAtomic.uniforms);
+
+            if (!renderAtomic.shader)
             {
                 renderAtomic.shader = this.renderAtomic.shader;
             }
-            renderAtomic.renderParams = this.renderParams;
-
+            renderAtomic.renderParams = this.renderAtomic.renderParams;
             renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode == RenderMode.POINTS;
         }
 

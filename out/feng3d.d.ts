@@ -10783,7 +10783,7 @@ declare namespace feng3d {
          * 是否使用 viewRect
          */
         useViewRect: boolean;
-        constructor(raw?: gPartial<RenderParams>);
+        constructor(raw?: Partial<RenderParams>);
     }
 }
 declare namespace feng3d {
@@ -10822,7 +10822,7 @@ declare namespace feng3d {
         /**
          * 渲染参数
          */
-        renderParams: RenderParams;
+        renderParams: Partial<RenderParams>;
         getIndexBuffer(): Index;
         getAttributes(attributes?: Attributes): Attributes;
         getAttributeByKey(key: string): Attribute;
@@ -10832,6 +10832,18 @@ declare namespace feng3d {
         getShader(): Shader;
         getRenderParams(renderParams?: RenderParams): RenderParams;
         getShaderMacro(shaderMacro?: ShaderMacro): ShaderMacro;
+    }
+    interface RenderAtomicData {
+        shader: Shader;
+        attributes: {
+            [name: string]: Attribute;
+        };
+        uniforms: {
+            [name: string]: Uniforms;
+        };
+        renderParams: RenderParams;
+        indexBuffer: Index;
+        instanceCount: number;
     }
 }
 declare namespace feng3d {
@@ -11770,6 +11782,7 @@ declare namespace feng3d {
          * 将向量从世界空间转换为局部空间
          */
         inverseTransformVector(vector: Vector3): Vector3;
+        beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
         dispose(): void;
         protected updateLocalToWorldMatrix(): Matrix4x4;
         protected invalidateSceneTransform(): void;

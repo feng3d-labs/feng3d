@@ -88,10 +88,9 @@ namespace feng3d
         @serialize
         useViewRect = false;
 
-        constructor(raw?: gPartial<RenderParams>)
+        constructor(raw?: Partial<RenderParams>)
         {
-            if (raw)
-                serialization.setValue(this, raw);
+            Object.assign(this, raw);
         }
     }
 }

@@ -19044,8 +19044,7 @@ var feng3d;
              * 是否使用 viewRect
              */
             this.useViewRect = false;
-            if (raw)
-                feng3d.serialization.setValue(this, raw);
+            Object.assign(this, raw);
         }
         __decorate([
             feng3d.serialize,
@@ -19121,7 +19120,7 @@ var feng3d;
             /**
              * 渲染参数
              */
-            this.renderParams = new feng3d.RenderParams();
+            this.renderParams = {};
         }
         RenderAtomic.prototype.getIndexBuffer = function () {
             if (this.indexBuffer != undefined)
@@ -19161,7 +19160,7 @@ var feng3d;
             return this.next && this.next.getShader();
         };
         RenderAtomic.prototype.getRenderParams = function (renderParams) {
-            if (renderParams === void 0) { renderParams = {}; }
+            if (renderParams === void 0) { renderParams = new feng3d.RenderParams(); }
             this.next && this.next.getRenderParams(renderParams);
             Object.assign(renderParams, this.renderParams);
             return renderParams;
@@ -20080,22 +20079,22 @@ var feng3d;
                 disableAttributes(shaderResult.attributes);
             };
             function checkRenderData(renderAtomic) {
-                var atomic = new feng3d.RenderAtomic();
                 var shader = renderAtomic.getShader();
                 var shaderResult = shader.activeShaderProgram(gl);
                 if (!shaderResult) {
                     feng3d.warn("\u7F3A\u5C11\u7740\u8272\u5668\uFF0C\u65E0\u6CD5\u6E32\u67D3!");
                     return null;
                 }
-                atomic.shader = shader;
+                var attributes = {};
                 for (var key_1 in shaderResult.attributes) {
                     var attribute = renderAtomic.getAttributeByKey(key_1);
                     if (attribute == undefined) {
                         feng3d.warn("\u7F3A\u5C11\u9876\u70B9 attribute \u6570\u636E " + key_1 + " \uFF0C\u65E0\u6CD5\u6E32\u67D3!");
                         return null;
                     }
-                    atomic.attributes[key_1] = attribute;
+                    attributes[key_1] = attribute;
                 }
+                var uniforms = {};
                 for (var key in shaderResult.uniforms) {
                     var activeInfo = shaderResult.uniforms[key];
                     if (activeInfo.name) {
@@ -20106,16 +20105,21 @@ var feng3d;
                         feng3d.warn("\u7F3A\u5C11 uniform \u6570\u636E " + key + " ,\u65E0\u6CD5\u6E32\u67D3\uFF01");
                         return null;
                     }
-                    atomic.uniforms[key] = uniform;
+                    uniforms[key] = uniform;
                 }
-                atomic.renderParams = renderAtomic.getRenderParams();
-                atomic.indexBuffer = renderAtomic.getIndexBuffer();
-                if (!atomic.indexBuffer) {
+                var indexBuffer = renderAtomic.getIndexBuffer();
+                if (!indexBuffer) {
                     feng3d.warn("\u786E\u5B9E\u9876\u70B9\u7D22\u5F15\u6570\u636E\uFF0C\u65E0\u6CD5\u6E32\u67D3\uFF01");
                     return null;
                 }
-                atomic.instanceCount = renderAtomic.getInstanceCount();
-                return atomic;
+                return {
+                    shader: shader,
+                    attributes: attributes,
+                    uniforms: uniforms,
+                    renderParams: renderAtomic.getRenderParams(),
+                    indexBuffer: indexBuffer,
+                    instanceCount: renderAtomic.getInstanceCount(),
+                };
             }
             function activeShaderParams(shaderParams) {
                 var cullfaceEnum = shaderParams.cullFace;
@@ -21307,6 +21311,13 @@ var feng3d;
             var matrix3d = this.parent.localToWorldMatrix.clone().invert();
             vector = matrix3d.deltaTransformVector(vector);
             return vector;
+        };
+        Transform.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
+            var _this = this;
+            renderAtomic.uniforms.u_modelMatrix = function () { return _this.localToWorldMatrix; };
+            renderAtomic.uniforms.u_ITModelMatrix = function () { return _this.ITlocalToWorldMatrix; };
+            renderAtomic.uniforms.u_mvMatrix = function () { return feng3d.lazy.getvalue(renderAtomic.uniforms.u_modelMatrix).clone().append(feng3d.lazy.getvalue(renderAtomic.uniforms.u_viewMatrix)); };
+            renderAtomic.uniforms.u_ITMVMatrix = function () { return feng3d.lazy.getvalue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose(); };
         };
         Transform.prototype.dispose = function () {
             _super.prototype.dispose.call(this);
@@ -23127,11 +23138,6 @@ var feng3d;
             this.on("scenetransformChanged", this.onScenetransformChanged, this);
         };
         Model.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
-            var _this = this;
-            renderAtomic.uniforms.u_modelMatrix = function () { return _this.transform.localToWorldMatrix; };
-            renderAtomic.uniforms.u_ITModelMatrix = function () { return _this.transform.ITlocalToWorldMatrix; };
-            renderAtomic.uniforms.u_mvMatrix = function () { return feng3d.lazy.getvalue(renderAtomic.uniforms.u_modelMatrix).clone().append(feng3d.lazy.getvalue(renderAtomic.uniforms.u_viewMatrix)); };
-            renderAtomic.uniforms.u_ITMVMatrix = function () { return feng3d.lazy.getvalue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose(); };
             //
             this.geometry.beforeRender(renderAtomic);
             this.material.beforeRender(renderAtomic);
@@ -27417,11 +27423,11 @@ var feng3d;
             return _this;
         }
         Material.prototype.beforeRender = function (renderAtomic) {
-            Object.assign(renderAtomic.uniforms, this.uniforms);
-            if (!renderAtomic.shader || renderAtomic.shader["shaderName"] != this.shaderName) {
+            Object.assign(renderAtomic.uniforms, this.renderAtomic.uniforms);
+            if (!renderAtomic.shader) {
                 renderAtomic.shader = this.renderAtomic.shader;
             }
-            renderAtomic.renderParams = this.renderParams;
+            renderAtomic.renderParams = this.renderAtomic.renderParams;
             renderAtomic.shaderMacro.IS_POINTS_MODE = this.renderParams.renderMode == feng3d.RenderMode.POINTS;
         };
         Object.defineProperty(Material.prototype, "isLoaded", {

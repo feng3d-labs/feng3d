@@ -68,11 +68,6 @@ namespace feng3d
 
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
-            renderAtomic.uniforms.u_modelMatrix = () => this.transform.localToWorldMatrix;
-            renderAtomic.uniforms.u_ITModelMatrix = () => this.transform.ITlocalToWorldMatrix;
-            renderAtomic.uniforms.u_mvMatrix = () => lazy.getvalue(renderAtomic.uniforms.u_modelMatrix).clone().append(lazy.getvalue(renderAtomic.uniforms.u_viewMatrix));
-            renderAtomic.uniforms.u_ITMVMatrix = () => lazy.getvalue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose();
-
             //
             this.geometry.beforeRender(renderAtomic);
             this.material.beforeRender(renderAtomic);
