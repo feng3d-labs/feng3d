@@ -8,7 +8,7 @@ namespace feng3d
         getvalue: function <T>(lazyItem: Lazy<T>): T
         {
             if (typeof lazyItem == "function")
-                return lazyItem();
+                return (<any>lazyItem)();
             return lazyItem;
         }
     };

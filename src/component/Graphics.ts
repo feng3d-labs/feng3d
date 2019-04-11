@@ -26,8 +26,6 @@ namespace feng3d
             watchContext2D(this.context2D);
         }
 
-
-
         draw(width: number, height: number, callback: (context2D: CanvasRenderingContext2D) => void)
         {
             var canvas = document.createElement("canvas");

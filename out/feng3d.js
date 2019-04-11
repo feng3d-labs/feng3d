@@ -19101,7 +19101,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）
-
      */
     var RenderAtomic = /** @class */ (function () {
         function RenderAtomic() {
@@ -19123,103 +19122,40 @@ var feng3d;
             this.renderParams = new feng3d.RenderParams();
         }
         RenderAtomic.prototype.getIndexBuffer = function () {
-            var node = this;
-            while (node) {
-                if (node.indexBuffer != undefined) {
-                    return node.indexBuffer;
-                }
-                node = node.next;
-            }
-            return undefined;
-        };
-        RenderAtomic.prototype.getAttributes = function (attributes) {
-            if (attributes === void 0) { attributes = {}; }
-            var node = this;
-            while (node) {
-                for (var name_1 in node.attributes) {
-                    if (!attributes.hasOwnProperty(name_1)) {
-                        attributes[name_1] = node.attributes[name_1];
-                    }
-                }
-                node = node.next;
-            }
-            return attributes;
+            if (this.indexBuffer != undefined)
+                return this.indexBuffer;
+            return (this.next && this.next.getIndexBuffer());
         };
         RenderAtomic.prototype.getAttributeByKey = function (key) {
-            var node = this;
-            while (node) {
-                if (node.attributes[key] != undefined)
-                    return node.attributes[key];
-                node = node.next;
-            }
-            return undefined;
-        };
-        RenderAtomic.prototype.getUniforms = function (uniforms) {
-            if (uniforms === void 0) { uniforms = {}; }
-            var node = this;
-            while (node) {
-                for (var name_2 in node.uniforms) {
-                    if (!uniforms.hasOwnProperty(name_2)) {
-                        uniforms[name_2] = feng3d.lazy.getvalue(node.uniforms[name_2]);
-                    }
-                }
-                node = node.next;
-            }
-            return uniforms;
+            if (this.attributes[key] != undefined)
+                return this.attributes[key];
+            return (this.next && this.next.getAttributeByKey(key));
         };
         RenderAtomic.prototype.getUniformByKey = function (key) {
-            var node = this;
-            while (node) {
-                if (node.uniforms[key] != undefined)
-                    return feng3d.lazy.getvalue(node.uniforms[key]);
-                node = node.next;
-            }
-            return undefined;
+            if (this.uniforms[key] != undefined)
+                return feng3d.lazy.getvalue(this.uniforms[key]);
+            return (this.next && this.next.getUniformByKey(key));
         };
         RenderAtomic.prototype.getInstanceCount = function () {
-            var node = this;
-            while (node) {
-                if (node.instanceCount != undefined) {
-                    return feng3d.lazy.getvalue(node.instanceCount);
-                }
-                node = node.next;
-            }
-            return undefined;
+            if (this.instanceCount != undefined)
+                return feng3d.lazy.getvalue(this.instanceCount);
+            return this.next && this.next.getInstanceCount();
         };
         RenderAtomic.prototype.getShader = function () {
-            var node = this;
-            while (node) {
-                if (node.shader != undefined) {
-                    return node.shader;
-                }
-                node = node.next;
-            }
-            return undefined;
+            if (this.shader != undefined)
+                return this.shader;
+            return this.next && this.shader;
         };
         RenderAtomic.prototype.getRenderParams = function (renderParams) {
             if (renderParams === void 0) { renderParams = {}; }
-            var node = this;
-            while (node) {
-                for (var name_3 in node.renderParams) {
-                    if (!renderParams.hasOwnProperty(name_3)) {
-                        renderParams[name_3] = node.renderParams[name_3];
-                    }
-                }
-                node = node.next;
-            }
+            this.next && this.next.getRenderParams(renderParams);
+            Object.assign(renderParams, this.renderParams);
             return renderParams;
         };
         RenderAtomic.prototype.getShaderMacro = function (shaderMacro) {
             if (shaderMacro === void 0) { shaderMacro = {}; }
-            var node = this;
-            while (node) {
-                for (var name_4 in node.shaderMacro) {
-                    if (!shaderMacro.hasOwnProperty(name_4)) {
-                        shaderMacro[name_4] = node.shaderMacro[name_4];
-                    }
-                }
-                node = node.next;
-            }
+            this.next && this.next.getShaderMacro(shaderMacro);
+            Object.assign(shaderMacro, this.shaderMacro);
             return shaderMacro;
         };
         return RenderAtomic;
@@ -34535,9 +34471,9 @@ var feng3d;
          */
         MTLConverter.prototype.convert = function (mtl, completed) {
             var materials = {};
-            for (var name_5 in mtl) {
-                var materialInfo = mtl[name_5];
-                var material = materials[name_5] = feng3d.serialization.setValue(new feng3d.Material(), {
+            for (var name_1 in mtl) {
+                var materialInfo = mtl[name_1];
+                var material = materials[name_1] = feng3d.serialization.setValue(new feng3d.Material(), {
                     name: materialInfo.name,
                     uniforms: {
                         u_diffuse: { r: materialInfo.kd[0], g: materialInfo.kd[1], b: materialInfo.kd[2], },

@@ -10789,7 +10789,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 渲染原子（该对象会收集一切渲染所需数据以及参数）
-
      */
     class RenderAtomic {
         /**
@@ -10825,11 +10824,9 @@ declare namespace feng3d {
          */
         renderParams: RenderParams;
         getIndexBuffer(): Index;
-        getAttributes(attributes?: Attributes): Attributes;
-        getAttributeByKey(key: string): any;
-        getUniforms(uniforms?: LazyUniforms): LazyObject<Uniforms>;
-        getUniformByKey(key: string): any;
-        getInstanceCount(): number;
+        getAttributeByKey(key: string): Attribute;
+        getUniformByKey(key: string): Uniforms;
+        getInstanceCount(): any;
         getShader(): Shader;
         getRenderParams(renderParams?: RenderParams): RenderParams;
         getShaderMacro(shaderMacro?: ShaderMacro): ShaderMacro;
