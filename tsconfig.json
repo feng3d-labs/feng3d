@@ -12,6 +12,8 @@
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
         //
+        "node_modules/@feng3d/watcher/src/Watcher.ts",
+        //
         "src/Feng3d.ts",
         // 自动生成文件
         "src/autofiles/ShaderConfig.ts",
@@ -22,7 +24,6 @@
         "src/polyfill/Array.ts",
         //基础工具
         "src/utils/debug.ts",
-        "src/utils/Watcher.ts",
         "src/utils/Serialization.ts",
         "src/utils/ObjectView.ts",
         "src/utils/ObjectViewDefinitions.ts",
