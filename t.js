@@ -24,6 +24,15 @@
 
 // console.warn(2);
 
-var fw = require("./packages/functionwarp/out/index");
-fw
-console.log(fw);
+// var fw = require("./packages/functionwarp/out/index");
+// fw
+// console.log(fw);
+
+// var map = new Map();
+
+// map.set("a", 1);
+// map.set({ "a": 1 }, 2);
+// map.set(2, 10);
+
+// var ks = map.keys();
+// console.log(ks);

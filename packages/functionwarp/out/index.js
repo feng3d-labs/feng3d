@@ -26,9 +26,9 @@ var feng3d;
                 return;
             var oldlog = space[funcName];
             space[funcName] = function () {
-                pf && pf(this, arguments);
+                pf && pf.apply(this, arguments);
                 oldlog.apply(this, arguments);
-                nf && nf(this, arguments);
+                nf && nf.apply(this, arguments);
             };
         };
         return FunctionWarp;

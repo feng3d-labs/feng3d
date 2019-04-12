@@ -7,7 +7,11 @@
     "declaration": true,
     "experimentalDecorators": true,
     "lib": [
-      "es2015"
+      "es2015",
+      "dom"
+    ],
+    "types": [
+      "@feng3d/debug"
     ],
     "outFile": "out/index.js"
     // "outDir": "debug"

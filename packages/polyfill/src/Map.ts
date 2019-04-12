@@ -1,115 +1,45 @@
-//参考 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
-
-interface Map<K, V>
+namespace feng3d
 {
-    clear(): void;
-    delete(key: K): boolean;
-    forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any): void;
-    get(key: K): V | undefined;
-    has(key: K): boolean;
-    set(key: K, value: V): this;
-    readonly size: number;
-}
+    /**
+     * 增强Map功能
+     */
+    export var maputils: MapUtils;
 
-interface MapConstructor
-{
-    new(): Map<any, any>;
-    new <K, V>(entries?: [K, V][]): Map<K, V>;
-    readonly prototype: Map<any, any>;
-}
-declare var Map: MapConstructor;
-
-interface ReadonlyMap<K, V>
-{
-    forEach(callbackfn: (value: V, key: K, map: ReadonlyMap<K, V>) => void, thisArg?: any): void;
-    get(key: K): V | undefined;
-    has(key: K): boolean;
-    readonly size: number;
-}
-
-// 参考 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap
-interface WeakMap<K extends object, V>
-{
-    delete(key: K): boolean;
-    get(key: K): V | undefined;
-    has(key: K): boolean;
-    set(key: K, value: V): this;
-}
-
-interface WeakMapConstructor
-{
-    new(): WeakMap<object, any>;
-    new <K extends object, V>(entries?: [K, V][]): WeakMap<K, V>;
-    readonly prototype: WeakMap<object, any>;
-}
-declare var WeakMap: WeakMapConstructor;
-
-
-// 参考 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set
-interface Set<T>
-{
-    add(value: T): this;
-    clear(): void;
-    delete(value: T): boolean;
-    forEach(callbackfn: (value: T, value2: T, set: Set<T>) => void, thisArg?: any): void;
-    has(value: T): boolean;
-    readonly size: number;
-}
-
-interface SetConstructor
-{
-    new(): Set<any>;
-    new <T>(values?: T[]): Set<T>;
-    readonly prototype: Set<any>;
-}
-declare var Set: SetConstructor;
-
-interface ReadonlySet<T>
-{
-    forEach(callbackfn: (value: T, value2: T, set: ReadonlySet<T>) => void, thisArg?: any): void;
-    has(value: T): boolean;
-    readonly size: number;
-}
-
-// 参考  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet
-interface WeakSet<T>
-{
-    add(value: T): this;
-    delete(value: T): boolean;
-    has(value: T): boolean;
-}
-
-interface WeakSetConstructor
-{
-    new(): WeakSet<object>;
-    new <T extends object>(values?: T[]): WeakSet<T>;
-    readonly prototype: WeakSet<object>;
-}
-declare var WeakSet: WeakSetConstructor;
-
-// 补充 Map
-interface Map<K, V>
-{
-    getKeys(): K[];
-    getValues(): V[];
-}
-
-Map.prototype.getKeys = function ()
-{
-    var keys: any[] = [];
-    this.forEach((v, k) =>
+    /**
+     * 增强Map功能
+     */
+    export class MapUtils
     {
-        keys.push(k);
-    });
-    return keys;
-}
+        /**
+         * 获取所有键
+         * 
+         * @param map Map对象
+         */
+        getKeys<K, V>(map: Map<K, V>)
+        {
+            var keys: K[] = [];
+            map.forEach((v, k) =>
+            {
+                keys.push(k);
+            });
+            return keys;
+        }
 
-Map.prototype.getValues = function ()
-{
-    var values: any[] = [];
-    this.forEach((v, k) =>
-    {
-        values.push(v);
-    });
-    return values;
+        /**
+         * 获取所有值
+         * 
+         * @param map Map对象
+         */
+        getValues<K, V>(map: Map<K, V>)
+        {
+            var values: V[] = [];
+            map.forEach((v, k) =>
+            {
+                values.push(v);
+            });
+            return values;
+        }
+
+    }
+    maputils = new MapUtils();
 }

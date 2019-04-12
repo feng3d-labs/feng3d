@@ -15,5 +15,8 @@
     "access": "public"
   },
   "author": "feng",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@feng3d/debug": "^0.0.1"
+  }
 }
