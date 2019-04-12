@@ -2,7 +2,7 @@ QUnit.module("DoublyLinkedList", () =>
 {
     QUnit.test("DoublyLinkedList", (assert) =>
     {
-        var ll = new ds.DoublyLinkedList<number>();
+        var ll = new feng3d.DoublyLinkedList<number>();
         assert.deepEqual(ll.deleteHead(), undefined);
         assert.deepEqual(ll.deleteTail(), undefined);
 
@@ -11,7 +11,7 @@ QUnit.module("DoublyLinkedList", () =>
 
     QUnit.test("empty", (assert) =>
     {
-        var ll = new ds.DoublyLinkedList<number>();
+        var ll = new feng3d.DoublyLinkedList<number>();
         ll.fromArray([Math.random(), Math.random(), Math.random()]);
         ll.empty();
         assert.deepEqual(ll.toArray().length, 0);
@@ -21,8 +21,8 @@ QUnit.module("DoublyLinkedList", () =>
 
     QUnit.test("addHead", (assert) =>
     {
-        var ll = new ds.DoublyLinkedList<number>();
-        var arr = ds.utils.createArray(10, () => Math.random());
+        var ll = new feng3d.DoublyLinkedList<number>();
+        var arr = feng3d.utils.createArray(10, () => Math.random());
         arr.concat().reverse().forEach(element =>
         {
             ll.addHead(element);
@@ -39,9 +39,9 @@ QUnit.module("DoublyLinkedList", () =>
 
     QUnit.test("addTail", (assert) =>
     {
-        var ll = new ds.DoublyLinkedList<number>();
+        var ll = new feng3d.DoublyLinkedList<number>();
 
-        var arr = ds.utils.createArray(10, () => Math.random());
+        var arr = feng3d.utils.createArray(10, () => Math.random());
         arr.forEach(element =>
         {
             ll.addTail(element);
@@ -59,9 +59,9 @@ QUnit.module("DoublyLinkedList", () =>
 
     QUnit.test("delete", (assert) =>
     {
-        var ll = new ds.DoublyLinkedList<number>();
+        var ll = new feng3d.DoublyLinkedList<number>();
 
-        var arr = ds.utils.createArray(10, () => Math.random());
+        var arr = feng3d.utils.createArray(10, () => Math.random());
         arr = arr.concat(arr);
         arr.forEach(element =>
         {
@@ -82,9 +82,9 @@ QUnit.module("DoublyLinkedList", () =>
 
     QUnit.test("deleteAll", (assert) =>
     {
-        var ll = new ds.DoublyLinkedList<number>();
+        var ll = new feng3d.DoublyLinkedList<number>();
 
-        var arr = ds.utils.createArray(10, () => Math.random());
+        var arr = feng3d.utils.createArray(10, () => Math.random());
         arr = arr.concat(arr);
         arr.forEach(element =>
         {
@@ -110,9 +110,9 @@ QUnit.module("DoublyLinkedList", () =>
 
     QUnit.test("deleteHead", (assert) =>
     {
-        var ll = new ds.DoublyLinkedList<number>();
+        var ll = new feng3d.DoublyLinkedList<number>();
 
-        var arr = ds.utils.createArray(10, () => Math.random());
+        var arr = feng3d.utils.createArray(10, () => Math.random());
         ll.fromArray(arr);
 
         assert.deepEqual(ll.deleteHead(), arr.shift());
@@ -125,9 +125,9 @@ QUnit.module("DoublyLinkedList", () =>
 
     QUnit.test("deleteTail", (assert) =>
     {
-        var ll = new ds.DoublyLinkedList<number>();
+        var ll = new feng3d.DoublyLinkedList<number>();
 
-        var arr = ds.utils.createArray(10, () => Math.random());
+        var arr = feng3d.utils.createArray(10, () => Math.random());
         ll.fromArray(arr);
 
         assert.deepEqual(ll.deleteTail(), arr.pop());
@@ -140,9 +140,9 @@ QUnit.module("DoublyLinkedList", () =>
 
     QUnit.test("toArray", (assert) =>
     {
-        var ll = new ds.DoublyLinkedList<number>();
+        var ll = new feng3d.DoublyLinkedList<number>();
 
-        var arr = ds.utils.createArray(10, () => Math.random());
+        var arr = feng3d.utils.createArray(10, () => Math.random());
         ll.fromArray(arr);
 
         assert.deepEqual(ll.toArray(), arr);
@@ -152,9 +152,9 @@ QUnit.module("DoublyLinkedList", () =>
 
     QUnit.test("fromArray", (assert) =>
     {
-        var ll = new ds.DoublyLinkedList<number>();
+        var ll = new feng3d.DoublyLinkedList<number>();
 
-        var arr = ds.utils.createArray(10, () => Math.random());
+        var arr = feng3d.utils.createArray(10, () => Math.random());
         ll.fromArray(arr);
 
         assert.deepEqual(ll.toArray(), arr);
@@ -164,9 +164,9 @@ QUnit.module("DoublyLinkedList", () =>
 
     QUnit.test("toString", (assert) =>
     {
-        var ll = new ds.DoublyLinkedList<number>();
+        var ll = new feng3d.DoublyLinkedList<number>();
 
-        var arr = ds.utils.createArray(10, () => Math.random());
+        var arr = feng3d.utils.createArray(10, () => Math.random());
         ll.fromArray(arr);
 
         assert.ok(true, ll.toString((v) => v.toFixed(3)));
@@ -176,9 +176,9 @@ QUnit.module("DoublyLinkedList", () =>
 
     QUnit.test("reverse", (assert) =>
     {
-        var ll = new ds.DoublyLinkedList<number>();
+        var ll = new feng3d.DoublyLinkedList<number>();
 
-        var arr = ds.utils.createArray(10, () => Math.random());
+        var arr = feng3d.utils.createArray(10, () => Math.random());
         ll.fromArray(arr);
 
         ll.reverse();

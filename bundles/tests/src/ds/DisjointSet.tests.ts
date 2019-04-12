@@ -4,14 +4,14 @@ QUnit.module('DisjointSet', () =>
     {
         function mergeNotExistingSets()
         {
-            const disjointSet = new ds.DisjointSet();
+            const disjointSet = new feng3d.DisjointSet();
 
             disjointSet.union('A', 'B');
         }
 
         function checkNotExistingSets()
         {
-            const disjointSet = new ds.DisjointSet();
+            const disjointSet = new feng3d.DisjointSet();
 
             disjointSet.inSameSet('A', 'B');
         }
@@ -38,7 +38,7 @@ QUnit.module('DisjointSet', () =>
 
     QUnit.test('should do basic manipulations on disjoint set', (assert) =>
     {
-        const disjointSet = new ds.DisjointSet();
+        const disjointSet = new feng3d.DisjointSet();
 
         assert.deepEqual(disjointSet.find('A'), null);
         assert.deepEqual(disjointSet.find('B'), null);
@@ -101,7 +101,7 @@ QUnit.module('DisjointSet', () =>
 
     QUnit.test('should union smaller set with bigger one making bigger one to be new root', (assert) =>
     {
-        const disjointSet = new ds.DisjointSet();
+        const disjointSet = new feng3d.DisjointSet();
 
         disjointSet
             .makeSet('A')
@@ -117,7 +117,7 @@ QUnit.module('DisjointSet', () =>
     {
         const keyExtractor = value => value.key;
 
-        const disjointSet = new ds.DisjointSet(keyExtractor);
+        const disjointSet = new feng3d.DisjointSet(keyExtractor);
 
         const itemA = { key: 'A', value: 1 };
         const itemB = { key: 'B', value: 2 };
@@ -164,10 +164,10 @@ QUnit.module('DisjointSetNode', () =>
 {
     QUnit.test('should do basic manipulation with disjoint set item', (assert) =>
     {
-        const itemA = new ds.DisjointSetNode('A');
-        const itemB = new ds.DisjointSetNode('B');
-        const itemC = new ds.DisjointSetNode('C');
-        const itemD = new ds.DisjointSetNode('D');
+        const itemA = new feng3d.DisjointSetNode('A');
+        const itemB = new feng3d.DisjointSetNode('B');
+        const itemC = new feng3d.DisjointSetNode('C');
+        const itemD = new feng3d.DisjointSetNode('D');
 
         assert.deepEqual(itemA.getRank(), 0);
         assert.deepEqual(itemA.getChildren(), []);
@@ -224,10 +224,10 @@ QUnit.module('DisjointSetNode', () =>
             return value.key;
         };
 
-        const itemA = new ds.DisjointSetNode({ key: 'A', value: 1 }, keyExtractor);
-        const itemB = new ds.DisjointSetNode({ key: 'B', value: 2 }, keyExtractor);
-        const itemC = new ds.DisjointSetNode({ key: 'C', value: 3 }, keyExtractor);
-        const itemD = new ds.DisjointSetNode({ key: 'D', value: 4 }, keyExtractor);
+        const itemA = new feng3d.DisjointSetNode({ key: 'A', value: 1 }, keyExtractor);
+        const itemB = new feng3d.DisjointSetNode({ key: 'B', value: 2 }, keyExtractor);
+        const itemC = new feng3d.DisjointSetNode({ key: 'C', value: 3 }, keyExtractor);
+        const itemD = new feng3d.DisjointSetNode({ key: 'D', value: 4 }, keyExtractor);
 
         assert.deepEqual(itemA.getRank(), 0);
         assert.deepEqual(itemA.getChildren(), []);

@@ -276,6 +276,7 @@ namespace feng3d
     if (typeof requestAnimationFrame == "undefined")
     {
         var _global: Window;
+        var global: any;
         if (typeof window != "undefined")
         {
             _global = window;

@@ -2,10 +2,10 @@ QUnit.module("PriorityQueue", () =>
 {
     QUnit.test("push", (assert) =>
     {
-        var arr = ds.utils.createArray(10, () => Math.random());
+        var arr = feng3d.utils.createArray(10, () => Math.random());
 
         var compare = (a: number, b: number) => a - b;
-        var q = new ds.PriorityQueue(compare);
+        var q = new feng3d.PriorityQueue(compare);
         q.push.apply(q, arr);
 
         var sortarr = arr.concat().sort(compare);
@@ -19,10 +19,10 @@ QUnit.module("PriorityQueue", () =>
 
     QUnit.test("shift", (assert) =>
     {
-        var arr = ds.utils.createArray(10, () => Math.random());
+        var arr = feng3d.utils.createArray(10, () => Math.random());
 
         var compare = (a: number, b: number) => a - b;
-        var q = new ds.PriorityQueue(compare);
+        var q = new feng3d.PriorityQueue(compare);
         q.push.apply(q, arr);
 
         var sortarr = arr.concat().sort(compare);
@@ -36,10 +36,10 @@ QUnit.module("PriorityQueue", () =>
 
     QUnit.test("toArray", (assert) =>
     {
-        var arr = ds.utils.createArray(10, () => Math.random());
+        var arr = feng3d.utils.createArray(10, () => Math.random());
 
         var compare = (a: number, b: number) => a - b;
-        var q = new ds.PriorityQueue(compare);
+        var q = new feng3d.PriorityQueue(compare);
         q.push.apply(q, arr);
 
         var sortarr = arr.concat().sort(compare);
@@ -49,10 +49,10 @@ QUnit.module("PriorityQueue", () =>
 
     QUnit.test("fromArray", (assert) =>
     {
-        var arr = ds.utils.createArray(10, () => Math.random());
+        var arr = feng3d.utils.createArray(10, () => Math.random());
 
         var compare = (a: number, b: number) => a - b;
-        var q = new ds.PriorityQueue(compare);
+        var q = new feng3d.PriorityQueue(compare);
         q.fromArray(arr);
 
         var sortarr = arr.concat().sort(compare);

@@ -3,10 +3,10 @@ QUnit.module('Graph', () =>
 {
     QUnit.test('should add vertices to graph', (assert) =>
     {
-        const graph = new ds.Graph();
+        const graph = new feng3d.Graph();
 
-        const vertexA = new ds.GraphVertex('A');
-        const vertexB = new ds.GraphVertex('B');
+        const vertexA = new feng3d.GraphVertex('A');
+        const vertexB = new feng3d.GraphVertex('B');
 
         graph
             .addVertex(vertexA)
@@ -19,12 +19,12 @@ QUnit.module('Graph', () =>
 
     QUnit.test('should add edges to undirected graph', (assert) =>
     {
-        const graph = new ds.Graph();
+        const graph = new feng3d.Graph();
 
-        const vertexA = new ds.GraphVertex('A');
-        const vertexB = new ds.GraphVertex('B');
+        const vertexA = new feng3d.GraphVertex('A');
+        const vertexB = new feng3d.GraphVertex('B');
 
-        const edgeAB = new ds.GraphEdge(vertexA, vertexB);
+        const edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
 
         graph.addEdge(edgeAB);
 
@@ -52,12 +52,12 @@ QUnit.module('Graph', () =>
 
     QUnit.test('should add edges to directed graph', (assert) =>
     {
-        const graph = new ds.Graph(true);
+        const graph = new feng3d.Graph(true);
 
-        const vertexA = new ds.GraphVertex('A');
-        const vertexB = new ds.GraphVertex('B');
+        const vertexA = new feng3d.GraphVertex('A');
+        const vertexB = new feng3d.GraphVertex('B');
 
-        const edgeAB = new ds.GraphEdge(vertexA, vertexB);
+        const edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
 
         graph.addEdge(edgeAB);
 
@@ -77,13 +77,13 @@ QUnit.module('Graph', () =>
 
     QUnit.test('should find edge by vertices in undirected graph', (assert) =>
     {
-        const graph = new ds.Graph();
+        const graph = new feng3d.Graph();
 
-        const vertexA = new ds.GraphVertex('A');
-        const vertexB = new ds.GraphVertex('B');
-        const vertexC = new ds.GraphVertex('C');
+        const vertexA = new feng3d.GraphVertex('A');
+        const vertexB = new feng3d.GraphVertex('B');
+        const vertexC = new feng3d.GraphVertex('C');
 
-        const edgeAB = new ds.GraphEdge(vertexA, vertexB, 10);
+        const edgeAB = new feng3d.GraphEdge(vertexA, vertexB, 10);
 
         graph.addEdge(edgeAB);
 
@@ -101,13 +101,13 @@ QUnit.module('Graph', () =>
 
     QUnit.test('should find edge by vertices in directed graph', (assert) =>
     {
-        const graph = new ds.Graph(true);
+        const graph = new feng3d.Graph(true);
 
-        const vertexA = new ds.GraphVertex('A');
-        const vertexB = new ds.GraphVertex('B');
-        const vertexC = new ds.GraphVertex('C');
+        const vertexA = new feng3d.GraphVertex('A');
+        const vertexB = new feng3d.GraphVertex('B');
+        const vertexC = new feng3d.GraphVertex('C');
 
-        const edgeAB = new ds.GraphEdge(vertexA, vertexB, 10);
+        const edgeAB = new feng3d.GraphEdge(vertexA, vertexB, 10);
 
         graph.addEdge(edgeAB);
 
@@ -125,14 +125,14 @@ QUnit.module('Graph', () =>
 
     QUnit.test('should return vertex neighbors', (assert) =>
     {
-        const graph = new ds.Graph(true);
+        const graph = new feng3d.Graph(true);
 
-        const vertexA = new ds.GraphVertex('A');
-        const vertexB = new ds.GraphVertex('B');
-        const vertexC = new ds.GraphVertex('C');
+        const vertexA = new feng3d.GraphVertex('A');
+        const vertexB = new feng3d.GraphVertex('B');
+        const vertexC = new feng3d.GraphVertex('C');
 
-        const edgeAB = new ds.GraphEdge(vertexA, vertexB);
-        const edgeAC = new ds.GraphEdge(vertexA, vertexC);
+        const edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
+        const edgeAC = new feng3d.GraphEdge(vertexA, vertexC);
 
         graph
             .addEdge(edgeAB)
@@ -149,12 +149,12 @@ QUnit.module('Graph', () =>
     {
         function addSameEdgeTwice()
         {
-            const graph = new ds.Graph(true);
+            const graph = new feng3d.Graph(true);
 
-            const vertexA = new ds.GraphVertex('A');
-            const vertexB = new ds.GraphVertex('B');
+            const vertexA = new feng3d.GraphVertex('A');
+            const vertexB = new feng3d.GraphVertex('B');
 
-            const edgeAB = new ds.GraphEdge(vertexA, vertexB);
+            const edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
 
             graph
                 .addEdge(edgeAB)
@@ -175,14 +175,14 @@ QUnit.module('Graph', () =>
 
     QUnit.test('should return the list of all added edges', (assert) =>
     {
-        const graph = new ds.Graph(true);
+        const graph = new feng3d.Graph(true);
 
-        const vertexA = new ds.GraphVertex('A');
-        const vertexB = new ds.GraphVertex('B');
-        const vertexC = new ds.GraphVertex('C');
+        const vertexA = new feng3d.GraphVertex('A');
+        const vertexB = new feng3d.GraphVertex('B');
+        const vertexC = new feng3d.GraphVertex('C');
 
-        const edgeAB = new ds.GraphEdge(vertexA, vertexB);
-        const edgeBC = new ds.GraphEdge(vertexB, vertexC);
+        const edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
+        const edgeBC = new feng3d.GraphEdge(vertexB, vertexC);
 
         graph
             .addEdge(edgeAB)
@@ -197,17 +197,17 @@ QUnit.module('Graph', () =>
 
     QUnit.test('should calculate total graph weight for default graph', (assert) =>
     {
-        const graph = new ds.Graph();
+        const graph = new feng3d.Graph();
 
-        const vertexA = new ds.GraphVertex('A');
-        const vertexB = new ds.GraphVertex('B');
-        const vertexC = new ds.GraphVertex('C');
-        const vertexD = new ds.GraphVertex('D');
+        const vertexA = new feng3d.GraphVertex('A');
+        const vertexB = new feng3d.GraphVertex('B');
+        const vertexC = new feng3d.GraphVertex('C');
+        const vertexD = new feng3d.GraphVertex('D');
 
-        const edgeAB = new ds.GraphEdge(vertexA, vertexB);
-        const edgeBC = new ds.GraphEdge(vertexB, vertexC);
-        const edgeCD = new ds.GraphEdge(vertexC, vertexD);
-        const edgeAD = new ds.GraphEdge(vertexA, vertexD);
+        const edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
+        const edgeBC = new feng3d.GraphEdge(vertexB, vertexC);
+        const edgeCD = new feng3d.GraphEdge(vertexC, vertexD);
+        const edgeAD = new feng3d.GraphEdge(vertexA, vertexD);
 
         graph
             .addEdge(edgeAB)
@@ -220,17 +220,17 @@ QUnit.module('Graph', () =>
 
     QUnit.test('should calculate total graph weight for weighted graph', (assert) =>
     {
-        const graph = new ds.Graph();
+        const graph = new feng3d.Graph();
 
-        const vertexA = new ds.GraphVertex('A');
-        const vertexB = new ds.GraphVertex('B');
-        const vertexC = new ds.GraphVertex('C');
-        const vertexD = new ds.GraphVertex('D');
+        const vertexA = new feng3d.GraphVertex('A');
+        const vertexB = new feng3d.GraphVertex('B');
+        const vertexC = new feng3d.GraphVertex('C');
+        const vertexD = new feng3d.GraphVertex('D');
 
-        const edgeAB = new ds.GraphEdge(vertexA, vertexB, 1);
-        const edgeBC = new ds.GraphEdge(vertexB, vertexC, 2);
-        const edgeCD = new ds.GraphEdge(vertexC, vertexD, 3);
-        const edgeAD = new ds.GraphEdge(vertexA, vertexD, 4);
+        const edgeAB = new feng3d.GraphEdge(vertexA, vertexB, 1);
+        const edgeBC = new feng3d.GraphEdge(vertexB, vertexC, 2);
+        const edgeCD = new feng3d.GraphEdge(vertexC, vertexD, 3);
+        const edgeAD = new feng3d.GraphEdge(vertexA, vertexD, 4);
 
         graph
             .addEdge(edgeAB)
@@ -243,15 +243,15 @@ QUnit.module('Graph', () =>
 
     QUnit.test('should be possible to delete edges from graph', (assert) =>
     {
-        const graph = new ds.Graph();
+        const graph = new feng3d.Graph();
 
-        const vertexA = new ds.GraphVertex('A');
-        const vertexB = new ds.GraphVertex('B');
-        const vertexC = new ds.GraphVertex('C');
+        const vertexA = new feng3d.GraphVertex('A');
+        const vertexB = new feng3d.GraphVertex('B');
+        const vertexC = new feng3d.GraphVertex('C');
 
-        const edgeAB = new ds.GraphEdge(vertexA, vertexB);
-        const edgeBC = new ds.GraphEdge(vertexB, vertexC);
-        const edgeAC = new ds.GraphEdge(vertexA, vertexC);
+        const edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
+        const edgeBC = new feng3d.GraphEdge(vertexB, vertexC);
+        const edgeAC = new feng3d.GraphEdge(vertexA, vertexC);
 
         graph
             .addEdge(edgeAB)
@@ -271,14 +271,14 @@ QUnit.module('Graph', () =>
     {
         function deleteNotExistingEdge()
         {
-            const graph = new ds.Graph();
+            const graph = new feng3d.Graph();
 
-            const vertexA = new ds.GraphVertex('A');
-            const vertexB = new ds.GraphVertex('B');
-            const vertexC = new ds.GraphVertex('C');
+            const vertexA = new feng3d.GraphVertex('A');
+            const vertexB = new feng3d.GraphVertex('B');
+            const vertexC = new feng3d.GraphVertex('C');
 
-            const edgeAB = new ds.GraphEdge(vertexA, vertexB);
-            const edgeBC = new ds.GraphEdge(vertexB, vertexC);
+            const edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
+            const edgeBC = new feng3d.GraphEdge(vertexB, vertexC);
 
             graph.addEdge(edgeAB);
             graph.deleteEdge(edgeBC);
@@ -298,16 +298,16 @@ QUnit.module('Graph', () =>
 
     QUnit.test('should be possible to reverse graph', (assert) =>
     {
-        const vertexA = new ds.GraphVertex('A');
-        const vertexB = new ds.GraphVertex('B');
-        const vertexC = new ds.GraphVertex('C');
-        const vertexD = new ds.GraphVertex('D');
+        const vertexA = new feng3d.GraphVertex('A');
+        const vertexB = new feng3d.GraphVertex('B');
+        const vertexC = new feng3d.GraphVertex('C');
+        const vertexD = new feng3d.GraphVertex('D');
 
-        const edgeAB = new ds.GraphEdge(vertexA, vertexB);
-        const edgeAC = new ds.GraphEdge(vertexA, vertexC);
-        const edgeCD = new ds.GraphEdge(vertexC, vertexD);
+        const edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
+        const edgeAC = new feng3d.GraphEdge(vertexA, vertexC);
+        const edgeCD = new feng3d.GraphEdge(vertexC, vertexD);
 
-        const graph = new ds.Graph(true);
+        const graph = new feng3d.Graph(true);
         graph
             .addEdge(edgeAB)
             .addEdge(edgeAC)
@@ -338,17 +338,17 @@ QUnit.module('Graph', () =>
 
     QUnit.test('should return vertices indices', (assert) =>
     {
-        const vertexA = new ds.GraphVertex('A');
-        const vertexB = new ds.GraphVertex('B');
-        const vertexC = new ds.GraphVertex('C');
-        const vertexD = new ds.GraphVertex('D');
+        const vertexA = new feng3d.GraphVertex('A');
+        const vertexB = new feng3d.GraphVertex('B');
+        const vertexC = new feng3d.GraphVertex('C');
+        const vertexD = new feng3d.GraphVertex('D');
 
-        const edgeAB = new ds.GraphEdge(vertexA, vertexB);
-        const edgeBC = new ds.GraphEdge(vertexB, vertexC);
-        const edgeCD = new ds.GraphEdge(vertexC, vertexD);
-        const edgeBD = new ds.GraphEdge(vertexB, vertexD);
+        const edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
+        const edgeBC = new feng3d.GraphEdge(vertexB, vertexC);
+        const edgeCD = new feng3d.GraphEdge(vertexC, vertexD);
+        const edgeBD = new feng3d.GraphEdge(vertexB, vertexD);
 
-        const graph = new ds.Graph();
+        const graph = new feng3d.Graph();
         graph
             .addEdge(edgeAB)
             .addEdge(edgeBC)
@@ -366,17 +366,17 @@ QUnit.module('Graph', () =>
 
     QUnit.test('should generate adjacency matrix for undirected graph', (assert) =>
     {
-        const vertexA = new ds.GraphVertex('A');
-        const vertexB = new ds.GraphVertex('B');
-        const vertexC = new ds.GraphVertex('C');
-        const vertexD = new ds.GraphVertex('D');
+        const vertexA = new feng3d.GraphVertex('A');
+        const vertexB = new feng3d.GraphVertex('B');
+        const vertexC = new feng3d.GraphVertex('C');
+        const vertexD = new feng3d.GraphVertex('D');
 
-        const edgeAB = new ds.GraphEdge(vertexA, vertexB);
-        const edgeBC = new ds.GraphEdge(vertexB, vertexC);
-        const edgeCD = new ds.GraphEdge(vertexC, vertexD);
-        const edgeBD = new ds.GraphEdge(vertexB, vertexD);
+        const edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
+        const edgeBC = new feng3d.GraphEdge(vertexB, vertexC);
+        const edgeCD = new feng3d.GraphEdge(vertexC, vertexD);
+        const edgeBD = new feng3d.GraphEdge(vertexB, vertexD);
 
-        const graph = new ds.Graph();
+        const graph = new feng3d.Graph();
         graph
             .addEdge(edgeAB)
             .addEdge(edgeBC)
@@ -394,17 +394,17 @@ QUnit.module('Graph', () =>
 
     QUnit.test('should generate adjacency matrix for directed graph', (assert) =>
     {
-        const vertexA = new ds.GraphVertex('A');
-        const vertexB = new ds.GraphVertex('B');
-        const vertexC = new ds.GraphVertex('C');
-        const vertexD = new ds.GraphVertex('D');
+        const vertexA = new feng3d.GraphVertex('A');
+        const vertexB = new feng3d.GraphVertex('B');
+        const vertexC = new feng3d.GraphVertex('C');
+        const vertexD = new feng3d.GraphVertex('D');
 
-        const edgeAB = new ds.GraphEdge(vertexA, vertexB, 2);
-        const edgeBC = new ds.GraphEdge(vertexB, vertexC, 1);
-        const edgeCD = new ds.GraphEdge(vertexC, vertexD, 5);
-        const edgeBD = new ds.GraphEdge(vertexB, vertexD, 7);
+        const edgeAB = new feng3d.GraphEdge(vertexA, vertexB, 2);
+        const edgeBC = new feng3d.GraphEdge(vertexB, vertexC, 1);
+        const edgeCD = new feng3d.GraphEdge(vertexC, vertexD, 5);
+        const edgeBD = new feng3d.GraphEdge(vertexB, vertexD, 7);
 
-        const graph = new ds.Graph(true);
+        const graph = new feng3d.Graph(true);
         graph
             .addEdge(edgeAB)
             .addEdge(edgeBC)

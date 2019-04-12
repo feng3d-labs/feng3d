@@ -2,7 +2,7 @@ QUnit.module('MinHeap', (assert) =>
 {
     QUnit.test('should create an empty min heap', (assert) =>
     {
-        const minHeap = new ds.MinHeap();
+        const minHeap = new feng3d.MinHeap();
 
         assert.deepEqual(minHeap.peek(), null);
         assert.deepEqual(minHeap.isEmpty(), true);
@@ -10,7 +10,7 @@ QUnit.module('MinHeap', (assert) =>
 
     QUnit.test('should add items to the heap and heapify it up', (assert) =>
     {
-        const minHeap = new ds.MinHeap();
+        const minHeap = new feng3d.MinHeap();
 
         minHeap.add(5);
         assert.deepEqual(minHeap.isEmpty(), false);
@@ -45,7 +45,7 @@ QUnit.module('MinHeap', (assert) =>
 
     QUnit.test('should poll items from the heap and heapify it down', (assert) =>
     {
-        const minHeap = new ds.MinHeap();
+        const minHeap = new feng3d.MinHeap();
 
         minHeap.add(5);
         minHeap.add(3);
@@ -76,7 +76,7 @@ QUnit.module('MinHeap', (assert) =>
 
     QUnit.test('should heapify down through the right branch as well', (assert) =>
     {
-        const minHeap = new ds.MinHeap();
+        const minHeap = new feng3d.MinHeap();
 
         minHeap.add(3);
         minHeap.add(12);
@@ -93,7 +93,7 @@ QUnit.module('MinHeap', (assert) =>
 
     QUnit.test('should be possible to find item indices in heap', (assert) =>
     {
-        const minHeap = new ds.MinHeap();
+        const minHeap = new feng3d.MinHeap();
 
         minHeap.add(3);
         minHeap.add(12);
@@ -110,7 +110,7 @@ QUnit.module('MinHeap', (assert) =>
 
     QUnit.test('should be possible to remove items from heap with heapify down', (assert) =>
     {
-        const minHeap = new ds.MinHeap();
+        const minHeap = new feng3d.MinHeap();
 
         minHeap.add(3);
         minHeap.add(12);
@@ -128,7 +128,7 @@ QUnit.module('MinHeap', (assert) =>
 
     QUnit.test('should be possible to remove items from heap with heapify up', (assert) =>
     {
-        const minHeap = new ds.MinHeap();
+        const minHeap = new feng3d.MinHeap();
 
         minHeap.add(3);
         minHeap.add(10);
@@ -155,7 +155,7 @@ QUnit.module('MinHeap', (assert) =>
 
     QUnit.test('should be possible to remove items from heap with custom finding comparator', (assert) =>
     {
-        const minHeap = new ds.MinHeap();
+        const minHeap = new feng3d.MinHeap();
         minHeap.add('dddd');
         minHeap.add('ccc');
         minHeap.add('bb');
@@ -163,7 +163,7 @@ QUnit.module('MinHeap', (assert) =>
 
         assert.deepEqual(minHeap.toString(), 'a,bb,ccc,dddd');
 
-        const comparator = new ds.Comparator((a: string, b: string) =>
+        const comparator = new feng3d.Comparator((a: string, b: string) =>
         {
             if (a.length === b.length)
             {
@@ -179,7 +179,7 @@ QUnit.module('MinHeap', (assert) =>
 
     QUnit.test('should remove values from heap and correctly re-order the tree', (assert) =>
     {
-        const minHeap = new ds.MinHeap();
+        const minHeap = new feng3d.MinHeap();
 
         minHeap.add(1);
         minHeap.add(2);

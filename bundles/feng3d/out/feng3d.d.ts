@@ -1,6 +1,15 @@
 declare module 'feng3d' {
     export = feng3d;
 }
+declare type gPartial<T> = {
+    [P in keyof T]?: gPartial<T[P]>;
+};
+declare namespace feng3d {
+    /**
+     * feng3d的版本号
+     */
+    var revision: string;
+}
 declare namespace feng3d {
     /**
      * 观察装饰器，观察被装饰属性的变化
@@ -81,15 +90,6 @@ getset平均耗时比 17.3
         watchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
         unwatchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
     }
-}
-declare type gPartial<T> = {
-    [P in keyof T]?: gPartial<T[P]>;
-};
-declare namespace feng3d {
-    /**
-     * feng3d的版本号
-     */
-    var revision: string;
 }
 declare namespace feng3d {
 }
@@ -1521,7 +1521,7 @@ declare namespace feng3d {
         classReg: RegExp;
     }
 }
-declare namespace ds {
+declare namespace feng3d {
     type CompareFunction<T> = (a: T, b: T) => number;
     /**
      * 比较器
@@ -1581,7 +1581,7 @@ declare namespace ds {
         reverse(): void;
     }
 }
-declare module ds {
+declare namespace feng3d {
     /**
      * 工具
      */
@@ -1633,7 +1633,7 @@ declare module ds {
         binarySearchInsert<T>(array: T[], target: T, compare: (a: T, b: T) => number, start?: number, end?: number): number;
     }
 }
-declare namespace ds {
+declare namespace feng3d {
     /**
      * 链表
      *
@@ -1755,7 +1755,7 @@ declare namespace ds {
         next: LinkedListNode<T>;
     }
 }
-declare namespace ds {
+declare namespace feng3d {
     /**
      * 双向链表
      *
@@ -1874,7 +1874,7 @@ declare namespace ds {
         next: DoublyLinkedListNode<T>;
     }
 }
-declare namespace ds {
+declare namespace feng3d {
     /**
      * 队列，只能从后面进，前面出
      * 使用单向链表实现
@@ -1924,7 +1924,7 @@ declare namespace ds {
         toString(valueToString?: (value: T) => string): string;
     }
 }
-declare namespace ds {
+declare namespace feng3d {
     /**
      * 栈
      *
@@ -1964,7 +1964,7 @@ declare namespace ds {
         toString(valueToString?: (value: T) => string): string;
     }
 }
-declare namespace ds {
+declare namespace feng3d {
     /**
      * 堆
      *
@@ -2109,7 +2109,7 @@ declare namespace ds {
         abstract pairIsInCorrectOrder(firstElement: T, secondElement: T): boolean;
     }
 }
-declare namespace ds {
+declare namespace feng3d {
     /**
      * 最大堆
      *
@@ -2127,7 +2127,7 @@ declare namespace ds {
         pairIsInCorrectOrder(firstElement: T, secondElement: T): boolean;
     }
 }
-declare namespace ds {
+declare namespace feng3d {
     /**
      * 最小堆
      *
@@ -2145,7 +2145,7 @@ declare namespace ds {
         pairIsInCorrectOrder(firstElement: T, secondElement: T): boolean;
     }
 }
-declare namespace ds {
+declare namespace feng3d {
     /**
      * 哈希表（散列表）
      *
@@ -2202,7 +2202,7 @@ declare namespace ds {
         getKeys(): string[];
     }
 }
-declare module ds {
+declare namespace feng3d {
     /**
      * 优先队列
      *
@@ -2246,7 +2246,7 @@ declare module ds {
         fromArray(array: T[]): void;
     }
 }
-declare module ds {
+declare namespace feng3d {
     /**
      * 优先队列
      *
@@ -2307,7 +2307,7 @@ declare module ds {
         compareValue(a: T, b: T): 0 | 1 | -1;
     }
 }
-declare namespace ds {
+declare namespace feng3d {
     /**
      * 布隆过滤器 （ 在 JavaScript中 该类可由Object对象代替）
      *
@@ -2368,7 +2368,7 @@ declare namespace ds {
         getHashValues(item: string): number[];
     }
 }
-declare namespace ds {
+declare namespace feng3d {
     /**
      * 并查集
      *
@@ -2475,7 +2475,7 @@ declare namespace ds {
         addChild(childNode: DisjointSetNode<T>): this;
     }
 }
-declare namespace ds {
+declare namespace feng3d {
     /**
      * 图
      *
@@ -2685,7 +2685,7 @@ declare namespace ds {
         toString(callback?: (value: T) => string): string;
     }
 }
-declare namespace ds {
+declare namespace feng3d {
     /**
      * 二叉树结点
      *
@@ -2787,7 +2787,7 @@ declare namespace ds {
         toString(): string;
     }
 }
-declare namespace ds {
+declare namespace feng3d {
     /**
      * 二叉查找树结点
      *
@@ -2851,7 +2851,7 @@ declare namespace ds {
         findMin(): BinarySearchTreeNode<T>;
     }
 }
-declare namespace ds {
+declare namespace feng3d {
     /**
      * 二叉查找树
      *
@@ -2905,7 +2905,7 @@ declare namespace ds {
         toString(): string;
     }
 }
-declare namespace ds {
+declare namespace feng3d {
     /**
      * 平衡二叉树
      *

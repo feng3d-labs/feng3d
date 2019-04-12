@@ -20,6 +20,14 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var feng3d;
 (function (feng3d) {
     /**
+     * feng3d的版本号
+     */
+    feng3d.revision = "2019.04.11.00";
+    console.log("feng3d version " + feng3d.revision);
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 观察装饰器，观察被装饰属性的变化
      *
      * @param onChange 属性变化回调  例如参数为“onChange”时，回调将会调用this.onChange(property, oldValue, newValue)
@@ -302,14 +310,6 @@ getset平均耗时比 17.3
         }
         return null;
     }
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * feng3d的版本号
-     */
-    feng3d.revision = "2019.04.11.00";
-    console.log("feng3d version " + feng3d.revision);
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -1607,6 +1607,7 @@ var feng3d;
     var localrequestAnimationFrame;
     if (typeof requestAnimationFrame == "undefined") {
         var _global;
+        var global;
         if (typeof window != "undefined") {
             _global = window;
             localrequestAnimationFrame =
@@ -1922,6 +1923,7 @@ var feng3d;
     feng3d.classUtils = new ClassUtils();
     var _definitionCache = {};
     var _global;
+    var global;
     if (typeof window != "undefined") {
         _global = window;
     }
@@ -4086,8 +4088,8 @@ var feng3d;
     feng3d.RegExps = RegExps;
     feng3d.regExps = new RegExps();
 })(feng3d || (feng3d = {}));
-var ds;
-(function (ds) {
+var feng3d;
+(function (feng3d) {
     /**
      * 比较器
      */
@@ -4164,10 +4166,10 @@ var ds;
         };
         return Comparator;
     }());
-    ds.Comparator = Comparator;
-})(ds || (ds = {}));
-var ds;
-(function (ds) {
+    feng3d.Comparator = Comparator;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 工具
      */
@@ -4273,11 +4275,11 @@ var ds;
         };
         return Utils;
     }());
-    ds.Utils = Utils;
-    ds.utils = new Utils();
-})(ds || (ds = {}));
-var ds;
-(function (ds) {
+    feng3d.Utils = Utils;
+    feng3d.utils = new Utils();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 链表
      *
@@ -4292,7 +4294,7 @@ var ds;
         function LinkedList(comparatorFunction) {
             this.head = null;
             this.tail = null;
-            this.compare = new ds.Comparator(comparatorFunction);
+            this.compare = new feng3d.Comparator(comparatorFunction);
         }
         /**
          * 是否为空
@@ -4548,10 +4550,10 @@ var ds;
         };
         return LinkedList;
     }());
-    ds.LinkedList = LinkedList;
-})(ds || (ds = {}));
-var ds;
-(function (ds) {
+    feng3d.LinkedList = LinkedList;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 双向链表
      *
@@ -4566,7 +4568,7 @@ var ds;
         function DoublyLinkedList(comparatorFunction) {
             this.head = null;
             this.tail = null;
-            this.compare = new ds.Comparator(comparatorFunction);
+            this.compare = new feng3d.Comparator(comparatorFunction);
         }
         /**
          * 是否为空
@@ -4823,10 +4825,10 @@ var ds;
         };
         return DoublyLinkedList;
     }());
-    ds.DoublyLinkedList = DoublyLinkedList;
-})(ds || (ds = {}));
-var ds;
-(function (ds) {
+    feng3d.DoublyLinkedList = DoublyLinkedList;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 队列，只能从后面进，前面出
      * 使用单向链表实现
@@ -4840,7 +4842,7 @@ var ds;
          * @param comparatorFunction 比较函数
          */
         function Queue() {
-            this.linkedList = new ds.LinkedList();
+            this.linkedList = new feng3d.LinkedList();
         }
         /**
          * 是否为空
@@ -4891,10 +4893,10 @@ var ds;
         };
         return Queue;
     }());
-    ds.Queue = Queue;
-})(ds || (ds = {}));
-var ds;
-(function (ds) {
+    feng3d.Queue = Queue;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 栈
      *
@@ -4904,7 +4906,7 @@ var ds;
      */
     var Stack = /** @class */ (function () {
         function Stack() {
-            this.linkedList = new ds.LinkedList();
+            this.linkedList = new feng3d.LinkedList();
         }
         /**
          * 是否为空
@@ -4949,10 +4951,10 @@ var ds;
         };
         return Stack;
     }());
-    ds.Stack = Stack;
-})(ds || (ds = {}));
-var ds;
-(function (ds) {
+    feng3d.Stack = Stack;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 堆
      *
@@ -4972,7 +4974,7 @@ var ds;
                 throw new TypeError('无法直接构造堆实例');
             }
             this.heapContainer = [];
-            this.compare = new ds.Comparator(comparatorFunction);
+            this.compare = new feng3d.Comparator(comparatorFunction);
         }
         /**
          * 获取左边子结点索引
@@ -5191,10 +5193,10 @@ var ds;
         };
         return Heap;
     }());
-    ds.Heap = Heap;
-})(ds || (ds = {}));
-var ds;
-(function (ds) {
+    feng3d.Heap = Heap;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 最大堆
      *
@@ -5217,11 +5219,11 @@ var ds;
             return this.compare.greaterThanOrEqual(firstElement, secondElement);
         };
         return MaxHeap;
-    }(ds.Heap));
-    ds.MaxHeap = MaxHeap;
-})(ds || (ds = {}));
-var ds;
-(function (ds) {
+    }(feng3d.Heap));
+    feng3d.MaxHeap = MaxHeap;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 最小堆
      *
@@ -5244,11 +5246,11 @@ var ds;
             return this.compare.lessThanOrEqual(firstElement, secondElement);
         };
         return MinHeap;
-    }(ds.Heap));
-    ds.MinHeap = MinHeap;
-})(ds || (ds = {}));
-var ds;
-(function (ds) {
+    }(feng3d.Heap));
+    feng3d.MinHeap = MinHeap;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 默认哈希表 （建议使用Object代替）
      *
@@ -5270,7 +5272,7 @@ var ds;
             if (hashTableSize === void 0) { hashTableSize = defaultHashTableSize; }
             this.buckets = [];
             for (var i = 0; i < hashTableSize; i++) {
-                this.buckets.push(new ds.LinkedList());
+                this.buckets.push(new feng3d.LinkedList());
             }
             this.keys = {};
         }
@@ -5343,10 +5345,10 @@ var ds;
         };
         return HashTable;
     }());
-    ds.HashTable = HashTable;
-})(ds || (ds = {}));
-var ds;
-(function (ds) {
+    feng3d.HashTable = HashTable;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 优先队列
      *
@@ -5399,7 +5401,7 @@ var ds;
                 items[_i] = arguments[_i];
             }
             items.forEach(function (item) {
-                var insert = ds.utils.binarySearchInsert(_this.items, item, _this._compare);
+                var insert = feng3d.utils.binarySearchInsert(_this.items, item, _this._compare);
                 _this.items.splice(insert, 0, item);
             });
             return this.items.length;
@@ -5425,10 +5427,10 @@ var ds;
         };
         return PriorityQueue;
     }());
-    ds.PriorityQueue = PriorityQueue;
-})(ds || (ds = {}));
-var ds;
-(function (ds) {
+    feng3d.PriorityQueue = PriorityQueue;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 优先队列
      *
@@ -5442,7 +5444,7 @@ var ds;
         function PriorityQueue1() {
             var _this = _super.call(this) || this;
             _this.priorities = {};
-            _this.compare = new ds.Comparator(_this.comparePriority.bind(_this));
+            _this.compare = new feng3d.Comparator(_this.comparePriority.bind(_this));
             return _this;
         }
         /**
@@ -5476,7 +5478,7 @@ var ds;
          * @param priority 优先级
          */
         PriorityQueue1.prototype.changePriority = function (item, priority) {
-            this.remove(item, new ds.Comparator(this.compareValue));
+            this.remove(item, new feng3d.Comparator(this.compareValue));
             this.add(item, priority);
             return this;
         };
@@ -5486,7 +5488,7 @@ var ds;
          * @param item 元素
          */
         PriorityQueue1.prototype.findByValue = function (item) {
-            return this.find(item, new ds.Comparator(this.compareValue));
+            return this.find(item, new feng3d.Comparator(this.compareValue));
         };
         /**
          * 是否拥有元素
@@ -5521,11 +5523,11 @@ var ds;
             return a < b ? -1 : 1;
         };
         return PriorityQueue1;
-    }(ds.MinHeap));
-    ds.PriorityQueue1 = PriorityQueue1;
-})(ds || (ds = {}));
-var ds;
-(function (ds) {
+    }(feng3d.MinHeap));
+    feng3d.PriorityQueue1 = PriorityQueue1;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 布隆过滤器 （ 在 JavaScript中 该类可由Object对象代替）
      *
@@ -5646,10 +5648,10 @@ var ds;
         };
         return BloomFilter;
     }());
-    ds.BloomFilter = BloomFilter;
-})(ds || (ds = {}));
-var ds;
-(function (ds) {
+    feng3d.BloomFilter = BloomFilter;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 并查集
      *
@@ -5734,7 +5736,7 @@ var ds;
         };
         return DisjointSet;
     }());
-    ds.DisjointSet = DisjointSet;
+    feng3d.DisjointSet = DisjointSet;
     /**
      * 并查集结点
      */
@@ -5814,10 +5816,10 @@ var ds;
         };
         return DisjointSetNode;
     }());
-    ds.DisjointSetNode = DisjointSetNode;
-})(ds || (ds = {}));
-var ds;
-(function (ds) {
+    feng3d.DisjointSetNode = DisjointSetNode;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 图
      *
@@ -6018,7 +6020,7 @@ var ds;
         };
         return Graph;
     }());
-    ds.Graph = Graph;
+    feng3d.Graph = Graph;
     /**
      * 图边
      */
@@ -6060,7 +6062,7 @@ var ds;
         };
         return GraphEdge;
     }());
-    ds.GraphEdge = GraphEdge;
+    feng3d.GraphEdge = GraphEdge;
     /**
      * 图顶点
      */
@@ -6078,7 +6080,7 @@ var ds;
                 return edgeA.getKey() < edgeB.getKey() ? -1 : 1;
             };
             this.value = value;
-            this.edges = new ds.LinkedList(edgeComparator);
+            this.edges = new feng3d.LinkedList(edgeComparator);
         }
         /**
          * 新增边
@@ -6174,10 +6176,10 @@ var ds;
         };
         return GraphVertex;
     }());
-    ds.GraphVertex = GraphVertex;
-})(ds || (ds = {}));
-var ds;
-(function (ds) {
+    feng3d.GraphVertex = GraphVertex;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 二叉树结点
      *
@@ -6195,8 +6197,8 @@ var ds;
             this.right = null;
             this.parent = null;
             this.value = value;
-            this.meta = new ds.HashTable();
-            this.nodeComparator = new ds.Comparator();
+            this.meta = new feng3d.HashTable();
+            this.nodeComparator = new feng3d.Comparator();
         }
         Object.defineProperty(BinaryTreeNode.prototype, "leftHeight", {
             /**
@@ -6377,10 +6379,11 @@ var ds;
         };
         return BinaryTreeNode;
     }());
-    ds.BinaryTreeNode = BinaryTreeNode;
-})(ds || (ds = {}));
-var ds;
-(function (ds) {
+    feng3d.BinaryTreeNode = BinaryTreeNode;
+})(feng3d || (feng3d = {}));
+/// <reference path="./BinaryTreeNode.ts" />
+var feng3d;
+(function (feng3d) {
     /**
      * 二叉查找树结点
      *
@@ -6397,7 +6400,7 @@ var ds;
         function BinarySearchTreeNode(value, compareFunction) {
             var _this = _super.call(this, value) || this;
             _this.compareFunction = compareFunction;
-            _this.nodeValueComparator = new ds.Comparator(compareFunction);
+            _this.nodeValueComparator = new feng3d.Comparator(compareFunction);
             return _this;
         }
         /**
@@ -6501,7 +6504,7 @@ var ds;
                     parent.replaceChild(nodeToRemove, childNode);
                 }
                 else {
-                    ds.BinaryTreeNode.copyNode(childNode, nodeToRemove);
+                    feng3d.BinaryTreeNode.copyNode(childNode, nodeToRemove);
                 }
             }
             nodeToRemove.parent = null;
@@ -6517,11 +6520,11 @@ var ds;
             return this.left.findMin();
         };
         return BinarySearchTreeNode;
-    }(ds.BinaryTreeNode));
-    ds.BinarySearchTreeNode = BinarySearchTreeNode;
-})(ds || (ds = {}));
-var ds;
-(function (ds) {
+    }(feng3d.BinaryTreeNode));
+    feng3d.BinarySearchTreeNode = BinarySearchTreeNode;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 二叉查找树
      *
@@ -6543,7 +6546,7 @@ var ds;
          * @param nodeValueCompareFunction 结点值比较器
          */
         function BinarySearchTree(nodeValueCompareFunction) {
-            this.root = new ds.BinarySearchTreeNode(null, nodeValueCompareFunction);
+            this.root = new feng3d.BinarySearchTreeNode(null, nodeValueCompareFunction);
             // 从根节点中窃取节点比较器。
             this.nodeComparator = this.root.nodeComparator;
         }
@@ -6579,10 +6582,11 @@ var ds;
         };
         return BinarySearchTree;
     }());
-    ds.BinarySearchTree = BinarySearchTree;
-})(ds || (ds = {}));
-var ds;
-(function (ds) {
+    feng3d.BinarySearchTree = BinarySearchTree;
+})(feng3d || (feng3d = {}));
+/// <reference path="./BinarySearchTree.ts" />
+var feng3d;
+(function (feng3d) {
     /**
      * 平衡二叉树
      *
@@ -6740,9 +6744,9 @@ var ds;
             rightNode.setLeft(rootNode);
         };
         return AvlTree;
-    }(ds.BinarySearchTree));
-    ds.AvlTree = AvlTree;
-})(ds || (ds = {}));
+    }(feng3d.BinarySearchTree));
+    feng3d.AvlTree = AvlTree;
+})(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
     feng3d.FMath = {
@@ -13227,7 +13231,7 @@ var feng3d;
          */
         TriangleGeometry.prototype.getPoints = function () {
             var ps = this.triangles.reduce(function (v, t) { return v.concat(t.getPoints()); }, []);
-            ds.utils.arrayUnique(ps, function (a, b) { return a.equals(b); });
+            feng3d.utils.arrayUnique(ps, function (a, b) { return a.equals(b); });
             return ps;
         };
         /**
@@ -13351,11 +13355,11 @@ var feng3d;
                 ps.push(r);
             });
             // 清除相同的线段
-            ds.utils.arrayUnique(ss, function (a, b) { return a.equals(b); });
+            feng3d.utils.arrayUnique(ss, function (a, b) { return a.equals(b); });
             // 删除在相交线段上的交点
             ps = ps.filter(function (p) { return ss.every(function (s) { return !s.onWithPoint(p); }); });
             // 清除相同点
-            ds.utils.arrayUnique(ps, function (a, b) { return a.equals(b); });
+            feng3d.utils.arrayUnique(ps, function (a, b) { return a.equals(b); });
             if (ss.length + ps.length == 0)
                 return null;
             return { segments: ss, points: ps };
@@ -14781,7 +14785,7 @@ var feng3d;
                 var bubbleTargets = this.getBubbleTargets(obj);
                 for (var i = 0, n = bubbleTargets.length; i < n; i++) {
                     var bubbleTarget = bubbleTargets[i];
-                    if (!e.isStop && bubbleTarget instanceof feng3d.EventDispatcher)
+                    if (!e.isStop && bubbleTarget && bubbleTarget.dispatchEvent)
                         bubbleTarget.dispatchEvent(e);
                 }
             }

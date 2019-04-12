@@ -2,7 +2,7 @@ QUnit.module('AvlTree', () =>
 {
     QUnit.test('should do simple left-left rotation', (assert) =>
     {
-        const tree = new ds.AvlTree();
+        const tree = new feng3d.AvlTree();
 
         tree.insert(4);
         tree.insert(3);
@@ -28,7 +28,7 @@ QUnit.module('AvlTree', () =>
 
     QUnit.test('should do complex left-left rotation', (assert) =>
     {
-        const tree = new ds.AvlTree();
+        const tree = new feng3d.AvlTree();
 
         tree.insert(30);
         tree.insert(20);
@@ -52,7 +52,7 @@ QUnit.module('AvlTree', () =>
 
     QUnit.test('should do simple right-right rotation', (assert) =>
     {
-        const tree = new ds.AvlTree();
+        const tree = new feng3d.AvlTree();
 
         tree.insert(2);
         tree.insert(3);
@@ -78,7 +78,7 @@ QUnit.module('AvlTree', () =>
 
     QUnit.test('should do complex right-right rotation', (assert) =>
     {
-        const tree = new ds.AvlTree();
+        const tree = new feng3d.AvlTree();
 
         tree.insert(30);
         tree.insert(20);
@@ -102,7 +102,7 @@ QUnit.module('AvlTree', () =>
 
     QUnit.test('should do left-right rotation', (assert) =>
     {
-        const tree = new ds.AvlTree();
+        const tree = new feng3d.AvlTree();
 
         tree.insert(30);
         tree.insert(20);
@@ -115,7 +115,7 @@ QUnit.module('AvlTree', () =>
 
     QUnit.test('should do right-left rotation', (assert) =>
     {
-        const tree = new ds.AvlTree();
+        const tree = new feng3d.AvlTree();
 
         tree.insert(30);
         tree.insert(40);
@@ -129,7 +129,7 @@ QUnit.module('AvlTree', () =>
     QUnit.test('should create balanced tree: case #1', (assert) =>
     {
         // @see: https://www.youtube.com/watch?v=rbg7Qf8GkQ4&t=839s
-        const tree = new ds.AvlTree();
+        const tree = new feng3d.AvlTree();
 
         tree.insert(1);
         tree.insert(2);
@@ -173,7 +173,7 @@ QUnit.module('AvlTree', () =>
     QUnit.test('should create balanced tree: case #2', (assert) =>
     {
         // @see https://www.youtube.com/watch?v=7m94k2Qhg68
-        const tree = new ds.AvlTree();
+        const tree = new feng3d.AvlTree();
 
         tree.insert(43);
         tree.insert(18);
@@ -195,7 +195,7 @@ QUnit.module('AvlTree', () =>
 
     QUnit.test('should do left right rotation and keeping left right node safe', (assert) =>
     {
-        const tree = new ds.AvlTree();
+        const tree = new feng3d.AvlTree();
 
         tree.insert(30);
         tree.insert(15);
@@ -218,7 +218,7 @@ QUnit.module('AvlTree', () =>
 
     QUnit.test('should do left right rotation and keeping left right node safe', (assert) =>
     {
-        const tree = new ds.AvlTree();
+        const tree = new feng3d.AvlTree();
 
         tree.insert(30);
         tree.insert(15);
@@ -241,7 +241,7 @@ QUnit.module('AvlTree', () =>
 
     QUnit.test('should remove values from the tree with right-right rotation', (assert) =>
     {
-        const tree = new ds.AvlTree();
+        const tree = new feng3d.AvlTree();
 
         tree.insert(10);
         tree.insert(20);
@@ -261,7 +261,7 @@ QUnit.module('AvlTree', () =>
 
     QUnit.test('should remove values from the tree with left-left rotation', (assert) =>
     {
-        const tree = new ds.AvlTree();
+        const tree = new feng3d.AvlTree();
 
         tree.insert(10);
         tree.insert(20);
@@ -281,7 +281,7 @@ QUnit.module('AvlTree', () =>
 
     QUnit.test('should keep balance after removal', (assert) =>
     {
-        const tree = new ds.AvlTree();
+        const tree = new feng3d.AvlTree();
 
         tree.insert(1);
         tree.insert(2);

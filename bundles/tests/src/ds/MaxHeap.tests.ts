@@ -2,7 +2,7 @@ QUnit.module("MaxHeap", () =>
 {
     QUnit.test("MaxHeap", (assert) =>
     {
-        const maxHeap = new ds.MaxHeap();
+        const maxHeap = new feng3d.MaxHeap();
 
         assert.deepEqual(maxHeap.peek(), null);
         assert.deepEqual(maxHeap.isEmpty(), true);
@@ -10,7 +10,7 @@ QUnit.module("MaxHeap", () =>
 
     QUnit.test("should add items to the heap and heapify it up", (assert) =>
     {
-        const maxHeap = new ds.MaxHeap();
+        const maxHeap = new feng3d.MaxHeap();
 
         maxHeap.add(5);
         assert.deepEqual(maxHeap.isEmpty(), false);
@@ -45,7 +45,7 @@ QUnit.module("MaxHeap", () =>
 
     QUnit.test('should poll items from the heap and heapify it down', (assert) =>
     {
-        const maxHeap = new ds.MaxHeap();
+        const maxHeap = new feng3d.MaxHeap();
 
         maxHeap.add(5);
         maxHeap.add(3);
@@ -76,7 +76,7 @@ QUnit.module("MaxHeap", () =>
 
     QUnit.test('should heapify down through the right branch as well', (assert) =>
     {
-        const maxHeap = new ds.MaxHeap();
+        const maxHeap = new feng3d.MaxHeap();
 
         maxHeap.add(3);
         maxHeap.add(12);
@@ -93,7 +93,7 @@ QUnit.module("MaxHeap", () =>
 
     QUnit.test('should be possible to find item indices in heap', (assert) =>
     {
-        const maxHeap = new ds.MaxHeap();
+        const maxHeap = new feng3d.MaxHeap();
 
         maxHeap.add(3);
         maxHeap.add(12);
@@ -110,7 +110,7 @@ QUnit.module("MaxHeap", () =>
 
     QUnit.test('should be possible to remove items from heap with heapify down', (assert) =>
     {
-        const maxHeap = new ds.MaxHeap();
+        const maxHeap = new feng3d.MaxHeap();
 
         maxHeap.add(3);
         maxHeap.add(12);
@@ -128,7 +128,7 @@ QUnit.module("MaxHeap", () =>
 
     QUnit.test('should be possible to remove items from heap with heapify up', (assert) =>
     {
-        const maxHeap = new ds.MaxHeap();
+        const maxHeap = new feng3d.MaxHeap();
 
         maxHeap.add(3);
         maxHeap.add(10);
@@ -155,7 +155,7 @@ QUnit.module("MaxHeap", () =>
 
     QUnit.test('should be possible to remove items from heap with custom finding comparator', (assert) =>
     {
-        const maxHeap = new ds.MaxHeap();
+        const maxHeap = new feng3d.MaxHeap();
         maxHeap.add('a');
         maxHeap.add('bb');
         maxHeap.add('ccc');
@@ -163,7 +163,7 @@ QUnit.module("MaxHeap", () =>
 
         assert.deepEqual(maxHeap.toString(), 'dddd,ccc,bb,a');
 
-        const comparator = new ds.Comparator((a: string, b: string) =>
+        const comparator = new feng3d.Comparator((a: string, b: string) =>
         {
             if (a.length === b.length)
             {

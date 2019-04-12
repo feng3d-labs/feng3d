@@ -2,7 +2,7 @@ QUnit.module('BinarySearchTreeNode', () =>
 {
     QUnit.test('should create binary search tree', (assert) =>
     {
-        const bstNode = new ds.BinarySearchTreeNode(2);
+        const bstNode = new feng3d.BinarySearchTreeNode(2);
 
         assert.deepEqual(bstNode.value, 2);
         assert.deepEqual(bstNode.left, null);
@@ -11,7 +11,7 @@ QUnit.module('BinarySearchTreeNode', () =>
 
     QUnit.test('should insert in itself if it is empty', (assert) =>
     {
-        const bstNode = new ds.BinarySearchTreeNode();
+        const bstNode = new feng3d.BinarySearchTreeNode();
         bstNode.insert(1);
 
         assert.deepEqual(bstNode.value, 1);
@@ -21,7 +21,7 @@ QUnit.module('BinarySearchTreeNode', () =>
 
     QUnit.test('should insert nodes in correct order', (assert) =>
     {
-        const bstNode = new ds.BinarySearchTreeNode(2);
+        const bstNode = new feng3d.BinarySearchTreeNode(2);
         const insertedNode1 = bstNode.insert(1);
 
         assert.deepEqual(insertedNode1.value, 1);
@@ -57,7 +57,7 @@ QUnit.module('BinarySearchTreeNode', () =>
 
     QUnit.test('should not insert duplicates', (assert) =>
     {
-        const bstNode = new ds.BinarySearchTreeNode(2);
+        const bstNode = new feng3d.BinarySearchTreeNode(2);
         bstNode.insert(1);
 
         assert.deepEqual(bstNode.toString(), '1,2');
@@ -73,7 +73,7 @@ QUnit.module('BinarySearchTreeNode', () =>
 
     QUnit.test('should find min node', (assert) =>
     {
-        const node = new ds.BinarySearchTreeNode(10);
+        const node = new feng3d.BinarySearchTreeNode(10);
 
         node.insert(20);
         node.insert(30);
@@ -87,7 +87,7 @@ QUnit.module('BinarySearchTreeNode', () =>
 
     QUnit.test('should be possible to attach meta information to binary search tree nodes', (assert) =>
     {
-        const node = new ds.BinarySearchTreeNode(10);
+        const node = new feng3d.BinarySearchTreeNode(10);
 
         node.insert(20);
         const node1 = node.insert(30);
@@ -109,7 +109,7 @@ QUnit.module('BinarySearchTreeNode', () =>
 
     QUnit.test('should find node', (assert) =>
     {
-        const node = new ds.BinarySearchTreeNode(10);
+        const node = new feng3d.BinarySearchTreeNode(10);
 
         node.insert(20);
         node.insert(30);
@@ -124,7 +124,7 @@ QUnit.module('BinarySearchTreeNode', () =>
 
     QUnit.test('should remove leaf nodes', (assert) =>
     {
-        const bstRootNode = new ds.BinarySearchTreeNode();
+        const bstRootNode = new feng3d.BinarySearchTreeNode();
 
         bstRootNode.insert(10);
         bstRootNode.insert(20);
@@ -143,7 +143,7 @@ QUnit.module('BinarySearchTreeNode', () =>
 
     QUnit.test('should remove nodes with one child', (assert) =>
     {
-        const bstRootNode = new ds.BinarySearchTreeNode();
+        const bstRootNode = new feng3d.BinarySearchTreeNode();
 
         bstRootNode.insert(10);
         bstRootNode.insert(20);
@@ -164,7 +164,7 @@ QUnit.module('BinarySearchTreeNode', () =>
 
     QUnit.test('should remove nodes with two children', (assert) =>
     {
-        const bstRootNode = new ds.BinarySearchTreeNode();
+        const bstRootNode = new feng3d.BinarySearchTreeNode();
 
         bstRootNode.insert(10);
         bstRootNode.insert(20);
@@ -196,7 +196,7 @@ QUnit.module('BinarySearchTreeNode', () =>
 
     QUnit.test('should remove node with no parent', (assert) =>
     {
-        const bstRootNode = new ds.BinarySearchTreeNode();
+        const bstRootNode = new feng3d.BinarySearchTreeNode();
         assert.deepEqual(bstRootNode.toString(), '');
 
         bstRootNode.insert(1);
@@ -212,7 +212,7 @@ QUnit.module('BinarySearchTreeNode', () =>
 
     QUnit.test('should throw error when trying to remove not existing node', (assert) =>
     {
-        const bstRootNode = new ds.BinarySearchTreeNode();
+        const bstRootNode = new feng3d.BinarySearchTreeNode();
 
         bstRootNode.insert(10);
         bstRootNode.insert(20);
@@ -252,7 +252,7 @@ QUnit.module('BinarySearchTreeNode', () =>
         const obj2 = { key: 'obj2', value: 2, toString: () => 'obj2' };
         const obj3 = { key: 'obj3', value: 3, toString: () => 'obj3' };
 
-        const bstNode = new ds.BinarySearchTreeNode(obj2, nodeValueComparatorCallback);
+        const bstNode = new feng3d.BinarySearchTreeNode(obj2, nodeValueComparatorCallback);
         bstNode.insert(obj1);
 
         assert.deepEqual(bstNode.toString(), 'obj1,obj2');
@@ -269,7 +269,7 @@ QUnit.module('BinarySearchTreeNode', () =>
 
     QUnit.test('should abandon removed node', (assert) =>
     {
-        const rootNode = new ds.BinarySearchTreeNode('foo');
+        const rootNode = new feng3d.BinarySearchTreeNode('foo');
         rootNode.insert('bar');
         const childNode = rootNode.find('bar');
         rootNode.remove('bar');

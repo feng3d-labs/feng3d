@@ -2,15 +2,15 @@ QUnit.module('BinaryTreeNode', () =>
 {
     QUnit.test('should create node', (assert) =>
     {
-        const node = new ds.BinaryTreeNode();
+        const node = new feng3d.BinaryTreeNode();
 
         assert.deepEqual(node.value, null);
         assert.deepEqual(node.left, null);
         assert.deepEqual(node.right, null);
 
-        const leftNode = new ds.BinaryTreeNode(1);
-        const rightNode = new ds.BinaryTreeNode(3);
-        const rootNode = new ds.BinaryTreeNode(2);
+        const leftNode = new feng3d.BinaryTreeNode(1);
+        const rightNode = new feng3d.BinaryTreeNode(3);
+        const rootNode = new feng3d.BinaryTreeNode(2);
 
         rootNode
             .setLeft(leftNode)
@@ -23,9 +23,9 @@ QUnit.module('BinaryTreeNode', () =>
 
     QUnit.test('should set parent', (assert) =>
     {
-        const leftNode = new ds.BinaryTreeNode(1);
-        const rightNode = new ds.BinaryTreeNode(3);
-        const rootNode = new ds.BinaryTreeNode(2);
+        const leftNode = new feng3d.BinaryTreeNode(1);
+        const rightNode = new feng3d.BinaryTreeNode(3);
+        const rootNode = new feng3d.BinaryTreeNode(2);
 
         rootNode
             .setLeft(leftNode)
@@ -39,9 +39,9 @@ QUnit.module('BinaryTreeNode', () =>
 
     QUnit.test('should traverse node', (assert) =>
     {
-        const leftNode = new ds.BinaryTreeNode(1);
-        const rightNode = new ds.BinaryTreeNode(3);
-        const rootNode = new ds.BinaryTreeNode(2);
+        const leftNode = new feng3d.BinaryTreeNode(1);
+        const rightNode = new feng3d.BinaryTreeNode(3);
+        const rootNode = new feng3d.BinaryTreeNode(2);
 
         rootNode
             .setLeft(leftNode)
@@ -54,9 +54,9 @@ QUnit.module('BinaryTreeNode', () =>
 
     QUnit.test('should remove child node', (assert) =>
     {
-        const leftNode = new ds.BinaryTreeNode(1);
-        const rightNode = new ds.BinaryTreeNode(3);
-        const rootNode = new ds.BinaryTreeNode(2);
+        const leftNode = new feng3d.BinaryTreeNode(1);
+        const rightNode = new feng3d.BinaryTreeNode(3);
+        const rootNode = new feng3d.BinaryTreeNode(2);
 
         rootNode
             .setLeft(leftNode)
@@ -76,9 +76,9 @@ QUnit.module('BinaryTreeNode', () =>
 
     QUnit.test('should replace child node', (assert) =>
     {
-        const leftNode = new ds.BinaryTreeNode(1);
-        const rightNode = new ds.BinaryTreeNode(3);
-        const rootNode = new ds.BinaryTreeNode(2);
+        const leftNode = new feng3d.BinaryTreeNode(1);
+        const rightNode = new feng3d.BinaryTreeNode(3);
+        const rootNode = new feng3d.BinaryTreeNode(2);
 
         rootNode
             .setLeft(leftNode)
@@ -86,7 +86,7 @@ QUnit.module('BinaryTreeNode', () =>
 
         assert.deepEqual(rootNode.traverseInOrder(), [1, 2, 3]);
 
-        const replacementNode = new ds.BinaryTreeNode(5);
+        const replacementNode = new feng3d.BinaryTreeNode(5);
         rightNode.setRight(replacementNode);
 
         assert.deepEqual(rootNode.traverseInOrder(), [1, 2, 3, 5]);
@@ -105,17 +105,17 @@ QUnit.module('BinaryTreeNode', () =>
         assert.deepEqual(rootNode.replaceChild(rootNode.left, replacementNode), true);
         assert.deepEqual(rootNode.traverseInOrder(), [5, 2, 5]);
 
-        assert.deepEqual(rootNode.replaceChild(new ds.BinaryTreeNode(), new ds.BinaryTreeNode()), false);
+        assert.deepEqual(rootNode.replaceChild(new feng3d.BinaryTreeNode(), new feng3d.BinaryTreeNode()), false);
     });
 
     QUnit.test('should calculate node height', (assert) =>
     {
-        const root = new ds.BinaryTreeNode(1);
-        const left = new ds.BinaryTreeNode(3);
-        const right = new ds.BinaryTreeNode(2);
-        const grandLeft = new ds.BinaryTreeNode(5);
-        const grandRight = new ds.BinaryTreeNode(6);
-        const grandGrandLeft = new ds.BinaryTreeNode(7);
+        const root = new feng3d.BinaryTreeNode(1);
+        const left = new feng3d.BinaryTreeNode(3);
+        const right = new feng3d.BinaryTreeNode(2);
+        const grandLeft = new feng3d.BinaryTreeNode(5);
+        const grandRight = new feng3d.BinaryTreeNode(6);
+        const grandGrandLeft = new feng3d.BinaryTreeNode(7);
 
         assert.deepEqual(root.height, 0);
         assert.deepEqual(root.balanceFactor, 0);
@@ -150,8 +150,8 @@ QUnit.module('BinaryTreeNode', () =>
 
     QUnit.test('should calculate node height for right nodes as well', (assert) =>
     {
-        const root = new ds.BinaryTreeNode(1);
-        const right = new ds.BinaryTreeNode(2);
+        const root = new feng3d.BinaryTreeNode(1);
+        const right = new feng3d.BinaryTreeNode(2);
 
         root.setRight(right);
 
@@ -162,9 +162,9 @@ QUnit.module('BinaryTreeNode', () =>
 
     QUnit.test('should set null for left and right node', (assert) =>
     {
-        const root = new ds.BinaryTreeNode(2);
-        const left = new ds.BinaryTreeNode(1);
-        const right = new ds.BinaryTreeNode(3);
+        const root = new feng3d.BinaryTreeNode(2);
+        const left = new feng3d.BinaryTreeNode(1);
+        const right = new feng3d.BinaryTreeNode(3);
 
         root.setLeft(left);
         root.setRight(right);
@@ -184,8 +184,8 @@ QUnit.module('BinaryTreeNode', () =>
         const obj1 = { key: 'object_1', toString: () => 'object_1' };
         const obj2 = { key: 'object_2' };
 
-        const node1 = new ds.BinaryTreeNode(obj1);
-        const node2 = new ds.BinaryTreeNode(obj2);
+        const node1 = new feng3d.BinaryTreeNode(obj1);
+        const node2 = new feng3d.BinaryTreeNode(obj2);
 
         node1.setLeft(node2);
 
@@ -205,8 +205,8 @@ QUnit.module('BinaryTreeNode', () =>
 
     QUnit.test('should be possible to attach meta information to the node', (assert) =>
     {
-        const redNode = new ds.BinaryTreeNode(1);
-        const blackNode = new ds.BinaryTreeNode(2);
+        const redNode = new feng3d.BinaryTreeNode(1);
+        const blackNode = new feng3d.BinaryTreeNode(2);
 
         redNode.meta.set('color', 'red');
         blackNode.meta.set('color', 'black');
@@ -217,10 +217,10 @@ QUnit.module('BinaryTreeNode', () =>
 
     QUnit.test('should detect right uncle', (assert) =>
     {
-        const grandParent = new ds.BinaryTreeNode('grand-parent');
-        const parent = new ds.BinaryTreeNode('parent');
-        const uncle = new ds.BinaryTreeNode('uncle');
-        const child = new ds.BinaryTreeNode('child');
+        const grandParent = new feng3d.BinaryTreeNode('grand-parent');
+        const parent = new feng3d.BinaryTreeNode('parent');
+        const uncle = new feng3d.BinaryTreeNode('uncle');
+        const child = new feng3d.BinaryTreeNode('child');
 
         assert.deepEqual(grandParent.uncle, undefined);
         assert.deepEqual(parent.uncle, undefined);
@@ -243,10 +243,10 @@ QUnit.module('BinaryTreeNode', () =>
 
     QUnit.test('should detect left uncle', (assert) =>
     {
-        const grandParent = new ds.BinaryTreeNode('grand-parent');
-        const parent = new ds.BinaryTreeNode('parent');
-        const uncle = new ds.BinaryTreeNode('uncle');
-        const child = new ds.BinaryTreeNode('child');
+        const grandParent = new feng3d.BinaryTreeNode('grand-parent');
+        const parent = new feng3d.BinaryTreeNode('parent');
+        const uncle = new feng3d.BinaryTreeNode('uncle');
+        const child = new feng3d.BinaryTreeNode('child');
 
         assert.deepEqual(grandParent.uncle, undefined);
         assert.deepEqual(parent.uncle, undefined);
@@ -269,7 +269,7 @@ QUnit.module('BinaryTreeNode', () =>
 
     QUnit.test('should be possible to set node values', (assert) =>
     {
-        const node = new ds.BinaryTreeNode('initial_value');
+        const node = new feng3d.BinaryTreeNode('initial_value');
 
         assert.deepEqual(node.value, 'initial_value');
 
@@ -280,9 +280,9 @@ QUnit.module('BinaryTreeNode', () =>
 
     QUnit.test('should be possible to copy node', (assert) =>
     {
-        const root = new ds.BinaryTreeNode('root');
-        const left = new ds.BinaryTreeNode('left');
-        const right = new ds.BinaryTreeNode('right');
+        const root = new feng3d.BinaryTreeNode('root');
+        const left = new feng3d.BinaryTreeNode('left');
+        const right = new feng3d.BinaryTreeNode('right');
 
         root
             .setLeft(left)
@@ -290,9 +290,9 @@ QUnit.module('BinaryTreeNode', () =>
 
         assert.deepEqual(root.toString(), 'left,root,right');
 
-        const newRoot = new ds.BinaryTreeNode('new_root');
-        const newLeft = new ds.BinaryTreeNode('new_left');
-        const newRight = new ds.BinaryTreeNode('new_right');
+        const newRoot = new feng3d.BinaryTreeNode('new_root');
+        const newLeft = new feng3d.BinaryTreeNode('new_left');
+        const newRight = new feng3d.BinaryTreeNode('new_right');
 
         newRoot
             .setLeft(newLeft)
@@ -300,7 +300,7 @@ QUnit.module('BinaryTreeNode', () =>
 
         assert.deepEqual(newRoot.toString(), 'new_left,new_root,new_right');
 
-        ds.BinaryTreeNode.copyNode(root, newRoot);
+        feng3d.BinaryTreeNode.copyNode(root, newRoot);
 
         assert.deepEqual(root.toString(), 'left,root,right');
         assert.deepEqual(newRoot.toString(), 'left,root,right');

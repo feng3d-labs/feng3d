@@ -3,16 +3,16 @@ QUnit.module('HashTable', (assert) =>
 {
     QUnit.test('should create hash table of certain size', (assert) =>
     {
-        const defaultHashTable = new ds.HashTable();
+        const defaultHashTable = new feng3d.HashTable();
         assert.deepEqual(defaultHashTable.buckets.length, 32);
 
-        const biggerHashTable = new ds.HashTable(64);
+        const biggerHashTable = new feng3d.HashTable(64);
         assert.deepEqual(biggerHashTable.buckets.length, 64);
     });
 
     QUnit.test('should generate proper hash for specified keys', (assert) =>
     {
-        const hashTable = new ds.HashTable();
+        const hashTable = new feng3d.HashTable();
 
         assert.deepEqual(hashTable.hash('a'), 1);
         assert.deepEqual(hashTable.hash('b'), 2);
@@ -21,7 +21,7 @@ QUnit.module('HashTable', (assert) =>
 
     QUnit.test('should set, read and delete data with collisions', (assert) =>
     {
-        const hashTable = new ds.HashTable(3);
+        const hashTable = new feng3d.HashTable(3);
 
         assert.deepEqual(hashTable.hash('a'), 1);
         assert.deepEqual(hashTable.hash('b'), 2);
@@ -61,7 +61,7 @@ QUnit.module('HashTable', (assert) =>
 
     QUnit.test('should be possible to add objects to hash table', (assert) =>
     {
-        const hashTable = new ds.HashTable();
+        const hashTable = new feng3d.HashTable();
 
         hashTable.set('objectKey', { prop1: 'a', prop2: 'b' });
 
@@ -72,7 +72,7 @@ QUnit.module('HashTable', (assert) =>
 
     QUnit.test('should track actual keys', (assert) =>
     {
-        const hashTable = new ds.HashTable(3);
+        const hashTable = new feng3d.HashTable(3);
 
         hashTable.set('a', 'sky-old');
         hashTable.set('a', 'sky');

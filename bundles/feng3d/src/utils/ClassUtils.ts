@@ -90,6 +90,7 @@ namespace feng3d
 
     var _definitionCache = {};
     var _global: Window;
+    var global: any;
     if (typeof window != "undefined")
     {
         _global = window;

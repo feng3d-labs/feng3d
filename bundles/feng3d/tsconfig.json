@@ -15,16 +15,16 @@
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
         //
-        "node_modules/@feng3d/watcher/src/Watcher.ts",
-        //
         "src/Feng3d.ts",
+        //
+        "node_modules/@feng3d/watcher/src/Watcher.ts",
         // 自动生成文件
         "src/autofiles/ShaderConfig.ts",
         // Polyfill
-        "src/polyfill/String.ts",
-        "src/polyfill/Object.ts",
-        "src/polyfill/Map.ts",
-        "src/polyfill/Array.ts",
+        "node_modules/@feng3d/polyfill/src/String.ts",
+        "node_modules/@feng3d/polyfill/src/Object.ts",
+        "node_modules/@feng3d/polyfill/src/Map.ts",
+        "node_modules/@feng3d/polyfill/src/Array.ts",
         //基础工具
         "src/utils/debug.ts",
         "src/utils/Serialization.ts",
@@ -41,25 +41,25 @@
         "src/utils/RegExps.ts",
         // 数据结构
         //
-        "src/ds/utils/Comparator.ts",
-        "src/ds/Utils.ts",
-        "src/ds/LinkedList.ts",
-        "src/ds/DoublyLinkedList.ts",
-        "src/ds/Queue.ts",
-        "src/ds/Stack.ts",
-        "src/ds/Heap.ts",
-        "src/ds/MaxHeap.ts",
-        "src/ds/MinHeap.ts",
-        "src/ds/HashTable.ts",
-        "src/ds/PriorityQueue.ts",
-        "src/ds/PriorityQueue1.ts",
-        "src/ds/BloomFilter.ts",
-        "src/ds/DisjointSet.ts",
-        "src/ds/Graph.ts",
-        "src/ds/BinaryTreeNode.ts",
-        "src/ds/BinarySearchTreeNode.ts",
-        "src/ds/BinarySearchTree.ts",
-        "src/ds/AvlTree.ts",
+        "node_modules/@feng3d/ds/src/utils/Comparator.ts",
+        "node_modules/@feng3d/ds/src/Utils.ts",
+        "node_modules/@feng3d/ds/src/LinkedList.ts",
+        "node_modules/@feng3d/ds/src/DoublyLinkedList.ts",
+        "node_modules/@feng3d/ds/src/Queue.ts",
+        "node_modules/@feng3d/ds/src/Stack.ts",
+        "node_modules/@feng3d/ds/src/Heap.ts",
+        "node_modules/@feng3d/ds/src/MaxHeap.ts",
+        "node_modules/@feng3d/ds/src/MinHeap.ts",
+        "node_modules/@feng3d/ds/src/HashTable.ts",
+        "node_modules/@feng3d/ds/src/PriorityQueue.ts",
+        "node_modules/@feng3d/ds/src/PriorityQueue1.ts",
+        "node_modules/@feng3d/ds/src/BloomFilter.ts",
+        "node_modules/@feng3d/ds/src/DisjointSet.ts",
+        "node_modules/@feng3d/ds/src/Graph.ts",
+        "node_modules/@feng3d/ds/src/BinaryTreeNode.ts",
+        "node_modules/@feng3d/ds/src/BinarySearchTreeNode.ts",
+        "node_modules/@feng3d/ds/src/BinarySearchTree.ts",
+        "node_modules/@feng3d/ds/src/AvlTree.ts",
         // 数学相关程序
         "src/math/Math.ts",
         // 函数方程
@@ -103,8 +103,8 @@
         "src/math/curve/MinMaxCurve.ts",
         "src/math/curve/MinMaxCurveVector3.ts",
         // 事件
-        "src/event/FEvent.ts",
-        "src/event/EventDispatcher.ts",
+        "node_modules/@feng3d/event/src/FEvent.ts",
+        "node_modules/@feng3d/event/src/EventDispatcher.ts",
         "src/event/EventProxy.ts",
         "src/event/WindowEventProxy.ts",
         //

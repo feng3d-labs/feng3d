@@ -364,7 +364,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 QUnit.module('AvlTree', function () {
     QUnit.test('should do simple left-left rotation', function (assert) {
-        var tree = new ds.AvlTree();
+        var tree = new feng3d.AvlTree();
         tree.insert(4);
         tree.insert(3);
         tree.insert(2);
@@ -382,7 +382,7 @@ QUnit.module('AvlTree', function () {
         assert.deepEqual(tree.root.height, 2);
     });
     QUnit.test('should do complex left-left rotation', function (assert) {
-        var tree = new ds.AvlTree();
+        var tree = new feng3d.AvlTree();
         tree.insert(30);
         tree.insert(20);
         tree.insert(40);
@@ -400,7 +400,7 @@ QUnit.module('AvlTree', function () {
         assert.deepEqual(tree.toString(), '5,10,20,25,30,40');
     });
     QUnit.test('should do simple right-right rotation', function (assert) {
-        var tree = new ds.AvlTree();
+        var tree = new feng3d.AvlTree();
         tree.insert(2);
         tree.insert(3);
         tree.insert(4);
@@ -418,7 +418,7 @@ QUnit.module('AvlTree', function () {
         assert.deepEqual(tree.root.height, 2);
     });
     QUnit.test('should do complex right-right rotation', function (assert) {
-        var tree = new ds.AvlTree();
+        var tree = new feng3d.AvlTree();
         tree.insert(30);
         tree.insert(20);
         tree.insert(40);
@@ -436,7 +436,7 @@ QUnit.module('AvlTree', function () {
         assert.deepEqual(tree.toString(), '20,30,35,40,50,55');
     });
     QUnit.test('should do left-right rotation', function (assert) {
-        var tree = new ds.AvlTree();
+        var tree = new feng3d.AvlTree();
         tree.insert(30);
         tree.insert(20);
         tree.insert(25);
@@ -445,7 +445,7 @@ QUnit.module('AvlTree', function () {
         assert.deepEqual(tree.toString(), '20,25,30');
     });
     QUnit.test('should do right-left rotation', function (assert) {
-        var tree = new ds.AvlTree();
+        var tree = new feng3d.AvlTree();
         tree.insert(30);
         tree.insert(40);
         tree.insert(35);
@@ -455,7 +455,7 @@ QUnit.module('AvlTree', function () {
     });
     QUnit.test('should create balanced tree: case #1', function (assert) {
         // @see: https://www.youtube.com/watch?v=rbg7Qf8GkQ4&t=839s
-        var tree = new ds.AvlTree();
+        var tree = new feng3d.AvlTree();
         tree.insert(1);
         tree.insert(2);
         tree.insert(3);
@@ -485,7 +485,7 @@ QUnit.module('AvlTree', function () {
     });
     QUnit.test('should create balanced tree: case #2', function (assert) {
         // @see https://www.youtube.com/watch?v=7m94k2Qhg68
-        var tree = new ds.AvlTree();
+        var tree = new feng3d.AvlTree();
         tree.insert(43);
         tree.insert(18);
         tree.insert(22);
@@ -501,7 +501,7 @@ QUnit.module('AvlTree', function () {
         assert.deepEqual(tree.toString(), '6,8,9,18,21,22,43');
     });
     QUnit.test('should do left right rotation and keeping left right node safe', function (assert) {
-        var tree = new ds.AvlTree();
+        var tree = new feng3d.AvlTree();
         tree.insert(30);
         tree.insert(15);
         tree.insert(40);
@@ -518,7 +518,7 @@ QUnit.module('AvlTree', function () {
         assert.deepEqual(tree.root.height, 3);
     });
     QUnit.test('should do left right rotation and keeping left right node safe', function (assert) {
-        var tree = new ds.AvlTree();
+        var tree = new feng3d.AvlTree();
         tree.insert(30);
         tree.insert(15);
         tree.insert(40);
@@ -535,7 +535,7 @@ QUnit.module('AvlTree', function () {
         assert.deepEqual(tree.root.height, 3);
     });
     QUnit.test('should remove values from the tree with right-right rotation', function (assert) {
-        var tree = new ds.AvlTree();
+        var tree = new feng3d.AvlTree();
         tree.insert(10);
         tree.insert(20);
         tree.insert(30);
@@ -549,7 +549,7 @@ QUnit.module('AvlTree', function () {
         assert.deepEqual(tree.root.balanceFactor, 0);
     });
     QUnit.test('should remove values from the tree with left-left rotation', function (assert) {
-        var tree = new ds.AvlTree();
+        var tree = new feng3d.AvlTree();
         tree.insert(10);
         tree.insert(20);
         tree.insert(30);
@@ -563,7 +563,7 @@ QUnit.module('AvlTree', function () {
         assert.deepEqual(tree.root.balanceFactor, 0);
     });
     QUnit.test('should keep balance after removal', function (assert) {
-        var tree = new ds.AvlTree();
+        var tree = new feng3d.AvlTree();
         tree.insert(1);
         tree.insert(2);
         tree.insert(3);
@@ -591,13 +591,13 @@ QUnit.module('AvlTree', function () {
 });
 QUnit.module('BinarySearchTree', function () {
     QUnit.test('should create binary search tree', function (assert) {
-        var bst = new ds.BinarySearchTree();
+        var bst = new feng3d.BinarySearchTree();
         assert.deepEqual(bst.root.value, null);
         assert.deepEqual(bst.root.left, null);
         assert.deepEqual(bst.root.right, null);
     });
     QUnit.test('should insert values', function (assert) {
-        var bst = new ds.BinarySearchTree();
+        var bst = new feng3d.BinarySearchTree();
         var insertedNode1 = bst.insert(10);
         var insertedNode2 = bst.insert(20);
         bst.insert(5);
@@ -606,7 +606,7 @@ QUnit.module('BinarySearchTree', function () {
         assert.deepEqual(insertedNode2.value, 20);
     });
     QUnit.test('should check if value exists', function (assert) {
-        var bst = new ds.BinarySearchTree();
+        var bst = new feng3d.BinarySearchTree();
         bst.insert(10);
         bst.insert(20);
         bst.insert(5);
@@ -614,7 +614,7 @@ QUnit.module('BinarySearchTree', function () {
         assert.deepEqual(bst.contains(40), false);
     });
     QUnit.test('should remove nodes', function (assert) {
-        var bst = new ds.BinarySearchTree();
+        var bst = new feng3d.BinarySearchTree();
         bst.insert(10);
         bst.insert(20);
         bst.insert(5);
@@ -638,14 +638,14 @@ QUnit.module('BinarySearchTree', function () {
         var obj1 = { key: 'obj1', value: 1, toString: function () { return 'obj1'; } };
         var obj2 = { key: 'obj2', value: 2, toString: function () { return 'obj2'; } };
         var obj3 = { key: 'obj3', value: 3, toString: function () { return 'obj3'; } };
-        var bst = new ds.BinarySearchTree(nodeValueCompareFunction);
+        var bst = new feng3d.BinarySearchTree(nodeValueCompareFunction);
         bst.insert(obj2);
         bst.insert(obj3);
         bst.insert(obj1);
         assert.deepEqual(bst.toString(), 'obj1,obj2,obj3');
     });
     QUnit.test('should be traversed to sorted array', function (assert) {
-        var bst = new ds.BinarySearchTree();
+        var bst = new feng3d.BinarySearchTree();
         bst.insert(10);
         bst.insert(-10);
         bst.insert(20);
@@ -661,20 +661,20 @@ QUnit.module('BinarySearchTree', function () {
 });
 QUnit.module('BinarySearchTreeNode', function () {
     QUnit.test('should create binary search tree', function (assert) {
-        var bstNode = new ds.BinarySearchTreeNode(2);
+        var bstNode = new feng3d.BinarySearchTreeNode(2);
         assert.deepEqual(bstNode.value, 2);
         assert.deepEqual(bstNode.left, null);
         assert.deepEqual(bstNode.right, null);
     });
     QUnit.test('should insert in itself if it is empty', function (assert) {
-        var bstNode = new ds.BinarySearchTreeNode();
+        var bstNode = new feng3d.BinarySearchTreeNode();
         bstNode.insert(1);
         assert.deepEqual(bstNode.value, 1);
         assert.deepEqual(bstNode.left, null);
         assert.deepEqual(bstNode.right, null);
     });
     QUnit.test('should insert nodes in correct order', function (assert) {
-        var bstNode = new ds.BinarySearchTreeNode(2);
+        var bstNode = new feng3d.BinarySearchTreeNode(2);
         var insertedNode1 = bstNode.insert(1);
         assert.deepEqual(insertedNode1.value, 1);
         assert.deepEqual(bstNode.toString(), '1,2');
@@ -699,7 +699,7 @@ QUnit.module('BinarySearchTreeNode', function () {
         assert.deepEqual(bstNode.contains(8), false);
     });
     QUnit.test('should not insert duplicates', function (assert) {
-        var bstNode = new ds.BinarySearchTreeNode(2);
+        var bstNode = new feng3d.BinarySearchTreeNode(2);
         bstNode.insert(1);
         assert.deepEqual(bstNode.toString(), '1,2');
         assert.deepEqual(bstNode.contains(1), true);
@@ -710,7 +710,7 @@ QUnit.module('BinarySearchTreeNode', function () {
         assert.deepEqual(bstNode.contains(3), false);
     });
     QUnit.test('should find min node', function (assert) {
-        var node = new ds.BinarySearchTreeNode(10);
+        var node = new feng3d.BinarySearchTreeNode(10);
         node.insert(20);
         node.insert(30);
         node.insert(5);
@@ -720,7 +720,7 @@ QUnit.module('BinarySearchTreeNode', function () {
         assert.deepEqual(node.findMin().value, 1);
     });
     QUnit.test('should be possible to attach meta information to binary search tree nodes', function (assert) {
-        var node = new ds.BinarySearchTreeNode(10);
+        var node = new feng3d.BinarySearchTreeNode(10);
         node.insert(20);
         var node1 = node.insert(30);
         node.insert(5);
@@ -736,7 +736,7 @@ QUnit.module('BinarySearchTreeNode', function () {
         assert.deepEqual(node.find(30).meta.get('color'), 'black');
     });
     QUnit.test('should find node', function (assert) {
-        var node = new ds.BinarySearchTreeNode(10);
+        var node = new feng3d.BinarySearchTreeNode(10);
         node.insert(20);
         node.insert(30);
         node.insert(5);
@@ -747,7 +747,7 @@ QUnit.module('BinarySearchTreeNode', function () {
         assert.deepEqual(node.find(5).value, 5);
     });
     QUnit.test('should remove leaf nodes', function (assert) {
-        var bstRootNode = new ds.BinarySearchTreeNode();
+        var bstRootNode = new feng3d.BinarySearchTreeNode();
         bstRootNode.insert(10);
         bstRootNode.insert(20);
         bstRootNode.insert(5);
@@ -760,7 +760,7 @@ QUnit.module('BinarySearchTreeNode', function () {
         assert.deepEqual(removed2, true);
     });
     QUnit.test('should remove nodes with one child', function (assert) {
-        var bstRootNode = new ds.BinarySearchTreeNode();
+        var bstRootNode = new feng3d.BinarySearchTreeNode();
         bstRootNode.insert(10);
         bstRootNode.insert(20);
         bstRootNode.insert(5);
@@ -774,7 +774,7 @@ QUnit.module('BinarySearchTreeNode', function () {
         assert.deepEqual(bstRootNode.toString(), '1,10,30');
     });
     QUnit.test('should remove nodes with two children', function (assert) {
-        var bstRootNode = new ds.BinarySearchTreeNode();
+        var bstRootNode = new feng3d.BinarySearchTreeNode();
         bstRootNode.insert(10);
         bstRootNode.insert(20);
         bstRootNode.insert(5);
@@ -797,7 +797,7 @@ QUnit.module('BinarySearchTreeNode', function () {
         assert.deepEqual(bstRootNode.toString(), '30');
     });
     QUnit.test('should remove node with no parent', function (assert) {
-        var bstRootNode = new ds.BinarySearchTreeNode();
+        var bstRootNode = new feng3d.BinarySearchTreeNode();
         assert.deepEqual(bstRootNode.toString(), '');
         bstRootNode.insert(1);
         bstRootNode.insert(2);
@@ -808,7 +808,7 @@ QUnit.module('BinarySearchTreeNode', function () {
         assert.deepEqual(bstRootNode.toString(), '');
     });
     QUnit.test('should throw error when trying to remove not existing node', function (assert) {
-        var bstRootNode = new ds.BinarySearchTreeNode();
+        var bstRootNode = new feng3d.BinarySearchTreeNode();
         bstRootNode.insert(10);
         bstRootNode.insert(20);
         function removeNotExistingElementFromTree() {
@@ -835,7 +835,7 @@ QUnit.module('BinarySearchTreeNode', function () {
         var obj1 = { key: 'obj1', value: 1, toString: function () { return 'obj1'; } };
         var obj2 = { key: 'obj2', value: 2, toString: function () { return 'obj2'; } };
         var obj3 = { key: 'obj3', value: 3, toString: function () { return 'obj3'; } };
-        var bstNode = new ds.BinarySearchTreeNode(obj2, nodeValueComparatorCallback);
+        var bstNode = new feng3d.BinarySearchTreeNode(obj2, nodeValueComparatorCallback);
         bstNode.insert(obj1);
         assert.deepEqual(bstNode.toString(), 'obj1,obj2');
         assert.deepEqual(bstNode.contains(obj1), true);
@@ -846,7 +846,7 @@ QUnit.module('BinarySearchTreeNode', function () {
         assert.deepEqual(bstNode.findMin().value, obj1);
     });
     QUnit.test('should abandon removed node', function (assert) {
-        var rootNode = new ds.BinarySearchTreeNode('foo');
+        var rootNode = new feng3d.BinarySearchTreeNode('foo');
         rootNode.insert('bar');
         var childNode = rootNode.find('bar');
         rootNode.remove('bar');
@@ -855,13 +855,13 @@ QUnit.module('BinarySearchTreeNode', function () {
 });
 QUnit.module('BinaryTreeNode', function () {
     QUnit.test('should create node', function (assert) {
-        var node = new ds.BinaryTreeNode();
+        var node = new feng3d.BinaryTreeNode();
         assert.deepEqual(node.value, null);
         assert.deepEqual(node.left, null);
         assert.deepEqual(node.right, null);
-        var leftNode = new ds.BinaryTreeNode(1);
-        var rightNode = new ds.BinaryTreeNode(3);
-        var rootNode = new ds.BinaryTreeNode(2);
+        var leftNode = new feng3d.BinaryTreeNode(1);
+        var rightNode = new feng3d.BinaryTreeNode(3);
+        var rootNode = new feng3d.BinaryTreeNode(2);
         rootNode
             .setLeft(leftNode)
             .setRight(rightNode);
@@ -870,9 +870,9 @@ QUnit.module('BinaryTreeNode', function () {
         assert.deepEqual(rootNode.right.value, 3);
     });
     QUnit.test('should set parent', function (assert) {
-        var leftNode = new ds.BinaryTreeNode(1);
-        var rightNode = new ds.BinaryTreeNode(3);
-        var rootNode = new ds.BinaryTreeNode(2);
+        var leftNode = new feng3d.BinaryTreeNode(1);
+        var rightNode = new feng3d.BinaryTreeNode(3);
+        var rootNode = new feng3d.BinaryTreeNode(2);
         rootNode
             .setLeft(leftNode)
             .setRight(rightNode);
@@ -882,9 +882,9 @@ QUnit.module('BinaryTreeNode', function () {
         assert.deepEqual(rootNode.right.parent, rootNode);
     });
     QUnit.test('should traverse node', function (assert) {
-        var leftNode = new ds.BinaryTreeNode(1);
-        var rightNode = new ds.BinaryTreeNode(3);
-        var rootNode = new ds.BinaryTreeNode(2);
+        var leftNode = new feng3d.BinaryTreeNode(1);
+        var rightNode = new feng3d.BinaryTreeNode(3);
+        var rootNode = new feng3d.BinaryTreeNode(2);
         rootNode
             .setLeft(leftNode)
             .setRight(rightNode);
@@ -892,9 +892,9 @@ QUnit.module('BinaryTreeNode', function () {
         assert.deepEqual(rootNode.toString(), '1,2,3');
     });
     QUnit.test('should remove child node', function (assert) {
-        var leftNode = new ds.BinaryTreeNode(1);
-        var rightNode = new ds.BinaryTreeNode(3);
-        var rootNode = new ds.BinaryTreeNode(2);
+        var leftNode = new feng3d.BinaryTreeNode(1);
+        var rightNode = new feng3d.BinaryTreeNode(3);
+        var rootNode = new feng3d.BinaryTreeNode(2);
         rootNode
             .setLeft(leftNode)
             .setRight(rightNode);
@@ -907,14 +907,14 @@ QUnit.module('BinaryTreeNode', function () {
         assert.deepEqual(rootNode.traverseInOrder(), [2]);
     });
     QUnit.test('should replace child node', function (assert) {
-        var leftNode = new ds.BinaryTreeNode(1);
-        var rightNode = new ds.BinaryTreeNode(3);
-        var rootNode = new ds.BinaryTreeNode(2);
+        var leftNode = new feng3d.BinaryTreeNode(1);
+        var rightNode = new feng3d.BinaryTreeNode(3);
+        var rootNode = new feng3d.BinaryTreeNode(2);
         rootNode
             .setLeft(leftNode)
             .setRight(rightNode);
         assert.deepEqual(rootNode.traverseInOrder(), [1, 2, 3]);
-        var replacementNode = new ds.BinaryTreeNode(5);
+        var replacementNode = new feng3d.BinaryTreeNode(5);
         rightNode.setRight(replacementNode);
         assert.deepEqual(rootNode.traverseInOrder(), [1, 2, 3, 5]);
         assert.deepEqual(rootNode.replaceChild(rootNode.right, rootNode.right.right), true);
@@ -927,15 +927,15 @@ QUnit.module('BinaryTreeNode', function () {
         assert.deepEqual(rootNode.traverseInOrder(), [1, 2, 5]);
         assert.deepEqual(rootNode.replaceChild(rootNode.left, replacementNode), true);
         assert.deepEqual(rootNode.traverseInOrder(), [5, 2, 5]);
-        assert.deepEqual(rootNode.replaceChild(new ds.BinaryTreeNode(), new ds.BinaryTreeNode()), false);
+        assert.deepEqual(rootNode.replaceChild(new feng3d.BinaryTreeNode(), new feng3d.BinaryTreeNode()), false);
     });
     QUnit.test('should calculate node height', function (assert) {
-        var root = new ds.BinaryTreeNode(1);
-        var left = new ds.BinaryTreeNode(3);
-        var right = new ds.BinaryTreeNode(2);
-        var grandLeft = new ds.BinaryTreeNode(5);
-        var grandRight = new ds.BinaryTreeNode(6);
-        var grandGrandLeft = new ds.BinaryTreeNode(7);
+        var root = new feng3d.BinaryTreeNode(1);
+        var left = new feng3d.BinaryTreeNode(3);
+        var right = new feng3d.BinaryTreeNode(2);
+        var grandLeft = new feng3d.BinaryTreeNode(5);
+        var grandRight = new feng3d.BinaryTreeNode(6);
+        var grandGrandLeft = new feng3d.BinaryTreeNode(7);
         assert.deepEqual(root.height, 0);
         assert.deepEqual(root.balanceFactor, 0);
         root
@@ -961,17 +961,17 @@ QUnit.module('BinaryTreeNode', function () {
         assert.deepEqual(root.balanceFactor, 2);
     });
     QUnit.test('should calculate node height for right nodes as well', function (assert) {
-        var root = new ds.BinaryTreeNode(1);
-        var right = new ds.BinaryTreeNode(2);
+        var root = new feng3d.BinaryTreeNode(1);
+        var right = new feng3d.BinaryTreeNode(2);
         root.setRight(right);
         assert.deepEqual(root.height, 1);
         assert.deepEqual(right.height, 0);
         assert.deepEqual(root.balanceFactor, -1);
     });
     QUnit.test('should set null for left and right node', function (assert) {
-        var root = new ds.BinaryTreeNode(2);
-        var left = new ds.BinaryTreeNode(1);
-        var right = new ds.BinaryTreeNode(3);
+        var root = new feng3d.BinaryTreeNode(2);
+        var left = new feng3d.BinaryTreeNode(1);
+        var right = new feng3d.BinaryTreeNode(3);
         root.setLeft(left);
         root.setRight(right);
         assert.deepEqual(root.left.value, 1);
@@ -984,8 +984,8 @@ QUnit.module('BinaryTreeNode', function () {
     QUnit.test('should be possible to create node with object as a value', function (assert) {
         var obj1 = { key: 'object_1', toString: function () { return 'object_1'; } };
         var obj2 = { key: 'object_2' };
-        var node1 = new ds.BinaryTreeNode(obj1);
-        var node2 = new ds.BinaryTreeNode(obj2);
+        var node1 = new feng3d.BinaryTreeNode(obj1);
+        var node2 = new feng3d.BinaryTreeNode(obj2);
         node1.setLeft(node2);
         assert.deepEqual(node1.value, obj1);
         assert.deepEqual(node2.value, obj2);
@@ -998,18 +998,18 @@ QUnit.module('BinaryTreeNode', function () {
         assert.deepEqual(node2.toString(), '[object Object]');
     });
     QUnit.test('should be possible to attach meta information to the node', function (assert) {
-        var redNode = new ds.BinaryTreeNode(1);
-        var blackNode = new ds.BinaryTreeNode(2);
+        var redNode = new feng3d.BinaryTreeNode(1);
+        var blackNode = new feng3d.BinaryTreeNode(2);
         redNode.meta.set('color', 'red');
         blackNode.meta.set('color', 'black');
         assert.deepEqual(redNode.meta.get('color'), 'red');
         assert.deepEqual(blackNode.meta.get('color'), 'black');
     });
     QUnit.test('should detect right uncle', function (assert) {
-        var grandParent = new ds.BinaryTreeNode('grand-parent');
-        var parent = new ds.BinaryTreeNode('parent');
-        var uncle = new ds.BinaryTreeNode('uncle');
-        var child = new ds.BinaryTreeNode('child');
+        var grandParent = new feng3d.BinaryTreeNode('grand-parent');
+        var parent = new feng3d.BinaryTreeNode('parent');
+        var uncle = new feng3d.BinaryTreeNode('uncle');
+        var child = new feng3d.BinaryTreeNode('child');
         assert.deepEqual(grandParent.uncle, undefined);
         assert.deepEqual(parent.uncle, undefined);
         grandParent.setLeft(parent);
@@ -1023,10 +1023,10 @@ QUnit.module('BinaryTreeNode', function () {
         assert.deepEqual(child.uncle, uncle);
     });
     QUnit.test('should detect left uncle', function (assert) {
-        var grandParent = new ds.BinaryTreeNode('grand-parent');
-        var parent = new ds.BinaryTreeNode('parent');
-        var uncle = new ds.BinaryTreeNode('uncle');
-        var child = new ds.BinaryTreeNode('child');
+        var grandParent = new feng3d.BinaryTreeNode('grand-parent');
+        var parent = new feng3d.BinaryTreeNode('parent');
+        var uncle = new feng3d.BinaryTreeNode('uncle');
+        var child = new feng3d.BinaryTreeNode('child');
         assert.deepEqual(grandParent.uncle, undefined);
         assert.deepEqual(parent.uncle, undefined);
         grandParent.setRight(parent);
@@ -1040,27 +1040,27 @@ QUnit.module('BinaryTreeNode', function () {
         assert.deepEqual(child.uncle, uncle);
     });
     QUnit.test('should be possible to set node values', function (assert) {
-        var node = new ds.BinaryTreeNode('initial_value');
+        var node = new feng3d.BinaryTreeNode('initial_value');
         assert.deepEqual(node.value, 'initial_value');
         node.setValue('new_value');
         assert.deepEqual(node.value, 'new_value');
     });
     QUnit.test('should be possible to copy node', function (assert) {
-        var root = new ds.BinaryTreeNode('root');
-        var left = new ds.BinaryTreeNode('left');
-        var right = new ds.BinaryTreeNode('right');
+        var root = new feng3d.BinaryTreeNode('root');
+        var left = new feng3d.BinaryTreeNode('left');
+        var right = new feng3d.BinaryTreeNode('right');
         root
             .setLeft(left)
             .setRight(right);
         assert.deepEqual(root.toString(), 'left,root,right');
-        var newRoot = new ds.BinaryTreeNode('new_root');
-        var newLeft = new ds.BinaryTreeNode('new_left');
-        var newRight = new ds.BinaryTreeNode('new_right');
+        var newRoot = new feng3d.BinaryTreeNode('new_root');
+        var newLeft = new feng3d.BinaryTreeNode('new_left');
+        var newRight = new feng3d.BinaryTreeNode('new_right');
         newRoot
             .setLeft(newLeft)
             .setRight(newRight);
         assert.deepEqual(newRoot.toString(), 'new_left,new_root,new_right');
-        ds.BinaryTreeNode.copyNode(root, newRoot);
+        feng3d.BinaryTreeNode.copyNode(root, newRoot);
         assert.deepEqual(root.toString(), 'left,root,right');
         assert.deepEqual(newRoot.toString(), 'left,root,right');
     });
@@ -1073,18 +1073,18 @@ QUnit.module('BloomFilter', function () {
         'Barry Allen',
     ];
     QUnit.test('should have methods named "insert" and "mayContain"', function (assert) {
-        var bloomFilter = new ds.BloomFilter();
+        var bloomFilter = new feng3d.BloomFilter();
         assert.deepEqual(typeof bloomFilter.insert, 'function');
         assert.deepEqual(typeof bloomFilter.mayContain, 'function');
     });
     QUnit.test('should create a new filter store with the appropriate methods', function (assert) {
-        var bloomFilter = new ds.BloomFilter();
+        var bloomFilter = new feng3d.BloomFilter();
         var store = bloomFilter.createStore(18);
         assert.deepEqual(typeof store.getValue, 'function');
         assert.deepEqual(typeof store.setValue, 'function');
     });
     QUnit.test('should hash deterministically with all 3 hash functions', function (assert) {
-        var bloomFilter = new ds.BloomFilter();
+        var bloomFilter = new feng3d.BloomFilter();
         var str1 = 'apple';
         assert.deepEqual(bloomFilter.hash1(str1), bloomFilter.hash1(str1));
         assert.deepEqual(bloomFilter.hash2(str1), bloomFilter.hash2(str1));
@@ -1101,12 +1101,12 @@ QUnit.module('BloomFilter', function () {
         assert.deepEqual(bloomFilter.hash3(str2), 10);
     });
     QUnit.test('should create an array with 3 hash values', function (assert) {
-        var bloomFilter = new ds.BloomFilter();
+        var bloomFilter = new feng3d.BloomFilter();
         assert.deepEqual(bloomFilter.getHashValues('abc').length, 3);
         assert.deepEqual(bloomFilter.getHashValues('abc'), [66, 63, 54]);
     });
     QUnit.test('should insert strings correctly and return true when checking for inserted values', function (assert) {
-        var bloomFilter = new ds.BloomFilter();
+        var bloomFilter = new feng3d.BloomFilter();
         people.forEach(function (person) { return bloomFilter.insert(person); });
         assert.deepEqual(bloomFilter.mayContain('Bruce Wayne'), true);
         assert.deepEqual(bloomFilter.mayContain('Clark Kent'), true);
@@ -1117,11 +1117,11 @@ QUnit.module('BloomFilter', function () {
 QUnit.module('DisjointSet', function () {
     QUnit.test('should throw error when trying to union and check not existing sets', function (assert) {
         function mergeNotExistingSets() {
-            var disjointSet = new ds.DisjointSet();
+            var disjointSet = new feng3d.DisjointSet();
             disjointSet.union('A', 'B');
         }
         function checkNotExistingSets() {
-            var disjointSet = new ds.DisjointSet();
+            var disjointSet = new feng3d.DisjointSet();
             disjointSet.inSameSet('A', 'B');
         }
         var error0 = false, error1 = false;
@@ -1141,7 +1141,7 @@ QUnit.module('DisjointSet', function () {
         assert.deepEqual(error1, true);
     });
     QUnit.test('should do basic manipulations on disjoint set', function (assert) {
-        var disjointSet = new ds.DisjointSet();
+        var disjointSet = new feng3d.DisjointSet();
         assert.deepEqual(disjointSet.find('A'), null);
         assert.deepEqual(disjointSet.find('B'), null);
         disjointSet.makeSet('A');
@@ -1184,7 +1184,7 @@ QUnit.module('DisjointSet', function () {
         assert.deepEqual(disjointSet.inSameSet('A', 'I'), true);
     });
     QUnit.test('should union smaller set with bigger one making bigger one to be new root', function (assert) {
-        var disjointSet = new ds.DisjointSet();
+        var disjointSet = new feng3d.DisjointSet();
         disjointSet
             .makeSet('A')
             .makeSet('B')
@@ -1195,7 +1195,7 @@ QUnit.module('DisjointSet', function () {
     });
     QUnit.test('should do basic manipulations on disjoint set with custom key extractor', function (assert) {
         var keyExtractor = function (value) { return value.key; };
-        var disjointSet = new ds.DisjointSet(keyExtractor);
+        var disjointSet = new feng3d.DisjointSet(keyExtractor);
         var itemA = { key: 'A', value: 1 };
         var itemB = { key: 'B', value: 2 };
         var itemC = { key: 'C', value: 3 };
@@ -1226,10 +1226,10 @@ QUnit.module('DisjointSet', function () {
 });
 QUnit.module('DisjointSetNode', function () {
     QUnit.test('should do basic manipulation with disjoint set item', function (assert) {
-        var itemA = new ds.DisjointSetNode('A');
-        var itemB = new ds.DisjointSetNode('B');
-        var itemC = new ds.DisjointSetNode('C');
-        var itemD = new ds.DisjointSetNode('D');
+        var itemA = new feng3d.DisjointSetNode('A');
+        var itemB = new feng3d.DisjointSetNode('B');
+        var itemC = new feng3d.DisjointSetNode('C');
+        var itemD = new feng3d.DisjointSetNode('D');
         assert.deepEqual(itemA.getRank(), 0);
         assert.deepEqual(itemA.getChildren(), []);
         assert.deepEqual(itemA.getKey(), 'A');
@@ -1269,10 +1269,10 @@ QUnit.module('DisjointSetNode', function () {
         var keyExtractor = function (value) {
             return value.key;
         };
-        var itemA = new ds.DisjointSetNode({ key: 'A', value: 1 }, keyExtractor);
-        var itemB = new ds.DisjointSetNode({ key: 'B', value: 2 }, keyExtractor);
-        var itemC = new ds.DisjointSetNode({ key: 'C', value: 3 }, keyExtractor);
-        var itemD = new ds.DisjointSetNode({ key: 'D', value: 4 }, keyExtractor);
+        var itemA = new feng3d.DisjointSetNode({ key: 'A', value: 1 }, keyExtractor);
+        var itemB = new feng3d.DisjointSetNode({ key: 'B', value: 2 }, keyExtractor);
+        var itemC = new feng3d.DisjointSetNode({ key: 'C', value: 3 }, keyExtractor);
+        var itemD = new feng3d.DisjointSetNode({ key: 'D', value: 4 }, keyExtractor);
         assert.deepEqual(itemA.getRank(), 0);
         assert.deepEqual(itemA.getChildren(), []);
         assert.deepEqual(itemA.getKey(), 'A');
@@ -1311,21 +1311,21 @@ QUnit.module('DisjointSetNode', function () {
 });
 QUnit.module("DoublyLinkedList", function () {
     QUnit.test("DoublyLinkedList", function (assert) {
-        var ll = new ds.DoublyLinkedList();
+        var ll = new feng3d.DoublyLinkedList();
         assert.deepEqual(ll.deleteHead(), undefined);
         assert.deepEqual(ll.deleteTail(), undefined);
         assert.ok(ll.checkStructure());
     });
     QUnit.test("empty", function (assert) {
-        var ll = new ds.DoublyLinkedList();
+        var ll = new feng3d.DoublyLinkedList();
         ll.fromArray([Math.random(), Math.random(), Math.random()]);
         ll.empty();
         assert.deepEqual(ll.toArray().length, 0);
         assert.ok(ll.checkStructure());
     });
     QUnit.test("addHead", function (assert) {
-        var ll = new ds.DoublyLinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.DoublyLinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         arr.concat().reverse().forEach(function (element) {
             ll.addHead(element);
         });
@@ -1336,8 +1336,8 @@ QUnit.module("DoublyLinkedList", function () {
         assert.ok(ll.checkStructure());
     });
     QUnit.test("addTail", function (assert) {
-        var ll = new ds.DoublyLinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.DoublyLinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         arr.forEach(function (element) {
             ll.addTail(element);
         });
@@ -1348,8 +1348,8 @@ QUnit.module("DoublyLinkedList", function () {
         assert.ok(ll.checkStructure());
     });
     QUnit.test("delete", function (assert) {
-        var ll = new ds.DoublyLinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.DoublyLinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         arr = arr.concat(arr);
         arr.forEach(function (element) {
             ll.addTail(element);
@@ -1362,8 +1362,8 @@ QUnit.module("DoublyLinkedList", function () {
         assert.ok(ll.checkStructure());
     });
     QUnit.test("deleteAll", function (assert) {
-        var ll = new ds.DoublyLinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.DoublyLinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         arr = arr.concat(arr);
         arr.forEach(function (element) {
             ll.addTail(element);
@@ -1380,8 +1380,8 @@ QUnit.module("DoublyLinkedList", function () {
         assert.ok(ll.checkStructure());
     });
     QUnit.test("deleteHead", function (assert) {
-        var ll = new ds.DoublyLinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.DoublyLinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         ll.fromArray(arr);
         assert.deepEqual(ll.deleteHead(), arr.shift());
         assert.deepEqual(ll.deleteHead(), arr.shift());
@@ -1389,8 +1389,8 @@ QUnit.module("DoublyLinkedList", function () {
         assert.ok(ll.checkStructure());
     });
     QUnit.test("deleteTail", function (assert) {
-        var ll = new ds.DoublyLinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.DoublyLinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         ll.fromArray(arr);
         assert.deepEqual(ll.deleteTail(), arr.pop());
         assert.deepEqual(ll.deleteTail(), arr.pop());
@@ -1398,29 +1398,29 @@ QUnit.module("DoublyLinkedList", function () {
         assert.ok(ll.checkStructure());
     });
     QUnit.test("toArray", function (assert) {
-        var ll = new ds.DoublyLinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.DoublyLinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         ll.fromArray(arr);
         assert.deepEqual(ll.toArray(), arr);
         assert.ok(ll.checkStructure());
     });
     QUnit.test("fromArray", function (assert) {
-        var ll = new ds.DoublyLinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.DoublyLinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         ll.fromArray(arr);
         assert.deepEqual(ll.toArray(), arr);
         assert.ok(ll.checkStructure());
     });
     QUnit.test("toString", function (assert) {
-        var ll = new ds.DoublyLinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.DoublyLinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         ll.fromArray(arr);
         assert.ok(true, ll.toString(function (v) { return v.toFixed(3); }));
         assert.ok(ll.checkStructure());
     });
     QUnit.test("reverse", function (assert) {
-        var ll = new ds.DoublyLinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.DoublyLinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         ll.fromArray(arr);
         ll.reverse();
         arr.reverse();
@@ -1435,9 +1435,9 @@ QUnit.module("DoublyLinkedList", function () {
 });
 QUnit.module('Graph', function () {
     QUnit.test('should add vertices to graph', function (assert) {
-        var graph = new ds.Graph();
-        var vertexA = new ds.GraphVertex('A');
-        var vertexB = new ds.GraphVertex('B');
+        var graph = new feng3d.Graph();
+        var vertexA = new feng3d.GraphVertex('A');
+        var vertexB = new feng3d.GraphVertex('B');
         graph
             .addVertex(vertexA)
             .addVertex(vertexB);
@@ -1446,10 +1446,10 @@ QUnit.module('Graph', function () {
         assert.deepEqual(graph.getVertexByKey(vertexB.getKey()), vertexB);
     });
     QUnit.test('should add edges to undirected graph', function (assert) {
-        var graph = new ds.Graph();
-        var vertexA = new ds.GraphVertex('A');
-        var vertexB = new ds.GraphVertex('B');
-        var edgeAB = new ds.GraphEdge(vertexA, vertexB);
+        var graph = new feng3d.Graph();
+        var vertexA = new feng3d.GraphVertex('A');
+        var vertexB = new feng3d.GraphVertex('B');
+        var edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
         graph.addEdge(edgeAB);
         assert.deepEqual(graph.getAllVertices().length, 2);
         assert.deepEqual(graph.getAllVertices()[0], vertexA);
@@ -1468,10 +1468,10 @@ QUnit.module('Graph', function () {
         assert.deepEqual(graphVertexB.getNeighbors()[0], graphVertexA);
     });
     QUnit.test('should add edges to directed graph', function (assert) {
-        var graph = new ds.Graph(true);
-        var vertexA = new ds.GraphVertex('A');
-        var vertexB = new ds.GraphVertex('B');
-        var edgeAB = new ds.GraphEdge(vertexA, vertexB);
+        var graph = new feng3d.Graph(true);
+        var vertexA = new feng3d.GraphVertex('A');
+        var vertexB = new feng3d.GraphVertex('B');
+        var edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
         graph.addEdge(edgeAB);
         var graphVertexA = graph.getVertexByKey(vertexA.getKey());
         var graphVertexB = graph.getVertexByKey(vertexB.getKey());
@@ -1484,11 +1484,11 @@ QUnit.module('Graph', function () {
         assert.deepEqual(graphVertexB.getNeighbors().length, 0);
     });
     QUnit.test('should find edge by vertices in undirected graph', function (assert) {
-        var graph = new ds.Graph();
-        var vertexA = new ds.GraphVertex('A');
-        var vertexB = new ds.GraphVertex('B');
-        var vertexC = new ds.GraphVertex('C');
-        var edgeAB = new ds.GraphEdge(vertexA, vertexB, 10);
+        var graph = new feng3d.Graph();
+        var vertexA = new feng3d.GraphVertex('A');
+        var vertexB = new feng3d.GraphVertex('B');
+        var vertexC = new feng3d.GraphVertex('C');
+        var edgeAB = new feng3d.GraphEdge(vertexA, vertexB, 10);
         graph.addEdge(edgeAB);
         var graphEdgeAB = graph.findEdge(vertexA, vertexB);
         var graphEdgeBA = graph.findEdge(vertexB, vertexA);
@@ -1501,11 +1501,11 @@ QUnit.module('Graph', function () {
         assert.deepEqual(graphEdgeAB.weight, 10);
     });
     QUnit.test('should find edge by vertices in directed graph', function (assert) {
-        var graph = new ds.Graph(true);
-        var vertexA = new ds.GraphVertex('A');
-        var vertexB = new ds.GraphVertex('B');
-        var vertexC = new ds.GraphVertex('C');
-        var edgeAB = new ds.GraphEdge(vertexA, vertexB, 10);
+        var graph = new feng3d.Graph(true);
+        var vertexA = new feng3d.GraphVertex('A');
+        var vertexB = new feng3d.GraphVertex('B');
+        var vertexC = new feng3d.GraphVertex('C');
+        var edgeAB = new feng3d.GraphEdge(vertexA, vertexB, 10);
         graph.addEdge(edgeAB);
         var graphEdgeAB = graph.findEdge(vertexA, vertexB);
         var graphEdgeBA = graph.findEdge(vertexB, vertexA);
@@ -1518,12 +1518,12 @@ QUnit.module('Graph', function () {
         assert.deepEqual(graphEdgeAB.weight, 10);
     });
     QUnit.test('should return vertex neighbors', function (assert) {
-        var graph = new ds.Graph(true);
-        var vertexA = new ds.GraphVertex('A');
-        var vertexB = new ds.GraphVertex('B');
-        var vertexC = new ds.GraphVertex('C');
-        var edgeAB = new ds.GraphEdge(vertexA, vertexB);
-        var edgeAC = new ds.GraphEdge(vertexA, vertexC);
+        var graph = new feng3d.Graph(true);
+        var vertexA = new feng3d.GraphVertex('A');
+        var vertexB = new feng3d.GraphVertex('B');
+        var vertexC = new feng3d.GraphVertex('C');
+        var edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
+        var edgeAC = new feng3d.GraphEdge(vertexA, vertexC);
         graph
             .addEdge(edgeAB)
             .addEdge(edgeAC);
@@ -1534,10 +1534,10 @@ QUnit.module('Graph', function () {
     });
     QUnit.test('should throw an error when trying to add edge twice', function (assert) {
         function addSameEdgeTwice() {
-            var graph = new ds.Graph(true);
-            var vertexA = new ds.GraphVertex('A');
-            var vertexB = new ds.GraphVertex('B');
-            var edgeAB = new ds.GraphEdge(vertexA, vertexB);
+            var graph = new feng3d.Graph(true);
+            var vertexA = new feng3d.GraphVertex('A');
+            var vertexB = new feng3d.GraphVertex('B');
+            var edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
             graph
                 .addEdge(edgeAB)
                 .addEdge(edgeAB);
@@ -1552,12 +1552,12 @@ QUnit.module('Graph', function () {
         assert.deepEqual(error0, true);
     });
     QUnit.test('should return the list of all added edges', function (assert) {
-        var graph = new ds.Graph(true);
-        var vertexA = new ds.GraphVertex('A');
-        var vertexB = new ds.GraphVertex('B');
-        var vertexC = new ds.GraphVertex('C');
-        var edgeAB = new ds.GraphEdge(vertexA, vertexB);
-        var edgeBC = new ds.GraphEdge(vertexB, vertexC);
+        var graph = new feng3d.Graph(true);
+        var vertexA = new feng3d.GraphVertex('A');
+        var vertexB = new feng3d.GraphVertex('B');
+        var vertexC = new feng3d.GraphVertex('C');
+        var edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
+        var edgeBC = new feng3d.GraphEdge(vertexB, vertexC);
         graph
             .addEdge(edgeAB)
             .addEdge(edgeBC);
@@ -1567,15 +1567,15 @@ QUnit.module('Graph', function () {
         assert.deepEqual(edges[1], edgeBC);
     });
     QUnit.test('should calculate total graph weight for default graph', function (assert) {
-        var graph = new ds.Graph();
-        var vertexA = new ds.GraphVertex('A');
-        var vertexB = new ds.GraphVertex('B');
-        var vertexC = new ds.GraphVertex('C');
-        var vertexD = new ds.GraphVertex('D');
-        var edgeAB = new ds.GraphEdge(vertexA, vertexB);
-        var edgeBC = new ds.GraphEdge(vertexB, vertexC);
-        var edgeCD = new ds.GraphEdge(vertexC, vertexD);
-        var edgeAD = new ds.GraphEdge(vertexA, vertexD);
+        var graph = new feng3d.Graph();
+        var vertexA = new feng3d.GraphVertex('A');
+        var vertexB = new feng3d.GraphVertex('B');
+        var vertexC = new feng3d.GraphVertex('C');
+        var vertexD = new feng3d.GraphVertex('D');
+        var edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
+        var edgeBC = new feng3d.GraphEdge(vertexB, vertexC);
+        var edgeCD = new feng3d.GraphEdge(vertexC, vertexD);
+        var edgeAD = new feng3d.GraphEdge(vertexA, vertexD);
         graph
             .addEdge(edgeAB)
             .addEdge(edgeBC)
@@ -1584,15 +1584,15 @@ QUnit.module('Graph', function () {
         assert.deepEqual(graph.getWeight(), 0);
     });
     QUnit.test('should calculate total graph weight for weighted graph', function (assert) {
-        var graph = new ds.Graph();
-        var vertexA = new ds.GraphVertex('A');
-        var vertexB = new ds.GraphVertex('B');
-        var vertexC = new ds.GraphVertex('C');
-        var vertexD = new ds.GraphVertex('D');
-        var edgeAB = new ds.GraphEdge(vertexA, vertexB, 1);
-        var edgeBC = new ds.GraphEdge(vertexB, vertexC, 2);
-        var edgeCD = new ds.GraphEdge(vertexC, vertexD, 3);
-        var edgeAD = new ds.GraphEdge(vertexA, vertexD, 4);
+        var graph = new feng3d.Graph();
+        var vertexA = new feng3d.GraphVertex('A');
+        var vertexB = new feng3d.GraphVertex('B');
+        var vertexC = new feng3d.GraphVertex('C');
+        var vertexD = new feng3d.GraphVertex('D');
+        var edgeAB = new feng3d.GraphEdge(vertexA, vertexB, 1);
+        var edgeBC = new feng3d.GraphEdge(vertexB, vertexC, 2);
+        var edgeCD = new feng3d.GraphEdge(vertexC, vertexD, 3);
+        var edgeAD = new feng3d.GraphEdge(vertexA, vertexD, 4);
         graph
             .addEdge(edgeAB)
             .addEdge(edgeBC)
@@ -1601,13 +1601,13 @@ QUnit.module('Graph', function () {
         assert.deepEqual(graph.getWeight(), 10);
     });
     QUnit.test('should be possible to delete edges from graph', function (assert) {
-        var graph = new ds.Graph();
-        var vertexA = new ds.GraphVertex('A');
-        var vertexB = new ds.GraphVertex('B');
-        var vertexC = new ds.GraphVertex('C');
-        var edgeAB = new ds.GraphEdge(vertexA, vertexB);
-        var edgeBC = new ds.GraphEdge(vertexB, vertexC);
-        var edgeAC = new ds.GraphEdge(vertexA, vertexC);
+        var graph = new feng3d.Graph();
+        var vertexA = new feng3d.GraphVertex('A');
+        var vertexB = new feng3d.GraphVertex('B');
+        var vertexC = new feng3d.GraphVertex('C');
+        var edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
+        var edgeBC = new feng3d.GraphEdge(vertexB, vertexC);
+        var edgeAC = new feng3d.GraphEdge(vertexA, vertexC);
         graph
             .addEdge(edgeAB)
             .addEdge(edgeBC)
@@ -1620,12 +1620,12 @@ QUnit.module('Graph', function () {
     });
     QUnit.test('should should throw an error when trying to delete not existing edge', function (assert) {
         function deleteNotExistingEdge() {
-            var graph = new ds.Graph();
-            var vertexA = new ds.GraphVertex('A');
-            var vertexB = new ds.GraphVertex('B');
-            var vertexC = new ds.GraphVertex('C');
-            var edgeAB = new ds.GraphEdge(vertexA, vertexB);
-            var edgeBC = new ds.GraphEdge(vertexB, vertexC);
+            var graph = new feng3d.Graph();
+            var vertexA = new feng3d.GraphVertex('A');
+            var vertexB = new feng3d.GraphVertex('B');
+            var vertexC = new feng3d.GraphVertex('C');
+            var edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
+            var edgeBC = new feng3d.GraphEdge(vertexB, vertexC);
             graph.addEdge(edgeAB);
             graph.deleteEdge(edgeBC);
         }
@@ -1639,14 +1639,14 @@ QUnit.module('Graph', function () {
         assert.deepEqual(error0, true);
     });
     QUnit.test('should be possible to reverse graph', function (assert) {
-        var vertexA = new ds.GraphVertex('A');
-        var vertexB = new ds.GraphVertex('B');
-        var vertexC = new ds.GraphVertex('C');
-        var vertexD = new ds.GraphVertex('D');
-        var edgeAB = new ds.GraphEdge(vertexA, vertexB);
-        var edgeAC = new ds.GraphEdge(vertexA, vertexC);
-        var edgeCD = new ds.GraphEdge(vertexC, vertexD);
-        var graph = new ds.Graph(true);
+        var vertexA = new feng3d.GraphVertex('A');
+        var vertexB = new feng3d.GraphVertex('B');
+        var vertexC = new feng3d.GraphVertex('C');
+        var vertexD = new feng3d.GraphVertex('D');
+        var edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
+        var edgeAC = new feng3d.GraphEdge(vertexA, vertexC);
+        var edgeCD = new feng3d.GraphEdge(vertexC, vertexD);
+        var graph = new feng3d.Graph(true);
         graph
             .addEdge(edgeAB)
             .addEdge(edgeAC)
@@ -1672,15 +1672,15 @@ QUnit.module('Graph', function () {
         assert.deepEqual(graph.getNeighbors(vertexD)[0].getKey(), vertexC.getKey());
     });
     QUnit.test('should return vertices indices', function (assert) {
-        var vertexA = new ds.GraphVertex('A');
-        var vertexB = new ds.GraphVertex('B');
-        var vertexC = new ds.GraphVertex('C');
-        var vertexD = new ds.GraphVertex('D');
-        var edgeAB = new ds.GraphEdge(vertexA, vertexB);
-        var edgeBC = new ds.GraphEdge(vertexB, vertexC);
-        var edgeCD = new ds.GraphEdge(vertexC, vertexD);
-        var edgeBD = new ds.GraphEdge(vertexB, vertexD);
-        var graph = new ds.Graph();
+        var vertexA = new feng3d.GraphVertex('A');
+        var vertexB = new feng3d.GraphVertex('B');
+        var vertexC = new feng3d.GraphVertex('C');
+        var vertexD = new feng3d.GraphVertex('D');
+        var edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
+        var edgeBC = new feng3d.GraphEdge(vertexB, vertexC);
+        var edgeCD = new feng3d.GraphEdge(vertexC, vertexD);
+        var edgeBD = new feng3d.GraphEdge(vertexB, vertexD);
+        var graph = new feng3d.Graph();
         graph
             .addEdge(edgeAB)
             .addEdge(edgeBC)
@@ -1695,15 +1695,15 @@ QUnit.module('Graph', function () {
         });
     });
     QUnit.test('should generate adjacency matrix for undirected graph', function (assert) {
-        var vertexA = new ds.GraphVertex('A');
-        var vertexB = new ds.GraphVertex('B');
-        var vertexC = new ds.GraphVertex('C');
-        var vertexD = new ds.GraphVertex('D');
-        var edgeAB = new ds.GraphEdge(vertexA, vertexB);
-        var edgeBC = new ds.GraphEdge(vertexB, vertexC);
-        var edgeCD = new ds.GraphEdge(vertexC, vertexD);
-        var edgeBD = new ds.GraphEdge(vertexB, vertexD);
-        var graph = new ds.Graph();
+        var vertexA = new feng3d.GraphVertex('A');
+        var vertexB = new feng3d.GraphVertex('B');
+        var vertexC = new feng3d.GraphVertex('C');
+        var vertexD = new feng3d.GraphVertex('D');
+        var edgeAB = new feng3d.GraphEdge(vertexA, vertexB);
+        var edgeBC = new feng3d.GraphEdge(vertexB, vertexC);
+        var edgeCD = new feng3d.GraphEdge(vertexC, vertexD);
+        var edgeBD = new feng3d.GraphEdge(vertexB, vertexD);
+        var graph = new feng3d.Graph();
         graph
             .addEdge(edgeAB)
             .addEdge(edgeBC)
@@ -1718,15 +1718,15 @@ QUnit.module('Graph', function () {
         ]);
     });
     QUnit.test('should generate adjacency matrix for directed graph', function (assert) {
-        var vertexA = new ds.GraphVertex('A');
-        var vertexB = new ds.GraphVertex('B');
-        var vertexC = new ds.GraphVertex('C');
-        var vertexD = new ds.GraphVertex('D');
-        var edgeAB = new ds.GraphEdge(vertexA, vertexB, 2);
-        var edgeBC = new ds.GraphEdge(vertexB, vertexC, 1);
-        var edgeCD = new ds.GraphEdge(vertexC, vertexD, 5);
-        var edgeBD = new ds.GraphEdge(vertexB, vertexD, 7);
-        var graph = new ds.Graph(true);
+        var vertexA = new feng3d.GraphVertex('A');
+        var vertexB = new feng3d.GraphVertex('B');
+        var vertexC = new feng3d.GraphVertex('C');
+        var vertexD = new feng3d.GraphVertex('D');
+        var edgeAB = new feng3d.GraphEdge(vertexA, vertexB, 2);
+        var edgeBC = new feng3d.GraphEdge(vertexB, vertexC, 1);
+        var edgeCD = new feng3d.GraphEdge(vertexC, vertexD, 5);
+        var edgeBD = new feng3d.GraphEdge(vertexB, vertexD, 7);
+        var graph = new feng3d.Graph(true);
         graph
             .addEdge(edgeAB)
             .addEdge(edgeBC)
@@ -1743,19 +1743,19 @@ QUnit.module('Graph', function () {
 });
 QUnit.module('HashTable', function (assert) {
     QUnit.test('should create hash table of certain size', function (assert) {
-        var defaultHashTable = new ds.HashTable();
+        var defaultHashTable = new feng3d.HashTable();
         assert.deepEqual(defaultHashTable.buckets.length, 32);
-        var biggerHashTable = new ds.HashTable(64);
+        var biggerHashTable = new feng3d.HashTable(64);
         assert.deepEqual(biggerHashTable.buckets.length, 64);
     });
     QUnit.test('should generate proper hash for specified keys', function (assert) {
-        var hashTable = new ds.HashTable();
+        var hashTable = new feng3d.HashTable();
         assert.deepEqual(hashTable.hash('a'), 1);
         assert.deepEqual(hashTable.hash('b'), 2);
         assert.deepEqual(hashTable.hash('abc'), 6);
     });
     QUnit.test('should set, read and delete data with collisions', function (assert) {
-        var hashTable = new ds.HashTable(3);
+        var hashTable = new feng3d.HashTable(3);
         assert.deepEqual(hashTable.hash('a'), 1);
         assert.deepEqual(hashTable.hash('b'), 2);
         assert.deepEqual(hashTable.hash('c'), 0);
@@ -1783,14 +1783,14 @@ QUnit.module('HashTable', function (assert) {
         assert.deepEqual(hashTable.get('d'), 'ocean-new');
     });
     QUnit.test('should be possible to add objects to hash table', function (assert) {
-        var hashTable = new ds.HashTable();
+        var hashTable = new feng3d.HashTable();
         hashTable.set('objectKey', { prop1: 'a', prop2: 'b' });
         var object = hashTable.get('objectKey');
         assert.deepEqual(object.prop1, 'a');
         assert.deepEqual(object.prop2, 'b');
     });
     QUnit.test('should track actual keys', function (assert) {
-        var hashTable = new ds.HashTable(3);
+        var hashTable = new feng3d.HashTable(3);
         hashTable.set('a', 'sky-old');
         hashTable.set('a', 'sky');
         hashTable.set('b', 'sea');
@@ -1807,14 +1807,14 @@ QUnit.module('HashTable', function (assert) {
 });
 QUnit.module("LinkedList", function () {
     QUnit.test("LinkedList", function (assert) {
-        var ll = new ds.LinkedList();
+        var ll = new feng3d.LinkedList();
         assert.deepEqual(ll.deleteHead(), null);
         assert.deepEqual(ll.deleteTail(), null);
         assert.ok(ll.checkStructure());
     });
     QUnit.test("addHead", function (assert) {
-        var ll = new ds.LinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.LinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         arr.concat().reverse().forEach(function (element) {
             ll.addHead(element);
         });
@@ -1825,8 +1825,8 @@ QUnit.module("LinkedList", function () {
         assert.ok(ll.checkStructure());
     });
     QUnit.test("addTail", function (assert) {
-        var ll = new ds.LinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.LinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         arr.forEach(function (element) {
             ll.addTail(element);
         });
@@ -1837,8 +1837,8 @@ QUnit.module("LinkedList", function () {
         assert.ok(ll.checkStructure());
     });
     QUnit.test("delete", function (assert) {
-        var ll = new ds.LinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.LinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         arr = arr.concat(arr);
         arr.forEach(function (element) {
             ll.addTail(element);
@@ -1851,8 +1851,8 @@ QUnit.module("LinkedList", function () {
         assert.ok(ll.checkStructure());
     });
     QUnit.test("deleteAll", function (assert) {
-        var ll = new ds.LinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.LinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         arr = arr.concat(arr);
         arr.forEach(function (element) {
             ll.addTail(element);
@@ -1869,8 +1869,8 @@ QUnit.module("LinkedList", function () {
         assert.ok(ll.checkStructure());
     });
     QUnit.test("deleteHead", function (assert) {
-        var ll = new ds.LinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.LinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         ll.fromArray(arr);
         assert.deepEqual(ll.deleteHead(), arr.shift());
         assert.deepEqual(ll.deleteHead(), arr.shift());
@@ -1878,8 +1878,8 @@ QUnit.module("LinkedList", function () {
         assert.ok(ll.checkStructure());
     });
     QUnit.test("deleteTail", function (assert) {
-        var ll = new ds.LinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.LinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         ll.fromArray(arr);
         assert.deepEqual(ll.deleteTail(), arr.pop());
         assert.deepEqual(ll.deleteTail(), arr.pop());
@@ -1887,29 +1887,29 @@ QUnit.module("LinkedList", function () {
         assert.ok(ll.checkStructure());
     });
     QUnit.test("toArray", function (assert) {
-        var ll = new ds.LinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.LinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         ll.fromArray(arr);
         assert.deepEqual(ll.toArray(), arr);
         assert.ok(ll.checkStructure());
     });
     QUnit.test("fromArray", function (assert) {
-        var ll = new ds.LinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.LinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         ll.fromArray(arr);
         assert.deepEqual(ll.toArray(), arr);
         assert.ok(ll.checkStructure());
     });
     QUnit.test("toString", function (assert) {
-        var ll = new ds.LinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.LinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         ll.fromArray(arr);
         assert.ok(true, ll.toString(function (v) { return v.toFixed(3); }));
         assert.ok(ll.checkStructure());
     });
     QUnit.test("reverse", function (assert) {
-        var ll = new ds.LinkedList();
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var ll = new feng3d.LinkedList();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         ll.fromArray(arr);
         ll.reverse();
         arr.reverse();
@@ -1924,12 +1924,12 @@ QUnit.module("LinkedList", function () {
 });
 QUnit.module("MaxHeap", function () {
     QUnit.test("MaxHeap", function (assert) {
-        var maxHeap = new ds.MaxHeap();
+        var maxHeap = new feng3d.MaxHeap();
         assert.deepEqual(maxHeap.peek(), null);
         assert.deepEqual(maxHeap.isEmpty(), true);
     });
     QUnit.test("should add items to the heap and heapify it up", function (assert) {
-        var maxHeap = new ds.MaxHeap();
+        var maxHeap = new feng3d.MaxHeap();
         maxHeap.add(5);
         assert.deepEqual(maxHeap.isEmpty(), false);
         assert.deepEqual(maxHeap.peek(), 5);
@@ -1954,7 +1954,7 @@ QUnit.module("MaxHeap", function () {
         assert.deepEqual(maxHeap.toString(), '1,1');
     });
     QUnit.test('should poll items from the heap and heapify it down', function (assert) {
-        var maxHeap = new ds.MaxHeap();
+        var maxHeap = new feng3d.MaxHeap();
         maxHeap.add(5);
         maxHeap.add(3);
         maxHeap.add(10);
@@ -1975,7 +1975,7 @@ QUnit.module("MaxHeap", function () {
         assert.deepEqual(maxHeap.toString(), '');
     });
     QUnit.test('should heapify down through the right branch as well', function (assert) {
-        var maxHeap = new ds.MaxHeap();
+        var maxHeap = new feng3d.MaxHeap();
         maxHeap.add(3);
         maxHeap.add(12);
         maxHeap.add(10);
@@ -1986,7 +1986,7 @@ QUnit.module("MaxHeap", function () {
         assert.deepEqual(maxHeap.toString(), '11,3,10');
     });
     QUnit.test('should be possible to find item indices in heap', function (assert) {
-        var maxHeap = new ds.MaxHeap();
+        var maxHeap = new feng3d.MaxHeap();
         maxHeap.add(3);
         maxHeap.add(12);
         maxHeap.add(10);
@@ -1998,7 +1998,7 @@ QUnit.module("MaxHeap", function () {
         assert.deepEqual(maxHeap.find(11), [1, 4]);
     });
     QUnit.test('should be possible to remove items from heap with heapify down', function (assert) {
-        var maxHeap = new ds.MaxHeap();
+        var maxHeap = new feng3d.MaxHeap();
         maxHeap.add(3);
         maxHeap.add(12);
         maxHeap.add(10);
@@ -2011,7 +2011,7 @@ QUnit.module("MaxHeap", function () {
         assert.deepEqual(maxHeap.remove(10).peek(), 3);
     });
     QUnit.test('should be possible to remove items from heap with heapify up', function (assert) {
-        var maxHeap = new ds.MaxHeap();
+        var maxHeap = new feng3d.MaxHeap();
         maxHeap.add(3);
         maxHeap.add(10);
         maxHeap.add(5);
@@ -2034,13 +2034,13 @@ QUnit.module("MaxHeap", function () {
         assert.deepEqual(maxHeap.remove(8).toString(), '');
     });
     QUnit.test('should be possible to remove items from heap with custom finding comparator', function (assert) {
-        var maxHeap = new ds.MaxHeap();
+        var maxHeap = new feng3d.MaxHeap();
         maxHeap.add('a');
         maxHeap.add('bb');
         maxHeap.add('ccc');
         maxHeap.add('dddd');
         assert.deepEqual(maxHeap.toString(), 'dddd,ccc,bb,a');
-        var comparator = new ds.Comparator(function (a, b) {
+        var comparator = new feng3d.Comparator(function (a, b) {
             if (a.length === b.length) {
                 return 0;
             }
@@ -2052,12 +2052,12 @@ QUnit.module("MaxHeap", function () {
 });
 QUnit.module('MinHeap', function (assert) {
     QUnit.test('should create an empty min heap', function (assert) {
-        var minHeap = new ds.MinHeap();
+        var minHeap = new feng3d.MinHeap();
         assert.deepEqual(minHeap.peek(), null);
         assert.deepEqual(minHeap.isEmpty(), true);
     });
     QUnit.test('should add items to the heap and heapify it up', function (assert) {
-        var minHeap = new ds.MinHeap();
+        var minHeap = new feng3d.MinHeap();
         minHeap.add(5);
         assert.deepEqual(minHeap.isEmpty(), false);
         assert.deepEqual(minHeap.peek(), 5);
@@ -2082,7 +2082,7 @@ QUnit.module('MinHeap', function (assert) {
         assert.deepEqual(minHeap.toString(), '5,10');
     });
     QUnit.test('should poll items from the heap and heapify it down', function (assert) {
-        var minHeap = new ds.MinHeap();
+        var minHeap = new feng3d.MinHeap();
         minHeap.add(5);
         minHeap.add(3);
         minHeap.add(10);
@@ -2103,7 +2103,7 @@ QUnit.module('MinHeap', function (assert) {
         assert.deepEqual(minHeap.toString(), '');
     });
     QUnit.test('should heapify down through the right branch as well', function (assert) {
-        var minHeap = new ds.MinHeap();
+        var minHeap = new feng3d.MinHeap();
         minHeap.add(3);
         minHeap.add(12);
         minHeap.add(10);
@@ -2114,7 +2114,7 @@ QUnit.module('MinHeap', function (assert) {
         assert.deepEqual(minHeap.toString(), '10,11,12');
     });
     QUnit.test('should be possible to find item indices in heap', function (assert) {
-        var minHeap = new ds.MinHeap();
+        var minHeap = new feng3d.MinHeap();
         minHeap.add(3);
         minHeap.add(12);
         minHeap.add(10);
@@ -2126,7 +2126,7 @@ QUnit.module('MinHeap', function (assert) {
         assert.deepEqual(minHeap.find(11), [1, 4]);
     });
     QUnit.test('should be possible to remove items from heap with heapify down', function (assert) {
-        var minHeap = new ds.MinHeap();
+        var minHeap = new feng3d.MinHeap();
         minHeap.add(3);
         minHeap.add(12);
         minHeap.add(10);
@@ -2139,7 +2139,7 @@ QUnit.module('MinHeap', function (assert) {
         assert.deepEqual(minHeap.remove(3).peek(), 10);
     });
     QUnit.test('should be possible to remove items from heap with heapify up', function (assert) {
-        var minHeap = new ds.MinHeap();
+        var minHeap = new feng3d.MinHeap();
         minHeap.add(3);
         minHeap.add(10);
         minHeap.add(5);
@@ -2162,13 +2162,13 @@ QUnit.module('MinHeap', function (assert) {
         assert.deepEqual(minHeap.remove(4).toString(), '');
     });
     QUnit.test('should be possible to remove items from heap with custom finding comparator', function (assert) {
-        var minHeap = new ds.MinHeap();
+        var minHeap = new feng3d.MinHeap();
         minHeap.add('dddd');
         minHeap.add('ccc');
         minHeap.add('bb');
         minHeap.add('a');
         assert.deepEqual(minHeap.toString(), 'a,bb,ccc,dddd');
-        var comparator = new ds.Comparator(function (a, b) {
+        var comparator = new feng3d.Comparator(function (a, b) {
             if (a.length === b.length) {
                 return 0;
             }
@@ -2178,7 +2178,7 @@ QUnit.module('MinHeap', function (assert) {
         assert.deepEqual(minHeap.toString(), 'a,bb,dddd');
     });
     QUnit.test('should remove values from heap and correctly re-order the tree', function (assert) {
-        var minHeap = new ds.MinHeap();
+        var minHeap = new feng3d.MinHeap();
         minHeap.add(1);
         minHeap.add(2);
         minHeap.add(3);
@@ -2197,9 +2197,9 @@ QUnit.module('MinHeap', function (assert) {
 });
 QUnit.module("PriorityQueue", function () {
     QUnit.test("push", function (assert) {
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         var compare = function (a, b) { return a - b; };
-        var q = new ds.PriorityQueue(compare);
+        var q = new feng3d.PriorityQueue(compare);
         q.push.apply(q, arr);
         var sortarr = arr.concat().sort(compare);
         assert.deepEqual(q.toArray(), sortarr);
@@ -2209,9 +2209,9 @@ QUnit.module("PriorityQueue", function () {
         assert.deepEqual(q.toArray(), sortarr);
     });
     QUnit.test("shift", function (assert) {
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         var compare = function (a, b) { return a - b; };
-        var q = new ds.PriorityQueue(compare);
+        var q = new feng3d.PriorityQueue(compare);
         q.push.apply(q, arr);
         var sortarr = arr.concat().sort(compare);
         for (var i = sortarr.length - 1; i >= 0; i--) {
@@ -2219,17 +2219,17 @@ QUnit.module("PriorityQueue", function () {
         }
     });
     QUnit.test("toArray", function (assert) {
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         var compare = function (a, b) { return a - b; };
-        var q = new ds.PriorityQueue(compare);
+        var q = new feng3d.PriorityQueue(compare);
         q.push.apply(q, arr);
         var sortarr = arr.concat().sort(compare);
         assert.deepEqual(q.toArray(), sortarr);
     });
     QUnit.test("fromArray", function (assert) {
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
         var compare = function (a, b) { return a - b; };
-        var q = new ds.PriorityQueue(compare);
+        var q = new feng3d.PriorityQueue(compare);
         q.fromArray(arr);
         var sortarr = arr.concat().sort(compare);
         assert.deepEqual(q.toArray(), sortarr);
@@ -2237,11 +2237,11 @@ QUnit.module("PriorityQueue", function () {
 });
 QUnit.module('PriorityQueue1', function () {
     QUnit.test('should create default priority queue', function (assert) {
-        var priorityQueue = new ds.PriorityQueue1();
+        var priorityQueue = new feng3d.PriorityQueue1();
         assert.deepEqual(priorityQueue != null, true);
     });
     QUnit.test('should insert items to the queue and respect priorities', function (assert) {
-        var priorityQueue = new ds.PriorityQueue1();
+        var priorityQueue = new feng3d.PriorityQueue1();
         priorityQueue.add(10, 1);
         assert.deepEqual(priorityQueue.peek(), 10);
         priorityQueue.add(5, 2);
@@ -2250,7 +2250,7 @@ QUnit.module('PriorityQueue1', function () {
         assert.deepEqual(priorityQueue.peek(), 100);
     });
     QUnit.test('should poll from queue with respect to priorities', function (assert) {
-        var priorityQueue = new ds.PriorityQueue1();
+        var priorityQueue = new feng3d.PriorityQueue1();
         priorityQueue.add(10, 1);
         priorityQueue.add(5, 2);
         priorityQueue.add(100, 0);
@@ -2261,7 +2261,7 @@ QUnit.module('PriorityQueue1', function () {
         assert.deepEqual(priorityQueue.poll(), 5);
     });
     QUnit.test('should be possible to change priority of internal nodes', function (assert) {
-        var priorityQueue = new ds.PriorityQueue1();
+        var priorityQueue = new feng3d.PriorityQueue1();
         priorityQueue.add(10, 1);
         priorityQueue.add(5, 2);
         priorityQueue.add(100, 0);
@@ -2274,7 +2274,7 @@ QUnit.module('PriorityQueue1', function () {
         assert.deepEqual(priorityQueue.poll(), 10);
     });
     QUnit.test('should be possible to change priority of head node', function (assert) {
-        var priorityQueue = new ds.PriorityQueue1();
+        var priorityQueue = new feng3d.PriorityQueue1();
         priorityQueue.add(10, 1);
         priorityQueue.add(5, 2);
         priorityQueue.add(100, 0);
@@ -2287,7 +2287,7 @@ QUnit.module('PriorityQueue1', function () {
         assert.deepEqual(priorityQueue.poll(), 10);
     });
     QUnit.test('should be possible to change priority along with node addition', function (assert) {
-        var priorityQueue = new ds.PriorityQueue1();
+        var priorityQueue = new feng3d.PriorityQueue1();
         priorityQueue.add(10, 1);
         priorityQueue.add(5, 2);
         priorityQueue.add(100, 0);
@@ -2302,7 +2302,7 @@ QUnit.module('PriorityQueue1', function () {
         assert.deepEqual(priorityQueue.poll(), 10);
     });
     QUnit.test('should be possible to search in priority queue by value', function (assert) {
-        var priorityQueue = new ds.PriorityQueue1();
+        var priorityQueue = new feng3d.PriorityQueue1();
         priorityQueue.add(10, 1);
         priorityQueue.add(5, 2);
         priorityQueue.add(100, 0);
@@ -2314,12 +2314,12 @@ QUnit.module('PriorityQueue1', function () {
 });
 QUnit.module("Queue", function () {
     QUnit.test("isEmpty", function (assert) {
-        var q = new ds.Queue();
+        var q = new feng3d.Queue();
         assert.deepEqual(q.isEmpty(), true);
     });
     QUnit.test("empty", function (assert) {
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
-        var q = new ds.Queue();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
+        var q = new feng3d.Queue();
         arr.forEach(function (element) {
             q.enqueue(element);
         });
@@ -2327,24 +2327,24 @@ QUnit.module("Queue", function () {
         assert.deepEqual(q.isEmpty(), true);
     });
     QUnit.test("peek", function (assert) {
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
-        var q = new ds.Queue();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
+        var q = new feng3d.Queue();
         arr.forEach(function (element) {
             q.enqueue(element);
         });
         assert.deepEqual(q.peek(), arr[0]);
     });
     QUnit.test("enqueue", function (assert) {
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
-        var q = new ds.Queue();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
+        var q = new feng3d.Queue();
         arr.forEach(function (element) {
             q.enqueue(element);
         });
         assert.deepEqual(q.peek(), arr[0]);
     });
     QUnit.test("enqueue", function (assert) {
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
-        var q = new ds.Queue();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
+        var q = new feng3d.Queue();
         arr.forEach(function (element) {
             q.enqueue(element);
         });
@@ -2353,8 +2353,8 @@ QUnit.module("Queue", function () {
         }
     });
     QUnit.test("toString", function (assert) {
-        var arr = ds.utils.createArray(10, function () { return Math.random(); });
-        var q = new ds.Queue();
+        var arr = feng3d.utils.createArray(10, function () { return Math.random(); });
+        var q = new feng3d.Queue();
         arr.forEach(function (element) {
             q.enqueue(element);
         });
@@ -2363,49 +2363,49 @@ QUnit.module("Queue", function () {
 });
 QUnit.module("Utils", function () {
     QUnit.test("arrayFrom", function (assert) {
-        var arr = ds.utils.createArray(100, function () { return Math.floor(Math.random() * 100); });
+        var arr = feng3d.utils.createArray(100, function () { return Math.floor(Math.random() * 100); });
         var float32Array = new Float32Array(arr);
-        var arr0 = ds.utils.arrayFrom(float32Array);
+        var arr0 = feng3d.utils.arrayFrom(float32Array);
         assert.deepEqual(arr, arr0);
     });
     QUnit.test("arrayUnique", function (assert) {
-        var arr = ds.utils.createArray(100, function () { return Math.floor(Math.random() * 100); });
-        ds.utils.arrayUnique(arr);
-        assert.deepEqual(ds.utils.arrayIsUnique(arr), true);
+        var arr = feng3d.utils.createArray(100, function () { return Math.floor(Math.random() * 100); });
+        feng3d.utils.arrayUnique(arr);
+        assert.deepEqual(feng3d.utils.arrayIsUnique(arr), true);
     });
     QUnit.test("arrayIsUnique", function (assert) {
-        assert.deepEqual(ds.utils.arrayIsUnique([1, 2, 3]), true);
-        assert.deepEqual(ds.utils.arrayIsUnique([1, 2, 2]), false);
+        assert.deepEqual(feng3d.utils.arrayIsUnique([1, 2, 3]), true);
+        assert.deepEqual(feng3d.utils.arrayIsUnique([1, 2, 2]), false);
     });
     QUnit.test("createArray", function (assert) {
-        var arr = ds.utils.createArray(100, function (i) { return i; });
+        var arr = feng3d.utils.createArray(100, function (i) { return i; });
         for (var i = 0; i < arr.length; i++) {
             assert.deepEqual(i, arr[i]);
         }
     });
     QUnit.test("binarySearch", function (assert) {
-        var arr = ds.utils.createArray(100, function () { return Math.floor(Math.random() * 100); });
+        var arr = feng3d.utils.createArray(100, function () { return Math.floor(Math.random() * 100); });
         var compareFn = function (a, b) { return a - b; };
         arr.sort(compareFn);
         var index = Math.floor(arr.length * Math.random());
-        var find = ds.utils.binarySearch(arr, arr[index], compareFn);
+        var find = feng3d.utils.binarySearch(arr, arr[index], compareFn);
         assert.deepEqual(find <= index, true);
         assert.deepEqual(arr[index], arr[find]);
         if (find > 0)
             assert.equal(arr[find] - arr[find - 1] > 0, true);
         if (find < arr.length - 1)
             assert.equal(arr[find] - arr[find + 1] <= 0, true);
-        assert.deepEqual(-1, ds.utils.binarySearch(arr, -1, compareFn));
+        assert.deepEqual(-1, feng3d.utils.binarySearch(arr, -1, compareFn));
     });
     QUnit.test("binarySearchInsert", function (assert) {
-        var arr = ds.utils.createArray(100, function () { return Math.floor(Math.random() * 100); });
+        var arr = feng3d.utils.createArray(100, function () { return Math.floor(Math.random() * 100); });
         var compareFn = function (a, b) { return a - b; };
         arr.sort(compareFn);
         var index = Math.floor(arr.length * Math.random());
-        var find = ds.utils.binarySearchInsert(arr, arr[index], compareFn);
+        var find = feng3d.utils.binarySearchInsert(arr, arr[index], compareFn);
         assert.deepEqual(find <= index, true);
-        assert.deepEqual(0, ds.utils.binarySearchInsert(arr, -1, compareFn));
-        assert.deepEqual(100, ds.utils.binarySearchInsert(arr, 10000, compareFn));
+        assert.deepEqual(0, feng3d.utils.binarySearchInsert(arr, -1, compareFn));
+        assert.deepEqual(100, feng3d.utils.binarySearchInsert(arr, 10000, compareFn));
     });
 });
 var feng3d;

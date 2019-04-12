@@ -10,7 +10,7 @@ QUnit.module('BloomFilter', () =>
 
     QUnit.test('should have methods named "insert" and "mayContain"', (assert) =>
     {
-        var bloomFilter = new ds.BloomFilter();
+        var bloomFilter = new feng3d.BloomFilter();
 
         assert.deepEqual(typeof bloomFilter.insert, 'function');
         assert.deepEqual(typeof bloomFilter.mayContain, 'function');
@@ -18,7 +18,7 @@ QUnit.module('BloomFilter', () =>
 
     QUnit.test('should create a new filter store with the appropriate methods', (assert) =>
     {
-        var bloomFilter = new ds.BloomFilter();
+        var bloomFilter = new feng3d.BloomFilter();
 
         const store = bloomFilter.createStore(18);
         assert.deepEqual(typeof store.getValue, 'function');
@@ -27,7 +27,7 @@ QUnit.module('BloomFilter', () =>
 
     QUnit.test('should hash deterministically with all 3 hash functions', (assert) =>
     {
-        var bloomFilter = new ds.BloomFilter();
+        var bloomFilter = new feng3d.BloomFilter();
         const str1 = 'apple';
 
         assert.deepEqual(bloomFilter.hash1(str1), bloomFilter.hash1(str1));
@@ -51,7 +51,7 @@ QUnit.module('BloomFilter', () =>
 
     QUnit.test('should create an array with 3 hash values', (assert) =>
     {
-        var bloomFilter = new ds.BloomFilter();
+        var bloomFilter = new feng3d.BloomFilter();
 
         assert.deepEqual(bloomFilter.getHashValues('abc').length, 3);
         assert.deepEqual(bloomFilter.getHashValues('abc'), [66, 63, 54]);
@@ -59,7 +59,7 @@ QUnit.module('BloomFilter', () =>
 
     QUnit.test('should insert strings correctly and return true when checking for inserted values', (assert) =>
     {
-        var bloomFilter = new ds.BloomFilter();
+        var bloomFilter = new feng3d.BloomFilter();
 
         people.forEach(person => bloomFilter.insert(person));
 

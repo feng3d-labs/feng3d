@@ -2,16 +2,16 @@ QUnit.module("Queue", () =>
 {
     QUnit.test("isEmpty", (assert) =>
     {
-        var q = new ds.Queue<number>();
+        var q = new feng3d.Queue<number>();
 
         assert.deepEqual(q.isEmpty(), true);
     });
 
     QUnit.test("empty", (assert) =>
     {
-        var arr = ds.utils.createArray(10, () => Math.random());
+        var arr = feng3d.utils.createArray(10, () => Math.random());
 
-        var q = new ds.Queue<number>();
+        var q = new feng3d.Queue<number>();
         arr.forEach(element =>
         {
             q.enqueue(element);
@@ -22,9 +22,9 @@ QUnit.module("Queue", () =>
 
     QUnit.test("peek", (assert) =>
     {
-        var arr = ds.utils.createArray(10, () => Math.random());
+        var arr = feng3d.utils.createArray(10, () => Math.random());
 
-        var q = new ds.Queue<number>();
+        var q = new feng3d.Queue<number>();
         arr.forEach(element =>
         {
             q.enqueue(element);
@@ -34,9 +34,9 @@ QUnit.module("Queue", () =>
 
     QUnit.test("enqueue", (assert) =>
     {
-        var arr = ds.utils.createArray(10, () => Math.random());
+        var arr = feng3d.utils.createArray(10, () => Math.random());
 
-        var q = new ds.Queue<number>();
+        var q = new feng3d.Queue<number>();
         arr.forEach(element =>
         {
             q.enqueue(element);
@@ -46,9 +46,9 @@ QUnit.module("Queue", () =>
 
     QUnit.test("enqueue", (assert) =>
     {
-        var arr = ds.utils.createArray(10, () => Math.random());
+        var arr = feng3d.utils.createArray(10, () => Math.random());
 
-        var q = new ds.Queue<number>();
+        var q = new feng3d.Queue<number>();
         arr.forEach(element =>
         {
             q.enqueue(element);
@@ -61,9 +61,9 @@ QUnit.module("Queue", () =>
 
     QUnit.test("toString", (assert) =>
     {
-        var arr = ds.utils.createArray(10, () => Math.random());
+        var arr = feng3d.utils.createArray(10, () => Math.random());
 
-        var q = new ds.Queue<number>();
+        var q = new feng3d.Queue<number>();
         arr.forEach(element =>
         {
             q.enqueue(element);
