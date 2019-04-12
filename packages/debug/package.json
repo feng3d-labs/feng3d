@@ -1,7 +1,7 @@
 {
-  "name": "@feng3d/functionwarp",
+  "name": "@feng3d/debug",
   "version": "0.0.1",
-  "description": "包装函数使得函数执行前后干点什么事情。",
+  "description": "提供包装原生console的error等函数用于调试的功能。",
   "main": "out/index.js",
   "types": "out/index.d.ts",
   "scripts": {
@@ -15,5 +15,8 @@
     "access": "public"
   },
   "author": "feng",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@feng3d/functionwarp": "^0.0.1"
+  }
 }

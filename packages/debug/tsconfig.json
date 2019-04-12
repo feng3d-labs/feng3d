@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "noImplicitAny": false,
+    "sourceMap": true,
+    "declarationMap": true,
+    "declaration": true,
+    "experimentalDecorators": true,
+    // "lib": [
+    //   "es2015"
+    // ],
+    "types": [
+      "@feng3d/functionwarp"
+    ],
+    "outFile": "out/index.js"
+    // "outDir": "debug"
+  },
+  "files": [
+    "src/debug.ts",
+  ]
+}

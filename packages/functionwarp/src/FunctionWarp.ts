@@ -29,9 +29,9 @@ namespace feng3d
             var oldlog: Function = <any>space[funcName];
             space[funcName] = <any>function ()
             {
-                pf && (<any>pf)(this, arguments);
+                pf && (<any>pf).apply(this, arguments);
                 oldlog.apply(this, arguments);
-                nf && (<any>nf)(this, arguments);
+                nf && (<any>nf).apply(this, arguments);
             }
         }
     }
