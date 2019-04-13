@@ -1,6 +1,6 @@
 {
   "name": "@feng3d/objectview",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "串联或并联一组异步函数为一个异步函数",
   "main": "out/index.js",
   "types": "out/index.d.ts",
@@ -17,7 +17,7 @@
   "author": "feng",
   "license": "ISC",
   "dependencies": {
-    "@feng3d/debug": "^0.0.1",
-    "@feng3d/polyfill": "^0.0.2"
+    "@feng3d/debug": "^0.0.2",
+    "@feng3d/polyfill": "^0.0.3"
   }
 }

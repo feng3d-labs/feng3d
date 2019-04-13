@@ -1,6 +1,6 @@
 {
   "name": "@feng3d/debug",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "提供包装原生console的error等函数用于调试的功能。",
   "main": "out/index.js",
   "types": "out/index.d.ts",
@@ -17,6 +17,6 @@
   "author": "feng",
   "license": "ISC",
   "dependencies": {
-    "@feng3d/functionwarp": "^0.0.1"
+    "@feng3d/functionwarp": "^0.0.2"
   }
 }
