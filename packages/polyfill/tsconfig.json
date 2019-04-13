@@ -13,9 +13,8 @@
     // "outDir": "debug"
   },
   "files": [
-    "src/String.ts",
-    "src/Object.ts",
-    "src/Map.ts",
-    "src/Array.ts",
+    "src/ObjectUtils.ts",
+    "src/MapUtils.ts",
+    "src/ArrayUtils.ts",
   ]
 }

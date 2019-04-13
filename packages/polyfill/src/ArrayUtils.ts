@@ -15,6 +15,8 @@ namespace feng3d
          * 
          * @param arr 数组
          * @param compare 比较函数
+         * 
+         * @returns 返回传入的数组
          */
         unique<T>(arr: T[], compare?: (a: T, b: T) => boolean)
         {

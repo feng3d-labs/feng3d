@@ -7,6 +7,10 @@
         "declaration": true,
         // "strict": true,
         "experimentalDecorators": true,
+        "lib": [
+            "es2015",
+            "dom"
+        ],
         "types": [
             // "@feng3d/watcher",
         ],
@@ -21,15 +25,16 @@
         // 自动生成文件
         "src/autofiles/ShaderConfig.ts",
         // Polyfill
-        "node_modules/@feng3d/polyfill/src/String.ts",
-        "node_modules/@feng3d/polyfill/src/Object.ts",
-        "node_modules/@feng3d/polyfill/src/Map.ts",
-        "node_modules/@feng3d/polyfill/src/Array.ts",
+        "node_modules/@feng3d/polyfill/src/ObjectUtils.ts",
+        "node_modules/@feng3d/polyfill/src/MapUtils.ts",
+        "node_modules/@feng3d/polyfill/src/ArrayUtils.ts",
         //基础工具
         "src/utils/debug.ts",
         "src/utils/Serialization.ts",
-        "src/utils/ObjectView.ts",
-        "src/utils/ObjectViewDefinitions.ts",
+        //
+        "node_modules/@feng3d/objectview/src/ObjectView.ts",
+        "node_modules/@feng3d/objectview/src/ObjectViewDefinitions.ts",
+        //
         "src/utils/Ticker.ts",
         "src/utils/DataTransform.ts",
         "src/utils/ClassUtils.ts",
@@ -108,7 +113,7 @@
         "src/event/EventProxy.ts",
         "src/event/WindowEventProxy.ts",
         //
-        "src/utils/Task.ts",
+        "node_modules/@feng3d/task/src/Task.ts",
         //
         "src/core/Feng3dObject.ts",
         "src/core/AssetData.ts",

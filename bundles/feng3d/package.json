@@ -28,6 +28,7 @@
     "@feng3d/event": "^0.0.9",
     "@feng3d/task": "^0.0.11",
     "@feng3d/ds": "^0.0.3",
+    "@feng3d/objectview": "^0.0.1",
     "@feng3d/polyfill": "^0.0.2"
   },
   "devDependencies": {

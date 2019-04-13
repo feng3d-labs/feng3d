@@ -11,7 +11,8 @@
       "dom"
     ],
     "types": [
-      "@feng3d/debug"
+      "@feng3d/debug",
+      "@feng3d/polyfill"
     ],
     "outFile": "out/index.js"
     // "outDir": "debug"
