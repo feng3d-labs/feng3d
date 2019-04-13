@@ -62,7 +62,7 @@ namespace feng3d
                 vec[2].scaleNumber(depthScale * this.holdSize);
                 _localToWorldMatrix.recompose(vec);
 
-                debuger && assert(!isNaN(_localToWorldMatrix.rawData[0]));
+                debug.debuger && console.assert(!isNaN(_localToWorldMatrix.rawData[0]));
             }
         }
 

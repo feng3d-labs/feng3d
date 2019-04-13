@@ -34,7 +34,7 @@ namespace feng3d
                 this.map.set(gl, result);
             } catch (error)
             {
-                feng3d.error(`${this.shaderName} 编译失败！\n${error}`)
+                console.error(`${this.shaderName} 编译失败！\n${error}`)
                 return null;
             }
             return result;
@@ -191,7 +191,7 @@ namespace feng3d
                 var names = [name];
                 if (activeInfo.size > 1)
                 {
-                    debuger && assert(name.substr(-3, 3) == "[0]");
+                    debug.debuger && console.assert(name.substr(-3, 3) == "[0]");
                     var baseName = name.substring(0, name.length - 3);
                     for (var j = 1; j < activeInfo.size; j++)
                     {

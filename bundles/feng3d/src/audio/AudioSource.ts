@@ -273,7 +273,7 @@ namespace feng3d
                 {
                     if (err)
                     {
-                        warn(err);
+                        console.warn(err);
                         return;
                     }
                     if (url != this.url)

@@ -56,13 +56,13 @@ namespace feng3d
                 var e = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
                 if (gl.FRAMEBUFFER_COMPLETE !== e)
                 {
-                    debuger && alert('Frame buffer object is incomplete: ' + e.toString());
+                    debug.debuger && alert('Frame buffer object is incomplete: ' + e.toString());
                     return null;
                 }
 
                 gl.bindTexture(gl.TEXTURE_2D, null);
                 gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-                
+
                 obj = { framebuffer: framebuffer, texture: texture, depthBuffer: depthBuffer };
                 this._map.set(gl, obj);
             } else

@@ -278,13 +278,13 @@ namespace feng3d
                     if (this.anisotropy > gl.maxAnisotropy)
                     {
                         this.anisotropy = gl.maxAnisotropy;
-                        warn(`${this.anisotropy} 超出 maxAnisotropy 的最大值 ${gl.maxAnisotropy} ！,使用最大值替换。`);
+                        console.warn(`${this.anisotropy} 超出 maxAnisotropy 的最大值 ${gl.maxAnisotropy} ！,使用最大值替换。`);
                     }
                     gl.texParameterf(textureType, eXTTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, this.anisotropy);
 
                 } else
                 {
-                    debuger && alert("浏览器不支持各向异性过滤（anisotropy）特性！");
+                    debug.debuger && alert("浏览器不支持各向异性过滤（anisotropy）特性！");
                 }
             }
             return texture;
@@ -302,7 +302,7 @@ namespace feng3d
                 var newtexture = gl.createTexture();   // Create a texture object
                 if (!newtexture)
                 {
-                    error("createTexture 失败！");
+                    console.error("createTexture 失败！");
                     throw "";
                 }
                 texture = newtexture;

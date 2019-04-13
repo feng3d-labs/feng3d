@@ -36,7 +36,7 @@ namespace feng3d
 
         get extenson()
         {
-            debuger && assert(!!this.assetPath);
+            debug.debuger && console.assert(!!this.assetPath);
             var ext = pathUtils.getExtension(this.assetPath);
             return ext;
         }
@@ -53,7 +53,7 @@ namespace feng3d
          */
         get fileName()
         {
-            debuger && assert(!!this.assetPath);
+            debug.debuger && console.assert(!!this.assetPath);
             var fn = pathUtils.getName(this.assetPath);
             return fn;
         }

@@ -15,7 +15,7 @@ namespace feng3d
         private _data = new Texture2D();
 
         get assetId() { return this._data.assetId; }
-        set assetId(v) { debuger && assert(this._data.assetId == undefined); this._data.assetId = v; }
+        set assetId(v) { debug.debuger && console.assert(this._data.assetId == undefined); this._data.assetId = v; }
 
         /**
          * 图片

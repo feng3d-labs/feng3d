@@ -1,3 +1,6 @@
+declare module 'feng3d' {
+    export = feng3d;
+}
 declare type gPartial<T> = {
     [P in keyof T]?: gPartial<T[P]>;
 };

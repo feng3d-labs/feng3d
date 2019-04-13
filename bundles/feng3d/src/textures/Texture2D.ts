@@ -111,7 +111,7 @@ namespace feng3d
                 }, null,
                     (e) =>
                     {
-                        feng3d.error(e);
+                        console.error(e);
                         arrayutils.delete(this._loadings, v.url);
                         this.onItemLoadCompleted();
                     });

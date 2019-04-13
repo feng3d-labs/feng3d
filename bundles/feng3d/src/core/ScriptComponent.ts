@@ -44,7 +44,7 @@ namespace feng3d
             if (cls)
                 this.scriptInstance = new cls();
             else
-                warn(`无法初始化脚本 ${this.scriptName}`);
+                console.warn(`无法初始化脚本 ${this.scriptName}`);
 
             this.scriptInit = false;
         }

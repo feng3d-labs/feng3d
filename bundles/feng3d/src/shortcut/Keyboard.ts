@@ -48,7 +48,7 @@ namespace feng3d
                         return Number(code);
                 }
             }
-            error(`无法获取按键 ${key} 的值！`);
+            console.error(`无法获取按键 ${key} 的值！`);
             return code;
         }
     }

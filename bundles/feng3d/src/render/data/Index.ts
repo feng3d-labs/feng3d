@@ -72,7 +72,7 @@ namespace feng3d
                 buffer = <any>gl.createBuffer();
                 if (!buffer)
                 {
-                    error("createBuffer 失败！");
+                    console.error("createBuffer 失败！");
                     throw "";
                 }
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);

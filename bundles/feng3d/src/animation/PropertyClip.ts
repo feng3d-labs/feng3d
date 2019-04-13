@@ -85,7 +85,7 @@ namespace feng3d
             if (this.type == "Quaternion")
                 return Quaternion.fromArray(value);
 
-            error(`未处理 动画数据类型 ${this.type}`);
+            console.error(`未处理 动画数据类型 ${this.type}`);
             throw ``;
         }
 

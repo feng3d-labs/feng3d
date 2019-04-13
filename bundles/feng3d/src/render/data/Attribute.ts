@@ -153,7 +153,7 @@ namespace feng3d
                 gl.extensions.aNGLEInstancedArrays.vertexAttribDivisorANGLE(location, this.divisor);
             } else
             {
-                warn(`浏览器 不支持 vertexAttribDivisor ！`);
+                console.warn(`浏览器 不支持 vertexAttribDivisor ！`);
             }
         }
 
@@ -173,7 +173,7 @@ namespace feng3d
                 var newbuffer = gl.createBuffer();
                 if (!newbuffer)
                 {
-                    error("createBuffer 失败！");
+                    console.error("createBuffer 失败！");
                     throw "";
                 }
                 buffer = newbuffer;
