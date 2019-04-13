@@ -143,7 +143,7 @@ namespace feng3d
             }
             // 计算路径
             if (extenson == "") extenson = cls["extenson"];
-            debuger && assert(extenson != undefined, `对象 ${cls} 没有设置 extenson 值，参考 FolderAsset.extenson`);
+            debug.debuger && console.assert(extenson != undefined, `对象 ${cls} 没有设置 extenson 值，参考 FolderAsset.extenson`);
             var path = fileName + extenson;
             if (asset.parentAsset) path = asset.parentAsset.assetPath + "/" + path;
             asset.assetPath = path;

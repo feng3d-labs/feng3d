@@ -42,7 +42,7 @@ namespace feng3d
                 depthBuffer = gl.createRenderbuffer(); // Create a renderbuffer object
                 if (!depthBuffer)
                 {
-                    debuger && alert('Failed to create renderbuffer object');
+                    debug.debuger && alert('Failed to create renderbuffer object');
                     return;
                 }
                 this._depthBufferMap.set(gl, depthBuffer);

@@ -559,77 +559,73 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 是否开启调试(主要用于断言)
+     * 函数经
+     *
+     * 包装函数，以及对应的拆包
      */
-    feng3d.debuger = true;
-    /**
-     * 测试代码运行时间
-     * @param fn 被测试的方法
-     * @param labal 标签
-     */
-    function time(fn, labal) {
-        labal = labal || fn["name"] || "Anonymous function " + Math.random();
-        console.time(labal);
-        fn();
-        console.timeEnd(labal);
-    }
-    feng3d.time = time;
-    /**
-     * 断言，测试不通过时报错
-     * @param test 测试项
-     * @param message 测试失败时提示信息
-     * @param optionalParams
-     */
-    function assert(test, message) {
-        var optionalParams = [];
-        for (var _i = 2; _i < arguments.length; _i++) {
-            optionalParams[_i - 2] = arguments[_i];
+    var FunctionWarp = /** @class */ (function () {
+        function FunctionWarp() {
         }
-        if (!test)
-            debugger;
-        console.assert.apply(null, arguments);
-    }
-    feng3d.assert = assert;
+        /**
+         * 包装函数
+         *
+         * 一般用于调试
+         * 使用场景示例：
+         * 1. 在函数执行前后记录时间来计算函数执行时间。
+         * 1. 在console.error调用前使用 debugger 进行断点调试。
+         *
+         * @param space 函数所属对象或者原型
+         * @param funcName 函数名称
+         * @param pf 在函数执行前执行的函数
+         * @param nf 在函数执行后执行的函数
+         */
+        FunctionWarp.prototype.wrap = function (space, funcName, pf, nf) {
+            if (pf == undefined && nf == undefined)
+                return;
+            var oldlog = space[funcName];
+            space[funcName] = function () {
+                pf && pf.apply(this, arguments);
+                oldlog.apply(this, arguments);
+                nf && nf.apply(this, arguments);
+            };
+        };
+        return FunctionWarp;
+    }());
+    feng3d.FunctionWarp = FunctionWarp;
+    feng3d.functionwarp = new FunctionWarp();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
-     * 输出错误
-     * @param message 错误信息
-     * @param optionalParams
+     * 调试工具
      */
-    function error(message) {
-        var optionalParams = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            optionalParams[_i - 1] = arguments[_i];
+    var Debug = /** @class */ (function () {
+        function Debug() {
+            /**
+             * 是否开启调试
+             */
+            this.debuger = true;
+            // 断言失败前进入断点调试
+            feng3d.functionwarp.wrap(console, "assert", function (test) { if (!test)
+                debugger; });
+            // 输出错误前进入断点调试
+            feng3d.functionwarp.wrap(console, "error", function () { debugger; });
         }
-        debugger;
-        console.error.apply(null, arguments);
-    }
-    feng3d.error = error;
-    /**
-     * 记录日志信息
-     * @param message 日志信息
-     * @param optionalParams
-     */
-    function log(message) {
-        var optionalParams = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            optionalParams[_i - 1] = arguments[_i];
-        }
-        console.log.apply(null, arguments);
-    }
-    feng3d.log = log;
-    /**
-     * 警告
-     * @param message 警告信息
-     * @param optionalParams
-     */
-    function warn(message) {
-        var optionalParams = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            optionalParams[_i - 1] = arguments[_i];
-        }
-        console.warn.apply(null, arguments);
-    }
-    feng3d.warn = warn;
+        /**
+         * 测试代码运行时间
+         * @param fn 被测试的方法
+         * @param labal 标签
+         */
+        Debug.prototype.time = function (fn, labal) {
+            labal = labal || fn["name"] || "Anonymous function " + Math.random();
+            console.time(labal);
+            fn();
+            console.timeEnd(labal);
+        };
+        return Debug;
+    }());
+    feng3d.Debug = Debug;
+    feng3d.debug = new Debug();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -769,11 +765,11 @@ var feng3d;
             //基础类型
             if (isBaseType(object))
                 return object;
-            if (feng3d.debuger && object.constructor == Object) {
+            if (feng3d.debug.debuger && object.constructor == Object) {
                 var assetids = this.getAssets(object);
                 var assets = assetids.reduce(function (pv, cv) { var r = feng3d.rs.getAssetData(cv); if (r)
                     pv.push(r); return pv; }, []);
-                feng3d.assert(assetids.length == assets.length, "\u5B58\u5728\u8D44\u6E90\u672A\u52A0\u8F7D\uFF0C\u8BF7\u4F7F\u7528 deserializeWithAssets \u8FDB\u884C\u53CD\u5E8F\u5217\u5316");
+                console.assert(assetids.length == assets.length, "\u5B58\u5728\u8D44\u6E90\u672A\u52A0\u8F7D\uFF0C\u8BF7\u4F7F\u7528 deserializeWithAssets \u8FDB\u884C\u53CD\u5E8F\u5217\u5316");
             }
             //处理数组
             if (object instanceof Array) {
@@ -802,14 +798,14 @@ var feng3d;
             }
             var cls = feng3d.classUtils.getDefinitionByName(className);
             if (!cls) {
-                feng3d.warn("\u65E0\u6CD5\u5E8F\u5217\u53F7\u5BF9\u8C61 " + className);
+                console.warn("\u65E0\u6CD5\u5E8F\u5217\u53F7\u5BF9\u8C61 " + className);
                 return undefined;
             }
             target = new cls();
             // 处理资源
             if (target instanceof feng3d.AssetData && object.assetId != undefined) {
                 var result = feng3d.rs.getAssetData(object.assetId);
-                feng3d.debuger && feng3d.assert(!!result);
+                feng3d.debug.debuger && console.assert(!!result);
                 return result;
             }
             //处理自定义反序列化对象
@@ -911,7 +907,7 @@ var feng3d;
                 return assetids;
             var cls = feng3d.classUtils.getDefinitionByName(className);
             if (!cls) {
-                feng3d.warn("\u65E0\u6CD5\u5E8F\u5217\u53F7\u5BF9\u8C61 " + className);
+                console.warn("\u65E0\u6CD5\u5E8F\u5217\u53F7\u5BF9\u8C61 " + className);
                 return assetids;
             }
             var target = new cls();
@@ -938,7 +934,7 @@ var feng3d;
                 });
             }; });
             feng3d.task.parallel(fns)(function () {
-                feng3d.debuger && feng3d.assert(assetids.length == result.filter(function (v) { return v != null; }).length);
+                feng3d.debug.debuger && console.assert(assetids.length == result.filter(function (v) { return v != null; }).length);
                 var r = _this.deserialize(object);
                 callback(r);
             });
@@ -1144,7 +1140,7 @@ var feng3d;
                 }
             }
             var cls = this.OVComponent[classConfig.component];
-            debug.debuger && console.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + classConfig.component + " \u5BF9\u5E94\u7684\u5BF9\u8C61\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + classConfig.component + " \u4E2D\u4F7F\u7528@OVComponent()\u6807\u8BB0");
+            feng3d.debug.debuger && console.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + classConfig.component + " \u5BF9\u5E94\u7684\u5BF9\u8C61\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + classConfig.component + " \u4E2D\u4F7F\u7528@OVComponent()\u6807\u8BB0");
             var view = new cls(classConfig);
             return view;
         };
@@ -1171,7 +1167,7 @@ var feng3d;
                 attributeViewInfo.component = this.defaultObjectAttributeViewClass;
             }
             var cls = this.OAVComponent[attributeViewInfo.component];
-            debug.debuger && console.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + attributeViewInfo.component + " \u5BF9\u5E94\u7684\u5C5E\u6027\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + attributeViewInfo.component + " \u4E2D\u4F7F\u7528@OVAComponent()\u6807\u8BB0");
+            feng3d.debug.debuger && console.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + attributeViewInfo.component + " \u5BF9\u5E94\u7684\u5C5E\u6027\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + attributeViewInfo.component + " \u4E2D\u4F7F\u7528@OVAComponent()\u6807\u8BB0");
             var view = new cls(attributeViewInfo);
             return view;
         };
@@ -1190,7 +1186,7 @@ var feng3d;
                 blockViewInfo.component = this.defaultObjectAttributeBlockView;
             }
             var cls = this.OBVComponent[blockViewInfo.component];
-            debug.debuger && console.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + blockViewInfo.component + " \u5BF9\u5E94\u7684\u5757\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + blockViewInfo.component + " \u4E2D\u4F7F\u7528@OVBComponent()\u6807\u8BB0");
+            feng3d.debug.debuger && console.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + blockViewInfo.component + " \u5BF9\u5E94\u7684\u5757\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + blockViewInfo.component + " \u4E2D\u4F7F\u7528@OVBComponent()\u6807\u8BB0");
             var view = new cls(blockViewInfo);
             return view;
         };
@@ -1613,7 +1609,7 @@ var feng3d;
                 v.func.call(v.thisObject, feng3d.lazy.getvalue(v.interval));
             }
             catch (error) {
-                feng3d.warn(v.func + " \u65B9\u6CD5\u6267\u884C\u9519\u8BEF\uFF0C\u4ECE ticker \u4E2D\u79FB\u9664", error);
+                console.warn(v.func + " \u65B9\u6CD5\u6267\u884C\u9519\u8BEF\uFF0C\u4ECE ticker \u4E2D\u79FB\u9664", error);
                 var index = tickerFuncs.indexOf(v);
                 if (index != -1)
                     tickerFuncs.splice(index, 1);
@@ -1904,7 +1900,7 @@ var feng3d;
                     return className;
                 }
             }
-            feng3d.error("\u672A\u5728\u7ED9\u51FA\u7684\u547D\u540D\u7A7A\u95F4 " + _classNameSpaces + " \u5185\u627E\u5230 " + value + " \u7684\u5B9A\u4E49");
+            console.error("\u672A\u5728\u7ED9\u51FA\u7684\u547D\u540D\u7A7A\u95F4 " + _classNameSpaces + " \u5185\u627E\u5230 " + value + " \u7684\u5B9A\u4E49");
             return "undefined";
         };
         /**
@@ -2030,7 +2026,7 @@ var feng3d;
             canvasImg.width = image.width;
             canvasImg.height = image.height;
             var ctxt = canvasImg.getContext('2d');
-            feng3d.debuger && feng3d.assert(!!ctxt);
+            feng3d.debug.debuger && console.assert(!!ctxt);
             ctxt.drawImage(image, 0, 0);
             this.imageData = ctxt.getImageData(0, 0, image.width, image.height); //读取整张图片的像素。
             return this;
@@ -2411,7 +2407,7 @@ var feng3d;
             canvas.style.cssText = 'width:80px;height:48px';
             var context0 = canvas.getContext('2d');
             if (context0 == null) {
-                feng3d.log("\u65E0\u6CD5\u521B\u5EFA CanvasRenderingContext2D ");
+                console.log("\u65E0\u6CD5\u521B\u5EFA CanvasRenderingContext2D ");
                 return;
             }
             var context = context0;
@@ -2468,7 +2464,7 @@ var feng3d;
          * @param path 路径
          */
         PathUtils.prototype.getName = function (path) {
-            feng3d.debuger && feng3d.assert(path != undefined);
+            feng3d.debug.debuger && console.assert(path != undefined);
             var name = this.getNameWithExtension(path);
             if (this.isDirectory(path))
                 return name;
@@ -2480,7 +2476,7 @@ var feng3d;
          * @param path 路径
          */
         PathUtils.prototype.getNameWithExtension = function (path) {
-            feng3d.debuger && feng3d.assert(path != undefined);
+            feng3d.debug.debuger && console.assert(path != undefined);
             var paths = path.split("/");
             var name = paths.pop();
             if (name == "")
@@ -2492,7 +2488,7 @@ var feng3d;
          * @param path 路径
          */
         PathUtils.prototype.getExtension = function (path) {
-            feng3d.debuger && feng3d.assert(path != undefined);
+            feng3d.debug.debuger && console.assert(path != undefined);
             var name = this.getNameWithExtension(path);
             var index = name.indexOf(".");
             if (index == -1)
@@ -2504,7 +2500,7 @@ var feng3d;
          * @param path 路径
          */
         PathUtils.prototype.getParentPath = function (path) {
-            feng3d.debuger && feng3d.assert(path != undefined);
+            feng3d.debug.debuger && console.assert(path != undefined);
             var paths = path.split("/");
             if (this.isDirectory(path))
                 paths.pop();
@@ -2518,8 +2514,8 @@ var feng3d;
          * @param childName 子文件名称
          */
         PathUtils.prototype.getChildFilePath = function (parentPath, childName) {
-            feng3d.debuger && feng3d.assert(parentPath != undefined);
-            feng3d.debuger && feng3d.assert(childName != undefined);
+            feng3d.debug.debuger && console.assert(parentPath != undefined);
+            feng3d.debug.debuger && console.assert(childName != undefined);
             if (parentPath.charAt(parentPath.length - 1) != "/")
                 parentPath += "/";
             return parentPath + childName;
@@ -2609,7 +2605,7 @@ var feng3d;
         __extends(ERR_INVALID_ARG_TYPE, _super);
         function ERR_INVALID_ARG_TYPE(name, expected, actual) {
             var _this = this;
-            feng3d.debuger && assert(typeof name === 'string', "'name' must be a string");
+            feng3d.debug.debuger && assert(typeof name === 'string', "'name' must be a string");
             // determiner: 'must be' or 'must not be'
             var determiner;
             if (typeof expected === 'string' && expected.startsWith('not ')) {
@@ -2636,10 +2632,10 @@ var feng3d;
         return ERR_INVALID_ARG_TYPE;
     }(TypeError));
     function oneOf(expected, thing) {
-        feng3d.debuger && assert(typeof thing === 'string', '`thing` has to be of type string');
+        feng3d.debug.debuger && assert(typeof thing === 'string', '`thing` has to be of type string');
         if (Array.isArray(expected)) {
             var len = expected.length;
-            feng3d.debuger && assert(len > 0, 'At least one expected value needs to be specified');
+            feng3d.debug.debuger && assert(len > 0, 'At least one expected value needs to be specified');
             expected = expected.map(function (i) { return String(i); });
             if (len > 2) {
                 return "one of " + thing + " " + expected.slice(0, len - 1).join(', ') + ", or " +
@@ -10308,7 +10304,7 @@ var feng3d;
             this.rawData[13] = m141 * m212 + m142 * m222 + m143 * m232 + m144 * m242;
             this.rawData[14] = m141 * m213 + m142 * m223 + m143 * m233 + m144 * m243;
             this.rawData[15] = m141 * m214 + m142 * m224 + m143 * m234 + m144 * m244;
-            feng3d.debuger && feng3d.assert(this.rawData[0] !== NaN && this.rawData[4] !== NaN && this.rawData[8] !== NaN && this.rawData[12] !== NaN);
+            debuger && assert(this.rawData[0] !== NaN && this.rawData[4] !== NaN && this.rawData[8] !== NaN && this.rawData[12] !== NaN);
             return this;
         };
         /**
@@ -10614,7 +10610,7 @@ var feng3d;
         Matrix4x4.prototype.invert = function () {
             var d = this.determinant;
             if (d == 0) {
-                feng3d.error("无法获取逆矩阵");
+                error("无法获取逆矩阵");
                 return this;
             }
             d = 1 / d;
@@ -14374,7 +14370,7 @@ var feng3d;
             }
             if (keys.length == 0)
                 return new feng3d.AnimationCurveKeyframe({ time: t, value: 0, tangent: 0 });
-            feng3d.debuger && feng3d.assert(isfind);
+            debuger && assert(isfind);
             return new feng3d.AnimationCurveKeyframe({ time: t, value: value, tangent: tangent });
         };
         /**
@@ -15294,7 +15290,7 @@ var feng3d;
                 if (this._assetId == v)
                     return;
                 if (this._assetId != undefined) {
-                    feng3d.debuger && feng3d.error("\u4E0D\u5141\u8BB8\u4FEE\u6539 assetId");
+                    debuger && feng3d.error("\u4E0D\u5141\u8BB8\u4FEE\u6539 assetId");
                     return;
                 }
                 this._assetId = v;
@@ -15751,7 +15747,7 @@ var feng3d;
                 this._dbStatus[dbname] = { status: DBStatus.unOpen, onsuccessCallbacks: [], onupgradeneededCallbacks: [] };
             this._dbStatus[dbname].onsuccessCallbacks.push(callback);
             if (upgrade) {
-                feng3d.debuger && feng3d.assert(!!onupgrade);
+                debuger && assert(!!onupgrade);
                 this._dbStatus[dbname].onupgradeneededCallbacks.push(onupgrade);
             }
             if (this._dbStatus[dbname].status == DBStatus.opening || this._dbStatus[dbname].status == DBStatus.upgrading)
@@ -16779,7 +16775,7 @@ var feng3d;
              * 文件后缀
              */
             get: function () {
-                feng3d.debuger && feng3d.assert(!!this.assetPath);
+                debuger && assert(!!this.assetPath);
                 var ext = feng3d.pathUtils.getExtension(this.assetPath);
                 return ext;
             },
@@ -16793,7 +16789,7 @@ var feng3d;
              * 不包含后缀
              */
             get: function () {
-                feng3d.debuger && feng3d.assert(!!this.assetPath);
+                debuger && assert(!!this.assetPath);
                 var fn = feng3d.pathUtils.getName(this.assetPath);
                 return fn;
             },
@@ -17064,7 +17060,7 @@ var feng3d;
             // 计算路径
             if (extenson == "")
                 extenson = cls["extenson"];
-            feng3d.debuger && feng3d.assert(extenson != undefined, "\u5BF9\u8C61 " + cls + " \u6CA1\u6709\u8BBE\u7F6E extenson \u503C\uFF0C\u53C2\u8003 FolderAsset.extenson");
+            debuger && assert(extenson != undefined, "\u5BF9\u8C61 " + cls + " \u6CA1\u6709\u8BBE\u7F6E extenson \u503C\uFF0C\u53C2\u8003 FolderAsset.extenson");
             var path = fileName + extenson;
             if (asset.parentAsset)
                 path = asset.parentAsset.assetPath + "/" + path;
@@ -17465,7 +17461,7 @@ var feng3d;
                         return Number(code_1);
                 }
             }
-            feng3d.error("\u65E0\u6CD5\u83B7\u53D6\u6309\u952E " + key + " \u7684\u503C\uFF01");
+            error("\u65E0\u6CD5\u83B7\u53D6\u6309\u952E " + key + " \u7684\u503C\uFF01");
             return code;
         };
         return KeyBoard;
@@ -17543,7 +17539,7 @@ var feng3d;
                 this._keyState.pressKey(boardKey, event);
             }
             else {
-                feng3d.error("\u65E0\u6CD5\u8BC6\u522B\u6309\u94AE " + event.key);
+                console.error("\u65E0\u6CD5\u8BC6\u522B\u6309\u94AE " + event.key);
             }
         };
         /**
@@ -18002,7 +17998,7 @@ var feng3d;
                 onCompleted && onCompleted(image);
             };
             image.onerror = function (event) {
-                feng3d.debuger && feng3d.error("Error while trying to load texture: " + url);
+                debuger && error("Error while trying to load texture: " + url);
                 //
                 image.src = "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
                 //
@@ -18730,7 +18726,7 @@ var feng3d;
      */
     var GLExtension = /** @class */ (function () {
         function GLExtension(gl) {
-            feng3d.debuger && feng3d.assert(!gl.extensions, gl + " " + gl.extensions + " \u5B58\u5728\uFF01");
+            debuger && assert(!gl.extensions, gl + " " + gl.extensions + " \u5B58\u5728\uFF01");
             gl.extensions = this;
             this.initExtensions(gl);
             this.cacheGLQuery(gl);
@@ -18996,7 +18992,7 @@ var feng3d;
                 var name = activeInfo.name;
                 var names = [name];
                 if (activeInfo.size > 1) {
-                    feng3d.debuger && feng3d.assert(name.substr(-3, 3) == "[0]");
+                    debuger && assert(name.substr(-3, 3) == "[0]");
                     var baseName = name.substring(0, name.length - 3);
                     for (var j = 1; j < activeInfo.size; j++) {
                         names[j] = baseName + ("[" + j + "]");
@@ -19286,7 +19282,7 @@ var feng3d;
             if (!buffer) {
                 buffer = gl.createBuffer();
                 if (!buffer) {
-                    feng3d.error("createBuffer 失败！");
+                    error("createBuffer 失败！");
                     throw "";
                 }
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
@@ -19397,7 +19393,7 @@ var feng3d;
                 gl.extensions.aNGLEInstancedArrays.vertexAttribDivisorANGLE(location, this.divisor);
             }
             else {
-                feng3d.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 vertexAttribDivisor \uFF01");
+                warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 vertexAttribDivisor \uFF01");
             }
         };
         Attribute.prototype.invalidate = function () {
@@ -19411,7 +19407,7 @@ var feng3d;
             if (!buffer) {
                 var newbuffer = gl.createBuffer();
                 if (!newbuffer) {
-                    feng3d.error("createBuffer 失败！");
+                    error("createBuffer 失败！");
                     throw "";
                 }
                 buffer = newbuffer;
@@ -19642,12 +19638,12 @@ var feng3d;
                 if (eXTTextureFilterAnisotropic) {
                     if (this.anisotropy > gl.maxAnisotropy) {
                         this.anisotropy = gl.maxAnisotropy;
-                        feng3d.warn(this.anisotropy + " \u8D85\u51FA maxAnisotropy \u7684\u6700\u5927\u503C " + gl.maxAnisotropy + " \uFF01,\u4F7F\u7528\u6700\u5927\u503C\u66FF\u6362\u3002");
+                        warn(this.anisotropy + " \u8D85\u51FA maxAnisotropy \u7684\u6700\u5927\u503C " + gl.maxAnisotropy + " \uFF01,\u4F7F\u7528\u6700\u5927\u503C\u66FF\u6362\u3002");
                     }
                     gl.texParameterf(textureType, eXTTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, this.anisotropy);
                 }
                 else {
-                    feng3d.debuger && alert("浏览器不支持各向异性过滤（anisotropy）特性！");
+                    debuger && alert("浏览器不支持各向异性过滤（anisotropy）特性！");
                 }
             }
             return texture;
@@ -19661,7 +19657,7 @@ var feng3d;
             if (!texture) {
                 var newtexture = gl.createTexture(); // Create a texture object
                 if (!newtexture) {
-                    feng3d.error("createTexture 失败！");
+                    error("createTexture 失败！");
                     throw "";
                 }
                 texture = newtexture;
@@ -19794,7 +19790,7 @@ var feng3d;
             if (!framebuffer) {
                 framebuffer = gl.createFramebuffer();
                 if (!framebuffer) {
-                    feng3d.debuger && alert('Failed to create frame buffer object');
+                    debuger && alert('Failed to create frame buffer object');
                     return null;
                 }
                 this._framebufferMap.set(gl, framebuffer);
@@ -19856,7 +19852,7 @@ var feng3d;
                 // 检查Framebuffer状态
                 var e = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
                 if (gl.FRAMEBUFFER_COMPLETE !== e) {
-                    feng3d.debuger && alert('Frame buffer object is incomplete: ' + e.toString());
+                    debuger && alert('Frame buffer object is incomplete: ' + e.toString());
                     return null;
                 }
                 gl.bindTexture(gl.TEXTURE_2D, null);
@@ -19943,7 +19939,7 @@ var feng3d;
                 // Create a renderbuffer object and Set its size and parameters
                 depthBuffer = gl.createRenderbuffer(); // Create a renderbuffer object
                 if (!depthBuffer) {
-                    feng3d.debuger && alert('Failed to create renderbuffer object');
+                    feng3d.debug.debuger && alert('Failed to create renderbuffer object');
                     return;
                 }
                 this._depthBufferMap.set(gl, depthBuffer);
@@ -20106,7 +20102,7 @@ var feng3d;
      */
     var Renderer = /** @class */ (function () {
         function Renderer(gl) {
-            feng3d.debuger && feng3d.assert(!gl.renderer, gl + " " + gl.renderer + " \u5B58\u5728\uFF01");
+            feng3d.debug.debuger && console.assert(!gl.renderer, gl + " " + gl.renderer + " \u5B58\u5728\uFF01");
             gl.renderer = this;
             this.draw = function (renderAtomic1) {
                 var instanceCount = renderAtomic1.getInstanceCount();
@@ -20141,14 +20137,14 @@ var feng3d;
                 var shader = renderAtomic.getShader();
                 var shaderResult = shader.activeShaderProgram(gl);
                 if (!shaderResult) {
-                    feng3d.warn("\u7F3A\u5C11\u7740\u8272\u5668\uFF0C\u65E0\u6CD5\u6E32\u67D3!");
+                    console.warn("\u7F3A\u5C11\u7740\u8272\u5668\uFF0C\u65E0\u6CD5\u6E32\u67D3!");
                     return null;
                 }
                 var attributes = {};
                 for (var key_1 in shaderResult.attributes) {
                     var attribute = renderAtomic.getAttributeByKey(key_1);
                     if (attribute == undefined) {
-                        feng3d.warn("\u7F3A\u5C11\u9876\u70B9 attribute \u6570\u636E " + key_1 + " \uFF0C\u65E0\u6CD5\u6E32\u67D3!");
+                        console.warn("\u7F3A\u5C11\u9876\u70B9 attribute \u6570\u636E " + key_1 + " \uFF0C\u65E0\u6CD5\u6E32\u67D3!");
                         return null;
                     }
                     attributes[key_1] = attribute;
@@ -20161,14 +20157,14 @@ var feng3d;
                     }
                     var uniform = renderAtomic.getUniformByKey(key);
                     if (uniform == undefined) {
-                        feng3d.warn("\u7F3A\u5C11 uniform \u6570\u636E " + key + " ,\u65E0\u6CD5\u6E32\u67D3\uFF01");
+                        console.warn("\u7F3A\u5C11 uniform \u6570\u636E " + key + " ,\u65E0\u6CD5\u6E32\u67D3\uFF01");
                         return null;
                     }
                     uniforms[key] = uniform;
                 }
                 var indexBuffer = renderAtomic.getIndexBuffer();
                 if (!indexBuffer) {
-                    feng3d.warn("\u786E\u5B9E\u9876\u70B9\u7D22\u5F15\u6570\u636E\uFF0C\u65E0\u6CD5\u6E32\u67D3\uFF01");
+                    console.warn("\u786E\u5B9E\u9876\u70B9\u7D22\u5F15\u6570\u636E\uFF0C\u65E0\u6CD5\u6E32\u67D3\uFF01");
                     return null;
                 }
                 return {
@@ -20319,7 +20315,7 @@ var feng3d;
                     indexBuffer.active(gl);
                     var arrayType = gl[indexBuffer.type];
                     if (indexBuffer.count == 0) {
-                        feng3d.warn("\u9876\u70B9\u7D22\u5F15\u4E3A0\uFF0C\u4E0D\u8FDB\u884C\u6E32\u67D3\uFF01");
+                        console.warn("\u9876\u70B9\u7D22\u5F15\u4E3A0\uFF0C\u4E0D\u8FDB\u884C\u6E32\u67D3\uFF01");
                         return;
                     }
                     if (instanceCount > 1) {
@@ -20331,7 +20327,7 @@ var feng3d;
                             gl.extensions.aNGLEInstancedArrays.drawElementsInstancedANGLE(renderMode, indexBuffer.count, arrayType, indexBuffer.offset, instanceCount);
                         }
                         else {
-                            feng3d.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 drawElementsInstanced \uFF01");
+                            console.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 drawElementsInstanced \uFF01");
                         }
                     }
                     else {
@@ -20349,7 +20345,7 @@ var feng3d;
                         return 0;
                     })(renderAtomic.attributes);
                     if (vertexNum == 0) {
-                        feng3d.warn("\u9876\u70B9\u6570\u91CF\u4E3A0\uFF0C\u4E0D\u8FDB\u884C\u6E32\u67D3\uFF01");
+                        console.warn("\u9876\u70B9\u6570\u91CF\u4E3A0\uFF0C\u4E0D\u8FDB\u884C\u6E32\u67D3\uFF01");
                         return;
                     }
                     if (instanceCount > 1) {
@@ -20361,7 +20357,7 @@ var feng3d;
                             gl.extensions.aNGLEInstancedArrays.drawArraysInstancedANGLE(renderMode, 0, vertexNum, instanceCount);
                         }
                         else {
-                            feng3d.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 drawArraysInstanced \uFF01");
+                            console.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 drawArraysInstanced \uFF01");
                         }
                     }
                     else {
@@ -21391,7 +21387,7 @@ var feng3d;
             if (this.parent)
                 this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
             this.dispatch("updateLocalToWorldMatrix");
-            feng3d.debuger && feng3d.assert(!isNaN(this._localToWorldMatrix.rawData[0]));
+            debuger && assert(!isNaN(this._localToWorldMatrix.rawData[0]));
             return this._localToWorldMatrix;
         };
         //------------------------------------------
@@ -21421,7 +21417,7 @@ var feng3d;
             },
             set: function (val) {
                 val = Number(val.toFixed(fixedNum));
-                feng3d.debuger && feng3d.assert(!isNaN(val));
+                debuger && assert(!isNaN(val));
                 if (this._x == val)
                     return;
                 this._x = val;
@@ -21436,7 +21432,7 @@ var feng3d;
             },
             set: function (val) {
                 val = Number(val.toFixed(fixedNum));
-                feng3d.debuger && feng3d.assert(!isNaN(val));
+                debuger && assert(!isNaN(val));
                 if (this._y == val)
                     return;
                 this._y = val;
@@ -21451,7 +21447,7 @@ var feng3d;
             },
             set: function (val) {
                 val = Number(val.toFixed(fixedNum));
-                feng3d.debuger && feng3d.assert(!isNaN(val));
+                debuger && assert(!isNaN(val));
                 if (this._z == val)
                     return;
                 this._z = val;
@@ -21466,7 +21462,7 @@ var feng3d;
             },
             set: function (val) {
                 val = Number(val.toFixed(fixedNum));
-                feng3d.debuger && feng3d.assert(!isNaN(val));
+                debuger && assert(!isNaN(val));
                 if (this.rx == val)
                     return;
                 this._rx = val;
@@ -21481,7 +21477,7 @@ var feng3d;
             },
             set: function (val) {
                 val = Number(val.toFixed(fixedNum));
-                feng3d.debuger && feng3d.assert(!isNaN(val));
+                debuger && assert(!isNaN(val));
                 if (this.ry == val)
                     return;
                 this._ry = val;
@@ -21496,7 +21492,7 @@ var feng3d;
             },
             set: function (val) {
                 val = Number(val.toFixed(fixedNum));
-                feng3d.debuger && feng3d.assert(!isNaN(val));
+                debuger && assert(!isNaN(val));
                 if (this.rz == val)
                     return;
                 this._rz = val;
@@ -21511,7 +21507,7 @@ var feng3d;
             },
             set: function (val) {
                 val = Number(val.toFixed(fixedNum));
-                feng3d.debuger && feng3d.assert(!isNaN(val) && val != 0);
+                debuger && assert(!isNaN(val) && val != 0);
                 if (this._sx == val)
                     return;
                 this._sx = val;
@@ -21526,7 +21522,7 @@ var feng3d;
             },
             set: function (val) {
                 val = Number(val.toFixed(fixedNum));
-                feng3d.debuger && feng3d.assert(!isNaN(val) && val != 0);
+                debuger && assert(!isNaN(val) && val != 0);
                 if (this._sy == val)
                     return;
                 this._sy = val;
@@ -21541,7 +21537,7 @@ var feng3d;
             },
             set: function (val) {
                 val = Number(val.toFixed(fixedNum));
-                feng3d.debuger && feng3d.assert(!isNaN(val) && val != 0);
+                debuger && assert(!isNaN(val) && val != 0);
                 if (this._sz == val)
                     return;
                 this._sz = val;
@@ -21599,9 +21595,9 @@ var feng3d;
                 x = Number(x.toFixed(fixedNum));
                 y = Number(y.toFixed(fixedNum));
                 z = Number(z.toFixed(fixedNum));
-                feng3d.debuger && feng3d.assert(!isNaN(x));
-                feng3d.debuger && feng3d.assert(!isNaN(y));
-                feng3d.debuger && feng3d.assert(!isNaN(z));
+                debuger && assert(!isNaN(x));
+                debuger && assert(!isNaN(y));
+                debuger && assert(!isNaN(z));
                 if (this._x != x || this._y != y || this._z != z) {
                     this._x = x;
                     this._y = y;
@@ -21622,9 +21618,9 @@ var feng3d;
                 x = Number(x.toFixed(fixedNum));
                 y = Number(y.toFixed(fixedNum));
                 z = Number(z.toFixed(fixedNum));
-                feng3d.debuger && feng3d.assert(!isNaN(x));
-                feng3d.debuger && feng3d.assert(!isNaN(y));
-                feng3d.debuger && feng3d.assert(!isNaN(z));
+                debuger && assert(!isNaN(x));
+                debuger && assert(!isNaN(y));
+                debuger && assert(!isNaN(z));
                 if (this._rx != x || this._ry != y || this._rz != z) {
                     this._rx = x;
                     this._ry = y;
@@ -21661,9 +21657,9 @@ var feng3d;
                 x = Number(x.toFixed(fixedNum));
                 y = Number(y.toFixed(fixedNum));
                 z = Number(z.toFixed(fixedNum));
-                feng3d.debuger && feng3d.assert(!isNaN(x) && x != 0);
-                feng3d.debuger && feng3d.assert(!isNaN(y) && y != 0);
-                feng3d.debuger && feng3d.assert(!isNaN(z) && z != 0);
+                debuger && assert(!isNaN(x) && x != 0);
+                debuger && assert(!isNaN(y) && y != 0);
+                debuger && assert(!isNaN(z) && z != 0);
                 if (this._sx != x || this._sy != y || this._sz != z) {
                     this._sx = x;
                     this._sy = y;
@@ -22215,7 +22211,7 @@ var feng3d;
          * @return				子组件
          */
         GameObject.prototype.getComponentAt = function (index) {
-            feng3d.debuger && feng3d.assert(index < this.numComponents, "给出索引超出范围");
+            debuger && assert(index < this.numComponents, "给出索引超出范围");
             return this._components[index];
         };
         /**
@@ -22321,9 +22317,9 @@ var feng3d;
          * @param index				位置索引
          */
         GameObject.prototype.setComponentIndex = function (component, index) {
-            feng3d.debuger && feng3d.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
+            debuger && assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
             var oldIndex = this._components.indexOf(component);
-            feng3d.debuger && feng3d.assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
+            debuger && assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
             this._components.splice(oldIndex, 1);
             this._components.splice(index, 0, component);
         };
@@ -22343,7 +22339,7 @@ var feng3d;
          * @param component 被移除组件
          */
         GameObject.prototype.removeComponent = function (component) {
-            feng3d.debuger && feng3d.assert(this.hasComponent(component), "只能移除在容器中的组件");
+            debuger && assert(this.hasComponent(component), "只能移除在容器中的组件");
             var index = this.getComponentIndex(component);
             this.removeComponentAt(index);
         };
@@ -22353,7 +22349,7 @@ var feng3d;
          * @return				    组件在容器的索引位置
          */
         GameObject.prototype.getComponentIndex = function (component) {
-            feng3d.debuger && feng3d.assert(this._components.indexOf(component) != -1, "组件不在容器中");
+            debuger && assert(this._components.indexOf(component) != -1, "组件不在容器中");
             var index = this._components.indexOf(component);
             return index;
         };
@@ -22362,7 +22358,7 @@ var feng3d;
          * @param index		要删除的 Component 的子索引。
          */
         GameObject.prototype.removeComponentAt = function (index) {
-            feng3d.debuger && feng3d.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
+            debuger && assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
             var component = this._components.splice(index, 1)[0];
             //派发移除组件事件
             this.dispatch("removeComponent", component, true);
@@ -22375,8 +22371,8 @@ var feng3d;
          * @param index2		第二个子组件的索引位置
          */
         GameObject.prototype.swapComponentsAt = function (index1, index2) {
-            feng3d.debuger && feng3d.assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
-            feng3d.debuger && feng3d.assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
+            debuger && assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
+            debuger && assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
             var temp = this._components[index1];
             this._components[index1] = this._components[index2];
             this._components[index2] = temp;
@@ -22387,8 +22383,8 @@ var feng3d;
          * @param b		第二个子组件
          */
         GameObject.prototype.swapComponents = function (a, b) {
-            feng3d.debuger && feng3d.assert(this.hasComponent(a), "第一个子组件不在容器中");
-            feng3d.debuger && feng3d.assert(this.hasComponent(b), "第二个子组件不在容器中");
+            debuger && assert(this.hasComponent(a), "第一个子组件不在容器中");
+            debuger && assert(this.hasComponent(b), "第二个子组件不在容器中");
             this.swapComponentsAt(this.getComponentIndex(a), this.getComponentIndex(b));
         };
         /**
@@ -22598,7 +22594,7 @@ var feng3d;
         GameObject.prototype.addComponentAt = function (component, index) {
             if (component == null)
                 return;
-            feng3d.debuger && feng3d.assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
+            debuger && assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
             if (this.hasComponent(component)) {
                 index = Math.min(index, this._components.length - 1);
                 this.setComponentIndex(component, index);
@@ -22669,7 +22665,7 @@ var feng3d;
                 canvas.style.height = "100%";
                 document.body.appendChild(canvas);
             }
-            feng3d.debuger && feng3d.assert(canvas instanceof HTMLCanvasElement, "canvas\u53C2\u6570\u5FC5\u987B\u4E3A HTMLCanvasElement \u7C7B\u578B\uFF01");
+            debuger && assert(canvas instanceof HTMLCanvasElement, "canvas\u53C2\u6570\u5FC5\u987B\u4E3A HTMLCanvasElement \u7C7B\u578B\uFF01");
             this.canvas = canvas;
             canvas.addEventListener("webglcontextlost", function (event) {
                 event.preventDefault();
@@ -22935,7 +22931,7 @@ var feng3d;
                 var vec = _localToWorldMatrix.decompose();
                 vec[2].scaleNumber(depthScale * this.holdSize);
                 _localToWorldMatrix.recompose(vec);
-                feng3d.debuger && feng3d.assert(!isNaN(_localToWorldMatrix.rawData[0]));
+                debuger && assert(!isNaN(_localToWorldMatrix.rawData[0]));
             }
         };
         HoldSizeComponent.prototype.getDepthScale = function (camera) {
@@ -23355,7 +23351,7 @@ var feng3d;
             if (cls)
                 this.scriptInstance = new cls();
             else
-                feng3d.warn("\u65E0\u6CD5\u521D\u59CB\u5316\u811A\u672C " + this.scriptName);
+                warn("\u65E0\u6CD5\u521D\u59CB\u5316\u811A\u672C " + this.scriptName);
             this.scriptInit = false;
         };
         ScriptComponent.prototype.onScriptChanged = function () {
@@ -25074,7 +25070,7 @@ var feng3d;
          * 投影矩阵失效
          */
         LensBase.prototype.invalidate = function () {
-            feng3d.debuger && feng3d.assert(!isNaN(this.aspect));
+            debuger && assert(!isNaN(this.aspect));
             this._matrixInvalid = true;
             this._invertMatrixInvalid = true;
             this._viewBoxInvalid = true;
@@ -29223,7 +29219,7 @@ var feng3d;
                 var url = this.url;
                 feng3d.fs.readArrayBuffer(this.url, function (err, data) {
                     if (err) {
-                        feng3d.warn(err);
+                        warn(err);
                         return;
                     }
                     if (url != _this.url)
@@ -31498,7 +31494,7 @@ var feng3d;
                 return feng3d.Vector3.fromArray(value);
             if (this.type == "Quaternion")
                 return feng3d.Quaternion.fromArray(value);
-            feng3d.error("\u672A\u5904\u7406 \u52A8\u753B\u6570\u636E\u7C7B\u578B " + this.type);
+            error("\u672A\u5904\u7406 \u52A8\u753B\u6570\u636E\u7C7B\u578B " + this.type);
             throw "";
         };
         __decorate([
@@ -31810,7 +31806,7 @@ var feng3d;
             var _this = this;
             this.rs.fs.readObject(this.assetPath, function (err, data) {
                 feng3d.serialization.setValue(_this.data, data);
-                feng3d.debuger && feng3d.assert(_this.data.assetId == _this.assetId);
+                debuger && assert(_this.data.assetId == _this.assetId);
                 callback && callback(err);
             });
         };
@@ -31853,7 +31849,7 @@ var feng3d;
             }
             // 获取脚本类名称
             var result = feng3d.regExps.classReg.exec(this.textContent);
-            feng3d.debuger && feng3d.assert(result != null, "\u5728\u811A\u672C " + this.assetPath + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
+            debuger && assert(result != null, "\u5728\u811A\u672C " + this.assetPath + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
             var script = result[3];
             if (result[5]) {
                 this.parentScriptName = result[5].split(".").pop();
@@ -31861,7 +31857,7 @@ var feng3d;
             // 获取导出类命名空间
             if (result[1]) {
                 result = feng3d.regExps.namespace.exec(this.textContent);
-                feng3d.debuger && feng3d.assert(result != null, "\u83B7\u53D6\u811A\u672C " + this.assetPath + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
+                debuger && assert(result != null, "\u83B7\u53D6\u811A\u672C " + this.assetPath + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
                 script = result[1] + "." + script;
             }
             this.scriptName = script;
@@ -31996,7 +31992,7 @@ var feng3d;
         });
         Object.defineProperty(TextureAsset.prototype, "assetId", {
             get: function () { return this._data.assetId; },
-            set: function (v) { feng3d.debuger && feng3d.assert(this._data.assetId == undefined); this._data.assetId = v; },
+            set: function (v) { debuger && assert(this._data.assetId == undefined); this._data.assetId = v; },
             enumerable: true,
             configurable: true
         });
@@ -34705,7 +34701,7 @@ var feng3d;
             gameObject.transform.rx = -90;
             //顶点最大关节关联数
             var _maxJointCount = this.calculateMaxJointCount(md5MeshData);
-            feng3d.debuger && feng3d.assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
+            debuger && assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
             var skeletonjoints = this.createSkeleton(md5MeshData.joints);
             var skeletonComponent = gameObject.addComponent(feng3d.SkeletonComponent);
             skeletonComponent.joints = skeletonjoints;
@@ -35447,20 +35443,3 @@ var feng3d;
     feng3d.WindowMouseInput = WindowMouseInput;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-(function universalModuleDefinition(root, factory)
-{
-    if (typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory();
-    else if (typeof define === 'function' && define.amd)
-        define([], factory);
-    else if (typeof exports === 'object')
-        exports["feng3d"] = factory();
-    else
-        root["feng3d"] = factory();
-    
-    var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
-    globalObject["feng3d"] = factory();
-})(this, function ()
-{
-    return feng3d;
-});

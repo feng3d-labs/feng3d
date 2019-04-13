@@ -24,6 +24,8 @@
   },
   "homepage": "https://gitee.com/feng3d/feng3d#readme",
   "dependencies": {
+    "@feng3d/functionwarp": "^0.0.1",
+    "@feng3d/debug": "^0.0.1",
     "@feng3d/watcher": "^0.0.2",
     "@feng3d/event": "^0.0.9",
     "@feng3d/task": "^0.0.11",

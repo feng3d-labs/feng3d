@@ -16,7 +16,7 @@ QUnit.module("Task", () =>
         });
         feng3d.task.series(funcs)(() =>
         {
-            feng3d.assert(JSON.stringify(arr) == JSON.stringify(result));
+            console.assert(JSON.stringify(arr) == JSON.stringify(result));
         });
         assert.ok(true);
     });

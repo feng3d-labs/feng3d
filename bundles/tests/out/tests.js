@@ -41,7 +41,7 @@ var feng3d;
             return _this;
         }
         C.prototype.change = function () {
-            feng3d.log("change", this.a, arguments);
+            console.log("change", this.a, arguments);
         };
         __decorate([
             feng3d.serialize
@@ -4155,7 +4155,7 @@ QUnit.module("Task", function () {
             };
         });
         feng3d.task.series(funcs)(function () {
-            feng3d.assert(JSON.stringify(arr) == JSON.stringify(result));
+            console.assert(JSON.stringify(arr) == JSON.stringify(result));
         });
         assert.ok(true);
     });

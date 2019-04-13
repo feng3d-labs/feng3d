@@ -19,7 +19,7 @@ namespace feng3d
 
         change()
         {
-            log("change", this.a, arguments);
+            console.log("change", this.a, arguments);
         }
     }
 

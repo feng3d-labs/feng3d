@@ -29,7 +29,8 @@
         "node_modules/@feng3d/polyfill/src/MapUtils.ts",
         "node_modules/@feng3d/polyfill/src/ArrayUtils.ts",
         //基础工具
-        "src/utils/debug.ts",
+        "node_modules/@feng3d/functionwarp/src/FunctionWarp.ts",
+        "node_modules/@feng3d/debug/src/debug.ts",
         "src/utils/Serialization.ts",
         //
         "node_modules/@feng3d/objectview/src/ObjectView.ts",

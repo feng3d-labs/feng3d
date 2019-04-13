@@ -88,7 +88,7 @@ namespace feng3d
 				this._keyState.pressKey(boardKey, event);
 			} else
 			{
-				feng3d.error(`无法识别按钮 ${event.key}`);
+				console.error(`无法识别按钮 ${event.key}`);
 			}
 		}
 
@@ -107,7 +107,7 @@ namespace feng3d
 				this._keyState.releaseKey(boardKey, event);
 			} else
 			{
-				feng3d.error(`无法识别按钮 ${event.key}`);
+				console.error(`无法识别按钮 ${event.key}`);
 			}
 		}
 	}

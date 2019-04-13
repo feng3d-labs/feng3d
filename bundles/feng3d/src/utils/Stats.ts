@@ -36,7 +36,7 @@ namespace feng3d
         {
             var mode = 0;
             if (typeof document == "undefined") return;
-            
+
             var container = document.createElement('div');
             container.style.cssText = 'position:fixed;top:0;left:0;cursor:pointer;opacity:0.9;';
             container.addEventListener('click', function (event)
@@ -138,7 +138,7 @@ namespace feng3d
             var context0 = canvas.getContext('2d');
             if (context0 == null)
             {
-                log(`无法创建 CanvasRenderingContext2D `);
+                console.log(`无法创建 CanvasRenderingContext2D `);
                 return;
             }
             var context = context0;

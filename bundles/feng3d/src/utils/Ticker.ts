@@ -250,7 +250,7 @@ namespace feng3d
                 v.func.call(v.thisObject, lazy.getvalue(v.interval));
             } catch (error)
             {
-                warn(`${v.func} 方法执行错误，从 ticker 中移除`, error)
+                console.warn(`${v.func} 方法执行错误，从 ticker 中移除`, error)
                 var index = tickerFuncs.indexOf(v);
                 if (index != -1) tickerFuncs.splice(index, 1);
             }

@@ -27,7 +27,7 @@ namespace feng3d
          */
         getName(path: string)
         {
-            debuger && assert(path != undefined);
+            debug.debuger && console.assert(path != undefined);
             var name = this.getNameWithExtension(path);
             if (this.isDirectory(path))
                 return name;
@@ -41,7 +41,7 @@ namespace feng3d
          */
         getNameWithExtension(path: string)
         {
-            debuger && assert(path != undefined);
+            debug.debuger && console.assert(path != undefined);
             var paths = path.split("/");
             var name = paths.pop();
             if (name == "")
@@ -55,7 +55,7 @@ namespace feng3d
          */
         getExtension(path: string)
         {
-            debuger && assert(path != undefined);
+            debug.debuger && console.assert(path != undefined);
             var name = this.getNameWithExtension(path);
             var index = name.indexOf(".");
             if (index == -1) return "";
@@ -68,7 +68,7 @@ namespace feng3d
          */
         getParentPath(path: string)
         {
-            debuger && assert(path != undefined);
+            debug.debuger && console.assert(path != undefined);
             var paths = path.split("/");
             if (this.isDirectory(path))
                 paths.pop();
@@ -84,8 +84,8 @@ namespace feng3d
          */
         getChildFilePath(parentPath: string, childName: string)
         {
-            debuger && assert(parentPath != undefined);
-            debuger && assert(childName != undefined);
+            debug.debuger && console.assert(parentPath != undefined);
+            debug.debuger && console.assert(childName != undefined);
 
             if (parentPath.charAt(parentPath.length - 1) != "/") parentPath += "/";
             return parentPath + childName;

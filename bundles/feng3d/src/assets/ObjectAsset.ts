@@ -33,7 +33,7 @@ namespace feng3d
             this.rs.fs.readObject(this.assetPath, (err, data: AssetData) =>
             {
                 serialization.setValue(this.data, data);
-                debuger && assert(this.data.assetId == this.assetId);
+                debug.debuger && console.assert(this.data.assetId == this.assetId);
                 callback && callback(err);
             });
         }

@@ -167,11 +167,11 @@ namespace feng3d
             //基础类型
             if (isBaseType(object)) return object;
 
-            if (debuger && object.constructor == Object)
+            if (debug.debuger && object.constructor == Object)
             {
                 let assetids = this.getAssets(object);
                 var assets = assetids.reduce((pv, cv) => { var r = rs.getAssetData(cv); if (r) pv.push(r); return pv; }, []);
-                feng3d.assert(assetids.length == assets.length, `存在资源未加载，请使用 deserializeWithAssets 进行反序列化`)
+                console.assert(assetids.length == assets.length, `存在资源未加载，请使用 deserializeWithAssets 进行反序列化`)
             }
 
             //处理数组
@@ -208,7 +208,7 @@ namespace feng3d
             var cls = classUtils.getDefinitionByName(className);
             if (!cls)
             {
-                warn(`无法序列号对象 ${className}`);
+                console.warn(`无法序列号对象 ${className}`);
                 return undefined;
             }
             target = new cls();
@@ -216,7 +216,7 @@ namespace feng3d
             if (target instanceof AssetData && object.assetId != undefined)
             {
                 var result = rs.getAssetData(object.assetId);
-                debuger && assert(!!result)
+                debug.debuger && console.assert(!!result)
                 return result;
             }
             //处理自定义反序列化对象
@@ -338,7 +338,7 @@ namespace feng3d
             var cls = classUtils.getDefinitionByName(className);
             if (!cls)
             {
-                warn(`无法序列号对象 ${className}`);
+                console.warn(`无法序列号对象 ${className}`);
                 return assetids;
             }
             var target = new cls();
@@ -370,7 +370,7 @@ namespace feng3d
             });
             task.parallel(fns)(() =>
             {
-                debuger && assert(assetids.length == result.filter(v => v != null).length);
+                debug.debuger && console.assert(assetids.length == result.filter(v => v != null).length);
                 var r = this.deserialize(object);
                 callback(r);
             });

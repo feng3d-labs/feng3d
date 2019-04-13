@@ -14,7 +14,7 @@ namespace feng3d
 
         constructor(gl: GL)
         {
-            debuger && assert(!gl.renderer, `${gl} ${gl.renderer} 存在！`);
+            debug.debuger && console.assert(!gl.renderer, `${gl} ${gl.renderer} 存在！`);
 
             gl.renderer = this;
 
@@ -56,7 +56,7 @@ namespace feng3d
                 var shaderResult = shader.activeShaderProgram(gl);
                 if (!shaderResult)
                 {
-                    warn(`缺少着色器，无法渲染!`)
+                    console.warn(`缺少着色器，无法渲染!`)
                     return null;
                 }
 
@@ -66,7 +66,7 @@ namespace feng3d
                     var attribute = renderAtomic.getAttributeByKey(key);
                     if (attribute == undefined)
                     {
-                        warn(`缺少顶点 attribute 数据 ${key} ，无法渲染!`)
+                        console.warn(`缺少顶点 attribute 数据 ${key} ，无法渲染!`)
                         return null;
                     }
                     attributes[key] = attribute;
@@ -83,7 +83,7 @@ namespace feng3d
                     var uniform = renderAtomic.getUniformByKey(key);
                     if (uniform == undefined)
                     {
-                        warn(`缺少 uniform 数据 ${key} ,无法渲染！`)
+                        console.warn(`缺少 uniform 数据 ${key} ,无法渲染！`)
                         return null;
                     }
                     uniforms[key] = uniform;
@@ -92,7 +92,7 @@ namespace feng3d
                 var indexBuffer = renderAtomic.getIndexBuffer();
                 if (!indexBuffer) 
                 {
-                    warn(`确实顶点索引数据，无法渲染！`);
+                    console.warn(`确实顶点索引数据，无法渲染！`);
                     return null;
                 }
                 return {
@@ -273,7 +273,7 @@ namespace feng3d
                     var arrayType = gl[indexBuffer.type];
                     if (indexBuffer.count == 0)
                     {
-                        warn(`顶点索引为0，不进行渲染！`);
+                        console.warn(`顶点索引为0，不进行渲染！`);
                         return;
                     }
                     if (instanceCount > 1)
@@ -287,7 +287,7 @@ namespace feng3d
                             gl.extensions.aNGLEInstancedArrays.drawElementsInstancedANGLE(renderMode, indexBuffer.count, arrayType, indexBuffer.offset, instanceCount);
                         } else
                         {
-                            warn(`浏览器 不支持 drawElementsInstanced ！`);
+                            console.warn(`浏览器 不支持 drawElementsInstanced ！`);
                         }
                     } else
                     {
@@ -310,7 +310,7 @@ namespace feng3d
                     })(renderAtomic.attributes);
                     if (vertexNum == 0)
                     {
-                        warn(`顶点数量为0，不进行渲染！`);
+                        console.warn(`顶点数量为0，不进行渲染！`);
                         return;
                     }
                     if (instanceCount > 1)
@@ -324,7 +324,7 @@ namespace feng3d
                             gl.extensions.aNGLEInstancedArrays.drawArraysInstancedANGLE(renderMode, 0, vertexNum, instanceCount);
                         } else
                         {
-                            warn(`浏览器 不支持 drawArraysInstanced ！`);
+                            console.warn(`浏览器 不支持 drawArraysInstanced ！`);
                         }
                     }
                     else

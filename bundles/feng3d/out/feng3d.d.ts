@@ -1,6 +1,3 @@
-declare module 'feng3d' {
-    export = feng3d;
-}
 declare type gPartial<T> = {
     [P in keyof T]?: gPartial<T[P]>;
 };
@@ -185,41 +182,50 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    var functionwarp: FunctionWarp;
     /**
-     * 是否开启调试(主要用于断言)
+     * 函数经
+     *
+     * 包装函数，以及对应的拆包
      */
-    var debuger: boolean;
+    class FunctionWarp {
+        /**
+         * 包装函数
+         *
+         * 一般用于调试
+         * 使用场景示例：
+         * 1. 在函数执行前后记录时间来计算函数执行时间。
+         * 1. 在console.error调用前使用 debugger 进行断点调试。
+         *
+         * @param space 函数所属对象或者原型
+         * @param funcName 函数名称
+         * @param pf 在函数执行前执行的函数
+         * @param nf 在函数执行后执行的函数
+         */
+        wrap<T, K extends keyof T, V extends T[K]>(space: T, funcName: K, pf?: V, nf?: V): void;
+    }
+}
+declare namespace feng3d {
     /**
-     * 测试代码运行时间
-     * @param fn 被测试的方法
-     * @param labal 标签
+     * 调试工具
      */
-    function time(fn: Function, labal?: string): void;
+    var debug: Debug;
     /**
-     * 断言，测试不通过时报错
-     * @param test 测试项
-     * @param message 测试失败时提示信息
-     * @param optionalParams
+     * 调试工具
      */
-    function assert(test?: boolean, message?: string, ...optionalParams: any[]): void;
-    /**
-     * 输出错误
-     * @param message 错误信息
-     * @param optionalParams
-     */
-    function error(message?: any, ...optionalParams: any[]): void;
-    /**
-     * 记录日志信息
-     * @param message 日志信息
-     * @param optionalParams
-     */
-    function log(message?: any, ...optionalParams: any[]): void;
-    /**
-     * 警告
-     * @param message 警告信息
-     * @param optionalParams
-     */
-    function warn(message?: any, ...optionalParams: any[]): void;
+    class Debug {
+        /**
+         * 是否开启调试
+         */
+        debuger: boolean;
+        constructor();
+        /**
+         * 测试代码运行时间
+         * @param fn 被测试的方法
+         * @param labal 标签
+         */
+        time(fn: Function, labal?: string): void;
+    }
 }
 declare namespace feng3d {
     /**

@@ -64,7 +64,7 @@ namespace feng3d
             canvasImg.height = image.height;
 
             var ctxt = canvasImg.getContext('2d');
-            debuger && assert(!!ctxt);
+            debug.debuger && console.assert(!!ctxt);
             ctxt.drawImage(image, 0, 0);
             this.imageData = ctxt.getImageData(0, 0, image.width, image.height);//读取整张图片的像素。
             return this;
