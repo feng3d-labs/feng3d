@@ -343,6 +343,7 @@ var feng3d;
     feng3d.dispatcher = new EventDispatcher();
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=index.js.map
+console.log("@feng3d/event-0.0.9");
 (function universalModuleDefinition(root, factory)
 {
     if (typeof exports === 'object' && typeof module === 'object')

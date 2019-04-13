@@ -285,6 +285,7 @@ getset平均耗时比 17.3
     }
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=index.js.map
+console.log("@feng3d/watcher-0.0.2");
 (function universalModuleDefinition(root, factory)
 {
     if (typeof exports === 'object' && typeof module === 'object')

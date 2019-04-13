@@ -397,6 +397,7 @@ var feng3d;
 //     }
 // });
 //# sourceMappingURL=index.js.map
+console.log("@feng3d/serialization-0.0.1");
 (function universalModuleDefinition(root, factory)
 {
     if (typeof exports === 'object' && typeof module === 'object')

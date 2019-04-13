@@ -37,6 +37,7 @@ var feng3d;
     feng3d.functionwarp = new FunctionWarp();
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=index.js.map
+console.log("@feng3d/functionwarp-0.0.2");
 (function universalModuleDefinition(root, factory)
 {
     if (typeof exports === 'object' && typeof module === 'object')

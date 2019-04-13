@@ -2671,6 +2671,7 @@ var feng3d;
     feng3d.AvlTree = AvlTree;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=index.js.map
+console.log("@feng3d/ds-0.0.3");
 (function universalModuleDefinition(root, factory)
 {
     if (typeof exports === 'object' && typeof module === 'object')

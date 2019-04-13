@@ -54,6 +54,7 @@ Array.prototype.delete = function (item) {
     return index;
 };
 //# sourceMappingURL=index.js.map
+console.log("@feng3d/polyfill-0.0.3");
 (function universalModuleDefinition(root, factory)
 {
     if (typeof exports === 'object' && typeof module === 'object')

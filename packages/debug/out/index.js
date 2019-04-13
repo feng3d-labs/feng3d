@@ -32,6 +32,7 @@ var feng3d;
     feng3d.debug = new Debug();
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=index.js.map
+console.log("@feng3d/debug-0.0.2");
 (function universalModuleDefinition(root, factory)
 {
     if (typeof exports === 'object' && typeof module === 'object')

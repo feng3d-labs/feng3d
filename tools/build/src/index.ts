@@ -28,7 +28,7 @@ export function watchProject(project: { path: string, moduleName: string, global
         if (data.indexOf("Compilation complete") != -1 || data.indexOf("Watching for file changes") != -1)
         {
             //在编译完成后处理 模块导出
-            var tsconfig = readTsConfig(readFile(project.path + "/tsconfig.json"));
+            var tsconfig = readFileObject(project.path + "/tsconfig.json");
             var outjsFilePath = tsconfig.compilerOptions.outFile;
             if (outjsFilePath !== undefined)
             {
@@ -37,6 +37,11 @@ export function watchProject(project: { path: string, moduleName: string, global
                 if (fs.existsSync(outjsFilePath))
                 {
                     var outjsStr = readFile(outjsFilePath)
+                    // 添加版本号输出
+                    var packageObj = readFileObject(project.path + "/package.json");
+                    if (packageObj && packageObj.name && packageObj.version)
+                        outjsStr += `\nconsole.log("${packageObj.name}-${packageObj.version}");`;
+                    //
                     var universalModuleDefinitionStr = getUniversalModuleDefinition(project.moduleName, project.globalModule);
                     outjsStr = outjsStr.replace(universalModuleDefinitionStr, "");
                     outjsStr += universalModuleDefinitionStr;
@@ -114,15 +119,16 @@ function writeFile(filePath, content)
     fs.writeFileSync(filePath, content);
 }
 
-function readFile(filePath)
+function readFile(filePath: string)
 {
     fs.openSync(filePath, "r");
     var result = fs.readFileSync(filePath, 'utf8');
     return result;
 }
 
-function readTsConfig(tsconfigStr)
+function readFileObject(path: string)
 {
+    var tsconfigStr = readFile(path);
     var tsconfig;
     eval("tsconfig=" + tsconfigStr);
     return tsconfig;

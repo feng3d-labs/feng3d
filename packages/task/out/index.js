@@ -134,6 +134,7 @@ var feng3d;
     feng3d.task = new Task();
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=index.js.map
+console.log("@feng3d/task-0.0.11");
 (function universalModuleDefinition(root, factory)
 {
     if (typeof exports === 'object' && typeof module === 'object')

@@ -6,12 +6,6 @@ declare type gPartial<T> = {
 };
 declare namespace feng3d {
     /**
-     * feng3d的版本号
-     */
-    var revision: string;
-}
-declare namespace feng3d {
-    /**
      * 观察装饰器，观察被装饰属性的变化
      *
      * @param onChange 属性变化回调  例如参数为“onChange”时，回调将会调用this.onChange(property, oldValue, newValue)
