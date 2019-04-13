@@ -292,7 +292,7 @@ namespace feng3d
 				if (excludeAttrs.indexOf(attributeDefinition.name) == -1)
 				{
 					var editable = attributeDefinition.editable == undefined ? true : attributeDefinition.editable;
-					editable = editable && objectutils.propertyIsWritable(object, attributeDefinition.name);
+					editable = editable && Object.propertyIsWritable(object, attributeDefinition.name);
 
 					var obj: AttributeViewInfo = <any>{ owner: object, type: getAttributeType(object[attributeDefinition.name]) };
 					Object.assign(obj, attributeDefinition);

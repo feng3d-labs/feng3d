@@ -201,7 +201,7 @@ var feng3d;
             classConfig.attributeDefinitionVec.forEach(function (attributeDefinition) {
                 if (excludeAttrs.indexOf(attributeDefinition.name) == -1) {
                     var editable = attributeDefinition.editable == undefined ? true : attributeDefinition.editable;
-                    editable = editable && feng3d.objectutils.propertyIsWritable(object, attributeDefinition.name);
+                    editable = editable && Object.propertyIsWritable(object, attributeDefinition.name);
                     var obj = { owner: object, type: getAttributeType(object[attributeDefinition.name]) };
                     Object.assign(obj, attributeDefinition);
                     obj.editable = editable;

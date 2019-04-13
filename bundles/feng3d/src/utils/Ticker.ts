@@ -242,7 +242,7 @@ namespace feng3d
         }
         needTickerFuncItems.reverse();
         // 相同的函数只执行一个
-        arrayutils.unique(needTickerFuncItems, (a, b) => { return (a.func == b.func && a.thisObject == b.thisObject) });
+        needTickerFuncItems.unique((a, b) => { return (a.func == b.func && a.thisObject == b.thisObject) });
         needTickerFuncItems.forEach(v =>
         {
             try

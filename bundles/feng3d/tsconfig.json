@@ -25,9 +25,9 @@
         // 自动生成文件
         "src/autofiles/ShaderConfig.ts",
         // Polyfill
-        "node_modules/@feng3d/polyfill/src/ObjectUtils.ts",
-        "node_modules/@feng3d/polyfill/src/MapUtils.ts",
-        "node_modules/@feng3d/polyfill/src/ArrayUtils.ts",
+        "node_modules/@feng3d/polyfill/src/Object.ts",
+        "node_modules/@feng3d/polyfill/src/Map.ts",
+        "node_modules/@feng3d/polyfill/src/Array.ts",
         //基础工具
         "node_modules/@feng3d/functionwarp/src/FunctionWarp.ts",
         "node_modules/@feng3d/debug/src/debug.ts",
