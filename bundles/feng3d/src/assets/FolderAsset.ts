@@ -20,6 +20,16 @@ namespace feng3d
         }
 
         /**
+         * 删除资源
+         * 
+         * @param callback 完成回调
+         */
+        delete(callback?: (err: Error) => void)
+        {
+            throw `未实现`;
+        }
+
+        /**
          * 保存文件
          * @param callback 完成回调
          */

@@ -227,32 +227,7 @@ namespace feng3d
                 }
                 var la = assets.pop();
 
-                // 删除 meta 文件
-                la.deleteMeta((err) =>
-                {
-                    if (err)
-                    {
-                        callback && callback(err);
-                        return;
-                    }
-
-                    la.deleteFile((err) =>
-                    {
-                        // 删除父子资源关系
-                        if (la.parentAsset)
-                        {
-                            var index = la.parentAsset.childrenAssets.indexOf(la);
-                            la.parentAsset.childrenAssets.splice(index, 1);
-                            la.parentAsset = null;
-                        }
-                        // 删除映射
-                        delete this.idMap[la.assetId];
-                        delete this.pathMap[la.assetPath];
-
-                        deleteLastAsset();
-                    });
-                });
-
+                la.delete(deleteLastAsset);
             };
             deleteLastAsset();
         }

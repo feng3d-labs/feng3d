@@ -8033,7 +8033,7 @@ declare namespace feng3d {
          *
          * @param callback 完成回调
          */
-        delete(callback?: (err: Error) => void): void;
+        delete(callback?: (err?: Error) => void): void;
         /**
          * 读取资源缩略图标
          *
@@ -8070,7 +8070,7 @@ declare namespace feng3d {
          *
          * @param callback 完成回调
          */
-        deleteFile(callback?: (err: Error) => void): void;
+        protected deleteFile(callback?: (err: Error) => void): void;
         /**
          * 元标签路径
          */
@@ -8092,7 +8092,7 @@ declare namespace feng3d {
          *
          * @param callback 完成回调
          */
-        deleteMeta(callback?: (err: Error) => void): void;
+        protected deleteMeta(callback?: (err: Error) => void): void;
         /**
          * 缩略图
          */
@@ -8125,13 +8125,13 @@ declare namespace feng3d {
         /**
          * 资源编号映射
          */
-        protected idMap: {
+        idMap: {
             [id: string]: FileAsset;
         };
         /**
          * 资源路径映射
          */
-        protected pathMap: {
+        pathMap: {
             [path: string]: FileAsset;
         };
         /**
@@ -15427,6 +15427,12 @@ declare namespace feng3d {
          */
         childrenAssets: FileAsset[];
         createData(): void;
+        /**
+         * 删除资源
+         *
+         * @param callback 完成回调
+         */
+        delete(callback?: (err: Error) => void): void;
         /**
          * 保存文件
          * @param callback 完成回调

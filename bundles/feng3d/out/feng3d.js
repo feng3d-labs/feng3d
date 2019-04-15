@@ -16763,7 +16763,25 @@ var feng3d;
          * @param callback 完成回调
          */
         FileAsset.prototype.delete = function (callback) {
-            this.rs.deleteAsset(this, callback);
+            var _this = this;
+            // 删除 meta 文件
+            this.deleteMeta(function (err) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                _this.deleteFile(function (err) {
+                    // 删除父子资源关系
+                    if (_this.parentAsset) {
+                        _this.parentAsset.childrenAssets.delete(_this);
+                        _this.parentAsset = null;
+                    }
+                    // 删除映射
+                    delete _this.rs.idMap[_this.assetId];
+                    delete _this.rs.pathMap[_this.assetPath];
+                    callback && callback();
+                });
+            });
         };
         /**
          * 读取资源缩略图标
@@ -17315,25 +17333,7 @@ var feng3d;
                     return;
                 }
                 var la = assets.pop();
-                // 删除 meta 文件
-                la.deleteMeta(function (err) {
-                    if (err) {
-                        callback && callback(err);
-                        return;
-                    }
-                    la.deleteFile(function (err) {
-                        // 删除父子资源关系
-                        if (la.parentAsset) {
-                            var index = la.parentAsset.childrenAssets.indexOf(la);
-                            la.parentAsset.childrenAssets.splice(index, 1);
-                            la.parentAsset = null;
-                        }
-                        // 删除映射
-                        delete _this.idMap[la.assetId];
-                        delete _this.pathMap[la.assetPath];
-                        deleteLastAsset();
-                    });
-                });
+                la.delete(deleteLastAsset);
             };
             deleteLastAsset();
         };
@@ -31616,6 +31616,14 @@ var feng3d;
             return _this;
         }
         FolderAsset.prototype.createData = function () {
+        };
+        /**
+         * 删除资源
+         *
+         * @param callback 完成回调
+         */
+        FolderAsset.prototype.delete = function (callback) {
+            throw "\u672A\u5B9E\u73B0";
         };
         /**
          * 保存文件

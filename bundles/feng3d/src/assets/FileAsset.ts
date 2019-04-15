@@ -141,9 +141,31 @@ namespace feng3d
          * 
          * @param callback 完成回调
          */
-        delete(callback?: (err: Error) => void)
+        delete(callback?: (err?: Error) => void)
         {
-            this.rs.deleteAsset(this, callback);
+            // 删除 meta 文件
+            this.deleteMeta((err) =>
+            {
+                if (err)
+                {
+                    callback && callback(err);
+                    return;
+                }
+                this.deleteFile((err) =>
+                {
+                    // 删除父子资源关系
+                    if (this.parentAsset)
+                    {
+                        this.parentAsset.childrenAssets.delete(this);
+                        this.parentAsset = null;
+                    }
+                    // 删除映射
+                    delete this.rs.idMap[this.assetId];
+                    delete this.rs.pathMap[this.assetPath];
+
+                    callback && callback();
+                });
+            });
         }
 
         /**
@@ -211,7 +233,7 @@ namespace feng3d
          * 
          * @param callback 完成回调
          */
-        deleteFile(callback?: (err: Error) => void)
+        protected deleteFile(callback?: (err: Error) => void)
         {
             this.rs.fs.deleteFile(this.assetPath, callback);
 
@@ -262,7 +284,7 @@ namespace feng3d
          * 
          * @param callback 完成回调
          */
-        deleteMeta(callback?: (err: Error) => void)
+        protected deleteMeta(callback?: (err: Error) => void)
         {
             this.rs.fs.deleteFile(this.metaPath, callback);
         }
