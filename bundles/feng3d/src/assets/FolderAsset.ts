@@ -15,6 +15,10 @@ namespace feng3d
         @serialize
         childrenAssets: FileAsset[] = [];
 
+        createData()
+        {
+        }
+
         /**
          * 保存文件
          * @param callback 完成回调

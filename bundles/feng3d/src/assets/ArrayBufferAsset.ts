@@ -10,6 +10,10 @@ namespace feng3d
          */
         arraybuffer: ArrayBuffer;
 
+        createData()
+        {
+        }
+
         /**
          * 保存文件
          * 

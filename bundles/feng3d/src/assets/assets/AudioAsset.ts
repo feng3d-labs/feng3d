@@ -8,6 +8,11 @@ namespace feng3d
         readonly assetType = AssetType.audio;
         // readonly extenson: ".ogg" | ".mp3" | ".wav" = ".mp3";
 
+        createData()
+        {
+            throw `未实现`;
+        }
+
         /**
          * 保存文件
          * @param callback 完成回调

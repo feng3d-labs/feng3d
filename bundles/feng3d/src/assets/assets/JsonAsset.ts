@@ -9,6 +9,11 @@ namespace feng3d
 
         assetType = AssetType.json;
 
-        textContent = "{}";
+        textContent: string;
+
+        createData()
+        {
+            this.textContent = "{}";
+        }
     }
 }

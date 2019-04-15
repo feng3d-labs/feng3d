@@ -124,7 +124,9 @@ namespace feng3d
             // 初始化
             asset.rs = <any>this;
             asset.assetId = assetId;
+            asset.createData();
             asset.meta = { guid: assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
+
             serialization.setValue(<T>asset, value);
 
             //
@@ -150,7 +152,12 @@ namespace feng3d
             // 新增映射
             this.idMap[asset.assetId] = asset;
             this.pathMap[asset.assetPath] = asset;
-            callback && callback(null, <T>asset);
+
+            //
+            asset.write((err) =>
+            {
+                callback && callback(null, <T>asset);
+            });
         }
 
         /**
@@ -187,28 +194,9 @@ namespace feng3d
                 callback(new Error(`不存在资源 ${id}`), asset);
                 return;
             }
-            var status = this._assetStatus[id] = this._assetStatus[id] || { isLoaded: false, isLoading: false };
-            if (status.isLoaded)
+            asset.read((err) =>
             {
-                callback(null, asset);
-                return;
-            }
-            var eventtype = `load_${id}`;
-            event.once(this, eventtype, () => { callback(null, asset); });
-            if (status.isLoading) return;
-
-            status.isLoading = true;
-            asset.readMeta((err) =>
-            {
-                if (err)
-                {
-                    event.dispatch(this, eventtype);
-                    return;
-                }
-                asset.readFile((err) =>
-                {
-                    event.dispatch(this, eventtype);
-                });
+                callback(err, asset);
             });
         }
 

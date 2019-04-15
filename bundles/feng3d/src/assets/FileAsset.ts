@@ -31,6 +31,16 @@ namespace feng3d
         assetType: AssetType;
 
         /**
+         * 是否已加载
+         */
+        isLoaded = false;
+
+        /**
+         * 是否正在加载中
+         */
+        isLoading = false
+
+        /**
          * 文件后缀
          */
 
@@ -70,13 +80,38 @@ namespace feng3d
         data: AssetData;
 
         /**
+         * 创建资源对象
+         */
+        abstract createData(): void;
+
+        /**
          * 读取资源
          * 
          * @param callback 完成回调
          */
-        read(callback: (err: Error) => void)
+        read(callback: (err?: Error) => void)
         {
-            this.rs.readAsset(this.assetId, callback);
+            if (this.isLoaded)
+            {
+                callback();
+                return;
+            }
+            var eventtype = "loaded";
+            event.once(this, eventtype, callback);
+            if (this.isLoading) return;
+            this.isLoading = true;
+            this.readMeta((err) =>
+            {
+                if (err)
+                {
+                    event.dispatch(this, eventtype);
+                    return;
+                }
+                this.readFile((err) =>
+                {
+                    event.dispatch(this, eventtype);
+                });
+            });
         }
 
         /**
@@ -86,7 +121,19 @@ namespace feng3d
          */
         write(callback?: (err: Error) => void)
         {
-            this.rs.writeAsset(this, callback);
+            this.meta.mtimeMs = Date.now();
+            this.writeMeta((err) =>
+            {
+                if (err)
+                {
+                    callback && callback(err);
+                    return;
+                }
+                this.saveFile(err =>
+                {
+                    callback && callback(err);
+                });
+            });
         }
 
         /**
@@ -191,7 +238,7 @@ namespace feng3d
          * 
          * @param callback 完成回调 
          */
-        readMeta(callback?: (err?: Error) => void)
+        protected readMeta(callback?: (err?: Error) => void)
         {
             this.rs.fs.readObject(this.metaPath, (err, meta: AssetMeta) =>
             {
@@ -205,7 +252,7 @@ namespace feng3d
          * 
          * @param callback 完成回调
          */
-        writeMeta(callback?: (err: Error) => void)
+        protected writeMeta(callback?: (err: Error) => void)
         {
             this.rs.fs.writeObject(this.metaPath, this.meta, callback);
         }

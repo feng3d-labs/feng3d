@@ -6,6 +6,11 @@ namespace feng3d
 
         assetType = AssetType.txt;
 
-        textContent = "";
+        textContent: string;
+
+        createData()
+        {
+            this.textContent = "";
+        }
     }
 }

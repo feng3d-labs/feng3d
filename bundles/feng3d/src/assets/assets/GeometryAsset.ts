@@ -15,5 +15,9 @@ namespace feng3d
 
         assetType = AssetType.geometry;
 
+        createData()
+        {
+            throw `未实现`;
+        }
     }
 }

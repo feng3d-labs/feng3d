@@ -78,19 +78,7 @@ namespace feng3d
          */
         writeAsset(asset: FileAsset, callback?: (err: Error) => void)
         {
-            asset.meta.mtimeMs = Date.now();
-            asset.writeMeta((err) =>
-            {
-                if (err)
-                {
-                    callback && callback(err);
-                    return;
-                }
-                asset.saveFile(err =>
-                {
-                    callback && callback(err);
-                });
-            });
+            asset.write(callback);
         }
 
         /**

@@ -9,10 +9,15 @@ namespace feng3d
          * 材质
          */
         @oav({ component: "OAVObjectView" })
-        data = new GameObject();
+        data: GameObject;
 
         assetType = AssetType.gameobject;
 
         static extenson = ".json";
+
+        createData()
+        {
+            throw `未实现`;
+        }
     }
 }

@@ -10,7 +10,7 @@ namespace feng3d
         assetType = AssetType.script
 
         @watch("onTextContentChanged")
-        textContent: string = "";
+        textContent: string;
 
         /**
          * 脚本父类名称
@@ -21,6 +21,11 @@ namespace feng3d
          * 脚本类定义
          */
         scriptName: string;
+
+        createData()
+        {
+            this.textContent = "";
+        }
 
         private onTextContentChanged()
         {

@@ -27,6 +27,12 @@ namespace feng3d
 
         assetType = AssetType.texture;
 
+        createData()
+        {
+            this.data = new Texture2D();
+            this.data.assetId = this.assetId;
+        }
+
         saveFile(callback?: (err: Error) => void)
         {
             this.rs.fs.writeImage(this.assetPath, this.image, (err) =>
@@ -54,7 +60,7 @@ namespace feng3d
          * 
          * @param callback 完成回调 
          */
-        readMeta(callback?: (err?: Error) => void)
+        protected readMeta(callback?: (err?: Error) => void)
         {
             super.readMeta((err) =>
             {
@@ -68,10 +74,10 @@ namespace feng3d
          * 
          * @param callback 完成回调
          */
-        writeMeta(callback?: (err: Error) => void)
+        protected writeMeta(callback?: (err: Error) => void)
         {
             this.meta.texture = this.data;
-            this.rs.fs.writeObject(this.metaPath, this.meta, callback);
+            super.writeMeta(callback);
         }
     }
 

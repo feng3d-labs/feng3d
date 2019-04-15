@@ -14,5 +14,11 @@ namespace feng3d
         data: TextureCube;
 
         assetType = AssetType.texturecube;
+
+        createData()
+        {
+            this.data = new TextureCube();
+            this.data.assetId = this.assetId;
+        }
     }
 }
