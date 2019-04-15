@@ -24,7 +24,7 @@ namespace feng3d
                 framebuffer = gl.createFramebuffer();
                 if (!framebuffer)
                 {
-                    debug.debuger && alert('Failed to create frame buffer object');
+                    debuger && alert('Failed to create frame buffer object');
                     return null;
                 }
                 this._framebufferMap.set(gl, framebuffer);

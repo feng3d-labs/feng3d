@@ -354,7 +354,7 @@ namespace feng3d
          */
         getComponentAt(index: number): Component
         {
-            debug.debuger && console.assert(index < this.numComponents, "给出索引超出范围");
+            debuger && console.assert(index < this.numComponents, "给出索引超出范围");
             return this._components[index];
         }
 
@@ -482,10 +482,10 @@ namespace feng3d
          */
         setComponentIndex(component: Components, index: number): void
         {
-            debug.debuger && console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
+            debuger && console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
 
             var oldIndex = this._components.indexOf(component);
-            debug.debuger && console.assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
+            debuger && console.assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
 
             this._components.splice(oldIndex, 1);
             this._components.splice(index, 0, component);
@@ -511,7 +511,7 @@ namespace feng3d
 		 */
         removeComponent(component: Components): void
         {
-            debug.debuger && console.assert(this.hasComponent(component), "只能移除在容器中的组件");
+            debuger && console.assert(this.hasComponent(component), "只能移除在容器中的组件");
 
             var index = this.getComponentIndex(component);
             this.removeComponentAt(index);
@@ -524,7 +524,7 @@ namespace feng3d
          */
         getComponentIndex(component: Components): number
         {
-            debug.debuger && console.assert(this._components.indexOf(component) != -1, "组件不在容器中");
+            debuger && console.assert(this._components.indexOf(component) != -1, "组件不在容器中");
 
             var index = this._components.indexOf(component);
             return index;
@@ -536,7 +536,7 @@ namespace feng3d
          */
         removeComponentAt(index: number): Component
         {
-            debug.debuger && console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
+            debuger && console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
 
             var component: Component = this._components.splice(index, 1)[0];
             //派发移除组件事件
@@ -552,8 +552,8 @@ namespace feng3d
          */
         swapComponentsAt(index1: number, index2: number): void
         {
-            debug.debuger && console.assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
-            debug.debuger && console.assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
+            debuger && console.assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
+            debuger && console.assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
 
             var temp: Components = this._components[index1];
             this._components[index1] = this._components[index2];
@@ -567,8 +567,8 @@ namespace feng3d
          */
         swapComponents(a: Components, b: Components): void
         {
-            debug.debuger && console.assert(this.hasComponent(a), "第一个子组件不在容器中");
-            debug.debuger && console.assert(this.hasComponent(b), "第二个子组件不在容器中");
+            debuger && console.assert(this.hasComponent(a), "第一个子组件不在容器中");
+            debuger && console.assert(this.hasComponent(b), "第二个子组件不在容器中");
 
             this.swapComponentsAt(this.getComponentIndex(a), this.getComponentIndex(b));
         }
@@ -834,7 +834,7 @@ namespace feng3d
         {
             if (component == null)
                 return;
-            debug.debuger && console.assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
+            debuger && console.assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
 
             if (this.hasComponent(component))
             {

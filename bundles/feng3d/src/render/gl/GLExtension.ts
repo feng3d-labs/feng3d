@@ -32,7 +32,7 @@ namespace feng3d
 
         constructor(gl: GL)
         {
-            debug.debuger && console.assert(!gl.extensions, `${gl} ${gl.extensions} 存在！`);
+            debuger && console.assert(!gl.extensions, `${gl} ${gl.extensions} 存在！`);
             gl.extensions = this;
 
             this.initExtensions(gl);

@@ -35,7 +35,7 @@ namespace feng3d
         {
             if (this._assetId == v) return;
 
-            if (this._assetId != undefined) { debug.debuger && console.error(`不允许修改 assetId`); return; }
+            if (this._assetId != undefined) { debuger && console.error(`不允许修改 assetId`); return; }
 
             this._assetId = v;
         }

@@ -167,7 +167,7 @@ namespace feng3d
             //基础类型
             if (isBaseType(object)) return object;
 
-            if (debug.debuger && object.constructor == Object)
+            if (debuger && object.constructor == Object)
             {
                 let assetids = this.getAssets(object);
                 var assets = assetids.reduce((pv, cv) => { var r = rs.getAssetData(cv); if (r) pv.push(r); return pv; }, []);
@@ -216,7 +216,7 @@ namespace feng3d
             if (target instanceof AssetData && object.assetId != undefined)
             {
                 var result = rs.getAssetData(object.assetId);
-                debug.debuger && console.assert(!!result)
+                debuger && console.assert(!!result)
                 return result;
             }
             //处理自定义反序列化对象
@@ -370,7 +370,7 @@ namespace feng3d
             });
             task.parallel(fns)(() =>
             {
-                debug.debuger && console.assert(assetids.length == result.filter(v => v != null).length);
+                debuger && console.assert(assetids.length == result.filter(v => v != null).length);
                 var r = this.deserialize(object);
                 callback(r);
             });

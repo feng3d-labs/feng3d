@@ -284,7 +284,7 @@ namespace feng3d
 
                 } else
                 {
-                    debug.debuger && alert("浏览器不支持各向异性过滤（anisotropy）特性！");
+                    debuger && alert("浏览器不支持各向异性过滤（anisotropy）特性！");
                 }
             }
             return texture;

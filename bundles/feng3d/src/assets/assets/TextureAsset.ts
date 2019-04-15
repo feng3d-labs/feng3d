@@ -11,11 +11,7 @@ namespace feng3d
          * 材质
          */
         @oav({ component: "OAVObjectView" })
-        get data() { return this._data; }
-        private _data = new Texture2D();
-
-        get assetId() { return this._data.assetId; }
-        set assetId(v) { debug.debuger && console.assert(this._data.assetId == undefined); this._data.assetId = v; }
+        data: Texture2D;
 
         /**
          * 图片
@@ -62,7 +58,7 @@ namespace feng3d
         {
             super.readMeta((err) =>
             {
-                serialization.setValue(this.data, this.meta.texture);
+                this.data = this.meta.texture;
                 callback && callback(err);
             });
         }
@@ -74,16 +70,13 @@ namespace feng3d
          */
         writeMeta(callback?: (err: Error) => void)
         {
-            var texture = serialization.serialize(this.data);
-            delete texture[CLASS_KEY];
-
-            this.meta.texture = texture;
+            this.meta.texture = this.data;
             this.rs.fs.writeObject(this.metaPath, this.meta, callback);
         }
     }
 
     export interface TextureAssetMeta extends AssetMeta
     {
-        texture: gPartial<Texture2D>;
+        texture: Texture2D;
     }
 }

@@ -14,7 +14,7 @@ namespace feng3d
 
         constructor(gl: GL)
         {
-            debug.debuger && console.assert(!gl.renderer, `${gl} ${gl.renderer} 存在！`);
+            debuger && console.assert(!gl.renderer, `${gl} ${gl.renderer} 存在！`);
 
             gl.renderer = this;
 

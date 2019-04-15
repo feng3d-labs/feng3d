@@ -195,7 +195,7 @@ namespace feng3d
     {
         constructor(name: string, expected: string, actual: any)
         {
-            debug.debuger && assert(typeof name === 'string', "'name' must be a string");
+            debuger && assert(typeof name === 'string', "'name' must be a string");
 
             // determiner: 'must be' or 'must not be'
             let determiner;
@@ -228,11 +228,11 @@ namespace feng3d
 
     function oneOf(expected: string | string[], thing: string)
     {
-        debug.debuger && assert(typeof thing === 'string', '`thing` has to be of type string');
+        debuger && assert(typeof thing === 'string', '`thing` has to be of type string');
         if (Array.isArray(expected))
         {
             const len = expected.length;
-            debug.debuger && assert(len > 0, 'At least one expected value needs to be specified');
+            debuger && assert(len > 0, 'At least one expected value needs to be specified');
             expected = expected.map((i) => String(i));
             if (len > 2)
             {

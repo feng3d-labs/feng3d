@@ -15566,9 +15566,7 @@ declare namespace feng3d {
         /**
          * 材质
          */
-        readonly data: Texture2D;
-        private _data;
-        assetId: string;
+        data: Texture2D;
         /**
          * 图片
          */
@@ -15596,7 +15594,7 @@ declare namespace feng3d {
         writeMeta(callback?: (err: Error) => void): void;
     }
     interface TextureAssetMeta extends AssetMeta {
-        texture: gPartial<Texture2D>;
+        texture: Texture2D;
     }
 }
 declare namespace feng3d {

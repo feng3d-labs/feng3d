@@ -215,7 +215,7 @@ namespace feng3d
             if (this.parent)
                 this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
             this.dispatch("updateLocalToWorldMatrix");
-            debug.debuger && console.assert(!isNaN(this._localToWorldMatrix.rawData[0]));
+            debuger && console.assert(!isNaN(this._localToWorldMatrix.rawData[0]));
             return this._localToWorldMatrix;
         }
 
@@ -255,7 +255,7 @@ namespace feng3d
         set x(val: number)
         {
             val = Number(val.toFixed(fixedNum));
-            debug.debuger && console.
+            debuger && console.
                 assert(!isNaN(val));
             if (this._x == val)
                 return;
@@ -273,7 +273,7 @@ namespace feng3d
         set y(val: number)
         {
             val = Number(val.toFixed(fixedNum));
-            debug.debuger && console.assert(!isNaN(val));
+            debuger && console.assert(!isNaN(val));
             if (this._y == val)
                 return;
             this._y = val;
@@ -290,7 +290,7 @@ namespace feng3d
         set z(val: number)
         {
             val = Number(val.toFixed(fixedNum));
-            debug.debuger && console.assert(!isNaN(val));
+            debuger && console.assert(!isNaN(val));
             if (this._z == val)
                 return;
             this._z = val;
@@ -307,7 +307,7 @@ namespace feng3d
         set rx(val: number)
         {
             val = Number(val.toFixed(fixedNum));
-            debug.debuger && console.assert(!isNaN(val));
+            debuger && console.assert(!isNaN(val));
             if (this.rx == val)
                 return;
             this._rx = val;
@@ -324,7 +324,7 @@ namespace feng3d
         set ry(val: number)
         {
             val = Number(val.toFixed(fixedNum));
-            debug.debuger && console.assert(!isNaN(val));
+            debuger && console.assert(!isNaN(val));
             if (this.ry == val)
                 return;
             this._ry = val;
@@ -341,7 +341,7 @@ namespace feng3d
         set rz(val: number)
         {
             val = Number(val.toFixed(fixedNum));
-            debug.debuger && console.assert(!isNaN(val));
+            debuger && console.assert(!isNaN(val));
             if (this.rz == val)
                 return;
             this._rz = val;
@@ -358,7 +358,7 @@ namespace feng3d
         set sx(val: number)
         {
             val = Number(val.toFixed(fixedNum));
-            debug.debuger && console.assert(!isNaN(val) && val != 0);
+            debuger && console.assert(!isNaN(val) && val != 0);
             if (this._sx == val)
                 return;
             this._sx = val;
@@ -375,7 +375,7 @@ namespace feng3d
         set sy(val: number)
         {
             val = Number(val.toFixed(fixedNum));
-            debug.debuger && console.assert(!isNaN(val) && val != 0);
+            debuger && console.assert(!isNaN(val) && val != 0);
             if (this._sy == val)
                 return;
             this._sy = val;
@@ -392,7 +392,7 @@ namespace feng3d
         set sz(val: number)
         {
             val = Number(val.toFixed(fixedNum));
-            debug.debuger && console.assert(!isNaN(val) && val != 0);
+            debuger && console.assert(!isNaN(val) && val != 0);
             if (this._sz == val)
                 return;
             this._sz = val;
@@ -448,9 +448,9 @@ namespace feng3d
             x = Number(x.toFixed(fixedNum));
             y = Number(y.toFixed(fixedNum));
             z = Number(z.toFixed(fixedNum));
-            debug.debuger && console.assert(!isNaN(x));
-            debug.debuger && console.assert(!isNaN(y));
-            debug.debuger && console.assert(!isNaN(z));
+            debuger && console.assert(!isNaN(x));
+            debuger && console.assert(!isNaN(y));
+            debuger && console.assert(!isNaN(z));
 
             if (this._x != x || this._y != y || this._z != z)
             {
@@ -472,9 +472,9 @@ namespace feng3d
             x = Number(x.toFixed(fixedNum));
             y = Number(y.toFixed(fixedNum));
             z = Number(z.toFixed(fixedNum));
-            debug.debuger && console.assert(!isNaN(x));
-            debug.debuger && console.assert(!isNaN(y));
-            debug.debuger && console.assert(!isNaN(z));
+            debuger && console.assert(!isNaN(x));
+            debuger && console.assert(!isNaN(y));
+            debuger && console.assert(!isNaN(z));
             if (this._rx != x || this._ry != y || this._rz != z)
             {
                 this._rx = x;
@@ -511,9 +511,9 @@ namespace feng3d
             x = Number(x.toFixed(fixedNum));
             y = Number(y.toFixed(fixedNum));
             z = Number(z.toFixed(fixedNum));
-            debug.debuger && console.assert(!isNaN(x) && x != 0);
-            debug.debuger && console.assert(!isNaN(y) && y != 0);
-            debug.debuger && console.assert(!isNaN(z) && z != 0);
+            debuger && console.assert(!isNaN(x) && x != 0);
+            debuger && console.assert(!isNaN(y) && y != 0);
+            debuger && console.assert(!isNaN(z) && z != 0);
             if (this._sx != x || this._sy != y || this._sz != z)
             {
                 this._sx = x;
