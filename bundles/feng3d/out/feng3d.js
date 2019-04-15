@@ -410,6 +410,16 @@ var feng3d;
         }
     };
 })(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    feng3d.lazy = {
+        getvalue: function (lazyItem) {
+            if (typeof lazyItem == "function")
+                return lazyItem();
+            return lazyItem;
+        }
+    };
+})(feng3d || (feng3d = {}));
 Object.getPropertyDescriptor = function (host, property) {
     var data = Object.getOwnPropertyDescriptor(host, property);
     if (data) {
@@ -3975,16 +3985,6 @@ var feng3d;
         feng3d.path = win32;
     else
         feng3d.path = posix;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    feng3d.lazy = {
-        getvalue: function (lazyItem) {
-            if (typeof lazyItem == "function")
-                return lazyItem();
-            return lazyItem;
-        }
-    };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

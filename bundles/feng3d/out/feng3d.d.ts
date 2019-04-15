@@ -1,9 +1,6 @@
 declare module 'feng3d' {
     export = feng3d;
 }
-declare type gPartial<T> = {
-    [P in keyof T]?: gPartial<T[P]>;
-};
 declare namespace feng3d {
     /**
      * 观察装饰器，观察被装饰属性的变化
@@ -86,6 +83,21 @@ getset平均耗时比 17.3
     }
 }
 declare namespace feng3d {
+}
+declare namespace feng3d {
+    /**
+     * 让T中以及所有属性中的所有属性都是可选的
+     */
+    type gPartial<T> = {
+        [P in keyof T]?: gPartial<T[P]>;
+    };
+    type Lazy<T> = T | (() => T);
+    type LazyObject<T> = {
+        [P in keyof T]: Lazy<T[P]>;
+    };
+    var lazy: {
+        getvalue: <T>(lazyItem: Lazy<T>) => T;
+    };
 }
 interface ObjectConstructor {
     /**
@@ -1367,15 +1379,6 @@ declare namespace feng3d {
          */
         name?: string;
     }
-}
-declare namespace feng3d {
-    type Lazy<T> = T | (() => T);
-    type LazyObject<T> = {
-        [P in keyof T]: Lazy<T[P]>;
-    };
-    var lazy: {
-        getvalue: <T>(lazyItem: Lazy<T>) => T;
-    };
 }
 declare namespace feng3d {
     /**

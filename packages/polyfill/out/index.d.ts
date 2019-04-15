@@ -1,6 +1,21 @@
 declare module '@feng3d/polyfill' {
     export = feng3d;
 }
+declare namespace feng3d {
+    /**
+     * 让T中以及所有属性中的所有属性都是可选的
+     */
+    type gPartial<T> = {
+        [P in keyof T]?: gPartial<T[P]>;
+    };
+    type Lazy<T> = T | (() => T);
+    type LazyObject<T> = {
+        [P in keyof T]: Lazy<T[P]>;
+    };
+    var lazy: {
+        getvalue: <T>(lazyItem: Lazy<T>) => T;
+    };
+}
 interface ObjectConstructor {
     /**
      * 从对象以及对象的原型中获取属性描述

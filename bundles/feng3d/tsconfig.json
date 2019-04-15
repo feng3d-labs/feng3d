@@ -25,6 +25,7 @@
         // 自动生成文件
         "src/autofiles/ShaderConfig.ts",
         // Polyfill
+        "node_modules/@feng3d/polyfill/src/Types.ts",
         "node_modules/@feng3d/polyfill/src/Object.ts",
         "node_modules/@feng3d/polyfill/src/Map.ts",
         "node_modules/@feng3d/polyfill/src/Array.ts",
@@ -32,7 +33,8 @@
         "node_modules/@feng3d/functionwarp/src/FunctionWarp.ts",
         "node_modules/@feng3d/debug/src/debug.ts",
         //
-        "node_modules/@feng3d/serialization/src/Serialization.ts",
+        // "node_modules/@feng3d/serialization/src/Serialization.ts",
+        "src/utils/Serialization.ts",
         //
         "node_modules/@feng3d/objectview/src/ObjectView.ts",
         "node_modules/@feng3d/objectview/src/ObjectViewDefinitions.ts",
@@ -44,7 +46,6 @@
         "src/utils/Stats.ts",
         "src/utils/PathUtils.ts",
         "src/utils/Path.ts",
-        "src/utils/Lazy.ts",
         "src/utils/RegExps.ts",
         // 数据结构
         //
