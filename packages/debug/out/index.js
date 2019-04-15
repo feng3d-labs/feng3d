@@ -1,14 +1,14 @@
 var feng3d;
 (function (feng3d) {
     /**
+     * 是否开启调试
+     */
+    feng3d.debuger = true;
+    /**
      * 调试工具
      */
     var Debug = /** @class */ (function () {
         function Debug() {
-            /**
-             * 是否开启调试
-             */
-            this.debuger = true;
             // 断言失败前进入断点调试
             feng3d.functionwarp.wrap(console, "assert", function (test) { if (!test)
                 debugger; });

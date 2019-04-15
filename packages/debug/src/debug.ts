@@ -6,14 +6,15 @@ namespace feng3d
     export var debug: Debug;
 
     /**
+     * 是否开启调试
+     */
+    export var debuger = true;
+
+    /**
      * 调试工具
      */
     export class Debug
     {
-        /**
-         * 是否开启调试
-         */
-        debuger = true;
 
         constructor()
         {

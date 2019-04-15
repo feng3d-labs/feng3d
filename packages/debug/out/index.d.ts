@@ -7,13 +7,13 @@ declare namespace feng3d {
      */
     var debug: Debug;
     /**
+     * 是否开启调试
+     */
+    var debuger: boolean;
+    /**
      * 调试工具
      */
     class Debug {
-        /**
-         * 是否开启调试
-         */
-        debuger: boolean;
         constructor();
         /**
          * 测试代码运行时间
