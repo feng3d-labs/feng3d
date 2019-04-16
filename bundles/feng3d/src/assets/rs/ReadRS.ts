@@ -63,10 +63,12 @@ namespace feng3d
             if (this._status.isiniting) return;
             this._status.isiniting = true;
 
-            this.fs.readObject(this.resources, (err, data: FolderAsset) =>
+            this.fs.readObject(this.resources, (err, object: Object) =>
             {
-                if (data)
+                if (object)
                 {
+                    var data: FolderAsset = serialization.deserialize(object);
+
                     this._root = data;
                     //
                     var assets: FileAsset[] = [data];
@@ -220,6 +222,30 @@ namespace feng3d
         }
 
         /**
+         * 读取资源数据列表
+         * 
+         * @param assetids 资源编号列表
+         * @param callback 完成回调
+         */
+        readAssetDatas(assetids: string[], callback: (err: Error, data: AssetData[]) => void)
+        {
+            var result: AssetData[] = [];
+            var fns = assetids.map(v => (callback) =>
+            {
+                rs.readAssetData(v, (err, data) =>
+                {
+                    result.push(data);
+                    callback();
+                });
+            });
+            task.parallel(fns)(() =>
+            {
+                debuger && console.assert(assetids.length == result.filter(v => v != null).length);
+                callback(null, result);
+            });
+        }
+
+        /**
          * 获取指定类型资源
          * 
          * @param type 资源类型
@@ -281,7 +307,88 @@ namespace feng3d
             var assets = Object.keys(this.idMap).map(v => this.idMap[v]);
             return assets;
         }
+
+        /**
+         * 获取需要反序列化对象中的资源id列表
+         */
+        getAssets(object: any, assetids: string[] = [])
+        {
+            //基础类型
+            if (Object.isBaseType(object)) return assetids;
+
+            //处理数组
+            if (object instanceof Array)
+            {
+                object.forEach(v => this.getAssets(v, assetids));
+                return assetids;
+            }
+
+            // 获取类型
+            var className: string = object[CLASS_KEY];
+            // 处理普通Object
+            if (className == "Object" || className == null)
+            {
+                for (var key in object)
+                {
+                    if (key != CLASS_KEY) this.getAssets(object[key], assetids);
+                }
+                return assetids;
+            }
+            //处理方法
+            if (className == "function") return assetids;
+
+            var cls = classUtils.getDefinitionByName(className);
+            if (!cls)
+            {
+                console.warn(`无法序列号对象 ${className}`);
+                return assetids;
+            }
+            var target = new cls();
+            // 处理资源
+            if (target instanceof AssetData && object.assetId != undefined)
+            {
+                assetids.push(object.assetId);
+                return assetids;
+            }
+            return assetids;
+        }
+
+        /**
+         * 反序列化包含资源的对象
+         * 
+         * @param object 反序列化的对象
+         * @param callback 完成回调
+         */
+        deserializeWithAssets(object: any, callback: (result: any) => void)
+        {
+            //
+            var className: string = object[CLASS_KEY];
+            var assetId = object.assetId;
+            debuger && console.assert(className != undefined && assetId != undefined);
+            // 获取资源类定义
+            var cls = classUtils.getDefinitionByName(className);
+            if (!cls)
+            {
+                console.warn(`无法序列号对象 ${className}`);
+                return;
+            }
+            // 创建资源数据实例
+            var assetData = new cls();
+            debuger && console.assert(assetData instanceof AssetData);
+            // 获取所包含的资源列表
+            var assetids = this.getAssets(object);
+            // 不需要加载本资源，移除自身资源
+            assetids.delete(assetId);
+            // 加载包含的资源数据
+            this.readAssetDatas(assetids, (err, result) =>
+            {
+                //默认反序列
+                serialization.setValue(assetData, object);
+                callback(assetData);
+            });
+        }
     }
+
     /**
      * 默认资源数据，该类资源不会保存到文件系统中
      */

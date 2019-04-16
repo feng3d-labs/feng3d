@@ -78,8 +78,7 @@ namespace feng3d
                 (content) =>
                 {
                     var obj = JSON.parse(content);
-                    var object = serialization.deserialize(obj);
-                    callback(null, object);
+                    callback(null, obj);
                 },
                 null,
                 (e) =>

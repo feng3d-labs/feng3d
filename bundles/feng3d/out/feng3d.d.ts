@@ -113,6 +113,10 @@ interface ObjectConstructor {
      */
     propertyIsWritable(obj: Object, property: string): boolean;
     /**
+     * 判断是否为基础类型 undefined,null,boolean,string,number
+     */
+    isBaseType(object: any): boolean;
+    /**
      * 执行方法
      *
      * 用例：
@@ -241,17 +245,6 @@ declare namespace feng3d {
          * @param property 属性名称
          */
         private setPropertyValue;
-        /**
-         * 获取需要反序列化对象中的资源id列表
-         */
-        getAssets(object: any, assetids?: string[]): string[];
-        /**
-         * 反序列化包含资源的对象
-         *
-         * @param object 反序列化的对象
-         * @param callback 完成回调
-         */
-        deserializeWithAssets(object: any, callback: (result: any) => void): void;
         /**
          * 克隆
          * @param target 被克隆对象
@@ -7790,10 +7783,10 @@ declare namespace feng3d {
         /**
          * 写文件
          * @param path 文件路径
-         * @param data 文件数据
+         * @param object 文件数据
          * @param callback 回调函数
          */
-        writeObject(path: string, data: Object, callback?: (err: Error) => void): void;
+        writeObject(path: string, object: Object, callback?: (err: Error) => void): void;
         /**
          * 写图片
          * @param path 图片路径
@@ -8183,6 +8176,13 @@ declare namespace feng3d {
          */
         readAssetData(id: string, callback: (err: Error, data: AssetData) => void): void;
         /**
+         * 读取资源数据列表
+         *
+         * @param assetids 资源编号列表
+         * @param callback 完成回调
+         */
+        readAssetDatas(assetids: string[], callback: (err: Error, data: AssetData[]) => void): void;
+        /**
          * 获取指定类型资源
          *
          * @param type 资源类型
@@ -8216,6 +8216,17 @@ declare namespace feng3d {
          * 获取所有资源
          */
         getAllAssets(): FileAsset[];
+        /**
+         * 获取需要反序列化对象中的资源id列表
+         */
+        getAssets(object: any, assetids?: string[]): string[];
+        /**
+         * 反序列化包含资源的对象
+         *
+         * @param object 反序列化的对象
+         * @param callback 完成回调
+         */
+        deserializeWithAssets(object: any, callback: (result: any) => void): void;
     }
 }
 declare namespace feng3d {
@@ -15620,7 +15631,7 @@ declare namespace feng3d {
         protected writeMeta(callback?: (err: Error) => void): void;
     }
     interface TextureAssetMeta extends AssetMeta {
-        texture: Texture2D;
+        texture: gPartial<Texture2D>;
     }
 }
 declare namespace feng3d {

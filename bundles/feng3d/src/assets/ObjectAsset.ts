@@ -29,11 +29,14 @@ namespace feng3d
          */
         readFile(callback?: (err: Error) => void)
         {
-            this.rs.fs.readObject(this.assetPath, (err, data: AssetData) =>
+            this.rs.fs.readObject(this.assetPath, (err, object) =>
             {
-                this.data = data;
-                debuger && console.assert(this.data.assetId == this.assetId);
-                callback && callback(err);
+                this.rs.deserializeWithAssets(object, (data: AssetData) =>
+                {
+                    this.data = data;
+                    debuger && console.assert(this.data.assetId == this.assetId);
+                    callback && callback(err);
+                });
             });
         }
 

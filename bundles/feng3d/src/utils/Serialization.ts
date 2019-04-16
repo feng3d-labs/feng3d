@@ -29,7 +29,7 @@ namespace feng3d
         serialize(target, saveFlags = HideFlags.DontSave)
         {
             //基础类型
-            if (isBaseType(target))
+            if (Object.isBaseType(target))
                 return target;
 
             // 排除不支持序列化对象
@@ -111,7 +111,7 @@ namespace feng3d
                 var property = serializableMembers[i].property;
                 if (target[property] === defaultInstance[property])
                     continue;
-                if (isBaseType(target[property]))
+                if (Object.isBaseType(target[property]))
                 {
                     different[property] = target[property];
                     continue;
@@ -165,11 +165,11 @@ namespace feng3d
         deserialize(object)
         {
             //基础类型
-            if (isBaseType(object)) return object;
+            if (Object.isBaseType(object)) return object;
 
             if (debuger && object.constructor == Object)
             {
-                let assetids = this.getAssets(object);
+                let assetids = rs.getAssets(object);
                 var assets = assetids.reduce((pv, cv) => { var r = rs.getAssetData(cv); if (r) pv.push(r); return pv; }, []);
                 console.assert(assetids.length == assets.length, `存在资源未加载，请使用 deserializeWithAssets 进行反序列化`)
             }
@@ -216,7 +216,7 @@ namespace feng3d
             if (target instanceof AssetData && object.assetId != undefined)
             {
                 var result = rs.getAssetData(object.assetId);
-                debuger && console.assert(!!result)
+                debuger && console.assert(!!result, `资源 ${object.assetId} 未加载，请使用 ReadRS.deserializeWithAssets 进行序列化包含加载的资源对象。`)
                 return result;
             }
             //处理自定义反序列化对象
@@ -265,7 +265,7 @@ namespace feng3d
                 target[property] = this.deserialize(objvalue);
                 return;
             }
-            if (isBaseType(objvalue))
+            if (Object.isBaseType(objvalue))
             {
                 target[property] = objvalue;
                 return;
@@ -307,76 +307,6 @@ namespace feng3d
         }
 
         /**
-         * 获取需要反序列化对象中的资源id列表
-         */
-        getAssets(object: any, assetids: string[] = [])
-        {
-            //基础类型
-            if (isBaseType(object)) return assetids;
-
-            //处理数组
-            if (object instanceof Array)
-            {
-                object.forEach(v => this.getAssets(v, assetids));
-                return assetids;
-            }
-
-            // 获取类型
-            var className: string = object[CLASS_KEY];
-            // 处理普通Object
-            if (className == "Object" || className == null)
-            {
-                for (var key in object)
-                {
-                    if (key != CLASS_KEY) this.getAssets(object[key], assetids);
-                }
-                return assetids;
-            }
-            //处理方法
-            if (className == "function") return assetids;
-
-            var cls = classUtils.getDefinitionByName(className);
-            if (!cls)
-            {
-                console.warn(`无法序列号对象 ${className}`);
-                return assetids;
-            }
-            var target = new cls();
-            // 处理资源
-            if (target instanceof AssetData && object.assetId != undefined)
-            {
-                assetids.push(object.assetId);
-                return assetids;
-            }
-            return assetids;
-        }
-
-        /**
-         * 反序列化包含资源的对象
-         * 
-         * @param object 反序列化的对象
-         * @param callback 完成回调
-         */
-        deserializeWithAssets(object, callback: (result: any) => void)
-        {
-            var assetids = this.getAssets(object);
-            var result = [];
-            var fns = assetids.map(v => (callback) =>
-            {
-                rs.readAssetData(v, (err, data) =>
-                {
-                    result.push(data);
-                });
-            });
-            task.parallel(fns)(() =>
-            {
-                debuger && console.assert(assetids.length == result.filter(v => v != null).length);
-                var r = this.deserialize(object);
-                callback(r);
-            });
-        }
-
-        /**
          * 克隆
          * @param target 被克隆对象
          */
@@ -394,22 +324,6 @@ namespace feng3d
     {
         propertys: { property: string, asset?: boolean }[];
         default: Object;
-    }
-
-    /**
-     * 判断是否为基础类型（在序列化中不发生变化的对象）
-     */
-    function isBaseType(object)
-    {
-        //基础类型
-        if (
-            object == undefined
-            || object == null
-            || typeof object == "boolean"
-            || typeof object == "string"
-            || typeof object == "number"
-        )
-            return true;
     }
 
     /**
@@ -469,13 +383,6 @@ namespace feng3d
     {
         loadingNum?: number;
         onLoaded?: () => void;
-    }
-
-    function initTempInfo(tempInfo?: SerializationTempInfo)
-    {
-        tempInfo = tempInfo || { loadingNum: 0, onLoaded: () => { } };
-        tempInfo.loadingNum = tempInfo.loadingNum || 0;
-        return tempInfo;
     }
 
     serialization = new Serialization();

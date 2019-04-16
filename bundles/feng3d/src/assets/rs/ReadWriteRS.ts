@@ -36,7 +36,8 @@ namespace feng3d
          */
         private save(callback?: (err: Error) => void)
         {
-            this.fs.writeObject(this.resources, this.root, callback)
+            var object = serialization.serialize(this.root);
+            this.fs.writeObject(this.resources, object, callback)
         }
 
         /**

@@ -117,18 +117,16 @@ namespace feng3d
                     dataTransform.arrayBufferToString(data, (str) =>
                     {
                         var obj = JSON.parse(str);
-                        var object = serialization.deserialize(obj);
-                        callback(null, object);
+                        callback(null, obj);
                     });
                 } else if (data instanceof Object)
                 {
-                    var object = serialization.deserialize(data);
-                    callback(null, object);
+                    callback(null, data);
                 } else
                 {
+                    debuger && console.assert(typeof data == "string");
                     var obj = JSON.parse(data);
-                    var object = serialization.deserialize(obj);
-                    callback(null, object);
+                    callback(null, obj);
                 }
             });
         }
@@ -141,7 +139,7 @@ namespace feng3d
         readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
         {
             if (this._images[path]) return this._images[path];
-            
+
             this.readArrayBuffer(path, (err, data) =>
             {
                 if (err)
@@ -281,13 +279,12 @@ namespace feng3d
         /**
          * 写文件
          * @param path 文件路径
-         * @param data 文件数据
+         * @param object 文件数据
          * @param callback 回调函数
          */
-        writeObject(path: string, data: Object, callback?: (err: Error) => void)
+        writeObject(path: string, object: Object, callback?: (err: Error) => void)
         {
-            var obj = serialization.serialize(data);
-            _indexedDB.objectStorePut(this.DBname, this.projectname, path, obj, callback);
+            _indexedDB.objectStorePut(this.DBname, this.projectname, path, object, callback);
             dispatcher.dispatch("fs.write", path);
         }
 

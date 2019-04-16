@@ -15,6 +15,11 @@ interface ObjectConstructor
     propertyIsWritable(obj: Object, property: string): boolean;
 
     /**
+     * 判断是否为基础类型 undefined,null,boolean,string,number
+     */
+    isBaseType(object: any): boolean;
+
+    /**
      * 执行方法
      * 
      * 用例：
@@ -26,6 +31,22 @@ interface ObjectConstructor
      * @param func 被执行的方法
      */
     runFunc<T>(obj: T, func: (obj: T) => void): T;
+}
+
+/**
+ * 判断是否为基础类型（在序列化中不发生变化的对象）
+ */
+Object.isBaseType = function (object: any)
+{
+    //基础类型
+    if (
+        object == undefined
+        || object == null
+        || typeof object == "boolean"
+        || typeof object == "string"
+        || typeof object == "number"
+    )
+        return true;
 }
 
 Object.getPropertyDescriptor = function (host: any, property: string): PropertyDescriptor

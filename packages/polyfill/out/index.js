@@ -8,6 +8,18 @@ var feng3d;
         }
     };
 })(feng3d || (feng3d = {}));
+/**
+ * 判断是否为基础类型（在序列化中不发生变化的对象）
+ */
+Object.isBaseType = function (object) {
+    //基础类型
+    if (object == undefined
+        || object == null
+        || typeof object == "boolean"
+        || typeof object == "string"
+        || typeof object == "number")
+        return true;
+};
 Object.getPropertyDescriptor = function (host, property) {
     var data = Object.getOwnPropertyDescriptor(host, property);
     if (data) {

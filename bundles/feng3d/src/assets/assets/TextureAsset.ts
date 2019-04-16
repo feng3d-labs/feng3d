@@ -64,8 +64,11 @@ namespace feng3d
         {
             super.readMeta((err) =>
             {
-                this.data = this.meta.texture;
-                callback && callback(err);
+                this.rs.deserializeWithAssets(this.meta.texture, (result) =>
+                {
+                    this.data = result;
+                    callback && callback(err);
+                });
             });
         }
 
@@ -76,13 +79,13 @@ namespace feng3d
          */
         protected writeMeta(callback?: (err: Error) => void)
         {
-            this.meta.texture = this.data;
+            this.meta.texture = serialization.serialize(this.data);
             super.writeMeta(callback);
         }
     }
 
     export interface TextureAssetMeta extends AssetMeta
     {
-        texture: Texture2D;
+        texture: gPartial<Texture2D>;
     }
 }

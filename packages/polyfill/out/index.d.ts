@@ -30,6 +30,10 @@ interface ObjectConstructor {
      */
     propertyIsWritable(obj: Object, property: string): boolean;
     /**
+     * 判断是否为基础类型 undefined,null,boolean,string,number
+     */
+    isBaseType(object: any): boolean;
+    /**
      * 执行方法
      *
      * 用例：

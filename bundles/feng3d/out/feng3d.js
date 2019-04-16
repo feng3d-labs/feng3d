@@ -420,6 +420,18 @@ var feng3d;
         }
     };
 })(feng3d || (feng3d = {}));
+/**
+ * 判断是否为基础类型（在序列化中不发生变化的对象）
+ */
+Object.isBaseType = function (object) {
+    //基础类型
+    if (object == undefined
+        || object == null
+        || typeof object == "boolean"
+        || typeof object == "string"
+        || typeof object == "number")
+        return true;
+};
 Object.getPropertyDescriptor = function (host, property) {
     var data = Object.getOwnPropertyDescriptor(host, property);
     if (data) {
@@ -572,7 +584,7 @@ var feng3d;
         Serialization.prototype.serialize = function (target, saveFlags) {
             if (saveFlags === void 0) { saveFlags = feng3d.HideFlags.DontSave; }
             //基础类型
-            if (isBaseType(target))
+            if (Object.isBaseType(target))
                 return target;
             // 排除不支持序列化对象
             if (target.hasOwnProperty("serializable") && !target["serializable"])
@@ -635,7 +647,7 @@ var feng3d;
                 var property = serializableMembers[i].property;
                 if (target[property] === defaultInstance[property])
                     continue;
-                if (isBaseType(target[property])) {
+                if (Object.isBaseType(target[property])) {
                     different[property] = target[property];
                     continue;
                 }
@@ -682,10 +694,10 @@ var feng3d;
         Serialization.prototype.deserialize = function (object) {
             var _this = this;
             //基础类型
-            if (isBaseType(object))
+            if (Object.isBaseType(object))
                 return object;
             if (feng3d.debuger && object.constructor == Object) {
-                var assetids = this.getAssets(object);
+                var assetids = feng3d.rs.getAssets(object);
                 var assets = assetids.reduce(function (pv, cv) { var r = feng3d.rs.getAssetData(cv); if (r)
                     pv.push(r); return pv; }, []);
                 console.assert(assetids.length == assets.length, "\u5B58\u5728\u8D44\u6E90\u672A\u52A0\u8F7D\uFF0C\u8BF7\u4F7F\u7528 deserializeWithAssets \u8FDB\u884C\u53CD\u5E8F\u5217\u5316");
@@ -724,7 +736,7 @@ var feng3d;
             // 处理资源
             if (target instanceof feng3d.AssetData && object.assetId != undefined) {
                 var result = feng3d.rs.getAssetData(object.assetId);
-                feng3d.debuger && console.assert(!!result);
+                feng3d.debuger && console.assert(!!result, "\u8D44\u6E90 " + object.assetId + " \u672A\u52A0\u8F7D\uFF0C\u8BF7\u4F7F\u7528 ReadRS.deserializeWithAssets \u8FDB\u884C\u5E8F\u5217\u5316\u5305\u542B\u52A0\u8F7D\u7684\u8D44\u6E90\u5BF9\u8C61\u3002");
                 return result;
             }
             //处理自定义反序列化对象
@@ -764,7 +776,7 @@ var feng3d;
                 target[property] = this.deserialize(objvalue);
                 return;
             }
-            if (isBaseType(objvalue)) {
+            if (Object.isBaseType(objvalue)) {
                 target[property] = objvalue;
                 return;
             }
@@ -798,67 +810,6 @@ var feng3d;
             }
         };
         /**
-         * 获取需要反序列化对象中的资源id列表
-         */
-        Serialization.prototype.getAssets = function (object, assetids) {
-            var _this = this;
-            if (assetids === void 0) { assetids = []; }
-            //基础类型
-            if (isBaseType(object))
-                return assetids;
-            //处理数组
-            if (object instanceof Array) {
-                object.forEach(function (v) { return _this.getAssets(v, assetids); });
-                return assetids;
-            }
-            // 获取类型
-            var className = object[feng3d.CLASS_KEY];
-            // 处理普通Object
-            if (className == "Object" || className == null) {
-                for (var key in object) {
-                    if (key != feng3d.CLASS_KEY)
-                        this.getAssets(object[key], assetids);
-                }
-                return assetids;
-            }
-            //处理方法
-            if (className == "function")
-                return assetids;
-            var cls = feng3d.classUtils.getDefinitionByName(className);
-            if (!cls) {
-                console.warn("\u65E0\u6CD5\u5E8F\u5217\u53F7\u5BF9\u8C61 " + className);
-                return assetids;
-            }
-            var target = new cls();
-            // 处理资源
-            if (target instanceof feng3d.AssetData && object.assetId != undefined) {
-                assetids.push(object.assetId);
-                return assetids;
-            }
-            return assetids;
-        };
-        /**
-         * 反序列化包含资源的对象
-         *
-         * @param object 反序列化的对象
-         * @param callback 完成回调
-         */
-        Serialization.prototype.deserializeWithAssets = function (object, callback) {
-            var _this = this;
-            var assetids = this.getAssets(object);
-            var result = [];
-            var fns = assetids.map(function (v) { return function (callback) {
-                feng3d.rs.readAssetData(v, function (err, data) {
-                    result.push(data);
-                });
-            }; });
-            feng3d.task.parallel(fns)(function () {
-                feng3d.debuger && console.assert(assetids.length == result.filter(function (v) { return v != null; }).length);
-                var r = _this.deserialize(object);
-                callback(r);
-            });
-        };
-        /**
          * 克隆
          * @param target 被克隆对象
          */
@@ -870,18 +821,6 @@ var feng3d;
     feng3d.Serialization = Serialization;
     feng3d.CLASS_KEY = "__class__";
     var SERIALIZE_KEY = "_serialize__";
-    /**
-     * 判断是否为基础类型（在序列化中不发生变化的对象）
-     */
-    function isBaseType(object) {
-        //基础类型
-        if (object == undefined
-            || object == null
-            || typeof object == "boolean"
-            || typeof object == "string"
-            || typeof object == "number")
-            return true;
-    }
     /**
      * 获取默认实例
      */
@@ -924,11 +863,6 @@ var feng3d;
             }
         }
         return serializableMembers;
-    }
-    function initTempInfo(tempInfo) {
-        tempInfo = tempInfo || { loadingNum: 0, onLoaded: function () { } };
-        tempInfo.loadingNum = tempInfo.loadingNum || 0;
-        return tempInfo;
     }
     feng3d.serialization = new Serialization();
 })(feng3d || (feng3d = {}));
@@ -16267,18 +16201,16 @@ var feng3d;
                 if (data instanceof ArrayBuffer) {
                     feng3d.dataTransform.arrayBufferToString(data, function (str) {
                         var obj = JSON.parse(str);
-                        var object = feng3d.serialization.deserialize(obj);
-                        callback(null, object);
+                        callback(null, obj);
                     });
                 }
                 else if (data instanceof Object) {
-                    var object = feng3d.serialization.deserialize(data);
-                    callback(null, object);
+                    callback(null, data);
                 }
                 else {
+                    feng3d.debuger && console.assert(typeof data == "string");
                     var obj = JSON.parse(data);
-                    var object = feng3d.serialization.deserialize(obj);
-                    callback(null, object);
+                    callback(null, obj);
                 }
             });
         };
@@ -16403,12 +16335,11 @@ var feng3d;
         /**
          * 写文件
          * @param path 文件路径
-         * @param data 文件数据
+         * @param object 文件数据
          * @param callback 回调函数
          */
-        IndexedDBFS.prototype.writeObject = function (path, data, callback) {
-            var obj = feng3d.serialization.serialize(data);
-            feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, obj, callback);
+        IndexedDBFS.prototype.writeObject = function (path, object, callback) {
+            feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, object, callback);
             feng3d.dispatcher.dispatch("fs.write", path);
         };
         /**
@@ -16543,8 +16474,7 @@ var feng3d;
         HttpFS.prototype.readObject = function (path, callback) {
             feng3d.loader.loadText(this.getAbsolutePath(path), function (content) {
                 var obj = JSON.parse(content);
-                var object = feng3d.serialization.deserialize(obj);
-                callback(null, object);
+                callback(null, obj);
             }, null, function (e) {
                 callback(e, null);
             });
@@ -16725,7 +16655,7 @@ var feng3d;
                 return;
             }
             var eventtype = "loaded";
-            feng3d.event.once(this, eventtype, callback);
+            feng3d.event.once(this, eventtype, function () { callback(); });
             if (this.isLoading)
                 return;
             this.isLoading = true;
@@ -16954,8 +16884,9 @@ var feng3d;
             if (this._status.isiniting)
                 return;
             this._status.isiniting = true;
-            this.fs.readObject(this.resources, function (err, data) {
-                if (data) {
+            this.fs.readObject(this.resources, function (err, object) {
+                if (object) {
+                    var data = feng3d.serialization.deserialize(object);
                     _this._root = data;
                     //
                     var assets = [data];
@@ -17084,6 +17015,25 @@ var feng3d;
             });
         };
         /**
+         * 读取资源数据列表
+         *
+         * @param assetids 资源编号列表
+         * @param callback 完成回调
+         */
+        ReadRS.prototype.readAssetDatas = function (assetids, callback) {
+            var result = [];
+            var fns = assetids.map(function (v) { return function (callback) {
+                feng3d.rs.readAssetData(v, function (err, data) {
+                    result.push(data);
+                    callback();
+                });
+            }; });
+            feng3d.task.parallel(fns)(function () {
+                feng3d.debuger && console.assert(assetids.length == result.filter(function (v) { return v != null; }).length);
+                callback(null, result);
+            });
+        };
+        /**
          * 获取指定类型资源
          *
          * @param type 资源类型
@@ -17137,6 +17087,77 @@ var feng3d;
             var assets = Object.keys(this.idMap).map(function (v) { return _this.idMap[v]; });
             return assets;
         };
+        /**
+         * 获取需要反序列化对象中的资源id列表
+         */
+        ReadRS.prototype.getAssets = function (object, assetids) {
+            var _this = this;
+            if (assetids === void 0) { assetids = []; }
+            //基础类型
+            if (Object.isBaseType(object))
+                return assetids;
+            //处理数组
+            if (object instanceof Array) {
+                object.forEach(function (v) { return _this.getAssets(v, assetids); });
+                return assetids;
+            }
+            // 获取类型
+            var className = object[feng3d.CLASS_KEY];
+            // 处理普通Object
+            if (className == "Object" || className == null) {
+                for (var key in object) {
+                    if (key != feng3d.CLASS_KEY)
+                        this.getAssets(object[key], assetids);
+                }
+                return assetids;
+            }
+            //处理方法
+            if (className == "function")
+                return assetids;
+            var cls = feng3d.classUtils.getDefinitionByName(className);
+            if (!cls) {
+                console.warn("\u65E0\u6CD5\u5E8F\u5217\u53F7\u5BF9\u8C61 " + className);
+                return assetids;
+            }
+            var target = new cls();
+            // 处理资源
+            if (target instanceof feng3d.AssetData && object.assetId != undefined) {
+                assetids.push(object.assetId);
+                return assetids;
+            }
+            return assetids;
+        };
+        /**
+         * 反序列化包含资源的对象
+         *
+         * @param object 反序列化的对象
+         * @param callback 完成回调
+         */
+        ReadRS.prototype.deserializeWithAssets = function (object, callback) {
+            //
+            var className = object[feng3d.CLASS_KEY];
+            var assetId = object.assetId;
+            feng3d.debuger && console.assert(className != undefined && assetId != undefined);
+            // 获取资源类定义
+            var cls = feng3d.classUtils.getDefinitionByName(className);
+            if (!cls) {
+                console.warn("\u65E0\u6CD5\u5E8F\u5217\u53F7\u5BF9\u8C61 " + className);
+                return;
+            }
+            // 创建资源数据实例
+            var assetData = new cls();
+            feng3d.debuger && console.assert(assetData instanceof feng3d.AssetData);
+            // 获取所包含的资源列表
+            var assetids = this.getAssets(object);
+            // 不需要加载本资源，移除自身资源
+            assetids.delete(assetId);
+            // 加载包含的资源数据
+            this.readAssetDatas(assetids, function (err, result) {
+                //默认反序列
+                feng3d.serialization.setValue(assetData, object);
+                callback(assetData);
+            });
+        };
         return ReadRS;
     }());
     feng3d.ReadRS = ReadRS;
@@ -17176,7 +17197,8 @@ var feng3d;
          * @param callback 完成回调
          */
         ReadWriteRS.prototype.save = function (callback) {
-            this.fs.writeObject(this.resources, this.root, callback);
+            var object = feng3d.serialization.serialize(this.root);
+            this.fs.writeObject(this.resources, object, callback);
         };
         /**
          * 新建资源
@@ -31739,10 +31761,12 @@ var feng3d;
          */
         ObjectAsset.prototype.readFile = function (callback) {
             var _this = this;
-            this.rs.fs.readObject(this.assetPath, function (err, data) {
-                _this.data = data;
-                feng3d.debuger && console.assert(_this.data.assetId == _this.assetId);
-                callback && callback(err);
+            this.rs.fs.readObject(this.assetPath, function (err, object) {
+                _this.rs.deserializeWithAssets(object, function (data) {
+                    _this.data = data;
+                    feng3d.debuger && console.assert(_this.data.assetId == _this.assetId);
+                    callback && callback(err);
+                });
             });
         };
         ObjectAsset.prototype._dataChanged = function (property, oldValue, newValue) {
@@ -31968,8 +31992,10 @@ var feng3d;
         TextureAsset.prototype.readMeta = function (callback) {
             var _this = this;
             _super.prototype.readMeta.call(this, function (err) {
-                _this.data = _this.meta.texture;
-                callback && callback(err);
+                _this.rs.deserializeWithAssets(_this.meta.texture, function (result) {
+                    _this.data = result;
+                    callback && callback(err);
+                });
             });
         };
         /**
@@ -31978,7 +32004,7 @@ var feng3d;
          * @param callback 完成回调
          */
         TextureAsset.prototype.writeMeta = function (callback) {
-            this.meta.texture = this.data;
+            this.meta.texture = feng3d.serialization.serialize(this.data);
             _super.prototype.writeMeta.call(this, callback);
         };
         TextureAsset.extenson = ".png";
