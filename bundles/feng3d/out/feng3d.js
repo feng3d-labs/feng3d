@@ -703,7 +703,7 @@ var feng3d;
                 console.assert(assetids.length == assets.length, "\u5B58\u5728\u8D44\u6E90\u672A\u52A0\u8F7D\uFF0C\u8BF7\u4F7F\u7528 deserializeWithAssets \u8FDB\u884C\u53CD\u5E8F\u5217\u5316");
             }
             //处理数组
-            if (object instanceof Array) {
+            if (Array.isArray(object)) {
                 var arr = object.map(function (v) { return _this.deserialize(v); });
                 return arr;
             }
@@ -15490,7 +15490,7 @@ var feng3d;
         if (typeof pathUrls == "string") {
             pathUrls = [pathUrls];
         }
-        if (!(pathUrls instanceof Array)) {
+        if (!Array.isArray(pathUrls)) {
             pathUrls = [pathUrls];
         }
         for (var i = 0; i < pathUrls.length; i++) {
@@ -17097,7 +17097,7 @@ var feng3d;
             if (Object.isBaseType(object))
                 return assetids;
             //处理数组
-            if (object instanceof Array) {
+            if (Array.isArray(object)) {
                 object.forEach(function (v) { return _this.getAssets(v, assetids); });
                 return assetids;
             }
@@ -19451,7 +19451,7 @@ var feng3d;
             }
             if (!pixels)
                 return false;
-            if (!(pixels instanceof Array))
+            if (!Array.isArray(pixels))
                 pixels = [pixels];
             for (var i = 0; i < pixels.length; i++) {
                 var element = pixels[i];
@@ -19472,7 +19472,7 @@ var feng3d;
             var pixels = this._activePixels;
             if (!pixels)
                 new feng3d.Vector2(1, 1);
-            if (!(pixels instanceof Array))
+            if (!Array.isArray(pixels))
                 pixels = [pixels];
             if (pixels.length == 0)
                 return new feng3d.Vector2(1, 1);
@@ -19485,7 +19485,7 @@ var feng3d;
         TextureInfo.prototype.checkRenderData = function (pixels) {
             if (!pixels)
                 return false;
-            if (!(pixels instanceof Array))
+            if (!Array.isArray(pixels))
                 pixels = [pixels];
             if (pixels.length == 0)
                 return false;
@@ -19539,7 +19539,7 @@ var feng3d;
                 this._activePixels = this._pixels;
             }
             else {
-                if (this.noPixels instanceof Array) {
+                if (Array.isArray(this.noPixels)) {
                     this._activePixels = this.noPixels.map(function (v) { return feng3d.imageDatas[v]; });
                 }
                 else {

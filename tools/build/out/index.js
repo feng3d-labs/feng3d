@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var fs = require("fs");
 var process = require("child_process");
 function watchProject(project) {
-    if (project instanceof Array) {
+    if (Array.isArray(project)) {
         for (var i = 0; i < project.length; i++) {
             watchProject(project[i]);
         }
