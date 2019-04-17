@@ -3,7 +3,7 @@ import * as process from "child_process";
 
 export function watchProject(project: { path: string, moduleName: string, globalModule: string })
 {
-    if (project instanceof Array)
+    if (Array.isArray(project))
     {
         for (var i = 0; i < project.length; i++)
         {

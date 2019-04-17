@@ -317,7 +317,7 @@ namespace feng3d
             if (Object.isBaseType(object)) return assetids;
 
             //处理数组
-            if (object instanceof Array)
+            if (Array.isArray(object))
             {
                 object.forEach(v => this.getAssets(v, assetids));
                 return assetids;

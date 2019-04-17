@@ -422,7 +422,7 @@ namespace feng3d
         {
             pathUrls = [pathUrls];
         }
-        if (!(pathUrls instanceof Array))
+        if (!Array.isArray(pathUrls))
         {
             pathUrls = [pathUrls];
         }

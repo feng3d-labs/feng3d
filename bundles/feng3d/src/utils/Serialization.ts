@@ -175,7 +175,7 @@ namespace feng3d
             }
 
             //处理数组
-            if (object instanceof Array)
+            if (Array.isArray(object))
             {
                 var arr = object.map(v => this.deserialize(v));
                 return arr;

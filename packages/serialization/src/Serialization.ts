@@ -175,7 +175,7 @@
 //             }
 
 //             //处理数组
-//             if (object instanceof Array)
+//             if (Array.isArray(object))
 //             {
 //                 var arr = object.map(v => this.deserialize(v));
 //                 return arr;
@@ -315,7 +315,7 @@
 //             if (isBaseType(object)) return assetids;
 
 //             //处理数组
-//             if (object instanceof Array)
+//             if (Array.isArray(object))
 //             {
 //                 object.forEach(v => this.getAssets(v, assetids));
 //                 return assetids;

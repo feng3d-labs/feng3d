@@ -127,7 +127,7 @@ namespace feng3d
                 return true;
             }
             if (!pixels) return false;
-            if (!(pixels instanceof Array))
+            if (!Array.isArray(pixels))
                 pixels = [pixels];
             for (let i = 0; i < pixels.length; i++)
             {
@@ -151,7 +151,7 @@ namespace feng3d
             }
             var pixels = this._activePixels;
             if (!pixels) new Vector2(1, 1);
-            if (!(pixels instanceof Array))
+            if (!Array.isArray(pixels))
                 pixels = [pixels];
             if (pixels.length == 0)
                 return new Vector2(1, 1);
@@ -165,7 +165,7 @@ namespace feng3d
         private checkRenderData(pixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[])
         {
             if (!pixels) return false;
-            if (!(pixels instanceof Array))
+            if (!Array.isArray(pixels))
                 pixels = [pixels];
 
             if (pixels.length == 0) return false;
@@ -222,7 +222,7 @@ namespace feng3d
                 this._activePixels = this._pixels;
             } else
             {
-                if (this.noPixels instanceof Array)
+                if (Array.isArray(this.noPixels))
                 {
                     this._activePixels = this.noPixels.map(v => imageDatas[v]);
                 } else
