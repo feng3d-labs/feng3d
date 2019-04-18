@@ -105,10 +105,10 @@ namespace feng3d
             for (let i = 0; i < NUM; i++)
             {
                 var ray = orthographicLens.unprojectRay(x, y);
-                var p = ray.getPointWithZ(FMath.lerp(near, far, Math.random()));
+                var p = ray.getPointWithZ(Math.lerp(near, far, Math.random()));
                 var pp = orthographicLens.project(p);
-                assert.ok(FMath.equals(x, pp.x));
-                assert.ok(FMath.equals(y, pp.y));
+                assert.ok(Math.equals(x, pp.x));
+                assert.ok(Math.equals(y, pp.y));
             }
         });
 
@@ -125,13 +125,13 @@ namespace feng3d
 
             for (let i = 0; i < NUM; i++)
             {
-                var sZ = FMath.lerp(near, far, Math.random());
+                var sZ = Math.lerp(near, far, Math.random());
                 var p = orthographicLens.unprojectWithDepth(x, y, sZ);
-                assert.ok(FMath.equals(sZ, p.z));
+                assert.ok(Math.equals(sZ, p.z));
 
                 var pp = orthographicLens.project(p);
-                assert.ok(FMath.equals(x, pp.x));
-                assert.ok(FMath.equals(y, pp.y));
+                assert.ok(Math.equals(x, pp.x));
+                assert.ok(Math.equals(y, pp.y));
             }
         });
     });

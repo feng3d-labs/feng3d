@@ -137,7 +137,7 @@ namespace feng3d
     //     /**
     //      * 通过将当前 Euler 对象的 x、y 和 z 元素与指定的 Euler 对象的 x、y 和 z 元素进行比较，确定这两个对象是否相等。
     //      */
-    //     equals(object: { x: number, y: number, z: number }, precision = FMath.PRECISION)
+    //     equals(object: { x: number, y: number, z: number }, precision = Math.PRECISION)
     //     {
     //         if (Math.abs(this.x - object.x) > precision)
     //             return false;

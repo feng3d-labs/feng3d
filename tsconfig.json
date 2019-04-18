@@ -62,7 +62,7 @@
         "src/ds/BinarySearchTree.ts",
         "src/ds/AvlTree.ts",
         // 数学相关程序
-        "src/math/Math.ts",
+        "src/polyfill/Math.ts",
         // 函数方程
         "src/math/EquationSolving.ts",
         "src/math/HighFunction.ts",

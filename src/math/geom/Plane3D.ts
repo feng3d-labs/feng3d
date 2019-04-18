@@ -151,7 +151,7 @@ namespace feng3d
          */
         onWithPoint(p: Vector3)
         {
-            return FMath.equals(this.distanceWithPoint(p), 0);
+            return Math.equals(this.distanceWithPoint(p), 0);
         }
 
 		/**
@@ -160,10 +160,10 @@ namespace feng3d
 		 * @param p			顶点
 		 * @return			顶点类型 PlaneClassification.BACK,PlaneClassification.FRONT,PlaneClassification.INTERSECT
 		 */
-        classifyPoint(p: Vector3, precision = FMath.PRECISION)
+        classifyPoint(p: Vector3, precision = Math.PRECISION)
         {
             var len = this.distanceWithPoint(p);
-            if (FMath.equals(len, 0, precision))
+            if (Math.equals(len, 0, precision))
                 return PlaneClassification.INTERSECT;
             if (len < 0)
                 return PlaneClassification.BACK;
@@ -174,9 +174,9 @@ namespace feng3d
          * 判定与直线是否平行
          * @param line3D 
          */
-        parallelWithLine3D(line3D: Line3D, precision = FMath.PRECISION)
+        parallelWithLine3D(line3D: Line3D, precision = Math.PRECISION)
         {
-            if (FMath.equals(line3D.direction.dot(this.getNormal()), 0, precision))
+            if (Math.equals(line3D.direction.dot(this.getNormal()), 0, precision))
                 return true;
             return false;
         }
@@ -185,7 +185,7 @@ namespace feng3d
          * 判定与平面是否平行
          * @param plane3D
          */
-        parallelWithPlane3D(plane3D: Plane3D, precision = FMath.PRECISION)
+        parallelWithPlane3D(plane3D: Plane3D, precision = Math.PRECISION)
         {
             if (plane3D.getNormal().isParallel(this.getNormal(), precision))
                 return true;

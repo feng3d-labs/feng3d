@@ -22,7 +22,7 @@ namespace feng3d
             var speed = particle.velocity.length;
 
             // 计算位置
-            var angle = Math.random() * FMath.degToRad(this.arc);
+            var angle = Math.random() * Math.degToRad(this.arc);
             var dir = new Vector3(Math.sin(angle), Math.cos(angle), 0);
             var p = dir.scaleNumberTo(this.radius * Math.random());
 

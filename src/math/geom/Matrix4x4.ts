@@ -162,9 +162,9 @@ namespace feng3d
          */
         static fromRotation(rx: number, ry: number, rz: number): Matrix4x4
         {
-            rx = FMath.degToRad(rx);
-            ry = FMath.degToRad(ry);
-            rz = FMath.degToRad(rz);
+            rx = Math.degToRad(rx);
+            ry = Math.degToRad(ry);
+            rz = Math.degToRad(rz);
 
             var sx = Math.sin(rx), cx = Math.cos(rx), sy = Math.sin(ry), cy = Math.cos(ry), sz = Math.sin(rz), cz = Math.cos(rz);
 
@@ -842,12 +842,12 @@ namespace feng3d
         /**
          * 比较矩阵是否相等
          */
-        equals(matrix3D: Matrix4x4, precision = FMath.PRECISION)
+        equals(matrix3D: Matrix4x4, precision = Math.PRECISION)
         {
             var r2 = matrix3D.rawData;
             for (var i = 0; i < 16; ++i)
             {
-                if (!FMath.equals(this.rawData[i] - r2[i], 0, precision))
+                if (!Math.equals(this.rawData[i] - r2[i], 0, precision))
                     return false;
             }
 

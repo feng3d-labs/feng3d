@@ -180,10 +180,10 @@ var feng3d;
             var y = Math.random();
             for (var i = 0; i < NUM; i++) {
                 var ray = orthographicLens.unprojectRay(x, y);
-                var p = ray.getPointWithZ(feng3d.FMath.lerp(near, far, Math.random()));
+                var p = ray.getPointWithZ(Math.lerp(near, far, Math.random()));
                 var pp = orthographicLens.project(p);
-                assert.ok(feng3d.FMath.equals(x, pp.x));
-                assert.ok(feng3d.FMath.equals(y, pp.y));
+                assert.ok(Math.equals(x, pp.x));
+                assert.ok(Math.equals(y, pp.y));
             }
         });
         QUnit.test("unprojectWithDepth", function (assert) {
@@ -194,12 +194,12 @@ var feng3d;
             var x = Math.random();
             var y = Math.random();
             for (var i = 0; i < NUM; i++) {
-                var sZ = feng3d.FMath.lerp(near, far, Math.random());
+                var sZ = Math.lerp(near, far, Math.random());
                 var p = orthographicLens.unprojectWithDepth(x, y, sZ);
-                assert.ok(feng3d.FMath.equals(sZ, p.z));
+                assert.ok(Math.equals(sZ, p.z));
                 var pp = orthographicLens.project(p);
-                assert.ok(feng3d.FMath.equals(x, pp.x));
-                assert.ok(feng3d.FMath.equals(y, pp.y));
+                assert.ok(Math.equals(x, pp.x));
+                assert.ok(Math.equals(y, pp.y));
             }
         });
     });
@@ -284,10 +284,10 @@ var feng3d;
             var y = Math.random();
             for (var i = 0; i < NUM; i++) {
                 var ray = perspectiveLens.unprojectRay(x, y);
-                var p = ray.getPointWithZ(feng3d.FMath.lerp(near, far, Math.random()));
+                var p = ray.getPointWithZ(Math.lerp(near, far, Math.random()));
                 var pp = perspectiveLens.project(p);
-                assert.ok(feng3d.FMath.equals(x, pp.x));
-                assert.ok(feng3d.FMath.equals(y, pp.y));
+                assert.ok(Math.equals(x, pp.x));
+                assert.ok(Math.equals(y, pp.y));
             }
         });
         QUnit.test("unprojectWithDepth", function (assert) {
@@ -299,12 +299,12 @@ var feng3d;
             var x = Math.random();
             var y = Math.random();
             for (var i = 0; i < NUM; i++) {
-                var sZ = feng3d.FMath.lerp(near, far, Math.random());
+                var sZ = Math.lerp(near, far, Math.random());
                 var p = perspectiveLens.unprojectWithDepth(x, y, sZ);
-                assert.ok(feng3d.FMath.equals(sZ, p.z));
+                assert.ok(Math.equals(sZ, p.z));
                 var pp = perspectiveLens.project(p);
-                assert.ok(feng3d.FMath.equals(x, pp.x));
-                assert.ok(feng3d.FMath.equals(y, pp.y));
+                assert.ok(Math.equals(x, pp.x));
+                assert.ok(Math.equals(y, pp.y));
             }
         });
     });
@@ -2661,7 +2661,7 @@ var feng3d;
         QUnit.test("getOrigin", function (assert) {
             var p = feng3d.Plane3D.random();
             assert.ok(p.onWithPoint(p.getOrigin()));
-            assert.ok(feng3d.FMath.equals(p.getOrigin().distance(feng3d.Vector3.ZERO), p.distanceWithPoint(feng3d.Vector3.ZERO)));
+            assert.ok(Math.equals(p.getOrigin().distance(feng3d.Vector3.ZERO), p.distanceWithPoint(feng3d.Vector3.ZERO)));
         });
         QUnit.test("randomPoint", function (assert) {
             var p = feng3d.Plane3D.random();
@@ -2757,8 +2757,8 @@ var feng3d;
         QUnit.test("getCircumcenter", function (assert) {
             var t = feng3d.Triangle3D.random();
             var circumcenter = t.getCircumcenter();
-            assert.ok(feng3d.FMath.equals(circumcenter.subTo(t.p0).length, circumcenter.subTo(t.p1).length));
-            assert.ok(feng3d.FMath.equals(circumcenter.subTo(t.p0).length, circumcenter.subTo(t.p2).length));
+            assert.ok(Math.equals(circumcenter.subTo(t.p0).length, circumcenter.subTo(t.p1).length));
+            assert.ok(Math.equals(circumcenter.subTo(t.p0).length, circumcenter.subTo(t.p2).length));
         });
         QUnit.test("getInnercenter", function (assert) {
             var t = feng3d.Triangle3D.random();
@@ -2767,15 +2767,15 @@ var feng3d;
             var d1 = feng3d.Line3D.fromPoints(t.p0, t.p2).distanceWithPoint(p);
             var d2 = feng3d.Line3D.fromPoints(t.p2, t.p1).distanceWithPoint(p);
             assert.ok(t.onWithPoint(p));
-            assert.ok(feng3d.FMath.equals(d0, d1));
-            assert.ok(feng3d.FMath.equals(d0, d2));
+            assert.ok(Math.equals(d0, d1));
+            assert.ok(Math.equals(d0, d2));
         });
         QUnit.test("getOrthocenter", function (assert) {
             var t = feng3d.Triangle3D.random();
             var p = t.getOrthocenter();
-            assert.ok(feng3d.FMath.equals(0, t.p0.subTo(t.p1).dot(p.subTo(t.p2))));
-            assert.ok(feng3d.FMath.equals(0, t.p2.subTo(t.p1).dot(p.subTo(t.p0))));
-            assert.ok(feng3d.FMath.equals(0, t.p2.subTo(t.p0).dot(p.subTo(t.p1))));
+            assert.ok(Math.equals(0, t.p0.subTo(t.p1).dot(p.subTo(t.p2))));
+            assert.ok(Math.equals(0, t.p2.subTo(t.p1).dot(p.subTo(t.p0))));
+            assert.ok(Math.equals(0, t.p2.subTo(t.p0).dot(p.subTo(t.p1))));
         });
         QUnit.test("decomposeWithPoint", function (assert) {
             //分割后的三角形面积总和与原三角形面积相等
@@ -2783,11 +2783,11 @@ var feng3d;
             var p = t.randomPoint();
             var ts = t.decomposeWithPoint(p);
             assert.ok(ts.length <= 3);
-            assert.ok(feng3d.FMath.equals(t.area(), ts.reduce(function (area, t) { return area + t.area(); }, 0), 0.001));
+            assert.ok(Math.equals(t.area(), ts.reduce(function (area, t) { return area + t.area(); }, 0), 0.001));
             p = t.getSegments()[0].getPoint(Math.random());
             ts = t.decomposeWithPoint(p);
             assert.ok(ts.length <= 2);
-            assert.ok(feng3d.FMath.equals(t.area(), ts.reduce(function (area, t) { return area + t.area(); }, 0), 0.001));
+            assert.ok(Math.equals(t.area(), ts.reduce(function (area, t) { return area + t.area(); }, 0), 0.001));
         });
         QUnit.test("intersectionWithLine", function (assert) {
             var t = feng3d.Triangle3D.random();
@@ -2812,22 +2812,22 @@ var feng3d;
             var s = feng3d.Segment3D.fromPoints(t.randomPoint(), t.randomPoint().add(t.getNormal()));
             var ts = t.decomposeWithSegment(s);
             assert.ok(ts.length <= 3);
-            assert.ok(feng3d.FMath.equals(ts.reduce(function (v, t) { return v + t.area(); }, 0), t.area(), 0.001));
+            assert.ok(Math.equals(ts.reduce(function (v, t) { return v + t.area(); }, 0), t.area(), 0.001));
             s = feng3d.Segment3D.fromPoints(t.randomPoint(), t.randomPoint());
             ts = t.decomposeWithSegment(s);
             assert.ok(ts.length <= 5);
-            assert.ok(feng3d.FMath.equals(ts.reduce(function (v, t) { return v + t.area(); }, 0), t.area(), 0.001));
+            assert.ok(Math.equals(ts.reduce(function (v, t) { return v + t.area(); }, 0), t.area(), 0.001));
         });
         QUnit.test("decomposeWithLine", function (assert) {
             var t = feng3d.Triangle3D.random();
             var l = feng3d.Line3D.fromPoints(t.randomPoint(), t.randomPoint().add(t.getNormal()));
             var ts = t.decomposeWithLine(l);
             assert.ok(ts.length <= 3);
-            assert.ok(feng3d.FMath.equals(ts.reduce(function (v, t) { return v + t.area(); }, 0), t.area(), 0.001));
+            assert.ok(Math.equals(ts.reduce(function (v, t) { return v + t.area(); }, 0), t.area(), 0.001));
             l = feng3d.Line3D.fromPoints(t.randomPoint(), t.randomPoint());
             ts = t.decomposeWithLine(l);
             assert.ok(ts.length <= 3);
-            assert.ok(feng3d.FMath.equals(ts.reduce(function (v, t) { return v + t.area(); }, 0), t.area(), 0.0001));
+            assert.ok(Math.equals(ts.reduce(function (v, t) { return v + t.area(); }, 0), t.area(), 0.0001));
         });
         QUnit.test("closestPointWithPoint", function (assert) {
             var t = feng3d.Triangle3D.random();
@@ -2900,7 +2900,7 @@ var feng3d;
                 assert.ok(r.points.length == 2);
                 assert.ok(feng3d.Segment3D.fromPoints(r.points[0], r.points[1]).equals(feng3d.Segment3D.fromPoints(box.min, box.max)));
             }
-            var p0 = new feng3d.Vector3(box.min.x, box.min.y, feng3d.FMath.lerp(box.min.z, box.max.z, Math.random()));
+            var p0 = new feng3d.Vector3(box.min.x, box.min.y, Math.lerp(box.min.z, box.max.z, Math.random()));
             var p1 = new feng3d.Vector3(box.min.x, box.min.y, box.max.z + 1);
             var s = feng3d.Segment3D.fromPoints(p0, p1);
             var r1 = triangleGeometry.intersectionWithSegment(s);

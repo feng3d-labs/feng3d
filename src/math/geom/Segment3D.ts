@@ -60,9 +60,9 @@ namespace feng3d
          * 判定点是否在线段上
          * @param point 
          */
-        onWithPoint(point: Vector3, precision = FMath.PRECISION)
+        onWithPoint(point: Vector3, precision = Math.PRECISION)
         {
-            return FMath.equals(this.getPointDistance(point), 0, precision);
+            return Math.equals(this.getPointDistance(point), 0, precision);
         }
 
         /**
@@ -193,7 +193,7 @@ namespace feng3d
          */
         clampPoint(point: Vector3, pout = new Vector3())
         {
-            return this.getPoint(FMath.clamp(this.getPositionByPoint(point), 0, 1), pout);
+            return this.getPoint(Math.clamp(this.getPositionByPoint(point), 0, 1), pout);
         }
 
         /**

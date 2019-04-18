@@ -240,7 +240,7 @@ namespace feng3d
             {
                 for (let j = 0; j < size; j++)
                 {
-                    var l = FMath.clamp(new Vector2(i - half, j - half).length, 0, half) / half;
+                    var l = Math.clamp(new Vector2(i - half, j - half).length, 0, half) / half;
                     // l = l * l;
                     var f = 1 - l;
                     f = f * f;
@@ -350,7 +350,7 @@ namespace feng3d
                 //
                 var y = curve.getValue(i / (rect.width - 1));
 
-                y = FMath.mapLinear(y, range[0], range[1], 0, 1);
+                y = Math.mapLinear(y, range[0], range[1], 0, 1);
 
                 var j = Math.round(y * (rect.height - 1));
                 this.setPixel(rect.x + i, rect.y + j, color);
@@ -377,8 +377,8 @@ namespace feng3d
                 var y0 = curve.getValue(i / (rect.width - 1));
                 var y1 = curve1.getValue(i / (rect.width - 1));
 
-                y0 = FMath.mapLinear(y0, range[0], range[1], 0, 1);
-                y1 = FMath.mapLinear(y1, range[0], range[1], 0, 1);
+                y0 = Math.mapLinear(y0, range[0], range[1], 0, 1);
+                y1 = Math.mapLinear(y1, range[0], range[1], 0, 1);
 
                 y0 = Math.round(y0 * (rect.height - 1));
                 y1 = Math.round(y1 * (rect.height - 1));

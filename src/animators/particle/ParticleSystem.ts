@@ -196,10 +196,10 @@ namespace feng3d
 
                 if (this.geometry == Geometry.billboard && cameraMatrix)
                 {
-                    var matrix = new Matrix4x4().recompose([particle.position, particle.rotation.scaleNumberTo(FMath.DEG2RAD), particle.scale]);
+                    var matrix = new Matrix4x4().recompose([particle.position, particle.rotation.scaleNumberTo(Math.DEG2RAD), particle.scale]);
                     matrix.lookAt(localCameraPos, localCameraUp);
 
-                    particle.rotation = matrix.decompose()[1].scaleNumber(FMath.RAD2DEG);
+                    particle.rotation = matrix.decompose()[1].scaleNumber(Math.RAD2DEG);
                 }
 
                 positions.push(particle.position.x, particle.position.y, particle.position.z);

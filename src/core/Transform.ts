@@ -420,7 +420,7 @@ namespace feng3d
             }
             val.decompose(Orientation3D.EULER_ANGLES, elements);
             this.position = elements[0];
-            this.rotation = elements[1].scaleNumber(FMath.RAD2DEG);
+            this.rotation = elements[1].scaleNumber(Math.RAD2DEG);
             this.scale = elements[2];
         }
 
@@ -496,7 +496,7 @@ namespace feng3d
         set orientation(value)
         {
             var angles = value.toEulerAngles();
-            angles.scaleNumber(FMath.RAD2DEG);
+            angles.scaleNumber(Math.RAD2DEG);
             this.rotation = angles;
         }
 
@@ -753,7 +753,7 @@ namespace feng3d
         protected updateMatrix3D()
         {
             tempComponents[0].init(this._x, this._y, this._z);
-            tempComponents[1].init(this._rx * FMath.DEG2RAD, this._ry * FMath.DEG2RAD, this._rz * FMath.DEG2RAD);
+            tempComponents[1].init(this._rx * Math.DEG2RAD, this._ry * Math.DEG2RAD, this._rz * Math.DEG2RAD);
             tempComponents[2].init(this._sx, this._sy, this._sz);
 
             this._matrix3d = new Matrix4x4().recompose(tempComponents);

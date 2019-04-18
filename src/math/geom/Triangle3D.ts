@@ -257,7 +257,7 @@ namespace feng3d
          * @param p 点
          * @param precision 精度，如果距离小于精度则判定为在三角形上
          */
-        onWithPoint(p: Vector3, precision = FMath.PRECISION)
+        onWithPoint(p: Vector3, precision = Math.PRECISION)
         {
             var plane3d = this.getPlane3d();
             if (plane3d.classifyPoint(p, precision) != PlaneClassification.INTERSECT)

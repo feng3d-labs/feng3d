@@ -11,7 +11,7 @@
             "dom"
         ],
         "types": [
-            "feng3d"
+            // "feng3d"
         ],
         // "outDir": "./debug"
         "outFile": "./out/tests.js",
@@ -19,6 +19,8 @@
     "include": [
         //
         "libs/qunit/qunit.d.ts",
+        "../out",
+        "../debug",
         //
         "src/**/*.ts",
     ],

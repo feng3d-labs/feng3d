@@ -360,13 +360,13 @@ namespace feng3d
         /**
          * 通过将当前 Vector3 对象的 x、y 和 z 元素与指定的 Vector3 对象的 x、y 和 z 元素进行比较，确定这两个对象是否相等。
          */
-        equals(object: Vector3, precision = FMath.PRECISION)
+        equals(object: Vector3, precision = Math.PRECISION)
         {
-            if (!FMath.equals(this.x - object.x, 0, precision))
+            if (!Math.equals(this.x - object.x, 0, precision))
                 return false;
-            if (!FMath.equals(this.y - object.y, 0, precision))
+            if (!Math.equals(this.y - object.y, 0, precision))
                 return false;
-            if (!FMath.equals(this.z - object.z, 0, precision))
+            if (!Math.equals(this.z - object.z, 0, precision))
                 return false;
             return true;
         }
@@ -584,9 +584,9 @@ namespace feng3d
          */
         clamp(min: Vector3, max: Vector3)
         {
-            this.x = FMath.clamp(this.x, min.x, max.x);
-            this.y = FMath.clamp(this.y, min.y, max.y);
-            this.z = FMath.clamp(this.z, min.z, max.z);
+            this.x = Math.clamp(this.x, min.x, max.x);
+            this.y = Math.clamp(this.y, min.y, max.y);
+            this.z = Math.clamp(this.z, min.z, max.z);
             return this;
         }
 
@@ -735,9 +735,9 @@ namespace feng3d
          * 与指定向量是否平行
          * @param v 向量
          */
-        isParallel(v: Vector3, precision = FMath.PRECISION)
+        isParallel(v: Vector3, precision = Math.PRECISION)
         {
-            return FMath.equals(Math.abs(this.clone().normalize().dot(v.clone().normalize())), 1, precision);
+            return Math.equals(Math.abs(this.clone().normalize().dot(v.clone().normalize())), 1, precision);
         }
 
         /**

@@ -266,8 +266,8 @@ namespace feng3d
          */
         clamp(min: Vector2, max: Vector2)
         {
-            this.x = FMath.clamp(this.x, min.x, max.x);
-            this.y = FMath.clamp(this.y, min.y, max.y);
+            this.x = Math.clamp(this.x, min.x, max.x);
+            this.y = Math.clamp(this.y, min.y, max.y);
             return this;
         }
 
