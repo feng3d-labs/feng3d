@@ -1,8 +1,10 @@
 var build = require("./tools/build/out/index");
+var shaderpack = require("./tools/shaderpack/out/index");
 
 var fs = require("fs");
 var path = require("path");
 
+shaderpack.shaderPack(__dirname);
 
 var toolsPath = path.join(__dirname, "tools");
 var tools = fs.readdirSync(toolsPath);
