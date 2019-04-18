@@ -5,7 +5,7 @@
   "main": "out/feng3d.js",
   "types": "out/feng3d.d.ts",
   "scripts": {
-    "server": "http-server",
+    "http-server": "http-server",
     "build": "node build.js",
     "prebuild": "rimraf \"{out,debug}\""
   },
@@ -30,6 +30,8 @@
   "homepage": "https://gitee.com/feng3d/feng3d#readme",
   "dependencies": {},
   "devDependencies": {
+    "@feng3d/build": "0.0.5",
+    "@feng3d/shaderpack": "0.0.4",
     "http-server": "^0.11.1",
     "rimraf": "^2.6.3"
   }

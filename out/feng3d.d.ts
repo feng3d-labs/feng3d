@@ -7186,8 +7186,8 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-  * 任务，用于处理任务之间依赖
-  */
+     * 任务，用于处理任务之间依赖
+     */
     var task: Task;
     /**
      * 任务函数
