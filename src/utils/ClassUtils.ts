@@ -74,6 +74,33 @@ namespace feng3d
             _definitionCache[name] = definition;
             return definition;
         }
+
+        /**
+         * 获取默认实例
+         * 
+         * @param name 类名称
+         */
+        getDefaultInstanceByName(name: string)
+        {
+            var cls = this.getDefinitionByName(name);
+            if (!cls) return undefined;
+            var key = "__default_instance__";
+            return cls[key] = cls[key] || new cls();
+        }
+
+        /**
+         * 获取实例
+         * 
+         * @param name 类名称
+         */
+        getInstanceByName(name: string)
+        {
+            var cls = this.getDefinitionByName(name);
+            console.assert(cls);
+            if (!cls) return undefined;
+            return new cls();
+        }
+
         /**
          * 新增反射对象所在的命名空间，使得getQualifiedClassName能够得到正确的结果
          */

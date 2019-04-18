@@ -169,7 +169,7 @@ namespace feng3d
 
             if (debuger && object.constructor == Object)
             {
-                let assetids = rs.getAssets(object);
+                let assetids = rs.getAssetsWithObject(object);
                 var assets = assetids.reduce((pv, cv) => { var r = rs.getAssetData(cv); if (r) pv.push(r); return pv; }, []);
                 console.assert(assetids.length == assets.length, `存在资源未加载，请使用 deserializeWithAssets 进行反序列化`)
             }

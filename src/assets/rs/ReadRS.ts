@@ -311,44 +311,21 @@ namespace feng3d
         /**
          * 获取需要反序列化对象中的资源id列表
          */
-        getAssets(object: any, assetids: string[] = [])
+        getAssetsWithObject(object: any, assetids: string[] = [])
         {
-            //基础类型
-            if (Object.isBaseType(object)) return assetids;
-
-            //处理数组
-            if (Array.isArray(object))
+            if (Object.isBaseType(object)) return;
+            //
+            var ins = classUtils.getDefaultInstanceByName(object[CLASS_KEY]);
+            var assetId = (<AssetData>object).assetId;
+            if (ins instanceof AssetData && assetId) assetids.push(assetId);
+            //
+            if (object.constructor.name == "Object" || Array.isArray(object))
             {
-                object.forEach(v => this.getAssets(v, assetids));
-                return assetids;
-            }
-
-            // 获取类型
-            var className: string = object[CLASS_KEY];
-            // 处理普通Object
-            if (className == "Object" || className == null)
-            {
-                for (var key in object)
+                var keys = Object.keys(object);
+                keys.forEach(k =>
                 {
-                    if (key != CLASS_KEY) this.getAssets(object[key], assetids);
-                }
-                return assetids;
-            }
-            //处理方法
-            if (className == "function") return assetids;
-
-            var cls = classUtils.getDefinitionByName(className);
-            if (!cls)
-            {
-                console.warn(`无法序列号对象 ${className}`);
-                return assetids;
-            }
-            var target = new cls();
-            // 处理资源
-            if (target instanceof AssetData && object.assetId != undefined)
-            {
-                assetids.push(object.assetId);
-                return assetids;
+                    this.getAssetsWithObject(object[k], assetids);
+                });
             }
             return assetids;
         }
@@ -361,27 +338,15 @@ namespace feng3d
          */
         deserializeWithAssets(object: any, callback: (result: any) => void)
         {
-            //
-            var className: string = object[CLASS_KEY];
-            var assetId = object.assetId;
-            debuger && console.assert(className != undefined && assetId != undefined);
-            // 获取资源类定义
-            var cls = classUtils.getDefinitionByName(className);
-            if (!cls)
-            {
-                console.warn(`无法序列号对象 ${className}`);
-                return;
-            }
-            // 创建资源数据实例
-            var assetData = new cls();
-            debuger && console.assert(assetData instanceof AssetData);
             // 获取所包含的资源列表
-            var assetids = this.getAssets(object);
+            var assetids = this.getAssetsWithObject(object);
             // 不需要加载本资源，移除自身资源
-            assetids.delete(assetId);
+            assetids.delete(object.assetId);
             // 加载包含的资源数据
             this.readAssetDatas(assetids, (err, result) =>
             {
+                // 创建资源数据实例
+                var assetData = classUtils.getInstanceByName(object[CLASS_KEY]);
                 //默认反序列
                 serialization.setValue(assetData, object);
                 callback(assetData);
