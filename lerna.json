@@ -1,8 +1,0 @@
-{
-  "packages": [
-    "bundles/*",
-    "packages/*",
-    "tools/*"
-  ],
-  "version": "0.1.4"
-}
