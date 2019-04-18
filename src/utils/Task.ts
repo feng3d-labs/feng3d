@@ -6,11 +6,6 @@ namespace feng3d
     export var task: Task;
 
     /**
-     * 用于临时存放函数执行结果，获取结果后会自动清除
-     */
-    var tempResutProperty = "__result__";
-
-    /**
      * 任务函数
      */
     export interface TaskFunction
@@ -114,12 +109,13 @@ namespace feng3d
          */
         parallelResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void)
         {
+            var map = new Map();
             // 包装函数
             var fns = ps.map(p => (callback: () => void) =>
             {
                 fn(p, r =>
                 {
-                    (<any>p)[tempResutProperty] = r;
+                    map.set(p, r);
                     callback();
                 });
             });
@@ -127,10 +123,9 @@ namespace feng3d
             {
                 var results = ps.map(p =>
                 {
-                    var r = (<any>p)[tempResutProperty];
-                    delete (<any>p)[tempResutProperty];
-                    return r;
+                    return map.get(p);
                 });
+                map.clear();
                 done(results);
             });
         }
@@ -144,12 +139,13 @@ namespace feng3d
          */
         seriesResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void)
         {
+            var map = new Map();
             // 包装函数
             var fns = ps.map(p => (callback: () => void) =>
             {
                 fn(p, r =>
                 {
-                    (<any>p)[tempResutProperty] = r;
+                    map.set(p, r);
                     callback();
                 });
             });
@@ -157,10 +153,9 @@ namespace feng3d
             {
                 var results = ps.map(p =>
                 {
-                    var r = (<any>p)[tempResutProperty];
-                    delete (<any>p)[tempResutProperty];
-                    return r;
+                    return map.get(p);
                 });
+                map.clear();
                 done(results);
             });
         }
