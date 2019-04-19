@@ -8,11 +8,10 @@ namespace feng3d
      */
     export class ScriptComponent extends Behaviour
     {
-
         runEnvironment = RunEnvironment.feng3d;
 
         @serialize
-        @watch("scriptChanged")
+        @watch("invalidateScriptInstance")
         @oav({ component: "OAVPick", componentParam: { accepttype: "file_script" } })
         scriptName: string;
 
@@ -20,43 +19,52 @@ namespace feng3d
          * 脚本对象
          */
         @serialize
-        scriptInstance: Script;
+        get scriptInstance()
+        {
+            if (this._invalid) this.updateScriptInstance();
+            return this._scriptInstance;
+        }
+        private _scriptInstance: Script;
+
+        private _invalid = true;
 
         private scriptInit = false;
 
         init(gameObject: GameObject)
         {
             super.init(gameObject);
-            feng3d.dispatcher.on("asset.scriptChanged", this.onScriptChanged, this);
+            feng3d.dispatcher.on("asset.scriptChanged", this.invalidateScriptInstance, this);
         }
 
-        private scriptChanged(property, oldValue: Script, newValue: Script)
+        private updateScriptInstance()
         {
-            if (this.scriptInstance)
-            {
-                this.scriptInstance.component = null;
-                this.scriptInstance.dispose();
-                this.scriptInstance = null;
-            }
+            var oldInstance = this._scriptInstance;
+            this._scriptInstance = null;
             if (!this.scriptName) return;
 
             var cls = classUtils.getDefinitionByName(this.scriptName, false);
-            if (cls)
-                this.scriptInstance = new cls();
-            else
-                console.warn(`无法初始化脚本 ${this.scriptName}`);
+
+            if (cls) this._scriptInstance = new cls();
+            else console.warn(`无法初始化脚本 ${this.scriptName}`);
 
             this.scriptInit = false;
+
+            // 移除旧实例
+            if (oldInstance)
+            {
+                // 如果两个类定义名称相同，则保留上个对象数据
+                if (classUtils.getQualifiedClassName(oldInstance) == this.scriptName)
+                {
+                    serialization.setValue(this._scriptInstance, oldInstance);
+                }
+                oldInstance.component = null;
+                oldInstance.dispose();
+            }
         }
 
-        private onScriptChanged()
+        private invalidateScriptInstance()
         {
-            var cls = classUtils.getDefinitionByName(this.scriptName, false);
-            if (this.scriptInstance instanceof cls) return;
-
-            var newInstance = new cls();
-            serialization.setValue(newInstance, <any>this.scriptInstance);
-            this.scriptInstance = newInstance;
+            this._invalid = true;
         }
 
         /**
@@ -80,15 +88,15 @@ namespace feng3d
         {
             this.enabled = false;
 
-            if (this.scriptInstance)
+            if (this._scriptInstance)
             {
-                this.scriptInstance.component = null;
-                this.scriptInstance.dispose();
-                this.scriptInstance = null;
+                this._scriptInstance.component = null;
+                this._scriptInstance.dispose();
+                this._scriptInstance = null;
             }
             super.dispose();
 
-            feng3d.dispatcher.off("asset.scriptChanged", this.onScriptChanged, this);
+            feng3d.dispatcher.off("asset.scriptChanged", this.invalidateScriptInstance, this);
         }
     }
 }

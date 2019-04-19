@@ -97,7 +97,12 @@ namespace feng3d
                 return;
             }
             var eventtype = "loaded";
-            event.once(this, eventtype, () => { callback(); });
+            event.once(this, eventtype, () =>
+            {
+                this.isLoaded = true;
+                this.isLoading = false;
+                callback();
+            });
             if (this.isLoading) return;
             this.isLoading = true;
             this.readMeta((err) =>
