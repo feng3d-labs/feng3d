@@ -163,47 +163,6 @@ namespace feng3d
                             different[property] = diff;
                     }
                 }
-
-                // if (Object.isBaseType(propertyValue))
-                // {
-                //     different[property] = this.serialize(propertyValue);
-                //     continue;
-                // }
-                // if (defaultPropertyValue == null)
-                // {
-                //     different[property] = this.serialize(propertyValue);
-                //     continue;
-                // }
-                // if (defaultPropertyValue.constructor != propertyValue.constructor)
-                // {
-                //     different[property] = this.serialize(propertyValue);
-                //     continue;
-                // }
-                // if (propertyValue.constructor == Array)
-                // {
-                //     different[property] = this.serialize(propertyValue);
-                //     continue;
-                // }
-
-                // // this.handleComponentsDeserialize()
-
-                // // 处理序列化组件
-                // // for (let i = 0; i < this.components.length; i++)
-                // // {
-                // //     let component = this.components[i];
-                // //     if (!component.deserialize) continue;
-                // //     var result = component.serialize(target[property]);
-                // //     if (!result) continue;
-
-                // //     return result.result;
-                // // }
-
-                // // 处理资源
-                // if (AssetData.isAssetData(propertyValue))
-                // {
-                //     different[property] = this.serialize(propertyValue);
-                //     continue;
-                // }
             }
             return different;
         }
