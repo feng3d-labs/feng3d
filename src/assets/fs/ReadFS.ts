@@ -19,7 +19,7 @@ namespace feng3d
         /**
          * 文件系统类型
          */
-        readonly type: FSType;
+        get type() { return this.fs.type; }
 
         constructor(fs?: IReadFS)
         {

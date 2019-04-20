@@ -16,11 +16,34 @@ namespace feng3d
         serializeInfo.propertys.push({ property: propertyKey });
     }
 
+    export interface SerializationComponent
+    {
+        /**
+         * 序列化
+         * 
+         * @param target 序列化对象
+         * 
+         * @returns Json对象
+         */
+        serialize(target: any): any
+
+        /**
+         * 反序列化
+         * 
+         * @param object Json的对象
+         * 
+         * @returns 反序列化后的数据
+         */
+        deserialize(object: any): { reulst: any }
+    }
+
     /**
      * 序列化
      */
     export class Serialization
     {
+        components: SerializationComponent[] = [];
+
         /**
          * 序列化对象
          * @param target 被序列化的对象
@@ -82,7 +105,7 @@ namespace feng3d
                 return target["serialize"](object);
 
             //使用默认序列化
-            var defaultInstance = getDefaultInstance(target);
+            var defaultInstance = classUtils.getDefaultInstanceByName(object[CLASS_KEY]);
             this.different(target, defaultInstance, object);
             return object;
         }
@@ -225,6 +248,9 @@ namespace feng3d
                 var result = AssetData.deserialize(object);
                 return result;
             }
+
+
+
             //处理自定义反序列化对象
             if (target["deserialize"])
                 return target["deserialize"](object);
@@ -284,18 +310,23 @@ namespace feng3d
             // 处理同为Object类型
             if (objvalue[CLASS_KEY] == undefined)
             {
-                if (target[property].constructor == Object)
-                {
-                    for (const key in objvalue)
-                    {
-                        this.setPropertyValue(target[property], objvalue, key);
-                    }
-                } else
-                {
-                    this.setValue(target[property], objvalue);
-                }
+                this.setValue(target[property], objvalue);
                 return;
             }
+
+            this.components
+            for (let i = 0; i < this.components.length; i++)
+            {
+                let component = this.components[i];
+                var result = component.deserialize(objvalue);
+                if (result)
+                {
+                    target[property] = result.reulst;
+                    return;
+                }
+            }
+
+
             // 处理资源
             if (target[property] instanceof AssetData)
             {
@@ -329,17 +360,6 @@ namespace feng3d
     interface SerializeInfo
     {
         propertys: { property: string, asset?: boolean }[];
-        default: Object;
-    }
-
-    /**
-     * 获取默认实例
-     */
-    function getDefaultInstance(object: Object)
-    {
-        var serializeInfo: SerializeInfo = getSerializeInfo(object);
-        serializeInfo.default = serializeInfo.default || new (<any>object.constructor)();
-        return serializeInfo.default;
     }
 
     /**

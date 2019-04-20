@@ -6,6 +6,11 @@ namespace feng3d
     export interface IReadFS
     {
         /**
+         * 文件系统类型
+         */
+        type: FSType;
+
+        /**
          * 读取文件为ArrayBuffer
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
