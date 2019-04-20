@@ -183,5 +183,5 @@ namespace feng3d
         static default: TextureCube;
     }
 
-    rs.setDefaultAssetData(TextureCube.default = serialization.setValue(new TextureCube(), { name: "Default-TextureCube", assetId: "Default-TextureCube", hideFlags: HideFlags.NotEditable }));
+    AssetData.addAssetData("Default-TextureCube", TextureCube.default = serialization.setValue(new TextureCube(), { name: "Default-TextureCube", assetId: "Default-TextureCube", hideFlags: HideFlags.NotEditable }));
 }

@@ -138,13 +138,20 @@ namespace feng3d
                     different[property] = this.serialize(target[property]);
                     continue;
                 }
-                // 处理资源
-                if (target[property] instanceof AssetData && target[property].assetId != undefined)
+
+                if (AssetData.isAssetData(target[property]))
                 {
                     var diff0 = <any>{};
                     diff0[CLASS_KEY] = classUtils.getQualifiedClassName(target[property]);
                     diff0.assetId = target[property].assetId;
                     different[property] = diff0;
+                    continue;
+                }
+
+                // 处理资源
+                if (AssetData.isAssetData(target[property]))
+                {
+                    different[property] = AssetData.serialize(target[property]);
                     continue;
                 }
                 var diff = this.different(target[property], defaultInstance[property]);
@@ -170,7 +177,7 @@ namespace feng3d
             if (debuger && object.constructor == Object)
             {
                 let assetids = rs.getAssetsWithObject(object);
-                var assets = assetids.reduce((pv, cv) => { var r = rs.getAssetData(cv); if (r) pv.push(r); return pv; }, []);
+                var assets = assetids.reduce((pv, cv) => { var r = AssetData.getLoadedAssetData(cv); if (r) pv.push(r); return pv; }, []);
                 console.assert(assetids.length == assets.length, `存在资源未加载，请使用 deserializeWithAssets 进行反序列化`)
             }
 
@@ -213,10 +220,9 @@ namespace feng3d
             }
             target = new cls();
             // 处理资源
-            if (target instanceof AssetData && object.assetId != undefined)
+            if (AssetData.isAssetData(object))
             {
-                var result = rs.getAssetData(object.assetId);
-                debuger && console.assert(!!result, `资源 ${object.assetId} 未加载，请使用 ReadRS.deserializeWithAssets 进行序列化包含加载的资源对象。`)
+                var result = AssetData.deserialize(object);
                 return result;
             }
             //处理自定义反序列化对象

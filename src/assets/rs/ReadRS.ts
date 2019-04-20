@@ -181,8 +181,6 @@ namespace feng3d
             return newName;
         }
 
-        private _assetStatus: { [id: string]: { isLoaded: boolean, isLoading: boolean } } = {};
-
         /**
          * 读取文件为资源对象
          * @param id 资源编号
@@ -210,9 +208,10 @@ namespace feng3d
          */
         readAssetData(id: string, callback: (err: Error, data: AssetData) => void)
         {
-            if (defaultAssets[id])
+            var asset = AssetData.getLoadedAssetData(id);
+            if (asset)
             {
-                callback(null, defaultAssets[id]);
+                callback(null, asset);
                 return;
             }
             this.readAsset(id, (err, asset) =>
@@ -264,20 +263,10 @@ namespace feng3d
          */
         getAssetDatasByType<T extends AssetData>(type: Constructor<T>): T[]
         {
-            var defaults = Object.keys(defaultAssets).map(v => defaultAssets[v]);
+            var defaults = AssetData.getAllLoadedAssetDatas();
             var assets = Object.keys(this.idMap).map(v => this.idMap[v].getAssetData());
             assets = defaults.concat(assets);
             return <any>assets.filter(v => v instanceof type);
-        }
-
-        /**
-         * 设置默认资源，该类资源不会保存到文件系统中
-         * 
-         * @param assets 资源
-         */
-        setDefaultAssetData(assetData: AssetData)
-        {
-            defaultAssets[assetData.assetId] = assetData;
         }
 
         /**
@@ -288,16 +277,6 @@ namespace feng3d
         getAsset(assetId: string)
         {
             return this.idMap[assetId];
-        }
-
-        /**
-         * 获取资源数据
-         * 
-         * @param assetId 资源编号
-         */
-        getAssetData(assetId: string)
-        {
-            return defaultAssets[assetId] || (this.idMap[assetId] && this.idMap[assetId].getAssetData());
         }
 
         /**
@@ -354,10 +333,5 @@ namespace feng3d
             });
         }
     }
-
-    /**
-     * 默认资源数据，该类资源不会保存到文件系统中
-     */
-    var defaultAssets: { [id: string]: AssetData } = {};
     rs = new ReadRS();
 }

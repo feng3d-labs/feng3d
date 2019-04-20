@@ -520,5 +520,5 @@ namespace feng3d
         }
     }
 
-    rs.setDefaultAssetData(Geometry.cube = serialization.setValue(new CubeGeometry(), { name: "Cube", assetId: "Cube", hideFlags: HideFlags.NotEditable }));
+    AssetData.addAssetData("Cube", Geometry.cube = serialization.setValue(new CubeGeometry(), { name: "Cube", assetId: "Cube", hideFlags: HideFlags.NotEditable }));
 }

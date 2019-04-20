@@ -161,7 +161,7 @@ namespace feng3d
         static defaultParticle: Texture2D;
     }
 
-    rs.setDefaultAssetData(Texture2D.default = serialization.setValue(new Texture2D(), { name: "Default-Texture", assetId: "Default-Texture", hideFlags: HideFlags.NotEditable }));
-    rs.setDefaultAssetData(Texture2D.defaultNormal = serialization.setValue(new Texture2D(), { name: "Default-NormalTexture", assetId: "Default-NormalTexture", noPixels: ImageDatas.defaultNormal, hideFlags: HideFlags.NotEditable }));
-    rs.setDefaultAssetData(Texture2D.defaultParticle = serialization.setValue(new Texture2D(), { name: "Default-ParticleTexture", assetId: "Default-ParticleTexture", noPixels: ImageDatas.defaultParticle, format: TextureFormat.RGBA, hideFlags: HideFlags.NotEditable }));
+    AssetData.addAssetData("Default-Texture", Texture2D.default = serialization.setValue(new Texture2D(), { name: "Default-Texture", assetId: "Default-Texture", hideFlags: HideFlags.NotEditable }));
+    AssetData.addAssetData("Default-NormalTexture", Texture2D.defaultNormal = serialization.setValue(new Texture2D(), { name: "Default-NormalTexture", assetId: "Default-NormalTexture", noPixels: ImageDatas.defaultNormal, hideFlags: HideFlags.NotEditable }));
+    AssetData.addAssetData("Default-ParticleTexture", Texture2D.defaultParticle = serialization.setValue(new Texture2D(), { name: "Default-ParticleTexture", assetId: "Default-ParticleTexture", noPixels: ImageDatas.defaultParticle, format: TextureFormat.RGBA, hideFlags: HideFlags.NotEditable }));
 }

@@ -11,14 +11,14 @@ namespace feng3d
          * 材质
          */
         @oav({ component: "OAVObjectView" })
-        $data: TextureCube;
+        data: TextureCube;
 
         assetType = AssetType.texturecube;
 
         createData()
         {
-            this.$data = new TextureCube();
-            this.$data.assetId = this.assetId;
+            this.data = new TextureCube();
+            this.data.assetId = this.assetId;
         }
     }
 }

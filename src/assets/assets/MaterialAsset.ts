@@ -11,14 +11,14 @@ namespace feng3d
          * 材质
          */
         @oav({ component: "OAVObjectView" })
-        $data: Material;
+        data: Material;
 
         assetType = AssetType.material;
 
         createData()
         {
-            this.$data = new Material();
-            this.$data.assetId = this.assetId;
+            this.data = new Material();
+            this.data.assetId = this.assetId;
         }
     }
 }

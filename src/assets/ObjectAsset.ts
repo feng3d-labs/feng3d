@@ -10,12 +10,12 @@ namespace feng3d
          */
         @oav({ component: "OAVObjectView" })
         @watch("_dataChanged")
-        $data: AssetData;
+        data: AssetData;
 
         saveFile(callback?: (err: Error) => void)
         {
-            this.$data.assetId = this.assetId;
-            var d = serialization.serialize(this.$data);
+            this.data.assetId = this.assetId;
+            var d = serialization.serialize(this.data);
             this.rs.fs.writeObject(this.assetPath, d, (err) =>
             {
                 callback && callback(err);
@@ -33,8 +33,8 @@ namespace feng3d
             {
                 this.rs.deserializeWithAssets(object, (data: AssetData) =>
                 {
-                    this.$data = data;
-                    debuger && console.assert(this.$data.assetId == this.assetId);
+                    this.data = data;
+                    debuger && console.assert(this.data.assetId == this.assetId);
                     callback && callback(err);
                 });
             });

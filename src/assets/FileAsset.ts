@@ -77,7 +77,7 @@ namespace feng3d
         /**
          * 资源对象
          */
-        protected $data: AssetData;
+        data: AssetData;
 
         /**
          * 创建资源对象
@@ -115,7 +115,7 @@ namespace feng3d
          */
         protected _getAssetData(): AssetData
         {
-            return this.$data;
+            return this.data;
         }
 
         /**
@@ -199,9 +199,8 @@ namespace feng3d
                         this.parentAsset = null;
                     }
                     // 删除映射
-                    delete this.rs.idMap[this.assetId];
-                    delete this.rs.pathMap[this.assetPath];
-
+                    delete rs.idMap[this.assetId];
+                    delete rs.pathMap[this.assetPath];
                     callback && callback();
                 });
             });
@@ -341,4 +340,5 @@ namespace feng3d
             return "assetIcons/" + this.assetId + ".png";
         }
     }
+
 }

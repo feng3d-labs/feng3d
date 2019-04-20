@@ -233,5 +233,5 @@ namespace feng3d
 		}
 	}
 
-	rs.setDefaultAssetData(Geometry.torus = serialization.setValue(new TorusGeometry(), { name: "Torus", assetId: "Torus", hideFlags: HideFlags.NotEditable }));
+	AssetData.addAssetData("Torus", Geometry.torus = serialization.setValue(new TorusGeometry(), { name: "Torus", assetId: "Torus", hideFlags: HideFlags.NotEditable }));
 }

@@ -45,5 +45,111 @@ namespace feng3d
          * 资源类型，由具体对象类型决定
          */
         assetType: AssetType;
+
+        /**
+         * 新增资源数据
+         * 
+         * @param assetId 资源编号
+         * @param data 资源数据
+         */
+        static addAssetData(assetId: string, data: AssetData)
+        {
+            this.assetMap.set(data, assetId);
+            this.idAssetMap.set(assetId, data);
+        }
+
+        /**
+         * 删除资源数据
+         * 
+         * @param data 资源数据
+         */
+        static deleteAssetData(data: AssetData)
+        {
+            debuger && console.assert(this.assetMap.has(data));
+            var assetId = this.assetMap.get(data);
+            this._delete(assetId, data);
+        }
+
+        static deleteAssetDataById(assetId: string)
+        {
+            debuger && console.assert(this.idAssetMap.has(assetId));
+            var data = this.idAssetMap.get(assetId);
+            this._delete(assetId, data);
+        }
+
+        private static _delete(assetId, data: any)
+        {
+            this.assetMap.delete(data);
+            this.idAssetMap.delete(assetId);
+        }
+
+        /**
+         * 判断是否为资源数据
+         * 
+         * @param asset 可能的资源数据
+         */
+        static isAssetData(asset: any)
+        {
+            return asset.assetId != undefined
+
+            // return FileAsset.assetMap.has(asset);
+        }
+
+        /**
+         * 资源属性标记名称
+         */
+        private static assetPropertySign = "assetId";
+
+        /**
+         * 序列化
+         * 
+         * @param asset 资源数据
+         */
+        static serialize(asset: AssetData)
+        {
+            var diff0 = <any>{};
+            diff0[CLASS_KEY] = classUtils.getQualifiedClassName(asset);
+            diff0.assetId = asset.assetId;
+        }
+
+        /**
+         * 反序列化
+         * 
+         * @param object 资源对象
+         */
+        static deserialize(object: any)
+        {
+            var result = this.getLoadedAssetData(object.assetId);
+            debuger && console.assert(!!result, `资源 ${object.assetId} 未加载，请使用 ReadRS.deserializeWithAssets 进行序列化包含加载的资源对象。`)
+            return result;
+        }
+
+        /**
+         * 获取已加载的资源数据
+         * 
+         * @param assetId 资源编号
+         */
+        static getLoadedAssetData(assetId: string)
+        {
+            return this.idAssetMap.get(assetId);
+        }
+
+        /**
+         * 获取所有已加载资源数据
+         */
+        static getAllLoadedAssetDatas()
+        {
+            return this.assetMap.getKeys();
+        }
+
+        /**
+         * 资源与编号对应表
+         */
+        static assetMap = new Map<AssetData, string>();
+
+        /**
+         * 编号与资源对应表
+         */
+        static idAssetMap = new Map<string, AssetData>();
     }
 }
