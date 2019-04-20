@@ -12,9 +12,9 @@ namespace feng3d
         /**
          * 基础文件系统
          */
-        get basefs() { return this._fs || httpfs; }
-        set basefs(v) { this._fs = v; }
-        protected _fs: IReadFS;
+        get fs() { return this._fs || basefs; }
+        set fs(v) { this._fs = v; }
+        private _fs: IReadFS;
 
         /**
          * 文件系统类型
@@ -23,7 +23,7 @@ namespace feng3d
 
         constructor(fs?: IReadFS)
         {
-            this._fs = fs;
+            this.fs = fs;
         }
 
         /**
@@ -33,7 +33,7 @@ namespace feng3d
          */
         readArrayBuffer(path: string, callback: (err: Error, arraybuffer: ArrayBuffer) => void)
         {
-            this._fs.readArrayBuffer(path, callback);
+            this.fs.readArrayBuffer(path, callback);
         }
 
         /**
@@ -43,7 +43,7 @@ namespace feng3d
          */
         readString(path: string, callback: (err: Error, str: string) => void)
         {
-            this._fs.readString(path, callback);
+            this.fs.readString(path, callback);
         }
 
         /**
@@ -53,7 +53,7 @@ namespace feng3d
          */
         readObject(path: string, callback: (err: Error, object: Object) => void)
         {
-            this._fs.readObject(path, callback);
+            this.fs.readObject(path, callback);
         }
 
         /**
@@ -75,7 +75,7 @@ namespace feng3d
             if (this._state[eventtype]) return;
             this._state[eventtype] = true;
             //
-            this._fs.readImage(path, (err, img) =>
+            this.fs.readImage(path, (err, img) =>
             {
                 delete this._state[eventtype];
                 this._images[path] = img;
@@ -89,7 +89,7 @@ namespace feng3d
          */
         getAbsolutePath(path: string)
         {
-            return this._fs.getAbsolutePath(path);
+            return this.fs.getAbsolutePath(path);
         }
 
         /**
@@ -113,6 +113,5 @@ namespace feng3d
 
         private _state: { [eventtype: string]: true } = {};
     }
-
     fs = new ReadFS();
 }

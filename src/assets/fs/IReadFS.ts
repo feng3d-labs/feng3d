@@ -36,4 +36,8 @@ namespace feng3d
         getAbsolutePath(path: string): string;
     }
 
+    /**
+     * 默认基础文件系统
+     */
+    export var basefs: IReadFS;
 }

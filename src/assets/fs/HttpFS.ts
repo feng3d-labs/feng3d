@@ -1,6 +1,5 @@
 namespace feng3d
 {
-    export var httpfs: HttpFS;
     /**
      * Http可读文件系统
      */
@@ -114,5 +113,5 @@ namespace feng3d
         }
     }
 
-    httpfs = new HttpFS();
+    basefs = new HttpFS();
 }

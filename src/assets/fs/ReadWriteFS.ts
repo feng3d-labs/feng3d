@@ -5,16 +5,16 @@ namespace feng3d
      * 
      * 扩展基础可读写文件系统
      */
-    export class ReadWriteFS extends ReadFS implements IReadWriteFS
+    export class ReadWriteFS extends ReadFS
     {
         /**
          * 项目名称（表单名称）
          */
         projectname: string;
 
-        protected _fs: IReadWriteFS;
+        fs: IReadWriteFS;
 
-        constructor(fs: IReadWriteFS)
+        constructor(fs?: IReadWriteFS)
         {
             super(fs);
         }
@@ -26,7 +26,7 @@ namespace feng3d
          */
         exists(path: string, callback: (exists: boolean) => void)
         {
-            this._fs.exists(path, callback);
+            this.fs.exists(path, callback);
         }
 
         /**
@@ -36,7 +36,7 @@ namespace feng3d
          */
         readdir(path: string, callback: (err: Error, files: string[]) => void)
         {
-            this._fs.readdir(path, callback);
+            this.fs.readdir(path, callback);
         }
 
         /**
@@ -46,7 +46,7 @@ namespace feng3d
          */
         mkdir(path: string, callback?: (err: Error) => void)
         {
-            this._fs.mkdir(path, callback);
+            this.fs.mkdir(path, callback);
         }
 
         /**
@@ -56,7 +56,7 @@ namespace feng3d
          */
         deleteFile(path: string, callback?: (err: Error) => void)
         {
-            this._fs.deleteFile(path, callback);
+            this.fs.deleteFile(path, callback);
         }
 
         /**
@@ -67,7 +67,7 @@ namespace feng3d
          */
         writeArrayBuffer(path: string, arraybuffer: ArrayBuffer, callback?: (err: Error) => void)
         {
-            this._fs.writeArrayBuffer(path, arraybuffer, callback);
+            this.fs.writeArrayBuffer(path, arraybuffer, callback);
         }
 
         /**
@@ -78,7 +78,7 @@ namespace feng3d
          */
         writeString(path: string, str: string, callback?: (err: Error) => void)
         {
-            this._fs.writeString(path, str, callback);
+            this.fs.writeString(path, str, callback);
         }
 
         /**
@@ -89,7 +89,7 @@ namespace feng3d
          */
         writeObject(path: string, object: Object, callback?: (err: Error) => void)
         {
-            this._fs.writeObject(path, object, callback);
+            this.fs.writeObject(path, object, callback);
         }
 
         /**
@@ -100,7 +100,7 @@ namespace feng3d
          */
         writeImage(path: string, image: HTMLImageElement, callback?: (err: Error) => void)
         {
-            this._fs.writeImage(path, image);
+            this.fs.writeImage(path, image);
         }
 
         /**
@@ -111,7 +111,7 @@ namespace feng3d
          */
         copyFile(src: string, dest: string, callback?: (err: Error) => void)
         {
-            this._fs.copyFile(src, dest, callback);
+            this.fs.copyFile(src, dest, callback);
         }
 
         /**
@@ -122,7 +122,7 @@ namespace feng3d
          */
         isDirectory(path: string, callback: (result: boolean) => void)
         {
-            this._fs.isDirectory(path, callback);
+            this.fs.isDirectory(path, callback);
         }
 
         /**
@@ -132,7 +132,7 @@ namespace feng3d
          */
         initproject(projectname: string, callback: (err: Error) => void)
         {
-            this._fs.initproject(projectname, callback);
+            this.fs.initproject(projectname, callback);
         }
 
         /**
@@ -142,7 +142,7 @@ namespace feng3d
          */
         hasProject(projectname: string, callback: (has: boolean) => void)
         {
-            this._fs.hasProject(projectname, callback);
+            this.fs.hasProject(projectname, callback);
         }
 
         /**

@@ -90,9 +90,9 @@ namespace feng3d
          */
         static isAssetData(asset: any)
         {
-            return asset.assetId != undefined
-
-            // return FileAsset.assetMap.has(asset);
+            if (asset.assetId == undefined) return false;
+            if (classUtils.getDefaultInstanceByName(asset[CLASS_KEY]) instanceof AssetData) return true;
+            return false;
         }
 
         /**
