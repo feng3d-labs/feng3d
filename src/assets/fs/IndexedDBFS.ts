@@ -13,7 +13,7 @@ namespace feng3d
     /**
      * 索引数据文件系统
      */
-    export class IndexedDBFS extends ReadWriteFS
+    export class IndexedDBFS implements IReadWriteFS
     {
         get type()
         {
@@ -32,7 +32,6 @@ namespace feng3d
 
         constructor(DBname = "feng3d-editor", projectname = "testproject")
         {
-            super();
             this.DBname = DBname;
             this.projectname = projectname;
         }
@@ -138,8 +137,6 @@ namespace feng3d
          */
         readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
         {
-            if (this._images[path]) return this._images[path];
-
             this.readArrayBuffer(path, (err, data) =>
             {
                 if (err)
@@ -149,7 +146,6 @@ namespace feng3d
                 }
                 dataTransform.arrayBufferToImage(data, (img) =>
                 {
-                    this._images[path] = img;
                     callback(null, img);
                 });
             });
@@ -199,7 +195,7 @@ namespace feng3d
          */
         readdir(path: string, callback: (err: Error, files: string[]) => void): void
         {
-            this.getAllPaths((err, allfilepaths) =>
+            _indexedDB.getAllKeys(this.DBname, this.projectname, (err, allfilepaths) =>
             {
                 if (!allfilepaths)
                 {
@@ -319,23 +315,6 @@ namespace feng3d
                     return;
                 }
                 _indexedDB.objectStorePut(this.DBname, this.projectname, dest, data, callback);
-            });
-        }
-
-        /**
-         * 获取所有文件路径
-         * @param callback 回调函数
-         */
-        getAllPaths(callback: (err: Error, allPaths: string[]) => void)
-        {
-            _indexedDB.getAllKeys(this.DBname, this.projectname, (err, allPaths) =>
-            {
-                if (err)
-                {
-                    callback(err, allPaths);
-                    return;
-                }
-                callback(err, allPaths);
             });
         }
 

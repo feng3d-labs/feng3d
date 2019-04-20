@@ -5,40 +5,59 @@ namespace feng3d
      * 
      * 扩展基础可读写文件系统
      */
-    export abstract class ReadWriteFS extends ReadFS
+    export class ReadWriteFS extends ReadFS implements IReadWriteFS
     {
         /**
          * 项目名称（表单名称）
          */
         projectname: string;
 
+        protected _fs: IReadWriteFS;
+
+        constructor(fs: IReadWriteFS)
+        {
+            super(fs);
+        }
+
         /**
          * 文件是否存在
          * @param path 文件路径
          * @param callback 回调函数
          */
-        abstract exists(path: string, callback: (exists: boolean) => void): void;
+        exists(path: string, callback: (exists: boolean) => void)
+        {
+            this._fs.exists(path, callback);
+        }
 
         /**
          * 读取文件夹中文件列表
          * @param path 路径
          * @param callback 回调函数
          */
-        abstract readdir(path: string, callback: (err: Error, files: string[]) => void): void;
+        readdir(path: string, callback: (err: Error, files: string[]) => void)
+        {
+            this._fs.readdir(path, callback);
+        }
 
         /**
          * 新建文件夹
          * @param path 文件夹路径
          * @param callback 回调函数
          */
-        abstract mkdir(path: string, callback?: (err: Error) => void): void;
+        mkdir(path: string, callback?: (err: Error) => void)
+        {
+            this._fs.mkdir(path, callback);
+        }
 
         /**
          * 删除文件
          * @param path 文件路径
          * @param callback 回调函数
          */
-        abstract deleteFile(path: string, callback?: (err: Error) => void): void;
+        deleteFile(path: string, callback?: (err: Error) => void)
+        {
+            this._fs.deleteFile(path, callback);
+        }
 
         /**
          * 写ArrayBuffer(新建)文件
@@ -46,7 +65,10 @@ namespace feng3d
          * @param arraybuffer 文件数据
          * @param callback 回调函数
          */
-        abstract writeArrayBuffer(path: string, arraybuffer: ArrayBuffer, callback?: (err: Error) => void): void;
+        writeArrayBuffer(path: string, arraybuffer: ArrayBuffer, callback?: (err: Error) => void)
+        {
+            this._fs.writeArrayBuffer(path, arraybuffer, callback);
+        }
 
         /**
          * 写字符串到(新建)文件
@@ -54,7 +76,10 @@ namespace feng3d
          * @param str 文件数据
          * @param callback 回调函数
          */
-        abstract writeString(path: string, str: string, callback?: (err: Error) => void): void;
+        writeString(path: string, str: string, callback?: (err: Error) => void)
+        {
+            this._fs.writeString(path, str, callback);
+        }
 
         /**
          * 写Object到(新建)文件
@@ -62,7 +87,10 @@ namespace feng3d
          * @param object 文件数据
          * @param callback 回调函数
          */
-        abstract writeObject(path: string, object: Object, callback?: (err: Error) => void): void;
+        writeObject(path: string, object: Object, callback?: (err: Error) => void)
+        {
+            this._fs.writeObject(path, object, callback);
+        }
 
         /**
          * 写图片
@@ -70,7 +98,10 @@ namespace feng3d
          * @param image 图片
          * @param callback 回调函数
          */
-        abstract writeImage(path: string, image: HTMLImageElement, callback?: (err: Error) => void): void;
+        writeImage(path: string, image: HTMLImageElement, callback?: (err: Error) => void)
+        {
+            this._fs.writeImage(path, image);
+        }
 
         /**
          * 复制文件
@@ -78,7 +109,10 @@ namespace feng3d
          * @param dest    目标路径
          * @param callback 回调函数
          */
-        abstract copyFile(src: string, dest: string, callback?: (err: Error) => void): void
+        copyFile(src: string, dest: string, callback?: (err: Error) => void)
+        {
+            this._fs.copyFile(src, dest, callback);
+        }
 
         /**
          * 是否为文件夹
@@ -86,35 +120,35 @@ namespace feng3d
          * @param path 文件路径
          * @param callback 完成回调
          */
-        abstract isDirectory(path: string, callback: (result: boolean) => void): void;
+        isDirectory(path: string, callback: (result: boolean) => void)
+        {
+            this._fs.isDirectory(path, callback);
+        }
 
         /**
          * 初始化项目
          * @param projectname 项目名称
          * @param callback 回调函数
          */
-        abstract initproject(projectname: string, callback: (err: Error) => void): void;
+        initproject(projectname: string, callback: (err: Error) => void)
+        {
+            this._fs.initproject(projectname, callback);
+        }
 
         /**
          * 是否存在指定项目
          * @param projectname 项目名称
          * @param callback 回调函数
          */
-        abstract hasProject(projectname: string, callback: (has: boolean) => void): void;
-
-        /**
-         * 获取所有文件路径
-         * @param callback 回调函数
-         */
-        getAllPaths(callback: (err: Error, allPaths: string[]) => void)
+        hasProject(projectname: string, callback: (has: boolean) => void)
         {
-            this.getAllfilepathInFolder("", callback);
+            this._fs.hasProject(projectname, callback);
         }
 
         /**
          * 获取指定文件下所有文件路径列表
          */
-        getAllfilepathInFolder(dirpath: string, callback: (err: Error, filepaths: string[]) => void): void
+        getAllPathsInFolder(dirpath = "", callback: (err: Error, filepaths: string[]) => void): void
         {
             var dirs = [dirpath];
             var result = [];
@@ -262,7 +296,7 @@ namespace feng3d
             {
                 if (result)
                 {
-                    this.getAllfilepathInFolder(oldPath, (err, filepaths) =>
+                    this.getAllPathsInFolder(oldPath, (err, filepaths) =>
                     {
                         if (err)
                         {
@@ -306,7 +340,7 @@ namespace feng3d
             {
                 if (result)
                 {
-                    this.getAllfilepathInFolder(path, (err, filepaths) =>
+                    this.getAllPathsInFolder(path, (err, filepaths) =>
                     {
                         if (err)
                         {

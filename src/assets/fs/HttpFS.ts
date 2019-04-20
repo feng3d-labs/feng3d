@@ -1,5 +1,6 @@
 namespace feng3d
 {
+    export var httpfs: HttpFS;
     /**
      * Http可读文件系统
      */
@@ -112,4 +113,6 @@ namespace feng3d
             return this.rootPath + path;
         }
     }
+
+    httpfs = new HttpFS();
 }

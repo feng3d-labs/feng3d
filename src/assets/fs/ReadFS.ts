@@ -9,14 +9,19 @@ namespace feng3d
      */
     export class ReadFS
     {
-        private _fs: IReadFS;
+        /**
+         * 基础文件系统
+         */
+        get basefs() { return this._fs || httpfs; }
+        set basefs(v) { this._fs = v; }
+        protected _fs: IReadFS;
 
         /**
          * 文件系统类型
          */
         readonly type: FSType;
 
-        constructor(fs: IReadFS = new HttpFS())
+        constructor(fs?: IReadFS)
         {
             this._fs = fs;
         }
@@ -108,7 +113,6 @@ namespace feng3d
 
         private _state: { [eventtype: string]: true } = {};
     }
-
 
     fs = new ReadFS();
 }
