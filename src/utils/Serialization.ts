@@ -136,36 +136,39 @@ namespace feng3d
             for (var i = 0; i < serializableMembers.length; i++)
             {
                 var property = serializableMembers[i].property;
-                if (target[property] === defaultInstance[property])
+                let propertyValue = target[property];
+                let defaultPropertyValue = defaultInstance[property];
+                if (propertyValue === defaultPropertyValue)
                     continue;
-                if (Object.isBaseType(target[property]))
+                if (Object.isBaseType(propertyValue))
                 {
-                    different[property] = target[property];
-                    continue;
-                }
-                if (defaultInstance[property] == null)
-                {
-                    different[property] = this.serialize(target[property]);
+                    different[property] = propertyValue;
                     continue;
                 }
-                if (defaultInstance[property].constructor != target[property].constructor)
+                if (defaultPropertyValue == null)
                 {
-                    different[property] = this.serialize(target[property]);
+                    different[property] = this.serialize(propertyValue);
                     continue;
                 }
-                if (target[property].constructor == Array)
+                if (defaultPropertyValue.constructor != propertyValue.constructor)
                 {
-                    if (target[property].length == 0)
+                    different[property] = this.serialize(propertyValue);
+                    continue;
+                }
+                if (propertyValue.constructor == Array)
+                {
+                    if (propertyValue.length == 0)
                     {
-                        if (defaultInstance[property].length == 0)
+                        if (defaultPropertyValue.length == 0)
                             continue;
                         different[property] = [];
                         continue;
                     }
-                    different[property] = this.serialize(target[property]);
+                    different[property] = this.serialize(propertyValue);
                     continue;
                 }
 
+                // this.handleComponentsDeserialize()
 
                 // 处理序列化组件
                 // for (let i = 0; i < this.components.length; i++)
@@ -179,12 +182,12 @@ namespace feng3d
                 // }
 
                 // 处理资源
-                if (AssetData.isAssetData(target[property]))
+                if (AssetData.isAssetData(propertyValue))
                 {
-                    different[property] = AssetData.serialize(target[property]);
+                    different[property] = AssetData.serialize(propertyValue);
                     continue;
                 }
-                var diff = this.different(target[property], defaultInstance[property]);
+                var diff = this.different(propertyValue, defaultPropertyValue);
                 if (Object.keys(diff).length > 0)
                     different[property] = diff;
             }
@@ -276,8 +279,7 @@ namespace feng3d
                 if (!component.deserialize) continue;
                 var result = component.deserialize(object);
                 if (!result) continue;
-
-                return result.result;
+                return result;
             }
             return null;
         }
