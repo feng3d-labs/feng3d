@@ -7,46 +7,85 @@ namespace feng3d
     /**
      * 可读文件系统
      */
-    export abstract class ReadFS
+    export class ReadFS
     {
+        private _fs: IReadFS;
+
         /**
          * 文件系统类型
          */
         readonly type: FSType;
+
+        constructor(fs: IReadFS = new HttpFS())
+        {
+            this._fs = fs;
+        }
 
         /**
          * 读取文件为ArrayBuffer
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        abstract readArrayBuffer(path: string, callback: (err: Error, arraybuffer: ArrayBuffer) => void): void;
+        readArrayBuffer(path: string, callback: (err: Error, arraybuffer: ArrayBuffer) => void)
+        {
+            this._fs.readArrayBuffer(path, callback);
+        }
 
         /**
          * 读取文件为字符串
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        abstract readString(path: string, callback: (err: Error, str: string) => void): void;
+        readString(path: string, callback: (err: Error, str: string) => void)
+        {
+            this._fs.readString(path, callback);
+        }
 
         /**
          * 读取文件为Object
          * @param path 路径
          * @param callback 读取完成回调 当err不为null时表示读取失败
          */
-        abstract readObject(path: string, callback: (err: Error, object: Object) => void): void;
+        readObject(path: string, callback: (err: Error, object: Object) => void)
+        {
+            this._fs.readObject(path, callback);
+        }
 
         /**
          * 加载图片
          * @param path 图片路径
          * @param callback 加载完成回调
          */
-        abstract readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void): void;
+        readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
+        {
+            var image = this._images[path];
+            if (image)
+            {
+                callback(null, image);
+                return;
+            }
+            var eventtype = `${arguments.callee.name} ${path}`;
+            event.once(this, eventtype, () => { this.readImage(path, callback); })
+
+            if (this._state[eventtype]) return;
+            this._state[eventtype] = true;
+            //
+            this._fs.readImage(path, (err, img) =>
+            {
+                delete this._state[eventtype];
+                this._images[path] = img;
+                event.dispatch(this, eventtype);
+            });
+        }
 
         /**
          * 获取文件绝对路径
          * @param path （相对）路径
          */
-        abstract getAbsolutePath(path: string): string;
+        getAbsolutePath(path: string)
+        {
+            return this._fs.getAbsolutePath(path);
+        }
 
         /**
          * 读取文件列表为字符串列表
@@ -65,15 +104,11 @@ namespace feng3d
             }, callback);
         }
 
-        /**
-         * 获取已经加载的图片，如果未加载则返回null
-         * 
-         * @param path 图片路径
-         */
-        getImage(path: string)
-        {
-            return this._images[path];
-        }
         protected _images: { [path: string]: HTMLImageElement } = {};
+
+        private _state: { [eventtype: string]: true } = {};
     }
+
+
+    fs = new ReadFS();
 }

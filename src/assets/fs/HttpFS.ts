@@ -3,21 +3,17 @@ namespace feng3d
     /**
      * Http可读文件系统
      */
-    export class HttpFS extends ReadFS
+    export class HttpFS implements IReadFS
     {
         /**
          * 根路径
          */
         rootPath = "";
 
-        get type()
-        {
-            return FSType.http;
-        }
+        type = FSType.http;
 
         constructor(rootPath = "")
         {
-            super();
             this.rootPath = rootPath;
             if (this.rootPath == "")
             {
@@ -94,12 +90,9 @@ namespace feng3d
          */
         readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
         {
-            if (this._images[path]) return this._images[path];
-
             var img = new Image();
             img.onload = () =>
             {
-                this._images[path] = img;
                 callback(null, img);
             };
             img.onerror = (evt) =>
@@ -119,6 +112,4 @@ namespace feng3d
             return this.rootPath + path;
         }
     }
-
-    fs = new HttpFS();
 }

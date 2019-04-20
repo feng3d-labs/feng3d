@@ -117,6 +117,7 @@
         "src/assets/fs/base/load.ts",
         "src/assets/fs/base/_IndexedDB.ts",
         "src/assets/fs/FSType.ts",
+        "src/assets/fs/IReadFS.ts",
         "src/assets/fs/ReadFS.ts",
         "src/assets/fs/ReadWriteFS.ts",
         "src/assets/AssetMeta.ts",
