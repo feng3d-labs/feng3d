@@ -17,7 +17,8 @@ namespace feng3d
 
         createData()
         {
-            throw `未实现`;
+            this.data = new GameObject();
+            this.data.assetId = this.assetId;
         }
     }
 }

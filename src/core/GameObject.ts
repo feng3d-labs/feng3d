@@ -66,6 +66,12 @@ namespace feng3d
         assetType = AssetType.gameobject;
 
         /**
+         * 预设资源编号
+         */
+        @serialize
+        prefabId: string;
+
+        /**
          * 资源编号
          */
         @serialize
@@ -269,9 +275,11 @@ namespace feng3d
             } else
             {
                 if (child.contains(this))
-                    throw "无法添加到自身中!";
-                if (child._parent)
-                    child._parent.removeChild(child);
+                {
+                    console.error("无法添加到自身中!");
+                    return;
+                }
+                if (child._parent) child._parent.removeChild(child);
                 child._setParent(this);
                 this._children.push(child);
                 this.dispatch("addChild", child, true);
@@ -298,8 +306,7 @@ namespace feng3d
          */
         remove()
         {
-            if (this.parent)
-                this.parent.removeChild(this);
+            if (this.parent) this.parent.removeChild(this);
         }
 
         /**
@@ -309,12 +316,9 @@ namespace feng3d
          */
         removeChild(child: GameObject)
         {
-            if (child == null)
-                throw new Error("Parameter child cannot be null").message;
+            if (child == null) return;
             var childIndex = this._children.indexOf(child);
-            if (childIndex == -1)
-                throw new Error("Parameter is not a child of the caller").message;
-            this.removeChildInternal(childIndex, child);
+            if (childIndex != -1) this.removeChildInternal(childIndex, child);
         }
 
         /**
