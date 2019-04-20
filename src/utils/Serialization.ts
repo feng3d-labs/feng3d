@@ -19,13 +19,17 @@ namespace feng3d
     export interface SerializationComponent
     {
         /**
+         * 名称
+         */
+        name: string;
+        /**
          * 序列化
          * 
          * @param target 序列化对象
          * 
          * @returns Json对象
          */
-        serialize(target: any): any
+        serialize?(target: any): any
 
         /**
          * 反序列化
@@ -34,7 +38,7 @@ namespace feng3d
          * 
          * @returns 反序列化后的数据
          */
-        deserialize(object: any): { reulst: any }
+        deserialize?(object: any): { result: any }
     }
 
     /**
@@ -162,14 +166,17 @@ namespace feng3d
                     continue;
                 }
 
-                if (AssetData.isAssetData(target[property]))
-                {
-                    var diff0 = <any>{};
-                    diff0[CLASS_KEY] = classUtils.getQualifiedClassName(target[property]);
-                    diff0.assetId = target[property].assetId;
-                    different[property] = diff0;
-                    continue;
-                }
+
+                // 处理序列化组件
+                // for (let i = 0; i < this.components.length; i++)
+                // {
+                //     let component = this.components[i];
+                //     if (!component.deserialize) continue;
+                //     var result = component.serialize(target[property]);
+                //     if (!result) continue;
+
+                //     return result.result;
+                // }
 
                 // 处理资源
                 if (AssetData.isAssetData(target[property]))
@@ -242,14 +249,9 @@ namespace feng3d
                 return undefined;
             }
             target = new cls();
-            // 处理资源
-            if (AssetData.isAssetData(object))
-            {
-                var result = AssetData.deserialize(object);
-                return result;
-            }
 
-
+            let result = this.handleComponentsDeserialize(object);
+            if (result) return result.result;
 
             //处理自定义反序列化对象
             if (target["deserialize"])
@@ -258,6 +260,26 @@ namespace feng3d
             //默认反序列
             this.setValue(target, object);
             return target;
+        }
+
+        /**
+         * 处理组件反序列化
+         * 
+         * @returns 序列化是否返回null，否则返回 包含结果的 {result:any} 对象
+         */
+        private handleComponentsDeserialize(object: any): { result: any }
+        {
+            // 处理序列化组件
+            for (let i = 0; i < this.components.length; i++)
+            {
+                let component = this.components[i];
+                if (!component.deserialize) continue;
+                var result = component.deserialize(object);
+                if (!result) continue;
+
+                return result.result;
+            }
+            return null;
         }
 
         /**
@@ -313,19 +335,6 @@ namespace feng3d
                 this.setValue(target[property], objvalue);
                 return;
             }
-
-            this.components
-            for (let i = 0; i < this.components.length; i++)
-            {
-                let component = this.components[i];
-                var result = component.deserialize(objvalue);
-                if (result)
-                {
-                    target[property] = result.reulst;
-                    return;
-                }
-            }
-
 
             // 处理资源
             if (target[property] instanceof AssetData)
@@ -412,6 +421,23 @@ namespace feng3d
     }
 
     serialization = new Serialization();
+
+    serialization.components.push(
+        {
+            name: "资源序列化",
+
+            deserialize: function (object: any)
+            {
+                // 处理资源
+                if (AssetData.isAssetData(object))
+                {
+                    var result = AssetData.deserialize(object);
+                    return { result: result };
+                }
+                return null;
+            }
+        }
+    );
 }
 
 // [Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach(element =>

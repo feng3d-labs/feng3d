@@ -107,9 +107,10 @@ namespace feng3d
          */
         static serialize(asset: AssetData)
         {
-            var diff0 = <any>{};
-            diff0[CLASS_KEY] = classUtils.getQualifiedClassName(asset);
-            diff0.assetId = asset.assetId;
+            var obj = <any>{};
+            obj[CLASS_KEY] = classUtils.getQualifiedClassName(asset);
+            obj.assetId = asset.assetId;
+            return obj;
         }
 
         /**
