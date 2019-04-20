@@ -4,7 +4,7 @@ namespace feng3d
     {
         getAssetData(callback?: (result: GameObject) => void): GameObject;
     }
-    
+
     /**
      * 游戏对象资源
      */
@@ -24,6 +24,8 @@ namespace feng3d
         {
             this.data = new GameObject();
             this.data.assetId = this.assetId;
+
+            AssetData.addAssetData(this.assetId, this.data);
         }
 
         protected _getAssetData()

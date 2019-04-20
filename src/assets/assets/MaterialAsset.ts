@@ -19,6 +19,8 @@ namespace feng3d
         {
             this.data = new Material();
             this.data.assetId = this.assetId;
+            
+            AssetData.addAssetData(this.assetId, this.data);
         }
     }
 }
