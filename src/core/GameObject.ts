@@ -310,6 +310,17 @@ namespace feng3d
         }
 
         /**
+         * 移除所有子对象
+         */
+        removeChildren()
+        {
+            for (let i = this.numChildren - 1; i >= 0; i--)
+            {
+                this.removeChildAt(i);
+            }
+        }
+
+        /**
          * 移除子对象
          * 
          * @param child 子对象

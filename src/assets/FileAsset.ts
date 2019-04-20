@@ -77,12 +77,46 @@ namespace feng3d
         /**
          * 资源对象
          */
-        data: AssetData;
+        protected $data: AssetData;
 
         /**
          * 创建资源对象
          */
-        abstract createData(): void;
+        createData()
+        {
+        }
+
+        /**
+         * 获取资源数据
+         * 
+         * @param callback 完成回调，当资源已加载时会立即调用回调，否则在资源加载完成后调用。
+         */
+        getAssetData(callback?: (result: feng3d.AssetData) => void)
+        {
+            if (!this.isLoaded)
+            {
+                if (callback)
+                {
+                    this.read(err =>
+                    {
+                        debuger && console.assert(!err);
+                        this.getAssetData(callback);
+                    });
+                }
+                return null;
+            }
+            var assetData = this._getAssetData();
+            callback && callback(assetData);
+            return assetData;
+        }
+
+        /**
+         * 资源已加载时获取资源数据，内部使用
+         */
+        protected _getAssetData(): AssetData
+        {
+            return this.$data;
+        }
 
         /**
          * 读取资源

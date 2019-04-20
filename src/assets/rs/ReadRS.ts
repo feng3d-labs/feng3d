@@ -217,7 +217,7 @@ namespace feng3d
             }
             this.readAsset(id, (err, asset) =>
             {
-                callback(err, asset && asset.data);
+                callback(err, asset && asset.getAssetData());
             });
         }
 
@@ -234,6 +234,7 @@ namespace feng3d
             {
                 rs.readAssetData(v, (err, data) =>
                 {
+                    debuger && console.assert(!!data);
                     result.push(data);
                     callback();
                 });
@@ -264,7 +265,7 @@ namespace feng3d
         getAssetDatasByType<T extends AssetData>(type: Constructor<T>): T[]
         {
             var defaults = Object.keys(defaultAssets).map(v => defaultAssets[v]);
-            var assets = Object.keys(this.idMap).map(v => this.idMap[v].data);
+            var assets = Object.keys(this.idMap).map(v => this.idMap[v].getAssetData());
             assets = defaults.concat(assets);
             return <any>assets.filter(v => v instanceof type);
         }
@@ -296,7 +297,7 @@ namespace feng3d
          */
         getAssetData(assetId: string)
         {
-            return defaultAssets[assetId] || (this.idMap[assetId] && this.idMap[assetId].data);
+            return defaultAssets[assetId] || (this.idMap[assetId] && this.idMap[assetId].getAssetData());
         }
 
         /**

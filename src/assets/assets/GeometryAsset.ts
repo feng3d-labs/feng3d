@@ -11,13 +11,8 @@ namespace feng3d
          * 几何体
          */
         @oav({ component: "OAVObjectView" })
-        data: Geometry;
+        $data: Geometry;
 
         assetType = AssetType.geometry;
-
-        createData()
-        {
-            throw `未实现`;
-        }
     }
 }
