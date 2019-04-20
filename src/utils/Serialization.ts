@@ -53,7 +53,7 @@ namespace feng3d
          * @param target 被序列化的对象
          * @returns 序列化后可以转换为Json的数据对象 
          */
-        serialize(target, saveFlags = HideFlags.DontSave)
+        serialize(target)
         {
             //基础类型
             if (Object.isBaseType(target))
@@ -63,7 +63,7 @@ namespace feng3d
             if (target.hasOwnProperty("serializable") && !target["serializable"])
                 return undefined;
 
-            if (target instanceof Feng3dObject && !!(target.hideFlags & saveFlags))
+            if (target instanceof Feng3dObject && !!(target.hideFlags & HideFlags.DontSave))
                 return undefined;
 
             //处理数组
@@ -100,6 +100,13 @@ namespace feng3d
             {
                 object[CLASS_KEY] = "function";
                 object.data = target.toString();
+                return object;
+            }
+
+            // 处理资源
+            if (AssetData.isAssetData(target))
+            {
+                object = AssetData.serialize(target);
                 return object;
             }
 
@@ -140,56 +147,63 @@ namespace feng3d
                 let defaultPropertyValue = defaultInstance[property];
                 if (propertyValue === defaultPropertyValue)
                     continue;
-                if (Object.isBaseType(propertyValue))
-                {
-                    different[property] = propertyValue;
-                    continue;
-                }
-                if (defaultPropertyValue == null)
+
+                if (defaultPropertyValue == null || Object.isBaseType(propertyValue) || Array.isArray(propertyValue) || defaultPropertyValue.constructor != propertyValue.constructor)
                 {
                     different[property] = this.serialize(propertyValue);
-                    continue;
-                }
-                if (defaultPropertyValue.constructor != propertyValue.constructor)
+                } else
                 {
-                    different[property] = this.serialize(propertyValue);
-                    continue;
-                }
-                if (propertyValue.constructor == Array)
-                {
-                    if (propertyValue.length == 0)
+                    if (AssetData.isAssetData(propertyValue))
                     {
-                        if (defaultPropertyValue.length == 0)
-                            continue;
-                        different[property] = [];
-                        continue;
+                        different[property] = this.serialize(propertyValue);
+                    } else
+                    {
+                        var diff = this.different(propertyValue, defaultPropertyValue);
+                        if (Object.keys(diff).length > 0)
+                            different[property] = diff;
                     }
-                    different[property] = this.serialize(propertyValue);
-                    continue;
                 }
 
-                // this.handleComponentsDeserialize()
-
-                // 处理序列化组件
-                // for (let i = 0; i < this.components.length; i++)
+                // if (Object.isBaseType(propertyValue))
                 // {
-                //     let component = this.components[i];
-                //     if (!component.deserialize) continue;
-                //     var result = component.serialize(target[property]);
-                //     if (!result) continue;
-
-                //     return result.result;
+                //     different[property] = this.serialize(propertyValue);
+                //     continue;
+                // }
+                // if (defaultPropertyValue == null)
+                // {
+                //     different[property] = this.serialize(propertyValue);
+                //     continue;
+                // }
+                // if (defaultPropertyValue.constructor != propertyValue.constructor)
+                // {
+                //     different[property] = this.serialize(propertyValue);
+                //     continue;
+                // }
+                // if (propertyValue.constructor == Array)
+                // {
+                //     different[property] = this.serialize(propertyValue);
+                //     continue;
                 // }
 
-                // 处理资源
-                if (AssetData.isAssetData(propertyValue))
-                {
-                    different[property] = AssetData.serialize(propertyValue);
-                    continue;
-                }
-                var diff = this.different(propertyValue, defaultPropertyValue);
-                if (Object.keys(diff).length > 0)
-                    different[property] = diff;
+                // // this.handleComponentsDeserialize()
+
+                // // 处理序列化组件
+                // // for (let i = 0; i < this.components.length; i++)
+                // // {
+                // //     let component = this.components[i];
+                // //     if (!component.deserialize) continue;
+                // //     var result = component.serialize(target[property]);
+                // //     if (!result) continue;
+
+                // //     return result.result;
+                // // }
+
+                // // 处理资源
+                // if (AssetData.isAssetData(propertyValue))
+                // {
+                //     different[property] = this.serialize(propertyValue);
+                //     continue;
+                // }
             }
             return different;
         }
