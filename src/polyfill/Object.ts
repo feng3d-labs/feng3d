@@ -1,3 +1,19 @@
+/**
+ * Object.assignDeep 中 转换结果的函数定义
+ */
+interface AssignDeepReplacer
+{
+    /**
+     * 
+     * @param target 目标对象
+     * @param source 源数据
+     * @param key 属性名称
+     * @param replacers 转换函数
+     * @param deep 当前深度
+     */
+    (target: any, source: any, key: string, replacers: AssignDeepReplacer[], deep: number): boolean;
+}
+
 interface ObjectConstructor
 {
     /**
@@ -41,10 +57,10 @@ interface ObjectConstructor
      * 
      * @param target 被赋值对象
      * @param source 源数据
-     * @param replacer 转换结果的函数。返回值为true表示该属性赋值已完成跳过默认属性赋值操作，否则执行默认属性赋值操作。
+     * @param replacers 转换结果的函数。返回值为true表示该属性赋值已完成跳过默认属性赋值操作，否则执行默认属性赋值操作。执行在 Object.DefaultAssignDeepReplacers 前。
      * @param deep 赋值深度，deep<1时直接返回。
      */
-    assignDeep<T>(target: T, source: feng3d.gPartial<T>, replacer?: (target: any, source: any, key: string) => boolean, deep?: number): T;
+    assignDeep<T>(target: T, source: feng3d.gPartial<T>, replacers?: AssignDeepReplacer | AssignDeepReplacer[], deep?: number): T;
 
     /**
      * 执行方法
@@ -58,6 +74,11 @@ interface ObjectConstructor
      * @param func 被执行的方法
      */
     runFunc<T>(obj: T, func: (obj: T) => void): T;
+
+    /**
+     * Object.assignDeep 中 默认转换结果的函数列表
+     */
+    DefaultAssignDeepReplacers: AssignDeepReplacer[];
 }
 
 Object.isBaseType = function (object: any)
@@ -118,24 +139,48 @@ Object.assignShallow = function (target, source)
     return target;
 }
 
-Object.assignDeep = function (target, source, replacer, deep = Number.MAX_SAFE_INTEGER)
+Object.assignDeep = function (target, source, replacers = [], deep = Number.MAX_SAFE_INTEGER)
 {
     if (source == null) return target;
     if (deep < 1) return target;
     var keys = Object.keys(source);
     keys.forEach(k =>
     {
-        if (replacer && replacer(target, source, k)) return;
         //
-        var spv = source[k];
-        var tpv = target[k];
+        var handles = [].concat(replacers).concat(Object.DefaultAssignDeepReplacers);
+        for (let i = 0; i < handles.length; i++)
+        {
+            if (handles[i](target, source, k, replacers, deep)) 
+            {
+                return;
+            }
+        }
         //
-        if (tpv == spv) return;
-        if (Object.isBaseType(tpv) || Object.isBaseType(spv)) { target[k] = spv; return }
-        //
-        if (Array.isArray(spv) || Object.isObject(spv)) { Object.assignDeep(tpv, spv, replacer, deep - 1); return; }
-        //
-        target[k] = spv;
+        target[k] = source[k];
     });
     return target;
 }
+
+Object.DefaultAssignDeepReplacers = [
+    function (target, source, key, replacers, deep)
+    {
+        if (target[key] == source[key]) return true;
+    },
+    function (target, source, key, replacers, deep)
+    {
+        if (Object.isBaseType(target[key]) || Object.isBaseType(source[key]))
+        {
+            target[key] = source[key];
+            return true
+        }
+    },
+    function (target, source, key, replacers, deep)
+    {
+        if (Array.isArray(source[key]) || Object.isObject(source[key]))
+        {
+            Object.assignDeep(target[key], source[key], replacers, deep - 1);
+            return true
+        }
+    },
+
+];

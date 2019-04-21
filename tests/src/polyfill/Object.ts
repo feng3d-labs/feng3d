@@ -27,11 +27,11 @@ QUnit.module("Object", () =>
 
         var v3 = new feng3d.Vector3();
         var o2 = { a: 1, v2: v20, v3: v3 };
-        Object.assignDeep(o2, { v2: { x: 1, y: 2 }, v3: <any>{ __class__: "feng3d.Vector3", x: 1 } }, (t, s, k) =>
+        Object.assignDeep(o2, { v2: { x: 1, y: 2 }, v3: <any>{ __class__: "feng3d.Vector3", x: 1 } }, (target, source, key, replacers, deep) =>
         {
-            if (Object.isObject(s[k]) && s[k]["__class__"] == "feng3d.Vector3")
+            if (Object.isObject(source[key]) && source[key]["__class__"] == "feng3d.Vector3")
             {
-                t[k] = new feng3d.Vector3();
+                target[key] = new feng3d.Vector3();
             }
             return false;
         });
