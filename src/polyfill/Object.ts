@@ -15,7 +15,7 @@ interface ObjectConstructor
     propertyIsWritable(obj: Object, property: string): boolean;
 
     /**
-     * 判断是否为基础类型 undefined,null,boolean,string,number
+     * 判断是否为基础类型 undefined,null,boolean,string,number,function
      */
     isBaseType(object: any): boolean;
 
@@ -60,9 +60,6 @@ interface ObjectConstructor
     runFunc<T>(obj: T, func: (obj: T) => void): T;
 }
 
-/**
- * 判断是否为基础类型（在序列化中不发生变化的对象）
- */
 Object.isBaseType = function (object: any)
 {
     //基础类型
@@ -72,6 +69,7 @@ Object.isBaseType = function (object: any)
         || typeof object == "boolean"
         || typeof object == "string"
         || typeof object == "number"
+        || typeof object == "function"
     )
         return true;
 }

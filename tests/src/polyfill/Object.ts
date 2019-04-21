@@ -40,5 +40,15 @@ QUnit.module("Object", () =>
         assert.ok(o2.v2.y == 2);
         assert.ok(o2.v3 != v3);
         assert.ok(o2.v3.x == 1);
+
+        // function
+
+        var fo = { f: () => 1 };
+        var o3 = { a: 3, fo: fo };
+        Object.assignDeep(o3, { fo: { f: () => 3 } });
+
+        assert.ok(o3.fo == fo);
+        assert.ok(o3.fo.f() == 3);
+
     });
 });
