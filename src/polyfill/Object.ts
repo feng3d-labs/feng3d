@@ -69,7 +69,6 @@ Object.isBaseType = function (object: any)
         || typeof object == "boolean"
         || typeof object == "string"
         || typeof object == "number"
-        || typeof object == "function"
     )
         return true;
 }
@@ -105,7 +104,7 @@ Object.runFunc = function (obj, func)
 
 Object.isObject = function (obj)
 {
-    return obj != null && ((obj.constructor == Object) || obj.constructor.name);
+    return obj != null && obj.constructor == Object;
 }
 
 Object.assignShallow = function (target, source)

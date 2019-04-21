@@ -382,16 +382,28 @@ namespace feng3d
          */
         mergeGeometry(geometrys: { indices: number[], positions: number[], uvs?: number[], normals?: number[], tangents?: number[] }[])
         {
-            var result = feng3d.serialization.clone(geometrys[0]);
-            for (let i = 1; i < geometrys.length; i++)
+            // 此处存在隐患。
+            // 优化方案，遍历所有几何体，找到所有共有属性后进行合并。
+            var result: { indices: number[], positions: number[], uvs?: number[], normals?: number[], tangents?: number[] } = <any>{};
+            for (let i = 0; i < geometrys.length; i++)
             {
                 var geometry = geometrys[i];
-                var startIndex = result.positions.length / 3;
-                geometry.indices.forEach(v => result.indices.push(v + startIndex));
-                geometry.positions.forEach(v => result.positions.push(v));
-                result.uvs && geometry.uvs.forEach(v => result.uvs.push(v));
-                result.normals && geometry.normals.forEach(v => result.normals.push(v));
-                result.tangents && geometry.tangents.forEach(v => result.tangents.push(v));
+                if (i == 0)
+                {
+                    result.indices = geometry.indices.concat();
+                    result.positions = geometry.positions.concat();
+                    geometry.uvs && (result.uvs = geometry.uvs.concat());
+                    geometry.normals && (result.normals = geometry.normals.concat());
+                    geometry.tangents && (result.tangents = geometry.tangents.concat());
+                } else
+                {
+                    var startIndex = result.positions.length / 3;
+                    geometry.indices.forEach(v => result.indices.push(v + startIndex));
+                    geometry.positions.forEach(v => result.positions.push(v));
+                    result.uvs && geometry.uvs.forEach(v => result.uvs.push(v));
+                    result.normals && geometry.normals.forEach(v => result.normals.push(v));
+                    result.tangents && geometry.tangents.forEach(v => result.tangents.push(v));
+                }
             }
             return result;
         }

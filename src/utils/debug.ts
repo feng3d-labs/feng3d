@@ -22,6 +22,7 @@ namespace feng3d
             functionwarp.wrap(console, "assert", (test: boolean) => { if (!test) debugger; });
             // 输出错误前进入断点调试
             functionwarp.wrap(console, "error", () => { debugger; });
+            functionwarp.wrap(console, "warn", () => { debugger; });
         }
 
         /**

@@ -23,7 +23,7 @@ QUnit.module("Object", () =>
         var o1 = { a: 1, v2: v20, str: "" };
         var v21 = new feng3d.Vector2();
         Object.assignDeep(o1, { v2: v21, str: "asjdlskj" })
-        assert.ok(o1.v2 == v20);
+        assert.ok(o1.v2 == v21);
 
         var v3 = new feng3d.Vector3();
         var o2 = { a: 1, v2: v20, v3: v3 };

@@ -14,12 +14,7 @@ namespace feng3d
     {
         if (!Object.getOwnPropertyDescriptor(target, SERIALIZE_KEY))
         {
-            Object.defineProperty(target, SERIALIZE_KEY, {
-                value: [],
-                enumerable: false,
-                writable: false,
-                configurable: false
-            });
+            Object.defineProperty(target, SERIALIZE_KEY, { value: [] });
         }
         var serializePropertys: string[] = target[SERIALIZE_KEY];
         serializePropertys.push(propertyKey);
@@ -64,74 +59,65 @@ namespace feng3d
          */
         serialize<T>(target: T): gPartial<T>
         {
+            //处理方法
+            if (typeof target == "function")
+            {
+                let object: any = {};
+                object[CLASS_KEY] = typeof target;
+                object.data = target.toString();
+                return object;
+            }
             //基础类型
-            if (Object.isBaseType(target)) return <any>target;
-
+            if (Object.isBaseType(target))
+                return <any>target;
             // 排除不支持序列化对象
             if (target.hasOwnProperty("serializable") && !target["serializable"])
                 return undefined;
 
             if (target instanceof Feng3dObject && !!(target.hideFlags & HideFlags.DontSave))
                 return undefined;
-
-            //处理数组
-            if (Array.isArray(target))
-            {
-                var arr: any[] = [];
-                for (var i = 0; i < target.length; i++)
-                {
-                    arr[i] = this.serialize(target[i]);
-                }
-                return <any>arr;
-            }
-
-            var object = <any>{};
-
-            //处理普通Object
-            if (target.constructor === Object)
-            {
-                for (var key in target)
-                {
-                    if (target.hasOwnProperty(key))
-                    {
-                        if (target[key] !== undefined)
-                        {
-                            object[key] = this.serialize(target[key]);
-                        }
-                    }
-                }
-                return object;
-            }
-
-            //处理方法
-            if (typeof target == "function")
-            {
-                object[CLASS_KEY] = "function";
-                object.data = target.toString();
-                return object;
-            }
-
             // 处理资源
             if (AssetData.isAssetData(target))
             {
-                object = AssetData.serialize(<any>target);
+                let object = AssetData.serialize(<any>target);
+                return object;
+            }
+            //处理数组
+            if (Array.isArray(target))
+            {
+                let arr = target.map(v => this.serialize(v));
+                return <any>arr;
+            }
+
+            //处理普通Object
+            if (Object.isObject(target))
+            {
+                let object = <any>{};
+                let keys = Object.keys(target);
+                keys.forEach(key =>
+                {
+                    object[key] = this.serialize(target[key]);
+                });
                 return object;
             }
 
-            object[CLASS_KEY] = classUtils.getQualifiedClassName(target);
-
             if (target["serialize"])
-                return target["serialize"](object);
+            {
+                let object = {};
+                object[CLASS_KEY] = classUtils.getQualifiedClassName(target);
+                target["serialize"](object);
+                return object;
+            }
 
             //使用默认序列化
+            let object = {};
+            object[CLASS_KEY] = classUtils.getQualifiedClassName(target);
             var serializableMembers = getSerializableMembers(target);
-            if (target.constructor == Object) serializableMembers = Object.keys(target);
             for (var i = 0; i < serializableMembers.length; i++)
             {
                 var property = serializableMembers[i];
                 object[property] = this.serialize(target[property]);
             }
-
             return object;
         }
 

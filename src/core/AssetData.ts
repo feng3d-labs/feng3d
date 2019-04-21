@@ -88,7 +88,7 @@ namespace feng3d
          * 
          * @param asset 可能的资源数据
          */
-        static isAssetData(asset: any)
+        static isAssetData(asset: any): asset is AssetData
         {
             if (asset.assetId == undefined) return false;
             if (classUtils.getDefaultInstanceByName(asset[CLASS_KEY]) instanceof AssetData) return true;

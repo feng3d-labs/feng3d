@@ -137,10 +137,6 @@ namespace feng3d
     function registerClass(classDefinition: any, className: string): void
     {
         var prototype = classDefinition.prototype;
-        Object.defineProperty(prototype, CLASS_KEY, {
-            value: className,
-            enumerable: false,
-            writable: true
-        });
+        Object.defineProperty(prototype, CLASS_KEY, { value: className });
     }
 }
