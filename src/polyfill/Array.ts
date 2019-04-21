@@ -14,6 +14,55 @@ interface Array<T>
      * @returns 被删除元素在数组中的位置
      */
     delete(item: T): number;
+
+    /**
+     * 连接一个或多个数组到自身
+     * 
+      * @param items 要添加到数组末尾的其他项。
+      * @returns 返回自身
+      */
+    concatToSelf(...items: (T | ConcatArray<T>)[]): this;
+
+    /**
+     * 比较两个数组是否相等
+     * 
+     * @param arr 用于比较的数组
+     */
+    equal(arr: ArrayLike<T>): boolean;
+}
+
+Array.prototype.equal = function (arr: ArrayLike<any>)
+{
+    var self: any[] = this;
+    if (self.length != arr.length) return false;
+
+    for (let i = 0, n = self.length; i < n; i++)
+    {
+        if (self[i] != arr[i]) return false;
+    }
+    return true;
+}
+
+Array.prototype.concatToSelf = function (...items)
+{
+    var self: any[] = this;
+    for (let i = 0; i < items.length; i++)
+    {
+        const element = items[i];
+        if (Array.isArray(element))
+        {
+            var selfLen = self.length;
+            element.forEach((v, i) =>
+            {
+                self[selfLen + i] = v;
+            });
+            self.length = selfLen + element.length;
+        } else
+        {
+            self.push(element);
+        }
+    }
+    return self;
 }
 
 Array.prototype.unique = function (compare = (a, b) => a == b)

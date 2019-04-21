@@ -3223,6 +3223,20 @@ QUnit.module("HighFunction", function () {
         }
     });
 });
+QUnit.module("Array", function () {
+    QUnit.test("equal", function (assert) {
+        assert.ok([1, 2, 3].equal([1, 2, 3]));
+        assert.ok(![{}, 2, 3].equal([{}, 2, 3]));
+        var obj = {};
+        assert.ok([obj, 2, 3].equal([obj, 2, 3]));
+    });
+    QUnit.test("concatToSelf", function (assert) {
+        var arr = [0];
+        arr.concatToSelf(1, 2, 3, [4, 5, 6], 7, 8, 9);
+        var arr1 = Array(10).fill(0).map(function (v, i) { return i; });
+        assert.ok(arr.equal(arr1));
+    });
+});
 // QUnit.module("Path", () =>
 // {
 //     var path = feng3d.path;
@@ -4299,12 +4313,12 @@ console.log("feng3d-tests-0.0.3");
     else if (typeof define === 'function' && define.amd)
         define([], factory);
     else if (typeof exports === 'object')
-        exports["feng3d"] = factory();
+        exports["tests"] = factory();
     else
-        root["feng3d"] = factory();
+        root["tests"] = factory();
     
     var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
-    globalObject["feng3d"] = factory();
+    globalObject["tests"] = factory();
 })(this, function ()
 {
     return feng3d;

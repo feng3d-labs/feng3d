@@ -12,8 +12,17 @@ namespace feng3d
      */
     export function serialize(target: any, propertyKey: string)
     {
-        var serializeInfo = getSerializeInfo(target);
-        serializeInfo.propertys.push({ property: propertyKey });
+        if (!Object.getOwnPropertyDescriptor(target, SERIALIZE_KEY))
+        {
+            Object.defineProperty(target, SERIALIZE_KEY, {
+                value: [],
+                enumerable: false,
+                writable: false,
+                configurable: false
+            });
+        }
+        var serializePropertys: string[] = target[SERIALIZE_KEY];
+        serializePropertys.push(propertyKey);
     }
 
     export interface SerializationComponent
@@ -116,8 +125,14 @@ namespace feng3d
                 return target["serialize"](object);
 
             //使用默认序列化
-            var defaultInstance = classUtils.getDefaultInstanceByName(object[CLASS_KEY]);
-            this.different(target, defaultInstance, object);
+            var serializableMembers = getSerializableMembers(target);
+            if (target.constructor == Object) serializableMembers = Object.keys(target);
+            for (var i = 0; i < serializableMembers.length; i++)
+            {
+                var property = serializableMembers[i];
+                object[property] = this.serialize(target[property]);
+            }
+
             return object;
         }
 
@@ -139,10 +154,10 @@ namespace feng3d
             }
             var serializableMembers = getSerializableMembers(target);
             if (target.constructor == Object)
-                serializableMembers = Object.keys(target).map(v => { return { property: v } });
+                serializableMembers = Object.keys(target);
             for (var i = 0; i < serializableMembers.length; i++)
             {
-                var property = serializableMembers[i].property;
+                var property = serializableMembers[i];
                 let propertyValue = target[property];
                 let defaultPropertyValue = defaultInstance[property];
                 if (propertyValue === defaultPropertyValue)
@@ -341,46 +356,20 @@ namespace feng3d
 
     var SERIALIZE_KEY = "_serialize__";
 
-    interface SerializeInfo
-    {
-        propertys: { property: string, asset?: boolean }[];
-    }
-
-    /**
-     * 获取序列号信息
-     * @param object 对象
-     */
-    function getSerializeInfo(object: Object)
-    {
-        if (!Object.getOwnPropertyDescriptor(object, SERIALIZE_KEY))
-        {
-            Object.defineProperty(object, SERIALIZE_KEY, {
-                /**
-                 * uv数据
-                 */
-                value: { propertys: [] },
-                enumerable: false,
-                configurable: true
-            });
-        }
-        var serializeInfo: SerializeInfo = object[SERIALIZE_KEY];
-        return serializeInfo;
-    }
-
     /**
      * 获取序列化属性列表
      */
-    function getSerializableMembers(object: Object, serializableMembers?: { property: string; asset?: boolean; }[])
+    function getSerializableMembers(object: Object, serializableMembers?: string[])
     {
         serializableMembers = serializableMembers || [];
         if (object["__proto__"])
         {
             getSerializableMembers(object["__proto__"], serializableMembers);
         }
-        var serializeInfo = getSerializeInfo(object);
-        if (serializeInfo)
+        var serializePropertys = object[SERIALIZE_KEY];
+        if (serializePropertys)
         {
-            var propertys = serializeInfo.propertys;
+            var propertys = serializePropertys;
             for (let i = 0, n = propertys.length; i < n; i++)
             {
                 serializableMembers.push(propertys[i]);
