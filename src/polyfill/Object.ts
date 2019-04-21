@@ -27,23 +27,24 @@ interface ObjectConstructor
     isObject(object: any): boolean;
 
     /**
-     * 赋值
+     * 浅赋值
      * 从源数据取所有可枚举属性值赋值给目标对象
      * 
      * @param target 目标对象
      * @param source 源数据
      */
-    setValue<T>(target: T, source: Partial<T>): T;
+    assignShallow<T>(target: T, source: Partial<T>): T;
 
     /**
      * 深度赋值
-     * 从源数据取子代所有可枚举属性值赋值给目标对象
+     * 从源数据取所有子代可枚举属性值赋值给目标对象
      * 
      * @param target 被赋值对象
      * @param source 源数据
      * @param replacer 转换结果的函数。返回值为true表示该属性赋值已完成跳过默认属性赋值操作，否则执行默认属性赋值操作。
+     * @param deep 赋值深度，deep<1时直接返回。
      */
-    setValueDeep<T>(target: T, source: feng3d.gPartial<T>, replacer?: (target: any, source: any, key: string) => boolean): T;
+    assignDeep<T>(target: T, source: feng3d.gPartial<T>, replacer?: (target: any, source: any, key: string) => boolean, deep?: number): T;
 
     /**
      * 执行方法
@@ -58,7 +59,7 @@ interface ObjectConstructor
      */
     runFunc<T>(obj: T, func: (obj: T) => void): T;
 }
-JSON.stringify
+
 /**
  * 判断是否为基础类型（在序列化中不发生变化的对象）
  */
@@ -109,7 +110,7 @@ Object.isObject = function (obj)
     return obj != null && ((obj.constructor == Object) || obj.constructor.name);
 }
 
-Object.setValue = function (target, source)
+Object.assignShallow = function (target, source)
 {
     var keys = Object.keys(source);
     keys.forEach(k =>
@@ -119,8 +120,9 @@ Object.setValue = function (target, source)
     return target;
 }
 
-Object.setValueDeep = function (target, source, replacer)
+Object.assignDeep = function (target, source, replacer, deep = Number.MAX_SAFE_INTEGER)
 {
+    if (deep < 1) return target;
     var keys = Object.keys(source);
     keys.forEach(k =>
     {
@@ -132,7 +134,7 @@ Object.setValueDeep = function (target, source, replacer)
         if (tpv == spv) return;
         if (Object.isBaseType(tpv) || Object.isBaseType(spv)) { target[k] = spv; return }
         //
-        if (Array.isArray(spv) || Object.isObject(spv)) { Object.setValueDeep(tpv, spv); return; }
+        if (Array.isArray(spv) || Object.isObject(spv)) { Object.assignDeep(tpv, spv, replacer, deep - 1); return; }
         //
         target[k] = spv;
     });
