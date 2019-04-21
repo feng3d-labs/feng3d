@@ -109,6 +109,7 @@ Object.isObject = function (obj)
 
 Object.assignShallow = function (target, source)
 {
+    if (source == null) return target;
     var keys = Object.keys(source);
     keys.forEach(k =>
     {
@@ -119,6 +120,7 @@ Object.assignShallow = function (target, source)
 
 Object.assignDeep = function (target, source, replacer, deep = Number.MAX_SAFE_INTEGER)
 {
+    if (source == null) return target;
     if (deep < 1) return target;
     var keys = Object.keys(source);
     keys.forEach(k =>
