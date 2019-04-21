@@ -59,66 +59,88 @@ namespace feng3d
          */
         serialize<T>(target: T): gPartial<T>
         {
+            var result = {};
+            this.serializeProperty(result, { "": target }, "");
+            var v = result[""];
+            return v;
+        }
+
+        private serializeProperty(r: Object, s: Object, k: string | number): void
+        {
+            var spv = s[k];
+
             //处理方法
-            if (typeof target == "function")
+            if (typeof spv == "function")
             {
                 let object: any = {};
-                object[CLASS_KEY] = typeof target;
-                object.data = target.toString();
-                return object;
+                object[CLASS_KEY] = typeof spv;
+                object.data = spv.toString();
+                r[k] = object;
+                return;
             }
             //基础类型
-            if (Object.isBaseType(target))
-                return <any>target;
-            // 排除不支持序列化对象
-            if (target.hasOwnProperty("serializable") && !target["serializable"])
-                return undefined;
-
-            if (target instanceof Feng3dObject && !!(target.hideFlags & HideFlags.DontSave))
-                return undefined;
-            // 处理资源
-            if (AssetData.isAssetData(target))
+            if (Object.isBaseType(spv))
             {
-                let object = AssetData.serialize(<any>target);
-                return object;
+                r[k] = spv;
+                return;
             }
-            //处理数组
-            if (Array.isArray(target))
+            // 排除不支持序列化对象
+            if (spv.hasOwnProperty("serializable") && !spv["serializable"]) return;
+
+            if (spv instanceof Feng3dObject && !!(spv.hideFlags & HideFlags.DontSave)) return;
+
+            // 处理资源
+            if (AssetData.isAssetData(spv))
             {
-                let arr = target.map(v => this.serialize(v));
-                return <any>arr;
+                r[k] = AssetData.serialize(<any>spv);
+                return;
+            }
+
+            if (spv["serialize"])
+            {
+                let object = {};
+                object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
+                spv["serialize"](object);
+                r[k] = object;
+                return;
+            }
+
+            //处理数组
+            if (Array.isArray(spv))
+            {
+                let arr = [];
+                let keys = Object.keys(spv);
+                keys.forEach(v =>
+                {
+                    this.serializeProperty(arr, spv, v);
+                });
+                r[k] = arr;
+                return;
             }
 
             //处理普通Object
-            if (Object.isObject(target))
+            if (Object.isObject(spv))
             {
                 let object = <any>{};
-                let keys = Object.keys(target);
+                let keys = Object.keys(spv);
                 keys.forEach(key =>
                 {
-                    object[key] = this.serialize(target[key]);
+                    this.serializeProperty(object, spv, key);
                 });
-                return object;
-            }
-
-            if (target["serialize"])
-            {
-                let object = {};
-                object[CLASS_KEY] = classUtils.getQualifiedClassName(target);
-                target["serialize"](object);
-                return object;
+                r[k] = object;
+                return;
             }
 
             //使用默认序列化
             let object = {};
-            object[CLASS_KEY] = classUtils.getQualifiedClassName(target);
-            var serializableMembers = getSerializableMembers(target);
-            for (var i = 0; i < serializableMembers.length; i++)
+            object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
+            var keys = getSerializableMembers(spv);
+            keys.forEach(v =>
             {
-                var property = serializableMembers[i];
-                object[property] = this.serialize(target[property]);
-            }
-            return object;
+                this.serializeProperty(object, spv, v);
+            });
+            r[k] = object;
+            return;
         }
 
         /**
