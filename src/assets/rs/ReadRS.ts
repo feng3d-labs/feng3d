@@ -63,11 +63,11 @@ namespace feng3d
             if (this._status.isiniting) return;
             this._status.isiniting = true;
 
-            this.fs.readObject(this.resources, (err, object: Object) =>
+            this.fs.readObject(this.resources, (err, object) =>
             {
                 if (object)
                 {
-                    var data: FolderAsset = serialization.deserialize(object);
+                    var data: FolderAsset = <any>serialization.deserialize(object);
 
                     this._root = data;
                     //

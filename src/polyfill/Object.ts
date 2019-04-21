@@ -20,6 +20,32 @@ interface ObjectConstructor
     isBaseType(object: any): boolean;
 
     /**
+     * 判断是否为Object对象，构造函数是否为Object， 检测 object.constructor == Object
+     * 
+     * @param object 用于判断的对象
+     */
+    isObject(object: any): boolean;
+
+    /**
+     * 赋值
+     * 从源数据取所有可枚举属性值赋值给目标对象
+     * 
+     * @param target 目标对象
+     * @param source 源数据
+     */
+    setValue<T>(target: T, source: Partial<T>): T;
+
+    /**
+     * 深度赋值
+     * 从源数据取子代所有可枚举属性值赋值给目标对象
+     * 
+     * @param target 被赋值对象
+     * @param source 源数据
+     * @param replacer 转换结果的函数。返回值为true表示该属性赋值已完成跳过默认属性赋值操作，否则执行默认属性赋值操作。
+     */
+    setValueDeep<T>(target: T, source: feng3d.gPartial<T>, replacer?: (target: any, source: any, key: string) => boolean): T;
+
+    /**
      * 执行方法
      * 
      * 用例：
@@ -32,7 +58,7 @@ interface ObjectConstructor
      */
     runFunc<T>(obj: T, func: (obj: T) => void): T;
 }
-
+JSON.stringify
 /**
  * 判断是否为基础类型（在序列化中不发生变化的对象）
  */
@@ -76,4 +102,39 @@ Object.runFunc = function (obj, func)
 {
     func(obj);
     return obj;
+}
+
+Object.isObject = function (obj)
+{
+    return obj != null && ((obj.constructor == Object) || obj.constructor.name);
+}
+
+Object.setValue = function (target, source)
+{
+    var keys = Object.keys(source);
+    keys.forEach(k =>
+    {
+        target[k] = source[k];
+    });
+    return target;
+}
+
+Object.setValueDeep = function (target, source, replacer)
+{
+    var keys = Object.keys(source);
+    keys.forEach(k =>
+    {
+        if (replacer && replacer(target, source, k)) return;
+        //
+        var spv = source[k];
+        var tpv = target[k];
+        //
+        if (tpv == spv) return;
+        if (Object.isBaseType(tpv) || Object.isBaseType(spv)) { target[k] = spv; return }
+        //
+        if (Array.isArray(spv) || Object.isObject(spv)) { Object.setValueDeep(tpv, spv); return; }
+        //
+        target[k] = spv;
+    });
+    return target;
 }

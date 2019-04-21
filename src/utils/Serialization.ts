@@ -62,11 +62,10 @@ namespace feng3d
          * @param target 被序列化的对象
          * @returns 序列化后可以转换为Json的数据对象 
          */
-        serialize(target)
+        serialize<T>(target: T): gPartial<T>
         {
             //基础类型
-            if (Object.isBaseType(target))
-                return target;
+            if (Object.isBaseType(target)) return <any>target;
 
             // 排除不支持序列化对象
             if (target.hasOwnProperty("serializable") && !target["serializable"])
@@ -76,14 +75,14 @@ namespace feng3d
                 return undefined;
 
             //处理数组
-            if (target.constructor === Array)
+            if (Array.isArray(target))
             {
                 var arr: any[] = [];
                 for (var i = 0; i < target.length; i++)
                 {
                     arr[i] = this.serialize(target[i]);
                 }
-                return arr;
+                return <any>arr;
             }
 
             var object = <any>{};
@@ -115,7 +114,7 @@ namespace feng3d
             // 处理资源
             if (AssetData.isAssetData(target))
             {
-                object = AssetData.serialize(target);
+                object = AssetData.serialize(<any>target);
                 return object;
             }
 
@@ -143,7 +142,7 @@ namespace feng3d
          * @param different 比较得出的不同（简单结构）数据
          * @returns 比较得出的不同（简单结构）数据
          */
-        different(target: Object, defaultInstance: Object, different?: Object)
+        different<T>(target: T, defaultInstance: T, different?: gPartial<T>)
         {
             different = different || {};
             if (target == defaultInstance) return different;
@@ -190,34 +189,33 @@ namespace feng3d
          * @param object 换为Json的对象
          * @returns 反序列化后的数据
          */
-        deserialize(object)
+        deserialize<T>(object: gPartial<T>): T
         {
             //基础类型
-            if (Object.isBaseType(object)) return object;
+            if (Object.isBaseType(object)) return <any>object;
 
-            if (debuger && object.constructor == Object)
+            if (debuger && Object.isObject(object))
             {
                 let assetids = rs.getAssetsWithObject(object);
                 var assets = assetids.reduce((pv, cv) => { var r = AssetData.getLoadedAssetData(cv); if (r) pv.push(r); return pv; }, []);
                 console.assert(assetids.length == assets.length, `存在资源未加载，请使用 deserializeWithAssets 进行反序列化`)
             }
-
             //处理数组
             if (Array.isArray(object))
             {
                 var arr = object.map(v => this.deserialize(v));
-                return arr;
+                return <any>arr;
             }
-            if (object.constructor != Object)
+            if (!Object.isObject(object))
             {
-                return object;
+                return <any>object;
             }
             // 获取类型
             var className: string = object[CLASS_KEY];
             // 处理普通Object
             if (className == "Object" || className == null)
             {
-                var target = {};
+                var target: T = <any>{};
                 for (var key in object)
                 {
                     if (key != CLASS_KEY) target[key] = this.deserialize(object[key]);
@@ -229,7 +227,7 @@ namespace feng3d
             if (className == "function")
             {
                 var f;
-                eval("f=" + object.data);
+                eval("f=" + (<any>object).data);
                 return f;
             }
 
@@ -275,17 +273,17 @@ namespace feng3d
         /**
          * 从数据对象中提取数据给目标对象赋值
          * @param target 目标对象
-         * @param object 数据对象
+         * @param source 数据对象
          */
-        setValue<T>(target: T, object: gPartial<T>)
+        setValue<T>(target: T, source: gPartial<T>)
         {
-            if (!object) return target;
+            if (!source) return target;
 
-            for (const property in object)
+            for (const property in source)
             {
-                if (object.hasOwnProperty(property))
+                if (source.hasOwnProperty(property))
                 {
-                    this.setPropertyValue(target, object, property);
+                    this.setPropertyValue(target, source, property);
                 }
             }
             return target;
@@ -293,52 +291,58 @@ namespace feng3d
 
         /**
          * 给目标对象的指定属性赋值
+         * 
          * @param target 目标对象
-         * @param object 数据对象
+         * @param source 数据对象
          * @param property 属性名称
          */
-        private setPropertyValue<T>(target: T, object: gPartial<T>, property: string)
+        private setPropertyValue<T>(target: T, source: gPartial<T>, property: string)
         {
-            if (target[property] == object[property])
-                return;
+            var sourcePropertyValue = source[property];
+            var targetPropertyValue = target[property];
 
-            var objvalue = object[property];
+            if (target[property] == source[property]) return;
+
+            this.deserialize(sourcePropertyValue);
+
             // 当原值等于null时直接反序列化赋值
             if (target[property] == null)
             {
-                target[property] = this.deserialize(objvalue);
+                target[property] = this.deserialize(sourcePropertyValue);
                 return;
             }
-            if (Object.isBaseType(objvalue))
+            if (Object.isBaseType(sourcePropertyValue))
             {
-                target[property] = objvalue;
+                target[property] = this.deserialize(sourcePropertyValue);
                 return;
             }
-            if (objvalue.constructor == Array)
+            if (sourcePropertyValue.constructor == Array)
             {
-                target[property] = this.deserialize(objvalue);
+                target[property] = this.deserialize(sourcePropertyValue);
                 return;
             }
+            // if(objvalue)
+
             // 处理同为Object类型
-            if (objvalue[CLASS_KEY] == undefined)
+            if (sourcePropertyValue[CLASS_KEY] == undefined)
             {
-                this.setValue(target[property], objvalue);
+                this.setValue(target[property], sourcePropertyValue);
                 return;
             }
 
             // 处理资源
             if (target[property] instanceof AssetData)
             {
-                target[property] = this.deserialize(objvalue);
+                target[property] = this.deserialize(sourcePropertyValue);
                 return;
             }
             var targetClassName = classUtils.getQualifiedClassName(target[property]);
-            if (targetClassName == objvalue[CLASS_KEY])
+            if (targetClassName == sourcePropertyValue[CLASS_KEY])
             {
-                this.setValue(target[property], objvalue);
+                this.setValue(target[property], sourcePropertyValue);
             } else
             {
-                target[property] = this.deserialize(objvalue);
+                target[property] = this.deserialize(sourcePropertyValue);
             }
         }
 
@@ -367,14 +371,8 @@ namespace feng3d
             getSerializableMembers(object["__proto__"], serializableMembers);
         }
         var serializePropertys = object[SERIALIZE_KEY];
-        if (serializePropertys)
-        {
-            var propertys = serializePropertys;
-            for (let i = 0, n = propertys.length; i < n; i++)
-            {
-                serializableMembers.push(propertys[i]);
-            }
-        }
+        if (serializePropertys) serializableMembers.concatToSelf(serializePropertys)
+        serializableMembers.unique();
         return serializableMembers;
     }
 

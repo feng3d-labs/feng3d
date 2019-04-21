@@ -1,4 +1,3 @@
-"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -3235,6 +3234,39 @@ QUnit.module("Array", function () {
         arr.concatToSelf(1, 2, 3, [4, 5, 6], 7, 8, 9);
         var arr1 = Array(10).fill(0).map(function (v, i) { return i; });
         assert.ok(arr.equal(arr1));
+    });
+});
+QUnit.module("Object", function () {
+    QUnit.test("setValue", function (assert) {
+        var o = { a: 1, b: 2 };
+        Object.setValue(o, { a: 1 });
+        assert.ok(o.a == 1);
+        var o1 = { a: 1, v2: new feng3d.Vector2() };
+        var v2 = new feng3d.Vector2();
+        Object.setValue(o1, { v2: v2 });
+        assert.ok(o1.v2 == v2);
+    });
+    QUnit.test("setValueDeep", function (assert) {
+        var o = { a: 1, b: 2 };
+        Object.setValueDeep(o, { a: 1 });
+        assert.ok(o.a == 1);
+        var v20 = new feng3d.Vector2();
+        var o1 = { a: 1, v2: v20, str: "" };
+        var v21 = new feng3d.Vector2();
+        Object.setValueDeep(o1, { v2: v21, str: "asjdlskj" });
+        assert.ok(o1.v2 == v20);
+        var v3 = new feng3d.Vector3();
+        var o2 = { a: 1, v2: v20, v3: v3 };
+        Object.setValueDeep(o2, { v2: { x: 1, y: 2 }, v3: { __class__: "feng3d.Vector3", x: 1 } }, function (t, s, k) {
+            if (Object.isObject(s[k]) && s[k]["__class__"] == "feng3d.Vector3") {
+                t[k] = new feng3d.Vector3();
+            }
+            return false;
+        });
+        assert.ok(o2.v2 == v20);
+        assert.ok(o2.v2.y == 2);
+        assert.ok(o2.v3 != v3);
+        assert.ok(o2.v3.x == 1);
     });
 });
 // QUnit.module("Path", () =>

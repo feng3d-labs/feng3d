@@ -4,7 +4,7 @@
         "noImplicitAny": false,
         "sourceMap": true,
         // "declaration": true,
-        "strict": true,
+        // "strict": true,
         "experimentalDecorators": true,
         "lib": [
             "es2015",
