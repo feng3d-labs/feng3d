@@ -267,20 +267,6 @@ namespace feng3d
     serialization = new Serialization();
 
     serialization.serializeReplacers = [
-        //处理方法
-        function (target, source, property)
-        {
-            var spv = source[property];
-            if (typeof spv == "function")
-            {
-                let object: any = {};
-                object[CLASS_KEY] = "function";
-                object.data = spv.toString();
-                target[property] = object;
-                return true;
-            }
-            return false;
-        },
         //基础类型
         function (target, source, property)
         {
@@ -288,6 +274,20 @@ namespace feng3d
             if (Object.isBaseType(spv))
             {
                 target[property] = spv;
+                return true;
+            }
+            return false;
+        },
+        //处理方法
+        function (target, source, property)
+        {
+            var spv = source[property];
+            if (spv && typeof spv == "function")
+            {
+                let object: any = {};
+                object[CLASS_KEY] = "function";
+                object.data = spv.toString();
+                target[property] = object;
                 return true;
             }
             return false;
@@ -327,7 +327,7 @@ namespace feng3d
         function (target, source, property)
         {
             var spv = source[property];
-            if (spv["serialize"])
+            if (spv && spv["serialize"])
             {
                 let object = {};
                 object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
@@ -388,17 +388,6 @@ namespace feng3d
     ];
 
     serialization.deserializeReplacers = [
-        //处理方法
-        function (target, source, property)
-        {
-            var spv = source[property];
-            if (spv[CLASS_KEY] == "function")
-            {
-                target[property] = eval(`(${spv.data})`);
-                return true;
-            }
-            return false;
-        },
         //基础类型
         function (target, source, property)
         {
@@ -406,6 +395,17 @@ namespace feng3d
             if (Object.isBaseType(spv))
             {
                 target[property] = spv;
+                return true;
+            }
+            return false;
+        },
+        //处理方法
+        function (target, source, property)
+        {
+            var spv = source[property];
+            if (spv && spv[CLASS_KEY] == "function")
+            {
+                target[property] = eval(`(${spv.data})`);
                 return true;
             }
             return false;
@@ -488,6 +488,7 @@ namespace feng3d
                 //默认反序列
                 for (const key in spv)
                 {
+                    if (CLASS_KEY == key) continue;
                     serializeProperty(inst, spv, key, replacers);
                 }
                 target[property] = inst;

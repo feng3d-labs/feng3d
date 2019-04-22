@@ -841,23 +841,23 @@ var feng3d;
     }
     feng3d.serialization = new Serialization();
     feng3d.serialization.serializeReplacers = [
-        //处理方法
-        function (target, source, property) {
-            var spv = source[property];
-            if (typeof spv == "function") {
-                var object = {};
-                object[feng3d.CLASS_KEY] = "function";
-                object.data = spv.toString();
-                target[property] = object;
-                return true;
-            }
-            return false;
-        },
         //基础类型
         function (target, source, property) {
             var spv = source[property];
             if (Object.isBaseType(spv)) {
                 target[property] = spv;
+                return true;
+            }
+            return false;
+        },
+        //处理方法
+        function (target, source, property) {
+            var spv = source[property];
+            if (spv && typeof spv == "function") {
+                var object = {};
+                object[feng3d.CLASS_KEY] = "function";
+                object.data = spv.toString();
+                target[property] = object;
                 return true;
             }
             return false;
@@ -890,7 +890,7 @@ var feng3d;
         // 自定义序列化函数
         function (target, source, property) {
             var spv = source[property];
-            if (spv["serialize"]) {
+            if (spv && spv["serialize"]) {
                 var object = {};
                 object[feng3d.CLASS_KEY] = feng3d.classUtils.getQualifiedClassName(spv);
                 spv["serialize"](object);
@@ -941,20 +941,20 @@ var feng3d;
         },
     ];
     feng3d.serialization.deserializeReplacers = [
-        //处理方法
-        function (target, source, property) {
-            var spv = source[property];
-            if (spv[feng3d.CLASS_KEY] == "function") {
-                target[property] = eval("(" + spv.data + ")");
-                return true;
-            }
-            return false;
-        },
         //基础类型
         function (target, source, property) {
             var spv = source[property];
             if (Object.isBaseType(spv)) {
                 target[property] = spv;
+                return true;
+            }
+            return false;
+        },
+        //处理方法
+        function (target, source, property) {
+            var spv = source[property];
+            if (spv && spv[feng3d.CLASS_KEY] == "function") {
+                target[property] = eval("(" + spv.data + ")");
                 return true;
             }
             return false;
@@ -1022,6 +1022,8 @@ var feng3d;
             if (inst) {
                 //默认反序列
                 for (var key in spv) {
+                    if (feng3d.CLASS_KEY == key)
+                        continue;
                     serializeProperty(inst, spv, key, replacers);
                 }
                 target[property] = inst;
