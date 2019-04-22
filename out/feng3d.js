@@ -660,17 +660,25 @@ var feng3d;
         function Serialization() {
             this.components = [];
             this.serializeReplacers = [
-                function (target, source, key, replacers) {
+                function (target, source, property, replacers) {
                     //处理方法
-                    if (typeof source[key] == "function") {
+                    if (typeof source[property] == "function") {
                         var object = {};
                         object[feng3d.CLASS_KEY] = "function";
-                        object.data = source[key].toString();
-                        target[key] = object;
+                        object.data = source[property].toString();
+                        target[property] = object;
                         return true;
                     }
                     return false;
-                }
+                },
+                function (target, source, property, replacers) {
+                    //基础类型
+                    if (Object.isBaseType(source[property])) {
+                        target[property] = source[property];
+                        return true;
+                    }
+                    return false;
+                },
             ];
         }
         /**
@@ -684,19 +692,14 @@ var feng3d;
             var v = result[""];
             return v;
         };
-        Serialization.prototype.serializeProperty = function (target, source, key, replacers) {
+        Serialization.prototype.serializeProperty = function (target, source, property, replacers) {
             var _this = this;
-            var spv = source[key];
+            var spv = source[property];
             var handles = [].concat(replacers).concat(this.serializeReplacers);
             for (var i = 0; i < handles.length; i++) {
-                if (handles[i] && handles[i](target, source, key, replacers)) {
+                if (handles[i] && handles[i](target, source, property, replacers)) {
                     return;
                 }
-            }
-            //基础类型
-            if (Object.isBaseType(spv)) {
-                target[key] = spv;
-                return;
             }
             // 排除不支持序列化对象
             if (spv.hasOwnProperty("serializable") && !spv["serializable"])
@@ -705,14 +708,14 @@ var feng3d;
                 return;
             // 处理资源
             if (feng3d.AssetData.isAssetData(spv)) {
-                target[key] = feng3d.AssetData.serialize(spv);
+                target[property] = feng3d.AssetData.serialize(spv);
                 return;
             }
             if (spv["serialize"]) {
                 var object_1 = {};
                 object_1[feng3d.CLASS_KEY] = feng3d.classUtils.getQualifiedClassName(spv);
                 spv["serialize"](object_1);
-                target[key] = object_1;
+                target[property] = object_1;
                 return;
             }
             //处理数组
@@ -722,7 +725,7 @@ var feng3d;
                 keys_1.forEach(function (v) {
                     _this.serializeProperty(arr_1, spv, v);
                 });
-                target[key] = arr_1;
+                target[property] = arr_1;
                 return;
             }
             //处理普通Object
@@ -732,7 +735,7 @@ var feng3d;
                 keys_2.forEach(function (key) {
                     _this.serializeProperty(object_2, spv, key);
                 });
-                target[key] = object_2;
+                target[property] = object_2;
                 return;
             }
             //使用默认序列化
@@ -742,7 +745,7 @@ var feng3d;
             keys.forEach(function (v) {
                 _this.serializeProperty(object, spv, v);
             });
-            target[key] = object;
+            target[property] = object;
             return;
         };
         /**

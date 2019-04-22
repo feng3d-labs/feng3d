@@ -31,7 +31,6 @@ namespace feng3d
             {
                 return a + b;
             }
-
             var result = serialization.serialize(add);
             var result1 = serialization.deserialize(result);
 
@@ -39,6 +38,17 @@ namespace feng3d
             var b = Math.random();
             assert.ok(result1 != add);
             assert.ok(result1(a, b) == add(a, b));
+        });
+
+        QUnit.test("serialize BaseType", (assert) =>
+        {
+            var arr = [1, "abc", true, null, undefined];
+
+            arr.forEach(v =>
+            {
+                var v0 = serialization.serialize(v);
+                assert.ok(v0 == v);
+            });
         });
 
         QUnit.test("serialize", (assert) =>

@@ -63,6 +63,13 @@ var feng3d;
             assert.ok(result1 != add);
             assert.ok(result1(a, b) == add(a, b));
         });
+        QUnit.test("serialize BaseType", function (assert) {
+            var arr = [1, "abc", true, null, undefined];
+            arr.forEach(function (v) {
+                var v0 = feng3d.serialization.serialize(v);
+                assert.ok(v0 == v);
+            });
+        });
         QUnit.test("serialize", function (assert) {
             var base = new ObjectBase();
             base.id = Math.random();

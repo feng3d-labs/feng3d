@@ -297,7 +297,7 @@ declare namespace feng3d {
          * @param deep 当前深度
          * @returns 返回true时结束该属性后续处理。
          */
-        (target: any, source: any, key: string, replacers: SerializeReplacer[]): boolean;
+        (target: any, source: any, key: string, replacers?: SerializeReplacer | SerializeReplacer[]): boolean;
     }
     /**
      * 序列化

@@ -59,7 +59,7 @@ namespace feng3d
          * @param deep 当前深度
          * @returns 返回true时结束该属性后续处理。
          */
-        (target: any, source: any, key: string, replacers: SerializeReplacer[]): boolean;
+        (target: any, source: any, key: string, replacers?: SerializeReplacer | SerializeReplacer[]): boolean;
     }
 
     /**
@@ -70,19 +70,30 @@ namespace feng3d
         components: SerializationComponent[] = [];
 
         serializeReplacers: SerializeReplacer[] = [
-            function (target: any, source: any, key: string, replacers: SerializeReplacer[])
+            function (target, source, property, replacers)
             {
                 //处理方法
-                if (typeof source[key] == "function")
+                if (typeof source[property] == "function")
                 {
                     let object: any = {};
                     object[CLASS_KEY] = "function";
-                    object.data = source[key].toString();
-                    target[key] = object;
+                    object.data = source[property].toString();
+                    target[property] = object;
                     return true;
                 }
                 return false;
-            }
+            },
+            function (target, source, property, replacers)
+            {
+                //基础类型
+                if (Object.isBaseType(source[property]))
+                {
+                    target[property] = source[property];
+                    return true;
+                }
+                return false;
+            },
+
         ];
 
         /**
@@ -98,23 +109,17 @@ namespace feng3d
             return v;
         }
 
-        private serializeProperty(target: Object, source: Object, key: string | number, replacers?: SerializeReplacer | SerializeReplacer[]): void
+        private serializeProperty(target: Object, source: Object, property: string | number, replacers?: SerializeReplacer | SerializeReplacer[]): void
         {
-            var spv = source[key];
+            var spv = source[property];
 
             var handles = [].concat(replacers).concat(this.serializeReplacers);
             for (let i = 0; i < handles.length; i++)
             {
-                if (handles[i] && handles[i](target, source, key, replacers)) 
+                if (handles[i] && handles[i](target, source, property, replacers)) 
                 {
                     return;
                 }
-            }
-            //基础类型
-            if (Object.isBaseType(spv))
-            {
-                target[key] = spv;
-                return;
             }
             // 排除不支持序列化对象
             if (spv.hasOwnProperty("serializable") && !spv["serializable"]) return;
@@ -124,7 +129,7 @@ namespace feng3d
             // 处理资源
             if (AssetData.isAssetData(spv))
             {
-                target[key] = AssetData.serialize(<any>spv);
+                target[property] = AssetData.serialize(<any>spv);
                 return;
             }
 
@@ -133,7 +138,7 @@ namespace feng3d
                 let object = {};
                 object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
                 spv["serialize"](object);
-                target[key] = object;
+                target[property] = object;
                 return;
             }
 
@@ -146,7 +151,7 @@ namespace feng3d
                 {
                     this.serializeProperty(arr, spv, v);
                 });
-                target[key] = arr;
+                target[property] = arr;
                 return;
             }
 
@@ -159,7 +164,7 @@ namespace feng3d
                 {
                     this.serializeProperty(object, spv, key);
                 });
-                target[key] = object;
+                target[property] = object;
                 return;
             }
 
@@ -171,7 +176,7 @@ namespace feng3d
             {
                 this.serializeProperty(object, spv, v);
             });
-            target[key] = object;
+            target[property] = object;
             return;
         }
 
