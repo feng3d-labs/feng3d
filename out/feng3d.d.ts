@@ -274,35 +274,10 @@ declare namespace feng3d {
      * @param replacers 序列化属性函数列表
      */
     function serializeProperty(target: Object, source: Object, property: string, replacers: typeof serializeProperty[]): boolean;
-    interface SerializationComponent {
-        /**
-         * 名称
-         */
-        name: string;
-        /**
-         * 序列化
-         *
-         * @param target 序列化对象
-         *
-         * @returns Json对象
-         */
-        serialize?(target: any): any;
-        /**
-         * 反序列化
-         *
-         * @param object Json的对象
-         *
-         * @returns 反序列化后的数据
-         */
-        deserialize?(object: any): {
-            result: any;
-        };
-    }
     /**
      * 序列化
      */
     class Serialization {
-        components: SerializationComponent[];
         /**
          * 序列化转换函数
          */
@@ -334,12 +309,6 @@ declare namespace feng3d {
          * @returns 反序列化后的数据
          */
         deserialize<T>(object: gPartial<T>): T;
-        /**
-         * 处理组件反序列化
-         *
-         * @returns 序列化是否返回null，否则返回 包含结果的 {result:any} 对象
-         */
-        private handleComponentsDeserialize;
         /**
          * 从数据对象中提取数据给目标对象赋值
          * @param target 目标对象

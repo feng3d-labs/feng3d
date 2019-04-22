@@ -674,28 +674,11 @@ var feng3d;
         }
         return true;
     }
-    // /**
-    //  * Object.assignDeep 中 转换结果的函数定义
-    //  */
-    // interface SerializeReplacer
-    // {
-    //     /**
-    //      * 
-    //      * @param target 目标对象
-    //      * @param source 源数据
-    //      * @param property 属性名称
-    //      * @param replacers 转换函数
-    //      * @param deep 当前深度
-    //      * @returns 返回true时结束该属性后续处理。
-    //      */
-    //     (target: any, source: any, property: string, replacers: SerializeReplacer[]): boolean;
-    // }
     /**
      * 序列化
      */
     var Serialization = /** @class */ (function () {
         function Serialization() {
-            this.components = [];
             /**
              * 序列化转换函数
              */
@@ -806,33 +789,17 @@ var feng3d;
                 return undefined;
             }
             target = new cls();
-            var result = this.handleComponentsDeserialize(object);
-            if (result)
-                return result.result;
+            // 处理资源
+            if (feng3d.AssetData.isAssetData(object)) {
+                target = feng3d.AssetData.deserialize(object);
+                return target;
+            }
             //处理自定义反序列化对象
             if (target["deserialize"])
                 return target["deserialize"](object);
             //默认反序列
             this.setValue(target, object);
             return target;
-        };
-        /**
-         * 处理组件反序列化
-         *
-         * @returns 序列化是否返回null，否则返回 包含结果的 {result:any} 对象
-         */
-        Serialization.prototype.handleComponentsDeserialize = function (object) {
-            // 处理序列化组件
-            for (var i = 0; i < this.components.length; i++) {
-                var component = this.components[i];
-                if (!component.deserialize)
-                    continue;
-                var result = component.deserialize(object);
-                if (!result)
-                    continue;
-                return result;
-            }
-            return null;
         };
         /**
          * 从数据对象中提取数据给目标对象赋值
@@ -921,17 +888,6 @@ var feng3d;
         return serializableMembers;
     }
     feng3d.serialization = new Serialization();
-    feng3d.serialization.components.push({
-        name: "资源序列化",
-        deserialize: function (object) {
-            // 处理资源
-            if (feng3d.AssetData.isAssetData(object)) {
-                var result = feng3d.AssetData.deserialize(object);
-                return { result: result };
-            }
-            return null;
-        }
-    });
     feng3d.serialization.serializeReplacers = [
         function (target, source, property) {
             var spv = source[property];
