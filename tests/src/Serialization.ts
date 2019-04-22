@@ -95,25 +95,6 @@ namespace feng3d
             assert.ok(r.a == 1);
         });
 
-        QUnit.test("serialize", (assert) =>
-        {
-            var base = new ObjectBase();
-            base.id = Math.random();
-            var resultb = serialization.serialize(base);
-            var base1: ObjectBase = serialization.deserialize(resultb);
-            assert.ok(base.id == base1.id);
-
-            var c = new C();
-            c.id = Math.random();
-            c.a = Math.random();
-            c.c = Math.random();
-            var result = serialization.serialize(c);
-            var c1: C = serialization.deserialize(result);
-            assert.ok(c.id == c1.id);
-            assert.ok(c.a == c1.a);
-            assert.ok(c.c == c1.c);
-        });
-
         QUnit.test("serialize Array", (assert) =>
         {
             var arr = [1, 2, 3, "a", "b"];
@@ -136,6 +117,25 @@ namespace feng3d
             var r = Object.keys(obj).reduce((prev, item) => { if (!prev) return prev; return obj[item] == result1[item]; }, true);
 
             assert.ok(r);
+        });
+
+        QUnit.test("serialize 自定义对象", (assert) =>
+        {
+            var base = new ObjectBase();
+            base.id = Math.random();
+            var resultb = serialization.serialize(base);
+            var base1: ObjectBase = serialization.deserialize(resultb);
+            assert.ok(base.id == base1.id);
+
+            var c = new C();
+            c.id = Math.random();
+            c.a = Math.random();
+            c.c = Math.random();
+            var result = serialization.serialize(c);
+            var c1: C = serialization.deserialize(result);
+            assert.ok(c.id == c1.id);
+            assert.ok(c.a == c1.a);
+            assert.ok(c.c == c1.c);
         });
 
         QUnit.test("serialize.different 获取两个数据的差异", (assert) =>
