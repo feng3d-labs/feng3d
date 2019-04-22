@@ -24,16 +24,16 @@ namespace feng3d
     }
 
     /**
-     * 序列化对象属性
+     * 序列化属性函数
      * 
      * 序列化对象时建议使用 serialization.serialize
      * 
      * @param target 序列化后的对象，存放序列化后属性值的对象。
      * @param source 被序列化的对象，提供序列化前属性值的对象。
-     * @param property 序列化属性
+     * @param property 序列化属性名称
      * @param replacers 序列化属性函数列表
      */
-    function serializeProperty(target: Object, source: Object, property: string, replacers: SerializeReplacer[])
+    function propertyHandler(target: Object, source: Object, property: string, replacers: PropertyHandler[])
     {
         for (let i = 0; i < replacers.length; i++)
         {
@@ -46,12 +46,12 @@ namespace feng3d
     }
 
     /**
-     * 序列化对象属性
+     * 序列化属性函数项
      */
-    interface SerializeReplacer
+    interface PropertyHandler
     {
         /**
-         * 序列化对象属性
+         * 序列化属性函数项
          * 
          * @param target 序列化后的对象，存放序列化后属性值的对象。
          * @param source 被序列化的对象，提供序列化前属性值的对象。
@@ -59,7 +59,7 @@ namespace feng3d
          * @param replacers 序列化属性函数列表
          * @returns 返回true时结束该属性后续处理。
          */
-        (target: any, source: any, property: string, replacers: SerializeReplacer[]): boolean;
+        (target: any, source: any, property: string, replacers: PropertyHandler[]): boolean;
     }
 
     /**
@@ -68,9 +68,34 @@ namespace feng3d
     export class Serialization
     {
         /**
+         * 添加序列化属性函数
+         * 
+         * @param handlers 序列化属性函数列表
+         */
+        addSerializeHandler(...handlers: PropertyHandler[])
+        {
+            this.serializeReplacers.concatToSelf(handlers);
+        }
+
+        /**
+         * 添加反序列化属性函数
+         * 
+         * @param handlers 序列化属性函数列表
+         */
+        addDeserializeHandler(...handlers: PropertyHandler[])
+        {
+            this.deserializeReplacers.concatToSelf(handlers);
+        }
+
+        /**
          * 序列化转换函数
          */
-        serializeReplacers: SerializeReplacer[] = [];
+        serializeReplacers: PropertyHandler[] = [];
+
+        /**
+         * 反序列化转换函数
+         */
+        deserializeReplacers: PropertyHandler[] = [];
 
         /**
          * 序列化对象
@@ -80,15 +105,10 @@ namespace feng3d
         serialize<T>(target: T): gPartial<T>
         {
             var result = {};
-            serializeProperty(result, { "": target }, "", this.serializeReplacers);
+            propertyHandler(result, { "": target }, "", this.serializeReplacers);
             var v = result[""];
             return v;
         }
-
-        /**
-         * 反序列化转换函数
-         */
-        deserializeReplacers: SerializeReplacer[] = [];
 
         /**
          * 反序列化
@@ -101,7 +121,7 @@ namespace feng3d
         deserialize<T>(object: gPartial<T>): T
         {
             var result = {};
-            serializeProperty(result, { "": object }, "", this.deserializeReplacers);
+            propertyHandler(result, { "": object }, "", this.deserializeReplacers);
             var v = result[""];
             return v;
         }
@@ -347,7 +367,7 @@ namespace feng3d
                 let keys = Object.keys(spv);
                 keys.forEach(v =>
                 {
-                    serializeProperty(arr, spv, v, replacers);
+                    propertyHandler(arr, spv, v, replacers);
                 });
                 target[property] = arr;
                 return true;
@@ -364,7 +384,7 @@ namespace feng3d
                 let keys = Object.keys(spv);
                 keys.forEach(key =>
                 {
-                    serializeProperty(object, spv, key, replacers);
+                    propertyHandler(object, spv, key, replacers);
                 });
                 target[property] = object;
                 return true;
@@ -380,7 +400,7 @@ namespace feng3d
             var keys = getSerializableMembers(spv);
             keys.forEach(v =>
             {
-                serializeProperty(object, spv, v, replacers);
+                propertyHandler(object, spv, v, replacers);
             });
             target[property] = object;
             return true;
@@ -419,7 +439,7 @@ namespace feng3d
                 var arr = [];
                 for (const key in spv)
                 {
-                    serializeProperty(arr, spv, key, replacers);
+                    propertyHandler(arr, spv, key, replacers);
                 }
                 target[property] = arr;
                 return true;
@@ -435,7 +455,7 @@ namespace feng3d
                 var obj = {};
                 for (var key in spv)
                 {
-                    serializeProperty(obj, spv, key, replacers);
+                    propertyHandler(obj, spv, key, replacers);
                 }
                 target[property] = obj;
                 return true;
@@ -489,7 +509,7 @@ namespace feng3d
                 for (const key in spv)
                 {
                     if (CLASS_KEY == key) continue;
-                    serializeProperty(inst, spv, key, replacers);
+                    propertyHandler(inst, spv, key, replacers);
                 }
                 target[property] = inst;
                 return true;

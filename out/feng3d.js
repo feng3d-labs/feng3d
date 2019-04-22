@@ -657,16 +657,16 @@ var feng3d;
     }
     feng3d.serialize = serialize;
     /**
-     * 序列化对象属性
+     * 序列化属性函数
      *
      * 序列化对象时建议使用 serialization.serialize
      *
      * @param target 序列化后的对象，存放序列化后属性值的对象。
      * @param source 被序列化的对象，提供序列化前属性值的对象。
-     * @param property 序列化属性
+     * @param property 序列化属性名称
      * @param replacers 序列化属性函数列表
      */
-    function serializeProperty(target, source, property, replacers) {
+    function propertyHandler(target, source, property, replacers) {
         for (var i = 0; i < replacers.length; i++) {
             if (replacers[i](target, source, property, replacers)) {
                 return true;
@@ -689,13 +689,37 @@ var feng3d;
             this.deserializeReplacers = [];
         }
         /**
+         * 添加序列化属性函数
+         *
+         * @param handlers 序列化属性函数列表
+         */
+        Serialization.prototype.addSerializeHandler = function () {
+            var handlers = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                handlers[_i] = arguments[_i];
+            }
+            this.serializeReplacers.concatToSelf(handlers);
+        };
+        /**
+         * 添加反序列化属性函数
+         *
+         * @param handlers 序列化属性函数列表
+         */
+        Serialization.prototype.addDeserializeHandler = function () {
+            var handlers = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                handlers[_i] = arguments[_i];
+            }
+            this.deserializeReplacers.concatToSelf(handlers);
+        };
+        /**
          * 序列化对象
          * @param target 被序列化的对象
          * @returns 序列化后可以转换为Json的数据对象
          */
         Serialization.prototype.serialize = function (target) {
             var result = {};
-            serializeProperty(result, { "": target }, "", this.serializeReplacers);
+            propertyHandler(result, { "": target }, "", this.serializeReplacers);
             var v = result[""];
             return v;
         };
@@ -709,7 +733,7 @@ var feng3d;
          */
         Serialization.prototype.deserialize = function (object) {
             var result = {};
-            serializeProperty(result, { "": object }, "", this.deserializeReplacers);
+            propertyHandler(result, { "": object }, "", this.deserializeReplacers);
             var v = result[""];
             return v;
         };
@@ -906,7 +930,7 @@ var feng3d;
                 var arr_1 = [];
                 var keys = Object.keys(spv);
                 keys.forEach(function (v) {
-                    serializeProperty(arr_1, spv, v, replacers);
+                    propertyHandler(arr_1, spv, v, replacers);
                 });
                 target[property] = arr_1;
                 return true;
@@ -920,7 +944,7 @@ var feng3d;
                 var object_1 = {};
                 var keys = Object.keys(spv);
                 keys.forEach(function (key) {
-                    serializeProperty(object_1, spv, key, replacers);
+                    propertyHandler(object_1, spv, key, replacers);
                 });
                 target[property] = object_1;
                 return true;
@@ -934,7 +958,7 @@ var feng3d;
             object[feng3d.CLASS_KEY] = feng3d.classUtils.getQualifiedClassName(spv);
             var keys = getSerializableMembers(spv);
             keys.forEach(function (v) {
-                serializeProperty(object, spv, v, replacers);
+                propertyHandler(object, spv, v, replacers);
             });
             target[property] = object;
             return true;
@@ -965,7 +989,7 @@ var feng3d;
             if (Array.isArray(spv)) {
                 var arr = [];
                 for (var key in spv) {
-                    serializeProperty(arr, spv, key, replacers);
+                    propertyHandler(arr, spv, key, replacers);
                 }
                 target[property] = arr;
                 return true;
@@ -978,7 +1002,7 @@ var feng3d;
             if (Object.isObject(spv) && spv[feng3d.CLASS_KEY] == null) {
                 var obj = {};
                 for (var key in spv) {
-                    serializeProperty(obj, spv, key, replacers);
+                    propertyHandler(obj, spv, key, replacers);
                 }
                 target[property] = obj;
                 return true;
@@ -1024,7 +1048,7 @@ var feng3d;
                 for (var key in spv) {
                     if (feng3d.CLASS_KEY == key)
                         continue;
-                    serializeProperty(inst, spv, key, replacers);
+                    propertyHandler(inst, spv, key, replacers);
                 }
                 target[property] = inst;
                 return true;

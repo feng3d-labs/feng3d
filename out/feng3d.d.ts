@@ -264,11 +264,11 @@ declare namespace feng3d {
      */
     function serialize(target: any, propertyKey: string): void;
     /**
-     * 序列化对象属性
+     * 序列化属性函数项
      */
-    interface SerializeReplacer {
+    interface PropertyHandler {
         /**
-         * 序列化对象属性
+         * 序列化属性函数项
          *
          * @param target 序列化后的对象，存放序列化后属性值的对象。
          * @param source 被序列化的对象，提供序列化前属性值的对象。
@@ -276,26 +276,38 @@ declare namespace feng3d {
          * @param replacers 序列化属性函数列表
          * @returns 返回true时结束该属性后续处理。
          */
-        (target: any, source: any, property: string, replacers: SerializeReplacer[]): boolean;
+        (target: any, source: any, property: string, replacers: PropertyHandler[]): boolean;
     }
     /**
      * 序列化
      */
     class Serialization {
         /**
+         * 添加序列化属性函数
+         *
+         * @param handlers 序列化属性函数列表
+         */
+        addSerializeHandler(...handlers: PropertyHandler[]): void;
+        /**
+         * 添加反序列化属性函数
+         *
+         * @param handlers 序列化属性函数列表
+         */
+        addDeserializeHandler(...handlers: PropertyHandler[]): void;
+        /**
          * 序列化转换函数
          */
-        serializeReplacers: SerializeReplacer[];
+        serializeReplacers: PropertyHandler[];
+        /**
+         * 反序列化转换函数
+         */
+        deserializeReplacers: PropertyHandler[];
         /**
          * 序列化对象
          * @param target 被序列化的对象
          * @returns 序列化后可以转换为Json的数据对象
          */
         serialize<T>(target: T): gPartial<T>;
-        /**
-         * 反序列化转换函数
-         */
-        deserializeReplacers: SerializeReplacer[];
         /**
          * 反序列化
          *
