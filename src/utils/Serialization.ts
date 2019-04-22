@@ -96,124 +96,10 @@ namespace feng3d
     {
         components: SerializationComponent[] = [];
 
-        serializeReplacers: SerializeReplacer[] = [
-            function (target, source, property)
-            {
-                var spv = source[property];
-                //处理方法
-                if (typeof spv == "function")
-                {
-                    let object: any = {};
-                    object[CLASS_KEY] = "function";
-                    object.data = spv.toString();
-                    target[property] = object;
-                    return true;
-                }
-                return false;
-            },
-            function (target, source, property)
-            {
-                var spv = source[property];
-                //基础类型
-                if (Object.isBaseType(spv))
-                {
-                    target[property] = spv;
-                    return true;
-                }
-                return false;
-            },
-            function (target, source, property)
-            {
-                var spv = source[property];
-                // 排除不支持序列化对象 serializable == false 时不进行序列化
-                if (spv && spv["serializable"] == false)
-                {
-                    return true;
-                }
-                return false;
-            },
-            function (target, source, property)
-            {
-                var spv = source[property];
-                if (spv instanceof Feng3dObject && (spv.hideFlags & HideFlags.DontSave))
-                {
-                    return true;
-                }
-                return false;
-            },
-            function (target, source, property)
-            {
-                var spv = source[property];
-                // 处理资源
-                if (AssetData.isAssetData(spv))
-                {
-                    target[property] = AssetData.serialize(<any>spv);
-                    return true;
-                }
-                return false;
-            },
-            function (target, source, property)
-            {
-                var spv = source[property];
-                if (spv["serialize"])
-                {
-                    let object = {};
-                    object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
-                    spv["serialize"](object);
-                    target[property] = object;
-                    return true;
-                }
-                return false;
-            },
-            function (target, source, property, replacers, serializable)
-            {
-                var spv = source[property];
-                //处理数组
-                if (Array.isArray(spv))
-                {
-                    let arr = [];
-                    let keys = Object.keys(spv);
-                    keys.forEach(v =>
-                    {
-                        serializeProperty(arr, spv, v, replacers, serializable);
-                    });
-                    target[property] = arr;
-                    return true;
-                }
-                return false;
-            },
-            function (target, source, property, replacers, serializable)
-            {
-                var spv = source[property];
-                //处理普通Object
-                if (Object.isObject(spv))
-                {
-                    let object = <any>{};
-                    let keys = Object.keys(spv);
-                    keys.forEach(key =>
-                    {
-                        serializeProperty(object, spv, key, replacers, serializable);
-                    });
-                    target[property] = object;
-                    return true;
-                }
-                return false;
-            },
-            function (target, source, property, replacers, serializable)
-            {
-                var spv = source[property];
-                //使用默认序列化
-                let object = {};
-                object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
-                var keys = getSerializableMembers(spv);
-                keys.forEach(v =>
-                {
-                    serializeProperty(object, spv, v, replacers, serialization);
-                });
-                target[property] = object;
-                return true;
-            },
-        ];
+        /**
+         * 序列化转换函数
+         */
+        serializeReplacers: SerializeReplacer[] = [];
 
         /**
          * 序列化对象
@@ -493,6 +379,125 @@ namespace feng3d
             }
         }
     );
+
+    serialization.serializeReplacers = [
+        function (target, source, property)
+        {
+            var spv = source[property];
+            //处理方法
+            if (typeof spv == "function")
+            {
+                let object: any = {};
+                object[CLASS_KEY] = "function";
+                object.data = spv.toString();
+                target[property] = object;
+                return true;
+            }
+            return false;
+        },
+        function (target, source, property)
+        {
+            var spv = source[property];
+            //基础类型
+            if (Object.isBaseType(spv))
+            {
+                target[property] = spv;
+                return true;
+            }
+            return false;
+        },
+        function (target, source, property)
+        {
+            var spv = source[property];
+            // 排除不支持序列化对象 serializable == false 时不进行序列化
+            if (spv && spv["serializable"] == false)
+            {
+                return true;
+            }
+            return false;
+        },
+        function (target, source, property)
+        {
+            var spv = source[property];
+            if (spv instanceof Feng3dObject && (spv.hideFlags & HideFlags.DontSave))
+            {
+                return true;
+            }
+            return false;
+        },
+        function (target, source, property)
+        {
+            var spv = source[property];
+            // 处理资源
+            if (AssetData.isAssetData(spv))
+            {
+                target[property] = AssetData.serialize(<any>spv);
+                return true;
+            }
+            return false;
+        },
+        function (target, source, property)
+        {
+            var spv = source[property];
+            if (spv["serialize"])
+            {
+                let object = {};
+                object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
+                spv["serialize"](object);
+                target[property] = object;
+                return true;
+            }
+            return false;
+        },
+        function (target, source, property, replacers, serializable)
+        {
+            var spv = source[property];
+            //处理数组
+            if (Array.isArray(spv))
+            {
+                let arr = [];
+                let keys = Object.keys(spv);
+                keys.forEach(v =>
+                {
+                    serializeProperty(arr, spv, v, replacers, serializable);
+                });
+                target[property] = arr;
+                return true;
+            }
+            return false;
+        },
+        function (target, source, property, replacers, serializable)
+        {
+            var spv = source[property];
+            //处理普通Object
+            if (Object.isObject(spv))
+            {
+                let object = <any>{};
+                let keys = Object.keys(spv);
+                keys.forEach(key =>
+                {
+                    serializeProperty(object, spv, key, replacers, serializable);
+                });
+                target[property] = object;
+                return true;
+            }
+            return false;
+        },
+        function (target, source, property, replacers, serializable)
+        {
+            var spv = source[property];
+            //使用默认序列化
+            let object = {};
+            object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
+            var keys = getSerializableMembers(spv);
+            keys.forEach(v =>
+            {
+                serializeProperty(object, spv, v, replacers, serialization);
+            });
+            target[property] = object;
+            return true;
+        },
+    ];
 }
 
 

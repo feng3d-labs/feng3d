@@ -307,6 +307,9 @@ declare namespace feng3d {
      */
     class Serialization {
         components: SerializationComponent[];
+        /**
+         * 序列化转换函数
+         */
         serializeReplacers: SerializeReplacer[];
         /**
          * 序列化对象
