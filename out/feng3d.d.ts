@@ -265,15 +265,19 @@ declare namespace feng3d {
     function serialize(target: any, propertyKey: string): void;
     /**
      * 序列化对象属性
-     *
-     * 序列化对象时建议使用 serialization.serialize
-     *
-     * @param target 序列化后的对象，存放序列化后属性值的对象。
-     * @param source 被序列化的对象，提供序列化前属性值的对象。
-     * @param property 序列化属性
-     * @param replacers 序列化属性函数列表
      */
-    function serializeProperty(target: Object, source: Object, property: string, replacers: typeof serializeProperty[]): boolean;
+    interface SerializeReplacer {
+        /**
+         * 序列化对象属性
+         *
+         * @param target 序列化后的对象，存放序列化后属性值的对象。
+         * @param source 被序列化的对象，提供序列化前属性值的对象。
+         * @param property 序列化属性名称
+         * @param replacers 序列化属性函数列表
+         * @returns 返回true时结束该属性后续处理。
+         */
+        (target: any, source: any, property: string, replacers: SerializeReplacer[]): boolean;
+    }
     /**
      * 序列化
      */
@@ -281,11 +285,11 @@ declare namespace feng3d {
         /**
          * 序列化转换函数
          */
-        serializeReplacers: (typeof serializeProperty)[];
+        serializeReplacers: SerializeReplacer[];
         /**
          * 反序列化转换函数
          */
-        deserializeReplacers: (typeof serializeProperty)[];
+        deserializeReplacers: SerializeReplacer[];
         /**
          * 序列化对象
          * @param target 被序列化的对象
