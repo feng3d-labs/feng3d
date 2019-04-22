@@ -108,7 +108,7 @@ var feng3d;
             var obj1 = feng3d.serialization.deserialize(r);
             assert.deepEqual(obj, obj1);
         });
-        QUnit.test("serialize 序列化拥有自定义serialize函数的对象", function (assert) {
+        QUnit.test("序列化反序列化 拥有自定义serialize函数的对象", function (assert) {
             var obj = {
                 a: 1,
                 serialize: function (obj) {
@@ -120,24 +120,22 @@ var feng3d;
             delete obj.serialize;
             var r = feng3d.serialization.serialize(obj);
             assert.ok(r.a == 1);
+            var r0 = feng3d.serialization.deserialize(r);
+            assert.ok(r0.a == 1);
         });
-        QUnit.test("serialize Array", function (assert) {
+        QUnit.test("序列化反序列化 Array", function (assert) {
             var arr = [1, 2, 3, "a", "b"];
             var result = feng3d.serialization.serialize(arr);
             var result1 = feng3d.serialization.deserialize(result);
-            var r = arr.reduce(function (prev, item, index) { if (!prev)
-                return prev; return arr[index] == result1[index]; }, true);
-            assert.ok(r);
+            assert.deepEqual(arr, result1);
         });
-        QUnit.test("serialize Object", function (assert) {
-            var obj = { a: 1, b: 2, c: 3, d: "a", e: "b" };
+        QUnit.test("序列化反序列化 Object", function (assert) {
+            var obj = { a: 1, b: 2, c: { f: 3, d: "a", e: "b" } };
             var result = feng3d.serialization.serialize(obj);
             var result1 = feng3d.serialization.deserialize(result);
-            var r = Object.keys(obj).reduce(function (prev, item) { if (!prev)
-                return prev; return obj[item] == result1[item]; }, true);
-            assert.ok(r);
+            assert.deepEqual(obj, result1);
         });
-        QUnit.test("serialize 自定义对象", function (assert) {
+        QUnit.test("序列化反序列化 自定义对象", function (assert) {
             var base = new ObjectBase();
             base.id = Math.random();
             var resultb = feng3d.serialization.serialize(base);
