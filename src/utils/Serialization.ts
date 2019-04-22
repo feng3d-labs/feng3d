@@ -88,115 +88,7 @@ namespace feng3d
         /**
          * 反序列化转换函数
          */
-        deserializeReplacers: SerializeReplacer[] = [
-            //处理方法
-            function (target, source, property)
-            {
-                var spv = source[property];
-                if (spv[CLASS_KEY] == "function")
-                {
-                    target[property] = eval(`(${spv.data})`);
-                    return true;
-                }
-                return false;
-            },
-            //基础类型
-            function (target, source, property)
-            {
-                var spv = source[property];
-                if (Object.isBaseType(spv))
-                {
-                    target[property] = spv;
-                    return true;
-                }
-                return false;
-            },
-            //处理数组
-            function (target, source, property, replacers)
-            {
-                var spv = source[property];
-                if (Array.isArray(spv))
-                {
-                    var arr = [];
-                    for (const key in spv)
-                    {
-                        serializeProperty(arr, spv, key, replacers);
-                    }
-                    target[property] = arr;
-                    return true;
-                }
-                return false;
-            },
-            // 处理 没有类名称标记的 普通Object
-            function (target, source, property, replacers)
-            {
-                var spv = source[property];
-                if (Object.isObject(spv) && spv[CLASS_KEY] == null)
-                {
-                    var obj = {};
-                    for (var key in spv)
-                    {
-                        serializeProperty(obj, spv, key, replacers);
-                    }
-                    target[property] = obj;
-                    return true;
-                }
-                return false;
-            },
-            // 处理非原生Object对象
-            function (target, source, property)
-            {
-                var spv = source[property];
-                if (!Object.isObject(spv))
-                {
-                    target[property] = spv;
-                    return true;
-                }
-                return false;
-            },
-            // 处理资源
-            function (target, source, property, replacers)
-            {
-                var spv = source[property];
-                if (AssetData.isAssetData(spv))
-                {
-                    target[property] = AssetData.deserialize(spv);
-                    return true;
-                }
-                return false;
-            },
-            // 处理自定义反序列化对象
-            function (target, source, property, replacers)
-            {
-                var spv = source[property];
-                var inst = classUtils.getInstanceByName(spv[CLASS_KEY]);
-                //处理自定义反序列化对象
-                if (inst && inst["deserialize"])
-                {
-                    inst["deserialize"](spv);
-                    target[property] = inst;
-                    return true;
-                }
-                return false;
-            },
-            // 处理自定义对象的反序列化 
-            function (target, source, property, replacers)
-            {
-                var spv = source[property];
-                var inst = classUtils.getInstanceByName(spv[CLASS_KEY]);
-                if (inst)
-                {
-                    //默认反序列
-                    for (const key in spv)
-                    {
-                        serializeProperty(inst, spv, key, replacers);
-                    }
-                    target[property] = inst;
-                    return true;
-                }
-                return false;
-            },
-        ];
+        deserializeReplacers: SerializeReplacer[] = [];
 
         /**
          * 反序列化
@@ -375,10 +267,10 @@ namespace feng3d
     serialization = new Serialization();
 
     serialization.serializeReplacers = [
+        //处理方法
         function (target, source, property)
         {
             var spv = source[property];
-            //处理方法
             if (typeof spv == "function")
             {
                 let object: any = {};
@@ -389,10 +281,10 @@ namespace feng3d
             }
             return false;
         },
+        //基础类型
         function (target, source, property)
         {
             var spv = source[property];
-            //基础类型
             if (Object.isBaseType(spv))
             {
                 target[property] = spv;
@@ -400,16 +292,17 @@ namespace feng3d
             }
             return false;
         },
+        // 排除不支持序列化对象 serializable == false 时不进行序列化
         function (target, source, property)
         {
             var spv = source[property];
-            // 排除不支持序列化对象 serializable == false 时不进行序列化
             if (spv && spv["serializable"] == false)
             {
                 return true;
             }
             return false;
         },
+        // 处理 Feng3dObject
         function (target, source, property)
         {
             var spv = source[property];
@@ -419,10 +312,10 @@ namespace feng3d
             }
             return false;
         },
+        // 处理资源
         function (target, source, property)
         {
             var spv = source[property];
-            // 处理资源
             if (AssetData.isAssetData(spv))
             {
                 target[property] = AssetData.serialize(<any>spv);
@@ -430,6 +323,7 @@ namespace feng3d
             }
             return false;
         },
+        // 自定义序列化函数
         function (target, source, property)
         {
             var spv = source[property];
@@ -443,10 +337,10 @@ namespace feng3d
             }
             return false;
         },
+        //处理数组
         function (target, source, property, replacers)
         {
             var spv = source[property];
-            //处理数组
             if (Array.isArray(spv))
             {
                 let arr = [];
@@ -460,10 +354,10 @@ namespace feng3d
             }
             return false;
         },
+        //处理普通Object
         function (target, source, property, replacers)
         {
             var spv = source[property];
-            //处理普通Object
             if (Object.isObject(spv))
             {
                 let object = <any>{};
@@ -477,10 +371,10 @@ namespace feng3d
             }
             return false;
         },
+        //使用默认序列化
         function (target, source, property, replacers)
         {
             var spv = source[property];
-            //使用默认序列化
             let object = {};
             object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
             var keys = getSerializableMembers(spv);
@@ -490,6 +384,116 @@ namespace feng3d
             });
             target[property] = object;
             return true;
+        },
+    ];
+
+    serialization.deserializeReplacers = [
+        //处理方法
+        function (target, source, property)
+        {
+            var spv = source[property];
+            if (spv[CLASS_KEY] == "function")
+            {
+                target[property] = eval(`(${spv.data})`);
+                return true;
+            }
+            return false;
+        },
+        //基础类型
+        function (target, source, property)
+        {
+            var spv = source[property];
+            if (Object.isBaseType(spv))
+            {
+                target[property] = spv;
+                return true;
+            }
+            return false;
+        },
+        //处理数组
+        function (target, source, property, replacers)
+        {
+            var spv = source[property];
+            if (Array.isArray(spv))
+            {
+                var arr = [];
+                for (const key in spv)
+                {
+                    serializeProperty(arr, spv, key, replacers);
+                }
+                target[property] = arr;
+                return true;
+            }
+            return false;
+        },
+        // 处理 没有类名称标记的 普通Object
+        function (target, source, property, replacers)
+        {
+            var spv = source[property];
+            if (Object.isObject(spv) && spv[CLASS_KEY] == null)
+            {
+                var obj = {};
+                for (var key in spv)
+                {
+                    serializeProperty(obj, spv, key, replacers);
+                }
+                target[property] = obj;
+                return true;
+            }
+            return false;
+        },
+        // 处理非原生Object对象
+        function (target, source, property)
+        {
+            var spv = source[property];
+            if (!Object.isObject(spv))
+            {
+                target[property] = spv;
+                return true;
+            }
+            return false;
+        },
+        // 处理资源
+        function (target, source, property, replacers)
+        {
+            var spv = source[property];
+            if (AssetData.isAssetData(spv))
+            {
+                target[property] = AssetData.deserialize(spv);
+                return true;
+            }
+            return false;
+        },
+        // 处理自定义反序列化对象
+        function (target, source, property, replacers)
+        {
+            var spv = source[property];
+            var inst = classUtils.getInstanceByName(spv[CLASS_KEY]);
+            //处理自定义反序列化对象
+            if (inst && inst["deserialize"])
+            {
+                inst["deserialize"](spv);
+                target[property] = inst;
+                return true;
+            }
+            return false;
+        },
+        // 处理自定义对象的反序列化 
+        function (target, source, property, replacers)
+        {
+            var spv = source[property];
+            var inst = classUtils.getInstanceByName(spv[CLASS_KEY]);
+            if (inst)
+            {
+                //默认反序列
+                for (const key in spv)
+                {
+                    serializeProperty(inst, spv, key, replacers);
+                }
+                target[property] = inst;
+                return true;
+            }
+            return false;
         },
     ];
 }
