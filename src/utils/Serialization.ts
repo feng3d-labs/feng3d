@@ -112,23 +112,17 @@ namespace feng3d
                 return false;
             },
             //处理数组
-            function (target, source, property)
+            function (target, source, property, replacers)
             {
                 var spv = source[property];
                 if (Array.isArray(spv))
                 {
-                    target[property] = spv.map(v => this.deserialize(v));
-                    return true;
-                }
-                return false;
-            },
-            // 处理非原生Object对象
-            function (target, source, property)
-            {
-                var spv = source[property];
-                if (!Object.isObject(spv))
-                {
-                    target[property] = spv;
+                    var arr = [];
+                    for (const key in spv)
+                    {
+                        serializeProperty(arr, spv, key, replacers);
+                    }
+                    target[property] = arr;
                     return true;
                 }
                 return false;
@@ -145,6 +139,17 @@ namespace feng3d
                         serializeProperty(obj, spv, key, replacers);
                     }
                     target[property] = obj;
+                    return true;
+                }
+                return false;
+            },
+            // 处理非原生Object对象
+            function (target, source, property)
+            {
+                var spv = source[property];
+                if (!Object.isObject(spv))
+                {
+                    target[property] = spv;
                     return true;
                 }
                 return false;
@@ -184,7 +189,7 @@ namespace feng3d
                     //默认反序列
                     for (const key in spv)
                     {
-                        this.setPropertyValue(inst, spv, key);
+                        serializeProperty(inst, spv, key, replacers);
                     }
                     target[property] = inst;
                     return true;
@@ -204,7 +209,7 @@ namespace feng3d
         deserialize<T>(object: gPartial<T>): T
         {
             var result = {};
-            serializeProperty(result, { "": object }, "", this.serializeReplacers);
+            serializeProperty(result, { "": object }, "", this.deserializeReplacers);
             var v = result[""];
             return v;
         }

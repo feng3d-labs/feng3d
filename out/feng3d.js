@@ -706,20 +706,14 @@ var feng3d;
                     return false;
                 },
                 //处理数组
-                function (target, source, property) {
-                    var _this = this;
+                function (target, source, property, replacers) {
                     var spv = source[property];
                     if (Array.isArray(spv)) {
-                        target[property] = spv.map(function (v) { return _this.deserialize(v); });
-                        return true;
-                    }
-                    return false;
-                },
-                // 处理非原生Object对象
-                function (target, source, property) {
-                    var spv = source[property];
-                    if (!Object.isObject(spv)) {
-                        target[property] = spv;
+                        var arr = [];
+                        for (var key in spv) {
+                            serializeProperty(arr, spv, key, replacers);
+                        }
+                        target[property] = arr;
                         return true;
                     }
                     return false;
@@ -733,6 +727,15 @@ var feng3d;
                             serializeProperty(obj, spv, key, replacers);
                         }
                         target[property] = obj;
+                        return true;
+                    }
+                    return false;
+                },
+                // 处理非原生Object对象
+                function (target, source, property) {
+                    var spv = source[property];
+                    if (!Object.isObject(spv)) {
+                        target[property] = spv;
                         return true;
                     }
                     return false;
@@ -765,7 +768,7 @@ var feng3d;
                     if (inst) {
                         //默认反序列
                         for (var key in spv) {
-                            this.setPropertyValue(inst, spv, key);
+                            serializeProperty(inst, spv, key, replacers);
                         }
                         target[property] = inst;
                         return true;
@@ -795,7 +798,7 @@ var feng3d;
          */
         Serialization.prototype.deserialize = function (object) {
             var result = {};
-            serializeProperty(result, { "": object }, "", this.serializeReplacers);
+            serializeProperty(result, { "": object }, "", this.deserializeReplacers);
             var v = result[""];
             return v;
         };
