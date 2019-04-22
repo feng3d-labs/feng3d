@@ -52,6 +52,17 @@ var feng3d;
     }(ObjectBase));
     feng3d.C = C;
     QUnit.module("Serialization", function () {
+        QUnit.test("serialize function", function (assert) {
+            function add(a, b) {
+                return a + b;
+            }
+            var result = feng3d.serialization.serialize(add);
+            var result1 = feng3d.serialization.deserialize(result);
+            var a = Math.random();
+            var b = Math.random();
+            assert.ok(result1 != add);
+            assert.ok(result1(a, b) == add(a, b));
+        });
         QUnit.test("serialize", function (assert) {
             var base = new ObjectBase();
             base.id = Math.random();
@@ -67,16 +78,6 @@ var feng3d;
             assert.ok(c.id == c1.id);
             assert.ok(c.a == c1.a);
             assert.ok(c.c == c1.c);
-        });
-        QUnit.test("serialize function", function (assert) {
-            function add(a, b) {
-                return a + b;
-            }
-            var result = feng3d.serialization.serialize(add);
-            var result1 = feng3d.serialization.deserialize(result);
-            var a = Math.random();
-            var b = Math.random();
-            assert.ok(result1(a, b) == add(a, b));
         });
         QUnit.test("serialize Array", function (assert) {
             var arr = [1, 2, 3, "a", "b"];

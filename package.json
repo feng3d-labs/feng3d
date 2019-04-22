@@ -7,7 +7,7 @@
   "scripts": {
     "http-server": "http-server",
     "build": "node build.js",
-    "prebuild": "rimraf \"{out,debug}\""
+    "prebuild": "rimraf \"{debug}\""
   },
   "files": [
     "out",
