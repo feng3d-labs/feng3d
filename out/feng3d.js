@@ -661,20 +661,57 @@ var feng3d;
             this.components = [];
             this.serializeReplacers = [
                 function (target, source, property, replacers) {
+                    var spv = source[property];
                     //处理方法
-                    if (typeof source[property] == "function") {
+                    if (typeof spv == "function") {
                         var object = {};
                         object[feng3d.CLASS_KEY] = "function";
-                        object.data = source[property].toString();
+                        object.data = spv.toString();
                         target[property] = object;
                         return true;
                     }
                     return false;
                 },
                 function (target, source, property, replacers) {
+                    var spv = source[property];
                     //基础类型
-                    if (Object.isBaseType(source[property])) {
-                        target[property] = source[property];
+                    if (Object.isBaseType(spv)) {
+                        target[property] = spv;
+                        return true;
+                    }
+                    return false;
+                },
+                function (target, source, property, replacers) {
+                    var spv = source[property];
+                    // 排除不支持序列化对象 serializable == false 时不进行序列化
+                    if (spv && spv["serializable"] == false) {
+                        return true;
+                    }
+                    return false;
+                },
+                function (target, source, property, replacers) {
+                    var spv = source[property];
+                    if (spv instanceof feng3d.Feng3dObject && (spv.hideFlags & feng3d.HideFlags.DontSave)) {
+                        return true;
+                    }
+                    return false;
+                },
+                function (target, source, property, replacers) {
+                    var spv = source[property];
+                    // 处理资源
+                    if (feng3d.AssetData.isAssetData(spv)) {
+                        target[property] = feng3d.AssetData.serialize(spv);
+                        return true;
+                    }
+                    return false;
+                },
+                function (target, source, property, replacers) {
+                    var spv = source[property];
+                    if (spv["serialize"]) {
+                        var object = {};
+                        object[feng3d.CLASS_KEY] = feng3d.classUtils.getQualifiedClassName(spv);
+                        spv["serialize"](object);
+                        target[property] = object;
                         return true;
                     }
                     return false;
@@ -701,23 +738,6 @@ var feng3d;
                     return;
                 }
             }
-            // 排除不支持序列化对象
-            if (spv.hasOwnProperty("serializable") && !spv["serializable"])
-                return;
-            if (spv instanceof feng3d.Feng3dObject && !!(spv.hideFlags & feng3d.HideFlags.DontSave))
-                return;
-            // 处理资源
-            if (feng3d.AssetData.isAssetData(spv)) {
-                target[property] = feng3d.AssetData.serialize(spv);
-                return;
-            }
-            if (spv["serialize"]) {
-                var object_1 = {};
-                object_1[feng3d.CLASS_KEY] = feng3d.classUtils.getQualifiedClassName(spv);
-                spv["serialize"](object_1);
-                target[property] = object_1;
-                return;
-            }
             //处理数组
             if (Array.isArray(spv)) {
                 var arr_1 = [];
@@ -730,12 +750,12 @@ var feng3d;
             }
             //处理普通Object
             if (Object.isObject(spv)) {
-                var object_2 = {};
+                var object_1 = {};
                 var keys_2 = Object.keys(spv);
                 keys_2.forEach(function (key) {
-                    _this.serializeProperty(object_2, spv, key);
+                    _this.serializeProperty(object_1, spv, key);
                 });
-                target[property] = object_2;
+                target[property] = object_1;
                 return;
             }
             //使用默认序列化

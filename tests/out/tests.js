@@ -52,7 +52,7 @@ var feng3d;
     }(ObjectBase));
     feng3d.C = C;
     QUnit.module("Serialization", function () {
-        QUnit.test("serialize function", function (assert) {
+        QUnit.test("serialize function 序列化函数", function (assert) {
             function add(a, b) {
                 return a + b;
             }
@@ -63,12 +63,45 @@ var feng3d;
             assert.ok(result1 != add);
             assert.ok(result1(a, b) == add(a, b));
         });
-        QUnit.test("serialize BaseType", function (assert) {
+        QUnit.test("serialize BaseType 序列化基础类型", function (assert) {
             var arr = [1, "abc", true, null, undefined];
             arr.forEach(function (v) {
                 var v0 = feng3d.serialization.serialize(v);
                 assert.ok(v0 == v);
             });
+        });
+        QUnit.test("serialize serializable 序列化带serializable属性对象", function (assert) {
+            var obj = { serializable: false, a: 1 };
+            var r = feng3d.serialization.serialize(obj);
+            assert.ok(r == undefined);
+            obj.serializable = true;
+            var r = feng3d.serialization.serialize(obj);
+            assert.ok(r.a == obj.a);
+            delete obj.serializable;
+            var r = feng3d.serialization.serialize(obj);
+            assert.ok(r.a == obj.a);
+        });
+        QUnit.test("serialize Feng3dObject 序列化Feng3dObject对象", function (assert) {
+            var obj = new feng3d.Feng3dObject();
+            obj.hideFlags = feng3d.HideFlags.DontSave;
+            var r = feng3d.serialization.serialize(obj);
+            assert.ok(r == undefined);
+            obj.hideFlags = feng3d.HideFlags.None;
+            var r = feng3d.serialization.serialize(obj);
+            assert.ok(r != undefined);
+        });
+        QUnit.test("serialize 序列化拥有自定义serialize函数的对象", function (assert) {
+            var obj = {
+                a: 1,
+                serialize: function (obj) {
+                    obj.a = this.a * 2;
+                },
+            };
+            var r = feng3d.serialization.serialize(obj);
+            assert.ok(r.a == obj.a * 2);
+            delete obj.serialize;
+            var r = feng3d.serialization.serialize(obj);
+            assert.ok(r.a == 1);
         });
         QUnit.test("serialize", function (assert) {
             var base = new ObjectBase();

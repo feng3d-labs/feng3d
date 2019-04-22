@@ -72,12 +72,13 @@ namespace feng3d
         serializeReplacers: SerializeReplacer[] = [
             function (target, source, property, replacers)
             {
+                var spv = source[property];
                 //处理方法
-                if (typeof source[property] == "function")
+                if (typeof spv == "function")
                 {
                     let object: any = {};
                     object[CLASS_KEY] = "function";
-                    object.data = source[property].toString();
+                    object.data = spv.toString();
                     target[property] = object;
                     return true;
                 }
@@ -85,15 +86,58 @@ namespace feng3d
             },
             function (target, source, property, replacers)
             {
+                var spv = source[property];
                 //基础类型
-                if (Object.isBaseType(source[property]))
+                if (Object.isBaseType(spv))
                 {
-                    target[property] = source[property];
+                    target[property] = spv;
                     return true;
                 }
                 return false;
             },
-
+            function (target, source, property, replacers)
+            {
+                var spv = source[property];
+                // 排除不支持序列化对象 serializable == false 时不进行序列化
+                if (spv && spv["serializable"] == false)
+                {
+                    return true;
+                }
+                return false;
+            },
+            function (target, source, property, replacers)
+            {
+                var spv = source[property];
+                if (spv instanceof Feng3dObject && (spv.hideFlags & HideFlags.DontSave))
+                {
+                    return true;
+                }
+                return false;
+            },
+            function (target, source, property, replacers)
+            {
+                var spv = source[property];
+                // 处理资源
+                if (AssetData.isAssetData(spv))
+                {
+                    target[property] = AssetData.serialize(<any>spv);
+                    return true;
+                }
+                return false;
+            },
+            function (target, source, property, replacers)
+            {
+                var spv = source[property];
+                if (spv["serialize"])
+                {
+                    let object = {};
+                    object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
+                    spv["serialize"](object);
+                    target[property] = object;
+                    return true;
+                }
+                return false;
+            },
         ];
 
         /**
@@ -120,26 +164,6 @@ namespace feng3d
                 {
                     return;
                 }
-            }
-            // 排除不支持序列化对象
-            if (spv.hasOwnProperty("serializable") && !spv["serializable"]) return;
-
-            if (spv instanceof Feng3dObject && !!(spv.hideFlags & HideFlags.DontSave)) return;
-
-            // 处理资源
-            if (AssetData.isAssetData(spv))
-            {
-                target[property] = AssetData.serialize(<any>spv);
-                return;
-            }
-
-            if (spv["serialize"])
-            {
-                let object = {};
-                object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
-                spv["serialize"](object);
-                target[property] = object;
-                return;
             }
 
             //处理数组

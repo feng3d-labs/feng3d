@@ -25,7 +25,7 @@ namespace feng3d
 
     QUnit.module("Serialization", () =>
     {
-        QUnit.test("serialize function", (assert) =>
+        QUnit.test("serialize function 序列化函数", (assert) =>
         {
             function add(a: number, b: number)
             {
@@ -40,7 +40,7 @@ namespace feng3d
             assert.ok(result1(a, b) == add(a, b));
         });
 
-        QUnit.test("serialize BaseType", (assert) =>
+        QUnit.test("serialize BaseType 序列化基础类型", (assert) =>
         {
             var arr = [1, "abc", true, null, undefined];
 
@@ -49,6 +49,50 @@ namespace feng3d
                 var v0 = serialization.serialize(v);
                 assert.ok(v0 == v);
             });
+        });
+
+        QUnit.test("serialize serializable 序列化带serializable属性对象", (assert) =>
+        {
+            var obj = { serializable: false, a: 1 };
+            var r = serialization.serialize(obj);
+            assert.ok(r == undefined);
+
+            obj.serializable = true;
+            var r = serialization.serialize(obj);
+            assert.ok(r.a == obj.a);
+
+            delete obj.serializable;
+            var r = serialization.serialize(obj);
+            assert.ok(r.a == obj.a);
+        });
+
+        QUnit.test("serialize Feng3dObject 序列化Feng3dObject对象", (assert) =>
+        {
+            var obj = new Feng3dObject();
+            obj.hideFlags = HideFlags.DontSave;
+            var r = serialization.serialize(obj);
+            assert.ok(r == undefined);
+
+            obj.hideFlags = HideFlags.None;
+            var r = serialization.serialize(obj);
+            assert.ok(r != undefined);
+        });
+
+        QUnit.test("serialize 序列化拥有自定义serialize函数的对象", (assert) =>
+        {
+            var obj = {
+                a: 1,
+                serialize(obj)
+                {
+                    obj.a = this.a * 2;
+                },
+            };
+            var r = serialization.serialize(obj);
+            assert.ok(r.a == obj.a * 2);
+
+            delete obj.serialize;
+            var r = serialization.serialize(obj);
+            assert.ok(r.a == 1);
         });
 
         QUnit.test("serialize", (assert) =>
