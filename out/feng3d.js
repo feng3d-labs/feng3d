@@ -700,46 +700,6 @@ var feng3d;
             return v;
         };
         /**
-         * 比较两个对象的不同，提取出不同的数据
-         * @param target 用于检测不同的数据
-         * @param defaultInstance   模板（默认）数据
-         * @param different 比较得出的不同（简单结构）数据
-         * @returns 比较得出的不同（简单结构）数据
-         */
-        Serialization.prototype.different = function (target, defaultInstance, different) {
-            different = different || {};
-            if (target == defaultInstance)
-                return different;
-            if (defaultInstance == null) {
-                different = this.serialize(target);
-                return different;
-            }
-            var serializableMembers = getSerializableMembers(target);
-            if (target.constructor == Object)
-                serializableMembers = Object.keys(target);
-            for (var i = 0; i < serializableMembers.length; i++) {
-                var property = serializableMembers[i];
-                var propertyValue = target[property];
-                var defaultPropertyValue = defaultInstance[property];
-                if (propertyValue === defaultPropertyValue)
-                    continue;
-                if (defaultPropertyValue == null || Object.isBaseType(propertyValue) || Array.isArray(propertyValue) || defaultPropertyValue.constructor != propertyValue.constructor) {
-                    different[property] = this.serialize(propertyValue);
-                }
-                else {
-                    if (feng3d.AssetData.isAssetData(propertyValue)) {
-                        different[property] = this.serialize(propertyValue);
-                    }
-                    else {
-                        var diff = this.different(propertyValue, defaultPropertyValue);
-                        if (Object.keys(diff).length > 0)
-                            different[property] = diff;
-                    }
-                }
-            }
-            return different;
-        };
-        /**
          * 反序列化
          *
          * 注意！ 如果反序列前需要把包含的资源提前加载，否则会报错！
@@ -798,8 +758,50 @@ var feng3d;
             if (target["deserialize"])
                 return target["deserialize"](object);
             //默认反序列
-            this.setValue(target, object);
+            for (var property in object) {
+                this.setPropertyValue(target, object, property);
+            }
             return target;
+        };
+        /**
+         * 比较两个对象的不同，提取出不同的数据
+         * @param target 用于检测不同的数据
+         * @param defaultInstance   模板（默认）数据
+         * @param different 比较得出的不同（简单结构）数据
+         * @returns 比较得出的不同（简单结构）数据
+         */
+        Serialization.prototype.different = function (target, defaultInstance, different) {
+            different = different || {};
+            if (target == defaultInstance)
+                return different;
+            if (defaultInstance == null) {
+                different = this.serialize(target);
+                return different;
+            }
+            var serializableMembers = getSerializableMembers(target);
+            if (target.constructor == Object)
+                serializableMembers = Object.keys(target);
+            for (var i = 0; i < serializableMembers.length; i++) {
+                var property = serializableMembers[i];
+                var propertyValue = target[property];
+                var defaultPropertyValue = defaultInstance[property];
+                if (propertyValue === defaultPropertyValue)
+                    continue;
+                if (defaultPropertyValue == null || Object.isBaseType(propertyValue) || Array.isArray(propertyValue) || defaultPropertyValue.constructor != propertyValue.constructor) {
+                    different[property] = this.serialize(propertyValue);
+                }
+                else {
+                    if (feng3d.AssetData.isAssetData(propertyValue)) {
+                        different[property] = this.serialize(propertyValue);
+                    }
+                    else {
+                        var diff = this.different(propertyValue, defaultPropertyValue);
+                        if (Object.keys(diff).length > 0)
+                            different[property] = diff;
+                    }
+                }
+            }
+            return different;
         };
         /**
          * 从数据对象中提取数据给目标对象赋值

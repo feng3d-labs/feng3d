@@ -73,11 +73,6 @@ namespace feng3d
         serializeReplacers: SerializeReplacer[] = [];
 
         /**
-         * 反序列化转换函数
-         */
-        deserializeReplacers: SerializeReplacer[] = [];
-
-        /**
          * 序列化对象
          * @param target 被序列化的对象
          * @returns 序列化后可以转换为Json的数据对象 
@@ -91,50 +86,9 @@ namespace feng3d
         }
 
         /**
-         * 比较两个对象的不同，提取出不同的数据
-         * @param target 用于检测不同的数据
-         * @param defaultInstance   模板（默认）数据
-         * @param different 比较得出的不同（简单结构）数据
-         * @returns 比较得出的不同（简单结构）数据
+         * 反序列化转换函数
          */
-        different<T>(target: T, defaultInstance: T, different?: gPartial<T>)
-        {
-            different = different || {};
-            if (target == defaultInstance) return different;
-            if (defaultInstance == null)
-            {
-                different = this.serialize(target);
-                return different;
-            }
-            var serializableMembers = getSerializableMembers(target);
-            if (target.constructor == Object)
-                serializableMembers = Object.keys(target);
-            for (var i = 0; i < serializableMembers.length; i++)
-            {
-                var property = serializableMembers[i];
-                let propertyValue = target[property];
-                let defaultPropertyValue = defaultInstance[property];
-                if (propertyValue === defaultPropertyValue)
-                    continue;
-
-                if (defaultPropertyValue == null || Object.isBaseType(propertyValue) || Array.isArray(propertyValue) || defaultPropertyValue.constructor != propertyValue.constructor)
-                {
-                    different[property] = this.serialize(propertyValue);
-                } else
-                {
-                    if (AssetData.isAssetData(propertyValue))
-                    {
-                        different[property] = this.serialize(propertyValue);
-                    } else
-                    {
-                        var diff = this.different(propertyValue, defaultPropertyValue);
-                        if (Object.keys(diff).length > 0)
-                            different[property] = diff;
-                    }
-                }
-            }
-            return different;
-        }
+        deserializeReplacers: SerializeReplacer[] = [];
 
         /**
          * 反序列化
@@ -206,8 +160,57 @@ namespace feng3d
                 return target["deserialize"](object);
 
             //默认反序列
-            this.setValue(target, object);
+            for (const property in object)
+            {
+                this.setPropertyValue(target, object, property);
+            }
             return target;
+        }
+
+        /**
+         * 比较两个对象的不同，提取出不同的数据
+         * @param target 用于检测不同的数据
+         * @param defaultInstance   模板（默认）数据
+         * @param different 比较得出的不同（简单结构）数据
+         * @returns 比较得出的不同（简单结构）数据
+         */
+        different<T>(target: T, defaultInstance: T, different?: gPartial<T>)
+        {
+            different = different || {};
+            if (target == defaultInstance) return different;
+            if (defaultInstance == null)
+            {
+                different = this.serialize(target);
+                return different;
+            }
+            var serializableMembers = getSerializableMembers(target);
+            if (target.constructor == Object)
+                serializableMembers = Object.keys(target);
+            for (var i = 0; i < serializableMembers.length; i++)
+            {
+                var property = serializableMembers[i];
+                let propertyValue = target[property];
+                let defaultPropertyValue = defaultInstance[property];
+                if (propertyValue === defaultPropertyValue)
+                    continue;
+
+                if (defaultPropertyValue == null || Object.isBaseType(propertyValue) || Array.isArray(propertyValue) || defaultPropertyValue.constructor != propertyValue.constructor)
+                {
+                    different[property] = this.serialize(propertyValue);
+                } else
+                {
+                    if (AssetData.isAssetData(propertyValue))
+                    {
+                        different[property] = this.serialize(propertyValue);
+                    } else
+                    {
+                        var diff = this.different(propertyValue, defaultPropertyValue);
+                        if (Object.keys(diff).length > 0)
+                            different[property] = diff;
+                    }
+                }
+            }
+            return different;
         }
 
         /**

@@ -287,23 +287,15 @@ declare namespace feng3d {
          */
         serializeReplacers: SerializeReplacer[];
         /**
-         * 反序列化转换函数
-         */
-        deserializeReplacers: SerializeReplacer[];
-        /**
          * 序列化对象
          * @param target 被序列化的对象
          * @returns 序列化后可以转换为Json的数据对象
          */
         serialize<T>(target: T): gPartial<T>;
         /**
-         * 比较两个对象的不同，提取出不同的数据
-         * @param target 用于检测不同的数据
-         * @param defaultInstance   模板（默认）数据
-         * @param different 比较得出的不同（简单结构）数据
-         * @returns 比较得出的不同（简单结构）数据
+         * 反序列化转换函数
          */
-        different<T>(target: T, defaultInstance: T, different?: gPartial<T>): gPartial<T>;
+        deserializeReplacers: SerializeReplacer[];
         /**
          * 反序列化
          *
@@ -313,6 +305,14 @@ declare namespace feng3d {
          * @returns 反序列化后的数据
          */
         deserialize<T>(object: gPartial<T>): T;
+        /**
+         * 比较两个对象的不同，提取出不同的数据
+         * @param target 用于检测不同的数据
+         * @param defaultInstance   模板（默认）数据
+         * @param different 比较得出的不同（简单结构）数据
+         * @returns 比较得出的不同（简单结构）数据
+         */
+        different<T>(target: T, defaultInstance: T, different?: gPartial<T>): gPartial<T>;
         /**
          * 从数据对象中提取数据给目标对象赋值
          * @param target 目标对象
