@@ -67,43 +67,15 @@ namespace feng3d
      */
     export class Serialization
     {
-        
-
-        /**
-         * 添加序列化属性函数
-         * 
-         * @param handlers 序列化属性函数列表
-         */
-        addSerializeHandlers(...handlers: (PropertyHandler | ConcatArray<PropertyHandler>)[])
-        {
-            handlers.forEach(v =>
-            {
-                this._serializeReplacers.concatToSelf(v);
-            });
-        }
-
-        /**
-         * 添加反序列化属性函数
-         * 
-         * @param handlers 序列化属性函数列表
-         */
-        addDeserializeHandlers(...handlers: (PropertyHandler | ConcatArray<PropertyHandler>)[])
-        {
-            handlers.forEach(v =>
-            {
-                this._deserializeReplacers.concatToSelf(v);
-            })
-        }
-
         /**
          * 序列化转换函数
          */
-        private _serializeReplacers: PropertyHandler[] = [];
+        serializePropertyHandlers: { priority: number, handler: PropertyHandler }[] = [];
 
         /**
          * 反序列化转换函数
          */
-        private _deserializeReplacers: PropertyHandler[] = [];
+        deserializePropertyHandlers: { priority: number, handler: PropertyHandler }[] = [];
 
         /**
          * 序列化对象
@@ -112,8 +84,9 @@ namespace feng3d
          */
         serialize<T>(target: T): gPartial<T>
         {
+            var handlers = this.serializePropertyHandlers.sort((a, b) => b.priority - a.priority).map(v => v.handler);
             var result = {};
-            propertyHandler(result, { "": target }, "", this._serializeReplacers);
+            propertyHandler(result, { "": target }, "", handlers);
             var v = result[""];
             return v;
         }
@@ -128,8 +101,9 @@ namespace feng3d
          */
         deserialize<T>(object: gPartial<T>): T
         {
+            var handlers = this.deserializePropertyHandlers.sort((a, b) => b.priority - a.priority).map(v => v.handler);
             var result = {};
-            propertyHandler(result, { "": object }, "", this._deserializeReplacers);
+            propertyHandler(result, { "": object }, "", handlers);
             var v = result[""];
             return v;
         }
@@ -294,235 +268,286 @@ namespace feng3d
 
     serialization = new Serialization();
 
-    serialization.addSerializeHandlers(
+    serialization.serializePropertyHandlers.push(
         //基础类型
-        function (target, source, property)
         {
-            var spv = source[property];
-            if (Object.isBaseType(spv))
+            priority: 0,
+            handler: function (target, source, property)
             {
-                target[property] = spv;
-                return true;
+                var spv = source[property];
+                if (Object.isBaseType(spv))
+                {
+                    target[property] = spv;
+                    return true;
+                }
+                return false;
             }
-            return false;
         },
         //处理方法
-        function (target, source, property)
         {
-            var spv = source[property];
-            if (spv && typeof spv == "function")
+            priority: 0,
+            handler: function (target, source, property)
             {
-                let object: any = {};
-                object[CLASS_KEY] = "function";
-                object.data = spv.toString();
-                target[property] = object;
-                return true;
+                var spv = source[property];
+                if (spv && typeof spv == "function")
+                {
+                    let object: any = {};
+                    object[CLASS_KEY] = "function";
+                    object.data = spv.toString();
+                    target[property] = object;
+                    return true;
+                }
+                return false;
             }
-            return false;
         },
         // 排除不支持序列化对象 serializable == false 时不进行序列化
-        function (target, source, property)
         {
-            var spv = source[property];
-            if (spv && spv["serializable"] == false)
+            priority: 0,
+            handler: function (target, source, property)
             {
-                return true;
+                var spv = source[property];
+                if (spv && spv["serializable"] == false)
+                {
+                    return true;
+                }
+                return false;
             }
-            return false;
         },
         // 处理 Feng3dObject
-        function (target, source, property)
         {
-            var spv = source[property];
-            if (spv instanceof Feng3dObject && (spv.hideFlags & HideFlags.DontSave))
+            priority: 0,
+            handler: function (target, source, property)
             {
-                return true;
+                var spv = source[property];
+                if (spv instanceof Feng3dObject && (spv.hideFlags & HideFlags.DontSave))
+                {
+                    return true;
+                }
+                return false;
             }
-            return false;
         },
         // 处理资源
-        function (target, source, property)
         {
-            var spv = source[property];
-            if (AssetData.isAssetData(spv))
+            priority: 0,
+            handler: function (target, source, property)
             {
-                target[property] = AssetData.serialize(<any>spv);
-                return true;
+                var spv = source[property];
+                if (AssetData.isAssetData(spv))
+                {
+                    target[property] = AssetData.serialize(<any>spv);
+                    return true;
+                }
+                return false;
             }
-            return false;
         },
         // 自定义序列化函数
-        function (target, source, property)
         {
-            var spv = source[property];
-            if (spv && spv["serialize"])
+            priority: 0,
+            handler: function (target, source, property)
             {
-                let object = {};
-                object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
-                spv["serialize"](object);
-                target[property] = object;
-                return true;
+                var spv = source[property];
+                if (spv && spv["serialize"])
+                {
+                    let object = {};
+                    object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
+                    spv["serialize"](object);
+                    target[property] = object;
+                    return true;
+                }
+                return false;
             }
-            return false;
         },
         //处理数组
-        function (target, source, property, replacers)
         {
-            var spv = source[property];
-            if (Array.isArray(spv))
+            priority: 0,
+            handler: function (target, source, property, replacers)
             {
-                let arr = [];
-                let keys = Object.keys(spv);
-                keys.forEach(v =>
+                var spv = source[property];
+                if (Array.isArray(spv))
                 {
-                    propertyHandler(arr, spv, v, replacers);
-                });
-                target[property] = arr;
-                return true;
+                    let arr = [];
+                    let keys = Object.keys(spv);
+                    keys.forEach(v =>
+                    {
+                        propertyHandler(arr, spv, v, replacers);
+                    });
+                    target[property] = arr;
+                    return true;
+                }
+                return false;
             }
-            return false;
         },
         //处理普通Object
-        function (target, source, property, replacers)
         {
-            var spv = source[property];
-            if (Object.isObject(spv))
+            priority: 0,
+            handler: function (target, source, property, replacers)
             {
-                let object = <any>{};
-                let keys = Object.keys(spv);
-                keys.forEach(key =>
+                var spv = source[property];
+                if (Object.isObject(spv))
                 {
-                    propertyHandler(object, spv, key, replacers);
+                    let object = <any>{};
+                    let keys = Object.keys(spv);
+                    keys.forEach(key =>
+                    {
+                        propertyHandler(object, spv, key, replacers);
+                    });
+                    target[property] = object;
+                    return true;
+                }
+                return false;
+            }
+        },
+        //使用默认序列化
+        {
+            priority: 0,
+            handler: function (target, source, property, replacers)
+            {
+                var spv = source[property];
+                let object = {};
+                object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
+                var keys = getSerializableMembers(spv);
+                keys.forEach(v =>
+                {
+                    propertyHandler(object, spv, v, replacers);
                 });
                 target[property] = object;
                 return true;
             }
-            return false;
-        },
-        //使用默认序列化
-        function (target, source, property, replacers)
-        {
-            var spv = source[property];
-            let object = {};
-            object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
-            var keys = getSerializableMembers(spv);
-            keys.forEach(v =>
-            {
-                propertyHandler(object, spv, v, replacers);
-            });
-            target[property] = object;
-            return true;
         },
     );
 
-    serialization.addDeserializeHandlers(
+    serialization.deserializePropertyHandlers.push(
         //基础类型
-        function (target, source, property)
         {
-            var spv = source[property];
-            if (Object.isBaseType(spv))
+            priority: 0,
+            handler: function (target, source, property)
             {
-                target[property] = spv;
-                return true;
+                var spv = source[property];
+                if (Object.isBaseType(spv))
+                {
+                    target[property] = spv;
+                    return true;
+                }
+                return false;
             }
-            return false;
         },
         //处理方法
-        function (target, source, property)
         {
-            var spv = source[property];
-            if (spv && spv[CLASS_KEY] == "function")
+            priority: 0,
+            handler: function (target, source, property)
             {
-                target[property] = eval(`(${spv.data})`);
-                return true;
+                var spv = source[property];
+                if (spv && spv[CLASS_KEY] == "function")
+                {
+                    target[property] = eval(`(${spv.data})`);
+                    return true;
+                }
+                return false;
             }
-            return false;
         },
         //处理数组
-        function (target, source, property, replacers)
         {
-            var spv = source[property];
-            if (Array.isArray(spv))
+            priority: 0,
+            handler: function (target, source, property, replacers)
             {
-                var arr = [];
-                for (const key in spv)
+                var spv = source[property];
+                if (Array.isArray(spv))
                 {
-                    propertyHandler(arr, spv, key, replacers);
+                    var arr = [];
+                    for (const key in spv)
+                    {
+                        propertyHandler(arr, spv, key, replacers);
+                    }
+                    target[property] = arr;
+                    return true;
                 }
-                target[property] = arr;
-                return true;
+                return false;
             }
-            return false;
         },
         // 处理 没有类名称标记的 普通Object
-        function (target, source, property, replacers)
         {
-            var spv = source[property];
-            if (Object.isObject(spv) && spv[CLASS_KEY] == null)
+            priority: 0,
+            handler: function (target, source, property, replacers)
             {
-                var obj = {};
-                for (var key in spv)
+                var spv = source[property];
+                if (Object.isObject(spv) && spv[CLASS_KEY] == null)
                 {
-                    propertyHandler(obj, spv, key, replacers);
+                    var obj = {};
+                    for (var key in spv)
+                    {
+                        propertyHandler(obj, spv, key, replacers);
+                    }
+                    target[property] = obj;
+                    return true;
                 }
-                target[property] = obj;
-                return true;
+                return false;
             }
-            return false;
         },
         // 处理非原生Object对象
-        function (target, source, property)
         {
-            var spv = source[property];
-            if (!Object.isObject(spv))
+            priority: 0,
+            handler: function (target, source, property)
             {
-                target[property] = spv;
-                return true;
+                var spv = source[property];
+                if (!Object.isObject(spv))
+                {
+                    target[property] = spv;
+                    return true;
+                }
+                return false;
             }
-            return false;
         },
         // 处理资源
-        function (target, source, property, replacers)
         {
-            var spv = source[property];
-            if (AssetData.isAssetData(spv))
+            priority: 0,
+            handler: function (target, source, property, replacers)
             {
-                target[property] = AssetData.deserialize(spv);
-                return true;
+                var spv = source[property];
+                if (AssetData.isAssetData(spv))
+                {
+                    target[property] = AssetData.deserialize(spv);
+                    return true;
+                }
+                return false;
             }
-            return false;
         },
         // 处理自定义反序列化对象
-        function (target, source, property, replacers)
         {
-            var spv = source[property];
-            var inst = classUtils.getInstanceByName(spv[CLASS_KEY]);
-            //处理自定义反序列化对象
-            if (inst && inst["deserialize"])
+            priority: 0,
+            handler: function (target, source, property, replacers)
             {
-                inst["deserialize"](spv);
-                target[property] = inst;
-                return true;
+                var spv = source[property];
+                var inst = classUtils.getInstanceByName(spv[CLASS_KEY]);
+                //处理自定义反序列化对象
+                if (inst && inst["deserialize"])
+                {
+                    inst["deserialize"](spv);
+                    target[property] = inst;
+                    return true;
+                }
+                return false;
             }
-            return false;
         },
         // 处理自定义对象的反序列化 
-        function (target, source, property, replacers)
         {
-            var spv = source[property];
-            var inst = classUtils.getInstanceByName(spv[CLASS_KEY]);
-            if (inst)
+            priority: 0,
+            handler: function (target, source, property, replacers)
             {
-                //默认反序列
-                for (const key in spv)
+                var spv = source[property];
+                var inst = classUtils.getInstanceByName(spv[CLASS_KEY]);
+                if (inst)
                 {
-                    if (CLASS_KEY == key) continue;
-                    propertyHandler(inst, spv, key, replacers);
+                    //默认反序列
+                    for (const key in spv)
+                    {
+                        if (CLASS_KEY == key) continue;
+                        propertyHandler(inst, spv, key, replacers);
+                    }
+                    target[property] = inst;
+                    return true;
                 }
-                target[property] = inst;
-                return true;
+                return false;
             }
-            return false;
         },
     );
 }

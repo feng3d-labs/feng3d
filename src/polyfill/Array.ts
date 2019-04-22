@@ -46,22 +46,9 @@ Array.prototype.equal = function (arr: ArrayLike<any>)
 Array.prototype.concatToSelf = function (...items)
 {
     var self: any[] = this;
-    for (let i = 0; i < items.length; i++)
-    {
-        const element = items[i];
-        if (Array.isArray(element))
-        {
-            var selfLen = self.length;
-            element.forEach((v, i) =>
-            {
-                self[selfLen + i] = v;
-            });
-            self.length = selfLen + element.length;
-        } else
-        {
-            self.push(element);
-        }
-    }
+    var arr = [];
+    items.forEach(v => arr = arr.concat(v));
+    arr.forEach(v => self.push(v));
     return self;
 }
 

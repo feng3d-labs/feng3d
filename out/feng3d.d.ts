@@ -283,25 +283,19 @@ declare namespace feng3d {
      */
     class Serialization {
         /**
-         * 添加序列化属性函数
-         *
-         * @param handlers 序列化属性函数列表
-         */
-        addSerializeHandlers(...handlers: (PropertyHandler | ConcatArray<PropertyHandler>)[]): void;
-        /**
-         * 添加反序列化属性函数
-         *
-         * @param handlers 序列化属性函数列表
-         */
-        addDeserializeHandlers(...handlers: (PropertyHandler | ConcatArray<PropertyHandler>)[]): void;
-        /**
          * 序列化转换函数
          */
-        private _serializeReplacers;
+        serializePropertyHandlers: {
+            priority: number;
+            handler: PropertyHandler;
+        }[];
         /**
          * 反序列化转换函数
          */
-        private _deserializeReplacers;
+        deserializePropertyHandlers: {
+            priority: number;
+            handler: PropertyHandler;
+        }[];
         /**
          * 序列化对象
          * @param target 被序列化的对象
