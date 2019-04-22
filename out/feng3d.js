@@ -674,25 +674,6 @@ var feng3d;
         }
         return true;
     }
-    /**
-     * 反序列化对象属性
-     *
-     * 序列化对象时建议使用 serialization.deserialize
-     *
-     * @param target 序列化后的对象，存放序列化后属性值的对象。
-     * @param source 被序列化的对象，提供序列化前属性值的对象。
-     * @param property 序列化属性
-     * @param replacers 序列化属性函数（列表）
-     * @param serialization 序列化工具对象，该工具内存储了默认序列化属性函数列表。
-     */
-    function deserializeProperty(target, source, property, replacers) {
-        for (var i = 0; i < replacers.length; i++) {
-            if (replacers[i](target, source, property, replacers)) {
-                return true;
-            }
-        }
-        return true;
-    }
     // /**
     //  * Object.assignDeep 中 转换结果的函数定义
     //  */

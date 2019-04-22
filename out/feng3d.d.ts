@@ -273,7 +273,7 @@ declare namespace feng3d {
      * @param property 序列化属性
      * @param replacers 序列化属性函数列表
      */
-    function serializeProperty(target: Object, source: Object, property: string, replacers: SerializeReplacer[]): boolean;
+    function serializeProperty(target: Object, source: Object, property: string, replacers: typeof serializeProperty[]): boolean;
     interface SerializationComponent {
         /**
          * 名称
@@ -299,21 +299,6 @@ declare namespace feng3d {
         };
     }
     /**
-     * Object.assignDeep 中 转换结果的函数定义
-     */
-    interface SerializeReplacer {
-        /**
-         *
-         * @param target 目标对象
-         * @param source 源数据
-         * @param property 属性名称
-         * @param replacers 转换函数
-         * @param deep 当前深度
-         * @returns 返回true时结束该属性后续处理。
-         */
-        (target: any, source: any, property: string, replacers: SerializeReplacer[]): boolean;
-    }
-    /**
      * 序列化
      */
     class Serialization {
@@ -325,7 +310,7 @@ declare namespace feng3d {
         /**
          * 反序列化转换函数
          */
-        deserializeReplacers: SerializeReplacer[];
+        deserializeReplacers: (typeof serializeProperty)[];
         /**
          * 序列化对象
          * @param target 被序列化的对象
