@@ -686,7 +686,93 @@ var feng3d;
             /**
              * 反序列化转换函数
              */
-            this.deserializeReplacers = [];
+            this.deserializeReplacers = [
+                //处理方法
+                function (target, source, property) {
+                    var spv = source[property];
+                    if (spv[feng3d.CLASS_KEY] == "function") {
+                        target[property] = eval("(" + spv.data + ")");
+                        return true;
+                    }
+                    return false;
+                },
+                //基础类型
+                function (target, source, property) {
+                    var spv = source[property];
+                    if (Object.isBaseType(spv)) {
+                        target[property] = spv;
+                        return true;
+                    }
+                    return false;
+                },
+                //处理数组
+                function (target, source, property) {
+                    var _this = this;
+                    var spv = source[property];
+                    if (Array.isArray(spv)) {
+                        target[property] = spv.map(function (v) { return _this.deserialize(v); });
+                        return true;
+                    }
+                    return false;
+                },
+                // 处理非原生Object对象
+                function (target, source, property) {
+                    var spv = source[property];
+                    if (!Object.isObject(spv)) {
+                        target[property] = spv;
+                        return true;
+                    }
+                    return false;
+                },
+                // 处理 没有类名称标记的 普通Object
+                function (target, source, property, replacers) {
+                    var spv = source[property];
+                    if (Object.isObject(spv) && spv[feng3d.CLASS_KEY] == null) {
+                        var obj = {};
+                        for (var key in spv) {
+                            serializeProperty(obj, spv, key, replacers);
+                        }
+                        target[property] = obj;
+                        return true;
+                    }
+                    return false;
+                },
+                // 处理资源
+                function (target, source, property, replacers) {
+                    var spv = source[property];
+                    if (feng3d.AssetData.isAssetData(spv)) {
+                        target[property] = feng3d.AssetData.deserialize(spv);
+                        return true;
+                    }
+                    return false;
+                },
+                // 处理自定义反序列化对象
+                function (target, source, property, replacers) {
+                    var spv = source[property];
+                    var inst = feng3d.classUtils.getInstanceByName(spv[feng3d.CLASS_KEY]);
+                    //处理自定义反序列化对象
+                    if (inst && inst["deserialize"]) {
+                        inst["deserialize"](spv);
+                        target[property] = inst;
+                        return true;
+                    }
+                    return false;
+                },
+                // 处理自定义对象的反序列化 
+                function (target, source, property, replacers) {
+                    var spv = source[property];
+                    var inst = feng3d.classUtils.getInstanceByName(spv[feng3d.CLASS_KEY]);
+                    if (inst) {
+                        //默认反序列
+                        for (var key in spv) {
+                            this.setPropertyValue(inst, spv, key);
+                        }
+                        target[property] = inst;
+                        return true;
+                    }
+                    return false;
+                },
+            ];
         }
         /**
          * 序列化对象
@@ -708,60 +794,10 @@ var feng3d;
          * @returns 反序列化后的数据
          */
         Serialization.prototype.deserialize = function (object) {
-            var _this = this;
-            //基础类型
-            if (Object.isBaseType(object))
-                return object;
-            if (feng3d.debuger && Object.isObject(object)) {
-                var assetids = feng3d.rs.getAssetsWithObject(object);
-                var assets = assetids.reduce(function (pv, cv) { var r = feng3d.AssetData.getLoadedAssetData(cv); if (r)
-                    pv.push(r); return pv; }, []);
-                console.assert(assetids.length == assets.length, "\u5B58\u5728\u8D44\u6E90\u672A\u52A0\u8F7D\uFF0C\u8BF7\u4F7F\u7528 deserializeWithAssets \u8FDB\u884C\u53CD\u5E8F\u5217\u5316");
-            }
-            //处理数组
-            if (Array.isArray(object)) {
-                var arr = object.map(function (v) { return _this.deserialize(v); });
-                return arr;
-            }
-            if (!Object.isObject(object)) {
-                return object;
-            }
-            // 获取类型
-            var className = object[feng3d.CLASS_KEY];
-            // 处理普通Object
-            if (className == "Object" || className == null) {
-                var target = {};
-                for (var key in object) {
-                    if (key != feng3d.CLASS_KEY)
-                        target[key] = this.deserialize(object[key]);
-                }
-                return target;
-            }
-            //处理方法
-            if (className == "function") {
-                var f;
-                eval("f=" + object.data);
-                return f;
-            }
-            var cls = feng3d.classUtils.getDefinitionByName(className);
-            if (!cls) {
-                console.warn("\u65E0\u6CD5\u5E8F\u5217\u53F7\u5BF9\u8C61 " + className);
-                return undefined;
-            }
-            target = new cls();
-            // 处理资源
-            if (feng3d.AssetData.isAssetData(object)) {
-                target = feng3d.AssetData.deserialize(object);
-                return target;
-            }
-            //处理自定义反序列化对象
-            if (target["deserialize"])
-                return target["deserialize"](object);
-            //默认反序列
-            for (var property in object) {
-                this.setPropertyValue(target, object, property);
-            }
-            return target;
+            var result = {};
+            serializeProperty(result, { "": object }, "", this.serializeReplacers);
+            var v = result[""];
+            return v;
         };
         /**
          * 比较两个对象的不同，提取出不同的数据

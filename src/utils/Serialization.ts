@@ -88,7 +88,110 @@ namespace feng3d
         /**
          * 反序列化转换函数
          */
-        deserializeReplacers: SerializeReplacer[] = [];
+        deserializeReplacers: SerializeReplacer[] = [
+            //处理方法
+            function (target, source, property)
+            {
+                var spv = source[property];
+                if (spv[CLASS_KEY] == "function")
+                {
+                    target[property] = eval(`(${spv.data})`);
+                    return true;
+                }
+                return false;
+            },
+            //基础类型
+            function (target, source, property)
+            {
+                var spv = source[property];
+                if (Object.isBaseType(spv))
+                {
+                    target[property] = spv;
+                    return true;
+                }
+                return false;
+            },
+            //处理数组
+            function (target, source, property)
+            {
+                var spv = source[property];
+                if (Array.isArray(spv))
+                {
+                    target[property] = spv.map(v => this.deserialize(v));
+                    return true;
+                }
+                return false;
+            },
+            // 处理非原生Object对象
+            function (target, source, property)
+            {
+                var spv = source[property];
+                if (!Object.isObject(spv))
+                {
+                    target[property] = spv;
+                    return true;
+                }
+                return false;
+            },
+            // 处理 没有类名称标记的 普通Object
+            function (target, source, property, replacers)
+            {
+                var spv = source[property];
+                if (Object.isObject(spv) && spv[CLASS_KEY] == null)
+                {
+                    var obj = {};
+                    for (var key in spv)
+                    {
+                        serializeProperty(obj, spv, key, replacers);
+                    }
+                    target[property] = obj;
+                    return true;
+                }
+                return false;
+            },
+            // 处理资源
+            function (target, source, property, replacers)
+            {
+                var spv = source[property];
+                if (AssetData.isAssetData(spv))
+                {
+                    target[property] = AssetData.deserialize(spv);
+                    return true;
+                }
+                return false;
+            },
+            // 处理自定义反序列化对象
+            function (target, source, property, replacers)
+            {
+                var spv = source[property];
+                var inst = classUtils.getInstanceByName(spv[CLASS_KEY]);
+                //处理自定义反序列化对象
+                if (inst && inst["deserialize"])
+                {
+                    inst["deserialize"](spv);
+                    target[property] = inst;
+                    return true;
+                }
+                return false;
+            },
+            // 处理自定义对象的反序列化 
+            function (target, source, property, replacers)
+            {
+                var spv = source[property];
+                var inst = classUtils.getInstanceByName(spv[CLASS_KEY]);
+                if (inst)
+                {
+                    //默认反序列
+                    for (const key in spv)
+                    {
+                        this.setPropertyValue(inst, spv, key);
+                    }
+                    target[property] = inst;
+                    return true;
+                }
+                return false;
+            },
+        ];
 
         /**
          * 反序列化
@@ -100,71 +203,10 @@ namespace feng3d
          */
         deserialize<T>(object: gPartial<T>): T
         {
-            //基础类型
-            if (Object.isBaseType(object)) return <any>object;
-
-            if (debuger && Object.isObject(object))
-            {
-                let assetids = rs.getAssetsWithObject(object);
-                var assets = assetids.reduce((pv, cv) => { var r = AssetData.getLoadedAssetData(cv); if (r) pv.push(r); return pv; }, []);
-                console.assert(assetids.length == assets.length, `存在资源未加载，请使用 deserializeWithAssets 进行反序列化`)
-            }
-            //处理数组
-            if (Array.isArray(object))
-            {
-                var arr = object.map(v => this.deserialize(v));
-                return <any>arr;
-            }
-            if (!Object.isObject(object))
-            {
-                return <any>object;
-            }
-            // 获取类型
-            var className: string = object[CLASS_KEY];
-            // 处理普通Object
-            if (className == "Object" || className == null)
-            {
-                var target: T = <any>{};
-                for (var key in object)
-                {
-                    if (key != CLASS_KEY) target[key] = this.deserialize(object[key]);
-                }
-                return target;
-            }
-
-            //处理方法
-            if (className == "function")
-            {
-                var f;
-                eval("f=" + (<any>object).data);
-                return f;
-            }
-
-            var cls = classUtils.getDefinitionByName(className);
-            if (!cls)
-            {
-                console.warn(`无法序列号对象 ${className}`);
-                return undefined;
-            }
-            target = new cls();
-
-            // 处理资源
-            if (AssetData.isAssetData(object))
-            {
-                target = <any>AssetData.deserialize(object);
-                return target;
-            }
-
-            //处理自定义反序列化对象
-            if (target["deserialize"])
-                return target["deserialize"](object);
-
-            //默认反序列
-            for (const property in object)
-            {
-                this.setPropertyValue(target, object, property);
-            }
-            return target;
+            var result = {};
+            serializeProperty(result, { "": object }, "", this.serializeReplacers);
+            var v = result[""];
+            return v;
         }
 
         /**
