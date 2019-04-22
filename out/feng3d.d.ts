@@ -102,7 +102,7 @@ declare namespace feng3d {
 /**
  * Object.assignDeep 中 转换结果的函数定义
  */
-interface AssignDeepReplacer {
+interface AssignDeepHandler {
     /**
      *
      * @param target 目标对象
@@ -111,7 +111,7 @@ interface AssignDeepReplacer {
      * @param replacers 转换函数
      * @param deep 当前深度
      */
-    (target: any, source: any, key: string, replacers: AssignDeepReplacer[], deep: number): boolean;
+    (target: any, source: any, key: string, replacers: AssignDeepHandler[], deep: number): boolean;
 }
 interface ObjectConstructor {
     /**
@@ -150,10 +150,10 @@ interface ObjectConstructor {
      *
      * @param target 被赋值对象
      * @param source 源数据
-     * @param replacers 转换结果的函数。返回值为true表示该属性赋值已完成跳过默认属性赋值操作，否则执行默认属性赋值操作。执行在 Object.DefaultAssignDeepReplacers 前。
+     * @param handlers 处理函数列表，先于 Object.assignDeepDefaultHandlers 执行。函数返回值为true表示该属性赋值已完成跳过默认属性赋值操作，否则执行默认属性赋值操作。执行在 Object.DefaultAssignDeepReplacers 前。
      * @param deep 赋值深度，deep<1时直接返回。
      */
-    assignDeep<T>(target: T, source: feng3d.gPartial<T>, replacers?: AssignDeepReplacer | AssignDeepReplacer[], deep?: number): T;
+    assignDeep<T>(target: T, source: feng3d.gPartial<T>, handlers?: AssignDeepHandler | AssignDeepHandler[], deep?: number): T;
     /**
      * 深度比较两个对象子代可枚举属性值
      *
@@ -175,7 +175,7 @@ interface ObjectConstructor {
     /**
      * Object.assignDeep 中 默认转换结果的函数列表
      */
-    DefaultAssignDeepReplacers: AssignDeepReplacer[];
+    assignDeepDefaultHandlers: AssignDeepHandler[];
 }
 interface Map<K, V> {
     getKeys(): K[];

@@ -497,7 +497,7 @@ Object.assignDeep = function (target, source, replacers, deep) {
     var keys = Object.keys(source);
     keys.forEach(function (k) {
         //
-        var handles = [].concat(replacers).concat(Object.DefaultAssignDeepReplacers);
+        var handles = [].concat(replacers).concat(Object.assignDeepDefaultHandlers);
         for (var i = 0; i < handles.length; i++) {
             if (handles[i](target, source, k, replacers, deep)) {
                 return;
@@ -508,20 +508,20 @@ Object.assignDeep = function (target, source, replacers, deep) {
     });
     return target;
 };
-Object.DefaultAssignDeepReplacers = [
-    function (target, source, key, replacers, deep) {
+Object.assignDeepDefaultHandlers = [
+    function (target, source, key) {
         if (target[key] == source[key])
             return true;
     },
-    function (target, source, key, replacers, deep) {
+    function (target, source, key) {
         if (Object.isBaseType(target[key]) || Object.isBaseType(source[key])) {
             target[key] = source[key];
             return true;
         }
     },
-    function (target, source, key, replacers, deep) {
+    function (target, source, key, handlers, deep) {
         if (Array.isArray(source[key]) || Object.isObject(source[key])) {
-            Object.assignDeep(target[key], source[key], replacers, deep - 1);
+            Object.assignDeep(target[key], source[key], handlers, deep - 1);
             return true;
         }
     },
