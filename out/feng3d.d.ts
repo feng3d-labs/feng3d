@@ -251,11 +251,14 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 序列化
+     * 默认序列化工具
      */
     var serialization: Serialization;
     /**
-     * 序列化装饰器，被装饰属性将被序列化
+     * 序列化装饰器
+     *
+     * 在属性定义前使用 @serialize 进行标记需要序列化
+     *
      * @param {*} target                序列化原型
      * @param {string} propertyKey      序列化属性
      */
@@ -292,12 +295,12 @@ declare namespace feng3d {
          *
          * @param target 目标对象
          * @param source 源数据
-         * @param key 属性名称
+         * @param property 属性名称
          * @param replacers 转换函数
          * @param deep 当前深度
          * @returns 返回true时结束该属性后续处理。
          */
-        (target: any, source: any, key: string, replacers?: SerializeReplacer | SerializeReplacer[]): boolean;
+        (target: any, source: any, property: string, replacers: SerializeReplacer | SerializeReplacer[], serialization: Serialization): boolean;
     }
     /**
      * 序列化
@@ -311,7 +314,6 @@ declare namespace feng3d {
          * @returns 序列化后可以转换为Json的数据对象
          */
         serialize<T>(target: T): gPartial<T>;
-        private serializeProperty;
         /**
          * 比较两个对象的不同，提取出不同的数据
          * @param target 用于检测不同的数据

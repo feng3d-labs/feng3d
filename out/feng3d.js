@@ -641,7 +641,10 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 序列化装饰器，被装饰属性将被序列化
+     * 序列化装饰器
+     *
+     * 在属性定义前使用 @serialize 进行标记需要序列化
+     *
      * @param {*} target                序列化原型
      * @param {string} propertyKey      序列化属性
      */
@@ -654,13 +657,33 @@ var feng3d;
     }
     feng3d.serialize = serialize;
     /**
+     * 序列化对象属性
+     *
+     * 序列化对象时建议使用 serialization.serialize
+     *
+     * @param target 序列化后的对象，存放序列化后属性值的对象。
+     * @param source 被序列化的对象，提供序列化前属性值的对象。
+     * @param property 序列化属性
+     * @param replacers 序列化属性函数（列表）
+     * @param serialization 序列化工具对象，该工具内存储了默认序列化属性函数列表。
+     */
+    function serializeProperty(target, source, property, replacers, serialization) {
+        var handles = [].concat(replacers).concat(serialization.serializeReplacers);
+        for (var i = 0; i < handles.length; i++) {
+            if (handles[i] && handles[i](target, source, property, replacers, serialization)) {
+                return true;
+            }
+        }
+        return true;
+    }
+    /**
      * 序列化
      */
     var Serialization = /** @class */ (function () {
         function Serialization() {
             this.components = [];
             this.serializeReplacers = [
-                function (target, source, property, replacers) {
+                function (target, source, property) {
                     var spv = source[property];
                     //处理方法
                     if (typeof spv == "function") {
@@ -672,7 +695,7 @@ var feng3d;
                     }
                     return false;
                 },
-                function (target, source, property, replacers) {
+                function (target, source, property) {
                     var spv = source[property];
                     //基础类型
                     if (Object.isBaseType(spv)) {
@@ -681,7 +704,7 @@ var feng3d;
                     }
                     return false;
                 },
-                function (target, source, property, replacers) {
+                function (target, source, property) {
                     var spv = source[property];
                     // 排除不支持序列化对象 serializable == false 时不进行序列化
                     if (spv && spv["serializable"] == false) {
@@ -689,14 +712,14 @@ var feng3d;
                     }
                     return false;
                 },
-                function (target, source, property, replacers) {
+                function (target, source, property) {
                     var spv = source[property];
                     if (spv instanceof feng3d.Feng3dObject && (spv.hideFlags & feng3d.HideFlags.DontSave)) {
                         return true;
                     }
                     return false;
                 },
-                function (target, source, property, replacers) {
+                function (target, source, property) {
                     var spv = source[property];
                     // 处理资源
                     if (feng3d.AssetData.isAssetData(spv)) {
@@ -705,7 +728,7 @@ var feng3d;
                     }
                     return false;
                 },
-                function (target, source, property, replacers) {
+                function (target, source, property) {
                     var spv = source[property];
                     if (spv["serialize"]) {
                         var object = {};
@@ -716,6 +739,46 @@ var feng3d;
                     }
                     return false;
                 },
+                function (target, source, property, replacers, serializable) {
+                    var spv = source[property];
+                    //处理数组
+                    if (Array.isArray(spv)) {
+                        var arr_1 = [];
+                        var keys = Object.keys(spv);
+                        keys.forEach(function (v) {
+                            serializeProperty(arr_1, spv, v, replacers, serializable);
+                        });
+                        target[property] = arr_1;
+                        return true;
+                    }
+                    return false;
+                },
+                function (target, source, property, replacers, serializable) {
+                    var spv = source[property];
+                    //处理普通Object
+                    if (Object.isObject(spv)) {
+                        var object_1 = {};
+                        var keys = Object.keys(spv);
+                        keys.forEach(function (key) {
+                            serializeProperty(object_1, spv, key, replacers, serializable);
+                        });
+                        target[property] = object_1;
+                        return true;
+                    }
+                    return false;
+                },
+                function (target, source, property, replacers, serializable) {
+                    var spv = source[property];
+                    //使用默认序列化
+                    var object = {};
+                    object[feng3d.CLASS_KEY] = feng3d.classUtils.getQualifiedClassName(spv);
+                    var keys = getSerializableMembers(spv);
+                    keys.forEach(function (v) {
+                        serializeProperty(object, spv, v, replacers, feng3d.serialization);
+                    });
+                    target[property] = object;
+                    return true;
+                },
             ];
         }
         /**
@@ -725,48 +788,9 @@ var feng3d;
          */
         Serialization.prototype.serialize = function (target) {
             var result = {};
-            this.serializeProperty(result, { "": target }, "");
+            serializeProperty(result, { "": target }, "", null, this);
             var v = result[""];
             return v;
-        };
-        Serialization.prototype.serializeProperty = function (target, source, property, replacers) {
-            var _this = this;
-            var spv = source[property];
-            var handles = [].concat(replacers).concat(this.serializeReplacers);
-            for (var i = 0; i < handles.length; i++) {
-                if (handles[i] && handles[i](target, source, property, replacers)) {
-                    return;
-                }
-            }
-            //处理数组
-            if (Array.isArray(spv)) {
-                var arr_1 = [];
-                var keys_1 = Object.keys(spv);
-                keys_1.forEach(function (v) {
-                    _this.serializeProperty(arr_1, spv, v);
-                });
-                target[property] = arr_1;
-                return;
-            }
-            //处理普通Object
-            if (Object.isObject(spv)) {
-                var object_1 = {};
-                var keys_2 = Object.keys(spv);
-                keys_2.forEach(function (key) {
-                    _this.serializeProperty(object_1, spv, key);
-                });
-                target[property] = object_1;
-                return;
-            }
-            //使用默认序列化
-            var object = {};
-            object[feng3d.CLASS_KEY] = feng3d.classUtils.getQualifiedClassName(spv);
-            var keys = getSerializableMembers(spv);
-            keys.forEach(function (v) {
-                _this.serializeProperty(object, spv, v);
-            });
-            target[property] = object;
-            return;
         };
         /**
          * 比较两个对象的不同，提取出不同的数据

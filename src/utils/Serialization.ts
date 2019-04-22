@@ -1,12 +1,15 @@
 namespace feng3d
 {
     /**
-     * 序列化
+     * 默认序列化工具
      */
     export var serialization: Serialization;
 
     /**
-     * 序列化装饰器，被装饰属性将被序列化
+     * 序列化装饰器
+     * 
+     * 在属性定义前使用 @serialize 进行标记需要序列化
+     * 
      * @param {*} target                序列化原型
      * @param {string} propertyKey      序列化属性
      */
@@ -18,6 +21,30 @@ namespace feng3d
         }
         var serializePropertys: string[] = target[SERIALIZE_KEY];
         serializePropertys.push(propertyKey);
+    }
+
+    /**
+     * 序列化对象属性
+     * 
+     * 序列化对象时建议使用 serialization.serialize
+     * 
+     * @param target 序列化后的对象，存放序列化后属性值的对象。
+     * @param source 被序列化的对象，提供序列化前属性值的对象。
+     * @param property 序列化属性
+     * @param replacers 序列化属性函数（列表）
+     * @param serialization 序列化工具对象，该工具内存储了默认序列化属性函数列表。
+     */
+    function serializeProperty(target: Object, source: Object, property: string, replacers: SerializeReplacer | SerializeReplacer[], serialization: Serialization)
+    {
+        var handles: SerializeReplacer[] = [].concat(replacers).concat(serialization.serializeReplacers);
+        for (let i = 0; i < handles.length; i++)
+        {
+            if (handles[i] && handles[i](target, source, property, replacers, serialization)) 
+            {
+                return true;
+            }
+        }
+        return true;
     }
 
     export interface SerializationComponent
@@ -54,12 +81,12 @@ namespace feng3d
          * 
          * @param target 目标对象
          * @param source 源数据
-         * @param key 属性名称
+         * @param property 属性名称
          * @param replacers 转换函数
          * @param deep 当前深度
          * @returns 返回true时结束该属性后续处理。
          */
-        (target: any, source: any, key: string, replacers?: SerializeReplacer | SerializeReplacer[]): boolean;
+        (target: any, source: any, property: string, replacers: SerializeReplacer | SerializeReplacer[], serialization: Serialization): boolean;
     }
 
     /**
@@ -70,7 +97,7 @@ namespace feng3d
         components: SerializationComponent[] = [];
 
         serializeReplacers: SerializeReplacer[] = [
-            function (target, source, property, replacers)
+            function (target, source, property)
             {
                 var spv = source[property];
                 //处理方法
@@ -84,7 +111,7 @@ namespace feng3d
                 }
                 return false;
             },
-            function (target, source, property, replacers)
+            function (target, source, property)
             {
                 var spv = source[property];
                 //基础类型
@@ -95,7 +122,7 @@ namespace feng3d
                 }
                 return false;
             },
-            function (target, source, property, replacers)
+            function (target, source, property)
             {
                 var spv = source[property];
                 // 排除不支持序列化对象 serializable == false 时不进行序列化
@@ -105,7 +132,7 @@ namespace feng3d
                 }
                 return false;
             },
-            function (target, source, property, replacers)
+            function (target, source, property)
             {
                 var spv = source[property];
                 if (spv instanceof Feng3dObject && (spv.hideFlags & HideFlags.DontSave))
@@ -114,7 +141,7 @@ namespace feng3d
                 }
                 return false;
             },
-            function (target, source, property, replacers)
+            function (target, source, property)
             {
                 var spv = source[property];
                 // 处理资源
@@ -125,7 +152,7 @@ namespace feng3d
                 }
                 return false;
             },
-            function (target, source, property, replacers)
+            function (target, source, property)
             {
                 var spv = source[property];
                 if (spv["serialize"])
@@ -138,6 +165,54 @@ namespace feng3d
                 }
                 return false;
             },
+            function (target, source, property, replacers, serializable)
+            {
+                var spv = source[property];
+                //处理数组
+                if (Array.isArray(spv))
+                {
+                    let arr = [];
+                    let keys = Object.keys(spv);
+                    keys.forEach(v =>
+                    {
+                        serializeProperty(arr, spv, v, replacers, serializable);
+                    });
+                    target[property] = arr;
+                    return true;
+                }
+                return false;
+            },
+            function (target, source, property, replacers, serializable)
+            {
+                var spv = source[property];
+                //处理普通Object
+                if (Object.isObject(spv))
+                {
+                    let object = <any>{};
+                    let keys = Object.keys(spv);
+                    keys.forEach(key =>
+                    {
+                        serializeProperty(object, spv, key, replacers, serializable);
+                    });
+                    target[property] = object;
+                    return true;
+                }
+                return false;
+            },
+            function (target, source, property, replacers, serializable)
+            {
+                var spv = source[property];
+                //使用默认序列化
+                let object = {};
+                object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
+                var keys = getSerializableMembers(spv);
+                keys.forEach(v =>
+                {
+                    serializeProperty(object, spv, v, replacers, serialization);
+                });
+                target[property] = object;
+                return true;
+            },
         ];
 
         /**
@@ -148,60 +223,9 @@ namespace feng3d
         serialize<T>(target: T): gPartial<T>
         {
             var result = {};
-            this.serializeProperty(result, { "": target }, "");
+            serializeProperty(result, { "": target }, "", null, this);
             var v = result[""];
             return v;
-        }
-
-        private serializeProperty(target: Object, source: Object, property: string | number, replacers?: SerializeReplacer | SerializeReplacer[]): void
-        {
-            var spv = source[property];
-
-            var handles = [].concat(replacers).concat(this.serializeReplacers);
-            for (let i = 0; i < handles.length; i++)
-            {
-                if (handles[i] && handles[i](target, source, property, replacers)) 
-                {
-                    return;
-                }
-            }
-
-            //处理数组
-            if (Array.isArray(spv))
-            {
-                let arr = [];
-                let keys = Object.keys(spv);
-                keys.forEach(v =>
-                {
-                    this.serializeProperty(arr, spv, v);
-                });
-                target[property] = arr;
-                return;
-            }
-
-            //处理普通Object
-            if (Object.isObject(spv))
-            {
-                let object = <any>{};
-                let keys = Object.keys(spv);
-                keys.forEach(key =>
-                {
-                    this.serializeProperty(object, spv, key);
-                });
-                target[property] = object;
-                return;
-            }
-
-            //使用默认序列化
-            let object = {};
-            object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
-            var keys = getSerializableMembers(spv);
-            keys.forEach(v =>
-            {
-                this.serializeProperty(object, spv, v);
-            });
-            target[property] = object;
-            return;
         }
 
         /**
@@ -470,6 +494,8 @@ namespace feng3d
         }
     );
 }
+
+
 
 // [Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray].forEach(element =>
 // {
