@@ -63,14 +63,14 @@ var feng3d;
             assert.ok(result1 != add);
             assert.ok(result1(a, b) == add(a, b));
             // 序列化反序列化 serialization 工具中的函数列表
-            var r = feng3d.serialization.serialize(feng3d.serialization.serializeReplacers);
+            var r = feng3d.serialization.serialize(feng3d.serialization["_serializeReplacers"]);
             var serializeReplacers = feng3d.serialization.deserialize(r);
-            var r = feng3d.serialization.serialize(feng3d.serialization.deserializeReplacers);
+            var r = feng3d.serialization.serialize(feng3d.serialization["_deserializeReplacers"]);
             var deserializeReplacers = feng3d.serialization.deserialize(r);
             //
             var mySerialization = new feng3d.Serialization();
-            mySerialization.serializeReplacers = serializeReplacers;
-            mySerialization.deserializeReplacers = deserializeReplacers;
+            mySerialization["_serializeReplacers"] = serializeReplacers;
+            mySerialization["_deserializeReplacers"] = deserializeReplacers;
             // 使用序列化反序列化后的 serialization 工具进行序列化函数测试
             var result = mySerialization.serialize(add);
             var result1 = mySerialization.deserialize(result);

@@ -67,14 +67,19 @@ namespace feng3d
      */
     export class Serialization
     {
+        
+
         /**
          * 添加序列化属性函数
          * 
          * @param handlers 序列化属性函数列表
          */
-        addSerializeHandler(...handlers: PropertyHandler[])
+        addSerializeHandlers(...handlers: (PropertyHandler | ConcatArray<PropertyHandler>)[])
         {
-            this.serializeReplacers.concatToSelf(handlers);
+            handlers.forEach(v =>
+            {
+                this._serializeReplacers.concatToSelf(v);
+            });
         }
 
         /**
@@ -82,20 +87,23 @@ namespace feng3d
          * 
          * @param handlers 序列化属性函数列表
          */
-        addDeserializeHandler(...handlers: PropertyHandler[])
+        addDeserializeHandlers(...handlers: (PropertyHandler | ConcatArray<PropertyHandler>)[])
         {
-            this.deserializeReplacers.concatToSelf(handlers);
+            handlers.forEach(v =>
+            {
+                this._deserializeReplacers.concatToSelf(v);
+            })
         }
 
         /**
          * 序列化转换函数
          */
-        serializeReplacers: PropertyHandler[] = [];
+        private _serializeReplacers: PropertyHandler[] = [];
 
         /**
          * 反序列化转换函数
          */
-        deserializeReplacers: PropertyHandler[] = [];
+        private _deserializeReplacers: PropertyHandler[] = [];
 
         /**
          * 序列化对象
@@ -105,7 +113,7 @@ namespace feng3d
         serialize<T>(target: T): gPartial<T>
         {
             var result = {};
-            propertyHandler(result, { "": target }, "", this.serializeReplacers);
+            propertyHandler(result, { "": target }, "", this._serializeReplacers);
             var v = result[""];
             return v;
         }
@@ -121,7 +129,7 @@ namespace feng3d
         deserialize<T>(object: gPartial<T>): T
         {
             var result = {};
-            propertyHandler(result, { "": object }, "", this.deserializeReplacers);
+            propertyHandler(result, { "": object }, "", this._deserializeReplacers);
             var v = result[""];
             return v;
         }
@@ -286,7 +294,7 @@ namespace feng3d
 
     serialization = new Serialization();
 
-    serialization.serializeReplacers = [
+    serialization.addSerializeHandlers(
         //基础类型
         function (target, source, property)
         {
@@ -405,9 +413,9 @@ namespace feng3d
             target[property] = object;
             return true;
         },
-    ];
+    );
 
-    serialization.deserializeReplacers = [
+    serialization.addDeserializeHandlers(
         //基础类型
         function (target, source, property)
         {
@@ -516,7 +524,7 @@ namespace feng3d
             }
             return false;
         },
-    ];
+    );
 }
 
 

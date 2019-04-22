@@ -287,21 +287,21 @@ declare namespace feng3d {
          *
          * @param handlers 序列化属性函数列表
          */
-        addSerializeHandler(...handlers: PropertyHandler[]): void;
+        addSerializeHandlers(...handlers: (PropertyHandler | ConcatArray<PropertyHandler>)[]): void;
         /**
          * 添加反序列化属性函数
          *
          * @param handlers 序列化属性函数列表
          */
-        addDeserializeHandler(...handlers: PropertyHandler[]): void;
+        addDeserializeHandlers(...handlers: (PropertyHandler | ConcatArray<PropertyHandler>)[]): void;
         /**
          * 序列化转换函数
          */
-        serializeReplacers: PropertyHandler[];
+        private _serializeReplacers;
         /**
          * 反序列化转换函数
          */
-        deserializeReplacers: PropertyHandler[];
+        private _deserializeReplacers;
         /**
          * 序列化对象
          * @param target 被序列化的对象
