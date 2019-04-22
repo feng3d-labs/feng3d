@@ -155,6 +155,12 @@ interface ObjectConstructor {
      */
     assignDeep<T>(target: T, source: feng3d.gPartial<T>, replacers?: AssignDeepReplacer | AssignDeepReplacer[], deep?: number): T;
     /**
+     * 深度比较两个对象子代可枚举属性值
+     *
+     * @param arr 用于比较的数组
+     */
+    equalDeep<T>(a: T, b: T): boolean;
+    /**
      * 执行方法
      *
      * 用例：

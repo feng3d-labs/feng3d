@@ -63,6 +63,13 @@ interface ObjectConstructor
     assignDeep<T>(target: T, source: feng3d.gPartial<T>, replacers?: AssignDeepReplacer | AssignDeepReplacer[], deep?: number): T;
 
     /**
+     * 深度比较两个对象子代可枚举属性值
+     * 
+     * @param arr 用于比较的数组
+     */
+    equalDeep<T>(a: T, b: T): boolean;
+
+    /**
      * 执行方法
      * 
      * 用例：
@@ -126,6 +133,28 @@ Object.runFunc = function (obj, func)
 Object.isObject = function (obj)
 {
     return obj != null && obj.constructor == Object;
+}
+
+Object.equalDeep = function (a, b)
+{
+    if (a == b) return true;
+    if (Object.isBaseType(a) || Object.isBaseType(b)) return a == b;
+    if (typeof a == "function" || typeof b == "function") return a == b;
+    //
+    var akeys = Object.keys(a);
+    var bkeys = Object.keys(b);
+    if (!akeys.equal(bkeys)) return false;
+    if (Array.isArray(a) && Array.isArray(b)) return a.length == b.length;
+    // 检测所有属性
+    for (let i = 0; i < akeys.length; i++)
+    {
+        const element = akeys[i];
+        if (!Object.equalDeep(a[element], b[element]))
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 Object.assignShallow = function (target, source)
