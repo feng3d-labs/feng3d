@@ -3331,6 +3331,18 @@ QUnit.module("Object", function () {
         assert.ok(o3.fo == fo);
         assert.ok(o3.fo.f() == 3);
     });
+    QUnit.test("equalDeep", function (assert) {
+        var o = { a: 1, b: { c: true, d: [1, 2, true, "abc"], e: "f" } };
+        var o1 = JSON.parse(JSON.stringify(o));
+        assert.ok(Object.equalDeep(o, o1));
+        o.b.e = "a";
+        assert.ok(!Object.equalDeep(o, o1));
+        var v = new feng3d.Vector3(1, 2, 3);
+        var v1 = new feng3d.Vector3(1, 2, 3);
+        assert.ok(Object.equalDeep(v, v1));
+        v1.z = 4;
+        assert.ok(!Object.equalDeep(v, v1));
+    });
 });
 // QUnit.module("Path", () =>
 // {
