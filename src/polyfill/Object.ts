@@ -132,7 +132,7 @@ Object.runFunc = function (obj, func)
 
 Object.isObject = function (obj)
 {
-    return obj != null && obj.constructor == Object;
+    return obj != null && (obj.constructor == Object || (obj.constructor.name == "Object"));// 兼容其他 HTMLIFrameElement 传入的Object
 }
 
 Object.equalDeep = function (a, b)

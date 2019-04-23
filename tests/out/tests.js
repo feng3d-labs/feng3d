@@ -3331,6 +3331,30 @@ QUnit.module("Object", function () {
         assert.ok(o3.fo == fo);
         assert.ok(o3.fo.f() == 3);
     });
+    QUnit.test("isObject", function (assert) {
+        var A = /** @class */ (function () {
+            function A() {
+            }
+            return A;
+        }());
+        assert.ok(!Object.isObject(1));
+        assert.ok(!Object.isObject([]));
+        assert.ok(!Object.isObject(new A()));
+        assert.ok(!Object.isObject(false));
+        assert.ok(!Object.isObject(window));
+        assert.ok(!Object.isObject("window"));
+        assert.ok(Object.isObject({}));
+        assert.ok(Object.isObject({ a: 1 }));
+        // 测试 参考：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray
+        var iframe = document.createElement('iframe');
+        iframe.name = "test Object.isObject IFrame";
+        document.body.appendChild(iframe);
+        var xObject = window.frames[window.frames.length - 1].Object;
+        var obj = new xObject();
+        assert.ok(Object.isObject(obj));
+        assert.ok(Object != obj.constructor);
+        iframe.remove();
+    });
     QUnit.test("equalDeep", function (assert) {
         var o = { a: 1, b: { c: true, d: [1, 2, true, "abc"], e: "f" } };
         var o1 = JSON.parse(JSON.stringify(o));
