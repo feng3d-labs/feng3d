@@ -52,7 +52,7 @@ var feng3d;
     }(ObjectBase));
     feng3d.C = C;
     QUnit.module("Serialization", function () {
-        QUnit.test("序列化反序列化 函数", function (assert) {
+        QUnit.test("serialize&deserialize 函数", function (assert) {
             function add(a, b) {
                 return a + b;
             }
@@ -79,14 +79,14 @@ var feng3d;
             assert.ok(result1 != add);
             assert.ok(result1(a, b) == add(a, b));
         });
-        QUnit.test("序列化反序列化 基础类型", function (assert) {
+        QUnit.test("serialize&deserialize 基础类型", function (assert) {
             var arr = [1, "abc", true, null, undefined];
             var r = arr.map(function (v) { return feng3d.serialization.serialize(v); });
             assert.deepEqual(arr, r);
             var r1 = r.map(function (v) { return feng3d.serialization.deserialize(v); });
             assert.deepEqual(arr, r1);
         });
-        QUnit.test("序列化反序列化 带serializable属性对象", function (assert) {
+        QUnit.test("serialize&deserialize 带serializable属性对象", function (assert) {
             var obj = { serializable: false, a: 1 };
             var r = feng3d.serialization.serialize(obj);
             assert.ok(r == undefined);
@@ -97,7 +97,7 @@ var feng3d;
             var r = feng3d.serialization.serialize(obj);
             assert.ok(r.a == obj.a);
         });
-        QUnit.test("序列化反序列化 Feng3dObject对象", function (assert) {
+        QUnit.test("serialize&deserialize Feng3dObject对象", function (assert) {
             var obj = new feng3d.Feng3dObject();
             obj.hideFlags = feng3d.HideFlags.DontSave;
             var r = feng3d.serialization.serialize(obj);
@@ -108,7 +108,7 @@ var feng3d;
             var obj1 = feng3d.serialization.deserialize(r);
             assert.deepEqual(obj, obj1);
         });
-        QUnit.test("序列化反序列化 拥有自定义serialize函数的对象", function (assert) {
+        QUnit.test("serialize&deserialize 拥有自定义serialize函数的对象", function (assert) {
             var obj = {
                 a: 1,
                 serialize: function (obj) {
@@ -123,19 +123,19 @@ var feng3d;
             var r0 = feng3d.serialization.deserialize(r);
             assert.ok(r0.a == 1);
         });
-        QUnit.test("序列化反序列化 Array", function (assert) {
+        QUnit.test("serialize&deserialize Array", function (assert) {
             var arr = [1, 2, 3, "a", "b"];
             var result = feng3d.serialization.serialize(arr);
             var result1 = feng3d.serialization.deserialize(result);
             assert.deepEqual(arr, result1);
         });
-        QUnit.test("序列化反序列化 Object", function (assert) {
+        QUnit.test("serialize&deserialize Object", function (assert) {
             var obj = { a: 1, b: 2, c: { f: 3, d: "a", e: "b" } };
             var result = feng3d.serialization.serialize(obj);
             var result1 = feng3d.serialization.deserialize(result);
             assert.deepEqual(obj, result1);
         });
-        QUnit.test("序列化反序列化 自定义对象", function (assert) {
+        QUnit.test("serialize&deserialize 自定义对象", function (assert) {
             var base = new ObjectBase();
             base.id = Math.random();
             var resultb = feng3d.serialization.serialize(base);

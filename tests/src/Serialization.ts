@@ -25,7 +25,7 @@ namespace feng3d
 
     QUnit.module("Serialization", () =>
     {
-        QUnit.test("序列化反序列化 函数", (assert) =>
+        QUnit.test("serialize&deserialize 函数", (assert) =>
         {
             function add(a: number, b: number)
             {
@@ -58,7 +58,7 @@ namespace feng3d
             assert.ok(result1(a, b) == add(a, b));
         });
 
-        QUnit.test("序列化反序列化 基础类型", (assert) =>
+        QUnit.test("serialize&deserialize 基础类型", (assert) =>
         {
             var arr = [1, "abc", true, null, undefined];
 
@@ -69,7 +69,7 @@ namespace feng3d
             assert.deepEqual(arr, r1);
         });
 
-        QUnit.test("序列化反序列化 带serializable属性对象", (assert) =>
+        QUnit.test("serialize&deserialize 带serializable属性对象", (assert) =>
         {
             var obj = { serializable: false, a: 1 };
             var r = serialization.serialize(obj);
@@ -84,7 +84,7 @@ namespace feng3d
             assert.ok(r.a == obj.a);
         });
 
-        QUnit.test("序列化反序列化 Feng3dObject对象", (assert) =>
+        QUnit.test("serialize&deserialize Feng3dObject对象", (assert) =>
         {
             var obj = new Feng3dObject();
             obj.hideFlags = HideFlags.DontSave;
@@ -99,7 +99,7 @@ namespace feng3d
             assert.deepEqual(obj, obj1);
         });
 
-        QUnit.test("序列化反序列化 拥有自定义serialize函数的对象", (assert) =>
+        QUnit.test("serialize&deserialize 拥有自定义serialize函数的对象", (assert) =>
         {
             var obj = {
                 a: 1,
@@ -119,7 +119,7 @@ namespace feng3d
             assert.ok(r0.a == 1);
         });
 
-        QUnit.test("序列化反序列化 Array", (assert) =>
+        QUnit.test("serialize&deserialize Array", (assert) =>
         {
             var arr = [1, 2, 3, "a", "b"];
 
@@ -129,7 +129,7 @@ namespace feng3d
             assert.deepEqual(arr, result1);
         });
 
-        QUnit.test("序列化反序列化 Object", (assert) =>
+        QUnit.test("serialize&deserialize Object", (assert) =>
         {
             var obj = { a: 1, b: 2, c: { f: 3, d: "a", e: "b" } };
 
@@ -139,7 +139,7 @@ namespace feng3d
             assert.deepEqual(obj, result1);
         });
 
-        QUnit.test("序列化反序列化 自定义对象", (assert) =>
+        QUnit.test("serialize&deserialize 自定义对象", (assert) =>
         {
             var base = new ObjectBase();
             base.id = Math.random();
