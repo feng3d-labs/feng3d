@@ -46,6 +46,28 @@ namespace feng3d
     }
 
     /**
+     * 序列化属性函数
+     * 
+     * 序列化对象时建议使用 serialization.serialize
+     * 
+     * @param target 序列化后的对象，存放序列化后属性值的对象。
+     * @param source 被序列化的对象，提供序列化前属性值的对象。
+     * @param property 序列化属性名称
+     * @param replacers 序列化属性函数列表
+     */
+    function differentPropertyHandler(target: Object, source: Object, property: string, different: Object, replacers: DifferentPropertyHandler[])
+    {
+        for (let i = 0; i < replacers.length; i++)
+        {
+            if (replacers[i](target, source, property, different, replacers))
+            {
+                return true;
+            }
+        }
+        return true;
+    }
+
+    /**
      * 序列化属性函数项
      */
     interface PropertyHandler
@@ -60,6 +82,23 @@ namespace feng3d
          * @returns 返回true时结束该属性后续处理。
          */
         (target: any, source: any, property: string, replacers: PropertyHandler[]): boolean;
+    }
+
+    /**
+     * 序列化属性函数项
+     */
+    interface DifferentPropertyHandler
+    {
+        /**
+         * 序列化属性函数项
+         * 
+         * @param target 序列化后的对象，存放序列化后属性值的对象。
+         * @param source 被序列化的对象，提供序列化前属性值的对象。
+         * @param property 序列化属性名称
+         * @param replacers 序列化属性函数列表
+         * @returns 返回true时结束该属性后续处理。
+         */
+        (target: any, source: any, property: string, different: Object, replacers: DifferentPropertyHandler[]): boolean;
     }
 
     /**
@@ -117,41 +156,88 @@ namespace feng3d
          */
         different<T>(target: T, defaultInstance: T, different?: gPartial<T>)
         {
-            different = different || {};
-            if (target == defaultInstance) return different;
-            if (defaultInstance == null)
-            {
-                different = this.serialize(target);
-                return different;
-            }
-            var serializableMembers = getSerializableMembers(target);
-            if (target.constructor == Object)
-                serializableMembers = Object.keys(target);
-            for (var i = 0; i < serializableMembers.length; i++)
-            {
-                var property = serializableMembers[i];
-                let propertyValue = target[property];
-                let defaultPropertyValue = defaultInstance[property];
-                if (propertyValue === defaultPropertyValue)
-                    continue;
-
-                if (defaultPropertyValue == null || Object.isBaseType(propertyValue) || Array.isArray(propertyValue) || defaultPropertyValue.constructor != propertyValue.constructor)
+            var handlers: DifferentPropertyHandler[] = [
+                function (target, source, property, different, replacers)
                 {
-                    different[property] = this.serialize(propertyValue);
-                } else
+                    if (target[property] == source[property])
+                    {
+                        return true;
+                    }
+                    return false;
+                },
+                function (target, source, property, different, replacers)
                 {
+                    if (null == source[property])
+                    {
+                        different[property] = this.serialize(target[property]);
+                        return true;
+                    }
+                    return false;
+                },
+                function (target, source, property, different, replacers)
+                {
+                    let propertyValue = target[property];
+                    if (Object.isBaseType(propertyValue))
+                    {
+                        different[property] = this.serialize(propertyValue);
+                        return true;
+                    }
+                    return false;
+                },
+                function (target, source, property, different, replacers)
+                {
+                    let propertyValue = target[property];
+                    if (Array.isArray(propertyValue))
+                    {
+                        different[property] = this.serialize(propertyValue);
+                        return true;
+                    }
+                    return false;
+                },
+                function (target, source, property, different, replacers)
+                {
+                    let propertyValue = target[property];
+                    let defaultPropertyValue = source[property];
+                    if (defaultPropertyValue.constructor != propertyValue.constructor)
+                    {
+                        different[property] = this.serialize(propertyValue);
+                        return true;
+                    }
+                    return false;
+                },
+                function (target, source, property, different, replacers)
+                {
+                    let propertyValue = target[property];
                     if (AssetData.isAssetData(propertyValue))
                     {
                         different[property] = this.serialize(propertyValue);
-                    } else
-                    {
-                        var diff = this.different(propertyValue, defaultPropertyValue);
-                        if (Object.keys(diff).length > 0)
-                            different[property] = diff;
+                        return true;
                     }
-                }
-            }
-            return different;
+                    return false;
+                },
+                function (target, source, property, different, replacers)
+                {
+                    let propertyValue = target[property];
+                    let defaultPropertyValue = source[property];
+
+                    var serializableMembers = getSerializableMembers(target);
+                    if (target.constructor == Object)
+                        serializableMembers = Object.keys(target);
+
+                    var diff = {};
+                    serializableMembers.forEach(v =>
+                    {
+                        differentPropertyHandler(propertyValue, defaultPropertyValue, v, diff, replacers);
+                    });
+                    if (Object.keys(diff).length > 0)
+                        different[property] = diff;
+                    return true;
+                },
+            ];
+
+            different = different || {};
+            differentPropertyHandler({ "": target }, { "": defaultInstance }, "", different, handlers);
+            return different[""];
         }
 
         /**

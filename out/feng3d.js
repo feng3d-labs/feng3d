@@ -736,6 +736,7 @@ var feng3d;
          * @returns 比较得出的不同（简单结构）数据
          */
         Serialization.prototype.different = function (target, defaultInstance, different) {
+            propertyHandler;
             different = different || {};
             if (target == defaultInstance)
                 return different;
