@@ -564,7 +564,7 @@ namespace feng3d
                         }
                     } else
                     {
-                        throw `合并类型 mergeType ${mergeType} 错误!`;
+                        console.error(`合并类型 mergeType ${mergeType} 错误!`);
                     }
                 }
             }

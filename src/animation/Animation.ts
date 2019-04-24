@@ -111,7 +111,7 @@ namespace feng3d
                         propertyHost = propertyHost.getComponent(componentType);
                         break;
                     default:
-                        throw `无法获取 PropertyHost ${element}`;
+                        console.error(`无法获取 PropertyHost ${element}`);
                 }
                 if (propertyHost == null)
                     return null;

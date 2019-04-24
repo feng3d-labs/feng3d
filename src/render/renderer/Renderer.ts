@@ -230,7 +230,7 @@ namespace feng3d
                             gl.uniform3f(location, data.x, data.y, data.z);
                         } else
                         {
-                            throw `无法处理 uniform数据 ${activeInfo.name} ${data}`;
+                            console.error(`无法处理 uniform数据 ${activeInfo.name} ${data}`);
                         }
                         break;
                     case gl.FLOAT_VEC4:
@@ -242,7 +242,7 @@ namespace feng3d
                             gl.uniform4f(location, data.x, data.y, data.z, data.w);
                         } else
                         {
-                            throw `无法处理 uniform数据 ${activeInfo.name} ${data}`;
+                            console.error(`无法处理 uniform数据 ${activeInfo.name} ${data}`);
                         }
                         break;
                     case gl.SAMPLER_2D:
@@ -255,7 +255,7 @@ namespace feng3d
                         gl.uniform1i(location, activeInfo.textureID);
                         break;
                     default:
-                        throw `无法识别的uniform类型 ${activeInfo.name} ${data}`;
+                        console.error(`无法识别的uniform类型 ${activeInfo.name} ${data}`);
                 }
             }
 

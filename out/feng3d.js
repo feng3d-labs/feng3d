@@ -14238,7 +14238,7 @@ var feng3d;
                         }
                     }
                     else {
-                        throw "\u5408\u5E76\u7C7B\u578B mergeType " + mergeType + " \u9519\u8BEF!";
+                        console.error("\u5408\u5E76\u7C7B\u578B mergeType " + mergeType + " \u9519\u8BEF!");
                     }
                 }
             }
@@ -20448,7 +20448,7 @@ var feng3d;
                 var moduleshader = this.shaderConfig.modules[match[1]];
                 if (!moduleshader) {
                     debugger;
-                    throw "\u65E0\u6CD5\u627E\u5230\u7740\u8272\u5668 " + match[1];
+                    console.error("\u65E0\u6CD5\u627E\u5230\u7740\u8272\u5668 " + match[1]);
                 }
                 moduleshader = this.uninclude(moduleshader);
                 shaderCode = shaderCode.replace(match[0], moduleshader);
@@ -20662,7 +20662,7 @@ var feng3d;
                             gl.uniform3f(location, data.x, data.y, data.z);
                         }
                         else {
-                            throw "\u65E0\u6CD5\u5904\u7406 uniform\u6570\u636E " + activeInfo.name + " " + data;
+                            console.error("\u65E0\u6CD5\u5904\u7406 uniform\u6570\u636E " + activeInfo.name + " " + data);
                         }
                         break;
                     case gl.FLOAT_VEC4:
@@ -20673,7 +20673,7 @@ var feng3d;
                             gl.uniform4f(location, data.x, data.y, data.z, data.w);
                         }
                         else {
-                            throw "\u65E0\u6CD5\u5904\u7406 uniform\u6570\u636E " + activeInfo.name + " " + data;
+                            console.error("\u65E0\u6CD5\u5904\u7406 uniform\u6570\u636E " + activeInfo.name + " " + data);
                         }
                         break;
                     case gl.SAMPLER_2D:
@@ -20686,7 +20686,7 @@ var feng3d;
                         gl.uniform1i(location, activeInfo.textureID);
                         break;
                     default:
-                        throw "\u65E0\u6CD5\u8BC6\u522B\u7684uniform\u7C7B\u578B " + activeInfo.name + " " + data;
+                        console.error("\u65E0\u6CD5\u8BC6\u522B\u7684uniform\u7C7B\u578B " + activeInfo.name + " " + data);
                 }
             }
             /**
@@ -31917,7 +31917,7 @@ var feng3d;
             if (this.type == "Quaternion")
                 return feng3d.Quaternion.fromArray(value);
             console.error("\u672A\u5904\u7406 \u52A8\u753B\u6570\u636E\u7C7B\u578B " + this.type);
-            throw "";
+            console.error("");
         };
         __decorate([
             feng3d.serialize
@@ -32057,7 +32057,7 @@ var feng3d;
                         propertyHost = propertyHost.getComponent(componentType);
                         break;
                     default:
-                        throw "\u65E0\u6CD5\u83B7\u53D6 PropertyHost " + element;
+                        console.error("\u65E0\u6CD5\u83B7\u53D6 PropertyHost " + element);
                 }
                 if (propertyHost == null)
                     return null;
@@ -32121,7 +32121,7 @@ var feng3d;
          * @param callback 完成回调
          */
         FolderAsset.prototype.delete = function (callback) {
-            throw "\u672A\u5B9E\u73B0";
+            console.error("\u672A\u5B9E\u73B0");
         };
         /**
          * 保存文件

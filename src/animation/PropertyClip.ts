@@ -86,7 +86,7 @@ namespace feng3d
                 return Quaternion.fromArray(value);
 
             console.error(`未处理 动画数据类型 ${this.type}`);
-            throw ``;
+            console.error(``);
         }
 
         cacheIndex: number;
