@@ -693,11 +693,11 @@ var feng3d;
      * @param target 序列化后的对象，存放序列化后属性值的对象。
      * @param source 被序列化的对象，提供序列化前属性值的对象。
      * @param property 序列化属性名称
-     * @param replacers 序列化属性函数列表
+     * @param handlers 序列化属性函数列表
      */
-    function propertyHandler(target, source, property, replacers) {
-        for (var i = 0; i < replacers.length; i++) {
-            if (replacers[i](target, source, property, replacers)) {
+    function propertyHandler(target, source, property, handlers) {
+        for (var i = 0; i < handlers.length; i++) {
+            if (handlers[i](target, source, property, handlers)) {
                 return true;
             }
         }
@@ -711,11 +711,11 @@ var feng3d;
      * @param target 序列化后的对象，存放序列化后属性值的对象。
      * @param source 被序列化的对象，提供序列化前属性值的对象。
      * @param property 序列化属性名称
-     * @param replacers 序列化属性函数列表
+     * @param handlers 序列化属性函数列表
      */
-    function differentPropertyHandler(target, source, property, different, replacers) {
-        for (var i = 0; i < replacers.length; i++) {
-            if (replacers[i](target, source, property, different, replacers)) {
+    function differentPropertyHandler(target, source, property, different, handlers) {
+        for (var i = 0; i < handlers.length; i++) {
+            if (handlers[i](target, source, property, different, handlers)) {
                 return true;
             }
         }
@@ -738,6 +738,10 @@ var feng3d;
              * 比较差异函数列表
              */
             this.differentHandlers = [];
+            /**
+             * 设置函数列表
+             */
+            this.setValueHandlers = [];
         }
         /**
          * 序列化对象
@@ -786,6 +790,9 @@ var feng3d;
          * @param source 数据对象
          */
         Serialization.prototype.setValue = function (target, source) {
+            // var handlers = this.setValueHandlers.sort((a, b) => b.priority - a.priority).map(v => v.handler);
+            // propertyHandler({ "": target }, { "": source }, "", handlers);
+            // return target;
             if (!source)
                 return target;
             for (var property in source) {
@@ -1032,7 +1039,7 @@ var feng3d;
     // 处理资源
     {
         priority: 0,
-        handler: function (target, source, property, replacers) {
+        handler: function (target, source, property, handlers) {
             var tpv = target[property];
             var spv = source[property];
             if (feng3d.AssetData.isAssetData(spv)) {
@@ -1041,7 +1048,7 @@ var feng3d;
             }
             if (feng3d.AssetData.isAssetData(tpv)) {
                 var result = {};
-                propertyHandler(result, { "": spv }, "", replacers);
+                propertyHandler(result, { "": spv }, "", handlers);
                 target[property] = result[""];
                 return true;
             }
@@ -1051,13 +1058,13 @@ var feng3d;
     //处理数组
     {
         priority: 0,
-        handler: function (target, source, property, replacers) {
+        handler: function (target, source, property, handlers) {
             var spv = source[property];
             if (Array.isArray(spv)) {
                 var arr = [];
                 var keys = Object.keys(spv);
                 keys.forEach(function (key) {
-                    propertyHandler(arr, spv, key, replacers);
+                    propertyHandler(arr, spv, key, handlers);
                 });
                 target[property] = arr;
                 return true;
@@ -1068,7 +1075,7 @@ var feng3d;
     // 处理 没有类名称标记的 普通Object
     {
         priority: 0,
-        handler: function (target, source, property, replacers) {
+        handler: function (target, source, property, handlers) {
             var tpv = target[property];
             var spv = source[property];
             if (Object.isObject(spv) && spv[feng3d.CLASS_KEY] == null) {
@@ -1078,7 +1085,7 @@ var feng3d;
                 //
                 var keys = Object.keys(spv);
                 keys.forEach(function (key) {
-                    propertyHandler(obj, spv, key, replacers);
+                    propertyHandler(obj, spv, key, handlers);
                 });
                 target[property] = obj;
                 return true;
@@ -1089,7 +1096,7 @@ var feng3d;
     // 处理自定义反序列化对象
     {
         priority: 0,
-        handler: function (target, source, property, replacers) {
+        handler: function (target, source, property) {
             var tpv = target[property];
             var spv = source[property];
             var inst = feng3d.classUtils.getInstanceByName(spv[feng3d.CLASS_KEY]);
@@ -1108,7 +1115,7 @@ var feng3d;
     // 处理自定义对象的反序列化 
     {
         priority: 0,
-        handler: function (target, source, property, replacers) {
+        handler: function (target, source, property, handlers) {
             var tpv = target[property];
             var spv = source[property];
             var inst = feng3d.classUtils.getInstanceByName(spv[feng3d.CLASS_KEY]);
@@ -1120,7 +1127,7 @@ var feng3d;
                 var keys = Object.keys(spv);
                 keys.forEach(function (key) {
                     if (key != feng3d.CLASS_KEY)
-                        propertyHandler(inst, spv, key, replacers);
+                        propertyHandler(inst, spv, key, handlers);
                 });
                 target[property] = inst;
                 return true;
@@ -1131,7 +1138,7 @@ var feng3d;
     feng3d.serialization.differentHandlers = [
         {
             priority: 0,
-            handler: function (target, source, property, different, replacers) {
+            handler: function (target, source, property) {
                 if (target[property] == source[property]) {
                     return true;
                 }
@@ -1140,7 +1147,7 @@ var feng3d;
         },
         {
             priority: 0,
-            handler: function (target, source, property, different, replacers) {
+            handler: function (target, source, property, different) {
                 if (null == source[property]) {
                     different[property] = this.serialize(target[property]);
                     return true;
@@ -1150,7 +1157,7 @@ var feng3d;
         },
         {
             priority: 0,
-            handler: function (target, source, property, different, replacers) {
+            handler: function (target, source, property, different) {
                 var propertyValue = target[property];
                 if (Object.isBaseType(propertyValue)) {
                     different[property] = propertyValue;
@@ -1161,7 +1168,7 @@ var feng3d;
         },
         {
             priority: 0,
-            handler: function (target, source, property, different, replacers) {
+            handler: function (target, source, property, different) {
                 var propertyValue = target[property];
                 if (Array.isArray(propertyValue)) {
                     different[property] = this.serialize(propertyValue);
@@ -1172,7 +1179,7 @@ var feng3d;
         },
         {
             priority: 0,
-            handler: function (target, source, property, different, replacers) {
+            handler: function (target, source, property, different) {
                 var propertyValue = target[property];
                 var defaultPropertyValue = source[property];
                 if (defaultPropertyValue.constructor != propertyValue.constructor) {
@@ -1184,7 +1191,7 @@ var feng3d;
         },
         {
             priority: 0,
-            handler: function (target, source, property, different, replacers) {
+            handler: function (target, source, property, different) {
                 var propertyValue = target[property];
                 if (feng3d.AssetData.isAssetData(propertyValue)) {
                     different[property] = this.serialize(propertyValue);
@@ -1195,7 +1202,7 @@ var feng3d;
         },
         {
             priority: 0,
-            handler: function (target, source, property, different, replacers) {
+            handler: function (target, source, property, different, handlers) {
                 var tpv = target[property];
                 var spv = source[property];
                 var keys = getSerializableMembers(tpv);
@@ -1203,11 +1210,19 @@ var feng3d;
                     keys = Object.keys(tpv);
                 var diff = {};
                 keys.forEach(function (v) {
-                    differentPropertyHandler(tpv, spv, v, diff, replacers);
+                    differentPropertyHandler(tpv, spv, v, diff, handlers);
                 });
                 if (Object.keys(diff).length > 0)
                     different[property] = diff;
                 return true;
+            }
+        },
+    ];
+    feng3d.serialization.setValueHandlers = [
+        {
+            priority: 0,
+            handler: function (target, source, property, handlers) {
+                return false;
             }
         },
     ];

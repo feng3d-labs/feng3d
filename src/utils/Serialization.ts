@@ -31,13 +31,13 @@ namespace feng3d
      * @param target 序列化后的对象，存放序列化后属性值的对象。
      * @param source 被序列化的对象，提供序列化前属性值的对象。
      * @param property 序列化属性名称
-     * @param replacers 序列化属性函数列表
+     * @param handlers 序列化属性函数列表
      */
-    function propertyHandler(target: Object, source: Object, property: string, replacers: PropertyHandler[])
+    function propertyHandler(target: Object, source: Object, property: string, handlers: PropertyHandler[])
     {
-        for (let i = 0; i < replacers.length; i++)
+        for (let i = 0; i < handlers.length; i++)
         {
-            if (replacers[i](target, source, property, replacers))
+            if (handlers[i](target, source, property, handlers))
             {
                 return true;
             }
@@ -53,13 +53,13 @@ namespace feng3d
      * @param target 序列化后的对象，存放序列化后属性值的对象。
      * @param source 被序列化的对象，提供序列化前属性值的对象。
      * @param property 序列化属性名称
-     * @param replacers 序列化属性函数列表
+     * @param handlers 序列化属性函数列表
      */
-    function differentPropertyHandler(target: Object, source: Object, property: string, different: Object, replacers: DifferentPropertyHandler[])
+    function differentPropertyHandler(target: Object, source: Object, property: string, different: Object, handlers: DifferentPropertyHandler[])
     {
-        for (let i = 0; i < replacers.length; i++)
+        for (let i = 0; i < handlers.length; i++)
         {
-            if (replacers[i](target, source, property, different, replacers))
+            if (handlers[i](target, source, property, different, handlers))
             {
                 return true;
             }
@@ -78,10 +78,10 @@ namespace feng3d
          * @param target 序列化后的对象，存放序列化后属性值的对象。
          * @param source 被序列化的对象，提供序列化前属性值的对象。
          * @param property 序列化属性名称
-         * @param replacers 序列化属性函数列表
+         * @param handlers 序列化属性函数列表
          * @returns 返回true时结束该属性后续处理。
          */
-        (target: any, source: any, property: string, replacers: PropertyHandler[]): boolean;
+        (target: any, source: any, property: string, handlers: PropertyHandler[]): boolean;
     }
 
     /**
@@ -95,10 +95,10 @@ namespace feng3d
          * @param target 序列化后的对象，存放序列化后属性值的对象。
          * @param source 被序列化的对象，提供序列化前属性值的对象。
          * @param property 序列化属性名称
-         * @param replacers 序列化属性函数列表
+         * @param handlers 序列化属性函数列表
          * @returns 返回true时结束该属性后续处理。
          */
-        (target: any, source: any, property: string, different: Object, replacers: DifferentPropertyHandler[]): boolean;
+        (target: any, source: any, property: string, different: Object, handlers: DifferentPropertyHandler[]): boolean;
     }
 
     /**
@@ -120,6 +120,11 @@ namespace feng3d
          * 比较差异函数列表
          */
         differentHandlers: { priority: number, handler: DifferentPropertyHandler }[] = [];
+
+        /**
+         * 设置函数列表
+         */
+        setValueHandlers: { priority: number, handler: PropertyHandler }[] = [];
 
         /**
          * 序列化对象
@@ -175,6 +180,13 @@ namespace feng3d
          */
         setValue<T>(target: T, source: gPartial<T>)
         {
+            // var handlers = this.setValueHandlers.sort((a, b) => b.priority - a.priority).map(v => v.handler);
+            // propertyHandler({ "": target }, { "": source }, "", handlers);
+            // return target;
+
+
+
+
             if (!source) return target;
 
             for (const property in source)
@@ -474,7 +486,7 @@ namespace feng3d
         // 处理资源
         {
             priority: 0,
-            handler: function (target, source, property, replacers)
+            handler: function (target, source, property, handlers)
             {
                 var tpv = target[property];
                 var spv = source[property];
@@ -486,7 +498,7 @@ namespace feng3d
                 if (AssetData.isAssetData(tpv))
                 {
                     let result = {};
-                    propertyHandler(result, { "": spv }, "", replacers);
+                    propertyHandler(result, { "": spv }, "", handlers);
                     target[property] = result[""];
                     return true;
                 }
@@ -496,7 +508,7 @@ namespace feng3d
         //处理数组
         {
             priority: 0,
-            handler: function (target, source, property, replacers)
+            handler: function (target, source, property, handlers)
             {
                 var spv = source[property];
                 if (Array.isArray(spv))
@@ -505,7 +517,7 @@ namespace feng3d
                     var keys = Object.keys(spv);
                     keys.forEach(key =>
                     {
-                        propertyHandler(arr, spv, key, replacers);
+                        propertyHandler(arr, spv, key, handlers);
                     });
                     target[property] = arr;
                     return true;
@@ -516,7 +528,7 @@ namespace feng3d
         // 处理 没有类名称标记的 普通Object
         {
             priority: 0,
-            handler: function (target, source, property, replacers)
+            handler: function (target, source, property, handlers)
             {
                 var tpv = target[property];
                 var spv = source[property];
@@ -528,7 +540,7 @@ namespace feng3d
                     var keys = Object.keys(spv);
                     keys.forEach(key =>
                     {
-                        propertyHandler(obj, spv, key, replacers);
+                        propertyHandler(obj, spv, key, handlers);
                     });
                     target[property] = obj;
                     return true;
@@ -539,7 +551,7 @@ namespace feng3d
         // 处理自定义反序列化对象
         {
             priority: 0,
-            handler: function (target, source, property, replacers)
+            handler: function (target, source, property)
             {
                 var tpv = target[property];
                 var spv = source[property];
@@ -561,7 +573,7 @@ namespace feng3d
         // 处理自定义对象的反序列化 
         {
             priority: 0,
-            handler: function (target, source, property, replacers)
+            handler: function (target, source, property, handlers)
             {
                 var tpv = target[property];
                 var spv = source[property];
@@ -577,7 +589,7 @@ namespace feng3d
                     keys.forEach(key =>
                     {
                         if (key != CLASS_KEY)
-                            propertyHandler(inst, spv, key, replacers);
+                            propertyHandler(inst, spv, key, handlers);
                     });
                     target[property] = inst;
                     return true;
@@ -590,7 +602,7 @@ namespace feng3d
     serialization.differentHandlers = [
         {
             priority: 0,
-            handler: function (target, source, property, different, replacers)
+            handler: function (target, source, property)
             {
                 if (target[property] == source[property])
                 {
@@ -601,7 +613,7 @@ namespace feng3d
         },
         {
             priority: 0,
-            handler: function (target, source, property, different, replacers)
+            handler: function (target, source, property, different)
             {
                 if (null == source[property])
                 {
@@ -613,7 +625,7 @@ namespace feng3d
         },
         {
             priority: 0,
-            handler: function (target, source, property, different, replacers)
+            handler: function (target, source, property, different)
             {
                 let propertyValue = target[property];
                 if (Object.isBaseType(propertyValue))
@@ -626,7 +638,7 @@ namespace feng3d
         },
         {
             priority: 0,
-            handler: function (target, source, property, different, replacers)
+            handler: function (target, source, property, different)
             {
                 let propertyValue = target[property];
                 if (Array.isArray(propertyValue))
@@ -639,7 +651,7 @@ namespace feng3d
         },
         {
             priority: 0,
-            handler: function (target, source, property, different, replacers)
+            handler: function (target, source, property, different)
             {
                 let propertyValue = target[property];
                 let defaultPropertyValue = source[property];
@@ -653,7 +665,7 @@ namespace feng3d
         },
         {
             priority: 0,
-            handler: function (target, source, property, different, replacers)
+            handler: function (target, source, property, different)
             {
                 let propertyValue = target[property];
                 if (AssetData.isAssetData(propertyValue))
@@ -666,7 +678,7 @@ namespace feng3d
         },
         {
             priority: 0,
-            handler: function (target, source, property, different, replacers)
+            handler: function (target, source, property, different, handlers)
             {
                 let tpv = target[property];
                 let spv = source[property];
@@ -678,11 +690,21 @@ namespace feng3d
                 var diff = {};
                 keys.forEach(v =>
                 {
-                    differentPropertyHandler(tpv, spv, v, diff, replacers);
+                    differentPropertyHandler(tpv, spv, v, diff, handlers);
                 });
                 if (Object.keys(diff).length > 0)
                     different[property] = diff;
                 return true;
+            }
+        },
+    ];
+
+    serialization.setValueHandlers = [
+        {
+            priority: 0,
+            handler: function (target, source, property, handlers)
+            {
+                return false;
             }
         },
     ];
