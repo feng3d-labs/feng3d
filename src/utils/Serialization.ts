@@ -101,6 +101,8 @@ namespace feng3d
         (target: any, source: any, property: string, different: Object, handlers: DifferentPropertyHandler[]): boolean;
     }
 
+    var __root__ = "__root__";
+
     /**
      * 序列化
      */
@@ -135,8 +137,8 @@ namespace feng3d
         {
             var handlers = this.serializeHandlers.sort((a, b) => b.priority - a.priority).map(v => v.handler);
             var result = {};
-            propertyHandler(result, { "": target }, "", handlers, this);
-            var v = result[""];
+            propertyHandler(result, { __root__: target }, __root__, handlers, this);
+            var v = result[__root__];
             return v;
         }
 
@@ -152,8 +154,8 @@ namespace feng3d
         {
             var handlers = this.deserializeHandlers.sort((a, b) => b.priority - a.priority).map(v => v.handler);
             var result = {};
-            propertyHandler(result, { "": object }, "", handlers, this);
-            var v = result[""];
+            propertyHandler(result, { __root__: object }, __root__, handlers, this);
+            var v = result[__root__];
             return v;
         }
 
@@ -168,9 +170,9 @@ namespace feng3d
         different<T>(target: T, defaultInstance: T): gPartial<T>
         {
             var handlers = this.differentHandlers.sort((a, b) => b.priority - a.priority).map(v => v.handler);
-            var different = { "": {} };
-            differentPropertyHandler({ "": target }, { "": defaultInstance }, "", different, handlers);
-            return different[""];
+            var different = { __root__: {} };
+            differentPropertyHandler({ __root__: target }, { __root__: defaultInstance }, __root__, different, handlers);
+            return different[__root__];
         }
 
         /**
@@ -181,7 +183,7 @@ namespace feng3d
         setValue<T>(target: T, source: gPartial<T>)
         {
             var handlers = this.setValueHandlers.sort((a, b) => b.priority - a.priority).map(v => v.handler);
-            propertyHandler({ "": target }, { "": source }, "", handlers, this);
+            propertyHandler({ __root__: target }, { __root__: source }, __root__, handlers, this);
             return target;
         }
 
@@ -289,6 +291,12 @@ namespace feng3d
                 var spv = source[property];
                 if (AssetData.isAssetData(spv))
                 {
+                    // 此处需要反序列化资源完整数据
+                    if (property == __root__)
+                    {
+                        debugger;
+                        return false;
+                    }
                     target[property] = AssetData.serialize(<any>spv);
                     return true;
                 }
@@ -423,6 +431,12 @@ namespace feng3d
                 var spv = source[property];
                 if (AssetData.isAssetData(spv))
                 {
+                    // 此处需要反序列化资源完整数据
+                    if (property == __root__)
+                    {
+                        debugger;
+                        return false;
+                    }
                     target[property] = AssetData.deserialize(spv);
                     return true;
                 }
@@ -600,6 +614,12 @@ namespace feng3d
                 let tpv = target[property];
                 if (AssetData.isAssetData(tpv))
                 {
+                    // 此处需要反序列化资源完整数据
+                    if (property == __root__)
+                    {
+                        debugger;
+                        return false;
+                    }
                     different[property] = this.serialize(tpv);
                     return true;
                 }
@@ -733,6 +753,13 @@ namespace feng3d
                 var spv = source[property];
                 if (AssetData.isAssetData(spv))
                 {
+                    // 此处需要反序列化资源完整数据
+                    if (property == __root__)
+                    {
+                        debugger;
+                        return false;
+                    }
+
                     target[property] = AssetData.deserialize(spv);
                     return true;
                 }

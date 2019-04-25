@@ -721,6 +721,7 @@ var feng3d;
         }
         return true;
     }
+    var __root__ = "__root__";
     /**
      * 序列化
      */
@@ -751,8 +752,8 @@ var feng3d;
         Serialization.prototype.serialize = function (target) {
             var handlers = this.serializeHandlers.sort(function (a, b) { return b.priority - a.priority; }).map(function (v) { return v.handler; });
             var result = {};
-            propertyHandler(result, { "": target }, "", handlers, this);
-            var v = result[""];
+            propertyHandler(result, { __root__: target }, __root__, handlers, this);
+            var v = result[__root__];
             return v;
         };
         /**
@@ -766,8 +767,8 @@ var feng3d;
         Serialization.prototype.deserialize = function (object) {
             var handlers = this.deserializeHandlers.sort(function (a, b) { return b.priority - a.priority; }).map(function (v) { return v.handler; });
             var result = {};
-            propertyHandler(result, { "": object }, "", handlers, this);
-            var v = result[""];
+            propertyHandler(result, { __root__: object }, __root__, handlers, this);
+            var v = result[__root__];
             return v;
         };
         /**
@@ -780,9 +781,9 @@ var feng3d;
          */
         Serialization.prototype.different = function (target, defaultInstance) {
             var handlers = this.differentHandlers.sort(function (a, b) { return b.priority - a.priority; }).map(function (v) { return v.handler; });
-            var different = { "": {} };
-            differentPropertyHandler({ "": target }, { "": defaultInstance }, "", different, handlers);
-            return different[""];
+            var different = { __root__: {} };
+            differentPropertyHandler({ __root__: target }, { __root__: defaultInstance }, __root__, different, handlers);
+            return different[__root__];
         };
         /**
          * 从数据对象中提取数据给目标对象赋值
@@ -791,7 +792,7 @@ var feng3d;
          */
         Serialization.prototype.setValue = function (target, source) {
             var handlers = this.setValueHandlers.sort(function (a, b) { return b.priority - a.priority; }).map(function (v) { return v.handler; });
-            propertyHandler({ "": target }, { "": source }, "", handlers, this);
+            propertyHandler({ __root__: target }, { __root__: source }, __root__, handlers, this);
             return target;
         };
         /**
@@ -877,6 +878,11 @@ var feng3d;
         handler: function (target, source, property) {
             var spv = source[property];
             if (feng3d.AssetData.isAssetData(spv)) {
+                // 此处需要反序列化资源完整数据
+                if (property == __root__) {
+                    debugger;
+                    return false;
+                }
                 target[property] = feng3d.AssetData.serialize(spv);
                 return true;
             }
@@ -991,6 +997,11 @@ var feng3d;
             var tpv = target[property];
             var spv = source[property];
             if (feng3d.AssetData.isAssetData(spv)) {
+                // 此处需要反序列化资源完整数据
+                if (property == __root__) {
+                    debugger;
+                    return false;
+                }
                 target[property] = feng3d.AssetData.deserialize(spv);
                 return true;
             }
@@ -1141,6 +1152,11 @@ var feng3d;
             handler: function (target, source, property, different) {
                 var tpv = target[property];
                 if (feng3d.AssetData.isAssetData(tpv)) {
+                    // 此处需要反序列化资源完整数据
+                    if (property == __root__) {
+                        debugger;
+                        return false;
+                    }
                     different[property] = this.serialize(tpv);
                     return true;
                 }
@@ -1254,6 +1270,11 @@ var feng3d;
                 var tpv = target[property];
                 var spv = source[property];
                 if (feng3d.AssetData.isAssetData(spv)) {
+                    // 此处需要反序列化资源完整数据
+                    if (property == __root__) {
+                        debugger;
+                        return false;
+                    }
                     target[property] = feng3d.AssetData.deserialize(spv);
                     return true;
                 }
