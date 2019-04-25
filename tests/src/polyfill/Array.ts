@@ -23,9 +23,23 @@ QUnit.module("Array", () =>
     QUnit.test("unique", (assert) =>
     {
         var arr1 = Array(10000).fill(0).map((v, i) => (Math.random() < 0.1 ? null : Math.floor(10 * Math.random())));
-
         arr1.unique();
-
         assert.ok(arr1.length == 11);
+
+        var arrObj = Array(10).fill(0).map(v => ({}));
+        var arr2 = Array(10000).fill(0).map((v, i) => (arrObj[Math.floor(10 * Math.random())]));
+        arr2.unique();
+        assert.ok(arr2.length == 10);
+    });
+
+    QUnit.test("delete", (assert) =>
+    {
+        var arr1 = Array(10).fill(0).map((v, i) => i);
+        arr1.delete(arr1[Math.floor(10 * Math.random())]);
+        assert.ok(arr1.length == 9);
+
+        var arr2 = Array(10).fill(0).map(v => ({}));
+        arr2.delete(arr2[Math.floor(10 * Math.random())]);
+        assert.ok(arr2.length == 9);
     });
 });

@@ -3296,6 +3296,18 @@ QUnit.module("Array", function () {
         var arr1 = Array(10000).fill(0).map(function (v, i) { return (Math.random() < 0.1 ? null : Math.floor(10 * Math.random())); });
         arr1.unique();
         assert.ok(arr1.length == 11);
+        var arrObj = Array(10).fill(0).map(function (v) { return ({}); });
+        var arr2 = Array(10000).fill(0).map(function (v, i) { return (arrObj[Math.floor(10 * Math.random())]); });
+        arr2.unique();
+        assert.ok(arr2.length == 10);
+    });
+    QUnit.test("delete", function (assert) {
+        var arr1 = Array(10).fill(0).map(function (v, i) { return i; });
+        arr1.delete(arr1[Math.floor(10 * Math.random())]);
+        assert.ok(arr1.length == 9);
+        var arr2 = Array(10).fill(0).map(function (v) { return ({}); });
+        arr2.delete(arr2[Math.floor(10 * Math.random())]);
+        assert.ok(arr2.length == 9);
     });
 });
 QUnit.module("Object", function () {
