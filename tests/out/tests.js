@@ -105,6 +105,7 @@ var feng3d;
             obj.hideFlags = feng3d.HideFlags.None;
             var r = feng3d.serialization.serialize(obj);
             assert.ok(r != undefined);
+            assert.ok(Object.keys(r).length == 1);
             var obj1 = feng3d.serialization.deserialize(r);
             assert.deepEqual(obj, obj1);
         });

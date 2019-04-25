@@ -1116,7 +1116,8 @@ var feng3d;
                 //默认反序列
                 var keys = Object.keys(spv);
                 keys.forEach(function (key) {
-                    propertyHandler(inst, spv, key, replacers);
+                    if (key != feng3d.CLASS_KEY)
+                        propertyHandler(inst, spv, key, replacers);
                 });
                 target[property] = inst;
                 return true;

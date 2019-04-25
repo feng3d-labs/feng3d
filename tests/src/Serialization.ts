@@ -94,6 +94,7 @@ namespace feng3d
             obj.hideFlags = HideFlags.None;
             var r = serialization.serialize(obj);
             assert.ok(r != undefined);
+            assert.ok(Object.keys(r).length == 1);
 
             var obj1 = serialization.deserialize(r);
             assert.deepEqual(obj, obj1);

@@ -575,7 +575,8 @@ namespace feng3d
                     var keys = Object.keys(spv);
                     keys.forEach(key =>
                     {
-                        propertyHandler(inst, spv, key, replacers);
+                        if (key != CLASS_KEY)
+                            propertyHandler(inst, spv, key, replacers);
                     });
                     target[property] = inst;
                     return true;
