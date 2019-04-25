@@ -285,22 +285,44 @@ declare namespace feng3d {
         (target: any, source: any, property: string, replacers: PropertyHandler[]): boolean;
     }
     /**
+     * 序列化属性函数项
+     */
+    interface DifferentPropertyHandler {
+        /**
+         * 序列化属性函数项
+         *
+         * @param target 序列化后的对象，存放序列化后属性值的对象。
+         * @param source 被序列化的对象，提供序列化前属性值的对象。
+         * @param property 序列化属性名称
+         * @param replacers 序列化属性函数列表
+         * @returns 返回true时结束该属性后续处理。
+         */
+        (target: any, source: any, property: string, different: Object, replacers: DifferentPropertyHandler[]): boolean;
+    }
+    /**
      * 序列化
      */
     class Serialization {
         /**
-         * 序列化转换函数
+         * 序列化函数列表
          */
-        serializePropertyHandlers: {
+        serializeHandlers: {
             priority: number;
             handler: PropertyHandler;
         }[];
         /**
-         * 反序列化转换函数
+         * 反序列化函数列表
          */
-        deserializePropertyHandlers: {
+        deserializeHandlers: {
             priority: number;
             handler: PropertyHandler;
+        }[];
+        /**
+         * 比较差异函数列表
+         */
+        differentHandlers: {
+            priority: number;
+            handler: DifferentPropertyHandler;
         }[];
         /**
          * 序列化对象
@@ -319,12 +341,13 @@ declare namespace feng3d {
         deserialize<T>(object: gPartial<T>): T;
         /**
          * 比较两个对象的不同，提取出不同的数据
+         *
          * @param target 用于检测不同的数据
          * @param defaultInstance   模板（默认）数据
          * @param different 比较得出的不同（简单结构）数据
          * @returns 比较得出的不同（简单结构）数据
          */
-        different<T>(target: T, defaultInstance: T, different?: gPartial<T>): gPartial<T>;
+        different<T>(target: T, defaultInstance: T, different?: gPartial<T>): any;
         /**
          * 从数据对象中提取数据给目标对象赋值
          * @param target 目标对象

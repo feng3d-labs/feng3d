@@ -107,14 +107,19 @@ namespace feng3d
     export class Serialization
     {
         /**
-         * 序列化转换函数
+         * 序列化函数列表
          */
-        serializePropertyHandlers: { priority: number, handler: PropertyHandler }[] = [];
+        serializeHandlers: { priority: number, handler: PropertyHandler }[] = [];
 
         /**
-         * 反序列化转换函数
+         * 反序列化函数列表
          */
-        deserializePropertyHandlers: { priority: number, handler: PropertyHandler }[] = [];
+        deserializeHandlers: { priority: number, handler: PropertyHandler }[] = [];
+
+        /**
+         * 比较差异函数列表
+         */
+        differentHandlers: { priority: number, handler: DifferentPropertyHandler }[] = [];
 
         /**
          * 序列化对象
@@ -123,7 +128,7 @@ namespace feng3d
          */
         serialize<T>(target: T): gPartial<T>
         {
-            var handlers = this.serializePropertyHandlers.sort((a, b) => b.priority - a.priority).map(v => v.handler);
+            var handlers = this.serializeHandlers.sort((a, b) => b.priority - a.priority).map(v => v.handler);
             var result = {};
             propertyHandler(result, { "": target }, "", handlers);
             var v = result[""];
@@ -140,7 +145,7 @@ namespace feng3d
          */
         deserialize<T>(object: gPartial<T>): T
         {
-            var handlers = this.deserializePropertyHandlers.sort((a, b) => b.priority - a.priority).map(v => v.handler);
+            var handlers = this.deserializeHandlers.sort((a, b) => b.priority - a.priority).map(v => v.handler);
             var result = {};
             propertyHandler(result, { "": object }, "", handlers);
             var v = result[""];
@@ -149,6 +154,7 @@ namespace feng3d
 
         /**
          * 比较两个对象的不同，提取出不同的数据
+         * 
          * @param target 用于检测不同的数据
          * @param defaultInstance   模板（默认）数据
          * @param different 比较得出的不同（简单结构）数据
@@ -156,85 +162,7 @@ namespace feng3d
          */
         different<T>(target: T, defaultInstance: T, different?: gPartial<T>)
         {
-            var handlers: DifferentPropertyHandler[] = [
-                function (target, source, property, different, replacers)
-                {
-                    if (target[property] == source[property])
-                    {
-                        return true;
-                    }
-                    return false;
-                },
-                function (target, source, property, different, replacers)
-                {
-                    if (null == source[property])
-                    {
-                        different[property] = this.serialize(target[property]);
-                        return true;
-                    }
-                    return false;
-                },
-                function (target, source, property, different, replacers)
-                {
-                    let propertyValue = target[property];
-                    if (Object.isBaseType(propertyValue))
-                    {
-                        different[property] = this.serialize(propertyValue);
-                        return true;
-                    }
-                    return false;
-                },
-                function (target, source, property, different, replacers)
-                {
-                    let propertyValue = target[property];
-                    if (Array.isArray(propertyValue))
-                    {
-                        different[property] = this.serialize(propertyValue);
-                        return true;
-                    }
-                    return false;
-                },
-                function (target, source, property, different, replacers)
-                {
-                    let propertyValue = target[property];
-                    let defaultPropertyValue = source[property];
-                    if (defaultPropertyValue.constructor != propertyValue.constructor)
-                    {
-                        different[property] = this.serialize(propertyValue);
-                        return true;
-                    }
-                    return false;
-                },
-                function (target, source, property, different, replacers)
-                {
-                    let propertyValue = target[property];
-                    if (AssetData.isAssetData(propertyValue))
-                    {
-                        different[property] = this.serialize(propertyValue);
-                        return true;
-                    }
-                    return false;
-                },
-                function (target, source, property, different, replacers)
-                {
-                    let propertyValue = target[property];
-                    let defaultPropertyValue = source[property];
-
-                    var serializableMembers = getSerializableMembers(target);
-                    if (target.constructor == Object)
-                        serializableMembers = Object.keys(target);
-
-                    var diff = {};
-                    serializableMembers.forEach(v =>
-                    {
-                        differentPropertyHandler(propertyValue, defaultPropertyValue, v, diff, replacers);
-                    });
-                    if (Object.keys(diff).length > 0)
-                        different[property] = diff;
-                    return true;
-                },
-            ];
-
+            var handlers = this.differentHandlers.sort((a, b) => b.priority - a.priority).map(v => v.handler);
             different = different || {};
             differentPropertyHandler({ "": target }, { "": defaultInstance }, "", different, handlers);
             return different[""];
@@ -354,7 +282,7 @@ namespace feng3d
 
     serialization = new Serialization();
 
-    serialization.serializePropertyHandlers.push(
+    serialization.serializeHandlers.push(
         //基础类型
         {
             priority: 0,
@@ -502,7 +430,7 @@ namespace feng3d
         },
     );
 
-    serialization.deserializePropertyHandlers.push(
+    serialization.deserializeHandlers.push(
         //基础类型
         {
             priority: 0,
@@ -636,6 +564,106 @@ namespace feng3d
             }
         },
     );
+
+    serialization.differentHandlers = [
+        {
+            priority: 0,
+            handler: function (target, source, property, different, replacers)
+            {
+                if (target[property] == source[property])
+                {
+                    return true;
+                }
+                return false;
+            }
+        },
+        {
+            priority: 0,
+            handler: function (target, source, property, different, replacers)
+            {
+                if (null == source[property])
+                {
+                    different[property] = this.serialize(target[property]);
+                    return true;
+                }
+                return false;
+            }
+        },
+        {
+            priority: 0,
+            handler: function (target, source, property, different, replacers)
+            {
+                let propertyValue = target[property];
+                if (Object.isBaseType(propertyValue))
+                {
+                    different[property] = this.serialize(propertyValue);
+                    return true;
+                }
+                return false;
+            }
+        },
+        {
+            priority: 0,
+            handler: function (target, source, property, different, replacers)
+            {
+                let propertyValue = target[property];
+                if (Array.isArray(propertyValue))
+                {
+                    different[property] = this.serialize(propertyValue);
+                    return true;
+                }
+                return false;
+            }
+        },
+        {
+            priority: 0,
+            handler: function (target, source, property, different, replacers)
+            {
+                let propertyValue = target[property];
+                let defaultPropertyValue = source[property];
+                if (defaultPropertyValue.constructor != propertyValue.constructor)
+                {
+                    different[property] = this.serialize(propertyValue);
+                    return true;
+                }
+                return false;
+            }
+        },
+        {
+            priority: 0,
+            handler: function (target, source, property, different, replacers)
+            {
+                let propertyValue = target[property];
+                if (AssetData.isAssetData(propertyValue))
+                {
+                    different[property] = this.serialize(propertyValue);
+                    return true;
+                }
+                return false;
+            }
+        },
+        {
+            priority: 0,
+            handler: function (target, source, property, different, replacers)
+            {
+                let propertyValue = target[property];
+                let defaultPropertyValue = source[property];
+
+                var serializableMembers = getSerializableMembers(target);
+                if (target.constructor == Object)
+                    serializableMembers = Object.keys(target);
+
+                var diff = {};
+                serializableMembers.forEach(v =>
+                {
+                    differentPropertyHandler(propertyValue, defaultPropertyValue, v, diff, replacers);
+                });
+                if (Object.keys(diff).length > 0)
+                    different[property] = diff;
+                return true;
+            }
+        },
+    ];
 }
 
 
