@@ -159,7 +159,7 @@ namespace feng3d
             assert.ok(c.c == c1.c);
         });
 
-        QUnit.test("serialize.different 获取两个数据的差异", (assert) =>
+        QUnit.test("serialization.different 获取两个数据的差异", (assert) =>
         {
             var c = new C();
             c.id = 8;
@@ -168,6 +168,15 @@ namespace feng3d
 
             var diff = serialization.different(c, nc);
             assert.ok(Object.keys(diff).length == 1);
+        });
+
+        QUnit.test("serialization.setValue", (assert) =>
+        {
+            // todo
+
+            serialization.setValue
+
+            assert.ok(true);
         });
     });
 }
