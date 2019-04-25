@@ -19,4 +19,13 @@ QUnit.module("Array", () =>
 
         assert.ok(arr.equal(arr1));
     });
+
+    QUnit.test("unique", (assert) =>
+    {
+        var arr1 = Array(10000).fill(0).map((v, i) => (Math.random() < 0.1 ? null : Math.floor(10 * Math.random())));
+
+        arr1.unique();
+
+        assert.ok(arr1.length == 11);
+    });
 });

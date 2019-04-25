@@ -40,14 +40,14 @@ namespace feng3d
             assert.ok(result1(a, b) == add(a, b));
 
             // 序列化反序列化 serialization 工具中的函数列表
-            var r = serialization.serialize(serialization.serializePropertyHandlers);
+            var r = serialization.serialize(serialization.serializeHandlers);
             var serializeReplacers = serialization.deserialize(r);
-            var r = serialization.serialize(serialization.deserializePropertyHandlers);
+            var r = serialization.serialize(serialization.deserializeHandlers);
             var deserializeReplacers = serialization.deserialize(r);
             //
             var mySerialization = new Serialization();
-            mySerialization.serializePropertyHandlers = serializeReplacers;
-            mySerialization.deserializePropertyHandlers = deserializeReplacers;
+            mySerialization.serializeHandlers = serializeReplacers;
+            mySerialization.deserializeHandlers = deserializeReplacers;
 
             // 使用序列化反序列化后的 serialization 工具进行序列化函数测试
             var result = mySerialization.serialize(add);

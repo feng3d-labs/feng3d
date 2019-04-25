@@ -468,10 +468,11 @@ namespace feng3d
                 if (Array.isArray(spv))
                 {
                     var arr = [];
-                    for (const key in spv)
+                    var keys = Object.keys(spv);
+                    keys.forEach(key =>
                     {
                         propertyHandler(arr, spv, key, replacers);
-                    }
+                    });
                     target[property] = arr;
                     return true;
                 }
@@ -483,10 +484,16 @@ namespace feng3d
             priority: 0,
             handler: function (target, source, property, replacers)
             {
+                var tpv = target[property];
                 var spv = source[property];
                 if (Object.isObject(spv) && spv[CLASS_KEY] == null)
                 {
                     var obj = {};
+                    if (tpv)
+                    {
+                        debugger;
+                        obj = tpv;
+                    }
                     for (var key in spv)
                     {
                         propertyHandler(obj, spv, key, replacers);
@@ -505,6 +512,7 @@ namespace feng3d
                 var spv = source[property];
                 if (!Object.isObject(spv))
                 {
+                    debugger;
                     target[property] = spv;
                     return true;
                 }
@@ -530,11 +538,17 @@ namespace feng3d
             priority: 0,
             handler: function (target, source, property, replacers)
             {
+                var tpv = target[property];
                 var spv = source[property];
                 var inst = classUtils.getInstanceByName(spv[CLASS_KEY]);
                 //处理自定义反序列化对象
                 if (inst && inst["deserialize"])
                 {
+                    if (tpv && tpv.constructor == inst.constructor)
+                    {
+                        debugger;
+                        inst = tpv;
+                    }
                     inst["deserialize"](spv);
                     target[property] = inst;
                     return true;
@@ -547,16 +561,22 @@ namespace feng3d
             priority: 0,
             handler: function (target, source, property, replacers)
             {
+                var tpv = target[property];
                 var spv = source[property];
                 var inst = classUtils.getInstanceByName(spv[CLASS_KEY]);
                 if (inst)
                 {
-                    //默认反序列
-                    for (const key in spv)
+                    if (tpv && tpv.constructor == inst.constructor)
                     {
-                        if (CLASS_KEY == key) continue;
-                        propertyHandler(inst, spv, key, replacers);
+                        debugger;
+                        inst = tpv;
                     }
+                    //默认反序列
+                    var keys = Object.keys(spv);
+                    keys.forEach(key =>
+                    {
+                        propertyHandler(inst, spv, key, replacers);
+                    });
                     target[property] = inst;
                     return true;
                 }

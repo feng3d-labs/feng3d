@@ -35,10 +35,11 @@ Array.prototype.equal = function (arr: ArrayLike<any>)
 {
     var self: any[] = this;
     if (self.length != arr.length) return false;
-
-    for (let i = 0, n = self.length; i < n; i++)
+    var keys = Object.keys(arr);
+    for (let i = 0, n = keys.length; i < n; i++)
     {
-        if (self[i] != arr[i]) return false;
+        var key = keys[i];
+        if (self[key] != arr[key]) return false;
     }
     return true;
 }
@@ -55,13 +56,27 @@ Array.prototype.concatToSelf = function (...items)
 Array.prototype.unique = function (compare = (a, b) => a == b)
 {
     var arr: any[] = this;
-    for (let i = 0; i < arr.length; i++)
+    var keys = Object.keys(arr);
+    var ids = keys.map(v => Number(v)).filter(v => !isNaN(v));
+    var deleteMap: { [id: number]: true } = {};
+    //
+    for (let i = 0, n = ids.length; i < n; i++)
     {
-        for (let j = arr.length - 1; j > i; j--)
+        var ki = ids[i];
+        if (deleteMap[ki]) continue;
+        for (let j = i + 1; j < n; j++)
         {
-            if (compare(arr[i], arr[j])) arr.splice(j, 1);
+            var kj = ids[j];
+            if (compare(arr[ki], arr[kj])) deleteMap[kj] = true;
         }
     }
+    //
+    for (let i = ids.length - 1; i >= 0; i--)
+    {
+        var id = ids[i];
+        if (deleteMap[id]) arr.splice(id, 1);
+    }
+
     return this;
 }
 

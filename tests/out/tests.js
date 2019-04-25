@@ -63,14 +63,14 @@ var feng3d;
             assert.ok(result1 != add);
             assert.ok(result1(a, b) == add(a, b));
             // 序列化反序列化 serialization 工具中的函数列表
-            var r = feng3d.serialization.serialize(feng3d.serialization.serializePropertyHandlers);
+            var r = feng3d.serialization.serialize(feng3d.serialization.serializeHandlers);
             var serializeReplacers = feng3d.serialization.deserialize(r);
-            var r = feng3d.serialization.serialize(feng3d.serialization.deserializePropertyHandlers);
+            var r = feng3d.serialization.serialize(feng3d.serialization.deserializeHandlers);
             var deserializeReplacers = feng3d.serialization.deserialize(r);
             //
             var mySerialization = new feng3d.Serialization();
-            mySerialization.serializePropertyHandlers = serializeReplacers;
-            mySerialization.deserializePropertyHandlers = deserializeReplacers;
+            mySerialization.serializeHandlers = serializeReplacers;
+            mySerialization.deserializeHandlers = deserializeReplacers;
             // 使用序列化反序列化后的 serialization 工具进行序列化函数测试
             var result = mySerialization.serialize(add);
             var result1 = mySerialization.deserialize(result);
@@ -3291,6 +3291,11 @@ QUnit.module("Array", function () {
         arr.concatToSelf(1, 2, 3, [4, 5, 6], 7, 8, 9);
         var arr1 = Array(10).fill(0).map(function (v, i) { return i; });
         assert.ok(arr.equal(arr1));
+    });
+    QUnit.test("unique", function (assert) {
+        var arr1 = Array(10000).fill(0).map(function (v, i) { return (Math.random() < 0.1 ? null : Math.floor(10 * Math.random())); });
+        arr1.unique();
+        assert.ok(arr1.length == 11);
     });
 });
 QUnit.module("Object", function () {
