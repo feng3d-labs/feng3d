@@ -160,10 +160,10 @@ namespace feng3d
          * @param different 比较得出的不同（简单结构）数据
          * @returns 比较得出的不同（简单结构）数据
          */
-        different<T>(target: T, defaultInstance: T, different?: gPartial<T>)
+        different<T>(target: T, defaultInstance: T): gPartial<T>
         {
             var handlers = this.differentHandlers.sort((a, b) => b.priority - a.priority).map(v => v.handler);
-            different = different || {};
+            var different = { "": {} };
             differentPropertyHandler({ "": target }, { "": defaultInstance }, "", different, handlers);
             return different[""];
         }
@@ -617,7 +617,7 @@ namespace feng3d
                 let propertyValue = target[property];
                 if (Object.isBaseType(propertyValue))
                 {
-                    different[property] = this.serialize(propertyValue);
+                    different[property] = propertyValue;
                     return true;
                 }
                 return false;
@@ -667,17 +667,17 @@ namespace feng3d
             priority: 0,
             handler: function (target, source, property, different, replacers)
             {
-                let propertyValue = target[property];
-                let defaultPropertyValue = source[property];
+                let tpv = target[property];
+                let spv = source[property];
 
-                var serializableMembers = getSerializableMembers(target);
-                if (target.constructor == Object)
-                    serializableMembers = Object.keys(target);
+                var keys = getSerializableMembers(tpv);
+                if (tpv.constructor == Object)
+                    keys = Object.keys(tpv);
 
                 var diff = {};
-                serializableMembers.forEach(v =>
+                keys.forEach(v =>
                 {
-                    differentPropertyHandler(propertyValue, defaultPropertyValue, v, diff, replacers);
+                    differentPropertyHandler(tpv, spv, v, diff, replacers);
                 });
                 if (Object.keys(diff).length > 0)
                     different[property] = diff;

@@ -155,7 +155,8 @@ var feng3d;
         QUnit.test("serialize.different 获取两个数据的差异", function (assert) {
             var c = new C();
             c.id = 8;
-            var diff = feng3d.serialization.different(c, new C());
+            var nc = new C();
+            var diff = feng3d.serialization.different(c, nc);
             assert.ok(Object.keys(diff).length == 1);
         });
     });

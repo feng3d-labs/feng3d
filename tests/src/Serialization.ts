@@ -164,7 +164,9 @@ namespace feng3d
             var c = new C();
             c.id = 8;
 
-            var diff = serialization.different(c, new C());
+            var nc = new C();
+
+            var diff = serialization.different(c, nc);
             assert.ok(Object.keys(diff).length == 1);
         });
     });

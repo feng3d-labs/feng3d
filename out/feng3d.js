@@ -774,9 +774,9 @@ var feng3d;
          * @param different 比较得出的不同（简单结构）数据
          * @returns 比较得出的不同（简单结构）数据
          */
-        Serialization.prototype.different = function (target, defaultInstance, different) {
+        Serialization.prototype.different = function (target, defaultInstance) {
             var handlers = this.differentHandlers.sort(function (a, b) { return b.priority - a.priority; }).map(function (v) { return v.handler; });
-            different = different || {};
+            var different = { "": {} };
             differentPropertyHandler({ "": target }, { "": defaultInstance }, "", different, handlers);
             return different[""];
         };
@@ -1150,7 +1150,7 @@ var feng3d;
             handler: function (target, source, property, different, replacers) {
                 var propertyValue = target[property];
                 if (Object.isBaseType(propertyValue)) {
-                    different[property] = this.serialize(propertyValue);
+                    different[property] = propertyValue;
                     return true;
                 }
                 return false;
@@ -1193,14 +1193,14 @@ var feng3d;
         {
             priority: 0,
             handler: function (target, source, property, different, replacers) {
-                var propertyValue = target[property];
-                var defaultPropertyValue = source[property];
-                var serializableMembers = getSerializableMembers(target);
-                if (target.constructor == Object)
-                    serializableMembers = Object.keys(target);
+                var tpv = target[property];
+                var spv = source[property];
+                var keys = getSerializableMembers(tpv);
+                if (tpv.constructor == Object)
+                    keys = Object.keys(tpv);
                 var diff = {};
-                serializableMembers.forEach(function (v) {
-                    differentPropertyHandler(propertyValue, defaultPropertyValue, v, diff, replacers);
+                keys.forEach(function (v) {
+                    differentPropertyHandler(tpv, spv, v, diff, replacers);
                 });
                 if (Object.keys(diff).length > 0)
                     different[property] = diff;

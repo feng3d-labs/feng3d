@@ -127,7 +127,7 @@ interface ObjectConstructor {
      */
     propertyIsWritable(obj: Object, property: string): boolean;
     /**
-     * 判断是否为基础类型 undefined,null,boolean,string,number,function
+     * 判断是否为基础类型 undefined,null,boolean,string,number
      */
     isBaseType(object: any): boolean;
     /**
@@ -347,7 +347,7 @@ declare namespace feng3d {
          * @param different 比较得出的不同（简单结构）数据
          * @returns 比较得出的不同（简单结构）数据
          */
-        different<T>(target: T, defaultInstance: T, different?: gPartial<T>): any;
+        different<T>(target: T, defaultInstance: T): gPartial<T>;
         /**
          * 从数据对象中提取数据给目标对象赋值
          * @param target 目标对象
