@@ -807,7 +807,6 @@ var feng3d;
             var targetPropertyValue = target[property];
             if (target[property] == source[property])
                 return;
-            this.deserialize(sourcePropertyValue);
             // 当原值等于null时直接反序列化赋值
             if (target[property] == null) {
                 target[property] = this.deserialize(sourcePropertyValue);
@@ -1018,6 +1017,37 @@ var feng3d;
             return false;
         }
     }, 
+    // 处理非原生Object对象
+    {
+        priority: 0,
+        handler: function (target, source, property) {
+            var spv = source[property];
+            if (!Object.isObject(spv) && !Array.isArray(spv)) {
+                target[property] = spv;
+                return true;
+            }
+            return false;
+        }
+    }, 
+    // 处理资源
+    {
+        priority: 0,
+        handler: function (target, source, property, replacers) {
+            var tpv = target[property];
+            var spv = source[property];
+            if (feng3d.AssetData.isAssetData(spv)) {
+                target[property] = feng3d.AssetData.deserialize(spv);
+                return true;
+            }
+            if (feng3d.AssetData.isAssetData(tpv)) {
+                var result = {};
+                propertyHandler(result, { "": spv }, "", replacers);
+                target[property] = result[""];
+                return true;
+            }
+            return false;
+        }
+    }, 
     //处理数组
     {
         priority: 0,
@@ -1043,39 +1073,14 @@ var feng3d;
             var spv = source[property];
             if (Object.isObject(spv) && spv[feng3d.CLASS_KEY] == null) {
                 var obj = {};
-                if (tpv) {
-                    debugger;
+                if (tpv)
                     obj = tpv;
-                }
-                for (var key in spv) {
+                //
+                var keys = Object.keys(spv);
+                keys.forEach(function (key) {
                     propertyHandler(obj, spv, key, replacers);
-                }
+                });
                 target[property] = obj;
-                return true;
-            }
-            return false;
-        }
-    }, 
-    // 处理非原生Object对象
-    {
-        priority: 0,
-        handler: function (target, source, property) {
-            var spv = source[property];
-            if (!Object.isObject(spv)) {
-                debugger;
-                target[property] = spv;
-                return true;
-            }
-            return false;
-        }
-    }, 
-    // 处理资源
-    {
-        priority: 0,
-        handler: function (target, source, property, replacers) {
-            var spv = source[property];
-            if (feng3d.AssetData.isAssetData(spv)) {
-                target[property] = feng3d.AssetData.deserialize(spv);
                 return true;
             }
             return false;
@@ -1091,7 +1096,6 @@ var feng3d;
             //处理自定义反序列化对象
             if (inst && inst["deserialize"]) {
                 if (tpv && tpv.constructor == inst.constructor) {
-                    debugger;
                     inst = tpv;
                 }
                 inst["deserialize"](spv);
@@ -1110,7 +1114,6 @@ var feng3d;
             var inst = feng3d.classUtils.getInstanceByName(spv[feng3d.CLASS_KEY]);
             if (inst) {
                 if (tpv && tpv.constructor == inst.constructor) {
-                    debugger;
                     inst = tpv;
                 }
                 //默认反序列
@@ -15522,7 +15525,7 @@ var feng3d;
          * @param asset 可能的资源数据
          */
         AssetData.isAssetData = function (asset) {
-            if (asset.assetId == undefined)
+            if (!asset || asset.assetId == undefined)
                 return false;
             if (feng3d.classUtils.getDefaultInstanceByName(asset[feng3d.CLASS_KEY]) instanceof AssetData)
                 return true;
@@ -27674,7 +27677,7 @@ var feng3d;
                 var _this = this;
                 if (this.assetId) {
                     // 来源于资源
-                    console.log("\u6765\u6E90\u4E8E\u8D44\u6E90\uFF0C\u4E0D\u53EF\u4FEE\u6539\uFF01");
+                    console.error("\u6765\u6E90\u4E8E\u8D44\u6E90\uFF0C\u4E0D\u53EF\u4FEE\u6539\uFF01");
                     return;
                 }
                 this._source = v;
