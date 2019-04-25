@@ -282,7 +282,7 @@ declare namespace feng3d {
          * @param handlers 序列化属性函数列表
          * @returns 返回true时结束该属性后续处理。
          */
-        (target: any, source: any, property: string, handlers: PropertyHandler[]): boolean;
+        (target: any, source: any, property: string, handlers: PropertyHandler[], serialization: Serialization): boolean;
     }
     /**
      * 序列化属性函数项
@@ -325,13 +325,6 @@ declare namespace feng3d {
             handler: DifferentPropertyHandler;
         }[];
         /**
-         * 设置函数列表
-         */
-        setValueHandlers: {
-            priority: number;
-            handler: PropertyHandler;
-        }[];
-        /**
          * 序列化对象
          * @param target 被序列化的对象
          * @returns 序列化后可以转换为Json的数据对象
@@ -362,13 +355,12 @@ declare namespace feng3d {
          */
         setValue<T>(target: T, source: gPartial<T>): T;
         /**
-         * 给目标对象的指定属性赋值
-         *
-         * @param target 目标对象
-         * @param source 数据对象
-         * @param property 属性名称
+         * 设置函数列表
          */
-        private setPropertyValue;
+        setValueHandlers: {
+            priority: number;
+            handler: PropertyHandler;
+        }[];
         /**
          * 克隆
          * @param target 被克隆对象
