@@ -280,6 +280,8 @@ declare namespace feng3d {
          * @param source 被序列化的对象，提供序列化前属性值的对象。
          * @param property 序列化属性名称
          * @param handlers 序列化属性函数列表
+         * @param serialization 序列化工具自身
+         *
          * @returns 返回true时结束该属性后续处理。
          */
         (target: any, source: any, property: string, handlers: PropertyHandler[], serialization: Serialization): boolean;
@@ -295,9 +297,11 @@ declare namespace feng3d {
          * @param source 被序列化的对象，提供序列化前属性值的对象。
          * @param property 序列化属性名称
          * @param handlers 序列化属性函数列表
+         * @param serialization 序列化工具自身
+         *
          * @returns 返回true时结束该属性后续处理。
          */
-        (target: any, source: any, property: string, different: Object, handlers: DifferentPropertyHandler[]): boolean;
+        (target: any, source: any, property: string, different: Object, handlers: DifferentPropertyHandler[], serialization: Serialization): boolean;
     }
     /**
      * 序列化
@@ -350,11 +354,11 @@ declare namespace feng3d {
          * 比较两个对象的不同，提取出不同的数据
          *
          * @param target 用于检测不同的数据
-         * @param defaultInstance   模板（默认）数据
+         * @param source   模板（默认）数据
          * @param different 比较得出的不同（简单结构）数据
          * @returns 比较得出的不同（简单结构）数据
          */
-        different<T>(target: T, defaultInstance: T): gPartial<T>;
+        different<T>(target: T, source: T): gPartial<T>;
         /**
          * 从数据对象中提取数据给目标对象赋值
          * @param target 目标对象
