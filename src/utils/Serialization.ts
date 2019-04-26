@@ -335,7 +335,7 @@ namespace feng3d
                 var spv = source[property];
                 if (Array.isArray(spv))
                 {
-                    let arr = [];
+                    let arr = target[property] || [];
                     let keys = Object.keys(spv);
                     keys.forEach(v =>
                     {
@@ -470,7 +470,7 @@ namespace feng3d
                 var spv = source[property];
                 if (Array.isArray(spv))
                 {
-                    var arr = [];
+                    var arr = target[property] || [];
                     var keys = Object.keys(spv);
                     keys.forEach(key =>
                     {
@@ -603,9 +603,17 @@ namespace feng3d
             handler: function (target, source, property, different, handlers, serialization)
             {
                 let tpv = target[property];
+                let spv = source[property];
                 if (Array.isArray(tpv))
                 {
-                    different[property] = serialization.serialize(tpv);
+                    var keys = Object.keys(tpv);
+                    var diff = [];
+                    keys.forEach(key =>
+                    {
+                        differentPropertyHandler(tpv, spv, key, diff, handlers, serialization);
+                    });
+                    if (Object.keys(diff).length > 0)
+                        different[property] = diff;
                     return true;
                 }
                 return false;
@@ -724,7 +732,11 @@ namespace feng3d
                 var spv = source[property];
                 if (Array.isArray(spv))
                 {
-                    target[property] = serialization.deserialize(spv);
+                    var keys = Object.keys(spv);
+                    keys.forEach(key =>
+                    {
+                        propertyHandler(tpv, spv, key, handlers, serialization);
+                    });
                     return true;
                 }
                 return false;

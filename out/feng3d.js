@@ -913,7 +913,7 @@ var feng3d;
         handler: function (target, source, property, handlers, serialization) {
             var spv = source[property];
             if (Array.isArray(spv)) {
-                var arr_1 = [];
+                var arr_1 = target[property] || [];
                 var keys = Object.keys(spv);
                 keys.forEach(function (v) {
                     propertyHandler(arr_1, spv, v, handlers, serialization);
@@ -1027,7 +1027,7 @@ var feng3d;
         handler: function (target, source, property, handlers, serialization) {
             var spv = source[property];
             if (Array.isArray(spv)) {
-                var arr = [];
+                var arr = target[property] || [];
                 var keys = Object.keys(spv);
                 keys.forEach(function (key) {
                     propertyHandler(arr, spv, key, handlers, serialization);
@@ -1141,8 +1141,15 @@ var feng3d;
             priority: 0,
             handler: function (target, source, property, different, handlers, serialization) {
                 var tpv = target[property];
+                var spv = source[property];
                 if (Array.isArray(tpv)) {
-                    different[property] = serialization.serialize(tpv);
+                    var keys = Object.keys(tpv);
+                    var diff = [];
+                    keys.forEach(function (key) {
+                        differentPropertyHandler(tpv, spv, key, diff, handlers, serialization);
+                    });
+                    if (Object.keys(diff).length > 0)
+                        different[property] = diff;
                     return true;
                 }
                 return false;
@@ -1243,7 +1250,10 @@ var feng3d;
                 var tpv = target[property];
                 var spv = source[property];
                 if (Array.isArray(spv)) {
-                    target[property] = serialization.deserialize(spv);
+                    var keys = Object.keys(spv);
+                    keys.forEach(function (key) {
+                        propertyHandler(tpv, spv, key, handlers, serialization);
+                    });
                     return true;
                 }
                 return false;

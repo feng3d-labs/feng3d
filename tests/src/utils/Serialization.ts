@@ -172,8 +172,19 @@ namespace feng3d
             var diff2 = serialization.serialize(obj);
             assert.deepEqual(diff2, { __class__: "feng3d.GameObject" });
 
+            //
             var obj2 = serialization.deserialize(diff2);
-            assert.deepEqual(obj, obj2);
+            var diff = serialization.different(obj, obj2);
+            assert.deepEqual(diff, {});
+
+            obj.transform.x = 1;
+            var r3 = serialization.serialize(obj);
+            assert.deepEqual(r3, { __class__: "feng3d.GameObject", components: [{ x: 1 }] });
+
+            //
+            var obj3 = serialization.deserialize(r3);
+            var diff1 = serialization.different(obj, obj3);
+            assert.deepEqual(diff1, {});
         });
 
         QUnit.test("different 相等对象", (assert) =>
@@ -232,12 +243,22 @@ namespace feng3d
         {
             var arr = [1, true, "str", null, undefined, NaN];
             var arr1 = [1, false, "str1", 1, 1, 1];
-
+            //
             var diff = serialization.different(arr, arr1);
-            assert.deepEqual(diff, arr);
-
-            var diff = serialization.different(arr1, arr);
-            assert.deepEqual(diff, arr1);
+            var expectDiff = [];
+            arr.forEach((v, i) =>
+            {
+                if (arr[i] != arr1[i]) expectDiff[i] = arr[i];
+            });
+            assert.deepEqual(diff, expectDiff); // 此处有 expectDiff[0] 未定义
+            //
+            var diff1 = serialization.different(arr1, arr);
+            var expectDiff1 = [];
+            arr.forEach((v, i) =>
+            {
+                if (arr[i] != arr1[i]) expectDiff1[i] = arr1[i];
+            });
+            assert.deepEqual(diff1, expectDiff1);
         });
 
         QUnit.test("different 不同对象类型", (assert) =>

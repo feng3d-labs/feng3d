@@ -4308,8 +4308,17 @@ var feng3d;
             var obj = new feng3d.GameObject();
             var diff2 = feng3d.serialization.serialize(obj);
             assert.deepEqual(diff2, { __class__: "feng3d.GameObject" });
+            //
             var obj2 = feng3d.serialization.deserialize(diff2);
-            assert.deepEqual(obj, obj2);
+            var diff = feng3d.serialization.different(obj, obj2);
+            assert.deepEqual(diff, {});
+            obj.transform.x = 1;
+            var r3 = feng3d.serialization.serialize(obj);
+            assert.deepEqual(r3, { __class__: "feng3d.GameObject", components: [{ x: 1 }] });
+            //
+            var obj3 = feng3d.serialization.deserialize(r3);
+            var diff1 = feng3d.serialization.different(obj, obj3);
+            assert.deepEqual(diff1, {});
         });
         QUnit.test("different 相等对象", function (assert) {
             var o = { a: 1, b: { c: true, d: { e: "str" } } };
@@ -4350,10 +4359,22 @@ var feng3d;
         QUnit.test("different 数组", function (assert) {
             var arr = [1, true, "str", null, undefined, NaN];
             var arr1 = [1, false, "str1", 1, 1, 1];
+            //
             var diff = feng3d.serialization.different(arr, arr1);
-            assert.deepEqual(diff, arr);
-            var diff = feng3d.serialization.different(arr1, arr);
-            assert.deepEqual(diff, arr1);
+            var expectDiff = [];
+            arr.forEach(function (v, i) {
+                if (arr[i] != arr1[i])
+                    expectDiff[i] = arr[i];
+            });
+            assert.deepEqual(diff, expectDiff); // 此处有 expectDiff[0] 未定义
+            //
+            var diff1 = feng3d.serialization.different(arr1, arr);
+            var expectDiff1 = [];
+            arr.forEach(function (v, i) {
+                if (arr[i] != arr1[i])
+                    expectDiff1[i] = arr1[i];
+            });
+            assert.deepEqual(diff1, expectDiff1);
         });
         QUnit.test("different 不同对象类型", function (assert) {
             var o = { v: new feng3d.Vector2() };
