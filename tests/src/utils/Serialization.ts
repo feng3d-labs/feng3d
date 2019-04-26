@@ -93,8 +93,7 @@ namespace feng3d
 
             obj.hideFlags = HideFlags.None;
             var r = serialization.serialize(obj);
-            assert.ok(r != undefined);
-            assert.ok(Object.keys(r).length == 1);
+            assert.deepEqual(r, { hideFlags: 0, __class__: "feng3d.Feng3dObject" });
 
             var obj1 = serialization.deserialize(r);
             assert.deepEqual(obj, obj1);
@@ -154,9 +153,7 @@ namespace feng3d
             c.c = Math.random();
             var result = serialization.serialize(c);
             var c1: C = serialization.deserialize(result);
-            assert.ok(c.id == c1.id);
-            assert.ok(c.a == c1.a);
-            assert.ok(c.c == c1.c);
+            assert.deepEqual(c, c1);
         });
 
         QUnit.test("different 相等对象", (assert) =>
@@ -240,13 +237,18 @@ namespace feng3d
 
         QUnit.test("different 资源", (assert) =>
         {
-            var c = new C();
-            c.id = 8;
+            var o = feng3d.Material.default; //默认材质资源
+            var o1 = new Material();
 
-            var nc = new C();
+            var diff = serialization.different(o, o1);
+            assert.deepEqual(diff, { name: "Default-Material", assetId: "Default-Material", hideFlags: HideFlags.NotEditable });
 
-            var diff = serialization.different(c, nc);
-            assert.ok(Object.keys(diff).length == 1);
+            var o2 = { v: feng3d.Material.default }; //默认材质资源
+            var o3 = { v: new Material() };
+
+            var expectDiff = serialization.serialize(o2);
+            var diff1 = serialization.different(o2, o3);
+            assert.deepEqual(diff1, expectDiff);
         });
 
         QUnit.test("serialization.setValue", (assert) =>

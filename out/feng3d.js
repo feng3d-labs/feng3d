@@ -757,9 +757,7 @@ var feng3d;
             return v;
         };
         /**
-         * 反序列化
-         *
-         * 注意！ 如果反序列前需要把包含的资源提前加载，否则会报错！
+         * 反序列化对象为基础对象数据（由Object与Array组合）
          *
          * @param object 换为Json的对象
          * @returns 反序列化后的数据
@@ -772,7 +770,7 @@ var feng3d;
             return v;
         };
         /**
-         * 比较两个对象的不同，提取出不同的数据
+         * 比较两个对象的不同，提取出不同的数据（由Object与Array组合）
          *
          * @param target 用于检测不同的数据
          * @param source   模板（默认）数据
@@ -1160,7 +1158,7 @@ var feng3d;
                     if (property == __root__) {
                         return false;
                     }
-                    different[property] = serialization.serialize(tpv);
+                    different[property] = feng3d.AssetData.serialize(tpv);
                     return true;
                 }
                 return false;
@@ -15537,6 +15535,9 @@ var feng3d;
             _this.hideFlags = feng3d.HideFlags.None;
             return _this;
         }
+        __decorate([
+            feng3d.serialize
+        ], Feng3dObject.prototype, "hideFlags", void 0);
         return Feng3dObject;
     }(feng3d.EventDispatcher));
     feng3d.Feng3dObject = Feng3dObject;
