@@ -4359,6 +4359,16 @@ var feng3d;
             var diff1 = feng3d.serialization.different(o2, o3);
             assert.deepEqual(diff1, expectDiff);
         });
+        QUnit.test("different 默认处理", function (assert) {
+            var o = { a: 1, b: true, c: "abc" };
+            var o1 = { a: 2, b: true, c: "abc" };
+            var diff = feng3d.serialization.different(o, o1);
+            assert.deepEqual(diff, { a: 1 });
+            var o2 = new feng3d.Vector3();
+            var o3 = new feng3d.Vector3(1, 2, 3);
+            var diff1 = feng3d.serialization.different(o2, o3);
+            assert.deepEqual(diff1, { x: 0, y: 0, z: 0 });
+        });
         QUnit.test("serialization.setValue", function (assert) {
             // todo
             feng3d.serialization.setValue;

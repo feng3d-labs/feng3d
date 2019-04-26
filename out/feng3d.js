@@ -1166,6 +1166,7 @@ var feng3d;
                 return false;
             }
         },
+        // 默认处理
         {
             priority: -10000,
             handler: function (target, source, property, different, handlers, serialization) {
