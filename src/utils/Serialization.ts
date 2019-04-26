@@ -134,8 +134,12 @@ namespace feng3d
 
         /**
          * 序列化对象
+         * 
+         * 过程中使用 different与默认值作比较减少结果中的数据。
+         * 
          * @param target 被序列化的对象
-         * @returns 序列化后可以转换为Json的数据对象 
+         * 
+         * @returns 序列化后简单数据对象（由Object与Array组合可 JSON.stringify 的简单结构） 
          */
         serialize<T>(target: T): gPartial<T>
         {
@@ -368,15 +372,23 @@ namespace feng3d
             priority: -10000,
             handler: function (target, source, property, handlers, serialization)
             {
+                var tpv = target[property];
                 var spv = source[property];
-                let object = {};
-                object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
-                var keys = getSerializableMembers(spv);
-                keys.forEach(v =>
+
+                if (tpv == null || tpv.constructor != spv.constructor)
                 {
-                    propertyHandler(object, spv, v, handlers, serialization);
-                });
-                target[property] = object;
+                    var className = classUtils.getQualifiedClassName(spv);
+                    var inst = classUtils.getDefaultInstanceByName(className);
+                    var diff: any = serialization.different(spv, inst);
+                    diff[CLASS_KEY] = className;
+                    target[property] = diff;
+                } else
+                {
+                    debugger;
+                    var diff: any = serialization.different(spv, tpv);
+                    if (diff)
+                        target[property] = diff;
+                }
                 return true;
             }
         },

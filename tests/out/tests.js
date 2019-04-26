@@ -4182,6 +4182,7 @@ var feng3d;
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.a = 1;
             _this.c = 1;
+            _this.o = { a: 1, b: true, c: { d: "string" } };
             return _this;
         }
         C.prototype.change = function () {
@@ -4193,6 +4194,9 @@ var feng3d;
         __decorate([
             feng3d.serialize
         ], C.prototype, "c", void 0);
+        __decorate([
+            feng3d.serialize
+        ], C.prototype, "o", void 0);
         return C;
     }(ObjectBase));
     feng3d.C = C;
@@ -4249,7 +4253,7 @@ var feng3d;
             assert.ok(r == undefined);
             obj.hideFlags = feng3d.HideFlags.None;
             var r = feng3d.serialization.serialize(obj);
-            assert.deepEqual(r, { hideFlags: 0, __class__: "feng3d.Feng3dObject" });
+            assert.deepEqual(r, { __class__: "feng3d.Feng3dObject" }); // 忽略默认值 hideFlags: HideFlags.None
             var obj1 = feng3d.serialization.deserialize(r);
             assert.deepEqual(obj, obj1);
         });
@@ -4293,6 +4297,19 @@ var feng3d;
             var result = feng3d.serialization.serialize(c);
             var c1 = feng3d.serialization.deserialize(result);
             assert.deepEqual(c, c1);
+            // 检查 serialize 过程中使用 different 减少数据量
+            var o2 = new feng3d.Vector2();
+            var r2 = feng3d.serialization.serialize(o2);
+            assert.deepEqual(r2, { __class__: "feng3d.Vector2" });
+            o2.x = 1;
+            var r2 = feng3d.serialization.serialize(o2);
+            assert.deepEqual(r2, { __class__: "feng3d.Vector2", x: 1 });
+            //
+            var obj = new feng3d.GameObject();
+            var diff2 = feng3d.serialization.serialize(obj);
+            assert.deepEqual(diff2, { __class__: "feng3d.GameObject" });
+            var obj2 = feng3d.serialization.deserialize(diff2);
+            assert.deepEqual(obj, obj2);
         });
         QUnit.test("different 相等对象", function (assert) {
             var o = { a: 1, b: { c: true, d: { e: "str" } } };
@@ -4318,7 +4335,7 @@ var feng3d;
             var o2 = { v: new feng3d.Vector2() };
             var o3 = { v: null };
             var diff1 = feng3d.serialization.different(o2, o3);
-            assert.deepEqual(diff1, { v: { __class__: "feng3d.Vector2", x: 0, y: 0 } });
+            assert.deepEqual(diff1, { v: { __class__: "feng3d.Vector2" } });
             var diff1 = feng3d.serialization.different(o3, o2);
             assert.deepEqual(diff1, { v: null });
         });
@@ -4368,6 +4385,9 @@ var feng3d;
             var o3 = new feng3d.Vector3(1, 2, 3);
             var diff1 = feng3d.serialization.different(o2, o3);
             assert.deepEqual(diff1, { x: 0, y: 0, z: 0 });
+            //
+            var diff2 = feng3d.serialization.different(new feng3d.GameObject(), new feng3d.GameObject());
+            assert.deepEqual(diff2, {});
         });
         QUnit.test("serialization.setValue", function (assert) {
             // todo

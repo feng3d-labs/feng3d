@@ -337,8 +337,12 @@ declare namespace feng3d {
         }[];
         /**
          * 序列化对象
+         *
+         * 过程中使用 different与默认值作比较减少结果中的数据。
+         *
          * @param target 被序列化的对象
-         * @returns 序列化后可以转换为Json的数据对象
+         *
+         * @returns 序列化后简单数据对象（由Object与Array组合可 JSON.stringify 的简单结构）
          */
         serialize<T>(target: T): gPartial<T>;
         /**
@@ -1131,6 +1135,7 @@ declare namespace feng3d {
          * @param name 类的名称。
          */
         getDefinitionByName(name: string, readCache?: boolean): any;
+        private defaultInstMap;
         /**
          * 获取默认实例
          *

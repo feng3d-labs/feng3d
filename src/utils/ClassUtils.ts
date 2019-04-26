@@ -75,6 +75,8 @@ namespace feng3d
             return definition;
         }
 
+        private defaultInstMap: { [className: string]: any } = {};
+
         /**
          * 获取默认实例
          * 
@@ -82,10 +84,21 @@ namespace feng3d
          */
         getDefaultInstanceByName(name: string)
         {
+            var defaultInst = this.defaultInstMap[name];
+            if (defaultInst) return defaultInst;
+            //
             var cls = this.getDefinitionByName(name);
-            if (!cls) return undefined;
-            var key = "__default_instance__";
-            return cls[key] = cls[key] || new cls();
+            if (!cls)
+            {
+                console.error(`无法实例化对象 ${name}`);
+                return undefined;
+            }
+            defaultInst = this.defaultInstMap[name] = new cls();
+
+            // 冻结对象，防止被修改
+            Object.freeze(defaultInst);
+
+            return defaultInst;
         }
 
         /**

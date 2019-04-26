@@ -746,8 +746,12 @@ var feng3d;
         }
         /**
          * 序列化对象
+         *
+         * 过程中使用 different与默认值作比较减少结果中的数据。
+         *
          * @param target 被序列化的对象
-         * @returns 序列化后可以转换为Json的数据对象
+         *
+         * @returns 序列化后简单数据对象（由Object与Array组合可 JSON.stringify 的简单结构）
          */
         Serialization.prototype.serialize = function (target) {
             var handlers = this.serializeHandlers.sort(function (a, b) { return b.priority - a.priority; }).map(function (v) { return v.handler; });
@@ -941,14 +945,21 @@ var feng3d;
     {
         priority: -10000,
         handler: function (target, source, property, handlers, serialization) {
+            var tpv = target[property];
             var spv = source[property];
-            var object = {};
-            object[feng3d.CLASS_KEY] = feng3d.classUtils.getQualifiedClassName(spv);
-            var keys = getSerializableMembers(spv);
-            keys.forEach(function (v) {
-                propertyHandler(object, spv, v, handlers, serialization);
-            });
-            target[property] = object;
+            if (tpv == null || tpv.constructor != spv.constructor) {
+                var className = feng3d.classUtils.getQualifiedClassName(spv);
+                var inst = feng3d.classUtils.getDefaultInstanceByName(className);
+                var diff = serialization.different(spv, inst);
+                diff[feng3d.CLASS_KEY] = className;
+                target[property] = diff;
+            }
+            else {
+                debugger;
+                var diff = serialization.different(spv, tpv);
+                if (diff)
+                    target[property] = diff;
+            }
             return true;
         }
     });
@@ -2173,6 +2184,7 @@ var feng3d;
      */
     var ClassUtils = /** @class */ (function () {
         function ClassUtils() {
+            this.defaultInstMap = {};
         }
         /**
          * 返回对象的完全限定类名。
@@ -2234,11 +2246,19 @@ var feng3d;
          * @param name 类名称
          */
         ClassUtils.prototype.getDefaultInstanceByName = function (name) {
+            var defaultInst = this.defaultInstMap[name];
+            if (defaultInst)
+                return defaultInst;
+            //
             var cls = this.getDefinitionByName(name);
-            if (!cls)
+            if (!cls) {
+                console.error("\u65E0\u6CD5\u5B9E\u4F8B\u5316\u5BF9\u8C61 " + name);
                 return undefined;
-            var key = "__default_instance__";
-            return cls[key] = cls[key] || new cls();
+            }
+            defaultInst = this.defaultInstMap[name] = new cls();
+            // 冻结对象，防止被修改
+            Object.freeze(defaultInst);
+            return defaultInst;
         };
         /**
          * 获取实例
