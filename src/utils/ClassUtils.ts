@@ -89,10 +89,7 @@ namespace feng3d
             //
             var cls = this.getDefinitionByName(name);
             if (!cls)
-            {
-                console.error(`无法实例化对象 ${name}`);
                 return undefined;
-            }
             defaultInst = this.defaultInstMap[name] = new cls();
 
             // 冻结对象，防止被修改

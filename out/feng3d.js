@@ -1250,10 +1250,12 @@ var feng3d;
                 var tpv = target[property];
                 var spv = source[property];
                 if (Array.isArray(spv)) {
+                    feng3d.debuger && console.assert(!!tpv);
                     var keys = Object.keys(spv);
                     keys.forEach(function (key) {
                         propertyHandler(tpv, spv, key, handlers, serialization);
                     });
+                    target[property] = tpv;
                     return true;
                 }
                 return false;
@@ -1279,10 +1281,12 @@ var feng3d;
                 var tpv = target[property];
                 var spv = source[property];
                 if (Object.isObject(spv) && spv[feng3d.CLASS_KEY] == undefined) {
+                    feng3d.debuger && console.assert(!!tpv);
                     var keys = Object.keys(spv);
                     keys.forEach(function (key) {
                         propertyHandler(tpv, spv, key, handlers, serialization);
                     });
+                    target[property] = tpv;
                     return true;
                 }
                 return false;
@@ -1322,6 +1326,7 @@ var feng3d;
                     keys.forEach(function (key) {
                         propertyHandler(tpv, spv, key, handlers, serialization);
                     });
+                    target[property] = tpv;
                 }
                 else {
                     // 不同对象类型
@@ -2261,10 +2266,8 @@ var feng3d;
                 return defaultInst;
             //
             var cls = this.getDefinitionByName(name);
-            if (!cls) {
-                console.error("\u65E0\u6CD5\u5B9E\u4F8B\u5316\u5BF9\u8C61 " + name);
+            if (!cls)
                 return undefined;
-            }
             defaultInst = this.defaultInstMap[name] = new cls();
             // 冻结对象，防止被修改
             Object.freeze(defaultInst);
@@ -17813,14 +17816,12 @@ var feng3d;
             var _this = this;
             if (assetids === void 0) { assetids = []; }
             if (Object.isBaseType(object))
-                return;
+                return [];
             //
-            var ins = feng3d.classUtils.getDefaultInstanceByName(object[feng3d.CLASS_KEY]);
-            var assetId = object.assetId;
-            if (ins instanceof feng3d.AssetData && assetId)
-                assetids.push(assetId);
+            if (feng3d.AssetData.isAssetData(object))
+                assetids.push(object.assetId);
             //
-            if (object.constructor.name == "Object" || Array.isArray(object)) {
+            if (Object.isObject(object) || Array.isArray(object)) {
                 var keys = Object.keys(object);
                 keys.forEach(function (k) {
                     _this.getAssetsWithObject(object[k], assetids);

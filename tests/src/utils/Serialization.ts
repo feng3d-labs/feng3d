@@ -185,6 +185,17 @@ namespace feng3d
             var obj3 = serialization.deserialize(r3);
             var diff1 = serialization.different(obj, obj3);
             assert.deepEqual(diff1, {});
+
+
+            var gameobject = serialization.setValue(new GameObject(), {
+                name: "gameobject",
+                components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.plane },]
+            });
+
+            assert.equal(gameobject.numComponents, 2);
+            var model = gameobject.getComponent(feng3d.MeshModel);
+            assert.notEqual(model, null);
+
         });
 
         QUnit.test("different 相等对象", (assert) =>

@@ -4319,6 +4319,13 @@ var feng3d;
             var obj3 = feng3d.serialization.deserialize(r3);
             var diff1 = feng3d.serialization.different(obj, obj3);
             assert.deepEqual(diff1, {});
+            var gameobject = feng3d.serialization.setValue(new feng3d.GameObject(), {
+                name: "gameobject",
+                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.plane },]
+            });
+            assert.equal(gameobject.numComponents, 2);
+            var model = gameobject.getComponent(feng3d.MeshModel);
+            assert.notEqual(model, null);
         });
         QUnit.test("different 相等对象", function (assert) {
             var o = { a: 1, b: { c: true, d: { e: "str" } } };

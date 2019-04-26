@@ -291,13 +291,11 @@ namespace feng3d
          */
         getAssetsWithObject(object: any, assetids: string[] = [])
         {
-            if (Object.isBaseType(object)) return;
+            if (Object.isBaseType(object)) return [];
             //
-            var ins = classUtils.getDefaultInstanceByName(object[CLASS_KEY]);
-            var assetId = (<AssetData>object).assetId;
-            if (ins instanceof AssetData && assetId) assetids.push(assetId);
+            if (AssetData.isAssetData(object)) assetids.push(object.assetId);
             //
-            if (object.constructor.name == "Object" || Array.isArray(object))
+            if (Object.isObject(object) || Array.isArray(object))
             {
                 var keys = Object.keys(object);
                 keys.forEach(k =>
