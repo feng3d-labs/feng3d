@@ -1115,6 +1115,7 @@ var feng3d;
                 return false;
             }
         },
+        // 基础类型
         {
             priority: 0,
             handler: function (target, source, property, different, handlers, serialization) {
@@ -1126,6 +1127,7 @@ var feng3d;
                 return false;
             }
         },
+        // 数组
         {
             priority: 0,
             handler: function (target, source, property, different, handlers, serialization) {

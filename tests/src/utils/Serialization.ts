@@ -189,26 +189,38 @@ namespace feng3d
             var diff = serialization.different(o1, o);
             assert.deepEqual(diff, { b: { c: true, d: { e: "str" } } });
 
-            var v = new feng3d.Vector2();
-            var v1 = new feng3d.Vector2();
-            var diff1 = serialization.different(v, v1);
-            assert.deepEqual(diff1, {});
+            var o2 = { v: new feng3d.Vector2() };
+            var o3 = { v: null };
 
-            var c = new C();
-            var nc = new C();
-            var diff2 = serialization.different(c, nc);
-            assert.deepEqual(diff2, {});
+            var diff1 = serialization.different(o2, o3);
+            assert.deepEqual(diff1, { v: { __class__: "feng3d.Vector2", x: 0, y: 0 } });
+
+            var diff1 = serialization.different(o3, o2);
+            assert.deepEqual(diff1, { v: null });
         });
 
         QUnit.test("different 基础类型", (assert) =>
         {
-            var c = new C();
-            c.id = 8;
+            var o = { a: 1, b: true, c: "str", d: null, e: undefined, f: NaN };
+            var o1 = { a: 2, b: false, c: "str1", d: 1, e: 1, f: 1 };
 
-            var nc = new C();
+            var diff = serialization.different(o, o1);
+            assert.deepEqual(diff, o);
 
-            var diff = serialization.different(c, nc);
-            assert.ok(Object.keys(diff).length == 1);
+            var diff = serialization.different(o1, o);
+            assert.deepEqual(diff, o1);
+        });
+
+        QUnit.test("different 数组", (assert) =>
+        {
+            var arr = [1, true, "str", null, undefined, NaN];
+            var arr1 = [1, false, "str1", 1, 1, 1];
+
+            var diff = serialization.different(arr, arr1);
+            assert.deepEqual(diff, arr);
+
+            var diff = serialization.different(arr1, arr);
+            assert.deepEqual(diff, arr1);
         });
 
         QUnit.test("different 获取两个数据的差异", (assert) =>
