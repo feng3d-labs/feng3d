@@ -223,7 +223,22 @@ namespace feng3d
             assert.deepEqual(diff, arr1);
         });
 
-        QUnit.test("different 获取两个数据的差异", (assert) =>
+        QUnit.test("different 不同对象类型", (assert) =>
+        {
+            var o = { v: new feng3d.Vector2() };
+            var o1 = { v: new feng3d.Vector3() };
+
+            var serO = serialization.serialize(o);
+            var serO1 = serialization.serialize(o1);
+
+            var diff = serialization.different(o, <any>o1);
+            assert.deepEqual(diff, serO);
+
+            var diff = serialization.different(o1, <any>o);
+            assert.deepEqual(diff, serO1);
+        });
+
+        QUnit.test("different 资源", (assert) =>
         {
             var c = new C();
             c.id = 8;

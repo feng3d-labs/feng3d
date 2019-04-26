@@ -298,7 +298,6 @@ namespace feng3d
                     // 此处需要反序列化资源完整数据
                     if (property == __root__)
                     {
-                        debugger;
                         return false;
                     }
                     target[property] = AssetData.serialize(<any>spv);
@@ -438,7 +437,6 @@ namespace feng3d
                     // 此处需要反序列化资源完整数据
                     if (property == __root__)
                     {
-                        debugger;
                         return false;
                     }
                     target[property] = AssetData.deserialize(spv);
@@ -601,6 +599,7 @@ namespace feng3d
                 return false;
             }
         },
+        // 不同对象类型
         {
             priority: 0,
             handler: function (target, source, property, different, handlers, serialization)
@@ -615,6 +614,7 @@ namespace feng3d
                 return false;
             }
         },
+        // 资源
         {
             priority: 0,
             handler: function (target, source, property, different, handlers, serialization)
@@ -625,7 +625,6 @@ namespace feng3d
                     // 此处需要反序列化资源完整数据
                     if (property == __root__)
                     {
-                        debugger;
                         return false;
                     }
                     different[property] = serialization.serialize(tpv);
@@ -764,7 +763,6 @@ namespace feng3d
                     // 此处需要反序列化资源完整数据
                     if (property == __root__)
                     {
-                        debugger;
                         return false;
                     }
 
@@ -799,7 +797,6 @@ namespace feng3d
                 } else
                 {
                     // 不同对象类型
-                    debugger;
                     target[property] = serialization.deserialize(spv);
                 }
                 return true;

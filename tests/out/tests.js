@@ -4341,7 +4341,17 @@ var feng3d;
             var diff = feng3d.serialization.different(arr1, arr);
             assert.deepEqual(diff, arr1);
         });
-        QUnit.test("different 获取两个数据的差异", function (assert) {
+        QUnit.test("different 不同对象类型", function (assert) {
+            var o = { v: new feng3d.Vector2() };
+            var o1 = { v: new feng3d.Vector3() };
+            var serO = feng3d.serialization.serialize(o);
+            var serO1 = feng3d.serialization.serialize(o1);
+            var diff = feng3d.serialization.different(o, o1);
+            assert.deepEqual(diff, serO);
+            var diff = feng3d.serialization.different(o1, o);
+            assert.deepEqual(diff, serO1);
+        });
+        QUnit.test("different 资源", function (assert) {
             var c = new C();
             c.id = 8;
             var nc = new C();

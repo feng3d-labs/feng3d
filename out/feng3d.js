@@ -880,7 +880,6 @@ var feng3d;
             if (feng3d.AssetData.isAssetData(spv)) {
                 // 此处需要反序列化资源完整数据
                 if (property == __root__) {
-                    debugger;
                     return false;
                 }
                 target[property] = feng3d.AssetData.serialize(spv);
@@ -999,7 +998,6 @@ var feng3d;
             if (feng3d.AssetData.isAssetData(spv)) {
                 // 此处需要反序列化资源完整数据
                 if (property == __root__) {
-                    debugger;
                     return false;
                 }
                 target[property] = feng3d.AssetData.deserialize(spv);
@@ -1139,6 +1137,7 @@ var feng3d;
                 return false;
             }
         },
+        // 不同对象类型
         {
             priority: 0,
             handler: function (target, source, property, different, handlers, serialization) {
@@ -1151,6 +1150,7 @@ var feng3d;
                 return false;
             }
         },
+        // 资源
         {
             priority: 0,
             handler: function (target, source, property, different, handlers, serialization) {
@@ -1158,7 +1158,6 @@ var feng3d;
                 if (feng3d.AssetData.isAssetData(tpv)) {
                     // 此处需要反序列化资源完整数据
                     if (property == __root__) {
-                        debugger;
                         return false;
                     }
                     different[property] = serialization.serialize(tpv);
@@ -1276,7 +1275,6 @@ var feng3d;
                 if (feng3d.AssetData.isAssetData(spv)) {
                     // 此处需要反序列化资源完整数据
                     if (property == __root__) {
-                        debugger;
                         return false;
                     }
                     target[property] = feng3d.AssetData.deserialize(spv);
@@ -1305,7 +1303,6 @@ var feng3d;
                 }
                 else {
                     // 不同对象类型
-                    debugger;
                     target[property] = serialization.deserialize(spv);
                 }
                 return true;
