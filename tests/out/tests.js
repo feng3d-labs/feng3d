@@ -3243,6 +3243,30 @@ QUnit.module("Object", function () {
         assert.ok(!Object.equalDeep(v, v1));
     });
 });
+QUnit.module("FunctionWarp", function () {
+    QUnit.test("FunctionWarp ", function (assert) {
+        var o = {
+            v: 1, f: function (a) {
+                this.v = this.v + a;
+            }
+        };
+        // 添加函数在指定函数之前执行
+        feng3d.functionwarp.wrap(o, "f", function (a) {
+            this.v = 0;
+        });
+        var v = Math.random();
+        o.f(v);
+        assert.ok(o.v == v);
+        // 添加函数在指定函数之后执行
+        feng3d.functionwarp.wrap(o, "f", function (a) {
+            this.v = 0;
+        }, false);
+        var v = Math.random();
+        o.f(v);
+        assert.ok(o.v == 0);
+        assert.ok(o[feng3d.__functionwarp__]);
+    });
+});
 // QUnit.module("Path", () =>
 // {
 //     var path = feng3d.path;

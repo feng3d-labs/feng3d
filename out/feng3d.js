@@ -615,22 +615,38 @@ var feng3d;
          *
          * @param space 函数所属对象或者原型
          * @param funcName 函数名称
-         * @param pf 在函数执行前执行的函数
-         * @param nf 在函数执行后执行的函数
+         * @param warpFunc 在函数执行前执行的函数
+         * @param before 运行在原函数之前
          */
-        FunctionWarp.prototype.wrap = function (space, funcName, pf, nf) {
-            if (pf == undefined && nf == undefined)
+        FunctionWarp.prototype.wrap = function (space, funcName, warpFunc, before) {
+            if (before === void 0) { before = true; }
+            if (warpFunc == undefined)
                 return;
-            var oldlog = space[funcName];
+            if (!Object.getOwnPropertyDescriptor(space, feng3d.__functionwarp__)) {
+                Object.defineProperty(space, feng3d.__functionwarp__, { value: {}, configurable: true });
+            }
+            var info = space[feng3d.__functionwarp__][funcName];
+            if (!info) {
+                var original = space[funcName];
+                space[feng3d.__functionwarp__][funcName] = info = { space: space, funcName: funcName, original: original, funcs: [original] };
+            }
+            var funcs = info.funcs;
+            if (before)
+                funcs.unshift(warpFunc);
+            else
+                funcs.push(warpFunc);
             space[funcName] = function () {
-                pf && pf.apply(this, arguments);
-                oldlog.apply(this, arguments);
-                nf && nf.apply(this, arguments);
+                var _this = this;
+                var args = arguments;
+                info.funcs.forEach(function (f) {
+                    f.apply(_this, args);
+                });
             };
         };
         return FunctionWarp;
     }());
     feng3d.FunctionWarp = FunctionWarp;
+    feng3d.__functionwarp__ = "__functionwarp__";
     feng3d.functionwarp = new FunctionWarp();
 })(feng3d || (feng3d = {}));
 var feng3d;

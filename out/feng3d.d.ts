@@ -210,7 +210,6 @@ interface Array<T> {
     equal(arr: ArrayLike<T>): boolean;
 }
 declare namespace feng3d {
-    var functionwarp: FunctionWarp;
     /**
      * 函数经
      *
@@ -227,11 +226,13 @@ declare namespace feng3d {
          *
          * @param space 函数所属对象或者原型
          * @param funcName 函数名称
-         * @param pf 在函数执行前执行的函数
-         * @param nf 在函数执行后执行的函数
+         * @param warpFunc 在函数执行前执行的函数
+         * @param before 运行在原函数之前
          */
-        wrap<T, K extends keyof T, V extends T[K]>(space: T, funcName: K, pf?: V, nf?: V): void;
+        wrap<T, K extends keyof T, V extends T[K] & Function>(space: T, funcName: K, warpFunc: V, before?: boolean): void;
     }
+    const __functionwarp__ = "__functionwarp__";
+    const functionwarp: FunctionWarp;
 }
 declare namespace feng3d {
     /**
