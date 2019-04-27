@@ -32825,8 +32825,7 @@ var feng3d;
             feng3d.AssetData.addAssetData(this.assetId, this.data);
         };
         GameObjectAsset.prototype._getAssetData = function () {
-            var gameobject = new feng3d.GameObject();
-            feng3d.serialization.setValue(gameobject, this.data);
+            var gameobject = feng3d.serialization.clone(this.data);
             delete gameobject.assetId;
             gameobject.prefabId = this.assetId;
             return gameobject;

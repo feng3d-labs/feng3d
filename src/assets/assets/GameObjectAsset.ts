@@ -30,8 +30,7 @@ namespace feng3d
 
         protected _getAssetData()
         {
-            var gameobject = new feng3d.GameObject();
-            feng3d.serialization.setValue(gameobject, this.data);
+            var gameobject = serialization.clone(this.data);
             delete gameobject.assetId;
             gameobject.prefabId = this.assetId;
             return gameobject;
