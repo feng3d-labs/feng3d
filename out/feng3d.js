@@ -15582,7 +15582,7 @@ var feng3d;
         function Feng3dObject() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             /**
-             * 隐藏标记，用于控制是否在层级面板、检查器显示，是否保存
+             * 隐藏标记，用于控制是否在层级界面、检查器显示，是否保存
              */
             _this.hideFlags = feng3d.HideFlags.None;
             return _this;
@@ -21772,11 +21772,11 @@ var feng3d;
          */
         HideFlags[HideFlags["None"] = 0] = "None";
         /**
-         * 不会出现在层次面板中。
+         * 不会出现在层次界面中。
          */
         HideFlags[HideFlags["HideInHierarchy"] = 1] = "HideInHierarchy";
         /**
-         * 不会出现在检查器面板中。
+         * 不会出现在检查器界面中。
          */
         HideFlags[HideFlags["HideInInspector"] = 2] = "HideInInspector";
         /**
@@ -21808,7 +21808,7 @@ var feng3d;
          */
         HideFlags[HideFlags["DontSave"] = 20] = "DontSave";
         /**
-         * 不显示在层次面板中，不保存到场景中，加载新场景时不会被销毁。
+         * 不显示在层次界面中，不保存到场景中，加载新场景时不会被销毁。
          */
         HideFlags[HideFlags["HideAndDontSave"] = 61] = "HideAndDontSave";
     })(HideFlags = feng3d.HideFlags || (feng3d.HideFlags = {}));

@@ -10,11 +10,11 @@ namespace feng3d
          */
         None = 0,
         /**
-         * 不会出现在层次面板中。
+         * 不会出现在层次界面中。
          */
         HideInHierarchy = 1,
         /**
-         * 不会出现在检查器面板中。
+         * 不会出现在检查器界面中。
          */
         HideInInspector = 2,
         /**
@@ -46,7 +46,7 @@ namespace feng3d
          */
         DontSave = DontSaveInEditor | DontSaveInBuild,
         /**
-         * 不显示在层次面板中，不保存到场景中，加载新场景时不会被销毁。
+         * 不显示在层次界面中，不保存到场景中，加载新场景时不会被销毁。
          */
         HideAndDontSave = 61
     }

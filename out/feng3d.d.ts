@@ -7385,7 +7385,7 @@ declare namespace feng3d {
      */
     class Feng3dObject extends EventDispatcher {
         /**
-         * 隐藏标记，用于控制是否在层级面板、检查器显示，是否保存
+         * 隐藏标记，用于控制是否在层级界面、检查器显示，是否保存
          */
         hideFlags: HideFlags;
     }
@@ -11880,11 +11880,11 @@ declare namespace feng3d {
          */
         None = 0,
         /**
-         * 不会出现在层次面板中。
+         * 不会出现在层次界面中。
          */
         HideInHierarchy = 1,
         /**
-         * 不会出现在检查器面板中。
+         * 不会出现在检查器界面中。
          */
         HideInInspector = 2,
         /**
@@ -11916,7 +11916,7 @@ declare namespace feng3d {
          */
         DontSave = 20,
         /**
-         * 不显示在层次面板中，不保存到场景中，加载新场景时不会被销毁。
+         * 不显示在层次界面中，不保存到场景中，加载新场景时不会被销毁。
          */
         HideAndDontSave = 61
     }

@@ -6,7 +6,7 @@ namespace feng3d
     export class Feng3dObject extends EventDispatcher
     {
         /**
-         * 隐藏标记，用于控制是否在层级面板、检查器显示，是否保存
+         * 隐藏标记，用于控制是否在层级界面、检查器显示，是否保存
          */
         @serialize
         hideFlags = HideFlags.None;
