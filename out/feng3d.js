@@ -31048,7 +31048,7 @@ var feng3d;
         return ParticleSystem;
     }(feng3d.Model));
     feng3d.ParticleSystem = ParticleSystem;
-    feng3d.AssetData.addAssetData("Billboard", feng3d.Geometry.billboard = feng3d.serialization.setValue(new feng3d.PlaneGeometry(), { name: "Billboard", assetId: "Billboard-Geometry", yUp: false, hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.AssetData.addAssetData("Billboard-Geometry", feng3d.Geometry.billboard = feng3d.serialization.setValue(new feng3d.PlaneGeometry(), { name: "Billboard-Geometry", assetId: "Billboard-Geometry", yUp: false, hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

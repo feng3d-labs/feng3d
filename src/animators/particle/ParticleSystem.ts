@@ -395,5 +395,5 @@ namespace feng3d
         }
     }
 
-    AssetData.addAssetData("Billboard", Geometry.billboard = serialization.setValue(new PlaneGeometry(), { name: "Billboard", assetId: "Billboard-Geometry", yUp: false, hideFlags: HideFlags.NotEditable }));
+    AssetData.addAssetData("Billboard-Geometry", Geometry.billboard = serialization.setValue(new PlaneGeometry(), { name: "Billboard-Geometry", assetId: "Billboard-Geometry", yUp: false, hideFlags: HideFlags.NotEditable }));
 }
