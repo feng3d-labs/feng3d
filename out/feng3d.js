@@ -23375,6 +23375,7 @@ var feng3d;
             this.camera = camera;
             this.start();
             this.mouse3DManager = new feng3d.Mouse3DManager(new feng3d.WindowMouseInput(), function () { return _this.viewRect; });
+            Engine.instanceList.push(this);
         }
         Object.defineProperty(Engine.prototype, "camera", {
             /**
@@ -23574,6 +23575,7 @@ var feng3d;
             }).map(function (t) { return t.gameObject; });
             return gs;
         };
+        Engine.instanceList = [];
         return Engine;
     }());
     feng3d.Engine = Engine;
@@ -28247,7 +28249,7 @@ var feng3d;
             if (cls) {
                 if (this.uniforms == null || this.uniforms.constructor != cls) {
                     var newuniforms = new cls();
-                    Object.assign(newuniforms, this.uniforms);
+                    // Object.assign(newuniforms, this.uniforms);
                     this.uniforms = newuniforms;
                 }
             }

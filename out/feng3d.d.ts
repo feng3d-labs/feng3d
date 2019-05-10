@@ -12538,6 +12538,7 @@ declare namespace feng3d {
          */
         getObjectsInGlobalArea(start: feng3d.Vector2, end: feng3d.Vector2): GameObject[];
         protected selectedObject: GameObject;
+        static instanceList: Engine[];
     }
 }
 declare namespace feng3d {

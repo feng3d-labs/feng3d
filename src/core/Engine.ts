@@ -124,6 +124,8 @@ namespace feng3d
             this.start();
 
             this.mouse3DManager = new Mouse3DManager(new WindowMouseInput(), () => this.viewRect);
+
+            Engine.instanceList.push(this);
         }
 
         /**
@@ -289,7 +291,10 @@ namespace feng3d
         }
 
         protected selectedObject: GameObject;
+
+        static instanceList: Engine[] = [];
     }
+
 }
 
 // var viewRect0 = { x: 0, y: 0, w: 400, h: 300 };

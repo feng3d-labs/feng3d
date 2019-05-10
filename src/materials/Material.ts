@@ -115,7 +115,7 @@ namespace feng3d
                 if (this.uniforms == null || this.uniforms.constructor != cls)
                 {
                     var newuniforms = new cls();
-                    Object.assign(newuniforms, this.uniforms);
+                    // Object.assign(newuniforms, this.uniforms);
                     this.uniforms = newuniforms;
                 }
             } else
