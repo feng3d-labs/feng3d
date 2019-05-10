@@ -29,9 +29,8 @@ namespace feng3d
         constructor()
         {
             super();
-            Object.defineProperty(this, "guid", { value: Math.uuid() });
+            Object.defineProperty(this, "uuid", { value: Math.uuid() });
             Object.defineProperty(this, "disposed", { value: false, configurable: true });
-            Object.defineProperty(this, "objectMap", { value: {} });
             debuger && console.assert(!Feng3dObject.objectLib[this.uuid], `唯一标识符存在重复！？`);
             Feng3dObject.objectLib[this.uuid] = this;
         }
@@ -76,4 +75,5 @@ namespace feng3d
          */
         private static objectLib: { [guid: string]: Feng3dObject };
     }
+    Object.defineProperty(Feng3dObject, "objectLib", { value: {} });
 }

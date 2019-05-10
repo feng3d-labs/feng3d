@@ -9,7 +9,7 @@ namespace feng3d
     /**
      * 3D视图
      */
-    export class Engine
+    export class Engine extends Feng3dObject
     {
         //
         canvas: HTMLCanvasElement;
@@ -86,6 +86,7 @@ namespace feng3d
          */
         constructor(canvas?: HTMLCanvasElement, scene?: Scene3D, camera?: Camera)
         {
+            super();
             if (!canvas)
             {
                 canvas = document.createElement("canvas");
@@ -124,8 +125,6 @@ namespace feng3d
             this.start();
 
             this.mouse3DManager = new Mouse3DManager(new WindowMouseInput(), () => this.viewRect);
-
-            Engine.instanceList.push(this);
         }
 
         /**
@@ -291,8 +290,6 @@ namespace feng3d
         }
 
         protected selectedObject: GameObject;
-
-        static instanceList: Engine[] = [];
     }
 
 }

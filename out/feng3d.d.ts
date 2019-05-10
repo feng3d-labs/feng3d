@@ -7396,11 +7396,45 @@ declare namespace feng3d {
     /**
      * 所有feng3d对象的基类
      */
-    class Feng3dObject extends EventDispatcher {
+    class Feng3dObject extends EventDispatcher implements IDisposable {
         /**
          * 隐藏标记，用于控制是否在层级界面、检查器显示，是否保存
          */
         hideFlags: HideFlags;
+        /**
+         * 通用唯一标识符（Universally Unique Identifier）
+         */
+        readonly uuid: string;
+        /**
+         * 是否已销毁
+         */
+        readonly disposed: boolean;
+        /**
+         * 构建
+         *
+         * 新增不可修改属性 guid
+         */
+        constructor();
+        /**
+         * 销毁
+         */
+        dispose(): void;
+        /**
+         * 获取对象
+         *
+         * @param uuid 通用唯一标识符
+         */
+        static getObject(uuid: string): Feng3dObject;
+        /**
+         * 获取对象
+         *
+         * @param type
+         */
+        static getObjects<T extends Feng3dObject>(type?: Constructor<T>): T[];
+        /**
+         * 对象库
+         */
+        private static objectLib;
     }
 }
 declare namespace feng3d {
@@ -12179,10 +12213,6 @@ declare namespace feng3d {
         assetId: string;
         readonly renderAtomic: RenderAtomic;
         /**
-         * 游戏对象池
-         */
-        static pool: Map<string, GameObject>;
-        /**
          * 名称
          */
         name: string;
@@ -12202,11 +12232,6 @@ declare namespace feng3d {
          * 用户自定义数据
          */
         userData: GameObjectUserData;
-        /**
-         * 是否已销毁
-         */
-        readonly disposed: boolean;
-        private _disposed;
         /**
          * 变换
          */
@@ -12293,8 +12318,8 @@ declare namespace feng3d {
          */
         getComponentAt(index: number): Component;
         /**
-         * 添加组件
-         * Adds a component class named className to the game object.
+         * 添加指定组件类型到游戏对象
+         *
          * @param param 被添加组件
          */
         addComponent<T extends Components>(param: Constructor<T>, callback?: (component: T) => void): T;
@@ -12304,19 +12329,22 @@ declare namespace feng3d {
          */
         addScript(scriptName: string): ScriptComponent;
         /**
-         * Returns the component of Type type if the game object has one attached, null if it doesn't.
+         * 获取游戏对象上第一个指定类型的组件，不存在时返回null
+         *
          * @param type				类定义
          * @return                  返回指定类型组件
          */
         getComponent<T extends Components>(type: Constructor<T>): T;
         /**
-         * Returns all components of Type type in the GameObject.
+         * 获取游戏对象上所有指定类型的组件数组
+         *
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
         getComponents<T extends Components>(type?: Constructor<T>): T[];
         /**
-         * 从子对象中获取组件
+         * 从自身与子代（孩子，孩子的孩子，...）游戏对象中获取所有指定类型的组件
+         *
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
@@ -12325,7 +12353,8 @@ declare namespace feng3d {
             value: boolean;
         }, result?: T[]): T[];
         /**
-         * 从父类中获取组件
+         * 从父代（父亲，父亲的父亲，...）中获取组件
+         *
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
@@ -12418,7 +12447,8 @@ declare namespace feng3d {
          */
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
         /**
-         * Finds a game object by name and returns it.
+         * 查找指定名称的游戏对象
+         *
          * @param name
          */
         static find(name: string): GameObject;
@@ -12429,7 +12459,6 @@ declare namespace feng3d {
         protected _children: GameObject[];
         protected _scene: Scene3D;
         protected _parent: GameObject;
-        private guid;
         private _setParent;
         private updateScene;
         private updateChildrenScene;
@@ -12455,7 +12484,7 @@ declare namespace feng3d {
     /**
      * 3D视图
      */
-    class Engine {
+    class Engine extends Feng3dObject {
         canvas: HTMLCanvasElement;
         /**
          * 摄像机
@@ -12538,7 +12567,6 @@ declare namespace feng3d {
          */
         getObjectsInGlobalArea(start: feng3d.Vector2, end: feng3d.Vector2): GameObject[];
         protected selectedObject: GameObject;
-        static instanceList: Engine[];
     }
 }
 declare namespace feng3d {
