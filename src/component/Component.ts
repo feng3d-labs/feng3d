@@ -19,7 +19,7 @@ namespace feng3d
      * 
      * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到GameObject(游戏物体)上。
 	 */
-    export class Component extends Feng3dObject
+    export class Component extends Feng3dObject implements IDisposable
     {
         //------------------------------------------
         // Variables
@@ -43,7 +43,7 @@ namespace feng3d
          */
         get transform()
         {
-            return this._gameObject.transform;
+            return this._gameObject && this._gameObject.transform;
         }
 
         /**
@@ -53,6 +53,12 @@ namespace feng3d
         {
             return false;
         }
+
+        /**
+         * 是否已销毁
+         */
+        get disposed() { return this._disposed; }
+        private _disposed = false;
 
         //------------------------------------------
         // Functions
@@ -117,6 +123,7 @@ namespace feng3d
         dispose()
         {
             this._gameObject = <any>null;
+            this._disposed = true;
         }
 
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)

@@ -98,6 +98,19 @@ declare namespace feng3d {
     var lazy: {
         getvalue: <T>(lazyItem: Lazy<T>) => T;
     };
+    /**
+     * 可销毁对象
+     */
+    interface IDisposable {
+        /**
+         * 是否已销毁
+         */
+        readonly disposed: boolean;
+        /**
+         * 销毁
+         */
+        dispose(): void;
+    }
 }
 /**
  * Object.assignDeep 中 转换结果的函数定义
@@ -11723,7 +11736,7 @@ declare namespace feng3d {
      *
      * 注意，您的代码永远不会直接创建组件。相反，你可以编写脚本代码，并将脚本附加到GameObject(游戏物体)上。
      */
-    class Component extends Feng3dObject {
+    class Component extends Feng3dObject implements IDisposable {
         /**
          * 此组件附加到的游戏对象。组件总是附加到游戏对象上。
          */
@@ -11740,6 +11753,11 @@ declare namespace feng3d {
          * 是否唯一，同类型3D对象组件只允许一个
          */
         readonly single: boolean;
+        /**
+         * 是否已销毁
+         */
+        readonly disposed: boolean;
+        private _disposed;
         /**
          * 创建一个组件容器
          */
@@ -11959,6 +11977,8 @@ declare namespace feng3d {
         Transfrom: Transform;
     }
     /**
+     * 变换
+     *
      * 物体的位置、旋转和比例。
      *
      * 场景中的每个对象都有一个变换。它用于存储和操作对象的位置、旋转和缩放。每个转换都可以有一个父元素，它允许您分层应用位置、旋转和缩放
@@ -12146,7 +12166,7 @@ declare namespace feng3d {
     /**
      * 游戏对象，场景唯一存在的对象类型
      */
-    class GameObject extends AssetData {
+    class GameObject extends AssetData implements IDisposable {
         __class__: "feng3d.GameObject";
         assetType: AssetType;
         /**
@@ -12163,8 +12183,7 @@ declare namespace feng3d {
          */
         static pool: Map<string, GameObject>;
         /**
-         * The name of the Feng3dObject.
-         * Components share the same name with the game object and all attached components.
+         * 名称
          */
         name: string;
         /**
@@ -12184,7 +12203,12 @@ declare namespace feng3d {
          */
         userData: GameObjectUserData;
         /**
-         * The Transform attached to this GameObject. (null if there is none attached).
+         * 是否已销毁
+         */
+        readonly disposed: boolean;
+        private _disposed;
+        /**
+         * 变换
          */
         readonly transform: Transform;
         private _transform;
@@ -14141,7 +14165,13 @@ declare namespace feng3d {
         /**
          * 原始数据
          */
-        private rawData;
+        rawData: {
+            type: "texture";
+            textures: Texture2D[];
+        } | {
+            type: "path";
+            paths: string[];
+        };
         noPixels: ImageDatas[];
         protected _pixels: any[];
         protected _textureType: TextureType;

@@ -21456,6 +21456,7 @@ var feng3d;
          */
         function Component() {
             var _this = _super.call(this) || this;
+            _this._disposed = false;
             _this.onAll(_this._onAllListener, _this);
             return _this;
         }
@@ -21477,7 +21478,7 @@ var feng3d;
              * The Transform attached to this GameObject (null if there is none attached).
              */
             get: function () {
-                return this._gameObject.transform;
+                return this._gameObject && this._gameObject.transform;
             },
             enumerable: true,
             configurable: true
@@ -21489,6 +21490,14 @@ var feng3d;
             get: function () {
                 return false;
             },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Component.prototype, "disposed", {
+            /**
+             * 是否已销毁
+             */
+            get: function () { return this._disposed; },
             enumerable: true,
             configurable: true
         });
@@ -21532,6 +21541,7 @@ var feng3d;
          */
         Component.prototype.dispose = function () {
             this._gameObject = null;
+            this._disposed = true;
         };
         Component.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
         };
@@ -21838,6 +21848,8 @@ var feng3d;
 (function (feng3d) {
     var fixedNum = 6;
     /**
+     * 变换
+     *
      * 物体的位置、旋转和比例。
      *
      * 场景中的每个对象都有一个变换。它用于存储和操作对象的位置、旋转和缩放。每个转换都可以有一个父元素，它允许您分层应用位置、旋转和缩放
@@ -22626,6 +22638,7 @@ var feng3d;
              * 用户自定义数据
              */
             _this.userData = {};
+            _this._disposed = false;
             //------------------------------------------
             // Protected Properties
             //------------------------------------------
@@ -22642,12 +22655,20 @@ var feng3d;
             _this.onAll(_this._onAllListener, _this);
             return _this;
         }
-        Object.defineProperty(GameObject.prototype, "transform", {
+        Object.defineProperty(GameObject.prototype, "disposed", {
             //------------------------------------------
             // Variables
             //------------------------------------------
             /**
-             * The Transform attached to this GameObject. (null if there is none attached).
+             * 是否已销毁
+             */
+            get: function () { return this._disposed; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(GameObject.prototype, "transform", {
+            /**
+             * 变换
              */
             get: function () {
                 if (!this._transform)
@@ -23094,6 +23115,7 @@ var feng3d;
                 this.removeComponentAt(i);
             }
             GameObject.pool.delete(this.guid);
+            this._disposed = true;
         };
         GameObject.prototype.disposeWithChildren = function () {
             this.dispose();

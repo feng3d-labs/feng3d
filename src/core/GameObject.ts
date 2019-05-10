@@ -58,7 +58,7 @@ namespace feng3d
     /**
      * 游戏对象，场景唯一存在的对象类型
      */
-    export class GameObject extends AssetData
+    export class GameObject extends AssetData implements IDisposable
     {
 
         __class__: "feng3d.GameObject" = "feng3d.GameObject";
@@ -85,8 +85,7 @@ namespace feng3d
         public static pool = new Map<string, GameObject>();
 
         /**
-         * The name of the Feng3dObject.
-         * Components share the same name with the game object and all attached components.
+         * 名称
          */
         @serialize
         @oav({ component: "OAVGameObjectName" })
@@ -120,7 +119,13 @@ namespace feng3d
         // Variables
         //------------------------------------------
         /**
-         * The Transform attached to this GameObject. (null if there is none attached).
+         * 是否已销毁
+         */
+        get disposed() { return this._disposed; }
+        private _disposed = false;
+
+        /**
+         * 变换
          */
         get transform()
         {
@@ -645,6 +650,7 @@ namespace feng3d
                 this.removeComponentAt(i);
             }
             GameObject.pool.delete(this.guid);
+            this._disposed = true;
         }
 
         disposeWithChildren()
