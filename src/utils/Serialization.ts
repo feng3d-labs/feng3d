@@ -759,27 +759,6 @@ namespace feng3d
                 return false;
             }
         },
-        // 处理 Object 基础类型数据
-        {
-            priority: 0,
-            handler: function (target, source, property, handlers, serialization)
-            {
-                var tpv = target[property];
-                var spv = source[property];
-                if (Object.isObject(spv) && spv[CLASS_KEY] == undefined)
-                {
-                    debuger && console.assert(!!tpv);
-                    var keys = Object.keys(spv);
-                    keys.forEach(key =>
-                    {
-                        propertyHandler(tpv, spv, key, handlers, serialization);
-                    });
-                    target[property] = tpv;
-                    return true;
-                }
-                return false;
-            }
-        },
         // 处理资源
         {
             priority: 0,
@@ -800,7 +779,37 @@ namespace feng3d
                 }
                 if (AssetData.isAssetData(tpv))
                 {
-                    target[property] = serialization.deserialize(spv);
+                    if (spv.__class__ == null)
+                    {
+                        var className = classUtils.getQualifiedClassName(tpv);
+                        var inst = classUtils.getInstanceByName(className)
+                        serialization.setValue(inst, spv);
+                        target[property] = inst;
+                    } else
+                    {
+                        target[property] = serialization.deserialize(spv);
+                    }
+                    return true;
+                }
+                return false;
+            }
+        },
+        // 处理 Object 基础类型数据
+        {
+            priority: 0,
+            handler: function (target, source, property, handlers, serialization)
+            {
+                var tpv = target[property];
+                var spv = source[property];
+                if (Object.isObject(spv) && spv[CLASS_KEY] == undefined)
+                {
+                    debuger && console.assert(!!tpv);
+                    var keys = Object.keys(spv);
+                    keys.forEach(key =>
+                    {
+                        propertyHandler(tpv, spv, key, handlers, serialization);
+                    });
+                    target[property] = tpv;
                     return true;
                 }
                 return false;

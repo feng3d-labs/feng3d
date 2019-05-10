@@ -14356,7 +14356,7 @@ declare namespace feng3d {
          */
         u_alphaThreshold: number;
         /**
-         * 漫反射纹理
+         * 法线纹理
          */
         s_normal: Texture2D;
         /**
@@ -14376,7 +14376,7 @@ declare namespace feng3d {
          */
         s_ambient: Texture2D;
         /**
-         * 颜色
+         * 环境光颜色
          */
         u_ambient: Color4;
         /**
@@ -14399,6 +14399,9 @@ declare namespace feng3d {
          * 雾的颜色
          */
         u_fogColor: Color3;
+        /**
+         * 雾的密度
+         */
         u_fogDensity: number;
         /**
          * 雾模式

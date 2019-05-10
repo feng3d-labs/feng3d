@@ -45,7 +45,7 @@ namespace feng3d
         u_alphaThreshold = 0;
 
         /**
-         * 漫反射纹理
+         * 法线纹理
          */
         @serialize
         @oav({ block: "normalMethod" })
@@ -80,7 +80,7 @@ namespace feng3d
         s_ambient = Texture2D.default;
 
         /**
-         * 颜色
+         * 环境光颜色
          */
         @serialize
         @oav({ block: "ambient" })
@@ -121,6 +121,9 @@ namespace feng3d
         @oav({ block: "fog" })
         u_fogColor = new Color3();
 
+        /**
+         * 雾的密度
+         */
         @serialize
         @oav({ block: "fog" })
         u_fogDensity = 0.1;

@@ -1290,24 +1290,6 @@ var feng3d;
                 return false;
             }
         },
-        // 处理 Object 基础类型数据
-        {
-            priority: 0,
-            handler: function (target, source, property, handlers, serialization) {
-                var tpv = target[property];
-                var spv = source[property];
-                if (Object.isObject(spv) && spv[feng3d.CLASS_KEY] == undefined) {
-                    feng3d.debuger && console.assert(!!tpv);
-                    var keys = Object.keys(spv);
-                    keys.forEach(function (key) {
-                        propertyHandler(tpv, spv, key, handlers, serialization);
-                    });
-                    target[property] = tpv;
-                    return true;
-                }
-                return false;
-            }
-        },
         // 处理资源
         {
             priority: 0,
@@ -1323,7 +1305,33 @@ var feng3d;
                     return true;
                 }
                 if (feng3d.AssetData.isAssetData(tpv)) {
-                    target[property] = serialization.deserialize(spv);
+                    if (spv.__class__ == null) {
+                        var className = feng3d.classUtils.getQualifiedClassName(tpv);
+                        var inst = feng3d.classUtils.getInstanceByName(className);
+                        serialization.setValue(inst, spv);
+                        target[property] = inst;
+                    }
+                    else {
+                        target[property] = serialization.deserialize(spv);
+                    }
+                    return true;
+                }
+                return false;
+            }
+        },
+        // 处理 Object 基础类型数据
+        {
+            priority: 0,
+            handler: function (target, source, property, handlers, serialization) {
+                var tpv = target[property];
+                var spv = source[property];
+                if (Object.isObject(spv) && spv[feng3d.CLASS_KEY] == undefined) {
+                    feng3d.debuger && console.assert(!!tpv);
+                    var keys = Object.keys(spv);
+                    keys.forEach(function (key) {
+                        propertyHandler(tpv, spv, key, handlers, serialization);
+                    });
+                    target[property] = tpv;
                     return true;
                 }
                 return false;
@@ -24055,6 +24063,7 @@ var feng3d;
                 oldInstance.component = null;
                 oldInstance.dispose();
             }
+            this._invalid = false;
         };
         ScriptComponent.prototype.invalidateScriptInstance = function () {
             this._invalid = true;
@@ -28407,7 +28416,7 @@ var feng3d;
              */
             this.u_alphaThreshold = 0;
             /**
-             * 漫反射纹理
+             * 法线纹理
              */
             this.s_normal = feng3d.Texture2D.defaultNormal;
             /**
@@ -28427,7 +28436,7 @@ var feng3d;
              */
             this.s_ambient = feng3d.Texture2D.default;
             /**
-             * 颜色
+             * 环境光颜色
              */
             this.u_ambient = new feng3d.Color4();
             /**
@@ -28450,6 +28459,9 @@ var feng3d;
              * 雾的颜色
              */
             this.u_fogColor = new feng3d.Color3();
+            /**
+             * 雾的密度
+             */
             this.u_fogDensity = 0.1;
             /**
              * 雾模式

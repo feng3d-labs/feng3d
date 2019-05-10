@@ -60,6 +60,7 @@ namespace feng3d
                 oldInstance.component = null;
                 oldInstance.dispose();
             }
+            this._invalid = false;
         }
 
         private invalidateScriptInstance()
