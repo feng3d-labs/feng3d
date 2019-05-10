@@ -80,11 +80,6 @@ namespace feng3d
         readonly renderAtomic = new RenderAtomic();
 
         /**
-         * 游戏对象池
-         */
-        public static pool = new Map<string, GameObject>();
-
-        /**
          * 名称
          */
         @serialize
@@ -118,11 +113,6 @@ namespace feng3d
         //------------------------------------------
         // Variables
         //------------------------------------------
-        /**
-         * 是否已销毁
-         */
-        get disposed() { return this._disposed; }
-        private _disposed = false;
 
         /**
          * 变换
@@ -220,9 +210,6 @@ namespace feng3d
             super();
             this.name = "GameObject";
             this.addComponent(Transform);
-            this.guid = Math.uuid();
-            //
-            GameObject.pool.set(this.guid, this);
 
             this.onAll(this._onAllListener, this);
         }
@@ -379,8 +366,8 @@ namespace feng3d
         }
 
 		/**
-		 * 添加组件
-         * Adds a component class named className to the game object.
+         * 添加指定组件类型到游戏对象
+         * 
 		 * @param param 被添加组件
 		 */
         addComponent<T extends Components>(param: Constructor<T>, callback: (component: T) => void = null): T
@@ -410,7 +397,8 @@ namespace feng3d
         }
 
         /**
-         * Returns the component of Type type if the game object has one attached, null if it doesn't.
+         * 获取游戏对象上第一个指定类型的组件，不存在时返回null
+         * 
          * @param type				类定义
          * @return                  返回指定类型组件
          */
@@ -421,7 +409,8 @@ namespace feng3d
         }
 
         /**
-         * Returns all components of Type type in the GameObject.
+         * 获取游戏对象上所有指定类型的组件数组
+         * 
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
@@ -439,7 +428,8 @@ namespace feng3d
         }
 
         /**
-         * 从子对象中获取组件
+         * 从自身与子代（孩子，孩子的孩子，...）游戏对象中获取所有指定类型的组件
+         * 
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
@@ -478,7 +468,8 @@ namespace feng3d
         }
 
         /**
-         * 从父类中获取组件
+         * 从父代（父亲，父亲的父亲，...）中获取组件
+         * 
          * @param type		类定义
          * @return			返回与给出类定义一致的组件
          */
@@ -649,8 +640,7 @@ namespace feng3d
             {
                 this.removeComponentAt(i);
             }
-            GameObject.pool.delete(this.guid);
-            this._disposed = true;
+            super.dispose();
         }
 
         disposeWithChildren()
@@ -757,18 +747,15 @@ namespace feng3d
         // Static Functions
         //------------------------------------------
         /**
-         * Finds a game object by name and returns it.
+         * 查找指定名称的游戏对象
+         * 
          * @param name 
          */
         static find(name: string)
         {
-            var target: GameObject | null = null;
-            this.pool.forEach(element =>
-            {
-                if (target == null && element.name == name)
-                    target = element;
-            });
-            return target;
+            var gameobjects = Feng3dObject.getObjects(GameObject)
+            var result = gameobjects.filter(v => !v.disposed && (v.name == name));
+            return result[0];
         }
 
         //------------------------------------------
@@ -789,7 +776,6 @@ namespace feng3d
         //------------------------------------------
         // Private Properties
         //------------------------------------------
-        private guid: string;
 
         //------------------------------------------
         // Private Methods
