@@ -64,7 +64,7 @@ namespace feng3d
         readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
         {
             var image = this._images[path];
-            if (image)
+            if (image !== undefined)
             {
                 callback(null, image);
                 return;

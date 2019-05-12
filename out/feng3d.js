@@ -16575,7 +16575,7 @@ var feng3d;
         ReadFS.prototype.readImage = function (path, callback) {
             var _this = this;
             var image = this._images[path];
-            if (image) {
+            if (image !== undefined) {
                 callback(null, image);
                 return;
             }
