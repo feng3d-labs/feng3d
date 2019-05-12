@@ -64,13 +64,17 @@ namespace feng3d
         readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
         {
             var image = this._images[path];
-            if (image !== undefined)
+            if (image)
             {
                 callback(null, image);
                 return;
             }
             var eventtype = `${arguments.callee.name} ${path}`;
-            event.once(this, eventtype, () => { this.readImage(path, callback); })
+            event.once(this, eventtype, (e) =>
+            {
+                var data: { err: Error, img: HTMLImageElement } = e.data;
+                callback(data.err, data.img);
+            });
 
             if (this._state[eventtype]) return;
             this._state[eventtype] = true;
@@ -79,7 +83,7 @@ namespace feng3d
             {
                 delete this._state[eventtype];
                 this._images[path] = img;
-                event.dispatch(this, eventtype);
+                event.dispatch(this, eventtype, { err: err, img: img });
             });
         }
 

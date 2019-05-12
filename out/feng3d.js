@@ -16575,12 +16575,15 @@ var feng3d;
         ReadFS.prototype.readImage = function (path, callback) {
             var _this = this;
             var image = this._images[path];
-            if (image !== undefined) {
+            if (image) {
                 callback(null, image);
                 return;
             }
             var eventtype = arguments.callee.name + " " + path;
-            feng3d.event.once(this, eventtype, function () { _this.readImage(path, callback); });
+            feng3d.event.once(this, eventtype, function (e) {
+                var data = e.data;
+                callback(data.err, data.img);
+            });
             if (this._state[eventtype])
                 return;
             this._state[eventtype] = true;
@@ -16588,7 +16591,7 @@ var feng3d;
             this.fs.readImage(path, function (err, img) {
                 delete _this._state[eventtype];
                 _this._images[path] = img;
-                feng3d.event.dispatch(_this, eventtype);
+                feng3d.event.dispatch(_this, eventtype, { err: err, img: img });
             });
         };
         /**
