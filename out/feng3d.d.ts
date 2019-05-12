@@ -243,17 +243,49 @@ declare namespace feng3d {
          * @param before 运行在原函数之前
          */
         wrap<T, K extends keyof T, V extends T[K] & Function>(space: T, funcName: K, warpFunc: V, before?: boolean): void;
-        wrapF(funcHost: any, func: Function, params: any[], callback: (err: Error, img: HTMLImageElement) => void): void;
-        getArrayUuid(arr: any[]): string;
-        getObjectUuid(o: Object): string;
-        objectUuid: WeakMap<Object, string>;
-        wrapFResult: any[];
-        _state: {
-            [uuid: string]: boolean;
-        };
+        /**
+         * 包装一个异步函数，使其避免重复执行
+         *
+         * 使用场景示例：同时加载同一资源时，使其只加载一次，完成后调用所有相关回调函数。
+         *
+         * @param funcHost 函数所属对象
+         * @param func 函数
+         * @param params 函数除callback外的参数列表
+         * @param callback 完成回调函数
+         */
+        wrapAsyncFunc(funcHost: Object, func: Function, params: any[], callback: (...args: any) => void): void;
+        private _wrapFResult;
+        private _state;
     }
     const __functionwarp__ = "__functionwarp__";
     const functionwarp: FunctionWarp;
+}
+declare namespace feng3d {
+    /**
+     * 通用唯一标识符（Universally Unique Identifier）
+     *
+     * 用于给所有对象分配一个通用唯一标识符
+     */
+    class Uuid {
+        /**
+         * 获取数组 通用唯一标识符
+         *
+         * @param arr 数组
+         * @param separator 分割符
+         */
+        getArrayUuid(arr: any[], separator?: string): string;
+        /**
+         * 获取对象 通用唯一标识符
+         *
+         * 当参数object非Object对象时强制转换为字符串返回
+         *
+         * @param object 对象
+         */
+        getObjectUuid(object: Object): any;
+        objectUuid: WeakMap<Object, string>;
+    }
+    const __uuid__ = "__uuid__";
+    const uuid: Uuid;
 }
 declare namespace feng3d {
     /**

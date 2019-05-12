@@ -50,58 +50,52 @@ namespace feng3d
             }
         }
 
-        wrapF(funcHost, func: Function, params: any[], callback: (err: Error, img: HTMLImageElement) => void)
+        /**
+         * 包装一个异步函数，使其避免重复执行
+         * 
+         * 使用场景示例：同时加载同一资源时，使其只加载一次，完成后调用所有相关回调函数。
+         * 
+         * @param funcHost 函数所属对象
+         * @param func 函数
+         * @param params 函数除callback外的参数列表
+         * @param callback 完成回调函数
+         */
+        wrapAsyncFunc(funcHost: Object, func: Function, params: any[], callback: (...args: any) => void)
         {
             // 获取唯一编号
-            var uuid = this.getArrayUuid([func].concat(params));
+            var cuuid = uuid.getArrayUuid([func].concat(params));
             // 检查是否执行过
-            var result: { err: Error, img: HTMLImageElement } = this.wrapFResult[uuid];
+            var result = this._wrapFResult[cuuid];
             if (result)
             {
-                callback(result.err, result.img);
+                callback.apply(null, result);
                 return;
             }
             // 监听执行完成事件
-            event.once(this, uuid, () =>
+            event.once(this, cuuid, () =>
             {
                 // 完成时重新执行函数
-                this.wrapF(funcHost, func, params, callback);
+                this.wrapAsyncFunc(funcHost, func, params, callback);
             });
             // 正在执行时直接返回等待完成事件
-            if (this._state[uuid]) return;
+            if (this._state[cuuid]) return;
             // 标记正在执行中
-            this._state[uuid] = true;
+            this._state[cuuid] = true;
+
             // 执行函数
-            func.apply(funcHost, params.concat((err, img) =>
+            func.apply(funcHost, params.concat((...args: any) =>
             {
                 // 清理执行标记
-                delete this._state[uuid];
+                delete this._state[cuuid];
                 // 保存执行结果
-                this.wrapFResult[uuid] = { err: err, img: img };
+                this._wrapFResult[cuuid] = args;
                 // 通知执行完成
-                event.dispatch(this, uuid);
+                event.dispatch(this, cuuid);
             }));
         }
 
-        getArrayUuid(arr: any[])
-        {
-            var uuids = arr.map(v => { if (Object.isObject(v)) return this.getObjectUuid(v); return String(v) });
-            var groupUuid = uuids.join("-");
-            return groupUuid;
-        }
-
-        getObjectUuid(o: Object)
-        {
-            if (!this.objectUuid.has(o))
-            {
-                this.objectUuid.set(o, Math.uuid());
-            }
-            return this.objectUuid.get(o);
-        }
-        objectUuid = new WeakMap<Object, string>();
-
-        wrapFResult = [];
-        _state: { [uuid: string]: boolean } = {};
+        private _wrapFResult = [];
+        private _state: { [uuid: string]: boolean } = {};
     }
 
     export const __functionwarp__ = "__functionwarp__";

@@ -26,6 +26,7 @@
         "src/polyfill/Array.ts",
         //基础工具
         "src/utils/FunctionWarp.ts",
+        "src/utils/Uuid.ts",
         "src/utils/debug.ts",
         //
         "src/utils/Serialization.ts",
