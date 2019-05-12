@@ -63,28 +63,9 @@ namespace feng3d
          */
         readImage(path: string, callback: (err: Error, img: HTMLImageElement) => void)
         {
-            var image = this._images[path];
-            if (image)
-            {
-                callback(null, image);
-                return;
-            }
-            var eventtype = `${arguments.callee.name} ${path}`;
-            event.once(this, eventtype, (e) =>
-            {
-                var data: { err: Error, img: HTMLImageElement } = e.data;
-                callback(data.err, data.img);
-            });
+            this.fs.readImage(path, callback);
 
-            if (this._state[eventtype]) return;
-            this._state[eventtype] = true;
-            //
-            this.fs.readImage(path, (err, img) =>
-            {
-                delete this._state[eventtype];
-                this._images[path] = img;
-                event.dispatch(this, eventtype, { err: err, img: img });
-            });
+            // functionwarp.wrapF(this.fs, this.fs.readImage, [path], callback);
         }
 
         /**

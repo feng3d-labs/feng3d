@@ -604,6 +604,9 @@ var feng3d;
      */
     var FunctionWarp = /** @class */ (function () {
         function FunctionWarp() {
+            this.objectUuid = new WeakMap();
+            this.wrapFResult = [];
+            this._state = {};
         }
         /**
          * 包装函数
@@ -642,6 +645,49 @@ var feng3d;
                     f.apply(_this, args);
                 });
             };
+        };
+        FunctionWarp.prototype.wrapF = function (funcHost, func, params, callback) {
+            var _this = this;
+            // 获取唯一编号
+            var uuid = this.getArrayUuid([func].concat(params));
+            // 检查是否执行过
+            var result = this.wrapFResult[uuid];
+            if (result) {
+                callback(result.err, result.img);
+                return;
+            }
+            // 监听执行完成事件
+            feng3d.event.once(this, uuid, function () {
+                // 完成时重新执行函数
+                _this.wrapF(funcHost, func, params, callback);
+            });
+            // 正在执行时直接返回等待完成事件
+            if (this._state[uuid])
+                return;
+            // 标记正在执行中
+            this._state[uuid] = true;
+            // 执行函数
+            func.apply(funcHost, params.concat(function (err, img) {
+                // 清理执行标记
+                delete _this._state[uuid];
+                // 保存执行结果
+                _this.wrapFResult[uuid] = { err: err, img: img };
+                // 通知执行完成
+                feng3d.event.dispatch(_this, uuid);
+            }));
+        };
+        FunctionWarp.prototype.getArrayUuid = function (arr) {
+            var _this = this;
+            var uuids = arr.map(function (v) { if (Object.isObject(v))
+                return _this.getObjectUuid(v); return String(v); });
+            var groupUuid = uuids.join("-");
+            return groupUuid;
+        };
+        FunctionWarp.prototype.getObjectUuid = function (o) {
+            if (!this.objectUuid.has(o)) {
+                this.objectUuid.set(o, Math.uuid());
+            }
+            return this.objectUuid.get(o);
         };
         return FunctionWarp;
     }());
@@ -16573,26 +16619,8 @@ var feng3d;
          * @param callback 加载完成回调
          */
         ReadFS.prototype.readImage = function (path, callback) {
-            var _this = this;
-            var image = this._images[path];
-            if (image) {
-                callback(null, image);
-                return;
-            }
-            var eventtype = arguments.callee.name + " " + path;
-            feng3d.event.once(this, eventtype, function (e) {
-                var data = e.data;
-                callback(data.err, data.img);
-            });
-            if (this._state[eventtype])
-                return;
-            this._state[eventtype] = true;
-            //
-            this.fs.readImage(path, function (err, img) {
-                delete _this._state[eventtype];
-                _this._images[path] = img;
-                feng3d.event.dispatch(_this, eventtype, { err: err, img: img });
-            });
+            this.fs.readImage(path, callback);
+            // functionwarp.wrapF(this.fs, this.fs.readImage, [path], callback);
         };
         /**
          * 获取文件绝对路径

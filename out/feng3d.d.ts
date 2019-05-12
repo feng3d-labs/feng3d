@@ -243,6 +243,14 @@ declare namespace feng3d {
          * @param before 运行在原函数之前
          */
         wrap<T, K extends keyof T, V extends T[K] & Function>(space: T, funcName: K, warpFunc: V, before?: boolean): void;
+        wrapF(funcHost: any, func: Function, params: any[], callback: (err: Error, img: HTMLImageElement) => void): void;
+        getArrayUuid(arr: any[]): string;
+        getObjectUuid(o: Object): string;
+        objectUuid: WeakMap<Object, string>;
+        wrapFResult: any[];
+        _state: {
+            [uuid: string]: boolean;
+        };
     }
     const __functionwarp__ = "__functionwarp__";
     const functionwarp: FunctionWarp;

@@ -49,6 +49,59 @@ namespace feng3d
                 });
             }
         }
+
+        wrapF(funcHost, func: Function, params: any[], callback: (err: Error, img: HTMLImageElement) => void)
+        {
+            // 获取唯一编号
+            var uuid = this.getArrayUuid([func].concat(params));
+            // 检查是否执行过
+            var result: { err: Error, img: HTMLImageElement } = this.wrapFResult[uuid];
+            if (result)
+            {
+                callback(result.err, result.img);
+                return;
+            }
+            // 监听执行完成事件
+            event.once(this, uuid, () =>
+            {
+                // 完成时重新执行函数
+                this.wrapF(funcHost, func, params, callback);
+            });
+            // 正在执行时直接返回等待完成事件
+            if (this._state[uuid]) return;
+            // 标记正在执行中
+            this._state[uuid] = true;
+            // 执行函数
+            func.apply(funcHost, params.concat((err, img) =>
+            {
+                // 清理执行标记
+                delete this._state[uuid];
+                // 保存执行结果
+                this.wrapFResult[uuid] = { err: err, img: img };
+                // 通知执行完成
+                event.dispatch(this, uuid);
+            }));
+        }
+
+        getArrayUuid(arr: any[])
+        {
+            var uuids = arr.map(v => { if (Object.isObject(v)) return this.getObjectUuid(v); return String(v) });
+            var groupUuid = uuids.join("-");
+            return groupUuid;
+        }
+
+        getObjectUuid(o: Object)
+        {
+            if (!this.objectUuid.has(o))
+            {
+                this.objectUuid.set(o, Math.uuid());
+            }
+            return this.objectUuid.get(o);
+        }
+        objectUuid = new WeakMap<Object, string>();
+
+        wrapFResult = [];
+        _state: { [uuid: string]: boolean } = {};
     }
 
     export const __functionwarp__ = "__functionwarp__";
