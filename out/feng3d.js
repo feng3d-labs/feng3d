@@ -727,7 +727,7 @@ var feng3d;
          * @param object 对象
          */
         Uuid.prototype.getObjectUuid = function (object) {
-            if (!Object.isObject(object)) {
+            if (Object.isBaseType(object)) {
                 return String(object);
             }
             if (!object[feng3d.__uuid__]) {
