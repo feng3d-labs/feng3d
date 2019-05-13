@@ -38,7 +38,7 @@ QUnit.module("FunctionWarp", () =>
 
     });
 
-    QUnit.test("FunctionWarp ", (assert) =>
+    QUnit.test("wrapAsyncFunc", (assert) =>
     {
         var done = assert.async();
 
@@ -54,17 +54,6 @@ QUnit.module("FunctionWarp", () =>
                 callback(a * a);
             }, Math.randInt(500, 1000));
         }
-
-        // var runtime1 = 0;
-        // // 相同的异步函数1
-        // function af1(a: number, callback: (r: number) => void)
-        // {
-        //     setTimeout(() =>
-        //     {
-        //         runtime1++;
-        //         callback(a * a);
-        //     }, Math.randInt(500, 1000));
-        // }
 
         // 包装后的函数
         function wrapFunc(a: number, callback: (r: number) => void)

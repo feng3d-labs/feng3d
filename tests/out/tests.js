@@ -3266,7 +3266,7 @@ QUnit.module("FunctionWarp", function () {
         assert.ok(o.v == 0);
         assert.ok(o[feng3d.__functionwarp__]);
     });
-    QUnit.test("FunctionWarp ", function (assert) {
+    QUnit.test("wrapAsyncFunc", function (assert) {
         var done = assert.async();
         // 执行次数
         var executions = 0;
@@ -3278,16 +3278,6 @@ QUnit.module("FunctionWarp", function () {
                 callback(a * a);
             }, Math.randInt(500, 1000));
         }
-        // var runtime1 = 0;
-        // // 相同的异步函数1
-        // function af1(a: number, callback: (r: number) => void)
-        // {
-        //     setTimeout(() =>
-        //     {
-        //         runtime1++;
-        //         callback(a * a);
-        //     }, Math.randInt(500, 1000));
-        // }
         // 包装后的函数
         function wrapFunc(a, callback) {
             feng3d.functionwarp.wrapAsyncFunc(null, af, [1], callback);
