@@ -60,7 +60,7 @@ namespace feng3d
          * @param params 函数除callback外的参数列表
          * @param callback 完成回调函数
          */
-        wrapAsyncFunc(funcHost: Object, func: Function, params: any[], callback: (...args: any) => void)
+        wrapAsyncFunc(funcHost: Object, func: Function, params: any[], callback: (...args: any[]) => void)
         {
             // 获取唯一编号
             var cuuid = uuid.getArrayUuid([func].concat(params));
@@ -83,7 +83,7 @@ namespace feng3d
             this._state[cuuid] = true;
 
             // 执行函数
-            func.apply(funcHost, params.concat((...args: any) =>
+            func.apply(funcHost, params.concat((...args: any[]) =>
             {
                 // 清理执行标记
                 delete this._state[cuuid];
@@ -94,7 +94,7 @@ namespace feng3d
             }));
         }
 
-        private _wrapFResult = [];
+        private _wrapFResult: { [cuuid: string]: any } = {};
         private _state: { [uuid: string]: boolean } = {};
     }
 

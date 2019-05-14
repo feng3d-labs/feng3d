@@ -113,14 +113,14 @@ getset平均耗时比 17.3
          */
         watch<T, K extends keyof T, V extends T[K]>(host: T, property: K, handler: (host: T, property: string, oldvalue: V) => void, thisObject?: any)
         {
-            if (!Object.getOwnPropertyDescriptor(host, bindables))
+            if (!Object.getOwnPropertyDescriptor(host, __watchs__))
             {
-                Object.defineProperty(host, bindables, {
+                Object.defineProperty(host, __watchs__, {
                     value: {},
                     enumerable: false,
                 });
             }
-            var watchs: Watchs = host[bindables];
+            var watchs: Watchs = host[__watchs__];
             var property1 = <string>property;
             if (!watchs[property1])
             {
@@ -147,14 +147,14 @@ getset平均耗时比 17.3
                     data = <any>{ enumerable: true, configurable: true };
                     data.get = function (): any
                     {
-                        return this[bindables][property1].value;
+                        return this[__watchs__][property1].value;
                     };
                     data.set = function (value: any)
                     {
-                        var oldvalue = this[bindables][property1].value;
+                        var oldvalue = this[__watchs__][property1].value;
                         if (oldvalue != value)
                         {
-                            this[bindables][property1].value = value;
+                            this[__watchs__][property1].value = value;
                             notifyListener(this, property1, oldvalue);
                         }
                     };
@@ -175,7 +175,7 @@ getset平均耗时比 17.3
 
         unwatch<T, K extends keyof T, V extends T[K]>(host: T, property: K, handler?: (host: T, property: string, oldvalue: V) => void, thisObject?: any)
         {
-            var watchs: Watchs = host[bindables];
+            var watchs: Watchs = host[__watchs__];
             if (!watchs) return;
             var property1 = <string>property;
             if (watchs[property1])
@@ -199,7 +199,7 @@ getset平均耗时比 17.3
                 }
                 if (Object.keys(watchs).length == 0)
                 {
-                    delete host[bindables];
+                    delete host[__watchs__];
                 }
             }
         }
@@ -212,9 +212,9 @@ getset平均耗时比 17.3
                 this.watch(host, property, handler, thisObject);
                 return;
             }
-            if (!Object.getOwnPropertyDescriptor(host, bindablechains))
-                Object.defineProperty(host, bindablechains, { value: {}, enumerable: false, });
-            var watchchains: WatchChains = host[bindablechains];
+            if (!Object.getOwnPropertyDescriptor(host, __watchchains__))
+                Object.defineProperty(host, __watchchains__, { value: {}, enumerable: false, });
+            var watchchains: WatchChains = host[__watchchains__];
             if (!watchchains[property])
             {
                 watchchains[property] = [];
@@ -278,7 +278,7 @@ getset平均耗时比 17.3
             var nextp = property.substr(notIndex + 1);
 
             //
-            var watchchains: WatchChains = host[bindablechains];
+            var watchchains: WatchChains = host[__watchchains__];
             if (!watchchains || !watchchains[property]) return;
 
             // 
@@ -303,7 +303,7 @@ getset平均耗时比 17.3
             if (propertywatchs.length == 0) delete watchchains[property];
             if (Object.keys(watchchains).length == 0)
             {
-                delete host[bindablechains];
+                delete host[__watchchains__];
             }
         }
 
@@ -321,12 +321,12 @@ getset平均耗时比 17.3
         [property: string]: { handler: (host: any, property: string, oldvalue: any) => void, thisObject: any, watchchainFun: (h: any, p: any, oldvalue: any) => void }[];
     }
 
-    const bindables = "__watchs__";
-    const bindablechains = "__watchchains__";
+    const __watchs__ = "__watchs__";
+    const __watchchains__ = "__watchchains__";
 
     function notifyListener(host: any, property: string, oldview: any): void
     {
-        var watchs: Watchs = host[bindables];
+        var watchs: Watchs = host[__watchs__];
         var handlers = watchs[property].handlers;
         handlers.forEach(element =>
         {

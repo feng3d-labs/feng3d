@@ -253,7 +253,7 @@ declare namespace feng3d {
          * @param params 函数除callback外的参数列表
          * @param callback 完成回调函数
          */
-        wrapAsyncFunc(funcHost: Object, func: Function, params: any[], callback: (...args: any) => void): void;
+        wrapAsyncFunc(funcHost: Object, func: Function, params: any[], callback: (...args: any[]) => void): void;
         private _wrapFResult;
         private _state;
     }
