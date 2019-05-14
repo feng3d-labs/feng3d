@@ -112,47 +112,51 @@ getset平均耗时比 17.3
         function Watcher() {
         }
         /**
-         * 注意：使用watch后获取该属性值的性能将会是原来的1/60，禁止在feng3d引擎内部使用watch
-         * @param host
-         * @param property1
+         * 监听对象属性的变化
+         *
+         * 注意：使用watch后获取该属性值的性能将会是原来的1/60，避免在运算密集处使用该函数。
+         *
+         * @param host 被监听对象
+         * @param property
          * @param handler
          * @param thisObject
          */
         Watcher.prototype.watch = function (host, property, handler, thisObject) {
-            if (!Object.getOwnPropertyDescriptor(host, __watchs__)) {
-                Object.defineProperty(host, __watchs__, {
+            if (!Object.getOwnPropertyDescriptor(host, feng3d.__watchs__)) {
+                Object.defineProperty(host, feng3d.__watchs__, {
                     value: {},
                     enumerable: false,
+                    configurable: true,
+                    writable: false,
                 });
             }
-            var watchs = host[__watchs__];
-            var property1 = property;
-            if (!watchs[property1]) {
-                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(host, property1);
-                watchs[property1] = { value: host[property1], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
+            var watchs = host[feng3d.__watchs__];
+            if (!watchs[property]) {
+                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(host, property);
+                watchs[property] = { value: host[property], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
                 //
-                var data = getPropertyDescriptor(host, property1);
+                var data = getPropertyDescriptor(host, property);
                 if (data && data.set && data.get) {
-                    data = { enumerable: true, configurable: true, get: data.get, set: data.set };
+                    data = { enumerable: data.enumerable, configurable: true, get: data.get, set: data.set };
                     var orgSet = data.set;
                     data.set = function (value) {
-                        var oldvalue = this[property1];
+                        var oldvalue = this[property];
                         if (oldvalue != value) {
                             orgSet && orgSet.call(this, value);
-                            notifyListener(this, property1, oldvalue);
+                            notifyListener(this, property, oldvalue);
                         }
                     };
                 }
                 else if (!data || (!data.get && !data.set)) {
                     data = { enumerable: true, configurable: true };
                     data.get = function () {
-                        return this[__watchs__][property1].value;
+                        return this[feng3d.__watchs__][property].value;
                     };
                     data.set = function (value) {
-                        var oldvalue = this[__watchs__][property1].value;
+                        var oldvalue = this[feng3d.__watchs__][property].value;
                         if (oldvalue != value) {
-                            this[__watchs__][property1].value = value;
-                            notifyListener(this, property1, oldvalue);
+                            this[feng3d.__watchs__][property].value = value;
+                            notifyListener(this, property, oldvalue);
                         }
                     };
                 }
@@ -160,15 +164,15 @@ getset平均耗时比 17.3
                     console.warn("watch " + host + " . " + property + " \u5931\u8D25\uFF01");
                     return;
                 }
-                Object.defineProperty(host, property1, data);
+                Object.defineProperty(host, property, data);
             }
-            var propertywatchs = watchs[property1];
+            var propertywatchs = watchs[property];
             var has = propertywatchs.handlers.reduce(function (v, item) { return v || (item.handler == handler && item.thisObject == thisObject); }, false);
             if (!has)
                 propertywatchs.handlers.push({ handler: handler, thisObject: thisObject });
         };
         Watcher.prototype.unwatch = function (host, property, handler, thisObject) {
-            var watchs = host[__watchs__];
+            var watchs = host[feng3d.__watchs__];
             if (!watchs)
                 return;
             var property1 = property;
@@ -189,7 +193,7 @@ getset平均耗时比 17.3
                     delete watchs[property1];
                 }
                 if (Object.keys(watchs).length == 0) {
-                    delete host[__watchs__];
+                    delete host[feng3d.__watchs__];
                 }
             }
         };
@@ -200,9 +204,9 @@ getset平均耗时比 17.3
                 this.watch(host, property, handler, thisObject);
                 return;
             }
-            if (!Object.getOwnPropertyDescriptor(host, __watchchains__))
-                Object.defineProperty(host, __watchchains__, { value: {}, enumerable: false, });
-            var watchchains = host[__watchchains__];
+            if (!Object.getOwnPropertyDescriptor(host, feng3d.__watchchains__))
+                Object.defineProperty(host, feng3d.__watchchains__, { value: {}, enumerable: false, });
+            var watchchains = host[feng3d.__watchchains__];
             if (!watchchains[property]) {
                 watchchains[property] = [];
             }
@@ -253,7 +257,7 @@ getset平均耗时比 17.3
             var currentp = property.substr(0, notIndex);
             var nextp = property.substr(notIndex + 1);
             //
-            var watchchains = host[__watchchains__];
+            var watchchains = host[feng3d.__watchchains__];
             if (!watchchains || !watchchains[property])
                 return;
             // 
@@ -275,17 +279,17 @@ getset平均耗时比 17.3
             if (propertywatchs.length == 0)
                 delete watchchains[property];
             if (Object.keys(watchchains).length == 0) {
-                delete host[__watchchains__];
+                delete host[feng3d.__watchchains__];
             }
         };
         return Watcher;
     }());
     feng3d.Watcher = Watcher;
     feng3d.watcher = new Watcher();
-    var __watchs__ = "__watchs__";
-    var __watchchains__ = "__watchchains__";
+    feng3d.__watchs__ = "__watchs__";
+    feng3d.__watchchains__ = "__watchchains__";
     function notifyListener(host, property, oldview) {
-        var watchs = host[__watchs__];
+        var watchs = host[feng3d.__watchs__];
         var handlers = watchs[property].handlers;
         handlers.forEach(function (element) {
             element.handler.call(element.thisObject, host, property, oldview);

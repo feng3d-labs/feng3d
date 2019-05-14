@@ -52,7 +52,7 @@ QUnit.module("FunctionWarp", () =>
             {
                 executions++;
                 callback(a * a);
-            }, Math.randInt(500, 1000));
+            }, Math.randInt(10, 50));
         }
 
         // 包装后的函数

@@ -70,17 +70,22 @@ getset平均耗时比 17.3
     var watcher: Watcher;
     class Watcher {
         /**
-         * 注意：使用watch后获取该属性值的性能将会是原来的1/60，禁止在feng3d引擎内部使用watch
-         * @param host
-         * @param property1
+         * 监听对象属性的变化
+         *
+         * 注意：使用watch后获取该属性值的性能将会是原来的1/60，避免在运算密集处使用该函数。
+         *
+         * @param host 被监听对象
+         * @param property
          * @param handler
          * @param thisObject
          */
-        watch<T, K extends keyof T, V extends T[K]>(host: T, property: K, handler: (host: T, property: string, oldvalue: V) => void, thisObject?: any): void;
+        watch<T, K extends (keyof T & string), V extends T[K]>(host: T, property: K, handler: (host: T, property: string, oldvalue: V) => void, thisObject?: any): void;
         unwatch<T, K extends keyof T, V extends T[K]>(host: T, property: K, handler?: (host: T, property: string, oldvalue: V) => void, thisObject?: any): void;
         watchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
         unwatchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
     }
+    const __watchs__ = "__watchs__";
+    const __watchchains__ = "__watchchains__";
 }
 declare namespace feng3d {
 }

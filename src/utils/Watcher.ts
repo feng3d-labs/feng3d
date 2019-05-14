@@ -105,40 +105,44 @@ getset平均耗时比 17.3
     export class Watcher
     {
         /**
-         * 注意：使用watch后获取该属性值的性能将会是原来的1/60，禁止在feng3d引擎内部使用watch
-         * @param host 
-         * @param property1 
+         * 监听对象属性的变化
+         * 
+         * 注意：使用watch后获取该属性值的性能将会是原来的1/60，避免在运算密集处使用该函数。
+         * 
+         * @param host 被监听对象
+         * @param property 
          * @param handler 
          * @param thisObject 
          */
-        watch<T, K extends keyof T, V extends T[K]>(host: T, property: K, handler: (host: T, property: string, oldvalue: V) => void, thisObject?: any)
+        watch<T, K extends (keyof T & string), V extends T[K]>(host: T, property: K, handler: (host: T, property: string, oldvalue: V) => void, thisObject?: any)
         {
             if (!Object.getOwnPropertyDescriptor(host, __watchs__))
             {
                 Object.defineProperty(host, __watchs__, {
                     value: {},
                     enumerable: false,
+                    configurable: true,
+                    writable: false,
                 });
             }
             var watchs: Watchs = host[__watchs__];
-            var property1 = <string>property;
-            if (!watchs[property1])
+            if (!watchs[property])
             {
-                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(host, property1);
-                watchs[property1] = { value: host[property1], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
+                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(host, property);
+                watchs[property] = { value: host[property], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
                 //
-                var data: PropertyDescriptor = getPropertyDescriptor(host, property1);
+                var data: PropertyDescriptor = getPropertyDescriptor(host, property);
                 if (data && data.set && data.get)
                 {
-                    data = <any>{ enumerable: true, configurable: true, get: data.get, set: data.set };
+                    data = <any>{ enumerable: data.enumerable, configurable: true, get: data.get, set: data.set };
                     var orgSet = data.set;
                     data.set = function (value: any)
                     {
-                        var oldvalue = this[<any>property1];
+                        var oldvalue = this[<any>property];
                         if (oldvalue != value)
                         {
                             orgSet && orgSet.call(this, value);
-                            notifyListener(this, property1, oldvalue);
+                            notifyListener(this, property, oldvalue);
                         }
                     };
                 }
@@ -147,15 +151,15 @@ getset平均耗时比 17.3
                     data = <any>{ enumerable: true, configurable: true };
                     data.get = function (): any
                     {
-                        return this[__watchs__][property1].value;
+                        return this[__watchs__][property].value;
                     };
                     data.set = function (value: any)
                     {
-                        var oldvalue = this[__watchs__][property1].value;
+                        var oldvalue = this[__watchs__][property].value;
                         if (oldvalue != value)
                         {
-                            this[__watchs__][property1].value = value;
-                            notifyListener(this, property1, oldvalue);
+                            this[__watchs__][property].value = value;
+                            notifyListener(this, property, oldvalue);
                         }
                     };
                 }
@@ -164,10 +168,10 @@ getset平均耗时比 17.3
                     console.warn(`watch ${host} . ${property} 失败！`);
                     return;
                 }
-                Object.defineProperty(host, property1, data);
+                Object.defineProperty(host, property, data);
             }
 
-            var propertywatchs = watchs[property1];
+            var propertywatchs = watchs[property];
             var has = propertywatchs.handlers.reduce((v, item) => { return v || (item.handler == handler && item.thisObject == thisObject); }, false);
             if (!has)
                 propertywatchs.handlers.push({ handler: handler, thisObject: thisObject });
@@ -321,8 +325,8 @@ getset平均耗时比 17.3
         [property: string]: { handler: (host: any, property: string, oldvalue: any) => void, thisObject: any, watchchainFun: (h: any, p: any, oldvalue: any) => void }[];
     }
 
-    const __watchs__ = "__watchs__";
-    const __watchchains__ = "__watchchains__";
+    export const __watchs__ = "__watchs__";
+    export const __watchchains__ = "__watchchains__";
 
     function notifyListener(host: any, property: string, oldview: any): void
     {

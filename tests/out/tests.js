@@ -3276,7 +3276,7 @@ QUnit.module("FunctionWarp", function () {
             setTimeout(function () {
                 executions++;
                 callback(a * a);
-            }, Math.randInt(500, 1000));
+            }, Math.randInt(10, 50));
         }
         // 包装后的函数
         function wrapFunc(a, callback) {
@@ -4528,11 +4528,17 @@ QUnit.module("watcher", function () {
         var f = function (h, p, o) { out += "f"; };
         var f1 = function (h, p, o) { out += "f1"; };
         feng3d.watcher.watch(o, "a", f);
+        // feng3d.watcher.watch(o,"a1",f)
         feng3d.watcher.watch(o, "a", f1);
+        assert.ok(!!o[feng3d.__watchs__]);
         o.a = 2;
         feng3d.watcher.unwatch(o, "a", f);
+        assert.ok(!!o[feng3d.__watchs__]);
         o.a = 3;
         assert.ok(out == "ff1f1", out);
+        feng3d.watcher.unwatch(o, "a", f1);
+        // 此时应该不存在属性 __watchs__
+        assert.ok(!o[feng3d.__watchs__]);
     });
     QUnit.test("watch custom A", function (assert) {
         var A = /** @class */ (function () {
@@ -4559,16 +4565,21 @@ QUnit.module("watcher", function () {
         var f1 = function (h, p, o) { out += "f1"; };
         feng3d.watcher.watch(o, "a", f);
         feng3d.watcher.watch(o, "a", f1);
+        assert.ok(!!o[feng3d.__watchs__]);
         o.a = 2;
         assert.ok(num == 2);
         feng3d.watcher.unwatch(o, "a", f);
+        assert.ok(!!o[feng3d.__watchs__]);
         o.a = 3;
         assert.ok(out == "ff1f1", out);
         assert.ok(num == 3);
+        feng3d.watcher.unwatch(o, "a", f1);
+        // 此时应该不存在属性 __watchs__
+        assert.ok(!o[feng3d.__watchs__]);
     });
     QUnit.test("watch Object 性能", function (assert) {
         var o = { a: 1 };
-        var num = 10000000;
+        var num = 1000000;
         var out = "";
         var f = function () { out += "f"; };
         var s = Date.now();
@@ -4590,15 +4601,20 @@ QUnit.module("watcher", function () {
     });
     QUnit.test("watch Vector3 性能", function (assert) {
         var o = new feng3d.Vector3();
-        var num = 10000000;
-        var out = "";
-        var f = function () { out += "f"; };
+        var num = 1000000;
+        var s = Date.now();
+        for (var i = 0; i < num; i++) {
+            o.x = i;
+        }
+        var t0 = Date.now() - s;
+        delete o.x;
+        o.x = 0;
         var s = Date.now();
         for (var i = 0; i < num; i++) {
             o.x = i;
         }
         var t1 = Date.now() - s;
-        out = "";
+        var f = function () { };
         feng3d.watcher.watch(o, "x", f);
         o.x = 2;
         feng3d.watcher.unwatch(o, "x", f);
@@ -4608,7 +4624,14 @@ QUnit.module("watcher", function () {
             o.x = i;
         }
         var t2 = Date.now() - s;
-        assert.ok(true, t1 + "->" + t2 + " watch\u4E0Eunwatch\u64CD\u4F5C\u540E\u6027\u80FD 1->" + t1 / t2);
+        delete o.x;
+        o.x = 0;
+        var s = Date.now();
+        for (var i = 0; i < num; i++) {
+            o.x = i;
+        }
+        var t3 = Date.now() - s;
+        assert.ok(true, t0 + "->" + t1 + "->" + t2 + "->" + t3 + " watch\u4E0Eunwatch\u64CD\u4F5C\u540E\u6027\u80FD 1->" + t0 / t1 + "->" + t0 / t2 + "->" + t0 / t3);
     });
     QUnit.test("watchchain Object", function (assert) {
         var o = { a: { b: { c: 1 } } };
