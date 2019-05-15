@@ -118,4 +118,21 @@ QUnit.module("Object", () =>
 
     });
 
+    QUnit.test("getPropertyChains", (assert) =>
+    {
+        // 对象
+        var o = { a: 1, b: { c: true, d: [1, 2, true, "abc"], e: "f" } };
+
+        var chains = Object.getPropertyChains(o);
+
+        assert.equal(chains.length, 7);
+
+        var o1 = { a: 1, b: { c: true } };
+
+        var chains1 = Object.getPropertyChains(o1);
+        assert.equal(chains1.length, 2);
+        assert.ok(chains1.indexOf("a") != -1);
+        assert.ok(chains1.indexOf("b.c") != -1);
+    });
+
 });

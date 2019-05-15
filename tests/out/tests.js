@@ -3256,6 +3256,17 @@ QUnit.module("Object", function () {
         assert.ok(Object.getPropertyValue(arr, ["0", "2", "3", "1"]) == 7);
         assert.ok(Object.getPropertyValue(arr, "2.2.3.1") == undefined);
     });
+    QUnit.test("getPropertyChains", function (assert) {
+        // 对象
+        var o = { a: 1, b: { c: true, d: [1, 2, true, "abc"], e: "f" } };
+        var chains = Object.getPropertyChains(o);
+        assert.equal(chains.length, 7);
+        var o1 = { a: 1, b: { c: true } };
+        var chains1 = Object.getPropertyChains(o1);
+        assert.equal(chains1.length, 2);
+        assert.ok(chains1.indexOf("a") != -1);
+        assert.ok(chains1.indexOf("b.c") != -1);
+    });
 });
 QUnit.module("FunctionWarp", function () {
     QUnit.test("FunctionWarp ", function (assert) {
@@ -4702,6 +4713,15 @@ QUnit.module("watcher", function () {
         obj.a = { b: { c: 1 } }; //obj.a.b.c从undefined变为1，  调用一次 函数f
         obj.a = null; //obj.a.b.c从undefined变为1，  调用一次 函数f
         assert.ok(out == "ff", out);
+    });
+    QUnit.test("watchobject", function (assert) {
+        var o = { a: { b: { c: 1 }, d: 2 } };
+        var out = "";
+        var f = function (h, p, o) { out += "f"; };
+        feng3d.watcher.watchobject(o, { a: { b: { c: null }, d: null } }, f);
+        o.a.b.c = 10; // 调用一次函数f
+        o.a.d = 10; // 调用一次函数f
+        assert.equal(out, "ff");
     });
 });
 //# sourceMappingURL=tests.js.map

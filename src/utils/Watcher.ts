@@ -157,7 +157,7 @@ namespace feng3d
          * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值
          */
-        watchchain(object: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any)
+        watchchain(object: any, property: string, handler?: (object: any, property: string, oldvalue: any) => void, thisObject?: any)
         {
             var notIndex = property.indexOf(".");
             if (notIndex == -1)
@@ -214,12 +214,12 @@ namespace feng3d
          * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值
          */
-        unwatchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any)
+        unwatchchain(object: any, property: string, handler?: (object: any, property: string, oldvalue: any) => void, thisObject?: any)
         {
             var notIndex = property.indexOf(".");
             if (notIndex == -1)
             {
-                this.unwatch(host, property, handler, thisObject);
+                this.unwatch(object, property, handler, thisObject);
                 return;
             }
 
@@ -227,7 +227,7 @@ namespace feng3d
             var nextp = property.substr(notIndex + 1);
 
             //
-            var watchchains: WatchChains = host[__watchchains__];
+            var watchchains: WatchChains = object[__watchchains__];
             if (!watchchains || !watchchains[property]) return;
 
             // 
@@ -238,12 +238,12 @@ namespace feng3d
                 if (handler == null || (handler == element.handler && thisObject == element.thisObject))
                 {
                     // 删除下级监听链
-                    if (host[currentp])
+                    if (object[currentp])
                     {
-                        this.unwatchchain(host[currentp], nextp, element.handler, element.thisObject);
+                        this.unwatchchain(object[currentp], nextp, element.handler, element.thisObject);
                     }
                     // 删除链监听
-                    this.unwatch(host, currentp, element.watchchainFun);
+                    this.unwatch(object, currentp, element.watchchainFun);
                     // 清理记录链监听函数
                     propertywatchs.splice(i, 1);
                 }
@@ -252,8 +252,24 @@ namespace feng3d
             if (propertywatchs.length == 0) delete watchchains[property];
             if (Object.keys(watchchains).length == 0)
             {
-                delete host[__watchchains__];
+                delete object[__watchchains__];
             }
+        }
+
+        /**
+         * 监听对象属性链值变化
+         * 
+         * @param object 被监听对象
+         * @param property 被监听属性 例如：{a:{b:null,d:null}} 表示监听 object.a.b 与 object.a.d 值得变化
+         * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
+         * @param thisObject 变化回调函数 this值
+         */
+        watchobject<T>(object: T, property: gPartial<T>, handler?: (object: any, property: string, oldvalue: any) => void, thisObject?: any)
+        {
+            var chains = Object.getPropertyChains(object);
+            chains
+
+            property
         }
 
     }

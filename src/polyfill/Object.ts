@@ -52,6 +52,15 @@ interface ObjectConstructor
     getPropertyValue(object: Object, property: string | string[]): any;
 
     /**
+     * 获取对象上属性链列表
+     * 
+     * 例如 object值为{ a: { b: { c: 1 }, d: 2 } }时则返回 ["a.b.c","a.d"]
+     * 
+     * @param object 对象
+     */
+    getPropertyChains(object: Object): string[];
+
+    /**
      * 浅赋值
      * 从源数据取所有可枚举属性值赋值给目标对象
      * 
@@ -155,6 +164,51 @@ Object.getPropertyValue = function (object, property)
         value = value[property[i]];
     }
     return value;
+}
+
+Object.getPropertyChains = function (object)
+{
+    var result: string[] = [];
+    // 属性名称列表
+    var propertys = Object.keys(object);
+    // 属性所属对象列表
+    var hosts = new Array(propertys.length).fill(object);
+    // 父属性所在编号列表
+    var parentPropertyIndices = new Array(propertys.length).fill(-1);
+    // 处理到的位置
+    var index = 0;
+    while (index < propertys.length)
+    {
+        var host = hosts[index];
+        var cp = propertys[index];
+        var cv = host[cp];
+        var vks: string[];
+        if (cv == null || Object.isBaseType(cv) || (vks = Object.keys(cv)).length == 0)
+        {
+            // 处理叶子属性
+            var ps = [cp];
+            var ci = index;
+            // 查找并组合属性链
+            while ((ci = parentPropertyIndices[ci]) != -1)
+            {
+                ps.push(propertys[ci]);
+            }
+            ps.reverse();
+            result.push(ps.join("."));
+        } else
+        {
+            // 处理中间属性
+            vks.forEach(k =>
+            {
+                propertys.push(k);
+                hosts.push(cv);
+                parentPropertyIndices.push(index);
+            });
+        }
+
+        index++;
+    }
+    return result;
 }
 
 Object.equalDeep = function (a, b)

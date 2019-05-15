@@ -196,4 +196,17 @@ QUnit.module("watcher", () =>
         assert.ok(out == "ff", out);
 
     });
+
+    QUnit.test("watchobject", (assert) =>
+    {
+        var o = { a: { b: { c: 1 }, d: 2 } };
+        var out = "";
+        var f = (h, p, o) => { out += "f"; };
+
+        feng3d.watcher.watchobject(o, { a: { b: { c: null }, d: null } }, f);
+        o.a.b.c = 10; // 调用一次函数f
+        o.a.d = 10;// 调用一次函数f
+        assert.equal(out, "ff");
+
+    });
 });

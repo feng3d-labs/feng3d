@@ -43,7 +43,7 @@ declare namespace feng3d {
          * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值
          */
-        watchchain(object: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
+        watchchain(object: any, property: string, handler?: (object: any, property: string, oldvalue: any) => void, thisObject?: any): void;
         /**
          * 取消监听对象属性链值变化
          *
@@ -52,7 +52,16 @@ declare namespace feng3d {
          * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值
          */
-        unwatchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
+        unwatchchain(object: any, property: string, handler?: (object: any, property: string, oldvalue: any) => void, thisObject?: any): void;
+        /**
+         * 监听对象属性链值变化
+         *
+         * @param object 被监听对象
+         * @param property 被监听属性 例如：{a:{b:null,d:null}} 表示监听 object.a.b 与 object.a.d 值得变化
+         * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
+         * @param thisObject 变化回调函数 this值
+         */
+        watchobject<T>(object: T, property: gPartial<T>, handler?: (object: any, property: string, oldvalue: any) => void, thisObject?: any): void;
     }
     const __watchs__ = "__watchs__";
     const __watchchains__ = "__watchchains__";
@@ -132,6 +141,14 @@ interface ObjectConstructor {
      * @param property 属性名称，可以是 "a" 或者 "a.b" 或者 ["a","b"]
      */
     getPropertyValue(object: Object, property: string | string[]): any;
+    /**
+     * 获取对象上属性链列表
+     *
+     * 例如 object值为{ a: { b: { c: 1 }, d: 2 } }时则返回 ["a.b.c","a.d"]
+     *
+     * @param object 对象
+     */
+    getPropertyChains(object: Object): string[];
     /**
      * 浅赋值
      * 从源数据取所有可枚举属性值赋值给目标对象

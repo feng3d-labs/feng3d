@@ -196,16 +196,16 @@ var feng3d;
          * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值
          */
-        Watcher.prototype.unwatchchain = function (host, property, handler, thisObject) {
+        Watcher.prototype.unwatchchain = function (object, property, handler, thisObject) {
             var notIndex = property.indexOf(".");
             if (notIndex == -1) {
-                this.unwatch(host, property, handler, thisObject);
+                this.unwatch(object, property, handler, thisObject);
                 return;
             }
             var currentp = property.substr(0, notIndex);
             var nextp = property.substr(notIndex + 1);
             //
-            var watchchains = host[feng3d.__watchchains__];
+            var watchchains = object[feng3d.__watchchains__];
             if (!watchchains || !watchchains[property])
                 return;
             // 
@@ -214,11 +214,11 @@ var feng3d;
                 var element = propertywatchs[i];
                 if (handler == null || (handler == element.handler && thisObject == element.thisObject)) {
                     // 删除下级监听链
-                    if (host[currentp]) {
-                        this.unwatchchain(host[currentp], nextp, element.handler, element.thisObject);
+                    if (object[currentp]) {
+                        this.unwatchchain(object[currentp], nextp, element.handler, element.thisObject);
                     }
                     // 删除链监听
-                    this.unwatch(host, currentp, element.watchchainFun);
+                    this.unwatch(object, currentp, element.watchchainFun);
                     // 清理记录链监听函数
                     propertywatchs.splice(i, 1);
                 }
@@ -227,8 +227,21 @@ var feng3d;
             if (propertywatchs.length == 0)
                 delete watchchains[property];
             if (Object.keys(watchchains).length == 0) {
-                delete host[feng3d.__watchchains__];
+                delete object[feng3d.__watchchains__];
             }
+        };
+        /**
+         * 监听对象属性链值变化
+         *
+         * @param object 被监听对象
+         * @param property 被监听属性 例如：{a:{b:null,d:null}} 表示监听 object.a.b 与 object.a.d 值得变化
+         * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
+         * @param thisObject 变化回调函数 this值
+         */
+        Watcher.prototype.watchobject = function (object, property, handler, thisObject) {
+            var chains = Object.getPropertyChains(object);
+            chains;
+            property;
         };
         return Watcher;
     }());
@@ -407,6 +420,44 @@ Object.getPropertyValue = function (object, property) {
         value = value[property[i]];
     }
     return value;
+};
+Object.getPropertyChains = function (object) {
+    var result = [];
+    // 属性名称列表
+    var propertys = Object.keys(object);
+    // 属性所属对象列表
+    var hosts = new Array(propertys.length).fill(object);
+    // 父属性所在编号列表
+    var parentPropertyIndices = new Array(propertys.length).fill(-1);
+    // 处理到的位置
+    var index = 0;
+    while (index < propertys.length) {
+        var host = hosts[index];
+        var cp = propertys[index];
+        var cv = host[cp];
+        var vks;
+        if (cv == null || Object.isBaseType(cv) || (vks = Object.keys(cv)).length == 0) {
+            // 处理叶子属性
+            var ps = [cp];
+            var ci = index;
+            // 查找并组合属性链
+            while ((ci = parentPropertyIndices[ci]) != -1) {
+                ps.push(propertys[ci]);
+            }
+            ps.reverse();
+            result.push(ps.join("."));
+        }
+        else {
+            // 处理中间属性
+            vks.forEach(function (k) {
+                propertys.push(k);
+                hosts.push(cv);
+                parentPropertyIndices.push(index);
+            });
+        }
+        index++;
+    }
+    return result;
 };
 Object.equalDeep = function (a, b) {
     if (a == b)
