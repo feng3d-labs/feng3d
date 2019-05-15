@@ -22,28 +22,36 @@ declare namespace feng3d {
          *
          * @param object 被监听对象
          * @param property 被监听属性
-         * @param handler 变化回调
+         * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值
          */
-        watch<T, K extends (keyof T & string), V extends T[K]>(object: T, property: K, handler: (host: T, property: string, oldvalue: V) => void, thisObject?: any): void;
+        watch<T, K extends (keyof T & string), V extends T[K]>(object: T, property: K, handler: (object: T, property: string, oldvalue: V) => void, thisObject?: any): void;
         /**
          * 取消监听对象属性的变化
          *
          * @param object 被监听对象
          * @param property 被监听属性
-         * @param handler 变化回调
+         * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值
          */
-        unwatch<T, K extends (keyof T & string), V extends T[K]>(object: T, property: K, handler?: (host: T, property: string, oldvalue: V) => void, thisObject?: any): void;
+        unwatch<T, K extends (keyof T & string), V extends T[K]>(object: T, property: K, handler?: (object: T, property: string, oldvalue: V) => void, thisObject?: any): void;
         /**
          * 监听对象属性链值变化
          *
-         * @param host 被监听对象
-         * @param property 被监听属性
-         * @param handler 变化回调
+         * @param object 被监听对象
+         * @param property 被监听属性 例如："a.b"
+         * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值
          */
-        watchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
+        watchchain(object: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
+        /**
+         * 取消监听对象属性链值变化
+         *
+         * @param object 被监听对象
+         * @param property 被监听属性 例如："a.b"
+         * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
+         * @param thisObject 变化回调函数 this值
+         */
         unwatchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any): void;
     }
     const __watchs__ = "__watchs__";

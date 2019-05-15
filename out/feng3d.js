@@ -53,7 +53,7 @@ var feng3d;
          *
          * @param object 被监听对象
          * @param property 被监听属性
-         * @param handler 变化回调
+         * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值
          */
         Watcher.prototype.watch = function (object, property, handler, thisObject) {
@@ -111,7 +111,7 @@ var feng3d;
          *
          * @param object 被监听对象
          * @param property 被监听属性
-         * @param handler 变化回调
+         * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值
          */
         Watcher.prototype.unwatch = function (object, property, handler, thisObject) {
@@ -142,21 +142,21 @@ var feng3d;
         /**
          * 监听对象属性链值变化
          *
-         * @param host 被监听对象
-         * @param property 被监听属性
-         * @param handler 变化回调
+         * @param object 被监听对象
+         * @param property 被监听属性 例如："a.b"
+         * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值
          */
-        Watcher.prototype.watchchain = function (host, property, handler, thisObject) {
+        Watcher.prototype.watchchain = function (object, property, handler, thisObject) {
             var _this = this;
             var notIndex = property.indexOf(".");
             if (notIndex == -1) {
-                this.watch(host, property, handler, thisObject);
+                this.watch(object, property, handler, thisObject);
                 return;
             }
-            if (!Object.getOwnPropertyDescriptor(host, feng3d.__watchchains__))
-                Object.defineProperty(host, feng3d.__watchchains__, { value: {}, enumerable: false, writable: false, configurable: true });
-            var watchchains = host[feng3d.__watchchains__];
+            if (!Object.getOwnPropertyDescriptor(object, feng3d.__watchchains__))
+                Object.defineProperty(object, feng3d.__watchchains__, { value: {}, enumerable: false, writable: false, configurable: true });
+            var watchchains = object[feng3d.__watchchains__];
             if (!watchchains[property]) {
                 watchchains[property] = [];
             }
@@ -166,8 +166,8 @@ var feng3d;
                 // 添加下级监听链
                 var currentp = property.substr(0, notIndex);
                 var nextp = property.substr(notIndex + 1);
-                if (host[currentp]) {
-                    this.watchchain(host[currentp], nextp, handler, thisObject);
+                if (object[currentp]) {
+                    this.watchchain(object[currentp], nextp, handler, thisObject);
                 }
                 // 添加链监听
                 var watchchainFun = function (h, p, oldvalue) {
@@ -183,11 +183,19 @@ var feng3d;
                         handler.call(thisObject, newvalue, nextp, ov);
                     }
                 };
-                this.watch(host, currentp, watchchainFun);
+                this.watch(object, currentp, watchchainFun);
                 // 记录链监听函数
                 propertywatchs.push({ handler: handler, thisObject: thisObject, watchchainFun: watchchainFun });
             }
         };
+        /**
+         * 取消监听对象属性链值变化
+         *
+         * @param object 被监听对象
+         * @param property 被监听属性 例如："a.b"
+         * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
+         * @param thisObject 变化回调函数 this值
+         */
         Watcher.prototype.unwatchchain = function (host, property, handler, thisObject) {
             var notIndex = property.indexOf(".");
             if (notIndex == -1) {

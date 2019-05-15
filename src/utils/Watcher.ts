@@ -45,10 +45,10 @@ namespace feng3d
          * 
          * @param object 被监听对象
          * @param property 被监听属性
-         * @param handler 变化回调
-         * @param thisObject 变化回调函数 this值
+         * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
+         * @param thisObject 变化回调函数 this值 
          */
-        watch<T, K extends (keyof T & string), V extends T[K]>(object: T, property: K, handler: (host: T, property: string, oldvalue: V) => void, thisObject?: any)
+        watch<T, K extends (keyof T & string), V extends T[K]>(object: T, property: K, handler: (object: T, property: string, oldvalue: V) => void, thisObject?: any)
         {
             if (!Object.getOwnPropertyDescriptor(object, __watchs__))
             {
@@ -116,10 +116,10 @@ namespace feng3d
          * 
          * @param object 被监听对象
          * @param property 被监听属性
-         * @param handler 变化回调
+         * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值
          */
-        unwatch<T, K extends (keyof T & string), V extends T[K]>(object: T, property: K, handler?: (host: T, property: string, oldvalue: V) => void, thisObject?: any)
+        unwatch<T, K extends (keyof T & string), V extends T[K]>(object: T, property: K, handler?: (object: T, property: string, oldvalue: V) => void, thisObject?: any)
         {
             var watchs: Watchs = object[__watchs__];
             if (!watchs) return;
@@ -152,22 +152,22 @@ namespace feng3d
         /**
          * 监听对象属性链值变化
          * 
-         * @param host 被监听对象
-         * @param property 被监听属性
-         * @param handler 变化回调
+         * @param object 被监听对象
+         * @param property 被监听属性 例如："a.b"
+         * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
          * @param thisObject 变化回调函数 this值
          */
-        watchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any)
+        watchchain(object: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any)
         {
             var notIndex = property.indexOf(".");
             if (notIndex == -1)
             {
-                this.watch(host, property, handler, thisObject);
+                this.watch(object, property, handler, thisObject);
                 return;
             }
-            if (!Object.getOwnPropertyDescriptor(host, __watchchains__))
-                Object.defineProperty(host, __watchchains__, { value: {}, enumerable: false, writable: false, configurable: true });
-            var watchchains: WatchChains = host[__watchchains__];
+            if (!Object.getOwnPropertyDescriptor(object, __watchchains__))
+                Object.defineProperty(object, __watchchains__, { value: {}, enumerable: false, writable: false, configurable: true });
+            var watchchains: WatchChains = object[__watchchains__];
             if (!watchchains[property])
             {
                 watchchains[property] = [];
@@ -180,9 +180,9 @@ namespace feng3d
                 // 添加下级监听链
                 var currentp = property.substr(0, notIndex);
                 var nextp = property.substr(notIndex + 1);
-                if (host[currentp])
+                if (object[currentp])
                 {
-                    this.watchchain(host[currentp], nextp, handler, thisObject);
+                    this.watchchain(object[currentp], nextp, handler, thisObject);
                 }
 
                 // 添加链监听
@@ -199,13 +199,21 @@ namespace feng3d
                         handler.call(thisObject, newvalue, nextp, ov);
                     }
                 };
-                this.watch(host, currentp, watchchainFun);
+                this.watch(object, currentp, watchchainFun);
 
                 // 记录链监听函数
                 propertywatchs.push({ handler: handler, thisObject: thisObject, watchchainFun: watchchainFun });
             }
         }
 
+        /**
+         * 取消监听对象属性链值变化
+         * 
+         * @param object 被监听对象
+         * @param property 被监听属性 例如："a.b"
+         * @param handler 变化回调函数 (object: T, property: string, oldvalue: V) => void
+         * @param thisObject 变化回调函数 this值
+         */
         unwatchchain(host: any, property: string, handler?: (host: any, property: string, oldvalue: any) => void, thisObject?: any)
         {
             var notIndex = property.indexOf(".");
