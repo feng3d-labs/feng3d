@@ -3243,9 +3243,18 @@ QUnit.module("Object", function () {
         assert.ok(!Object.equalDeep(v, v1));
     });
     QUnit.test("getPropertyValue", function (assert) {
+        // 对象
         var o = { a: 1, b: { c: true, d: [1, 2, true, "abc"], e: "f" } };
         assert.ok(Object.getPropertyValue(o, "b.e") == o.b.e);
+        assert.ok(Object.getPropertyValue(o, ["b", "e"]) == o.b.e);
         assert.ok(Object.getPropertyValue(o, "b.f") == undefined);
+        // 数组
+        var arr = [[1, 2, [3, 4, 5, [6, 7]]]];
+        assert.ok(Object.getPropertyValue(arr, "0.1") == 2);
+        assert.ok(Object.getPropertyValue(arr, ["0", "1"]) == 2);
+        assert.ok(Object.getPropertyValue(arr, "0.2.3.1") == 7);
+        assert.ok(Object.getPropertyValue(arr, ["0", "2", "3", "1"]) == 7);
+        assert.ok(Object.getPropertyValue(arr, "2.2.3.1") == undefined);
     });
 });
 QUnit.module("FunctionWarp", function () {
