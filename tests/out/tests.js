@@ -4732,6 +4732,15 @@ QUnit.module("watcher", function () {
         o.a.b.c = 10; // 调用一次函数f
         o.a.d = 10; // 调用一次函数f
         assert.equal(out, "");
+        // 监听所有属性
+        var out = "";
+        feng3d.watcher.watchobject(o, o, f);
+        assert.ok(!!o[feng3d.__watchchains__]);
+        o.a.d = 100;
+        o.a.b.c = 100;
+        assert.equal(out, "ff");
+        feng3d.watcher.unwatchobject(o, o, f);
+        assert.ok(!o[feng3d.__watchchains__]);
     });
 });
 //# sourceMappingURL=tests.js.map
