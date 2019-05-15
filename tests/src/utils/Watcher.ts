@@ -142,7 +142,11 @@ QUnit.module("watcher", () =>
         var f = (h, p, o) => { out += "f"; };
         var f1 = (h, p, o) => { out += "f1"; };
         feng3d.watcher.watchchain(o, "a.b.c", f);
+        // 重复监听时不会生效，发生变化是 函数f只执行一次
+        feng3d.watcher.watchchain(o, "a.b.c", f);
+        // 可以在同一属性上监听多个函数
         feng3d.watcher.watchchain(o, "a.b.c", f1);
+        // 添加监听后会自动生成 属性__watchchains__
         assert.ok(!!o[feng3d.__watchchains__]);
 
         o.a.b.c = 2;
@@ -152,32 +156,44 @@ QUnit.module("watcher", () =>
         //
         out = "";
         feng3d.watcher.unwatchchain(o, "a.b.c", f1);
+        // 移除所有监听后 属性__watchchains__会自动被删除
         assert.ok(!o[feng3d.__watchchains__]);
 
+        // 测试监听被清理干净
         o.a.b.c = 4;
         assert.ok(out == "", out);
         //
         out = "";
         feng3d.watcher.watchchain(o, "a.b.c", f);
+        // 被赋予相同值时不会触发函数f
         o.a.b.c = 4;
         o.a.b.c = 5;
         assert.ok(out == "f", out);
         //
         out = "";
-        o.a = { b: { c: 1 } };
-        o.a.b.c = 3;
+        o.a = { b: { c: 1 } }; // 调用一次 函数f
+        o.a.b.c = 3;// 调用一次 函数f
         assert.ok(out == "ff", "out:" + out);
         //
         out = "";
         feng3d.watcher.unwatchchain(o, "a.b.c", f);
-        o.a.b.c = 4;
+        o.a.b.c = 4;// 取消监听后 不会触发函数f
         assert.ok(out == "", "out:" + out);
         //
         out = "";
         feng3d.watcher.watchchain(o, "a.b.c", f);
-        o.a = <any>null;
-        o.a = { b: { c: 1 } }
-        o.a.b.c = 5;
+        o.a = <any>null; // 触发一次函数f
+        o.a = { b: { c: 1 } }// 触发一次函数f
+        o.a.b.c = 5;// 触发一次函数f
         assert.ok(out == "fff", out);
+
+        //
+        var obj: any = {};
+        out = "";
+        feng3d.watcher.watchchain(obj, "a.b.c", f); // 监听不存在的属性
+        obj.a = { b: { c: 1 } }; //obj.a.b.c从undefined变为1，  调用一次 函数f
+        obj.a = null; //obj.a.b.c从undefined变为1，  调用一次 函数f
+        assert.ok(out == "ff", out);
+
     });
 });
