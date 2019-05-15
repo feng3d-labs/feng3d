@@ -155,7 +155,7 @@ var feng3d;
                 return;
             }
             if (!Object.getOwnPropertyDescriptor(host, feng3d.__watchchains__))
-                Object.defineProperty(host, feng3d.__watchchains__, { value: {}, enumerable: false, });
+                Object.defineProperty(host, feng3d.__watchchains__, { value: {}, enumerable: false, writable: false, configurable: true });
             var watchchains = host[feng3d.__watchchains__];
             if (!watchchains[property]) {
                 watchchains[property] = [];
@@ -177,18 +177,8 @@ var feng3d;
                     if (newvalue)
                         _this.watchchain(newvalue, nextp, handler, thisObject);
                     // 当更换对象且监听值发生改变时触发处理函数
-                    try {
-                        var ov = eval("oldvalue." + nextp + "");
-                    }
-                    catch (e) {
-                        ov = undefined;
-                    }
-                    try {
-                        var nv = eval("newvalue." + nextp + "");
-                    }
-                    catch (e) {
-                        nv = undefined;
-                    }
+                    var ov = Object.getPropertyValue(oldvalue, nextp);
+                    var nv = Object.getPropertyValue(newvalue, nextp);
                     if (ov != nv) {
                         handler.call(thisObject, newvalue, nextp, ov);
                     }
@@ -374,6 +364,18 @@ var feng3d;
         }
     };
 })(feng3d || (feng3d = {}));
+Object.getPropertyValue = function (object, property) {
+    if (typeof property == "string")
+        property = property.split(".");
+    var value = object;
+    var len = property.length;
+    for (var i = 0; i < property.length; i++) {
+        if (value == null)
+            return undefined;
+        value = value[property[i]];
+    }
+    return value;
+};
 Object.isBaseType = function (object) {
     //基础类型
     if (object == undefined

@@ -3242,6 +3242,11 @@ QUnit.module("Object", function () {
         v1.z = 4;
         assert.ok(!Object.equalDeep(v, v1));
     });
+    QUnit.test("getPropertyValue", function (assert) {
+        var o = { a: 1, b: { c: true, d: [1, 2, true, "abc"], e: "f" } };
+        assert.ok(Object.getPropertyValue(o, "b.e") == o.b.e);
+        assert.ok(Object.getPropertyValue(o, "b.f") == undefined);
+    });
 });
 QUnit.module("FunctionWarp", function () {
     QUnit.test("FunctionWarp ", function (assert) {
@@ -4640,6 +4645,7 @@ QUnit.module("watcher", function () {
         var f1 = function (h, p, o) { out += "f1"; };
         feng3d.watcher.watchchain(o, "a.b.c", f);
         feng3d.watcher.watchchain(o, "a.b.c", f1);
+        assert.ok(!!o[feng3d.__watchchains__]);
         o.a.b.c = 2;
         feng3d.watcher.unwatchchain(o, "a.b.c", f);
         o.a.b.c = 3;
@@ -4647,6 +4653,7 @@ QUnit.module("watcher", function () {
         //
         out = "";
         feng3d.watcher.unwatchchain(o, "a.b.c", f1);
+        assert.ok(!o[feng3d.__watchchains__]);
         o.a.b.c = 4;
         assert.ok(out == "", out);
         //

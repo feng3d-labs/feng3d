@@ -83,9 +83,30 @@ interface ObjectConstructor
     runFunc<T>(obj: T, func: (obj: T) => void): T;
 
     /**
+     * 获取对象对应属性上的值
+     * 
+     * @param obj 对象
+     * @param property 属性名称，可以是 "a" 或者 "a.b" 或者 ["a","b"]
+     */
+    getPropertyValue(obj: Object, property: string | string[]): any;
+
+    /**
      * Object.assignDeep 中 默认转换结果的函数列表
      */
     assignDeepDefaultHandlers: AssignDeepHandler[];
+}
+
+Object.getPropertyValue = function (object, property)
+{
+    if (typeof property == "string") property = property.split(".");
+    var value = object;
+    var len = property.length;
+    for (let i = 0; i < property.length; i++)
+    {
+        if (value == null) return undefined;
+        value = value[property[i]];
+    }
+    return value;
 }
 
 Object.isBaseType = function (object: any)

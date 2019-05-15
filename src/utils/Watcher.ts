@@ -166,7 +166,7 @@ namespace feng3d
                 return;
             }
             if (!Object.getOwnPropertyDescriptor(host, __watchchains__))
-                Object.defineProperty(host, __watchchains__, { value: {}, enumerable: false, });
+                Object.defineProperty(host, __watchchains__, { value: {}, enumerable: false, writable: false, configurable: true });
             var watchchains: WatchChains = host[__watchchains__];
             if (!watchchains[property])
             {
@@ -192,20 +192,8 @@ namespace feng3d
                     if (oldvalue) this.unwatchchain(oldvalue, nextp, handler, thisObject);
                     if (newvalue) this.watchchain(newvalue, nextp, handler, thisObject);
                     // 当更换对象且监听值发生改变时触发处理函数
-                    try
-                    {
-                        var ov = eval("oldvalue." + nextp + "");
-                    } catch (e)
-                    {
-                        ov = undefined;
-                    }
-                    try
-                    {
-                        var nv = eval("newvalue." + nextp + "");
-                    } catch (e)
-                    {
-                        nv = undefined;
-                    }
+                    var ov = Object.getPropertyValue(oldvalue, nextp);
+                    var nv = Object.getPropertyValue(newvalue, nextp);
                     if (ov != nv)
                     {
                         handler.call(thisObject, newvalue, nextp, ov);

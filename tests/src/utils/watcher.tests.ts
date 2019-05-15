@@ -143,6 +143,8 @@ QUnit.module("watcher", () =>
         var f1 = (h, p, o) => { out += "f1"; };
         feng3d.watcher.watchchain(o, "a.b.c", f);
         feng3d.watcher.watchchain(o, "a.b.c", f1);
+        assert.ok(!!o[feng3d.__watchchains__]);
+
         o.a.b.c = 2;
         feng3d.watcher.unwatchchain(o, "a.b.c", f);
         o.a.b.c = 3;
@@ -150,6 +152,8 @@ QUnit.module("watcher", () =>
         //
         out = "";
         feng3d.watcher.unwatchchain(o, "a.b.c", f1);
+        assert.ok(!o[feng3d.__watchchains__]);
+
         o.a.b.c = 4;
         assert.ok(out == "", out);
         //

@@ -97,4 +97,14 @@ QUnit.module("Object", () =>
         assert.ok(!Object.equalDeep(v, v1));
     });
 
+    QUnit.test("getPropertyValue", (assert) =>
+    {
+        var o = { a: 1, b: { c: true, d: [1, 2, true, "abc"], e: "f" } };
+
+        assert.ok(Object.getPropertyValue(o, "b.e") == o.b.e);
+        assert.ok(Object.getPropertyValue(o, "b.f") == undefined);
+
+
+    });
+
 });
