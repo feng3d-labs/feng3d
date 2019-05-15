@@ -95,11 +95,12 @@ interface AssignDeepHandler {
 }
 interface ObjectConstructor {
     /**
-     * 从对象以及对象的原型中获取属性描述
-     * @param obj 对象
+     * 从对象自身或者对象的原型中获取属性描述
+     *
+     * @param object 对象
      * @param property 属性名称
      */
-    getPropertyDescriptor(obj: Object, property: string): PropertyDescriptor;
+    getPropertyDescriptor(object: Object, property: string): PropertyDescriptor;
     /**
      * 属性是否可写
      * @param obj 对象
@@ -116,6 +117,13 @@ interface ObjectConstructor {
      * @param object 用于判断的对象
      */
     isObject(object: any): boolean;
+    /**
+     * 获取对象对应属性上的值
+     *
+     * @param object 对象
+     * @param property 属性名称，可以是 "a" 或者 "a.b" 或者 ["a","b"]
+     */
+    getPropertyValue(object: Object, property: string | string[]): any;
     /**
      * 浅赋值
      * 从源数据取所有可枚举属性值赋值给目标对象
@@ -152,13 +160,6 @@ interface ObjectConstructor {
      * @param func 被执行的方法
      */
     runFunc<T>(obj: T, func: (obj: T) => void): T;
-    /**
-     * 获取对象对应属性上的值
-     *
-     * @param obj 对象
-     * @param property 属性名称，可以是 "a" 或者 "a.b" 或者 ["a","b"]
-     */
-    getPropertyValue(obj: Object, property: string | string[]): any;
     /**
      * Object.assignDeep 中 默认转换结果的函数列表
      */

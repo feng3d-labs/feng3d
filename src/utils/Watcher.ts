@@ -65,7 +65,7 @@ namespace feng3d
                 var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(host, property);
                 watchs[property] = { value: host[property], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
                 //
-                var data: PropertyDescriptor = getPropertyDescriptor(host, property);
+                var data: PropertyDescriptor = Object.getPropertyDescriptor(host, property);
                 if (data && data.set && data.get)
                 {
                     data = <any>{ enumerable: data.enumerable, configurable: true, get: data.get, set: data.set };
@@ -273,20 +273,5 @@ namespace feng3d
         {
             element.handler.call(element.thisObject, host, property, oldview);
         });
-    }
-
-    function getPropertyDescriptor(host: any, property: string): PropertyDescriptor
-    {
-        var data = Object.getOwnPropertyDescriptor(host, property);
-        if (data)
-        {
-            return data;
-        }
-        var prototype = Object.getPrototypeOf(host);
-        if (prototype)
-        {
-            return getPropertyDescriptor(prototype, property);
-        }
-        return null;
     }
 }

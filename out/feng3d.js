@@ -70,7 +70,7 @@ var feng3d;
                 var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(host, property);
                 watchs[property] = { value: host[property], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
                 //
-                var data = getPropertyDescriptor(host, property);
+                var data = Object.getPropertyDescriptor(host, property);
                 if (data && data.set && data.get) {
                     data = { enumerable: data.enumerable, configurable: true, get: data.get, set: data.set };
                     var orgSet = data.set;
@@ -235,17 +235,6 @@ var feng3d;
             element.handler.call(element.thisObject, host, property, oldview);
         });
     }
-    function getPropertyDescriptor(host, property) {
-        var data = Object.getOwnPropertyDescriptor(host, property);
-        if (data) {
-            return data;
-        }
-        var prototype = Object.getPrototypeOf(host);
-        if (prototype) {
-            return getPropertyDescriptor(prototype, property);
-        }
-        return null;
-    }
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -364,18 +353,6 @@ var feng3d;
         }
     };
 })(feng3d || (feng3d = {}));
-Object.getPropertyValue = function (object, property) {
-    if (typeof property == "string")
-        property = property.split(".");
-    var value = object;
-    var len = property.length;
-    for (var i = 0; i < property.length; i++) {
-        if (value == null)
-            return undefined;
-        value = value[property[i]];
-    }
-    return value;
-};
 Object.isBaseType = function (object) {
     //基础类型
     if (object == undefined
@@ -410,6 +387,18 @@ Object.runFunc = function (obj, func) {
 };
 Object.isObject = function (obj) {
     return obj != null && (obj.constructor == Object || (obj.constructor.name == "Object")); // 兼容其他 HTMLIFrameElement 传入的Object
+};
+Object.getPropertyValue = function (object, property) {
+    if (typeof property == "string")
+        property = property.split(".");
+    var value = object;
+    var len = property.length;
+    for (var i = 0; i < property.length; i++) {
+        if (value == null)
+            return undefined;
+        value = value[property[i]];
+    }
+    return value;
 };
 Object.equalDeep = function (a, b) {
     if (a == b)
