@@ -51,26 +51,26 @@ var feng3d;
          *
          * 注意：使用watch后获取该属性值的性能将会是原来的1/60，避免在运算密集处使用该函数。
          *
-         * @param host 被监听对象
+         * @param object 被监听对象
          * @param property 被监听属性
          * @param handler 变化回调
          * @param thisObject 变化回调函数 this值
          */
-        Watcher.prototype.watch = function (host, property, handler, thisObject) {
-            if (!Object.getOwnPropertyDescriptor(host, feng3d.__watchs__)) {
-                Object.defineProperty(host, feng3d.__watchs__, {
+        Watcher.prototype.watch = function (object, property, handler, thisObject) {
+            if (!Object.getOwnPropertyDescriptor(object, feng3d.__watchs__)) {
+                Object.defineProperty(object, feng3d.__watchs__, {
                     value: {},
                     enumerable: false,
                     configurable: true,
                     writable: false,
                 });
             }
-            var watchs = host[feng3d.__watchs__];
+            var watchs = object[feng3d.__watchs__];
             if (!watchs[property]) {
-                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(host, property);
-                watchs[property] = { value: host[property], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
+                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(object, property);
+                watchs[property] = { value: object[property], oldPropertyDescriptor: oldPropertyDescriptor, handlers: [] };
                 //
-                var data = Object.getPropertyDescriptor(host, property);
+                var data = Object.getPropertyDescriptor(object, property);
                 if (data && data.set && data.get) {
                     data = { enumerable: data.enumerable, configurable: true, get: data.get, set: data.set };
                     var orgSet = data.set;
@@ -96,10 +96,10 @@ var feng3d;
                     };
                 }
                 else {
-                    console.warn("watch " + host + " . " + property + " \u5931\u8D25\uFF01");
+                    console.warn("watch " + object + " . " + property + " \u5931\u8D25\uFF01");
                     return;
                 }
-                Object.defineProperty(host, property, data);
+                Object.defineProperty(object, property, data);
             }
             var propertywatchs = watchs[property];
             var has = propertywatchs.handlers.reduce(function (v, item) { return v || (item.handler == handler && item.thisObject == thisObject); }, false);
@@ -109,13 +109,13 @@ var feng3d;
         /**
          * 取消监听对象属性的变化
          *
-         * @param host 被监听对象
+         * @param object 被监听对象
          * @param property 被监听属性
          * @param handler 变化回调
          * @param thisObject 变化回调函数 this值
          */
-        Watcher.prototype.unwatch = function (host, property, handler, thisObject) {
-            var watchs = host[feng3d.__watchs__];
+        Watcher.prototype.unwatch = function (object, property, handler, thisObject) {
+            var watchs = object[feng3d.__watchs__];
             if (!watchs)
                 return;
             if (watchs[property]) {
@@ -127,15 +127,15 @@ var feng3d;
                         handlers.splice(i, 1);
                 }
                 if (handlers.length == 0) {
-                    var value = host[property];
-                    delete host[property];
+                    var value = object[property];
+                    delete object[property];
                     if (watchs[property].oldPropertyDescriptor)
-                        Object.defineProperty(host, property, watchs[property].oldPropertyDescriptor);
-                    host[property] = value;
+                        Object.defineProperty(object, property, watchs[property].oldPropertyDescriptor);
+                    object[property] = value;
                     delete watchs[property];
                 }
                 if (Object.keys(watchs).length == 0) {
-                    delete host[feng3d.__watchs__];
+                    delete object[feng3d.__watchs__];
                 }
             }
         };
