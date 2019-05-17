@@ -17615,42 +17615,42 @@ var feng3d;
             });
         };
         /**
-         * 读取资源缩略图标
+         * 读取资源预览图标
          *
          * @param callback 完成回调
          */
-        FileAsset.prototype.readThumbnail = function (callback) {
+        FileAsset.prototype.readPreview = function (callback) {
             var _this = this;
-            if (this._thumbnail) {
-                callback(null, this._thumbnail);
+            if (this._preview) {
+                callback(null, this._preview);
                 return;
             }
-            this.rs.fs.readImage(this.thumbnailPath, function (err, image) {
-                _this._thumbnail = image;
+            this.rs.fs.readImage(this.previewPath, function (err, image) {
+                _this._preview = image;
                 callback(err, image);
             });
         };
         /**
-         * 读取资源缩略图标
+         * 读取资源预览图标
          *
-         * @param image 缩略图
+         * @param image 预览图
          * @param callback 完成回调
          */
-        FileAsset.prototype.writeThumbnail = function (image, callback) {
-            if (this._thumbnail == image) {
+        FileAsset.prototype.writePreview = function (image, callback) {
+            if (this._preview == image) {
                 callback && callback(null);
                 return;
             }
-            this._thumbnail = image;
-            this.rs.fs.writeImage(this.thumbnailPath, image, callback);
+            this._preview = image;
+            this.rs.fs.writeImage(this.previewPath, image, callback);
         };
         /**
-         * 删除资源缩略图标
+         * 删除资源预览图标
          *
          * @param callback 完成回调
          */
-        FileAsset.prototype.deleteThumbnail = function (callback) {
-            this.rs.fs.deleteFile(this.thumbnailPath, callback);
+        FileAsset.prototype.deletePreview = function (callback) {
+            this.rs.fs.deleteFile(this.previewPath, callback);
         };
         /**
          * 删除文件
@@ -17663,7 +17663,7 @@ var feng3d;
             // 延迟一帧判断该资源是否被删除，排除移动文件时出现的临时删除情况
             feng3d.ticker.once(1000, function () {
                 if (_this.rs.getAsset(_this.assetId) == null) {
-                    _this.deleteThumbnail();
+                    _this.deletePreview();
                 }
             });
         };
@@ -17705,12 +17705,12 @@ var feng3d;
         FileAsset.prototype.deleteMeta = function (callback) {
             this.rs.fs.deleteFile(this.metaPath, callback);
         };
-        Object.defineProperty(FileAsset.prototype, "thumbnailPath", {
+        Object.defineProperty(FileAsset.prototype, "previewPath", {
             /**
-             * 缩略图路径
+             * 预览图路径
              */
             get: function () {
-                return "assetIcons/" + this.assetId + ".png";
+                return "previews/" + this.assetId + ".png";
             },
             enumerable: true,
             configurable: true

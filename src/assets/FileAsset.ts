@@ -43,7 +43,6 @@ namespace feng3d
         /**
          * 文件后缀
          */
-
         get extenson()
         {
             debuger && console.assert(!!this.assetPath);
@@ -207,49 +206,49 @@ namespace feng3d
         }
 
         /**
-         * 读取资源缩略图标
+         * 读取资源预览图标
          * 
          * @param callback 完成回调
          */
-        readThumbnail(callback: (err: Error, image: HTMLImageElement) => void)
+        readPreview(callback: (err: Error, image: HTMLImageElement) => void)
         {
-            if (this._thumbnail)
+            if (this._preview)
             {
-                callback(null, this._thumbnail);
+                callback(null, this._preview);
                 return;
             }
-            this.rs.fs.readImage(this.thumbnailPath, (err, image) =>
+            this.rs.fs.readImage(this.previewPath, (err, image) =>
             {
-                this._thumbnail = image;
+                this._preview = image;
                 callback(err, image);
             });
         }
 
         /**
-         * 读取资源缩略图标
+         * 读取资源预览图标
          * 
-         * @param image 缩略图
+         * @param image 预览图
          * @param callback 完成回调
          */
-        writeThumbnail(image: HTMLImageElement, callback?: (err: Error) => void)
+        writePreview(image: HTMLImageElement, callback?: (err: Error) => void)
         {
-            if (this._thumbnail == image)
+            if (this._preview == image)
             {
                 callback && callback(null);
                 return;
             }
-            this._thumbnail = image;
-            this.rs.fs.writeImage(this.thumbnailPath, image, callback);
+            this._preview = image;
+            this.rs.fs.writeImage(this.previewPath, image, callback);
         }
 
         /**
-         * 删除资源缩略图标
+         * 删除资源预览图标
          * 
          * @param callback 完成回调
          */
-        deleteThumbnail(callback?: (err: Error) => void)
+        deletePreview(callback?: (err: Error) => void)
         {
-            this.rs.fs.deleteFile(this.thumbnailPath, callback);
+            this.rs.fs.deleteFile(this.previewPath, callback);
         }
 
         /**
@@ -280,7 +279,7 @@ namespace feng3d
             {
                 if (this.rs.getAsset(this.assetId) == null)
                 {
-                    this.deleteThumbnail();
+                    this.deletePreview();
                 }
             });
         }
@@ -328,16 +327,16 @@ namespace feng3d
         }
 
         /**
-         * 缩略图
+         * 预览图
          */
-        private _thumbnail: HTMLImageElement;
+        private _preview: HTMLImageElement;
 
         /**
-         * 缩略图路径
+         * 预览图路径
          */
-        private get thumbnailPath()
+        private get previewPath()
         {
-            return "assetIcons/" + this.assetId + ".png";
+            return "previews/" + this.assetId + ".png";
         }
     }
 

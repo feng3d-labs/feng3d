@@ -8454,24 +8454,24 @@ declare namespace feng3d {
          */
         delete(callback?: (err?: Error) => void): void;
         /**
-         * 读取资源缩略图标
+         * 读取资源预览图标
          *
          * @param callback 完成回调
          */
-        readThumbnail(callback: (err: Error, image: HTMLImageElement) => void): void;
+        readPreview(callback: (err: Error, image: HTMLImageElement) => void): void;
         /**
-         * 读取资源缩略图标
+         * 读取资源预览图标
          *
-         * @param image 缩略图
+         * @param image 预览图
          * @param callback 完成回调
          */
-        writeThumbnail(image: HTMLImageElement, callback?: (err: Error) => void): void;
+        writePreview(image: HTMLImageElement, callback?: (err: Error) => void): void;
         /**
-         * 删除资源缩略图标
+         * 删除资源预览图标
          *
          * @param callback 完成回调
          */
-        deleteThumbnail(callback?: (err: Error) => void): void;
+        deletePreview(callback?: (err: Error) => void): void;
         /**
          * 读取文件
          *
@@ -8513,13 +8513,13 @@ declare namespace feng3d {
          */
         protected deleteMeta(callback?: (err: Error) => void): void;
         /**
-         * 缩略图
+         * 预览图
          */
-        private _thumbnail;
+        private _preview;
         /**
-         * 缩略图路径
+         * 预览图路径
          */
-        private readonly thumbnailPath;
+        private readonly previewPath;
     }
 }
 declare namespace feng3d {
