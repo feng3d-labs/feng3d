@@ -237,7 +237,7 @@ declare namespace feng3d {
      *
      * 包装函数，以及对应的拆包
      */
-    class FunctionWarp {
+    class FunctionWrap {
         /**
          * 包装函数
          *
@@ -246,12 +246,23 @@ declare namespace feng3d {
          * 1. 在函数执行前后记录时间来计算函数执行时间。
          * 1. 在console.error调用前使用 debugger 进行断点调试。
          *
-         * @param space 函数所属对象或者原型
+         * @param object 函数所属对象或者原型
          * @param funcName 函数名称
-         * @param warpFunc 在函数执行前执行的函数
+         * @param wrapFunc 在函数执行前执行的函数
          * @param before 运行在原函数之前
          */
-        wrap<T, K extends keyof T, V extends T[K] & Function>(space: T, funcName: K, warpFunc: V, before?: boolean): void;
+        wrap<T, K extends (keyof T) & string, V extends T[K] & Function>(object: T, funcName: K, wrapFunc: V, before?: boolean): void;
+        /**
+         * 取消包装函数
+         *
+         * 与wrap函数对应
+         *
+         * @param object 函数所属对象或者原型
+         * @param funcName 函数名称
+         * @param wrapFunc 在函数执行前执行的函数
+         * @param before 运行在原函数之前
+         */
+        unwrap<T, K extends (keyof T) & string, V extends T[K] & Function>(object: T, funcName: K, wrapFunc?: V): void;
         /**
          * 包装一个异步函数，使其避免重复执行
          *
@@ -266,8 +277,8 @@ declare namespace feng3d {
         private _wrapFResult;
         private _state;
     }
-    const __functionwarp__ = "__functionwarp__";
-    const functionwarp: FunctionWarp;
+    const __functionwrap__ = "__functionwrap__";
+    const functionwrap: FunctionWrap;
 }
 declare namespace feng3d {
     /**

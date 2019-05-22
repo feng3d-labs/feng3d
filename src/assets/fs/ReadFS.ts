@@ -65,7 +65,7 @@ namespace feng3d
         {
             this.fs.readImage(path, callback);
 
-            // functionwarp.wrapF(this.fs, this.fs.readImage, [path], callback);
+            // functionwrap.wrapF(this.fs, this.fs.readImage, [path], callback);
         }
 
         /**

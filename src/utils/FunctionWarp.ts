@@ -1,11 +1,16 @@
 namespace feng3d
 {
+    interface Wraps
+    {
+        [property: string]: { space: Object, funcName: string, oldPropertyDescriptor: PropertyDescriptor, original: Function, funcs: Function[] };
+    }
+
     /**
      * 函数经
      * 
      * 包装函数，以及对应的拆包
      */
-    export class FunctionWarp
+    export class FunctionWrap
     {
         /**
          * 包装函数
@@ -15,38 +20,78 @@ namespace feng3d
          * 1. 在函数执行前后记录时间来计算函数执行时间。
          * 1. 在console.error调用前使用 debugger 进行断点调试。
          * 
-         * @param space 函数所属对象或者原型
+         * @param object 函数所属对象或者原型
          * @param funcName 函数名称
-         * @param warpFunc 在函数执行前执行的函数
+         * @param wrapFunc 在函数执行前执行的函数
          * @param before 运行在原函数之前
          */
-        wrap<T, K extends keyof T, V extends T[K] & Function>(space: T, funcName: K, warpFunc: V, before = true)
+        wrap<T, K extends (keyof T) & string, V extends T[K] & Function>(object: T, funcName: K, wrapFunc: V, before = true)
         {
-            if (warpFunc == undefined) return;
+            if (wrapFunc == undefined) return;
 
-            if (!Object.getOwnPropertyDescriptor(space, __functionwarp__))
+            if (!Object.getOwnPropertyDescriptor(object, __functionwrap__))
             {
-                Object.defineProperty(space, __functionwarp__, { value: {}, configurable: true });
+                Object.defineProperty(object, __functionwrap__, { value: {}, configurable: true, enumerable: false, writable: false });
             }
 
-            var info: { space: T, funcName: K, original: Function, funcs: Function[] } = space[__functionwarp__][funcName];
+            var functionwraps: Wraps = object[__functionwrap__];
+            var info = functionwraps[funcName];
             if (!info)
             {
-                var original: Function = <any>space[funcName];
-                space[__functionwarp__][funcName] = info = { space: space, funcName: funcName, original: original, funcs: [original] };
+                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(object, funcName);
+                var original: Function = <any>object[funcName];
+                functionwraps[funcName] = info = { space: object, funcName: funcName, oldPropertyDescriptor: oldPropertyDescriptor, original: original, funcs: [original] };
             }
             var funcs = info.funcs;
 
-            if (before) funcs.unshift(warpFunc);
-            else funcs.push(warpFunc);
+            funcs.delete(wrapFunc);
 
-            space[funcName] = <any>function ()
+            if (before) funcs.unshift(wrapFunc);
+            else funcs.push(wrapFunc);
+
+            object[funcName] = <any>function ()
             {
                 var args = arguments;
                 info.funcs.forEach(f =>
                 {
                     f.apply(this, args);
                 });
+            }
+        }
+
+        /**
+         * 取消包装函数
+         * 
+         * 与wrap函数对应
+         * 
+         * @param object 函数所属对象或者原型
+         * @param funcName 函数名称
+         * @param wrapFunc 在函数执行前执行的函数
+         * @param before 运行在原函数之前
+         */
+        unwrap<T, K extends (keyof T) & string, V extends T[K] & Function>(object: T, funcName: K, wrapFunc?: V)
+        {
+            var functionwraps: Wraps = object[__functionwrap__];
+            var info = functionwraps[funcName];
+            if (!info) return;
+            if (wrapFunc == undefined)
+            {
+                info.funcs = [info.original];
+            } else
+            {
+                info.funcs.delete(wrapFunc);
+            }
+            if (info.funcs.length == 1)
+            {
+                delete object[funcName];
+                if (info.oldPropertyDescriptor)
+                    Object.defineProperty(object, funcName, info.oldPropertyDescriptor);
+                delete functionwraps[funcName];
+
+                if (Object.keys(functionwraps).length == 0)
+                {
+                    delete object[__functionwrap__];
+                }
             }
         }
 
@@ -98,6 +143,6 @@ namespace feng3d
         private _state: { [uuid: string]: boolean } = {};
     }
 
-    export const __functionwarp__ = "__functionwarp__";
-    export const functionwarp = new FunctionWarp();
+    export const __functionwrap__ = "__functionwrap__";
+    export const functionwrap = new FunctionWrap();
 }

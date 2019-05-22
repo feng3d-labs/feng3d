@@ -19,10 +19,10 @@ namespace feng3d
         constructor()
         {
             // 断言失败前进入断点调试
-            functionwarp.wrap(console, "assert", (test: boolean) => { if (!test) debugger; });
+            functionwrap.wrap(console, "assert", (test: boolean) => { if (!test) debugger; });
             // 输出错误前进入断点调试
-            functionwarp.wrap(console, "error", () => { debugger; });
-            functionwarp.wrap(console, "warn", () => { debugger; });
+            functionwrap.wrap(console, "error", () => { debugger; });
+            functionwrap.wrap(console, "warn", () => { debugger; });
         }
 
         /**

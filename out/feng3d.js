@@ -623,8 +623,8 @@ var feng3d;
      *
      * 包装函数，以及对应的拆包
      */
-    var FunctionWarp = /** @class */ (function () {
-        function FunctionWarp() {
+    var FunctionWrap = /** @class */ (function () {
+        function FunctionWrap() {
             this._wrapFResult = {};
             this._state = {};
         }
@@ -636,35 +636,69 @@ var feng3d;
          * 1. 在函数执行前后记录时间来计算函数执行时间。
          * 1. 在console.error调用前使用 debugger 进行断点调试。
          *
-         * @param space 函数所属对象或者原型
+         * @param object 函数所属对象或者原型
          * @param funcName 函数名称
-         * @param warpFunc 在函数执行前执行的函数
+         * @param wrapFunc 在函数执行前执行的函数
          * @param before 运行在原函数之前
          */
-        FunctionWarp.prototype.wrap = function (space, funcName, warpFunc, before) {
+        FunctionWrap.prototype.wrap = function (object, funcName, wrapFunc, before) {
             if (before === void 0) { before = true; }
-            if (warpFunc == undefined)
+            if (wrapFunc == undefined)
                 return;
-            if (!Object.getOwnPropertyDescriptor(space, feng3d.__functionwarp__)) {
-                Object.defineProperty(space, feng3d.__functionwarp__, { value: {}, configurable: true });
+            if (!Object.getOwnPropertyDescriptor(object, feng3d.__functionwrap__)) {
+                Object.defineProperty(object, feng3d.__functionwrap__, { value: {}, configurable: true, enumerable: false, writable: false });
             }
-            var info = space[feng3d.__functionwarp__][funcName];
+            var functionwraps = object[feng3d.__functionwrap__];
+            var info = functionwraps[funcName];
             if (!info) {
-                var original = space[funcName];
-                space[feng3d.__functionwarp__][funcName] = info = { space: space, funcName: funcName, original: original, funcs: [original] };
+                var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(object, funcName);
+                var original = object[funcName];
+                functionwraps[funcName] = info = { space: object, funcName: funcName, oldPropertyDescriptor: oldPropertyDescriptor, original: original, funcs: [original] };
             }
             var funcs = info.funcs;
+            funcs.delete(wrapFunc);
             if (before)
-                funcs.unshift(warpFunc);
+                funcs.unshift(wrapFunc);
             else
-                funcs.push(warpFunc);
-            space[funcName] = function () {
+                funcs.push(wrapFunc);
+            object[funcName] = function () {
                 var _this = this;
                 var args = arguments;
                 info.funcs.forEach(function (f) {
                     f.apply(_this, args);
                 });
             };
+        };
+        /**
+         * 取消包装函数
+         *
+         * 与wrap函数对应
+         *
+         * @param object 函数所属对象或者原型
+         * @param funcName 函数名称
+         * @param wrapFunc 在函数执行前执行的函数
+         * @param before 运行在原函数之前
+         */
+        FunctionWrap.prototype.unwrap = function (object, funcName, wrapFunc) {
+            var functionwraps = object[feng3d.__functionwrap__];
+            var info = functionwraps[funcName];
+            if (!info)
+                return;
+            if (wrapFunc == undefined) {
+                info.funcs = [info.original];
+            }
+            else {
+                info.funcs.delete(wrapFunc);
+            }
+            if (info.funcs.length == 1) {
+                delete object[funcName];
+                if (info.oldPropertyDescriptor)
+                    Object.defineProperty(object, funcName, info.oldPropertyDescriptor);
+                delete functionwraps[funcName];
+                if (Object.keys(functionwraps).length == 0) {
+                    delete object[feng3d.__functionwrap__];
+                }
+            }
         };
         /**
          * 包装一个异步函数，使其避免重复执行
@@ -676,7 +710,7 @@ var feng3d;
          * @param params 函数除callback外的参数列表
          * @param callback 完成回调函数
          */
-        FunctionWarp.prototype.wrapAsyncFunc = function (funcHost, func, params, callback) {
+        FunctionWrap.prototype.wrapAsyncFunc = function (funcHost, func, params, callback) {
             var _this = this;
             // 获取唯一编号
             var cuuid = feng3d.uuid.getArrayUuid([func].concat(params));
@@ -710,11 +744,11 @@ var feng3d;
                 feng3d.event.dispatch(_this, cuuid);
             }));
         };
-        return FunctionWarp;
+        return FunctionWrap;
     }());
-    feng3d.FunctionWarp = FunctionWarp;
-    feng3d.__functionwarp__ = "__functionwarp__";
-    feng3d.functionwarp = new FunctionWarp();
+    feng3d.FunctionWrap = FunctionWrap;
+    feng3d.__functionwrap__ = "__functionwrap__";
+    feng3d.functionwrap = new FunctionWrap();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -774,11 +808,11 @@ var feng3d;
     var Debug = /** @class */ (function () {
         function Debug() {
             // 断言失败前进入断点调试
-            feng3d.functionwarp.wrap(console, "assert", function (test) { if (!test)
+            feng3d.functionwrap.wrap(console, "assert", function (test) { if (!test)
                 debugger; });
             // 输出错误前进入断点调试
-            feng3d.functionwarp.wrap(console, "error", function () { debugger; });
-            feng3d.functionwarp.wrap(console, "warn", function () { debugger; });
+            feng3d.functionwrap.wrap(console, "error", function () { debugger; });
+            feng3d.functionwrap.wrap(console, "warn", function () { debugger; });
         }
         /**
          * 测试代码运行时间
@@ -16687,7 +16721,7 @@ var feng3d;
          */
         ReadFS.prototype.readImage = function (path, callback) {
             this.fs.readImage(path, callback);
-            // functionwarp.wrapF(this.fs, this.fs.readImage, [path], callback);
+            // functionwrap.wrapF(this.fs, this.fs.readImage, [path], callback);
         };
         /**
          * 获取文件绝对路径

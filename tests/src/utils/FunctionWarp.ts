@@ -3,9 +3,9 @@ interface FF
     (a, b): void;
 }
 
-QUnit.module("FunctionWarp", () =>
+QUnit.module("FunctionWrap", () =>
 {
-    QUnit.test("FunctionWarp ", (assert) =>
+    QUnit.test("wrap & unwrap ", (assert) =>
     {
         var o = {
             v: 1, f: function (a)
@@ -14,28 +14,47 @@ QUnit.module("FunctionWarp", () =>
             }
         };
 
-        // 添加函数在指定函数之前执行
-        feng3d.functionwarp.wrap(o, "f", function (a)
+        function wrapFunc(a)
         {
             this.v = 0;
-        })
+        }
+
+        // 添加函数在指定函数之前执行
+        feng3d.functionwrap.wrap(o, "f", wrapFunc)
         var v = Math.random();
         o.f(v);
         assert.ok(o.v == v);
 
         // 添加函数在指定函数之后执行
-        feng3d.functionwarp.wrap(o, "f", function (a)
-        {
-            this.v = 0;
-        }, false)
+        feng3d.functionwrap.wrap(o, "f", wrapFunc, false)
         var v = Math.random();
         o.f(v);
         assert.ok(o.v == 0);
 
-        assert.ok(o[feng3d.__functionwarp__]);
+        assert.ok(o[feng3d.__functionwrap__]);
+
+        feng3d.functionwrap.unwrap(o, "f", wrapFunc);
+        assert.ok(!o[feng3d.__functionwrap__]);
+
+        o.v = 0;
+        var v = Math.random();
+        o.f(v);
+        assert.ok(o.v == v);
 
 
+        var vec2 = new feng3d.Vector2();
 
+        var propertyDescriptor = Object.getOwnPropertyDescriptor(vec2, "sub");
+
+        feng3d.functionwrap.wrap(vec2, "sub", (v: feng3d.Vector2) => { v.init(0, 0); return null; })
+        assert.ok(vec2[feng3d.__functionwrap__]);
+
+        feng3d.functionwrap.unwrap(vec2, "sub")
+        assert.ok(!vec2[feng3d.__functionwrap__]);
+
+
+        var propertyDescriptor1 = Object.getOwnPropertyDescriptor(vec2, "sub");
+        assert.deepEqual(propertyDescriptor, propertyDescriptor1)
     });
 
     QUnit.test("wrapAsyncFunc", (assert) =>
@@ -58,7 +77,7 @@ QUnit.module("FunctionWarp", () =>
         // 包装后的函数
         function wrapFunc(a: number, callback: (r: number) => void)
         {
-            feng3d.functionwarp.wrapAsyncFunc(null, af, [1], callback);
+            feng3d.functionwrap.wrapAsyncFunc(null, af, [1], callback);
         }
 
         // 测试同时调用五次 af 函数
