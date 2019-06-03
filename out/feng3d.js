@@ -3027,7 +3027,7 @@ var feng3d;
             if (this.isDirectory(path))
                 paths.pop();
             paths.pop();
-            return paths.join("/") + "/";
+            return paths.join("/");
         };
         /**
          * 获取子文件（非文件夹）路径
@@ -16783,7 +16783,14 @@ var feng3d;
          * @param callback 回调函数
          */
         ReadWriteFS.prototype.mkdir = function (path, callback) {
-            this.fs.mkdir(path, callback);
+            var _this = this;
+            this.fs.exists(path, function (exists) {
+                if (exists) {
+                    callback && callback(null);
+                    return;
+                }
+                _this.fs.mkdir(path, callback);
+            });
         };
         /**
          * 删除文件
@@ -16800,7 +16807,16 @@ var feng3d;
          * @param callback 回调函数
          */
         ReadWriteFS.prototype.writeArrayBuffer = function (path, arraybuffer, callback) {
-            this.fs.writeArrayBuffer(path, arraybuffer, callback);
+            var _this = this;
+            // 如果所属文件夹不存在则新建
+            var dirpath = feng3d.pathUtils.getParentPath(path);
+            this.mkdir(dirpath, function (err) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                _this.fs.writeArrayBuffer(path, arraybuffer, callback);
+            });
         };
         /**
          * 写字符串到(新建)文件
@@ -16809,7 +16825,16 @@ var feng3d;
          * @param callback 回调函数
          */
         ReadWriteFS.prototype.writeString = function (path, str, callback) {
-            this.fs.writeString(path, str, callback);
+            var _this = this;
+            // 如果所属文件夹不存在则新建
+            var dirpath = feng3d.pathUtils.getParentPath(path);
+            this.mkdir(dirpath, function (err) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                _this.fs.writeString(path, str, callback);
+            });
         };
         /**
          * 写Object到(新建)文件
@@ -16818,7 +16843,16 @@ var feng3d;
          * @param callback 回调函数
          */
         ReadWriteFS.prototype.writeObject = function (path, object, callback) {
-            this.fs.writeObject(path, object, callback);
+            var _this = this;
+            // 如果所属文件夹不存在则新建
+            var dirpath = feng3d.pathUtils.getParentPath(path);
+            this.mkdir(dirpath, function (err) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                _this.fs.writeObject(path, object, callback);
+            });
         };
         /**
          * 写图片
@@ -16827,7 +16861,16 @@ var feng3d;
          * @param callback 回调函数
          */
         ReadWriteFS.prototype.writeImage = function (path, image, callback) {
-            this.fs.writeImage(path, image);
+            var _this = this;
+            // 如果所属文件夹不存在则新建
+            var dirpath = feng3d.pathUtils.getParentPath(path);
+            this.mkdir(dirpath, function (err) {
+                if (err) {
+                    callback && callback(err);
+                    return;
+                }
+                _this.fs.writeImage(path, image);
+            });
         };
         /**
          * 复制文件

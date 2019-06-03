@@ -46,7 +46,15 @@ namespace feng3d
          */
         mkdir(path: string, callback?: (err: Error) => void)
         {
-            this.fs.mkdir(path, callback);
+            this.fs.exists(path, (exists) =>
+            {
+                if (exists)
+                {
+                    callback && callback(null);
+                    return;
+                }
+                this.fs.mkdir(path, callback);
+            });
         }
 
         /**
@@ -67,7 +75,17 @@ namespace feng3d
          */
         writeArrayBuffer(path: string, arraybuffer: ArrayBuffer, callback?: (err: Error) => void)
         {
-            this.fs.writeArrayBuffer(path, arraybuffer, callback);
+            // 如果所属文件夹不存在则新建
+            var dirpath = pathUtils.getParentPath(path);
+            this.mkdir(dirpath, (err) =>
+            {
+                if (err)
+                {
+                    callback && callback(err);
+                    return;
+                }
+                this.fs.writeArrayBuffer(path, arraybuffer, callback);
+            });
         }
 
         /**
@@ -78,7 +96,17 @@ namespace feng3d
          */
         writeString(path: string, str: string, callback?: (err: Error) => void)
         {
-            this.fs.writeString(path, str, callback);
+            // 如果所属文件夹不存在则新建
+            var dirpath = pathUtils.getParentPath(path);
+            this.mkdir(dirpath, (err) =>
+            {
+                if (err)
+                {
+                    callback && callback(err);
+                    return;
+                }
+                this.fs.writeString(path, str, callback);
+            });
         }
 
         /**
@@ -89,7 +117,17 @@ namespace feng3d
          */
         writeObject(path: string, object: Object, callback?: (err: Error) => void)
         {
-            this.fs.writeObject(path, object, callback);
+            // 如果所属文件夹不存在则新建
+            var dirpath = pathUtils.getParentPath(path);
+            this.mkdir(dirpath, (err) =>
+            {
+                if (err)
+                {
+                    callback && callback(err);
+                    return;
+                }
+                this.fs.writeObject(path, object, callback);
+            });
         }
 
         /**
@@ -100,7 +138,17 @@ namespace feng3d
          */
         writeImage(path: string, image: HTMLImageElement, callback?: (err: Error) => void)
         {
-            this.fs.writeImage(path, image);
+            // 如果所属文件夹不存在则新建
+            var dirpath = pathUtils.getParentPath(path);
+            this.mkdir(dirpath, (err) =>
+            {
+                if (err)
+                {
+                    callback && callback(err);
+                    return;
+                }
+                this.fs.writeImage(path, image);
+            });
         }
 
         /**

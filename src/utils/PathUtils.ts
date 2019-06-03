@@ -73,7 +73,7 @@ namespace feng3d
             if (this.isDirectory(path))
                 paths.pop();
             paths.pop();
-            return paths.join("/") + "/";
+            return paths.join("/");
         }
 
         /**
