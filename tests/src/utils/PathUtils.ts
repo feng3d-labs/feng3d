@@ -19,9 +19,9 @@ QUnit.module("PathUtils", () =>
 
     QUnit.test("getParentPath", (assert) =>
     {
-        assert.ok(feng3d.pathUtils.getParentPath("a/a.txt") == "a/");
-        assert.ok(feng3d.pathUtils.getParentPath("a/b") == "a/");
-        assert.ok(feng3d.pathUtils.getParentPath("a/b/") == "a/");
+        assert.ok(feng3d.pathUtils.getParentPath("a/a.txt") == "a");
+        assert.ok(feng3d.pathUtils.getParentPath("a/b") == "a");
+        assert.ok(feng3d.pathUtils.getParentPath("a/b/") == "a");
     });
 
     QUnit.test("isDirectory", (assert) =>

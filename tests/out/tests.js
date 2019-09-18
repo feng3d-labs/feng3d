@@ -4260,9 +4260,9 @@ QUnit.module("PathUtils", function () {
         assert.ok(feng3d.pathUtils.getExtension("a.b/.txt") == ".txt");
     });
     QUnit.test("getParentPath", function (assert) {
-        assert.ok(feng3d.pathUtils.getParentPath("a/a.txt") == "a/");
-        assert.ok(feng3d.pathUtils.getParentPath("a/b") == "a/");
-        assert.ok(feng3d.pathUtils.getParentPath("a/b/") == "a/");
+        assert.ok(feng3d.pathUtils.getParentPath("a/a.txt") == "a");
+        assert.ok(feng3d.pathUtils.getParentPath("a/b") == "a");
+        assert.ok(feng3d.pathUtils.getParentPath("a/b/") == "a");
     });
     QUnit.test("isDirectory", function (assert) {
         assert.ok(feng3d.pathUtils.isDirectory("a/a.txt") == false);
