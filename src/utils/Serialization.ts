@@ -378,7 +378,7 @@ namespace feng3d
                 if (tpv == null || tpv.constructor != spv.constructor)
                 {
                     var className = classUtils.getQualifiedClassName(spv);
-                    var inst = classUtils.getDefaultInstanceByName(className);
+                    var inst = new spv.constructor();
                     var diff: any = serialization.different(spv, inst);
                     diff[CLASS_KEY] = className;
                     target[property] = diff;

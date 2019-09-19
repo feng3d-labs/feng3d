@@ -1112,7 +1112,7 @@ var feng3d;
             var spv = source[property];
             if (tpv == null || tpv.constructor != spv.constructor) {
                 var className = feng3d.classUtils.getQualifiedClassName(spv);
-                var inst = feng3d.classUtils.getDefaultInstanceByName(className);
+                var inst = new spv.constructor();
                 var diff = serialization.different(spv, inst);
                 diff[feng3d.CLASS_KEY] = className;
                 target[property] = diff;
@@ -2396,8 +2396,8 @@ var feng3d;
                     return className;
                 }
             }
-            console.error("\u672A\u5728\u7ED9\u51FA\u7684\u547D\u540D\u7A7A\u95F4 " + _classNameSpaces + " \u5185\u627E\u5230 " + value + " \u7684\u5B9A\u4E49");
-            return "undefined";
+            // console.warn(`未在给出的命名空间 ${_classNameSpaces} 内找到 ${value} 的定义`);
+            return className;
         };
         /**
          * 返回 name 参数指定的类的类对象引用。

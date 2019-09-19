@@ -40,8 +40,8 @@ namespace feng3d
                     return className;
                 }
             }
-            console.error(`未在给出的命名空间 ${_classNameSpaces} 内找到 ${value} 的定义`);
-            return "undefined";
+            // console.warn(`未在给出的命名空间 ${_classNameSpaces} 内找到 ${value} 的定义`);
+            return className;
         }
 
         /**
