@@ -15,11 +15,11 @@ namespace feng3d
 
         assetType = AssetType.material;
 
-        createData()
+        initAsset()
         {
-            this.data = new Material();
-            this.data.assetId = this.assetId;
-            
+            this.data = this.data || new Material();
+            this.data.assetId = this.data.assetId || this.assetId;
+
             AssetData.addAssetData(this.assetId, this.data);
         }
     }

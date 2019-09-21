@@ -27,10 +27,10 @@ namespace feng3d
 
         assetType = AssetType.texture;
 
-        createData()
+        initAsset()
         {
-            this.data = new Texture2D();
-            this.data.assetId = this.assetId;
+            this.data = this.data || new Texture2D();
+            this.data.assetId = this.data.assetId || this.assetId;
 
             AssetData.addAssetData(this.assetId, this.data);
         }

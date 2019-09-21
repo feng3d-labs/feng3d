@@ -20,10 +20,10 @@ namespace feng3d
 
         static extenson = ".json";
 
-        createData()
+        initAsset()
         {
-            this.data = new GameObject();
-            this.data.assetId = this.assetId;
+            this.data = this.data || new GameObject();
+            this.data.assetId = this.data.assetId || this.assetId;
 
             AssetData.addAssetData(this.assetId, this.data);
         }

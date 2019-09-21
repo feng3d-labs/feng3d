@@ -8,9 +8,9 @@ namespace feng3d
 
         textContent: string;
 
-        createData()
+        initAsset()
         {
-            this.textContent = "";
+            this.textContent = this.textContent || "";
         }
     }
 }

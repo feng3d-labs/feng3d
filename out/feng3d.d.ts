@@ -8433,9 +8433,9 @@ declare namespace feng3d {
          */
         data: AssetData;
         /**
-         * 创建资源对象
+         * 初始化资源
          */
-        createData(): void;
+        initAsset(): void;
         /**
          * 获取资源数据
          *
@@ -15886,7 +15886,7 @@ declare namespace feng3d {
          * 子资源列表
          */
         childrenAssets: FileAsset[];
-        createData(): void;
+        initAsset(): void;
         /**
          * 删除资源
          *
@@ -15979,7 +15979,7 @@ declare namespace feng3d {
          * 脚本类定义
          */
         scriptName: string;
-        createData(): void;
+        initAsset(): void;
         private onTextContentChanged;
     }
 }
@@ -16000,7 +16000,7 @@ declare namespace feng3d {
         static extenson: string;
         assetType: AssetType;
         textContent: string;
-        createData(): void;
+        initAsset(): void;
     }
 }
 declare namespace feng3d {
@@ -16011,7 +16011,7 @@ declare namespace feng3d {
         static extenson: string;
         assetType: AssetType;
         textContent: string;
-        createData(): void;
+        initAsset(): void;
     }
 }
 declare namespace feng3d {
@@ -16019,7 +16019,7 @@ declare namespace feng3d {
         static extenson: string;
         assetType: AssetType;
         textContent: string;
-        createData(): void;
+        initAsset(): void;
     }
 }
 declare namespace feng3d {
@@ -16056,7 +16056,7 @@ declare namespace feng3d {
         image: HTMLImageElement;
         meta: TextureAssetMeta;
         assetType: AssetType;
-        createData(): void;
+        initAsset(): void;
         saveFile(callback?: (err: Error) => void): void;
         /**
          * 读取文件
@@ -16092,7 +16092,7 @@ declare namespace feng3d {
          */
         data: TextureCube;
         assetType: AssetType;
-        createData(): void;
+        initAsset(): void;
     }
 }
 declare namespace feng3d {
@@ -16119,7 +16119,7 @@ declare namespace feng3d {
          */
         data: Material;
         assetType: AssetType;
-        createData(): void;
+        initAsset(): void;
     }
 }
 declare namespace feng3d {
@@ -16136,7 +16136,7 @@ declare namespace feng3d {
         data: GameObject;
         assetType: AssetType;
         static extenson: string;
-        createData(): void;
+        initAsset(): void;
         protected _getAssetData(): GameObject;
     }
 }

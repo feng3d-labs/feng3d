@@ -15,7 +15,7 @@ namespace feng3d
         @serialize
         childrenAssets: FileAsset[] = [];
 
-        createData()
+        initAsset()
         {
         }
 

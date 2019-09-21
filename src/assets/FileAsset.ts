@@ -79,9 +79,9 @@ namespace feng3d
         data: AssetData;
 
         /**
-         * 创建资源对象
+         * 初始化资源
          */
-        createData()
+        initAsset()
         {
         }
 

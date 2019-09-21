@@ -22,9 +22,9 @@ namespace feng3d
          */
         scriptName: string;
 
-        createData()
+        initAsset()
         {
-            this.textContent = "";
+            this.textContent = this.textContent || "";
         }
 
         private onTextContentChanged()

@@ -15,10 +15,10 @@ namespace feng3d
 
         assetType = AssetType.texturecube;
 
-        createData()
+        initAsset()
         {
-            this.data = new TextureCube();
-            this.data.assetId = this.assetId;
+            this.data = this.data || new TextureCube();
+            this.data.assetId = this.data.assetId || this.assetId;
 
             AssetData.addAssetData(this.assetId, this.data);
         }
