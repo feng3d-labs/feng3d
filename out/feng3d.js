@@ -2975,6 +2975,15 @@ var feng3d;
         function PathUtils() {
         }
         /**
+         * 标准化文件夹路径
+         * @param path
+         */
+        PathUtils.prototype.normalizeDir = function (path) {
+            if (path[path.length - 1] == "/")
+                path = path.substr(0, path.length - 1);
+            return path;
+        };
+        /**
          * 是否为HTTP地址
          *
          * @param path 地址
@@ -16791,6 +16800,7 @@ var feng3d;
          */
         ReadWriteFS.prototype.mkdir = function (path, callback) {
             var _this = this;
+            path = feng3d.pathUtils.normalizeDir(path);
             this.fs.exists(path, function (exists) {
                 if (exists) {
                     callback && callback(null);
@@ -16806,6 +16816,45 @@ var feng3d;
          */
         ReadWriteFS.prototype.deleteFile = function (path, callback) {
             this.fs.deleteFile(path, callback);
+        };
+        /**
+         * 写(新建)文件
+         * 自动根据文件类型保存为对应结构
+         *
+         * @param path 文件路径
+         * @param arraybuffer 文件数据
+         * @param callback 回调函数
+         */
+        ReadWriteFS.prototype.writeFile = function (path, arraybuffer, callback) {
+            var _this = this;
+            var ext = feng3d.pathUtils.getExtension(path);
+            ext = ext.split(".").pop();
+            var fileTypedic = { "meta": "txt", "json": "object", "png": "arraybuffer", "js": "txt", "ts": "txt", "map": "txt", "html": "txt" };
+            var type = fileTypedic[ext];
+            if (path == "tsconfig.json" || path == ".vscode/settings.json")
+                type = "txt";
+            if (type == "txt") {
+                feng3d.dataTransform.arrayBufferToString(arraybuffer, function (str) {
+                    _this.fs.writeString(path, str, function (err) {
+                        callback(err);
+                    });
+                });
+            }
+            else if (type == "object") {
+                feng3d.dataTransform.arrayBufferToObject(arraybuffer, function (obj) {
+                    _this.fs.writeObject(path, obj, function (err) {
+                        callback(err);
+                    });
+                });
+            }
+            else if (type == "arraybuffer") {
+                this.writeArrayBuffer(path, arraybuffer, function (err) {
+                    callback(err);
+                });
+            }
+            else {
+                console.error("\u65E0\u6CD5\u5BFC\u5165\u6587\u4EF6 " + path);
+            }
         };
         /**
          * 写ArrayBuffer(新建)文件
@@ -32641,7 +32690,7 @@ var feng3d;
          * @param callback 完成回调
          */
         FolderAsset.prototype.delete = function (callback) {
-            console.error("\u672A\u5B9E\u73B0");
+            _super.prototype.delete.call(this, callback);
         };
         /**
          * 保存文件

@@ -26,7 +26,7 @@ namespace feng3d
          */
         delete(callback?: (err: Error) => void)
         {
-            console.error(`未实现`);
+            super.delete(callback);
         }
 
         /**

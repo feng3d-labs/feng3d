@@ -10,6 +10,16 @@ namespace feng3d
     export class PathUtils
     {
         /**
+         * 标准化文件夹路径
+         * @param path 
+         */
+        normalizeDir(path: string): string
+        {
+            if (path[path.length - 1] == "/")
+                path = path.substr(0, path.length - 1);
+            return path;
+        }
+        /**
          * 是否为HTTP地址
          * 
          * @param path 地址

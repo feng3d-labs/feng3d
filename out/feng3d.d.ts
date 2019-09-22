@@ -1394,6 +1394,11 @@ declare namespace feng3d {
      */
     class PathUtils {
         /**
+         * 标准化文件夹路径
+         * @param path
+         */
+        normalizeDir(path: string): string;
+        /**
          * 是否为HTTP地址
          *
          * @param path 地址
@@ -7982,6 +7987,15 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         deleteFile(path: string, callback?: (err: Error) => void): void;
+        /**
+         * 写(新建)文件
+         * 自动根据文件类型保存为对应结构
+         *
+         * @param path 文件路径
+         * @param arraybuffer 文件数据
+         * @param callback 回调函数
+         */
+        writeFile(path: string, arraybuffer: ArrayBuffer, callback?: (err: Error) => void): void;
         /**
          * 写ArrayBuffer(新建)文件
          * @param path 文件路径

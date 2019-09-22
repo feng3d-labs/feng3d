@@ -46,6 +46,8 @@ namespace feng3d
          */
         mkdir(path: string, callback?: (err: Error) => void)
         {
+            path = pathUtils.normalizeDir(path);
+
             this.fs.exists(path, (exists) =>
             {
                 if (exists)
@@ -65,6 +67,53 @@ namespace feng3d
         deleteFile(path: string, callback?: (err: Error) => void)
         {
             this.fs.deleteFile(path, callback);
+        }
+
+        /**
+         * 写(新建)文件
+         * 自动根据文件类型保存为对应结构
+         * 
+         * @param path 文件路径
+         * @param arraybuffer 文件数据
+         * @param callback 回调函数
+         */
+        writeFile(path: string, arraybuffer: ArrayBuffer, callback?: (err: Error) => void)
+        {
+            var ext = feng3d.pathUtils.getExtension(path);
+            ext = ext.split(".").pop();
+            var fileTypedic = { "meta": "txt", "json": "object", "png": "arraybuffer", "js": "txt", "ts": "txt", "map": "txt", "html": "txt" };
+            var type = fileTypedic[ext];
+            if (path == "tsconfig.json" || path == ".vscode/settings.json")
+                type = "txt";
+
+            if (type == "txt")
+            {
+                dataTransform.arrayBufferToString(arraybuffer, (str) =>
+                {
+                    this.fs.writeString(path, str, (err) =>
+                    {
+                        callback(err);
+                    });
+                });
+            } else if (type == "object")
+            {
+                dataTransform.arrayBufferToObject(arraybuffer, (obj) =>
+                {
+                    this.fs.writeObject(path, obj, (err) =>
+                    {
+                        callback(err);
+                    });
+                });
+            } else if (type == "arraybuffer")
+            {
+                this.writeArrayBuffer(path, arraybuffer, (err) =>
+                {
+                    callback(err);
+                });
+            } else
+            {
+                console.error(`无法导入文件 ${path}`)
+            }
         }
 
         /**
