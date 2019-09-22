@@ -52,6 +52,7 @@ namespace feng3d
          */
         static addAssetData(assetId: string, data: AssetData)
         {
+            if (!data) return;
             if (data.assetId != assetId)
                 console.warn(`同一个材质被保存在多个资源中！`);
 
@@ -66,6 +67,7 @@ namespace feng3d
          */
         static deleteAssetData(data: AssetData)
         {
+            if (!data) return;
             debuger && console.assert(this.assetMap.has(data));
             var assetId = this.assetMap.get(data);
             this._delete(assetId, data);

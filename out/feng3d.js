@@ -15843,6 +15843,8 @@ var feng3d;
          * @param data 资源数据
          */
         AssetData.addAssetData = function (assetId, data) {
+            if (!data)
+                return;
             if (data.assetId != assetId)
                 console.warn("\u540C\u4E00\u4E2A\u6750\u8D28\u88AB\u4FDD\u5B58\u5728\u591A\u4E2A\u8D44\u6E90\u4E2D\uFF01");
             this.assetMap.set(data, assetId);
@@ -15854,6 +15856,8 @@ var feng3d;
          * @param data 资源数据
          */
         AssetData.deleteAssetData = function (data) {
+            if (!data)
+                return;
             feng3d.debuger && console.assert(this.assetMap.has(data));
             var assetId = this.assetMap.get(data);
             this._delete(assetId, data);
@@ -16872,7 +16876,7 @@ var feng3d;
                     callback && callback(err);
                     return;
                 }
-                _this.fs.writeImage(path, image);
+                _this.fs.writeImage(path, image, callback);
             });
         };
         /**

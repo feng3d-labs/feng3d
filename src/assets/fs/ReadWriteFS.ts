@@ -147,7 +147,7 @@ namespace feng3d
                     callback && callback(err);
                     return;
                 }
-                this.fs.writeImage(path, image);
+                this.fs.writeImage(path, image, callback);
             });
         }
 
