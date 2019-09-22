@@ -2292,8 +2292,16 @@ var feng3d;
             return canvas;
         };
         DataTransform.prototype.imageToArrayBuffer = function (img, callback) {
+            if (img["arraybuffer"]) {
+                callback(img["arraybuffer"]);
+                return;
+            }
             var dataUrl = this.imageToDataURL(img);
-            this.dataURLToArrayBuffer(dataUrl, callback);
+            this.dataURLToArrayBuffer(dataUrl, function (arraybuffer) {
+                img["arraybuffer"] = arraybuffer;
+                arraybuffer["img"] = img;
+                callback(arraybuffer);
+            });
         };
         DataTransform.prototype.imageDataToDataURL = function (imageData) {
             var canvas = this.imageDataToCanvas(imageData);
@@ -2314,8 +2322,16 @@ var feng3d;
         };
         DataTransform.prototype.arrayBufferToImage = function (arrayBuffer, callback) {
             var _this = this;
+            if (arrayBuffer["image"]) {
+                callback(arrayBuffer["image"]);
+                return;
+            }
             this.arrayBufferToDataURL(arrayBuffer, function (dataurl) {
-                _this.dataURLToImage(dataurl, callback);
+                _this.dataURLToImage(dataurl, function (img) {
+                    img["arraybuffer"] = arrayBuffer;
+                    arrayBuffer["image"] = img;
+                    callback(img);
+                });
             });
         };
         DataTransform.prototype.blobToText = function (blob, callback) {
@@ -16829,7 +16845,7 @@ var feng3d;
             var _this = this;
             var ext = feng3d.pathUtils.getExtension(path);
             ext = ext.split(".").pop();
-            var fileTypedic = { "meta": "txt", "json": "object", "png": "arraybuffer", "js": "txt", "ts": "txt", "map": "txt", "html": "txt" };
+            var fileTypedic = { "meta": "txt", "json": "object", "jpg": "arraybuffer", "png": "arraybuffer", "js": "txt", "ts": "txt", "map": "txt", "html": "txt" };
             var type = fileTypedic[ext];
             if (path == "tsconfig.json" || path == ".vscode/settings.json")
                 type = "txt";

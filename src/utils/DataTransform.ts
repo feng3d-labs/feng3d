@@ -38,7 +38,7 @@ namespace feng3d
             var reader = new FileReader();
             reader.onload = function (e)
             {
-                callback(e.target["result"]);
+                callback(<any>e.target["result"]);
             };
             reader.readAsArrayBuffer(blob);
         }
@@ -123,7 +123,7 @@ namespace feng3d
             var a = new FileReader();
             a.onload = function (e)
             {
-                callback(e.target["result"]);
+                callback(<any>e.target["result"]);
             };
             a.readAsDataURL(blob);
         }
@@ -198,8 +198,18 @@ namespace feng3d
 
         imageToArrayBuffer(img: HTMLImageElement, callback: (arraybuffer: ArrayBuffer) => void)
         {
+            if (img["arraybuffer"])
+            {
+                callback(img["arraybuffer"]);
+                return;
+            }
             var dataUrl = this.imageToDataURL(img);
-            this.dataURLToArrayBuffer(dataUrl, callback);
+            this.dataURLToArrayBuffer(dataUrl, arraybuffer =>
+            {
+                img["arraybuffer"] = arraybuffer;
+                arraybuffer["img"] = img;
+                callback(arraybuffer);
+            });
         }
 
         imageDataToDataURL(imageData: ImageData)
@@ -227,16 +237,27 @@ namespace feng3d
 
         arrayBufferToImage(arrayBuffer: ArrayBuffer, callback: (img: HTMLImageElement) => void)
         {
+            if (arrayBuffer["image"])
+            {
+                callback(arrayBuffer["image"]);
+                return;
+            }
+
             this.arrayBufferToDataURL(arrayBuffer, (dataurl) =>
             {
-                this.dataURLToImage(dataurl, callback);
+                this.dataURLToImage(dataurl, img =>
+                {
+                    img["arraybuffer"] = arrayBuffer;
+                    arrayBuffer["image"] = img;
+                    callback(img);
+                });
             });
         }
 
         blobToText(blob: Blob, callback: (content: string) => void)
         {
             var a = new FileReader();
-            a.onload = function (e) { callback(e.target["result"]); };
+            a.onload = function (e) { callback(<any>e.target["result"]); };
             a.readAsText(blob);
         }
 
