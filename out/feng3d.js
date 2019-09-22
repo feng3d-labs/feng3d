@@ -17892,11 +17892,15 @@ var feng3d;
                         }
                         index++;
                     }
+                    _this._status.isinit = true;
+                    _this._status.isiniting = false;
                     feng3d.event.dispatch(_this, eventtype);
                 }
                 else {
                     _this.createAsset(feng3d.FolderAsset, "Assets", null, null, function (err, asset) {
                         _this._root = asset;
+                        _this._status.isinit = true;
+                        _this._status.isiniting = false;
                         feng3d.event.dispatch(_this, eventtype);
                     });
                 }

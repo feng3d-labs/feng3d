@@ -95,12 +95,16 @@ namespace feng3d
                         }
                         index++;
                     }
+                    this._status.isinit = true;
+                    this._status.isiniting = false;
                     event.dispatch(this, eventtype);
                 } else
                 {
                     this.createAsset(FolderAsset, "Assets", null, null, (err, asset) =>
                     {
                         this._root = asset;
+                        this._status.isinit = true;
+                        this._status.isiniting = false;
                         event.dispatch(this, eventtype);
                     });
                 }
