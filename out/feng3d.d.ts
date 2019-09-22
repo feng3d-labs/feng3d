@@ -8582,7 +8582,6 @@ declare namespace feng3d {
          * 资源树保存路径
          */
         protected resources: string;
-        private _status;
         /**
          * 构建可读资源系统
          *

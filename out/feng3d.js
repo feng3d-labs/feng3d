@@ -17882,7 +17882,6 @@ var feng3d;
              * 资源树保存路径
              */
             this.resources = "resource.json";
-            this._status = { isiniting: false, isinit: false };
             this._fs = fs;
         }
         Object.defineProperty(ReadRS.prototype, "fs", {
@@ -17908,15 +17907,6 @@ var feng3d;
          */
         ReadRS.prototype.init = function (callback) {
             var _this = this;
-            if (this._status.isinit) {
-                callback && callback();
-                return;
-            }
-            var eventtype = "init";
-            feng3d.event.once(this, eventtype, function () { callback && callback(); });
-            if (this._status.isiniting)
-                return;
-            this._status.isiniting = true;
             this.fs.readObject(this.resources, function (err, object) {
                 if (object) {
                     var data = feng3d.serialization.deserialize(object);
@@ -17943,16 +17933,12 @@ var feng3d;
                         }
                         index++;
                     }
-                    _this._status.isinit = true;
-                    _this._status.isiniting = false;
-                    feng3d.event.dispatch(_this, eventtype);
+                    callback();
                 }
                 else {
                     _this.createAsset(feng3d.FolderAsset, "Assets", null, null, function (err, asset) {
                         _this._root = asset;
-                        _this._status.isinit = true;
-                        _this._status.isiniting = false;
-                        feng3d.event.dispatch(_this, eventtype);
+                        callback();
                     });
                 }
             });
@@ -30919,6 +30905,7 @@ var feng3d;
     /**
      * The Terrain component renders the terrain.
      */
+    // @ov({ component: "OVTerrain" })
     var Terrain = /** @class */ (function (_super) {
         __extends(Terrain, _super);
         function Terrain() {
@@ -30928,9 +30915,6 @@ var feng3d;
             _this.material = feng3d.Material.terrain;
             return _this;
         }
-        Terrain = __decorate([
-            feng3d.ov({ component: "OVTerrain" })
-        ], Terrain);
         return Terrain;
     }(feng3d.Model));
     feng3d.Terrain = Terrain;
