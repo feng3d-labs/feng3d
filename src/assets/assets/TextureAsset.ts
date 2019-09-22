@@ -31,8 +31,6 @@ namespace feng3d
         {
             this.data = this.data || new Texture2D();
             this.data.assetId = this.data.assetId || this.assetId;
-
-            AssetData.addAssetData(this.assetId, this.data);
         }
 
         saveFile(callback?: (err: Error) => void)
@@ -69,8 +67,6 @@ namespace feng3d
                 this.rs.deserializeWithAssets(this.meta.texture, (result) =>
                 {
                     this.data = result;
-
-                    AssetData.addAssetData(this.assetId, this.data);
                     callback && callback(err);
                 });
             });

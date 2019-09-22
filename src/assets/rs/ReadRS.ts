@@ -133,6 +133,7 @@ namespace feng3d
             asset.assetId = assetId;
             asset.meta = { guid: assetId, mtimeMs: Date.now(), birthtimeMs: Date.now(), assetType: asset.assetType };
             asset.initAsset();
+            AssetData.addAssetData(asset.assetId, asset.data);
 
             //
             var extenson = pathUtils.getExtension(fileName);
@@ -199,6 +200,8 @@ namespace feng3d
             }
             asset.read((err) =>
             {
+                if (asset)
+                    AssetData.addAssetData(asset.assetId, asset.data);
                 callback(err, asset);
             });
         }

@@ -13,11 +13,9 @@ namespace feng3d
         @serialize
         get name()
         {
-            if (!this._name)
-            {
-                var asset = rs.getAsset(this.assetId);
-                if (asset) return asset.fileName;
-            }
+            var asset = rs.getAsset(this.assetId);
+            if (asset)
+                this._name = asset.fileName;
             return this._name;
         }
         set name(v) { this._name = v; }

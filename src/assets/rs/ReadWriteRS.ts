@@ -228,7 +228,11 @@ namespace feng3d
                 }
                 var la = assets.pop();
 
-                la.delete(deleteLastAsset);
+                la.delete(() =>
+                {
+                    AssetData.deleteAssetData(la.data);
+                    deleteLastAsset();
+                });
             };
             deleteLastAsset();
         }

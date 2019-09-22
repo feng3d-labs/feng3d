@@ -16106,6 +16106,7 @@ declare namespace feng3d {
          */
         data: Geometry;
         assetType: AssetType;
+        initAsset(): void;
     }
 }
 declare namespace feng3d {

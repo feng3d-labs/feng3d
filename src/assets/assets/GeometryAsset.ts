@@ -14,5 +14,11 @@ namespace feng3d
         data: Geometry;
 
         assetType = AssetType.geometry;
+
+        initAsset()
+        {
+            this.data = this.data || new CubeGeometry();
+            this.data.assetId = this.data.assetId || this.assetId;
+        }
     }
 }

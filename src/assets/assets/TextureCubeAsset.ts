@@ -19,8 +19,6 @@ namespace feng3d
         {
             this.data = this.data || new TextureCube();
             this.data.assetId = this.data.assetId || this.assetId;
-
-            AssetData.addAssetData(this.assetId, this.data);
         }
     }
 }

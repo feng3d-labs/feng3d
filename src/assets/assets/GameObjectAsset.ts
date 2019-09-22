@@ -24,8 +24,6 @@ namespace feng3d
         {
             this.data = this.data || new GameObject();
             this.data.assetId = this.data.assetId || this.assetId;
-
-            AssetData.addAssetData(this.assetId, this.data);
         }
 
         protected _getAssetData()
