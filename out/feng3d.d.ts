@@ -11559,6 +11559,14 @@ declare namespace feng3d {
      */
     interface ShaderMacro {
         /**
+         * UV中的U缩放
+         */
+        SCALEU: number;
+        /**
+         * UV中的V放
+         */
+        SCALEV: number;
+        /**
          * 光源数量
          */
         NUM_LIGHT: number;
@@ -13180,17 +13188,11 @@ declare namespace feng3d {
         /**
          * 纹理U缩放，默认为1。
          */
-        readonly scaleU: number;
+        scaleU: number;
         /**
          * 纹理V缩放，默认为1。
          */
-        readonly scaleV: number;
-        /**
-         * 缩放UV
-         * @param scaleU 纹理U缩放，默认1。
-         * @param scaleV 纹理V缩放，默认1。
-         */
-        scaleUV(scaleU?: number, scaleV?: number): void;
+        scaleV: number;
         /**
          * 包围盒失效
          */
@@ -13237,8 +13239,6 @@ declare namespace feng3d {
         };
         private _geometryInvalid;
         private _useFaceWeights;
-        private _scaleU;
-        private _scaleV;
         private _bounding;
         private _autoAttributeDatas;
         private _invalids;

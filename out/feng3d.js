@@ -375,7 +375,7 @@ var feng3d;
             "terrain_frag": "diffuseColor = terrainMethod(diffuseColor, v_uv);",
             "terrain_pars_frag": "#ifdef USE_TERRAIN_MERGE\r\n    #include<terrainMerge_pars_frag>\r\n#else\r\n    #include<terrainDefault_pars_frag>\r\n#endif",
             "uv_pars_vert": "attribute vec2 a_uv;\r\n\r\nvarying vec2 v_uv;",
-            "uv_vert": "v_uv = a_uv;",
+            "uv_vert": "v_uv = a_uv;\r\n#ifdef SCALEU\r\n    #ifdef SCALEV\r\n    v_uv = v_uv * vec2(SCALEU,SCALEV);\r\n    #endif\r\n#endif",
             "worldposition_pars_vert": "uniform mat4 u_modelMatrix;\r\n\r\nvarying vec3 v_worldPosition;",
             "worldposition_vert": "//获取全局坐标\r\nvec4 worldPosition = u_modelMatrix * position;\r\n//输出全局坐标\r\nv_worldPosition = worldPosition.xyz;"
         }
@@ -24797,13 +24797,19 @@ var feng3d;
             _this.preview = "";
             _this.assetType = feng3d.AssetType.geometry;
             /**
+             * 纹理U缩放，默认为1。
+             */
+            _this.scaleU = 1;
+            /**
+             * 纹理V缩放，默认为1。
+             */
+            _this.scaleV = 1;
+            /**
              * 属性数据列表
              */
             _this._attributes = {};
             _this._geometryInvalid = true;
             _this._useFaceWeights = false;
-            _this._scaleU = 1;
-            _this._scaleV = 1;
             _this._autoAttributeDatas = {};
             _this._invalids = { index: true, a_uv: true, a_normal: true, a_tangent: true };
             return _this;
@@ -25062,47 +25068,6 @@ var feng3d;
             this.normals = normals;
             this.tangents = tangents;
         };
-        Object.defineProperty(Geometry.prototype, "scaleU", {
-            /**
-             * 纹理U缩放，默认为1。
-             */
-            get: function () {
-                return this._scaleU;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Geometry.prototype, "scaleV", {
-            /**
-             * 纹理V缩放，默认为1。
-             */
-            get: function () {
-                return this._scaleV;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 缩放UV
-         * @param scaleU 纹理U缩放，默认1。
-         * @param scaleV 纹理V缩放，默认1。
-         */
-        Geometry.prototype.scaleUV = function (scaleU, scaleV) {
-            if (scaleU === void 0) { scaleU = 1; }
-            if (scaleV === void 0) { scaleV = 1; }
-            this.updateGrometry();
-            var uvs = this.uvs.concat();
-            var len = uvs.length;
-            var ratioU = scaleU / this._scaleU;
-            var ratioV = scaleV / this._scaleV;
-            for (var i = 0; i < len; i += 2) {
-                uvs[i] *= ratioU;
-                uvs[i + 1] *= ratioV;
-            }
-            this._scaleU = scaleU;
-            this._scaleV = scaleV;
-            this.uvs = uvs;
-        };
         /**
          * 包围盒失效
          */
@@ -25189,6 +25154,8 @@ var feng3d;
                     renderAtomic.shaderMacro["HSA_" + vaId] = true;
                 }
             }
+            renderAtomic.shaderMacro.SCALEU = this.scaleU;
+            renderAtomic.shaderMacro.SCALEV = this.scaleV;
         };
         __decorate([
             feng3d.oav({ component: "OAVFeng3dPreView" })
@@ -25199,6 +25166,14 @@ var feng3d;
         __decorate([
             feng3d.oav({ component: "OAVMultiText", priority: 10 })
         ], Geometry.prototype, "geometryInfo", null);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], Geometry.prototype, "scaleU", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], Geometry.prototype, "scaleV", void 0);
         return Geometry;
     }(feng3d.AssetData));
     feng3d.Geometry = Geometry;

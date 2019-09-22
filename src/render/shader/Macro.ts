@@ -6,6 +6,15 @@ namespace feng3d
      */
     export interface ShaderMacro
     {
+        /**
+         * UV中的U缩放
+         */
+        SCALEU: number;
+
+        /**
+         * UV中的V放
+         */
+        SCALEV: number;
 
         /**
          * 光源数量
@@ -26,7 +35,7 @@ namespace feng3d
          * 生成投影的方向光源数量
          */
         NUM_DIRECTIONALLIGHT_CASTSHADOW: number;
-        
+
         /**
          * 生成投影的点光源数量
          */

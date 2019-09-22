@@ -389,44 +389,16 @@ namespace feng3d
         /**
          * 纹理U缩放，默认为1。
          */
-        get scaleU(): number
-        {
-            return this._scaleU;
-        }
+        @serialize
+        @oav()
+        scaleU = 1;
 
         /**
          * 纹理V缩放，默认为1。
          */
-        get scaleV(): number
-        {
-            return this._scaleV;
-        }
-
-        /**
-         * 缩放UV
-         * @param scaleU 纹理U缩放，默认1。
-         * @param scaleV 纹理V缩放，默认1。
-         */
-        scaleUV(scaleU = 1, scaleV = 1)
-        {
-            this.updateGrometry();
-
-            var uvs = this.uvs.concat();
-            var len = uvs.length;
-            var ratioU = scaleU / this._scaleU;
-            var ratioV = scaleV / this._scaleV;
-
-            for (var i = 0; i < len; i += 2)
-            {
-                uvs[i] *= ratioU;
-                uvs[i + 1] *= ratioV;
-            }
-
-            this._scaleU = scaleU;
-            this._scaleV = scaleV;
-
-            this.uvs = uvs;
-        }
+        @serialize
+        @oav()
+        scaleV = 1;
 
         /**
          * 包围盒失效
@@ -529,6 +501,8 @@ namespace feng3d
                     renderAtomic.shaderMacro["HSA_" + vaId] = true;
                 }
             }
+            renderAtomic.shaderMacro.SCALEU = this.scaleU;
+            renderAtomic.shaderMacro.SCALEV = this.scaleV;
         }
 
         /**
@@ -546,9 +520,6 @@ namespace feng3d
 
         private _geometryInvalid = true;
         private _useFaceWeights = false;
-
-        private _scaleU = 1;
-        private _scaleV = 1;
 
         private _bounding: Box;
 

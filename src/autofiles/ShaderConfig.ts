@@ -99,7 +99,7 @@ feng3d.shaderConfig = {
 		"terrain_frag": "diffuseColor = terrainMethod(diffuseColor, v_uv);",
 		"terrain_pars_frag": "#ifdef USE_TERRAIN_MERGE\r\n    #include<terrainMerge_pars_frag>\r\n#else\r\n    #include<terrainDefault_pars_frag>\r\n#endif",
 		"uv_pars_vert": "attribute vec2 a_uv;\r\n\r\nvarying vec2 v_uv;",
-		"uv_vert": "v_uv = a_uv;",
+		"uv_vert": "v_uv = a_uv;\r\n#ifdef SCALEU\r\n    #ifdef SCALEV\r\n    v_uv = v_uv * vec2(SCALEU,SCALEV);\r\n    #endif\r\n#endif",
 		"worldposition_pars_vert": "uniform mat4 u_modelMatrix;\r\n\r\nvarying vec3 v_worldPosition;",
 		"worldposition_vert": "//获取全局坐标\r\nvec4 worldPosition = u_modelMatrix * position;\r\n//输出全局坐标\r\nv_worldPosition = worldPosition.xyz;"
 	}
