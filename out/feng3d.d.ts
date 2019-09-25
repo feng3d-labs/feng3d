@@ -16039,18 +16039,8 @@ declare namespace feng3d {
     /**
      * 音效资源
      */
-    class AudioAsset extends FileAsset {
+    class AudioAsset extends ArrayBufferAsset {
         readonly assetType: AssetType;
-        /**
-         * 保存文件
-         * @param callback 完成回调
-         */
-        saveFile(callback?: (err: Error) => void): void;
-        /**
-         * 读取文件
-         * @param callback 完成回调
-         */
-        readFile(callback?: (err: Error) => void): void;
     }
 }
 declare namespace feng3d {

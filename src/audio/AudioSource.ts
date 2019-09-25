@@ -248,18 +248,23 @@ namespace feng3d
 
         private onScenetransformChanged()
         {
-            var scenePosition = this.transform.scenePosition;
+            var localToWorldMatrix = this.transform.localToWorldMatrix;
+            var scenePosition = localToWorldMatrix.position;
+
             //
             var panner = this.panner;
-
-            if (panner.positionX)
+            // feng3d使用左手坐标系，panner使用右手坐标系，参考https://developer.mozilla.org/en-US/docs/Web/API/PannerNode
+            panner.positionX.value = scenePosition.x;
+            panner.positionY.value = scenePosition.y;
+            panner.positionZ.value = -scenePosition.z;
+            if (panner.orientationX)
             {
-                panner.positionX.value = scenePosition.x;
-                panner.positionY.value = scenePosition.y;
-                panner.positionZ.value = scenePosition.z;
+                panner.orientationX.value = 1;
+                panner.orientationY.value = 0;
+                panner.orientationZ.value = 0;
             } else
             {
-                panner.setPosition(scenePosition.x, scenePosition.y, scenePosition.z);
+                panner.setOrientation(1, 0, 0);
             }
         }
 

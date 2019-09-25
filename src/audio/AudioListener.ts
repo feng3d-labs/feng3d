@@ -47,19 +47,22 @@ namespace feng3d
 
         private onScenetransformChanged()
         {
-            var scenePosition = this.transform.scenePosition;
+            var localToWorldMatrix = this.transform.localToWorldMatrix;
+            var position = localToWorldMatrix.position;
+            var forward = localToWorldMatrix.forward;
+            var up = localToWorldMatrix.up;
             //
             var listener = audioCtx.listener;
-
-            if (listener.positionX)
-            {
-                listener.positionX.value = scenePosition.x;
-                listener.positionY.value = scenePosition.y;
-                listener.positionZ.value = scenePosition.z;
-            } else
-            {
-                listener.setPosition(scenePosition.x, scenePosition.y, scenePosition.z);
-            }
+            // feng3d中为左手坐标系，listener中使用的为右手坐标系，参考https://developer.mozilla.org/en-US/docs/Web/API/AudioListener
+            listener.positionX.value = position.x;
+            listener.positionY.value = position.y;
+            listener.positionZ.value = -position.z;
+            listener.forwardX.value = forward.x;
+            listener.forwardY.value = forward.y;
+            listener.forwardZ.value = -forward.z;
+            listener.upX.value = up.x;
+            listener.upY.value = up.y;
+            listener.upZ.value = -up.z;
         }
 
         private enabledChanged()

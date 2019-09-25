@@ -81,7 +81,7 @@ namespace feng3d
         {
             var ext = feng3d.pathUtils.getExtension(path);
             ext = ext.split(".").pop();
-            var fileTypedic = { "meta": "txt", "json": "object", "jpg": "arraybuffer", "png": "arraybuffer", "js": "txt", "ts": "txt", "map": "txt", "html": "txt" };
+            var fileTypedic = { "meta": "txt", "json": "object", "jpg": "arraybuffer", "png": "arraybuffer", "mp3": "arraybuffer", "js": "txt", "ts": "txt", "map": "txt", "html": "txt" };
             var type = fileTypedic[ext];
             if (path == "tsconfig.json" || path == ".vscode/settings.json")
                 type = "txt";

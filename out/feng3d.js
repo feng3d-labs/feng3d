@@ -16845,7 +16845,7 @@ var feng3d;
             var _this = this;
             var ext = feng3d.pathUtils.getExtension(path);
             ext = ext.split(".").pop();
-            var fileTypedic = { "meta": "txt", "json": "object", "jpg": "arraybuffer", "png": "arraybuffer", "js": "txt", "ts": "txt", "map": "txt", "html": "txt" };
+            var fileTypedic = { "meta": "txt", "json": "object", "jpg": "arraybuffer", "png": "arraybuffer", "mp3": "arraybuffer", "js": "txt", "ts": "txt", "map": "txt", "html": "txt" };
             var type = fileTypedic[ext];
             if (path == "tsconfig.json" || path == ".vscode/settings.json")
                 type = "txt";
@@ -29882,17 +29882,22 @@ var feng3d;
             this.onScenetransformChanged();
         };
         AudioListener.prototype.onScenetransformChanged = function () {
-            var scenePosition = this.transform.scenePosition;
+            var localToWorldMatrix = this.transform.localToWorldMatrix;
+            var position = localToWorldMatrix.position;
+            var forward = localToWorldMatrix.forward;
+            var up = localToWorldMatrix.up;
             //
             var listener = feng3d.audioCtx.listener;
-            if (listener.positionX) {
-                listener.positionX.value = scenePosition.x;
-                listener.positionY.value = scenePosition.y;
-                listener.positionZ.value = scenePosition.z;
-            }
-            else {
-                listener.setPosition(scenePosition.x, scenePosition.y, scenePosition.z);
-            }
+            // feng3d中为左手坐标系，listener中使用的为右手坐标系，参考https://developer.mozilla.org/en-US/docs/Web/API/AudioListener
+            listener.positionX.value = position.x;
+            listener.positionY.value = position.y;
+            listener.positionZ.value = -position.z;
+            listener.forwardX.value = forward.x;
+            listener.forwardY.value = forward.y;
+            listener.forwardZ.value = -forward.z;
+            listener.upX.value = up.x;
+            listener.upY.value = up.y;
+            listener.upZ.value = -up.z;
         };
         AudioListener.prototype.enabledChanged = function () {
             if (!this.gain)
@@ -30168,16 +30173,21 @@ var feng3d;
             this.on("scenetransformChanged", this.onScenetransformChanged, this);
         };
         AudioSource.prototype.onScenetransformChanged = function () {
-            var scenePosition = this.transform.scenePosition;
+            var localToWorldMatrix = this.transform.localToWorldMatrix;
+            var scenePosition = localToWorldMatrix.position;
             //
             var panner = this.panner;
-            if (panner.positionX) {
-                panner.positionX.value = scenePosition.x;
-                panner.positionY.value = scenePosition.y;
-                panner.positionZ.value = scenePosition.z;
+            // feng3d使用左手坐标系，panner使用右手坐标系，参考https://developer.mozilla.org/en-US/docs/Web/API/PannerNode
+            panner.positionX.value = scenePosition.x;
+            panner.positionY.value = scenePosition.y;
+            panner.positionZ.value = -scenePosition.z;
+            if (panner.orientationX) {
+                panner.orientationX.value = 1;
+                panner.orientationY.value = 0;
+                panner.orientationZ.value = 0;
             }
             else {
-                panner.setPosition(scenePosition.x, scenePosition.y, scenePosition.z);
+                panner.setOrientation(1, 0, 0);
             }
         };
         AudioSource.prototype.onUrlChanged = function () {
@@ -32934,24 +32944,10 @@ var feng3d;
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.assetType = feng3d.AssetType.audio;
             return _this;
+            // readonly extenson: ".ogg" | ".mp3" | ".wav" = ".mp3";
         }
-        // readonly extenson: ".ogg" | ".mp3" | ".wav" = ".mp3";
-        /**
-         * 保存文件
-         * @param callback 完成回调
-         */
-        AudioAsset.prototype.saveFile = function (callback) {
-            callback && callback(null);
-        };
-        /**
-         * 读取文件
-         * @param callback 完成回调
-         */
-        AudioAsset.prototype.readFile = function (callback) {
-            callback && callback(null);
-        };
         return AudioAsset;
-    }(feng3d.FileAsset));
+    }(feng3d.ArrayBufferAsset));
     feng3d.AudioAsset = AudioAsset;
 })(feng3d || (feng3d = {}));
 var feng3d;
