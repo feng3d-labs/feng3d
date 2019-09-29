@@ -4652,6 +4652,31 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var Pool = /** @class */ (function () {
+        function Pool(cls) {
+            this._type = cls;
+        }
+        Pool.prototype.get = function () {
+            var obj = this._objects.pop();
+            if (obj)
+                return obj;
+        };
+        Pool.prototype.release = function () {
+            var _this = this;
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            args.forEach(function (element) {
+                _this._objects.push(element);
+            });
+        };
+        return Pool;
+    }());
+    feng3d.Pool = Pool;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 比较器
      */
@@ -24204,13 +24229,15 @@ var feng3d;
         function BodyComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.BodyComponent";
+            _this.runEnvironment = feng3d.RunEnvironment.feng3d;
+            _this.mass = 5;
             return _this;
         }
         BodyComponent.prototype.init = function (gameobject) {
             _super.prototype.init.call(this, gameobject);
             var radius = 1; // m
             this.body = new CANNON.Body({
-                mass: 5,
+                mass: this.mass,
                 position: new feng3d.Vector3(0, 10, 0),
                 shape: new CANNON.Sphere(radius)
             });
@@ -24220,15 +24247,14 @@ var feng3d;
          */
         BodyComponent.prototype.update = function (interval) {
             var scene3D = this.getComponentsInParents(feng3d.Scene3D)[0];
-            if (scene3D && scene3D.runEnvironment == feng3d.RunEnvironment.feng3d) {
-                this.transform.x = this.body.position.x;
-                this.transform.y = this.body.position.y;
-                this.transform.z = this.body.position.z;
+            if (scene3D) {
+                this.transform.position = this.body.position;
             }
         };
         __decorate([
-            feng3d.oav()
-        ], BodyComponent.prototype, "body", void 0);
+            feng3d.oav(),
+            feng3d.serialize
+        ], BodyComponent.prototype, "mass", void 0);
         return BodyComponent;
     }(feng3d.Behaviour));
     feng3d.BodyComponent = BodyComponent;
@@ -24848,7 +24874,8 @@ var feng3d;
             feng3d.oav()
         ], Scene3D.prototype, "ambientColor", void 0);
         __decorate([
-            feng3d.oav()
+            feng3d.oav(),
+            feng3d.serialize
         ], Scene3D.prototype, "gravity", void 0);
         return Scene3D;
     }(feng3d.Component));

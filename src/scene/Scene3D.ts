@@ -38,6 +38,7 @@ namespace feng3d
          * 重力加速度
          */
         @oav()
+        @serialize
         gravity = new Vector3(0, -9.82, 0);
 
         /**

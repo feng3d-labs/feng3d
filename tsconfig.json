@@ -42,6 +42,7 @@
         "src/utils/PathUtils.ts",
         "src/utils/Path.ts",
         "src/utils/RegExps.ts",
+        "src/utils/Pool.ts",
         // 数据结构
         "src/ds/utils/Comparator.ts",
         "src/ds/Utils.ts",

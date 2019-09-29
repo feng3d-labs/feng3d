@@ -1621,6 +1621,15 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    class Pool<T> {
+        private _objects;
+        private _type;
+        constructor(cls: Constructor<T>);
+        get(): T;
+        release(...args: T[]): void;
+    }
+}
+declare namespace feng3d {
     type CompareFunction<T> = (a: T, b: T) => number;
     /**
      * 比较器
@@ -12796,6 +12805,8 @@ declare namespace feng3d {
     class BodyComponent extends Behaviour {
         __class__: "feng3d.BodyComponent";
         body: CANNON.Body;
+        runEnvironment: RunEnvironment;
+        mass: number;
         init(gameobject: GameObject): void;
         /**
          * 每帧执行
