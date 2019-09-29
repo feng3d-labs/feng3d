@@ -14,7 +14,7 @@
             // "feng3d"
         ],
         // "outDir": "./debug"
-        "outFile": "./out/tests.js",
+        "outFile": "./out/tests.js"
     },
     "include": [
         //
@@ -22,6 +22,6 @@
         "../out",
         "../debug",
         //
-        "src/**/*.ts",
-    ],
+        "src/**/*.ts"
+    ]
 }

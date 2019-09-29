@@ -1621,12 +1621,37 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * 对象池
+     *
+     * 对象池并不能带来性能的提升，反而会严重影响性能。但是在管理内存时可以考虑使用。
+     */
     class Pool<T> {
         private _objects;
         private _type;
-        constructor(cls: Constructor<T>);
+        constructor(type: Constructor<T>);
+        /**
+         * 获取对象
+         */
         get(): T;
+        /**
+         * 释放对象
+         *
+         * @param args 被释放对象列表
+         */
         release(...args: T[]): void;
+        /**
+         * 获取指定数量的对象
+         *
+         * @param num 数量
+         */
+        getArray(num: number): T[];
+        /**
+         * 释放对象
+         *
+         * @param objects 被释放对象列表
+         */
+        releaseArray(objects: T[]): void;
     }
 }
 declare namespace feng3d {

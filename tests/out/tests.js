@@ -4279,6 +4279,27 @@ QUnit.module("PathUtils", function () {
         assert.ok(feng3d.pathUtils.getDirDepth("a/b/a/") == 2);
     });
 });
+QUnit.module("Pool", function () {
+    QUnit.test("测试性能", function (assert) {
+        var NUM = 1000000;
+        var pool = new feng3d.Pool(feng3d.Vector3);
+        // var arr = pool.getArray(NUM);
+        // pool.releaseArray(arr);
+        var t = Date.now();
+        for (var i = 0; i < NUM; i++) {
+            new feng3d.Vector3();
+        }
+        var time0 = Date.now() - t;
+        var t = Date.now();
+        for (var i = 0; i < NUM; i++) {
+            var v = pool.get();
+            pool.release(v);
+        }
+        var time1 = Date.now() - t;
+        console.log("\u6B63\u5E38: " + time0 + "\uFF0Cpool: " + time1);
+        assert.ok(time0 < time1);
+    });
+});
 var feng3d;
 (function (feng3d) {
     var ObjectBase = /** @class */ (function () {
@@ -4757,6 +4778,10 @@ QUnit.module("watcher", function () {
     });
 });
 //# sourceMappingURL=tests.js.map
+console.log("feng3d-tests-0.0.3");
+console.log("feng3d-tests-0.0.3");
+console.log("feng3d-tests-0.0.3");
+console.log("feng3d-tests-0.0.3");
 console.log("feng3d-tests-0.0.3");
 (function universalModuleDefinition(root, factory)
 {

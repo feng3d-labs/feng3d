@@ -4652,15 +4652,30 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 对象池
+     *
+     * 对象池并不能带来性能的提升，反而会严重影响性能。但是在管理内存时可以考虑使用。
+     */
     var Pool = /** @class */ (function () {
-        function Pool(cls) {
-            this._type = cls;
+        function Pool(type) {
+            this._objects = [];
+            this._type = type;
         }
+        /**
+         * 获取对象
+         */
         Pool.prototype.get = function () {
             var obj = this._objects.pop();
             if (obj)
                 return obj;
+            return new this._type();
         };
+        /**
+         * 释放对象
+         *
+         * @param args 被释放对象列表
+         */
         Pool.prototype.release = function () {
             var _this = this;
             var args = [];
@@ -4668,6 +4683,36 @@ var feng3d;
                 args[_i] = arguments[_i];
             }
             args.forEach(function (element) {
+                _this._objects.push(element);
+            });
+        };
+        /**
+         * 获取指定数量的对象
+         *
+         * @param num 数量
+         */
+        Pool.prototype.getArray = function (num) {
+            var arr;
+            if (this._objects.length <= num) {
+                arr = this._objects.concat();
+                this._objects.length = 0;
+            }
+            else {
+                arr = this._objects.splice(0, num);
+            }
+            while (arr.length < num) {
+                arr.push(new this._type());
+            }
+            return arr;
+        };
+        /**
+         * 释放对象
+         *
+         * @param objects 被释放对象列表
+         */
+        Pool.prototype.releaseArray = function (objects) {
+            var _this = this;
+            objects.forEach(function (element) {
                 _this._objects.push(element);
             });
         };
