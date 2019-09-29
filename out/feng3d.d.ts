@@ -12925,6 +12925,7 @@ declare namespace feng3d {
          * 环境光强度
          */
         ambientColor: Color4;
+        gravity: CANNON.Vec3;
         /**
          * 指定所运行环境
          *
@@ -20410,19 +20411,17 @@ declare namespace CANNON {
          */
         addContactMaterial(cmat: ContactMaterial): void;
         /**
-         * Step the physics world forward in time.
+         * 让物理世界在时间上向前迈进。
          *
-         * There are two modes. The simple mode is fixed timestepping without interpolation. In this case you only use the first argument. The second case uses interpolation. In that you also provide the time since the function was last used, as well as the maximum fixed timesteps to take.
+         * 有两种模式。简单的模式是固定的时间步长没有插值。在本例中，您只使用第一个参数。第二种情况使用插值。因为您还提供了函数上次使用以来的时间，以及要采取的最大固定时间步骤。
          *
-         * @param dt                       The fixed time step size to use.
-         * @param timeSinceLastCalled    The time elapsed since the function was last called.
-         * @param maxSubSteps         Maximum number of fixed steps to take per function call.
+         * @param dt 使用固定时间步长。单位为s。
+         * @param timeSinceLastCalled 函数上次调用后经过的时间。单位为s。
+         * @param maxSubSteps 每个函数调用要执行的最大固定步骤数。
          *
          * @example
-         *     // fixed timestepping without interpolation
+         *     // 固定的时间步进没有插值
          *     world.step(1/60);
-         *
-         * @see http://bulletphysics.org/mediawiki-1.5.8/index.php/Stepping_The_World
          */
         step(dt: number, timeSinceLastCalled: number, maxSubSteps: number): void;
         internalStep(dt: number): void;

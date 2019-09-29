@@ -34,6 +34,8 @@ namespace feng3d
         @oav()
         ambientColor = new Color4();
 
+        gravity: CANNON.Vec3;
+
         /**
          * 指定所运行环境
          * 
