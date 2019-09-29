@@ -119,6 +119,14 @@ namespace feng3d
         }
 
         /**
+         * 把所有分量都设为零
+         */
+        setZero()
+        {
+            this.x = this.y = this.z = 0;
+        }
+
+        /**
          * 从Vector2初始化
          */
         fromVector2(vector: Vector2, z = 0)
@@ -418,14 +426,39 @@ namespace feng3d
          */
         normalize(thickness = 1)
         {
-            if (this.length != 0)
+            var length = this.lengthSquared
+            if (length > 0)
             {
-                var invLength = thickness / this.length;
+                length = Math.sqrt(length);
+                var invLength = thickness / length;
                 this.x *= invLength;
                 this.y *= invLength;
                 this.z *= invLength;
             }
             return this;
+        }
+
+        /**
+         * 得到这个向量长度为1
+         */
+        unit(target: Vector3 = new Vector3())
+        {
+            var x = this.x, y = this.y, z = this.z;
+            var ninv = x * x + y * y + z * z;
+            if (ninv > 0.0)
+            {
+                var ninv = Math.sqrt(ninv);
+                ninv = 1.0 / ninv;
+                target.x = x * ninv;
+                target.y = y * ninv;
+                target.z = z * ninv;
+            } else
+            {
+                target.x = 1;
+                target.y = 0;
+                target.z = 0;
+            }
+            return target;
         }
 
         /**
@@ -738,6 +771,17 @@ namespace feng3d
         isParallel(v: Vector3, precision = Math.PRECISION)
         {
             return Math.equals(Math.abs(this.clone().normalize().dot(v.clone().normalize())), 1, precision);
+        }
+
+        /**
+         * 从向量中得到叉乘矩阵a_cross，使得a x b = a_cross * b = c
+         * @see http://www8.cs.umu.se/kurser/TDBD24/VT06/lectures/Lecture6.pdf
+         */
+        crossmat()
+        {
+            return new CANNON.Mat3([0, -this.z, this.y,
+                this.z, 0, -this.x,
+                -this.y, this.x, 0]);
         }
 
         /**

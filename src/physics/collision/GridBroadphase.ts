@@ -161,11 +161,12 @@ namespace CANNON
 						break;
 
 					case PLANE:
-						if (si.worldNormalNeedsUpdate)
+						let plane = <Plane>si;
+						if (plane.worldNormalNeedsUpdate)
 						{
-							si.computeWorldNormal(bi.quaternion);
+							plane.computeWorldNormal(bi.quaternion);
 						}
-						var planeNormal = si.worldNormal;
+						var planeNormal = plane.worldNormal;
 
 						//Relative position from origin of plane object to the first bin
 						//Incremented as we iterate through the bins
@@ -174,7 +175,7 @@ namespace CANNON
 							zreset = zmin + binsizeZ * 0.5 - bi.position.z;
 
 						var d = GridBroadphase_collisionPairs_d;
-						d.set(xreset, yreset, zreset);
+						d.init(xreset, yreset, zreset);
 
 						for (var xi = 0, xoff = 0; xi !== nx; xi++ , xoff += xstep, d.y = yreset, d.x += binsizeX)
 						{
@@ -222,7 +223,7 @@ namespace CANNON
 					// Do N^2 broadphase inside
 					for (var xi = 0; xi !== binLength; xi++)
 					{
-						var bi = bin[xi];
+						var bi: Body = bin[xi];
 						for (var yi = 0; yi !== xi; yi++)
 						{
 							var bj = bin[yi];

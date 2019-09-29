@@ -97,7 +97,7 @@ namespace CANNON
 
         timeLastSleepy: number;
 
-        private _wakeUpAfterNarrowphase: boolean;
+        _wakeUpAfterNarrowphase: boolean;
 
         /**
          * World space rotational force on the body, around center of mass.
@@ -368,8 +368,8 @@ namespace CANNON
         sleep()
         {
             this.sleepState = Body.SLEEPING;
-            this.velocity.set(0, 0, 0);
-            this.angularVelocity.set(0, 0, 0);
+            this.velocity.init(0, 0, 0);
+            this.angularVelocity.init(0, 0, 0);
             this._wakeUpAfterNarrowphase = false;
         }
 
@@ -441,7 +441,7 @@ namespace CANNON
         pointToLocalFrame(worldPoint: Vector3, result: Vector3)
         {
             var result = result || new Vector3();
-            worldPoint.vsub(this.position, result);
+            worldPoint.subTo(this.position, result);
             this.quaternion.conjugate().vmult(result, result);
             return result;
         }
@@ -468,7 +468,7 @@ namespace CANNON
         {
             var result = result || new Vector3();
             this.quaternion.vmult(localPoint, result);
-            result.vadd(this.position, result);
+            result.addTo(this.position, result);
             return result;
         }
 
@@ -534,7 +534,7 @@ namespace CANNON
             {
                 var shape = shapes[i];
                 shape.updateBoundingSphereRadius();
-                var offset = shapeOffsets[i].norm(),
+                var offset = shapeOffsets[i].length(),
                     r = shape.boundingSphereRadius;
                 if (offset + r > radius)
                 {
@@ -569,7 +569,7 @@ namespace CANNON
 
                 // Get shape world position
                 bodyQuat.vmult(shapeOffsets[i], offset);
-                offset.vadd(this.position, offset);
+                offset.addTo(this.position, offset);
 
                 // Get shape world quaternion
                 shapeOrientations[i].mult(bodyQuat, orientation);
@@ -632,10 +632,10 @@ namespace CANNON
             relativePoint.cross(force, rotForce);
 
             // Add linear force
-            this.force.vadd(force, this.force);
+            this.force.addTo(force, this.force);
 
             // Add rotational force
-            this.torque.vadd(rotForce, this.torque);
+            this.torque.addTo(rotForce, this.torque);
         }
 
         /**
@@ -683,7 +683,7 @@ namespace CANNON
             velo.mult(this.invMass, velo);
 
             // Add linear impulse
-            this.velocity.vadd(velo, this.velocity);
+            this.velocity.addTo(velo, this.velocity);
 
             // Compute produced rotational impulse velocity
             var rotVelo = Body_applyImpulse_rotVelo;
@@ -697,7 +697,7 @@ namespace CANNON
             this.invInertiaWorld.vmult(rotVelo, rotVelo);
 
             // Add rotational Impulse
-            this.angularVelocity.vadd(rotVelo, this.angularVelocity);
+            this.angularVelocity.addTo(rotVelo, this.angularVelocity);
         }
 
         /**
@@ -736,14 +736,14 @@ namespace CANNON
 
             // Approximate with AABB box
             this.computeAABB();
-            halfExtents.set(
+            halfExtents.init(
                 (this.aabb.upperBound.x - this.aabb.lowerBound.x) / 2,
                 (this.aabb.upperBound.y - this.aabb.lowerBound.y) / 2,
                 (this.aabb.upperBound.z - this.aabb.lowerBound.z) / 2
             );
             Box.calculateInertia(halfExtents, this.mass, I);
 
-            this.invInertia.set(
+            this.invInertia.init(
                 I.x > 0 && !fixed ? 1.0 / I.x : 0,
                 I.y > 0 && !fixed ? 1.0 / I.y : 0,
                 I.z > 0 && !fixed ? 1.0 / I.z : 0
@@ -763,7 +763,7 @@ namespace CANNON
             var r = new Vector3();
             worldPoint.vsub(this.position, r);
             this.angularVelocity.cross(r, result);
-            this.velocity.vadd(result, result);
+            this.velocity.addTo(result, result);
             return result;
         }
 

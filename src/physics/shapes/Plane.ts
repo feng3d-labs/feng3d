@@ -26,7 +26,7 @@ namespace CANNON
         computeWorldNormal(quat: Quaternion)
         {
             var n = this.worldNormal;
-            n.set(0, 1, 0);
+            n.init(0, 1, 0);
             quat.vmult(n, n);
             this.worldNormalNeedsUpdate = false;
         }
@@ -44,11 +44,11 @@ namespace CANNON
         calculateWorldAABB(pos: Vector3, quat: Quaternion, min: Vector3, max: Vector3)
         {
             // The plane AABB is infinite, except if the normal is pointing along any axis
-            tempNormal.set(0, 1, 0); // Default plane normal is y
+            tempNormal.init(0, 1, 0); // Default plane normal is y
             quat.vmult(tempNormal, tempNormal);
             var maxVal = Number.MAX_VALUE;
-            min.set(-maxVal, -maxVal, -maxVal);
-            max.set(maxVal, maxVal, maxVal);
+            min.init(-maxVal, -maxVal, -maxVal);
+            max.init(maxVal, maxVal, maxVal);
 
             if (tempNormal.x === 1) { max.x = pos.x; }
             if (tempNormal.y === 1) { max.y = pos.y; }

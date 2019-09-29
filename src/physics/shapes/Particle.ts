@@ -22,7 +22,7 @@ namespace CANNON
         calculateLocalInertia(mass: number, target: Vector3)
         {
             target = target || new Vector3();
-            target.set(0, 0, 0);
+            target.init(0, 0, 0);
             return target;
         }
 

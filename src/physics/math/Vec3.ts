@@ -27,11 +27,11 @@ namespace CANNON
 
         static ZERO = new Vector3(0, 0, 0);
 
-        static UNIT_X = new Vector3(1, 0, 0);
+        static X_AXIS = new Vector3(1, 0, 0);
 
-        static UNIT_Y = new Vector3(0, 1, 0);
+        static Y_AXIS = new Vector3(0, 1, 0);
 
-        static UNIT_Z = new Vector3(0, 0, 1);
+        static Z_AXIS = new Vector3(0, 0, 1);
 
         /**
          * Vector cross product
@@ -57,7 +57,7 @@ namespace CANNON
          * @param y 
          * @param z 
          */
-        set(x: number, y: number, z: number)
+        init(x: number, y: number, z: number)
         {
             this.x = x;
             this.y = y;
@@ -78,7 +78,7 @@ namespace CANNON
          * @param v 
          * @param target 
          */
-        vadd(v: Vector3, target: Vector3 = null)
+        addTo(v: Vector3, target: Vector3 = null)
         {
             if (target)
             {
@@ -98,7 +98,7 @@ namespace CANNON
          * @param v 
          * @param target Target to save in.
          */
-        vsub(v: Vector3, target: Vector3 = null)
+        subTo(v: Vector3, target: Vector3 = null)
         {
             if (target)
             {
@@ -170,16 +170,6 @@ namespace CANNON
                 target.z = 0;
             }
             return target;
-        }
-
-        /**
-         * Get the length of the vector
-         * @deprecated Use .length() instead
-         */
-        norm()
-        {
-            var x = this.x, y = this.y, z = this.z;
-            return Math.sqrt(x * x + y * y + z * z);
         }
 
         /**
@@ -321,28 +311,28 @@ namespace CANNON
 
         tangents(t1: Vector3, t2: Vector3)
         {
-            var norm = this.norm();
+            var norm = this.length();
             if (norm > 0.0)
             {
                 var n = Vec3_tangents_n;
                 var inorm = 1 / norm;
-                n.set(this.x * inorm, this.y * inorm, this.z * inorm);
+                n.init(this.x * inorm, this.y * inorm, this.z * inorm);
                 var randVec = Vec3_tangents_randVec;
                 if (Math.abs(n.x) < 0.9)
                 {
-                    randVec.set(1, 0, 0);
+                    randVec.init(1, 0, 0);
                     n.cross(randVec, t1);
                 } else
                 {
-                    randVec.set(0, 1, 0);
+                    randVec.init(0, 1, 0);
                     n.cross(randVec, t1);
                 }
                 n.cross(t1, t2);
             } else
             {
                 // The normal length is zero, make something up
-                t1.set(1, 0, 0);
-                t2.set(0, 1, 0);
+                t1.init(1, 0, 0);
+                t2.init(0, 1, 0);
             }
         }
 

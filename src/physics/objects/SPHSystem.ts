@@ -123,7 +123,7 @@ namespace CANNON
 
                     //printf("Current particle has position %f %f %f\n",objects[id].pos.x(),objects[id].pos.y(),objects[id].pos.z());
                     p.position.vsub(neighbors[j].position, dist);
-                    var len = dist.norm();
+                    var len = dist.length();
 
                     var weight = this.w(len);
                     sum += neighbors[j].mass * weight;
@@ -148,8 +148,8 @@ namespace CANNON
 
                 var particle = this.particles[i];
 
-                a_pressure.set(0, 0, 0);
-                a_visc.set(0, 0, 0);
+                a_pressure.init(0, 0, 0);
+                a_visc.init(0, 0, 0);
 
                 // Init vars
                 var Pij;
@@ -169,14 +169,14 @@ namespace CANNON
 
                     // Get r once for all..
                     particle.position.vsub(neighbor.position, r_vec);
-                    var r = r_vec.norm();
+                    var r = r_vec.length();
 
                     // Pressure contribution
                     Pij = -neighbor.mass * (this.pressures[i] / (this.densities[i] * this.densities[i] + eps) + this.pressures[j] / (this.densities[j] * this.densities[j] + eps));
                     this.gradw(r_vec, gradW);
                     // Add to pressure acceleration
                     gradW.mult(Pij, gradW);
-                    a_pressure.vadd(gradW, a_pressure);
+                    a_pressure.addTo(gradW, a_pressure);
 
                     // Viscosity contribution
                     neighbor.velocity.vsub(particle.velocity, u);
@@ -184,7 +184,7 @@ namespace CANNON
                     nabla = this.nablaw(r);
                     u.mult(nabla, u);
                     // Add to viscosity acceleration
-                    a_visc.vadd(u, a_visc);
+                    a_visc.addTo(u, a_visc);
                 }
 
                 // Calculate force
@@ -208,7 +208,7 @@ namespace CANNON
         // calculate gradient of the weight function
         gradw(rVec: Vector3, resultVec: Vector3)
         {
-            var r = rVec.norm(),
+            var r = rVec.length(),
                 h = this.smoothingRadius;
             rVec.mult(945.0 / (32.0 * Math.PI * Math.pow(h, 9)) * Math.pow((h * h - r * r), 2), resultVec);
         }

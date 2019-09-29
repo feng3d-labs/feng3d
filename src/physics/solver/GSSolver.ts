@@ -73,8 +73,8 @@ namespace CANNON
                     var b = bodies[i],
                         vlambda = b.vlambda,
                         wlambda = b.wlambda;
-                    vlambda.set(0, 0, 0);
-                    wlambda.set(0, 0, 0);
+                    vlambda.init(0, 0, 0);
+                    wlambda.init(0, 0, 0);
                 }
 
                 // Iterate over equations
@@ -126,10 +126,10 @@ namespace CANNON
                         w = b.angularVelocity;
 
                     b.vlambda.vmul(b.linearFactor, b.vlambda);
-                    v.vadd(b.vlambda, v);
+                    v.addTo(b.vlambda, v);
 
                     b.wlambda.vmul(b.angularFactor, b.wlambda);
-                    w.vadd(b.wlambda, w);
+                    w.addTo(b.wlambda, w);
                 }
 
                 // Set the .multiplier property of each equation

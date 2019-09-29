@@ -58,7 +58,7 @@ namespace CANNON
             // Set position locally to the chassis
             var worldPosition = new Vector3();
             this.chassisBody.pointToWorldFrame(position, worldPosition);
-            wheelBody.position.set(worldPosition.x, worldPosition.y, worldPosition.z);
+            wheelBody.position.init(worldPosition.x, worldPosition.y, worldPosition.z);
 
             // Constrain wheel
             var axis = typeof (options.axis) !== 'undefined' ? options.axis.clone() : new Vector3(0, 1, 0);

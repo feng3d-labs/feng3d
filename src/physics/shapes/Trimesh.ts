@@ -240,7 +240,7 @@ namespace CANNON
             var vb = getEdgeVector_vb;
             this.getEdgeVertex(edgeIndex, 0, va);
             this.getEdgeVertex(edgeIndex, 1, vb);
-            vb.vsub(va, vectorStore);
+            vb.subTo(va, vectorStore);
         }
 
         /**
@@ -253,8 +253,8 @@ namespace CANNON
          */
         static computeNormal(va: Vector3, vb: Vector3, vc: Vector3, target: Vector3)
         {
-            vb.vsub(va, ab);
-            vc.vsub(vb, cb);
+            vb.subTo(va, ab);
+            vc.subTo(vb, cb);
             cb.cross(ab, target);
             if (!target.isZero())
             {
@@ -290,7 +290,7 @@ namespace CANNON
         {
             var i3 = i * 3;
             var vertices = this.vertices;
-            return out.set(
+            return out.init(
                 vertices[i3],
                 vertices[i3 + 1],
                 vertices[i3 + 2]
@@ -339,7 +339,7 @@ namespace CANNON
         getNormal(i: number, target: Vector3)
         {
             var i3 = i * 3;
-            return target.set(
+            return target.init(
                 this.normals[i3],
                 this.normals[i3 + 1],
                 this.normals[i3 + 2]
@@ -360,7 +360,7 @@ namespace CANNON
             var x = cli_aabb.upperBound.x - cli_aabb.lowerBound.x,
                 y = cli_aabb.upperBound.y - cli_aabb.lowerBound.y,
                 z = cli_aabb.upperBound.z - cli_aabb.lowerBound.z;
-            return target.set(
+            return target.init(
                 1.0 / 12.0 * mass * (2 * y * 2 * y + 2 * z * 2 * z),
                 1.0 / 12.0 * mass * (2 * x * 2 * x + 2 * z * 2 * z),
                 1.0 / 12.0 * mass * (2 * y * 2 * y + 2 * x * 2 * x)

@@ -60,9 +60,9 @@ namespace CANNON
             x.minForce = y.minForce = z.minForce = -maxForce;
             x.maxForce = y.maxForce = z.maxForce = maxForce;
 
-            x.ni.set(1, 0, 0);
-            y.ni.set(0, 1, 0);
-            z.ni.set(0, 0, 1);
+            x.ni.init(1, 0, 0);
+            y.ni.init(0, 1, 0);
+            z.ni.init(0, 0, 1);
         }
 
         update()

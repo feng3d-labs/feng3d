@@ -3955,6 +3955,10 @@ declare namespace feng3d {
          */
         init(x: number, y: number, z: number): this;
         /**
+         * 把所有分量都设为零
+         */
+        setZero(): void;
+        /**
          * 从Vector2初始化
          */
         fromVector2(vector: Vector2, z?: number): this;
@@ -4096,6 +4100,10 @@ declare namespace feng3d {
          * 通过将最前面的三个元素（x、y、z）除以矢量的长度可将 Vector3 对象转换为单位矢量。
          */
         normalize(thickness?: number): this;
+        /**
+         * 得到这个向量长度为1
+         */
+        unit(target?: Vector3): Vector3;
         /**
          * 按标量（大小）缩放当前的 Vector3 对象。
          */
@@ -4242,6 +4250,11 @@ declare namespace feng3d {
          * @param v 向量
          */
         isParallel(v: Vector3, precision?: number): boolean;
+        /**
+         * 从向量中得到叉乘矩阵a_cross，使得a x b = a_cross * b = c
+         * @see http://www8.cs.umu.se/kurser/TDBD24/VT06/lectures/Lecture6.pdf
+         */
+        crossmat(): CANNON.Mat3;
         /**
          * 返回当前 Vector3 对象的字符串表示形式。
          */
@@ -17093,9 +17106,9 @@ declare namespace CANNON {
          */
         constructor(x?: number, y?: number, z?: number);
         static ZERO: Vector3;
-        static UNIT_X: Vector3;
-        static UNIT_Y: Vector3;
-        static UNIT_Z: Vector3;
+        static X_AXIS: Vector3;
+        static Y_AXIS: Vector3;
+        static Z_AXIS: Vector3;
         /**
          * Vector cross product
          *
@@ -17109,7 +17122,7 @@ declare namespace CANNON {
          * @param y
          * @param z
          */
-        set(x: number, y: number, z: number): this;
+        init(x: number, y: number, z: number): this;
         /**
          * Set all components of the vector to zero.
          */
@@ -17119,13 +17132,13 @@ declare namespace CANNON {
          * @param v
          * @param target
          */
-        vadd(v: Vector3, target?: Vector3): Vector3;
+        addTo(v: Vector3, target?: Vector3): Vector3;
         /**
          * Vector subtraction
          * @param v
          * @param target Target to save in.
          */
-        vsub(v: Vector3, target?: Vector3): Vector3;
+        subTo(v: Vector3, target?: Vector3): Vector3;
         /**
          * Get the cross product matrix a_cross from a vector, such that a x b = a_cross * b = c
          * @see http://www8.cs.umu.se/kurser/TDBD24/VT06/lectures/Lecture6.pdf
@@ -17141,11 +17154,6 @@ declare namespace CANNON {
          * @param target target to save in
          */
         unit(target?: Vector3): Vector3;
-        /**
-         * Get the length of the vector
-         * @deprecated Use .length() instead
-         */
-        norm(): number;
         /**
          * Get the length of the vector
          */
@@ -19263,7 +19271,7 @@ declare namespace CANNON {
          */
         sleepTimeLimit: number;
         timeLastSleepy: number;
-        private _wakeUpAfterNarrowphase;
+        _wakeUpAfterNarrowphase: boolean;
         /**
          * World space rotational force on the body, around center of mass.
          */
@@ -20020,6 +20028,8 @@ declare namespace CANNON {
          * Contact normal, pointing out of body i.
          */
         ni: Vector3;
+        si: Shape;
+        sj: Shape;
         /**
          * Contact/non-penetration constraint equation
          *
@@ -20199,8 +20209,8 @@ declare namespace CANNON {
         /**
          * All the current contacts (instances of ContactEquation) in the world.
          */
-        contacts: any[];
-        frictionEquations: any[];
+        contacts: ContactEquation[];
+        frictionEquations: FrictionEquation[];
         /**
          * How often to normalize quaternions. Set to 0 for every step, 1 for every second etc.. A larger value increases performance. If bodies tend to explode, set to a smaller value (zero to be sure nothing can go wrong).
          */
@@ -20224,12 +20234,12 @@ declare namespace CANNON {
          * The broadphase algorithm to use. Default is NaiveBroadphase
          */
         broadphase: Broadphase;
-        bodies: any[];
+        bodies: Body[];
         /**
          * The solver algorithm to use. Default is GSSolver
          */
         solver: Solver;
-        constraints: any[];
+        constraints: Constraint[];
         narrowphase: Narrowphase;
         collisionMatrix: ArrayCollisionMatrix;
         /**
@@ -20242,7 +20252,7 @@ declare namespace CANNON {
          * All added materials
          */
         materials: Material[];
-        contactmaterials: any[];
+        contactmaterials: ContactMaterial[];
         /**
          * Used to look up a ContactMaterial given two instances of Material.
          */
@@ -20416,7 +20426,7 @@ declare namespace CANNON {
          */
         removeBody(body: Body): void;
         getBodyById(id: number): any;
-        getShapeById(id: number): any;
+        getShapeById(id: number): Shape;
         /**
          * Adds a material to the World.
          * @param m
@@ -20486,7 +20496,7 @@ declare namespace CANNON {
          * @param overrideShapeA
          * @param overrideShapeB
          */
-        createContactEquation(bi: Body, bj: Body, si: Shape, sj: Shape, overrideShapeA: Shape, overrideShapeB: Shape): any;
+        createContactEquation(bi: Body, bj: Body, si: Shape, sj: Shape, overrideShapeA: Shape, overrideShapeB: Shape): ContactEquation;
         createFrictionEquationsFromContact(contactEquation: any, outArray: FrictionEquation[]): boolean;
         createFrictionFromAverage(numContacts: number): void;
         /**

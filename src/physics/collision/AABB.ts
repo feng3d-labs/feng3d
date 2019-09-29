@@ -76,8 +76,8 @@ namespace CANNON
             // Add offset
             if (position)
             {
-                position.vadd(l, l);
-                position.vadd(u, u);
+                position.addTo(l, l);
+                position.addTo(u, u);
             }
 
             if (skinSize)
@@ -190,12 +190,12 @@ namespace CANNON
                 u = this.upperBound;
 
             a.copy(l);
-            b.set(u.x, l.y, l.z);
-            c.set(u.x, u.y, l.z);
-            d.set(l.x, u.y, u.z);
-            e.set(u.x, l.y, l.z);
-            f.set(l.x, u.y, l.z);
-            g.set(l.x, l.y, u.z);
+            b.init(u.x, l.y, l.z);
+            c.init(u.x, u.y, l.z);
+            d.init(l.x, u.y, u.z);
+            e.init(u.x, l.y, l.z);
+            f.init(l.x, u.y, l.z);
+            g.init(l.x, l.y, u.z);
             h.copy(u);
         }
 

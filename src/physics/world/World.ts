@@ -16,8 +16,8 @@ namespace CANNON
         /**
          * All the current contacts (instances of ContactEquation) in the world.
          */
-        contacts: any[];
-        frictionEquations: any[];
+        contacts: ContactEquation[];
+        frictionEquations: FrictionEquation[];
 
         /**
          * How often to normalize quaternions. Set to 0 for every step, 1 for every second etc.. A larger value increases performance. If bodies tend to explode, set to a smaller value (zero to be sure nothing can go wrong).
@@ -50,14 +50,14 @@ namespace CANNON
          */
         broadphase: Broadphase;
 
-        bodies: any[];
+        bodies: Body[];
 
         /**
          * The solver algorithm to use. Default is GSSolver
          */
         solver: Solver;
 
-        constraints: any[];
+        constraints: Constraint[];
 
         narrowphase: Narrowphase;
 
@@ -76,7 +76,7 @@ namespace CANNON
          */
         materials: Material[];
 
-        contactmaterials: any[];
+        contactmaterials: ContactMaterial[];
 
         /**
          * Used to look up a ContactMaterial given two instances of Material.
@@ -558,7 +558,7 @@ namespace CANNON
                 profilingStart,
                 constraints = this.constraints,
                 frictionEquationPool = World_step_frictionEquationPool,
-                gnorm = gravity.norm(),
+                gnorm = gravity.length(),
                 gx = gravity.x,
                 gy = gravity.y,
                 gz = gravity.z,
@@ -599,13 +599,13 @@ namespace CANNON
             var Nconstraints = constraints.length;
             for (i = 0; i !== Nconstraints; i++)
             {
-                var c = constraints[i];
-                if (!c.collideConnected)
+                var c0 = constraints[i];
+                if (!c0.collideConnected)
                 {
                     for (var j = p1.length - 1; j >= 0; j -= 1)
                     {
-                        if ((c.bodyA === p1[j] && c.bodyB === p2[j]) ||
-                            (c.bodyB === p1[j] && c.bodyA === p2[j]))
+                        if ((c0.bodyA === p1[j] && c0.bodyB === p2[j]) ||
+                            (c0.bodyB === p1[j] && c0.bodyA === p2[j]))
                         {
                             p1.splice(j, 1);
                             p2.splice(j, 1);
@@ -823,11 +823,11 @@ namespace CANNON
             var Nconstraints = constraints.length;
             for (i = 0; i !== Nconstraints; i++)
             {
-                var c = constraints[i];
-                c.update();
-                for (var j = 0, Neq = c.equations.length; j !== Neq; j++)
+                var c1 = constraints[i];
+                c1.update();
+                for (var j = 0, Neq = c1.equations.length; j !== Neq; j++)
                 {
-                    var eq = c.equations[j];
+                    var eq = c1.equations[j];
                     solver.addEquation(eq);
                 }
             }
@@ -1042,8 +1042,8 @@ namespace CANNON
                     force = b.force,
                     tau = b.torque;
 
-                b.force.set(0, 0, 0);
-                b.torque.set(0, 0, 0);
+                b.force.init(0, 0, 0);
+                b.torque.init(0, 0, 0);
             }
         }
     }

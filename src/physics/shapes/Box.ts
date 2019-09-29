@@ -92,12 +92,12 @@ namespace CANNON
         {
             var sides = sixTargetVectors;
             var ex = this.halfExtents;
-            sides[0].set(ex.x, 0, 0);
-            sides[1].set(0, ex.y, 0);
-            sides[2].set(0, 0, ex.z);
-            sides[3].set(-ex.x, 0, 0);
-            sides[4].set(0, -ex.y, 0);
-            sides[5].set(0, 0, -ex.z);
+            sides[0].init(ex.x, 0, 0);
+            sides[1].init(0, ex.y, 0);
+            sides[2].init(0, 0, ex.z);
+            sides[3].init(-ex.x, 0, 0);
+            sides[4].init(0, -ex.y, 0);
+            sides[5].init(0, 0, -ex.z);
 
             if (quat !== undefined)
             {
@@ -117,7 +117,7 @@ namespace CANNON
 
         updateBoundingSphereRadius()
         {
-            this.boundingSphereRadius = this.halfExtents.norm();
+            this.boundingSphereRadius = this.halfExtents.length();
         }
 
         forEachWorldCorner(pos: Vector3, quat: Quaternion, callback: Function)
@@ -133,9 +133,9 @@ namespace CANNON
             [e.x, -e.y, e.z]];
             for (var i = 0; i < corners.length; i++)
             {
-                worldCornerTempPos.set(corners[i][0], corners[i][1], corners[i][2]);
+                worldCornerTempPos.init(corners[i][0], corners[i][1], corners[i][2]);
                 quat.vmult(worldCornerTempPos, worldCornerTempPos);
-                pos.vadd(worldCornerTempPos, worldCornerTempPos);
+                pos.addTo(worldCornerTempPos, worldCornerTempPos);
                 callback(worldCornerTempPos.x,
                     worldCornerTempPos.y,
                     worldCornerTempPos.z);
@@ -145,25 +145,25 @@ namespace CANNON
         calculateWorldAABB(pos: Vector3, quat: Quaternion, min: Vector3, max: Vector3)
         {
             var e = this.halfExtents;
-            worldCornersTemp[0].set(e.x, e.y, e.z);
-            worldCornersTemp[1].set(-e.x, e.y, e.z);
-            worldCornersTemp[2].set(-e.x, -e.y, e.z);
-            worldCornersTemp[3].set(-e.x, -e.y, -e.z);
-            worldCornersTemp[4].set(e.x, -e.y, -e.z);
-            worldCornersTemp[5].set(e.x, e.y, -e.z);
-            worldCornersTemp[6].set(-e.x, e.y, -e.z);
-            worldCornersTemp[7].set(e.x, -e.y, e.z);
+            worldCornersTemp[0].init(e.x, e.y, e.z);
+            worldCornersTemp[1].init(-e.x, e.y, e.z);
+            worldCornersTemp[2].init(-e.x, -e.y, e.z);
+            worldCornersTemp[3].init(-e.x, -e.y, -e.z);
+            worldCornersTemp[4].init(e.x, -e.y, -e.z);
+            worldCornersTemp[5].init(e.x, e.y, -e.z);
+            worldCornersTemp[6].init(-e.x, e.y, -e.z);
+            worldCornersTemp[7].init(e.x, -e.y, e.z);
 
             var wc = worldCornersTemp[0];
             quat.vmult(wc, wc);
-            pos.vadd(wc, wc);
+            pos.addTo(wc, wc);
             max.copy(wc);
             min.copy(wc);
             for (var i = 1; i < 8; i++)
             {
                 var wc = worldCornersTemp[i];
                 quat.vmult(wc, wc);
-                pos.vadd(wc, wc);
+                pos.addTo(wc, wc);
                 var x = wc.x;
                 var y = wc.y;
                 var z = wc.z;

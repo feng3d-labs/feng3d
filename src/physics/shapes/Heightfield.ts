@@ -280,8 +280,8 @@ namespace CANNON
             var e0 = getNormalAt_e0;
             var e1 = getNormalAt_e1;
             this.getTriangleAt(x, y, edgeClamp, a, b, c);
-            b.vsub(a, e0);
-            c.vsub(a, e1);
+            b.subTo(a, e0);
+            c.subTo(a, e1);
             e0.cross(e1, result);
             result.normalize();
         }
@@ -298,12 +298,12 @@ namespace CANNON
             var data = this.data;
             var elementSize = this.elementSize;
 
-            result.lowerBound.set(
+            result.lowerBound.init(
                 xi * elementSize,
                 yi * elementSize,
                 data[xi][yi]
             );
-            result.upperBound.set(
+            result.upperBound.init(
                 (xi + 1) * elementSize,
                 (yi + 1) * elementSize,
                 data[xi + 1][yi + 1]
@@ -394,17 +394,17 @@ namespace CANNON
             {
 
                 // Top triangle verts
-                a.set(
+                a.init(
                     (xi + 1) * elementSize,
                     (yi + 1) * elementSize,
                     data[xi + 1][yi + 1]
                 );
-                b.set(
+                b.init(
                     xi * elementSize,
                     (yi + 1) * elementSize,
                     data[xi][yi + 1]
                 );
-                c.set(
+                c.init(
                     (xi + 1) * elementSize,
                     yi * elementSize,
                     data[xi + 1][yi]
@@ -414,17 +414,17 @@ namespace CANNON
             {
 
                 // Top triangle verts
-                a.set(
+                a.init(
                     xi * elementSize,
                     yi * elementSize,
                     data[xi][yi]
                 );
-                b.set(
+                b.init(
                     (xi + 1) * elementSize,
                     yi * elementSize,
                     data[xi + 1][yi]
                 );
-                c.set(
+                c.init(
                     xi * elementSize,
                     (yi + 1) * elementSize,
                     data[xi][yi + 1]
@@ -498,41 +498,41 @@ namespace CANNON
             {
 
                 // Center of the triangle pillar - all polygons are given relative to this one
-                offsetResult.set(
+                offsetResult.init(
                     (xi + 0.25) * elementSize, // sort of center of a triangle
                     (yi + 0.25) * elementSize,
                     h // vertical center
                 );
 
                 // Top triangle verts
-                verts[0].set(
+                verts[0].init(
                     -0.25 * elementSize,
                     -0.25 * elementSize,
                     data[xi][yi] - h
                 );
-                verts[1].set(
+                verts[1].init(
                     0.75 * elementSize,
                     -0.25 * elementSize,
                     data[xi + 1][yi] - h
                 );
-                verts[2].set(
+                verts[2].init(
                     -0.25 * elementSize,
                     0.75 * elementSize,
                     data[xi][yi + 1] - h
                 );
 
                 // bottom triangle verts
-                verts[3].set(
+                verts[3].init(
                     -0.25 * elementSize,
                     -0.25 * elementSize,
                     -h - 1
                 );
-                verts[4].set(
+                verts[4].init(
                     0.75 * elementSize,
                     -0.25 * elementSize,
                     -h - 1
                 );
-                verts[5].set(
+                verts[5].init(
                     -0.25 * elementSize,
                     0.75 * elementSize,
                     -h - 1
@@ -571,41 +571,41 @@ namespace CANNON
             {
 
                 // Center of the triangle pillar - all polygons are given relative to this one
-                offsetResult.set(
+                offsetResult.init(
                     (xi + 0.75) * elementSize, // sort of center of a triangle
                     (yi + 0.75) * elementSize,
                     h // vertical center
                 );
 
                 // Top triangle verts
-                verts[0].set(
+                verts[0].init(
                     0.25 * elementSize,
                     0.25 * elementSize,
                     data[xi + 1][yi + 1] - h
                 );
-                verts[1].set(
+                verts[1].init(
                     -0.75 * elementSize,
                     0.25 * elementSize,
                     data[xi][yi + 1] - h
                 );
-                verts[2].set(
+                verts[2].init(
                     0.25 * elementSize,
                     -0.75 * elementSize,
                     data[xi + 1][yi] - h
                 );
 
                 // bottom triangle verts
-                verts[3].set(
+                verts[3].init(
                     0.25 * elementSize,
                     0.25 * elementSize,
                     - h - 1
                 );
-                verts[4].set(
+                verts[4].init(
                     -0.75 * elementSize,
                     0.25 * elementSize,
                     - h - 1
                 );
-                verts[5].set(
+                verts[5].init(
                     0.25 * elementSize,
                     -0.75 * elementSize,
                     - h - 1
@@ -649,7 +649,7 @@ namespace CANNON
 
         calculateLocalInertia(mass: number, target = new Vector3())
         {
-            target.set(0, 0, 0);
+            target.init(0, 0, 0);
             return target;
         }
 
@@ -661,8 +661,8 @@ namespace CANNON
         calculateWorldAABB(pos: Vector3, quat: Quaternion, min: Vector3, max: Vector3)
         {
             // TODO: do it properly
-            min.set(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
-            max.set(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            min.init(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+            max.init(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         }
 
         updateBoundingSphereRadius()
@@ -670,7 +670,7 @@ namespace CANNON
             // Use the bounding box of the min/max values
             var data = this.data,
                 s = this.elementSize;
-            this.boundingSphereRadius = new Vector3(data.length * s, data[0].length * s, Math.max(Math.abs(this.maxValue), Math.abs(this.minValue))).norm();
+            this.boundingSphereRadius = new Vector3(data.length * s, data[0].length * s, Math.max(Math.abs(this.maxValue), Math.abs(this.minValue))).length();
         }
 
         /**
