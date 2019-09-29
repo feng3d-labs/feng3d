@@ -43,7 +43,7 @@ namespace CANNON
         default_dt: number;
 
         nextId: number;
-        gravity: Vec3;
+        gravity: Vector3;
 
         /**
          * The broadphase algorithm to use. Default is NaiveBroadphase
@@ -129,7 +129,7 @@ namespace CANNON
          * The physics world
          * @param options 
          */
-        constructor(options: { gravity?: Vec3, allowSleep?: boolean, broadphase?: Broadphase, solver?: Solver, quatNormalizeFast?: boolean, quatNormalizeSkip?: number } = {})
+        constructor(options: { gravity?: Vector3, allowSleep?: boolean, broadphase?: Broadphase, solver?: Solver, quatNormalizeFast?: boolean, quatNormalizeSkip?: number } = {})
         {
             super();
 
@@ -143,7 +143,7 @@ namespace CANNON
             this.stepnumber = 0;
             this.default_dt = 1 / 60;
             this.nextId = 0;
-            this.gravity = new Vec3();
+            this.gravity = new Vector3();
             if (options.gravity)
             {
                 this.gravity.copy(options.gravity);
@@ -313,7 +313,7 @@ namespace CANNON
          * @param result
          * @deprecated Use .raycastAll, .raycastClosest or .raycastAny instead.
          */
-        rayTest(from: Vec3, to: Vec3, result: RaycastResult)
+        rayTest(from: Vector3, to: Vector3, result: RaycastResult)
         {
             if (result instanceof RaycastResult)
             {
@@ -338,7 +338,7 @@ namespace CANNON
          * @param callback 
          * @return True if any body was hit.
          */
-        raycastAll(from: Vec3, to: Vec3, options: { collisionFilterMask?: number, collisionFilterGroup?: number, skipBackfaces?: boolean, checkCollisionResponse?: boolean, mode?: number, from?: Vec3, to?: Vec3, callback?: Function } = {}, callback: Function)
+        raycastAll(from: Vector3, to: Vector3, options: { collisionFilterMask?: number, collisionFilterGroup?: number, skipBackfaces?: boolean, checkCollisionResponse?: boolean, mode?: number, from?: Vector3, to?: Vector3, callback?: Function } = {}, callback: Function)
         {
             options.mode = Ray.ALL;
             options.from = from;
@@ -357,7 +357,7 @@ namespace CANNON
          * 
          * @return True if any body was hit.
          */
-        raycastAny(from: Vec3, to: Vec3, options: { collisionFilterMask?: number, collisionFilterGroup?: number, skipBackfaces?: boolean, checkCollisionResponse?: boolean, mode?: number, from?: Vec3, to?: Vec3, callback?: Function, result?: RaycastResult }, result: RaycastResult)
+        raycastAny(from: Vector3, to: Vector3, options: { collisionFilterMask?: number, collisionFilterGroup?: number, skipBackfaces?: boolean, checkCollisionResponse?: boolean, mode?: number, from?: Vector3, to?: Vector3, callback?: Function, result?: RaycastResult }, result: RaycastResult)
         {
             options.mode = Ray.ANY;
             options.from = from;
@@ -376,7 +376,7 @@ namespace CANNON
          * 
          * @return True if any body was hit.
          */
-        raycastClosest(from: Vec3, to: Vec3, options: { collisionFilterMask?: number, collisionFilterGroup?: number, skipBackfaces?: boolean, checkCollisionResponse?: boolean, mode?: number, from?: Vec3, to?: Vec3, callback?: Function, result?: RaycastResult }, result: RaycastResult)
+        raycastClosest(from: Vector3, to: Vector3, options: { collisionFilterMask?: number, collisionFilterGroup?: number, skipBackfaces?: boolean, checkCollisionResponse?: boolean, mode?: number, from?: Vector3, to?: Vector3, callback?: Function, result?: RaycastResult }, result: RaycastResult)
         {
             options.mode = Ray.CLOSEST;
             options.from = from;
@@ -1075,7 +1075,7 @@ namespace CANNON
         };
     }
 
-    var step_tmp1 = new Vec3();
+    var step_tmp1 = new Vector3();
 
     /**
      * Dispatched after the world has stepped forward in time.
@@ -1090,17 +1090,17 @@ namespace CANNON
     var World_step_frictionEquationPool = [];
     var World_step_p1 = []; // Reusable arrays for collision pairs
     var World_step_p2 = [];
-    var World_step_gvec = new Vec3(); // Temporary vectors and quats
-    var World_step_vi = new Vec3();
-    var World_step_vj = new Vec3();
-    var World_step_wi = new Vec3();
-    var World_step_wj = new Vec3();
-    var World_step_t1 = new Vec3();
-    var World_step_t2 = new Vec3();
-    var World_step_rixn = new Vec3();
-    var World_step_rjxn = new Vec3();
+    var World_step_gvec = new Vector3(); // Temporary vectors and quats
+    var World_step_vi = new Vector3();
+    var World_step_vj = new Vector3();
+    var World_step_wi = new Vector3();
+    var World_step_wj = new Vector3();
+    var World_step_t1 = new Vector3();
+    var World_step_t2 = new Vector3();
+    var World_step_rixn = new Vector3();
+    var World_step_rjxn = new Vector3();
     var World_step_step_q = new Quaternion();
     var World_step_step_w = new Quaternion();
     var World_step_step_wq = new Quaternion();
-    var invI_tau_dt = new Vec3();
+    var invI_tau_dt = new Vector3();
 }

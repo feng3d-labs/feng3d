@@ -5,12 +5,12 @@ namespace CANNON
         /**
          * The lower bound of the bounding box.
          */
-        lowerBound: Vec3;
+        lowerBound: Vector3;
 
         /**
          * The upper bound of the bounding box.
          */
-        upperBound: Vec3;
+        upperBound: Vector3;
 
         /**
          * 
@@ -18,15 +18,15 @@ namespace CANNON
          * 
          * Axis aligned bounding box class.
          */
-        constructor(options: { lowerBound?: Vec3, upperBound?: Vec3 } = {})
+        constructor(options: { lowerBound?: Vector3, upperBound?: Vector3 } = {})
         {
-            this.lowerBound = new Vec3();
+            this.lowerBound = new Vector3();
             if (options.lowerBound)
             {
                 this.lowerBound.copy(options.lowerBound);
             }
 
-            this.upperBound = new Vec3();
+            this.upperBound = new Vector3();
             if (options.upperBound)
             {
                 this.upperBound.copy(options.upperBound);
@@ -41,7 +41,7 @@ namespace CANNON
          * @param skinSize
          * @return The self object
          */
-        setFromPoints(points: Vec3[], position?: Vec3, quaternion?: Quaternion, skinSize?: number)
+        setFromPoints(points: Vector3[], position?: Vector3, quaternion?: Quaternion, skinSize?: number)
         {
             var l = this.lowerBound,
                 u = this.upperBound,
@@ -184,7 +184,7 @@ namespace CANNON
             );
         }
 
-        getCorners(a: Vec3, b: Vec3, c: Vec3, d: Vec3, e: Vec3, f: Vec3, g: Vec3, h: Vec3)
+        getCorners(a: Vector3, b: Vector3, c: Vector3, d: Vector3, e: Vector3, f: Vector3, g: Vector3, h: Vector3)
         {
             var l = this.lowerBound,
                 u = this.upperBound;
@@ -306,15 +306,15 @@ namespace CANNON
 
     }
 
-    var tmp = new Vec3();
+    var tmp = new Vector3();
     var transformIntoFrame_corners = [
-        new Vec3(),
-        new Vec3(),
-        new Vec3(),
-        new Vec3(),
-        new Vec3(),
-        new Vec3(),
-        new Vec3(),
-        new Vec3()
+        new Vector3(),
+        new Vector3(),
+        new Vector3(),
+        new Vector3(),
+        new Vector3(),
+        new Vector3(),
+        new Vector3(),
+        new Vector3()
     ];
 }

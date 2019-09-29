@@ -1,6 +1,6 @@
 namespace CANNON
 {
-    export class Vec3
+    export class Vector3
     {
         x: number;
         y: number;
@@ -25,13 +25,13 @@ namespace CANNON
             this.z = z;
         }
 
-        static ZERO = new Vec3(0, 0, 0);
+        static ZERO = new Vector3(0, 0, 0);
 
-        static UNIT_X = new Vec3(1, 0, 0);
+        static UNIT_X = new Vector3(1, 0, 0);
 
-        static UNIT_Y = new Vec3(0, 1, 0);
+        static UNIT_Y = new Vector3(0, 1, 0);
 
-        static UNIT_Z = new Vec3(0, 0, 1);
+        static UNIT_Z = new Vector3(0, 0, 1);
 
         /**
          * Vector cross product
@@ -39,7 +39,7 @@ namespace CANNON
          * @param v 
          * @param target Target to save in.
          */
-        cross(v: Vec3, target = new Vec3())
+        cross(v: Vector3, target = new Vector3())
         {
             var vx = v.x, vy = v.y, vz = v.z, x = this.x, y = this.y, z = this.z;
             target = target;
@@ -78,7 +78,7 @@ namespace CANNON
          * @param v 
          * @param target 
          */
-        vadd(v: Vec3, target: Vec3 = null)
+        vadd(v: Vector3, target: Vector3 = null)
         {
             if (target)
             {
@@ -87,7 +87,7 @@ namespace CANNON
                 target.z = v.z + this.z;
             } else
             {
-                return new Vec3(this.x + v.x,
+                return new Vector3(this.x + v.x,
                     this.y + v.y,
                     this.z + v.z);
             }
@@ -98,7 +98,7 @@ namespace CANNON
          * @param v 
          * @param target Target to save in.
          */
-        vsub(v: Vec3, target: Vec3 = null)
+        vsub(v: Vector3, target: Vector3 = null)
         {
             if (target)
             {
@@ -107,7 +107,7 @@ namespace CANNON
                 target.z = this.z - v.z;
             } else
             {
-                return new Vec3(this.x - v.x,
+                return new Vector3(this.x - v.x,
                     this.y - v.y,
                     this.z - v.z);
             }
@@ -152,7 +152,7 @@ namespace CANNON
          * Get the version of this vector that is of length 1.
          * @param target target to save in
          */
-        unit(target: Vec3 = new Vec3())
+        unit(target: Vector3 = new Vector3())
         {
             target = target;
             var x = this.x, y = this.y, z = this.z;
@@ -212,7 +212,7 @@ namespace CANNON
          * Get distance from this point to another point
          * @param p 
          */
-        distanceTo(p: Vec3)
+        distanceTo(p: Vector3)
         {
             var x = this.x, y = this.y, z = this.z;
             var px = p.x, py = p.y, pz = p.z;
@@ -225,7 +225,7 @@ namespace CANNON
          * Get squared distance from this point to another point
          * @param p 
          */
-        distanceSquared(p: Vec3)
+        distanceSquared(p: Vector3)
         {
             var x = this.x, y = this.y, z = this.z;
             var px = p.x, py = p.y, pz = p.z;
@@ -238,7 +238,7 @@ namespace CANNON
          * @param  target The vector to save the result in.
          * @deprecated Use .scale() instead
          */
-        mult(scalar: number, target = new Vec3())
+        mult(scalar: number, target = new Vector3())
         {
             var x = this.x,
                 y = this.y,
@@ -254,7 +254,7 @@ namespace CANNON
          * @param scalar
          * @param  target The vector to save the result in.
          */
-        scale(scalar: number, target = new Vec3())
+        scale(scalar: number, target = new Vector3())
         {
             var x = this.x,
                 y = this.y,
@@ -270,7 +270,7 @@ namespace CANNON
          * @param  vector
          * @param  target The vector to save the result in.
          */
-        vmul(vector: Vec3, target = new Vec3())
+        vmul(vector: Vector3, target = new Vector3())
         {
             target.x = vector.x * this.x;
             target.y = vector.y * this.y;
@@ -284,7 +284,7 @@ namespace CANNON
          * @param vector
          * @param  target The vector to save the result in.
          */
-        addScaledVector(scalar: number, vector: Vec3, target = new Vec3())
+        addScaledVector(scalar: number, vector: Vector3, target = new Vector3())
         {
             target.x = this.x + scalar * vector.x;
             target.y = this.y + scalar * vector.y;
@@ -294,9 +294,9 @@ namespace CANNON
 
         /**
          * Calculate dot product
-         * @param {Vec3} v
+         * @param {Vector3} v
          */
-        dot(v: Vec3)
+        dot(v: Vector3)
         {
             return this.x * v.x + this.y * v.y + this.z * v.z;
         }
@@ -310,16 +310,16 @@ namespace CANNON
          * Make the vector point in the opposite direction.
          * @param target Optional target to save in
          */
-        negate(target: Vec3)
+        negate(target: Vector3)
         {
-            target = target || new Vec3();
+            target = target || new Vector3();
             target.x = -this.x;
             target.y = -this.y;
             target.z = -this.z;
             return target;
         }
 
-        tangents(t1: Vec3, t2: Vec3)
+        tangents(t1: Vector3, t2: Vector3)
         {
             var norm = this.norm();
             if (norm > 0.0)
@@ -366,7 +366,7 @@ namespace CANNON
          * Copies value of source to this vector.
          * @param source
          */
-        copy(source: Vec3)
+        copy(source: Vector3)
         {
             this.x = source.x;
             this.y = source.y;
@@ -380,7 +380,7 @@ namespace CANNON
          * @param v
          * @param t A number between 0 and 1. 0 will make this function return u, and 1 will make it return v. Numbers in between will generate a vector in between them.
          */
-        lerp(v: Vec3, t: number, target: Vec3)
+        lerp(v: Vector3, t: number, target: Vector3)
         {
             var x = this.x, y = this.y, z = this.z;
             target.x = x + (v.x - x) * t;
@@ -393,7 +393,7 @@ namespace CANNON
          * @param v
          * @param  precision
          */
-        almostEquals(v: Vec3, precision = 1e-6)
+        almostEquals(v: Vector3, precision = 1e-6)
         {
             if (Math.abs(this.x - v.x) > precision ||
                 Math.abs(this.y - v.y) > precision ||
@@ -424,7 +424,7 @@ namespace CANNON
          * @param  v
          * @param  precision Set to zero for exact comparisons
          */
-        isAntiparallelTo(v: Vec3, precision = 1e-6)
+        isAntiparallelTo(v: Vector3, precision = 1e-6)
         {
             this.negate(antip_neg);
             return antip_neg.almostEquals(v, precision);
@@ -435,18 +435,18 @@ namespace CANNON
          */
         clone()
         {
-            return new Vec3(this.x, this.y, this.z);
+            return new Vector3(this.x, this.y, this.z);
         }
     }
 
     /**
      * Compute two artificial tangents to the vector
      * @method tangents
-     * @param {Vec3} t1 Vector object to save the first tangent in
-     * @param {Vec3} t2 Vector object to save the second tangent in
+     * @param {Vector3} t1 Vector object to save the first tangent in
+     * @param {Vector3} t2 Vector object to save the second tangent in
      */
-    var Vec3_tangents_n = new Vec3();
-    var Vec3_tangents_randVec = new Vec3();
+    var Vec3_tangents_n = new Vector3();
+    var Vec3_tangents_randVec = new Vector3();
 
-    var antip_neg = new Vec3();
+    var antip_neg = new Vector3();
 }

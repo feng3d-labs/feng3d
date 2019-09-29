@@ -2,11 +2,11 @@ namespace CANNON
 {
     export class LockConstraint extends PointToPointConstraint
     {
-        xA: Vec3;
+        xA: Vector3;
         xB: any;
-        yA: Vec3;
+        yA: Vector3;
         yB: any;
-        zA: Vec3;
+        zA: Vector3;
         zB: any;
         rotationalEquation1: RotationalEquation;
         rotationalEquation2: RotationalEquation;
@@ -25,24 +25,24 @@ namespace CANNON
         constructor(bodyA: Body, bodyB: Body, options: { maxForce?: number } = {})
         {
             // The point-to-point constraint will keep a point shared between the bodies
-            super(bodyA, new Vec3(), bodyB, new Vec3(), typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6);
+            super(bodyA, new Vector3(), bodyB, new Vector3(), typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6);
 
             // Set pivot point in between
             var pivotA = this.pivotA;
             var pivotB = this.pivotB;
-            var halfWay = new Vec3();
+            var halfWay = new Vector3();
             bodyA.position.vadd(bodyB.position, halfWay);
             halfWay.scale(0.5, halfWay);
             bodyB.pointToLocalFrame(halfWay, pivotB);
             bodyA.pointToLocalFrame(halfWay, pivotA);
 
             // Store initial rotation of the bodies as unit vectors in the local body spaces
-            this.xA = bodyA.vectorToLocalFrame(Vec3.UNIT_X);
-            this.xB = bodyB.vectorToLocalFrame(Vec3.UNIT_X);
-            this.yA = bodyA.vectorToLocalFrame(Vec3.UNIT_Y);
-            this.yB = bodyB.vectorToLocalFrame(Vec3.UNIT_Y);
-            this.zA = bodyA.vectorToLocalFrame(Vec3.UNIT_Z);
-            this.zB = bodyB.vectorToLocalFrame(Vec3.UNIT_Z);
+            this.xA = bodyA.vectorToLocalFrame(Vector3.UNIT_X);
+            this.xB = bodyB.vectorToLocalFrame(Vector3.UNIT_X);
+            this.yA = bodyA.vectorToLocalFrame(Vector3.UNIT_Y);
+            this.yB = bodyB.vectorToLocalFrame(Vector3.UNIT_Y);
+            this.zA = bodyA.vectorToLocalFrame(Vector3.UNIT_Z);
+            this.zB = bodyB.vectorToLocalFrame(Vector3.UNIT_Z);
 
             // ...and the following rotational equations will keep all rotational DOF's in place
 
@@ -81,7 +81,7 @@ namespace CANNON
 
     }
 
-    var LockConstraint_update_tmpVec1 = new Vec3();
-    var LockConstraint_update_tmpVec2 = new Vec3();
+    var LockConstraint_update_tmpVec1 = new Vector3();
+    var LockConstraint_update_tmpVec2 = new Vector3();
 
 }

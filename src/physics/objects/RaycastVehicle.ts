@@ -124,7 +124,7 @@ namespace CANNON
          * @param axisIndex
          * @param result
          */
-        getVehicleAxisWorld(axisIndex: number, result: Vec3)
+        getVehicleAxisWorld(axisIndex: number, result: Vector3)
         {
             result.set(
                 axisIndex === 0 ? 1 : 0,
@@ -147,7 +147,7 @@ namespace CANNON
 
             this.currentVehicleSpeedKmHour = 3.6 * chassisBody.velocity.norm();
 
-            var forwardWorld = new Vec3();
+            var forwardWorld = new Vector3();
             this.getVehicleAxisWorld(this.indexForwardAxis, forwardWorld);
 
             if (forwardWorld.dot(chassisBody.velocity) < 0)
@@ -163,8 +163,8 @@ namespace CANNON
 
             this.updateSuspension(timeStep);
 
-            var impulse = new Vec3();
-            var relpos = new Vec3();
+            var impulse = new Vector3();
+            var relpos = new Vector3();
             for (var i = 0; i < numWheels; i++)
             {
                 //apply suspension force
@@ -182,9 +182,9 @@ namespace CANNON
 
             this.updateFriction(timeStep);
 
-            var hitNormalWorldScaledWithProj = new Vec3();
-            var fwd = new Vec3();
-            var vel = new Vec3();
+            var hitNormalWorldScaledWithProj = new Vector3();
+            var fwd = new Vector3();
+            var vel = new Vector3();
             for (i = 0; i < numWheels; i++)
             {
                 var wheel = wheelInfos[i];
@@ -346,7 +346,7 @@ namespace CANNON
 
                 var denominator = wheel.raycastResult.hitNormalWorld.dot(wheel.directionWorld);
 
-                var chassis_velocity_at_contactPoint = new Vec3();
+                var chassis_velocity_at_contactPoint = new Vector3();
                 chassisBody.getVelocityAtWorldPoint(wheel.raycastResult.hitPointWorld, chassis_velocity_at_contactPoint);
 
                 var projVel = wheel.raycastResult.hitNormalWorld.dot(chassis_velocity_at_contactPoint);
@@ -464,11 +464,11 @@ namespace CANNON
                 wheel.forwardImpulse = 0;
                 if (!forwardWS[i])
                 {
-                    forwardWS[i] = new Vec3();
+                    forwardWS[i] = new Vector3();
                 }
                 if (!axle[i])
                 {
-                    axle[i] = new Vec3();
+                    axle[i] = new Vector3();
                 }
             }
 
@@ -590,14 +590,14 @@ namespace CANNON
             {
                 var wheel = wheelInfos[i];
 
-                var rel_pos = new Vec3();
+                var rel_pos = new Vector3();
                 wheel.raycastResult.hitPointWorld.vsub(chassisBody.position, rel_pos);
                 // cannons applyimpulse is using world coord for the position
                 //rel_pos.copy(wheel.raycastResult.hitPointWorld);
 
                 if (wheel.forwardImpulse !== 0)
                 {
-                    var impulse = new Vec3();
+                    var impulse = new Vector3();
                     forwardWS[i].scale(wheel.forwardImpulse, impulse);
                     chassisBody.applyImpulse(impulse, rel_pos);
                 }
@@ -606,10 +606,10 @@ namespace CANNON
                 {
                     var groundObject = wheel.raycastResult.body;
 
-                    var rel_pos2 = new Vec3();
+                    var rel_pos2 = new Vector3();
                     wheel.raycastResult.hitPointWorld.vsub(groundObject.position, rel_pos2);
                     //rel_pos2.copy(wheel.raycastResult.hitPointWorld);
-                    var sideImp = new Vec3();
+                    var sideImp = new Vector3();
                     axle[i].scale(wheel.sideImpulse, sideImp);
 
                     // Scale the relative position in the up direction with rollInfluence.
@@ -629,35 +629,35 @@ namespace CANNON
     }
 
 
-    var tmpVec1 = new Vec3();
-    var tmpVec2 = new Vec3();
-    var tmpVec3 = new Vec3();
-    var tmpVec4 = new Vec3();
-    var tmpVec5 = new Vec3();
-    var tmpVec6 = new Vec3();
+    var tmpVec1 = new Vector3();
+    var tmpVec2 = new Vector3();
+    var tmpVec3 = new Vector3();
+    var tmpVec4 = new Vector3();
+    var tmpVec5 = new Vector3();
+    var tmpVec6 = new Vector3();
     var tmpRay = new Ray();
 
-    var torque = new Vec3();
+    var torque = new Vector3();
 
-    var castRay_rayvector = new Vec3();
-    var castRay_target = new Vec3();
+    var castRay_rayvector = new Vector3();
+    var castRay_target = new Vector3();
 
     var directions = [
-        new Vec3(1, 0, 0),
-        new Vec3(0, 1, 0),
-        new Vec3(0, 0, 1)
+        new Vector3(1, 0, 0),
+        new Vector3(0, 1, 0),
+        new Vector3(0, 0, 1)
     ];
-    var updateFriction_surfNormalWS_scaled_proj = new Vec3();
+    var updateFriction_surfNormalWS_scaled_proj = new Vector3();
     var updateFriction_axle = [];
     var updateFriction_forwardWS = [];
     var sideFrictionStiffness2 = 1;
 
 
-    var calcRollingFriction_vel1 = new Vec3();
-    var calcRollingFriction_vel2 = new Vec3();
-    var calcRollingFriction_vel = new Vec3();
+    var calcRollingFriction_vel1 = new Vector3();
+    var calcRollingFriction_vel2 = new Vector3();
+    var calcRollingFriction_vel = new Vector3();
 
-    function calcRollingFriction(body0: Body, body1: Body, frictionPosWorld: Vec3, frictionDirectionWorld: Vec3, maxImpulse: number)
+    function calcRollingFriction(body0: Body, body1: Body, frictionPosWorld: Vector3, frictionDirectionWorld: Vector3, maxImpulse: number)
     {
         var j1 = 0;
         var contactPosWorld = frictionPosWorld;
@@ -696,11 +696,11 @@ namespace CANNON
         return j1;
     }
 
-    var computeImpulseDenominator_r0 = new Vec3();
-    var computeImpulseDenominator_c0 = new Vec3();
-    var computeImpulseDenominator_vec = new Vec3();
-    var computeImpulseDenominator_m = new Vec3();
-    function computeImpulseDenominator(body: Body, pos: Vec3, normal: Vec3)
+    var computeImpulseDenominator_r0 = new Vector3();
+    var computeImpulseDenominator_c0 = new Vector3();
+    var computeImpulseDenominator_vec = new Vector3();
+    var computeImpulseDenominator_m = new Vector3();
+    function computeImpulseDenominator(body: Body, pos: Vector3, normal: Vector3)
     {
         var r0 = computeImpulseDenominator_r0;
         var c0 = computeImpulseDenominator_c0;
@@ -716,12 +716,12 @@ namespace CANNON
     }
 
 
-    var resolveSingleBilateral_vel1 = new Vec3();
-    var resolveSingleBilateral_vel2 = new Vec3();
-    var resolveSingleBilateral_vel = new Vec3();
+    var resolveSingleBilateral_vel1 = new Vector3();
+    var resolveSingleBilateral_vel2 = new Vector3();
+    var resolveSingleBilateral_vel = new Vector3();
 
     //bilateral constraint between two dynamic objects
-    function resolveSingleBilateral(body1: Body, pos1: Vec3, body2: Body, pos2: Vec3, normal: Vec3)
+    function resolveSingleBilateral(body1: Body, pos1: Vector3, body2: Body, pos2: Vector3, normal: Vector3)
     {
         var normalLenSqr = normal.norm2();
         if (normalLenSqr > 1.1)

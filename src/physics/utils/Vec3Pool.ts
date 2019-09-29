@@ -5,7 +5,7 @@ namespace CANNON
         constructor()
         {
             super();
-            this.type = Vec3;
+            this.type = Vector3;
         }
 
         /**
@@ -13,7 +13,7 @@ namespace CANNON
          */
         constructObject()
         {
-            return new Vec3();
+            return new Vector3();
         }
     }
 }
