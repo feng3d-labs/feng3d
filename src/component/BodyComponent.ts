@@ -13,7 +13,7 @@ namespace feng3d
             var radius = 1; // m
             this.body = new CANNON.Body({
                 mass: 5, // kg
-                position: new CANNON.Vector3(0, 10, 0), // m
+                position: new Vector3(0, 10, 0), // m
                 shape: new CANNON.Sphere(radius)
             });
         }

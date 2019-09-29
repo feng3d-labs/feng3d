@@ -54,8 +54,8 @@ namespace CANNON
 
             bodyB.position.subTo(bodyA.position, normal);
             normal.normalize();
-            normal.multiplyTo(halfDist, eq.ri);
-            normal.multiplyTo(-halfDist, eq.rj);
+            normal.scaleNumberTo(halfDist, eq.ri);
+            normal.scaleNumberTo(-halfDist, eq.rj);
         }
     }
 }

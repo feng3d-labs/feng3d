@@ -22,7 +22,7 @@ namespace CANNON
         elementSize: number;
         cacheEnabled: boolean;
         pillarConvex: ConvexPolyhedron;
-        pillarOffset: Vector3;
+        pillarOffset: feng3d.Vector3;
         private _cachedPillars: {};
 
         /**
@@ -90,7 +90,7 @@ namespace CANNON
             });
 
             this.pillarConvex = new ConvexPolyhedron();
-            this.pillarOffset = new Vector3();
+            this.pillarOffset = new feng3d.Vector3();
 
             this.updateBoundingSphereRadius();
 
@@ -250,7 +250,7 @@ namespace CANNON
             return true;
         }
 
-        getTriangleAt(x: number, y: number, edgeClamp: boolean, a: Vector3, b: Vector3, c: Vector3)
+        getTriangleAt(x: number, y: number, edgeClamp: boolean, a: feng3d.Vector3, b: feng3d.Vector3, c: feng3d.Vector3)
         {
             var idx = getHeightAt_idx;
             this.getIndexOfPosition(x, y, idx, edgeClamp);
@@ -272,7 +272,7 @@ namespace CANNON
             return upper;
         }
 
-        getNormalAt(x: number, y: number, edgeClamp: boolean, result: Vector3)
+        getNormalAt(x: number, y: number, edgeClamp: boolean, result: feng3d.Vector3)
         {
             var a = getNormalAt_a;
             var b = getNormalAt_b;
@@ -362,7 +362,7 @@ namespace CANNON
             return this._cachedPillars[this.getCacheConvexTrianglePillarKey(xi, yi, getUpperTriangle)];
         }
 
-        setCachedConvexTrianglePillar(xi: number, yi: number, getUpperTriangle: boolean, convex: ConvexPolyhedron, offset: Vector3)
+        setCachedConvexTrianglePillar(xi: number, yi: number, getUpperTriangle: boolean, convex: ConvexPolyhedron, offset: feng3d.Vector3)
         {
             this._cachedPillars[this.getCacheConvexTrianglePillarKey(xi, yi, getUpperTriangle)] = {
                 convex: convex,
@@ -385,7 +385,7 @@ namespace CANNON
          * @param b
          * @param c
          */
-        getTriangle(xi: number, yi: number, upper: boolean, a: Vector3, b: Vector3, c: Vector3)
+        getTriangle(xi: number, yi: number, upper: boolean, a: feng3d.Vector3, b: feng3d.Vector3, c: feng3d.Vector3)
         {
             var data = this.data;
             var elementSize = this.elementSize;
@@ -455,7 +455,7 @@ namespace CANNON
                 }
 
                 result = new ConvexPolyhedron();
-                offsetResult = new Vector3();
+                offsetResult = new feng3d.Vector3();
 
                 this.pillarConvex = result;
                 this.pillarOffset = offsetResult;
@@ -471,7 +471,7 @@ namespace CANNON
             {
                 if (!result.vertices[i])
                 {
-                    result.vertices[i] = new Vector3();
+                    result.vertices[i] = new feng3d.Vector3();
                 }
             }
 
@@ -647,7 +647,7 @@ namespace CANNON
             this.setCachedConvexTrianglePillar(xi, yi, getUpperTriangle, result, offsetResult);
         };
 
-        calculateLocalInertia(mass: number, target = new Vector3())
+        calculateLocalInertia(mass: number, target = new feng3d.Vector3())
         {
             target.init(0, 0, 0);
             return target;
@@ -658,7 +658,7 @@ namespace CANNON
             return Number.MAX_VALUE; // The terrain is infinite
         }
 
-        calculateWorldAABB(pos: Vector3, quat: Quaternion, min: Vector3, max: Vector3)
+        calculateWorldAABB(pos: feng3d.Vector3, quat: Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
         {
             // TODO: do it properly
             min.init(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
@@ -670,7 +670,7 @@ namespace CANNON
             // Use the bounding box of the min/max values
             var data = this.data,
                 s = this.elementSize;
-            this.boundingSphereRadius = new Vector3(data.length * s, data[0].length * s, Math.max(Math.abs(this.maxValue), Math.abs(this.minValue))).length;
+            this.boundingSphereRadius = new feng3d.Vector3(data.length * s, data[0].length * s, Math.max(Math.abs(this.maxValue), Math.abs(this.minValue))).length;
         }
 
         /**
@@ -679,7 +679,7 @@ namespace CANNON
          * @param image
          * @param scale
          */
-        setHeightsFromImage(image: HTMLImageElement, scale: Vector3)
+        setHeightsFromImage(image: HTMLImageElement, scale: feng3d.Vector3)
         {
             var canvas = document.createElement('canvas');
             canvas.width = image.width;
@@ -723,17 +723,17 @@ namespace CANNON
     }
 
     var getHeightAt_idx = [];
-    var getHeightAt_weights = new Vector3();
-    var getHeightAt_a = new Vector3();
-    var getHeightAt_b = new Vector3();
-    var getHeightAt_c = new Vector3();
+    var getHeightAt_weights = new feng3d.Vector3();
+    var getHeightAt_a = new feng3d.Vector3();
+    var getHeightAt_b = new feng3d.Vector3();
+    var getHeightAt_c = new feng3d.Vector3();
 
 
-    var getNormalAt_a = new Vector3();
-    var getNormalAt_b = new Vector3();
-    var getNormalAt_c = new Vector3();
-    var getNormalAt_e0 = new Vector3();
-    var getNormalAt_e1 = new Vector3();
+    var getNormalAt_a = new feng3d.Vector3();
+    var getNormalAt_b = new feng3d.Vector3();
+    var getNormalAt_c = new feng3d.Vector3();
+    var getNormalAt_e0 = new feng3d.Vector3();
+    var getNormalAt_e1 = new feng3d.Vector3();
 
 
     // from https://en.wikipedia.org/wiki/Barycentric_coordinate_system

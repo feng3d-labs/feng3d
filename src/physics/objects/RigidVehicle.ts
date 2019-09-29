@@ -18,14 +18,14 @@ namespace CANNON
         {
             this.wheelBodies = [];
 
-            this.coordinateSystem = typeof (options.coordinateSystem) === 'undefined' ? new Vector3(1, 2, 3) : options.coordinateSystem.clone();
+            this.coordinateSystem = typeof (options.coordinateSystem) === 'undefined' ? new feng3d.Vector3(1, 2, 3) : options.coordinateSystem.clone();
 
             this.chassisBody = options.chassisBody;
 
             if (!this.chassisBody)
             {
                 // No chassis body given. Create it!
-                var chassisShape = new Box(new Vector3(5, 2, 0.5));
+                var chassisShape = new Box(new feng3d.Vector3(5, 2, 0.5));
                 throw "下一行代码有问题？！"
                 // this.chassisBody = new Body(1, chassisShape);
             }
@@ -40,7 +40,7 @@ namespace CANNON
          * 
          * @param options 
          */
-        addWheel(options: { body?: Body, isFrontWheel?: boolean, position?: Vector3, axis?: Vector3 } = {})
+        addWheel(options: { body?: Body, isFrontWheel?: boolean, position?: feng3d.Vector3, axis?: feng3d.Vector3 } = {})
         {
             var wheelBody = options.body;
             if (!wheelBody)
@@ -52,22 +52,22 @@ namespace CANNON
             this.wheelForces.push(0);
 
             // Position constrain wheels
-            var zero = new Vector3();
-            var position = typeof (options.position) !== 'undefined' ? options.position.clone() : new Vector3();
+            var zero = new feng3d.Vector3();
+            var position = typeof (options.position) !== 'undefined' ? options.position.clone() : new feng3d.Vector3();
 
             // Set position locally to the chassis
-            var worldPosition = new Vector3();
+            var worldPosition = new feng3d.Vector3();
             this.chassisBody.pointToWorldFrame(position, worldPosition);
             wheelBody.position.init(worldPosition.x, worldPosition.y, worldPosition.z);
 
             // Constrain wheel
-            var axis = typeof (options.axis) !== 'undefined' ? options.axis.clone() : new Vector3(0, 1, 0);
+            var axis = typeof (options.axis) !== 'undefined' ? options.axis.clone() : new feng3d.Vector3(0, 1, 0);
             this.wheelAxes.push(axis);
 
             var hingeConstraint = new HingeConstraint(this.chassisBody, wheelBody, {
                 pivotA: position,
                 axisA: axis,
-                pivotB: Vector3.ZERO,
+                pivotB: feng3d.Vector3.ZERO,
                 axisB: axis,
                 collideConnected: false
             });
@@ -221,7 +221,7 @@ namespace CANNON
     }
 
 
-    var torque = new Vector3();
+    var torque = new feng3d.Vector3();
 
-    var worldAxis = new Vector3();
+    var worldAxis = new feng3d.Vector3();
 }

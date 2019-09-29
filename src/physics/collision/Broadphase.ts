@@ -208,15 +208,15 @@ namespace CANNON
 
     }
 
-    var Broadphase_collisionPairs_r = new Vector3();// Temp objects
-    var Broadphase_collisionPairs_normal = new Vector3();
+    var Broadphase_collisionPairs_r = new feng3d.Vector3();// Temp objects
+    var Broadphase_collisionPairs_normal = new feng3d.Vector3();
     var Broadphase_collisionPairs_quat = new Quaternion();
-    var Broadphase_collisionPairs_relpos = new Vector3();
+    var Broadphase_collisionPairs_relpos = new feng3d.Vector3();
 
 
     var Broadphase_makePairsUnique_temp: { keys: string[] } = { keys: [] };
     var Broadphase_makePairsUnique_p1: any[] = [];
     var Broadphase_makePairsUnique_p2: any[] = [];
 
-    var bsc_dist = new Vector3();
+    var bsc_dist = new feng3d.Vector3();
 }

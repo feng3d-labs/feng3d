@@ -5,12 +5,12 @@ namespace CANNON
         /**
          * The lower bound of the bounding box.
          */
-        lowerBound: Vector3;
+        lowerBound: feng3d.Vector3;
 
         /**
          * The upper bound of the bounding box.
          */
-        upperBound: Vector3;
+        upperBound: feng3d.Vector3;
 
         /**
          * 
@@ -18,15 +18,15 @@ namespace CANNON
          * 
          * Axis aligned bounding box class.
          */
-        constructor(options: { lowerBound?: Vector3, upperBound?: Vector3 } = {})
+        constructor(options: { lowerBound?: feng3d.Vector3, upperBound?: feng3d.Vector3 } = {})
         {
-            this.lowerBound = new Vector3();
+            this.lowerBound = new feng3d.Vector3();
             if (options.lowerBound)
             {
                 this.lowerBound.copy(options.lowerBound);
             }
 
-            this.upperBound = new Vector3();
+            this.upperBound = new feng3d.Vector3();
             if (options.upperBound)
             {
                 this.upperBound.copy(options.upperBound);
@@ -41,7 +41,7 @@ namespace CANNON
          * @param skinSize
          * @return The self object
          */
-        setFromPoints(points: Vector3[], position?: Vector3, quaternion?: Quaternion, skinSize?: number)
+        setFromPoints(points: feng3d.Vector3[], position?: feng3d.Vector3, quaternion?: Quaternion, skinSize?: number)
         {
             var l = this.lowerBound,
                 u = this.upperBound,
@@ -184,7 +184,7 @@ namespace CANNON
             );
         }
 
-        getCorners(a: Vector3, b: Vector3, c: Vector3, d: Vector3, e: Vector3, f: Vector3, g: Vector3, h: Vector3)
+        getCorners(a: feng3d.Vector3, b: feng3d.Vector3, c: feng3d.Vector3, d: feng3d.Vector3, e: feng3d.Vector3, f: feng3d.Vector3, g: feng3d.Vector3, h: feng3d.Vector3)
         {
             var l = this.lowerBound,
                 u = this.upperBound;
@@ -306,15 +306,15 @@ namespace CANNON
 
     }
 
-    var tmp = new Vector3();
+    var tmp = new feng3d.Vector3();
     var transformIntoFrame_corners = [
-        new Vector3(),
-        new Vector3(),
-        new Vector3(),
-        new Vector3(),
-        new Vector3(),
-        new Vector3(),
-        new Vector3(),
-        new Vector3()
+        new feng3d.Vector3(),
+        new feng3d.Vector3(),
+        new feng3d.Vector3(),
+        new feng3d.Vector3(),
+        new feng3d.Vector3(),
+        new feng3d.Vector3(),
+        new feng3d.Vector3(),
+        new feng3d.Vector3()
     ];
 }

@@ -23,17 +23,17 @@ namespace CANNON
         /**
          * Connection point, defined locally in the chassis body frame.
          */
-        chassisConnectionPointLocal: Vector3;
+        chassisConnectionPointLocal: feng3d.Vector3;
 
-        chassisConnectionPointWorld: Vector3;
+        chassisConnectionPointWorld: feng3d.Vector3;
 
-        directionLocal: Vector3;
+        directionLocal: feng3d.Vector3;
 
-        directionWorld: Vector3;
+        directionWorld: feng3d.Vector3;
 
-        axleLocal: Vector3;
+        axleLocal: feng3d.Vector3;
 
-        axleWorld: Vector3;
+        axleWorld: feng3d.Vector3;
 
         suspensionRestLength: number;
 
@@ -102,19 +102,19 @@ namespace CANNON
          */
         constructor(options: {
             maxSuspensionTravel?: number, customSlidingRotationalSpeed?: number, useCustomSlidingRotationalSpeed?: boolean,
-            chassisConnectionPointLocal?: Vector3, chassisConnectionPointWorld?: Vector3, directionLocal?: Vector3, directionWorld?: Vector3,
-            axleLocal?: Vector3, axleWorld?: Vector3, suspensionRestLength?: number, suspensionMaxLength?: number, radius?: number,
+            chassisConnectionPointLocal?: feng3d.Vector3, chassisConnectionPointWorld?: feng3d.Vector3, directionLocal?: feng3d.Vector3, directionWorld?: feng3d.Vector3,
+            axleLocal?: feng3d.Vector3, axleWorld?: feng3d.Vector3, suspensionRestLength?: number, suspensionMaxLength?: number, radius?: number,
             suspensionStiffness?: number, dampingCompression?: number, dampingRelaxation?: number, frictionSlip?: number,
             rollInfluence?: number, maxSuspensionForce?: number, isFrontWheel?: number,
         } = {})
         {
             options = Utils.defaults(options, {
-                chassisConnectionPointLocal: new Vector3(),
-                chassisConnectionPointWorld: new Vector3(),
-                directionLocal: new Vector3(),
-                directionWorld: new Vector3(),
-                axleLocal: new Vector3(),
-                axleWorld: new Vector3(),
+                chassisConnectionPointLocal: new feng3d.Vector3(),
+                chassisConnectionPointWorld: new feng3d.Vector3(),
+                directionLocal: new feng3d.Vector3(),
+                directionWorld: new feng3d.Vector3(),
+                axleLocal: new feng3d.Vector3(),
+                axleWorld: new feng3d.Vector3(),
                 suspensionRestLength: 1,
                 suspensionMaxLength: 2,
                 radius: 1,
@@ -207,7 +207,7 @@ namespace CANNON
         }
     }
 
-    var chassis_velocity_at_contactPoint = new Vector3();
-    var relpos = new Vector3();
-    var chassis_velocity_at_contactPoint = new Vector3();
+    var chassis_velocity_at_contactPoint = new feng3d.Vector3();
+    var relpos = new feng3d.Vector3();
+    var chassis_velocity_at_contactPoint = new feng3d.Vector3();
 }

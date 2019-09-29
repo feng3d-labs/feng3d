@@ -38,7 +38,7 @@ namespace feng3d
          * 重力加速度
          */
         @oav()
-        gravity = new CANNON.Vector3(0, -9.82, 0);
+        gravity = new Vector3(0, -9.82, 0);
 
         /**
          * 指定所运行环境

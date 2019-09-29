@@ -2,8 +2,8 @@ namespace CANNON
 {
     export class ConeTwistConstraint extends PointToPointConstraint
     {
-        axisA: Vector3;
-        axisB: Vector3;
+        axisA: feng3d.Vector3;
+        axisB: feng3d.Vector3;
         angle: number;
         coneEquation: ConeEquation;
         twistEquation: RotationalEquation;
@@ -19,15 +19,15 @@ namespace CANNON
          * @author schteppe
          */
         constructor(bodyA: Body, bodyB: Body, options: {
-            pivotA?: Vector3, pivotB?: Vector3, maxForce?: number, axisA?: Vector3, axisB?: Vector3,
+            pivotA?: feng3d.Vector3, pivotB?: feng3d.Vector3, maxForce?: number, axisA?: feng3d.Vector3, axisB?: feng3d.Vector3,
             collideConnected?: boolean, angle?: number, twistAngle?: number
         } = {})
         {
-            super(bodyA, options.pivotA ? options.pivotA.clone() : new Vector3(), bodyB, options.pivotB ? options.pivotB.clone() : new Vector3(),
+            super(bodyA, options.pivotA ? options.pivotA.clone() : new feng3d.Vector3(), bodyB, options.pivotB ? options.pivotB.clone() : new feng3d.Vector3(),
                 typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6);
 
-            this.axisA = options.axisA ? options.axisA.clone() : new Vector3();
-            this.axisB = options.axisB ? options.axisB.clone() : new Vector3();
+            this.axisA = options.axisA ? options.axisA.clone() : new feng3d.Vector3();
+            this.axisB = options.axisB ? options.axisB.clone() : new feng3d.Vector3();
 
             var maxForce = typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6;
 
@@ -83,7 +83,7 @@ namespace CANNON
 
     }
 
-    var ConeTwistConstraint_update_tmpVec1 = new Vector3();
-    var ConeTwistConstraint_update_tmpVec2 = new Vector3();
+    var ConeTwistConstraint_update_tmpVec1 = new feng3d.Vector3();
+    var ConeTwistConstraint_update_tmpVec2 = new feng3d.Vector3();
 
 }

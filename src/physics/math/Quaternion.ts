@@ -73,7 +73,7 @@ namespace CANNON
          * @param axis
          * @param angle in radians
          */
-        setFromAxisAngle(axis: Vector3, angle: number)
+        setFromAxisAngle(axis: feng3d.Vector3, angle: number)
         {
             var s = Math.sin(angle * 0.5);
             this.x = axis.x * s;
@@ -88,7 +88,7 @@ namespace CANNON
          * @param targetAxis A vector object to reuse for storing the axis.
          * @return An array, first elemnt is the axis and the second is the angle in radians.
          */
-        toAxisAngle(targetAxis = new Vector3())
+        toAxisAngle(targetAxis = new feng3d.Vector3())
         {
             this.normalize(); // if w>1 acos and sqrt will produce errors, this cant happen if quaternion is normalised
             var angle = 2 * Math.acos(this.w);
@@ -113,7 +113,7 @@ namespace CANNON
          * @param u
          * @param v
          */
-        setFromVectors(u: Vector3, v: Vector3)
+        setFromVectors(u: feng3d.Vector3, v: feng3d.Vector3)
         {
             if (u.isAntiparallelTo(v))
             {
@@ -237,7 +237,7 @@ namespace CANNON
          * @param v
          * @param target Optional
          */
-        vmult(v: Vector3, target = new Vector3())
+        vmult(v: feng3d.Vector3, target = new feng3d.Vector3())
         {
             var x = v.x,
                 y = v.y,
@@ -279,7 +279,7 @@ namespace CANNON
          * @param target
          * @param order Three-character string e.g. "YZX", which also is default.
          */
-        toEuler(target: Vector3, order: string)
+        toEuler(target: feng3d.Vector3, order: string)
         {
             order = order || "YZX";
 
@@ -464,7 +464,7 @@ namespace CANNON
          * @param  target
          * @return The "target" object
          */
-        integrate(angularVelocity: Vector3, dt: number, angularFactor: Vector3, target: Quaternion)
+        integrate(angularVelocity: feng3d.Vector3, dt: number, angularFactor: feng3d.Vector3, target: Quaternion)
         {
             target = target || new Quaternion();
 
@@ -487,10 +487,10 @@ namespace CANNON
         }
     }
 
-    var sfv_t1 = new Vector3();
-    var sfv_t2 = new Vector3();
+    var sfv_t1 = new feng3d.Vector3();
+    var sfv_t2 = new feng3d.Vector3();
 
-    var Quaternion_mult_va = new Vector3();
-    var Quaternion_mult_vb = new Vector3();
-    var Quaternion_mult_vaxvb = new Vector3();
+    var Quaternion_mult_va = new feng3d.Vector3();
+    var Quaternion_mult_vb = new feng3d.Vector3();
+    var Quaternion_mult_vaxvb = new feng3d.Vector3();
 }

@@ -5,7 +5,7 @@ namespace CANNON
         constructor()
         {
             super();
-            this.type = Vector3;
+            this.type = feng3d.Vector3;
         }
 
         /**
@@ -13,7 +13,7 @@ namespace CANNON
          */
         constructObject()
         {
-            return new Vector3();
+            return new feng3d.Vector3();
         }
     }
 }

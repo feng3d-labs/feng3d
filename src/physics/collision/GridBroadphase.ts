@@ -5,8 +5,8 @@ namespace CANNON
 		nx: number;
 		ny: number;
 		nz: number;
-		aabbMin: Vector3;
-		aabbMax: Vector3;
+		aabbMin: feng3d.Vector3;
+		aabbMax: feng3d.Vector3;
 		bins: any[];
 		binLengths: any[]; //Rather than continually resizing arrays (thrashing the memory), just record length and allow them to grow
 
@@ -21,14 +21,14 @@ namespace CANNON
 		 * 
 		 * @todo Needs support for more than just planes and spheres.
 		 */
-		constructor(aabbMin: Vector3, aabbMax: Vector3, nx: number, ny: number, nz: number)
+		constructor(aabbMin: feng3d.Vector3, aabbMax: feng3d.Vector3, nx: number, ny: number, nz: number)
 		{
 			super();
 			this.nx = nx || 10;
 			this.ny = ny || 10;
 			this.nz = nz || 10;
-			this.aabbMin = aabbMin || new Vector3(100, 100, 100);
-			this.aabbMax = aabbMax || new Vector3(-100, -100, -100);
+			this.aabbMin = aabbMin || new feng3d.Vector3(100, 100, 100);
+			this.aabbMax = aabbMax || new feng3d.Vector3(-100, -100, -100);
 			var nbins = this.nx * this.ny * this.nz;
 			if (nbins <= 0)
 			{
@@ -253,6 +253,6 @@ namespace CANNON
 	}
 
 
-	var GridBroadphase_collisionPairs_d = new Vector3();
-	var GridBroadphase_collisionPairs_binPos = new Vector3();
+	var GridBroadphase_collisionPairs_d = new feng3d.Vector3();
+	var GridBroadphase_collisionPairs_binPos = new feng3d.Vector3();
 }

@@ -3,9 +3,9 @@ namespace CANNON
     export class ConvexPolyhedron extends Shape
     {
 
-        vertices: Vector3[];
+        vertices: feng3d.Vector3[];
 
-        worldVertices: Vector3[];
+        worldVertices: feng3d.Vector3[];
         worldVerticesNeedsUpdate: boolean;
 
         /**
@@ -13,12 +13,12 @@ namespace CANNON
          */
         faces: ({ connectedFaces: number[] } & (number[]))[];
 
-        faceNormals: Vector3[];
+        faceNormals: feng3d.Vector3[];
 
         worldFaceNormalsNeedsUpdate: boolean;
-        worldFaceNormals: Vector3[];
+        worldFaceNormals: feng3d.Vector3[];
 
-        uniqueEdges: Vector3[];
+        uniqueEdges: feng3d.Vector3[];
 
         /**
          * If given, these locally defined, normalized axes are the only ones being checked when doing separating axis check.
@@ -44,7 +44,7 @@ namespace CANNON
          * @todo Move the clipping functions to ContactGenerator?
          * @todo Automatically merge coplanar polygons in constructor.
          */
-        constructor(points?: Vector3[], faces?: number[][], uniqueAxes?: any[])
+        constructor(points?: feng3d.Vector3[], faces?: number[][], uniqueAxes?: any[])
         {
             super({
                 type: Shape.types.CONVEXPOLYHEDRON
@@ -132,7 +132,7 @@ namespace CANNON
                     }
                 }
 
-                var n = this.faceNormals[i] || new Vector3();
+                var n = this.faceNormals[i] || new feng3d.Vector3();
                 this.getFaceNormal(i, n);
                 n.negateTo(n);
                 this.faceNormals[i] = n;
@@ -156,7 +156,7 @@ namespace CANNON
          * @param vc 
          * @param target 
          */
-        static computeNormal(va: Vector3, vb: Vector3, vc: Vector3, target: Vector3)
+        static computeNormal(va: feng3d.Vector3, vb: feng3d.Vector3, vc: feng3d.Vector3, target: feng3d.Vector3)
         {
             vb.subTo(va, ab);
             vc.subTo(vb, cb);
@@ -173,7 +173,7 @@ namespace CANNON
          * @param i 
          * @param target 
          */
-        getFaceNormal(i: number, target: Vector3)
+        getFaceNormal(i: number, target: feng3d.Vector3)
         {
             var f = this.faces[i];
             var va = this.vertices[f[0]];
@@ -194,7 +194,7 @@ namespace CANNON
          * @param result The an array of contact point objects, see clipFaceAgainstHull
          * @see http://bullet.googlecode.com/svn/trunk/src/BulletCollision/NarrowPhaseCollision/btPolyhedralContactClipping.cpp
          */
-        clipAgainstHull(posA: Vector3, quatA: Quaternion, hullB: ConvexPolyhedron, posB: Vector3, quatB: Quaternion, separatingNormal: Vector3, minDist: number, maxDist: number, result: number[])
+        clipAgainstHull(posA: feng3d.Vector3, quatA: Quaternion, hullB: ConvexPolyhedron, posB: feng3d.Vector3, quatB: Quaternion, separatingNormal: feng3d.Vector3, minDist: number, maxDist: number, result: number[])
         {
             var WorldNormal = cah_WorldNormal;
             var hullA = this;
@@ -219,7 +219,7 @@ namespace CANNON
             for (var e0 = 0; e0 < numVertices; e0++)
             {
                 var b = hullB.vertices[polyB[e0]];
-                var worldb = new Vector3();
+                var worldb = new feng3d.Vector3();
                 worldb.copy(b);
                 quatB.vmult(worldb, worldb);
                 posB.addTo(worldb, worldb);
@@ -251,7 +251,7 @@ namespace CANNON
          * @param faceListB 
          * @returns Returns false if a separation is found, else true
          */
-        findSeparatingAxis(hullB: ConvexPolyhedron, posA: Vector3, quatA: Quaternion, posB: Vector3, quatB: Quaternion, target: Vector3, faceListA: number[], faceListB: number[])
+        findSeparatingAxis(hullB: ConvexPolyhedron, posA: feng3d.Vector3, quatA: Quaternion, posB: feng3d.Vector3, quatB: Quaternion, target: feng3d.Vector3, faceListA: number[], faceListB: number[])
         {
             var faceANormalWS3 = fsa_faceANormalWS3,
                 Worldnormal1 = fsa_Worldnormal1,
@@ -413,7 +413,7 @@ namespace CANNON
          * @param quatB
          * @return The overlap depth, or FALSE if no penetration.
          */
-        testSepAxis(axis: Vector3, hullB: ConvexPolyhedron, posA: Vector3, quatA: Quaternion, posB: Vector3, quatB: Quaternion)
+        testSepAxis(axis: feng3d.Vector3, hullB: ConvexPolyhedron, posA: feng3d.Vector3, quatA: Quaternion, posB: feng3d.Vector3, quatB: Quaternion)
         {
             var hullA = this;
             ConvexPolyhedron.project(hullA, axis, posA, quatA, maxminA);
@@ -437,7 +437,7 @@ namespace CANNON
          * @param mass
          * @param target
          */
-        calculateLocalInertia(mass: number, target: Vector3)
+        calculateLocalInertia(mass: number, target: feng3d.Vector3)
         {
             // Approximate with box inertia
             // Exact inertia calculation is overkill, but see http://geometrictools.com/Documentation/PolyhedralMassProperties.pdf for the correct way to do it
@@ -474,7 +474,7 @@ namespace CANNON
          * @param maxDist
          * @param result Array to store resulting contact points in. Will be objects with properties: point, depth, normal. These are represented in world coordinates.
          */
-        clipFaceAgainstHull(separatingNormal: Vector3, posA: Vector3, quatA: Quaternion, worldVertsB1: Vector3[], minDist: number, maxDist: number, result: any[])
+        clipFaceAgainstHull(separatingNormal: feng3d.Vector3, posA: feng3d.Vector3, quatA: Quaternion, worldVertsB1: feng3d.Vector3[], minDist: number, maxDist: number, result: any[])
         {
             var faceANormalWS = cfah_faceANormalWS,
                 edge0 = cfah_edge0,
@@ -624,7 +624,7 @@ namespace CANNON
          * @param planeNormal
          * @param planeConstant The constant in the mathematical plane equation
          */
-        clipFaceAgainstPlane(inVertices: Vector3[], outVertices: Vector3[], planeNormal: Vector3, planeConstant: number)
+        clipFaceAgainstPlane(inVertices: feng3d.Vector3[], outVertices: feng3d.Vector3[], planeNormal: feng3d.Vector3, planeConstant: number)
         {
             var n_dot_first, n_dot_last;
             var numVerts = inVertices.length;
@@ -648,14 +648,14 @@ namespace CANNON
                     if (n_dot_last < 0)
                     {
                         // Start < 0, end < 0, so output lastVertex
-                        var newv = new Vector3();
+                        var newv = new feng3d.Vector3();
                         newv.copy(lastVertex);
                         outVertices.push(newv);
                     } else
                     {
                         // Start < 0, end >= 0, so output intersection
-                        var newv = new Vector3();
-                        firstVertex.lerpTo(lastVertex,
+                        var newv = new feng3d.Vector3();
+                        firstVertex.lerpNumberTo(lastVertex,
                             n_dot_first / (n_dot_first - n_dot_last),
                             newv);
                         outVertices.push(newv);
@@ -665,8 +665,8 @@ namespace CANNON
                     if (n_dot_last < 0)
                     {
                         // Start >= 0, end < 0 so output intersection and end
-                        var newv = new Vector3();
-                        firstVertex.lerpTo(lastVertex,
+                        var newv = new feng3d.Vector3();
+                        firstVertex.lerpNumberTo(lastVertex,
                             n_dot_first / (n_dot_first - n_dot_last),
                             newv);
                         outVertices.push(newv);
@@ -680,12 +680,12 @@ namespace CANNON
         }
 
         // Updates .worldVertices and sets .worldVerticesNeedsUpdate to false.
-        computeWorldVertices(position: Vector3, quat: Quaternion)
+        computeWorldVertices(position: feng3d.Vector3, quat: Quaternion)
         {
             var N = this.vertices.length;
             while (this.worldVertices.length < N)
             {
-                this.worldVertices.push(new Vector3());
+                this.worldVertices.push(new feng3d.Vector3());
             }
 
             var verts = this.vertices,
@@ -745,7 +745,7 @@ namespace CANNON
             var N = this.faceNormals.length;
             while (this.worldFaceNormals.length < N)
             {
-                this.worldFaceNormals.push(new Vector3());
+                this.worldFaceNormals.push(new feng3d.Vector3());
             }
 
             var normals = this.faceNormals,
@@ -781,7 +781,7 @@ namespace CANNON
          * @param min
          * @param max
          */
-        calculateWorldAABB(pos: Vector3, quat: Quaternion, min: Vector3, max: Vector3)
+        calculateWorldAABB(pos: feng3d.Vector3, quat: Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
         {
             var n = this.vertices.length, verts = this.vertices;
             var minx, miny, minz, maxx, maxy, maxz;
@@ -832,16 +832,16 @@ namespace CANNON
          * 
          * @param target
          */
-        getAveragePointLocal(target: Vector3)
+        getAveragePointLocal(target: feng3d.Vector3)
         {
-            target = target || new Vector3();
+            target = target || new feng3d.Vector3();
             var n = this.vertices.length,
                 verts = this.vertices;
             for (var i = 0; i < n; i++)
             {
                 target.addTo(verts[i], target);
             }
-            target.multiplyTo(1 / n, target);
+            target.scaleNumberTo(1 / n, target);
             return target;
         }
 
@@ -851,7 +851,7 @@ namespace CANNON
          * @param  offset
          * @param quat
          */
-        transformAllPoints(offset: Vector3, quat: Quaternion)
+        transformAllPoints(offset: feng3d.Vector3, quat: Quaternion)
         {
             var n = this.vertices.length,
                 verts = this.vertices;
@@ -895,7 +895,7 @@ namespace CANNON
          * 
          * @param p      A point given in local coordinates
          */
-        pointIsInside(p: Vector3)
+        pointIsInside(p: feng3d.Vector3)
         {
             var n = this.vertices.length,
                 verts = this.vertices,
@@ -941,7 +941,7 @@ namespace CANNON
          * @param quat
          * @param result result[0] and result[1] will be set to maximum and minimum, respectively.
          */
-        static project(hull: ConvexPolyhedron, axis: Vector3, pos: Vector3, quat: Quaternion, result: number[])
+        static project(hull: ConvexPolyhedron, axis: feng3d.Vector3, pos: feng3d.Vector3, quat: Quaternion, result: number[])
         {
             var n = hull.vertices.length,
                 worldVertex = project_worldVertex,
@@ -991,42 +991,42 @@ namespace CANNON
         };
     }
 
-    var computeEdges_tmpEdge = new Vector3();
+    var computeEdges_tmpEdge = new feng3d.Vector3();
 
-    var cb = new Vector3();
-    var ab = new Vector3();
-    var cah_WorldNormal = new Vector3();
+    var cb = new feng3d.Vector3();
+    var ab = new feng3d.Vector3();
+    var cah_WorldNormal = new feng3d.Vector3();
 
 
-    var fsa_faceANormalWS3 = new Vector3();
-    var fsa_Worldnormal1 = new Vector3();
-    var fsa_deltaC = new Vector3();
-    var fsa_worldEdge0 = new Vector3();
-    var fsa_worldEdge1 = new Vector3();
-    var fsa_Cross = new Vector3();
+    var fsa_faceANormalWS3 = new feng3d.Vector3();
+    var fsa_Worldnormal1 = new feng3d.Vector3();
+    var fsa_deltaC = new feng3d.Vector3();
+    var fsa_worldEdge0 = new feng3d.Vector3();
+    var fsa_worldEdge1 = new feng3d.Vector3();
+    var fsa_Cross = new feng3d.Vector3();
 
     var maxminA = [], maxminB = [];
 
-    var cli_aabbmin = new Vector3();
-    var cli_aabbmax = new Vector3();
+    var cli_aabbmin = new feng3d.Vector3();
+    var cli_aabbmax = new feng3d.Vector3();
 
-    var cfah_faceANormalWS = new Vector3();
-    var cfah_edge0 = new Vector3();
-    var cfah_WorldEdge0 = new Vector3();
-    var cfah_worldPlaneAnormal1 = new Vector3();
-    var cfah_planeNormalWS1 = new Vector3();
-    var cfah_worldA1 = new Vector3();
-    var cfah_localPlaneNormal = new Vector3();
-    var cfah_planeNormalWS = new Vector3();
+    var cfah_faceANormalWS = new feng3d.Vector3();
+    var cfah_edge0 = new feng3d.Vector3();
+    var cfah_WorldEdge0 = new feng3d.Vector3();
+    var cfah_worldPlaneAnormal1 = new feng3d.Vector3();
+    var cfah_planeNormalWS1 = new feng3d.Vector3();
+    var cfah_worldA1 = new feng3d.Vector3();
+    var cfah_localPlaneNormal = new feng3d.Vector3();
+    var cfah_planeNormalWS = new feng3d.Vector3();
 
-    var computeLocalAABB_worldVert = new Vector3();
+    var computeLocalAABB_worldVert = new feng3d.Vector3();
 
-    var tempWorldVertex = new Vector3();
+    var tempWorldVertex = new feng3d.Vector3();
 
-    var ConvexPolyhedron_pointIsInside = new Vector3();
-    var ConvexPolyhedron_vToP = new Vector3();
-    var ConvexPolyhedron_vToPointInside = new Vector3();
-    var project_worldVertex = new Vector3();
-    var project_localAxis = new Vector3();
-    var project_localOrigin = new Vector3();
+    var ConvexPolyhedron_pointIsInside = new feng3d.Vector3();
+    var ConvexPolyhedron_vToP = new feng3d.Vector3();
+    var ConvexPolyhedron_vToPointInside = new feng3d.Vector3();
+    var project_worldVertex = new feng3d.Vector3();
+    var project_localAxis = new feng3d.Vector3();
+    var project_localOrigin = new feng3d.Vector3();
 }

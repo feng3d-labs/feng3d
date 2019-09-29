@@ -2,8 +2,8 @@ namespace CANNON
 {
     export class ConeEquation extends Equation
     {
-        axisA: Vector3;
-        axisB: Vector3;
+        axisA: feng3d.Vector3;
+        axisB: feng3d.Vector3;
         /**
          * The cone angle to keep
          */
@@ -18,12 +18,12 @@ namespace CANNON
          * 
          * @author schteppe
          */
-        constructor(bodyA: Body, bodyB: Body, options: { maxForce?: number, axisA?: Vector3, axisB?: Vector3, angle?: number } = {})
+        constructor(bodyA: Body, bodyB: Body, options: { maxForce?: number, axisA?: feng3d.Vector3, axisB?: feng3d.Vector3, angle?: number } = {})
         {
             super(bodyA, bodyB, -(typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6), typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6);
 
-            this.axisA = options.axisA ? options.axisA.clone() : new Vector3(1, 0, 0);
-            this.axisB = options.axisB ? options.axisB.clone() : new Vector3(0, 1, 0);
+            this.axisA = options.axisA ? options.axisA.clone() : new feng3d.Vector3(1, 0, 0);
+            this.axisB = options.axisB ? options.axisB.clone() : new feng3d.Vector3(0, 1, 0);
 
             this.angle = typeof (options.angle) !== 'undefined' ? options.angle : 0;
         }
@@ -67,6 +67,6 @@ namespace CANNON
 
     }
 
-    var tmpVec1 = new Vector3();
-    var tmpVec2 = new Vector3();
+    var tmpVec1 = new feng3d.Vector3();
+    var tmpVec2 = new feng3d.Vector3();
 }

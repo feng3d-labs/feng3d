@@ -2,9 +2,9 @@ namespace CANNON
 {
     export class FrictionEquation extends Equation
     {
-        ri: Vector3;
-        rj: Vector3;
-        t: Vector3; // tangent
+        ri: feng3d.Vector3;
+        rj: feng3d.Vector3;
+        t: feng3d.Vector3; // tangent
 
         /**
          * Constrains the slipping in a contact along a tangent
@@ -19,9 +19,9 @@ namespace CANNON
         constructor(bodyA: Body, bodyB: Body, slipForce: number)
         {
             super(bodyA, bodyB, -slipForce, slipForce);
-            this.ri = new Vector3();
-            this.rj = new Vector3();
-            this.t = new Vector3(); // tangent
+            this.ri = new feng3d.Vector3();
+            this.rj = new feng3d.Vector3();
+            this.t = new feng3d.Vector3(); // tangent
         }
 
         computeB(h: number)
@@ -58,6 +58,6 @@ namespace CANNON
         }
     }
 
-    var FrictionEquation_computeB_temp1 = new Vector3();
-    var FrictionEquation_computeB_temp2 = new Vector3();
+    var FrictionEquation_computeB_temp1 = new feng3d.Vector3();
+    var FrictionEquation_computeB_temp2 = new feng3d.Vector3();
 }

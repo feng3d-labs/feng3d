@@ -223,18 +223,18 @@ namespace CANNON
         }
     }
 
-    var zero = new Vector3();
-    var iMfi = new Vector3();
-    var iMfj = new Vector3();
-    var invIi_vmult_taui = new Vector3();
-    var invIj_vmult_tauj = new Vector3();
-    var tmp = new Vector3();
+    var zero = new feng3d.Vector3();
+    var iMfi = new feng3d.Vector3();
+    var iMfj = new feng3d.Vector3();
+    var invIi_vmult_taui = new feng3d.Vector3();
+    var invIj_vmult_tauj = new feng3d.Vector3();
+    var tmp = new feng3d.Vector3();
 
 
-    var addToWlambda_temp = new Vector3();
-    var addToWlambda_Gi = new Vector3();
-    var addToWlambda_Gj = new Vector3();
-    var addToWlambda_ri = new Vector3();
-    var addToWlambda_rj = new Vector3();
-    var addToWlambda_Mdiag = new Vector3();
+    var addToWlambda_temp = new feng3d.Vector3();
+    var addToWlambda_Gi = new feng3d.Vector3();
+    var addToWlambda_Gj = new feng3d.Vector3();
+    var addToWlambda_ri = new feng3d.Vector3();
+    var addToWlambda_rj = new feng3d.Vector3();
+    var addToWlambda_Mdiag = new feng3d.Vector3();
 }

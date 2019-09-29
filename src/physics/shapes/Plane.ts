@@ -2,7 +2,7 @@ namespace CANNON
 {
     export class Plane extends Shape
     {
-        worldNormal: Vector3;
+        worldNormal: feng3d.Vector3;
         worldNormalNeedsUpdate: boolean;
 
         /**
@@ -17,7 +17,7 @@ namespace CANNON
             });
 
             // World oriented normal
-            this.worldNormal = new Vector3();
+            this.worldNormal = new feng3d.Vector3();
             this.worldNormalNeedsUpdate = true;
 
             this.boundingSphereRadius = Number.MAX_VALUE;
@@ -31,7 +31,7 @@ namespace CANNON
             this.worldNormalNeedsUpdate = false;
         }
 
-        calculateLocalInertia(mass: number, target = new Vector3())
+        calculateLocalInertia(mass: number, target = new feng3d.Vector3())
         {
             return target;
         }
@@ -41,7 +41,7 @@ namespace CANNON
             return Number.MAX_VALUE; // The plane is infinite...
         }
 
-        calculateWorldAABB(pos: Vector3, quat: Quaternion, min: Vector3, max: Vector3)
+        calculateWorldAABB(pos: feng3d.Vector3, quat: Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
         {
             // The plane AABB is infinite, except if the normal is pointing along any axis
             tempNormal.init(0, 1, 0); // Default plane normal is y
@@ -65,6 +65,6 @@ namespace CANNON
         }
     }
 
-    var tempNormal = new Vector3();
+    var tempNormal = new feng3d.Vector3();
 
 }

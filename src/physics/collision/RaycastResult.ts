@@ -2,13 +2,13 @@ namespace CANNON
 {
 	export class RaycastResult
 	{
-		rayFromWorld = new Vector3();
+		rayFromWorld = new feng3d.Vector3();
 
-		rayToWorld = new Vector3();
+		rayToWorld = new feng3d.Vector3();
 
-		hitNormalWorld = new Vector3();
+		hitNormalWorld = new feng3d.Vector3();
 
-		hitPointWorld = new Vector3();
+		hitPointWorld = new feng3d.Vector3();
 
 		hasHit = false;
 
@@ -27,7 +27,7 @@ namespace CANNON
 		distance = -1;
 
 		suspensionLength: number;
-		directionWorld: Vector3;
+		directionWorld: feng3d.Vector3;
 
 		/**
 		 * If the ray should stop traversing the bodies.
@@ -66,10 +66,10 @@ namespace CANNON
 		}
 
 		set(
-			rayFromWorld: Vector3,
-			rayToWorld: Vector3,
-			hitNormalWorld: Vector3,
-			hitPointWorld: Vector3,
+			rayFromWorld: feng3d.Vector3,
+			rayToWorld: feng3d.Vector3,
+			hitNormalWorld: feng3d.Vector3,
+			hitPointWorld: feng3d.Vector3,
 			shape: Shape,
 			body: Body,
 			distance: number

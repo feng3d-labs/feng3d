@@ -43,7 +43,7 @@ namespace CANNON
         default_dt: number;
 
         nextId: number;
-        gravity: Vector3;
+        gravity: feng3d.Vector3;
 
         /**
          * The broadphase algorithm to use. Default is NaiveBroadphase
@@ -129,7 +129,7 @@ namespace CANNON
          * The physics world
          * @param options 
          */
-        constructor(options: { gravity?: Vector3, allowSleep?: boolean, broadphase?: Broadphase, solver?: Solver, quatNormalizeFast?: boolean, quatNormalizeSkip?: number } = {})
+        constructor(options: { gravity?: feng3d.Vector3, allowSleep?: boolean, broadphase?: Broadphase, solver?: Solver, quatNormalizeFast?: boolean, quatNormalizeSkip?: number } = {})
         {
             super();
 
@@ -143,7 +143,7 @@ namespace CANNON
             this.stepnumber = 0;
             this.default_dt = 1 / 60;
             this.nextId = 0;
-            this.gravity = new Vector3();
+            this.gravity = new feng3d.Vector3();
             if (options.gravity)
             {
                 this.gravity.copy(options.gravity);
@@ -313,7 +313,7 @@ namespace CANNON
          * @param result
          * @deprecated Use .raycastAll, .raycastClosest or .raycastAny instead.
          */
-        rayTest(from: Vector3, to: Vector3, result: RaycastResult)
+        rayTest(from: feng3d.Vector3, to: feng3d.Vector3, result: RaycastResult)
         {
             if (result instanceof RaycastResult)
             {
@@ -338,7 +338,7 @@ namespace CANNON
          * @param callback 
          * @return True if any body was hit.
          */
-        raycastAll(from: Vector3, to: Vector3, options: { collisionFilterMask?: number, collisionFilterGroup?: number, skipBackfaces?: boolean, checkCollisionResponse?: boolean, mode?: number, from?: Vector3, to?: Vector3, callback?: Function } = {}, callback: Function)
+        raycastAll(from: feng3d.Vector3, to: feng3d.Vector3, options: { collisionFilterMask?: number, collisionFilterGroup?: number, skipBackfaces?: boolean, checkCollisionResponse?: boolean, mode?: number, from?: feng3d.Vector3, to?: feng3d.Vector3, callback?: Function } = {}, callback: Function)
         {
             options.mode = Ray.ALL;
             options.from = from;
@@ -357,7 +357,7 @@ namespace CANNON
          * 
          * @return True if any body was hit.
          */
-        raycastAny(from: Vector3, to: Vector3, options: { collisionFilterMask?: number, collisionFilterGroup?: number, skipBackfaces?: boolean, checkCollisionResponse?: boolean, mode?: number, from?: Vector3, to?: Vector3, callback?: Function, result?: RaycastResult }, result: RaycastResult)
+        raycastAny(from: feng3d.Vector3, to: feng3d.Vector3, options: { collisionFilterMask?: number, collisionFilterGroup?: number, skipBackfaces?: boolean, checkCollisionResponse?: boolean, mode?: number, from?: feng3d.Vector3, to?: feng3d.Vector3, callback?: Function, result?: RaycastResult }, result: RaycastResult)
         {
             options.mode = Ray.ANY;
             options.from = from;
@@ -376,7 +376,7 @@ namespace CANNON
          * 
          * @return True if any body was hit.
          */
-        raycastClosest(from: Vector3, to: Vector3, options: { collisionFilterMask?: number, collisionFilterGroup?: number, skipBackfaces?: boolean, checkCollisionResponse?: boolean, mode?: number, from?: Vector3, to?: Vector3, callback?: Function, result?: RaycastResult }, result: RaycastResult)
+        raycastClosest(from: feng3d.Vector3, to: feng3d.Vector3, options: { collisionFilterMask?: number, collisionFilterGroup?: number, skipBackfaces?: boolean, checkCollisionResponse?: boolean, mode?: number, from?: feng3d.Vector3, to?: feng3d.Vector3, callback?: Function, result?: RaycastResult }, result: RaycastResult)
         {
             options.mode = Ray.CLOSEST;
             options.from = from;
@@ -531,7 +531,7 @@ namespace CANNON
                 for (var j = 0; j !== this.bodies.length; j++)
                 {
                     var b = this.bodies[j];
-                    b.previousPosition.lerpTo(b.position, t, b.interpolatedPosition);
+                    b.previousPosition.lerpNumberTo(b.position, t, b.interpolatedPosition);
                     b.previousQuaternion.slerp(b.quaternion, t, b.interpolatedQuaternion);
                     b.previousQuaternion.normalize();
                 }
@@ -852,12 +852,12 @@ namespace CANNON
                 { // Only for dynamic bodies
                     var ld = pow(1.0 - bi.linearDamping, dt);
                     var v = bi.velocity;
-                    v.multiplyTo(ld, v);
+                    v.scaleNumberTo(ld, v);
                     var av = bi.angularVelocity;
                     if (av)
                     {
                         var ad = pow(1.0 - bi.angularDamping, dt);
-                        av.multiplyTo(ad, av);
+                        av.scaleNumberTo(ad, av);
                     }
                 }
             }
@@ -1075,7 +1075,7 @@ namespace CANNON
         };
     }
 
-    var step_tmp1 = new Vector3();
+    var step_tmp1 = new feng3d.Vector3();
 
     /**
      * Dispatched after the world has stepped forward in time.
@@ -1090,17 +1090,17 @@ namespace CANNON
     var World_step_frictionEquationPool = [];
     var World_step_p1 = []; // Reusable arrays for collision pairs
     var World_step_p2 = [];
-    var World_step_gvec = new Vector3(); // Temporary vectors and quats
-    var World_step_vi = new Vector3();
-    var World_step_vj = new Vector3();
-    var World_step_wi = new Vector3();
-    var World_step_wj = new Vector3();
-    var World_step_t1 = new Vector3();
-    var World_step_t2 = new Vector3();
-    var World_step_rixn = new Vector3();
-    var World_step_rjxn = new Vector3();
+    var World_step_gvec = new feng3d.Vector3(); // Temporary vectors and quats
+    var World_step_vi = new feng3d.Vector3();
+    var World_step_vj = new feng3d.Vector3();
+    var World_step_wi = new feng3d.Vector3();
+    var World_step_wj = new feng3d.Vector3();
+    var World_step_t1 = new feng3d.Vector3();
+    var World_step_t2 = new feng3d.Vector3();
+    var World_step_rixn = new feng3d.Vector3();
+    var World_step_rjxn = new feng3d.Vector3();
     var World_step_step_q = new Quaternion();
     var World_step_step_w = new Quaternion();
     var World_step_step_wq = new Quaternion();
-    var invI_tau_dt = new Vector3();
+    var invI_tau_dt = new feng3d.Vector3();
 }

@@ -24211,7 +24211,7 @@ var feng3d;
             var radius = 1; // m
             this.body = new CANNON.Body({
                 mass: 5,
-                position: new CANNON.Vector3(0, 10, 0),
+                position: new feng3d.Vector3(0, 10, 0),
                 shape: new CANNON.Sphere(radius)
             });
         };
@@ -24576,7 +24576,7 @@ var feng3d;
             /**
              * 重力加速度
              */
-            _this.gravity = new CANNON.Vector3(0, -9.82, 0);
+            _this.gravity = new feng3d.Vector3(0, -9.82, 0);
             /**
              * 指定所运行环境
              *
@@ -36586,364 +36586,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var CANNON;
 (function (CANNON) {
-    var Vector3 = /** @class */ (function () {
-        /**
-         * 3-dimensional vector
-         *
-         * @param x
-         * @param y
-         * @param z
-         *
-         * @author schteppe
-         * @example
-         *     var v = new Vec3(1, 2, 3);
-         *     console.log('x=' + v.x); // x=1
-         */
-        function Vector3(x, y, z) {
-            if (x === void 0) { x = 0.0; }
-            if (y === void 0) { y = 0.0; }
-            if (z === void 0) { z = 0.0; }
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-        /**
-         * Vector cross product
-         *
-         * @param v
-         * @param target Target to save in.
-         */
-        Vector3.prototype.crossTo = function (v, target) {
-            if (target === void 0) { target = new Vector3(); }
-            var vx = v.x, vy = v.y, vz = v.z, x = this.x, y = this.y, z = this.z;
-            target = target;
-            target.x = (y * vz) - (z * vy);
-            target.y = (z * vx) - (x * vz);
-            target.z = (x * vy) - (y * vx);
-            return target;
-        };
-        /**
-         * Set the vectors' 3 elements
-         * @param x
-         * @param y
-         * @param z
-         */
-        Vector3.prototype.init = function (x, y, z) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            return this;
-        };
-        /**
-         * Set all components of the vector to zero.
-         */
-        Vector3.prototype.setZero = function () {
-            this.x = this.y = this.z = 0;
-        };
-        /**
-         * Vector addition
-         * @param v
-         * @param target
-         */
-        Vector3.prototype.addTo = function (v, target) {
-            if (target === void 0) { target = null; }
-            if (target) {
-                target.x = v.x + this.x;
-                target.y = v.y + this.y;
-                target.z = v.z + this.z;
-            }
-            else {
-                return new Vector3(this.x + v.x, this.y + v.y, this.z + v.z);
-            }
-        };
-        /**
-         * Vector subtraction
-         * @param v
-         * @param target Target to save in.
-         */
-        Vector3.prototype.subTo = function (v, target) {
-            if (target === void 0) { target = null; }
-            if (target) {
-                target.x = this.x - v.x;
-                target.y = this.y - v.y;
-                target.z = this.z - v.z;
-            }
-            else {
-                return new Vector3(this.x - v.x, this.y - v.y, this.z - v.z);
-            }
-        };
-        /**
-         * Get the cross product matrix a_cross from a vector, such that a x b = a_cross * b = c
-         * @see http://www8.cs.umu.se/kurser/TDBD24/VT06/lectures/Lecture6.pdf
-         */
-        Vector3.prototype.crossmat = function () {
-            return new CANNON.Mat3([0, -this.z, this.y,
-                this.z, 0, -this.x,
-                -this.y, this.x, 0]);
-        };
-        /**
-         * Normalize the vector. Note that this changes the values in the vector.
-         * @returns Returns the norm of the vector
-         */
-        Vector3.prototype.normalize = function () {
-            var x = this.x, y = this.y, z = this.z;
-            var n = Math.sqrt(x * x + y * y + z * z);
-            if (n > 0.0) {
-                var invN = 1 / n;
-                this.x *= invN;
-                this.y *= invN;
-                this.z *= invN;
-            }
-            else {
-                // Make something up
-                this.x = 0;
-                this.y = 0;
-                this.z = 0;
-            }
-            return n;
-        };
-        /**
-         * Get the version of this vector that is of length 1.
-         * @param target target to save in
-         */
-        Vector3.prototype.unit = function (target) {
-            if (target === void 0) { target = new Vector3(); }
-            target = target;
-            var x = this.x, y = this.y, z = this.z;
-            var ninv = Math.sqrt(x * x + y * y + z * z);
-            if (ninv > 0.0) {
-                ninv = 1.0 / ninv;
-                target.x = x * ninv;
-                target.y = y * ninv;
-                target.z = z * ninv;
-            }
-            else {
-                target.x = 1;
-                target.y = 0;
-                target.z = 0;
-            }
-            return target;
-        };
-        Object.defineProperty(Vector3.prototype, "length", {
-            /**
-             * Get the length of the vector
-             */
-            get: function () {
-                var x = this.x, y = this.y, z = this.z;
-                return Math.sqrt(x * x + y * y + z * z);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Vector3.prototype, "lengthSquared", {
-            /**
-             * Get the squared length of the vector
-             */
-            get: function () {
-                return this.dot(this);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * Get distance from this point to another point
-         * @param p
-         */
-        Vector3.prototype.distance = function (p) {
-            var x = this.x, y = this.y, z = this.z;
-            var px = p.x, py = p.y, pz = p.z;
-            return Math.sqrt((px - x) * (px - x) +
-                (py - y) * (py - y) +
-                (pz - z) * (pz - z));
-        };
-        /**
-         * Get squared distance from this point to another point
-         * @param p
-         */
-        Vector3.prototype.distanceSquared = function (p) {
-            var x = this.x, y = this.y, z = this.z;
-            var px = p.x, py = p.y, pz = p.z;
-            return (px - x) * (px - x) + (py - y) * (py - y) + (pz - z) * (pz - z);
-        };
-        /**
-         * Multiply all the components of the vector with a scalar.
-         * @param scalar
-         * @param  target The vector to save the result in.
-         * @deprecated Use .scale() instead
-         */
-        Vector3.prototype.multiplyTo = function (scalar, target) {
-            if (target === void 0) { target = new Vector3(); }
-            var x = this.x, y = this.y, z = this.z;
-            target.x = scalar * x;
-            target.y = scalar * y;
-            target.z = scalar * z;
-            return target;
-        };
-        /**
-         * Multiply all the components of the vector with a scalar.
-         * @param scalar
-         * @param  target The vector to save the result in.
-         */
-        Vector3.prototype.scaleNumberTo = function (scalar, target) {
-            if (target === void 0) { target = new Vector3(); }
-            var x = this.x, y = this.y, z = this.z;
-            target.x = scalar * x;
-            target.y = scalar * y;
-            target.z = scalar * z;
-            return target;
-        };
-        /**
-         * Multiply the vector with an other vector, component-wise.
-         * @param  vector
-         * @param  target The vector to save the result in.
-         */
-        Vector3.prototype.scaleTo = function (vector, target) {
-            if (target === void 0) { target = new Vector3(); }
-            target.x = vector.x * this.x;
-            target.y = vector.y * this.y;
-            target.z = vector.z * this.z;
-            return target;
-        };
-        /**
-         * Calculate dot product
-         * @param {Vector3} v
-         */
-        Vector3.prototype.dot = function (v) {
-            return this.x * v.x + this.y * v.y + this.z * v.z;
-        };
-        Vector3.prototype.isZero = function () {
-            return this.x === 0 && this.y === 0 && this.z === 0;
-        };
-        /**
-         * Make the vector point in the opposite direction.
-         * @param target Optional target to save in
-         */
-        Vector3.prototype.negateTo = function (target) {
-            target = target || new Vector3();
-            target.x = -this.x;
-            target.y = -this.y;
-            target.z = -this.z;
-            return target;
-        };
-        Vector3.prototype.tangents = function (t1, t2) {
-            var norm = this.length;
-            if (norm > 0.0) {
-                var n = Vec3_tangents_n;
-                var inorm = 1 / norm;
-                n.init(this.x * inorm, this.y * inorm, this.z * inorm);
-                var randVec = Vec3_tangents_randVec;
-                if (Math.abs(n.x) < 0.9) {
-                    randVec.init(1, 0, 0);
-                    n.crossTo(randVec, t1);
-                }
-                else {
-                    randVec.init(0, 1, 0);
-                    n.crossTo(randVec, t1);
-                }
-                n.crossTo(t1, t2);
-            }
-            else {
-                // The normal length is zero, make something up
-                t1.init(1, 0, 0);
-                t2.init(0, 1, 0);
-            }
-        };
-        /**
-         * Converts to a more readable format
-         */
-        Vector3.prototype.toString = function () {
-            return this.x + "," + this.y + "," + this.z;
-        };
-        /**
-         * Converts to an array
-         */
-        Vector3.prototype.toArray = function () {
-            return [this.x, this.y, this.z];
-        };
-        /**
-         * Copies value of source to this vector.
-         * @param source
-         */
-        Vector3.prototype.copy = function (source) {
-            this.x = source.x;
-            this.y = source.y;
-            this.z = source.z;
-            return this;
-        };
-        /**
-         * Do a linear interpolation between two vectors
-         *
-         * @param v
-         * @param t A number between 0 and 1. 0 will make this function return u, and 1 will make it return v. Numbers in between will generate a vector in between them.
-         */
-        Vector3.prototype.lerpTo = function (v, t, target) {
-            var x = this.x, y = this.y, z = this.z;
-            target.x = x + (v.x - x) * t;
-            target.y = y + (v.y - y) * t;
-            target.z = z + (v.z - z) * t;
-        };
-        /**
-         * Check if a vector equals is almost equal to another one.
-         * @param v
-         * @param  precision
-         */
-        Vector3.prototype.equals = function (v, precision) {
-            if (precision === void 0) { precision = 1e-6; }
-            if (Math.abs(this.x - v.x) > precision ||
-                Math.abs(this.y - v.y) > precision ||
-                Math.abs(this.z - v.z) > precision) {
-                return false;
-            }
-            return true;
-        };
-        /**
-         * Check if a vector is almost zero
-         * @param precision
-         */
-        Vector3.prototype.almostZero = function (precision) {
-            if (precision === void 0) { precision = 1e-6; }
-            if (Math.abs(this.x) > precision ||
-                Math.abs(this.y) > precision ||
-                Math.abs(this.z) > precision) {
-                return false;
-            }
-            return true;
-        };
-        /**
-         * Check if the vector is anti-parallel to another vector.
-         * @param  v
-         * @param  precision Set to zero for exact comparisons
-         */
-        Vector3.prototype.isAntiparallelTo = function (v, precision) {
-            if (precision === void 0) { precision = 1e-6; }
-            this.negateTo(antip_neg);
-            return antip_neg.equals(v, precision);
-        };
-        /**
-         * Clone the vector
-         */
-        Vector3.prototype.clone = function () {
-            return new Vector3(this.x, this.y, this.z);
-        };
-        Vector3.ZERO = new Vector3(0, 0, 0);
-        Vector3.X_AXIS = new Vector3(1, 0, 0);
-        Vector3.Y_AXIS = new Vector3(0, 1, 0);
-        Vector3.Z_AXIS = new Vector3(0, 0, 1);
-        return Vector3;
-    }());
-    CANNON.Vector3 = Vector3;
-    /**
-     * Compute two artificial tangents to the vector
-     * @method tangents
-     * @param {Vector3} t1 Vector object to save the first tangent in
-     * @param {Vector3} t2 Vector object to save the second tangent in
-     */
-    var Vec3_tangents_n = new Vector3();
-    var Vec3_tangents_randVec = new Vector3();
-    var antip_neg = new Vector3();
-})(CANNON || (CANNON = {}));
-var CANNON;
-(function (CANNON) {
     var Mat3 = /** @class */ (function () {
         /**
          * A 3x3 matrix.
@@ -37007,7 +36649,7 @@ var CANNON;
          * Gets the matrix diagonal elements
          */
         Mat3.prototype.getTrace = function (target) {
-            if (target === void 0) { target = new CANNON.Vector3(); }
+            if (target === void 0) { target = new feng3d.Vector3(); }
             var e = this.elements;
             target.x = e[0];
             target.y = e[4];
@@ -37019,7 +36661,7 @@ var CANNON;
          * @param target Optional, target to save the result in.
          */
         Mat3.prototype.vmult = function (v, target) {
-            if (target === void 0) { target = new CANNON.Vector3(); }
+            if (target === void 0) { target = new feng3d.Vector3(); }
             var e = this.elements, x = v.x, y = v.y, z = v.z;
             target.x = e[0] * x + e[1] * y + e[2] * z;
             target.y = e[3] * x + e[4] * y + e[5] * z;
@@ -37073,7 +36715,7 @@ var CANNON;
          * @todo should reuse arrays
          */
         Mat3.prototype.solve = function (b, target) {
-            if (target === void 0) { target = new CANNON.Vector3(); }
+            if (target === void 0) { target = new feng3d.Vector3(); }
             // Construct equations
             var nr = 3; // num rows
             var nc = 4; // num cols
@@ -37362,7 +37004,7 @@ var CANNON;
          * @return An array, first elemnt is the axis and the second is the angle in radians.
          */
         Quaternion.prototype.toAxisAngle = function (targetAxis) {
-            if (targetAxis === void 0) { targetAxis = new CANNON.Vector3(); }
+            if (targetAxis === void 0) { targetAxis = new feng3d.Vector3(); }
             this.normalize(); // if w>1 acos and sqrt will produce errors, this cant happen if quaternion is normalised
             var angle = 2 * Math.acos(this.w);
             var s = Math.sqrt(1 - this.w * this.w); // assuming quaternion normalised then w is less than 1, so term always positive.
@@ -37489,7 +37131,7 @@ var CANNON;
          * @param target Optional
          */
         Quaternion.prototype.vmult = function (v, target) {
-            if (target === void 0) { target = new CANNON.Vector3(); }
+            if (target === void 0) { target = new feng3d.Vector3(); }
             var x = v.x, y = v.y, z = v.z;
             var qx = this.x, qy = this.y, qz = this.z, qw = this.w;
             // q*v
@@ -37668,18 +37310,18 @@ var CANNON;
         return Quaternion;
     }());
     CANNON.Quaternion = Quaternion;
-    var sfv_t1 = new CANNON.Vector3();
-    var sfv_t2 = new CANNON.Vector3();
-    var Quaternion_mult_va = new CANNON.Vector3();
-    var Quaternion_mult_vb = new CANNON.Vector3();
-    var Quaternion_mult_vaxvb = new CANNON.Vector3();
+    var sfv_t1 = new feng3d.Vector3();
+    var sfv_t2 = new feng3d.Vector3();
+    var Quaternion_mult_va = new feng3d.Vector3();
+    var Quaternion_mult_vb = new feng3d.Vector3();
+    var Quaternion_mult_vaxvb = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
     var Transform = /** @class */ (function () {
         function Transform(options) {
             if (options === void 0) { options = {}; }
-            this.position = new CANNON.Vector3();
+            this.position = new feng3d.Vector3();
             if (options.position) {
                 this.position.copy(options.position);
             }
@@ -37695,7 +37337,7 @@ var CANNON;
          * @param result
          */
         Transform.pointToLocalFrame = function (position, quaternion, worldPoint, result) {
-            if (result === void 0) { result = new CANNON.Vector3(); }
+            if (result === void 0) { result = new feng3d.Vector3(); }
             worldPoint.subTo(position, result);
             quaternion.conjugate(tmpQuat);
             tmpQuat.vmult(result, result);
@@ -37717,7 +37359,7 @@ var CANNON;
          * @param result
          */
         Transform.pointToWorldFrame = function (position, quaternion, localPoint, result) {
-            if (result === void 0) { result = new CANNON.Vector3(); }
+            if (result === void 0) { result = new feng3d.Vector3(); }
             quaternion.vmult(localPoint, result);
             result.addTo(position, result);
             return result;
@@ -37732,7 +37374,7 @@ var CANNON;
             return Transform.pointToWorldFrame(this.position, this.quaternion, localPoint, result);
         };
         Transform.prototype.vectorToWorldFrame = function (localVector, result) {
-            if (result === void 0) { result = new CANNON.Vector3(); }
+            if (result === void 0) { result = new feng3d.Vector3(); }
             this.quaternion.vmult(localVector, result);
             return result;
         };
@@ -37741,7 +37383,7 @@ var CANNON;
             return result;
         };
         Transform.vectorToLocalFrame = function (position, quaternion, worldVector, result) {
-            if (result === void 0) { result = new CANNON.Vector3(); }
+            if (result === void 0) { result = new feng3d.Vector3(); }
             quaternion.w *= -1;
             quaternion.vmult(worldVector, result);
             quaternion.w *= -1;
@@ -37759,8 +37401,8 @@ var CANNON;
          * An element containing 6 entries, 3 spatial and 3 rotational degrees of freedom.
          */
         function JacobianElement() {
-            this.spatial = new CANNON.Vector3();
-            this.rotational = new CANNON.Vector3();
+            this.spatial = new feng3d.Vector3();
+            this.rotational = new feng3d.Vector3();
         }
         /**
          * Multiply with other JacobianElement
@@ -37966,14 +37608,14 @@ var CANNON;
         __extends(Vec3Pool, _super);
         function Vec3Pool() {
             var _this = _super.call(this) || this;
-            _this.type = CANNON.Vector3;
+            _this.type = feng3d.Vector3;
             return _this;
         }
         /**
          * Construct a vector
          */
         Vec3Pool.prototype.constructObject = function () {
-            return new CANNON.Vector3();
+            return new feng3d.Vector3();
         };
         return Vec3Pool;
     }(CANNON.Pool));
@@ -38128,8 +37770,8 @@ var CANNON;
             var normal = eq.ni;
             bodyB.position.subTo(bodyA.position, normal);
             normal.normalize();
-            normal.multiplyTo(halfDist, eq.ri);
-            normal.multiplyTo(-halfDist, eq.rj);
+            normal.scaleNumberTo(halfDist, eq.ri);
+            normal.scaleNumberTo(-halfDist, eq.rj);
         };
         return DistanceConstraint;
     }(CANNON.Constraint));
@@ -38165,8 +37807,8 @@ var CANNON;
         function PointToPointConstraint(bodyA, pivotA, bodyB, pivotB, maxForce) {
             var _this = _super.call(this, bodyA, bodyB) || this;
             maxForce = typeof (maxForce) !== 'undefined' ? maxForce : 1e6;
-            _this.pivotA = pivotA ? pivotA.clone() : new CANNON.Vector3();
-            _this.pivotB = pivotB ? pivotB.clone() : new CANNON.Vector3();
+            _this.pivotA = pivotA ? pivotA.clone() : new feng3d.Vector3();
+            _this.pivotB = pivotB ? pivotB.clone() : new feng3d.Vector3();
             var x = _this.equationX = new CANNON.ContactEquation(bodyA, bodyB);
             var y = _this.equationY = new CANNON.ContactEquation(bodyA, bodyB);
             var z = _this.equationZ = new CANNON.ContactEquation(bodyA, bodyB);
@@ -38213,9 +37855,9 @@ var CANNON;
          */
         function ConeTwistConstraint(bodyA, bodyB, options) {
             if (options === void 0) { options = {}; }
-            var _this = _super.call(this, bodyA, options.pivotA ? options.pivotA.clone() : new CANNON.Vector3(), bodyB, options.pivotB ? options.pivotB.clone() : new CANNON.Vector3(), typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6) || this;
-            _this.axisA = options.axisA ? options.axisA.clone() : new CANNON.Vector3();
-            _this.axisB = options.axisB ? options.axisB.clone() : new CANNON.Vector3();
+            var _this = _super.call(this, bodyA, options.pivotA ? options.pivotA.clone() : new feng3d.Vector3(), bodyB, options.pivotB ? options.pivotB.clone() : new feng3d.Vector3(), typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6) || this;
+            _this.axisA = options.axisA ? options.axisA.clone() : new feng3d.Vector3();
+            _this.axisB = options.axisB ? options.axisB.clone() : new feng3d.Vector3();
             var maxForce = typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6;
             _this.collideConnected = !!options.collideConnected;
             _this.angle = typeof (options.angle) !== 'undefined' ? options.angle : 0;
@@ -38254,8 +37896,8 @@ var CANNON;
         return ConeTwistConstraint;
     }(CANNON.PointToPointConstraint));
     CANNON.ConeTwistConstraint = ConeTwistConstraint;
-    var ConeTwistConstraint_update_tmpVec1 = new CANNON.Vector3();
-    var ConeTwistConstraint_update_tmpVec2 = new CANNON.Vector3();
+    var ConeTwistConstraint_update_tmpVec1 = new feng3d.Vector3();
+    var ConeTwistConstraint_update_tmpVec2 = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -38272,11 +37914,11 @@ var CANNON;
          */
         function HingeConstraint(bodyA, bodyB, options) {
             if (options === void 0) { options = {}; }
-            var _this = _super.call(this, bodyA, options.pivotA ? options.pivotA.clone() : new CANNON.Vector3(), bodyB, options.pivotB ? options.pivotB.clone() : new CANNON.Vector3(), maxForce) || this;
+            var _this = _super.call(this, bodyA, options.pivotA ? options.pivotA.clone() : new feng3d.Vector3(), bodyB, options.pivotB ? options.pivotB.clone() : new feng3d.Vector3(), maxForce) || this;
             var maxForce = typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6;
-            var axisA = _this.axisA = options.axisA ? options.axisA.clone() : new CANNON.Vector3(1, 0, 0);
+            var axisA = _this.axisA = options.axisA ? options.axisA.clone() : new feng3d.Vector3(1, 0, 0);
             axisA.normalize();
-            var axisB = _this.axisB = options.axisB ? options.axisB.clone() : new CANNON.Vector3(1, 0, 0);
+            var axisB = _this.axisB = options.axisB ? options.axisB.clone() : new feng3d.Vector3(1, 0, 0);
             axisB.normalize();
             var r1 = _this.rotationalEquation1 = new CANNON.RotationalEquation(bodyA, bodyB, options);
             var r2 = _this.rotationalEquation2 = new CANNON.RotationalEquation(bodyA, bodyB, options);
@@ -38320,8 +37962,8 @@ var CANNON;
         return HingeConstraint;
     }(CANNON.PointToPointConstraint));
     CANNON.HingeConstraint = HingeConstraint;
-    var HingeConstraint_update_tmpVec1 = new CANNON.Vector3();
-    var HingeConstraint_update_tmpVec2 = new CANNON.Vector3();
+    var HingeConstraint_update_tmpVec1 = new feng3d.Vector3();
+    var HingeConstraint_update_tmpVec2 = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -38340,22 +37982,22 @@ var CANNON;
             if (options === void 0) { options = {}; }
             var _this = 
             // The point-to-point constraint will keep a point shared between the bodies
-            _super.call(this, bodyA, new CANNON.Vector3(), bodyB, new CANNON.Vector3(), typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6) || this;
+            _super.call(this, bodyA, new feng3d.Vector3(), bodyB, new feng3d.Vector3(), typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6) || this;
             // Set pivot point in between
             var pivotA = _this.pivotA;
             var pivotB = _this.pivotB;
-            var halfWay = new CANNON.Vector3();
+            var halfWay = new feng3d.Vector3();
             bodyA.position.addTo(bodyB.position, halfWay);
             halfWay.scaleNumberTo(0.5, halfWay);
             bodyB.pointToLocalFrame(halfWay, pivotB);
             bodyA.pointToLocalFrame(halfWay, pivotA);
             // Store initial rotation of the bodies as unit vectors in the local body spaces
-            _this.xA = bodyA.vectorToLocalFrame(CANNON.Vector3.X_AXIS);
-            _this.xB = bodyB.vectorToLocalFrame(CANNON.Vector3.X_AXIS);
-            _this.yA = bodyA.vectorToLocalFrame(CANNON.Vector3.Y_AXIS);
-            _this.yB = bodyB.vectorToLocalFrame(CANNON.Vector3.Y_AXIS);
-            _this.zA = bodyA.vectorToLocalFrame(CANNON.Vector3.Z_AXIS);
-            _this.zB = bodyB.vectorToLocalFrame(CANNON.Vector3.Z_AXIS);
+            _this.xA = bodyA.vectorToLocalFrame(feng3d.Vector3.X_AXIS);
+            _this.xB = bodyB.vectorToLocalFrame(feng3d.Vector3.X_AXIS);
+            _this.yA = bodyA.vectorToLocalFrame(feng3d.Vector3.Y_AXIS);
+            _this.yB = bodyB.vectorToLocalFrame(feng3d.Vector3.Y_AXIS);
+            _this.zA = bodyA.vectorToLocalFrame(feng3d.Vector3.Z_AXIS);
+            _this.zB = bodyB.vectorToLocalFrame(feng3d.Vector3.Z_AXIS);
             // ...and the following rotational equations will keep all rotational DOF's in place
             var r1 = _this.rotationalEquation1 = new CANNON.RotationalEquation(bodyA, bodyB, options);
             var r2 = _this.rotationalEquation2 = new CANNON.RotationalEquation(bodyA, bodyB, options);
@@ -38378,8 +38020,8 @@ var CANNON;
         return LockConstraint;
     }(CANNON.PointToPointConstraint));
     CANNON.LockConstraint = LockConstraint;
-    var LockConstraint_update_tmpVec1 = new CANNON.Vector3();
-    var LockConstraint_update_tmpVec2 = new CANNON.Vector3();
+    var LockConstraint_update_tmpVec1 = new feng3d.Vector3();
+    var LockConstraint_update_tmpVec2 = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -38528,7 +38170,7 @@ var CANNON;
                         throw new Error("Vertex " + this.faces[i][j] + " not found!");
                     }
                 }
-                var n = this.faceNormals[i] || new CANNON.Vector3();
+                var n = this.faceNormals[i] || new feng3d.Vector3();
                 this.getFaceNormal(i, n);
                 n.negateTo(n);
                 this.faceNormals[i] = n;
@@ -38603,7 +38245,7 @@ var CANNON;
             var numVertices = polyB.length;
             for (var e0 = 0; e0 < numVertices; e0++) {
                 var b = hullB.vertices[polyB[e0]];
-                var worldb = new CANNON.Vector3();
+                var worldb = new feng3d.Vector3();
                 worldb.copy(b);
                 quatB.vmult(worldb, worldb);
                 posB.addTo(worldb, worldb);
@@ -38919,22 +38561,22 @@ var CANNON;
                 if (n_dot_first < 0) {
                     if (n_dot_last < 0) {
                         // Start < 0, end < 0, so output lastVertex
-                        var newv = new CANNON.Vector3();
+                        var newv = new feng3d.Vector3();
                         newv.copy(lastVertex);
                         outVertices.push(newv);
                     }
                     else {
                         // Start < 0, end >= 0, so output intersection
-                        var newv = new CANNON.Vector3();
-                        firstVertex.lerpTo(lastVertex, n_dot_first / (n_dot_first - n_dot_last), newv);
+                        var newv = new feng3d.Vector3();
+                        firstVertex.lerpNumberTo(lastVertex, n_dot_first / (n_dot_first - n_dot_last), newv);
                         outVertices.push(newv);
                     }
                 }
                 else {
                     if (n_dot_last < 0) {
                         // Start >= 0, end < 0 so output intersection and end
-                        var newv = new CANNON.Vector3();
-                        firstVertex.lerpTo(lastVertex, n_dot_first / (n_dot_first - n_dot_last), newv);
+                        var newv = new feng3d.Vector3();
+                        firstVertex.lerpNumberTo(lastVertex, n_dot_first / (n_dot_first - n_dot_last), newv);
                         outVertices.push(newv);
                         outVertices.push(lastVertex);
                     }
@@ -38948,7 +38590,7 @@ var CANNON;
         ConvexPolyhedron.prototype.computeWorldVertices = function (position, quat) {
             var N = this.vertices.length;
             while (this.worldVertices.length < N) {
-                this.worldVertices.push(new CANNON.Vector3());
+                this.worldVertices.push(new feng3d.Vector3());
             }
             var verts = this.vertices, worldVerts = this.worldVertices;
             for (var i = 0; i !== N; i++) {
@@ -38991,7 +38633,7 @@ var CANNON;
         ConvexPolyhedron.prototype.computeWorldFaceNormals = function (quat) {
             var N = this.faceNormals.length;
             while (this.worldFaceNormals.length < N) {
-                this.worldFaceNormals.push(new CANNON.Vector3());
+                this.worldFaceNormals.push(new feng3d.Vector3());
             }
             var normals = this.faceNormals, worldNormals = this.worldFaceNormals;
             for (var i = 0; i !== N; i++) {
@@ -39061,12 +38703,12 @@ var CANNON;
          * @param target
          */
         ConvexPolyhedron.prototype.getAveragePointLocal = function (target) {
-            target = target || new CANNON.Vector3();
+            target = target || new feng3d.Vector3();
             var n = this.vertices.length, verts = this.vertices;
             for (var i = 0; i < n; i++) {
                 target.addTo(verts[i], target);
             }
-            target.multiplyTo(1 / n, target);
+            target.scaleNumberTo(1 / n, target);
             return target;
         };
         /**
@@ -39177,35 +38819,35 @@ var CANNON;
         return ConvexPolyhedron;
     }(CANNON.Shape));
     CANNON.ConvexPolyhedron = ConvexPolyhedron;
-    var computeEdges_tmpEdge = new CANNON.Vector3();
-    var cb = new CANNON.Vector3();
-    var ab = new CANNON.Vector3();
-    var cah_WorldNormal = new CANNON.Vector3();
-    var fsa_faceANormalWS3 = new CANNON.Vector3();
-    var fsa_Worldnormal1 = new CANNON.Vector3();
-    var fsa_deltaC = new CANNON.Vector3();
-    var fsa_worldEdge0 = new CANNON.Vector3();
-    var fsa_worldEdge1 = new CANNON.Vector3();
-    var fsa_Cross = new CANNON.Vector3();
+    var computeEdges_tmpEdge = new feng3d.Vector3();
+    var cb = new feng3d.Vector3();
+    var ab = new feng3d.Vector3();
+    var cah_WorldNormal = new feng3d.Vector3();
+    var fsa_faceANormalWS3 = new feng3d.Vector3();
+    var fsa_Worldnormal1 = new feng3d.Vector3();
+    var fsa_deltaC = new feng3d.Vector3();
+    var fsa_worldEdge0 = new feng3d.Vector3();
+    var fsa_worldEdge1 = new feng3d.Vector3();
+    var fsa_Cross = new feng3d.Vector3();
     var maxminA = [], maxminB = [];
-    var cli_aabbmin = new CANNON.Vector3();
-    var cli_aabbmax = new CANNON.Vector3();
-    var cfah_faceANormalWS = new CANNON.Vector3();
-    var cfah_edge0 = new CANNON.Vector3();
-    var cfah_WorldEdge0 = new CANNON.Vector3();
-    var cfah_worldPlaneAnormal1 = new CANNON.Vector3();
-    var cfah_planeNormalWS1 = new CANNON.Vector3();
-    var cfah_worldA1 = new CANNON.Vector3();
-    var cfah_localPlaneNormal = new CANNON.Vector3();
-    var cfah_planeNormalWS = new CANNON.Vector3();
-    var computeLocalAABB_worldVert = new CANNON.Vector3();
-    var tempWorldVertex = new CANNON.Vector3();
-    var ConvexPolyhedron_pointIsInside = new CANNON.Vector3();
-    var ConvexPolyhedron_vToP = new CANNON.Vector3();
-    var ConvexPolyhedron_vToPointInside = new CANNON.Vector3();
-    var project_worldVertex = new CANNON.Vector3();
-    var project_localAxis = new CANNON.Vector3();
-    var project_localOrigin = new CANNON.Vector3();
+    var cli_aabbmin = new feng3d.Vector3();
+    var cli_aabbmax = new feng3d.Vector3();
+    var cfah_faceANormalWS = new feng3d.Vector3();
+    var cfah_edge0 = new feng3d.Vector3();
+    var cfah_WorldEdge0 = new feng3d.Vector3();
+    var cfah_worldPlaneAnormal1 = new feng3d.Vector3();
+    var cfah_planeNormalWS1 = new feng3d.Vector3();
+    var cfah_worldA1 = new feng3d.Vector3();
+    var cfah_localPlaneNormal = new feng3d.Vector3();
+    var cfah_planeNormalWS = new feng3d.Vector3();
+    var computeLocalAABB_worldVert = new feng3d.Vector3();
+    var tempWorldVertex = new feng3d.Vector3();
+    var ConvexPolyhedron_pointIsInside = new feng3d.Vector3();
+    var ConvexPolyhedron_vToP = new feng3d.Vector3();
+    var ConvexPolyhedron_vToPointInside = new feng3d.Vector3();
+    var project_worldVertex = new feng3d.Vector3();
+    var project_localAxis = new feng3d.Vector3();
+    var project_localOrigin = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -39233,7 +38875,7 @@ var CANNON;
             var sx = this.halfExtents.x;
             var sy = this.halfExtents.y;
             var sz = this.halfExtents.z;
-            var V = CANNON.Vector3;
+            var V = feng3d.Vector3;
             var vertices = [
                 new V(-sx, -sy, -sz),
                 new V(sx, -sy, -sz),
@@ -39262,7 +38904,7 @@ var CANNON;
             h.material = this.material;
         };
         Box.prototype.calculateLocalInertia = function (mass, target) {
-            if (target === void 0) { target = new CANNON.Vector3(); }
+            if (target === void 0) { target = new feng3d.Vector3(); }
             Box.calculateInertia(this.halfExtents, mass, target);
             return target;
         };
@@ -39384,17 +39026,17 @@ var CANNON;
         return Box;
     }(CANNON.Shape));
     CANNON.Box = Box;
-    var worldCornerTempPos = new CANNON.Vector3();
-    var worldCornerTempNeg = new CANNON.Vector3();
+    var worldCornerTempPos = new feng3d.Vector3();
+    var worldCornerTempNeg = new feng3d.Vector3();
     var worldCornersTemp = [
-        new CANNON.Vector3(),
-        new CANNON.Vector3(),
-        new CANNON.Vector3(),
-        new CANNON.Vector3(),
-        new CANNON.Vector3(),
-        new CANNON.Vector3(),
-        new CANNON.Vector3(),
-        new CANNON.Vector3()
+        new feng3d.Vector3(),
+        new feng3d.Vector3(),
+        new feng3d.Vector3(),
+        new feng3d.Vector3(),
+        new feng3d.Vector3(),
+        new feng3d.Vector3(),
+        new feng3d.Vector3(),
+        new feng3d.Vector3()
     ];
 })(CANNON || (CANNON = {}));
 var CANNON;
@@ -39413,20 +39055,20 @@ var CANNON;
             var _this = this;
             var N = numSegments, verts = [], axes = [], faces = [], bottomface = [], topface = [], cos = Math.cos, sin = Math.sin;
             // First bottom point
-            verts.push(new CANNON.Vector3(radiusBottom * cos(0), radiusBottom * sin(0), -height * 0.5));
+            verts.push(new feng3d.Vector3(radiusBottom * cos(0), radiusBottom * sin(0), -height * 0.5));
             bottomface.push(0);
             // First top point
-            verts.push(new CANNON.Vector3(radiusTop * cos(0), radiusTop * sin(0), height * 0.5));
+            verts.push(new feng3d.Vector3(radiusTop * cos(0), radiusTop * sin(0), height * 0.5));
             topface.push(1);
             for (var i = 0; i < N; i++) {
                 var theta = 2 * Math.PI / N * (i + 1);
                 var thetaN = 2 * Math.PI / N * (i + 0.5);
                 if (i < N - 1) {
                     // Bottom
-                    verts.push(new CANNON.Vector3(radiusBottom * cos(theta), radiusBottom * sin(theta), -height * 0.5));
+                    verts.push(new feng3d.Vector3(radiusBottom * cos(theta), radiusBottom * sin(theta), -height * 0.5));
                     bottomface.push(2 * i + 2);
                     // Top
-                    verts.push(new CANNON.Vector3(radiusTop * cos(theta), radiusTop * sin(theta), height * 0.5));
+                    verts.push(new feng3d.Vector3(radiusTop * cos(theta), radiusTop * sin(theta), height * 0.5));
                     topface.push(2 * i + 3);
                     // Face
                     faces.push([2 * i + 2, 2 * i + 3, 2 * i + 1, 2 * i]);
@@ -39436,11 +39078,11 @@ var CANNON;
                 }
                 // Axis: we can cut off half of them if we have even number of segments
                 if (N % 2 === 1 || i < N / 2) {
-                    axes.push(new CANNON.Vector3(cos(thetaN), sin(thetaN), 0));
+                    axes.push(new feng3d.Vector3(cos(thetaN), sin(thetaN), 0));
                 }
             }
             faces.push(topface);
-            axes.push(new CANNON.Vector3(0, 0, 1));
+            axes.push(new feng3d.Vector3(0, 0, 1));
             // Reorder bottom face
             var temp = [];
             for (var i = 0; i < bottomface.length; i++) {
@@ -39513,7 +39155,7 @@ var CANNON;
                 type: CANNON.Shape.types.HEIGHTFIELD
             });
             _this.pillarConvex = new CANNON.ConvexPolyhedron();
-            _this.pillarOffset = new CANNON.Vector3();
+            _this.pillarOffset = new feng3d.Vector3();
             _this.updateBoundingSphereRadius();
             // "i_j_isUpper" => { convex: ..., offset: ... }
             // for example:
@@ -39779,7 +39421,7 @@ var CANNON;
                     return;
                 }
                 result = new CANNON.ConvexPolyhedron();
-                offsetResult = new CANNON.Vector3();
+                offsetResult = new feng3d.Vector3();
                 this.pillarConvex = result;
                 this.pillarOffset = offsetResult;
             }
@@ -39790,7 +39432,7 @@ var CANNON;
             result.vertices.length = 6;
             for (var i = 0; i < 6; i++) {
                 if (!result.vertices[i]) {
-                    result.vertices[i] = new CANNON.Vector3();
+                    result.vertices[i] = new feng3d.Vector3();
                 }
             }
             // Reuse faces if possible
@@ -39883,7 +39525,7 @@ var CANNON;
         };
         ;
         Heightfield.prototype.calculateLocalInertia = function (mass, target) {
-            if (target === void 0) { target = new CANNON.Vector3(); }
+            if (target === void 0) { target = new feng3d.Vector3(); }
             target.init(0, 0, 0);
             return target;
         };
@@ -39898,7 +39540,7 @@ var CANNON;
         Heightfield.prototype.updateBoundingSphereRadius = function () {
             // Use the bounding box of the min/max values
             var data = this.data, s = this.elementSize;
-            this.boundingSphereRadius = new CANNON.Vector3(data.length * s, data[0].length * s, Math.max(Math.abs(this.maxValue), Math.abs(this.minValue))).length;
+            this.boundingSphereRadius = new feng3d.Vector3(data.length * s, data[0].length * s, Math.max(Math.abs(this.maxValue), Math.abs(this.minValue))).length;
         };
         /**
          * Sets the height values from an image. Currently only supported in browser.
@@ -39945,15 +39587,15 @@ var CANNON;
     }(CANNON.Shape));
     CANNON.Heightfield = Heightfield;
     var getHeightAt_idx = [];
-    var getHeightAt_weights = new CANNON.Vector3();
-    var getHeightAt_a = new CANNON.Vector3();
-    var getHeightAt_b = new CANNON.Vector3();
-    var getHeightAt_c = new CANNON.Vector3();
-    var getNormalAt_a = new CANNON.Vector3();
-    var getNormalAt_b = new CANNON.Vector3();
-    var getNormalAt_c = new CANNON.Vector3();
-    var getNormalAt_e0 = new CANNON.Vector3();
-    var getNormalAt_e1 = new CANNON.Vector3();
+    var getHeightAt_weights = new feng3d.Vector3();
+    var getHeightAt_a = new feng3d.Vector3();
+    var getHeightAt_b = new feng3d.Vector3();
+    var getHeightAt_c = new feng3d.Vector3();
+    var getNormalAt_a = new feng3d.Vector3();
+    var getNormalAt_b = new feng3d.Vector3();
+    var getNormalAt_c = new feng3d.Vector3();
+    var getNormalAt_e0 = new feng3d.Vector3();
+    var getNormalAt_e1 = new feng3d.Vector3();
     // from https://en.wikipedia.org/wiki/Barycentric_coordinate_system
     function barycentricWeights(x, y, ax, ay, bx, by, cx, cy, result) {
         result.x = ((by - cy) * (x - cx) + (cx - bx) * (y - cy)) / ((by - cy) * (ax - cx) + (cx - bx) * (ay - cy));
@@ -39980,7 +39622,7 @@ var CANNON;
          * @param target
          */
         Particle.prototype.calculateLocalInertia = function (mass, target) {
-            target = target || new CANNON.Vector3();
+            target = target || new feng3d.Vector3();
             target.init(0, 0, 0);
             return target;
         };
@@ -40013,7 +39655,7 @@ var CANNON;
                 type: CANNON.Shape.types.PLANE
             }) || this;
             // World oriented normal
-            _this.worldNormal = new CANNON.Vector3();
+            _this.worldNormal = new feng3d.Vector3();
             _this.worldNormalNeedsUpdate = true;
             _this.boundingSphereRadius = Number.MAX_VALUE;
             return _this;
@@ -40025,7 +39667,7 @@ var CANNON;
             this.worldNormalNeedsUpdate = false;
         };
         Plane.prototype.calculateLocalInertia = function (mass, target) {
-            if (target === void 0) { target = new CANNON.Vector3(); }
+            if (target === void 0) { target = new feng3d.Vector3(); }
             return target;
         };
         Plane.prototype.volume = function () {
@@ -40063,7 +39705,7 @@ var CANNON;
         return Plane;
     }(CANNON.Shape));
     CANNON.Plane = Plane;
-    var tempNormal = new CANNON.Vector3();
+    var tempNormal = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -40087,7 +39729,7 @@ var CANNON;
             return _this;
         }
         Sphere.prototype.calculateLocalInertia = function (mass, target) {
-            if (target === void 0) { target = new CANNON.Vector3(); }
+            if (target === void 0) { target = new feng3d.Vector3(); }
             var I = 2.0 * mass * this.radius * this.radius / 5.0;
             target.x = I;
             target.y = I;
@@ -40124,11 +39766,11 @@ var CANNON;
          */
         function AABB(options) {
             if (options === void 0) { options = {}; }
-            this.lowerBound = new CANNON.Vector3();
+            this.lowerBound = new feng3d.Vector3();
             if (options.lowerBound) {
                 this.lowerBound.copy(options.lowerBound);
             }
-            this.upperBound = new CANNON.Vector3();
+            this.upperBound = new feng3d.Vector3();
             if (options.upperBound) {
                 this.upperBound.copy(options.upperBound);
             }
@@ -40349,16 +39991,16 @@ var CANNON;
         return AABB;
     }());
     CANNON.AABB = AABB;
-    var tmp = new CANNON.Vector3();
+    var tmp = new feng3d.Vector3();
     var transformIntoFrame_corners = [
-        new CANNON.Vector3(),
-        new CANNON.Vector3(),
-        new CANNON.Vector3(),
-        new CANNON.Vector3(),
-        new CANNON.Vector3(),
-        new CANNON.Vector3(),
-        new CANNON.Vector3(),
-        new CANNON.Vector3()
+        new feng3d.Vector3(),
+        new feng3d.Vector3(),
+        new feng3d.Vector3(),
+        new feng3d.Vector3(),
+        new feng3d.Vector3(),
+        new feng3d.Vector3(),
+        new feng3d.Vector3(),
+        new feng3d.Vector3()
     ];
 })(CANNON || (CANNON = {}));
 var CANNON;
@@ -40393,7 +40035,7 @@ var CANNON;
             _this.normals = new Float32Array(indices.length);
             _this.aabb = new CANNON.AABB();
             _this.edges = null;
-            _this.scale = new CANNON.Vector3(1, 1, 1);
+            _this.scale = new feng3d.Vector3(1, 1, 1);
             _this.tree = new CANNON.Octree();
             _this.updateEdges();
             _this.updateNormals();
@@ -40415,9 +40057,9 @@ var CANNON;
             tree.aabb.upperBound.z *= 1 / scale.z;
             // Insert all triangles
             var triangleAABB = new CANNON.AABB();
-            var a = new CANNON.Vector3();
-            var b = new CANNON.Vector3();
-            var c = new CANNON.Vector3();
+            var a = new feng3d.Vector3();
+            var b = new feng3d.Vector3();
+            var c = new feng3d.Vector3();
             var points = [a, b, c];
             for (var i = 0; i < this.indices.length / 3; i++) {
                 //this.getTriangleVertices(i, a, b, c);
@@ -40677,7 +40319,7 @@ var CANNON;
             // Assume points are distributed with local (0,0,0) as center
             var max2 = 0;
             var vertices = this.vertices;
-            var v = new CANNON.Vector3();
+            var v = new feng3d.Vector3();
             for (var i = 0, N = vertices.length / 3; i !== N; i++) {
                 this.getVertex(i, v);
                 var norm2 = v.lengthSquared;
@@ -40780,18 +40422,18 @@ var CANNON;
         return Trimesh;
     }(CANNON.Shape));
     CANNON.Trimesh = Trimesh;
-    var computeNormals_n = new CANNON.Vector3();
+    var computeNormals_n = new feng3d.Vector3();
     var unscaledAABB = new CANNON.AABB();
-    var getEdgeVector_va = new CANNON.Vector3();
-    var getEdgeVector_vb = new CANNON.Vector3();
-    var cb = new CANNON.Vector3();
-    var ab = new CANNON.Vector3();
-    var va = new CANNON.Vector3();
-    var vb = new CANNON.Vector3();
-    var vc = new CANNON.Vector3();
+    var getEdgeVector_va = new feng3d.Vector3();
+    var getEdgeVector_vb = new feng3d.Vector3();
+    var cb = new feng3d.Vector3();
+    var ab = new feng3d.Vector3();
+    var va = new feng3d.Vector3();
+    var vb = new feng3d.Vector3();
+    var vc = new feng3d.Vector3();
     var cli_aabb = new CANNON.AABB();
-    var computeLocalAABB_worldVert = new CANNON.Vector3();
-    var tempWorldVertex = new CANNON.Vector3();
+    var computeLocalAABB_worldVert = new feng3d.Vector3();
+    var tempWorldVertex = new feng3d.Vector3();
     var calculateWorldAABB_frame = new CANNON.Transform();
     var calculateWorldAABB_aabb = new CANNON.AABB();
 })(CANNON || (CANNON = {}));
@@ -40857,7 +40499,7 @@ var CANNON;
             var l = aabb.lowerBound;
             var u = aabb.upperBound;
             var children = this.children;
-            children.push(new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new CANNON.Vector3(0, 0, 0) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new CANNON.Vector3(1, 0, 0) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new CANNON.Vector3(1, 1, 0) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new CANNON.Vector3(1, 1, 1) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new CANNON.Vector3(0, 1, 1) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new CANNON.Vector3(0, 0, 1) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new CANNON.Vector3(1, 0, 1) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new CANNON.Vector3(0, 1, 0) }) }));
+            children.push(new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new feng3d.Vector3(0, 0, 0) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new feng3d.Vector3(1, 0, 0) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new feng3d.Vector3(1, 1, 0) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new feng3d.Vector3(1, 1, 1) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new feng3d.Vector3(0, 1, 1) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new feng3d.Vector3(0, 0, 1) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new feng3d.Vector3(1, 0, 1) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new feng3d.Vector3(0, 1, 0) }) }));
             u.subTo(l, halfDiagonal);
             halfDiagonal.scaleNumberTo(0.5, halfDiagonal);
             var root = this.root || this;
@@ -40957,7 +40599,7 @@ var CANNON;
         return Octree;
     }(OctreeNode));
     CANNON.Octree = Octree;
-    var halfDiagonal = new CANNON.Vector3();
+    var halfDiagonal = new feng3d.Vector3();
     var tmpAABB = new CANNON.AABB();
 })(CANNON || (CANNON = {}));
 var CANNON;
@@ -41158,10 +40800,10 @@ var CANNON;
          * Storage for Ray casting data.
          */
         function RaycastResult() {
-            this.rayFromWorld = new CANNON.Vector3();
-            this.rayToWorld = new CANNON.Vector3();
-            this.hitNormalWorld = new CANNON.Vector3();
-            this.hitPointWorld = new CANNON.Vector3();
+            this.rayFromWorld = new feng3d.Vector3();
+            this.rayToWorld = new feng3d.Vector3();
+            this.hitNormalWorld = new feng3d.Vector3();
+            this.hitPointWorld = new feng3d.Vector3();
             this.hasHit = false;
             this.shape = null;
             this.body = null;
@@ -41362,14 +41004,14 @@ var CANNON;
         return Broadphase;
     }());
     CANNON.Broadphase = Broadphase;
-    var Broadphase_collisionPairs_r = new CANNON.Vector3(); // Temp objects
-    var Broadphase_collisionPairs_normal = new CANNON.Vector3();
+    var Broadphase_collisionPairs_r = new feng3d.Vector3(); // Temp objects
+    var Broadphase_collisionPairs_normal = new feng3d.Vector3();
     var Broadphase_collisionPairs_quat = new CANNON.Quaternion();
-    var Broadphase_collisionPairs_relpos = new CANNON.Vector3();
+    var Broadphase_collisionPairs_relpos = new feng3d.Vector3();
     var Broadphase_makePairsUnique_temp = { keys: [] };
     var Broadphase_makePairsUnique_p1 = [];
     var Broadphase_makePairsUnique_p2 = [];
-    var bsc_dist = new CANNON.Vector3();
+    var bsc_dist = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -41391,8 +41033,8 @@ var CANNON;
             _this.nx = nx || 10;
             _this.ny = ny || 10;
             _this.nz = nz || 10;
-            _this.aabbMin = aabbMin || new CANNON.Vector3(100, 100, 100);
-            _this.aabbMax = aabbMax || new CANNON.Vector3(-100, -100, -100);
+            _this.aabbMin = aabbMin || new feng3d.Vector3(100, 100, 100);
+            _this.aabbMax = aabbMax || new feng3d.Vector3(-100, -100, -100);
             var nbins = _this.nx * _this.ny * _this.nz;
             if (nbins <= 0) {
                 throw "GridBroadphase: Each dimension's n must be >0";
@@ -41563,8 +41205,8 @@ var CANNON;
         return GridBroadphase;
     }(CANNON.Broadphase));
     CANNON.GridBroadphase = GridBroadphase;
-    var GridBroadphase_collisionPairs_d = new CANNON.Vector3();
-    var GridBroadphase_collisionPairs_binPos = new CANNON.Vector3();
+    var GridBroadphase_collisionPairs_d = new feng3d.Vector3();
+    var GridBroadphase_collisionPairs_binPos = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -41863,9 +41505,9 @@ var CANNON;
          * @param to
          */
         function Ray(from, to) {
-            this.from = from ? from.clone() : new CANNON.Vector3();
-            this.to = to ? to.clone() : new CANNON.Vector3();
-            this._direction = new CANNON.Vector3();
+            this.from = from ? from.clone() : new feng3d.Vector3();
+            this.to = to ? to.clone() : new feng3d.Vector3();
+            this._direction = new feng3d.Vector3();
             this.precision = 0.0001;
             this.checkCollisionResponse = true;
             this.skipBackfaces = false;
@@ -41979,9 +41621,9 @@ var CANNON;
             var to = this.to;
             var direction = this._direction;
             // Get plane normal
-            var worldNormal = new CANNON.Vector3(0, 1, 0);
+            var worldNormal = new feng3d.Vector3(0, 1, 0);
             quat.vmult(worldNormal, worldNormal);
-            var len = new CANNON.Vector3();
+            var len = new feng3d.Vector3();
             from.subTo(position, len);
             var planeToFrom = len.dot(worldNormal);
             to.subTo(position, len);
@@ -41998,9 +41640,9 @@ var CANNON;
                 // No intersection
                 return;
             }
-            var planePointToFrom = new CANNON.Vector3();
-            var dir_scaled_with_t = new CANNON.Vector3();
-            var hitPointWorld = new CANNON.Vector3();
+            var planePointToFrom = new feng3d.Vector3();
+            var dir_scaled_with_t = new feng3d.Vector3();
+            var hitPointWorld = new feng3d.Vector3();
             from.subTo(position, planePointToFrom);
             var t = -worldNormal.dot(planePointToFrom) / n_dot_dir;
             direction.scaleNumberTo(t, dir_scaled_with_t);
@@ -42080,7 +41722,7 @@ var CANNON;
             }
             else if (delta === 0) {
                 // single intersection point
-                from.lerpTo(to, delta, intersectionPoint);
+                from.lerpNumberTo(to, delta, intersectionPoint);
                 intersectionPoint.subTo(position, normal);
                 normal.normalize();
                 this.reportIntersection(normal, intersectionPoint, reportedShape, body, -1);
@@ -42089,7 +41731,7 @@ var CANNON;
                 var d1 = (-b - Math.sqrt(delta)) / (2 * a);
                 var d2 = (-b + Math.sqrt(delta)) / (2 * a);
                 if (d1 >= 0 && d1 <= 1) {
-                    from.lerpTo(to, d1, intersectionPoint);
+                    from.lerpNumberTo(to, d1, intersectionPoint);
                     intersectionPoint.subTo(position, normal);
                     normal.normalize();
                     this.reportIntersection(normal, intersectionPoint, reportedShape, body, -1);
@@ -42098,7 +41740,7 @@ var CANNON;
                     return;
                 }
                 if (d2 >= 0 && d2 <= 1) {
-                    from.lerpTo(to, d2, intersectionPoint);
+                    from.lerpNumberTo(to, d2, intersectionPoint);
                     intersectionPoint.subTo(position, normal);
                     normal.normalize();
                     this.reportIntersection(normal, intersectionPoint, reportedShape, body, -1);
@@ -42151,7 +41793,7 @@ var CANNON;
                 }
                 // if (dot < 0) {
                 // Intersection point is from + direction * scalar
-                direction.multiplyTo(scalar, intersectPoint);
+                direction.scaleNumberTo(scalar, intersectPoint);
                 intersectPoint.addTo(from, intersectPoint);
                 // a is the point we compare points b and c with.
                 a.copy(vertices[face[0]]);
@@ -42328,42 +41970,42 @@ var CANNON;
     CANNON.Ray = Ray;
     var tmpAABB = new CANNON.AABB();
     var tmpArray = [];
-    var v1 = new CANNON.Vector3();
-    var v2 = new CANNON.Vector3();
-    var intersectBody_xi = new CANNON.Vector3();
+    var v1 = new feng3d.Vector3();
+    var v2 = new feng3d.Vector3();
+    var intersectBody_xi = new feng3d.Vector3();
     var intersectBody_qi = new CANNON.Quaternion();
-    var vector = new CANNON.Vector3();
-    var normal = new CANNON.Vector3();
-    var intersectPoint = new CANNON.Vector3();
-    var a = new CANNON.Vector3();
-    var b = new CANNON.Vector3();
-    var c = new CANNON.Vector3();
-    var d = new CANNON.Vector3();
+    var vector = new feng3d.Vector3();
+    var normal = new feng3d.Vector3();
+    var intersectPoint = new feng3d.Vector3();
+    var a = new feng3d.Vector3();
+    var b = new feng3d.Vector3();
+    var c = new feng3d.Vector3();
+    var d = new feng3d.Vector3();
     var tmpRaycastResult = new CANNON.RaycastResult();
-    var v0 = new CANNON.Vector3();
-    var intersect = new CANNON.Vector3();
-    var intersectTrimesh_normal = new CANNON.Vector3();
-    var intersectTrimesh_localDirection = new CANNON.Vector3();
-    var intersectTrimesh_localFrom = new CANNON.Vector3();
-    var intersectTrimesh_localTo = new CANNON.Vector3();
-    var intersectTrimesh_worldNormal = new CANNON.Vector3();
-    var intersectTrimesh_worldIntersectPoint = new CANNON.Vector3();
+    var v0 = new feng3d.Vector3();
+    var intersect = new feng3d.Vector3();
+    var intersectTrimesh_normal = new feng3d.Vector3();
+    var intersectTrimesh_localDirection = new feng3d.Vector3();
+    var intersectTrimesh_localFrom = new feng3d.Vector3();
+    var intersectTrimesh_localTo = new feng3d.Vector3();
+    var intersectTrimesh_worldNormal = new feng3d.Vector3();
+    var intersectTrimesh_worldIntersectPoint = new feng3d.Vector3();
     var intersectTrimesh_localAABB = new CANNON.AABB();
     var intersectTrimesh_triangles = [];
     var intersectTrimesh_treeTransform = new CANNON.Transform();
     var intersectConvexOptions = {
         faceList: [0]
     };
-    var worldPillarOffset = new CANNON.Vector3();
+    var worldPillarOffset = new feng3d.Vector3();
     var intersectHeightfield_localRay = new Ray();
     var intersectHeightfield_index = [];
     var intersectHeightfield_minMax = [];
-    var Ray_intersectSphere_intersectionPoint = new CANNON.Vector3();
-    var Ray_intersectSphere_normal = new CANNON.Vector3();
-    var intersectConvex_normal = new CANNON.Vector3();
-    var intersectConvex_minDistNormal = new CANNON.Vector3();
-    var intersectConvex_minDistIntersect = new CANNON.Vector3();
-    var intersectConvex_vector = new CANNON.Vector3();
+    var Ray_intersectSphere_intersectionPoint = new feng3d.Vector3();
+    var Ray_intersectSphere_normal = new feng3d.Vector3();
+    var intersectConvex_normal = new feng3d.Vector3();
+    var intersectConvex_minDistNormal = new feng3d.Vector3();
+    var intersectConvex_minDistIntersect = new feng3d.Vector3();
+    var intersectConvex_vector = new feng3d.Vector3();
     Ray.prototype[CANNON.Shape.types.BOX] = Ray.prototype["intersectBox"];
     Ray.prototype[CANNON.Shape.types.PLANE] = Ray.prototype["intersectPlane"];
     Ray.prototype[CANNON.Shape.types.HEIGHTFIELD] = Ray.prototype["intersectHeightfield"];
@@ -42471,26 +42113,26 @@ var CANNON;
             _this.world = null;
             _this.preStep = null;
             _this.postStep = null;
-            _this.vlambda = new CANNON.Vector3();
+            _this.vlambda = new feng3d.Vector3();
             _this.collisionFilterGroup = typeof (options.collisionFilterGroup) === 'number' ? options.collisionFilterGroup : 1;
             _this.collisionFilterMask = typeof (options.collisionFilterMask) === 'number' ? options.collisionFilterMask : -1;
             _this.collisionResponse = true;
-            _this.position = new CANNON.Vector3();
-            _this.previousPosition = new CANNON.Vector3();
-            _this.interpolatedPosition = new CANNON.Vector3();
-            _this.initPosition = new CANNON.Vector3();
+            _this.position = new feng3d.Vector3();
+            _this.previousPosition = new feng3d.Vector3();
+            _this.interpolatedPosition = new feng3d.Vector3();
+            _this.initPosition = new feng3d.Vector3();
             if (options.position) {
                 _this.position.copy(options.position);
                 _this.previousPosition.copy(options.position);
                 _this.interpolatedPosition.copy(options.position);
                 _this.initPosition.copy(options.position);
             }
-            _this.velocity = new CANNON.Vector3();
+            _this.velocity = new feng3d.Vector3();
             if (options.velocity) {
                 _this.velocity.copy(options.velocity);
             }
-            _this.initVelocity = new CANNON.Vector3();
-            _this.force = new CANNON.Vector3();
+            _this.initVelocity = new feng3d.Vector3();
+            _this.force = new feng3d.Vector3();
             var mass = typeof (options.mass) === 'number' ? options.mass : 0;
             _this.mass = mass;
             _this.invMass = mass > 0 ? 1.0 / mass : 0;
@@ -42506,7 +42148,7 @@ var CANNON;
             _this.sleepTimeLimit = typeof (options.sleepTimeLimit) !== 'undefined' ? options.sleepTimeLimit : 1;
             _this.timeLastSleepy = 0;
             _this._wakeUpAfterNarrowphase = false;
-            _this.torque = new CANNON.Vector3();
+            _this.torque = new feng3d.Vector3();
             _this.quaternion = new CANNON.Quaternion();
             _this.initQuaternion = new CANNON.Quaternion();
             _this.previousQuaternion = new CANNON.Quaternion();
@@ -42517,34 +42159,34 @@ var CANNON;
                 _this.previousQuaternion.copy(options.quaternion);
                 _this.interpolatedQuaternion.copy(options.quaternion);
             }
-            _this.angularVelocity = new CANNON.Vector3();
+            _this.angularVelocity = new feng3d.Vector3();
             if (options.angularVelocity) {
                 _this.angularVelocity.copy(options.angularVelocity);
             }
-            _this.initAngularVelocity = new CANNON.Vector3();
+            _this.initAngularVelocity = new feng3d.Vector3();
             _this.shapes = [];
             _this.shapeOffsets = [];
             _this.shapeOrientations = [];
-            _this.inertia = new CANNON.Vector3();
-            _this.invInertia = new CANNON.Vector3();
+            _this.inertia = new feng3d.Vector3();
+            _this.invInertia = new feng3d.Vector3();
             _this.invInertiaWorld = new CANNON.Mat3();
             _this.invMassSolve = 0;
-            _this.invInertiaSolve = new CANNON.Vector3();
+            _this.invInertiaSolve = new feng3d.Vector3();
             _this.invInertiaWorldSolve = new CANNON.Mat3();
             _this.fixedRotation = typeof (options.fixedRotation) !== "undefined" ? options.fixedRotation : false;
             _this.angularDamping = typeof (options.angularDamping) !== 'undefined' ? options.angularDamping : 0.01;
-            _this.linearFactor = new CANNON.Vector3(1, 1, 1);
+            _this.linearFactor = new feng3d.Vector3(1, 1, 1);
             if (options.linearFactor) {
                 _this.linearFactor.copy(options.linearFactor);
             }
-            _this.angularFactor = new CANNON.Vector3(1, 1, 1);
+            _this.angularFactor = new feng3d.Vector3(1, 1, 1);
             if (options.angularFactor) {
                 _this.angularFactor.copy(options.angularFactor);
             }
             _this.aabb = new CANNON.AABB();
             _this.aabbNeedsUpdate = true;
             _this.boundingRadius = 0;
-            _this.wlambda = new CANNON.Vector3();
+            _this.wlambda = new feng3d.Vector3();
             if (options.shape) {
                 _this.addShape(options.shape);
             }
@@ -42615,7 +42257,7 @@ var CANNON;
          * @param result
          */
         Body.prototype.pointToLocalFrame = function (worldPoint, result) {
-            var result = result || new CANNON.Vector3();
+            var result = result || new feng3d.Vector3();
             worldPoint.subTo(this.position, result);
             this.quaternion.conjugate().vmult(result, result);
             return result;
@@ -42627,7 +42269,7 @@ var CANNON;
          * @param result
          */
         Body.prototype.vectorToLocalFrame = function (worldVector, result) {
-            if (result === void 0) { result = new CANNON.Vector3(); }
+            if (result === void 0) { result = new feng3d.Vector3(); }
             this.quaternion.conjugate().vmult(worldVector, result);
             return result;
         };
@@ -42638,7 +42280,7 @@ var CANNON;
          * @param result
          */
         Body.prototype.pointToWorldFrame = function (localPoint, result) {
-            var result = result || new CANNON.Vector3();
+            var result = result || new feng3d.Vector3();
             this.quaternion.vmult(localPoint, result);
             result.addTo(this.position, result);
             return result;
@@ -42650,7 +42292,7 @@ var CANNON;
          * @param result
          */
         Body.prototype.vectorToWorldFrame = function (localVector, result) {
-            var result = result || new CANNON.Vector3();
+            var result = result || new feng3d.Vector3();
             this.quaternion.vmult(localVector, result);
             return result;
         };
@@ -42663,7 +42305,7 @@ var CANNON;
          * @return The body object, for chainability.
          */
         Body.prototype.addShape = function (shape, _offset, _orientation) {
-            var offset = new CANNON.Vector3();
+            var offset = new feng3d.Vector3();
             var orientation = new CANNON.Quaternion();
             if (_offset) {
                 offset.copy(_offset);
@@ -42790,7 +42432,7 @@ var CANNON;
             // Compute produced central impulse velocity
             var velo = Body_applyImpulse_velo;
             velo.copy(impulse);
-            velo.multiplyTo(this.invMass, velo);
+            velo.scaleNumberTo(this.invMass, velo);
             // Add linear impulse
             this.velocity.addTo(velo, this.velocity);
             // Compute produced rotational impulse velocity
@@ -42845,7 +42487,7 @@ var CANNON;
          * @return {Vector3} The result vector.
          */
         Body.prototype.getVelocityAtWorldPoint = function (worldPoint, result) {
-            var r = new CANNON.Vector3();
+            var r = new feng3d.Vector3();
             worldPoint.vsub(this.position, r);
             this.angularVelocity.crossTo(r, result);
             this.velocity.addTo(result, result);
@@ -42933,22 +42575,22 @@ var CANNON;
         return Body;
     }(CANNON.EventTarget));
     CANNON.Body = Body;
-    var tmpVec = new CANNON.Vector3();
+    var tmpVec = new feng3d.Vector3();
     var tmpQuat = new CANNON.Quaternion();
-    var torque = new CANNON.Vector3();
-    var invI_tau_dt = new CANNON.Vector3();
+    var torque = new feng3d.Vector3();
+    var invI_tau_dt = new feng3d.Vector3();
     var w = new CANNON.Quaternion();
     var wq = new CANNON.Quaternion();
-    var Body_updateMassProperties_halfExtents = new CANNON.Vector3();
-    var Body_applyForce_r = new CANNON.Vector3();
-    var Body_applyForce_rotForce = new CANNON.Vector3();
-    var Body_applyLocalForce_worldForce = new CANNON.Vector3();
-    var Body_applyLocalForce_relativePointWorld = new CANNON.Vector3();
-    var Body_applyImpulse_r = new CANNON.Vector3();
-    var Body_applyImpulse_velo = new CANNON.Vector3();
-    var Body_applyImpulse_rotVelo = new CANNON.Vector3();
-    var Body_applyLocalImpulse_worldImpulse = new CANNON.Vector3();
-    var Body_applyLocalImpulse_relativePoint = new CANNON.Vector3();
+    var Body_updateMassProperties_halfExtents = new feng3d.Vector3();
+    var Body_applyForce_r = new feng3d.Vector3();
+    var Body_applyForce_rotForce = new feng3d.Vector3();
+    var Body_applyLocalForce_worldForce = new feng3d.Vector3();
+    var Body_applyLocalForce_relativePointWorld = new feng3d.Vector3();
+    var Body_applyImpulse_r = new feng3d.Vector3();
+    var Body_applyImpulse_velo = new feng3d.Vector3();
+    var Body_applyImpulse_rotVelo = new feng3d.Vector3();
+    var Body_applyLocalImpulse_worldImpulse = new feng3d.Vector3();
+    var Body_applyLocalImpulse_relativePoint = new feng3d.Vector3();
     var uiw_m1 = new CANNON.Mat3();
     var uiw_m2 = new CANNON.Mat3();
     var uiw_m3 = new CANNON.Mat3();
@@ -42971,8 +42613,8 @@ var CANNON;
             this.damping = options.damping || 1;
             this.bodyA = bodyA;
             this.bodyB = bodyB;
-            this.localAnchorA = new CANNON.Vector3();
-            this.localAnchorB = new CANNON.Vector3();
+            this.localAnchorA = new feng3d.Vector3();
+            this.localAnchorB = new feng3d.Vector3();
             if (options.localAnchorA) {
                 this.localAnchorA.copy(options.localAnchorA);
             }
@@ -43039,7 +42681,7 @@ var CANNON;
             bodyA.angularVelocity.crossTo(ri, tmp);
             u.subTo(tmp, u);
             // F = - k * ( x - L ) - D * ( u )
-            r_unit.multiplyTo(-k * (rlen - l) - d * u.dot(r_unit), f);
+            r_unit.scaleNumberTo(-k * (rlen - l) - d * u.dot(r_unit), f);
             // Add forces to bodies
             bodyA.force.subTo(f, bodyA.force);
             bodyB.force.addTo(f, bodyB.force);
@@ -43052,17 +42694,17 @@ var CANNON;
         return Spring;
     }());
     CANNON.Spring = Spring;
-    var applyForce_r = new CANNON.Vector3();
-    var applyForce_r_unit = new CANNON.Vector3();
-    var applyForce_u = new CANNON.Vector3();
-    var applyForce_f = new CANNON.Vector3();
-    var applyForce_worldAnchorA = new CANNON.Vector3();
-    var applyForce_worldAnchorB = new CANNON.Vector3();
-    var applyForce_ri = new CANNON.Vector3();
-    var applyForce_rj = new CANNON.Vector3();
-    var applyForce_ri_x_f = new CANNON.Vector3();
-    var applyForce_rj_x_f = new CANNON.Vector3();
-    var applyForce_tmp = new CANNON.Vector3();
+    var applyForce_r = new feng3d.Vector3();
+    var applyForce_r_unit = new feng3d.Vector3();
+    var applyForce_u = new feng3d.Vector3();
+    var applyForce_f = new feng3d.Vector3();
+    var applyForce_worldAnchorA = new feng3d.Vector3();
+    var applyForce_worldAnchorB = new feng3d.Vector3();
+    var applyForce_ri = new feng3d.Vector3();
+    var applyForce_rj = new feng3d.Vector3();
+    var applyForce_ri_x_f = new feng3d.Vector3();
+    var applyForce_rj_x_f = new feng3d.Vector3();
+    var applyForce_tmp = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -43074,12 +42716,12 @@ var CANNON;
         function WheelInfo(options) {
             if (options === void 0) { options = {}; }
             options = CANNON.Utils.defaults(options, {
-                chassisConnectionPointLocal: new CANNON.Vector3(),
-                chassisConnectionPointWorld: new CANNON.Vector3(),
-                directionLocal: new CANNON.Vector3(),
-                directionWorld: new CANNON.Vector3(),
-                axleLocal: new CANNON.Vector3(),
-                axleWorld: new CANNON.Vector3(),
+                chassisConnectionPointLocal: new feng3d.Vector3(),
+                chassisConnectionPointWorld: new feng3d.Vector3(),
+                directionLocal: new feng3d.Vector3(),
+                directionWorld: new feng3d.Vector3(),
+                axleLocal: new feng3d.Vector3(),
+                axleWorld: new feng3d.Vector3(),
                 suspensionRestLength: 1,
                 suspensionMaxLength: 2,
                 radius: 1,
@@ -43166,9 +42808,9 @@ var CANNON;
         return WheelInfo;
     }());
     CANNON.WheelInfo = WheelInfo;
-    var chassis_velocity_at_contactPoint = new CANNON.Vector3();
-    var relpos = new CANNON.Vector3();
-    var chassis_velocity_at_contactPoint = new CANNON.Vector3();
+    var chassis_velocity_at_contactPoint = new feng3d.Vector3();
+    var relpos = new feng3d.Vector3();
+    var chassis_velocity_at_contactPoint = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -43260,7 +42902,7 @@ var CANNON;
                 this.updateWheelTransform(i);
             }
             this.currentVehicleSpeedKmHour = 3.6 * chassisBody.velocity.length;
-            var forwardWorld = new CANNON.Vector3();
+            var forwardWorld = new feng3d.Vector3();
             this.getVehicleAxisWorld(this.indexForwardAxis, forwardWorld);
             if (forwardWorld.dot(chassisBody.velocity) < 0) {
                 this.currentVehicleSpeedKmHour *= -1;
@@ -43270,8 +42912,8 @@ var CANNON;
                 this.castRay(wheelInfos[i]);
             }
             this.updateSuspension(timeStep);
-            var impulse = new CANNON.Vector3();
-            var relpos = new CANNON.Vector3();
+            var impulse = new feng3d.Vector3();
+            var relpos = new feng3d.Vector3();
             for (var i = 0; i < numWheels; i++) {
                 //apply suspension force
                 var wheel = wheelInfos[i];
@@ -43284,9 +42926,9 @@ var CANNON;
                 chassisBody.applyImpulse(impulse, relpos);
             }
             this.updateFriction(timeStep);
-            var hitNormalWorldScaledWithProj = new CANNON.Vector3();
-            var fwd = new CANNON.Vector3();
-            var vel = new CANNON.Vector3();
+            var hitNormalWorldScaledWithProj = new feng3d.Vector3();
+            var fwd = new feng3d.Vector3();
+            var vel = new feng3d.Vector3();
             for (i = 0; i < numWheels; i++) {
                 var wheel = wheelInfos[i];
                 //var relpos = new Vec3();
@@ -43402,7 +43044,7 @@ var CANNON;
                     wheel.raycastResult.reset();
                 }
                 var denominator = wheel.raycastResult.hitNormalWorld.dot(wheel.directionWorld);
-                var chassis_velocity_at_contactPoint = new CANNON.Vector3();
+                var chassis_velocity_at_contactPoint = new feng3d.Vector3();
                 chassisBody.getVelocityAtWorldPoint(wheel.raycastResult.hitPointWorld, chassis_velocity_at_contactPoint);
                 var projVel = wheel.raycastResult.hitNormalWorld.dot(chassis_velocity_at_contactPoint);
                 if (denominator >= -0.1) {
@@ -43491,10 +43133,10 @@ var CANNON;
                 wheel.sideImpulse = 0;
                 wheel.forwardImpulse = 0;
                 if (!forwardWS[i]) {
-                    forwardWS[i] = new CANNON.Vector3();
+                    forwardWS[i] = new feng3d.Vector3();
                 }
                 if (!axle[i]) {
-                    axle[i] = new CANNON.Vector3();
+                    axle[i] = new feng3d.Vector3();
                 }
             }
             for (var i = 0; i < numWheels; i++) {
@@ -43570,21 +43212,21 @@ var CANNON;
             // apply the impulses
             for (var i = 0; i < numWheels; i++) {
                 var wheel = wheelInfos[i];
-                var rel_pos = new CANNON.Vector3();
+                var rel_pos = new feng3d.Vector3();
                 wheel.raycastResult.hitPointWorld.subTo(chassisBody.position, rel_pos);
                 // cannons applyimpulse is using world coord for the position
                 //rel_pos.copy(wheel.raycastResult.hitPointWorld);
                 if (wheel.forwardImpulse !== 0) {
-                    var impulse = new CANNON.Vector3();
+                    var impulse = new feng3d.Vector3();
                     forwardWS[i].scale(wheel.forwardImpulse, impulse);
                     chassisBody.applyImpulse(impulse, rel_pos);
                 }
                 if (wheel.sideImpulse !== 0) {
                     var groundObject = wheel.raycastResult.body;
-                    var rel_pos2 = new CANNON.Vector3();
+                    var rel_pos2 = new feng3d.Vector3();
                     wheel.raycastResult.hitPointWorld.subTo(groundObject.position, rel_pos2);
                     //rel_pos2.copy(wheel.raycastResult.hitPointWorld);
-                    var sideImp = new CANNON.Vector3();
+                    var sideImp = new feng3d.Vector3();
                     axle[i].scale(wheel.sideImpulse, sideImp);
                     // Scale the relative position in the up direction with rollInfluence.
                     // If rollInfluence is 1, the impulse will be applied on the hitPoint (easy to roll over), if it is zero it will be applied in the same plane as the center of mass (not easy to roll over).
@@ -43601,28 +43243,28 @@ var CANNON;
         return RaycastVehicle;
     }());
     CANNON.RaycastVehicle = RaycastVehicle;
-    var tmpVec1 = new CANNON.Vector3();
-    var tmpVec2 = new CANNON.Vector3();
-    var tmpVec3 = new CANNON.Vector3();
-    var tmpVec4 = new CANNON.Vector3();
-    var tmpVec5 = new CANNON.Vector3();
-    var tmpVec6 = new CANNON.Vector3();
+    var tmpVec1 = new feng3d.Vector3();
+    var tmpVec2 = new feng3d.Vector3();
+    var tmpVec3 = new feng3d.Vector3();
+    var tmpVec4 = new feng3d.Vector3();
+    var tmpVec5 = new feng3d.Vector3();
+    var tmpVec6 = new feng3d.Vector3();
     var tmpRay = new CANNON.Ray();
-    var torque = new CANNON.Vector3();
-    var castRay_rayvector = new CANNON.Vector3();
-    var castRay_target = new CANNON.Vector3();
+    var torque = new feng3d.Vector3();
+    var castRay_rayvector = new feng3d.Vector3();
+    var castRay_target = new feng3d.Vector3();
     var directions = [
-        new CANNON.Vector3(1, 0, 0),
-        new CANNON.Vector3(0, 1, 0),
-        new CANNON.Vector3(0, 0, 1)
+        new feng3d.Vector3(1, 0, 0),
+        new feng3d.Vector3(0, 1, 0),
+        new feng3d.Vector3(0, 0, 1)
     ];
-    var updateFriction_surfNormalWS_scaled_proj = new CANNON.Vector3();
+    var updateFriction_surfNormalWS_scaled_proj = new feng3d.Vector3();
     var updateFriction_axle = [];
     var updateFriction_forwardWS = [];
     var sideFrictionStiffness2 = 1;
-    var calcRollingFriction_vel1 = new CANNON.Vector3();
-    var calcRollingFriction_vel2 = new CANNON.Vector3();
-    var calcRollingFriction_vel = new CANNON.Vector3();
+    var calcRollingFriction_vel1 = new feng3d.Vector3();
+    var calcRollingFriction_vel2 = new feng3d.Vector3();
+    var calcRollingFriction_vel = new feng3d.Vector3();
     function calcRollingFriction(body0, body1, frictionPosWorld, frictionDirectionWorld, maxImpulse) {
         var j1 = 0;
         var contactPosWorld = frictionPosWorld;
@@ -43651,10 +43293,10 @@ var CANNON;
         }
         return j1;
     }
-    var computeImpulseDenominator_r0 = new CANNON.Vector3();
-    var computeImpulseDenominator_c0 = new CANNON.Vector3();
-    var computeImpulseDenominator_vec = new CANNON.Vector3();
-    var computeImpulseDenominator_m = new CANNON.Vector3();
+    var computeImpulseDenominator_r0 = new feng3d.Vector3();
+    var computeImpulseDenominator_c0 = new feng3d.Vector3();
+    var computeImpulseDenominator_vec = new feng3d.Vector3();
+    var computeImpulseDenominator_m = new feng3d.Vector3();
     function computeImpulseDenominator(body, pos, normal) {
         var r0 = computeImpulseDenominator_r0;
         var c0 = computeImpulseDenominator_c0;
@@ -43666,9 +43308,9 @@ var CANNON;
         m.crossTo(r0, vec);
         return body.invMass + normal.dot(vec);
     }
-    var resolveSingleBilateral_vel1 = new CANNON.Vector3();
-    var resolveSingleBilateral_vel2 = new CANNON.Vector3();
-    var resolveSingleBilateral_vel = new CANNON.Vector3();
+    var resolveSingleBilateral_vel1 = new feng3d.Vector3();
+    var resolveSingleBilateral_vel2 = new feng3d.Vector3();
+    var resolveSingleBilateral_vel = new feng3d.Vector3();
     //bilateral constraint between two dynamic objects
     function resolveSingleBilateral(body1, pos1, body2, pos2, normal) {
         var normalLenSqr = normal.lengthSquared;
@@ -43703,11 +43345,11 @@ var CANNON;
         function RigidVehicle(options) {
             if (options === void 0) { options = {}; }
             this.wheelBodies = [];
-            this.coordinateSystem = typeof (options.coordinateSystem) === 'undefined' ? new CANNON.Vector3(1, 2, 3) : options.coordinateSystem.clone();
+            this.coordinateSystem = typeof (options.coordinateSystem) === 'undefined' ? new feng3d.Vector3(1, 2, 3) : options.coordinateSystem.clone();
             this.chassisBody = options.chassisBody;
             if (!this.chassisBody) {
                 // No chassis body given. Create it!
-                var chassisShape = new CANNON.Box(new CANNON.Vector3(5, 2, 0.5));
+                var chassisShape = new CANNON.Box(new feng3d.Vector3(5, 2, 0.5));
                 throw "下一行代码有问题？！";
                 // this.chassisBody = new Body(1, chassisShape);
             }
@@ -43730,19 +43372,19 @@ var CANNON;
             this.wheelBodies.push(wheelBody);
             this.wheelForces.push(0);
             // Position constrain wheels
-            var zero = new CANNON.Vector3();
-            var position = typeof (options.position) !== 'undefined' ? options.position.clone() : new CANNON.Vector3();
+            var zero = new feng3d.Vector3();
+            var position = typeof (options.position) !== 'undefined' ? options.position.clone() : new feng3d.Vector3();
             // Set position locally to the chassis
-            var worldPosition = new CANNON.Vector3();
+            var worldPosition = new feng3d.Vector3();
             this.chassisBody.pointToWorldFrame(position, worldPosition);
             wheelBody.position.init(worldPosition.x, worldPosition.y, worldPosition.z);
             // Constrain wheel
-            var axis = typeof (options.axis) !== 'undefined' ? options.axis.clone() : new CANNON.Vector3(0, 1, 0);
+            var axis = typeof (options.axis) !== 'undefined' ? options.axis.clone() : new feng3d.Vector3(0, 1, 0);
             this.wheelAxes.push(axis);
             var hingeConstraint = new CANNON.HingeConstraint(this.chassisBody, wheelBody, {
                 pivotA: position,
                 axisA: axis,
-                pivotB: CANNON.Vector3.ZERO,
+                pivotB: feng3d.Vector3.ZERO,
                 axisB: axis,
                 collideConnected: false
             });
@@ -43857,8 +43499,8 @@ var CANNON;
         return RigidVehicle;
     }());
     CANNON.RigidVehicle = RigidVehicle;
-    var torque = new CANNON.Vector3();
-    var worldAxis = new CANNON.Vector3();
+    var torque = new feng3d.Vector3();
+    var worldAxis = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -43913,7 +43555,7 @@ var CANNON;
             var N = this.particles.length, id = particle.id, R2 = this.smoothingRadius * this.smoothingRadius, dist = SPHSystem_getNeighbors_dist;
             for (var i = 0; i !== N; i++) {
                 var p = this.particles[i];
-                p.position.vsub(particle.position, dist);
+                p.position.subTo(particle.position, dist);
                 if (id !== p.id && dist.lengthSquared < R2) {
                     neighbors.push(p);
                 }
@@ -43933,7 +43575,7 @@ var CANNON;
                 var sum = 0.0;
                 for (var j = 0; j !== numNeighbors; j++) {
                     //printf("Current particle has position %f %f %f\n",objects[id].pos.x(),objects[id].pos.y(),objects[id].pos.z());
-                    p.position.vsub(neighbors[j].position, dist);
+                    p.position.subTo(neighbors[j].position, dist);
                     var len = dist.length;
                     var weight = this.w(len);
                     sum += neighbors[j].mass * weight;
@@ -43965,28 +43607,28 @@ var CANNON;
                     var neighbor = neighbors[j];
                     //printf("%d ",nj);
                     // Get r once for all..
-                    particle.position.vsub(neighbor.position, r_vec);
+                    particle.position.subTo(neighbor.position, r_vec);
                     var r = r_vec.length;
                     // Pressure contribution
                     Pij = -neighbor.mass * (this.pressures[i] / (this.densities[i] * this.densities[i] + eps) + this.pressures[j] / (this.densities[j] * this.densities[j] + eps));
                     this.gradw(r_vec, gradW);
                     // Add to pressure acceleration
-                    gradW.multiplyTo(Pij, gradW);
+                    gradW.scaleNumberTo(Pij, gradW);
                     a_pressure.addTo(gradW, a_pressure);
                     // Viscosity contribution
-                    neighbor.velocity.vsub(particle.velocity, u);
-                    u.multiplyTo(1.0 / (0.0001 + this.densities[i] * this.densities[j]) * this.viscosity * neighbor.mass, u);
+                    neighbor.velocity.subTo(particle.velocity, u);
+                    u.scaleNumberTo(1.0 / (0.0001 + this.densities[i] * this.densities[j]) * this.viscosity * neighbor.mass, u);
                     nabla = this.nablaw(r);
-                    u.multiplyTo(nabla, u);
+                    u.scaleNumberTo(nabla, u);
                     // Add to viscosity acceleration
                     a_visc.addTo(u, a_visc);
                 }
                 // Calculate force
-                a_visc.multiplyTo(particle.mass, a_visc);
-                a_pressure.multiplyTo(particle.mass, a_pressure);
+                a_visc.scaleNumberTo(particle.mass, a_visc);
+                a_pressure.scaleNumberTo(particle.mass, a_pressure);
                 // Add force to particles
-                particle.force.vadd(a_visc, particle.force);
-                particle.force.vadd(a_pressure, particle.force);
+                particle.force.addTo(a_visc, particle.force);
+                particle.force.addTo(a_pressure, particle.force);
             }
         };
         // Calculate the weight using the W(r) weightfunction
@@ -43998,7 +43640,7 @@ var CANNON;
         // calculate gradient of the weight function
         SPHSystem.prototype.gradw = function (rVec, resultVec) {
             var r = rVec.length, h = this.smoothingRadius;
-            rVec.multiplyTo(945.0 / (32.0 * Math.PI * Math.pow(h, 9)) * Math.pow((h * h - r * r), 2), resultVec);
+            rVec.scaleNumberTo(945.0 / (32.0 * Math.PI * Math.pow(h, 9)) * Math.pow((h * h - r * r), 2), resultVec);
         };
         // Calculate nabla(W)
         SPHSystem.prototype.nablaw = function (r) {
@@ -44009,13 +43651,13 @@ var CANNON;
         return SPHSystem;
     }());
     CANNON.SPHSystem = SPHSystem;
-    var SPHSystem_getNeighbors_dist = new CANNON.Vector3();
-    var SPHSystem_update_dist = new CANNON.Vector3();
-    var SPHSystem_update_a_pressure = new CANNON.Vector3();
-    var SPHSystem_update_a_visc = new CANNON.Vector3();
-    var SPHSystem_update_gradW = new CANNON.Vector3();
-    var SPHSystem_update_r_vec = new CANNON.Vector3();
-    var SPHSystem_update_u = new CANNON.Vector3(); // Relative velocity
+    var SPHSystem_getNeighbors_dist = new feng3d.Vector3();
+    var SPHSystem_update_dist = new feng3d.Vector3();
+    var SPHSystem_update_a_pressure = new feng3d.Vector3();
+    var SPHSystem_update_a_visc = new feng3d.Vector3();
+    var SPHSystem_update_gradW = new feng3d.Vector3();
+    var SPHSystem_update_r_vec = new feng3d.Vector3();
+    var SPHSystem_update_u = new feng3d.Vector3(); // Relative velocity
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -44130,18 +43772,18 @@ var CANNON;
         return Equation;
     }());
     CANNON.Equation = Equation;
-    var zero = new CANNON.Vector3();
-    var iMfi = new CANNON.Vector3();
-    var iMfj = new CANNON.Vector3();
-    var invIi_vmult_taui = new CANNON.Vector3();
-    var invIj_vmult_tauj = new CANNON.Vector3();
-    var tmp = new CANNON.Vector3();
-    var addToWlambda_temp = new CANNON.Vector3();
-    var addToWlambda_Gi = new CANNON.Vector3();
-    var addToWlambda_Gj = new CANNON.Vector3();
-    var addToWlambda_ri = new CANNON.Vector3();
-    var addToWlambda_rj = new CANNON.Vector3();
-    var addToWlambda_Mdiag = new CANNON.Vector3();
+    var zero = new feng3d.Vector3();
+    var iMfi = new feng3d.Vector3();
+    var iMfj = new feng3d.Vector3();
+    var invIi_vmult_taui = new feng3d.Vector3();
+    var invIj_vmult_tauj = new feng3d.Vector3();
+    var tmp = new feng3d.Vector3();
+    var addToWlambda_temp = new feng3d.Vector3();
+    var addToWlambda_Gi = new feng3d.Vector3();
+    var addToWlambda_Gj = new feng3d.Vector3();
+    var addToWlambda_ri = new feng3d.Vector3();
+    var addToWlambda_rj = new feng3d.Vector3();
+    var addToWlambda_Mdiag = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -44159,8 +43801,8 @@ var CANNON;
         function ConeEquation(bodyA, bodyB, options) {
             if (options === void 0) { options = {}; }
             var _this = _super.call(this, bodyA, bodyB, -(typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6), typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6) || this;
-            _this.axisA = options.axisA ? options.axisA.clone() : new CANNON.Vector3(1, 0, 0);
-            _this.axisB = options.axisB ? options.axisB.clone() : new CANNON.Vector3(0, 1, 0);
+            _this.axisA = options.axisA ? options.axisA.clone() : new feng3d.Vector3(1, 0, 0);
+            _this.axisB = options.axisB ? options.axisB.clone() : new feng3d.Vector3(0, 1, 0);
             _this.angle = typeof (options.angle) !== 'undefined' ? options.angle : 0;
             return _this;
         }
@@ -44184,8 +43826,8 @@ var CANNON;
         return ConeEquation;
     }(CANNON.Equation));
     CANNON.ConeEquation = ConeEquation;
-    var tmpVec1 = new CANNON.Vector3();
-    var tmpVec2 = new CANNON.Vector3();
+    var tmpVec1 = new feng3d.Vector3();
+    var tmpVec2 = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -44202,9 +43844,9 @@ var CANNON;
         function ContactEquation(bodyA, bodyB, maxForce) {
             var _this = _super.call(this, bodyA, bodyB, 0, typeof (maxForce) !== 'undefined' ? maxForce : 1e6) || this;
             _this.restitution = 0.0; // "bounciness": u1 = -e*u0
-            _this.ri = new CANNON.Vector3();
-            _this.rj = new CANNON.Vector3();
-            _this.ni = new CANNON.Vector3();
+            _this.ri = new feng3d.Vector3();
+            _this.rj = new feng3d.Vector3();
+            _this.ni = new feng3d.Vector3();
             return _this;
         }
         ContactEquation.prototype.computeB = function (h) {
@@ -44250,14 +43892,14 @@ var CANNON;
         return ContactEquation;
     }(CANNON.Equation));
     CANNON.ContactEquation = ContactEquation;
-    var ContactEquation_computeB_temp1 = new CANNON.Vector3(); // Temp vectors
-    var ContactEquation_computeB_temp2 = new CANNON.Vector3();
-    var ContactEquation_computeB_temp3 = new CANNON.Vector3();
-    var ContactEquation_getImpactVelocityAlongNormal_vi = new CANNON.Vector3();
-    var ContactEquation_getImpactVelocityAlongNormal_vj = new CANNON.Vector3();
-    var ContactEquation_getImpactVelocityAlongNormal_xi = new CANNON.Vector3();
-    var ContactEquation_getImpactVelocityAlongNormal_xj = new CANNON.Vector3();
-    var ContactEquation_getImpactVelocityAlongNormal_relVel = new CANNON.Vector3();
+    var ContactEquation_computeB_temp1 = new feng3d.Vector3(); // Temp vectors
+    var ContactEquation_computeB_temp2 = new feng3d.Vector3();
+    var ContactEquation_computeB_temp3 = new feng3d.Vector3();
+    var ContactEquation_getImpactVelocityAlongNormal_vi = new feng3d.Vector3();
+    var ContactEquation_getImpactVelocityAlongNormal_vj = new feng3d.Vector3();
+    var ContactEquation_getImpactVelocityAlongNormal_xi = new feng3d.Vector3();
+    var ContactEquation_getImpactVelocityAlongNormal_xj = new feng3d.Vector3();
+    var ContactEquation_getImpactVelocityAlongNormal_relVel = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -44275,9 +43917,9 @@ var CANNON;
          */
         function FrictionEquation(bodyA, bodyB, slipForce) {
             var _this = _super.call(this, bodyA, bodyB, -slipForce, slipForce) || this;
-            _this.ri = new CANNON.Vector3();
-            _this.rj = new CANNON.Vector3();
-            _this.t = new CANNON.Vector3(); // tangent
+            _this.ri = new feng3d.Vector3();
+            _this.rj = new feng3d.Vector3();
+            _this.t = new feng3d.Vector3(); // tangent
             return _this;
         }
         FrictionEquation.prototype.computeB = function (h) {
@@ -44300,8 +43942,8 @@ var CANNON;
         return FrictionEquation;
     }(CANNON.Equation));
     CANNON.FrictionEquation = FrictionEquation;
-    var FrictionEquation_computeB_temp1 = new CANNON.Vector3();
-    var FrictionEquation_computeB_temp2 = new CANNON.Vector3();
+    var FrictionEquation_computeB_temp1 = new feng3d.Vector3();
+    var FrictionEquation_computeB_temp2 = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -44319,8 +43961,8 @@ var CANNON;
         function RotationalEquation(bodyA, bodyB, options) {
             if (options === void 0) { options = {}; }
             var _this = _super.call(this, bodyA, bodyB, -(typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6), typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6) || this;
-            _this.axisA = options.axisA ? options.axisA.clone() : new CANNON.Vector3(1, 0, 0);
-            _this.axisB = options.axisB ? options.axisB.clone() : new CANNON.Vector3(0, 1, 0);
+            _this.axisA = options.axisA ? options.axisA.clone() : new feng3d.Vector3(1, 0, 0);
+            _this.axisB = options.axisB ? options.axisB.clone() : new feng3d.Vector3(0, 1, 0);
             _this.maxAngle = Math.PI / 2;
             return _this;
         }
@@ -44342,8 +43984,8 @@ var CANNON;
         return RotationalEquation;
     }(CANNON.Equation));
     CANNON.RotationalEquation = RotationalEquation;
-    var tmpVec1 = new CANNON.Vector3();
-    var tmpVec2 = new CANNON.Vector3();
+    var tmpVec1 = new feng3d.Vector3();
+    var tmpVec2 = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -44360,8 +44002,8 @@ var CANNON;
          */
         function RotationalMotorEquation(bodyA, bodyB, maxForce) {
             var _this = _super.call(this, bodyA, bodyB, -(typeof (maxForce) !== 'undefined' ? maxForce : 1e6), typeof (maxForce) !== 'undefined' ? maxForce : 1e6) || this;
-            _this.axisA = new CANNON.Vector3();
-            _this.axisB = new CANNON.Vector3(); // World oriented rotational axis
+            _this.axisA = new feng3d.Vector3();
+            _this.axisB = new feng3d.Vector3(); // World oriented rotational axis
             _this.targetVelocity = 0;
             return _this;
         }
@@ -44774,7 +44416,7 @@ var CANNON;
             _this.stepnumber = 0;
             _this.default_dt = 1 / 60;
             _this.nextId = 0;
-            _this.gravity = new CANNON.Vector3();
+            _this.gravity = new feng3d.Vector3();
             if (options.gravity) {
                 _this.gravity.copy(options.gravity);
             }
@@ -45089,7 +44731,7 @@ var CANNON;
                 var t = (this.accumulator % dt) / dt;
                 for (var j = 0; j !== this.bodies.length; j++) {
                     var b = this.bodies[j];
-                    b.previousPosition.lerpTo(b.position, t, b.interpolatedPosition);
+                    b.previousPosition.lerpNumberTo(b.position, t, b.interpolatedPosition);
                     b.previousQuaternion.slerp(b.quaternion, t, b.interpolatedQuaternion);
                     b.previousQuaternion.normalize();
                 }
@@ -45306,11 +44948,11 @@ var CANNON;
                 if (bi.type & DYNAMIC) { // Only for dynamic bodies
                     var ld = pow(1.0 - bi.linearDamping, dt);
                     var v = bi.velocity;
-                    v.multiplyTo(ld, v);
+                    v.scaleNumberTo(ld, v);
                     var av = bi.angularVelocity;
                     if (av) {
                         var ad = pow(1.0 - bi.angularDamping, dt);
-                        av.multiplyTo(ad, av);
+                        av.scaleNumberTo(ad, av);
                     }
                 }
             }
@@ -45392,7 +45034,7 @@ var CANNON;
             return Date.now() - nowOffset;
         };
     }
-    var step_tmp1 = new CANNON.Vector3();
+    var step_tmp1 = new feng3d.Vector3();
     /**
      * Dispatched after the world has stepped forward in time.
      */
@@ -45406,19 +45048,19 @@ var CANNON;
     var World_step_frictionEquationPool = [];
     var World_step_p1 = []; // Reusable arrays for collision pairs
     var World_step_p2 = [];
-    var World_step_gvec = new CANNON.Vector3(); // Temporary vectors and quats
-    var World_step_vi = new CANNON.Vector3();
-    var World_step_vj = new CANNON.Vector3();
-    var World_step_wi = new CANNON.Vector3();
-    var World_step_wj = new CANNON.Vector3();
-    var World_step_t1 = new CANNON.Vector3();
-    var World_step_t2 = new CANNON.Vector3();
-    var World_step_rixn = new CANNON.Vector3();
-    var World_step_rjxn = new CANNON.Vector3();
+    var World_step_gvec = new feng3d.Vector3(); // Temporary vectors and quats
+    var World_step_vi = new feng3d.Vector3();
+    var World_step_vj = new feng3d.Vector3();
+    var World_step_wi = new feng3d.Vector3();
+    var World_step_wj = new feng3d.Vector3();
+    var World_step_t1 = new feng3d.Vector3();
+    var World_step_t2 = new feng3d.Vector3();
+    var World_step_rixn = new feng3d.Vector3();
+    var World_step_rjxn = new feng3d.Vector3();
     var World_step_step_q = new CANNON.Quaternion();
     var World_step_step_w = new CANNON.Quaternion();
     var World_step_step_wq = new CANNON.Quaternion();
-    var invI_tau_dt = new CANNON.Vector3();
+    var invI_tau_dt = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -45656,8 +45298,8 @@ var CANNON;
             // Contact point locations
             r.ri.copy(r.ni);
             r.rj.copy(r.ni);
-            r.ri.multiplyTo(si.radius, r.ri);
-            r.rj.multiplyTo(-sj.radius, r.rj);
+            r.ri.scaleNumberTo(si.radius, r.ri);
+            r.rj.scaleNumberTo(-sj.radius, r.rj);
             r.ri.addTo(xi, r.ri);
             r.ri.subTo(bi.position, r.ri);
             r.rj.addTo(xj, r.rj);
@@ -45679,7 +45321,7 @@ var CANNON;
          */
         Narrowphase.prototype.planeTrimesh = function (planeShape, trimeshShape, planePos, trimeshPos, planeQuat, trimeshQuat, planeBody, trimeshBody, rsi, rsj, justTest) {
             // Make contacts!
-            var v = new CANNON.Vector3();
+            var v = new feng3d.Vector3();
             var normal = planeTrimesh_normal;
             normal.init(0, 1, 0);
             planeQuat.vmult(normal, normal); // Turn normal according to plane
@@ -45687,7 +45329,7 @@ var CANNON;
                 // Get world vertex from trimesh
                 trimeshShape.getVertex(i, v);
                 // Safe up
-                var v2 = new CANNON.Vector3();
+                var v2 = new feng3d.Vector3();
                 v2.copy(v);
                 CANNON.Transform.pointToWorldFrame(trimeshPos, trimeshQuat, v2, v);
                 // Check plane side
@@ -45846,10 +45488,10 @@ var CANNON;
             r.ni.negateTo(r.ni); // body i is the sphere, flip normal
             r.ni.normalize(); // Needed?
             // Vector from sphere center to contact point
-            r.ni.multiplyTo(si.radius, r.ri);
+            r.ni.scaleNumberTo(si.radius, r.ri);
             // Project down sphere on plane
             xi.subTo(xj, point_on_plane_to_sphere);
-            r.ni.multiplyTo(r.ni.dot(point_on_plane_to_sphere), plane_to_sphere_ortho);
+            r.ni.scaleNumberTo(r.ni.dot(point_on_plane_to_sphere), plane_to_sphere_ortho);
             point_on_plane_to_sphere.subTo(plane_to_sphere_ortho, r.rj); // The sphere position projected to plane
             if (-point_on_plane_to_sphere.dot(r.ni) <= si.radius) {
                 if (justTest) {
@@ -45926,13 +45568,13 @@ var CANNON;
             if (side_penetrations) {
                 found = true;
                 var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
-                side_ns.multiplyTo(-R, r.ri); // Sphere r
+                side_ns.scaleNumberTo(-R, r.ri); // Sphere r
                 r.ni.copy(side_ns);
                 r.ni.negateTo(r.ni); // Normal should be out of sphere
-                side_ns.multiplyTo(side_h, side_ns);
-                side_ns1.multiplyTo(side_dot1, side_ns1);
+                side_ns.scaleNumberTo(side_h, side_ns);
+                side_ns1.scaleNumberTo(side_dot1, side_ns1);
                 side_ns.addTo(side_ns1, side_ns);
-                side_ns2.multiplyTo(side_dot2, side_ns2);
+                side_ns2.scaleNumberTo(side_dot2, side_ns2);
                 side_ns.addTo(side_ns2, r.rj);
                 // Make relative to bodies
                 r.ri.addTo(xi, r.ri);
@@ -45979,7 +45621,7 @@ var CANNON;
                             r.ri.copy(sphere_to_corner);
                             r.ri.normalize();
                             r.ni.copy(r.ri);
-                            r.ri.multiplyTo(R, r.ri);
+                            r.ri.scaleNumberTo(R, r.ri);
                             r.rj.copy(rj);
                             // Make relative to bodies
                             r.ri.addTo(xi, r.ri);
@@ -46040,7 +45682,7 @@ var CANNON;
                             res.ri.addTo(xj, res.ri);
                             res.ri.subTo(xi, res.ri);
                             res.ri.normalize();
-                            res.ri.multiplyTo(R, res.ri);
+                            res.ri.scaleNumberTo(R, res.ri);
                             // Make relative to bodies
                             res.ri.addTo(xi, res.ri);
                             res.ri.subTo(bi.position, res.ri);
@@ -46083,7 +45725,7 @@ var CANNON;
                     r.ri.copy(sphere_to_corner);
                     r.ri.normalize();
                     r.ni.copy(r.ri);
-                    r.ri.multiplyTo(R, r.ri);
+                    r.ri.scaleNumberTo(R, r.ri);
                     worldCorner.subTo(xj, r.rj);
                     // Should be relative to the body.
                     r.ri.addTo(xi, r.ri);
@@ -46110,7 +45752,7 @@ var CANNON;
                 worldPoint.addTo(xj, worldPoint);
                 // Get a point on the sphere, closest to the face normal
                 var worldSpherePointClosestToPlane = sphereConvex_worldSpherePointClosestToPlane;
-                worldNormal.multiplyTo(-R, worldSpherePointClosestToPlane);
+                worldNormal.scaleNumberTo(-R, worldSpherePointClosestToPlane);
                 xi.addTo(worldSpherePointClosestToPlane, worldSpherePointClosestToPlane);
                 // Vector from a face point to the closest point on the sphere
                 var penetrationVec = sphereConvex_penetrationVec;
@@ -46134,12 +45776,12 @@ var CANNON;
                         }
                         found = true;
                         var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
-                        worldNormal.multiplyTo(-R, r.ri); // Contact offset, from sphere center to contact
+                        worldNormal.scaleNumberTo(-R, r.ri); // Contact offset, from sphere center to contact
                         worldNormal.negateTo(r.ni); // Normal pointing out of sphere
                         var penetrationVec2 = v3pool.get();
-                        worldNormal.multiplyTo(-penetration, penetrationVec2);
+                        worldNormal.scaleNumberTo(-penetration, penetrationVec2);
                         var penetrationSpherePoint = v3pool.get();
-                        worldNormal.multiplyTo(-R, penetrationSpherePoint);
+                        worldNormal.scaleNumberTo(-R, penetrationSpherePoint);
                         //xi.subTo(xj).addTo(penetrationSpherePoint).addTo(penetrationVec2 , r.rj);
                         xi.subTo(xj, r.rj);
                         r.rj.addTo(penetrationSpherePoint, r.rj);
@@ -46181,7 +45823,7 @@ var CANNON;
                             var v1_to_xi = v3pool.get();
                             xi.subTo(v1, v1_to_xi);
                             var dot = v1_to_xi.dot(edgeUnit);
-                            edgeUnit.multiplyTo(dot, p);
+                            edgeUnit.scaleNumberTo(dot, p);
                             p.addTo(v1, p);
                             // Compute a vector from p to the center of the sphere
                             var xi_to_p = v3pool.get();
@@ -46197,7 +45839,7 @@ var CANNON;
                                 p.subTo(xj, r.rj);
                                 p.subTo(xi, r.ni);
                                 r.ni.normalize();
-                                r.ni.multiplyTo(R, r.ri);
+                                r.ni.scaleNumberTo(R, r.ri);
                                 // Should be relative to the body.
                                 r.rj.addTo(xj, r.rj);
                                 r.rj.subTo(bj.position, r.rj);
@@ -46258,7 +45900,7 @@ var CANNON;
                     var r = this.createContactEquation(planeBody, convexBody, planeShape, convexShape, si, sj);
                     // Get vertex position projected on plane
                     var projected = planeConvex_projected;
-                    worldNormal.multiplyTo(worldNormal.dot(relpos), projected);
+                    worldNormal.scaleNumberTo(worldNormal.dot(relpos), projected);
                     worldVertex.subTo(projected, projected);
                     projected.subTo(planePosition, r.ri); // From plane to vertex projected on plane
                     r.ni.copy(worldNormal); // Contact normal is the plane normal out from plane
@@ -46403,7 +46045,7 @@ var CANNON;
                 r.ri.init(0, 0, 0); // Center of particle
                 // Get particle position projected on plane
                 var projected = particlePlane_projected;
-                normal.multiplyTo(normal.dot(xi), projected);
+                normal.scaleNumberTo(normal.dot(xi), projected);
                 xi.subTo(projected, projected);
                 //projected.addTo(bj.position,projected);
                 // rj is now the projected world position minus plane position
@@ -46425,7 +46067,7 @@ var CANNON;
                 var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
                 normal.normalize();
                 r.rj.copy(normal);
-                r.rj.multiplyTo(sj.radius, r.rj);
+                r.rj.scaleNumberTo(sj.radius, r.rj);
                 r.ni.copy(normal); // Contact normal
                 r.ni.negateTo(r.ni);
                 r.ri.init(0, 0, 0); // Center of particle
@@ -46654,11 +46296,11 @@ var CANNON;
         return Narrowphase;
     }());
     CANNON.Narrowphase = Narrowphase;
-    var averageNormal = new CANNON.Vector3();
-    var averageContactPointA = new CANNON.Vector3();
-    var averageContactPointB = new CANNON.Vector3();
-    var tmpVec1 = new CANNON.Vector3();
-    var tmpVec2 = new CANNON.Vector3();
+    var averageNormal = new feng3d.Vector3();
+    var averageContactPointA = new feng3d.Vector3();
+    var averageContactPointB = new feng3d.Vector3();
+    var tmpVec1 = new feng3d.Vector3();
+    var tmpVec2 = new feng3d.Vector3();
     var tmpQuat1 = new CANNON.Quaternion();
     var tmpQuat2 = new CANNON.Quaternion();
     var numWarnings = 0;
@@ -46670,31 +46312,31 @@ var CANNON;
         numWarnings++;
         console.warn(msg);
     }
-    var planeTrimesh_normal = new CANNON.Vector3();
-    var planeTrimesh_relpos = new CANNON.Vector3();
-    var planeTrimesh_projected = new CANNON.Vector3();
-    var sphereTrimesh_normal = new CANNON.Vector3();
-    var sphereTrimesh_relpos = new CANNON.Vector3();
-    var sphereTrimesh_projected = new CANNON.Vector3();
-    var sphereTrimesh_v = new CANNON.Vector3();
-    var sphereTrimesh_v2 = new CANNON.Vector3();
-    var sphereTrimesh_edgeVertexA = new CANNON.Vector3();
-    var sphereTrimesh_edgeVertexB = new CANNON.Vector3();
-    var sphereTrimesh_edgeVector = new CANNON.Vector3();
-    var sphereTrimesh_edgeVectorUnit = new CANNON.Vector3();
-    var sphereTrimesh_localSpherePos = new CANNON.Vector3();
-    var sphereTrimesh_tmp = new CANNON.Vector3();
-    var sphereTrimesh_va = new CANNON.Vector3();
-    var sphereTrimesh_vb = new CANNON.Vector3();
-    var sphereTrimesh_vc = new CANNON.Vector3();
+    var planeTrimesh_normal = new feng3d.Vector3();
+    var planeTrimesh_relpos = new feng3d.Vector3();
+    var planeTrimesh_projected = new feng3d.Vector3();
+    var sphereTrimesh_normal = new feng3d.Vector3();
+    var sphereTrimesh_relpos = new feng3d.Vector3();
+    var sphereTrimesh_projected = new feng3d.Vector3();
+    var sphereTrimesh_v = new feng3d.Vector3();
+    var sphereTrimesh_v2 = new feng3d.Vector3();
+    var sphereTrimesh_edgeVertexA = new feng3d.Vector3();
+    var sphereTrimesh_edgeVertexB = new feng3d.Vector3();
+    var sphereTrimesh_edgeVector = new feng3d.Vector3();
+    var sphereTrimesh_edgeVectorUnit = new feng3d.Vector3();
+    var sphereTrimesh_localSpherePos = new feng3d.Vector3();
+    var sphereTrimesh_tmp = new feng3d.Vector3();
+    var sphereTrimesh_va = new feng3d.Vector3();
+    var sphereTrimesh_vb = new feng3d.Vector3();
+    var sphereTrimesh_vc = new feng3d.Vector3();
     var sphereTrimesh_localSphereAABB = new CANNON.AABB();
     var sphereTrimesh_triangles = [];
-    var point_on_plane_to_sphere = new CANNON.Vector3();
-    var plane_to_sphere_ortho = new CANNON.Vector3();
+    var point_on_plane_to_sphere = new feng3d.Vector3();
+    var plane_to_sphere_ortho = new feng3d.Vector3();
     // See http://bulletphysics.com/Bullet/BulletFull/SphereTriangleDetector_8cpp_source.html
-    var pointInPolygon_edge = new CANNON.Vector3();
-    var pointInPolygon_edge_x_normal = new CANNON.Vector3();
-    var pointInPolygon_vtp = new CANNON.Vector3();
+    var pointInPolygon_edge = new feng3d.Vector3();
+    var pointInPolygon_edge_x_normal = new feng3d.Vector3();
+    var pointInPolygon_vtp = new feng3d.Vector3();
     function pointInPolygon(verts, normal, p) {
         var positiveResult = null;
         var N = verts.length;
@@ -46726,49 +46368,49 @@ var CANNON;
         // If we got here, all dot products were of the same sign.
         return true;
     }
-    var box_to_sphere = new CANNON.Vector3();
-    var sphereBox_ns = new CANNON.Vector3();
-    var sphereBox_ns1 = new CANNON.Vector3();
-    var sphereBox_ns2 = new CANNON.Vector3();
-    var sphereBox_sides = [new CANNON.Vector3(), new CANNON.Vector3(), new CANNON.Vector3(), new CANNON.Vector3(), new CANNON.Vector3(), new CANNON.Vector3()];
-    var sphereBox_sphere_to_corner = new CANNON.Vector3();
-    var sphereBox_side_ns = new CANNON.Vector3();
-    var sphereBox_side_ns1 = new CANNON.Vector3();
-    var sphereBox_side_ns2 = new CANNON.Vector3();
-    var convex_to_sphere = new CANNON.Vector3();
-    var sphereConvex_edge = new CANNON.Vector3();
-    var sphereConvex_edgeUnit = new CANNON.Vector3();
-    var sphereConvex_sphereToCorner = new CANNON.Vector3();
-    var sphereConvex_worldCorner = new CANNON.Vector3();
-    var sphereConvex_worldNormal = new CANNON.Vector3();
-    var sphereConvex_worldPoint = new CANNON.Vector3();
-    var sphereConvex_worldSpherePointClosestToPlane = new CANNON.Vector3();
-    var sphereConvex_penetrationVec = new CANNON.Vector3();
-    var sphereConvex_sphereToWorldPoint = new CANNON.Vector3();
-    var planeBox_normal = new CANNON.Vector3();
-    var plane_to_corner = new CANNON.Vector3();
-    var planeConvex_v = new CANNON.Vector3();
-    var planeConvex_normal = new CANNON.Vector3();
-    var planeConvex_relpos = new CANNON.Vector3();
-    var planeConvex_projected = new CANNON.Vector3();
-    var convexConvex_sepAxis = new CANNON.Vector3();
-    var convexConvex_q = new CANNON.Vector3();
-    var particlePlane_normal = new CANNON.Vector3();
-    var particlePlane_relpos = new CANNON.Vector3();
-    var particlePlane_projected = new CANNON.Vector3();
-    var particleSphere_normal = new CANNON.Vector3();
+    var box_to_sphere = new feng3d.Vector3();
+    var sphereBox_ns = new feng3d.Vector3();
+    var sphereBox_ns1 = new feng3d.Vector3();
+    var sphereBox_ns2 = new feng3d.Vector3();
+    var sphereBox_sides = [new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3()];
+    var sphereBox_sphere_to_corner = new feng3d.Vector3();
+    var sphereBox_side_ns = new feng3d.Vector3();
+    var sphereBox_side_ns1 = new feng3d.Vector3();
+    var sphereBox_side_ns2 = new feng3d.Vector3();
+    var convex_to_sphere = new feng3d.Vector3();
+    var sphereConvex_edge = new feng3d.Vector3();
+    var sphereConvex_edgeUnit = new feng3d.Vector3();
+    var sphereConvex_sphereToCorner = new feng3d.Vector3();
+    var sphereConvex_worldCorner = new feng3d.Vector3();
+    var sphereConvex_worldNormal = new feng3d.Vector3();
+    var sphereConvex_worldPoint = new feng3d.Vector3();
+    var sphereConvex_worldSpherePointClosestToPlane = new feng3d.Vector3();
+    var sphereConvex_penetrationVec = new feng3d.Vector3();
+    var sphereConvex_sphereToWorldPoint = new feng3d.Vector3();
+    var planeBox_normal = new feng3d.Vector3();
+    var plane_to_corner = new feng3d.Vector3();
+    var planeConvex_v = new feng3d.Vector3();
+    var planeConvex_normal = new feng3d.Vector3();
+    var planeConvex_relpos = new feng3d.Vector3();
+    var planeConvex_projected = new feng3d.Vector3();
+    var convexConvex_sepAxis = new feng3d.Vector3();
+    var convexConvex_q = new feng3d.Vector3();
+    var particlePlane_normal = new feng3d.Vector3();
+    var particlePlane_relpos = new feng3d.Vector3();
+    var particlePlane_projected = new feng3d.Vector3();
+    var particleSphere_normal = new feng3d.Vector3();
     // WIP
     var cqj = new CANNON.Quaternion();
-    var convexParticle_local = new CANNON.Vector3();
-    var convexParticle_normal = new CANNON.Vector3();
-    var convexParticle_penetratedFaceNormal = new CANNON.Vector3();
-    var convexParticle_vertexToParticle = new CANNON.Vector3();
-    var convexParticle_worldPenetrationVec = new CANNON.Vector3();
-    var convexHeightfield_tmp1 = new CANNON.Vector3();
-    var convexHeightfield_tmp2 = new CANNON.Vector3();
+    var convexParticle_local = new feng3d.Vector3();
+    var convexParticle_normal = new feng3d.Vector3();
+    var convexParticle_penetratedFaceNormal = new feng3d.Vector3();
+    var convexParticle_vertexToParticle = new feng3d.Vector3();
+    var convexParticle_worldPenetrationVec = new feng3d.Vector3();
+    var convexHeightfield_tmp1 = new feng3d.Vector3();
+    var convexHeightfield_tmp2 = new feng3d.Vector3();
     var convexHeightfield_faceList = [0];
-    var sphereHeightfield_tmp1 = new CANNON.Vector3();
-    var sphereHeightfield_tmp2 = new CANNON.Vector3();
+    var sphereHeightfield_tmp1 = new feng3d.Vector3();
+    var sphereHeightfield_tmp2 = new feng3d.Vector3();
     Narrowphase.prototype[CANNON.Shape.types.BOX | CANNON.Shape.types.BOX] = Narrowphase.prototype.boxBox;
     Narrowphase.prototype[CANNON.Shape.types.BOX | CANNON.Shape.types.CONVEXPOLYHEDRON] = Narrowphase.prototype.boxConvex;
     Narrowphase.prototype[CANNON.Shape.types.BOX | CANNON.Shape.types.PARTICLE] = Narrowphase.prototype.boxParticle;

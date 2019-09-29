@@ -31,12 +31,12 @@ namespace CANNON
         /**
          * Anchor for bodyA in local bodyA coordinates.
          */
-        localAnchorA: Vector3;
+        localAnchorA: feng3d.Vector3;
 
         /**
          * Anchor for bodyB in local bodyB coordinates.
          */
-        localAnchorB: Vector3;
+        localAnchorB: feng3d.Vector3;
 
         /**
          * A spring, connecting two bodies.
@@ -45,7 +45,7 @@ namespace CANNON
          * @param bodyB 
          * @param options 
          */
-        constructor(bodyA: Body, bodyB: Body, options: { restLength?: number, stiffness?: number, damping?: number, localAnchorA?: Vector3, localAnchorB?: Vector3, worldAnchorA?: Vector3, worldAnchorB?: Vector3 } = {})
+        constructor(bodyA: Body, bodyB: Body, options: { restLength?: number, stiffness?: number, damping?: number, localAnchorA?: feng3d.Vector3, localAnchorB?: feng3d.Vector3, worldAnchorA?: feng3d.Vector3, worldAnchorB?: feng3d.Vector3 } = {})
         {
             this.restLength = typeof (options.restLength) === "number" ? options.restLength : 1;
 
@@ -57,8 +57,8 @@ namespace CANNON
 
             this.bodyB = bodyB;
 
-            this.localAnchorA = new Vector3();
-            this.localAnchorB = new Vector3();
+            this.localAnchorA = new feng3d.Vector3();
+            this.localAnchorB = new feng3d.Vector3();
 
             if (options.localAnchorA)
             {
@@ -82,7 +82,7 @@ namespace CANNON
          * Set the anchor point on body A, using world coordinates.
          * @param worldAnchorA
          */
-        setWorldAnchorA(worldAnchorA: Vector3)
+        setWorldAnchorA(worldAnchorA: feng3d.Vector3)
         {
             this.bodyA.pointToLocalFrame(worldAnchorA, this.localAnchorA);
         }
@@ -91,7 +91,7 @@ namespace CANNON
          * Set the anchor point on body B, using world coordinates.
          * @param worldAnchorB
          */
-        setWorldAnchorB(worldAnchorB: Vector3)
+        setWorldAnchorB(worldAnchorB: feng3d.Vector3)
         {
             this.bodyB.pointToLocalFrame(worldAnchorB, this.localAnchorB);
         }
@@ -100,7 +100,7 @@ namespace CANNON
          * Get the anchor point on body A, in world coordinates.
          * @param result The vector to store the result in.
          */
-        getWorldAnchorA(result: Vector3)
+        getWorldAnchorA(result: feng3d.Vector3)
         {
             this.bodyA.pointToWorldFrame(this.localAnchorA, result);
         }
@@ -109,7 +109,7 @@ namespace CANNON
          * Get the anchor point on body B, in world coordinates.
          * @param result The vector to store the result in.
          */
-        getWorldAnchorB(result: Vector3)
+        getWorldAnchorB(result: feng3d.Vector3)
         {
             this.bodyB.pointToWorldFrame(this.localAnchorB, result);
         }
@@ -161,7 +161,7 @@ namespace CANNON
             u.subTo(tmp, u);
 
             // F = - k * ( x - L ) - D * ( u )
-            r_unit.multiplyTo(-k * (rlen - l) - d * u.dot(r_unit), f);
+            r_unit.scaleNumberTo(-k * (rlen - l) - d * u.dot(r_unit), f);
 
             // Add forces to bodies
             bodyA.force.subTo(f, bodyA.force);
@@ -176,17 +176,17 @@ namespace CANNON
 
     }
 
-    var applyForce_r = new Vector3();
-    var applyForce_r_unit = new Vector3();
-    var applyForce_u = new Vector3();
-    var applyForce_f = new Vector3();
-    var applyForce_worldAnchorA = new Vector3();
-    var applyForce_worldAnchorB = new Vector3();
-    var applyForce_ri = new Vector3();
-    var applyForce_rj = new Vector3();
-    var applyForce_ri_x_f = new Vector3();
-    var applyForce_rj_x_f = new Vector3();
-    var applyForce_tmp = new Vector3();
+    var applyForce_r = new feng3d.Vector3();
+    var applyForce_r_unit = new feng3d.Vector3();
+    var applyForce_u = new feng3d.Vector3();
+    var applyForce_f = new feng3d.Vector3();
+    var applyForce_worldAnchorA = new feng3d.Vector3();
+    var applyForce_worldAnchorB = new feng3d.Vector3();
+    var applyForce_ri = new feng3d.Vector3();
+    var applyForce_rj = new feng3d.Vector3();
+    var applyForce_ri_x_f = new feng3d.Vector3();
+    var applyForce_rj_x_f = new feng3d.Vector3();
+    var applyForce_tmp = new feng3d.Vector3();
 
 }
 

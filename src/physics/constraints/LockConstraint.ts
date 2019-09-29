@@ -2,11 +2,11 @@ namespace CANNON
 {
     export class LockConstraint extends PointToPointConstraint
     {
-        xA: Vector3;
+        xA: feng3d.Vector3;
         xB: any;
-        yA: Vector3;
+        yA: feng3d.Vector3;
         yB: any;
-        zA: Vector3;
+        zA: feng3d.Vector3;
         zB: any;
         rotationalEquation1: RotationalEquation;
         rotationalEquation2: RotationalEquation;
@@ -25,24 +25,24 @@ namespace CANNON
         constructor(bodyA: Body, bodyB: Body, options: { maxForce?: number } = {})
         {
             // The point-to-point constraint will keep a point shared between the bodies
-            super(bodyA, new Vector3(), bodyB, new Vector3(), typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6);
+            super(bodyA, new feng3d.Vector3(), bodyB, new feng3d.Vector3(), typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6);
 
             // Set pivot point in between
             var pivotA = this.pivotA;
             var pivotB = this.pivotB;
-            var halfWay = new Vector3();
+            var halfWay = new feng3d.Vector3();
             bodyA.position.addTo(bodyB.position, halfWay);
             halfWay.scaleNumberTo(0.5, halfWay);
             bodyB.pointToLocalFrame(halfWay, pivotB);
             bodyA.pointToLocalFrame(halfWay, pivotA);
 
             // Store initial rotation of the bodies as unit vectors in the local body spaces
-            this.xA = bodyA.vectorToLocalFrame(Vector3.X_AXIS);
-            this.xB = bodyB.vectorToLocalFrame(Vector3.X_AXIS);
-            this.yA = bodyA.vectorToLocalFrame(Vector3.Y_AXIS);
-            this.yB = bodyB.vectorToLocalFrame(Vector3.Y_AXIS);
-            this.zA = bodyA.vectorToLocalFrame(Vector3.Z_AXIS);
-            this.zB = bodyB.vectorToLocalFrame(Vector3.Z_AXIS);
+            this.xA = bodyA.vectorToLocalFrame(feng3d.Vector3.X_AXIS);
+            this.xB = bodyB.vectorToLocalFrame(feng3d.Vector3.X_AXIS);
+            this.yA = bodyA.vectorToLocalFrame(feng3d.Vector3.Y_AXIS);
+            this.yB = bodyB.vectorToLocalFrame(feng3d.Vector3.Y_AXIS);
+            this.zA = bodyA.vectorToLocalFrame(feng3d.Vector3.Z_AXIS);
+            this.zB = bodyB.vectorToLocalFrame(feng3d.Vector3.Z_AXIS);
 
             // ...and the following rotational equations will keep all rotational DOF's in place
 
@@ -81,7 +81,7 @@ namespace CANNON
 
     }
 
-    var LockConstraint_update_tmpVec1 = new Vector3();
-    var LockConstraint_update_tmpVec2 = new Vector3();
+    var LockConstraint_update_tmpVec1 = new feng3d.Vector3();
+    var LockConstraint_update_tmpVec2 = new feng3d.Vector3();
 
 }

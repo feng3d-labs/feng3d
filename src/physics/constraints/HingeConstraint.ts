@@ -5,11 +5,11 @@ namespace CANNON
         /**
          * Rotation axis, defined locally in bodyA.
          */
-        axisA: Vector3;
+        axisA: feng3d.Vector3;
         /**
          * Rotation axis, defined locally in bodyB.
          */
-        axisB: Vector3;
+        axisB: feng3d.Vector3;
         rotationalEquation1: RotationalEquation;
         rotationalEquation2: RotationalEquation;
         motorEquation: RotationalMotorEquation;
@@ -27,16 +27,16 @@ namespace CANNON
          * 
          * @author schteppe
          */
-        constructor(bodyA: Body, bodyB: Body, options: { pivotA?: Vector3, pivotB?: Vector3, maxForce?: number, axisA?: Vector3, axisB?: Vector3, collideConnected?: boolean } = {})
+        constructor(bodyA: Body, bodyB: Body, options: { pivotA?: feng3d.Vector3, pivotB?: feng3d.Vector3, maxForce?: number, axisA?: feng3d.Vector3, axisB?: feng3d.Vector3, collideConnected?: boolean } = {})
         {
-            super(bodyA, options.pivotA ? options.pivotA.clone() : new Vector3(), bodyB, options.pivotB ? options.pivotB.clone() : new Vector3(), maxForce);
+            super(bodyA, options.pivotA ? options.pivotA.clone() : new feng3d.Vector3(), bodyB, options.pivotB ? options.pivotB.clone() : new feng3d.Vector3(), maxForce);
 
             var maxForce = typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6;
 
-            var axisA = this.axisA = options.axisA ? options.axisA.clone() : new Vector3(1, 0, 0);
+            var axisA = this.axisA = options.axisA ? options.axisA.clone() : new feng3d.Vector3(1, 0, 0);
             axisA.normalize();
 
-            var axisB = this.axisB = options.axisB ? options.axisB.clone() : new Vector3(1, 0, 0);
+            var axisB = this.axisB = options.axisB ? options.axisB.clone() : new feng3d.Vector3(1, 0, 0);
             axisB.normalize();
 
             var r1 = this.rotationalEquation1 = new RotationalEquation(bodyA, bodyB, options);
@@ -107,6 +107,6 @@ namespace CANNON
     }
 
 
-    var HingeConstraint_update_tmpVec1 = new Vector3();
-    var HingeConstraint_update_tmpVec2 = new Vector3();
+    var HingeConstraint_update_tmpVec1 = new feng3d.Vector3();
+    var HingeConstraint_update_tmpVec2 = new feng3d.Vector3();
 }

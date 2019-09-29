@@ -2,16 +2,16 @@ namespace CANNON
 {
     export class JacobianElement
     {
-        spatial: Vector3;
-        rotational: Vector3;
+        spatial: feng3d.Vector3;
+        rotational: feng3d.Vector3;
 
         /**
          * An element containing 6 entries, 3 spatial and 3 rotational degrees of freedom.
          */
         constructor()
         {
-            this.spatial = new Vector3();
-            this.rotational = new Vector3();
+            this.spatial = new feng3d.Vector3();
+            this.rotational = new feng3d.Vector3();
         }
 
         /**
@@ -28,7 +28,7 @@ namespace CANNON
          * @param spatial
          * @param rotational
          */
-        multiplyVectors(spatial: Vector3, rotational: Vector3)
+        multiplyVectors(spatial: feng3d.Vector3, rotational: feng3d.Vector3)
         {
             return spatial.dot(this.spatial) + rotational.dot(this.rotational);
         }

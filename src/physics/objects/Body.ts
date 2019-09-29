@@ -22,7 +22,7 @@ namespace CANNON
          */
         postStep: Function;
 
-        vlambda: Vector3;
+        vlambda: feng3d.Vector3;
 
         collisionFilterGroup: number;
 
@@ -36,31 +36,31 @@ namespace CANNON
         /**
          * World space position of the body.
          */
-        position: Vector3;
+        position: feng3d.Vector3;
 
-        previousPosition: Vector3;
+        previousPosition: feng3d.Vector3;
 
         /**
          * Interpolated position of the body.
          */
-        interpolatedPosition: Vector3;
+        interpolatedPosition: feng3d.Vector3;
 
         /**
          * Initial position of the body
          */
-        initPosition: Vector3;
+        initPosition: feng3d.Vector3;
 
         /**
          * World space velocity of the body.
          */
-        velocity: Vector3;
+        velocity: feng3d.Vector3;
 
-        initVelocity: Vector3;
+        initVelocity: feng3d.Vector3;
 
         /**
          * Linear force on the body in world space.
          */
-        force: Vector3;
+        force: feng3d.Vector3;
 
         mass: number;
 
@@ -102,7 +102,7 @@ namespace CANNON
         /**
          * World space rotational force on the body, around center of mass.
          */
-        torque: Vector3;
+        torque: feng3d.Vector3;
 
         /**
          * World space orientation of the body.
@@ -122,32 +122,32 @@ namespace CANNON
         /**
          * Angular velocity of the body, in world space. Think of the angular velocity as a vector, which the body rotates around. The length of this vector determines how fast (in radians per second) the body rotates.
          */
-        angularVelocity: Vector3;
+        angularVelocity: feng3d.Vector3;
 
 
-        initAngularVelocity: Vector3;
+        initAngularVelocity: feng3d.Vector3;
 
         shapes: Shape[];
 
         /**
          * Position of each Shape in the body, given in local Body space.
          */
-        shapeOffsets: Vector3[];
+        shapeOffsets: feng3d.Vector3[];
 
         /**
          * Orientation of each Shape, given in local Body space.
          */
         shapeOrientations: Quaternion[];
 
-        inertia: Vector3;
+        inertia: feng3d.Vector3;
 
-        invInertia: Vector3;
+        invInertia: feng3d.Vector3;
 
         invInertiaWorld: Mat3;
 
         invMassSolve: number;
 
-        invInertiaSolve: Vector3;
+        invInertiaSolve: feng3d.Vector3;
 
         invInertiaWorldSolve: Mat3;
 
@@ -161,12 +161,12 @@ namespace CANNON
         /**
          * Use this property to limit the motion along any world axis. (1,1,1) will allow motion along all axes while (0,0,0) allows none.
          */
-        linearFactor: Vector3;
+        linearFactor: feng3d.Vector3;
 
         /**
          * Use this property to limit the rotational motion along any world axis. (1,1,1) will allow rotation along all axes while (0,0,0) allows none.
          */
-        angularFactor: Vector3;
+        angularFactor: feng3d.Vector3;
 
         /**
          * World space bounding box of the body and its shapes.
@@ -183,7 +183,7 @@ namespace CANNON
          */
         boundingRadius: number;
 
-        wlambda: Vector3;
+        wlambda: feng3d.Vector3;
 
         shape: Shape;
 
@@ -204,10 +204,10 @@ namespace CANNON
          *     world.addBody(body);
          */
         constructor(options: {
-            collisionFilterGroup?: number, collisionFilterMask?: number, position?: Vector3, velocity?: Vector3,
+            collisionFilterGroup?: number, collisionFilterMask?: number, position?: feng3d.Vector3, velocity?: feng3d.Vector3,
             material?: Material, mass?: number, linearDamping?: number, type?: number, allowSleep?: boolean,
-            sleepSpeedLimit?: number, sleepTimeLimit?: number, quaternion?: Quaternion, angularVelocity?: Vector3,
-            fixedRotation?: boolean, angularDamping?: number, linearFactor?: Vector3, angularFactor?: Vector3, shape?: Shape,
+            sleepSpeedLimit?: number, sleepTimeLimit?: number, quaternion?: Quaternion, angularVelocity?: feng3d.Vector3,
+            fixedRotation?: boolean, angularDamping?: number, linearFactor?: feng3d.Vector3, angularFactor?: feng3d.Vector3, shape?: Shape,
         } = {}, a = undefined)
         {
             super();
@@ -216,14 +216,14 @@ namespace CANNON
             this.world = null;
             this.preStep = null;
             this.postStep = null;
-            this.vlambda = new Vector3();
+            this.vlambda = new feng3d.Vector3();
             this.collisionFilterGroup = typeof (options.collisionFilterGroup) === 'number' ? options.collisionFilterGroup : 1;
             this.collisionFilterMask = typeof (options.collisionFilterMask) === 'number' ? options.collisionFilterMask : -1;
             this.collisionResponse = true;
-            this.position = new Vector3();
-            this.previousPosition = new Vector3();
-            this.interpolatedPosition = new Vector3();
-            this.initPosition = new Vector3();
+            this.position = new feng3d.Vector3();
+            this.previousPosition = new feng3d.Vector3();
+            this.interpolatedPosition = new feng3d.Vector3();
+            this.initPosition = new feng3d.Vector3();
 
             if (options.position)
             {
@@ -232,15 +232,15 @@ namespace CANNON
                 this.interpolatedPosition.copy(options.position);
                 this.initPosition.copy(options.position);
             }
-            this.velocity = new Vector3();
+            this.velocity = new feng3d.Vector3();
 
             if (options.velocity)
             {
                 this.velocity.copy(options.velocity);
             }
 
-            this.initVelocity = new Vector3();
-            this.force = new Vector3();
+            this.initVelocity = new feng3d.Vector3();
+            this.force = new feng3d.Vector3();
 
             var mass = typeof (options.mass) === 'number' ? options.mass : 0;
             this.mass = mass;
@@ -260,7 +260,7 @@ namespace CANNON
             this.timeLastSleepy = 0;
 
             this._wakeUpAfterNarrowphase = false;
-            this.torque = new Vector3();
+            this.torque = new feng3d.Vector3();
             this.quaternion = new Quaternion();
             this.initQuaternion = new Quaternion();
             this.previousQuaternion = new Quaternion();
@@ -273,31 +273,31 @@ namespace CANNON
                 this.previousQuaternion.copy(options.quaternion);
                 this.interpolatedQuaternion.copy(options.quaternion);
             }
-            this.angularVelocity = new Vector3();
+            this.angularVelocity = new feng3d.Vector3();
 
             if (options.angularVelocity)
             {
                 this.angularVelocity.copy(options.angularVelocity);
             }
-            this.initAngularVelocity = new Vector3();
+            this.initAngularVelocity = new feng3d.Vector3();
             this.shapes = [];
             this.shapeOffsets = [];
             this.shapeOrientations = [];
-            this.inertia = new Vector3();
-            this.invInertia = new Vector3();
+            this.inertia = new feng3d.Vector3();
+            this.invInertia = new feng3d.Vector3();
             this.invInertiaWorld = new Mat3();
 
             this.invMassSolve = 0;
-            this.invInertiaSolve = new Vector3();
+            this.invInertiaSolve = new feng3d.Vector3();
             this.invInertiaWorldSolve = new Mat3();
             this.fixedRotation = typeof (options.fixedRotation) !== "undefined" ? options.fixedRotation : false;
             this.angularDamping = typeof (options.angularDamping) !== 'undefined' ? options.angularDamping : 0.01;
-            this.linearFactor = new Vector3(1, 1, 1);
+            this.linearFactor = new feng3d.Vector3(1, 1, 1);
             if (options.linearFactor)
             {
                 this.linearFactor.copy(options.linearFactor);
             }
-            this.angularFactor = new Vector3(1, 1, 1);
+            this.angularFactor = new feng3d.Vector3(1, 1, 1);
             if (options.angularFactor)
             {
                 this.angularFactor.copy(options.angularFactor);
@@ -306,7 +306,7 @@ namespace CANNON
             this.aabbNeedsUpdate = true;
             this.boundingRadius = 0;
 
-            this.wlambda = new Vector3();
+            this.wlambda = new feng3d.Vector3();
 
             if (options.shape)
             {
@@ -438,9 +438,9 @@ namespace CANNON
          * @param worldPoint
          * @param result
          */
-        pointToLocalFrame(worldPoint: Vector3, result: Vector3)
+        pointToLocalFrame(worldPoint: feng3d.Vector3, result: feng3d.Vector3)
         {
-            var result = result || new Vector3();
+            var result = result || new feng3d.Vector3();
             worldPoint.subTo(this.position, result);
             this.quaternion.conjugate().vmult(result, result);
             return result;
@@ -452,7 +452,7 @@ namespace CANNON
          * @param worldPoint
          * @param result
          */
-        vectorToLocalFrame(worldVector, result = new Vector3())
+        vectorToLocalFrame(worldVector, result = new feng3d.Vector3())
         {
             this.quaternion.conjugate().vmult(worldVector, result);
             return result;
@@ -464,9 +464,9 @@ namespace CANNON
          * @param localPoint
          * @param result
          */
-        pointToWorldFrame(localPoint: Vector3, result: Vector3)
+        pointToWorldFrame(localPoint: feng3d.Vector3, result: feng3d.Vector3)
         {
-            var result = result || new Vector3();
+            var result = result || new feng3d.Vector3();
             this.quaternion.vmult(localPoint, result);
             result.addTo(this.position, result);
             return result;
@@ -478,9 +478,9 @@ namespace CANNON
          * @param localVector
          * @param result
          */
-        vectorToWorldFrame(localVector: Vector3, result: Vector3)
+        vectorToWorldFrame(localVector: feng3d.Vector3, result: feng3d.Vector3)
         {
-            var result = result || new Vector3();
+            var result = result || new feng3d.Vector3();
             this.quaternion.vmult(localVector, result);
             return result;
         }
@@ -493,9 +493,9 @@ namespace CANNON
          * @param_orientation
          * @return The body object, for chainability.
          */
-        addShape(shape: Shape, _offset?: Vector3, _orientation?: Quaternion)
+        addShape(shape: Shape, _offset?: feng3d.Vector3, _orientation?: Quaternion)
         {
-            var offset = new Vector3();
+            var offset = new feng3d.Vector3();
             var orientation = new Quaternion();
 
             if (_offset)
@@ -620,7 +620,7 @@ namespace CANNON
          * @param force The amount of force to add.
          * @param relativePoint A point relative to the center of mass to apply the force on.
          */
-        applyForce(force: Vector3, relativePoint: Vector3)
+        applyForce(force: feng3d.Vector3, relativePoint: feng3d.Vector3)
         {
             if (this.type !== Body.DYNAMIC)
             { // Needed?
@@ -644,7 +644,7 @@ namespace CANNON
          * @param force The force vector to apply, defined locally in the body frame.
          * @param localPoint A local point in the body to apply the force on.
          */
-        applyLocalForce(localForce: Vector3, localPoint: Vector3)
+        applyLocalForce(localForce: feng3d.Vector3, localPoint: feng3d.Vector3)
         {
             if (this.type !== Body.DYNAMIC)
             {
@@ -667,7 +667,7 @@ namespace CANNON
          * @param impulse The amount of impulse to add.
          * @param relativePoint A point relative to the center of mass to apply the force on.
          */
-        applyImpulse(impulse: Vector3, relativePoint: Vector3)
+        applyImpulse(impulse: feng3d.Vector3, relativePoint: feng3d.Vector3)
         {
             if (this.type !== Body.DYNAMIC)
             {
@@ -680,7 +680,7 @@ namespace CANNON
             // Compute produced central impulse velocity
             var velo = Body_applyImpulse_velo;
             velo.copy(impulse);
-            velo.multiplyTo(this.invMass, velo);
+            velo.scaleNumberTo(this.invMass, velo);
 
             // Add linear impulse
             this.velocity.addTo(velo, this.velocity);
@@ -706,7 +706,7 @@ namespace CANNON
          * @param force The force vector to apply, defined locally in the body frame.
          * @param localPoint A local point in the body to apply the force on.
          */
-        applyLocalImpulse(localImpulse: Vector3, localPoint: Vector3)
+        applyLocalImpulse(localImpulse: feng3d.Vector3, localPoint: feng3d.Vector3)
         {
             if (this.type !== Body.DYNAMIC)
             {
@@ -760,7 +760,7 @@ namespace CANNON
          */
         getVelocityAtWorldPoint(worldPoint, result)
         {
-            var r = new Vector3();
+            var r = new feng3d.Vector3();
             worldPoint.vsub(this.position, r);
             this.angularVelocity.crossTo(r, result);
             this.velocity.addTo(result, result);
@@ -833,27 +833,27 @@ namespace CANNON
         }
     }
 
-    var tmpVec = new Vector3();
+    var tmpVec = new feng3d.Vector3();
     var tmpQuat = new Quaternion();
 
-    var torque = new Vector3();
-    var invI_tau_dt = new Vector3();
+    var torque = new feng3d.Vector3();
+    var invI_tau_dt = new feng3d.Vector3();
     var w = new Quaternion();
     var wq = new Quaternion();
 
 
-    var Body_updateMassProperties_halfExtents = new Vector3();
+    var Body_updateMassProperties_halfExtents = new feng3d.Vector3();
 
 
-    var Body_applyForce_r = new Vector3();
-    var Body_applyForce_rotForce = new Vector3();
-    var Body_applyLocalForce_worldForce = new Vector3();
-    var Body_applyLocalForce_relativePointWorld = new Vector3();
-    var Body_applyImpulse_r = new Vector3();
-    var Body_applyImpulse_velo = new Vector3();
-    var Body_applyImpulse_rotVelo = new Vector3();
-    var Body_applyLocalImpulse_worldImpulse = new Vector3();
-    var Body_applyLocalImpulse_relativePoint = new Vector3();
+    var Body_applyForce_r = new feng3d.Vector3();
+    var Body_applyForce_rotForce = new feng3d.Vector3();
+    var Body_applyLocalForce_worldForce = new feng3d.Vector3();
+    var Body_applyLocalForce_relativePointWorld = new feng3d.Vector3();
+    var Body_applyImpulse_r = new feng3d.Vector3();
+    var Body_applyImpulse_velo = new feng3d.Vector3();
+    var Body_applyImpulse_rotVelo = new feng3d.Vector3();
+    var Body_applyLocalImpulse_worldImpulse = new feng3d.Vector3();
+    var Body_applyLocalImpulse_relativePoint = new feng3d.Vector3();
 
     var uiw_m1 = new Mat3();
     var uiw_m2 = new Mat3();

@@ -8,17 +8,17 @@ namespace CANNON
         /**
          * World-oriented vector that goes from the center of bi to the contact point.
          */
-        ri: Vector3;
+        ri: feng3d.Vector3;
 
         /**
          * World-oriented vector that starts in body j position and goes to the contact point.
          */
-        rj: Vector3;
+        rj: feng3d.Vector3;
 
         /**
          * Contact normal, pointing out of body i.
          */
-        ni: Vector3;
+        ni: feng3d.Vector3;
         si: Shape;
         sj: Shape;
 
@@ -35,9 +35,9 @@ namespace CANNON
             super(bodyA, bodyB, 0, typeof (maxForce) !== 'undefined' ? maxForce : 1e6);
 
             this.restitution = 0.0; // "bounciness": u1 = -e*u0
-            this.ri = new Vector3();
-            this.rj = new Vector3();
-            this.ni = new Vector3();
+            this.ri = new feng3d.Vector3();
+            this.rj = new feng3d.Vector3();
+            this.ni = new feng3d.Vector3();
         }
 
         computeB(h: number)
@@ -121,14 +121,14 @@ namespace CANNON
 
     }
 
-    var ContactEquation_computeB_temp1 = new Vector3(); // Temp vectors
-    var ContactEquation_computeB_temp2 = new Vector3();
-    var ContactEquation_computeB_temp3 = new Vector3();
+    var ContactEquation_computeB_temp1 = new feng3d.Vector3(); // Temp vectors
+    var ContactEquation_computeB_temp2 = new feng3d.Vector3();
+    var ContactEquation_computeB_temp3 = new feng3d.Vector3();
 
 
-    var ContactEquation_getImpactVelocityAlongNormal_vi = new Vector3();
-    var ContactEquation_getImpactVelocityAlongNormal_vj = new Vector3();
-    var ContactEquation_getImpactVelocityAlongNormal_xi = new Vector3();
-    var ContactEquation_getImpactVelocityAlongNormal_xj = new Vector3();
-    var ContactEquation_getImpactVelocityAlongNormal_relVel = new Vector3();
+    var ContactEquation_getImpactVelocityAlongNormal_vi = new feng3d.Vector3();
+    var ContactEquation_getImpactVelocityAlongNormal_vj = new feng3d.Vector3();
+    var ContactEquation_getImpactVelocityAlongNormal_xi = new feng3d.Vector3();
+    var ContactEquation_getImpactVelocityAlongNormal_xj = new feng3d.Vector3();
+    var ContactEquation_getImpactVelocityAlongNormal_relVel = new feng3d.Vector3();
 }
