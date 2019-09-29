@@ -531,7 +531,7 @@ namespace CANNON
                 for (var j = 0; j !== this.bodies.length; j++)
                 {
                     var b = this.bodies[j];
-                    b.previousPosition.lerp(b.position, t, b.interpolatedPosition);
+                    b.previousPosition.lerpTo(b.position, t, b.interpolatedPosition);
                     b.previousQuaternion.slerp(b.quaternion, t, b.interpolatedQuaternion);
                     b.previousQuaternion.normalize();
                 }

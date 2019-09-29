@@ -198,17 +198,20 @@ namespace CANNON
                 bj = this.bj,
                 temp = addToWlambda_temp;
 
+
+
             // Add to linear velocity
             // v_lambda += inv(M) * delta_lamba * G
-            bi.vlambda.addScaledVector(bi.invMassSolve * deltalambda, GA.spatial, bi.vlambda);
-            bj.vlambda.addScaledVector(bj.invMassSolve * deltalambda, GB.spatial, bj.vlambda);
+
+            bi.vlambda.addTo(GA.spatial.scaleNumberTo(bi.invMassSolve * deltalambda, addToWlambda_Gi), bi.vlambda);
+            bj.vlambda.addTo(GB.spatial.scaleNumberTo(bj.invMassSolve * deltalambda, addToWlambda_Gi), bj.vlambda);
 
             // Add to angular velocity
             bi.invInertiaWorldSolve.vmult(GA.rotational, temp);
-            bi.wlambda.addScaledVector(deltalambda, temp, bi.wlambda);
+            bi.wlambda.addTo(temp.scaleNumberTo(deltalambda, addToWlambda_Gi), bi.wlambda);
 
             bj.invInertiaWorldSolve.vmult(GB.rotational, temp);
-            bj.wlambda.addScaledVector(deltalambda, temp, bj.wlambda);
+            bj.wlambda.addTo(temp.scaleNumberTo(deltalambda, addToWlambda_Gi), bj.wlambda);
         }
 
         /**

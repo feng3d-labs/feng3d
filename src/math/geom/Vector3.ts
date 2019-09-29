@@ -2,7 +2,6 @@ namespace feng3d
 {
     /**
      * Vector3 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
-
      */
     export class Vector3
     {
@@ -256,6 +255,70 @@ namespace feng3d
         dot(a: Vector3)
         {
             return this.x * a.x + this.y * a.y + this.z * a.z;
+        }
+
+        /**
+         * 是否为零向量
+         */
+        isZero()
+        {
+            return this.x === 0 && this.y === 0 && this.z === 0;
+        }
+
+        tangents(t1: Vector3, t2: Vector3)
+        {
+            var norm = this.length;
+            if (norm > 0.0)
+            {
+                var n = new Vector3();
+                var inorm = 1 / norm;
+                n.init(this.x * inorm, this.y * inorm, this.z * inorm);
+                var randVec = new Vector3();
+                if (Math.abs(n.x) < 0.9)
+                {
+                    randVec.init(1, 0, 0);
+                    n.crossTo(randVec, t1);
+                } else
+                {
+                    randVec.init(0, 1, 0);
+                    n.crossTo(randVec, t1);
+                }
+                n.crossTo(t1, t2);
+            } else
+            {
+                // The normal length is zero, make something up
+                t1.init(1, 0, 0);
+                t2.init(0, 1, 0);
+            }
+        }
+
+        /**
+         * 检查一个向量是否接近零
+         * 
+         * @param precision
+         */
+        almostZero(precision = Math.PRECISION)
+        {
+            if (Math.abs(this.x) > precision ||
+                Math.abs(this.y) > precision ||
+                Math.abs(this.z) > precision)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /**
+         * 检查这个向量是否与另一个向量反平行。
+         * 
+         * @param  v
+         * @param  precision 设置为零以进行精确比较
+         */
+        isAntiparallelTo(v: Vector3, precision = Math.PRECISION)
+        {
+            var t = new Vector3();
+            this.negateTo(t);
+            return t.equals(v, precision);
         }
 
         /**

@@ -8654,7 +8654,6 @@ var feng3d;
 (function (feng3d) {
     /**
      * Vector3 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
-
      */
     var Vector3 = /** @class */ (function () {
         /**
@@ -8857,6 +8856,61 @@ var feng3d;
          */
         Vector3.prototype.dot = function (a) {
             return this.x * a.x + this.y * a.y + this.z * a.z;
+        };
+        /**
+         * 是否为零向量
+         */
+        Vector3.prototype.isZero = function () {
+            return this.x === 0 && this.y === 0 && this.z === 0;
+        };
+        Vector3.prototype.tangents = function (t1, t2) {
+            var norm = this.length;
+            if (norm > 0.0) {
+                var n = new Vector3();
+                var inorm = 1 / norm;
+                n.init(this.x * inorm, this.y * inorm, this.z * inorm);
+                var randVec = new Vector3();
+                if (Math.abs(n.x) < 0.9) {
+                    randVec.init(1, 0, 0);
+                    n.crossTo(randVec, t1);
+                }
+                else {
+                    randVec.init(0, 1, 0);
+                    n.crossTo(randVec, t1);
+                }
+                n.crossTo(t1, t2);
+            }
+            else {
+                // The normal length is zero, make something up
+                t1.init(1, 0, 0);
+                t2.init(0, 1, 0);
+            }
+        };
+        /**
+         * 检查一个向量是否接近零
+         *
+         * @param precision
+         */
+        Vector3.prototype.almostZero = function (precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
+            if (Math.abs(this.x) > precision ||
+                Math.abs(this.y) > precision ||
+                Math.abs(this.z) > precision) {
+                return false;
+            }
+            return true;
+        };
+        /**
+         * 检查这个向量是否与另一个向量反平行。
+         *
+         * @param  v
+         * @param  precision 设置为零以进行精确比较
+         */
+        Vector3.prototype.isAntiparallelTo = function (v, precision) {
+            if (precision === void 0) { precision = Math.PRECISION; }
+            var t = new Vector3();
+            this.negateTo(t);
+            return t.equals(v, precision);
         };
         /**
          * 加上标量
@@ -36559,7 +36613,7 @@ var CANNON;
          * @param v
          * @param target Target to save in.
          */
-        Vector3.prototype.cross = function (v, target) {
+        Vector3.prototype.crossTo = function (v, target) {
             if (target === void 0) { target = new Vector3(); }
             var vx = v.x, vy = v.y, vz = v.z, x = this.x, y = this.y, z = this.z;
             target = target;
@@ -36751,19 +36805,6 @@ var CANNON;
             return target;
         };
         /**
-         * Scale a vector and add it to this vector. Save the result in "target". (target = this + vector * scalar)
-         * @param scalar
-         * @param vector
-         * @param  target The vector to save the result in.
-         */
-        Vector3.prototype.addScaledVector = function (scalar, vector, target) {
-            if (target === void 0) { target = new Vector3(); }
-            target.x = this.x + scalar * vector.x;
-            target.y = this.y + scalar * vector.y;
-            target.z = this.z + scalar * vector.z;
-            return target;
-        };
-        /**
          * Calculate dot product
          * @param {Vector3} v
          */
@@ -36773,12 +36814,11 @@ var CANNON;
         Vector3.prototype.isZero = function () {
             return this.x === 0 && this.y === 0 && this.z === 0;
         };
-        ;
         /**
          * Make the vector point in the opposite direction.
          * @param target Optional target to save in
          */
-        Vector3.prototype.negate = function (target) {
+        Vector3.prototype.negateTo = function (target) {
             target = target || new Vector3();
             target.x = -this.x;
             target.y = -this.y;
@@ -36794,13 +36834,13 @@ var CANNON;
                 var randVec = Vec3_tangents_randVec;
                 if (Math.abs(n.x) < 0.9) {
                     randVec.init(1, 0, 0);
-                    n.cross(randVec, t1);
+                    n.crossTo(randVec, t1);
                 }
                 else {
                     randVec.init(0, 1, 0);
-                    n.cross(randVec, t1);
+                    n.crossTo(randVec, t1);
                 }
-                n.cross(t1, t2);
+                n.crossTo(t1, t2);
             }
             else {
                 // The normal length is zero, make something up
@@ -36836,7 +36876,7 @@ var CANNON;
          * @param v
          * @param t A number between 0 and 1. 0 will make this function return u, and 1 will make it return v. Numbers in between will generate a vector in between them.
          */
-        Vector3.prototype.lerp = function (v, t, target) {
+        Vector3.prototype.lerpTo = function (v, t, target) {
             var x = this.x, y = this.y, z = this.z;
             target.x = x + (v.x - x) * t;
             target.y = y + (v.y - y) * t;
@@ -36847,7 +36887,7 @@ var CANNON;
          * @param v
          * @param  precision
          */
-        Vector3.prototype.almostEquals = function (v, precision) {
+        Vector3.prototype.equals = function (v, precision) {
             if (precision === void 0) { precision = 1e-6; }
             if (Math.abs(this.x - v.x) > precision ||
                 Math.abs(this.y - v.y) > precision ||
@@ -36876,8 +36916,8 @@ var CANNON;
          */
         Vector3.prototype.isAntiparallelTo = function (v, precision) {
             if (precision === void 0) { precision = 1e-6; }
-            this.negate(antip_neg);
-            return antip_neg.almostEquals(v, precision);
+            this.negateTo(antip_neg);
+            return antip_neg.equals(v, precision);
         };
         /**
          * Clone the vector
@@ -37352,7 +37392,7 @@ var CANNON;
                 this.setFromAxisAngle(t1, Math.PI);
             }
             else {
-                var a = u.cross(v);
+                var a = u.crossTo(v);
                 this.x = a.x;
                 this.y = a.y;
                 this.z = a.z;
@@ -38464,7 +38504,7 @@ var CANNON;
                     edge.normalize();
                     var found = false;
                     for (var p = 0; p !== edges.length; p++) {
-                        if (edges[p].almostEquals(edge) || edges[p].almostEquals(edge)) {
+                        if (edges[p].equals(edge) || edges[p].equals(edge)) {
                             found = true;
                             break;
                         }
@@ -38490,7 +38530,7 @@ var CANNON;
                 }
                 var n = this.faceNormals[i] || new CANNON.Vector3();
                 this.getFaceNormal(i, n);
-                n.negate(n);
+                n.negateTo(n);
                 this.faceNormals[i] = n;
                 var vertex = this.vertices[this.faces[i][0]];
                 if (n.dot(vertex) < 0) {
@@ -38512,7 +38552,7 @@ var CANNON;
         ConvexPolyhedron.computeNormal = function (va, vb, vc, target) {
             vb.subTo(va, ab);
             vc.subTo(vb, cb);
-            cb.cross(ab, target);
+            cb.crossTo(ab, target);
             if (!target.isZero()) {
                 target.normalize();
             }
@@ -38664,7 +38704,7 @@ var CANNON;
                 for (var e1 = 0; e1 !== hullB.uniqueEdges.length; e1++) {
                     // Get world edge 2
                     quatB.vmult(hullB.uniqueEdges[e1], worldEdge1);
-                    worldEdge0.cross(worldEdge1, Cross);
+                    worldEdge0.crossTo(worldEdge1, Cross);
                     if (!Cross.almostZero()) {
                         Cross.normalize();
                         var dist = hullA.testSepAxis(Cross, hullB, posA, quatA, posB, quatB);
@@ -38680,7 +38720,7 @@ var CANNON;
             }
             posB.subTo(posA, deltaC);
             if ((deltaC.dot(target)) > 0.0) {
-                target.negate(target);
+                target.negateTo(target);
             }
             return true;
         };
@@ -38795,8 +38835,8 @@ var CANNON;
                 worldPlaneAnormal1.copy(this.faceNormals[closestFaceA]); //transA.getBasis()* btVector3(polyA.m_plane[0],polyA.m_plane[1],polyA.m_plane[2]);
                 quatA.vmult(worldPlaneAnormal1, worldPlaneAnormal1);
                 posA.addTo(worldPlaneAnormal1, worldPlaneAnormal1);
-                WorldEdge0.cross(worldPlaneAnormal1, planeNormalWS1);
-                planeNormalWS1.negate(planeNormalWS1);
+                WorldEdge0.crossTo(worldPlaneAnormal1, planeNormalWS1);
+                planeNormalWS1.negateTo(planeNormalWS1);
                 worldA1.copy(a);
                 quatA.vmult(worldA1, worldA1);
                 posA.addTo(worldA1, worldA1);
@@ -38886,7 +38926,7 @@ var CANNON;
                     else {
                         // Start < 0, end >= 0, so output intersection
                         var newv = new CANNON.Vector3();
-                        firstVertex.lerp(lastVertex, n_dot_first / (n_dot_first - n_dot_last), newv);
+                        firstVertex.lerpTo(lastVertex, n_dot_first / (n_dot_first - n_dot_last), newv);
                         outVertices.push(newv);
                     }
                 }
@@ -38894,7 +38934,7 @@ var CANNON;
                     if (n_dot_last < 0) {
                         // Start >= 0, end < 0 so output intersection and end
                         var newv = new CANNON.Vector3();
-                        firstVertex.lerp(lastVertex, n_dot_first / (n_dot_first - n_dot_last), newv);
+                        firstVertex.lerpTo(lastVertex, n_dot_first / (n_dot_first - n_dot_last), newv);
                         outVertices.push(newv);
                         outVertices.push(lastVertex);
                     }
@@ -39631,7 +39671,7 @@ var CANNON;
             this.getTriangleAt(x, y, edgeClamp, a, b, c);
             b.subTo(a, e0);
             c.subTo(a, e1);
-            e0.cross(e1, result);
+            e0.crossTo(e1, result);
             result.normalize();
         };
         /**
@@ -40508,7 +40548,7 @@ var CANNON;
         Trimesh.computeNormal = function (va, vb, vc, target) {
             vb.subTo(va, ab);
             vc.subTo(vb, cb);
-            cb.cross(ab, target);
+            cb.crossTo(ab, target);
             if (!target.isZero()) {
                 target.normalize();
             }
@@ -42040,7 +42080,7 @@ var CANNON;
             }
             else if (delta === 0) {
                 // single intersection point
-                from.lerp(to, delta, intersectionPoint);
+                from.lerpTo(to, delta, intersectionPoint);
                 intersectionPoint.subTo(position, normal);
                 normal.normalize();
                 this.reportIntersection(normal, intersectionPoint, reportedShape, body, -1);
@@ -42049,7 +42089,7 @@ var CANNON;
                 var d1 = (-b - Math.sqrt(delta)) / (2 * a);
                 var d2 = (-b + Math.sqrt(delta)) / (2 * a);
                 if (d1 >= 0 && d1 <= 1) {
-                    from.lerp(to, d1, intersectionPoint);
+                    from.lerpTo(to, d1, intersectionPoint);
                     intersectionPoint.subTo(position, normal);
                     normal.normalize();
                     this.reportIntersection(normal, intersectionPoint, reportedShape, body, -1);
@@ -42058,7 +42098,7 @@ var CANNON;
                     return;
                 }
                 if (d2 >= 0 && d2 <= 1) {
-                    from.lerp(to, d2, intersectionPoint);
+                    from.lerpTo(to, d2, intersectionPoint);
                     intersectionPoint.subTo(position, normal);
                     normal.normalize();
                     this.reportIntersection(normal, intersectionPoint, reportedShape, body, -1);
@@ -42712,7 +42752,7 @@ var CANNON;
             }
             // Compute produced rotational force
             var rotForce = Body_applyForce_rotForce;
-            relativePoint.cross(force, rotForce);
+            relativePoint.crossTo(force, rotForce);
             // Add linear force
             this.force.addTo(force, this.force);
             // Add rotational force
@@ -42755,7 +42795,7 @@ var CANNON;
             this.velocity.addTo(velo, this.velocity);
             // Compute produced rotational impulse velocity
             var rotVelo = Body_applyImpulse_rotVelo;
-            r.cross(impulse, rotVelo);
+            r.crossTo(impulse, rotVelo);
             /*
             rotVelo.x *= this.invInertia.x;
             rotVelo.y *= this.invInertia.y;
@@ -42807,7 +42847,7 @@ var CANNON;
         Body.prototype.getVelocityAtWorldPoint = function (worldPoint, result) {
             var r = new CANNON.Vector3();
             worldPoint.vsub(this.position, r);
-            this.angularVelocity.cross(r, result);
+            this.angularVelocity.crossTo(r, result);
             this.velocity.addTo(result, result);
             return result;
         };
@@ -42994,9 +43034,9 @@ var CANNON;
             // Compute relative velocity of the anchor points, u
             bodyB.velocity.subTo(bodyA.velocity, u);
             // Add rotational velocity
-            bodyB.angularVelocity.cross(rj, tmp);
+            bodyB.angularVelocity.crossTo(rj, tmp);
             u.addTo(tmp, u);
-            bodyA.angularVelocity.cross(ri, tmp);
+            bodyA.angularVelocity.crossTo(ri, tmp);
             u.subTo(tmp, u);
             // F = - k * ( x - L ) - D * ( u )
             r_unit.multiplyTo(-k * (rlen - l) - d * u.dot(r_unit), f);
@@ -43004,8 +43044,8 @@ var CANNON;
             bodyA.force.subTo(f, bodyA.force);
             bodyB.force.addTo(f, bodyB.force);
             // Angular force
-            ri.cross(f, ri_x_f);
-            rj.cross(f, rj_x_f);
+            ri.crossTo(f, ri_x_f);
+            rj.crossTo(f, rj_x_f);
             bodyA.torque.subTo(ri_x_f, bodyA.torque);
             bodyB.torque.addTo(rj_x_f, bodyB.torque);
         };
@@ -43405,7 +43445,7 @@ var CANNON;
             this.updateWheelTransformWorld(wheel);
             wheel.directionLocal.scaleNumberTo(-1, up);
             right.copy(wheel.axleLocal);
-            up.cross(right, fwd);
+            up.crossTo(right, fwd);
             fwd.normalize();
             right.normalize();
             // Rotate around steering over the wheelAxle
@@ -43470,7 +43510,7 @@ var CANNON;
                     surfNormalWS.scaleNumberTo(proj, surfNormalWS_scaled_proj);
                     axlei.vsub(surfNormalWS_scaled_proj, axlei);
                     axlei.normalize();
-                    surfNormalWS.cross(axlei, forwardWS[i]);
+                    surfNormalWS.crossTo(axlei, forwardWS[i]);
                     forwardWS[i].normalize();
                     wheel.sideImpulse = resolveSingleBilateral(chassisBody, wheel.raycastResult.hitPointWorld, groundObject, wheel.raycastResult.hitPointWorld, axlei);
                     wheel.sideImpulse *= sideFrictionStiffness2;
@@ -43621,9 +43661,9 @@ var CANNON;
         var vec = computeImpulseDenominator_vec;
         var m = computeImpulseDenominator_m;
         pos.subTo(body.position, r0);
-        r0.cross(normal, c0);
+        r0.crossTo(normal, c0);
         body.invInertiaWorld.vmult(c0, m);
-        m.cross(r0, vec);
+        m.crossTo(r0, vec);
         return body.invMass + normal.dot(vec);
     }
     var resolveSingleBilateral_vel1 = new CANNON.Vector3();
@@ -44072,13 +44112,13 @@ var CANNON;
             var GA = this.jacobianElementA, GB = this.jacobianElementB, bi = this.bi, bj = this.bj, temp = addToWlambda_temp;
             // Add to linear velocity
             // v_lambda += inv(M) * delta_lamba * G
-            bi.vlambda.addScaledVector(bi.invMassSolve * deltalambda, GA.spatial, bi.vlambda);
-            bj.vlambda.addScaledVector(bj.invMassSolve * deltalambda, GB.spatial, bj.vlambda);
+            bi.vlambda.addTo(GA.spatial.scaleNumberTo(bi.invMassSolve * deltalambda, addToWlambda_Gi), bi.vlambda);
+            bj.vlambda.addTo(GB.spatial.scaleNumberTo(bj.invMassSolve * deltalambda, addToWlambda_Gi), bj.vlambda);
             // Add to angular velocity
             bi.invInertiaWorldSolve.vmult(GA.rotational, temp);
-            bi.wlambda.addScaledVector(deltalambda, temp, bi.wlambda);
+            bi.wlambda.addTo(temp.scaleNumberTo(deltalambda, addToWlambda_Gi), bi.wlambda);
             bj.invInertiaWorldSolve.vmult(GB.rotational, temp);
-            bj.wlambda.addScaledVector(deltalambda, temp, bj.wlambda);
+            bj.wlambda.addTo(temp.scaleNumberTo(deltalambda, addToWlambda_Gi), bj.wlambda);
         };
         /**
          * Compute the denominator part of the SPOOK equation: C = G*inv(M)*G' + eps
@@ -44127,8 +44167,8 @@ var CANNON;
         ConeEquation.prototype.computeB = function (h) {
             var a = this.a, b = this.b, ni = this.axisA, nj = this.axisB, nixnj = tmpVec1, njxni = tmpVec2, GA = this.jacobianElementA, GB = this.jacobianElementB;
             // Caluclate cross products
-            ni.cross(nj, nixnj);
-            nj.cross(ni, njxni);
+            ni.crossTo(nj, nixnj);
+            nj.crossTo(ni, njxni);
             // The angle between two vector is:
             // cos(theta) = a * b / (length(a) * length(b) = { len(a) = len(b) = 1 } = a * b
             // g = a * b
@@ -44170,12 +44210,12 @@ var CANNON;
         ContactEquation.prototype.computeB = function (h) {
             var a = this.a, b = this.b, bi = this.bi, bj = this.bj, ri = this.ri, rj = this.rj, rixn = ContactEquation_computeB_temp1, rjxn = ContactEquation_computeB_temp2, vi = bi.velocity, wi = bi.angularVelocity, fi = bi.force, taui = bi.torque, vj = bj.velocity, wj = bj.angularVelocity, fj = bj.force, tauj = bj.torque, penetrationVec = ContactEquation_computeB_temp3, GA = this.jacobianElementA, GB = this.jacobianElementB, n = this.ni;
             // Caluclate cross products
-            ri.cross(n, rixn);
-            rj.cross(n, rjxn);
+            ri.crossTo(n, rixn);
+            rj.crossTo(n, rjxn);
             // g = xj+rj -(xi+ri)
             // G = [ -ni  -rixn  ni  rjxn ]
-            n.negate(GA.spatial);
-            rixn.negate(GA.rotational);
+            n.negateTo(GA.spatial);
+            rixn.negateTo(GA.rotational);
             GB.spatial.copy(n);
             GB.rotational.copy(rjxn);
             // Calculate the penetration vector
@@ -44243,13 +44283,13 @@ var CANNON;
         FrictionEquation.prototype.computeB = function (h) {
             var a = this.a, b = this.b, bi = this.bi, bj = this.bj, ri = this.ri, rj = this.rj, rixt = FrictionEquation_computeB_temp1, rjxt = FrictionEquation_computeB_temp2, t = this.t;
             // Caluclate cross products
-            ri.cross(t, rixt);
-            rj.cross(t, rjxt);
+            ri.crossTo(t, rixt);
+            rj.crossTo(t, rjxt);
             // G = [-t -rixt t rjxt]
             // And remember, this is a pure velocity constraint, g is always zero!
             var GA = this.jacobianElementA, GB = this.jacobianElementB;
-            t.negate(GA.spatial);
-            rixt.negate(GA.rotational);
+            t.negateTo(GA.spatial);
+            rixt.negateTo(GA.rotational);
             GB.spatial.copy(t);
             GB.rotational.copy(rjxt);
             var GW = this.computeGW();
@@ -44287,8 +44327,8 @@ var CANNON;
         RotationalEquation.prototype.computeB = function (h) {
             var a = this.a, b = this.b, ni = this.axisA, nj = this.axisB, nixnj = tmpVec1, njxni = tmpVec2, GA = this.jacobianElementA, GB = this.jacobianElementB;
             // Caluclate cross products
-            ni.cross(nj, nixnj);
-            nj.cross(ni, njxni);
+            ni.crossTo(nj, nixnj);
+            nj.crossTo(ni, njxni);
             // g = ni * nj
             // gdot = (nj x ni) * wi + (ni x nj) * wj
             // G = [0 njxni 0 nixnj]
@@ -44333,7 +44373,7 @@ var CANNON;
             // =>
             // G = [0 axisA 0 -axisB]
             GA.rotational.copy(axisA);
-            axisB.negate(GB.rotational);
+            axisB.negateTo(GB.rotational);
             var GW = this.computeGW() - this.targetVelocity, GiMf = this.computeGiMf();
             var B = -GW * b - h * GiMf;
             return B;
@@ -45049,7 +45089,7 @@ var CANNON;
                 var t = (this.accumulator % dt) / dt;
                 for (var j = 0; j !== this.bodies.length; j++) {
                     var b = this.bodies[j];
-                    b.previousPosition.lerp(b.position, t, b.interpolatedPosition);
+                    b.previousPosition.lerpTo(b.position, t, b.interpolatedPosition);
                     b.previousQuaternion.slerp(b.quaternion, t, b.interpolatedQuaternion);
                     b.previousQuaternion.normalize();
                 }
@@ -45803,7 +45843,7 @@ var CANNON;
             // Contact normal
             r.ni.init(0, 1, 0);
             qj.vmult(r.ni, r.ni);
-            r.ni.negate(r.ni); // body i is the sphere, flip normal
+            r.ni.negateTo(r.ni); // body i is the sphere, flip normal
             r.ni.normalize(); // Needed?
             // Vector from sphere center to contact point
             r.ni.multiplyTo(si.radius, r.ri);
@@ -45888,7 +45928,7 @@ var CANNON;
                 var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
                 side_ns.multiplyTo(-R, r.ri); // Sphere r
                 r.ni.copy(side_ns);
-                r.ni.negate(r.ni); // Normal should be out of sphere
+                r.ni.negateTo(r.ni); // Normal should be out of sphere
                 side_ns.multiplyTo(side_h, side_ns);
                 side_ns1.multiplyTo(side_dot1, side_ns1);
                 side_ns.addTo(side_ns1, side_ns);
@@ -45965,7 +46005,7 @@ var CANNON;
                 for (var k = 0; k !== Nsides && !found; k++) {
                     if (j % 3 !== k % 3) {
                         // Get edge tangent
-                        sides[k].cross(sides[j], edgeTangent);
+                        sides[k].crossTo(sides[j], edgeTangent);
                         edgeTangent.normalize();
                         sides[j].addTo(sides[k], edgeCenter);
                         r_vec3.copy(xi);
@@ -45994,7 +46034,7 @@ var CANNON;
                             var res = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
                             edgeCenter.addTo(orthogonal, res.rj); // box rj
                             res.rj.copy(res.rj);
-                            dist1.negate(res.ni);
+                            dist1.negateTo(res.ni);
                             res.ni.normalize();
                             res.ri.copy(res.rj);
                             res.ri.addTo(xj, res.ri);
@@ -46095,7 +46135,7 @@ var CANNON;
                         found = true;
                         var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
                         worldNormal.multiplyTo(-R, r.ri); // Contact offset, from sphere center to contact
-                        worldNormal.negate(r.ni); // Normal pointing out of sphere
+                        worldNormal.negateTo(r.ni); // Normal pointing out of sphere
                         var penetrationVec2 = v3pool.get();
                         worldNormal.multiplyTo(-penetration, penetrationVec2);
                         var penetrationSpherePoint = v3pool.get();
@@ -46255,7 +46295,7 @@ var CANNON;
                         return true;
                     }
                     var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj), ri = r.ri, rj = r.rj;
-                    sepAxis.negate(r.ni);
+                    sepAxis.negateTo(r.ni);
                     res[j].normal.negate(q);
                     q.multiplyTo(res[j].depth, q);
                     res[j].point.addTo(q, ri);
@@ -46359,7 +46399,7 @@ var CANNON;
                 }
                 var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
                 r.ni.copy(normal); // Contact normal is the plane normal
-                r.ni.negate(r.ni);
+                r.ni.negateTo(r.ni);
                 r.ri.init(0, 0, 0); // Center of particle
                 // Get particle position projected on plane
                 var projected = particlePlane_projected;
@@ -46387,7 +46427,7 @@ var CANNON;
                 r.rj.copy(normal);
                 r.rj.multiplyTo(sj.radius, r.rj);
                 r.ni.copy(normal); // Contact normal
-                r.ni.negate(r.ni);
+                r.ni.negateTo(r.ni);
                 r.ri.init(0, 0, 0); // Center of particle
                 this.result.push(r);
                 this.createFrictionEquationsFromContact(r, this.frictionResult);
@@ -46441,7 +46481,7 @@ var CANNON;
                     //var projectedToFace = xi.subTo(xj).addTo(worldPenetrationVec);
                     //projectedToFace.copy(r.rj);
                     //qj.vmult(r.rj,r.rj);
-                    penetratedFaceNormal.negate(r.ni); // Contact normal
+                    penetratedFaceNormal.negateTo(r.ni); // Contact normal
                     r.ri.init(0, 0, 0); // Center of particle
                     var ri = r.ri, rj = r.rj;
                     // Make relative to bodies
@@ -46666,7 +46706,7 @@ var CANNON;
             // Get cross product between polygon normal and the edge
             var edge_x_normal = pointInPolygon_edge_x_normal;
             //var edge_x_normal = new Vec3();
-            edge.cross(normal, edge_x_normal);
+            edge.crossTo(normal, edge_x_normal);
             // Get vector between point and current vertex
             var vertex_to_p = pointInPolygon_vtp;
             p.subTo(v, vertex_to_p);

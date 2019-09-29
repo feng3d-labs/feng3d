@@ -97,7 +97,7 @@ namespace CANNON
                     var found = false;
                     for (var p = 0; p !== edges.length; p++)
                     {
-                        if (edges[p].almostEquals(edge) || edges[p].almostEquals(edge))
+                        if (edges[p].equals(edge) || edges[p].equals(edge))
                         {
                             found = true;
                             break;
@@ -134,7 +134,7 @@ namespace CANNON
 
                 var n = this.faceNormals[i] || new Vector3();
                 this.getFaceNormal(i, n);
-                n.negate(n);
+                n.negateTo(n);
                 this.faceNormals[i] = n;
                 var vertex = this.vertices[this.faces[i][0]];
                 if (n.dot(vertex) < 0)
@@ -160,7 +160,7 @@ namespace CANNON
         {
             vb.subTo(va, ab);
             vc.subTo(vb, cb);
-            cb.cross(ab, target);
+            cb.crossTo(ab, target);
             if (!target.isZero())
             {
                 target.normalize();
@@ -374,7 +374,7 @@ namespace CANNON
 
                     // Get world edge 2
                     quatB.vmult(hullB.uniqueEdges[e1], worldEdge1);
-                    worldEdge0.cross(worldEdge1, Cross);
+                    worldEdge0.crossTo(worldEdge1, Cross);
 
                     if (!Cross.almostZero())
                     {
@@ -396,7 +396,7 @@ namespace CANNON
             posB.subTo(posA, deltaC);
             if ((deltaC.dot(target)) > 0.0)
             {
-                target.negate(target);
+                target.negateTo(target);
             }
 
             return true;
@@ -538,8 +538,8 @@ namespace CANNON
                 worldPlaneAnormal1.copy(this.faceNormals[closestFaceA]);//transA.getBasis()* btVector3(polyA.m_plane[0],polyA.m_plane[1],polyA.m_plane[2]);
                 quatA.vmult(worldPlaneAnormal1, worldPlaneAnormal1);
                 posA.addTo(worldPlaneAnormal1, worldPlaneAnormal1);
-                WorldEdge0.cross(worldPlaneAnormal1, planeNormalWS1);
-                planeNormalWS1.negate(planeNormalWS1);
+                WorldEdge0.crossTo(worldPlaneAnormal1, planeNormalWS1);
+                planeNormalWS1.negateTo(planeNormalWS1);
                 worldA1.copy(a);
                 quatA.vmult(worldA1, worldA1);
                 posA.addTo(worldA1, worldA1);
@@ -655,7 +655,7 @@ namespace CANNON
                     {
                         // Start < 0, end >= 0, so output intersection
                         var newv = new Vector3();
-                        firstVertex.lerp(lastVertex,
+                        firstVertex.lerpTo(lastVertex,
                             n_dot_first / (n_dot_first - n_dot_last),
                             newv);
                         outVertices.push(newv);
@@ -666,7 +666,7 @@ namespace CANNON
                     {
                         // Start >= 0, end < 0 so output intersection and end
                         var newv = new Vector3();
-                        firstVertex.lerp(lastVertex,
+                        firstVertex.lerpTo(lastVertex,
                             n_dot_first / (n_dot_first - n_dot_last),
                             newv);
                         outVertices.push(newv);

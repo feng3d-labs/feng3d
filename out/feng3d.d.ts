@@ -3887,7 +3887,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * Vector3 类使用笛卡尔坐标 x、y 和 z 表示三维空间中的点或位置
-
      */
     class Vector3 {
         __class__: "feng3d.Vector3";
@@ -4020,6 +4019,24 @@ declare namespace feng3d {
          * 如果当前 Vector3 对象和作为参数指定的 Vector3 对象均为单位顶点，此方法将返回这两个顶点之间所成角的余弦值。
          */
         dot(a: Vector3): number;
+        /**
+         * 是否为零向量
+         */
+        isZero(): boolean;
+        tangents(t1: Vector3, t2: Vector3): void;
+        /**
+         * 检查一个向量是否接近零
+         *
+         * @param precision
+         */
+        almostZero(precision?: number): boolean;
+        /**
+         * 检查这个向量是否与另一个向量反平行。
+         *
+         * @param  v
+         * @param  precision 设置为零以进行精确比较
+         */
+        isAntiparallelTo(v: Vector3, precision?: number): boolean;
         /**
          * 加上标量
          * @param n 标量
@@ -17115,7 +17132,7 @@ declare namespace CANNON {
          * @param v
          * @param target Target to save in.
          */
-        cross(v: Vector3, target?: Vector3): Vector3;
+        crossTo(v: Vector3, target?: Vector3): Vector3;
         /**
          * Set the vectors' 3 elements
          * @param x
@@ -17192,13 +17209,6 @@ declare namespace CANNON {
          */
         scaleTo(vector: Vector3, target?: Vector3): Vector3;
         /**
-         * Scale a vector and add it to this vector. Save the result in "target". (target = this + vector * scalar)
-         * @param scalar
-         * @param vector
-         * @param  target The vector to save the result in.
-         */
-        addScaledVector(scalar: number, vector: Vector3, target?: Vector3): Vector3;
-        /**
          * Calculate dot product
          * @param {Vector3} v
          */
@@ -17208,7 +17218,7 @@ declare namespace CANNON {
          * Make the vector point in the opposite direction.
          * @param target Optional target to save in
          */
-        negate(target: Vector3): Vector3;
+        negateTo(target: Vector3): Vector3;
         tangents(t1: Vector3, t2: Vector3): void;
         /**
          * Converts to a more readable format
@@ -17229,13 +17239,13 @@ declare namespace CANNON {
          * @param v
          * @param t A number between 0 and 1. 0 will make this function return u, and 1 will make it return v. Numbers in between will generate a vector in between them.
          */
-        lerp(v: Vector3, t: number, target: Vector3): void;
+        lerpTo(v: Vector3, t: number, target: Vector3): void;
         /**
          * Check if a vector equals is almost equal to another one.
          * @param v
          * @param  precision
          */
-        almostEquals(v: Vector3, precision?: number): boolean;
+        equals(v: Vector3, precision?: number): boolean;
         /**
          * Check if a vector is almost zero
          * @param precision

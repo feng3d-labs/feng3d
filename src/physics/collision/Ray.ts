@@ -364,7 +364,7 @@ namespace CANNON
             } else if (delta === 0)
             {
                 // single intersection point
-                from.lerp(to, delta, intersectionPoint);
+                from.lerpTo(to, delta, intersectionPoint);
 
                 intersectionPoint.subTo(position, normal);
                 normal.normalize();
@@ -378,7 +378,7 @@ namespace CANNON
 
                 if (d1 >= 0 && d1 <= 1)
                 {
-                    from.lerp(to, d1, intersectionPoint);
+                    from.lerpTo(to, d1, intersectionPoint);
                     intersectionPoint.subTo(position, normal);
                     normal.normalize();
                     this.reportIntersection(normal, intersectionPoint, reportedShape, body, -1);
@@ -391,7 +391,7 @@ namespace CANNON
 
                 if (d2 >= 0 && d2 <= 1)
                 {
-                    from.lerp(to, d2, intersectionPoint);
+                    from.lerpTo(to, d2, intersectionPoint);
                     intersectionPoint.subTo(position, normal);
                     normal.normalize();
                     this.reportIntersection(normal, intersectionPoint, reportedShape, body, -1);

@@ -69,13 +69,13 @@ namespace CANNON
                 n = this.ni;
 
             // Caluclate cross products
-            ri.cross(n, rixn);
-            rj.cross(n, rjxn);
+            ri.crossTo(n, rixn);
+            rj.crossTo(n, rjxn);
 
             // g = xj+rj -(xi+ri)
             // G = [ -ni  -rixn  ni  rjxn ]
-            n.negate(GA.spatial);
-            rixn.negate(GA.rotational);
+            n.negateTo(GA.spatial);
+            rixn.negateTo(GA.rotational);
             GB.spatial.copy(n);
             GB.rotational.copy(rjxn);
 

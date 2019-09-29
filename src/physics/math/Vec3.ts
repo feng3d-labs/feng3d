@@ -39,7 +39,7 @@ namespace CANNON
          * @param v 
          * @param target Target to save in.
          */
-        cross(v: Vector3, target = new Vector3())
+        crossTo(v: Vector3, target = new Vector3())
         {
             var vx = v.x, vy = v.y, vz = v.z, x = this.x, y = this.y, z = this.z;
             target = target;
@@ -260,20 +260,6 @@ namespace CANNON
         }
 
         /**
-         * Scale a vector and add it to this vector. Save the result in "target". (target = this + vector * scalar)
-         * @param scalar
-         * @param vector
-         * @param  target The vector to save the result in.
-         */
-        addScaledVector(scalar: number, vector: Vector3, target = new Vector3())
-        {
-            target.x = this.x + scalar * vector.x;
-            target.y = this.y + scalar * vector.y;
-            target.z = this.z + scalar * vector.z;
-            return target;
-        }
-
-        /**
          * Calculate dot product
          * @param {Vector3} v
          */
@@ -285,13 +271,13 @@ namespace CANNON
         isZero()
         {
             return this.x === 0 && this.y === 0 && this.z === 0;
-        };
+        }
 
         /**
          * Make the vector point in the opposite direction.
          * @param target Optional target to save in
          */
-        negate(target: Vector3)
+        negateTo(target: Vector3)
         {
             target = target || new Vector3();
             target.x = -this.x;
@@ -312,13 +298,13 @@ namespace CANNON
                 if (Math.abs(n.x) < 0.9)
                 {
                     randVec.init(1, 0, 0);
-                    n.cross(randVec, t1);
+                    n.crossTo(randVec, t1);
                 } else
                 {
                     randVec.init(0, 1, 0);
-                    n.cross(randVec, t1);
+                    n.crossTo(randVec, t1);
                 }
-                n.cross(t1, t2);
+                n.crossTo(t1, t2);
             } else
             {
                 // The normal length is zero, make something up
@@ -361,7 +347,7 @@ namespace CANNON
          * @param v
          * @param t A number between 0 and 1. 0 will make this function return u, and 1 will make it return v. Numbers in between will generate a vector in between them.
          */
-        lerp(v: Vector3, t: number, target: Vector3)
+        lerpTo(v: Vector3, t: number, target: Vector3)
         {
             var x = this.x, y = this.y, z = this.z;
             target.x = x + (v.x - x) * t;
@@ -374,7 +360,7 @@ namespace CANNON
          * @param v
          * @param  precision
          */
-        almostEquals(v: Vector3, precision = 1e-6)
+        equals(v: Vector3, precision = 1e-6)
         {
             if (Math.abs(this.x - v.x) > precision ||
                 Math.abs(this.y - v.y) > precision ||
@@ -407,8 +393,8 @@ namespace CANNON
          */
         isAntiparallelTo(v: Vector3, precision = 1e-6)
         {
-            this.negate(antip_neg);
-            return antip_neg.almostEquals(v, precision);
+            this.negateTo(antip_neg);
+            return antip_neg.equals(v, precision);
         }
 
         /**
