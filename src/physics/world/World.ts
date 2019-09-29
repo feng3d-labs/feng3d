@@ -558,7 +558,7 @@ namespace CANNON
                 profilingStart,
                 constraints = this.constraints,
                 frictionEquationPool = World_step_frictionEquationPool,
-                gnorm = gravity.length(),
+                gnorm = gravity.length,
                 gx = gravity.x,
                 gy = gravity.y,
                 gz = gravity.z,
@@ -758,7 +758,7 @@ namespace CANNON
                     bj.type !== Body.STATIC
                 )
                 {
-                    var speedSquaredB = bj.velocity.norm2() + bj.angularVelocity.norm2();
+                    var speedSquaredB = bj.velocity.lengthSquared + bj.angularVelocity.lengthSquared;
                     var speedLimitSquaredB = Math.pow(bj.sleepSpeedLimit, 2);
                     if (speedSquaredB >= speedLimitSquaredB * 2)
                     {
@@ -773,7 +773,7 @@ namespace CANNON
                     bi.type !== Body.STATIC
                 )
                 {
-                    var speedSquaredA = bi.velocity.norm2() + bi.angularVelocity.norm2();
+                    var speedSquaredA = bi.velocity.lengthSquared + bi.angularVelocity.lengthSquared;
                     var speedLimitSquaredA = Math.pow(bi.sleepSpeedLimit, 2);
                     if (speedSquaredA >= speedLimitSquaredA * 2)
                     {

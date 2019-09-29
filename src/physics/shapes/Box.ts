@@ -117,7 +117,7 @@ namespace CANNON
 
         updateBoundingSphereRadius()
         {
-            this.boundingSphereRadius = this.halfExtents.length();
+            this.boundingSphereRadius = this.halfExtents.length;
         }
 
         forEachWorldCorner(pos: Vector3, quat: Quaternion, callback: Function)

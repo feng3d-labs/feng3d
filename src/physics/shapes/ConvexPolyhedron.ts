@@ -765,7 +765,7 @@ namespace CANNON
             var verts = this.vertices;
             for (var i = 0, N = verts.length; i !== N; i++)
             {
-                var norm2 = verts[i].norm2();
+                var norm2 = verts[i].lengthSquared;
                 if (norm2 > max2)
                 {
                     max2 = norm2;

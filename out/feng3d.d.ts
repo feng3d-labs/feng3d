@@ -17157,16 +17157,11 @@ declare namespace CANNON {
         /**
          * Get the length of the vector
          */
-        length(): number;
-        /**
-         * Get the squared length of the vector
-         * @deprecated Use .lengthSquared() instead.
-         */
-        norm2(): number;
+        readonly length: number;
         /**
          * Get the squared length of the vector
          */
-        lengthSquared(): number;
+        readonly lengthSquared: number;
         /**
          * Get distance from this point to another point
          * @param p

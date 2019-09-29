@@ -145,7 +145,7 @@ namespace CANNON
                 this.updateWheelTransform(i);
             }
 
-            this.currentVehicleSpeedKmHour = 3.6 * chassisBody.velocity.length();
+            this.currentVehicleSpeedKmHour = 3.6 * chassisBody.velocity.length;
 
             var forwardWorld = new Vector3();
             this.getVehicleAxisWorld(this.indexForwardAxis, forwardWorld);
@@ -723,7 +723,7 @@ namespace CANNON
     //bilateral constraint between two dynamic objects
     function resolveSingleBilateral(body1: Body, pos1: Vector3, body2: Body, pos2: Vector3, normal: Vector3)
     {
-        var normalLenSqr = normal.norm2();
+        var normalLenSqr = normal.lengthSquared;
         if (normalLenSqr > 1.1)
         {
             return 0; // no impulse

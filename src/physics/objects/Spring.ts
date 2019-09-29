@@ -147,7 +147,7 @@ namespace CANNON
 
             // Compute distance vector between world anchor points
             worldAnchorB.subTo(worldAnchorA, r);
-            var rlen = r.length();
+            var rlen = r.length;
             r_unit.copy(r);
             r_unit.normalize();
 

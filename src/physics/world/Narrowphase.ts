@@ -112,7 +112,7 @@ namespace CANNON
             if (friction > 0)
             {
                 // Create 2 tangent equations
-                var mug = friction * world.gravity.length();
+                var mug = friction * world.gravity.length;
                 var reducedMass = (bodyA.invMass + bodyB.invMass);
                 if (reducedMass > 0)
                 {
@@ -492,7 +492,7 @@ namespace CANNON
                     // Check vertex overlap in sphere
                     v.subTo(localSpherePos, relpos);
 
-                    if (relpos.norm2() <= radiusSquared)
+                    if (relpos.lengthSquared <= radiusSquared)
                     {
 
                         // Safe up
@@ -696,7 +696,7 @@ namespace CANNON
                 var ns = sphereBox_ns;
                 ns.copy(sides[idx]);
 
-                var h = ns.length();
+                var h = ns.length;
                 ns.normalize();
 
                 // The normal/distance dot product tells which side of the plane we are
@@ -709,8 +709,8 @@ namespace CANNON
                     var ns2 = sphereBox_ns2;
                     ns1.copy(sides[(idx + 1) % 3]);
                     ns2.copy(sides[(idx + 2) % 3]);
-                    var h1 = ns1.length();
-                    var h2 = ns2.length();
+                    var h1 = ns1.length;
+                    var h2 = ns2.length;
                     ns1.normalize();
                     ns2.normalize();
                     var dot1 = box_to_sphere.dot(ns1);
@@ -796,7 +796,7 @@ namespace CANNON
                         xj.addTo(rj, sphere_to_corner);
                         sphere_to_corner.subTo(xi, sphere_to_corner);
 
-                        if (sphere_to_corner.norm2() < R * R)
+                        if (sphere_to_corner.lengthSquared < R * R)
                         {
                             if (justTest)
                             {
@@ -863,9 +863,9 @@ namespace CANNON
 
                         // Distances in tangent direction and distance in the plane orthogonal to it
                         var tdist = Math.abs(orthonorm);
-                        var ndist = dist1.length();
+                        var ndist = dist1.length;
 
-                        if (tdist < sides[l].length() && ndist < R)
+                        if (tdist < sides[l].length && ndist < R)
                         {
                             if (justTest)
                             {
@@ -925,7 +925,7 @@ namespace CANNON
                 xj.addTo(worldCorner, worldCorner);
                 var sphere_to_corner = sphereConvex_sphereToCorner;
                 worldCorner.subTo(xi, sphere_to_corner);
-                if (sphere_to_corner.norm2() < R * R)
+                if (sphere_to_corner.lengthSquared < R * R)
                 {
                     if (justTest)
                     {
@@ -1075,7 +1075,7 @@ namespace CANNON
 
                             // Collision if the edge-sphere distance is less than the radius
                             // AND if p is in between v1 and v2
-                            if (dot > 0 && dot * dot < edge.norm2() && xi_to_p.norm2() < R * R)
+                            if (dot > 0 && dot * dot < edge.lengthSquared && xi_to_p.norm2() < R * R)
                             { // Collision if the edge-sphere distance is less than the radius
                                 // Edge contact!
                                 if (justTest)
@@ -1388,7 +1388,7 @@ namespace CANNON
             var normal = particleSphere_normal;
             normal.init(0, 1, 0);
             xi.subTo(xj, normal);
-            var lengthSquared = normal.norm2();
+            var lengthSquared = normal.lengthSquared;
 
             if (lengthSquared <= sj.radius * sj.radius)
             {

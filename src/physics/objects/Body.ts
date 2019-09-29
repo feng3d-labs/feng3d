@@ -396,7 +396,7 @@ namespace CANNON
             if (this.allowSleep)
             {
                 var sleepState = this.sleepState;
-                var speedSquared = this.velocity.norm2() + this.angularVelocity.norm2();
+                var speedSquared = this.velocity.lengthSquared + this.angularVelocity.lengthSquared;
                 var speedLimitSquared = Math.pow(this.sleepSpeedLimit, 2);
                 if (sleepState === Body.AWAKE && speedSquared < speedLimitSquared)
                 {
@@ -534,7 +534,7 @@ namespace CANNON
             {
                 var shape = shapes[i];
                 shape.updateBoundingSphereRadius();
-                var offset = shapeOffsets[i].length(),
+                var offset = shapeOffsets[i].length,
                     r = shape.boundingSphereRadius;
                 if (offset + r > radius)
                 {

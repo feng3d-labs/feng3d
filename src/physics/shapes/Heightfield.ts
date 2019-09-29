@@ -670,7 +670,7 @@ namespace CANNON
             // Use the bounding box of the min/max values
             var data = this.data,
                 s = this.elementSize;
-            this.boundingSphereRadius = new Vector3(data.length * s, data[0].length * s, Math.max(Math.abs(this.maxValue), Math.abs(this.minValue))).length();
+            this.boundingSphereRadius = new Vector3(data.length * s, data[0].length * s, Math.max(Math.abs(this.maxValue), Math.abs(this.minValue))).length;
         }
 
         /**

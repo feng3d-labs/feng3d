@@ -175,7 +175,7 @@ namespace CANNON
         /**
          * Get the length of the vector
          */
-        length()
+        get length()
         {
             var x = this.x, y = this.y, z = this.z;
             return Math.sqrt(x * x + y * y + z * z);
@@ -183,17 +183,8 @@ namespace CANNON
 
         /**
          * Get the squared length of the vector
-         * @deprecated Use .lengthSquared() instead.
          */
-        norm2()
-        {
-            return this.dot(this);
-        }
-
-        /**
-         * Get the squared length of the vector
-         */
-        lengthSquared()
+        get lengthSquared()
         {
             return this.dot(this);
         }
@@ -311,7 +302,7 @@ namespace CANNON
 
         tangents(t1: Vector3, t2: Vector3)
         {
-            var norm = this.length();
+            var norm = this.length;
             if (norm > 0.0)
             {
                 var n = Vec3_tangents_n;

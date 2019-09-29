@@ -36670,26 +36670,27 @@ var CANNON;
             }
             return target;
         };
-        /**
-         * Get the length of the vector
-         */
-        Vector3.prototype.length = function () {
-            var x = this.x, y = this.y, z = this.z;
-            return Math.sqrt(x * x + y * y + z * z);
-        };
-        /**
-         * Get the squared length of the vector
-         * @deprecated Use .lengthSquared() instead.
-         */
-        Vector3.prototype.norm2 = function () {
-            return this.dot(this);
-        };
-        /**
-         * Get the squared length of the vector
-         */
-        Vector3.prototype.lengthSquared = function () {
-            return this.dot(this);
-        };
+        Object.defineProperty(Vector3.prototype, "length", {
+            /**
+             * Get the length of the vector
+             */
+            get: function () {
+                var x = this.x, y = this.y, z = this.z;
+                return Math.sqrt(x * x + y * y + z * z);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Vector3.prototype, "lengthSquared", {
+            /**
+             * Get the squared length of the vector
+             */
+            get: function () {
+                return this.dot(this);
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Get distance from this point to another point
          * @param p
@@ -36785,7 +36786,7 @@ var CANNON;
             return target;
         };
         Vector3.prototype.tangents = function (t1, t2) {
-            var norm = this.length();
+            var norm = this.length;
             if (norm > 0.0) {
                 var n = Vec3_tangents_n;
                 var inorm = 1 / norm;
@@ -37355,7 +37356,7 @@ var CANNON;
                 this.x = a.x;
                 this.y = a.y;
                 this.z = a.z;
-                this.w = Math.sqrt(Math.pow(u.length(), 2) * Math.pow(v.length(), 2)) + u.dot(v);
+                this.w = Math.sqrt(Math.pow(u.length, 2) * Math.pow(v.length, 2)) + u.dot(v);
                 this.normalize();
             }
             return this;
@@ -38964,7 +38965,7 @@ var CANNON;
             var max2 = 0;
             var verts = this.vertices;
             for (var i = 0, N = verts.length; i !== N; i++) {
-                var norm2 = verts[i].norm2();
+                var norm2 = verts[i].lengthSquared;
                 if (norm2 > max2) {
                     max2 = norm2;
                 }
@@ -39256,7 +39257,7 @@ var CANNON;
             return 8.0 * this.halfExtents.x * this.halfExtents.y * this.halfExtents.z;
         };
         Box.prototype.updateBoundingSphereRadius = function () {
-            this.boundingSphereRadius = this.halfExtents.length();
+            this.boundingSphereRadius = this.halfExtents.length;
         };
         Box.prototype.forEachWorldCorner = function (pos, quat, callback) {
             var e = this.halfExtents;
@@ -39857,7 +39858,7 @@ var CANNON;
         Heightfield.prototype.updateBoundingSphereRadius = function () {
             // Use the bounding box of the min/max values
             var data = this.data, s = this.elementSize;
-            this.boundingSphereRadius = new CANNON.Vector3(data.length * s, data[0].length * s, Math.max(Math.abs(this.maxValue), Math.abs(this.minValue))).length();
+            this.boundingSphereRadius = new CANNON.Vector3(data.length * s, data[0].length * s, Math.max(Math.abs(this.maxValue), Math.abs(this.minValue))).length;
         };
         /**
          * Sets the height values from an image. Currently only supported in browser.
@@ -40639,7 +40640,7 @@ var CANNON;
             var v = new CANNON.Vector3();
             for (var i = 0, N = vertices.length / 3; i !== N; i++) {
                 this.getVertex(i, v);
-                var norm2 = v.norm2();
+                var norm2 = v.lengthSquared;
                 if (norm2 > max2) {
                     max2 = norm2;
                 }
@@ -41237,7 +41238,7 @@ var CANNON;
             var r = Broadphase_collisionPairs_r;
             bodyB.position.subTo(bodyA.position, r);
             var boundingRadiusSum2 = Math.pow(bodyA.boundingRadius + bodyB.boundingRadius, 2);
-            var norm2 = r.norm2();
+            var norm2 = r.lengthSquared;
             if (norm2 < boundingRadiusSum2) {
                 pairs1.push(bodyA);
                 pairs2.push(bodyB);
@@ -41305,7 +41306,7 @@ var CANNON;
         Broadphase.boundingSphereCheck = function (bodyA, bodyB) {
             var dist = bsc_dist;
             bodyA.position.subTo(bodyB.position, dist);
-            return Math.pow(bodyA.shape.boundingSphereRadius + bodyB.shape.boundingSphereRadius, 2) > dist.norm2();
+            return Math.pow(bodyA.shape.boundingSphereRadius + bodyB.shape.boundingSphereRadius, 2) > dist.lengthSquared;
         };
         /**
          * Returns all the bodies within the AABB.
@@ -42536,7 +42537,7 @@ var CANNON;
         Body.prototype.sleepTick = function (time) {
             if (this.allowSleep) {
                 var sleepState = this.sleepState;
-                var speedSquared = this.velocity.norm2() + this.angularVelocity.norm2();
+                var speedSquared = this.velocity.lengthSquared + this.angularVelocity.lengthSquared;
                 var speedLimitSquared = Math.pow(this.sleepSpeedLimit, 2);
                 if (sleepState === Body.AWAKE && speedSquared < speedLimitSquared) {
                     this.sleepState = Body.SLEEPY; // Sleepy
@@ -42647,7 +42648,7 @@ var CANNON;
             for (var i = 0; i !== N; i++) {
                 var shape = shapes[i];
                 shape.updateBoundingSphereRadius();
-                var offset = shapeOffsets[i].length(), r = shape.boundingSphereRadius;
+                var offset = shapeOffsets[i].length, r = shape.boundingSphereRadius;
                 if (offset + r > radius) {
                     radius = offset + r;
                 }
@@ -42987,7 +42988,7 @@ var CANNON;
             worldAnchorB.subTo(bodyB.position, rj);
             // Compute distance vector between world anchor points
             worldAnchorB.subTo(worldAnchorA, r);
-            var rlen = r.length();
+            var rlen = r.length;
             r_unit.copy(r);
             r_unit.normalize();
             // Compute relative velocity of the anchor points, u
@@ -43218,7 +43219,7 @@ var CANNON;
             for (var i = 0; i < numWheels; i++) {
                 this.updateWheelTransform(i);
             }
-            this.currentVehicleSpeedKmHour = 3.6 * chassisBody.velocity.length();
+            this.currentVehicleSpeedKmHour = 3.6 * chassisBody.velocity.length;
             var forwardWorld = new CANNON.Vector3();
             this.getVehicleAxisWorld(this.indexForwardAxis, forwardWorld);
             if (forwardWorld.dot(chassisBody.velocity) < 0) {
@@ -43630,7 +43631,7 @@ var CANNON;
     var resolveSingleBilateral_vel = new CANNON.Vector3();
     //bilateral constraint between two dynamic objects
     function resolveSingleBilateral(body1, pos1, body2, pos2, normal) {
-        var normalLenSqr = normal.norm2();
+        var normalLenSqr = normal.lengthSquared;
         if (normalLenSqr > 1.1) {
             return 0; // no impulse
         }
@@ -43873,7 +43874,7 @@ var CANNON;
             for (var i = 0; i !== N; i++) {
                 var p = this.particles[i];
                 p.position.vsub(particle.position, dist);
-                if (id !== p.id && dist.norm2() < R2) {
+                if (id !== p.id && dist.lengthSquared < R2) {
                     neighbors.push(p);
                 }
             }
@@ -43893,7 +43894,7 @@ var CANNON;
                 for (var j = 0; j !== numNeighbors; j++) {
                     //printf("Current particle has position %f %f %f\n",objects[id].pos.x(),objects[id].pos.y(),objects[id].pos.z());
                     p.position.vsub(neighbors[j].position, dist);
-                    var len = dist.length();
+                    var len = dist.length;
                     var weight = this.w(len);
                     sum += neighbors[j].mass * weight;
                 }
@@ -43925,7 +43926,7 @@ var CANNON;
                     //printf("%d ",nj);
                     // Get r once for all..
                     particle.position.vsub(neighbor.position, r_vec);
-                    var r = r_vec.length();
+                    var r = r_vec.length;
                     // Pressure contribution
                     Pij = -neighbor.mass * (this.pressures[i] / (this.densities[i] * this.densities[i] + eps) + this.pressures[j] / (this.densities[j] * this.densities[j] + eps));
                     this.gradw(r_vec, gradW);
@@ -43956,7 +43957,7 @@ var CANNON;
         };
         // calculate gradient of the weight function
         SPHSystem.prototype.gradw = function (rVec, resultVec) {
-            var r = rVec.length(), h = this.smoothingRadius;
+            var r = rVec.length, h = this.smoothingRadius;
             rVec.mult(945.0 / (32.0 * Math.PI * Math.pow(h, 9)) * Math.pow((h * h - r * r), 2), resultVec);
         };
         // Calculate nabla(W)
@@ -45057,7 +45058,7 @@ var CANNON;
         };
         World.prototype.internalStep = function (dt) {
             this.dt = dt;
-            var world = this, that = this, contacts = this.contacts, p1 = World_step_p1, p2 = World_step_p2, N = this.numObjects(), bodies = this.bodies, solver = this.solver, gravity = this.gravity, doProfiling = this.doProfiling, profile = this.profile, DYNAMIC = CANNON.Body.DYNAMIC, profilingStart, constraints = this.constraints, frictionEquationPool = World_step_frictionEquationPool, gnorm = gravity.length(), gx = gravity.x, gy = gravity.y, gz = gravity.z, i = 0;
+            var world = this, that = this, contacts = this.contacts, p1 = World_step_p1, p2 = World_step_p2, N = this.numObjects(), bodies = this.bodies, solver = this.solver, gravity = this.gravity, doProfiling = this.doProfiling, profile = this.profile, DYNAMIC = CANNON.Body.DYNAMIC, profilingStart, constraints = this.constraints, frictionEquationPool = World_step_frictionEquationPool, gnorm = gravity.length, gx = gravity.x, gy = gravity.y, gz = gravity.z, i = 0;
             if (doProfiling) {
                 profilingStart = performance.now();
             }
@@ -45197,7 +45198,7 @@ var CANNON;
                     bi.sleepState === CANNON.Body.SLEEPING &&
                     bj.sleepState === CANNON.Body.AWAKE &&
                     bj.type !== CANNON.Body.STATIC) {
-                    var speedSquaredB = bj.velocity.norm2() + bj.angularVelocity.norm2();
+                    var speedSquaredB = bj.velocity.lengthSquared + bj.angularVelocity.lengthSquared;
                     var speedLimitSquaredB = Math.pow(bj.sleepSpeedLimit, 2);
                     if (speedSquaredB >= speedLimitSquaredB * 2) {
                         bi._wakeUpAfterNarrowphase = true;
@@ -45208,7 +45209,7 @@ var CANNON;
                     bj.sleepState === CANNON.Body.SLEEPING &&
                     bi.sleepState === CANNON.Body.AWAKE &&
                     bi.type !== CANNON.Body.STATIC) {
-                    var speedSquaredA = bi.velocity.norm2() + bi.angularVelocity.norm2();
+                    var speedSquaredA = bi.velocity.lengthSquared + bi.angularVelocity.lengthSquared;
                     var speedLimitSquaredA = Math.pow(bi.sleepSpeedLimit, 2);
                     if (speedSquaredA >= speedLimitSquaredA * 2) {
                         bj._wakeUpAfterNarrowphase = true;
@@ -45450,7 +45451,7 @@ var CANNON;
             }
             if (friction > 0) {
                 // Create 2 tangent equations
-                var mug = friction * world.gravity.length();
+                var mug = friction * world.gravity.length;
                 var reducedMass = (bodyA.invMass + bodyB.invMass);
                 if (reducedMass > 0) {
                     reducedMass = 1 / reducedMass;
@@ -45701,7 +45702,7 @@ var CANNON;
                     trimeshShape.getVertex(trimeshShape.indices[triangles[i] * 3 + j], v);
                     // Check vertex overlap in sphere
                     v.subTo(localSpherePos, relpos);
-                    if (relpos.norm2() <= radiusSquared) {
+                    if (relpos.lengthSquared <= radiusSquared) {
                         // Safe up
                         v2.copy(v);
                         CANNON.Transform.pointToWorldFrame(trimeshPos, trimeshQuat, v2, v);
@@ -45848,7 +45849,7 @@ var CANNON;
                 // Get the plane side normal (ns)
                 var ns = sphereBox_ns;
                 ns.copy(sides[idx]);
-                var h = ns.length();
+                var h = ns.length;
                 ns.normalize();
                 // The normal/distance dot product tells which side of the plane we are
                 var dot = box_to_sphere.dot(ns);
@@ -45858,8 +45859,8 @@ var CANNON;
                     var ns2 = sphereBox_ns2;
                     ns1.copy(sides[(idx + 1) % 3]);
                     ns2.copy(sides[(idx + 2) % 3]);
-                    var h1 = ns1.length();
-                    var h2 = ns2.length();
+                    var h1 = ns1.length;
+                    var h2 = ns2.length;
                     ns1.normalize();
                     ns2.normalize();
                     var dot1 = box_to_sphere.dot(ns1);
@@ -45929,7 +45930,7 @@ var CANNON;
                         // World position of corner
                         xj.addTo(rj, sphere_to_corner);
                         sphere_to_corner.subTo(xi, sphere_to_corner);
-                        if (sphere_to_corner.norm2() < R * R) {
+                        if (sphere_to_corner.lengthSquared < R * R) {
                             if (justTest) {
                                 return true;
                             }
@@ -45984,8 +45985,8 @@ var CANNON;
                         dist1.subTo(xj, dist1);
                         // Distances in tangent direction and distance in the plane orthogonal to it
                         var tdist = Math.abs(orthonorm);
-                        var ndist = dist1.length();
-                        if (tdist < sides[l].length() && ndist < R) {
+                        var ndist = dist1.length;
+                        if (tdist < sides[l].length && ndist < R) {
                             if (justTest) {
                                 return true;
                             }
@@ -46033,7 +46034,7 @@ var CANNON;
                 xj.addTo(worldCorner, worldCorner);
                 var sphere_to_corner = sphereConvex_sphereToCorner;
                 worldCorner.subTo(xi, sphere_to_corner);
-                if (sphere_to_corner.norm2() < R * R) {
+                if (sphere_to_corner.lengthSquared < R * R) {
                     if (justTest) {
                         return true;
                     }
@@ -46147,7 +46148,7 @@ var CANNON;
                             p.subTo(xi, xi_to_p);
                             // Collision if the edge-sphere distance is less than the radius
                             // AND if p is in between v1 and v2
-                            if (dot > 0 && dot * dot < edge.norm2() && xi_to_p.norm2() < R * R) { // Collision if the edge-sphere distance is less than the radius
+                            if (dot > 0 && dot * dot < edge.lengthSquared && xi_to_p.norm2() < R * R) { // Collision if the edge-sphere distance is less than the radius
                                 // Edge contact!
                                 if (justTest) {
                                     return true;
@@ -46376,7 +46377,7 @@ var CANNON;
             var normal = particleSphere_normal;
             normal.init(0, 1, 0);
             xi.subTo(xj, normal);
-            var lengthSquared = normal.norm2();
+            var lengthSquared = normal.lengthSquared;
             if (lengthSquared <= sj.radius * sj.radius) {
                 if (justTest) {
                     return true;
