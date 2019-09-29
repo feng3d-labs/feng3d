@@ -51,10 +51,14 @@ namespace feng3d
 
         createSphere(name = "sphere")
         {
-            return serialization.setValue(new GameObject(), {
+            var sphere = serialization.setValue(new GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.sphere },]
             });
+
+            var sphereBody = sphere.addComponent(BodyComponent);
+
+            return sphere;
         }
 
         createCapsule(name = "capsule")

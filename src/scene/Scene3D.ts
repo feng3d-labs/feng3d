@@ -34,7 +34,11 @@ namespace feng3d
         @oav()
         ambientColor = new Color4();
 
-        gravity: CANNON.Vec3;
+        /**
+         * 重力加速度
+         */
+        @oav()
+        gravity = new CANNON.Vec3(0, -9.82, 0);
 
         /**
          * 指定所运行环境
@@ -56,6 +60,11 @@ namespace feng3d
         camera: Camera;
 
         /**
+         * 物理世界
+         */
+        world: CANNON.World;
+
+        /**
          * 构造3D场景
          */
         init(gameObject: GameObject)
@@ -68,6 +77,15 @@ namespace feng3d
             gameObject["_scene"] = this;
             this.gameObject["updateChildrenScene"]();
 
+            this.world = new CANNON.World();
+            this.world.gravity = this.gravity;
+
+            var bodys = this.getComponentsInChildren(BodyComponent).map(c => c.body);
+            bodys.forEach(v =>
+            {
+                this.world.addBody(v);
+            });
+
             //
             this.on("addChild", this.onAddChild, this);
             this.on("removeChild", this.onRemoveChild, this);
@@ -77,26 +95,42 @@ namespace feng3d
 
         private onAddComponent(e: Event<Component>)
         {
-
+            if (e.data instanceof BodyComponent)
+            {
+                this.world.addBody(e.data.body);
+            }
         }
 
         private onRemovedComponent(e: Event<Component>)
         {
-
+            if (e.data instanceof BodyComponent)
+            {
+                this.world.removeBody(e.data.body);
+            }
         }
 
         private onAddChild(e: Event<GameObject>)
         {
-
+            var bodyComponent = e.data.getComponent(BodyComponent);
+            if (bodyComponent)
+            {
+                this.world.addBody(bodyComponent.body);
+            }
         }
 
         private onRemoveChild(e: Event<GameObject>)
         {
-
+            var bodyComponent = e.data.getComponent(BodyComponent);
+            if (bodyComponent)
+            {
+                this.world.removeBody(bodyComponent.body);
+            }
         }
 
         update(interval?: number)
         {
+            interval = interval || (1000 / feng3d.ticker.frameRate);
+
             this._mouseCheckObjects = <any>null;
             this._models = null;
             this._visibleAndEnabledModels = null;
@@ -119,8 +153,12 @@ namespace feng3d
             this.behaviours.forEach(element =>
             {
                 if (element.isVisibleAndEnabled && Boolean(this.runEnvironment & element.runEnvironment))
-                    element.update(interval || (1000 / feng3d.ticker.frameRate));
+                    element.update(interval);
             });
+
+            // 只在
+            if (this.runEnvironment == RunEnvironment.feng3d)
+                this.world.step(1.0 / 60.0, interval / 1000, 3);
         }
 
         /**

@@ -204,6 +204,7 @@
         "src/component/WireframeComponent.ts",
         "src/component/CartoonComponent.ts",
         "src/component/OutLineComponent.ts",
+        "src/component/BodyComponent.ts",
         "src/core/Model.ts",
         "src/core/MeshModel.ts",
         "src/core/ScriptComponent.ts",

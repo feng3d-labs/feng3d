@@ -24107,6 +24107,42 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var BodyComponent = /** @class */ (function (_super) {
+        __extends(BodyComponent, _super);
+        function BodyComponent() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.BodyComponent";
+            return _this;
+        }
+        BodyComponent.prototype.init = function (gameobject) {
+            _super.prototype.init.call(this, gameobject);
+            var radius = 1; // m
+            this.body = new CANNON.Body({
+                mass: 5,
+                position: new CANNON.Vec3(0, 10, 0),
+                shape: new CANNON.Sphere(radius)
+            });
+        };
+        /**
+         * 每帧执行
+         */
+        BodyComponent.prototype.update = function (interval) {
+            var scene3D = this.getComponentsInParents(feng3d.Scene3D)[0];
+            if (scene3D && scene3D.runEnvironment == feng3d.RunEnvironment.feng3d) {
+                this.transform.x = this.body.position.x;
+                this.transform.y = this.body.position.y;
+                this.transform.z = this.body.position.z;
+            }
+        };
+        __decorate([
+            feng3d.oav()
+        ], BodyComponent.prototype, "body", void 0);
+        return BodyComponent;
+    }(feng3d.Behaviour));
+    feng3d.BodyComponent = BodyComponent;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     var Model = /** @class */ (function (_super) {
         __extends(Model, _super);
         function Model() {
@@ -24446,6 +24482,10 @@ var feng3d;
              */
             _this.ambientColor = new feng3d.Color4();
             /**
+             * 重力加速度
+             */
+            _this.gravity = new CANNON.Vec3(0, -9.82, 0);
+            /**
              * 指定所运行环境
              *
              * 控制运行符合指定环境场景中所有 Behaviour.update 方法
@@ -24460,12 +24500,19 @@ var feng3d;
          * 构造3D场景
          */
         Scene3D.prototype.init = function (gameObject) {
+            var _this = this;
             _super.prototype.init.call(this, gameObject);
             this.transform.hideFlags = this.transform.hideFlags | feng3d.HideFlags.Hide;
             this.gameObject.hideFlags = this.gameObject.hideFlags | feng3d.HideFlags.DontTransform;
             //
             gameObject["_scene"] = this;
             this.gameObject["updateChildrenScene"]();
+            this.world = new CANNON.World();
+            this.world.gravity = this.gravity;
+            var bodys = this.getComponentsInChildren(feng3d.BodyComponent).map(function (c) { return c.body; });
+            bodys.forEach(function (v) {
+                _this.world.addBody(v);
+            });
             //
             this.on("addChild", this.onAddChild, this);
             this.on("removeChild", this.onRemoveChild, this);
@@ -24473,15 +24520,30 @@ var feng3d;
             this.on("removeComponent", this.onRemovedComponent, this);
         };
         Scene3D.prototype.onAddComponent = function (e) {
+            if (e.data instanceof feng3d.BodyComponent) {
+                this.world.addBody(e.data.body);
+            }
         };
         Scene3D.prototype.onRemovedComponent = function (e) {
+            if (e.data instanceof feng3d.BodyComponent) {
+                this.world.removeBody(e.data.body);
+            }
         };
         Scene3D.prototype.onAddChild = function (e) {
+            var bodyComponent = e.data.getComponent(feng3d.BodyComponent);
+            if (bodyComponent) {
+                this.world.addBody(bodyComponent.body);
+            }
         };
         Scene3D.prototype.onRemoveChild = function (e) {
+            var bodyComponent = e.data.getComponent(feng3d.BodyComponent);
+            if (bodyComponent) {
+                this.world.removeBody(bodyComponent.body);
+            }
         };
         Scene3D.prototype.update = function (interval) {
             var _this = this;
+            interval = interval || (1000 / feng3d.ticker.frameRate);
             this._mouseCheckObjects = null;
             this._models = null;
             this._visibleAndEnabledModels = null;
@@ -24501,8 +24563,11 @@ var feng3d;
             this._pickMap.forEach(function (item) { return item.clear(); });
             this.behaviours.forEach(function (element) {
                 if (element.isVisibleAndEnabled && Boolean(_this.runEnvironment & element.runEnvironment))
-                    element.update(interval || (1000 / feng3d.ticker.frameRate));
+                    element.update(interval);
             });
+            // 只在
+            if (this.runEnvironment == feng3d.RunEnvironment.feng3d)
+                this.world.step(1.0 / 60.0, interval / 1000, 3);
         };
         Object.defineProperty(Scene3D.prototype, "models", {
             /**
@@ -24690,6 +24755,9 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav()
         ], Scene3D.prototype, "ambientColor", void 0);
+        __decorate([
+            feng3d.oav()
+        ], Scene3D.prototype, "gravity", void 0);
         return Scene3D;
     }(feng3d.Component));
     feng3d.Scene3D = Scene3D;
@@ -36145,10 +36213,12 @@ var feng3d;
         };
         GameObjectFactory.prototype.createSphere = function (name) {
             if (name === void 0) { name = "sphere"; }
-            return feng3d.serialization.setValue(new feng3d.GameObject(), {
+            var sphere = feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.sphere },]
             });
+            var sphereBody = sphere.addComponent(feng3d.BodyComponent);
+            return sphere;
         };
         GameObjectFactory.prototype.createCapsule = function (name) {
             if (name === void 0) { name = "capsule"; }

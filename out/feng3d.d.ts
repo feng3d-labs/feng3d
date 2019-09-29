@@ -12763,6 +12763,17 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    class BodyComponent extends Behaviour {
+        __class__: "feng3d.BodyComponent";
+        body: CANNON.Body;
+        init(gameobject: GameObject): void;
+        /**
+         * 每帧执行
+         */
+        update(interval?: number): void;
+    }
+}
+declare namespace feng3d {
     interface ComponentMap {
         Model: Model;
     }
@@ -12925,6 +12936,9 @@ declare namespace feng3d {
          * 环境光强度
          */
         ambientColor: Color4;
+        /**
+         * 重力加速度
+         */
         gravity: CANNON.Vec3;
         /**
          * 指定所运行环境
@@ -12942,6 +12956,10 @@ declare namespace feng3d {
          * 上次渲染时用的摄像机
          */
         camera: Camera;
+        /**
+         * 物理世界
+         */
+        world: CANNON.World;
         /**
          * 构造3D场景
          */
