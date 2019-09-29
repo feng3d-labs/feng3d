@@ -32,7 +32,7 @@ namespace CANNON
             var pivotB = this.pivotB;
             var halfWay = new Vector3();
             bodyA.position.addTo(bodyB.position, halfWay);
-            halfWay.scale(0.5, halfWay);
+            halfWay.scaleNumberTo(0.5, halfWay);
             bodyB.pointToLocalFrame(halfWay, pivotB);
             bodyA.pointToLocalFrame(halfWay, pivotA);
 

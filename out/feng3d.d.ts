@@ -17166,7 +17166,7 @@ declare namespace CANNON {
          * Get distance from this point to another point
          * @param p
          */
-        distanceTo(p: Vector3): number;
+        distance(p: Vector3): number;
         /**
          * Get squared distance from this point to another point
          * @param p
@@ -17178,19 +17178,19 @@ declare namespace CANNON {
          * @param  target The vector to save the result in.
          * @deprecated Use .scale() instead
          */
-        mult(scalar: number, target?: Vector3): Vector3;
+        multiplyTo(scalar: number, target?: Vector3): Vector3;
         /**
          * Multiply all the components of the vector with a scalar.
          * @param scalar
          * @param  target The vector to save the result in.
          */
-        scale(scalar: number, target?: Vector3): Vector3;
+        scaleNumberTo(scalar: number, target?: Vector3): Vector3;
         /**
          * Multiply the vector with an other vector, component-wise.
          * @param  vector
          * @param  target The vector to save the result in.
          */
-        vmul(vector: Vector3, target?: Vector3): Vector3;
+        scaleTo(vector: Vector3, target?: Vector3): Vector3;
         /**
          * Scale a vector and add it to this vector. Save the result in "target". (target = this + vector * scalar)
          * @param scalar

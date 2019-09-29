@@ -23,7 +23,7 @@ namespace CANNON
 
             if (typeof (distance) === "undefined")
             {
-                distance = bodyA.position.distanceTo(bodyB.position);
+                distance = bodyA.position.distance(bodyB.position);
             }
 
             if (typeof (maxForce) === "undefined")
@@ -54,8 +54,8 @@ namespace CANNON
 
             bodyB.position.subTo(bodyA.position, normal);
             normal.normalize();
-            normal.mult(halfDist, eq.ri);
-            normal.mult(-halfDist, eq.rj);
+            normal.multiplyTo(halfDist, eq.ri);
+            normal.multiplyTo(-halfDist, eq.rj);
         }
     }
 }

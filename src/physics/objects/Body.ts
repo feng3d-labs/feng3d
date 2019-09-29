@@ -680,7 +680,7 @@ namespace CANNON
             // Compute produced central impulse velocity
             var velo = Body_applyImpulse_velo;
             velo.copy(impulse);
-            velo.mult(this.invMass, velo);
+            velo.multiplyTo(this.invMass, velo);
 
             // Add linear impulse
             this.velocity.addTo(velo, this.velocity);

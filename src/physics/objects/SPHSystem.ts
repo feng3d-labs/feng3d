@@ -175,21 +175,21 @@ namespace CANNON
                     Pij = -neighbor.mass * (this.pressures[i] / (this.densities[i] * this.densities[i] + eps) + this.pressures[j] / (this.densities[j] * this.densities[j] + eps));
                     this.gradw(r_vec, gradW);
                     // Add to pressure acceleration
-                    gradW.mult(Pij, gradW);
+                    gradW.multiplyTo(Pij, gradW);
                     a_pressure.addTo(gradW, a_pressure);
 
                     // Viscosity contribution
                     neighbor.velocity.vsub(particle.velocity, u);
-                    u.mult(1.0 / (0.0001 + this.densities[i] * this.densities[j]) * this.viscosity * neighbor.mass, u);
+                    u.multiplyTo(1.0 / (0.0001 + this.densities[i] * this.densities[j]) * this.viscosity * neighbor.mass, u);
                     nabla = this.nablaw(r);
-                    u.mult(nabla, u);
+                    u.multiplyTo(nabla, u);
                     // Add to viscosity acceleration
                     a_visc.addTo(u, a_visc);
                 }
 
                 // Calculate force
-                a_visc.mult(particle.mass, a_visc);
-                a_pressure.mult(particle.mass, a_pressure);
+                a_visc.multiplyTo(particle.mass, a_visc);
+                a_pressure.multiplyTo(particle.mass, a_pressure);
 
                 // Add force to particles
                 particle.force.vadd(a_visc, particle.force);
@@ -210,7 +210,7 @@ namespace CANNON
         {
             var r = rVec.length,
                 h = this.smoothingRadius;
-            rVec.mult(945.0 / (32.0 * Math.PI * Math.pow(h, 9)) * Math.pow((h * h - r * r), 2), resultVec);
+            rVec.multiplyTo(945.0 / (32.0 * Math.PI * Math.pow(h, 9)) * Math.pow((h * h - r * r), 2), resultVec);
         }
 
         // Calculate nabla(W)

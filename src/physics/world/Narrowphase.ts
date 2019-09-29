@@ -188,8 +188,8 @@ namespace CANNON
             }
 
             var invNumContacts = 1 / numContacts;
-            averageContactPointA.scale(invNumContacts, f1.ri);
-            averageContactPointB.scale(invNumContacts, f1.rj);
+            averageContactPointA.scaleNumberTo(invNumContacts, f1.ri);
+            averageContactPointB.scaleNumberTo(invNumContacts, f1.rj);
             f2.ri.copy(f1.ri); // Should be the same
             f2.rj.copy(f1.rj);
             averageNormal.normalize();
@@ -264,7 +264,7 @@ namespace CANNON
                             continue;
                         }
 
-                        if (xi.distanceTo(xj) > si.boundingSphereRadius + sj.boundingSphereRadius)
+                        if (xi.distance(xj) > si.boundingSphereRadius + sj.boundingSphereRadius)
                         {
                             continue;
                         }
@@ -343,8 +343,8 @@ namespace CANNON
             // Contact point locations
             r.ri.copy(r.ni);
             r.rj.copy(r.ni);
-            r.ri.mult(si.radius, r.ri);
-            r.rj.mult(-sj.radius, r.rj);
+            r.ri.multiplyTo(si.radius, r.ri);
+            r.rj.multiplyTo(-sj.radius, r.rj);
 
             r.ri.addTo(xi, r.ri);
             r.ri.subTo(bi.position, r.ri);
@@ -418,7 +418,7 @@ namespace CANNON
 
                     // Get vertex position projected on plane
                     var projected = planeTrimesh_projected;
-                    normal.scale(relpos.dot(normal), projected);
+                    normal.scaleNumberTo(relpos.dot(normal), projected);
                     v.subTo(projected, projected);
 
                     // ri is the projected world position minus plane position
@@ -512,7 +512,7 @@ namespace CANNON
 
                         // ri is the vector from sphere center to the sphere surface
                         r.ri.copy(r.ni);
-                        r.ri.scale(sphereShape.radius, r.ri);
+                        r.ri.scaleNumberTo(sphereShape.radius, r.ri);
                         r.ri.addTo(spherePos, r.ri);
                         r.ri.subTo(sphereBody.position, r.ri);
 
@@ -553,11 +553,11 @@ namespace CANNON
                         edgeVectorUnit.normalize();
                         positionAlongEdgeA = tmp.dot(edgeVectorUnit);
 
-                        edgeVectorUnit.scale(positionAlongEdgeA, tmp);
+                        edgeVectorUnit.scaleNumberTo(positionAlongEdgeA, tmp);
                         tmp.addTo(edgeVertexA, tmp);
 
                         // tmp is now the sphere center position projected to the edge, defined locally in the trimesh frame
-                        var dist = tmp.distanceTo(localSpherePos);
+                        var dist = tmp.distance(localSpherePos);
                         if (dist < sphereShape.radius)
                         {
 
@@ -570,7 +570,7 @@ namespace CANNON
 
                             tmp.subTo(localSpherePos, r.ni);
                             r.ni.normalize();
-                            r.ni.scale(sphereShape.radius, r.ri);
+                            r.ni.scaleNumberTo(sphereShape.radius, r.ri);
 
                             Transform.pointToWorldFrame(trimeshPos, trimeshQuat, tmp, tmp);
                             tmp.subTo(trimeshBody.position, r.rj);
@@ -596,11 +596,11 @@ namespace CANNON
                 trimeshShape.getNormal(triangles[i], normal);
                 localSpherePos.subTo(va, tmp);
                 var dist = tmp.dot(normal);
-                normal.scale(dist, tmp);
+                normal.scaleNumberTo(dist, tmp);
                 localSpherePos.subTo(tmp, tmp);
 
                 // tmp is now the sphere position projected to the triangle plane
-                dist = tmp.distanceTo(localSpherePos);
+                dist = tmp.distance(localSpherePos);
                 if (Ray.pointInTriangle(tmp, va, vb, vc) && dist < sphereShape.radius)
                 {
                     if (justTest)
@@ -611,7 +611,7 @@ namespace CANNON
 
                     tmp.subTo(localSpherePos, r.ni);
                     r.ni.normalize();
-                    r.ni.scale(sphereShape.radius, r.ri);
+                    r.ni.scaleNumberTo(sphereShape.radius, r.ri);
 
                     Transform.pointToWorldFrame(trimeshPos, trimeshQuat, tmp, tmp);
                     tmp.subTo(trimeshBody.position, r.rj);
@@ -639,11 +639,11 @@ namespace CANNON
             r.ni.normalize(); // Needed?
 
             // Vector from sphere center to contact point
-            r.ni.mult(si.radius, r.ri);
+            r.ni.multiplyTo(si.radius, r.ri);
 
             // Project down sphere on plane
             xi.subTo(xj, point_on_plane_to_sphere);
-            r.ni.mult(r.ni.dot(point_on_plane_to_sphere), plane_to_sphere_ortho);
+            r.ni.multiplyTo(r.ni.dot(point_on_plane_to_sphere), plane_to_sphere_ortho);
             point_on_plane_to_sphere.subTo(plane_to_sphere_ortho, r.rj); // The sphere position projected to plane
 
             if (-point_on_plane_to_sphere.dot(r.ni) <= si.radius)
@@ -741,13 +741,13 @@ namespace CANNON
             {
                 found = true;
                 var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
-                side_ns.mult(-R, r.ri); // Sphere r
+                side_ns.multiplyTo(-R, r.ri); // Sphere r
                 r.ni.copy(side_ns);
                 r.ni.negate(r.ni); // Normal should be out of sphere
-                side_ns.mult(side_h, side_ns);
-                side_ns1.mult(side_dot1, side_ns1);
+                side_ns.multiplyTo(side_h, side_ns);
+                side_ns1.multiplyTo(side_dot1, side_ns1);
                 side_ns.addTo(side_ns1, side_ns);
-                side_ns2.mult(side_dot2, side_ns2);
+                side_ns2.multiplyTo(side_dot2, side_ns2);
                 side_ns.addTo(side_ns2, r.rj);
 
                 // Make relative to bodies
@@ -807,7 +807,7 @@ namespace CANNON
                             r.ri.copy(sphere_to_corner);
                             r.ri.normalize();
                             r.ni.copy(r.ri);
-                            r.ri.mult(R, r.ri);
+                            r.ri.multiplyTo(R, r.ri);
                             r.rj.copy(rj);
 
                             // Make relative to bodies
@@ -882,7 +882,7 @@ namespace CANNON
                             res.ri.addTo(xj, res.ri);
                             res.ri.subTo(xi, res.ri);
                             res.ri.normalize();
-                            res.ri.mult(R, res.ri);
+                            res.ri.multiplyTo(R, res.ri);
 
                             // Make relative to bodies
                             res.ri.addTo(xi, res.ri);
@@ -936,7 +936,7 @@ namespace CANNON
                     r.ri.copy(sphere_to_corner);
                     r.ri.normalize();
                     r.ni.copy(r.ri);
-                    r.ri.mult(R, r.ri);
+                    r.ri.multiplyTo(R, r.ri);
                     worldCorner.subTo(xj, r.rj);
 
                     // Should be relative to the body.
@@ -971,7 +971,7 @@ namespace CANNON
 
                 // Get a point on the sphere, closest to the face normal
                 var worldSpherePointClosestToPlane = sphereConvex_worldSpherePointClosestToPlane;
-                worldNormal.mult(-R, worldSpherePointClosestToPlane);
+                worldNormal.multiplyTo(-R, worldSpherePointClosestToPlane);
                 xi.addTo(worldSpherePointClosestToPlane, worldSpherePointClosestToPlane);
 
                 // Vector from a face point to the closest point on the sphere
@@ -1005,13 +1005,13 @@ namespace CANNON
                         found = true;
                         var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
 
-                        worldNormal.mult(-R, r.ri); // Contact offset, from sphere center to contact
+                        worldNormal.multiplyTo(-R, r.ri); // Contact offset, from sphere center to contact
                         worldNormal.negate(r.ni); // Normal pointing out of sphere
 
                         var penetrationVec2 = v3pool.get();
-                        worldNormal.mult(-penetration, penetrationVec2);
+                        worldNormal.multiplyTo(-penetration, penetrationVec2);
                         var penetrationSpherePoint = v3pool.get();
-                        worldNormal.mult(-R, penetrationSpherePoint);
+                        worldNormal.multiplyTo(-R, penetrationSpherePoint);
 
                         //xi.subTo(xj).addTo(penetrationSpherePoint).addTo(penetrationVec2 , r.rj);
                         xi.subTo(xj, r.rj);
@@ -1066,7 +1066,7 @@ namespace CANNON
                             var v1_to_xi: Vector3 = v3pool.get();
                             xi.subTo(v1, v1_to_xi);
                             var dot = v1_to_xi.dot(edgeUnit);
-                            edgeUnit.mult(dot, p);
+                            edgeUnit.multiplyTo(dot, p);
                             p.addTo(v1, p);
 
                             // Compute a vector from p to the center of the sphere
@@ -1088,7 +1088,7 @@ namespace CANNON
                                 p.subTo(xi, r.ni);
                                 r.ni.normalize();
 
-                                r.ni.mult(R, r.ri);
+                                r.ni.multiplyTo(R, r.ri);
 
                                 // Should be relative to the body.
                                 r.rj.addTo(xj, r.rj);
@@ -1184,7 +1184,7 @@ namespace CANNON
 
                     // Get vertex position projected on plane
                     var projected = planeConvex_projected;
-                    worldNormal.mult(worldNormal.dot(relpos), projected);
+                    worldNormal.multiplyTo(worldNormal.dot(relpos), projected);
                     worldVertex.subTo(projected, projected);
                     projected.subTo(planePosition, r.ri); // From plane to vertex projected on plane
 
@@ -1218,7 +1218,7 @@ namespace CANNON
         {
             var sepAxis = convexConvex_sepAxis;
 
-            if (xi.distanceTo(xj) > si.boundingSphereRadius + sj.boundingSphereRadius)
+            if (xi.distance(xj) > si.boundingSphereRadius + sj.boundingSphereRadius)
             {
                 return;
             }
@@ -1240,7 +1240,7 @@ namespace CANNON
                         rj = r.rj;
                     sepAxis.negate(r.ni);
                     res[j].normal.negate(q);
-                    q.mult(res[j].depth, q);
+                    q.multiplyTo(res[j].depth, q);
                     res[j].point.addTo(q, ri);
                     rj.copy(res[j].point);
 
@@ -1371,7 +1371,7 @@ namespace CANNON
 
                 // Get particle position projected on plane
                 var projected = particlePlane_projected;
-                normal.mult(normal.dot(xi), projected);
+                normal.multiplyTo(normal.dot(xi), projected);
                 xi.subTo(projected, projected);
                 //projected.addTo(bj.position,projected);
 
@@ -1399,7 +1399,7 @@ namespace CANNON
                 var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
                 normal.normalize();
                 r.rj.copy(normal);
-                r.rj.mult(sj.radius, r.rj);
+                r.rj.multiplyTo(sj.radius, r.rj);
                 r.ni.copy(normal); // Contact normal
                 r.ni.negate(r.ni);
                 r.ri.init(0, 0, 0); // Center of particle
@@ -1465,7 +1465,7 @@ namespace CANNON
                 {
                     // Setup contact
                     var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
-                    penetratedFaceNormal.mult(minPenetration, worldPenetrationVec);
+                    penetratedFaceNormal.multiplyTo(minPenetration, worldPenetrationVec);
 
                     // rj is the particle position projected to the face
                     worldPenetrationVec.addTo(xi, worldPenetrationVec);
@@ -1570,7 +1570,7 @@ namespace CANNON
                     // Lower triangle
                     hfShape.getConvexTrianglePillar(i, j, false);
                     Transform.pointToWorldFrame(hfPos, hfQuat, hfShape.pillarOffset, worldPillarOffset);
-                    if (convexPos.distanceTo(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + convexShape.boundingSphereRadius)
+                    if (convexPos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + convexShape.boundingSphereRadius)
                     {
                         intersecting = this.convexConvex(convexShape, hfShape.pillarConvex, convexPos, worldPillarOffset, convexQuat, hfQuat, convexBody, hfBody, null, null, justTest, faceList, null);
                     }
@@ -1583,7 +1583,7 @@ namespace CANNON
                     // Upper triangle
                     hfShape.getConvexTrianglePillar(i, j, true);
                     Transform.pointToWorldFrame(hfPos, hfQuat, hfShape.pillarOffset, worldPillarOffset);
-                    if (convexPos.distanceTo(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + convexShape.boundingSphereRadius)
+                    if (convexPos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + convexShape.boundingSphereRadius)
                     {
                         intersecting = this.convexConvex(convexShape, hfShape.pillarConvex, convexPos, worldPillarOffset, convexQuat, hfQuat, convexBody, hfBody, null, null, justTest, faceList, null);
                     }
@@ -1665,7 +1665,7 @@ namespace CANNON
                     // Lower triangle
                     hfShape.getConvexTrianglePillar(i, j, false);
                     Transform.pointToWorldFrame(hfPos, hfQuat, hfShape.pillarOffset, worldPillarOffset);
-                    if (spherePos.distanceTo(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + sphereShape.boundingSphereRadius)
+                    if (spherePos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + sphereShape.boundingSphereRadius)
                     {
                         intersecting = this.sphereConvex(sphereShape, hfShape.pillarConvex, spherePos, worldPillarOffset, sphereQuat, hfQuat, sphereBody, hfBody, sphereShape, hfShape, justTest);
                     }
@@ -1678,7 +1678,7 @@ namespace CANNON
                     // Upper triangle
                     hfShape.getConvexTrianglePillar(i, j, true);
                     Transform.pointToWorldFrame(hfPos, hfQuat, hfShape.pillarOffset, worldPillarOffset);
-                    if (spherePos.distanceTo(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + sphereShape.boundingSphereRadius)
+                    if (spherePos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + sphereShape.boundingSphereRadius)
                     {
                         intersecting = this.sphereConvex(sphereShape, hfShape.pillarConvex, spherePos, worldPillarOffset, sphereQuat, hfQuat, sphereBody, hfBody, sphereShape, hfShape, justTest);
                     }

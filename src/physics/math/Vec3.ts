@@ -193,7 +193,7 @@ namespace CANNON
          * Get distance from this point to another point
          * @param p 
          */
-        distanceTo(p: Vector3)
+        distance(p: Vector3)
         {
             var x = this.x, y = this.y, z = this.z;
             var px = p.x, py = p.y, pz = p.z;
@@ -219,7 +219,7 @@ namespace CANNON
          * @param  target The vector to save the result in.
          * @deprecated Use .scale() instead
          */
-        mult(scalar: number, target = new Vector3())
+        multiplyTo(scalar: number, target = new Vector3())
         {
             var x = this.x,
                 y = this.y,
@@ -235,7 +235,7 @@ namespace CANNON
          * @param scalar
          * @param  target The vector to save the result in.
          */
-        scale(scalar: number, target = new Vector3())
+        scaleNumberTo(scalar: number, target = new Vector3())
         {
             var x = this.x,
                 y = this.y,
@@ -251,7 +251,7 @@ namespace CANNON
          * @param  vector
          * @param  target The vector to save the result in.
          */
-        vmul(vector: Vector3, target = new Vector3())
+        scaleTo(vector: Vector3, target = new Vector3())
         {
             target.x = vector.x * this.x;
             target.y = vector.y * this.y;

@@ -125,10 +125,10 @@ namespace CANNON
                         v = b.velocity,
                         w = b.angularVelocity;
 
-                    b.vlambda.vmul(b.linearFactor, b.vlambda);
+                    b.vlambda.scaleTo(b.linearFactor, b.vlambda);
                     v.addTo(b.vlambda, v);
 
-                    b.wlambda.vmul(b.angularFactor, b.wlambda);
+                    b.wlambda.scaleTo(b.angularFactor, b.wlambda);
                     w.addTo(b.wlambda, w);
                 }
 

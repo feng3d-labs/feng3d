@@ -852,12 +852,12 @@ namespace CANNON
                 { // Only for dynamic bodies
                     var ld = pow(1.0 - bi.linearDamping, dt);
                     var v = bi.velocity;
-                    v.mult(ld, v);
+                    v.multiplyTo(ld, v);
                     var av = bi.angularVelocity;
                     if (av)
                     {
                         var ad = pow(1.0 - bi.angularDamping, dt);
-                        av.mult(ad, av);
+                        av.multiplyTo(ad, av);
                     }
                 }
             }

@@ -841,7 +841,7 @@ namespace CANNON
             {
                 target.addTo(verts[i], target);
             }
-            target.mult(1 / n, target);
+            target.multiplyTo(1 / n, target);
             return target;
         }
 

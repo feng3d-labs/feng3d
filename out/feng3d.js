@@ -36695,7 +36695,7 @@ var CANNON;
          * Get distance from this point to another point
          * @param p
          */
-        Vector3.prototype.distanceTo = function (p) {
+        Vector3.prototype.distance = function (p) {
             var x = this.x, y = this.y, z = this.z;
             var px = p.x, py = p.y, pz = p.z;
             return Math.sqrt((px - x) * (px - x) +
@@ -36717,7 +36717,7 @@ var CANNON;
          * @param  target The vector to save the result in.
          * @deprecated Use .scale() instead
          */
-        Vector3.prototype.mult = function (scalar, target) {
+        Vector3.prototype.multiplyTo = function (scalar, target) {
             if (target === void 0) { target = new Vector3(); }
             var x = this.x, y = this.y, z = this.z;
             target.x = scalar * x;
@@ -36730,7 +36730,7 @@ var CANNON;
          * @param scalar
          * @param  target The vector to save the result in.
          */
-        Vector3.prototype.scale = function (scalar, target) {
+        Vector3.prototype.scaleNumberTo = function (scalar, target) {
             if (target === void 0) { target = new Vector3(); }
             var x = this.x, y = this.y, z = this.z;
             target.x = scalar * x;
@@ -36743,7 +36743,7 @@ var CANNON;
          * @param  vector
          * @param  target The vector to save the result in.
          */
-        Vector3.prototype.vmul = function (vector, target) {
+        Vector3.prototype.scaleTo = function (vector, target) {
             if (target === void 0) { target = new Vector3(); }
             target.x = vector.x * this.x;
             target.y = vector.y * this.y;
@@ -38064,7 +38064,7 @@ var CANNON;
         function DistanceConstraint(bodyA, bodyB, distance, maxForce) {
             var _this = _super.call(this, bodyA, bodyB) || this;
             if (typeof (distance) === "undefined") {
-                distance = bodyA.position.distanceTo(bodyB.position);
+                distance = bodyA.position.distance(bodyB.position);
             }
             if (typeof (maxForce) === "undefined") {
                 maxForce = 1e6;
@@ -38088,8 +38088,8 @@ var CANNON;
             var normal = eq.ni;
             bodyB.position.subTo(bodyA.position, normal);
             normal.normalize();
-            normal.mult(halfDist, eq.ri);
-            normal.mult(-halfDist, eq.rj);
+            normal.multiplyTo(halfDist, eq.ri);
+            normal.multiplyTo(-halfDist, eq.rj);
         };
         return DistanceConstraint;
     }(CANNON.Constraint));
@@ -38306,7 +38306,7 @@ var CANNON;
             var pivotB = _this.pivotB;
             var halfWay = new CANNON.Vector3();
             bodyA.position.addTo(bodyB.position, halfWay);
-            halfWay.scale(0.5, halfWay);
+            halfWay.scaleNumberTo(0.5, halfWay);
             bodyB.pointToLocalFrame(halfWay, pivotB);
             bodyA.pointToLocalFrame(halfWay, pivotA);
             // Store initial rotation of the bodies as unit vectors in the local body spaces
@@ -39026,7 +39026,7 @@ var CANNON;
             for (var i = 0; i < n; i++) {
                 target.addTo(verts[i], target);
             }
-            target.mult(1 / n, target);
+            target.multiplyTo(1 / n, target);
             return target;
         };
         /**
@@ -40819,7 +40819,7 @@ var CANNON;
             var children = this.children;
             children.push(new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new CANNON.Vector3(0, 0, 0) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new CANNON.Vector3(1, 0, 0) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new CANNON.Vector3(1, 1, 0) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new CANNON.Vector3(1, 1, 1) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new CANNON.Vector3(0, 1, 1) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new CANNON.Vector3(0, 0, 1) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new CANNON.Vector3(1, 0, 1) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new CANNON.Vector3(0, 1, 0) }) }));
             u.subTo(l, halfDiagonal);
-            halfDiagonal.scale(0.5, halfDiagonal);
+            halfDiagonal.scaleNumberTo(0.5, halfDiagonal);
             var root = this.root || this;
             for (var i = 0; i !== 8; i++) {
                 var child = children[i];
@@ -41950,7 +41950,7 @@ var CANNON;
                 // "from" and "to" are on the same side of the plane... bail out
                 return;
             }
-            if (from.distanceTo(to) < planeToFrom) {
+            if (from.distance(to) < planeToFrom) {
                 return;
             }
             var n_dot_dir = worldNormal.dot(direction);
@@ -41963,7 +41963,7 @@ var CANNON;
             var hitPointWorld = new CANNON.Vector3();
             from.subTo(position, planePointToFrom);
             var t = -worldNormal.dot(planePointToFrom) / n_dot_dir;
-            direction.scale(t, dir_scaled_with_t);
+            direction.scaleNumberTo(t, dir_scaled_with_t);
             from.addTo(dir_scaled_with_t, hitPointWorld);
             this.reportIntersection(worldNormal, hitPointWorld, reportedShape, body, -1);
         };
@@ -42077,7 +42077,7 @@ var CANNON;
             var direction = this._direction;
             var from = this.from;
             var to = this.to;
-            var fromToDistance = from.distanceTo(to);
+            var fromToDistance = from.distance(to);
             var minDist = -1;
             var Nfaces = faceList ? faceList.length : faces.length;
             var result = this.result;
@@ -42111,7 +42111,7 @@ var CANNON;
                 }
                 // if (dot < 0) {
                 // Intersection point is from + direction * scalar
-                direction.mult(scalar, intersectPoint);
+                direction.multiplyTo(scalar, intersectPoint);
                 intersectPoint.addTo(from, intersectPoint);
                 // a is the point we compare points b and c with.
                 a.copy(vertices[face[0]]);
@@ -42125,7 +42125,7 @@ var CANNON;
                     q.vmult(c, c);
                     x.addTo(b, b);
                     x.addTo(c, c);
-                    var distance = intersectPoint.distanceTo(from);
+                    var distance = intersectPoint.distance(from);
                     if (!(Ray.pointInTriangle(intersectPoint, a, b, c) || Ray.pointInTriangle(intersectPoint, b, a, c)) || distance > fromToDistance) {
                         continue;
                     }
@@ -42213,7 +42213,7 @@ var CANNON;
                     continue;
                 }
                 // Intersection point is from + direction * scalar
-                localDirection.scale(scalar, intersectPoint);
+                localDirection.scaleNumberTo(scalar, intersectPoint);
                 intersectPoint.addTo(localFrom, intersectPoint);
                 // Get triangle vertices
                 mesh.getVertex(indices[trianglesIndex * 3 + 1], b);
@@ -42232,7 +42232,7 @@ var CANNON;
         Ray.prototype.reportIntersection = function (normal, hitPointWorld, shape, body, hitFaceIndex) {
             var from = this.from;
             var to = this.to;
-            var distance = from.distanceTo(hitPointWorld);
+            var distance = from.distance(hitPointWorld);
             var result = this.result;
             // Skip back faces?
             if (this.skipBackfaces && normal.dot(this._direction) > 0) {
@@ -42750,7 +42750,7 @@ var CANNON;
             // Compute produced central impulse velocity
             var velo = Body_applyImpulse_velo;
             velo.copy(impulse);
-            velo.mult(this.invMass, velo);
+            velo.multiplyTo(this.invMass, velo);
             // Add linear impulse
             this.velocity.addTo(velo, this.velocity);
             // Compute produced rotational impulse velocity
@@ -42999,7 +42999,7 @@ var CANNON;
             bodyA.angularVelocity.cross(ri, tmp);
             u.subTo(tmp, u);
             // F = - k * ( x - L ) - D * ( u )
-            r_unit.mult(-k * (rlen - l) - d * u.dot(r_unit), f);
+            r_unit.multiplyTo(-k * (rlen - l) - d * u.dot(r_unit), f);
             // Add forces to bodies
             bodyA.force.subTo(f, bodyA.force);
             bodyB.force.addTo(f, bodyB.force);
@@ -43119,7 +43119,7 @@ var CANNON;
                 // Not in contact : position wheel in a nice (rest length) position
                 raycastResult.suspensionLength = this.suspensionRestLength;
                 this.suspensionRelativeVelocity = 0.0;
-                raycastResult.directionWorld.scale(-1, raycastResult.hitNormalWorld);
+                raycastResult.directionWorld.scaleNumberTo(-1, raycastResult.hitNormalWorld);
                 this.clippedInvContactDotSuspension = 1.0;
             }
         };
@@ -43239,7 +43239,7 @@ var CANNON;
                 if (suspensionForce > wheel.maxSuspensionForce) {
                     suspensionForce = wheel.maxSuspensionForce;
                 }
-                wheel.raycastResult.hitNormalWorld.scale(suspensionForce * timeStep, impulse);
+                wheel.raycastResult.hitNormalWorld.scaleNumberTo(suspensionForce * timeStep, impulse);
                 wheel.raycastResult.hitPointWorld.subTo(chassisBody.position, relpos);
                 chassisBody.applyImpulse(impulse, relpos);
             }
@@ -43262,7 +43262,7 @@ var CANNON;
                 if (wheel.isInContact) {
                     this.getVehicleAxisWorld(this.indexForwardAxis, fwd);
                     var proj = fwd.dot(wheel.raycastResult.hitNormalWorld);
-                    wheel.raycastResult.hitNormalWorld.scale(proj, hitNormalWorldScaledWithProj);
+                    wheel.raycastResult.hitNormalWorld.scaleNumberTo(proj, hitNormalWorldScaledWithProj);
                     fwd.subTo(hitNormalWorldScaledWithProj, fwd);
                     var proj2 = fwd.dot(vel);
                     wheel.deltaRotation = m * proj2 * timeStep / wheel.radius;
@@ -43331,7 +43331,7 @@ var CANNON;
             var chassisBody = this.chassisBody;
             var depth = -1;
             var raylen = wheel.suspensionRestLength + wheel.radius;
-            wheel.directionWorld.scale(raylen, rayvector);
+            wheel.directionWorld.scaleNumberTo(raylen, rayvector);
             var source = wheel.chassisConnectionPointWorld;
             source.addTo(rayvector, target);
             var raycastResult = wheel.raycastResult;
@@ -43379,7 +43379,7 @@ var CANNON;
                 //put wheel info as in rest position
                 wheel.suspensionLength = wheel.suspensionRestLength + 0 * wheel.maxSuspensionTravel;
                 wheel.suspensionRelativeVelocity = 0.0;
-                wheel.directionWorld.scale(-1, wheel.raycastResult.hitNormalWorld);
+                wheel.directionWorld.scaleNumberTo(-1, wheel.raycastResult.hitNormalWorld);
                 wheel.clippedInvContactDotSuspension = 1.0;
             }
             return depth;
@@ -43403,7 +43403,7 @@ var CANNON;
             var fwd = tmpVec6;
             var wheel = this.wheelInfos[wheelIndex];
             this.updateWheelTransformWorld(wheel);
-            wheel.directionLocal.scale(-1, up);
+            wheel.directionLocal.scaleNumberTo(-1, up);
             right.copy(wheel.axleLocal);
             up.cross(right, fwd);
             fwd.normalize();
@@ -43422,7 +43422,7 @@ var CANNON;
             // world position of the wheel
             var p = wheel.worldTransform.position;
             p.copy(wheel.directionWorld);
-            p.scale(wheel.suspensionLength, p);
+            p.scaleNumberTo(wheel.suspensionLength, p);
             p.addTo(wheel.chassisConnectionPointWorld, p);
         };
         /**
@@ -43467,7 +43467,7 @@ var CANNON;
                     wheelTrans.vectorToWorldFrame(directions[this.indexRightAxis], axlei);
                     var surfNormalWS = wheel.raycastResult.hitNormalWorld;
                     var proj = axlei.dot(surfNormalWS);
-                    surfNormalWS.scale(proj, surfNormalWS_scaled_proj);
+                    surfNormalWS.scaleNumberTo(proj, surfNormalWS_scaled_proj);
                     axlei.vsub(surfNormalWS_scaled_proj, axlei);
                     axlei.normalize();
                     surfNormalWS.cross(axlei, forwardWS[i]);
@@ -43553,7 +43553,7 @@ var CANNON;
                     chassisBody.vectorToWorldFrame(rel_pos, rel_pos);
                     chassisBody.applyImpulse(sideImp, rel_pos);
                     //apply friction impulse on the ground
-                    sideImp.scale(-1, sideImp);
+                    sideImp.scaleNumberTo(-1, sideImp);
                     groundObject.applyImpulse(sideImp, rel_pos2);
                 }
             }
@@ -43931,19 +43931,19 @@ var CANNON;
                     Pij = -neighbor.mass * (this.pressures[i] / (this.densities[i] * this.densities[i] + eps) + this.pressures[j] / (this.densities[j] * this.densities[j] + eps));
                     this.gradw(r_vec, gradW);
                     // Add to pressure acceleration
-                    gradW.mult(Pij, gradW);
+                    gradW.multiplyTo(Pij, gradW);
                     a_pressure.addTo(gradW, a_pressure);
                     // Viscosity contribution
                     neighbor.velocity.vsub(particle.velocity, u);
-                    u.mult(1.0 / (0.0001 + this.densities[i] * this.densities[j]) * this.viscosity * neighbor.mass, u);
+                    u.multiplyTo(1.0 / (0.0001 + this.densities[i] * this.densities[j]) * this.viscosity * neighbor.mass, u);
                     nabla = this.nablaw(r);
-                    u.mult(nabla, u);
+                    u.multiplyTo(nabla, u);
                     // Add to viscosity acceleration
                     a_visc.addTo(u, a_visc);
                 }
                 // Calculate force
-                a_visc.mult(particle.mass, a_visc);
-                a_pressure.mult(particle.mass, a_pressure);
+                a_visc.multiplyTo(particle.mass, a_visc);
+                a_pressure.multiplyTo(particle.mass, a_pressure);
                 // Add force to particles
                 particle.force.vadd(a_visc, particle.force);
                 particle.force.vadd(a_pressure, particle.force);
@@ -43958,7 +43958,7 @@ var CANNON;
         // calculate gradient of the weight function
         SPHSystem.prototype.gradw = function (rVec, resultVec) {
             var r = rVec.length, h = this.smoothingRadius;
-            rVec.mult(945.0 / (32.0 * Math.PI * Math.pow(h, 9)) * Math.pow((h * h - r * r), 2), resultVec);
+            rVec.multiplyTo(945.0 / (32.0 * Math.PI * Math.pow(h, 9)) * Math.pow((h * h - r * r), 2), resultVec);
         };
         // Calculate nabla(W)
         SPHSystem.prototype.nablaw = function (r) {
@@ -44048,8 +44048,8 @@ var CANNON;
          */
         Equation.prototype.computeGiMf = function () {
             var GA = this.jacobianElementA, GB = this.jacobianElementB, bi = this.bi, bj = this.bj, fi = bi.force, ti = bi.torque, fj = bj.force, tj = bj.torque, invMassi = bi.invMassSolve, invMassj = bj.invMassSolve;
-            fi.scale(invMassi, iMfi);
-            fj.scale(invMassj, iMfj);
+            fi.scaleNumberTo(invMassi, iMfi);
+            fj.scaleNumberTo(invMassj, iMfj);
             bi.invInertiaWorldSolve.vmult(ti, invIi_vmult_taui);
             bj.invInertiaWorldSolve.vmult(tj, invIj_vmult_tauj);
             return GA.multiplyVectors(iMfi, invIi_vmult_taui) + GB.multiplyVectors(iMfj, invIj_vmult_tauj);
@@ -44464,9 +44464,9 @@ var CANNON;
                 // Add result to velocity
                 for (var i = 0; i !== Nbodies; i++) {
                     var b = bodies[i], v = b.velocity, w = b.angularVelocity;
-                    b.vlambda.vmul(b.linearFactor, b.vlambda);
+                    b.vlambda.scaleTo(b.linearFactor, b.vlambda);
                     v.addTo(b.vlambda, v);
-                    b.wlambda.vmul(b.angularFactor, b.wlambda);
+                    b.wlambda.scaleTo(b.angularFactor, b.wlambda);
                     w.addTo(b.wlambda, w);
                 }
                 // Set the .multiplier property of each equation
@@ -45266,11 +45266,11 @@ var CANNON;
                 if (bi.type & DYNAMIC) { // Only for dynamic bodies
                     var ld = pow(1.0 - bi.linearDamping, dt);
                     var v = bi.velocity;
-                    v.mult(ld, v);
+                    v.multiplyTo(ld, v);
                     var av = bi.angularVelocity;
                     if (av) {
                         var ad = pow(1.0 - bi.angularDamping, dt);
-                        av.mult(ad, av);
+                        av.multiplyTo(ad, av);
                     }
                 }
             }
@@ -45508,8 +45508,8 @@ var CANNON;
                 }
             }
             var invNumContacts = 1 / numContacts;
-            averageContactPointA.scale(invNumContacts, f1.ri);
-            averageContactPointB.scale(invNumContacts, f1.rj);
+            averageContactPointA.scaleNumberTo(invNumContacts, f1.ri);
+            averageContactPointB.scaleNumberTo(invNumContacts, f1.rj);
             f2.ri.copy(f1.ri); // Should be the same
             f2.rj.copy(f1.rj);
             averageNormal.normalize();
@@ -45558,7 +45558,7 @@ var CANNON;
                         if (!((si.collisionFilterMask & sj.collisionFilterGroup) && (sj.collisionFilterMask & si.collisionFilterGroup))) {
                             continue;
                         }
-                        if (xi.distanceTo(xj) > si.boundingSphereRadius + sj.boundingSphereRadius) {
+                        if (xi.distance(xj) > si.boundingSphereRadius + sj.boundingSphereRadius) {
                             continue;
                         }
                         // Get collision material
@@ -45616,8 +45616,8 @@ var CANNON;
             // Contact point locations
             r.ri.copy(r.ni);
             r.rj.copy(r.ni);
-            r.ri.mult(si.radius, r.ri);
-            r.rj.mult(-sj.radius, r.rj);
+            r.ri.multiplyTo(si.radius, r.ri);
+            r.rj.multiplyTo(-sj.radius, r.rj);
             r.ri.addTo(xi, r.ri);
             r.ri.subTo(bi.position, r.ri);
             r.rj.addTo(xj, r.rj);
@@ -45662,7 +45662,7 @@ var CANNON;
                     r.ni.copy(normal); // Contact normal is the plane normal
                     // Get vertex position projected on plane
                     var projected = planeTrimesh_projected;
-                    normal.scale(relpos.dot(normal), projected);
+                    normal.scaleNumberTo(relpos.dot(normal), projected);
                     v.subTo(projected, projected);
                     // ri is the projected world position minus plane position
                     r.ri.copy(projected);
@@ -45715,7 +45715,7 @@ var CANNON;
                         r.ni.normalize();
                         // ri is the vector from sphere center to the sphere surface
                         r.ri.copy(r.ni);
-                        r.ri.scale(sphereShape.radius, r.ri);
+                        r.ri.scaleNumberTo(sphereShape.radius, r.ri);
                         r.ri.addTo(spherePos, r.ri);
                         r.ri.subTo(sphereBody.position, r.ri);
                         r.rj.copy(v);
@@ -45743,10 +45743,10 @@ var CANNON;
                         edgeVectorUnit.copy(edgeVector);
                         edgeVectorUnit.normalize();
                         positionAlongEdgeA = tmp.dot(edgeVectorUnit);
-                        edgeVectorUnit.scale(positionAlongEdgeA, tmp);
+                        edgeVectorUnit.scaleNumberTo(positionAlongEdgeA, tmp);
                         tmp.addTo(edgeVertexA, tmp);
                         // tmp is now the sphere center position projected to the edge, defined locally in the trimesh frame
-                        var dist = tmp.distanceTo(localSpherePos);
+                        var dist = tmp.distance(localSpherePos);
                         if (dist < sphereShape.radius) {
                             if (justTest) {
                                 return true;
@@ -45754,7 +45754,7 @@ var CANNON;
                             var r = this.createContactEquation(sphereBody, trimeshBody, sphereShape, trimeshShape, rsi, rsj);
                             tmp.subTo(localSpherePos, r.ni);
                             r.ni.normalize();
-                            r.ni.scale(sphereShape.radius, r.ri);
+                            r.ni.scaleNumberTo(sphereShape.radius, r.ri);
                             CANNON.Transform.pointToWorldFrame(trimeshPos, trimeshQuat, tmp, tmp);
                             tmp.subTo(trimeshBody.position, r.rj);
                             CANNON.Transform.vectorToWorldFrame(trimeshQuat, r.ni, r.ni);
@@ -45775,10 +45775,10 @@ var CANNON;
                 trimeshShape.getNormal(triangles[i], normal);
                 localSpherePos.subTo(va, tmp);
                 var dist = tmp.dot(normal);
-                normal.scale(dist, tmp);
+                normal.scaleNumberTo(dist, tmp);
                 localSpherePos.subTo(tmp, tmp);
                 // tmp is now the sphere position projected to the triangle plane
-                dist = tmp.distanceTo(localSpherePos);
+                dist = tmp.distance(localSpherePos);
                 if (CANNON.Ray.pointInTriangle(tmp, va, vb, vc) && dist < sphereShape.radius) {
                     if (justTest) {
                         return true;
@@ -45786,7 +45786,7 @@ var CANNON;
                     var r = this.createContactEquation(sphereBody, trimeshBody, sphereShape, trimeshShape, rsi, rsj);
                     tmp.subTo(localSpherePos, r.ni);
                     r.ni.normalize();
-                    r.ni.scale(sphereShape.radius, r.ri);
+                    r.ni.scaleNumberTo(sphereShape.radius, r.ri);
                     CANNON.Transform.pointToWorldFrame(trimeshPos, trimeshQuat, tmp, tmp);
                     tmp.subTo(trimeshBody.position, r.rj);
                     CANNON.Transform.vectorToWorldFrame(trimeshQuat, r.ni, r.ni);
@@ -45806,10 +45806,10 @@ var CANNON;
             r.ni.negate(r.ni); // body i is the sphere, flip normal
             r.ni.normalize(); // Needed?
             // Vector from sphere center to contact point
-            r.ni.mult(si.radius, r.ri);
+            r.ni.multiplyTo(si.radius, r.ri);
             // Project down sphere on plane
             xi.subTo(xj, point_on_plane_to_sphere);
-            r.ni.mult(r.ni.dot(point_on_plane_to_sphere), plane_to_sphere_ortho);
+            r.ni.multiplyTo(r.ni.dot(point_on_plane_to_sphere), plane_to_sphere_ortho);
             point_on_plane_to_sphere.subTo(plane_to_sphere_ortho, r.rj); // The sphere position projected to plane
             if (-point_on_plane_to_sphere.dot(r.ni) <= si.radius) {
                 if (justTest) {
@@ -45886,13 +45886,13 @@ var CANNON;
             if (side_penetrations) {
                 found = true;
                 var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
-                side_ns.mult(-R, r.ri); // Sphere r
+                side_ns.multiplyTo(-R, r.ri); // Sphere r
                 r.ni.copy(side_ns);
                 r.ni.negate(r.ni); // Normal should be out of sphere
-                side_ns.mult(side_h, side_ns);
-                side_ns1.mult(side_dot1, side_ns1);
+                side_ns.multiplyTo(side_h, side_ns);
+                side_ns1.multiplyTo(side_dot1, side_ns1);
                 side_ns.addTo(side_ns1, side_ns);
-                side_ns2.mult(side_dot2, side_ns2);
+                side_ns2.multiplyTo(side_dot2, side_ns2);
                 side_ns.addTo(side_ns2, r.rj);
                 // Make relative to bodies
                 r.ri.addTo(xi, r.ri);
@@ -45939,7 +45939,7 @@ var CANNON;
                             r.ri.copy(sphere_to_corner);
                             r.ri.normalize();
                             r.ni.copy(r.ri);
-                            r.ri.mult(R, r.ri);
+                            r.ri.multiplyTo(R, r.ri);
                             r.rj.copy(rj);
                             // Make relative to bodies
                             r.ri.addTo(xi, r.ri);
@@ -46000,7 +46000,7 @@ var CANNON;
                             res.ri.addTo(xj, res.ri);
                             res.ri.subTo(xi, res.ri);
                             res.ri.normalize();
-                            res.ri.mult(R, res.ri);
+                            res.ri.multiplyTo(R, res.ri);
                             // Make relative to bodies
                             res.ri.addTo(xi, res.ri);
                             res.ri.subTo(bi.position, res.ri);
@@ -46043,7 +46043,7 @@ var CANNON;
                     r.ri.copy(sphere_to_corner);
                     r.ri.normalize();
                     r.ni.copy(r.ri);
-                    r.ri.mult(R, r.ri);
+                    r.ri.multiplyTo(R, r.ri);
                     worldCorner.subTo(xj, r.rj);
                     // Should be relative to the body.
                     r.ri.addTo(xi, r.ri);
@@ -46070,7 +46070,7 @@ var CANNON;
                 worldPoint.addTo(xj, worldPoint);
                 // Get a point on the sphere, closest to the face normal
                 var worldSpherePointClosestToPlane = sphereConvex_worldSpherePointClosestToPlane;
-                worldNormal.mult(-R, worldSpherePointClosestToPlane);
+                worldNormal.multiplyTo(-R, worldSpherePointClosestToPlane);
                 xi.addTo(worldSpherePointClosestToPlane, worldSpherePointClosestToPlane);
                 // Vector from a face point to the closest point on the sphere
                 var penetrationVec = sphereConvex_penetrationVec;
@@ -46094,12 +46094,12 @@ var CANNON;
                         }
                         found = true;
                         var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
-                        worldNormal.mult(-R, r.ri); // Contact offset, from sphere center to contact
+                        worldNormal.multiplyTo(-R, r.ri); // Contact offset, from sphere center to contact
                         worldNormal.negate(r.ni); // Normal pointing out of sphere
                         var penetrationVec2 = v3pool.get();
-                        worldNormal.mult(-penetration, penetrationVec2);
+                        worldNormal.multiplyTo(-penetration, penetrationVec2);
                         var penetrationSpherePoint = v3pool.get();
-                        worldNormal.mult(-R, penetrationSpherePoint);
+                        worldNormal.multiplyTo(-R, penetrationSpherePoint);
                         //xi.subTo(xj).addTo(penetrationSpherePoint).addTo(penetrationVec2 , r.rj);
                         xi.subTo(xj, r.rj);
                         r.rj.addTo(penetrationSpherePoint, r.rj);
@@ -46141,7 +46141,7 @@ var CANNON;
                             var v1_to_xi = v3pool.get();
                             xi.subTo(v1, v1_to_xi);
                             var dot = v1_to_xi.dot(edgeUnit);
-                            edgeUnit.mult(dot, p);
+                            edgeUnit.multiplyTo(dot, p);
                             p.addTo(v1, p);
                             // Compute a vector from p to the center of the sphere
                             var xi_to_p = v3pool.get();
@@ -46157,7 +46157,7 @@ var CANNON;
                                 p.subTo(xj, r.rj);
                                 p.subTo(xi, r.ni);
                                 r.ni.normalize();
-                                r.ni.mult(R, r.ri);
+                                r.ni.multiplyTo(R, r.ri);
                                 // Should be relative to the body.
                                 r.rj.addTo(xj, r.rj);
                                 r.rj.subTo(bj.position, r.rj);
@@ -46218,7 +46218,7 @@ var CANNON;
                     var r = this.createContactEquation(planeBody, convexBody, planeShape, convexShape, si, sj);
                     // Get vertex position projected on plane
                     var projected = planeConvex_projected;
-                    worldNormal.mult(worldNormal.dot(relpos), projected);
+                    worldNormal.multiplyTo(worldNormal.dot(relpos), projected);
                     worldVertex.subTo(projected, projected);
                     projected.subTo(planePosition, r.ri); // From plane to vertex projected on plane
                     r.ni.copy(worldNormal); // Contact normal is the plane normal out from plane
@@ -46242,7 +46242,7 @@ var CANNON;
         };
         Narrowphase.prototype.convexConvex = function (si, sj, xi, xj, qi, qj, bi, bj, rsi, rsj, justTest, faceListA, faceListB) {
             var sepAxis = convexConvex_sepAxis;
-            if (xi.distanceTo(xj) > si.boundingSphereRadius + sj.boundingSphereRadius) {
+            if (xi.distance(xj) > si.boundingSphereRadius + sj.boundingSphereRadius) {
                 return;
             }
             if (si.findSeparatingAxis(sj, xi, qi, xj, qj, sepAxis, faceListA, faceListB)) {
@@ -46257,7 +46257,7 @@ var CANNON;
                     var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj), ri = r.ri, rj = r.rj;
                     sepAxis.negate(r.ni);
                     res[j].normal.negate(q);
-                    q.mult(res[j].depth, q);
+                    q.multiplyTo(res[j].depth, q);
                     res[j].point.addTo(q, ri);
                     rj.copy(res[j].point);
                     // Contact points are in world coordinates. Transform back to relative
@@ -46363,7 +46363,7 @@ var CANNON;
                 r.ri.init(0, 0, 0); // Center of particle
                 // Get particle position projected on plane
                 var projected = particlePlane_projected;
-                normal.mult(normal.dot(xi), projected);
+                normal.multiplyTo(normal.dot(xi), projected);
                 xi.subTo(projected, projected);
                 //projected.addTo(bj.position,projected);
                 // rj is now the projected world position minus plane position
@@ -46385,7 +46385,7 @@ var CANNON;
                 var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
                 normal.normalize();
                 r.rj.copy(normal);
-                r.rj.mult(sj.radius, r.rj);
+                r.rj.multiplyTo(sj.radius, r.rj);
                 r.ni.copy(normal); // Contact normal
                 r.ni.negate(r.ni);
                 r.ri.init(0, 0, 0); // Center of particle
@@ -46433,7 +46433,7 @@ var CANNON;
                 if (penetratedFaceIndex !== -1) {
                     // Setup contact
                     var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
-                    penetratedFaceNormal.mult(minPenetration, worldPenetrationVec);
+                    penetratedFaceNormal.multiplyTo(minPenetration, worldPenetrationVec);
                     // rj is the particle position projected to the face
                     worldPenetrationVec.addTo(xi, worldPenetrationVec);
                     worldPenetrationVec.subTo(xj, worldPenetrationVec);
@@ -46512,7 +46512,7 @@ var CANNON;
                     // Lower triangle
                     hfShape.getConvexTrianglePillar(i, j, false);
                     CANNON.Transform.pointToWorldFrame(hfPos, hfQuat, hfShape.pillarOffset, worldPillarOffset);
-                    if (convexPos.distanceTo(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + convexShape.boundingSphereRadius) {
+                    if (convexPos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + convexShape.boundingSphereRadius) {
                         intersecting = this.convexConvex(convexShape, hfShape.pillarConvex, convexPos, worldPillarOffset, convexQuat, hfQuat, convexBody, hfBody, null, null, justTest, faceList, null);
                     }
                     if (justTest && intersecting) {
@@ -46521,7 +46521,7 @@ var CANNON;
                     // Upper triangle
                     hfShape.getConvexTrianglePillar(i, j, true);
                     CANNON.Transform.pointToWorldFrame(hfPos, hfQuat, hfShape.pillarOffset, worldPillarOffset);
-                    if (convexPos.distanceTo(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + convexShape.boundingSphereRadius) {
+                    if (convexPos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + convexShape.boundingSphereRadius) {
                         intersecting = this.convexConvex(convexShape, hfShape.pillarConvex, convexPos, worldPillarOffset, convexQuat, hfQuat, convexBody, hfBody, null, null, justTest, faceList, null);
                     }
                     if (justTest && intersecting) {
@@ -46583,7 +46583,7 @@ var CANNON;
                     // Lower triangle
                     hfShape.getConvexTrianglePillar(i, j, false);
                     CANNON.Transform.pointToWorldFrame(hfPos, hfQuat, hfShape.pillarOffset, worldPillarOffset);
-                    if (spherePos.distanceTo(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + sphereShape.boundingSphereRadius) {
+                    if (spherePos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + sphereShape.boundingSphereRadius) {
                         intersecting = this.sphereConvex(sphereShape, hfShape.pillarConvex, spherePos, worldPillarOffset, sphereQuat, hfQuat, sphereBody, hfBody, sphereShape, hfShape, justTest);
                     }
                     if (justTest && intersecting) {
@@ -46592,7 +46592,7 @@ var CANNON;
                     // Upper triangle
                     hfShape.getConvexTrianglePillar(i, j, true);
                     CANNON.Transform.pointToWorldFrame(hfPos, hfQuat, hfShape.pillarOffset, worldPillarOffset);
-                    if (spherePos.distanceTo(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + sphereShape.boundingSphereRadius) {
+                    if (spherePos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + sphereShape.boundingSphereRadius) {
                         intersecting = this.sphereConvex(sphereShape, hfShape.pillarConvex, spherePos, worldPillarOffset, sphereQuat, hfQuat, sphereBody, hfBody, sphereShape, hfShape, justTest);
                     }
                     if (justTest && intersecting) {
