@@ -17471,39 +17471,6 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    /**
-     * For pooling objects that can be reused.
-     */
-    class Pool {
-        /**
-         * The pooled objects
-         */
-        objects: any[];
-        /**
-         * Constructor of the objects
-         */
-        type: Object;
-        constructor();
-        /**
-         * Release an object after use
-         */
-        release(...args: any[]): this;
-        /**
-         * Get an object
-         */
-        get(): any;
-        /**
-         * Construct an object. Should be implmented in each subclass.
-         */
-        constructObject(): void;
-        /**
-         * @param size
-         * @return Self, for chaining
-         */
-        resize(size: number): this;
-    }
-}
-declare namespace CANNON {
     class Utils {
         /**
          * Extend an options object with default values.
@@ -17512,15 +17479,6 @@ declare namespace CANNON {
          * @return The modified options object.
          */
         static defaults(options: Object, defaults: Object): Object;
-    }
-}
-declare namespace CANNON {
-    class Vec3Pool extends Pool {
-        constructor();
-        /**
-         * Construct a vector
-         */
-        constructObject(): feng3d.Vector3;
     }
 }
 declare namespace CANNON {
@@ -20356,10 +20314,6 @@ declare namespace CANNON {
         frictionEquationPool: any[];
         result: any[];
         frictionResult: any[];
-        /**
-         * Pooled vectors.
-         */
-        v3pool: Vec3Pool;
         world: World;
         currentContactMaterial: any;
         enableFrictionReduction: boolean;

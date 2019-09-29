@@ -4298,6 +4298,21 @@ QUnit.module("Pool", function () {
         var time1 = Date.now() - t;
         console.log("\u6B63\u5E38: " + time0 + "\uFF0Cpool: " + time1);
         assert.ok(time0 < time1);
+        //
+        // var t = Date.now();
+        // for (let i = 0; i < NUM; i++)
+        // {
+        //     new feng3d.Vector3();
+        // }
+        // var time0 = Date.now() - t;
+        // var vec3 = new feng3d.Vector3();
+        // var t = Date.now();
+        // for (let i = 0; i < NUM; i++)
+        // {
+        //     vec3.init(0, 0, 0);
+        // }
+        // var time1 = Date.now() - t;
+        // console.log(`正常: ${time0}，pool: ${time1}`);
     });
 });
 var feng3d;
@@ -4778,10 +4793,6 @@ QUnit.module("watcher", function () {
     });
 });
 //# sourceMappingURL=tests.js.map
-console.log("feng3d-tests-0.0.3");
-console.log("feng3d-tests-0.0.3");
-console.log("feng3d-tests-0.0.3");
-console.log("feng3d-tests-0.0.3");
 console.log("feng3d-tests-0.0.3");
 (function universalModuleDefinition(root, factory)
 {

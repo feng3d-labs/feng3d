@@ -37593,65 +37593,6 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
-    /**
-     * For pooling objects that can be reused.
-     */
-    var Pool = /** @class */ (function () {
-        function Pool() {
-            this.objects = [];
-            this.type = Object;
-        }
-        /**
-         * Release an object after use
-         */
-        Pool.prototype.release = function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i] = arguments[_i];
-            }
-            var Nargs = arguments.length;
-            for (var i = 0; i !== Nargs; i++) {
-                this.objects.push(arguments[i]);
-            }
-            return this;
-        };
-        /**
-         * Get an object
-         */
-        Pool.prototype.get = function () {
-            if (this.objects.length === 0) {
-                return this.constructObject();
-            }
-            else {
-                return this.objects.pop();
-            }
-        };
-        /**
-         * Construct an object. Should be implmented in each subclass.
-         */
-        Pool.prototype.constructObject = function () {
-            throw new Error("constructObject() not implemented in this Pool subclass yet!");
-        };
-        /**
-         * @param size
-         * @return Self, for chaining
-         */
-        Pool.prototype.resize = function (size) {
-            var objects = this.objects;
-            while (objects.length > size) {
-                objects.pop();
-            }
-            while (objects.length < size) {
-                objects.push(this.constructObject());
-            }
-            return this;
-        };
-        return Pool;
-    }());
-    CANNON.Pool = Pool;
-})(CANNON || (CANNON = {}));
-var CANNON;
-(function (CANNON) {
     var Utils = /** @class */ (function () {
         function Utils() {
         }
@@ -37673,25 +37614,6 @@ var CANNON;
         return Utils;
     }());
     CANNON.Utils = Utils;
-})(CANNON || (CANNON = {}));
-var CANNON;
-(function (CANNON) {
-    var Vec3Pool = /** @class */ (function (_super) {
-        __extends(Vec3Pool, _super);
-        function Vec3Pool() {
-            var _this = _super.call(this) || this;
-            _this.type = feng3d.Vector3;
-            return _this;
-        }
-        /**
-         * Construct a vector
-         */
-        Vec3Pool.prototype.constructObject = function () {
-            return new feng3d.Vector3();
-        };
-        return Vec3Pool;
-    }(CANNON.Pool));
-    CANNON.Vec3Pool = Vec3Pool;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -45150,7 +45072,6 @@ var CANNON;
             this.frictionEquationPool = [];
             this.result = [];
             this.frictionResult = [];
-            this.v3pool = new CANNON.Vec3Pool();
             this.world = world;
             this.currentContactMaterial = null;
             this.enableFrictionReduction = false;
@@ -45581,7 +45502,6 @@ var CANNON;
             }
         };
         Narrowphase.prototype.sphereBox = function (si, sj, xi, xj, qi, qj, bi, bj, rsi, rsj, justTest) {
-            var v3pool = this.v3pool;
             // we refer to the box as body j
             var sides = sphereBox_sides;
             xi.subTo(xj, box_to_sphere);
@@ -45657,7 +45577,7 @@ var CANNON;
                 this.createFrictionEquationsFromContact(r, this.frictionResult);
             }
             // Check corners
-            var rj = v3pool.get();
+            var rj = new feng3d.Vector3();
             var sphere_to_corner = sphereBox_sphere_to_corner;
             for (var j = 0; j !== 2 && !found; j++) {
                 for (var k = 0; k !== 2 && !found; k++) {
@@ -45706,14 +45626,12 @@ var CANNON;
                     }
                 }
             }
-            v3pool.release(rj);
-            rj = null;
             // Check edges
-            var edgeTangent = v3pool.get();
-            var edgeCenter = v3pool.get();
-            var r_vec3 = v3pool.get(); // r = edge center to sphere center
-            var orthogonal = v3pool.get();
-            var dist1 = v3pool.get();
+            var edgeTangent = new feng3d.Vector3();
+            var edgeCenter = new feng3d.Vector3();
+            var r_vec3 = new feng3d.Vector3(); // r = edge center to sphere center
+            var orthogonal = new feng3d.Vector3();
+            var dist1 = new feng3d.Vector3();
             var Nsides = sides.length;
             for (var j = 0; j !== Nsides && !found; j++) {
                 for (var k = 0; k !== Nsides && !found; k++) {
@@ -45726,7 +45644,7 @@ var CANNON;
                         r_vec3.subTo(edgeCenter, r_vec3);
                         r_vec3.subTo(xj, r_vec3);
                         var orthonorm = r_vec3.dot(edgeTangent); // distance from edge center to sphere center in the tangent direction
-                        edgeTangent.mult(orthonorm, orthogonal); // Vector from edge center to sphere center in the tangent direction
+                        edgeTangent.scaleNumberTo(orthonorm, orthogonal); // Vector from edge center to sphere center in the tangent direction
                         // Find the third side orthogonal to this one
                         var l = 0;
                         while (l === j % 3 || l === k % 3) {
@@ -45766,10 +45684,8 @@ var CANNON;
                     }
                 }
             }
-            v3pool.release(edgeTangent, edgeCenter, r_vec3, orthogonal, dist1);
         };
         Narrowphase.prototype.sphereConvex = function (si, sj, xi, xj, qi, qj, bi, bj, rsi, rsj, justTest) {
-            var v3pool = this.v3pool;
             xi.subTo(xj, convex_to_sphere);
             var normals = sj.faceNormals;
             var faces = sj.faces;
@@ -45837,7 +45753,7 @@ var CANNON;
                     // Intersects plane. Now check if the sphere is inside the face polygon
                     var faceVerts = []; // Face vertices, in world coords
                     for (var j = 0, Nverts = face.length; j !== Nverts; j++) {
-                        var worldVertex = v3pool.get();
+                        var worldVertex = new feng3d.Vector3();
                         qj.vmult(verts[face[j]], worldVertex);
                         xj.addTo(worldVertex, worldVertex);
                         faceVerts.push(worldVertex);
@@ -45850,9 +45766,9 @@ var CANNON;
                         var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
                         worldNormal.scaleNumberTo(-R, r.ri); // Contact offset, from sphere center to contact
                         worldNormal.negateTo(r.ni); // Normal pointing out of sphere
-                        var penetrationVec2 = v3pool.get();
+                        var penetrationVec2 = new feng3d.Vector3();
                         worldNormal.scaleNumberTo(-penetration, penetrationVec2);
-                        var penetrationSpherePoint = v3pool.get();
+                        var penetrationSpherePoint = new feng3d.Vector3();
                         worldNormal.scaleNumberTo(-R, penetrationSpherePoint);
                         //xi.subTo(xj).addTo(penetrationSpherePoint).addTo(penetrationVec2 , r.rj);
                         xi.subTo(xj, r.rj);
@@ -45864,22 +45780,16 @@ var CANNON;
                         // Should be relative to the body.
                         r.ri.addTo(xi, r.ri);
                         r.ri.subTo(bi.position, r.ri);
-                        v3pool.release(penetrationVec2);
-                        v3pool.release(penetrationSpherePoint);
                         this.result.push(r);
                         this.createFrictionEquationsFromContact(r, this.frictionResult);
-                        // Release world vertices
-                        for (var j = 0, Nfaceverts = faceVerts.length; j !== Nfaceverts; j++) {
-                            v3pool.release(faceVerts[j]);
-                        }
                         return; // We only expect *one* face contact
                     }
                     else {
                         // Edge?
                         for (var j = 0; j !== face.length; j++) {
                             // Get two world transformed vertices
-                            var v1 = v3pool.get();
-                            var v2 = v3pool.get();
+                            var v1 = new feng3d.Vector3();
+                            var v2 = new feng3d.Vector3();
                             qj.vmult(verts[face[(j + 1) % face.length]], v1);
                             qj.vmult(verts[face[(j + 2) % face.length]], v2);
                             xj.addTo(v1, v1);
@@ -45891,18 +45801,18 @@ var CANNON;
                             var edgeUnit = sphereConvex_edgeUnit;
                             edge.unit(edgeUnit);
                             // p is xi projected onto the edge
-                            var p = v3pool.get();
-                            var v1_to_xi = v3pool.get();
+                            var p = new feng3d.Vector3();
+                            var v1_to_xi = new feng3d.Vector3();
                             xi.subTo(v1, v1_to_xi);
                             var dot = v1_to_xi.dot(edgeUnit);
                             edgeUnit.scaleNumberTo(dot, p);
                             p.addTo(v1, p);
                             // Compute a vector from p to the center of the sphere
-                            var xi_to_p = v3pool.get();
+                            var xi_to_p = new feng3d.Vector3();
                             p.subTo(xi, xi_to_p);
                             // Collision if the edge-sphere distance is less than the radius
                             // AND if p is in between v1 and v2
-                            if (dot > 0 && dot * dot < edge.lengthSquared && xi_to_p.norm2() < R * R) { // Collision if the edge-sphere distance is less than the radius
+                            if (dot > 0 && dot * dot < edge.lengthSquared && xi_to_p.lengthSquared < R * R) { // Collision if the edge-sphere distance is less than the radius
                                 // Edge contact!
                                 if (justTest) {
                                     return true;
@@ -45920,27 +45830,9 @@ var CANNON;
                                 r.ri.subTo(bi.position, r.ri);
                                 this.result.push(r);
                                 this.createFrictionEquationsFromContact(r, this.frictionResult);
-                                // Release world vertices
-                                for (var j = 0, Nfaceverts = faceVerts.length; j !== Nfaceverts; j++) {
-                                    v3pool.release(faceVerts[j]);
-                                }
-                                v3pool.release(v1);
-                                v3pool.release(v2);
-                                v3pool.release(p);
-                                v3pool.release(xi_to_p);
-                                v3pool.release(v1_to_xi);
                                 return;
                             }
-                            v3pool.release(v1);
-                            v3pool.release(v2);
-                            v3pool.release(p);
-                            v3pool.release(xi_to_p);
-                            v3pool.release(v1_to_xi);
                         }
-                    }
-                    // Release world vertices
-                    for (var j = 0, Nfaceverts = faceVerts.length; j !== Nfaceverts; j++) {
-                        v3pool.release(faceVerts[j]);
                     }
                 }
             }
