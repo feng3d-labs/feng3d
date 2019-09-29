@@ -4656,6 +4656,9 @@ var feng3d;
      * 对象池
      *
      * 对象池并不能带来性能的提升，反而会严重影响性能。但是在管理内存时可以考虑使用。
+     *
+     * js虚拟机会在对象没有被引用时自动释放内存，谨慎使用对象池。
+     *
      */
     var Pool = /** @class */ (function () {
         function Pool(type) {
@@ -11707,15 +11710,16 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * A Quaternion object which can be used to represent rotations.
+     * 可用于表示旋转的四元数对象
      */
     var Quaternion = /** @class */ (function () {
         /**
-         * Creates a new Quaternion object.
-         * @param x The x value of the quaternion.
-         * @param y The y value of the quaternion.
-         * @param z The z value of the quaternion.
-         * @param w The w value of the quaternion.
+         * 四元数描述三维空间中的旋转。四元数的数学定义为Q = x*i + y*j + z*k + w，其中(i,j,k)为虚基向量。(x,y,z)可以看作是一个与旋转轴相关的向量，而实际的乘法器w与旋转量相关。
+         *
+         * @param x 虚基向量i的乘子
+         * @param y 虚基向量j的乘子
+         * @param z 虚基向量k的乘子
+         * @param w 实部的乘数
          */
         function Quaternion(x, y, z, w) {
             if (x === void 0) { x = 0; }
@@ -11723,19 +11727,19 @@ var feng3d;
             if (z === void 0) { z = 0; }
             if (w === void 0) { w = 1; }
             /**
-             * The x value of the quaternion.
+             * 虚基向量i的乘子
              */
             this.x = 0;
             /**
-             * The y value of the quaternion.
+             * 虚基向量j的乘子
              */
             this.y = 0;
             /**
-             * The z value of the quaternion.
+             * 虚基向量k的乘子
              */
             this.z = 0;
             /**
-             * The w value of the quaternion.
+             * 实部的乘数
              */
             this.w = 1;
             this.x = x;
@@ -11749,7 +11753,7 @@ var feng3d;
         };
         Object.defineProperty(Quaternion.prototype, "magnitude", {
             /**
-             * Returns the magnitude of the quaternion object.
+             * 返回四元数对象的大小
              */
             get: function () {
                 return Math.sqrt(this.w * this.w + this.x * this.x + this.y * this.y + this.z * this.z);
@@ -11757,7 +11761,15 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Quaternion.prototype.setTo = function (x, y, z, w) {
+        /**
+         * 设置四元数的值。
+         *
+         * @param x 虚基向量i的乘子
+         * @param y 虚基向量j的乘子
+         * @param z 虚基向量k的乘子
+         * @param w 实部的乘数
+         */
+        Quaternion.prototype.set = function (x, y, z, w) {
             if (x === void 0) { x = 0; }
             if (y === void 0) { y = 0; }
             if (z === void 0) { z = 0; }
@@ -11766,6 +11778,7 @@ var feng3d;
             this.y = y;
             this.z = z;
             this.w = w;
+            return this;
         };
         Quaternion.prototype.fromArray = function (array, offset) {
             if (offset === void 0) { offset = 0; }
@@ -11775,6 +11788,12 @@ var feng3d;
             this.w = array[offset + 3];
             return this;
         };
+        /**
+         * 转换为数组
+         *
+         * @param array
+         * @param offset
+         */
         Quaternion.prototype.toArray = function (array, offset) {
             if (offset === void 0) { offset = 0; }
             array = array || [];
@@ -11785,21 +11804,69 @@ var feng3d;
             return array;
         };
         /**
-         * Fills the quaternion object with the result from a multiplication of two quaternion objects.
+         * 四元数乘法
          *
-         * @param    qa    The first quaternion in the multiplication.
-         * @param    qb    The second quaternion in the multiplication.
+         * @param q
+         * @param this
          */
-        Quaternion.prototype.multiply = function (qa, qb) {
-            var w1 = qa.w, x1 = qa.x, y1 = qa.y, z1 = qa.z;
-            var w2 = qb.w, x2 = qb.x, y2 = qb.y, z2 = qb.z;
-            this.w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2;
-            this.x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2;
-            this.y = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2;
-            this.z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2;
+        Quaternion.prototype.mult = function (q) {
+            var ax = this.x, ay = this.y, az = this.z, aw = this.w, bx = q.x, by = q.y, bz = q.z, bw = q.w;
+            this.x = ax * bw + aw * bx + ay * bz - az * by;
+            this.y = ay * bw + aw * by + az * bx - ax * bz;
+            this.z = az * bw + aw * bz + ax * by - ay * bx;
+            this.w = aw * bw - ax * bx - ay * by - az * bz;
+            return this;
+        };
+        /**
+         * 四元数乘法
+         *
+         * @param q
+         * @param target
+         */
+        Quaternion.prototype.multTo = function (q, target) {
+            if (target === void 0) { target = new Quaternion(); }
+            return target.copy(this).mult(q);
+        };
+        /**
+         * 得到反四元数旋转
+         */
+        Quaternion.prototype.inverse = function () {
+            var x = this.x, y = this.y, z = this.z, w = this.w;
+            this.conjugate();
+            var inorm2 = 1 / (x * x + y * y + z * z + w * w);
+            this.x *= inorm2;
+            this.y *= inorm2;
+            this.z *= inorm2;
+            this.w *= inorm2;
+            return this;
+        };
+        /**
+         * 得到反四元数旋转
+         */
+        Quaternion.prototype.inverseTo = function (target) {
+            if (target === void 0) { target = new Quaternion(); }
+            return target.copy(this).inverse();
+        };
+        /**
+         * 得到四元数共轭
+         */
+        Quaternion.prototype.conjugate = function () {
+            this.x = -this.x;
+            this.y = -this.y;
+            this.z = -this.z;
+            return this;
+        };
+        /**
+         * 得到四元数共轭
+         *
+         * @param target
+         */
+        Quaternion.prototype.conjugateTo = function (target) {
+            if (target === void 0) { target = new Quaternion(); }
+            return target.copy(this).conjugate();
         };
         Quaternion.prototype.multiplyVector = function (vector, target) {
-            target = target || new Quaternion();
+            if (target === void 0) { target = new Quaternion(); }
             var x2 = vector.x;
             var y2 = vector.y;
             var z2 = vector.z;
@@ -11810,10 +11877,10 @@ var feng3d;
             return target;
         };
         /**
-         * Fills the quaternion object with values representing the given rotation around a vector.
+         * 用表示给定绕向量旋转的值填充四元数对象。
          *
-         * @param    axis    The axis around which to rotate
-         * @param    angle    The angle in radians of the rotation.
+         * @param axis 要绕其旋转的轴
+         * @param angle 以弧度为单位的旋转角度。
          */
         Quaternion.prototype.fromAxisAngle = function (axis, angle) {
             var sin_a = Math.sin(angle / 2);
@@ -11823,6 +11890,54 @@ var feng3d;
             this.z = axis.z * sin_a;
             this.w = cos_a;
             this.normalize();
+            return this;
+        };
+        /**
+         * 将四元数转换为轴/角表示形式
+         *
+         * @param targetAxis 要重用的向量对象，用于存储轴
+         * @return 一个数组，第一个元素是轴，第二个元素是弧度
+         */
+        Quaternion.prototype.toAxisAngle = function (targetAxis) {
+            if (targetAxis === void 0) { targetAxis = new feng3d.Vector3(); }
+            this.normalize(); // 如果w>1 acos和sqrt会产生错误，那么如果四元数被标准化，就不会发生这种情况
+            var angle = 2 * Math.acos(this.w);
+            var s = Math.sqrt(1 - this.w * this.w); // 假设四元数归一化了，那么w小于1，所以项总是正的。
+            if (s < 0.001) { // 为了避免除以零，s总是正的，因为是根号
+                // 如果s接近于零，那么轴的方向就不重要了
+                targetAxis.x = this.x; // 如果轴归一化很重要，则用x=1替换;y = z = 0;
+                targetAxis.y = this.y;
+                targetAxis.z = this.z;
+            }
+            else {
+                targetAxis.x = this.x / s; // 法线轴
+                targetAxis.y = this.y / s;
+                targetAxis.z = this.z / s;
+            }
+            return [targetAxis, angle];
+        };
+        /**
+         * 给定两个向量，设置四元数值。得到的旋转将是将u旋转到v所需要的旋转。
+         *
+         * @param u
+         * @param v
+         */
+        Quaternion.prototype.setFromVectors = function (u, v) {
+            if (u.isAntiparallelTo(v)) {
+                var t1 = new feng3d.Vector3();
+                var t2 = new feng3d.Vector3();
+                u.tangents(t1, t2);
+                this.fromAxisAngle(t1, Math.PI);
+            }
+            else {
+                var a = u.crossTo(v);
+                this.x = a.x;
+                this.y = a.y;
+                this.z = a.z;
+                this.w = Math.sqrt(Math.pow(u.length, 2) * Math.pow(v.length, 2)) + u.dot(v);
+                this.normalize();
+            }
+            return this;
         };
         /**
          * Spherically interpolates between two quaternions, providing an interpolation between rotations with constant angle change rate.
@@ -11930,16 +12045,47 @@ var feng3d;
          */
         Quaternion.prototype.normalize = function (val) {
             if (val === void 0) { val = 1; }
-            var mag = val / Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
-            this.x *= mag;
-            this.y *= mag;
-            this.z *= mag;
-            this.w *= mag;
+            var l = this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w;
+            if (l === 0) {
+                this.x = 0;
+                this.y = 0;
+                this.z = 0;
+                this.w = 0;
+            }
+            else {
+                l = Math.sqrt(l);
+                l = 1 / l;
+                this.x *= l;
+                this.y *= l;
+                this.z *= l;
+                this.w *= l;
+            }
+            return this;
         };
         /**
-         * Used to trace the values of a quaternion.
+         * 四元数归一化的近似。当quat已经几乎标准化时，效果最好。
          *
-         * @return A string representation of the quaternion object.
+         * @see http://jsperf.com/fast-quaternion-normalization
+         * @author unphased, https://github.com/unphased
+         */
+        Quaternion.prototype.normalizeFast = function () {
+            var f = (3.0 - (this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w)) / 2.0;
+            if (f === 0) {
+                this.x = 0;
+                this.y = 0;
+                this.z = 0;
+                this.w = 0;
+            }
+            else {
+                this.x *= f;
+                this.y *= f;
+                this.z *= f;
+                this.w *= f;
+            }
+            return this;
+        };
+        /**
+         * 转换为可读格式
          */
         Quaternion.prototype.toString = function () {
             return "{this.x:" + this.x + " this.y:" + this.y + " this.z:" + this.z + " this.w:" + this.w + "}";
@@ -12037,14 +12183,33 @@ var feng3d;
             return target;
         };
         /**
-         * Copies the data from a quaternion into this instance.
-         * @param q The quaternion to copy from.
+          * 将四元数乘以一个向量
+          *
+          * @param v
+          * @param target
+          */
+        Quaternion.prototype.vmult = function (v, target) {
+            if (target === void 0) { target = new feng3d.Vector3(); }
+            var x = v.x, y = v.y, z = v.z;
+            var qx = this.x, qy = this.y, qz = this.z, qw = this.w;
+            // q*v
+            var ix = qw * x + qy * z - qz * y, iy = qw * y + qz * x - qx * z, iz = qw * z + qx * y - qy * x, iw = -qx * x - qy * y - qz * z;
+            target.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+            target.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+            target.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+            return target;
+        };
+        /**
+         * 将源的值复制到此四元数
+         *
+         * @param q 要复制的四元数
          */
-        Quaternion.prototype.copyFrom = function (q) {
+        Quaternion.prototype.copy = function (q) {
             this.x = q.x;
             this.y = q.y;
             this.z = q.z;
             this.w = q.w;
+            return this;
         };
         __decorate([
             feng3d.serialize
@@ -33913,7 +34078,7 @@ var feng3d;
                     quaternion.fromEulerAngles(rotation.value.x, rotation.value.y, rotation.value.z);
                 }
                 else {
-                    quaternion.copyFrom(rotation.value);
+                    quaternion.copy(rotation.value);
                 }
                 return quaternion;
             };
@@ -33931,7 +34096,7 @@ var feng3d;
                     key1 = key2;
                 }
                 if (key1 == key2) {
-                    RotationQuaternion.copyFrom(key1.value);
+                    RotationQuaternion.copy(key1.value);
                     return RotationQuaternion;
                 }
                 var Factor = (keyFrameTime - key1.time) / (key2.time - key1.time);
@@ -37062,7 +37227,7 @@ var CANNON;
          * @param axis
          * @param angle in radians
          */
-        Quaternion.prototype.setFromAxisAngle = function (axis, angle) {
+        Quaternion.prototype.fromAxisAngle = function (axis, angle) {
             var s = Math.sin(angle * 0.5);
             this.x = axis.x * s;
             this.y = axis.y * s;
@@ -37103,7 +37268,7 @@ var CANNON;
                 var t1 = sfv_t1;
                 var t2 = sfv_t2;
                 u.tangents(t1, t2);
-                this.setFromAxisAngle(t1, Math.PI);
+                this.fromAxisAngle(t1, Math.PI);
             }
             else {
                 var a = u.crossTo(v);
@@ -37120,7 +37285,7 @@ var CANNON;
          * @param q
          * @param target
          */
-        Quaternion.prototype.mult = function (q, target) {
+        Quaternion.prototype.multTo = function (q, target) {
             if (target === void 0) { target = new Quaternion(); }
             var ax = this.x, ay = this.y, az = this.z, aw = this.w, bx = q.x, by = q.y, bz = q.z, bw = q.w;
             target.x = ax * bw + aw * bx + ay * bz - az * by;
@@ -37133,10 +37298,10 @@ var CANNON;
          * Get the inverse quaternion rotation.
          * @param target
          */
-        Quaternion.prototype.inverse = function (target) {
+        Quaternion.prototype.inverseTo = function (target) {
             var x = this.x, y = this.y, z = this.z, w = this.w;
             target = target || new Quaternion();
-            this.conjugate(target);
+            this.conjugateTo(target);
             var inorm2 = 1 / (x * x + y * y + z * z + w * w);
             target.x *= inorm2;
             target.y *= inorm2;
@@ -37148,7 +37313,7 @@ var CANNON;
          * Get the quaternion conjugate
          * @param target
          */
-        Quaternion.prototype.conjugate = function (target) {
+        Quaternion.prototype.conjugateTo = function (target) {
             if (target === void 0) { target = new Quaternion(); }
             target.x = -this.x;
             target.y = -this.y;
@@ -37411,7 +37576,7 @@ var CANNON;
         Transform.pointToLocalFrame = function (position, quaternion, worldPoint, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
             worldPoint.subTo(position, result);
-            quaternion.conjugate(tmpQuat);
+            quaternion.conjugateTo(tmpQuat);
             tmpQuat.vmult(result, result);
             return result;
         };
@@ -41564,7 +41729,7 @@ var CANNON;
                 if (checkCollisionResponse && !shape.collisionResponse) {
                     continue; // Skip
                 }
-                body.quaternion.mult(body.shapeOrientations[i], qi);
+                body.quaternion.multTo(body.shapeOrientations[i], qi);
                 body.quaternion.vmult(body.shapeOffsets[i], xi);
                 xi.addTo(body.position, xi);
                 this.intersectShape(shape, qi, xi, body);
@@ -42253,7 +42418,7 @@ var CANNON;
         Body.prototype.pointToLocalFrame = function (worldPoint, result) {
             var result = result || new feng3d.Vector3();
             worldPoint.subTo(this.position, result);
-            this.quaternion.conjugate().vmult(result, result);
+            this.quaternion.conjugateTo().vmult(result, result);
             return result;
         };
         /**
@@ -42264,7 +42429,7 @@ var CANNON;
          */
         Body.prototype.vectorToLocalFrame = function (worldVector, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
-            this.quaternion.conjugate().vmult(worldVector, result);
+            this.quaternion.conjugateTo().vmult(worldVector, result);
             return result;
         };
         /**
@@ -42344,7 +42509,7 @@ var CANNON;
                 bodyQuat.vmult(shapeOffsets[i], offset);
                 offset.addTo(this.position, offset);
                 // Get shape world quaternion
-                shapeOrientations[i].mult(bodyQuat, orientation);
+                shapeOrientations[i].multTo(bodyQuat, orientation);
                 // Get shape AABB
                 shape.calculateWorldAABB(offset, orientation, shapeAABB.lowerBound, shapeAABB.upperBound);
                 if (i === 0) {
@@ -43087,13 +43252,13 @@ var CANNON;
             // Rotate around steering over the wheelAxle
             var steering = wheel.steering;
             var steeringOrn = new CANNON.Quaternion();
-            steeringOrn.setFromAxisAngle(up, steering);
+            steeringOrn.fromAxisAngle(up, steering);
             var rotatingOrn = new CANNON.Quaternion();
-            rotatingOrn.setFromAxisAngle(right, wheel.rotation);
+            rotatingOrn.fromAxisAngle(right, wheel.rotation);
             // World rotation of the wheel
             var q = wheel.worldTransform.quaternion;
-            this.chassisBody.quaternion.mult(steeringOrn, q);
-            q.mult(rotatingOrn, q);
+            this.chassisBody.quaternion.multTo(steeringOrn, q);
+            q.multTo(rotatingOrn, q);
             q.normalize();
             // world position of the wheel
             var p = wheel.worldTransform.position;
@@ -45220,13 +45385,13 @@ var CANNON;
                 }
                 var justTest = (((bi.type & CANNON.Body.KINEMATIC) && (bj.type & CANNON.Body.STATIC)) || ((bi.type & CANNON.Body.STATIC) && (bj.type & CANNON.Body.KINEMATIC)) || ((bi.type & CANNON.Body.KINEMATIC) && (bj.type & CANNON.Body.KINEMATIC)));
                 for (var i = 0; i < bi.shapes.length; i++) {
-                    bi.quaternion.mult(bi.shapeOrientations[i], qi);
+                    bi.quaternion.multTo(bi.shapeOrientations[i], qi);
                     bi.quaternion.vmult(bi.shapeOffsets[i], xi);
                     xi.addTo(bi.position, xi);
                     var si = bi.shapes[i];
                     for (var j = 0; j < bj.shapes.length; j++) {
                         // Compute world transform of shapes
-                        bj.quaternion.mult(bj.shapeOrientations[j], qj);
+                        bj.quaternion.multTo(bj.shapeOrientations[j], qj);
                         bj.quaternion.vmult(bj.shapeOffsets[j], xj);
                         xj.addTo(bj.position, xj);
                         var sj = bj.shapes[j];
@@ -46049,7 +46214,7 @@ var CANNON;
             var local = convexParticle_local;
             local.copy(xi);
             local.subTo(xj, local); // Convert position to relative the convex origin
-            qj.conjugate(cqj);
+            qj.conjugateTo(cqj);
             cqj.vmult(local, local);
             if (sj.pointIsInside(local)) {
                 if (sj.worldVerticesNeedsUpdate) {

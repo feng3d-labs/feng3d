@@ -29,7 +29,7 @@ namespace CANNON
         static pointToLocalFrame(position: feng3d.Vector3, quaternion: Quaternion, worldPoint: feng3d.Vector3, result = new feng3d.Vector3())
         {
             worldPoint.subTo(position, result);
-            quaternion.conjugate(tmpQuat);
+            quaternion.conjugateTo(tmpQuat);
             tmpQuat.vmult(result, result);
             return result;
         }

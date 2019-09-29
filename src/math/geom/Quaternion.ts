@@ -1,7 +1,7 @@
 namespace feng3d
 {
 	/**
-	 * A Quaternion object which can be used to represent rotations.
+	 * 可用于表示旋转的四元数对象
 	 */
     export class Quaternion
     {
@@ -11,35 +11,36 @@ namespace feng3d
         }
 
 		/**
-		 * The x value of the quaternion.
+		 * 虚基向量i的乘子
 		 */
         @serialize
         x = 0;
 
 		/**
-		 * The y value of the quaternion.
+		 * 虚基向量j的乘子
 		 */
         @serialize
         y = 0;
 
 		/**
-		 * The z value of the quaternion.
+		 * 虚基向量k的乘子
 		 */
         @serialize
         z = 0;
 
 		/**
-		 * The w value of the quaternion.
+		 * 实部的乘数
 		 */
         @serialize
         w = 1;
 
 		/**
-		 * Creates a new Quaternion object.
-		 * @param x The x value of the quaternion.
-		 * @param y The y value of the quaternion.
-		 * @param z The z value of the quaternion.
-		 * @param w The w value of the quaternion.
+		 * 四元数描述三维空间中的旋转。四元数的数学定义为Q = x*i + y*j + z*k + w，其中(i,j,k)为虚基向量。(x,y,z)可以看作是一个与旋转轴相关的向量，而实际的乘法器w与旋转量相关。
+         * 
+		 * @param x 虚基向量i的乘子
+		 * @param y 虚基向量j的乘子
+		 * @param z 虚基向量k的乘子
+		 * @param w 实部的乘数
 		 */
         constructor(x = 0, y = 0, z = 0, w = 1)
         {
@@ -50,19 +51,28 @@ namespace feng3d
         }
 
 		/**
-		 * Returns the magnitude of the quaternion object.
+		 * 返回四元数对象的大小
 		 */
         get magnitude(): number
         {
             return Math.sqrt(this.w * this.w + this.x * this.x + this.y * this.y + this.z * this.z);
         }
 
-        setTo(x = 0, y = 0, z = 0, w = 1)
+        /**
+         * 设置四元数的值。
+         * 
+		 * @param x 虚基向量i的乘子
+		 * @param y 虚基向量j的乘子
+		 * @param z 虚基向量k的乘子
+		 * @param w 实部的乘数
+         */
+        set(x = 0, y = 0, z = 0, w = 1)
         {
             this.x = x;
             this.y = y;
             this.z = z;
             this.w = w;
+            return this;
         }
 
         fromArray(array: ArrayLike<number>, offset = 0)
@@ -74,6 +84,12 @@ namespace feng3d
             return this;
         }
 
+        /**
+         * 转换为数组
+         * 
+         * @param array 
+         * @param offset 
+         */
         toArray(array?: number[], offset = 0)
         {
             array = array || [];
@@ -85,26 +101,83 @@ namespace feng3d
         }
 
 		/**
-		 * Fills the quaternion object with the result from a multiplication of two quaternion objects.
+         * 四元数乘法
 		 *
-		 * @param    qa    The first quaternion in the multiplication.
-		 * @param    qb    The second quaternion in the multiplication.
-		 */
-        multiply(qa: Quaternion, qb: Quaternion)
+         * @param q
+         * @param this
+         */
+        mult(q: Quaternion)
         {
-            var w1 = qa.w, x1 = qa.x, y1 = qa.y, z1 = qa.z;
-            var w2 = qb.w, x2 = qb.x, y2 = qb.y, z2 = qb.z;
+            var ax = this.x, ay = this.y, az = this.z, aw = this.w,
+                bx = q.x, by = q.y, bz = q.z, bw = q.w;
 
-            this.w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2;
-            this.x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2;
-            this.y = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2;
-            this.z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2;
+            this.x = ax * bw + aw * bx + ay * bz - az * by;
+            this.y = ay * bw + aw * by + az * bx - ax * bz;
+            this.z = az * bw + aw * bz + ax * by - ay * bx;
+            this.w = aw * bw - ax * bx - ay * by - az * bz;
+            return this;
         }
 
-        multiplyVector(vector: Vector3, target?: Quaternion): Quaternion
+		/**
+         * 四元数乘法
+		 *
+         * @param q
+         * @param target
+         */
+        multTo(q: Quaternion, target = new Quaternion())
         {
-            target = target || new Quaternion();
+            return target.copy(this).mult(q);
+        }
 
+        /**
+         * 得到反四元数旋转
+         */
+        inverse()
+        {
+            var x = this.x, y = this.y, z = this.z, w = this.w;
+
+            this.conjugate();
+            var inorm2 = 1 / (x * x + y * y + z * z + w * w);
+            this.x *= inorm2;
+            this.y *= inorm2;
+            this.z *= inorm2;
+            this.w *= inorm2;
+
+            return this;
+        }
+
+        /**
+         * 得到反四元数旋转
+         */
+        inverseTo(target = new Quaternion())
+        {
+            return target.copy(this).inverse();
+        }
+
+        /**
+         * 得到四元数共轭
+         */
+        conjugate()
+        {
+            this.x = -this.x;
+            this.y = -this.y;
+            this.z = -this.z;
+
+            return this;
+        }
+
+        /**
+         * 得到四元数共轭
+         * 
+         * @param target
+         */
+        conjugateTo(target = new Quaternion())
+        {
+            return target.copy(this).conjugate();
+        }
+
+        multiplyVector(vector: Vector3, target = new Quaternion())
+        {
             var x2 = vector.x;
             var y2 = vector.y;
             var z2 = vector.z;
@@ -118,10 +191,10 @@ namespace feng3d
         }
 
 		/**
-		 * Fills the quaternion object with values representing the given rotation around a vector.
+		 * 用表示给定绕向量旋转的值填充四元数对象。
 		 *
-		 * @param    axis    The axis around which to rotate
-		 * @param    angle    The angle in radians of the rotation.
+		 * @param axis 要绕其旋转的轴
+		 * @param angle 以弧度为单位的旋转角度。
 		 */
         fromAxisAngle(axis: Vector3, angle: number)
         {
@@ -133,6 +206,60 @@ namespace feng3d
             this.z = axis.z * sin_a;
             this.w = cos_a;
             this.normalize();
+            return this;
+        }
+
+        /**
+         * 将四元数转换为轴/角表示形式
+         * 
+         * @param targetAxis 要重用的向量对象，用于存储轴
+         * @return 一个数组，第一个元素是轴，第二个元素是弧度
+         */
+        toAxisAngle(targetAxis = new feng3d.Vector3())
+        {
+            this.normalize(); // 如果w>1 acos和sqrt会产生错误，那么如果四元数被标准化，就不会发生这种情况
+            var angle = 2 * Math.acos(this.w);
+            var s = Math.sqrt(1 - this.w * this.w); // 假设四元数归一化了，那么w小于1，所以项总是正的。
+            if (s < 0.001)
+            { // 为了避免除以零，s总是正的，因为是根号
+                // 如果s接近于零，那么轴的方向就不重要了
+                targetAxis.x = this.x; // 如果轴归一化很重要，则用x=1替换;y = z = 0;
+                targetAxis.y = this.y;
+                targetAxis.z = this.z;
+            } else
+            {
+                targetAxis.x = this.x / s; // 法线轴
+                targetAxis.y = this.y / s;
+                targetAxis.z = this.z / s;
+            }
+            return [targetAxis, angle];
+        }
+
+        /**
+         * 给定两个向量，设置四元数值。得到的旋转将是将u旋转到v所需要的旋转。
+         * 
+         * @param u
+         * @param v
+         */
+        setFromVectors(u: Vector3, v: Vector3)
+        {
+            if (u.isAntiparallelTo(v))
+            {
+                var t1 = new Vector3();
+                var t2 = new Vector3();
+
+                u.tangents(t1, t2);
+                this.fromAxisAngle(t1, Math.PI);
+            } else
+            {
+                var a = u.crossTo(v);
+                this.x = a.x;
+                this.y = a.y;
+                this.z = a.z;
+                this.w = Math.sqrt(Math.pow(u.length, 2) * Math.pow(v.length, 2)) + u.dot(v);
+                this.normalize();
+            }
+            return this;
         }
 
 		/**
@@ -259,20 +386,55 @@ namespace feng3d
 		 */
         normalize(val = 1)
         {
-            var mag = val / Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
+            var l = this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w;
+            if (l === 0)
+            {
+                this.x = 0;
+                this.y = 0;
+                this.z = 0;
+                this.w = 0;
+            } else
+            {
+                l = Math.sqrt(l);
+                l = 1 / l;
+                this.x *= l;
+                this.y *= l;
+                this.z *= l;
+                this.w *= l;
+            }
+            return this;
+        }
 
-            this.x *= mag;
-            this.y *= mag;
-            this.z *= mag;
-            this.w *= mag;
+
+        /**
+         * 四元数归一化的近似。当quat已经几乎标准化时，效果最好。
+         * 
+         * @see http://jsperf.com/fast-quaternion-normalization
+         * @author unphased, https://github.com/unphased
+         */
+        normalizeFast()
+        {
+            var f = (3.0 - (this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w)) / 2.0;
+            if (f === 0)
+            {
+                this.x = 0;
+                this.y = 0;
+                this.z = 0;
+                this.w = 0;
+            } else
+            {
+                this.x *= f;
+                this.y *= f;
+                this.z *= f;
+                this.w *= f;
+            }
+            return this;
         }
 
 		/**
-		 * Used to trace the values of a quaternion.
-		 *
-		 * @return A string representation of the quaternion object.
+		 * 转换为可读格式
 		 */
-        toString(): string
+        toString()
         {
             return "{this.x:" + this.x + " this.y:" + this.y + " this.z:" + this.z + " this.w:" + this.w + "}";
         }
@@ -389,16 +551,48 @@ namespace feng3d
             return target;
         }
 
+        /**
+          * 将四元数乘以一个向量
+          * 
+          * @param v
+          * @param target
+          */
+        vmult(v: Vector3, target = new Vector3())
+        {
+            var x = v.x,
+                y = v.y,
+                z = v.z;
+
+            var qx = this.x,
+                qy = this.y,
+                qz = this.z,
+                qw = this.w;
+
+            // q*v
+            var ix = qw * x + qy * z - qz * y,
+                iy = qw * y + qz * x - qx * z,
+                iz = qw * z + qx * y - qy * x,
+                iw = -qx * x - qy * y - qz * z;
+
+            target.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+            target.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+            target.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+
+            return target;
+        }
+
 		/**
-		 * Copies the data from a quaternion into this instance.
-		 * @param q The quaternion to copy from.
+		 * 将源的值复制到此四元数
+         * 
+		 * @param q 要复制的四元数
 		 */
-        copyFrom(q: Quaternion)
+        copy(q: Quaternion)
         {
             this.x = q.x;
             this.y = q.y;
             this.z = q.z;
             this.w = q.w;
+            return this;
         }
     }
 }

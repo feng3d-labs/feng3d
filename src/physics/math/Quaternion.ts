@@ -73,7 +73,7 @@ namespace CANNON
          * @param axis
          * @param angle in radians
          */
-        setFromAxisAngle(axis: feng3d.Vector3, angle: number)
+        fromAxisAngle(axis: feng3d.Vector3, angle: number)
         {
             var s = Math.sin(angle * 0.5);
             this.x = axis.x * s;
@@ -121,7 +121,7 @@ namespace CANNON
                 var t2 = sfv_t2;
 
                 u.tangents(t1, t2);
-                this.setFromAxisAngle(t1, Math.PI);
+                this.fromAxisAngle(t1, Math.PI);
             } else
             {
                 var a = u.crossTo(v);
@@ -139,7 +139,7 @@ namespace CANNON
          * @param q
          * @param target
          */
-        mult(q: Quaternion, target = new Quaternion())
+        multTo(q: Quaternion, target = new Quaternion())
         {
             var ax = this.x, ay = this.y, az = this.z, aw = this.w,
                 bx = q.x, by = q.y, bz = q.z, bw = q.w;
@@ -156,12 +156,12 @@ namespace CANNON
          * Get the inverse quaternion rotation.
          * @param target
          */
-        inverse(target: Quaternion)
+        inverseTo(target: Quaternion)
         {
             var x = this.x, y = this.y, z = this.z, w = this.w;
             target = target || new Quaternion();
 
-            this.conjugate(target);
+            this.conjugateTo(target);
             var inorm2 = 1 / (x * x + y * y + z * z + w * w);
             target.x *= inorm2;
             target.y *= inorm2;
@@ -175,7 +175,7 @@ namespace CANNON
          * Get the quaternion conjugate
          * @param target
          */
-        conjugate(target = new Quaternion())
+        conjugateTo(target = new Quaternion())
         {
             target.x = -this.x;
             target.y = -this.y;

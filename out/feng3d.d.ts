@@ -1625,6 +1625,9 @@ declare namespace feng3d {
      * 对象池
      *
      * 对象池并不能带来性能的提升，反而会严重影响性能。但是在管理内存时可以考虑使用。
+     *
+     * js虚拟机会在对象没有被引用时自动释放内存，谨慎使用对象池。
+     *
      */
     class Pool<T> {
         private _objects;
@@ -5373,56 +5376,110 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * A Quaternion object which can be used to represent rotations.
+     * 可用于表示旋转的四元数对象
      */
     class Quaternion {
         static fromArray(array: ArrayLike<number>, offset?: number): Quaternion;
         /**
-         * The x value of the quaternion.
+         * 虚基向量i的乘子
          */
         x: number;
         /**
-         * The y value of the quaternion.
+         * 虚基向量j的乘子
          */
         y: number;
         /**
-         * The z value of the quaternion.
+         * 虚基向量k的乘子
          */
         z: number;
         /**
-         * The w value of the quaternion.
+         * 实部的乘数
          */
         w: number;
         /**
-         * Creates a new Quaternion object.
-         * @param x The x value of the quaternion.
-         * @param y The y value of the quaternion.
-         * @param z The z value of the quaternion.
-         * @param w The w value of the quaternion.
+         * 四元数描述三维空间中的旋转。四元数的数学定义为Q = x*i + y*j + z*k + w，其中(i,j,k)为虚基向量。(x,y,z)可以看作是一个与旋转轴相关的向量，而实际的乘法器w与旋转量相关。
+         *
+         * @param x 虚基向量i的乘子
+         * @param y 虚基向量j的乘子
+         * @param z 虚基向量k的乘子
+         * @param w 实部的乘数
          */
         constructor(x?: number, y?: number, z?: number, w?: number);
         /**
-         * Returns the magnitude of the quaternion object.
+         * 返回四元数对象的大小
          */
         readonly magnitude: number;
-        setTo(x?: number, y?: number, z?: number, w?: number): void;
+        /**
+         * 设置四元数的值。
+         *
+         * @param x 虚基向量i的乘子
+         * @param y 虚基向量j的乘子
+         * @param z 虚基向量k的乘子
+         * @param w 实部的乘数
+         */
+        set(x?: number, y?: number, z?: number, w?: number): this;
         fromArray(array: ArrayLike<number>, offset?: number): this;
+        /**
+         * 转换为数组
+         *
+         * @param array
+         * @param offset
+         */
         toArray(array?: number[], offset?: number): number[];
         /**
-         * Fills the quaternion object with the result from a multiplication of two quaternion objects.
+         * 四元数乘法
          *
-         * @param    qa    The first quaternion in the multiplication.
-         * @param    qb    The second quaternion in the multiplication.
+         * @param q
+         * @param this
          */
-        multiply(qa: Quaternion, qb: Quaternion): void;
+        mult(q: Quaternion): this;
+        /**
+         * 四元数乘法
+         *
+         * @param q
+         * @param target
+         */
+        multTo(q: Quaternion, target?: Quaternion): Quaternion;
+        /**
+         * 得到反四元数旋转
+         */
+        inverse(): this;
+        /**
+         * 得到反四元数旋转
+         */
+        inverseTo(target?: Quaternion): Quaternion;
+        /**
+         * 得到四元数共轭
+         */
+        conjugate(): this;
+        /**
+         * 得到四元数共轭
+         *
+         * @param target
+         */
+        conjugateTo(target?: Quaternion): Quaternion;
         multiplyVector(vector: Vector3, target?: Quaternion): Quaternion;
         /**
-         * Fills the quaternion object with values representing the given rotation around a vector.
+         * 用表示给定绕向量旋转的值填充四元数对象。
          *
-         * @param    axis    The axis around which to rotate
-         * @param    angle    The angle in radians of the rotation.
+         * @param axis 要绕其旋转的轴
+         * @param angle 以弧度为单位的旋转角度。
          */
-        fromAxisAngle(axis: Vector3, angle: number): void;
+        fromAxisAngle(axis: Vector3, angle: number): this;
+        /**
+         * 将四元数转换为轴/角表示形式
+         *
+         * @param targetAxis 要重用的向量对象，用于存储轴
+         * @return 一个数组，第一个元素是轴，第二个元素是弧度
+         */
+        toAxisAngle(targetAxis?: Vector3): (number | Vector3)[];
+        /**
+         * 给定两个向量，设置四元数值。得到的旋转将是将u旋转到v所需要的旋转。
+         *
+         * @param u
+         * @param v
+         */
+        setFromVectors(u: Vector3, v: Vector3): this;
         /**
          * Spherically interpolates between two quaternions, providing an interpolation between rotations with constant angle change rate.
          * @param qa The first quaternion to interpolate.
@@ -5454,11 +5511,16 @@ declare namespace feng3d {
         /**
          * Normalises the quaternion object.
          */
-        normalize(val?: number): void;
+        normalize(val?: number): this;
         /**
-         * Used to trace the values of a quaternion.
+         * 四元数归一化的近似。当quat已经几乎标准化时，效果最好。
          *
-         * @return A string representation of the quaternion object.
+         * @see http://jsperf.com/fast-quaternion-normalization
+         * @author unphased, https://github.com/unphased
+         */
+        normalizeFast(): this;
+        /**
+         * 转换为可读格式
          */
         toString(): string;
         /**
@@ -5491,10 +5553,18 @@ declare namespace feng3d {
          */
         rotatePoint(vector: Vector3, target?: Vector3): Vector3;
         /**
-         * Copies the data from a quaternion into this instance.
-         * @param q The quaternion to copy from.
+          * 将四元数乘以一个向量
+          *
+          * @param v
+          * @param target
+          */
+        vmult(v: Vector3, target?: Vector3): Vector3;
+        /**
+         * 将源的值复制到此四元数
+         *
+         * @param q 要复制的四元数
          */
-        copyFrom(q: Quaternion): void;
+        copy(q: Quaternion): this;
     }
 }
 declare namespace feng3d {
@@ -17284,7 +17354,7 @@ declare namespace CANNON {
          * @param axis
          * @param angle in radians
          */
-        setFromAxisAngle(axis: feng3d.Vector3, angle: number): this;
+        fromAxisAngle(axis: feng3d.Vector3, angle: number): this;
         /**
          * Converts the quaternion to axis/angle representation.
          * @param targetAxis A vector object to reuse for storing the axis.
@@ -17302,17 +17372,17 @@ declare namespace CANNON {
          * @param q
          * @param target
          */
-        mult(q: Quaternion, target?: Quaternion): Quaternion;
+        multTo(q: Quaternion, target?: Quaternion): Quaternion;
         /**
          * Get the inverse quaternion rotation.
          * @param target
          */
-        inverse(target: Quaternion): Quaternion;
+        inverseTo(target: Quaternion): Quaternion;
         /**
          * Get the quaternion conjugate
          * @param target
          */
-        conjugate(target?: Quaternion): Quaternion;
+        conjugateTo(target?: Quaternion): Quaternion;
         /**
          * Normalize the quaternion. Note that this changes the values of the quaternion.
          */

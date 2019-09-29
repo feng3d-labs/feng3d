@@ -239,7 +239,7 @@ namespace CANNON
 
                 for (var i = 0; i < bi.shapes.length; i++)
                 {
-                    bi.quaternion.mult(bi.shapeOrientations[i], qi);
+                    bi.quaternion.multTo(bi.shapeOrientations[i], qi);
                     bi.quaternion.vmult(bi.shapeOffsets[i], xi);
                     xi.addTo(bi.position, xi);
                     var si = bi.shapes[i];
@@ -248,7 +248,7 @@ namespace CANNON
                     {
 
                         // Compute world transform of shapes
-                        bj.quaternion.mult(bj.shapeOrientations[j], qj);
+                        bj.quaternion.multTo(bj.shapeOrientations[j], qj);
                         bj.quaternion.vmult(bj.shapeOffsets[j], xj);
                         xj.addTo(bj.position, xj);
                         var sj = bj.shapes[j];
@@ -1373,7 +1373,7 @@ namespace CANNON
             var local = convexParticle_local;
             local.copy(xi);
             local.subTo(xj, local); // Convert position to relative the convex origin
-            qj.conjugate(cqj);
+            qj.conjugateTo(cqj);
             cqj.vmult(local, local);
 
             if (sj.pointIsInside(local))

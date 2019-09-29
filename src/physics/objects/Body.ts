@@ -442,7 +442,7 @@ namespace CANNON
         {
             var result = result || new feng3d.Vector3();
             worldPoint.subTo(this.position, result);
-            this.quaternion.conjugate().vmult(result, result);
+            this.quaternion.conjugateTo().vmult(result, result);
             return result;
         }
 
@@ -454,7 +454,7 @@ namespace CANNON
          */
         vectorToLocalFrame(worldVector, result = new feng3d.Vector3())
         {
-            this.quaternion.conjugate().vmult(worldVector, result);
+            this.quaternion.conjugateTo().vmult(worldVector, result);
             return result;
         }
 
@@ -572,7 +572,7 @@ namespace CANNON
                 offset.addTo(this.position, offset);
 
                 // Get shape world quaternion
-                shapeOrientations[i].mult(bodyQuat, orientation);
+                shapeOrientations[i].multTo(bodyQuat, orientation);
 
                 // Get shape AABB
                 shape.calculateWorldAABB(offset, orientation, shapeAABB.lowerBound, shapeAABB.upperBound);

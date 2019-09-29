@@ -66,7 +66,7 @@ namespace feng3d.war3
 				quaternion.fromEulerAngles(rotation.value.x, rotation.value.y, rotation.value.z);
 			} else
 			{
-				quaternion.copyFrom(rotation.value);
+				quaternion.copy(rotation.value);
 			}
 			return quaternion;
 		}
@@ -92,7 +92,7 @@ namespace feng3d.war3
 
 			if (key1 == key2)
 			{
-				RotationQuaternion.copyFrom(key1.value);
+				RotationQuaternion.copy(key1.value);
 				return RotationQuaternion;
 			}
 
