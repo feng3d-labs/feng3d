@@ -107,16 +107,16 @@ namespace CANNON
         /**
          * World space orientation of the body.
          */
-        quaternion: Quaternion;
+        quaternion: feng3d.Quaternion;
 
-        initQuaternion: Quaternion;
+        initQuaternion: feng3d.Quaternion;
 
-        previousQuaternion: Quaternion;
+        previousQuaternion: feng3d.Quaternion;
 
         /**
          * Interpolated orientation of the body.
          */
-        interpolatedQuaternion: Quaternion;
+        interpolatedQuaternion: feng3d.Quaternion;
 
 
         /**
@@ -137,7 +137,7 @@ namespace CANNON
         /**
          * Orientation of each Shape, given in local Body space.
          */
-        shapeOrientations: Quaternion[];
+        shapeOrientations: feng3d.Quaternion[];
 
         inertia: feng3d.Vector3;
 
@@ -206,7 +206,7 @@ namespace CANNON
         constructor(options: {
             collisionFilterGroup?: number, collisionFilterMask?: number, position?: feng3d.Vector3, velocity?: feng3d.Vector3,
             material?: Material, mass?: number, linearDamping?: number, type?: number, allowSleep?: boolean,
-            sleepSpeedLimit?: number, sleepTimeLimit?: number, quaternion?: Quaternion, angularVelocity?: feng3d.Vector3,
+            sleepSpeedLimit?: number, sleepTimeLimit?: number, quaternion?: feng3d.Quaternion, angularVelocity?: feng3d.Vector3,
             fixedRotation?: boolean, angularDamping?: number, linearFactor?: feng3d.Vector3, angularFactor?: feng3d.Vector3, shape?: Shape,
         } = {}, a = undefined)
         {
@@ -261,10 +261,10 @@ namespace CANNON
 
             this._wakeUpAfterNarrowphase = false;
             this.torque = new feng3d.Vector3();
-            this.quaternion = new Quaternion();
-            this.initQuaternion = new Quaternion();
-            this.previousQuaternion = new Quaternion();
-            this.interpolatedQuaternion = new Quaternion();
+            this.quaternion = new feng3d.Quaternion();
+            this.initQuaternion = new feng3d.Quaternion();
+            this.previousQuaternion = new feng3d.Quaternion();
+            this.interpolatedQuaternion = new feng3d.Quaternion();
 
             if (options.quaternion)
             {
@@ -493,10 +493,10 @@ namespace CANNON
          * @param_orientation
          * @return The body object, for chainability.
          */
-        addShape(shape: Shape, _offset?: feng3d.Vector3, _orientation?: Quaternion)
+        addShape(shape: Shape, _offset?: feng3d.Vector3, _orientation?: feng3d.Quaternion)
         {
             var offset = new feng3d.Vector3();
-            var orientation = new Quaternion();
+            var orientation = new feng3d.Quaternion();
 
             if (_offset)
             {
@@ -834,12 +834,12 @@ namespace CANNON
     }
 
     var tmpVec = new feng3d.Vector3();
-    var tmpQuat = new Quaternion();
+    var tmpQuat = new feng3d.Quaternion();
 
     var torque = new feng3d.Vector3();
     var invI_tau_dt = new feng3d.Vector3();
-    var w = new Quaternion();
-    var wq = new Quaternion();
+    var w = new feng3d.Quaternion();
+    var wq = new feng3d.Quaternion();
 
 
     var Body_updateMassProperties_halfExtents = new feng3d.Vector3();

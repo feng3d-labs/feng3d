@@ -320,7 +320,7 @@ namespace CANNON
             return this.convexParticle(si.convexPolyhedronRepresentation, sj, xi, xj, qi, qj, bi, bj, si, sj, justTest);
         }
 
-        sphereSphere(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        sphereSphere(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             if (justTest)
             {
@@ -367,8 +367,8 @@ namespace CANNON
             trimeshShape: any,
             planePos: feng3d.Vector3,
             trimeshPos: feng3d.Vector3,
-            planeQuat: Quaternion,
-            trimeshQuat: Quaternion,
+            planeQuat: feng3d.Quaternion,
+            trimeshQuat: feng3d.Quaternion,
             planeBody: Body,
             trimeshBody: Body,
             rsi: Shape,
@@ -434,8 +434,8 @@ namespace CANNON
             trimeshShape: any,
             spherePos: feng3d.Vector3,
             trimeshPos: feng3d.Vector3,
-            sphereQuat: Quaternion,
-            trimeshQuat: Quaternion,
+            sphereQuat: feng3d.Quaternion,
+            trimeshQuat: feng3d.Quaternion,
             sphereBody: Body,
             trimeshBody: Body,
             rsi: Shape,
@@ -621,7 +621,7 @@ namespace CANNON
             triangles.length = 0;
         }
 
-        spherePlane(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        spherePlane(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             // We will have one contact in this case
             var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
@@ -661,7 +661,7 @@ namespace CANNON
             }
         }
 
-        sphereBox(si: Shape, sj: any, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        sphereBox(si: Shape, sj: any, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             // we refer to the box as body j
             var sides = sphereBox_sides;
@@ -888,7 +888,7 @@ namespace CANNON
             }
         }
 
-        sphereConvex(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        sphereConvex(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             xi.subTo(xj, convex_to_sphere);
             var normals = sj.faceNormals;
@@ -1086,7 +1086,7 @@ namespace CANNON
             }
         }
 
-        planeBox(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        planeBox(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             sj.convexPolyhedronRepresentation.material = sj.material;
             sj.convexPolyhedronRepresentation.collisionResponse = sj.collisionResponse;
@@ -1099,8 +1099,8 @@ namespace CANNON
             convexShape: any,
             planePosition: feng3d.Vector3,
             convexPosition: feng3d.Vector3,
-            planeQuat: Quaternion,
-            convexQuat: Quaternion,
+            planeQuat: feng3d.Quaternion,
+            convexQuat: feng3d.Quaternion,
             planeBody: Body,
             convexBody: Body,
             si: Shape,
@@ -1167,7 +1167,7 @@ namespace CANNON
             }
         }
 
-        convexConvex(si: any, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean, faceListA?: any[], faceListB?: any[])
+        convexConvex(si: any, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean, faceListA?: any[], faceListB?: any[])
         {
             var sepAxis = convexConvex_sepAxis;
 
@@ -1301,7 +1301,7 @@ namespace CANNON
         //     }
         // };
 
-        planeParticle(sj: Shape, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: Quaternion, qi: Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        planeParticle(sj: Shape, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             var normal = particlePlane_normal;
             normal.init(0, 1, 0);
@@ -1335,7 +1335,7 @@ namespace CANNON
             }
         }
 
-        sphereParticle(sj: Shape, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: Quaternion, qi: Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        sphereParticle(sj: Shape, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             // The normal is the unit vector from sphere center to particle center
             var normal = particleSphere_normal;
@@ -1361,7 +1361,7 @@ namespace CANNON
             }
         }
 
-        convexParticle(sj: any, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: Quaternion, qi: Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        convexParticle(sj: any, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             var penetratedFaceIndex = -1;
             var penetratedFaceNormal = convexParticle_penetratedFaceNormal;
@@ -1449,7 +1449,7 @@ namespace CANNON
             }
         }
 
-        boxHeightfield(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        boxHeightfield(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             si.convexPolyhedronRepresentation.material = si.material;
             si.convexPolyhedronRepresentation.collisionResponse = si.collisionResponse;
@@ -1461,8 +1461,8 @@ namespace CANNON
             hfShape: any,
             convexPos: feng3d.Vector3,
             hfPos: feng3d.Vector3,
-            convexQuat: Quaternion,
-            hfQuat: Quaternion,
+            convexQuat: feng3d.Quaternion,
+            hfQuat: feng3d.Quaternion,
             convexBody: Body,
             hfBody: Body,
             rsi: Shape,
@@ -1554,8 +1554,8 @@ namespace CANNON
             hfShape: any,
             spherePos: feng3d.Vector3,
             hfPos: feng3d.Vector3,
-            sphereQuat: Quaternion,
-            hfQuat: Quaternion,
+            sphereQuat: feng3d.Quaternion,
+            hfQuat: feng3d.Quaternion,
             sphereBody: Body,
             hfBody: Body,
             rsi: Shape,
@@ -1665,8 +1665,8 @@ namespace CANNON
 
     var tmpVec1 = new feng3d.Vector3();
     var tmpVec2 = new feng3d.Vector3();
-    var tmpQuat1 = new Quaternion();
-    var tmpQuat2 = new Quaternion();
+    var tmpQuat1 = new feng3d.Quaternion();
+    var tmpQuat2 = new feng3d.Quaternion();
 
     var numWarnings = 0;
     var maxWarnings = 10;
@@ -1792,7 +1792,7 @@ namespace CANNON
     var particleSphere_normal = new feng3d.Vector3();
 
     // WIP
-    var cqj = new Quaternion();
+    var cqj = new feng3d.Quaternion();
     var convexParticle_local = new feng3d.Vector3();
     var convexParticle_normal = new feng3d.Vector3();
     var convexParticle_penetratedFaceNormal = new feng3d.Vector3();

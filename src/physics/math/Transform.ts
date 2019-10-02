@@ -4,7 +4,7 @@ namespace CANNON
     {
 
         position: feng3d.Vector3;
-        quaternion: Quaternion;
+        quaternion: feng3d.Quaternion;
 
         constructor(options: any = {})
         {
@@ -13,7 +13,7 @@ namespace CANNON
             {
                 this.position.copy(options.position);
             }
-            this.quaternion = new Quaternion();
+            this.quaternion = new feng3d.Quaternion();
             if (options.quaternion)
             {
                 this.quaternion.copy(options.quaternion);
@@ -26,7 +26,7 @@ namespace CANNON
          * @param worldPoint
          * @param result
          */
-        static pointToLocalFrame(position: feng3d.Vector3, quaternion: Quaternion, worldPoint: feng3d.Vector3, result = new feng3d.Vector3())
+        static pointToLocalFrame(position: feng3d.Vector3, quaternion: feng3d.Quaternion, worldPoint: feng3d.Vector3, result = new feng3d.Vector3())
         {
             worldPoint.subTo(position, result);
             quaternion.conjugateTo(tmpQuat);
@@ -51,7 +51,7 @@ namespace CANNON
          * @param localPoint
          * @param result
          */
-        static pointToWorldFrame(position: feng3d.Vector3, quaternion: Quaternion, localPoint: feng3d.Vector3, result = new feng3d.Vector3())
+        static pointToWorldFrame(position: feng3d.Vector3, quaternion: feng3d.Quaternion, localPoint: feng3d.Vector3, result = new feng3d.Vector3())
         {
             quaternion.vmult(localPoint, result);
             result.addTo(position, result);
@@ -75,13 +75,13 @@ namespace CANNON
             return result;
         }
 
-        static vectorToWorldFrame(quaternion: Quaternion, localVector: feng3d.Vector3, result: feng3d.Vector3)
+        static vectorToWorldFrame(quaternion: feng3d.Quaternion, localVector: feng3d.Vector3, result: feng3d.Vector3)
         {
             quaternion.vmult(localVector, result);
             return result;
         }
 
-        static vectorToLocalFrame(position: feng3d.Vector3, quaternion: Quaternion, worldVector: feng3d.Vector3, result = new feng3d.Vector3())
+        static vectorToLocalFrame(position: feng3d.Vector3, quaternion: feng3d.Quaternion, worldVector: feng3d.Vector3, result = new feng3d.Vector3())
         {
             quaternion.w *= -1;
             quaternion.vmult(worldVector, result);
@@ -90,5 +90,5 @@ namespace CANNON
         }
     }
 
-    var tmpQuat = new Quaternion();
+    var tmpQuat = new feng3d.Quaternion();
 }

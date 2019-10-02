@@ -194,7 +194,7 @@ namespace CANNON
          * @param result The an array of contact point objects, see clipFaceAgainstHull
          * @see http://bullet.googlecode.com/svn/trunk/src/BulletCollision/NarrowPhaseCollision/btPolyhedralContactClipping.cpp
          */
-        clipAgainstHull(posA: feng3d.Vector3, quatA: Quaternion, hullB: ConvexPolyhedron, posB: feng3d.Vector3, quatB: Quaternion, separatingNormal: feng3d.Vector3, minDist: number, maxDist: number, result: number[])
+        clipAgainstHull(posA: feng3d.Vector3, quatA: feng3d.Quaternion, hullB: ConvexPolyhedron, posB: feng3d.Vector3, quatB: feng3d.Quaternion, separatingNormal: feng3d.Vector3, minDist: number, maxDist: number, result: number[])
         {
             var WorldNormal = cah_WorldNormal;
             var hullA = this;
@@ -251,7 +251,7 @@ namespace CANNON
          * @param faceListB 
          * @returns Returns false if a separation is found, else true
          */
-        findSeparatingAxis(hullB: ConvexPolyhedron, posA: feng3d.Vector3, quatA: Quaternion, posB: feng3d.Vector3, quatB: Quaternion, target: feng3d.Vector3, faceListA: number[], faceListB: number[])
+        findSeparatingAxis(hullB: ConvexPolyhedron, posA: feng3d.Vector3, quatA: feng3d.Quaternion, posB: feng3d.Vector3, quatB: feng3d.Quaternion, target: feng3d.Vector3, faceListA: number[], faceListB: number[])
         {
             var faceANormalWS3 = fsa_faceANormalWS3,
                 Worldnormal1 = fsa_Worldnormal1,
@@ -413,7 +413,7 @@ namespace CANNON
          * @param quatB
          * @return The overlap depth, or FALSE if no penetration.
          */
-        testSepAxis(axis: feng3d.Vector3, hullB: ConvexPolyhedron, posA: feng3d.Vector3, quatA: Quaternion, posB: feng3d.Vector3, quatB: Quaternion)
+        testSepAxis(axis: feng3d.Vector3, hullB: ConvexPolyhedron, posA: feng3d.Vector3, quatA: feng3d.Quaternion, posB: feng3d.Vector3, quatB: feng3d.Quaternion)
         {
             var hullA = this;
             ConvexPolyhedron.project(hullA, axis, posA, quatA, maxminA);
@@ -474,7 +474,7 @@ namespace CANNON
          * @param maxDist
          * @param result Array to store resulting contact points in. Will be objects with properties: point, depth, normal. These are represented in world coordinates.
          */
-        clipFaceAgainstHull(separatingNormal: feng3d.Vector3, posA: feng3d.Vector3, quatA: Quaternion, worldVertsB1: feng3d.Vector3[], minDist: number, maxDist: number, result: any[])
+        clipFaceAgainstHull(separatingNormal: feng3d.Vector3, posA: feng3d.Vector3, quatA: feng3d.Quaternion, worldVertsB1: feng3d.Vector3[], minDist: number, maxDist: number, result: any[])
         {
             var faceANormalWS = cfah_faceANormalWS,
                 edge0 = cfah_edge0,
@@ -680,7 +680,7 @@ namespace CANNON
         }
 
         // Updates .worldVertices and sets .worldVerticesNeedsUpdate to false.
-        computeWorldVertices(position: feng3d.Vector3, quat: Quaternion)
+        computeWorldVertices(position: feng3d.Vector3, quat: feng3d.Quaternion)
         {
             var N = this.vertices.length;
             while (this.worldVertices.length < N)
@@ -740,7 +740,7 @@ namespace CANNON
          * 
          * @param quat
          */
-        computeWorldFaceNormals(quat: Quaternion)
+        computeWorldFaceNormals(quat: feng3d.Quaternion)
         {
             var N = this.faceNormals.length;
             while (this.worldFaceNormals.length < N)
@@ -781,7 +781,7 @@ namespace CANNON
          * @param min
          * @param max
          */
-        calculateWorldAABB(pos: feng3d.Vector3, quat: Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
+        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
         {
             var n = this.vertices.length, verts = this.vertices;
             var minx, miny, minz, maxx, maxy, maxz;
@@ -851,7 +851,7 @@ namespace CANNON
          * @param  offset
          * @param quat
          */
-        transformAllPoints(offset: feng3d.Vector3, quat: Quaternion)
+        transformAllPoints(offset: feng3d.Vector3, quat: feng3d.Quaternion)
         {
             var n = this.vertices.length,
                 verts = this.vertices;
@@ -941,7 +941,7 @@ namespace CANNON
          * @param quat
          * @param result result[0] and result[1] will be set to maximum and minimum, respectively.
          */
-        static project(hull: ConvexPolyhedron, axis: feng3d.Vector3, pos: feng3d.Vector3, quat: Quaternion, result: number[])
+        static project(hull: ConvexPolyhedron, axis: feng3d.Vector3, pos: feng3d.Vector3, quat: feng3d.Quaternion, result: number[])
         {
             var n = hull.vertices.length,
                 worldVertex = project_worldVertex,

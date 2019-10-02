@@ -40,7 +40,7 @@ namespace CANNON
             this.boundingSphereRadius = 0;
         }
 
-        calculateWorldAABB(pos: feng3d.Vector3, quat: Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
+        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
         {
             // Get each axis max
             min.copy(pos);

@@ -407,10 +407,10 @@ namespace CANNON
 
             // Rotate around steering over the wheelAxle
             var steering = wheel.steering;
-            var steeringOrn = new Quaternion();
+            var steeringOrn = new feng3d.Quaternion();
             steeringOrn.fromAxisAngle(up, steering);
 
-            var rotatingOrn = new Quaternion();
+            var rotatingOrn = new feng3d.Quaternion();
             rotatingOrn.fromAxisAngle(right, wheel.rotation);
 
             // World rotation of the wheel

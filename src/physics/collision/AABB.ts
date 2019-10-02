@@ -41,7 +41,7 @@ namespace CANNON
          * @param skinSize
          * @return The self object
          */
-        setFromPoints(points: feng3d.Vector3[], position?: feng3d.Vector3, quaternion?: Quaternion, skinSize?: number)
+        setFromPoints(points: feng3d.Vector3[], position?: feng3d.Vector3, quaternion?: feng3d.Quaternion, skinSize?: number)
         {
             var l = this.lowerBound,
                 u = this.upperBound,

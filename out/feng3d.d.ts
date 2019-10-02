@@ -5481,12 +5481,18 @@ declare namespace feng3d {
          */
         setFromVectors(u: Vector3, v: Vector3): this;
         /**
-         * Spherically interpolates between two quaternions, providing an interpolation between rotations with constant angle change rate.
-         * @param qa The first quaternion to interpolate.
-         * @param qb The second quaternion to interpolate.
-         * @param t The interpolation weight, a value between 0 and 1.
+         * 与目标四元数之间进行球面内插，提供了具有恒定角度变化率的旋转之间的内插。
+         * @param qb 目标四元素
+         * @param t 插值权值，一个介于0和1之间的值。
          */
-        slerp(qa: Quaternion, qb: Quaternion, t: number): void;
+        slerp(qb: Quaternion, t: number): this;
+        /**
+         * 与目标四元数之间进行球面内插，提供了具有恒定角度变化率的旋转之间的内插。
+         * @param qb 目标四元素
+         * @param t 插值权值，一个介于0和1之间的值。
+         * @param out 保存插值结果
+         */
+        slerpTo(qb: Quaternion, t: number, out?: Quaternion): Quaternion;
         /**
          * 线性求插值
          * @param qa 第一个四元素
@@ -5559,6 +5565,23 @@ declare namespace feng3d {
           * @param target
           */
         vmult(v: Vector3, target?: Vector3): Vector3;
+        /**
+         * 旋转一个绝对方向四元数给定一个角速度和一个时间步长
+         *
+         * @param angularVelocity
+         * @param dt
+         * @param angularFactor
+         */
+        integrate(angularVelocity: Vector3, dt: number, angularFactor: Vector3): this;
+        /**
+         * 旋转一个绝对方向四元数给定一个角速度和一个时间步长
+         *
+         * @param angularVelocity
+         * @param dt
+         * @param angularFactor
+         * @param  target
+         */
+        integrateTo(angularVelocity: Vector3, dt: number, angularFactor: Vector3, target?: Quaternion): Quaternion;
         /**
          * 将源的值复制到此四元数
          *
@@ -17296,7 +17319,7 @@ declare namespace CANNON {
          * Set the matrix from a quaterion
          * @param q
          */
-        setRotationFromQuaternion(q: Quaternion): this;
+        setRotationFromQuaternion(q: feng3d.Quaternion): this;
         /**
          * Transpose the matrix
          * @param target Where to store the result.
@@ -17306,143 +17329,9 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    class Quaternion {
-        /**
-         * Multiplier of the imaginary basis vector i.
-         */
-        x: number;
-        /**
-         * Multiplier of the imaginary basis vector j.
-         */
-        y: number;
-        /**
-         * Multiplier of the imaginary basis vector k.
-         */
-        z: number;
-        /**
-         * Multiplier of the real part.
-         */
-        w: number;
-        /**
-         * A Quaternion describes a rotation in 3D space. The Quaternion is mathematically defined as Q = x*i + y*j + z*k + w, where (i,j,k) are imaginary basis vectors. (x,y,z) can be seen as a vector related to the axis of rotation, while the real multiplier, w, is related to the amount of rotation.
-         *
-         * @param x Multiplier of the imaginary basis vector i.
-         * @param y Multiplier of the imaginary basis vector j.
-         * @param z Multiplier of the imaginary basis vector k.
-         * @param w Multiplier of the real part.
-         * @see http://en.wikipedia.org/wiki/Quaternion
-         */
-        constructor(x?: number, y?: number, z?: number, w?: number);
-        /**
-         * Set the value of the quaternion.
-         * @param x
-         * @param y
-         * @param z
-         * @param w
-         */
-        set(x: number, y: number, z: number, w: number): this;
-        /**
-         * Convert to a readable format
-         */
-        toString(): string;
-        /**
-         * Convert to an Array
-         */
-        toArray(): number[];
-        /**
-         * Set the quaternion components given an axis and an angle.
-         * @param axis
-         * @param angle in radians
-         */
-        fromAxisAngle(axis: feng3d.Vector3, angle: number): this;
-        /**
-         * Converts the quaternion to axis/angle representation.
-         * @param targetAxis A vector object to reuse for storing the axis.
-         * @return An array, first elemnt is the axis and the second is the angle in radians.
-         */
-        toAxisAngle(targetAxis?: feng3d.Vector3): (number | feng3d.Vector3)[];
-        /**
-         * Set the quaternion value given two vectors. The resulting rotation will be the needed rotation to rotate u to v.
-         * @param u
-         * @param v
-         */
-        setFromVectors(u: feng3d.Vector3, v: feng3d.Vector3): this;
-        /**
-         * Quaternion multiplication
-         * @param q
-         * @param target
-         */
-        multTo(q: Quaternion, target?: Quaternion): Quaternion;
-        /**
-         * Get the inverse quaternion rotation.
-         * @param target
-         */
-        inverseTo(target: Quaternion): Quaternion;
-        /**
-         * Get the quaternion conjugate
-         * @param target
-         */
-        conjugateTo(target?: Quaternion): Quaternion;
-        /**
-         * Normalize the quaternion. Note that this changes the values of the quaternion.
-         */
-        normalize(): this;
-        /**
-         * Approximation of quaternion normalization. Works best when quat is already almost-normalized.
-         * @see http://jsperf.com/fast-quaternion-normalization
-         * @author unphased, https://github.com/unphased
-         */
-        normalizeFast(): this;
-        /**
-         * Multiply the quaternion by a vector
-         * @param v
-         * @param target Optional
-         */
-        vmult(v: feng3d.Vector3, target?: feng3d.Vector3): feng3d.Vector3;
-        /**
-         * Copies value of source to this quaternion.
-         * @param source
-         */
-        copy(source: Quaternion): this;
-        /**
-         * Convert the quaternion to euler angle representation. Order: YZX, as this page describes: http://www.euclideanspace.com/maths/standards/index.htm
-         * @param target
-         * @param order Three-character string e.g. "YZX", which also is default.
-         */
-        toEuler(target: feng3d.Vector3, order: string): void;
-        /**
-         * See http://www.mathworks.com/matlabcentral/fileexchange/20696-function-to-convert-between-dcm-euler-angles-quaternions-and-euler-vectors/content/SpinCalc.m
-         * @param x
-         * @param y
-         * @param z
-         * @param order The order to apply angles: 'XYZ' or 'YXZ' or any other combination
-         */
-        setFromEuler(x: number, y: number, z: number, order: string): this;
-        clone(): Quaternion;
-        /**
-         * Performs a spherical linear interpolation between two quat
-         *
-         * @param toQuat second operand
-         * @param t interpolation amount between the self quaternion and toQuat
-         * @param target A quaternion to store the result in. If not provided, a new one will be created.
-         * @returns The "target" object
-         */
-        slerp(toQuat: Quaternion, t: number, target?: Quaternion): Quaternion;
-        /**
-         * Rotate an absolute orientation quaternion given an angular velocity and a time step.
-         * @param angularVelocity
-         * @param dt
-         * @param angularFactor
-         * @param  target
-         * @return The "target" object
-         */
-        integrate(angularVelocity: feng3d.Vector3, dt: number, angularFactor: feng3d.Vector3, target: Quaternion): Quaternion;
-    }
-}
-declare namespace CANNON {
     class Transform {
         position: feng3d.Vector3;
-        quaternion: Quaternion;
+        quaternion: feng3d.Quaternion;
         constructor(options?: any);
         /**
          * @param position
@@ -17450,7 +17339,7 @@ declare namespace CANNON {
          * @param worldPoint
          * @param result
          */
-        static pointToLocalFrame(position: feng3d.Vector3, quaternion: Quaternion, worldPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        static pointToLocalFrame(position: feng3d.Vector3, quaternion: feng3d.Quaternion, worldPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
         /**
          * Get a global point in local transform coordinates.
          * @param worldPoint
@@ -17464,7 +17353,7 @@ declare namespace CANNON {
          * @param localPoint
          * @param result
          */
-        static pointToWorldFrame(position: feng3d.Vector3, quaternion: Quaternion, localPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        static pointToWorldFrame(position: feng3d.Vector3, quaternion: feng3d.Quaternion, localPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
         /**
          * Get a local point in global transform coordinates.
          * @param point
@@ -17473,8 +17362,8 @@ declare namespace CANNON {
          */
         pointToWorld(localPoint: feng3d.Vector3, result: feng3d.Vector3): feng3d.Vector3;
         vectorToWorldFrame(localVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
-        static vectorToWorldFrame(quaternion: Quaternion, localVector: feng3d.Vector3, result: feng3d.Vector3): feng3d.Vector3;
-        static vectorToLocalFrame(position: feng3d.Vector3, quaternion: Quaternion, worldVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        static vectorToWorldFrame(quaternion: feng3d.Quaternion, localVector: feng3d.Vector3, result: feng3d.Vector3): feng3d.Vector3;
+        static vectorToLocalFrame(position: feng3d.Vector3, quaternion: feng3d.Quaternion, worldVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
     }
 }
 declare namespace CANNON {
@@ -17822,7 +17711,7 @@ declare namespace CANNON {
          * @see http://en.wikipedia.org/wiki/List_of_moments_of_inertia
          */
         calculateLocalInertia(mass: number, target: feng3d.Vector3): void;
-        calculateWorldAABB(pos: feng3d.Vector3, quat: Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
+        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
         static idCounter: number;
         /**
          * The available shape types.
@@ -17915,7 +17804,7 @@ declare namespace CANNON {
          * @param result The an array of contact point objects, see clipFaceAgainstHull
          * @see http://bullet.googlecode.com/svn/trunk/src/BulletCollision/NarrowPhaseCollision/btPolyhedralContactClipping.cpp
          */
-        clipAgainstHull(posA: feng3d.Vector3, quatA: Quaternion, hullB: ConvexPolyhedron, posB: feng3d.Vector3, quatB: Quaternion, separatingNormal: feng3d.Vector3, minDist: number, maxDist: number, result: number[]): void;
+        clipAgainstHull(posA: feng3d.Vector3, quatA: feng3d.Quaternion, hullB: ConvexPolyhedron, posB: feng3d.Vector3, quatB: feng3d.Quaternion, separatingNormal: feng3d.Vector3, minDist: number, maxDist: number, result: number[]): void;
         /**
          * Find the separating axis between this hull and another
          *
@@ -17929,7 +17818,7 @@ declare namespace CANNON {
          * @param faceListB
          * @returns Returns false if a separation is found, else true
          */
-        findSeparatingAxis(hullB: ConvexPolyhedron, posA: feng3d.Vector3, quatA: Quaternion, posB: feng3d.Vector3, quatB: Quaternion, target: feng3d.Vector3, faceListA: number[], faceListB: number[]): boolean;
+        findSeparatingAxis(hullB: ConvexPolyhedron, posA: feng3d.Vector3, quatA: feng3d.Quaternion, posB: feng3d.Vector3, quatB: feng3d.Quaternion, target: feng3d.Vector3, faceListA: number[], faceListB: number[]): boolean;
         /**
          * Test separating axis against two hulls. Both hulls are projected onto the axis and the overlap size is returned if there is one.
          *
@@ -17941,7 +17830,7 @@ declare namespace CANNON {
          * @param quatB
          * @return The overlap depth, or FALSE if no penetration.
          */
-        testSepAxis(axis: feng3d.Vector3, hullB: ConvexPolyhedron, posA: feng3d.Vector3, quatA: Quaternion, posB: feng3d.Vector3, quatB: Quaternion): number | false;
+        testSepAxis(axis: feng3d.Vector3, hullB: ConvexPolyhedron, posA: feng3d.Vector3, quatA: feng3d.Quaternion, posB: feng3d.Vector3, quatB: feng3d.Quaternion): number | false;
         /**
          *
          * @param mass
@@ -17964,7 +17853,7 @@ declare namespace CANNON {
          * @param maxDist
          * @param result Array to store resulting contact points in. Will be objects with properties: point, depth, normal. These are represented in world coordinates.
          */
-        clipFaceAgainstHull(separatingNormal: feng3d.Vector3, posA: feng3d.Vector3, quatA: Quaternion, worldVertsB1: feng3d.Vector3[], minDist: number, maxDist: number, result: any[]): void;
+        clipFaceAgainstHull(separatingNormal: feng3d.Vector3, posA: feng3d.Vector3, quatA: feng3d.Quaternion, worldVertsB1: feng3d.Vector3[], minDist: number, maxDist: number, result: any[]): void;
         /**
          * Clip a face in a hull against the back of a plane.
          *
@@ -17974,14 +17863,14 @@ declare namespace CANNON {
          * @param planeConstant The constant in the mathematical plane equation
          */
         clipFaceAgainstPlane(inVertices: feng3d.Vector3[], outVertices: feng3d.Vector3[], planeNormal: feng3d.Vector3, planeConstant: number): feng3d.Vector3[];
-        computeWorldVertices(position: feng3d.Vector3, quat: Quaternion): void;
+        computeWorldVertices(position: feng3d.Vector3, quat: feng3d.Quaternion): void;
         computeLocalAABB(aabbmin: any, aabbmax: any): void;
         /**
          * Updates .worldVertices and sets .worldVerticesNeedsUpdate to false.
          *
          * @param quat
          */
-        computeWorldFaceNormals(quat: Quaternion): void;
+        computeWorldFaceNormals(quat: feng3d.Quaternion): void;
         updateBoundingSphereRadius(): void;
         /**
          *
@@ -17990,7 +17879,7 @@ declare namespace CANNON {
          * @param min
          * @param max
          */
-        calculateWorldAABB(pos: feng3d.Vector3, quat: Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
+        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
         /**
          * Get approximate convex volume
          */
@@ -18007,7 +17896,7 @@ declare namespace CANNON {
          * @param  offset
          * @param quat
          */
-        transformAllPoints(offset: feng3d.Vector3, quat: Quaternion): void;
+        transformAllPoints(offset: feng3d.Vector3, quat: feng3d.Quaternion): void;
         /**
          * Checks whether p is inside the polyhedra. Must be in local coords. The point lies outside of the convex hull of the other points if and only if the direction of all the vectors from it to those other points are on less than one half of a sphere around it.
          *
@@ -18023,7 +17912,7 @@ declare namespace CANNON {
          * @param quat
          * @param result result[0] and result[1] will be set to maximum and minimum, respectively.
          */
-        static project(hull: ConvexPolyhedron, axis: feng3d.Vector3, pos: feng3d.Vector3, quat: Quaternion, result: number[]): void;
+        static project(hull: ConvexPolyhedron, axis: feng3d.Vector3, pos: feng3d.Vector3, quat: feng3d.Quaternion, result: number[]): void;
     }
 }
 declare namespace CANNON {
@@ -18050,11 +17939,11 @@ declare namespace CANNON {
          * @param sixTargetVectors An array of 6 vectors, to store the resulting side normals in.
          * @param quat             Orientation to apply to the normal vectors. If not provided, the vectors will be in respect to the local frame.
          */
-        getSideNormals(sixTargetVectors: feng3d.Vector3[], quat: Quaternion): feng3d.Vector3[];
+        getSideNormals(sixTargetVectors: feng3d.Vector3[], quat: feng3d.Quaternion): feng3d.Vector3[];
         volume(): number;
         updateBoundingSphereRadius(): void;
-        forEachWorldCorner(pos: feng3d.Vector3, quat: Quaternion, callback: Function): void;
-        calculateWorldAABB(pos: feng3d.Vector3, quat: Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
+        forEachWorldCorner(pos: feng3d.Vector3, quat: feng3d.Quaternion, callback: Function): void;
+        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
     }
 }
 declare namespace CANNON {
@@ -18214,7 +18103,7 @@ declare namespace CANNON {
         getConvexTrianglePillar(xi: number, yi: number, getUpperTriangle: boolean): void;
         calculateLocalInertia(mass: number, target?: feng3d.Vector3): feng3d.Vector3;
         volume(): number;
-        calculateWorldAABB(pos: feng3d.Vector3, quat: Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
+        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
         updateBoundingSphereRadius(): void;
         /**
          * Sets the height values from an image. Currently only supported in browser.
@@ -18244,7 +18133,7 @@ declare namespace CANNON {
         calculateLocalInertia(mass: number, target: feng3d.Vector3): feng3d.Vector3;
         volume(): number;
         updateBoundingSphereRadius(): void;
-        calculateWorldAABB(pos: feng3d.Vector3, quat: Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
+        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
     }
 }
 declare namespace CANNON {
@@ -18257,10 +18146,10 @@ declare namespace CANNON {
          * @author schteppe
          */
         constructor();
-        computeWorldNormal(quat: Quaternion): void;
+        computeWorldNormal(quat: feng3d.Quaternion): void;
         calculateLocalInertia(mass: number, target?: feng3d.Vector3): feng3d.Vector3;
         volume(): number;
-        calculateWorldAABB(pos: feng3d.Vector3, quat: Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
+        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
         updateBoundingSphereRadius(): void;
     }
 }
@@ -18277,7 +18166,7 @@ declare namespace CANNON {
         calculateLocalInertia(mass: number, target?: feng3d.Vector3): feng3d.Vector3;
         volume(): number;
         updateBoundingSphereRadius(): void;
-        calculateWorldAABB(pos: feng3d.Vector3, quat: Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
+        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
     }
 }
 declare namespace CANNON {
@@ -18308,7 +18197,7 @@ declare namespace CANNON {
          * @param skinSize
          * @return The self object
          */
-        setFromPoints(points: feng3d.Vector3[], position?: feng3d.Vector3, quaternion?: Quaternion, skinSize?: number): this;
+        setFromPoints(points: feng3d.Vector3[], position?: feng3d.Vector3, quaternion?: feng3d.Quaternion, skinSize?: number): this;
         /**
          * Copy bounds from an AABB to this AABB
          * @param aabb Source to copy from
@@ -18468,7 +18357,7 @@ declare namespace CANNON {
          * @param out
          * @return The "out" vector object
          */
-        getWorldVertex(i: number, pos: feng3d.Vector3, quat: Quaternion, out: feng3d.Vector3): feng3d.Vector3;
+        getWorldVertex(i: number, pos: feng3d.Vector3, quat: feng3d.Quaternion, out: feng3d.Vector3): feng3d.Vector3;
         /**
          * Get the three vertices for triangle i.
          *
@@ -18507,7 +18396,7 @@ declare namespace CANNON {
          * Will update the .boundingSphereRadius property
          */
         updateBoundingSphereRadius(): void;
-        calculateWorldAABB(pos: feng3d.Vector3, quat: Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
+        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
         /**
          * Get approximate volume
          */
@@ -19193,13 +19082,13 @@ declare namespace CANNON {
         /**
          * World space orientation of the body.
          */
-        quaternion: Quaternion;
-        initQuaternion: Quaternion;
-        previousQuaternion: Quaternion;
+        quaternion: feng3d.Quaternion;
+        initQuaternion: feng3d.Quaternion;
+        previousQuaternion: feng3d.Quaternion;
         /**
          * Interpolated orientation of the body.
          */
-        interpolatedQuaternion: Quaternion;
+        interpolatedQuaternion: feng3d.Quaternion;
         /**
          * Angular velocity of the body, in world space. Think of the angular velocity as a vector, which the body rotates around. The length of this vector determines how fast (in radians per second) the body rotates.
          */
@@ -19213,7 +19102,7 @@ declare namespace CANNON {
         /**
          * Orientation of each Shape, given in local Body space.
          */
-        shapeOrientations: Quaternion[];
+        shapeOrientations: feng3d.Quaternion[];
         inertia: feng3d.Vector3;
         invInertia: feng3d.Vector3;
         invInertiaWorld: Mat3;
@@ -19274,7 +19163,7 @@ declare namespace CANNON {
             allowSleep?: boolean;
             sleepSpeedLimit?: number;
             sleepTimeLimit?: number;
-            quaternion?: Quaternion;
+            quaternion?: feng3d.Quaternion;
             angularVelocity?: feng3d.Vector3;
             fixedRotation?: boolean;
             angularDamping?: number;
@@ -19370,7 +19259,7 @@ declare namespace CANNON {
          * @param_orientation
          * @return The body object, for chainability.
          */
-        addShape(shape: Shape, _offset?: feng3d.Vector3, _orientation?: Quaternion): this;
+        addShape(shape: Shape, _offset?: feng3d.Vector3, _orientation?: feng3d.Quaternion): this;
         /**
          * Update the bounding radius of the body. Should be done if any of the shapes are changed.
          */
@@ -20422,7 +20311,7 @@ declare namespace CANNON {
         boxBox(si: any, sj: any, xi: any, xj: any, qi: any, qj: any, bi: any, bj: any, rsi: any, rsj: any, justTest: any): boolean;
         boxConvex(si: any, sj: any, xi: any, xj: any, qi: any, qj: any, bi: any, bj: any, rsi: any, rsj: any, justTest: any): boolean;
         boxParticle(si: any, sj: any, xi: any, xj: any, qi: any, qj: any, bi: any, bj: any, rsi: any, rsj: any, justTest: any): boolean;
-        sphereSphere(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereSphere(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         /**
          * @method planeTrimesh
          * @param  {Shape}      si
@@ -20434,14 +20323,14 @@ declare namespace CANNON {
          * @param  {Body}       bi
          * @param  {Body}       bj
          */
-        planeTrimesh(planeShape: Shape, trimeshShape: any, planePos: feng3d.Vector3, trimeshPos: feng3d.Vector3, planeQuat: Quaternion, trimeshQuat: Quaternion, planeBody: Body, trimeshBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        sphereTrimesh(sphereShape: Shape, trimeshShape: any, spherePos: feng3d.Vector3, trimeshPos: feng3d.Vector3, sphereQuat: Quaternion, trimeshQuat: Quaternion, sphereBody: Body, trimeshBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        spherePlane(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        sphereBox(si: Shape, sj: any, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        sphereConvex(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        planeBox(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        planeConvex(planeShape: Shape, convexShape: any, planePosition: feng3d.Vector3, convexPosition: feng3d.Vector3, planeQuat: Quaternion, convexQuat: Quaternion, planeBody: Body, convexBody: Body, si: Shape, sj: Shape, justTest: boolean): boolean;
-        convexConvex(si: any, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean, faceListA?: any[], faceListB?: any[]): boolean;
+        planeTrimesh(planeShape: Shape, trimeshShape: any, planePos: feng3d.Vector3, trimeshPos: feng3d.Vector3, planeQuat: feng3d.Quaternion, trimeshQuat: feng3d.Quaternion, planeBody: Body, trimeshBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereTrimesh(sphereShape: Shape, trimeshShape: any, spherePos: feng3d.Vector3, trimeshPos: feng3d.Vector3, sphereQuat: feng3d.Quaternion, trimeshQuat: feng3d.Quaternion, sphereBody: Body, trimeshBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        spherePlane(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereBox(si: Shape, sj: any, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereConvex(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        planeBox(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        planeConvex(planeShape: Shape, convexShape: any, planePosition: feng3d.Vector3, convexPosition: feng3d.Vector3, planeQuat: feng3d.Quaternion, convexQuat: feng3d.Quaternion, planeBody: Body, convexBody: Body, si: Shape, sj: Shape, justTest: boolean): boolean;
+        convexConvex(si: any, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean, faceListA?: any[], faceListB?: any[]): boolean;
         /**
          * @method convexTrimesh
          * @param  {Array}      result
@@ -20454,12 +20343,12 @@ declare namespace CANNON {
          * @param  {Body}       bi
          * @param  {Body}       bj
          */
-        planeParticle(sj: Shape, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: Quaternion, qi: Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        sphereParticle(sj: Shape, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: Quaternion, qi: Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        convexParticle(sj: any, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: Quaternion, qi: Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        boxHeightfield(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        convexHeightfield(convexShape: Shape, hfShape: any, convexPos: feng3d.Vector3, hfPos: feng3d.Vector3, convexQuat: Quaternion, hfQuat: Quaternion, convexBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        sphereHeightfield(sphereShape: Shape, hfShape: any, spherePos: feng3d.Vector3, hfPos: feng3d.Vector3, sphereQuat: Quaternion, hfQuat: Quaternion, sphereBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        planeParticle(sj: Shape, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereParticle(sj: Shape, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        convexParticle(sj: any, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        boxHeightfield(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        convexHeightfield(convexShape: Shape, hfShape: any, convexPos: feng3d.Vector3, hfPos: feng3d.Vector3, convexQuat: feng3d.Quaternion, hfQuat: feng3d.Quaternion, convexBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereHeightfield(sphereShape: Shape, hfShape: any, spherePos: feng3d.Vector3, hfPos: feng3d.Vector3, sphereQuat: feng3d.Quaternion, hfQuat: feng3d.Quaternion, sphereBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
     }
 }
 //# sourceMappingURL=feng3d.d.ts.map

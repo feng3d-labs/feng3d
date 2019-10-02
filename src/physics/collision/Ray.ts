@@ -191,7 +191,7 @@ namespace CANNON
             this._direction.normalize();
         };
 
-        private intersectShape(shape: Shape, quat: Quaternion, position: feng3d.Vector3, body: Body)
+        private intersectShape(shape: Shape, quat: feng3d.Quaternion, position: feng3d.Vector3, body: Body)
         {
             var from = this.from;
 
@@ -209,12 +209,12 @@ namespace CANNON
             }
         }
 
-        private intersectBox(shape: Shape, quat: Quaternion, position: feng3d.Vector3, body: Body, reportedShape: Shape)
+        private intersectBox(shape: Shape, quat: feng3d.Quaternion, position: feng3d.Vector3, body: Body, reportedShape: Shape)
         {
             return this.intersectConvex(shape.convexPolyhedronRepresentation, quat, position, body, reportedShape);
         }
 
-        private intersectPlane(shape: Shape, quat: Quaternion, position: feng3d.Vector3, body: Body, reportedShape: Shape)
+        private intersectPlane(shape: Shape, quat: feng3d.Quaternion, position: feng3d.Vector3, body: Body, reportedShape: Shape)
         {
             var from = this.from;
             var to = this.to;
@@ -276,7 +276,7 @@ namespace CANNON
             result.upperBound.z = Math.max(to.z, from.z);
         }
 
-        private intersectHeightfield(shape: any, quat: Quaternion, position: feng3d.Vector3, body: Body, reportedShape: Shape)
+        private intersectHeightfield(shape: any, quat: feng3d.Quaternion, position: feng3d.Vector3, body: Body, reportedShape: Shape)
         {
             var data = shape.data,
                 w = shape.elementSize;
@@ -341,7 +341,7 @@ namespace CANNON
             }
         }
 
-        private intersectSphere(shape: any, quat: Quaternion, position: feng3d.Vector3, body: Body, reportedShape: Shape)
+        private intersectSphere(shape: any, quat: feng3d.Quaternion, position: feng3d.Vector3, body: Body, reportedShape: Shape)
         {
             var from = this.from,
                 to = this.to,
@@ -401,7 +401,7 @@ namespace CANNON
 
         private intersectConvex(
             shape: Shape,
-            quat: Quaternion,
+            quat: feng3d.Quaternion,
             position: feng3d.Vector3,
             body: Body,
             reportedShape: Shape,
@@ -526,7 +526,7 @@ namespace CANNON
          */
         private intersectTrimesh(
             mesh: any,
-            quat: Quaternion,
+            quat: feng3d.Quaternion,
             position: feng3d.Vector3,
             body: Body,
             reportedShape: Shape,
@@ -736,7 +736,7 @@ namespace CANNON
     var v2 = new feng3d.Vector3();
 
     var intersectBody_xi = new feng3d.Vector3();
-    var intersectBody_qi = new Quaternion();
+    var intersectBody_qi = new feng3d.Quaternion();
 
 
     var vector = new feng3d.Vector3();

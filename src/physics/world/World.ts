@@ -1099,8 +1099,5 @@ namespace CANNON
     var World_step_t2 = new feng3d.Vector3();
     var World_step_rixn = new feng3d.Vector3();
     var World_step_rjxn = new feng3d.Vector3();
-    var World_step_step_q = new Quaternion();
-    var World_step_step_w = new Quaternion();
-    var World_step_step_wq = new Quaternion();
     var invI_tau_dt = new feng3d.Vector3();
 }

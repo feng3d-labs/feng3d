@@ -353,7 +353,6 @@
         "src/core/Mouse3DManager.ts",
         //
         "src/physics/math/Mat3.ts",
-        "src/physics/math/Quaternion.ts",
         "src/physics/math/Transform.ts",
         "src/physics/math/JacobianElement.ts",
         "src/physics/utils/EventTarget.ts",

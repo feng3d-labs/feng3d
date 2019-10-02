@@ -23,7 +23,7 @@ namespace CANNON
             this.boundingSphereRadius = Number.MAX_VALUE;
         }
 
-        computeWorldNormal(quat: Quaternion)
+        computeWorldNormal(quat: feng3d.Quaternion)
         {
             var n = this.worldNormal;
             n.init(0, 1, 0);
@@ -41,7 +41,7 @@ namespace CANNON
             return Number.MAX_VALUE; // The plane is infinite...
         }
 
-        calculateWorldAABB(pos: feng3d.Vector3, quat: Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
+        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
         {
             // The plane AABB is infinite, except if the normal is pointing along any axis
             tempNormal.init(0, 1, 0); // Default plane normal is y

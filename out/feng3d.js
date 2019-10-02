@@ -11940,46 +11940,63 @@ var feng3d;
             return this;
         };
         /**
-         * Spherically interpolates between two quaternions, providing an interpolation between rotations with constant angle change rate.
-         * @param qa The first quaternion to interpolate.
-         * @param qb The second quaternion to interpolate.
-         * @param t The interpolation weight, a value between 0 and 1.
+         * 与目标四元数之间进行球面内插，提供了具有恒定角度变化率的旋转之间的内插。
+         * @param qb 目标四元素
+         * @param t 插值权值，一个介于0和1之间的值。
          */
-        Quaternion.prototype.slerp = function (qa, qb, t) {
-            var w1 = qa.w, x1 = qa.x, y1 = qa.y, z1 = qa.z;
-            var w2 = qb.w, x2 = qb.x, y2 = qb.y, z2 = qb.z;
-            var dot = w1 * w2 + x1 * x2 + y1 * y2 + z1 * z2;
-            // shortest direction
-            if (dot < 0) {
-                dot = -dot;
-                w2 = -w2;
-                x2 = -x2;
-                y2 = -y2;
-                z2 = -z2;
-            }
-            if (dot < 0.95) {
-                // interpolate angle linearly
-                var angle = Math.acos(dot);
-                var s = 1 / Math.sin(angle);
-                var s1 = Math.sin(angle * (1 - t)) * s;
-                var s2 = Math.sin(angle * t) * s;
-                this.w = w1 * s1 + w2 * s2;
-                this.x = x1 * s1 + x2 * s2;
-                this.y = y1 * s1 + y2 * s2;
-                this.z = z1 * s1 + z2 * s2;
+        Quaternion.prototype.slerp = function (qb, t) {
+            if (t === 0)
+                return this;
+            if (t === 1)
+                return this.copy(qb);
+            var x = this.x, y = this.y, z = this.z, w = this.w;
+            // http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/
+            var cosHalfTheta = w * qb.w + x * qb.x + y * qb.y + z * qb.z;
+            if (cosHalfTheta < 0) {
+                this.w = -qb.w;
+                this.x = -qb.x;
+                this.y = -qb.y;
+                this.z = -qb.z;
+                cosHalfTheta = -cosHalfTheta;
             }
             else {
-                // nearly identical angle, interpolate linearly
-                this.w = w1 + t * (w2 - w1);
-                this.x = x1 + t * (x2 - x1);
-                this.y = y1 + t * (y2 - y1);
-                this.z = z1 + t * (z2 - z1);
-                var len = 1.0 / Math.sqrt(this.w * this.w + this.x * this.x + this.y * this.y + this.z * this.z);
-                this.w *= len;
-                this.x *= len;
-                this.y *= len;
-                this.z *= len;
+                this.copy(qb);
             }
+            if (cosHalfTheta >= 1.0) {
+                this.w = w;
+                this.x = x;
+                this.y = y;
+                this.z = z;
+                return this;
+            }
+            var sqrSinHalfTheta = 1.0 - cosHalfTheta * cosHalfTheta;
+            if (sqrSinHalfTheta <= Number.EPSILON) {
+                var s = 1 - t;
+                this.w = s * w + t * this.w;
+                this.x = s * x + t * this.x;
+                this.y = s * y + t * this.y;
+                this.z = s * z + t * this.z;
+                this.normalize();
+                return this;
+            }
+            var sinHalfTheta = Math.sqrt(sqrSinHalfTheta);
+            var halfTheta = Math.atan2(sinHalfTheta, cosHalfTheta);
+            var ratioA = Math.sin((1 - t) * halfTheta) / sinHalfTheta, ratioB = Math.sin(t * halfTheta) / sinHalfTheta;
+            this.w = (w * ratioA + this.w * ratioB);
+            this.x = (x * ratioA + this.x * ratioB);
+            this.y = (y * ratioA + this.y * ratioB);
+            this.z = (z * ratioA + this.z * ratioB);
+            return this;
+        };
+        /**
+         * 与目标四元数之间进行球面内插，提供了具有恒定角度变化率的旋转之间的内插。
+         * @param qb 目标四元素
+         * @param t 插值权值，一个介于0和1之间的值。
+         * @param out 保存插值结果
+         */
+        Quaternion.prototype.slerpTo = function (qb, t, out) {
+            if (out === void 0) { out = new Quaternion(); }
+            return out.copy(this).slerp(qb, t);
         };
         /**
          * 线性求插值
@@ -12198,6 +12215,34 @@ var feng3d;
             target.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
             target.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
             return target;
+        };
+        /**
+         * 旋转一个绝对方向四元数给定一个角速度和一个时间步长
+         *
+         * @param angularVelocity
+         * @param dt
+         * @param angularFactor
+         */
+        Quaternion.prototype.integrate = function (angularVelocity, dt, angularFactor) {
+            var ax = angularVelocity.x * angularFactor.x, ay = angularVelocity.y * angularFactor.y, az = angularVelocity.z * angularFactor.z, bx = this.x, by = this.y, bz = this.z, bw = this.w;
+            var half_dt = dt * 0.5;
+            this.x += half_dt * (ax * bw + ay * bz - az * by);
+            this.y += half_dt * (ay * bw + az * bx - ax * bz);
+            this.z += half_dt * (az * bw + ax * by - ay * bx);
+            this.w += half_dt * (-ax * bx - ay * by - az * bz);
+            return this;
+        };
+        /**
+         * 旋转一个绝对方向四元数给定一个角速度和一个时间步长
+         *
+         * @param angularVelocity
+         * @param dt
+         * @param angularFactor
+         * @param  target
+         */
+        Quaternion.prototype.integrateTo = function (angularVelocity, dt, angularFactor, target) {
+            if (target === void 0) { target = new Quaternion(); }
+            return target.copy(this).integrate(angularVelocity, dt, angularFactor);
         };
         /**
          * 将源的值复制到此四元数
@@ -34118,13 +34163,13 @@ var feng3d;
                     case "Linear":
                         q1 = key1.value.clone();
                         q2 = key2.value.clone();
-                        rotationQuaternion.slerp(q1, q2, Factor);
+                        q1.slerpTo(q2, Factor, rotationQuaternion);
                         break;
                     case "Hermite":
                     case "Bezier":
                         q1 = key1.value.clone();
                         q2 = key2.value.clone();
-                        rotationQuaternion.slerp(q1, q2, Factor);
+                        q1.slerpTo(q2, Factor, rotationQuaternion);
                         break;
                 }
                 return rotationQuaternion;
@@ -37176,385 +37221,6 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
-    var Quaternion = /** @class */ (function () {
-        /**
-         * A Quaternion describes a rotation in 3D space. The Quaternion is mathematically defined as Q = x*i + y*j + z*k + w, where (i,j,k) are imaginary basis vectors. (x,y,z) can be seen as a vector related to the axis of rotation, while the real multiplier, w, is related to the amount of rotation.
-         *
-         * @param x Multiplier of the imaginary basis vector i.
-         * @param y Multiplier of the imaginary basis vector j.
-         * @param z Multiplier of the imaginary basis vector k.
-         * @param w Multiplier of the real part.
-         * @see http://en.wikipedia.org/wiki/Quaternion
-         */
-        function Quaternion(x, y, z, w) {
-            if (x === void 0) { x = 0; }
-            if (y === void 0) { y = 0; }
-            if (z === void 0) { z = 0; }
-            if (w === void 0) { w = 1; }
-            this.x = x !== undefined ? x : 0;
-            this.y = y !== undefined ? y : 0;
-            this.z = z !== undefined ? z : 0;
-            this.w = w !== undefined ? w : 1;
-        }
-        /**
-         * Set the value of the quaternion.
-         * @param x
-         * @param y
-         * @param z
-         * @param w
-         */
-        Quaternion.prototype.set = function (x, y, z, w) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-            return this;
-        };
-        /**
-         * Convert to a readable format
-         */
-        Quaternion.prototype.toString = function () {
-            return this.x + "," + this.y + "," + this.z + "," + this.w;
-        };
-        /**
-         * Convert to an Array
-         */
-        Quaternion.prototype.toArray = function () {
-            return [this.x, this.y, this.z, this.w];
-        };
-        /**
-         * Set the quaternion components given an axis and an angle.
-         * @param axis
-         * @param angle in radians
-         */
-        Quaternion.prototype.fromAxisAngle = function (axis, angle) {
-            var s = Math.sin(angle * 0.5);
-            this.x = axis.x * s;
-            this.y = axis.y * s;
-            this.z = axis.z * s;
-            this.w = Math.cos(angle * 0.5);
-            return this;
-        };
-        /**
-         * Converts the quaternion to axis/angle representation.
-         * @param targetAxis A vector object to reuse for storing the axis.
-         * @return An array, first elemnt is the axis and the second is the angle in radians.
-         */
-        Quaternion.prototype.toAxisAngle = function (targetAxis) {
-            if (targetAxis === void 0) { targetAxis = new feng3d.Vector3(); }
-            this.normalize(); // if w>1 acos and sqrt will produce errors, this cant happen if quaternion is normalised
-            var angle = 2 * Math.acos(this.w);
-            var s = Math.sqrt(1 - this.w * this.w); // assuming quaternion normalised then w is less than 1, so term always positive.
-            if (s < 0.001) { // test to avoid divide by zero, s is always positive due to sqrt
-                // if s close to zero then direction of axis not important
-                targetAxis.x = this.x; // if it is important that axis is normalised then replace with x=1; y=z=0;
-                targetAxis.y = this.y;
-                targetAxis.z = this.z;
-            }
-            else {
-                targetAxis.x = this.x / s; // normalise axis
-                targetAxis.y = this.y / s;
-                targetAxis.z = this.z / s;
-            }
-            return [targetAxis, angle];
-        };
-        /**
-         * Set the quaternion value given two vectors. The resulting rotation will be the needed rotation to rotate u to v.
-         * @param u
-         * @param v
-         */
-        Quaternion.prototype.setFromVectors = function (u, v) {
-            if (u.isAntiparallelTo(v)) {
-                var t1 = sfv_t1;
-                var t2 = sfv_t2;
-                u.tangents(t1, t2);
-                this.fromAxisAngle(t1, Math.PI);
-            }
-            else {
-                var a = u.crossTo(v);
-                this.x = a.x;
-                this.y = a.y;
-                this.z = a.z;
-                this.w = Math.sqrt(Math.pow(u.length, 2) * Math.pow(v.length, 2)) + u.dot(v);
-                this.normalize();
-            }
-            return this;
-        };
-        /**
-         * Quaternion multiplication
-         * @param q
-         * @param target
-         */
-        Quaternion.prototype.multTo = function (q, target) {
-            if (target === void 0) { target = new Quaternion(); }
-            var ax = this.x, ay = this.y, az = this.z, aw = this.w, bx = q.x, by = q.y, bz = q.z, bw = q.w;
-            target.x = ax * bw + aw * bx + ay * bz - az * by;
-            target.y = ay * bw + aw * by + az * bx - ax * bz;
-            target.z = az * bw + aw * bz + ax * by - ay * bx;
-            target.w = aw * bw - ax * bx - ay * by - az * bz;
-            return target;
-        };
-        /**
-         * Get the inverse quaternion rotation.
-         * @param target
-         */
-        Quaternion.prototype.inverseTo = function (target) {
-            var x = this.x, y = this.y, z = this.z, w = this.w;
-            target = target || new Quaternion();
-            this.conjugateTo(target);
-            var inorm2 = 1 / (x * x + y * y + z * z + w * w);
-            target.x *= inorm2;
-            target.y *= inorm2;
-            target.z *= inorm2;
-            target.w *= inorm2;
-            return target;
-        };
-        /**
-         * Get the quaternion conjugate
-         * @param target
-         */
-        Quaternion.prototype.conjugateTo = function (target) {
-            if (target === void 0) { target = new Quaternion(); }
-            target.x = -this.x;
-            target.y = -this.y;
-            target.z = -this.z;
-            target.w = this.w;
-            return target;
-        };
-        /**
-         * Normalize the quaternion. Note that this changes the values of the quaternion.
-         */
-        Quaternion.prototype.normalize = function () {
-            var l = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
-            if (l === 0) {
-                this.x = 0;
-                this.y = 0;
-                this.z = 0;
-                this.w = 0;
-            }
-            else {
-                l = 1 / l;
-                this.x *= l;
-                this.y *= l;
-                this.z *= l;
-                this.w *= l;
-            }
-            return this;
-        };
-        /**
-         * Approximation of quaternion normalization. Works best when quat is already almost-normalized.
-         * @see http://jsperf.com/fast-quaternion-normalization
-         * @author unphased, https://github.com/unphased
-         */
-        Quaternion.prototype.normalizeFast = function () {
-            var f = (3.0 - (this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w)) / 2.0;
-            if (f === 0) {
-                this.x = 0;
-                this.y = 0;
-                this.z = 0;
-                this.w = 0;
-            }
-            else {
-                this.x *= f;
-                this.y *= f;
-                this.z *= f;
-                this.w *= f;
-            }
-            return this;
-        };
-        /**
-         * Multiply the quaternion by a vector
-         * @param v
-         * @param target Optional
-         */
-        Quaternion.prototype.vmult = function (v, target) {
-            if (target === void 0) { target = new feng3d.Vector3(); }
-            var x = v.x, y = v.y, z = v.z;
-            var qx = this.x, qy = this.y, qz = this.z, qw = this.w;
-            // q*v
-            var ix = qw * x + qy * z - qz * y, iy = qw * y + qz * x - qx * z, iz = qw * z + qx * y - qy * x, iw = -qx * x - qy * y - qz * z;
-            target.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
-            target.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
-            target.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
-            return target;
-        };
-        /**
-         * Copies value of source to this quaternion.
-         * @param source
-         */
-        Quaternion.prototype.copy = function (source) {
-            this.x = source.x;
-            this.y = source.y;
-            this.z = source.z;
-            this.w = source.w;
-            return this;
-        };
-        /**
-         * Convert the quaternion to euler angle representation. Order: YZX, as this page describes: http://www.euclideanspace.com/maths/standards/index.htm
-         * @param target
-         * @param order Three-character string e.g. "YZX", which also is default.
-         */
-        Quaternion.prototype.toEuler = function (target, order) {
-            order = order || "YZX";
-            var heading, attitude, bank;
-            var x = this.x, y = this.y, z = this.z, w = this.w;
-            switch (order) {
-                case "YZX":
-                    var test = x * y + z * w;
-                    if (test > 0.499) { // singularity at north pole
-                        heading = 2 * Math.atan2(x, w);
-                        attitude = Math.PI / 2;
-                        bank = 0;
-                    }
-                    if (test < -0.499) { // singularity at south pole
-                        heading = -2 * Math.atan2(x, w);
-                        attitude = -Math.PI / 2;
-                        bank = 0;
-                    }
-                    if (isNaN(heading)) {
-                        var sqx = x * x;
-                        var sqy = y * y;
-                        var sqz = z * z;
-                        heading = Math.atan2(2 * y * w - 2 * x * z, 1 - 2 * sqy - 2 * sqz); // Heading
-                        attitude = Math.asin(2 * test); // attitude
-                        bank = Math.atan2(2 * x * w - 2 * y * z, 1 - 2 * sqx - 2 * sqz); // bank
-                    }
-                    break;
-                default:
-                    throw new Error("Euler order " + order + " not supported yet.");
-            }
-            target.y = heading;
-            target.z = attitude;
-            target.x = bank;
-        };
-        /**
-         * See http://www.mathworks.com/matlabcentral/fileexchange/20696-function-to-convert-between-dcm-euler-angles-quaternions-and-euler-vectors/content/SpinCalc.m
-         * @param x
-         * @param y
-         * @param z
-         * @param order The order to apply angles: 'XYZ' or 'YXZ' or any other combination
-         */
-        Quaternion.prototype.setFromEuler = function (x, y, z, order) {
-            order = order || "XYZ";
-            var c1 = Math.cos(x / 2);
-            var c2 = Math.cos(y / 2);
-            var c3 = Math.cos(z / 2);
-            var s1 = Math.sin(x / 2);
-            var s2 = Math.sin(y / 2);
-            var s3 = Math.sin(z / 2);
-            if (order === 'XYZ') {
-                this.x = s1 * c2 * c3 + c1 * s2 * s3;
-                this.y = c1 * s2 * c3 - s1 * c2 * s3;
-                this.z = c1 * c2 * s3 + s1 * s2 * c3;
-                this.w = c1 * c2 * c3 - s1 * s2 * s3;
-            }
-            else if (order === 'YXZ') {
-                this.x = s1 * c2 * c3 + c1 * s2 * s3;
-                this.y = c1 * s2 * c3 - s1 * c2 * s3;
-                this.z = c1 * c2 * s3 - s1 * s2 * c3;
-                this.w = c1 * c2 * c3 + s1 * s2 * s3;
-            }
-            else if (order === 'ZXY') {
-                this.x = s1 * c2 * c3 - c1 * s2 * s3;
-                this.y = c1 * s2 * c3 + s1 * c2 * s3;
-                this.z = c1 * c2 * s3 + s1 * s2 * c3;
-                this.w = c1 * c2 * c3 - s1 * s2 * s3;
-            }
-            else if (order === 'ZYX') {
-                this.x = s1 * c2 * c3 - c1 * s2 * s3;
-                this.y = c1 * s2 * c3 + s1 * c2 * s3;
-                this.z = c1 * c2 * s3 - s1 * s2 * c3;
-                this.w = c1 * c2 * c3 + s1 * s2 * s3;
-            }
-            else if (order === 'YZX') {
-                this.x = s1 * c2 * c3 + c1 * s2 * s3;
-                this.y = c1 * s2 * c3 + s1 * c2 * s3;
-                this.z = c1 * c2 * s3 - s1 * s2 * c3;
-                this.w = c1 * c2 * c3 - s1 * s2 * s3;
-            }
-            else if (order === 'XZY') {
-                this.x = s1 * c2 * c3 - c1 * s2 * s3;
-                this.y = c1 * s2 * c3 - s1 * c2 * s3;
-                this.z = c1 * c2 * s3 + s1 * s2 * c3;
-                this.w = c1 * c2 * c3 + s1 * s2 * s3;
-            }
-            return this;
-        };
-        Quaternion.prototype.clone = function () {
-            return new Quaternion(this.x, this.y, this.z, this.w);
-        };
-        /**
-         * Performs a spherical linear interpolation between two quat
-         *
-         * @param toQuat second operand
-         * @param t interpolation amount between the self quaternion and toQuat
-         * @param target A quaternion to store the result in. If not provided, a new one will be created.
-         * @returns The "target" object
-         */
-        Quaternion.prototype.slerp = function (toQuat, t, target) {
-            if (target === void 0) { target = new Quaternion(); }
-            var ax = this.x, ay = this.y, az = this.z, aw = this.w, bx = toQuat.x, by = toQuat.y, bz = toQuat.z, bw = toQuat.w;
-            var omega, cosom, sinom, scale0, scale1;
-            // calc cosine
-            cosom = ax * bx + ay * by + az * bz + aw * bw;
-            // adjust signs (if necessary)
-            if (cosom < 0.0) {
-                cosom = -cosom;
-                bx = -bx;
-                by = -by;
-                bz = -bz;
-                bw = -bw;
-            }
-            // calculate coefficients
-            if ((1.0 - cosom) > 0.000001) {
-                // standard case (slerp)
-                omega = Math.acos(cosom);
-                sinom = Math.sin(omega);
-                scale0 = Math.sin((1.0 - t) * omega) / sinom;
-                scale1 = Math.sin(t * omega) / sinom;
-            }
-            else {
-                // "from" and "to" quaternions are very close
-                //  ... so we can do a linear interpolation
-                scale0 = 1.0 - t;
-                scale1 = t;
-            }
-            // calculate final values
-            target.x = scale0 * ax + scale1 * bx;
-            target.y = scale0 * ay + scale1 * by;
-            target.z = scale0 * az + scale1 * bz;
-            target.w = scale0 * aw + scale1 * bw;
-            return target;
-        };
-        /**
-         * Rotate an absolute orientation quaternion given an angular velocity and a time step.
-         * @param angularVelocity
-         * @param dt
-         * @param angularFactor
-         * @param  target
-         * @return The "target" object
-         */
-        Quaternion.prototype.integrate = function (angularVelocity, dt, angularFactor, target) {
-            target = target || new Quaternion();
-            var ax = angularVelocity.x * angularFactor.x, ay = angularVelocity.y * angularFactor.y, az = angularVelocity.z * angularFactor.z, bx = this.x, by = this.y, bz = this.z, bw = this.w;
-            var half_dt = dt * 0.5;
-            target.x += half_dt * (ax * bw + ay * bz - az * by);
-            target.y += half_dt * (ay * bw + az * bx - ax * bz);
-            target.z += half_dt * (az * bw + ax * by - ay * bx);
-            target.w += half_dt * (-ax * bx - ay * by - az * bz);
-            return target;
-        };
-        return Quaternion;
-    }());
-    CANNON.Quaternion = Quaternion;
-    var sfv_t1 = new feng3d.Vector3();
-    var sfv_t2 = new feng3d.Vector3();
-    var Quaternion_mult_va = new feng3d.Vector3();
-    var Quaternion_mult_vb = new feng3d.Vector3();
-    var Quaternion_mult_vaxvb = new feng3d.Vector3();
-})(CANNON || (CANNON = {}));
-var CANNON;
-(function (CANNON) {
     var Transform = /** @class */ (function () {
         function Transform(options) {
             if (options === void 0) { options = {}; }
@@ -37562,7 +37228,7 @@ var CANNON;
             if (options.position) {
                 this.position.copy(options.position);
             }
-            this.quaternion = new CANNON.Quaternion();
+            this.quaternion = new feng3d.Quaternion();
             if (options.quaternion) {
                 this.quaternion.copy(options.quaternion);
             }
@@ -37629,7 +37295,7 @@ var CANNON;
         return Transform;
     }());
     CANNON.Transform = Transform;
-    var tmpQuat = new CANNON.Quaternion();
+    var tmpQuat = new feng3d.Quaternion();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -41164,9 +40830,6 @@ var CANNON;
     }());
     CANNON.Broadphase = Broadphase;
     var Broadphase_collisionPairs_r = new feng3d.Vector3(); // Temp objects
-    var Broadphase_collisionPairs_normal = new feng3d.Vector3();
-    var Broadphase_collisionPairs_quat = new CANNON.Quaternion();
-    var Broadphase_collisionPairs_relpos = new feng3d.Vector3();
     var Broadphase_makePairsUnique_temp = { keys: [] };
     var Broadphase_makePairsUnique_p1 = [];
     var Broadphase_makePairsUnique_p2 = [];
@@ -42132,7 +41795,7 @@ var CANNON;
     var v1 = new feng3d.Vector3();
     var v2 = new feng3d.Vector3();
     var intersectBody_xi = new feng3d.Vector3();
-    var intersectBody_qi = new CANNON.Quaternion();
+    var intersectBody_qi = new feng3d.Quaternion();
     var vector = new feng3d.Vector3();
     var normal = new feng3d.Vector3();
     var intersectPoint = new feng3d.Vector3();
@@ -42308,10 +41971,10 @@ var CANNON;
             _this.timeLastSleepy = 0;
             _this._wakeUpAfterNarrowphase = false;
             _this.torque = new feng3d.Vector3();
-            _this.quaternion = new CANNON.Quaternion();
-            _this.initQuaternion = new CANNON.Quaternion();
-            _this.previousQuaternion = new CANNON.Quaternion();
-            _this.interpolatedQuaternion = new CANNON.Quaternion();
+            _this.quaternion = new feng3d.Quaternion();
+            _this.initQuaternion = new feng3d.Quaternion();
+            _this.previousQuaternion = new feng3d.Quaternion();
+            _this.interpolatedQuaternion = new feng3d.Quaternion();
             if (options.quaternion) {
                 _this.quaternion.copy(options.quaternion);
                 _this.initQuaternion.copy(options.quaternion);
@@ -42465,7 +42128,7 @@ var CANNON;
          */
         Body.prototype.addShape = function (shape, _offset, _orientation) {
             var offset = new feng3d.Vector3();
-            var orientation = new CANNON.Quaternion();
+            var orientation = new feng3d.Quaternion();
             if (_offset) {
                 offset.copy(_offset);
             }
@@ -42682,7 +42345,7 @@ var CANNON;
             pos.x += velo.x * dt;
             pos.y += velo.y * dt;
             pos.z += velo.z * dt;
-            quat.integrate(this.angularVelocity, dt, this.angularFactor, quat);
+            quat.integrateTo(this.angularVelocity, dt, this.angularFactor, quat);
             if (quatNormalize) {
                 if (quatNormalizeFast) {
                     quat.normalizeFast();
@@ -42735,11 +42398,11 @@ var CANNON;
     }(CANNON.EventTarget));
     CANNON.Body = Body;
     var tmpVec = new feng3d.Vector3();
-    var tmpQuat = new CANNON.Quaternion();
+    var tmpQuat = new feng3d.Quaternion();
     var torque = new feng3d.Vector3();
     var invI_tau_dt = new feng3d.Vector3();
-    var w = new CANNON.Quaternion();
-    var wq = new CANNON.Quaternion();
+    var w = new feng3d.Quaternion();
+    var wq = new feng3d.Quaternion();
     var Body_updateMassProperties_halfExtents = new feng3d.Vector3();
     var Body_applyForce_r = new feng3d.Vector3();
     var Body_applyForce_rotForce = new feng3d.Vector3();
@@ -43251,9 +42914,9 @@ var CANNON;
             right.normalize();
             // Rotate around steering over the wheelAxle
             var steering = wheel.steering;
-            var steeringOrn = new CANNON.Quaternion();
+            var steeringOrn = new feng3d.Quaternion();
             steeringOrn.fromAxisAngle(up, steering);
-            var rotatingOrn = new CANNON.Quaternion();
+            var rotatingOrn = new feng3d.Quaternion();
             rotatingOrn.fromAxisAngle(right, wheel.rotation);
             // World rotation of the wheel
             var q = wheel.worldTransform.quaternion;
@@ -44891,7 +44554,7 @@ var CANNON;
                 for (var j = 0; j !== this.bodies.length; j++) {
                     var b = this.bodies[j];
                     b.previousPosition.lerpNumberTo(b.position, t, b.interpolatedPosition);
-                    b.previousQuaternion.slerp(b.quaternion, t, b.interpolatedQuaternion);
+                    b.previousQuaternion.slerpTo(b.quaternion, t, b.interpolatedQuaternion);
                     b.previousQuaternion.normalize();
                 }
                 this.time += timeSinceLastCalled;
@@ -45216,9 +44879,6 @@ var CANNON;
     var World_step_t2 = new feng3d.Vector3();
     var World_step_rixn = new feng3d.Vector3();
     var World_step_rjxn = new feng3d.Vector3();
-    var World_step_step_q = new CANNON.Quaternion();
-    var World_step_step_w = new CANNON.Quaternion();
-    var World_step_step_wq = new CANNON.Quaternion();
     var invI_tau_dt = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
@@ -46430,8 +46090,8 @@ var CANNON;
     var averageContactPointB = new feng3d.Vector3();
     var tmpVec1 = new feng3d.Vector3();
     var tmpVec2 = new feng3d.Vector3();
-    var tmpQuat1 = new CANNON.Quaternion();
-    var tmpQuat2 = new CANNON.Quaternion();
+    var tmpQuat1 = new feng3d.Quaternion();
+    var tmpQuat2 = new feng3d.Quaternion();
     var numWarnings = 0;
     var maxWarnings = 10;
     function warn(msg) {
@@ -46529,7 +46189,7 @@ var CANNON;
     var particlePlane_projected = new feng3d.Vector3();
     var particleSphere_normal = new feng3d.Vector3();
     // WIP
-    var cqj = new CANNON.Quaternion();
+    var cqj = new feng3d.Quaternion();
     var convexParticle_local = new feng3d.Vector3();
     var convexParticle_normal = new feng3d.Vector3();
     var convexParticle_penetratedFaceNormal = new feng3d.Vector3();

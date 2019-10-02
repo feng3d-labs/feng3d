@@ -658,7 +658,7 @@ namespace CANNON
             return Number.MAX_VALUE; // The terrain is infinite
         }
 
-        calculateWorldAABB(pos: feng3d.Vector3, quat: Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
+        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
         {
             // TODO: do it properly
             min.init(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);

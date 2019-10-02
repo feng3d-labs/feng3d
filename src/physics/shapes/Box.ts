@@ -88,7 +88,7 @@ namespace CANNON
          * @param sixTargetVectors An array of 6 vectors, to store the resulting side normals in.
          * @param quat             Orientation to apply to the normal vectors. If not provided, the vectors will be in respect to the local frame.
          */
-        getSideNormals(sixTargetVectors: feng3d.Vector3[], quat: Quaternion)
+        getSideNormals(sixTargetVectors: feng3d.Vector3[], quat: feng3d.Quaternion)
         {
             var sides = sixTargetVectors;
             var ex = this.halfExtents;
@@ -120,7 +120,7 @@ namespace CANNON
             this.boundingSphereRadius = this.halfExtents.length;
         }
 
-        forEachWorldCorner(pos: feng3d.Vector3, quat: Quaternion, callback: Function)
+        forEachWorldCorner(pos: feng3d.Vector3, quat: feng3d.Quaternion, callback: Function)
         {
             var e = this.halfExtents;
             var corners = [[e.x, e.y, e.z],
@@ -142,7 +142,7 @@ namespace CANNON
             }
         }
 
-        calculateWorldAABB(pos: feng3d.Vector3, quat: Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
+        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
         {
             var e = this.halfExtents;
             worldCornersTemp[0].init(e.x, e.y, e.z);

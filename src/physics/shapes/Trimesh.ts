@@ -306,7 +306,7 @@ namespace CANNON
          * @param out
          * @return The "out" vector object
          */
-        getWorldVertex(i: number, pos: feng3d.Vector3, quat: Quaternion, out: feng3d.Vector3)
+        getWorldVertex(i: number, pos: feng3d.Vector3, quat: feng3d.Quaternion, out: feng3d.Vector3)
         {
             this.getVertex(i, out);
             Transform.pointToWorldFrame(pos, quat, out, out);
@@ -443,7 +443,7 @@ namespace CANNON
             this.boundingSphereRadius = Math.sqrt(max2);
         }
 
-        calculateWorldAABB(pos: feng3d.Vector3, quat: Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
+        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
         {
             /*
             var n = this.vertices.length / 3,
