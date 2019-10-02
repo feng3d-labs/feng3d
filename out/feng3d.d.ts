@@ -17236,62 +17236,61 @@ declare namespace feng3d {
 declare namespace CANNON {
     class Mat3 {
         /**
-         * A vector of length 9, containing all matrix elements
+         * 长度为9的向量，包含所有的矩阵元素
          */
         elements: [number, number, number, number, number, number, number, number, number];
         /**
-         * A 3x3 matrix.
-         * @class Mat3
-         * @constructor
-         * @param array elements Array of nine elements. Optional.
-         * @author schteppe / http://github.com/schteppe
+         * 构建3x3矩阵
+         *
+         * @param elements 九个元素的数组
          */
         constructor(elements?: [number, number, number, number, number, number, number, number, number]);
         /**
-         * Sets the matrix to identity
-         * @todo Should perhaps be renamed to setIdentity() to be more clear.
-         * @todo Create another function that immediately creates an identity matrix eg. eye()
+         * 设置矩阵为单位矩阵
          */
-        identity(): void;
+        identity(): this;
         /**
-         * Set all elements to zero
+         * 将所有元素设置为0
          */
-        setZero(): void;
+        setZero(): this;
         /**
-         * Sets the matrix diagonal elements from a Vec3
+         * 根据一个 Vector3 设置矩阵对角元素
+         *
          * @param vec3
          */
-        setTrace(vec3: feng3d.Vector3): void;
+        setTrace(vec3: feng3d.Vector3): this;
         /**
-         * Gets the matrix diagonal elements
+         * 获取矩阵对角元素
          */
-        getTrace(target?: feng3d.Vector3): void;
+        getTrace(target?: feng3d.Vector3): feng3d.Vector3;
         /**
-         * Matrix-Vector multiplication
-         * @param v The vector to multiply with
-         * @param target Optional, target to save the result in.
+         * 矩阵向量乘法
+         *
+         * @param v 要乘以的向量
+         * @param target 目标保存结果
          */
         vmult(v: feng3d.Vector3, target?: feng3d.Vector3): feng3d.Vector3;
         /**
-         * Matrix-scalar multiplication
+         * 矩阵标量乘法
          * @param s
          */
         smult(s: number): void;
         /**
-         * Matrix multiplication
-         * @param  m Matrix to multiply with from left side.
+         * 矩阵乘法
+         * @param  m 要从左边乘的矩阵。
          */
         mmult(m: Mat3, target?: Mat3): Mat3;
         /**
-         * Scale each column of the matrix
+         * 缩放矩阵的每一列
+         *
          * @param v
          */
         scale(v: feng3d.Vector3, target?: Mat3): Mat3;
         /**
-         * Solve Ax=b
-         * @param b The right hand side
-         * @param target Optional. Target vector to save in.
-         * @todo should reuse arrays
+         * 解决Ax = b
+         *
+         * @param b 右手边
+         * @param target 结果
          */
         solve(b: feng3d.Vector3, target?: feng3d.Vector3): feng3d.Vector3;
         /**

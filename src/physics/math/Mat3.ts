@@ -3,32 +3,22 @@ namespace CANNON
     export class Mat3
     {
         /**
-         * A vector of length 9, containing all matrix elements
+         * 长度为9的向量，包含所有的矩阵元素
          */
         elements: [number, number, number, number, number, number, number, number, number];
 
         /**
-         * A 3x3 matrix.
-         * @class Mat3
-         * @constructor
-         * @param array elements Array of nine elements. Optional.
-         * @author schteppe / http://github.com/schteppe
+         * 构建3x3矩阵
+         * 
+         * @param elements 九个元素的数组
          */
-        constructor(elements: [number, number, number, number, number, number, number, number, number] = [0, 0, 0, 0, 0, 0, 0, 0, 0])
+        constructor(elements: [number, number, number, number, number, number, number, number, number] = [1, 0, 0, 0, 1, 0, 0, 0, 1])
         {
-            if (elements)
-            {
-                this.elements = elements;
-            } else
-            {
-                this.elements = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-            }
+            this.elements = elements;
         }
 
         /**
-         * Sets the matrix to identity
-         * @todo Should perhaps be renamed to setIdentity() to be more clear.
-         * @todo Create another function that immediately creates an identity matrix eg. eye()
+         * 设置矩阵为单位矩阵
          */
         identity()
         {
@@ -44,10 +34,11 @@ namespace CANNON
             e[6] = 0;
             e[7] = 0;
             e[8] = 1;
+            return this;
         }
 
         /**
-         * Set all elements to zero
+         * 将所有元素设置为0
          */
         setZero()
         {
@@ -61,10 +52,12 @@ namespace CANNON
             e[6] = 0;
             e[7] = 0;
             e[8] = 0;
+            return this;
         }
 
         /**
-         * Sets the matrix diagonal elements from a Vec3
+         * 根据一个 Vector3 设置矩阵对角元素
+         * 
          * @param vec3
          */
         setTrace(vec3: feng3d.Vector3)
@@ -73,10 +66,11 @@ namespace CANNON
             e[0] = vec3.x;
             e[4] = vec3.y;
             e[8] = vec3.z;
+            return this;
         }
 
         /**
-         * Gets the matrix diagonal elements
+         * 获取矩阵对角元素
          */
         getTrace(target = new feng3d.Vector3())
         {
@@ -84,12 +78,14 @@ namespace CANNON
             target.x = e[0];
             target.y = e[4];
             target.z = e[8];
+            return target;
         }
 
         /**
-         * Matrix-Vector multiplication
-         * @param v The vector to multiply with
-         * @param target Optional, target to save the result in.
+         * 矩阵向量乘法
+         * 
+         * @param v 要乘以的向量
+         * @param target 目标保存结果
          */
         vmult(v: feng3d.Vector3, target = new feng3d.Vector3())
         {
@@ -105,7 +101,7 @@ namespace CANNON
         }
 
         /**
-         * Matrix-scalar multiplication
+         * 矩阵标量乘法
          * @param s
          */
         smult(s: number)
@@ -117,8 +113,8 @@ namespace CANNON
         }
 
         /**
-         * Matrix multiplication
-         * @param  m Matrix to multiply with from left side.
+         * 矩阵乘法
+         * @param  m 要从左边乘的矩阵。
          */
         mmult(m: Mat3, target = new Mat3())
         {
@@ -138,7 +134,8 @@ namespace CANNON
         }
 
         /**
-         * Scale each column of the matrix
+         * 缩放矩阵的每一列
+         * 
          * @param v
          */
         scale(v: feng3d.Vector3, target = new Mat3())
@@ -155,17 +152,17 @@ namespace CANNON
         }
 
         /**
-         * Solve Ax=b
-         * @param b The right hand side
-         * @param target Optional. Target vector to save in.
-         * @todo should reuse arrays
+         * 解决Ax = b
+         * 
+         * @param b 右手边
+         * @param target 结果
          */
         solve(b: feng3d.Vector3, target = new feng3d.Vector3())
         {
             // Construct equations
             var nr = 3; // num rows
             var nc = 4; // num cols
-            var eqns = [];
+            var eqns: number[] = [];
             for (var i = 0; i < nr * nc; i++)
             {
                 eqns.push(0);
@@ -182,10 +179,10 @@ namespace CANNON
             eqns[3 + 4 * 1] = b.y;
             eqns[3 + 4 * 2] = b.z;
 
-            // Compute right upper triangular version of the matrix - Gauss elimination
+            // 计算矩阵的右上三角型——高斯消去法
             var n = 3, k = n, np;
             var kp = 4; // num rows
-            var p, els;
+            var p: number;
             do
             {
                 i = k - n;

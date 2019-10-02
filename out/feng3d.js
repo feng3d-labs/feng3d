@@ -36870,25 +36870,16 @@ var CANNON;
 (function (CANNON) {
     var Mat3 = /** @class */ (function () {
         /**
-         * A 3x3 matrix.
-         * @class Mat3
-         * @constructor
-         * @param array elements Array of nine elements. Optional.
-         * @author schteppe / http://github.com/schteppe
+         * 构建3x3矩阵
+         *
+         * @param elements 九个元素的数组
          */
         function Mat3(elements) {
-            if (elements === void 0) { elements = [0, 0, 0, 0, 0, 0, 0, 0, 0]; }
-            if (elements) {
-                this.elements = elements;
-            }
-            else {
-                this.elements = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-            }
+            if (elements === void 0) { elements = [1, 0, 0, 0, 1, 0, 0, 0, 1]; }
+            this.elements = elements;
         }
         /**
-         * Sets the matrix to identity
-         * @todo Should perhaps be renamed to setIdentity() to be more clear.
-         * @todo Create another function that immediately creates an identity matrix eg. eye()
+         * 设置矩阵为单位矩阵
          */
         Mat3.prototype.identity = function () {
             var e = this.elements;
@@ -36901,9 +36892,10 @@ var CANNON;
             e[6] = 0;
             e[7] = 0;
             e[8] = 1;
+            return this;
         };
         /**
-         * Set all elements to zero
+         * 将所有元素设置为0
          */
         Mat3.prototype.setZero = function () {
             var e = this.elements;
@@ -36916,9 +36908,11 @@ var CANNON;
             e[6] = 0;
             e[7] = 0;
             e[8] = 0;
+            return this;
         };
         /**
-         * Sets the matrix diagonal elements from a Vec3
+         * 根据一个 Vector3 设置矩阵对角元素
+         *
          * @param vec3
          */
         Mat3.prototype.setTrace = function (vec3) {
@@ -36926,9 +36920,10 @@ var CANNON;
             e[0] = vec3.x;
             e[4] = vec3.y;
             e[8] = vec3.z;
+            return this;
         };
         /**
-         * Gets the matrix diagonal elements
+         * 获取矩阵对角元素
          */
         Mat3.prototype.getTrace = function (target) {
             if (target === void 0) { target = new feng3d.Vector3(); }
@@ -36936,11 +36931,13 @@ var CANNON;
             target.x = e[0];
             target.y = e[4];
             target.z = e[8];
+            return target;
         };
         /**
-         * Matrix-Vector multiplication
-         * @param v The vector to multiply with
-         * @param target Optional, target to save the result in.
+         * 矩阵向量乘法
+         *
+         * @param v 要乘以的向量
+         * @param target 目标保存结果
          */
         Mat3.prototype.vmult = function (v, target) {
             if (target === void 0) { target = new feng3d.Vector3(); }
@@ -36951,7 +36948,7 @@ var CANNON;
             return target;
         };
         /**
-         * Matrix-scalar multiplication
+         * 矩阵标量乘法
          * @param s
          */
         Mat3.prototype.smult = function (s) {
@@ -36960,8 +36957,8 @@ var CANNON;
             }
         };
         /**
-         * Matrix multiplication
-         * @param  m Matrix to multiply with from left side.
+         * 矩阵乘法
+         * @param  m 要从左边乘的矩阵。
          */
         Mat3.prototype.mmult = function (m, target) {
             if (target === void 0) { target = new Mat3(); }
@@ -36977,7 +36974,8 @@ var CANNON;
             return target;
         };
         /**
-         * Scale each column of the matrix
+         * 缩放矩阵的每一列
+         *
          * @param v
          */
         Mat3.prototype.scale = function (v, target) {
@@ -36991,10 +36989,10 @@ var CANNON;
             return target;
         };
         /**
-         * Solve Ax=b
-         * @param b The right hand side
-         * @param target Optional. Target vector to save in.
-         * @todo should reuse arrays
+         * 解决Ax = b
+         *
+         * @param b 右手边
+         * @param target 结果
          */
         Mat3.prototype.solve = function (b, target) {
             if (target === void 0) { target = new feng3d.Vector3(); }
@@ -37014,10 +37012,10 @@ var CANNON;
             eqns[3 + 4 * 0] = b.x;
             eqns[3 + 4 * 1] = b.y;
             eqns[3 + 4 * 2] = b.z;
-            // Compute right upper triangular version of the matrix - Gauss elimination
+            // 计算矩阵的右上三角型——高斯消去法
             var n = 3, k = n, np;
             var kp = 4; // num rows
-            var p, els;
+            var p;
             do {
                 i = k - n;
                 if (eqns[i + nc * i] === 0) {
