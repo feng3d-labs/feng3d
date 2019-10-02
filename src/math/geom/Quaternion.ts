@@ -263,52 +263,81 @@ namespace feng3d
         }
 
 		/**
-		 * Spherically interpolates between two quaternions, providing an interpolation between rotations with constant angle change rate.
-		 * @param qa The first quaternion to interpolate.
-		 * @param qb The second quaternion to interpolate.
-		 * @param t The interpolation weight, a value between 0 and 1.
+		 * 与目标四元数之间进行球面内插，提供了具有恒定角度变化率的旋转之间的内插。
+		 * @param qb 目标四元素
+		 * @param t 插值权值，一个介于0和1之间的值。
 		 */
-        slerp(qa: Quaternion, qb: Quaternion, t: number)
+        slerp(qb: Quaternion, t: number)
         {
-            var w1 = qa.w, x1 = qa.x, y1 = qa.y, z1 = qa.z;
-            var w2 = qb.w, x2 = qb.x, y2 = qb.y, z2 = qb.z;
-            var dot = w1 * w2 + x1 * x2 + y1 * y2 + z1 * z2;
+            if (t === 0) return this;
+            if (t === 1) return this.copy(qb);
 
-            // shortest direction
-            if (dot < 0)
+            var x = this.x, y = this.y, z = this.z, w = this.w;
+
+            // http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/
+
+            var cosHalfTheta = w * qb.w + x * qb.x + y * qb.y + z * qb.z;
+
+            if (cosHalfTheta < 0)
             {
-                dot = -dot;
-                w2 = -w2;
-                x2 = -x2;
-                y2 = -y2;
-                z2 = -z2;
+                this.w = - qb.w;
+                this.x = - qb.x;
+                this.y = - qb.y;
+                this.z = - qb.z;
+
+                cosHalfTheta = - cosHalfTheta;
+
+            } else
+            {
+                this.copy(qb);
             }
 
-            if (dot < 0.95)
+            if (cosHalfTheta >= 1.0)
             {
-                // interpolate angle linearly
-                var angle = Math.acos(dot);
-                var s = 1 / Math.sin(angle);
-                var s1 = Math.sin(angle * (1 - t)) * s;
-                var s2 = Math.sin(angle * t) * s;
-                this.w = w1 * s1 + w2 * s2;
-                this.x = x1 * s1 + x2 * s2;
-                this.y = y1 * s1 + y2 * s2;
-                this.z = z1 * s1 + z2 * s2;
+                this.w = w;
+                this.x = x;
+                this.y = y;
+                this.z = z;
+                return this;
             }
-            else
+
+            var sqrSinHalfTheta = 1.0 - cosHalfTheta * cosHalfTheta;
+
+            if (sqrSinHalfTheta <= Number.EPSILON)
             {
-                // nearly identical angle, interpolate linearly
-                this.w = w1 + t * (w2 - w1);
-                this.x = x1 + t * (x2 - x1);
-                this.y = y1 + t * (y2 - y1);
-                this.z = z1 + t * (z2 - z1);
-                var len = 1.0 / Math.sqrt(this.w * this.w + this.x * this.x + this.y * this.y + this.z * this.z);
-                this.w *= len;
-                this.x *= len;
-                this.y *= len;
-                this.z *= len;
+                var s = 1 - t;
+                this.w = s * w + t * this.w;
+                this.x = s * x + t * this.x;
+                this.y = s * y + t * this.y;
+                this.z = s * z + t * this.z;
+
+                this.normalize();
+
+                return this;
             }
+
+            var sinHalfTheta = Math.sqrt(sqrSinHalfTheta);
+            var halfTheta = Math.atan2(sinHalfTheta, cosHalfTheta);
+            var ratioA = Math.sin((1 - t) * halfTheta) / sinHalfTheta,
+                ratioB = Math.sin(t * halfTheta) / sinHalfTheta;
+
+            this.w = (w * ratioA + this.w * ratioB);
+            this.x = (x * ratioA + this.x * ratioB);
+            this.y = (y * ratioA + this.y * ratioB);
+            this.z = (z * ratioA + this.z * ratioB);
+
+            return this;
+        }
+
+		/**
+		 * 与目标四元数之间进行球面内插，提供了具有恒定角度变化率的旋转之间的内插。
+		 * @param qb 目标四元素
+		 * @param t 插值权值，一个介于0和1之间的值。
+         * @param out 保存插值结果 
+		 */
+        slerpTo(qb: Quaternion, t: number, out = new Quaternion())
+        {
+            return out.copy(this).slerp(qb, t);
         }
 
 		/**
@@ -579,6 +608,47 @@ namespace feng3d
             target.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
 
             return target;
+        }
+
+
+        /**
+         * 旋转一个绝对方向四元数给定一个角速度和一个时间步长
+         * 
+         * @param angularVelocity
+         * @param dt
+         * @param angularFactor
+         */
+        integrate(angularVelocity: Vector3, dt: number, angularFactor: Vector3)
+        {
+            var ax = angularVelocity.x * angularFactor.x,
+                ay = angularVelocity.y * angularFactor.y,
+                az = angularVelocity.z * angularFactor.z,
+                bx = this.x,
+                by = this.y,
+                bz = this.z,
+                bw = this.w;
+
+            var half_dt = dt * 0.5;
+
+            this.x += half_dt * (ax * bw + ay * bz - az * by);
+            this.y += half_dt * (ay * bw + az * bx - ax * bz);
+            this.z += half_dt * (az * bw + ax * by - ay * bx);
+            this.w += half_dt * (- ax * bx - ay * by - az * bz);
+
+            return this;
+        }
+
+        /**
+         * 旋转一个绝对方向四元数给定一个角速度和一个时间步长
+         * 
+         * @param angularVelocity
+         * @param dt
+         * @param angularFactor
+         * @param  target
+         */
+        integrateTo(angularVelocity: Vector3, dt: number, angularFactor: Vector3, target = new Quaternion())
+        {
+            return target.copy(this).integrate(angularVelocity, dt, angularFactor);
         }
 
 		/**

@@ -34083,7 +34083,7 @@ var feng3d;
                 return quaternion;
             };
             BoneRotation.prototype.getRotation = function (keyFrameTime) {
-                var RotationQuaternion = new feng3d.Quaternion();
+                var rotationQuaternion = new feng3d.Quaternion();
                 if (this.rotations.length == 0 || keyFrameTime < this.rotations[0].time || keyFrameTime > this.rotations[this.rotations.length - 1].time)
                     return new feng3d.Quaternion();
                 var key1 = this.rotations[0];
@@ -34096,8 +34096,8 @@ var feng3d;
                     key1 = key2;
                 }
                 if (key1 == key2) {
-                    RotationQuaternion.copy(key1.value);
-                    return RotationQuaternion;
+                    rotationQuaternion.copy(key1.value);
+                    return rotationQuaternion;
                 }
                 var Factor = (keyFrameTime - key1.time) / (key2.time - key1.time);
                 var InverseFactor = 1.0 - Factor;
@@ -34113,21 +34113,21 @@ var feng3d;
                 var q2;
                 switch (this.type) {
                     case "DontInterp":
-                        RotationQuaternion.fromEulerAngles(key1.value.x, key1.value.y, key1.value.z);
+                        rotationQuaternion.fromEulerAngles(key1.value.x, key1.value.y, key1.value.z);
                         break;
                     case "Linear":
                         q1 = key1.value.clone();
                         q2 = key2.value.clone();
-                        RotationQuaternion.slerp(q1, q2, Factor);
+                        rotationQuaternion.slerp(q1, q2, Factor);
                         break;
                     case "Hermite":
                     case "Bezier":
                         q1 = key1.value.clone();
                         q2 = key2.value.clone();
-                        RotationQuaternion.slerp(q1, q2, Factor);
+                        rotationQuaternion.slerp(q1, q2, Factor);
                         break;
                 }
-                return RotationQuaternion;
+                return rotationQuaternion;
             };
             return BoneRotation;
         }());

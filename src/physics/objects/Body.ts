@@ -813,7 +813,7 @@ namespace CANNON
             pos.y += velo.y * dt;
             pos.z += velo.z * dt;
 
-            quat.integrate(this.angularVelocity, dt, this.angularFactor, quat);
+            quat.integrateTo(this.angularVelocity, dt, this.angularFactor, quat);
 
             if (quatNormalize)
             {

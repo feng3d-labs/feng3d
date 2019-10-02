@@ -73,7 +73,7 @@ namespace feng3d.war3
 
 		getRotation(keyFrameTime: number): Quaternion
 		{
-			var RotationQuaternion = new Quaternion();
+			var rotationQuaternion = new Quaternion();
 			if (this.rotations.length == 0 || keyFrameTime < this.rotations[0].time || keyFrameTime > this.rotations[this.rotations.length - 1].time)
 				return new Quaternion();
 
@@ -92,8 +92,8 @@ namespace feng3d.war3
 
 			if (key1 == key2)
 			{
-				RotationQuaternion.copy(key1.value);
-				return RotationQuaternion;
+				rotationQuaternion.copy(key1.value);
+				return rotationQuaternion;
 			}
 
 			var Factor = (keyFrameTime - key1.time) / (key2.time - key1.time);
@@ -114,24 +114,24 @@ namespace feng3d.war3
 			switch (this.type)
 			{
 				case "DontInterp":
-					RotationQuaternion.fromEulerAngles(key1.value.x, key1.value.y, key1.value.z);
+					rotationQuaternion.fromEulerAngles(key1.value.x, key1.value.y, key1.value.z);
 					break;
 				case "Linear":
 					q1 = key1.value.clone();
 					q2 = key2.value.clone();
 
-					RotationQuaternion.slerp(q1, q2, Factor);
+					q1.slerpTo(q2, Factor, rotationQuaternion);
 					break;
 				case "Hermite":
 				case "Bezier":
 					q1 = key1.value.clone();
 					q2 = key2.value.clone();
 
-					RotationQuaternion.slerp(q1, q2, Factor);
+					q1.slerpTo(q2, Factor, rotationQuaternion);
 					break;
 			}
 
-			return RotationQuaternion;
+			return rotationQuaternion;
 		}
 	}
 

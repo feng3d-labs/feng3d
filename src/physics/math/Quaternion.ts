@@ -405,7 +405,7 @@ namespace CANNON
          * @param target A quaternion to store the result in. If not provided, a new one will be created.
          * @returns The "target" object
          */
-        slerp(toQuat: Quaternion, t: number, target = new Quaternion())
+        slerpTo(toQuat: Quaternion, t: number, target = new Quaternion())
         {
             var ax = this.x,
                 ay = this.y,
@@ -464,7 +464,7 @@ namespace CANNON
          * @param  target
          * @return The "target" object
          */
-        integrate(angularVelocity: feng3d.Vector3, dt: number, angularFactor: feng3d.Vector3, target: Quaternion)
+        integrateTo(angularVelocity: feng3d.Vector3, dt: number, angularFactor: feng3d.Vector3, target: Quaternion)
         {
             target = target || new Quaternion();
 
