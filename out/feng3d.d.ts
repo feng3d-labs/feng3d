@@ -17343,26 +17343,30 @@ declare namespace feng3d {
     }
 }
 declare namespace CANNON {
+    interface ITransform {
+        position: feng3d.Vector3;
+        quaternion: feng3d.Quaternion;
+    }
     class Transform {
         position: feng3d.Vector3;
         quaternion: feng3d.Quaternion;
+        constructor(position?: feng3d.Vector3, quaternion?: feng3d.Quaternion);
         /**
          * @param position
          * @param quaternion
          * @param worldPoint
          * @param result
          */
-        static pointToLocalFrame(position: feng3d.Vector3, quaternion: feng3d.Quaternion, worldPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        static pointToLocalFrame(transform: ITransform, worldPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
         /**
          * @param position
          * @param quaternion
          * @param localPoint
          * @param result
          */
-        static pointToWorldFrame(position: feng3d.Vector3, quaternion: feng3d.Quaternion, localPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
-        vectorToWorldFrame(localVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
-        static vectorToWorldFrame(quaternion: feng3d.Quaternion, localVector: feng3d.Vector3, result: feng3d.Vector3): feng3d.Vector3;
-        static vectorToLocalFrame(quaternion: feng3d.Quaternion, worldVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        static pointToWorldFrame(transform: ITransform, localPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        static vectorToWorldFrame(transform: ITransform, localVector: feng3d.Vector3, result: feng3d.Vector3): feng3d.Vector3;
+        static vectorToLocalFrame(transform: ITransform, worldVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
     }
 }
 declare namespace CANNON {
@@ -17808,28 +17812,24 @@ declare namespace CANNON {
          * Find the separating axis between this hull and another
          *
          * @param hullB
-         * @param posA
-         * @param quatA
-         * @param posB
-         * @param quatB
+         * @param transformA
+         * @param transformB
          * @param target The target vector to save the axis in
          * @param faceListA
          * @param faceListB
          * @returns Returns false if a separation is found, else true
          */
-        findSeparatingAxis(hullB: ConvexPolyhedron, posA: feng3d.Vector3, quatA: feng3d.Quaternion, posB: feng3d.Vector3, quatB: feng3d.Quaternion, target: feng3d.Vector3, faceListA: number[], faceListB: number[]): boolean;
+        findSeparatingAxis(hullB: ConvexPolyhedron, transformA: ITransform, transformB: Transform, target: feng3d.Vector3, faceListA: number[], faceListB: number[]): boolean;
         /**
          * Test separating axis against two hulls. Both hulls are projected onto the axis and the overlap size is returned if there is one.
          *
          * @param axis
          * @param hullB
-         * @param posA
-         * @param quatA
-         * @param posB
-         * @param quatB
+         * @param transformA
+         * @param transformB
          * @return The overlap depth, or FALSE if no penetration.
          */
-        testSepAxis(axis: feng3d.Vector3, hullB: ConvexPolyhedron, posA: feng3d.Vector3, quatA: feng3d.Quaternion, posB: feng3d.Vector3, quatB: feng3d.Quaternion): number | false;
+        testSepAxis(axis: feng3d.Vector3, hullB: ConvexPolyhedron, transformA: Transform, transformB: Transform): number | false;
         /**
          *
          * @param mass
@@ -17911,7 +17911,7 @@ declare namespace CANNON {
          * @param quat
          * @param result result[0] and result[1] will be set to maximum and minimum, respectively.
          */
-        static project(hull: ConvexPolyhedron, axis: feng3d.Vector3, pos: feng3d.Vector3, quat: feng3d.Quaternion, result: number[]): void;
+        static project(hull: ConvexPolyhedron, axis: feng3d.Vector3, transform: Transform, result: number[]): void;
     }
 }
 declare namespace CANNON {
@@ -18356,7 +18356,7 @@ declare namespace CANNON {
          * @param out
          * @return The "out" vector object
          */
-        getWorldVertex(i: number, pos: feng3d.Vector3, quat: feng3d.Quaternion, out: feng3d.Vector3): feng3d.Vector3;
+        getWorldVertex(i: number, transform: Transform, out: feng3d.Vector3): feng3d.Vector3;
         /**
          * Get the three vertices for triangle i.
          *
@@ -20322,14 +20322,14 @@ declare namespace CANNON {
          * @param  {Body}       bi
          * @param  {Body}       bj
          */
-        planeTrimesh(planeShape: Shape, trimeshShape: any, planePos: feng3d.Vector3, trimeshPos: feng3d.Vector3, planeQuat: feng3d.Quaternion, trimeshQuat: feng3d.Quaternion, planeBody: Body, trimeshBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        sphereTrimesh(sphereShape: Shape, trimeshShape: any, spherePos: feng3d.Vector3, trimeshPos: feng3d.Vector3, sphereQuat: feng3d.Quaternion, trimeshQuat: feng3d.Quaternion, sphereBody: Body, trimeshBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        planeTrimesh(planeShape: Shape, trimeshShape: any, planeTransform: Transform, trimeshTransform: Transform, planeBody: Body, trimeshBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereTrimesh(sphereShape: Shape, trimeshShape: any, sphereTransform: Transform, trimeshTransform: Transform, sphereBody: Body, trimeshBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         spherePlane(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         sphereBox(si: Shape, sj: any, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        sphereConvex(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereConvex(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         planeBox(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         planeConvex(planeShape: Shape, convexShape: any, planePosition: feng3d.Vector3, convexPosition: feng3d.Vector3, planeQuat: feng3d.Quaternion, convexQuat: feng3d.Quaternion, planeBody: Body, convexBody: Body, si: Shape, sj: Shape, justTest: boolean): boolean;
-        convexConvex(si: any, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean, faceListA?: any[], faceListB?: any[]): boolean;
+        convexConvex(si: any, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean, faceListA?: any[], faceListB?: any[]): boolean;
         /**
          * @method convexTrimesh
          * @param  {Array}      result
@@ -20345,9 +20345,9 @@ declare namespace CANNON {
         planeParticle(sj: Shape, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         sphereParticle(sj: Shape, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         convexParticle(sj: any, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        boxHeightfield(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        convexHeightfield(convexShape: Shape, hfShape: any, convexPos: feng3d.Vector3, hfPos: feng3d.Vector3, convexQuat: feng3d.Quaternion, hfQuat: feng3d.Quaternion, convexBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        sphereHeightfield(sphereShape: Shape, hfShape: any, spherePos: feng3d.Vector3, hfPos: feng3d.Vector3, sphereQuat: feng3d.Quaternion, hfQuat: feng3d.Quaternion, sphereBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        boxHeightfield(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        convexHeightfield(convexShape: Shape, hfShape: any, convexTransform: Transform, hfTransform: Transform, convexBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereHeightfield(sphereShape: Shape, hfShape: any, sphereTransform: Transform, hfTransform: Transform, sphereBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
     }
 }
 //# sourceMappingURL=feng3d.d.ts.map

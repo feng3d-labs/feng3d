@@ -276,8 +276,10 @@ namespace CANNON
             result.upperBound.z = Math.max(to.z, from.z);
         }
 
-        private intersectHeightfield(shape: any, quat: feng3d.Quaternion, position: feng3d.Vector3, body: Body, reportedShape: Shape)
+        private intersectHeightfield(shape: any, transform: Transform, body: Body, reportedShape: Shape)
         {
+            var quat = transform.quaternion;
+
             var data = shape.data,
                 w = shape.elementSize;
 
@@ -285,8 +287,8 @@ namespace CANNON
             var localRay = intersectHeightfield_localRay; //new Ray(this.from, this.to);
             localRay.from.copy(this.from);
             localRay.to.copy(this.to);
-            Transform.pointToLocalFrame(position, quat, localRay.from, localRay.from);
-            Transform.pointToLocalFrame(position, quat, localRay.to, localRay.to);
+            Transform.pointToLocalFrame(transform, localRay.from, localRay.from);
+            Transform.pointToLocalFrame(transform, localRay.to, localRay.to);
             localRay._updateDirection();
 
             // Get the index of the data points to test against
@@ -325,7 +327,7 @@ namespace CANNON
 
                     // Lower triangle
                     shape.getConvexTrianglePillar(i, j, false);
-                    Transform.pointToWorldFrame(position, quat, shape.pillarOffset, worldPillarOffset);
+                    Transform.pointToWorldFrame(transform, shape.pillarOffset, worldPillarOffset);
                     this.intersectConvex(shape.pillarConvex, quat, worldPillarOffset, body, reportedShape, intersectConvexOptions);
 
                     if (this.result._shouldStop)
@@ -335,7 +337,7 @@ namespace CANNON
 
                     // Upper triangle
                     shape.getConvexTrianglePillar(i, j, true);
-                    Transform.pointToWorldFrame(position, quat, shape.pillarOffset, worldPillarOffset);
+                    Transform.pointToWorldFrame(transform, shape.pillarOffset, worldPillarOffset);
                     this.intersectConvex(shape.pillarConvex, quat, worldPillarOffset, body, reportedShape, intersectConvexOptions);
                 }
             }
@@ -561,9 +563,9 @@ namespace CANNON
             treeTransform.quaternion.copy(quat);
 
             // Transform ray to local space!
-            Transform.vectorToLocalFrame(quat, direction, localDirection);
-            Transform.pointToLocalFrame(position, quat, from, localFrom);
-            Transform.pointToLocalFrame(position, quat, to, localTo);
+            Transform.vectorToLocalFrame(treeTransform, direction, localDirection);
+            Transform.pointToLocalFrame(treeTransform, from, localFrom);
+            Transform.pointToLocalFrame(treeTransform, to, localTo);
 
             localTo.x *= mesh.scale.x;
             localTo.y *= mesh.scale.y;
@@ -627,13 +629,12 @@ namespace CANNON
                 }
 
                 // transform intersectpoint and normal to world
-                Transform.vectorToWorldFrame(quat, normal, worldNormal);
-                Transform.pointToWorldFrame(position, quat, intersectPoint, worldIntersectPoint);
+                Transform.vectorToWorldFrame(treeTransform, normal, worldNormal);
+                Transform.pointToWorldFrame(treeTransform, intersectPoint, worldIntersectPoint);
                 this.reportIntersection(worldNormal, worldIntersectPoint, reportedShape, body, trianglesIndex);
             }
             triangles.length = 0;
         }
-
 
         private reportIntersection(normal: feng3d.Vector3, hitPointWorld: feng3d.Vector3, shape: Shape, body: Body, hitFaceIndex?: number)
         {

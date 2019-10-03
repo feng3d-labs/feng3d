@@ -306,10 +306,10 @@ namespace CANNON
          * @param out
          * @return The "out" vector object
          */
-        getWorldVertex(i: number, pos: feng3d.Vector3, quat: feng3d.Quaternion, out: feng3d.Vector3)
+        getWorldVertex(i: number, transform: Transform, out: feng3d.Vector3)
         {
             this.getVertex(i, out);
-            Transform.pointToWorldFrame(pos, quat, out, out);
+            Transform.pointToWorldFrame(transform, out, out);
             return out;
         }
 

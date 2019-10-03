@@ -365,10 +365,8 @@ namespace CANNON
         planeTrimesh(
             planeShape: Shape,
             trimeshShape: any,
-            planePos: feng3d.Vector3,
-            trimeshPos: feng3d.Vector3,
-            planeQuat: feng3d.Quaternion,
-            trimeshQuat: feng3d.Quaternion,
+            planeTransform: Transform,
+            trimeshTransform: Transform,
             planeBody: Body,
             trimeshBody: Body,
             rsi: Shape,
@@ -378,10 +376,11 @@ namespace CANNON
         {
             // Make contacts!
             var v = new feng3d.Vector3();
+            var planePos = planeTransform.position;
 
             var normal = planeTrimesh_normal;
             normal.init(0, 1, 0);
-            planeQuat.vmult(normal, normal); // Turn normal according to plane
+            planeTransform.quaternion.vmult(normal, normal); // Turn normal according to plane
 
             for (var i = 0; i < trimeshShape.vertices.length / 3; i++)
             {
@@ -392,7 +391,7 @@ namespace CANNON
                 // Safe up
                 var v2 = new feng3d.Vector3();
                 v2.copy(v);
-                Transform.pointToWorldFrame(trimeshPos, trimeshQuat, v2, v);
+                Transform.pointToWorldFrame(trimeshTransform, v2, v);
 
                 // Check plane side
                 var relpos = planeTrimesh_relpos;
@@ -432,10 +431,8 @@ namespace CANNON
         sphereTrimesh(
             sphereShape: Shape,
             trimeshShape: any,
-            spherePos: feng3d.Vector3,
-            trimeshPos: feng3d.Vector3,
-            sphereQuat: feng3d.Quaternion,
-            trimeshQuat: feng3d.Quaternion,
+            sphereTransform: Transform,
+            trimeshTransform: Transform,
             sphereBody: Body,
             trimeshBody: Body,
             rsi: Shape,
@@ -443,6 +440,8 @@ namespace CANNON
             justTest: boolean
         )
         {
+            var spherePos = sphereTransform.position;
+            //
             var edgeVertexA = sphereTrimesh_edgeVertexA;
             var edgeVertexB = sphereTrimesh_edgeVertexB;
             var edgeVector = sphereTrimesh_edgeVector;
@@ -455,7 +454,7 @@ namespace CANNON
             var triangles = sphereTrimesh_triangles;
 
             // Convert sphere position to local in the trimesh
-            Transform.pointToLocalFrame(trimeshPos, trimeshQuat, spherePos, localSpherePos);
+            Transform.pointToLocalFrame(trimeshTransform, spherePos, localSpherePos);
 
             // Get the aabb of the sphere locally in the trimesh
             var sphereRadius = sphereShape.radius;
@@ -491,7 +490,7 @@ namespace CANNON
 
                         // Safe up
                         v2.copy(v);
-                        Transform.pointToWorldFrame(trimeshPos, trimeshQuat, v2, v);
+                        Transform.pointToWorldFrame(trimeshTransform, v2, v);
 
                         v.subTo(spherePos, relpos);
 
@@ -566,11 +565,11 @@ namespace CANNON
                             r.ni.normalize();
                             r.ni.scaleNumberTo(sphereShape.radius, r.ri);
 
-                            Transform.pointToWorldFrame(trimeshPos, trimeshQuat, tmp, tmp);
+                            Transform.pointToWorldFrame(trimeshTransform, tmp, tmp);
                             tmp.subTo(trimeshBody.position, r.rj);
 
-                            Transform.vectorToWorldFrame(trimeshQuat, r.ni, r.ni);
-                            Transform.vectorToWorldFrame(trimeshQuat, r.ri, r.ri);
+                            Transform.vectorToWorldFrame(trimeshTransform, r.ni, r.ni);
+                            Transform.vectorToWorldFrame(trimeshTransform, r.ri, r.ri);
 
                             this.result.push(r);
                             this.createFrictionEquationsFromContact(r, this.frictionResult);
@@ -607,11 +606,11 @@ namespace CANNON
                     r.ni.normalize();
                     r.ni.scaleNumberTo(sphereShape.radius, r.ri);
 
-                    Transform.pointToWorldFrame(trimeshPos, trimeshQuat, tmp, tmp);
+                    Transform.pointToWorldFrame(trimeshTransform, tmp, tmp);
                     tmp.subTo(trimeshBody.position, r.rj);
 
-                    Transform.vectorToWorldFrame(trimeshQuat, r.ni, r.ni);
-                    Transform.vectorToWorldFrame(trimeshQuat, r.ri, r.ri);
+                    Transform.vectorToWorldFrame(trimeshTransform, r.ni, r.ni);
+                    Transform.vectorToWorldFrame(trimeshTransform, r.ri, r.ri);
 
                     this.result.push(r);
                     this.createFrictionEquationsFromContact(r, this.frictionResult);
@@ -888,8 +887,10 @@ namespace CANNON
             }
         }
 
-        sphereConvex(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        sphereConvex(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
+            var xi = transformi.position, xj = transformj.position, qj = transformj.quaternion;
+
             xi.subTo(xj, convex_to_sphere);
             var normals = sj.faceNormals;
             var faces = sj.faces;
@@ -1167,8 +1168,9 @@ namespace CANNON
             }
         }
 
-        convexConvex(si: any, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean, faceListA?: any[], faceListB?: any[])
+        convexConvex(si: any, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean, faceListA?: any[], faceListB?: any[])
         {
+            var xi = transformi.position, xj = transformj.position, qi = transformi.quaternion, qj = transformj.quaternion;
             var sepAxis = convexConvex_sepAxis;
 
             if (xi.distance(xj) > si.boundingSphereRadius + sj.boundingSphereRadius)
@@ -1449,20 +1451,18 @@ namespace CANNON
             }
         }
 
-        boxHeightfield(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        boxHeightfield(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             si.convexPolyhedronRepresentation.material = si.material;
             si.convexPolyhedronRepresentation.collisionResponse = si.collisionResponse;
-            return this.convexHeightfield(si.convexPolyhedronRepresentation, sj, xi, xj, qi, qj, bi, bj, si, sj, justTest);
+            return this.convexHeightfield(si.convexPolyhedronRepresentation, sj, transformi, transformj, bi, bj, si, sj, justTest);
         }
 
         convexHeightfield(
             convexShape: Shape,
             hfShape: any,
-            convexPos: feng3d.Vector3,
-            hfPos: feng3d.Vector3,
-            convexQuat: feng3d.Quaternion,
-            hfQuat: feng3d.Quaternion,
+            convexTransform: Transform,
+            hfTransform: Transform,
             convexBody: Body,
             hfBody: Body,
             rsi: Shape,
@@ -1470,6 +1470,9 @@ namespace CANNON
             justTest: boolean
         )
         {
+            var convexPos = convexTransform.position;
+            var hfQuat = hfTransform.quaternion
+
             var data = hfShape.data,
                 w = hfShape.elementSize,
                 radius = convexShape.boundingSphereRadius,
@@ -1478,7 +1481,7 @@ namespace CANNON
 
             // Get sphere position to heightfield local!
             var localConvexPos = convexHeightfield_tmp1;
-            Transform.pointToLocalFrame(hfPos, hfQuat, convexPos, localConvexPos);
+            Transform.pointToLocalFrame(hfTransform, convexPos, localConvexPos);
 
             // Get the index of the data points to test against
             var iMinX = Math.floor((localConvexPos.x - radius) / w) - 1,
@@ -1522,10 +1525,10 @@ namespace CANNON
 
                     // Lower triangle
                     hfShape.getConvexTrianglePillar(i, j, false);
-                    Transform.pointToWorldFrame(hfPos, hfQuat, hfShape.pillarOffset, worldPillarOffset);
+                    Transform.pointToWorldFrame(hfTransform, hfShape.pillarOffset, worldPillarOffset);
                     if (convexPos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + convexShape.boundingSphereRadius)
                     {
-                        intersecting = this.convexConvex(convexShape, hfShape.pillarConvex, convexPos, worldPillarOffset, convexQuat, hfQuat, convexBody, hfBody, null, null, justTest, faceList, null);
+                        intersecting = this.convexConvex(convexShape, hfShape.pillarConvex, convexTransform, new Transform(worldPillarOffset, hfQuat), convexBody, hfBody, null, null, justTest, faceList, null);
                     }
 
                     if (justTest && intersecting)
@@ -1535,10 +1538,10 @@ namespace CANNON
 
                     // Upper triangle
                     hfShape.getConvexTrianglePillar(i, j, true);
-                    Transform.pointToWorldFrame(hfPos, hfQuat, hfShape.pillarOffset, worldPillarOffset);
+                    Transform.pointToWorldFrame(hfTransform, hfShape.pillarOffset, worldPillarOffset);
                     if (convexPos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + convexShape.boundingSphereRadius)
                     {
-                        intersecting = this.convexConvex(convexShape, hfShape.pillarConvex, convexPos, worldPillarOffset, convexQuat, hfQuat, convexBody, hfBody, null, null, justTest, faceList, null);
+                        intersecting = this.convexConvex(convexShape, hfShape.pillarConvex, convexTransform, new Transform(worldPillarOffset, hfQuat), convexBody, hfBody, null, null, justTest, faceList, null);
                     }
 
                     if (justTest && intersecting)
@@ -1552,10 +1555,8 @@ namespace CANNON
         sphereHeightfield(
             sphereShape: Shape,
             hfShape: any,
-            spherePos: feng3d.Vector3,
-            hfPos: feng3d.Vector3,
-            sphereQuat: feng3d.Quaternion,
-            hfQuat: feng3d.Quaternion,
+            sphereTransform: Transform,
+            hfTransform: Transform,
             sphereBody: Body,
             hfBody: Body,
             rsi: Shape,
@@ -1567,10 +1568,12 @@ namespace CANNON
                 radius = sphereShape.radius,
                 w = hfShape.elementSize,
                 worldPillarOffset = sphereHeightfield_tmp2;
+            var spherePos = sphereTransform.position;
+            var hfQuat = hfTransform.quaternion;
 
             // Get sphere position to heightfield local!
             var localSpherePos = sphereHeightfield_tmp1;
-            Transform.pointToLocalFrame(hfPos, hfQuat, spherePos, localSpherePos);
+            Transform.pointToLocalFrame(hfTransform, spherePos, localSpherePos);
 
             // Get the index of the data points to test against
             var iMinX = Math.floor((localSpherePos.x - radius) / w) - 1,
@@ -1617,10 +1620,10 @@ namespace CANNON
 
                     // Lower triangle
                     hfShape.getConvexTrianglePillar(i, j, false);
-                    Transform.pointToWorldFrame(hfPos, hfQuat, hfShape.pillarOffset, worldPillarOffset);
+                    Transform.pointToWorldFrame(hfTransform, hfShape.pillarOffset, worldPillarOffset);
                     if (spherePos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + sphereShape.boundingSphereRadius)
                     {
-                        intersecting = this.sphereConvex(sphereShape, hfShape.pillarConvex, spherePos, worldPillarOffset, sphereQuat, hfQuat, sphereBody, hfBody, sphereShape, hfShape, justTest);
+                        intersecting = this.sphereConvex(sphereShape, hfShape.pillarConvex, sphereTransform, new Transform(worldPillarOffset, hfQuat), sphereBody, hfBody, sphereShape, hfShape, justTest);
                     }
 
                     if (justTest && intersecting)
@@ -1630,10 +1633,10 @@ namespace CANNON
 
                     // Upper triangle
                     hfShape.getConvexTrianglePillar(i, j, true);
-                    Transform.pointToWorldFrame(hfPos, hfQuat, hfShape.pillarOffset, worldPillarOffset);
+                    Transform.pointToWorldFrame(hfTransform, hfShape.pillarOffset, worldPillarOffset);
                     if (spherePos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + sphereShape.boundingSphereRadius)
                     {
-                        intersecting = this.sphereConvex(sphereShape, hfShape.pillarConvex, spherePos, worldPillarOffset, sphereQuat, hfQuat, sphereBody, hfBody, sphereShape, hfShape, justTest);
+                        intersecting = this.sphereConvex(sphereShape, hfShape.pillarConvex, sphereTransform, new Transform(worldPillarOffset, hfQuat), sphereBody, hfBody, sphereShape, hfShape, justTest);
                     }
 
                     if (justTest && intersecting)

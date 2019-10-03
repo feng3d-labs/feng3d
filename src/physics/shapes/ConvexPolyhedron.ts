@@ -242,16 +242,14 @@ namespace CANNON
          * Find the separating axis between this hull and another
          * 
          * @param hullB 
-         * @param posA 
-         * @param quatA 
-         * @param posB 
-         * @param quatB 
+         * @param transformA
+         * @param transformB
          * @param target The target vector to save the axis in
          * @param faceListA 
          * @param faceListB 
          * @returns Returns false if a separation is found, else true
          */
-        findSeparatingAxis(hullB: ConvexPolyhedron, posA: feng3d.Vector3, quatA: feng3d.Quaternion, posB: feng3d.Vector3, quatB: feng3d.Quaternion, target: feng3d.Vector3, faceListA: number[], faceListB: number[])
+        findSeparatingAxis(hullB: ConvexPolyhedron, transformA: ITransform, transformB: Transform, target: feng3d.Vector3, faceListA: number[], faceListB: number[])
         {
             var faceANormalWS3 = fsa_faceANormalWS3,
                 Worldnormal1 = fsa_Worldnormal1,
@@ -276,9 +274,9 @@ namespace CANNON
 
                     // Get world face normal
                     faceANormalWS3.copy(hullA.faceNormals[fi]);
-                    quatA.vmult(faceANormalWS3, faceANormalWS3);
+                    transformA.quaternion.vmult(faceANormalWS3, faceANormalWS3);
 
-                    var d = hullA.testSepAxis(faceANormalWS3, hullB, posA, quatA, posB, quatB);
+                    var d = hullA.testSepAxis(faceANormalWS3, hullB, transformA, transformB);
                     if (d === false)
                     {
                         return false;
@@ -298,9 +296,9 @@ namespace CANNON
                 {
 
                     // Get world axis
-                    quatA.vmult(hullA.uniqueAxes[i], faceANormalWS3);
+                    transformA.quaternion.vmult(hullA.uniqueAxes[i], faceANormalWS3);
 
-                    var d = hullA.testSepAxis(faceANormalWS3, hullB, posA, quatA, posB, quatB);
+                    var d = hullA.testSepAxis(faceANormalWS3, hullB, transformA, transformB);
                     if (d === false)
                     {
                         return false;
@@ -325,9 +323,9 @@ namespace CANNON
                     var fi = faceListB ? faceListB[i] : i;
 
                     Worldnormal1.copy(hullB.faceNormals[fi]);
-                    quatB.vmult(Worldnormal1, Worldnormal1);
+                    transformB.quaternion.vmult(Worldnormal1, Worldnormal1);
                     curPlaneTests++;
-                    var d = hullA.testSepAxis(Worldnormal1, hullB, posA, quatA, posB, quatB);
+                    var d = hullA.testSepAxis(Worldnormal1, hullB, transformA, transformB);
                     if (d === false)
                     {
                         return false;
@@ -345,10 +343,10 @@ namespace CANNON
                 // Test unique axes in B
                 for (var i = 0; i !== hullB.uniqueAxes.length; i++)
                 {
-                    quatB.vmult(hullB.uniqueAxes[i], Worldnormal1);
+                    transformB.quaternion.vmult(hullB.uniqueAxes[i], Worldnormal1);
 
                     curPlaneTests++;
-                    var d = hullA.testSepAxis(Worldnormal1, hullB, posA, quatA, posB, quatB);
+                    var d = hullA.testSepAxis(Worldnormal1, hullB, transformA, transformB);
                     if (d === false)
                     {
                         return false;
@@ -367,19 +365,19 @@ namespace CANNON
             {
 
                 // Get world edge
-                quatA.vmult(hullA.uniqueEdges[e0], worldEdge0);
+                transformA.quaternion.vmult(hullA.uniqueEdges[e0], worldEdge0);
 
                 for (var e1 = 0; e1 !== hullB.uniqueEdges.length; e1++)
                 {
 
                     // Get world edge 2
-                    quatB.vmult(hullB.uniqueEdges[e1], worldEdge1);
+                    transformB.quaternion.vmult(hullB.uniqueEdges[e1], worldEdge1);
                     worldEdge0.crossTo(worldEdge1, Cross);
 
                     if (!Cross.almostZero())
                     {
                         Cross.normalize();
-                        var dist = hullA.testSepAxis(Cross, hullB, posA, quatA, posB, quatB);
+                        var dist = hullA.testSepAxis(Cross, hullB, transformA, transformB);
                         if (dist === false)
                         {
                             return false;
@@ -393,7 +391,7 @@ namespace CANNON
                 }
             }
 
-            posB.subTo(posA, deltaC);
+            transformB.position.subTo(transformA.position, deltaC);
             if ((deltaC.dot(target)) > 0.0)
             {
                 target.negateTo(target);
@@ -407,17 +405,15 @@ namespace CANNON
          * 
          * @param axis
          * @param hullB
-         * @param posA
-         * @param quatA
-         * @param posB
-         * @param quatB
+         * @param transformA
+         * @param transformB
          * @return The overlap depth, or FALSE if no penetration.
          */
-        testSepAxis(axis: feng3d.Vector3, hullB: ConvexPolyhedron, posA: feng3d.Vector3, quatA: feng3d.Quaternion, posB: feng3d.Vector3, quatB: feng3d.Quaternion)
+        testSepAxis(axis: feng3d.Vector3, hullB: ConvexPolyhedron, transformA: Transform, transformB: Transform)
         {
             var hullA = this;
-            ConvexPolyhedron.project(hullA, axis, posA, quatA, maxminA);
-            ConvexPolyhedron.project(hullB, axis, posB, quatB, maxminB);
+            ConvexPolyhedron.project(hullA, axis, transformA, maxminA);
+            ConvexPolyhedron.project(hullB, axis, transformB, maxminB);
             var maxA = maxminA[0];
             var minA = maxminA[1];
             var maxB = maxminB[0];
@@ -941,7 +937,7 @@ namespace CANNON
          * @param quat
          * @param result result[0] and result[1] will be set to maximum and minimum, respectively.
          */
-        static project(hull: ConvexPolyhedron, axis: feng3d.Vector3, pos: feng3d.Vector3, quat: feng3d.Quaternion, result: number[])
+        static project(hull: ConvexPolyhedron, axis: feng3d.Vector3, transform: Transform, result: number[])
         {
             var n = hull.vertices.length,
                 worldVertex = project_worldVertex,
@@ -954,8 +950,8 @@ namespace CANNON
             localOrigin.setZero();
 
             // Transform the axis to local
-            Transform.vectorToLocalFrame(quat, axis, localAxis);
-            Transform.pointToLocalFrame(pos, quat, localOrigin, localOrigin);
+            Transform.vectorToLocalFrame(transform, axis, localAxis);
+            Transform.pointToLocalFrame(transform, localOrigin, localOrigin);
             var add = localOrigin.dot(localAxis);
 
             min = max = vs[0].dot(localAxis);

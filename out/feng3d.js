@@ -37235,7 +37235,11 @@ var feng3d;
 var CANNON;
 (function (CANNON) {
     var Transform = /** @class */ (function () {
-        function Transform() {
+        function Transform(position, quaternion) {
+            if (position === void 0) { position = new feng3d.Vector3(); }
+            if (quaternion === void 0) { quaternion = new feng3d.Quaternion(); }
+            this.position = position;
+            this.quaternion = quaternion;
         }
         /**
          * @param position
@@ -37243,10 +37247,10 @@ var CANNON;
          * @param worldPoint
          * @param result
          */
-        Transform.pointToLocalFrame = function (position, quaternion, worldPoint, result) {
+        Transform.pointToLocalFrame = function (transform, worldPoint, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
-            worldPoint.subTo(position, result);
-            var tmpQuat = quaternion.conjugateTo();
+            worldPoint.subTo(transform.position, result);
+            var tmpQuat = transform.quaternion.conjugateTo();
             tmpQuat.vmult(result, result);
             return result;
         };
@@ -37256,26 +37260,21 @@ var CANNON;
          * @param localPoint
          * @param result
          */
-        Transform.pointToWorldFrame = function (position, quaternion, localPoint, result) {
+        Transform.pointToWorldFrame = function (transform, localPoint, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
-            quaternion.vmult(localPoint, result);
-            result.addTo(position, result);
+            transform.quaternion.vmult(localPoint, result);
+            result.addTo(transform.position, result);
             return result;
         };
-        Transform.prototype.vectorToWorldFrame = function (localVector, result) {
-            if (result === void 0) { result = new feng3d.Vector3(); }
-            this.quaternion.vmult(localVector, result);
+        Transform.vectorToWorldFrame = function (transform, localVector, result) {
+            transform.quaternion.vmult(localVector, result);
             return result;
         };
-        Transform.vectorToWorldFrame = function (quaternion, localVector, result) {
-            quaternion.vmult(localVector, result);
-            return result;
-        };
-        Transform.vectorToLocalFrame = function (quaternion, worldVector, result) {
+        Transform.vectorToLocalFrame = function (transform, worldVector, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
-            quaternion.w *= -1;
-            quaternion.vmult(worldVector, result);
-            quaternion.w *= -1;
+            transform.quaternion.w *= -1;
+            transform.quaternion.vmult(worldVector, result);
+            transform.quaternion.w *= -1;
             return result;
         };
         return Transform;
@@ -38069,16 +38068,14 @@ var CANNON;
          * Find the separating axis between this hull and another
          *
          * @param hullB
-         * @param posA
-         * @param quatA
-         * @param posB
-         * @param quatB
+         * @param transformA
+         * @param transformB
          * @param target The target vector to save the axis in
          * @param faceListA
          * @param faceListB
          * @returns Returns false if a separation is found, else true
          */
-        ConvexPolyhedron.prototype.findSeparatingAxis = function (hullB, posA, quatA, posB, quatB, target, faceListA, faceListB) {
+        ConvexPolyhedron.prototype.findSeparatingAxis = function (hullB, transformA, transformB, target, faceListA, faceListB) {
             var faceANormalWS3 = fsa_faceANormalWS3, Worldnormal1 = fsa_Worldnormal1, deltaC = fsa_deltaC, worldEdge0 = fsa_worldEdge0, worldEdge1 = fsa_worldEdge1, Cross = fsa_Cross;
             var dmin = Number.MAX_VALUE;
             var hullA = this;
@@ -38090,8 +38087,8 @@ var CANNON;
                     var fi = faceListA ? faceListA[i] : i;
                     // Get world face normal
                     faceANormalWS3.copy(hullA.faceNormals[fi]);
-                    quatA.vmult(faceANormalWS3, faceANormalWS3);
-                    var d = hullA.testSepAxis(faceANormalWS3, hullB, posA, quatA, posB, quatB);
+                    transformA.quaternion.vmult(faceANormalWS3, faceANormalWS3);
+                    var d = hullA.testSepAxis(faceANormalWS3, hullB, transformA, transformB);
                     if (d === false) {
                         return false;
                     }
@@ -38105,8 +38102,8 @@ var CANNON;
                 // Test unique axes
                 for (var i = 0; i !== hullA.uniqueAxes.length; i++) {
                     // Get world axis
-                    quatA.vmult(hullA.uniqueAxes[i], faceANormalWS3);
-                    var d = hullA.testSepAxis(faceANormalWS3, hullB, posA, quatA, posB, quatB);
+                    transformA.quaternion.vmult(hullA.uniqueAxes[i], faceANormalWS3);
+                    var d = hullA.testSepAxis(faceANormalWS3, hullB, transformA, transformB);
                     if (d === false) {
                         return false;
                     }
@@ -38122,9 +38119,9 @@ var CANNON;
                 for (var i = 0; i < numFacesB; i++) {
                     var fi = faceListB ? faceListB[i] : i;
                     Worldnormal1.copy(hullB.faceNormals[fi]);
-                    quatB.vmult(Worldnormal1, Worldnormal1);
+                    transformB.quaternion.vmult(Worldnormal1, Worldnormal1);
                     curPlaneTests++;
-                    var d = hullA.testSepAxis(Worldnormal1, hullB, posA, quatA, posB, quatB);
+                    var d = hullA.testSepAxis(Worldnormal1, hullB, transformA, transformB);
                     if (d === false) {
                         return false;
                     }
@@ -38137,9 +38134,9 @@ var CANNON;
             else {
                 // Test unique axes in B
                 for (var i = 0; i !== hullB.uniqueAxes.length; i++) {
-                    quatB.vmult(hullB.uniqueAxes[i], Worldnormal1);
+                    transformB.quaternion.vmult(hullB.uniqueAxes[i], Worldnormal1);
                     curPlaneTests++;
-                    var d = hullA.testSepAxis(Worldnormal1, hullB, posA, quatA, posB, quatB);
+                    var d = hullA.testSepAxis(Worldnormal1, hullB, transformA, transformB);
                     if (d === false) {
                         return false;
                     }
@@ -38152,14 +38149,14 @@ var CANNON;
             // Test edges
             for (var e0 = 0; e0 !== hullA.uniqueEdges.length; e0++) {
                 // Get world edge
-                quatA.vmult(hullA.uniqueEdges[e0], worldEdge0);
+                transformA.quaternion.vmult(hullA.uniqueEdges[e0], worldEdge0);
                 for (var e1 = 0; e1 !== hullB.uniqueEdges.length; e1++) {
                     // Get world edge 2
-                    quatB.vmult(hullB.uniqueEdges[e1], worldEdge1);
+                    transformB.quaternion.vmult(hullB.uniqueEdges[e1], worldEdge1);
                     worldEdge0.crossTo(worldEdge1, Cross);
                     if (!Cross.almostZero()) {
                         Cross.normalize();
-                        var dist = hullA.testSepAxis(Cross, hullB, posA, quatA, posB, quatB);
+                        var dist = hullA.testSepAxis(Cross, hullB, transformA, transformB);
                         if (dist === false) {
                             return false;
                         }
@@ -38170,7 +38167,7 @@ var CANNON;
                     }
                 }
             }
-            posB.subTo(posA, deltaC);
+            transformB.position.subTo(transformA.position, deltaC);
             if ((deltaC.dot(target)) > 0.0) {
                 target.negateTo(target);
             }
@@ -38181,16 +38178,14 @@ var CANNON;
          *
          * @param axis
          * @param hullB
-         * @param posA
-         * @param quatA
-         * @param posB
-         * @param quatB
+         * @param transformA
+         * @param transformB
          * @return The overlap depth, or FALSE if no penetration.
          */
-        ConvexPolyhedron.prototype.testSepAxis = function (axis, hullB, posA, quatA, posB, quatB) {
+        ConvexPolyhedron.prototype.testSepAxis = function (axis, hullB, transformA, transformB) {
             var hullA = this;
-            ConvexPolyhedron.project(hullA, axis, posA, quatA, maxminA);
-            ConvexPolyhedron.project(hullB, axis, posB, quatB, maxminB);
+            ConvexPolyhedron.project(hullA, axis, transformA, maxminA);
+            ConvexPolyhedron.project(hullB, axis, transformB, maxminB);
             var maxA = maxminA[0];
             var minA = maxminA[1];
             var maxB = maxminB[0];
@@ -38596,12 +38591,12 @@ var CANNON;
          * @param quat
          * @param result result[0] and result[1] will be set to maximum and minimum, respectively.
          */
-        ConvexPolyhedron.project = function (hull, axis, pos, quat, result) {
+        ConvexPolyhedron.project = function (hull, axis, transform, result) {
             var n = hull.vertices.length, worldVertex = project_worldVertex, localAxis = project_localAxis, max = 0, min = 0, localOrigin = project_localOrigin, vs = hull.vertices;
             localOrigin.setZero();
             // Transform the axis to local
-            CANNON.Transform.vectorToLocalFrame(quat, axis, localAxis);
-            CANNON.Transform.pointToLocalFrame(pos, quat, localOrigin, localOrigin);
+            CANNON.Transform.vectorToLocalFrame(transform, axis, localAxis);
+            CANNON.Transform.pointToLocalFrame(transform, localOrigin, localOrigin);
             var add = localOrigin.dot(localAxis);
             min = max = vs[0].dot(localAxis);
             for (var i = 1; i < n; i++) {
@@ -39737,7 +39732,7 @@ var CANNON;
             // Transform them to new local frame
             for (var i = 0; i !== 8; i++) {
                 var corner = corners[i];
-                CANNON.Transform.pointToLocalFrame(frame.position, frame.quaternion, corner, corner);
+                CANNON.Transform.pointToLocalFrame(frame, corner, corner);
             }
             return target.setFromPoints(corners);
         };
@@ -39762,7 +39757,7 @@ var CANNON;
             // Transform them to new local frame
             for (var i = 0; i !== 8; i++) {
                 var corner = corners[i];
-                CANNON.Transform.pointToWorldFrame(frame.position, frame.quaternion, corner, corner);
+                CANNON.Transform.pointToWorldFrame(frame, corner, corner);
             }
             return target.setFromPoints(corners);
         };
@@ -40041,9 +40036,9 @@ var CANNON;
          * @param out
          * @return The "out" vector object
          */
-        Trimesh.prototype.getWorldVertex = function (i, pos, quat, out) {
+        Trimesh.prototype.getWorldVertex = function (i, transform, out) {
             this.getVertex(i, out);
-            CANNON.Transform.pointToWorldFrame(pos, quat, out, out);
+            CANNON.Transform.pointToWorldFrame(transform, out, out);
             return out;
         };
         /**
@@ -41469,14 +41464,15 @@ var CANNON;
             result.upperBound.y = Math.max(to.y, from.y);
             result.upperBound.z = Math.max(to.z, from.z);
         };
-        Ray.prototype.intersectHeightfield = function (shape, quat, position, body, reportedShape) {
+        Ray.prototype.intersectHeightfield = function (shape, transform, body, reportedShape) {
+            var quat = transform.quaternion;
             var data = shape.data, w = shape.elementSize;
             // Convert the ray to local heightfield coordinates
             var localRay = intersectHeightfield_localRay; //new Ray(this.from, this.to);
             localRay.from.copy(this.from);
             localRay.to.copy(this.to);
-            CANNON.Transform.pointToLocalFrame(position, quat, localRay.from, localRay.from);
-            CANNON.Transform.pointToLocalFrame(position, quat, localRay.to, localRay.to);
+            CANNON.Transform.pointToLocalFrame(transform, localRay.from, localRay.from);
+            CANNON.Transform.pointToLocalFrame(transform, localRay.to, localRay.to);
             localRay._updateDirection();
             // Get the index of the data points to test against
             var index = intersectHeightfield_index;
@@ -41503,14 +41499,14 @@ var CANNON;
                     }
                     // Lower triangle
                     shape.getConvexTrianglePillar(i, j, false);
-                    CANNON.Transform.pointToWorldFrame(position, quat, shape.pillarOffset, worldPillarOffset);
+                    CANNON.Transform.pointToWorldFrame(transform, shape.pillarOffset, worldPillarOffset);
                     this.intersectConvex(shape.pillarConvex, quat, worldPillarOffset, body, reportedShape, intersectConvexOptions);
                     if (this.result._shouldStop) {
                         return;
                     }
                     // Upper triangle
                     shape.getConvexTrianglePillar(i, j, true);
-                    CANNON.Transform.pointToWorldFrame(position, quat, shape.pillarOffset, worldPillarOffset);
+                    CANNON.Transform.pointToWorldFrame(transform, shape.pillarOffset, worldPillarOffset);
                     this.intersectConvex(shape.pillarConvex, quat, worldPillarOffset, body, reportedShape, intersectConvexOptions);
                 }
             }
@@ -41667,9 +41663,9 @@ var CANNON;
             treeTransform.position.copy(position);
             treeTransform.quaternion.copy(quat);
             // Transform ray to local space!
-            CANNON.Transform.vectorToLocalFrame(quat, direction, localDirection);
-            CANNON.Transform.pointToLocalFrame(position, quat, from, localFrom);
-            CANNON.Transform.pointToLocalFrame(position, quat, to, localTo);
+            CANNON.Transform.vectorToLocalFrame(treeTransform, direction, localDirection);
+            CANNON.Transform.pointToLocalFrame(treeTransform, from, localFrom);
+            CANNON.Transform.pointToLocalFrame(treeTransform, to, localTo);
             localTo.x *= mesh.scale.x;
             localTo.y *= mesh.scale.y;
             localTo.z *= mesh.scale.z;
@@ -41712,8 +41708,8 @@ var CANNON;
                     continue;
                 }
                 // transform intersectpoint and normal to world
-                CANNON.Transform.vectorToWorldFrame(quat, normal, worldNormal);
-                CANNON.Transform.pointToWorldFrame(position, quat, intersectPoint, worldIntersectPoint);
+                CANNON.Transform.vectorToWorldFrame(treeTransform, normal, worldNormal);
+                CANNON.Transform.pointToWorldFrame(treeTransform, intersectPoint, worldIntersectPoint);
                 this.reportIntersection(worldNormal, worldIntersectPoint, reportedShape, body, trianglesIndex);
             }
             triangles.length = 0;
@@ -42953,7 +42949,7 @@ var CANNON;
                     var axlei = axle[i];
                     var wheelTrans = this.getWheelTransformWorld(i);
                     // Get world axle
-                    CANNON.Transform.vectorToWorldFrame(wheelTrans.quaternion, directions[this.indexRightAxis], axlei);
+                    CANNON.Transform.vectorToWorldFrame(wheelTrans, directions[this.indexRightAxis], axlei);
                     var surfNormalWS = wheel.raycastResult.hitNormalWorld;
                     var proj = axlei.dot(surfNormalWS);
                     surfNormalWS.scaleNumberTo(proj, surfNormalWS_scaled_proj);
@@ -45122,19 +45118,20 @@ var CANNON;
          * @param  {Body}       bi
          * @param  {Body}       bj
          */
-        Narrowphase.prototype.planeTrimesh = function (planeShape, trimeshShape, planePos, trimeshPos, planeQuat, trimeshQuat, planeBody, trimeshBody, rsi, rsj, justTest) {
+        Narrowphase.prototype.planeTrimesh = function (planeShape, trimeshShape, planeTransform, trimeshTransform, planeBody, trimeshBody, rsi, rsj, justTest) {
             // Make contacts!
             var v = new feng3d.Vector3();
+            var planePos = planeTransform.position;
             var normal = planeTrimesh_normal;
             normal.init(0, 1, 0);
-            planeQuat.vmult(normal, normal); // Turn normal according to plane
+            planeTransform.quaternion.vmult(normal, normal); // Turn normal according to plane
             for (var i = 0; i < trimeshShape.vertices.length / 3; i++) {
                 // Get world vertex from trimesh
                 trimeshShape.getVertex(i, v);
                 // Safe up
                 var v2 = new feng3d.Vector3();
                 v2.copy(v);
-                CANNON.Transform.pointToWorldFrame(trimeshPos, trimeshQuat, v2, v);
+                CANNON.Transform.pointToWorldFrame(trimeshTransform, v2, v);
                 // Check plane side
                 var relpos = planeTrimesh_relpos;
                 v.subTo(planePos, relpos);
@@ -45160,7 +45157,9 @@ var CANNON;
                 }
             }
         };
-        Narrowphase.prototype.sphereTrimesh = function (sphereShape, trimeshShape, spherePos, trimeshPos, sphereQuat, trimeshQuat, sphereBody, trimeshBody, rsi, rsj, justTest) {
+        Narrowphase.prototype.sphereTrimesh = function (sphereShape, trimeshShape, sphereTransform, trimeshTransform, sphereBody, trimeshBody, rsi, rsj, justTest) {
+            var spherePos = sphereTransform.position;
+            //
             var edgeVertexA = sphereTrimesh_edgeVertexA;
             var edgeVertexB = sphereTrimesh_edgeVertexB;
             var edgeVector = sphereTrimesh_edgeVector;
@@ -45172,7 +45171,7 @@ var CANNON;
             var relpos = sphereTrimesh_relpos;
             var triangles = sphereTrimesh_triangles;
             // Convert sphere position to local in the trimesh
-            CANNON.Transform.pointToLocalFrame(trimeshPos, trimeshQuat, spherePos, localSpherePos);
+            CANNON.Transform.pointToLocalFrame(trimeshTransform, spherePos, localSpherePos);
             // Get the aabb of the sphere locally in the trimesh
             var sphereRadius = sphereShape.radius;
             localSphereAABB.lowerBound.init(localSpherePos.x - sphereRadius, localSpherePos.y - sphereRadius, localSpherePos.z - sphereRadius);
@@ -45190,7 +45189,7 @@ var CANNON;
                     if (relpos.lengthSquared <= radiusSquared) {
                         // Safe up
                         v2.copy(v);
-                        CANNON.Transform.pointToWorldFrame(trimeshPos, trimeshQuat, v2, v);
+                        CANNON.Transform.pointToWorldFrame(trimeshTransform, v2, v);
                         v.subTo(spherePos, relpos);
                         if (justTest) {
                             return true;
@@ -45240,10 +45239,10 @@ var CANNON;
                             tmp.subTo(localSpherePos, r.ni);
                             r.ni.normalize();
                             r.ni.scaleNumberTo(sphereShape.radius, r.ri);
-                            CANNON.Transform.pointToWorldFrame(trimeshPos, trimeshQuat, tmp, tmp);
+                            CANNON.Transform.pointToWorldFrame(trimeshTransform, tmp, tmp);
                             tmp.subTo(trimeshBody.position, r.rj);
-                            CANNON.Transform.vectorToWorldFrame(trimeshQuat, r.ni, r.ni);
-                            CANNON.Transform.vectorToWorldFrame(trimeshQuat, r.ri, r.ri);
+                            CANNON.Transform.vectorToWorldFrame(trimeshTransform, r.ni, r.ni);
+                            CANNON.Transform.vectorToWorldFrame(trimeshTransform, r.ri, r.ri);
                             this.result.push(r);
                             this.createFrictionEquationsFromContact(r, this.frictionResult);
                         }
@@ -45272,10 +45271,10 @@ var CANNON;
                     tmp.subTo(localSpherePos, r.ni);
                     r.ni.normalize();
                     r.ni.scaleNumberTo(sphereShape.radius, r.ri);
-                    CANNON.Transform.pointToWorldFrame(trimeshPos, trimeshQuat, tmp, tmp);
+                    CANNON.Transform.pointToWorldFrame(trimeshTransform, tmp, tmp);
                     tmp.subTo(trimeshBody.position, r.rj);
-                    CANNON.Transform.vectorToWorldFrame(trimeshQuat, r.ni, r.ni);
-                    CANNON.Transform.vectorToWorldFrame(trimeshQuat, r.ri, r.ri);
+                    CANNON.Transform.vectorToWorldFrame(trimeshTransform, r.ni, r.ni);
+                    CANNON.Transform.vectorToWorldFrame(trimeshTransform, r.ri, r.ri);
                     this.result.push(r);
                     this.createFrictionEquationsFromContact(r, this.frictionResult);
                 }
@@ -45495,7 +45494,8 @@ var CANNON;
                 }
             }
         };
-        Narrowphase.prototype.sphereConvex = function (si, sj, xi, xj, qi, qj, bi, bj, rsi, rsj, justTest) {
+        Narrowphase.prototype.sphereConvex = function (si, sj, transformi, transformj, bi, bj, rsi, rsj, justTest) {
+            var xi = transformi.position, xj = transformj.position, qj = transformj.quaternion;
             xi.subTo(xj, convex_to_sphere);
             var normals = sj.faceNormals;
             var faces = sj.faces;
@@ -45696,7 +45696,8 @@ var CANNON;
                 this.createFrictionFromAverage(numContacts);
             }
         };
-        Narrowphase.prototype.convexConvex = function (si, sj, xi, xj, qi, qj, bi, bj, rsi, rsj, justTest, faceListA, faceListB) {
+        Narrowphase.prototype.convexConvex = function (si, sj, transformi, transformj, bi, bj, rsi, rsj, justTest, faceListA, faceListB) {
+            var xi = transformi.position, xj = transformj.position, qi = transformi.quaternion, qj = transformj.quaternion;
             var sepAxis = convexConvex_sepAxis;
             if (xi.distance(xj) > si.boundingSphereRadius + sj.boundingSphereRadius) {
                 return;
@@ -45913,16 +45914,18 @@ var CANNON;
                 }
             }
         };
-        Narrowphase.prototype.boxHeightfield = function (si, sj, xi, xj, qi, qj, bi, bj, rsi, rsj, justTest) {
+        Narrowphase.prototype.boxHeightfield = function (si, sj, transformi, transformj, bi, bj, rsi, rsj, justTest) {
             si.convexPolyhedronRepresentation.material = si.material;
             si.convexPolyhedronRepresentation.collisionResponse = si.collisionResponse;
-            return this.convexHeightfield(si.convexPolyhedronRepresentation, sj, xi, xj, qi, qj, bi, bj, si, sj, justTest);
+            return this.convexHeightfield(si.convexPolyhedronRepresentation, sj, transformi, transformj, bi, bj, si, sj, justTest);
         };
-        Narrowphase.prototype.convexHeightfield = function (convexShape, hfShape, convexPos, hfPos, convexQuat, hfQuat, convexBody, hfBody, rsi, rsj, justTest) {
+        Narrowphase.prototype.convexHeightfield = function (convexShape, hfShape, convexTransform, hfTransform, convexBody, hfBody, rsi, rsj, justTest) {
+            var convexPos = convexTransform.position;
+            var hfQuat = hfTransform.quaternion;
             var data = hfShape.data, w = hfShape.elementSize, radius = convexShape.boundingSphereRadius, worldPillarOffset = convexHeightfield_tmp2, faceList = convexHeightfield_faceList;
             // Get sphere position to heightfield local!
             var localConvexPos = convexHeightfield_tmp1;
-            CANNON.Transform.pointToLocalFrame(hfPos, hfQuat, convexPos, localConvexPos);
+            CANNON.Transform.pointToLocalFrame(hfTransform, convexPos, localConvexPos);
             // Get the index of the data points to test against
             var iMinX = Math.floor((localConvexPos.x - radius) / w) - 1, iMaxX = Math.ceil((localConvexPos.x + radius) / w) + 1, iMinY = Math.floor((localConvexPos.y - radius) / w) - 1, iMaxY = Math.ceil((localConvexPos.y + radius) / w) + 1;
             // Bail out if we are out of the terrain
@@ -45967,18 +45970,18 @@ var CANNON;
                     var intersecting = false;
                     // Lower triangle
                     hfShape.getConvexTrianglePillar(i, j, false);
-                    CANNON.Transform.pointToWorldFrame(hfPos, hfQuat, hfShape.pillarOffset, worldPillarOffset);
+                    CANNON.Transform.pointToWorldFrame(hfTransform, hfShape.pillarOffset, worldPillarOffset);
                     if (convexPos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + convexShape.boundingSphereRadius) {
-                        intersecting = this.convexConvex(convexShape, hfShape.pillarConvex, convexPos, worldPillarOffset, convexQuat, hfQuat, convexBody, hfBody, null, null, justTest, faceList, null);
+                        intersecting = this.convexConvex(convexShape, hfShape.pillarConvex, convexTransform, new CANNON.Transform(worldPillarOffset, hfQuat), convexBody, hfBody, null, null, justTest, faceList, null);
                     }
                     if (justTest && intersecting) {
                         return true;
                     }
                     // Upper triangle
                     hfShape.getConvexTrianglePillar(i, j, true);
-                    CANNON.Transform.pointToWorldFrame(hfPos, hfQuat, hfShape.pillarOffset, worldPillarOffset);
+                    CANNON.Transform.pointToWorldFrame(hfTransform, hfShape.pillarOffset, worldPillarOffset);
                     if (convexPos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + convexShape.boundingSphereRadius) {
-                        intersecting = this.convexConvex(convexShape, hfShape.pillarConvex, convexPos, worldPillarOffset, convexQuat, hfQuat, convexBody, hfBody, null, null, justTest, faceList, null);
+                        intersecting = this.convexConvex(convexShape, hfShape.pillarConvex, convexTransform, new CANNON.Transform(worldPillarOffset, hfQuat), convexBody, hfBody, null, null, justTest, faceList, null);
                     }
                     if (justTest && intersecting) {
                         return true;
@@ -45987,11 +45990,13 @@ var CANNON;
             }
         };
         ;
-        Narrowphase.prototype.sphereHeightfield = function (sphereShape, hfShape, spherePos, hfPos, sphereQuat, hfQuat, sphereBody, hfBody, rsi, rsj, justTest) {
+        Narrowphase.prototype.sphereHeightfield = function (sphereShape, hfShape, sphereTransform, hfTransform, sphereBody, hfBody, rsi, rsj, justTest) {
             var data = hfShape.data, radius = sphereShape.radius, w = hfShape.elementSize, worldPillarOffset = sphereHeightfield_tmp2;
+            var spherePos = sphereTransform.position;
+            var hfQuat = hfTransform.quaternion;
             // Get sphere position to heightfield local!
             var localSpherePos = sphereHeightfield_tmp1;
-            CANNON.Transform.pointToLocalFrame(hfPos, hfQuat, spherePos, localSpherePos);
+            CANNON.Transform.pointToLocalFrame(hfTransform, spherePos, localSpherePos);
             // Get the index of the data points to test against
             var iMinX = Math.floor((localSpherePos.x - radius) / w) - 1, iMaxX = Math.ceil((localSpherePos.x + radius) / w) + 1, iMinY = Math.floor((localSpherePos.y - radius) / w) - 1, iMaxY = Math.ceil((localSpherePos.y + radius) / w) + 1;
             // Bail out if we are out of the terrain
@@ -46038,18 +46043,18 @@ var CANNON;
                     var intersecting = false;
                     // Lower triangle
                     hfShape.getConvexTrianglePillar(i, j, false);
-                    CANNON.Transform.pointToWorldFrame(hfPos, hfQuat, hfShape.pillarOffset, worldPillarOffset);
+                    CANNON.Transform.pointToWorldFrame(hfTransform, hfShape.pillarOffset, worldPillarOffset);
                     if (spherePos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + sphereShape.boundingSphereRadius) {
-                        intersecting = this.sphereConvex(sphereShape, hfShape.pillarConvex, spherePos, worldPillarOffset, sphereQuat, hfQuat, sphereBody, hfBody, sphereShape, hfShape, justTest);
+                        intersecting = this.sphereConvex(sphereShape, hfShape.pillarConvex, sphereTransform, new CANNON.Transform(worldPillarOffset, hfQuat), sphereBody, hfBody, sphereShape, hfShape, justTest);
                     }
                     if (justTest && intersecting) {
                         return true;
                     }
                     // Upper triangle
                     hfShape.getConvexTrianglePillar(i, j, true);
-                    CANNON.Transform.pointToWorldFrame(hfPos, hfQuat, hfShape.pillarOffset, worldPillarOffset);
+                    CANNON.Transform.pointToWorldFrame(hfTransform, hfShape.pillarOffset, worldPillarOffset);
                     if (spherePos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + sphereShape.boundingSphereRadius) {
-                        intersecting = this.sphereConvex(sphereShape, hfShape.pillarConvex, spherePos, worldPillarOffset, sphereQuat, hfQuat, sphereBody, hfBody, sphereShape, hfShape, justTest);
+                        intersecting = this.sphereConvex(sphereShape, hfShape.pillarConvex, sphereTransform, new CANNON.Transform(worldPillarOffset, hfQuat), sphereBody, hfBody, sphereShape, hfShape, justTest);
                     }
                     if (justTest && intersecting) {
                         return true;
