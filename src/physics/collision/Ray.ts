@@ -561,7 +561,7 @@ namespace CANNON
             treeTransform.quaternion.copy(quat);
 
             // Transform ray to local space!
-            Transform.vectorToLocalFrame(position, quat, direction, localDirection);
+            Transform.vectorToLocalFrame(quat, direction, localDirection);
             Transform.pointToLocalFrame(position, quat, from, localFrom);
             Transform.pointToLocalFrame(position, quat, to, localTo);
 

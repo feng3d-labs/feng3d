@@ -17346,7 +17346,6 @@ declare namespace CANNON {
     class Transform {
         position: feng3d.Vector3;
         quaternion: feng3d.Quaternion;
-        constructor(options?: any);
         /**
          * @param position
          * @param quaternion
@@ -17355,29 +17354,15 @@ declare namespace CANNON {
          */
         static pointToLocalFrame(position: feng3d.Vector3, quaternion: feng3d.Quaternion, worldPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
         /**
-         * Get a global point in local transform coordinates.
-         * @param worldPoint
-         * @param result
-         * @returnThe "result" vector object
-         */
-        pointToLocal(worldPoint: feng3d.Vector3, result: feng3d.Vector3): feng3d.Vector3;
-        /**
          * @param position
          * @param quaternion
          * @param localPoint
          * @param result
          */
         static pointToWorldFrame(position: feng3d.Vector3, quaternion: feng3d.Quaternion, localPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
-        /**
-         * Get a local point in global transform coordinates.
-         * @param point
-         * @param result
-         * @return The "result" vector object
-         */
-        pointToWorld(localPoint: feng3d.Vector3, result: feng3d.Vector3): feng3d.Vector3;
         vectorToWorldFrame(localVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
         static vectorToWorldFrame(quaternion: feng3d.Quaternion, localVector: feng3d.Vector3, result: feng3d.Vector3): feng3d.Vector3;
-        static vectorToLocalFrame(position: feng3d.Vector3, quaternion: feng3d.Quaternion, worldVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        static vectorToLocalFrame(quaternion: feng3d.Quaternion, worldVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
     }
 }
 declare namespace CANNON {

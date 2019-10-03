@@ -224,7 +224,7 @@ namespace CANNON
             for (var i = 0; i !== 8; i++)
             {
                 var corner = corners[i];
-                frame.pointToLocal(corner, corner);
+                Transform.pointToLocalFrame(frame.position, frame.quaternion, corner, corner);
             }
 
             return target.setFromPoints(corners);
@@ -256,7 +256,7 @@ namespace CANNON
             for (var i = 0; i !== 8; i++)
             {
                 var corner = corners[i];
-                frame.pointToWorld(corner, corner);
+                Transform.pointToWorldFrame(frame.position, frame.quaternion, corner, corner);
             }
 
             return target.setFromPoints(corners);

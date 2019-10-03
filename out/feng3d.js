@@ -37235,16 +37235,7 @@ var feng3d;
 var CANNON;
 (function (CANNON) {
     var Transform = /** @class */ (function () {
-        function Transform(options) {
-            if (options === void 0) { options = {}; }
-            this.position = new feng3d.Vector3();
-            if (options.position) {
-                this.position.copy(options.position);
-            }
-            this.quaternion = new feng3d.Quaternion();
-            if (options.quaternion) {
-                this.quaternion.copy(options.quaternion);
-            }
+        function Transform() {
         }
         /**
          * @param position
@@ -37255,18 +37246,9 @@ var CANNON;
         Transform.pointToLocalFrame = function (position, quaternion, worldPoint, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
             worldPoint.subTo(position, result);
-            quaternion.conjugateTo(tmpQuat);
+            var tmpQuat = quaternion.conjugateTo();
             tmpQuat.vmult(result, result);
             return result;
-        };
-        /**
-         * Get a global point in local transform coordinates.
-         * @param worldPoint
-         * @param result
-         * @returnThe "result" vector object
-         */
-        Transform.prototype.pointToLocal = function (worldPoint, result) {
-            return Transform.pointToLocalFrame(this.position, this.quaternion, worldPoint, result);
         };
         /**
          * @param position
@@ -37280,15 +37262,6 @@ var CANNON;
             result.addTo(position, result);
             return result;
         };
-        /**
-         * Get a local point in global transform coordinates.
-         * @param point
-         * @param result
-         * @return The "result" vector object
-         */
-        Transform.prototype.pointToWorld = function (localPoint, result) {
-            return Transform.pointToWorldFrame(this.position, this.quaternion, localPoint, result);
-        };
         Transform.prototype.vectorToWorldFrame = function (localVector, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
             this.quaternion.vmult(localVector, result);
@@ -37298,7 +37271,7 @@ var CANNON;
             quaternion.vmult(localVector, result);
             return result;
         };
-        Transform.vectorToLocalFrame = function (position, quaternion, worldVector, result) {
+        Transform.vectorToLocalFrame = function (quaternion, worldVector, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
             quaternion.w *= -1;
             quaternion.vmult(worldVector, result);
@@ -37308,7 +37281,6 @@ var CANNON;
         return Transform;
     }());
     CANNON.Transform = Transform;
-    var tmpQuat = new feng3d.Quaternion();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -38628,7 +38600,7 @@ var CANNON;
             var n = hull.vertices.length, worldVertex = project_worldVertex, localAxis = project_localAxis, max = 0, min = 0, localOrigin = project_localOrigin, vs = hull.vertices;
             localOrigin.setZero();
             // Transform the axis to local
-            CANNON.Transform.vectorToLocalFrame(pos, quat, axis, localAxis);
+            CANNON.Transform.vectorToLocalFrame(quat, axis, localAxis);
             CANNON.Transform.pointToLocalFrame(pos, quat, localOrigin, localOrigin);
             var add = localOrigin.dot(localAxis);
             min = max = vs[0].dot(localAxis);
@@ -39765,7 +39737,7 @@ var CANNON;
             // Transform them to new local frame
             for (var i = 0; i !== 8; i++) {
                 var corner = corners[i];
-                frame.pointToLocal(corner, corner);
+                CANNON.Transform.pointToLocalFrame(frame.position, frame.quaternion, corner, corner);
             }
             return target.setFromPoints(corners);
         };
@@ -39790,7 +39762,7 @@ var CANNON;
             // Transform them to new local frame
             for (var i = 0; i !== 8; i++) {
                 var corner = corners[i];
-                frame.pointToWorld(corner, corner);
+                CANNON.Transform.pointToWorldFrame(frame.position, frame.quaternion, corner, corner);
             }
             return target.setFromPoints(corners);
         };
@@ -41695,7 +41667,7 @@ var CANNON;
             treeTransform.position.copy(position);
             treeTransform.quaternion.copy(quat);
             // Transform ray to local space!
-            CANNON.Transform.vectorToLocalFrame(position, quat, direction, localDirection);
+            CANNON.Transform.vectorToLocalFrame(quat, direction, localDirection);
             CANNON.Transform.pointToLocalFrame(position, quat, from, localFrom);
             CANNON.Transform.pointToLocalFrame(position, quat, to, localTo);
             localTo.x *= mesh.scale.x;
@@ -42981,7 +42953,7 @@ var CANNON;
                     var axlei = axle[i];
                     var wheelTrans = this.getWheelTransformWorld(i);
                     // Get world axle
-                    wheelTrans.vectorToWorldFrame(directions[this.indexRightAxis], axlei);
+                    CANNON.Transform.vectorToWorldFrame(wheelTrans.quaternion, directions[this.indexRightAxis], axlei);
                     var surfNormalWS = wheel.raycastResult.hitNormalWorld;
                     var proj = axlei.dot(surfNormalWS);
                     surfNormalWS.scaleNumberTo(proj, surfNormalWS_scaled_proj);
