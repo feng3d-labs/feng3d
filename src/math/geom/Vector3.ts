@@ -842,7 +842,7 @@ namespace feng3d
          */
         crossmat()
         {
-            return new CANNON.Mat3([0, -this.z, this.y,
+            return new Matrix3x3([0, -this.z, this.y,
                 this.z, 0, -this.x,
                 -this.y, this.x, 0]);
         }

@@ -143,13 +143,13 @@ namespace CANNON
 
         invInertia: feng3d.Vector3;
 
-        invInertiaWorld: Mat3;
+        invInertiaWorld: feng3d.Matrix3x3;
 
         invMassSolve: number;
 
         invInertiaSolve: feng3d.Vector3;
 
-        invInertiaWorldSolve: Mat3;
+        invInertiaWorldSolve: feng3d.Matrix3x3;
 
         /**
          * Set to true if you don't want the body to rotate. Make sure to run .updateMassProperties() after changing this.
@@ -285,11 +285,11 @@ namespace CANNON
             this.shapeOrientations = [];
             this.inertia = new feng3d.Vector3();
             this.invInertia = new feng3d.Vector3();
-            this.invInertiaWorld = new Mat3();
+            this.invInertiaWorld = new feng3d.Matrix3x3();
 
             this.invMassSolve = 0;
             this.invInertiaSolve = new feng3d.Vector3();
-            this.invInertiaWorldSolve = new Mat3();
+            this.invInertiaWorldSolve = new feng3d.Matrix3x3();
             this.fixedRotation = typeof (options.fixedRotation) !== "undefined" ? options.fixedRotation : false;
             this.angularDamping = typeof (options.angularDamping) !== 'undefined' ? options.angularDamping : 0.01;
             this.linearFactor = new feng3d.Vector3(1, 1, 1);
@@ -608,7 +608,7 @@ namespace CANNON
                     m2 = uiw_m2,
                     m3 = uiw_m3;
                 m1.setRotationFromQuaternion(this.quaternion);
-                m1.transpose(m2);
+                m1.transposeTo(m2);
                 m1.scale(I, m1);
                 m1.mmult(m2, this.invInertiaWorld);
             }
@@ -855,9 +855,9 @@ namespace CANNON
     var Body_applyLocalImpulse_worldImpulse = new feng3d.Vector3();
     var Body_applyLocalImpulse_relativePoint = new feng3d.Vector3();
 
-    var uiw_m1 = new Mat3();
-    var uiw_m2 = new Mat3();
-    var uiw_m3 = new Mat3();
+    var uiw_m1 = new feng3d.Matrix3x3();
+    var uiw_m2 = new feng3d.Matrix3x3();
+    var uiw_m3 = new feng3d.Matrix3x3();
 
     var computeAABB_shapeAABB = new AABB();
 }

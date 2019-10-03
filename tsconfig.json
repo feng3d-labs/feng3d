@@ -78,6 +78,7 @@
         "src/math/geom/Orientation3D.ts",
         "src/math/geom/Rectangle.ts",
         "src/math/geom/Matrix.ts",
+        "src/math/geom/Matrix3x3.ts",
         "src/math/geom/Matrix4x4.ts",
         "src/math/geom/Quaternion.ts",
         "src/math/geom/Euler.ts",
@@ -352,7 +353,6 @@
         //
         "src/core/Mouse3DManager.ts",
         //
-        "src/physics/math/Mat3.ts",
         "src/physics/math/Transform.ts",
         "src/physics/math/JacobianElement.ts",
         "src/physics/utils/EventTarget.ts",

@@ -1,6 +1,6 @@
-namespace CANNON
+namespace feng3d
 {
-    export class Mat3
+    export class Matrix3x3
     {
         /**
          * 长度为9的向量，包含所有的矩阵元素
@@ -60,7 +60,7 @@ namespace CANNON
          * 
          * @param vec3
          */
-        setTrace(vec3: feng3d.Vector3)
+        setTrace(vec3: Vector3)
         {
             var e = this.elements;
             e[0] = vec3.x;
@@ -72,7 +72,7 @@ namespace CANNON
         /**
          * 获取矩阵对角元素
          */
-        getTrace(target = new feng3d.Vector3())
+        getTrace(target = new Vector3())
         {
             var e = this.elements;
             target.x = e[0];
@@ -87,7 +87,7 @@ namespace CANNON
          * @param v 要乘以的向量
          * @param target 目标保存结果
          */
-        vmult(v: feng3d.Vector3, target = new feng3d.Vector3())
+        vmult(v: Vector3, target = new Vector3())
         {
             var e = this.elements,
                 x = v.x,
@@ -116,7 +116,7 @@ namespace CANNON
          * 矩阵乘法
          * @param  m 要从左边乘的矩阵。
          */
-        mmult(m: Mat3, target = new Mat3())
+        mmult(m: feng3d.Matrix3x3, target = new feng3d.Matrix3x3())
         {
             for (var i = 0; i < 3; i++)
             {
@@ -138,7 +138,7 @@ namespace CANNON
          * 
          * @param v
          */
-        scale(v: feng3d.Vector3, target = new Mat3())
+        scale(v: Vector3, target = new feng3d.Matrix3x3())
         {
             var e = this.elements,
                 t = target.elements;
@@ -157,7 +157,7 @@ namespace CANNON
          * @param b 右手边
          * @param target 结果
          */
-        solve(b: feng3d.Vector3, target = new feng3d.Vector3())
+        solve(b: Vector3, target = new Vector3())
         {
             // Construct equations
             var nr = 3; // num rows
@@ -232,28 +232,34 @@ namespace CANNON
         }
 
         /**
-         * Get an element in the matrix by index. Index starts at 0, not 1!!!
-         * @param row
-         * @param column
-         * @param value Optional. If provided, the matrix element will be set to this value.
+         * 获取指定行列元素值
+         * 
+         * @param row 
+         * @param column 
          */
-        e(row: number, column: number, value: number)
+        getElement(row: number, column: number)
         {
-            if (value === undefined)
-            {
-                return this.elements[column + 3 * row];
-            } else
-            {
-                // Set value
-                this.elements[column + 3 * row] = value;
-            }
+            return this.elements[column + 3 * row];
         }
 
         /**
-         * Copy another matrix into this matrix object.
+         * 设置指定行列元素值
+         * 
+         * @param row
+         * @param column
+         * @param value
+         */
+        setElement(row: number, column: number, value: number)
+        {
+            this.elements[column + 3 * row] = value;
+        }
+
+        /**
+         * 将另一个矩阵复制到这个矩阵对象中
+         * 
          * @param source
          */
-        copy(source: Mat3)
+        copy(source: feng3d.Matrix3x3)
         {
             for (var i = 0; i < source.elements.length; i++)
             {
@@ -263,7 +269,7 @@ namespace CANNON
         }
 
         /**
-         * Returns a string representation of the matrix.
+         * 返回矩阵的字符串表示形式
          */
         toString()
         {
@@ -277,10 +283,9 @@ namespace CANNON
         }
 
         /**
-         * reverse the matrix
-         * @param target Optional. Target matrix to save in.
+         * 逆矩阵
          */
-        reverse(target = new Mat3())
+        reverse()
         {
             // Construct equations
             var nr = 3; // num rows
@@ -309,9 +314,9 @@ namespace CANNON
             eqns[5 + 6 * 2] = 1;
 
             // Compute right upper triangular version of the matrix - Gauss elimination
-            var n = 3, k = n, np;
+            var n = 3, k = n, np: number;
             var kp = nc; // num rows
-            var p;
+            var p: number;
             do
             {
                 i = k - n;
@@ -388,15 +393,24 @@ namespace CANNON
                     {
                         throw "Could not reverse! A=[" + this.toString() + "]";
                     }
-                    target.e(i, j, p);
+                    this.setElement(i, j, p);
                 } while (j--);
             } while (i--);
 
-            return target;
+            return this;
         }
 
         /**
-         * Set the matrix from a quaterion
+         * 逆矩阵
+         */
+        reverseTo(target = new feng3d.Matrix3x3())
+        {
+            return target.copy(this).reverse();
+        }
+
+        /**
+         * 从四元数设置矩阵
+         * 
          * @param q
          */
         setRotationFromQuaternion(q: feng3d.Quaternion)
@@ -424,14 +438,12 @@ namespace CANNON
         }
 
         /**
-         * Transpose the matrix
-         * @param target Where to store the result.
-         * @return The target Mat3, or a new Mat3 if target was omitted.
+         * 转置矩阵
          */
-        transpose(target = new Mat3())
+        transpose()
         {
-            var Mt = target.elements,
-                M = this.elements;
+            var Mt = this.elements,
+                M = this.elements.concat();
 
             for (var i = 0; i !== 3; i++)
             {
@@ -441,8 +453,15 @@ namespace CANNON
                 }
             }
 
-            return target;
+            return this;
         }
 
+        /**
+         * 转置矩阵
+         */
+        transposeTo(target = new feng3d.Matrix3x3())
+        {
+            return target.copy(this).transpose();
+        }
     }
 }

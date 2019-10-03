@@ -4308,7 +4308,7 @@ declare namespace feng3d {
          * 从向量中得到叉乘矩阵a_cross，使得a x b = a_cross * b = c
          * @see http://www8.cs.umu.se/kurser/TDBD24/VT06/lectures/Lecture6.pdf
          */
-        crossmat(): CANNON.Mat3;
+        crossmat(): Matrix3x3;
         /**
          * 返回当前 Vector3 对象的字符串表示形式。
          */
@@ -5048,6 +5048,115 @@ declare namespace feng3d {
          * @param dy The amount of movement down along the <i>y</i> axis, in pixels.
          */
         translate(dx: number, dy: number): void;
+    }
+}
+declare namespace feng3d {
+    class Matrix3x3 {
+        /**
+         * 长度为9的向量，包含所有的矩阵元素
+         */
+        elements: [number, number, number, number, number, number, number, number, number];
+        /**
+         * 构建3x3矩阵
+         *
+         * @param elements 九个元素的数组
+         */
+        constructor(elements?: [number, number, number, number, number, number, number, number, number]);
+        /**
+         * 设置矩阵为单位矩阵
+         */
+        identity(): this;
+        /**
+         * 将所有元素设置为0
+         */
+        setZero(): this;
+        /**
+         * 根据一个 Vector3 设置矩阵对角元素
+         *
+         * @param vec3
+         */
+        setTrace(vec3: Vector3): this;
+        /**
+         * 获取矩阵对角元素
+         */
+        getTrace(target?: Vector3): Vector3;
+        /**
+         * 矩阵向量乘法
+         *
+         * @param v 要乘以的向量
+         * @param target 目标保存结果
+         */
+        vmult(v: Vector3, target?: Vector3): Vector3;
+        /**
+         * 矩阵标量乘法
+         * @param s
+         */
+        smult(s: number): void;
+        /**
+         * 矩阵乘法
+         * @param  m 要从左边乘的矩阵。
+         */
+        mmult(m: feng3d.Matrix3x3, target?: Matrix3x3): Matrix3x3;
+        /**
+         * 缩放矩阵的每一列
+         *
+         * @param v
+         */
+        scale(v: Vector3, target?: Matrix3x3): Matrix3x3;
+        /**
+         * 解决Ax = b
+         *
+         * @param b 右手边
+         * @param target 结果
+         */
+        solve(b: Vector3, target?: Vector3): Vector3;
+        /**
+         * 获取指定行列元素值
+         *
+         * @param row
+         * @param column
+         */
+        getElement(row: number, column: number): number;
+        /**
+         * 设置指定行列元素值
+         *
+         * @param row
+         * @param column
+         * @param value
+         */
+        setElement(row: number, column: number, value: number): void;
+        /**
+         * 将另一个矩阵复制到这个矩阵对象中
+         *
+         * @param source
+         */
+        copy(source: feng3d.Matrix3x3): this;
+        /**
+         * 返回矩阵的字符串表示形式
+         */
+        toString(): string;
+        /**
+         * 逆矩阵
+         */
+        reverse(): this;
+        /**
+         * 逆矩阵
+         */
+        reverseTo(target?: Matrix3x3): Matrix3x3;
+        /**
+         * 从四元数设置矩阵
+         *
+         * @param q
+         */
+        setRotationFromQuaternion(q: feng3d.Quaternion): this;
+        /**
+         * 转置矩阵
+         */
+        transpose(): this;
+        /**
+         * 转置矩阵
+         */
+        transposeTo(target?: Matrix3x3): Matrix3x3;
     }
 }
 declare namespace feng3d {
@@ -17234,100 +17343,6 @@ declare namespace feng3d {
     }
 }
 declare namespace CANNON {
-    class Mat3 {
-        /**
-         * 长度为9的向量，包含所有的矩阵元素
-         */
-        elements: [number, number, number, number, number, number, number, number, number];
-        /**
-         * 构建3x3矩阵
-         *
-         * @param elements 九个元素的数组
-         */
-        constructor(elements?: [number, number, number, number, number, number, number, number, number]);
-        /**
-         * 设置矩阵为单位矩阵
-         */
-        identity(): this;
-        /**
-         * 将所有元素设置为0
-         */
-        setZero(): this;
-        /**
-         * 根据一个 Vector3 设置矩阵对角元素
-         *
-         * @param vec3
-         */
-        setTrace(vec3: feng3d.Vector3): this;
-        /**
-         * 获取矩阵对角元素
-         */
-        getTrace(target?: feng3d.Vector3): feng3d.Vector3;
-        /**
-         * 矩阵向量乘法
-         *
-         * @param v 要乘以的向量
-         * @param target 目标保存结果
-         */
-        vmult(v: feng3d.Vector3, target?: feng3d.Vector3): feng3d.Vector3;
-        /**
-         * 矩阵标量乘法
-         * @param s
-         */
-        smult(s: number): void;
-        /**
-         * 矩阵乘法
-         * @param  m 要从左边乘的矩阵。
-         */
-        mmult(m: Mat3, target?: Mat3): Mat3;
-        /**
-         * 缩放矩阵的每一列
-         *
-         * @param v
-         */
-        scale(v: feng3d.Vector3, target?: Mat3): Mat3;
-        /**
-         * 解决Ax = b
-         *
-         * @param b 右手边
-         * @param target 结果
-         */
-        solve(b: feng3d.Vector3, target?: feng3d.Vector3): feng3d.Vector3;
-        /**
-         * Get an element in the matrix by index. Index starts at 0, not 1!!!
-         * @param row
-         * @param column
-         * @param value Optional. If provided, the matrix element will be set to this value.
-         */
-        e(row: number, column: number, value: number): number;
-        /**
-         * Copy another matrix into this matrix object.
-         * @param source
-         */
-        copy(source: Mat3): this;
-        /**
-         * Returns a string representation of the matrix.
-         */
-        toString(): string;
-        /**
-         * reverse the matrix
-         * @param target Optional. Target matrix to save in.
-         */
-        reverse(target?: Mat3): Mat3;
-        /**
-         * Set the matrix from a quaterion
-         * @param q
-         */
-        setRotationFromQuaternion(q: feng3d.Quaternion): this;
-        /**
-         * Transpose the matrix
-         * @param target Where to store the result.
-         * @return The target Mat3, or a new Mat3 if target was omitted.
-         */
-        transpose(target?: Mat3): Mat3;
-    }
-}
-declare namespace CANNON {
     class Transform {
         position: feng3d.Vector3;
         quaternion: feng3d.Quaternion;
@@ -19104,10 +19119,10 @@ declare namespace CANNON {
         shapeOrientations: feng3d.Quaternion[];
         inertia: feng3d.Vector3;
         invInertia: feng3d.Vector3;
-        invInertiaWorld: Mat3;
+        invInertiaWorld: feng3d.Matrix3x3;
         invMassSolve: number;
         invInertiaSolve: feng3d.Vector3;
-        invInertiaWorldSolve: Mat3;
+        invInertiaWorldSolve: feng3d.Matrix3x3;
         /**
          * Set to true if you don't want the body to rotate. Make sure to run .updateMassProperties() after changing this.
          */
