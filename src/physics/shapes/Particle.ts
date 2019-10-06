@@ -15,7 +15,7 @@ namespace CANNON
         constructor()
         {
             super({
-                type: Shape.types.PARTICLE
+                type: ShapeType.PARTICLE
             });
         }
 

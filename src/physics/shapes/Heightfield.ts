@@ -86,7 +86,7 @@ namespace CANNON
             this.cacheEnabled = true;
 
             Shape.call(this, {
-                type: Shape.types.HEIGHTFIELD
+                type: ShapeType.HEIGHTFIELD
             });
 
             this.pillarConvex = new ConvexPolyhedron();

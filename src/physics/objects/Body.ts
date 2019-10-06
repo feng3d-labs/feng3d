@@ -185,8 +185,6 @@ namespace CANNON
 
         wlambda: feng3d.Vector3;
 
-        shape: Shape;
-
         index: number;
 
         /**
@@ -592,7 +590,7 @@ namespace CANNON
         /**
          * Update .inertiaWorld and .invInertiaWorld
          */
-        updateInertiaWorld(force?)
+        updateInertiaWorld(force?: boolean)
         {
             var I = this.invInertia;
             if (I.x === I.y && I.y === I.z && !force)
@@ -758,10 +756,10 @@ namespace CANNON
          * @param  {Vector3} result
          * @return {Vector3} The result vector.
          */
-        getVelocityAtWorldPoint(worldPoint, result)
+        getVelocityAtWorldPoint(worldPoint: feng3d.Vector3, result: feng3d.Vector3)
         {
             var r = new feng3d.Vector3();
-            worldPoint.vsub(this.position, r);
+            worldPoint.subTo(this.position, r);
             this.angularVelocity.crossTo(r, result);
             this.velocity.addTo(result, result);
             return result;

@@ -1235,7 +1235,7 @@ namespace CANNON
          * @param  {Body}       bi
          * @param  {Body}       bj
          */
-        // Narrowphase.prototype[Shape.types.CONVEXPOLYHEDRON | Shape.types.TRIMESH] =
+        // Narrowphase.prototype[ShapeType.CONVEXPOLYHEDRON | ShapeType.TRIMESH] =
         // Narrowphase.prototype.convexTrimesh = function(si,sj,xi,xj,qi,qj,bi,bj,rsi,rsj,faceListA,faceListB){
         //     var sepAxis = convexConvex_sepAxis;
 
@@ -1810,34 +1810,34 @@ namespace CANNON
     var sphereHeightfield_tmp2 = new feng3d.Vector3();
 
 
-    Narrowphase.prototype[Shape.types.BOX | Shape.types.BOX] = Narrowphase.prototype.boxBox;
-    Narrowphase.prototype[Shape.types.BOX | Shape.types.CONVEXPOLYHEDRON] = Narrowphase.prototype.boxConvex;
-    Narrowphase.prototype[Shape.types.BOX | Shape.types.PARTICLE] = Narrowphase.prototype.boxParticle;
-    Narrowphase.prototype[Shape.types.SPHERE] = Narrowphase.prototype.sphereSphere;
-    Narrowphase.prototype[Shape.types.PLANE | Shape.types.TRIMESH] = Narrowphase.prototype.planeTrimesh;
-    Narrowphase.prototype[Shape.types.SPHERE | Shape.types.TRIMESH] = Narrowphase.prototype.sphereTrimesh;
+    Narrowphase.prototype[ShapeType.BOX | ShapeType.BOX] = Narrowphase.prototype.boxBox;
+    Narrowphase.prototype[ShapeType.BOX | ShapeType.CONVEXPOLYHEDRON] = Narrowphase.prototype.boxConvex;
+    Narrowphase.prototype[ShapeType.BOX | ShapeType.PARTICLE] = Narrowphase.prototype.boxParticle;
+    Narrowphase.prototype[ShapeType.SPHERE] = Narrowphase.prototype.sphereSphere;
+    Narrowphase.prototype[ShapeType.PLANE | ShapeType.TRIMESH] = Narrowphase.prototype.planeTrimesh;
+    Narrowphase.prototype[ShapeType.SPHERE | ShapeType.TRIMESH] = Narrowphase.prototype.sphereTrimesh;
 
-    Narrowphase.prototype[Shape.types.SPHERE | Shape.types.PLANE] = Narrowphase.prototype.spherePlane;
+    Narrowphase.prototype[ShapeType.SPHERE | ShapeType.PLANE] = Narrowphase.prototype.spherePlane;
 
-    Narrowphase.prototype[Shape.types.SPHERE | Shape.types.BOX] = Narrowphase.prototype.sphereBox;
-    Narrowphase.prototype[Shape.types.SPHERE | Shape.types.CONVEXPOLYHEDRON] = Narrowphase.prototype.sphereConvex;
+    Narrowphase.prototype[ShapeType.SPHERE | ShapeType.BOX] = Narrowphase.prototype.sphereBox;
+    Narrowphase.prototype[ShapeType.SPHERE | ShapeType.CONVEXPOLYHEDRON] = Narrowphase.prototype.sphereConvex;
 
-    Narrowphase.prototype[Shape.types.PLANE | Shape.types.BOX] = Narrowphase.prototype.planeBox;
+    Narrowphase.prototype[ShapeType.PLANE | ShapeType.BOX] = Narrowphase.prototype.planeBox;
 
-    Narrowphase.prototype[Shape.types.PLANE | Shape.types.CONVEXPOLYHEDRON] = Narrowphase.prototype.planeConvex;
+    Narrowphase.prototype[ShapeType.PLANE | ShapeType.CONVEXPOLYHEDRON] = Narrowphase.prototype.planeConvex;
 
-    Narrowphase.prototype[Shape.types.CONVEXPOLYHEDRON] = Narrowphase.prototype.convexConvex;
+    Narrowphase.prototype[ShapeType.CONVEXPOLYHEDRON] = Narrowphase.prototype.convexConvex;
 
-    Narrowphase.prototype[Shape.types.PLANE | Shape.types.PARTICLE] = Narrowphase.prototype.planeParticle;
+    Narrowphase.prototype[ShapeType.PLANE | ShapeType.PARTICLE] = Narrowphase.prototype.planeParticle;
 
-    Narrowphase.prototype[Shape.types.PARTICLE | Shape.types.SPHERE] = Narrowphase.prototype.sphereParticle;
+    Narrowphase.prototype[ShapeType.PARTICLE | ShapeType.SPHERE] = Narrowphase.prototype.sphereParticle;
 
-    Narrowphase.prototype[Shape.types.PARTICLE | Shape.types.CONVEXPOLYHEDRON] = Narrowphase.prototype.convexParticle;
+    Narrowphase.prototype[ShapeType.PARTICLE | ShapeType.CONVEXPOLYHEDRON] = Narrowphase.prototype.convexParticle;
 
-    Narrowphase.prototype[Shape.types.BOX | Shape.types.HEIGHTFIELD] = Narrowphase.prototype.boxHeightfield;
-    Narrowphase.prototype[Shape.types.SPHERE | Shape.types.HEIGHTFIELD] = Narrowphase.prototype.sphereHeightfield;
+    Narrowphase.prototype[ShapeType.BOX | ShapeType.HEIGHTFIELD] = Narrowphase.prototype.boxHeightfield;
+    Narrowphase.prototype[ShapeType.SPHERE | ShapeType.HEIGHTFIELD] = Narrowphase.prototype.sphereHeightfield;
 
-    Narrowphase.prototype[Shape.types.CONVEXPOLYHEDRON | Shape.types.HEIGHTFIELD] = Narrowphase.prototype.convexHeightfield;
+    Narrowphase.prototype[ShapeType.CONVEXPOLYHEDRON | ShapeType.HEIGHTFIELD] = Narrowphase.prototype.convexHeightfield;
 
 
 }

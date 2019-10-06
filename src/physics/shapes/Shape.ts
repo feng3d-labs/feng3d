@@ -44,7 +44,7 @@ namespace CANNON
          * @param options 
          * @author schteppe
          */
-        constructor(options: { type?: number, collisionFilterGroup?: number, collisionFilterMask?: number, collisionResponse?: boolean, material?: any } = {})
+        constructor(options: { type?: ShapeType, collisionFilterGroup?: number, collisionFilterMask?: number, collisionResponse?: boolean, material?: any } = {})
         {
             this.id = Shape.idCounter++;
             this.type = options.type || 0;
@@ -93,20 +93,5 @@ namespace CANNON
         }
 
         static idCounter = 0;
-
-        /**
-         * The available shape types.
-         */
-        static types = {
-            SPHERE: 1,
-            PLANE: 2,
-            BOX: 4,
-            COMPOUND: 8,
-            CONVEXPOLYHEDRON: 16,
-            HEIGHTFIELD: 32,
-            PARTICLE: 64,
-            CYLINDER: 128,
-            TRIMESH: 256
-        };
     }
 }

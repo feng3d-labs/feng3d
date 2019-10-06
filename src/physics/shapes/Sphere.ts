@@ -13,7 +13,7 @@ namespace CANNON
         constructor(radius: number)
         {
             super({
-                type: Shape.types.SPHERE
+                type: ShapeType.SPHERE
             });
 
             this.radius = radius !== undefined ? radius : 1.0;

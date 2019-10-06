@@ -47,7 +47,7 @@ namespace CANNON
         constructor(points?: feng3d.Vector3[], faces?: number[][], uniqueAxes?: any[])
         {
             super({
-                type: Shape.types.CONVEXPOLYHEDRON
+                type: ShapeType.CONVEXPOLYHEDRON
             });
 
             this.vertices = points || [];

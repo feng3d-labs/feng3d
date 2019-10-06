@@ -364,6 +364,8 @@
         "src/physics/constraints/ConeTwistConstraint.ts",
         "src/physics/constraints/HingeConstraint.ts",
         "src/physics/constraints/LockConstraint.ts",
+        //
+        "src/physics/shapes/ShapeType.ts",
         "src/physics/shapes/Shape.ts",
         "src/physics/shapes/ConvexPolyhedron.ts",
         "src/physics/shapes/Box.ts",

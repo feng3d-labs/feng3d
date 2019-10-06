@@ -17659,6 +17659,22 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
+    /**
+     * 形状类型
+     */
+    enum ShapeType {
+        SPHERE = 1,
+        PLANE = 2,
+        BOX = 4,
+        COMPOUND = 8,
+        CONVEXPOLYHEDRON = 16,
+        HEIGHTFIELD = 32,
+        PARTICLE = 64,
+        CYLINDER = 128,
+        TRIMESH = 256
+    }
+}
+declare namespace CANNON {
     class Shape {
         /**
          * Identifyer of the Shape.
@@ -17693,7 +17709,7 @@ declare namespace CANNON {
          * @author schteppe
          */
         constructor(options?: {
-            type?: number;
+            type?: ShapeType;
             collisionFilterGroup?: number;
             collisionFilterMask?: number;
             collisionResponse?: boolean;
@@ -17716,20 +17732,6 @@ declare namespace CANNON {
         calculateLocalInertia(mass: number, target: feng3d.Vector3): void;
         calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
         static idCounter: number;
-        /**
-         * The available shape types.
-         */
-        static types: {
-            SPHERE: number;
-            PLANE: number;
-            BOX: number;
-            COMPOUND: number;
-            CONVEXPOLYHEDRON: number;
-            HEIGHTFIELD: number;
-            PARTICLE: number;
-            CYLINDER: number;
-            TRIMESH: number;
-        };
     }
 }
 declare namespace CANNON {
@@ -19134,7 +19136,6 @@ declare namespace CANNON {
          */
         boundingRadius: number;
         wlambda: feng3d.Vector3;
-        shape: Shape;
         index: number;
         /**
          * Base class for all body types.
@@ -19272,7 +19273,7 @@ declare namespace CANNON {
         /**
          * Update .inertiaWorld and .invInertiaWorld
          */
-        updateInertiaWorld(force?: any): void;
+        updateInertiaWorld(force?: boolean): void;
         /**
          * Apply force to a world point. This could for example be a point on the Body surface. Applying force this way will add to Body.force and Body.torque.
          *
@@ -19312,7 +19313,7 @@ declare namespace CANNON {
          * @param  {Vector3} result
          * @return {Vector3} The result vector.
          */
-        getVelocityAtWorldPoint(worldPoint: any, result: any): any;
+        getVelocityAtWorldPoint(worldPoint: feng3d.Vector3, result: feng3d.Vector3): feng3d.Vector3;
         /**
          * Move the body forward in time.
          * @param dt Time step

@@ -782,14 +782,14 @@ namespace CANNON
     var intersectConvex_minDistIntersect = new feng3d.Vector3();
     var intersectConvex_vector = new feng3d.Vector3();
 
-    Ray.prototype[Shape.types.BOX] = Ray.prototype["intersectBox"];
-    Ray.prototype[Shape.types.PLANE] = Ray.prototype["intersectPlane"];
+    Ray.prototype[ShapeType.BOX] = Ray.prototype["intersectBox"];
+    Ray.prototype[ShapeType.PLANE] = Ray.prototype["intersectPlane"];
 
-    Ray.prototype[Shape.types.HEIGHTFIELD] = Ray.prototype["intersectHeightfield"];
-    Ray.prototype[Shape.types.SPHERE] = Ray.prototype["intersectSphere"];
+    Ray.prototype[ShapeType.HEIGHTFIELD] = Ray.prototype["intersectHeightfield"];
+    Ray.prototype[ShapeType.SPHERE] = Ray.prototype["intersectSphere"];
 
-    Ray.prototype[Shape.types.TRIMESH] = Ray.prototype["intersectTrimesh"];
-    Ray.prototype[Shape.types.CONVEXPOLYHEDRON] = Ray.prototype["intersectConvex"];
+    Ray.prototype[ShapeType.TRIMESH] = Ray.prototype["intersectTrimesh"];
+    Ray.prototype[ShapeType.CONVEXPOLYHEDRON] = Ray.prototype["intersectConvex"];
 
     function distanceFromIntersection(from, direction, position)
     {

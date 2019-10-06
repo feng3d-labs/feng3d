@@ -13,7 +13,7 @@ namespace CANNON
         constructor()
         {
             super({
-                type: Shape.types.PLANE
+                type: ShapeType.PLANE
             });
 
             // World oriented normal

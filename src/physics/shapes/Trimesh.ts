@@ -44,7 +44,7 @@ namespace CANNON
         constructor(vertices: number[], indices: number[])
         {
             super({
-                type: Shape.types.TRIMESH
+                type: ShapeType.TRIMESH
             });
 
             this.vertices = <any>new Float32Array(vertices);

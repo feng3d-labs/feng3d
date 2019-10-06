@@ -190,7 +190,9 @@ namespace CANNON
         {
             var dist = bsc_dist;
             bodyA.position.subTo(bodyB.position, dist);
-            return Math.pow(bodyA.shape.boundingSphereRadius + bodyB.shape.boundingSphereRadius, 2) > dist.lengthSquared;
+            throw "";
+            return true;
+            // return Math.pow(bodyA.shape.boundingSphereRadius + bodyB.shape.boundingSphereRadius, 2) > dist.lengthSquared;
         }
 
         /**

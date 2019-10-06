@@ -24862,6 +24862,7 @@ var feng3d;
                 position: new feng3d.Vector3(0, 10, 0),
                 shape: new CANNON.Sphere(radius)
             });
+            this.body.addShape;
         };
         /**
          * 每帧执行
@@ -37834,6 +37835,24 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
+    /**
+     * 形状类型
+     */
+    var ShapeType;
+    (function (ShapeType) {
+        ShapeType[ShapeType["SPHERE"] = 1] = "SPHERE";
+        ShapeType[ShapeType["PLANE"] = 2] = "PLANE";
+        ShapeType[ShapeType["BOX"] = 4] = "BOX";
+        ShapeType[ShapeType["COMPOUND"] = 8] = "COMPOUND";
+        ShapeType[ShapeType["CONVEXPOLYHEDRON"] = 16] = "CONVEXPOLYHEDRON";
+        ShapeType[ShapeType["HEIGHTFIELD"] = 32] = "HEIGHTFIELD";
+        ShapeType[ShapeType["PARTICLE"] = 64] = "PARTICLE";
+        ShapeType[ShapeType["CYLINDER"] = 128] = "CYLINDER";
+        ShapeType[ShapeType["TRIMESH"] = 256] = "TRIMESH";
+    })(ShapeType = CANNON.ShapeType || (CANNON.ShapeType = {}));
+})(CANNON || (CANNON = {}));
+var CANNON;
+(function (CANNON) {
     var Shape = /** @class */ (function () {
         /**
          * Base class for shapes
@@ -37877,20 +37896,6 @@ var CANNON;
             throw "未实现";
         };
         Shape.idCounter = 0;
-        /**
-         * The available shape types.
-         */
-        Shape.types = {
-            SPHERE: 1,
-            PLANE: 2,
-            BOX: 4,
-            COMPOUND: 8,
-            CONVEXPOLYHEDRON: 16,
-            HEIGHTFIELD: 32,
-            PARTICLE: 64,
-            CYLINDER: 128,
-            TRIMESH: 256
-        };
         return Shape;
     }());
     CANNON.Shape = Shape;
@@ -37920,7 +37925,7 @@ var CANNON;
          */
         function ConvexPolyhedron(points, faces, uniqueAxes) {
             var _this = _super.call(this, {
-                type: CANNON.Shape.types.CONVEXPOLYHEDRON
+                type: CANNON.ShapeType.CONVEXPOLYHEDRON
             }) || this;
             _this.vertices = points || [];
             _this.worldVertices = []; // World transformed version of .vertices
@@ -38665,7 +38670,7 @@ var CANNON;
          */
         function Box(halfExtents) {
             var _this = _super.call(this, {
-                type: CANNON.Shape.types.BOX
+                type: CANNON.ShapeType.BOX
             }) || this;
             _this.halfExtents = halfExtents;
             _this.convexPolyhedronRepresentation = null;
@@ -38957,7 +38962,7 @@ var CANNON;
             }
             _this.cacheEnabled = true;
             CANNON.Shape.call(_this, {
-                type: CANNON.Shape.types.HEIGHTFIELD
+                type: CANNON.ShapeType.HEIGHTFIELD
             });
             _this.pillarConvex = new CANNON.ConvexPolyhedron();
             _this.pillarOffset = new feng3d.Vector3();
@@ -39419,7 +39424,7 @@ var CANNON;
          */
         function Particle() {
             return _super.call(this, {
-                type: CANNON.Shape.types.PARTICLE
+                type: CANNON.ShapeType.PARTICLE
             }) || this;
         }
         /**
@@ -39457,7 +39462,7 @@ var CANNON;
          */
         function Plane() {
             var _this = _super.call(this, {
-                type: CANNON.Shape.types.PLANE
+                type: CANNON.ShapeType.PLANE
             }) || this;
             // World oriented normal
             _this.worldNormal = new feng3d.Vector3();
@@ -39524,7 +39529,7 @@ var CANNON;
          */
         function Sphere(radius) {
             var _this = _super.call(this, {
-                type: CANNON.Shape.types.SPHERE
+                type: CANNON.ShapeType.SPHERE
             }) || this;
             _this.radius = radius !== undefined ? radius : 1.0;
             if (_this.radius < 0) {
@@ -39830,7 +39835,7 @@ var CANNON;
          */
         function Trimesh(vertices, indices) {
             var _this = _super.call(this, {
-                type: CANNON.Shape.types.TRIMESH
+                type: CANNON.ShapeType.TRIMESH
             }) || this;
             _this.vertices = new Float32Array(vertices);
             /**
@@ -40793,7 +40798,9 @@ var CANNON;
         Broadphase.boundingSphereCheck = function (bodyA, bodyB) {
             var dist = bsc_dist;
             bodyA.position.subTo(bodyB.position, dist);
-            return Math.pow(bodyA.shape.boundingSphereRadius + bodyB.shape.boundingSphereRadius, 2) > dist.lengthSquared;
+            throw "";
+            return true;
+            // return Math.pow(bodyA.shape.boundingSphereRadius + bodyB.shape.boundingSphereRadius, 2) > dist.lengthSquared;
         };
         /**
          * Returns all the bodies within the AABB.
@@ -40868,8 +40875,7 @@ var CANNON;
             var xmult = nx / (xmax - xmin), ymult = ny / (ymax - ymin), zmult = nz / (zmax - zmin);
             var binsizeX = (xmax - xmin) / nx, binsizeY = (ymax - ymin) / ny, binsizeZ = (zmax - zmin) / nz;
             var binRadius = Math.sqrt(binsizeX * binsizeX + binsizeY * binsizeY + binsizeZ * binsizeZ) * 0.5;
-            var types = CANNON.Shape.types;
-            var SPHERE = types.SPHERE, PLANE = types.PLANE, BOX = types.BOX, COMPOUND = types.COMPOUND, CONVEXPOLYHEDRON = types.CONVEXPOLYHEDRON;
+            var SPHERE = CANNON.ShapeType.SPHERE, PLANE = CANNON.ShapeType.PLANE, BOX = CANNON.ShapeType.BOX, COMPOUND = CANNON.ShapeType.COMPOUND, CONVEXPOLYHEDRON = CANNON.ShapeType.CONVEXPOLYHEDRON;
             var bins = this.bins, binLengths = this.binLengths, Nbins = this.bins.length;
             // Reset bins
             for (var i = 0; i !== Nbins; i++) {
@@ -40934,7 +40940,9 @@ var CANNON;
             // Put all bodies into the bins
             for (var i = 0; i !== N; i++) {
                 var bi = bodies[i];
-                var si = bi.shape;
+                throw "";
+                // var si = bi.shape;
+                var si;
                 switch (si.type) {
                     case SPHERE:
                         // Put in bin
@@ -41809,12 +41817,12 @@ var CANNON;
     var intersectConvex_minDistNormal = new feng3d.Vector3();
     var intersectConvex_minDistIntersect = new feng3d.Vector3();
     var intersectConvex_vector = new feng3d.Vector3();
-    Ray.prototype[CANNON.Shape.types.BOX] = Ray.prototype["intersectBox"];
-    Ray.prototype[CANNON.Shape.types.PLANE] = Ray.prototype["intersectPlane"];
-    Ray.prototype[CANNON.Shape.types.HEIGHTFIELD] = Ray.prototype["intersectHeightfield"];
-    Ray.prototype[CANNON.Shape.types.SPHERE] = Ray.prototype["intersectSphere"];
-    Ray.prototype[CANNON.Shape.types.TRIMESH] = Ray.prototype["intersectTrimesh"];
-    Ray.prototype[CANNON.Shape.types.CONVEXPOLYHEDRON] = Ray.prototype["intersectConvex"];
+    Ray.prototype[CANNON.ShapeType.BOX] = Ray.prototype["intersectBox"];
+    Ray.prototype[CANNON.ShapeType.PLANE] = Ray.prototype["intersectPlane"];
+    Ray.prototype[CANNON.ShapeType.HEIGHTFIELD] = Ray.prototype["intersectHeightfield"];
+    Ray.prototype[CANNON.ShapeType.SPHERE] = Ray.prototype["intersectSphere"];
+    Ray.prototype[CANNON.ShapeType.TRIMESH] = Ray.prototype["intersectTrimesh"];
+    Ray.prototype[CANNON.ShapeType.CONVEXPOLYHEDRON] = Ray.prototype["intersectConvex"];
     function distanceFromIntersection(from, direction, position) {
         // v0 is vector from from to position
         position.vsub(from, v0);
@@ -42291,7 +42299,7 @@ var CANNON;
          */
         Body.prototype.getVelocityAtWorldPoint = function (worldPoint, result) {
             var r = new feng3d.Vector3();
-            worldPoint.vsub(this.position, r);
+            worldPoint.subTo(this.position, r);
             this.angularVelocity.crossTo(r, result);
             this.velocity.addTo(result, result);
             return result;
@@ -45748,7 +45756,7 @@ var CANNON;
          * @param  {Body}       bi
          * @param  {Body}       bj
          */
-        // Narrowphase.prototype[Shape.types.CONVEXPOLYHEDRON | Shape.types.TRIMESH] =
+        // Narrowphase.prototype[ShapeType.CONVEXPOLYHEDRON | ShapeType.TRIMESH] =
         // Narrowphase.prototype.convexTrimesh = function(si,sj,xi,xj,qi,qj,bi,bj,rsi,rsj,faceListA,faceListB){
         //     var sepAxis = convexConvex_sepAxis;
         //     if(xi.distanceTo(xj) > si.boundingSphereRadius + sj.boundingSphereRadius){
@@ -46190,24 +46198,24 @@ var CANNON;
     var convexHeightfield_faceList = [0];
     var sphereHeightfield_tmp1 = new feng3d.Vector3();
     var sphereHeightfield_tmp2 = new feng3d.Vector3();
-    Narrowphase.prototype[CANNON.Shape.types.BOX | CANNON.Shape.types.BOX] = Narrowphase.prototype.boxBox;
-    Narrowphase.prototype[CANNON.Shape.types.BOX | CANNON.Shape.types.CONVEXPOLYHEDRON] = Narrowphase.prototype.boxConvex;
-    Narrowphase.prototype[CANNON.Shape.types.BOX | CANNON.Shape.types.PARTICLE] = Narrowphase.prototype.boxParticle;
-    Narrowphase.prototype[CANNON.Shape.types.SPHERE] = Narrowphase.prototype.sphereSphere;
-    Narrowphase.prototype[CANNON.Shape.types.PLANE | CANNON.Shape.types.TRIMESH] = Narrowphase.prototype.planeTrimesh;
-    Narrowphase.prototype[CANNON.Shape.types.SPHERE | CANNON.Shape.types.TRIMESH] = Narrowphase.prototype.sphereTrimesh;
-    Narrowphase.prototype[CANNON.Shape.types.SPHERE | CANNON.Shape.types.PLANE] = Narrowphase.prototype.spherePlane;
-    Narrowphase.prototype[CANNON.Shape.types.SPHERE | CANNON.Shape.types.BOX] = Narrowphase.prototype.sphereBox;
-    Narrowphase.prototype[CANNON.Shape.types.SPHERE | CANNON.Shape.types.CONVEXPOLYHEDRON] = Narrowphase.prototype.sphereConvex;
-    Narrowphase.prototype[CANNON.Shape.types.PLANE | CANNON.Shape.types.BOX] = Narrowphase.prototype.planeBox;
-    Narrowphase.prototype[CANNON.Shape.types.PLANE | CANNON.Shape.types.CONVEXPOLYHEDRON] = Narrowphase.prototype.planeConvex;
-    Narrowphase.prototype[CANNON.Shape.types.CONVEXPOLYHEDRON] = Narrowphase.prototype.convexConvex;
-    Narrowphase.prototype[CANNON.Shape.types.PLANE | CANNON.Shape.types.PARTICLE] = Narrowphase.prototype.planeParticle;
-    Narrowphase.prototype[CANNON.Shape.types.PARTICLE | CANNON.Shape.types.SPHERE] = Narrowphase.prototype.sphereParticle;
-    Narrowphase.prototype[CANNON.Shape.types.PARTICLE | CANNON.Shape.types.CONVEXPOLYHEDRON] = Narrowphase.prototype.convexParticle;
-    Narrowphase.prototype[CANNON.Shape.types.BOX | CANNON.Shape.types.HEIGHTFIELD] = Narrowphase.prototype.boxHeightfield;
-    Narrowphase.prototype[CANNON.Shape.types.SPHERE | CANNON.Shape.types.HEIGHTFIELD] = Narrowphase.prototype.sphereHeightfield;
-    Narrowphase.prototype[CANNON.Shape.types.CONVEXPOLYHEDRON | CANNON.Shape.types.HEIGHTFIELD] = Narrowphase.prototype.convexHeightfield;
+    Narrowphase.prototype[CANNON.ShapeType.BOX | CANNON.ShapeType.BOX] = Narrowphase.prototype.boxBox;
+    Narrowphase.prototype[CANNON.ShapeType.BOX | CANNON.ShapeType.CONVEXPOLYHEDRON] = Narrowphase.prototype.boxConvex;
+    Narrowphase.prototype[CANNON.ShapeType.BOX | CANNON.ShapeType.PARTICLE] = Narrowphase.prototype.boxParticle;
+    Narrowphase.prototype[CANNON.ShapeType.SPHERE] = Narrowphase.prototype.sphereSphere;
+    Narrowphase.prototype[CANNON.ShapeType.PLANE | CANNON.ShapeType.TRIMESH] = Narrowphase.prototype.planeTrimesh;
+    Narrowphase.prototype[CANNON.ShapeType.SPHERE | CANNON.ShapeType.TRIMESH] = Narrowphase.prototype.sphereTrimesh;
+    Narrowphase.prototype[CANNON.ShapeType.SPHERE | CANNON.ShapeType.PLANE] = Narrowphase.prototype.spherePlane;
+    Narrowphase.prototype[CANNON.ShapeType.SPHERE | CANNON.ShapeType.BOX] = Narrowphase.prototype.sphereBox;
+    Narrowphase.prototype[CANNON.ShapeType.SPHERE | CANNON.ShapeType.CONVEXPOLYHEDRON] = Narrowphase.prototype.sphereConvex;
+    Narrowphase.prototype[CANNON.ShapeType.PLANE | CANNON.ShapeType.BOX] = Narrowphase.prototype.planeBox;
+    Narrowphase.prototype[CANNON.ShapeType.PLANE | CANNON.ShapeType.CONVEXPOLYHEDRON] = Narrowphase.prototype.planeConvex;
+    Narrowphase.prototype[CANNON.ShapeType.CONVEXPOLYHEDRON] = Narrowphase.prototype.convexConvex;
+    Narrowphase.prototype[CANNON.ShapeType.PLANE | CANNON.ShapeType.PARTICLE] = Narrowphase.prototype.planeParticle;
+    Narrowphase.prototype[CANNON.ShapeType.PARTICLE | CANNON.ShapeType.SPHERE] = Narrowphase.prototype.sphereParticle;
+    Narrowphase.prototype[CANNON.ShapeType.PARTICLE | CANNON.ShapeType.CONVEXPOLYHEDRON] = Narrowphase.prototype.convexParticle;
+    Narrowphase.prototype[CANNON.ShapeType.BOX | CANNON.ShapeType.HEIGHTFIELD] = Narrowphase.prototype.boxHeightfield;
+    Narrowphase.prototype[CANNON.ShapeType.SPHERE | CANNON.ShapeType.HEIGHTFIELD] = Narrowphase.prototype.sphereHeightfield;
+    Narrowphase.prototype[CANNON.ShapeType.CONVEXPOLYHEDRON | CANNON.ShapeType.HEIGHTFIELD] = Narrowphase.prototype.convexHeightfield;
 })(CANNON || (CANNON = {}));
 //# sourceMappingURL=feng3d.js.map
 console.log("feng3d-0.1.3");

@@ -18,7 +18,7 @@ namespace CANNON
         constructor(halfExtents: feng3d.Vector3)
         {
             super({
-                type: Shape.types.BOX
+                type: ShapeType.BOX
             });
 
             this.halfExtents = halfExtents;

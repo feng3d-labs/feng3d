@@ -8,6 +8,8 @@ namespace feng3d
 
         runEnvironment = RunEnvironment.feng3d;
 
+        
+
         @oav()
         @serialize
         mass = 5;
@@ -21,6 +23,8 @@ namespace feng3d
                 position: new Vector3(0, 10, 0), // m
                 shape: new CANNON.Sphere(radius)
             });
+
+            this.body.addShape
         }
 
         /**

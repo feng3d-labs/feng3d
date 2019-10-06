@@ -84,12 +84,11 @@ namespace CANNON
 
 			var binRadius = Math.sqrt(binsizeX * binsizeX + binsizeY * binsizeY + binsizeZ * binsizeZ) * 0.5;
 
-			var types = Shape.types;
-			var SPHERE = types.SPHERE,
-				PLANE = types.PLANE,
-				BOX = types.BOX,
-				COMPOUND = types.COMPOUND,
-				CONVEXPOLYHEDRON = types.CONVEXPOLYHEDRON;
+			var SPHERE = ShapeType.SPHERE,
+				PLANE = ShapeType.PLANE,
+				BOX = ShapeType.BOX,
+				COMPOUND = ShapeType.COMPOUND,
+				CONVEXPOLYHEDRON = ShapeType.CONVEXPOLYHEDRON;
 
 			var bins = this.bins,
 				binLengths = this.binLengths,
@@ -145,7 +144,9 @@ namespace CANNON
 			for (var i = 0; i !== N; i++)
 			{
 				var bi = bodies[i];
-				var si = bi.shape;
+				throw "";
+				// var si = bi.shape;
+				var si: Shape;
 
 				switch (si.type)
 				{
