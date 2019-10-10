@@ -183,6 +183,7 @@ namespace feng3d
          */
         addTo(a: Vector3, vout = new Vector3())
         {
+            if (a == vout) a = a.clone();
             return vout.copy(this).add(a);
         }
 
@@ -205,6 +206,7 @@ namespace feng3d
          */
         multiplyTo(a: Vector3, vout = new Vector3())
         {
+            if (a == vout) a = a.clone();
             return vout.copy(this).multiply(a);
         }
 
@@ -227,6 +229,7 @@ namespace feng3d
          */
         divideTo(a: Vector3, vout = new Vector3())
         {
+            if (a == vout) a = a.clone();
             return vout.copy(this).divide(a);
         }
 
@@ -246,6 +249,7 @@ namespace feng3d
          */
         crossTo(a: Vector3, vout = new Vector3()): Vector3
         {
+            if (a == vout) a = a.clone();
             return vout.copy(this).cross(a);
         }
 
@@ -561,6 +565,7 @@ namespace feng3d
          */
         scaleTo(s: Vector3, vout = new Vector3())
         {
+            if (s == vout) s = s.clone();
             return vout.copy(this).scale(s);
         }
 
@@ -584,6 +589,7 @@ namespace feng3d
          */
         subTo(a: Vector3, vout = new Vector3())
         {
+            if (a == vout) a = a.clone();
             return vout.copy(this).sub(a);
         }
 
@@ -609,6 +615,7 @@ namespace feng3d
          */
         lerpTo(v: Vector3, alpha: Vector3, vout = new Vector3())
         {
+            if (v == vout) v = v.clone();
             return vout.copy(this).lerp(v, alpha);
         }
 
@@ -634,6 +641,7 @@ namespace feng3d
          */
         lerpNumberTo(v: Vector3, alpha: number, vout = new Vector3())
         {
+            if (v == vout) v = v.clone();
             return vout.copy(this).lerpNumber(v, alpha);
         }
 

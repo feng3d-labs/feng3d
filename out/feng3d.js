@@ -8868,6 +8868,8 @@ var feng3d;
          */
         Vector3.prototype.addTo = function (a, vout) {
             if (vout === void 0) { vout = new Vector3(); }
+            if (a == vout)
+                a = a.clone();
             return vout.copy(this).add(a);
         };
         /**
@@ -8887,6 +8889,8 @@ var feng3d;
          */
         Vector3.prototype.multiplyTo = function (a, vout) {
             if (vout === void 0) { vout = new Vector3(); }
+            if (a == vout)
+                a = a.clone();
             return vout.copy(this).multiply(a);
         };
         /**
@@ -8906,6 +8910,8 @@ var feng3d;
          */
         Vector3.prototype.divideTo = function (a, vout) {
             if (vout === void 0) { vout = new Vector3(); }
+            if (a == vout)
+                a = a.clone();
             return vout.copy(this).divide(a);
         };
         /**
@@ -8922,6 +8928,8 @@ var feng3d;
          */
         Vector3.prototype.crossTo = function (a, vout) {
             if (vout === void 0) { vout = new Vector3(); }
+            if (a == vout)
+                a = a.clone();
             return vout.copy(this).cross(a);
         };
         /**
@@ -9193,6 +9201,8 @@ var feng3d;
          */
         Vector3.prototype.scaleTo = function (s, vout) {
             if (vout === void 0) { vout = new Vector3(); }
+            if (s == vout)
+                s = s.clone();
             return vout.copy(this).scale(s);
         };
         /**
@@ -9213,6 +9223,8 @@ var feng3d;
          */
         Vector3.prototype.subTo = function (a, vout) {
             if (vout === void 0) { vout = new Vector3(); }
+            if (a == vout)
+                a = a.clone();
             return vout.copy(this).sub(a);
         };
         /**
@@ -9235,6 +9247,8 @@ var feng3d;
          */
         Vector3.prototype.lerpTo = function (v, alpha, vout) {
             if (vout === void 0) { vout = new Vector3(); }
+            if (v == vout)
+                v = v.clone();
             return vout.copy(this).lerp(v, alpha);
         };
         /**
@@ -9257,6 +9271,8 @@ var feng3d;
          */
         Vector3.prototype.lerpNumberTo = function (v, alpha, vout) {
             if (vout === void 0) { vout = new Vector3(); }
+            if (v == vout)
+                v = v.clone();
             return vout.copy(this).lerpNumber(v, alpha);
         };
         /**
