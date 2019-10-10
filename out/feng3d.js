@@ -24312,7 +24312,6 @@ var feng3d;
             if (component.single)
                 this.removeComponentsByType(component.constructor);
             this._components.splice(index, 0, component);
-            component["_gameObject"] = this;
             component.setGameObject(this);
             component.init();
             //派发添加组件事件
