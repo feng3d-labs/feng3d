@@ -34,10 +34,14 @@ namespace feng3d
 
         createCylinder(name = "cylinder")
         {
-            return serialization.setValue(new GameObject(), {
+            var g = serialization.setValue(new GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.cylinder },]
             });
+            g.addComponent(CylinderCollider);
+            g.addComponent(Rigidbody);
+
+            return g;
         }
 
         createCone(name = "Cone")

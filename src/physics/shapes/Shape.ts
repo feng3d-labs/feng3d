@@ -35,7 +35,7 @@ namespace CANNON
         vertices: feng3d.Vector3[] | number[];
         faceNormals: feng3d.Vector3[];
 
-        convexPolyhedronRepresentation: Shape;
+        convexPolyhedronRepresentation: ConvexPolyhedron;
         radius: number;
 
         /**

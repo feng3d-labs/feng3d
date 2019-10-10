@@ -279,10 +279,10 @@ namespace CANNON
                             var retval = false;
                             if (si.type < sj.type)
                             {
-                                retval = resolver.call(this, si, sj, xi, xj, qi, qj, bi, bj, si, sj, justTest);
+                                retval = resolver.call(this, si, sj, new Transform(xi, qi), new Transform(xj, qj), bi, bj, si, sj, justTest);
                             } else
                             {
-                                retval = resolver.call(this, sj, si, xj, xi, qj, qi, bj, bi, si, sj, justTest);
+                                retval = resolver.call(this, sj, si, new Transform(xj, qj), new Transform(xi, qi), bj, bi, si, sj, justTest);
                             }
 
                             if (retval && justTest)
@@ -297,27 +297,27 @@ namespace CANNON
             }
         }
 
-        boxBox(si, sj, xi, xj, qi, qj, bi, bj, rsi, rsj, justTest)
+        boxBox(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             si.convexPolyhedronRepresentation.material = si.material;
             sj.convexPolyhedronRepresentation.material = sj.material;
             si.convexPolyhedronRepresentation.collisionResponse = si.collisionResponse;
             sj.convexPolyhedronRepresentation.collisionResponse = sj.collisionResponse;
-            return this.convexConvex(si.convexPolyhedronRepresentation, sj.convexPolyhedronRepresentation, xi, xj, qi, qj, bi, bj, si, sj, justTest);
+            return this.convexConvex(si.convexPolyhedronRepresentation, sj.convexPolyhedronRepresentation, transformi, transformj, bi, bj, si, sj, justTest);
         }
 
-        boxConvex(si, sj, xi, xj, qi, qj, bi, bj, rsi, rsj, justTest)
+        boxConvex(si: Shape, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             si.convexPolyhedronRepresentation.material = si.material;
             si.convexPolyhedronRepresentation.collisionResponse = si.collisionResponse;
-            return this.convexConvex(si.convexPolyhedronRepresentation, sj, xi, xj, qi, qj, bi, bj, si, sj, justTest);
+            return this.convexConvex(si.convexPolyhedronRepresentation, sj, transformi, transformj, bi, bj, si, sj, justTest);
         }
 
-        boxParticle(si, sj, xi, xj, qi, qj, bi, bj, rsi, rsj, justTest)
+        boxParticle(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             si.convexPolyhedronRepresentation.material = si.material;
             si.convexPolyhedronRepresentation.collisionResponse = si.collisionResponse;
-            return this.convexParticle(si.convexPolyhedronRepresentation, sj, xi, xj, qi, qj, bi, bj, si, sj, justTest);
+            return this.convexParticle(si.convexPolyhedronRepresentation, sj, transformi, transformj, bi, bj, si, sj, justTest);
         }
 
         sphereSphere(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
@@ -1087,21 +1087,19 @@ namespace CANNON
             }
         }
 
-        planeBox(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        planeBox(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             sj.convexPolyhedronRepresentation.material = sj.material;
             sj.convexPolyhedronRepresentation.collisionResponse = sj.collisionResponse;
             sj.convexPolyhedronRepresentation.id = sj.id;
-            return this.planeConvex(si, sj.convexPolyhedronRepresentation, xi, xj, qi, qj, bi, bj, si, sj, justTest);
+            return this.planeConvex(si, sj.convexPolyhedronRepresentation, transformi, transformj, bi, bj, si, sj, justTest);
         }
 
         planeConvex(
             planeShape: Shape,
             convexShape: any,
-            planePosition: feng3d.Vector3,
-            convexPosition: feng3d.Vector3,
-            planeQuat: feng3d.Quaternion,
-            convexQuat: feng3d.Quaternion,
+            planeTransform: Transform,
+            convexTransform: Transform,
             planeBody: Body,
             convexBody: Body,
             si: Shape,
@@ -1109,6 +1107,11 @@ namespace CANNON
             justTest: boolean
         )
         {
+            var planePosition = planeTransform.position,
+                convexPosition = convexTransform.position,
+                planeQuat = planeTransform.quaternion,
+                convexQuat = convexTransform.quaternion;
+
             // Simply return the points behind the plane.
             var worldVertex = planeConvex_v,
                 worldNormal = planeConvex_normal;
@@ -1168,7 +1171,7 @@ namespace CANNON
             }
         }
 
-        convexConvex(si: any, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean, faceListA?: any[], faceListB?: any[])
+        convexConvex(si: ConvexPolyhedron, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean, faceListA?: any[], faceListB?: any[])
         {
             var xi = transformi.position, xj = transformj.position, qi = transformi.quaternion, qj = transformj.quaternion;
             var sepAxis = convexConvex_sepAxis;
@@ -1178,7 +1181,7 @@ namespace CANNON
                 return;
             }
 
-            if (si.findSeparatingAxis(sj, xi, qi, xj, qj, sepAxis, faceListA, faceListB))
+            if (si.findSeparatingAxis(sj, transformi,transformj, sepAxis, faceListA, faceListB))
             {
                 var res = [];
                 var q = convexConvex_q;
@@ -1363,8 +1366,10 @@ namespace CANNON
             }
         }
 
-        convexParticle(sj: any, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        convexParticle(sj: any, si: Shape, transformi: Transform, transformj: Transform, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
+            var xj = transformi.position, xi = transformj.position, qj = transformi.quaternion, qi = transformj.quaternion;
+
             var penetratedFaceIndex = -1;
             var penetratedFaceNormal = convexParticle_penetratedFaceNormal;
             var worldPenetrationVec = convexParticle_worldPenetrationVec;
@@ -1451,7 +1456,7 @@ namespace CANNON
             }
         }
 
-        boxHeightfield(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        boxHeightfield(si: Shape, sj: Heightfield, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             si.convexPolyhedronRepresentation.material = si.material;
             si.convexPolyhedronRepresentation.collisionResponse = si.collisionResponse;
@@ -1459,8 +1464,8 @@ namespace CANNON
         }
 
         convexHeightfield(
-            convexShape: Shape,
-            hfShape: any,
+            convexShape: ConvexPolyhedron,
+            hfShape: Heightfield,
             convexTransform: Transform,
             hfTransform: Transform,
             convexBody: Body,
