@@ -22,9 +22,8 @@ namespace feng3d
         @watch("onCameraChanged")
         camera: Camera;
 
-        init(gameobject: GameObject)
+        init()
         {
-            super.init(gameobject);
             this.transform.on("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
         }
 

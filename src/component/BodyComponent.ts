@@ -14,9 +14,8 @@ namespace feng3d
         @serialize
         mass = 5;
 
-        init(gameobject: GameObject)
+        init()
         {
-            super.init(gameobject);
             this.body = new CANNON.Body({
                 mass: this.mass, // kg
             });

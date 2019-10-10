@@ -240,9 +240,9 @@ namespace feng3d
             this.connect();
         }
 
-        init(gameObject: GameObject)
+        init()
         {
-            super.init(gameObject);
+            super.init();
             this.on("scenetransformChanged", this.onScenetransformChanged, this);
         }
 

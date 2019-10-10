@@ -60,9 +60,9 @@ namespace feng3d
             this._lightPicker = new LightPicker(this);
         }
 
-        init(gameObject: GameObject)
+        init()
         {
-            super.init(gameObject);
+            super.init();
             this.on("scenetransformChanged", this.onScenetransformChanged, this);
         }
 

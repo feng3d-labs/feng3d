@@ -61,9 +61,9 @@ namespace feng3d
 		/**
 		 * 创建一个摄像机
 		 */
-        init(gameObject: GameObject)
+        init()
         {
-            super.init(gameObject);
+            super.init();
             this.lens = this.lens || new PerspectiveLens();
             //
             this.on("scenetransformChanged", this.onScenetransformChanged, this);

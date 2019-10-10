@@ -12143,7 +12143,7 @@ declare namespace feng3d {
          * 创建一个组件容器
          */
         constructor();
-        init(gameObject: GameObject): void;
+        init(): void;
         /**
          * Returns the component of Type type if the game object has one attached, null if it doesn't.
          * @param type				The type of Component to retrieve.
@@ -12180,6 +12180,13 @@ declare namespace feng3d {
          * 监听对象的所有事件并且传播到所有组件中
          */
         private _onAllListener;
+        /**
+         * 该方法仅在GameObject中使用
+         * @private
+         *
+         * @param gameObject 游戏对象
+         */
+        setGameObject(gameObject: GameObject): void;
         protected _gameObject: GameObject;
     }
 }
@@ -12372,7 +12379,6 @@ declare namespace feng3d {
          * 创建一个实体，该类为虚类
          */
         constructor();
-        init(gameObject: GameObject): void;
         readonly scenePosition: Vector3;
         readonly parent: Transform;
         /**
@@ -12930,7 +12936,7 @@ declare namespace feng3d {
          * 相机
          */
         camera: Camera;
-        init(gameobject: GameObject): void;
+        init(): void;
         dispose(): void;
         private onHoldSizeChanged;
         private onCameraChanged;
@@ -12950,7 +12956,7 @@ declare namespace feng3d {
          */
         camera: Camera;
         private onCameraChanged;
-        init(gameobject: GameObject): void;
+        init(): void;
         private invalidHoldSizeMatrix;
         private updateLocalToWorldMatrix;
         dispose(): void;
@@ -12991,7 +12997,6 @@ declare namespace feng3d {
         specularSegment: number;
         cartoon_Anti_aliasing: boolean;
         _cartoon_Anti_aliasing: boolean;
-        init(gameObject: GameObject): void;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
     }
     interface Uniforms {
@@ -13009,7 +13014,6 @@ declare namespace feng3d {
         size: number;
         color: Color4;
         outlineMorphFactor: number;
-        init(gameobject: GameObject): void;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
     }
     interface Uniforms {
@@ -13035,7 +13039,7 @@ declare namespace feng3d {
         body: CANNON.Body;
         runEnvironment: RunEnvironment;
         mass: number;
-        init(gameobject: GameObject): void;
+        init(): void;
         /**
          * 每帧执行
          */
@@ -13068,7 +13072,7 @@ declare namespace feng3d {
          */
         readonly selfWorldBounds: Box;
         constructor();
-        init(gameObject: GameObject): void;
+        init(): void;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
         /**
           * 判断射线是否穿过对象
@@ -13134,7 +13138,7 @@ declare namespace feng3d {
         private _scriptInstance;
         private _invalid;
         private scriptInit;
-        init(gameObject: GameObject): void;
+        init(): void;
         private updateScriptInstance;
         private invalidateScriptInstance;
         /**
@@ -13232,7 +13236,7 @@ declare namespace feng3d {
         /**
          * 构造3D场景
          */
-        init(gameObject: GameObject): void;
+        init(): void;
         private onAddComponent;
         private onRemovedComponent;
         private onAddChild;
@@ -13948,7 +13952,7 @@ declare namespace feng3d {
         /**
          * 创建一个摄像机
          */
-        init(gameObject: GameObject): void;
+        init(): void;
         /**
          * 获取与坐标重叠的射线
          * @param x view3D上的X坐标
@@ -14903,7 +14907,6 @@ declare namespace feng3d {
         debugShadowMap: boolean;
         private debugShadowMapObject;
         constructor();
-        init(gameObject: GameObject): void;
         updateDebugShadowMap(scene3d: Scene3D, viewCamera: Camera): void;
     }
 }
@@ -15082,7 +15085,7 @@ declare namespace feng3d {
         private ischange;
         private _auto;
         auto: boolean;
-        init(gameobject: GameObject): void;
+        init(): void;
         onMousedown(): void;
         onMouseup(): void;
         /**
@@ -15205,7 +15208,7 @@ declare namespace feng3d {
         volume: number;
         private _volume;
         constructor();
-        init(gameObject: GameObject): void;
+        init(): void;
         private onScenetransformChanged;
         private enabledChanged;
         dispose(): void;
@@ -15303,7 +15306,7 @@ declare namespace feng3d {
         rolloffFactor: number;
         private _rolloffFactor;
         constructor();
-        init(gameObject: GameObject): void;
+        init(): void;
         private onScenetransformChanged;
         private onUrlChanged;
         play(): void;
@@ -15596,7 +15599,7 @@ declare namespace feng3d {
          */
         readonly numActiveParticles: number;
         readonly single: boolean;
-        init(gameObject: GameObject): void;
+        init(): void;
         update(interval: number): void;
         /**
          * 停止
@@ -16071,7 +16074,7 @@ declare namespace feng3d {
         /**
          * 创建一个骨骼动画类
          */
-        init(gameObject: GameObject): void;
+        init(): void;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
         /**
          * 销毁
@@ -20380,7 +20383,7 @@ declare namespace feng3d {
         private _radius;
         readonly shape: CANNON.Sphere;
         private _shape;
-        init(gameobject: GameObject): void;
+        init(): void;
     }
 }
 //# sourceMappingURL=feng3d.d.ts.map

@@ -61,9 +61,9 @@ namespace feng3d
             }
         }
 
-        init(gameobject: GameObject)
+        init()
         {
-            super.init(gameobject);
+            super.init();
 
             this.keyDirectionDic = {};
             this.keyDirectionDic["a"] = new Vector3(-1, 0, 0);//左

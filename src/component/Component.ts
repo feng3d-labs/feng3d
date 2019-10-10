@@ -72,9 +72,8 @@ namespace feng3d
             this.onAll(this._onAllListener, this);
         }
 
-        init(gameObject: GameObject)
+        init()
         {
-            this._gameObject = gameObject;
         }
 
         /**
@@ -138,6 +137,17 @@ namespace feng3d
         {
             if (this._gameObject)
                 this._gameObject.dispatchEvent(e);
+        }
+
+        /**
+         * 该方法仅在GameObject中使用
+         * @private
+         * 
+         * @param gameObject 游戏对象
+         */
+        setGameObject(gameObject: GameObject)
+        {
+            this._gameObject = gameObject;
         }
 
         //------------------------------------------

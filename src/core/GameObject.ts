@@ -854,7 +854,9 @@ namespace feng3d
                 this.removeComponentsByType(<Constructor<Components>>component.constructor);
 
             this._components.splice(index, 0, component);
-            component.init(this);
+            component["_gameObject"] = this;
+            component.setGameObject(this);
+            component.init();
             //派发添加组件事件
             this.dispatch("addComponent", component, true);
         }

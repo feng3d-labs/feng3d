@@ -22529,8 +22529,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Component.prototype.init = function (gameObject) {
-            this._gameObject = gameObject;
+        Component.prototype.init = function () {
         };
         /**
          * Returns the component of Type type if the game object has one attached, null if it doesn't.
@@ -22579,6 +22578,15 @@ var feng3d;
         Component.prototype._onAllListener = function (e) {
             if (this._gameObject)
                 this._gameObject.dispatchEvent(e);
+        };
+        /**
+         * 该方法仅在GameObject中使用
+         * @private
+         *
+         * @param gameObject 游戏对象
+         */
+        Component.prototype.setGameObject = function (gameObject) {
+            this._gameObject = gameObject;
         };
         __decorate([
             feng3d.serialize
@@ -22917,9 +22925,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Transform.prototype.init = function (gameObject) {
-            _super.prototype.init.call(this, gameObject);
-        };
         Object.defineProperty(Transform.prototype, "scenePosition", {
             get: function () {
                 return this.localToWorldMatrix.position;
@@ -24307,7 +24312,9 @@ var feng3d;
             if (component.single)
                 this.removeComponentsByType(component.constructor);
             this._components.splice(index, 0, component);
-            component.init(this);
+            component["_gameObject"] = this;
+            component.setGameObject(this);
+            component.init();
             //派发添加组件事件
             this.dispatch("addComponent", component, true);
         };
@@ -24605,8 +24612,7 @@ var feng3d;
             _this.holdSize = 1;
             return _this;
         }
-        HoldSizeComponent.prototype.init = function (gameobject) {
-            _super.prototype.init.call(this, gameobject);
+        HoldSizeComponent.prototype.init = function () {
             this.transform.on("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
         };
         HoldSizeComponent.prototype.dispose = function () {
@@ -24677,8 +24683,8 @@ var feng3d;
                 value.on("scenetransformChanged", this.invalidHoldSizeMatrix, this);
             this.invalidHoldSizeMatrix();
         };
-        BillboardComponent.prototype.init = function (gameobject) {
-            _super.prototype.init.call(this, gameobject);
+        BillboardComponent.prototype.init = function () {
+            _super.prototype.init.call(this);
             this.transform.on("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
             this.invalidHoldSizeMatrix();
         };
@@ -24763,9 +24769,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        CartoonComponent.prototype.init = function (gameObject) {
-            _super.prototype.init.call(this, gameObject);
-        };
         CartoonComponent.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
             renderAtomic.uniforms.u_diffuseSegment = this.diffuseSegment;
             renderAtomic.uniforms.u_diffuseSegmentValue = this.diffuseSegmentValue;
@@ -24819,9 +24822,6 @@ var feng3d;
             _this.outlineMorphFactor = 0.0;
             return _this;
         }
-        OutLineComponent.prototype.init = function (gameobject) {
-            _super.prototype.init.call(this, gameobject);
-        };
         OutLineComponent.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
             renderAtomic.uniforms.u_outlineSize = this.size;
             renderAtomic.uniforms.u_outlineColor = this.color;
@@ -24855,8 +24855,7 @@ var feng3d;
             _this.mass = 5;
             return _this;
         }
-        BodyComponent.prototype.init = function (gameobject) {
-            _super.prototype.init.call(this, gameobject);
+        BodyComponent.prototype.init = function () {
             this.body = new CANNON.Body({
                 mass: this.mass,
             });
@@ -24938,8 +24937,8 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Model.prototype.init = function (gameObject) {
-            _super.prototype.init.call(this, gameObject);
+        Model.prototype.init = function () {
+            _super.prototype.init.call(this);
             this.on("scenetransformChanged", this.onScenetransformChanged, this);
         };
         Model.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
@@ -25099,8 +25098,8 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        ScriptComponent.prototype.init = function (gameObject) {
-            _super.prototype.init.call(this, gameObject);
+        ScriptComponent.prototype.init = function () {
+            _super.prototype.init.call(this);
             feng3d.dispatcher.on("asset.scriptChanged", this.invalidateScriptInstance, this);
         };
         ScriptComponent.prototype.updateScriptInstance = function () {
@@ -25248,14 +25247,14 @@ var feng3d;
         /**
          * 构造3D场景
          */
-        Scene3D.prototype.init = function (gameObject) {
+        Scene3D.prototype.init = function () {
             var _this = this;
-            _super.prototype.init.call(this, gameObject);
+            _super.prototype.init.call(this);
             this.transform.hideFlags = this.transform.hideFlags | feng3d.HideFlags.Hide;
             this.gameObject.hideFlags = this.gameObject.hideFlags | feng3d.HideFlags.DontTransform;
             //
-            gameObject["_scene"] = this;
-            this.gameObject["updateChildrenScene"]();
+            this._gameObject["_scene"] = this;
+            this._gameObject["updateChildrenScene"]();
             this.world = new CANNON.World();
             this.world.gravity = this.gravity;
             var bodys = this.getComponentsInChildren(feng3d.BodyComponent).map(function (c) { return c.body; });
@@ -27117,8 +27116,8 @@ var feng3d;
         /**
          * 创建一个摄像机
          */
-        Camera.prototype.init = function (gameObject) {
-            _super.prototype.init.call(this, gameObject);
+        Camera.prototype.init = function () {
+            _super.prototype.init.call(this);
             this.lens = this.lens || new feng3d.PerspectiveLens();
             //
             this.on("scenetransformChanged", this.onScenetransformChanged, this);
@@ -29749,9 +29748,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Light.prototype.init = function (gameObject) {
-            _super.prototype.init.call(this, gameObject);
-        };
         Light.prototype.updateDebugShadowMap = function (scene3d, viewCamera) {
             var gameObject = this.debugShadowMapObject;
             if (!gameObject) {
@@ -30435,8 +30431,8 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        FPSController.prototype.init = function (gameobject) {
-            _super.prototype.init.call(this, gameobject);
+        FPSController.prototype.init = function () {
+            _super.prototype.init.call(this);
             this.keyDirectionDic = {};
             this.keyDirectionDic["a"] = new feng3d.Vector3(-1, 0, 0); //左
             this.keyDirectionDic["d"] = new feng3d.Vector3(1, 0, 0); //右
@@ -30694,8 +30690,8 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        AudioListener.prototype.init = function (gameObject) {
-            _super.prototype.init.call(this, gameObject);
+        AudioListener.prototype.init = function () {
+            _super.prototype.init.call(this);
             this.on("scenetransformChanged", this.onScenetransformChanged, this);
             this.onScenetransformChanged();
         };
@@ -30986,8 +30982,8 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        AudioSource.prototype.init = function (gameObject) {
-            _super.prototype.init.call(this, gameObject);
+        AudioSource.prototype.init = function () {
+            _super.prototype.init.call(this);
             this.on("scenetransformChanged", this.onScenetransformChanged, this);
         };
         AudioSource.prototype.onScenetransformChanged = function () {
@@ -31894,9 +31890,9 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        ParticleSystem.prototype.init = function (gameObject) {
+        ParticleSystem.prototype.init = function () {
             var _this = this;
-            _super.prototype.init.call(this, gameObject);
+            _super.prototype.init.call(this);
             this._modules = [
                 this.main = this.main || new feng3d.ParticleMainModule(),
                 this.emission = this.emission || new feng3d.ParticleEmissionModule(),
@@ -33097,8 +33093,8 @@ var feng3d;
         /**
          * 创建一个骨骼动画类
          */
-        SkinnedModel.prototype.init = function (gameObject) {
-            _super.prototype.init.call(this, gameObject);
+        SkinnedModel.prototype.init = function () {
+            _super.prototype.init.call(this);
             this.hideFlags = feng3d.HideFlags.DontTransform;
         };
         SkinnedModel.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
@@ -46284,8 +46280,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        SphereCollider.prototype.init = function (gameobject) {
-            _super.prototype.init.call(this, gameobject);
+        SphereCollider.prototype.init = function () {
             this._shape = new CANNON.Sphere(this._radius);
         };
         return SphereCollider;

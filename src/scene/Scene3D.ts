@@ -68,15 +68,15 @@ namespace feng3d
         /**
          * 构造3D场景
          */
-        init(gameObject: GameObject)
+        init()
         {
-            super.init(gameObject);
+            super.init();
             this.transform.hideFlags = this.transform.hideFlags | HideFlags.Hide;
             this.gameObject.hideFlags = this.gameObject.hideFlags | HideFlags.DontTransform;
 
             //
-            gameObject["_scene"] = this;
-            this.gameObject["updateChildrenScene"]();
+            this._gameObject["_scene"] = this;
+            this._gameObject["updateChildrenScene"]();
 
             this.world = new CANNON.World();
             this.world.gravity = this.gravity;

@@ -18,9 +18,9 @@ namespace feng3d
         /**
 		 * 创建一个骨骼动画类
 		 */
-        init(gameObject: GameObject)
+        init()
         {
-            super.init(gameObject);
+            super.init();
             this.hideFlags = HideFlags.DontTransform;
         }
 

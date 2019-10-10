@@ -30,9 +30,9 @@ namespace feng3d
 
         private scriptInit = false;
 
-        init(gameObject: GameObject)
+        init()
         {
-            super.init(gameObject);
+            super.init();
             feng3d.dispatcher.on("asset.scriptChanged", this.invalidateScriptInstance, this);
         }
 

@@ -18,11 +18,6 @@ namespace feng3d
         @serialize
         outlineMorphFactor = 0.0;
 
-        init(gameobject: GameObject)
-        {
-            super.init(gameobject);
-        }
-
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
             renderAtomic.uniforms.u_outlineSize = this.size;

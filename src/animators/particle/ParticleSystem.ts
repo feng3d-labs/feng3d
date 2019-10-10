@@ -87,9 +87,9 @@ namespace feng3d
 
         get single() { return true; }
 
-        init(gameObject: GameObject)
+        init()
         {
-            super.init(gameObject);
+            super.init();
 
             this._modules = [
                 this.main = this.main || new ParticleMainModule(),

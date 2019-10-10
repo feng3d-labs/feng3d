@@ -21,9 +21,9 @@ namespace feng3d
             this.invalidHoldSizeMatrix();
         }
 
-        init(gameobject: GameObject)
+        init()
         {
-            super.init(gameobject);
+            super.init();
             this.transform.on("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
             this.invalidHoldSizeMatrix();
         }

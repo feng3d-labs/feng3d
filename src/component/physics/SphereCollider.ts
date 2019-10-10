@@ -27,10 +27,8 @@ namespace feng3d
         }
         private _shape: CANNON.Sphere;
 
-        init(gameobject: GameObject)
+        init()
         {
-            super.init(gameobject);
-
             this._shape = new CANNON.Sphere(this._radius);
         }
     }

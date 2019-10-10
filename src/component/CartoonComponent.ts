@@ -52,11 +52,6 @@ namespace feng3d
         }
         _cartoon_Anti_aliasing = false;
 
-        init(gameObject: GameObject)
-        {
-            super.init(gameObject);
-        }
-
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
             renderAtomic.uniforms.u_diffuseSegment = this.diffuseSegment;

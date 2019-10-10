@@ -48,11 +48,6 @@ namespace feng3d
             this.renderAtomic.uniforms.u_ITModelMatrix = () => this.ITlocalToWorldMatrix;
         }
 
-        init(gameObject: GameObject)
-        {
-            super.init(gameObject);
-        }
-
         get scenePosition()
         {
             return this.localToWorldMatrix.position;
