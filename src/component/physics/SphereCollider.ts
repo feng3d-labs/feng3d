@@ -8,6 +8,8 @@ namespace feng3d
         /**
          * 半径
          */
+        @oav()
+        @serialize
         get radius()
         {
             return this._radius;
@@ -19,13 +21,10 @@ namespace feng3d
                 this._shape.radius = v;
         }
 
-        private _radius = 1;
+        private _radius = 0.5;
 
-        get shape()
-        {
-            return this._shape;
-        }
-        private _shape: CANNON.Sphere;
+        readonly shape: CANNON.Sphere;
+        protected _shape: CANNON.Sphere;
 
         init()
         {

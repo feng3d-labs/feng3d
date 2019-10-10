@@ -13033,20 +13033,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class BodyComponent extends Behaviour {
-        __class__: "feng3d.BodyComponent";
-        shapeType: CANNON.ShapeType;
-        body: CANNON.Body;
-        runEnvironment: RunEnvironment;
-        mass: number;
-        init(): void;
-        /**
-         * 每帧执行
-         */
-        update(interval?: number): void;
-    }
-}
-declare namespace feng3d {
     interface ComponentMap {
         Model: Model;
     }
@@ -20365,10 +20351,25 @@ declare namespace CANNON {
     }
 }
 declare namespace feng3d {
+    class Rigidbody extends Behaviour {
+        __class__: "feng3d.Rigidbody";
+        body: CANNON.Body;
+        runEnvironment: RunEnvironment;
+        mass: number;
+        init(): void;
+        /**
+         * 每帧执行
+         */
+        update(interval?: number): void;
+    }
+}
+declare namespace feng3d {
     /**
      * 碰撞体
      */
     class Collider extends Component {
+        readonly shape: CANNON.Shape;
+        protected _shape: CANNON.Shape;
     }
 }
 declare namespace feng3d {
@@ -20382,7 +20383,17 @@ declare namespace feng3d {
         radius: number;
         private _radius;
         readonly shape: CANNON.Sphere;
-        private _shape;
+        protected _shape: CANNON.Sphere;
+        init(): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 平面碰撞体
+     */
+    class PlaneCollider extends Collider {
+        readonly shape: CANNON.Plane;
+        protected _shape: CANNON.Plane;
         init(): void;
     }
 }

@@ -81,7 +81,7 @@ namespace feng3d
             this.world = new CANNON.World();
             this.world.gravity = this.gravity;
 
-            var bodys = this.getComponentsInChildren(BodyComponent).map(c => c.body);
+            var bodys = this.getComponentsInChildren(Rigidbody).map(c => c.body);
             bodys.forEach(v =>
             {
                 this.world.addBody(v);
@@ -96,7 +96,7 @@ namespace feng3d
 
         private onAddComponent(e: Event<Component>)
         {
-            if (e.data instanceof BodyComponent)
+            if (e.data instanceof Rigidbody)
             {
                 this.world.addBody(e.data.body);
             }
@@ -104,7 +104,7 @@ namespace feng3d
 
         private onRemovedComponent(e: Event<Component>)
         {
-            if (e.data instanceof BodyComponent)
+            if (e.data instanceof Rigidbody)
             {
                 this.world.removeBody(e.data.body);
             }
@@ -112,7 +112,7 @@ namespace feng3d
 
         private onAddChild(e: Event<GameObject>)
         {
-            var bodyComponent = e.data.getComponent(BodyComponent);
+            var bodyComponent = e.data.getComponent(Rigidbody);
             if (bodyComponent)
             {
                 this.world.addBody(bodyComponent.body);
@@ -121,7 +121,7 @@ namespace feng3d
 
         private onRemoveChild(e: Event<GameObject>)
         {
-            var bodyComponent = e.data.getComponent(BodyComponent);
+            var bodyComponent = e.data.getComponent(Rigidbody);
             if (bodyComponent)
             {
                 this.world.removeBody(bodyComponent.body);

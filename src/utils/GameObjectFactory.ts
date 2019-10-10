@@ -19,10 +19,14 @@ namespace feng3d
 
         createPlane(name = "plane")
         {
-            return serialization.setValue(new GameObject(), {
+            var g = serialization.setValue(new GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.plane },]
             });
+            g.addComponent(PlaneCollider);
+            g.addComponent(Rigidbody);
+
+            return g;
         }
 
         createCylinder(name = "cylinder")
@@ -56,7 +60,8 @@ namespace feng3d
                 components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.sphere },]
             });
 
-            var sphereBody = sphere.addComponent(BodyComponent);
+            sphere.addComponent(SphereCollider);
+            sphere.addComponent(Rigidbody);
 
             return sphere;
         }

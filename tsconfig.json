@@ -206,7 +206,6 @@
         "src/component/WireframeComponent.ts",
         "src/component/CartoonComponent.ts",
         "src/component/OutLineComponent.ts",
-        "src/component/BodyComponent.ts",
         "src/core/Model.ts",
         "src/core/MeshModel.ts",
         "src/core/ScriptComponent.ts",
@@ -405,7 +404,10 @@
         "src/physics/solver/SplitSolver.ts",
         "src/physics/world/World.ts",
         "src/physics/world/Narrowphase.ts",
+        //
+        "src/component/physics/Rigidbody.ts",
         "src/component/physics/Collider.ts",
-        "src/component/physics/SphereCollider.ts"
+        "src/component/physics/SphereCollider.ts",
+        "src/component/physics/PlaneCollider.ts"
     ]
 }

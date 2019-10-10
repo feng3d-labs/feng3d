@@ -5,6 +5,10 @@ namespace feng3d
      */
     export class Collider extends Component
     {
-
+        get shape()
+        {
+            return this._shape;
+        }
+        protected _shape: CANNON.Shape;
     }
 }
