@@ -11,10 +11,13 @@ namespace feng3d
 
         createCube(name = "cube")
         {
-            return serialization.setValue(new GameObject(), {
+            var g = serialization.setValue(new GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.cube },]
             });
+            g.addComponent(BoxCollider);
+            g.addComponent(Rigidbody);
+            return g;
         }
 
         createPlane(name = "plane")

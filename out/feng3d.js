@@ -36877,10 +36877,13 @@ var feng3d;
         };
         GameObjectFactory.prototype.createCube = function (name) {
             if (name === void 0) { name = "cube"; }
-            return feng3d.serialization.setValue(new feng3d.GameObject(), {
+            var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.cube },]
             });
+            g.addComponent(feng3d.BoxCollider);
+            g.addComponent(feng3d.Rigidbody);
+            return g;
         };
         GameObjectFactory.prototype.createPlane = function (name) {
             if (name === void 0) { name = "plane"; }
@@ -38674,11 +38677,6 @@ var CANNON;
                 [2, 3, 7, 6],
                 [0, 4, 7, 3],
                 [1, 2, 6, 5],
-            ];
-            var axes = [
-                new V(0, 0, 1),
-                new V(0, 1, 0),
-                new V(1, 0, 0)
             ];
             var h = new CANNON.ConvexPolyhedron(vertices, indices);
             this.convexPolyhedronRepresentation = h;
@@ -46191,6 +46189,9 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 刚体
+     */
     var Rigidbody = /** @class */ (function (_super) {
         __extends(Rigidbody, _super);
         function Rigidbody() {
@@ -46248,6 +46249,49 @@ var feng3d;
         return Collider;
     }(feng3d.Component));
     feng3d.Collider = Collider;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 长方体碰撞体
+     */
+    var BoxCollider = /** @class */ (function (_super) {
+        __extends(BoxCollider, _super);
+        function BoxCollider() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * 宽度
+             */
+            _this.width = 1;
+            /**
+             * 高度
+             */
+            _this.height = 1;
+            /**
+             * 深度
+             */
+            _this.depth = 1;
+            return _this;
+        }
+        BoxCollider.prototype.init = function () {
+            var halfExtents = new feng3d.Vector3(this.width / 2, this.height / 2, this.depth / 2);
+            this._shape = new CANNON.Box(halfExtents);
+        };
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], BoxCollider.prototype, "width", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], BoxCollider.prototype, "height", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], BoxCollider.prototype, "depth", void 0);
+        return BoxCollider;
+    }(feng3d.Collider));
+    feng3d.BoxCollider = BoxCollider;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

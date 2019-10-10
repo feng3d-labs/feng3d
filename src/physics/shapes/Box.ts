@@ -58,12 +58,6 @@ namespace CANNON
                 [1, 2, 6, 5], // +x
             ];
 
-            var axes = [
-                new V(0, 0, 1),
-                new V(0, 1, 0),
-                new V(1, 0, 0)
-            ];
-
             var h = new ConvexPolyhedron(vertices, indices);
             this.convexPolyhedronRepresentation = h;
             h.material = this.material;

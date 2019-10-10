@@ -20351,6 +20351,9 @@ declare namespace CANNON {
     }
 }
 declare namespace feng3d {
+    /**
+     * 刚体
+     */
     class Rigidbody extends Behaviour {
         __class__: "feng3d.Rigidbody";
         body: CANNON.Body;
@@ -20370,6 +20373,28 @@ declare namespace feng3d {
     class Collider extends Component {
         readonly shape: CANNON.Shape;
         protected _shape: CANNON.Shape;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 长方体碰撞体
+     */
+    class BoxCollider extends Collider {
+        /**
+         * 宽度
+         */
+        width: number;
+        /**
+         * 高度
+         */
+        height: number;
+        /**
+         * 深度
+         */
+        depth: number;
+        readonly shape: CANNON.Box;
+        protected _shape: CANNON.Box;
+        init(): void;
     }
 }
 declare namespace feng3d {
