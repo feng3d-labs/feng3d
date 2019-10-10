@@ -13031,6 +13031,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     class BodyComponent extends Behaviour {
         __class__: "feng3d.BodyComponent";
+        shapeType: CANNON.ShapeType;
         body: CANNON.Body;
         runEnvironment: RunEnvironment;
         mass: number;
@@ -17663,8 +17664,17 @@ declare namespace CANNON {
      * 形状类型
      */
     enum ShapeType {
+        /**
+         * 球形
+         */
         SPHERE = 1,
+        /**
+         * 平面
+         */
         PLANE = 2,
+        /**
+         * 盒子
+         */
         BOX = 4,
         COMPOUND = 8,
         CONVEXPOLYHEDRON = 16,
@@ -18158,12 +18168,12 @@ declare namespace CANNON {
     class Sphere extends Shape {
         radius: number;
         /**
-         * Spherical shape
+         * 球体
          *
-         * @param radius The radius of the sphere, a non-negative number.
+         * @param radius 半径
          * @author schteppe / http://github.com/schteppe
          */
-        constructor(radius: number);
+        constructor(radius?: number);
         calculateLocalInertia(mass: number, target?: feng3d.Vector3): feng3d.Vector3;
         volume(): number;
         updateBoundingSphereRadius(): void;
@@ -20349,6 +20359,28 @@ declare namespace CANNON {
         boxHeightfield(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         convexHeightfield(convexShape: Shape, hfShape: any, convexTransform: Transform, hfTransform: Transform, convexBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         sphereHeightfield(sphereShape: Shape, hfShape: any, sphereTransform: Transform, hfTransform: Transform, sphereBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 碰撞体
+     */
+    class Collider extends Component {
+    }
+}
+declare namespace feng3d {
+    /**
+     * 球形碰撞体
+     */
+    class SphereCollider extends Collider {
+        /**
+         * 半径
+         */
+        radius: number;
+        private _radius;
+        readonly shape: CANNON.Sphere;
+        private _shape;
+        init(gameobject: GameObject): void;
     }
 }
 //# sourceMappingURL=feng3d.d.ts.map

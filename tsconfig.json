@@ -404,6 +404,8 @@
         "src/physics/solver/GSSolver.ts",
         "src/physics/solver/SplitSolver.ts",
         "src/physics/world/World.ts",
-        "src/physics/world/Narrowphase.ts"
+        "src/physics/world/Narrowphase.ts",
+        "src/component/physics/Collider.ts",
+        "src/component/physics/SphereCollider.ts"
     ]
 }

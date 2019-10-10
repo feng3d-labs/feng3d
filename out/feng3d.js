@@ -24850,19 +24850,28 @@ var feng3d;
         function BodyComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.BodyComponent";
+            _this.shapeType = CANNON.ShapeType.SPHERE;
             _this.runEnvironment = feng3d.RunEnvironment.feng3d;
             _this.mass = 5;
             return _this;
         }
         BodyComponent.prototype.init = function (gameobject) {
             _super.prototype.init.call(this, gameobject);
-            var radius = 1; // m
             this.body = new CANNON.Body({
                 mass: this.mass,
-                position: new feng3d.Vector3(0, 10, 0),
-                shape: new CANNON.Sphere(radius)
             });
-            this.body.addShape;
+            switch (this.shapeType) {
+                case CANNON.ShapeType.SPHERE:
+                    var radius = 1;
+                    this.body.addShape(new CANNON.Sphere(radius));
+                    break;
+                case CANNON.ShapeType.PLANE:
+                    this.body.addShape(new CANNON.Plane());
+                    break;
+                default:
+                    break;
+            }
+            this.body.position = this.transform.position;
         };
         /**
          * 每帧执行
@@ -37840,8 +37849,17 @@ var CANNON;
      */
     var ShapeType;
     (function (ShapeType) {
+        /**
+         * 球形
+         */
         ShapeType[ShapeType["SPHERE"] = 1] = "SPHERE";
+        /**
+         * 平面
+         */
         ShapeType[ShapeType["PLANE"] = 2] = "PLANE";
+        /**
+         * 盒子
+         */
         ShapeType[ShapeType["BOX"] = 4] = "BOX";
         ShapeType[ShapeType["COMPOUND"] = 8] = "COMPOUND";
         ShapeType[ShapeType["CONVEXPOLYHEDRON"] = 16] = "CONVEXPOLYHEDRON";
@@ -39522,16 +39540,17 @@ var CANNON;
     var Sphere = /** @class */ (function (_super) {
         __extends(Sphere, _super);
         /**
-         * Spherical shape
+         * 球体
          *
-         * @param radius The radius of the sphere, a non-negative number.
+         * @param radius 半径
          * @author schteppe / http://github.com/schteppe
          */
         function Sphere(radius) {
+            if (radius === void 0) { radius = 1; }
             var _this = _super.call(this, {
                 type: CANNON.ShapeType.SPHERE
             }) || this;
-            _this.radius = radius !== undefined ? radius : 1.0;
+            _this.radius = radius;
             if (_this.radius < 0) {
                 throw new Error('The sphere radius cannot be negative.');
             }
@@ -46217,6 +46236,62 @@ var CANNON;
     Narrowphase.prototype[CANNON.ShapeType.SPHERE | CANNON.ShapeType.HEIGHTFIELD] = Narrowphase.prototype.sphereHeightfield;
     Narrowphase.prototype[CANNON.ShapeType.CONVEXPOLYHEDRON | CANNON.ShapeType.HEIGHTFIELD] = Narrowphase.prototype.convexHeightfield;
 })(CANNON || (CANNON = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 碰撞体
+     */
+    var Collider = /** @class */ (function (_super) {
+        __extends(Collider, _super);
+        function Collider() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return Collider;
+    }(feng3d.Component));
+    feng3d.Collider = Collider;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 球形碰撞体
+     */
+    var SphereCollider = /** @class */ (function (_super) {
+        __extends(SphereCollider, _super);
+        function SphereCollider() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this._radius = 1;
+            return _this;
+        }
+        Object.defineProperty(SphereCollider.prototype, "radius", {
+            /**
+             * 半径
+             */
+            get: function () {
+                return this._radius;
+            },
+            set: function (v) {
+                this._radius = v;
+                if (this._shape)
+                    this._shape.radius = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SphereCollider.prototype, "shape", {
+            get: function () {
+                return this._shape;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        SphereCollider.prototype.init = function (gameobject) {
+            _super.prototype.init.call(this, gameobject);
+            this._shape = new CANNON.Sphere(this._radius);
+        };
+        return SphereCollider;
+    }(feng3d.Collider));
+    feng3d.SphereCollider = SphereCollider;
+})(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)

@@ -4,11 +4,11 @@ namespace feng3d
     {
         __class__: "feng3d.BodyComponent" = "feng3d.BodyComponent";
 
+        shapeType = CANNON.ShapeType.SPHERE;
+
         body: CANNON.Body;
 
         runEnvironment = RunEnvironment.feng3d;
-
-        
 
         @oav()
         @serialize
@@ -17,14 +17,24 @@ namespace feng3d
         init(gameobject: GameObject)
         {
             super.init(gameobject);
-            var radius = 1; // m
             this.body = new CANNON.Body({
                 mass: this.mass, // kg
-                position: new Vector3(0, 10, 0), // m
-                shape: new CANNON.Sphere(radius)
             });
 
-            this.body.addShape
+            switch (this.shapeType)
+            {
+                case CANNON.ShapeType.SPHERE:
+                    var radius = 1;
+                    this.body.addShape(new CANNON.Sphere(radius));
+                    break;
+                case CANNON.ShapeType.PLANE:
+                    this.body.addShape(new CANNON.Plane());
+                    break;
+                default:
+                    break;
+            }
+
+            this.body.position = this.transform.position;
         }
 
         /**

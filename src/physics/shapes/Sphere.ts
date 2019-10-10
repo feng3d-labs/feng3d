@@ -5,18 +5,18 @@ namespace CANNON
         radius: number;
 
         /**
-         * Spherical shape
+         * 球体
          * 
-         * @param radius The radius of the sphere, a non-negative number.
+         * @param radius 半径
          * @author schteppe / http://github.com/schteppe
          */
-        constructor(radius: number)
+        constructor(radius = 1)
         {
             super({
                 type: ShapeType.SPHERE
             });
 
-            this.radius = radius !== undefined ? radius : 1.0;
+            this.radius = radius;
 
             if (this.radius < 0)
             {
