@@ -10,8 +10,17 @@ namespace feng3d
         /**
          * 索引数据
          */
-        @watch("invalidate")
-        indices: number[];
+        get indices()
+        {
+            return this._indices;
+        }
+        set indices(v)
+        {
+            if (this._indices == v) return;
+            this._indices = v;
+            this.invalidate();
+        }
+        private _indices: number[];
 
         private invalidate()
         {

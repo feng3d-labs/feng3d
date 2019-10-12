@@ -11471,6 +11471,7 @@ declare namespace feng3d {
          * 索引数据
          */
         indices: number[];
+        private _indices;
         private invalidate;
         /**
          * 渲染数量
@@ -11557,6 +11558,7 @@ declare namespace feng3d {
          * 属性数据
          */
         data: number[];
+        private _data;
         /**
          * 数据尺寸
          *
@@ -14012,22 +14014,27 @@ declare namespace feng3d {
          * 宽度
          */
         width: number;
+        private _width;
         /**
          * 高度
          */
         height: number;
+        private _height;
         /**
          * 横向分割数
          */
         segmentsW: number;
+        private _segmentsW;
         /**
          * 纵向分割数
          */
         segmentsH: number;
+        private _segmentsH;
         /**
          * 是否朝上
          */
         yUp: boolean;
+        private _yUp;
         name: string;
         /**
          * 构建几何体数据
@@ -14085,30 +14092,37 @@ declare namespace feng3d {
          * 宽度
          */
         width: number;
+        private _width;
         /**
          * 高度
          */
         height: number;
+        private _height;
         /**
          * 深度
          */
         depth: number;
+        private _depth;
         /**
          * 宽度方向分割数
          */
         segmentsW: number;
+        private _segmentsW;
         /**
          * 高度方向分割数
          */
         segmentsH: number;
+        private _segmentsH;
         /**
          * 深度方向分割数
          */
         segmentsD: number;
+        private _segmentsD;
         /**
          * 是否为6块贴图，默认true。
          */
         tile6: boolean;
+        private _tile6;
         protected buildGeometry(): void;
         /**
          * 构建坐标
@@ -14165,18 +14179,22 @@ declare namespace feng3d {
          * 球体半径
          */
         radius: number;
+        private _radius;
         /**
          * 横向分割数
          */
         segmentsW: number;
+        private _segmentsW;
         /**
          * 纵向分割数
          */
         segmentsH: number;
+        private _segmentsH;
         /**
          * 是否朝上
          */
         yUp: boolean;
+        private _yUp;
         name: string;
         /**
          * 构建几何体数据
@@ -14274,38 +14292,47 @@ declare namespace feng3d {
          * 顶部半径
          */
         topRadius: number;
+        private _topRadius;
         /**
          * 底部半径
          */
         bottomRadius: number;
+        private _bottomRadius;
         /**
          * 高度
          */
         height: number;
+        private _height;
         /**
          * 横向分割数
          */
         segmentsW: number;
+        private _segmentsW;
         /**
          * 纵向分割数
          */
         segmentsH: number;
+        private _segmentsH;
         /**
          * 顶部是否封口
          */
         topClosed: boolean;
+        private _topClosed;
         /**
          * 底部是否封口
          */
         bottomClosed: boolean;
+        private _bottomClosed;
         /**
          * 侧面是否封口
          */
         surfaceClosed: boolean;
+        private _surfaceClosed;
         /**
          * 是否朝上
          */
         yUp: boolean;
+        private _yUp;
         name: string;
         /**
          * 构建几何体数据
@@ -14361,22 +14388,27 @@ declare namespace feng3d {
          * 半径
          */
         radius: number;
+        private _radius;
         /**
          * 管道半径
          */
         tubeRadius: number;
+        private _tubeRadius;
         /**
          * 半径方向分割数
          */
         segmentsR: number;
+        private _segmentsR;
         /**
          * 管道方向分割数
          */
         segmentsT: number;
+        private _segmentsT;
         /**
          * 是否朝上
          */
         yUp: boolean;
+        private _yUp;
         name: string;
         protected _vertexPositionData: number[];
         protected _vertexNormalData: number[];

@@ -17,57 +17,119 @@ namespace feng3d
          */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        width = 1;
+        get width()
+        {
+            return this._width;
+        }
+        set width(v)
+        {
+            if (this._width == v) return;
+            this._width = v;
+            this.invalidateGeometry();
+        }
+        private _width = 1;
 
         /**
          * 高度
          */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        height = 1;
+        get height()
+        {
+            return this._height;
+        }
+        set height(v)
+        {
+            if (this._height == v) return;
+            this._height = v;
+            this.invalidateGeometry();
+        }
+        private _height = 1;
 
         /**
          * 深度
          */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        depth = 1;
+        get depth()
+        {
+            return this._depth;
+        }
+        set depth(v)
+        {
+            if (this._depth == v) return;
+            this._depth = v;
+            this.invalidateGeometry();
+        }
+        private _depth = 1;
 
         /**
          * 宽度方向分割数
          */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        segmentsW = 1;
+        get segmentsW()
+        {
+            return this._segmentsW;
+        }
+        set segmentsW(v)
+        {
+            if (this._segmentsW == v) return;
+            this._segmentsW = v;
+            this.invalidateGeometry();
+        }
+        private _segmentsW = 1;
 
         /**
          * 高度方向分割数
          */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        segmentsH = 1;
+        get segmentsH()
+        {
+            return this._segmentsH;
+        }
+        set segmentsH(v)
+        {
+            if (this._segmentsH == v) return;
+            this._segmentsH = v;
+            this.invalidateGeometry();
+        }
+        private _segmentsH = 1;
 
         /**
          * 深度方向分割数
          */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        @watch("invalidateGeometry")
-        segmentsD = 1;
+        get segmentsD()
+        {
+            return this._segmentsD;
+        }
+        set segmentsD(v)
+        {
+            if (this._segmentsD == v) return;
+            this._segmentsD = v;
+            this.invalidateGeometry();
+        }
+        private _segmentsD = 1;
 
         /**
          * 是否为6块贴图，默认true。
          */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        tile6 = false;
+        get tile6()
+        {
+            return this._tile6;
+        }
+        set tile6(v)
+        {
+            if (this._tile6 == v) return;
+            this._tile6 = v;
+            this.invalidateGeometry();
+        }
+        private _tile6 = false;
 
         protected buildGeometry()
         {

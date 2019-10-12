@@ -16,40 +16,85 @@ namespace feng3d
 		 */
 		@serialize
 		@oav()
-		@watch("invalidateGeometry")
-		radius = 0.5;
+		get radius()
+		{
+			return this._radius;
+		}
+		set radius(v)
+		{
+			if (this._radius == v) return;
+			this._radius = v;
+			this.invalidateGeometry();
+		}
+		private _radius = 0.5;
 
 		/**
 		 * 管道半径
 		 */
 		@serialize
 		@oav()
-		@watch("invalidateGeometry")
-		tubeRadius = 0.1;
+		get tubeRadius()
+		{
+			return this._tubeRadius;
+		}
+		set tubeRadius(v)
+		{
+			if (this._tubeRadius == v) return;
+			this._tubeRadius = v;
+			this.invalidateGeometry();
+		}
+		private _tubeRadius = 0.1;
 
 		/**
 		 * 半径方向分割数
 		 */
 		@serialize
 		@oav()
-		@watch("invalidateGeometry")
-		segmentsR = 16;
+		get segmentsR()
+		{
+			return this._segmentsR;
+		}
+		set segmentsR(v)
+		{
+			if (this._segmentsR == v) return;
+			this._segmentsR = v;
+			this.invalidateGeometry();
+		}
+		private _segmentsR = 16;
 
 		/**
 		 * 管道方向分割数
 		 */
 		@serialize
 		@oav()
-		@watch("invalidateGeometry")
-		segmentsT = 8;
+		get segmentsT()
+		{
+			return this._segmentsT;
+		}
+		set segmentsT(v)
+		{
+			if (this._segmentsT == v) return;
+			this._segmentsT = v;
+			this.invalidateGeometry();
+		}
+		private _segmentsT = 8;
 
 		/**
 		 * 是否朝上
 		 */
 		@serialize
 		@oav()
-		@watch("invalidateGeometry")
-		yUp = true;
+		get yUp()
+		{
+			return this._yUp;
+		}
+		set yUp(v)
+		{
+			if (this._yUp == v) return;
+			this._yUp = v;
+			this.invalidateGeometry();
+		}
+		private _yUp = true;
 
 		name = "Torus";
 

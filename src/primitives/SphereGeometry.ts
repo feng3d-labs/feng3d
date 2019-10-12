@@ -16,32 +16,68 @@ namespace feng3d
          */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        radius = 0.5;
+        get radius()
+        {
+            return this._radius;
+        }
+        set radius(v)
+        {
+            if (this._radius == v) return;
+            this._radius = v;
+            this.invalidateGeometry();
+        }
+        private _radius = 0.5;
 
         /**
          * 横向分割数
          */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        segmentsW = 16;
+        get segmentsW()
+        {
+            return this._segmentsW;
+        }
+        set segmentsW(v)
+        {
+            if (this._segmentsW == v) return;
+            this._segmentsW = v;
+            this.invalidateGeometry();
+        }
+        private _segmentsW = 16;
 
         /**
          * 纵向分割数
          */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        segmentsH = 12;
+        get segmentsH()
+        {
+            return this._segmentsH;
+        }
+        set segmentsH(v)
+        {
+            if (this._segmentsH == v) return;
+            this._segmentsH = v;
+            this.invalidateGeometry();
+        }
+        private _segmentsH = 12;
 
         /**
          * 是否朝上
          */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        yUp = true;
+        get yUp()
+        {
+            return this._yUp;
+        }
+        set yUp(v)
+        {
+            if (this._yUp == v) return;
+            this._yUp = v;
+            this.invalidateGeometry();
+        }
+        private _yUp = true;
 
         name = "Sphere";
 

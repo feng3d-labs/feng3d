@@ -60,8 +60,16 @@ namespace feng3d
         /**
          * 属性数据
          */
-        @watch("invalidate")
-        data: number[];
+        get data()
+        {
+            return this._data;
+        }
+        set data(v)
+        {
+            this._data = v;
+            this.invalidate();
+        }
+        private _data: number[];
 
         /**
          * 数据尺寸

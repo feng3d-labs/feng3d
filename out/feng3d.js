@@ -20939,6 +20939,22 @@ var feng3d;
              */
             this.invalid = true;
         }
+        Object.defineProperty(Index.prototype, "indices", {
+            /**
+             * 索引数据
+             */
+            get: function () {
+                return this._indices;
+            },
+            set: function (v) {
+                if (this._indices == v)
+                    return;
+                this._indices = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
         Index.prototype.invalidate = function () {
             this.invalid = true;
         };
@@ -20992,9 +21008,6 @@ var feng3d;
             });
             this._indexBufferMap.clear();
         };
-        __decorate([
-            feng3d.watch("invalidate")
-        ], Index.prototype, "indices", void 0);
         return Index;
     }());
     feng3d.Index = Index;
@@ -21062,6 +21075,20 @@ var feng3d;
             this.size = size;
             this.divisor = divisor;
         }
+        Object.defineProperty(Attribute.prototype, "data", {
+            /**
+             * 属性数据
+             */
+            get: function () {
+                return this._data;
+            },
+            set: function (v) {
+                this._data = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          *
          * @param gl
@@ -21118,9 +21145,6 @@ var feng3d;
             });
             this._indexBufferMap.clear();
         };
-        __decorate([
-            feng3d.watch("invalidate")
-        ], Attribute.prototype, "data", void 0);
         return Attribute;
     }());
     feng3d.Attribute = Attribute;
@@ -27410,29 +27434,94 @@ var feng3d;
         function PlaneGeometry() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.PlaneGeometry";
-            /**
-             * 宽度
-             */
-            _this.width = 1;
-            /**
-             * 高度
-             */
-            _this.height = 1;
-            /**
-             * 横向分割数
-             */
-            _this.segmentsW = 1;
-            /**
-             * 纵向分割数
-             */
-            _this.segmentsH = 1;
-            /**
-             * 是否朝上
-             */
-            _this.yUp = true;
+            _this._width = 1;
+            _this._height = 1;
+            _this._segmentsW = 1;
+            _this._segmentsH = 1;
+            _this._yUp = true;
             _this.name = "Plane";
             return _this;
         }
+        Object.defineProperty(PlaneGeometry.prototype, "width", {
+            /**
+             * 宽度
+             */
+            get: function () {
+                return this._width;
+            },
+            set: function (v) {
+                if (this._width == v)
+                    return;
+                this._width = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PlaneGeometry.prototype, "height", {
+            /**
+             * 高度
+             */
+            get: function () {
+                return this._height;
+            },
+            set: function (v) {
+                if (this._height == v)
+                    return;
+                this._height = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PlaneGeometry.prototype, "segmentsW", {
+            /**
+             * 横向分割数
+             */
+            get: function () {
+                return this._segmentsW;
+            },
+            set: function (v) {
+                if (this._segmentsW == v)
+                    return;
+                this._segmentsW = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PlaneGeometry.prototype, "segmentsH", {
+            /**
+             * 纵向分割数
+             */
+            get: function () {
+                return this._segmentsH;
+            },
+            set: function (v) {
+                if (this._segmentsH == v)
+                    return;
+                this._segmentsH = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(PlaneGeometry.prototype, "yUp", {
+            /**
+             * 是否朝上
+             */
+            get: function () {
+                return this._yUp;
+            },
+            set: function (v) {
+                if (this._yUp == v)
+                    return;
+                this._yUp = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 构建几何体数据
          */
@@ -27589,29 +27678,24 @@ var feng3d;
         };
         __decorate([
             feng3d.oav(),
-            feng3d.serialize,
-            feng3d.watch("invalidateGeometry")
-        ], PlaneGeometry.prototype, "width", void 0);
+            feng3d.serialize
+        ], PlaneGeometry.prototype, "width", null);
         __decorate([
             feng3d.oav(),
-            feng3d.serialize,
-            feng3d.watch("invalidateGeometry")
-        ], PlaneGeometry.prototype, "height", void 0);
+            feng3d.serialize
+        ], PlaneGeometry.prototype, "height", null);
         __decorate([
             feng3d.oav(),
-            feng3d.serialize,
-            feng3d.watch("invalidateGeometry")
-        ], PlaneGeometry.prototype, "segmentsW", void 0);
+            feng3d.serialize
+        ], PlaneGeometry.prototype, "segmentsW", null);
         __decorate([
             feng3d.oav(),
-            feng3d.serialize,
-            feng3d.watch("invalidateGeometry")
-        ], PlaneGeometry.prototype, "segmentsH", void 0);
+            feng3d.serialize
+        ], PlaneGeometry.prototype, "segmentsH", null);
         __decorate([
             feng3d.oav(),
-            feng3d.serialize,
-            feng3d.watch("invalidateGeometry")
-        ], PlaneGeometry.prototype, "yUp", void 0);
+            feng3d.serialize
+        ], PlaneGeometry.prototype, "yUp", null);
         return PlaneGeometry;
     }(feng3d.Geometry));
     feng3d.PlaneGeometry = PlaneGeometry;
@@ -27628,36 +27712,127 @@ var feng3d;
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.CubeGeometry";
             _this.name = "Cube";
+            _this._width = 1;
+            _this._height = 1;
+            _this._depth = 1;
+            _this._segmentsW = 1;
+            _this._segmentsH = 1;
+            _this._segmentsD = 1;
+            _this._tile6 = false;
+            return _this;
+        }
+        Object.defineProperty(CubeGeometry.prototype, "width", {
             /**
              * 宽度
              */
-            _this.width = 1;
+            get: function () {
+                return this._width;
+            },
+            set: function (v) {
+                if (this._width == v)
+                    return;
+                this._width = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CubeGeometry.prototype, "height", {
             /**
              * 高度
              */
-            _this.height = 1;
+            get: function () {
+                return this._height;
+            },
+            set: function (v) {
+                if (this._height == v)
+                    return;
+                this._height = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CubeGeometry.prototype, "depth", {
             /**
              * 深度
              */
-            _this.depth = 1;
+            get: function () {
+                return this._depth;
+            },
+            set: function (v) {
+                if (this._depth == v)
+                    return;
+                this._depth = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CubeGeometry.prototype, "segmentsW", {
             /**
              * 宽度方向分割数
              */
-            _this.segmentsW = 1;
+            get: function () {
+                return this._segmentsW;
+            },
+            set: function (v) {
+                if (this._segmentsW == v)
+                    return;
+                this._segmentsW = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CubeGeometry.prototype, "segmentsH", {
             /**
              * 高度方向分割数
              */
-            _this.segmentsH = 1;
+            get: function () {
+                return this._segmentsH;
+            },
+            set: function (v) {
+                if (this._segmentsH == v)
+                    return;
+                this._segmentsH = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CubeGeometry.prototype, "segmentsD", {
             /**
              * 深度方向分割数
              */
-            _this.segmentsD = 1;
+            get: function () {
+                return this._segmentsD;
+            },
+            set: function (v) {
+                if (this._segmentsD == v)
+                    return;
+                this._segmentsD = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CubeGeometry.prototype, "tile6", {
             /**
              * 是否为6块贴图，默认true。
              */
-            _this.tile6 = false;
-            return _this;
-        }
+            get: function () {
+                return this._tile6;
+            },
+            set: function (v) {
+                if (this._tile6 == v)
+                    return;
+                this._tile6 = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
         CubeGeometry.prototype.buildGeometry = function () {
             var vertexPositionData = this.buildPosition();
             this.setVAData("a_position", vertexPositionData, 3);
@@ -28004,40 +28179,32 @@ var feng3d;
         };
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], CubeGeometry.prototype, "width", void 0);
+            feng3d.oav()
+        ], CubeGeometry.prototype, "width", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], CubeGeometry.prototype, "height", void 0);
+            feng3d.oav()
+        ], CubeGeometry.prototype, "height", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], CubeGeometry.prototype, "depth", void 0);
+            feng3d.oav()
+        ], CubeGeometry.prototype, "depth", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], CubeGeometry.prototype, "segmentsW", void 0);
+            feng3d.oav()
+        ], CubeGeometry.prototype, "segmentsW", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], CubeGeometry.prototype, "segmentsH", void 0);
+            feng3d.oav()
+        ], CubeGeometry.prototype, "segmentsH", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry"),
-            feng3d.watch("invalidateGeometry")
-        ], CubeGeometry.prototype, "segmentsD", void 0);
+            feng3d.oav()
+        ], CubeGeometry.prototype, "segmentsD", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], CubeGeometry.prototype, "tile6", void 0);
+            feng3d.oav()
+        ], CubeGeometry.prototype, "tile6", null);
         return CubeGeometry;
     }(feng3d.Geometry));
     feng3d.CubeGeometry = CubeGeometry;
@@ -28054,25 +28221,77 @@ var feng3d;
         function SphereGeometry() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.SphereGeometry";
-            /**
-             * 球体半径
-             */
-            _this.radius = 0.5;
-            /**
-             * 横向分割数
-             */
-            _this.segmentsW = 16;
-            /**
-             * 纵向分割数
-             */
-            _this.segmentsH = 12;
-            /**
-             * 是否朝上
-             */
-            _this.yUp = true;
+            _this._radius = 0.5;
+            _this._segmentsW = 16;
+            _this._segmentsH = 12;
+            _this._yUp = true;
             _this.name = "Sphere";
             return _this;
         }
+        Object.defineProperty(SphereGeometry.prototype, "radius", {
+            /**
+             * 球体半径
+             */
+            get: function () {
+                return this._radius;
+            },
+            set: function (v) {
+                if (this._radius == v)
+                    return;
+                this._radius = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SphereGeometry.prototype, "segmentsW", {
+            /**
+             * 横向分割数
+             */
+            get: function () {
+                return this._segmentsW;
+            },
+            set: function (v) {
+                if (this._segmentsW == v)
+                    return;
+                this._segmentsW = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SphereGeometry.prototype, "segmentsH", {
+            /**
+             * 纵向分割数
+             */
+            get: function () {
+                return this._segmentsH;
+            },
+            set: function (v) {
+                if (this._segmentsH == v)
+                    return;
+                this._segmentsH = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SphereGeometry.prototype, "yUp", {
+            /**
+             * 是否朝上
+             */
+            get: function () {
+                return this._yUp;
+            },
+            set: function (v) {
+                if (this._yUp == v)
+                    return;
+                this._yUp = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 构建几何体数据
          * @param this.radius 球体半径
@@ -28207,24 +28426,20 @@ var feng3d;
         };
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], SphereGeometry.prototype, "radius", void 0);
+            feng3d.oav()
+        ], SphereGeometry.prototype, "radius", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], SphereGeometry.prototype, "segmentsW", void 0);
+            feng3d.oav()
+        ], SphereGeometry.prototype, "segmentsW", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], SphereGeometry.prototype, "segmentsH", void 0);
+            feng3d.oav()
+        ], SphereGeometry.prototype, "segmentsH", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], SphereGeometry.prototype, "yUp", void 0);
+            feng3d.oav()
+        ], SphereGeometry.prototype, "yUp", null);
         return SphereGeometry;
     }(feng3d.Geometry));
     feng3d.SphereGeometry = SphereGeometry;
@@ -28497,45 +28712,162 @@ var feng3d;
         function CylinderGeometry() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.CylinderGeometry";
-            /**
-             * 顶部半径
-             */
-            _this.topRadius = 0.5;
-            /**
-             * 底部半径
-             */
-            _this.bottomRadius = 0.5;
-            /**
-             * 高度
-             */
-            _this.height = 2;
-            /**
-             * 横向分割数
-             */
-            _this.segmentsW = 16;
-            /**
-             * 纵向分割数
-             */
-            _this.segmentsH = 1;
-            /**
-             * 顶部是否封口
-             */
-            _this.topClosed = true;
-            /**
-             * 底部是否封口
-             */
-            _this.bottomClosed = true;
-            /**
-             * 侧面是否封口
-             */
-            _this.surfaceClosed = true;
-            /**
-             * 是否朝上
-             */
-            _this.yUp = true;
+            _this._topRadius = 0.5;
+            _this._bottomRadius = 0.5;
+            _this._height = 2;
+            _this._segmentsW = 16;
+            _this._segmentsH = 1;
+            _this._topClosed = true;
+            _this._bottomClosed = true;
+            _this._surfaceClosed = true;
+            _this._yUp = true;
             _this.name = "Cylinder";
             return _this;
         }
+        Object.defineProperty(CylinderGeometry.prototype, "topRadius", {
+            /**
+             * 顶部半径
+             */
+            get: function () {
+                return this._topRadius;
+            },
+            set: function (v) {
+                if (this._topRadius == v)
+                    return;
+                this._topRadius = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CylinderGeometry.prototype, "bottomRadius", {
+            /**
+             * 底部半径
+             */
+            get: function () {
+                return this._bottomRadius;
+            },
+            set: function (v) {
+                if (this._bottomRadius == v)
+                    return;
+                this._bottomRadius = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CylinderGeometry.prototype, "height", {
+            /**
+             * 高度
+             */
+            get: function () {
+                return this._height;
+            },
+            set: function (v) {
+                if (this._height == v)
+                    return;
+                this._height = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CylinderGeometry.prototype, "segmentsW", {
+            /**
+             * 横向分割数
+             */
+            get: function () {
+                return this._segmentsW;
+            },
+            set: function (v) {
+                if (this._segmentsW == v)
+                    return;
+                this._segmentsW = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CylinderGeometry.prototype, "segmentsH", {
+            /**
+             * 纵向分割数
+             */
+            get: function () {
+                return this._segmentsH;
+            },
+            set: function (v) {
+                if (this._segmentsH == v)
+                    return;
+                this._segmentsH = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CylinderGeometry.prototype, "topClosed", {
+            /**
+             * 顶部是否封口
+             */
+            get: function () {
+                return this._topClosed;
+            },
+            set: function (v) {
+                if (this._topClosed == v)
+                    return;
+                this._topClosed = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CylinderGeometry.prototype, "bottomClosed", {
+            /**
+             * 底部是否封口
+             */
+            get: function () {
+                return this._bottomClosed;
+            },
+            set: function (v) {
+                if (this._bottomClosed == v)
+                    return;
+                this._bottomClosed = v;
+                this.invalidateGeometry;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CylinderGeometry.prototype, "surfaceClosed", {
+            /**
+             * 侧面是否封口
+             */
+            get: function () {
+                return this._surfaceClosed;
+            },
+            set: function (v) {
+                if (this._surfaceClosed == v)
+                    return;
+                this._surfaceClosed = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CylinderGeometry.prototype, "yUp", {
+            /**
+             * 是否朝上
+             */
+            get: function () {
+                return this._yUp;
+            },
+            set: function (v) {
+                if (this._yUp == v)
+                    return;
+                this._yUp = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 构建几何体数据
          */
@@ -28792,50 +29124,41 @@ var feng3d;
             return data;
         };
         __decorate([
-            feng3d.watch("invalidateGeometry"),
             feng3d.serialize,
             feng3d.oav()
-        ], CylinderGeometry.prototype, "topRadius", void 0);
+        ], CylinderGeometry.prototype, "topRadius", null);
         __decorate([
-            feng3d.watch("invalidateGeometry"),
             feng3d.serialize,
             feng3d.oav()
-        ], CylinderGeometry.prototype, "bottomRadius", void 0);
+        ], CylinderGeometry.prototype, "bottomRadius", null);
         __decorate([
-            feng3d.watch("invalidateGeometry"),
             feng3d.serialize,
             feng3d.oav()
-        ], CylinderGeometry.prototype, "height", void 0);
+        ], CylinderGeometry.prototype, "height", null);
         __decorate([
-            feng3d.watch("invalidateGeometry"),
             feng3d.serialize,
             feng3d.oav()
-        ], CylinderGeometry.prototype, "segmentsW", void 0);
+        ], CylinderGeometry.prototype, "segmentsW", null);
         __decorate([
-            feng3d.watch("invalidateGeometry"),
             feng3d.serialize,
             feng3d.oav()
-        ], CylinderGeometry.prototype, "segmentsH", void 0);
+        ], CylinderGeometry.prototype, "segmentsH", null);
         __decorate([
-            feng3d.watch("invalidateGeometry"),
-            feng3d.serialize,
-            feng3d.oav()
-        ], CylinderGeometry.prototype, "topClosed", void 0);
+            feng3d.oav(),
+            feng3d.serialize
+        ], CylinderGeometry.prototype, "topClosed", null);
         __decorate([
-            feng3d.watch("invalidateGeometry"),
-            feng3d.serialize,
-            feng3d.oav()
-        ], CylinderGeometry.prototype, "bottomClosed", void 0);
+            feng3d.oav(),
+            feng3d.serialize
+        ], CylinderGeometry.prototype, "bottomClosed", null);
         __decorate([
-            feng3d.watch("invalidateGeometry"),
-            feng3d.serialize,
-            feng3d.oav()
-        ], CylinderGeometry.prototype, "surfaceClosed", void 0);
+            feng3d.oav(),
+            feng3d.serialize
+        ], CylinderGeometry.prototype, "surfaceClosed", null);
         __decorate([
-            feng3d.watch("invalidateGeometry"),
             feng3d.serialize,
             feng3d.oav()
-        ], CylinderGeometry.prototype, "yUp", void 0);
+        ], CylinderGeometry.prototype, "yUp", null);
         return CylinderGeometry;
     }(feng3d.Geometry));
     feng3d.CylinderGeometry = CylinderGeometry;
@@ -28882,32 +29205,97 @@ var feng3d;
         function TorusGeometry() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.TorusGeometry";
-            /**
-             * 半径
-             */
-            _this.radius = 0.5;
-            /**
-             * 管道半径
-             */
-            _this.tubeRadius = 0.1;
-            /**
-             * 半径方向分割数
-             */
-            _this.segmentsR = 16;
-            /**
-             * 管道方向分割数
-             */
-            _this.segmentsT = 8;
-            /**
-             * 是否朝上
-             */
-            _this.yUp = true;
+            _this._radius = 0.5;
+            _this._tubeRadius = 0.1;
+            _this._segmentsR = 16;
+            _this._segmentsT = 8;
+            _this._yUp = true;
             _this.name = "Torus";
             _this._vertexPositionStride = 3;
             _this._vertexNormalStride = 3;
             _this._vertexTangentStride = 3;
             return _this;
         }
+        Object.defineProperty(TorusGeometry.prototype, "radius", {
+            /**
+             * 半径
+             */
+            get: function () {
+                return this._radius;
+            },
+            set: function (v) {
+                if (this._radius == v)
+                    return;
+                this._radius = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TorusGeometry.prototype, "tubeRadius", {
+            /**
+             * 管道半径
+             */
+            get: function () {
+                return this._tubeRadius;
+            },
+            set: function (v) {
+                if (this._tubeRadius == v)
+                    return;
+                this._tubeRadius = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TorusGeometry.prototype, "segmentsR", {
+            /**
+             * 半径方向分割数
+             */
+            get: function () {
+                return this._segmentsR;
+            },
+            set: function (v) {
+                if (this._segmentsR == v)
+                    return;
+                this._segmentsR = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TorusGeometry.prototype, "segmentsT", {
+            /**
+             * 管道方向分割数
+             */
+            get: function () {
+                return this._segmentsT;
+            },
+            set: function (v) {
+                if (this._segmentsT == v)
+                    return;
+                this._segmentsT = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TorusGeometry.prototype, "yUp", {
+            /**
+             * 是否朝上
+             */
+            get: function () {
+                return this._yUp;
+            },
+            set: function (v) {
+                if (this._yUp == v)
+                    return;
+                this._yUp = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 添加顶点数据
          */
@@ -29039,29 +29427,24 @@ var feng3d;
         };
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], TorusGeometry.prototype, "radius", void 0);
+            feng3d.oav()
+        ], TorusGeometry.prototype, "radius", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], TorusGeometry.prototype, "tubeRadius", void 0);
+            feng3d.oav()
+        ], TorusGeometry.prototype, "tubeRadius", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], TorusGeometry.prototype, "segmentsR", void 0);
+            feng3d.oav()
+        ], TorusGeometry.prototype, "segmentsR", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], TorusGeometry.prototype, "segmentsT", void 0);
+            feng3d.oav()
+        ], TorusGeometry.prototype, "segmentsT", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], TorusGeometry.prototype, "yUp", void 0);
+            feng3d.oav()
+        ], TorusGeometry.prototype, "yUp", null);
         return TorusGeometry;
     }(feng3d.Geometry));
     feng3d.TorusGeometry = TorusGeometry;
