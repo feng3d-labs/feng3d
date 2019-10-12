@@ -17,22 +17,49 @@ namespace feng3d
 		 */
 		@serialize
 		@oav()
-		@watch("invalidate")
-		near: number;
+		get near()
+		{
+			return this._near;
+		}
+		set near(v)
+		{
+			if (this._near == v) return;
+			this._near = v;
+			this.invalidate();
+		}
+		protected _near: number;
 
 		/**
 		 * 最远距离
 		 */
 		@serialize
 		@oav()
-		@watch("invalidate")
-		far: number;
+		get far()
+		{
+			return this._far;
+		}
+		set far(v)
+		{
+			if (this._far == v) return;
+			this._far = v;
+			this.invalidate();
+		}
+		protected _far: number;
 
 		/**
 		 * 视窗缩放比例(width/height)，在渲染器中设置
 		 */
-		@watch("invalidate")
-		aspect: number;
+		get aspect()
+		{
+			return this._aspect;
+		}
+		set aspect(v)
+		{
+			if (this._aspect == v) return;
+			this._aspect = v;
+			this.invalidate();
+		}
+		protected _aspect: number;
 
 		/**
 		 * 创建一个摄像机镜头

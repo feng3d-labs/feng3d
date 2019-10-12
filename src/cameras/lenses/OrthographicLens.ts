@@ -10,8 +10,17 @@ namespace feng3d
          */
         @serialize
         @oav()
-        @watch("invalidate")
-        size: number;
+        get size()
+        {
+            return this._size;
+        }
+        set size(v)
+        {
+            if (this._size == v) return;
+            this._size = v;
+            this.invalidate();
+        }
+        private _size: number;
 
         /**
          * 构建正射投影镜头
@@ -25,15 +34,15 @@ namespace feng3d
 
         protected updateMatrix()
         {
-            this._matrix.setOrtho(-this.size, this.size, this.size, -this.size, this.near, this.far);
+            this._matrix.setOrtho(-this._size, this._size, this._size, -this._size, this.near, this.far);
         }
 
         protected updateViewBox()
         {
-            var left = -this.size * this.aspect;
-            var right = this.size * this.aspect;
-            var top = this.size;
-            var bottom = -this.size;
+            var left = -this._size * this.aspect;
+            var right = this._size * this.aspect;
+            var top = this._size;
+            var bottom = -this._size;
             var near = this.near;
             var far = this.far;
 
@@ -51,7 +60,7 @@ namespace feng3d
 
         clone()
         {
-            return new OrthographicLens(this.size, this.aspect, this.near, this.far);
+            return new OrthographicLens(this._size, this.aspect, this.near, this.far);
         }
     }
 }

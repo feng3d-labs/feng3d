@@ -9,8 +9,17 @@ namespace feng3d
 
         assetType = AssetType.script
 
-        @watch("onTextContentChanged")
-        textContent: string;
+        get textContent()
+        {
+            return this._textContent;
+        }
+        set textContent(v)
+        {
+            if (this._textContent == v) return;
+            this._textContent = v;
+            this.onTextContentChanged();
+        }
+        private _textContent: string;
 
         /**
          * 脚本父类名称

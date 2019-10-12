@@ -34,16 +34,34 @@ namespace feng3d
         private buffer: AudioBuffer;
         private gain: GainNode;
 
-        @watch("enabledChanged")
-        enabled = true;
+        get enabled()
+        {
+            return this._enabled;
+        }
+        set enabled(v)
+        {
+            if (this._enabled == v) return;
+            this._enabled = v;
+            this.enabledChanged();
+        }
+        private _enabled = true;
 
         /**
          * 声音文件路径
          */
         @serialize
         @oav({ component: "OAVPick", tooltip: "声音文件路径", componentParam: { accepttype: "audio" } })
-        @watch("onUrlChanged")
-        url = "";
+        get url()
+        {
+            return this._url;
+        }
+        set url(v)
+        {
+            if (this._url == v) return;
+            this._url = v;
+            this.onUrlChanged();
+        }
+        private _url = "";
 
         /**
          * 是否循环播放

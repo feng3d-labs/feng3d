@@ -11,15 +11,19 @@ namespace feng3d
          * 相机
          */
         @oav()
-        @watch("onCameraChanged")
-        camera: Camera;
-
-        private onCameraChanged(property: string, oldValue: Camera, value: Camera)
+        get camera()
         {
-            if (oldValue) oldValue.off("scenetransformChanged", this.invalidHoldSizeMatrix, this);
-            if (value) value.on("scenetransformChanged", this.invalidHoldSizeMatrix, this);
+            return this._camera;
+        }
+        set camera(v)
+        {
+            if (this._camera == v) return;
+            if (this._camera) this._camera.off("scenetransformChanged", this.invalidHoldSizeMatrix, this);
+            this._camera = v;
+            if (this._camera) this._camera.on("scenetransformChanged", this.invalidHoldSizeMatrix, this);
             this.invalidHoldSizeMatrix();
         }
+        private _camera: Camera;
 
         init()
         {

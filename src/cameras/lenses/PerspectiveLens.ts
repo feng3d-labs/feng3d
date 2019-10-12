@@ -10,16 +10,19 @@ namespace feng3d
         /**
 		 * 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
 		 */
-        @watch("invalidate")
         @serialize
         @oav()
-        fov: number;
-
-		/**
-		 * 视窗缩放比例(width/height)，在渲染器中设置
-		 */
-        @watch("invalidate")
-        aspect: number;
+        get fov()
+        {
+            return this._fov;
+        }
+        set fov(v)
+        {
+            if (this._fov == v) return;
+            this._fov = v;
+            this.invalidate();
+        }
+        private _fov: number;
 
 		/**
 		 * 创建一个透视摄像机镜头
@@ -37,7 +40,7 @@ namespace feng3d
 		 */
         get focalLength(): number
         {
-            return 1 / Math.tan(this.fov * Math.PI / 360);
+            return 1 / Math.tan(this._fov * Math.PI / 360);
         }
 
         set focalLength(value: number)
@@ -91,12 +94,12 @@ namespace feng3d
 
         protected updateMatrix()
         {
-            this._matrix.setPerspectiveFromFOV(this.fov, this.aspect, this.near, this.far);
+            this._matrix.setPerspectiveFromFOV(this._fov, this.aspect, this.near, this.far);
         }
 
         protected updateViewBox()
         {
-            var fov = this.fov;
+            var fov = this._fov;
             var aspect = this.aspect;
             var near = this.near;
             var far = this.far;
@@ -115,7 +118,7 @@ namespace feng3d
 
         clone()
         {
-            return new PerspectiveLens(this.fov, this.aspect, this.near, this.far);
+            return new PerspectiveLens(this._fov, this._aspect, this._near, this._far);
         }
     }
 }

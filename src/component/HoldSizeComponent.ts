@@ -12,15 +12,35 @@ namespace feng3d
          * 保持缩放尺寸
          */
         @oav()
-        @watch("onHoldSizeChanged")
-        holdSize = 1;
+        get holdSize()
+        {
+            return this._holdSize;
+        }
+        set holdSize(v)
+        {
+            if (this._holdSize == v) return;
+            this._holdSize = v;
+            this.onHoldSizeChanged();
+        }
+        private _holdSize = 1;
 
         /**
          * 相机
          */
         @oav()
-        @watch("onCameraChanged")
-        camera: Camera;
+        get camera()
+        {
+            return this._camera;
+        }
+        set camera(v)
+        {
+            if (this._camera == v) return;
+            if (this._camera) this._camera.off("scenetransformChanged", this.invalidateSceneTransform, this);
+            this._camera = v;
+            if (this._camera) this._camera.on("scenetransformChanged", this.invalidateSceneTransform, this);
+            this.invalidateSceneTransform();
+        }
+        private _camera: Camera;
 
         init()
         {
@@ -36,13 +56,6 @@ namespace feng3d
 
         private onHoldSizeChanged()
         {
-            this.invalidateSceneTransform();
-        }
-
-        private onCameraChanged(property: string, oldValue: Camera, value: Camera)
-        {
-            if (oldValue) oldValue.off("scenetransformChanged", this.invalidateSceneTransform, this);
-            if (value) value.on("scenetransformChanged", this.invalidateSceneTransform, this);
             this.invalidateSceneTransform();
         }
 

@@ -10,9 +10,18 @@ namespace feng3d
          * 发射形状类型
          */
         @serialize
-        @watch("_onTypeChanged")
         @oav({ tooltip: "发射形状类型", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeType } })
-        type = ParticleSystemShapeType.Cone;
+        get type()
+        {
+            return this._type;
+        }
+        set type(v)
+        {
+            if (this._type == v) return;
+            this._type = v;
+            this._onTypeChanged();
+        }
+        private _type = ParticleSystemShapeType.Cone;
 
         /**
          * 发射形状

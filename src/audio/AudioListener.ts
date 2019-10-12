@@ -11,8 +11,17 @@ namespace feng3d
     {
         gain: GainNode;
 
-        @watch("enabledChanged")
-        enabled = true;
+        get enabled()
+        {
+            return this._enabled;
+        }
+        set enabled(v)
+        {
+            if (this._enabled == v) return;
+            this._enabled = v;
+            this.enabledChanged();
+        }
+        private _enabled = true;
 
         /**
          * 音量

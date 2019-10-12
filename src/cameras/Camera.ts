@@ -17,16 +17,36 @@ namespace feng3d
         get single() { return true; }
 
         @oav({ component: "OAVEnum", componentParam: { enumClass: Projection } })
-        @watch("onProjectionChanged")
-        projection = Projection.Perspective;
+        get projection()
+        {
+            return this._projection;
+        }
+        set projection(v)
+        {
+            if (this._projection == v) return;
+            this._projection = v;
+            this.onProjectionChanged();
+        }
+        private _projection = Projection.Perspective;
 
         /**
 		 * 镜头
 		 */
         @serialize
         @oav({ component: "OAVObjectView" })
-        @watch("onLensChanged")
-        lens: LensBase
+        get lens()
+        {
+            return this._lens;
+        }
+        set lens(v)
+        {
+            if (this._lens == v) return;
+            if (this._lens) this._lens.off("lensChanged", <any>this.onLensChanged, this);
+            this._lens = v;
+            if (this._lens) this._lens.on("lensChanged", <any>this.onLensChanged, this);
+
+            this.onLensChanged();
+        }
 
 		/**
 		 * 场景投影矩阵，世界空间转投影空间
@@ -158,12 +178,9 @@ namespace feng3d
 		/**
 		 * 处理镜头变化事件
 		 */
-        private onLensChanged(property: string, oldValue: LensBase, value: LensBase)
+        private onLensChanged()
         {
             this._viewProjectionInvalid = true;
-
-            if (oldValue) oldValue.off("lensChanged", <any>this.onLensChanged, this);
-            if (value) value.on("lensChanged", <any>this.onLensChanged, this);
 
             if (this.lens instanceof PerspectiveLens)
             {
@@ -173,15 +190,12 @@ namespace feng3d
                 this.projection = Projection.Orthographic;
             }
 
-            if (oldValue != value)
-            {
-                this.dispatch("refreshView");
-            }
+            this.dispatch("refreshView");
 
             this.dispatch("lensChanged");
         }
 
-        private onProjectionChanged(property: string, oldValue: Projection, value: Projection)
+        private onProjectionChanged()
         {
             var aspect = 1;
             var near = 0.3;

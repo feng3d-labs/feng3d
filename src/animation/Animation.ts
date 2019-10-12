@@ -7,8 +7,17 @@ namespace feng3d
     {
         @oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" } } })
         @serialize
-        @watch("onAnimationChanged")
-        animation: AnimationClip;
+        get animation()
+        {
+            return this._animation;
+        }
+        set animation(v)
+        {
+            if (this._animation == v) return;
+            this._animation = v;
+            this.onAnimationChanged();
+        }
+        private _animation: AnimationClip;
 
         @oav({ component: "OAVArray", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" }, defaultItem: () => new AnimationClip() } })
         @serialize
@@ -18,8 +27,17 @@ namespace feng3d
          * 动画事件，单位为ms
          */
         @oav()
-        @watch("onTimeChanged")
-        time = 0;
+        get time()
+        {
+            return this._time;
+        }
+        set time(v)
+        {
+            if (this._time == v) return;
+            this._time = v;
+            this.onTimeChanged();
+        }
+        private _time = 0;
 
         @oav()
         @serialize

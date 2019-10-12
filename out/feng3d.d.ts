@@ -12932,14 +12932,15 @@ declare namespace feng3d {
          * 保持缩放尺寸
          */
         holdSize: number;
+        private _holdSize;
         /**
          * 相机
          */
         camera: Camera;
+        private _camera;
         init(): void;
         dispose(): void;
         private onHoldSizeChanged;
-        private onCameraChanged;
         private invalidateSceneTransform;
         private updateLocalToWorldMatrix;
         private getDepthScale;
@@ -12955,7 +12956,7 @@ declare namespace feng3d {
          * 相机
          */
         camera: Camera;
-        private onCameraChanged;
+        private _camera;
         init(): void;
         private invalidHoldSizeMatrix;
         private updateLocalToWorldMatrix;
@@ -13741,14 +13742,17 @@ declare namespace feng3d {
          * 最近距离
          */
         near: number;
+        protected _near: number;
         /**
          * 最远距离
          */
         far: number;
+        protected _far: number;
         /**
          * 视窗缩放比例(width/height)，在渲染器中设置
          */
         aspect: number;
+        protected _aspect: number;
         /**
          * 创建一个摄像机镜头
          */
@@ -13835,6 +13839,7 @@ declare namespace feng3d {
          * 尺寸
          */
         size: number;
+        private _size;
         /**
          * 构建正射投影镜头
          * @param size 尺寸
@@ -13855,10 +13860,7 @@ declare namespace feng3d {
          * 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
          */
         fov: number;
-        /**
-         * 视窗缩放比例(width/height)，在渲染器中设置
-         */
-        aspect: number;
+        private _fov;
         /**
          * 创建一个透视摄像机镜头
          * @param fov 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
@@ -13923,6 +13925,7 @@ declare namespace feng3d {
         __class__: "feng3d.Camera";
         readonly single: boolean;
         projection: Projection;
+        private _projection;
         /**
          * 镜头
          */
@@ -15188,6 +15191,7 @@ declare namespace feng3d {
     class AudioListener extends Behaviour {
         gain: GainNode;
         enabled: boolean;
+        private _enabled;
         /**
          * 音量
          */
@@ -15234,10 +15238,12 @@ declare namespace feng3d {
         private buffer;
         private gain;
         enabled: boolean;
+        private _enabled;
         /**
          * 声音文件路径
          */
         url: string;
+        private _url;
         /**
          * 是否循环播放
          */
@@ -15915,6 +15921,7 @@ declare namespace feng3d {
          * 发射形状类型
          */
         type: ParticleSystemShapeType;
+        private _type;
         /**
          * 发射形状
          */
@@ -16139,11 +16146,13 @@ declare namespace feng3d {
     }
     class Animation extends Behaviour {
         animation: AnimationClip;
+        private _animation;
         animations: AnimationClip[];
         /**
          * 动画事件，单位为ms
          */
         time: number;
+        private _time;
         isplaying: boolean;
         /**
          * 播放速度
@@ -16242,6 +16251,7 @@ declare namespace feng3d {
          * 资源对象
          */
         data: AssetData;
+        private _data;
         saveFile(callback?: (err: Error) => void): void;
         /**
          * 读取文件
@@ -16249,7 +16259,6 @@ declare namespace feng3d {
          * @param callback 完成回调
          */
         readFile(callback?: (err: Error) => void): void;
-        private _dataChanged;
         private _onDataChanged;
     }
 }
@@ -16261,6 +16270,7 @@ declare namespace feng3d {
         static extenson: string;
         assetType: AssetType;
         textContent: string;
+        private _textContent;
         /**
          * 脚本父类名称
          */

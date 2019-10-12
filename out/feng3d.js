@@ -24621,12 +24621,45 @@ var feng3d;
         function HoldSizeComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.HoldSizeComponent";
+            _this._holdSize = 1;
+            return _this;
+        }
+        Object.defineProperty(HoldSizeComponent.prototype, "holdSize", {
             /**
              * 保持缩放尺寸
              */
-            _this.holdSize = 1;
-            return _this;
-        }
+            get: function () {
+                return this._holdSize;
+            },
+            set: function (v) {
+                if (this._holdSize == v)
+                    return;
+                this._holdSize = v;
+                this.onHoldSizeChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(HoldSizeComponent.prototype, "camera", {
+            /**
+             * 相机
+             */
+            get: function () {
+                return this._camera;
+            },
+            set: function (v) {
+                if (this._camera == v)
+                    return;
+                if (this._camera)
+                    this._camera.off("scenetransformChanged", this.invalidateSceneTransform, this);
+                this._camera = v;
+                if (this._camera)
+                    this._camera.on("scenetransformChanged", this.invalidateSceneTransform, this);
+                this.invalidateSceneTransform();
+            },
+            enumerable: true,
+            configurable: true
+        });
         HoldSizeComponent.prototype.init = function () {
             this.transform.on("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
         };
@@ -24636,13 +24669,6 @@ var feng3d;
             _super.prototype.dispose.call(this);
         };
         HoldSizeComponent.prototype.onHoldSizeChanged = function () {
-            this.invalidateSceneTransform();
-        };
-        HoldSizeComponent.prototype.onCameraChanged = function (property, oldValue, value) {
-            if (oldValue)
-                oldValue.off("scenetransformChanged", this.invalidateSceneTransform, this);
-            if (value)
-                value.on("scenetransformChanged", this.invalidateSceneTransform, this);
             this.invalidateSceneTransform();
         };
         HoldSizeComponent.prototype.invalidateSceneTransform = function () {
@@ -24671,13 +24697,11 @@ var feng3d;
             return scale;
         };
         __decorate([
-            feng3d.oav(),
-            feng3d.watch("onHoldSizeChanged")
-        ], HoldSizeComponent.prototype, "holdSize", void 0);
+            feng3d.oav()
+        ], HoldSizeComponent.prototype, "holdSize", null);
         __decorate([
-            feng3d.oav(),
-            feng3d.watch("onCameraChanged")
-        ], HoldSizeComponent.prototype, "camera", void 0);
+            feng3d.oav()
+        ], HoldSizeComponent.prototype, "camera", null);
         return HoldSizeComponent;
     }(feng3d.Component));
     feng3d.HoldSizeComponent = HoldSizeComponent;
@@ -24691,13 +24715,26 @@ var feng3d;
             _this.__class__ = "feng3d.BillboardComponent";
             return _this;
         }
-        BillboardComponent.prototype.onCameraChanged = function (property, oldValue, value) {
-            if (oldValue)
-                oldValue.off("scenetransformChanged", this.invalidHoldSizeMatrix, this);
-            if (value)
-                value.on("scenetransformChanged", this.invalidHoldSizeMatrix, this);
-            this.invalidHoldSizeMatrix();
-        };
+        Object.defineProperty(BillboardComponent.prototype, "camera", {
+            /**
+             * 相机
+             */
+            get: function () {
+                return this._camera;
+            },
+            set: function (v) {
+                if (this._camera == v)
+                    return;
+                if (this._camera)
+                    this._camera.off("scenetransformChanged", this.invalidHoldSizeMatrix, this);
+                this._camera = v;
+                if (this._camera)
+                    this._camera.on("scenetransformChanged", this.invalidHoldSizeMatrix, this);
+                this.invalidHoldSizeMatrix();
+            },
+            enumerable: true,
+            configurable: true
+        });
         BillboardComponent.prototype.init = function () {
             _super.prototype.init.call(this);
             this.transform.on("updateLocalToWorldMatrix", this.updateLocalToWorldMatrix, this);
@@ -24722,9 +24759,8 @@ var feng3d;
             _super.prototype.dispose.call(this);
         };
         __decorate([
-            feng3d.oav(),
-            feng3d.watch("onCameraChanged")
-        ], BillboardComponent.prototype, "camera", void 0);
+            feng3d.oav()
+        ], BillboardComponent.prototype, "camera", null);
         return BillboardComponent;
     }(feng3d.Component));
     feng3d.BillboardComponent = BillboardComponent;
@@ -26716,6 +26752,54 @@ var feng3d;
             _this.far = far;
             return _this;
         }
+        Object.defineProperty(LensBase.prototype, "near", {
+            /**
+             * 最近距离
+             */
+            get: function () {
+                return this._near;
+            },
+            set: function (v) {
+                if (this._near == v)
+                    return;
+                this._near = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(LensBase.prototype, "far", {
+            /**
+             * 最远距离
+             */
+            get: function () {
+                return this._far;
+            },
+            set: function (v) {
+                if (this._far == v)
+                    return;
+                this._far = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(LensBase.prototype, "aspect", {
+            /**
+             * 视窗缩放比例(width/height)，在渲染器中设置
+             */
+            get: function () {
+                return this._aspect;
+            },
+            set: function (v) {
+                if (this._aspect == v)
+                    return;
+                this._aspect = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(LensBase.prototype, "matrix", {
             /**
              * 投影矩阵
@@ -26831,17 +26915,12 @@ var feng3d;
         };
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidate")
-        ], LensBase.prototype, "near", void 0);
+            feng3d.oav()
+        ], LensBase.prototype, "near", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidate")
-        ], LensBase.prototype, "far", void 0);
-        __decorate([
-            feng3d.watch("invalidate")
-        ], LensBase.prototype, "aspect", void 0);
+            feng3d.oav()
+        ], LensBase.prototype, "far", null);
         return LensBase;
     }(feng3d.Feng3dObject));
     feng3d.LensBase = LensBase;
@@ -26866,14 +26945,30 @@ var feng3d;
             _this.size = size;
             return _this;
         }
+        Object.defineProperty(OrthographicLens.prototype, "size", {
+            /**
+             * 尺寸
+             */
+            get: function () {
+                return this._size;
+            },
+            set: function (v) {
+                if (this._size == v)
+                    return;
+                this._size = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
         OrthographicLens.prototype.updateMatrix = function () {
-            this._matrix.setOrtho(-this.size, this.size, this.size, -this.size, this.near, this.far);
+            this._matrix.setOrtho(-this._size, this._size, this._size, -this._size, this.near, this.far);
         };
         OrthographicLens.prototype.updateViewBox = function () {
-            var left = -this.size * this.aspect;
-            var right = this.size * this.aspect;
-            var top = this.size;
-            var bottom = -this.size;
+            var left = -this._size * this.aspect;
+            var right = this._size * this.aspect;
+            var top = this._size;
+            var bottom = -this._size;
             var near = this.near;
             var far = this.far;
             this._viewBox.fromPoints([
@@ -26888,13 +26983,12 @@ var feng3d;
             ]);
         };
         OrthographicLens.prototype.clone = function () {
-            return new OrthographicLens(this.size, this.aspect, this.near, this.far);
+            return new OrthographicLens(this._size, this.aspect, this.near, this.far);
         };
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidate")
-        ], OrthographicLens.prototype, "size", void 0);
+            feng3d.oav()
+        ], OrthographicLens.prototype, "size", null);
         return OrthographicLens;
     }(feng3d.LensBase));
     feng3d.OrthographicLens = OrthographicLens;
@@ -26921,12 +27015,28 @@ var feng3d;
             _this.fov = fov;
             return _this;
         }
+        Object.defineProperty(PerspectiveLens.prototype, "fov", {
+            /**
+             * 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
+             */
+            get: function () {
+                return this._fov;
+            },
+            set: function (v) {
+                if (this._fov == v)
+                    return;
+                this._fov = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(PerspectiveLens.prototype, "focalLength", {
             /**
              * 焦距
              */
             get: function () {
-                return 1 / Math.tan(this.fov * Math.PI / 360);
+                return 1 / Math.tan(this._fov * Math.PI / 360);
             },
             set: function (value) {
                 this.fov = Math.atan(1 / value) * 360 / Math.PI;
@@ -26977,10 +27087,10 @@ var feng3d;
             return v;
         };
         PerspectiveLens.prototype.updateMatrix = function () {
-            this._matrix.setPerspectiveFromFOV(this.fov, this.aspect, this.near, this.far);
+            this._matrix.setPerspectiveFromFOV(this._fov, this.aspect, this.near, this.far);
         };
         PerspectiveLens.prototype.updateViewBox = function () {
-            var fov = this.fov;
+            var fov = this._fov;
             var aspect = this.aspect;
             var near = this.near;
             var far = this.far;
@@ -26997,16 +27107,12 @@ var feng3d;
             ]);
         };
         PerspectiveLens.prototype.clone = function () {
-            return new PerspectiveLens(this.fov, this.aspect, this.near, this.far);
+            return new PerspectiveLens(this._fov, this._aspect, this._near, this._far);
         };
         __decorate([
-            feng3d.watch("invalidate"),
             feng3d.serialize,
             feng3d.oav()
-        ], PerspectiveLens.prototype, "fov", void 0);
-        __decorate([
-            feng3d.watch("invalidate")
-        ], PerspectiveLens.prototype, "aspect", void 0);
+        ], PerspectiveLens.prototype, "fov", null);
         return PerspectiveLens;
     }(feng3d.LensBase));
     feng3d.PerspectiveLens = PerspectiveLens;
@@ -27038,7 +27144,7 @@ var feng3d;
         function Camera() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.Camera";
-            _this.projection = feng3d.Projection.Perspective;
+            _this._projection = feng3d.Projection.Perspective;
             _this._viewProjection = new feng3d.Matrix4x4();
             _this._viewProjectionInvalid = true;
             _this._viewBox = new feng3d.Box();
@@ -27048,6 +27154,39 @@ var feng3d;
         }
         Object.defineProperty(Camera.prototype, "single", {
             get: function () { return true; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera.prototype, "projection", {
+            get: function () {
+                return this._projection;
+            },
+            set: function (v) {
+                if (this._projection == v)
+                    return;
+                this._projection = v;
+                this.onProjectionChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Camera.prototype, "lens", {
+            /**
+             * 镜头
+             */
+            get: function () {
+                return this._lens;
+            },
+            set: function (v) {
+                if (this._lens == v)
+                    return;
+                if (this._lens)
+                    this._lens.off("lensChanged", this.onLensChanged, this);
+                this._lens = v;
+                if (this._lens)
+                    this._lens.on("lensChanged", this.onLensChanged, this);
+                this.onLensChanged();
+            },
             enumerable: true,
             configurable: true
         });
@@ -27162,24 +27301,18 @@ var feng3d;
         /**
          * 处理镜头变化事件
          */
-        Camera.prototype.onLensChanged = function (property, oldValue, value) {
+        Camera.prototype.onLensChanged = function () {
             this._viewProjectionInvalid = true;
-            if (oldValue)
-                oldValue.off("lensChanged", this.onLensChanged, this);
-            if (value)
-                value.on("lensChanged", this.onLensChanged, this);
             if (this.lens instanceof feng3d.PerspectiveLens) {
                 this.projection = feng3d.Projection.Perspective;
             }
             else if (this.lens instanceof feng3d.OrthographicLens) {
                 this.projection = feng3d.Projection.Orthographic;
             }
-            if (oldValue != value) {
-                this.dispatch("refreshView");
-            }
+            this.dispatch("refreshView");
             this.dispatch("lensChanged");
         };
-        Camera.prototype.onProjectionChanged = function (property, oldValue, value) {
+        Camera.prototype.onProjectionChanged = function () {
             var aspect = 1;
             var near = 0.3;
             var far = 1000;
@@ -27203,14 +27336,12 @@ var feng3d;
             }
         };
         __decorate([
-            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.Projection } }),
-            feng3d.watch("onProjectionChanged")
-        ], Camera.prototype, "projection", void 0);
+            feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.Projection } })
+        ], Camera.prototype, "projection", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ component: "OAVObjectView" }),
-            feng3d.watch("onLensChanged")
-        ], Camera.prototype, "lens", void 0);
+            feng3d.oav({ component: "OAVObjectView" })
+        ], Camera.prototype, "lens", null);
         return Camera;
     }(feng3d.Component));
     feng3d.Camera = Camera;
@@ -30638,13 +30769,26 @@ var feng3d;
         __extends(AudioListener, _super);
         function AudioListener() {
             var _this = _super.call(this) || this;
-            _this.enabled = true;
+            _this._enabled = true;
             _this._volume = 1;
             _this.gain = feng3d.audioCtx.createGain();
             _this.gain.connect(feng3d.audioCtx.destination);
             _this.enabledChanged();
             return _this;
         }
+        Object.defineProperty(AudioListener.prototype, "enabled", {
+            get: function () {
+                return this._enabled;
+            },
+            set: function (v) {
+                if (this._enabled == v)
+                    return;
+                this._enabled = v;
+                this.enabledChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(AudioListener.prototype, "volume", {
             /**
              * 音量
@@ -30696,9 +30840,6 @@ var feng3d;
             this.off("scenetransformChanged", this.onScenetransformChanged, this);
             _super.prototype.dispose.call(this);
         };
-        __decorate([
-            feng3d.watch("enabledChanged")
-        ], AudioListener.prototype, "enabled", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ tooltip: "音量" })
@@ -30764,11 +30905,8 @@ var feng3d;
         __extends(AudioSource, _super);
         function AudioSource() {
             var _this = _super.call(this) || this;
-            _this.enabled = true;
-            /**
-             * 声音文件路径
-             */
-            _this.url = "";
+            _this._enabled = true;
+            _this._url = "";
             _this._loop = true;
             _this._enablePosition = true;
             _this.panner = createPanner();
@@ -30788,6 +30926,35 @@ var feng3d;
             _this.connect();
             return _this;
         }
+        Object.defineProperty(AudioSource.prototype, "enabled", {
+            get: function () {
+                return this._enabled;
+            },
+            set: function (v) {
+                if (this._enabled == v)
+                    return;
+                this._enabled = v;
+                this.enabledChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AudioSource.prototype, "url", {
+            /**
+             * 声音文件路径
+             */
+            get: function () {
+                return this._url;
+            },
+            set: function (v) {
+                if (this._url == v)
+                    return;
+                this._url = v;
+                this.onUrlChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(AudioSource.prototype, "loop", {
             /**
              * 是否循环播放
@@ -31043,13 +31210,9 @@ var feng3d;
             _super.prototype.dispose.call(this);
         };
         __decorate([
-            feng3d.watch("enabledChanged")
-        ], AudioSource.prototype, "enabled", void 0);
-        __decorate([
             feng3d.serialize,
-            feng3d.oav({ component: "OAVPick", tooltip: "声音文件路径", componentParam: { accepttype: "audio" } }),
-            feng3d.watch("onUrlChanged")
-        ], AudioSource.prototype, "url", void 0);
+            feng3d.oav({ component: "OAVPick", tooltip: "声音文件路径", componentParam: { accepttype: "audio" } })
+        ], AudioSource.prototype, "url", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ tooltip: "是否循环播放" })
@@ -32646,12 +32809,25 @@ var feng3d;
         __extends(ParticleShapeModule, _super);
         function ParticleShapeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this._type = feng3d.ParticleSystemShapeType.Cone;
+            return _this;
+        }
+        Object.defineProperty(ParticleShapeModule.prototype, "type", {
             /**
              * 发射形状类型
              */
-            _this.type = feng3d.ParticleSystemShapeType.Cone;
-            return _this;
-        }
+            get: function () {
+                return this._type;
+            },
+            set: function (v) {
+                if (this._type == v)
+                    return;
+                this._type = v;
+                this._onTypeChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 初始化粒子状态
          * @param particle 粒子
@@ -32683,9 +32859,8 @@ var feng3d;
         };
         __decorate([
             feng3d.serialize,
-            feng3d.watch("_onTypeChanged"),
             feng3d.oav({ tooltip: "发射形状类型", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemShapeType } })
-        ], ParticleShapeModule.prototype, "type", void 0);
+        ], ParticleShapeModule.prototype, "type", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ component: "OAVObjectView" })
@@ -33312,10 +33487,7 @@ var feng3d;
         function Animation() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.animations = [];
-            /**
-             * 动画事件，单位为ms
-             */
-            _this.time = 0;
+            _this._time = 0;
             _this.isplaying = false;
             /**
              * 播放速度
@@ -33326,6 +33498,35 @@ var feng3d;
             _this._objectCache = new Map();
             return _this;
         }
+        Object.defineProperty(Animation.prototype, "animation", {
+            get: function () {
+                return this._animation;
+            },
+            set: function (v) {
+                if (this._animation == v)
+                    return;
+                this._animation = v;
+                this.onAnimationChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Animation.prototype, "time", {
+            /**
+             * 动画事件，单位为ms
+             */
+            get: function () {
+                return this._time;
+            },
+            set: function (v) {
+                if (this._time == v)
+                    return;
+                this._time = v;
+                this.onTimeChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Animation.prototype, "clipName", {
             /**
              * 动作名称
@@ -33410,17 +33611,15 @@ var feng3d;
         };
         __decorate([
             feng3d.oav({ component: "OAVDefault", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" } } }),
-            feng3d.serialize,
-            feng3d.watch("onAnimationChanged")
-        ], Animation.prototype, "animation", void 0);
+            feng3d.serialize
+        ], Animation.prototype, "animation", null);
         __decorate([
             feng3d.oav({ component: "OAVArray", componentParam: { dragparam: { accepttype: "animationclip", datatype: "animationclip" }, defaultItem: function () { return new feng3d.AnimationClip(); } } }),
             feng3d.serialize
         ], Animation.prototype, "animations", void 0);
         __decorate([
-            feng3d.oav(),
-            feng3d.watch("onTimeChanged")
-        ], Animation.prototype, "time", void 0);
+            feng3d.oav()
+        ], Animation.prototype, "time", null);
         __decorate([
             feng3d.oav(),
             feng3d.serialize
@@ -33558,6 +33757,27 @@ var feng3d;
         function ObjectAsset() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
+        Object.defineProperty(ObjectAsset.prototype, "data", {
+            /**
+             * 资源对象
+             */
+            get: function () {
+                return this._data;
+            },
+            set: function (v) {
+                if (this._data == v)
+                    return;
+                if (this._data) {
+                    feng3d.objectevent.off(this._data, "propertyValueChanged", this._onDataChanged, this);
+                }
+                this._data = v;
+                if (this._data) {
+                    feng3d.objectevent.on(this._data, "propertyValueChanged", this._onDataChanged, this);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         ObjectAsset.prototype.saveFile = function (callback) {
             this.data.assetId = this.assetId;
             var d = feng3d.serialization.serialize(this.data);
@@ -33580,21 +33800,12 @@ var feng3d;
                 });
             });
         };
-        ObjectAsset.prototype._dataChanged = function (property, oldValue, newValue) {
-            if (oldValue) {
-                feng3d.objectevent.off(oldValue, "propertyValueChanged", this._onDataChanged, this);
-            }
-            if (newValue) {
-                feng3d.objectevent.on(newValue, "propertyValueChanged", this._onDataChanged, this);
-            }
-        };
         ObjectAsset.prototype._onDataChanged = function () {
             this.write();
         };
         __decorate([
-            feng3d.oav({ component: "OAVObjectView" }),
-            feng3d.watch("_dataChanged")
-        ], ObjectAsset.prototype, "data", void 0);
+            feng3d.oav({ component: "OAVObjectView" })
+        ], ObjectAsset.prototype, "data", null);
         return ObjectAsset;
     }(feng3d.FileAsset));
     feng3d.ObjectAsset = ObjectAsset;
@@ -33611,6 +33822,19 @@ var feng3d;
             _this.assetType = feng3d.AssetType.script;
             return _this;
         }
+        Object.defineProperty(ScriptAsset.prototype, "textContent", {
+            get: function () {
+                return this._textContent;
+            },
+            set: function (v) {
+                if (this._textContent == v)
+                    return;
+                this._textContent = v;
+                this.onTextContentChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
         ScriptAsset.prototype.initAsset = function () {
             this.textContent = this.textContent || "";
         };
@@ -33635,9 +33859,6 @@ var feng3d;
             this.scriptName = script;
         };
         ScriptAsset.extenson = ".ts";
-        __decorate([
-            feng3d.watch("onTextContentChanged")
-        ], ScriptAsset.prototype, "textContent", void 0);
         return ScriptAsset;
     }(feng3d.StringAsset));
     feng3d.ScriptAsset = ScriptAsset;
