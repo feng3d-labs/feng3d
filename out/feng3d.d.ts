@@ -11637,22 +11637,27 @@ declare namespace feng3d {
          * 格式
          */
         format: TextureFormat;
+        private _format;
         /**
          * 数据类型
          */
         type: TextureDataType;
+        private _type;
         /**
          * 是否生成mipmap
          */
         generateMipmap: boolean;
+        private _generateMipmap;
         /**
          * 对图像进行Y轴反转。默认值为false
          */
         flipY: boolean;
+        private _flipY;
         /**
          * 将图像RGB颜色值得每一个分量乘以A。默认为false
          */
         premulAlpha: boolean;
+        private _premulAlpha;
         minFilter: TextureMinFilter;
         magFilter: TextureMagFilter;
         /**
@@ -11684,7 +11689,9 @@ declare namespace feng3d {
          */
         protected _isRenderTarget: boolean;
         protected OFFSCREEN_WIDTH: number;
+        protected _OFFSCREEN_WIDTH: number;
         protected OFFSCREEN_HEIGHT: number;
+        protected _OFFSCREEN_HEIGHT: number;
         /**
          * 纹理缓冲
          */
@@ -11754,10 +11761,15 @@ declare namespace feng3d {
      */
     class FrameBufferObject {
         OFFSCREEN_WIDTH: number;
+        private _OFFSCREEN_WIDTH;
         OFFSCREEN_HEIGHT: number;
+        private _OFFSCREEN_HEIGHT;
         frameBuffer: FrameBuffer;
+        private _frameBuffer;
         texture: RenderTargetTexture2D;
+        private _texture;
         depthBuffer: RenderBuffer;
+        private _depthBuffer;
         constructor(width?: number, height?: number);
         active(gl: GL): {
             framebuffer: WebGLFramebuffer;
@@ -11781,7 +11793,9 @@ declare namespace feng3d {
 declare namespace feng3d {
     class RenderBuffer {
         OFFSCREEN_WIDTH: number;
+        private _OFFSCREEN_WIDTH;
         OFFSCREEN_HEIGHT: number;
+        private _OFFSCREEN_HEIGHT;
         protected _depthBufferMap: Map<GL, WebGLRenderbuffer>;
         /**
          * 是否失效
@@ -14528,24 +14542,28 @@ declare namespace feng3d {
      */
     class ImageTexture2D extends Texture2D {
         image: HTMLImageElement;
+        private _image;
         private imageChanged;
     }
 }
 declare namespace feng3d {
     class ImageDataTexture2D extends Texture2D {
         imageData: ImageData;
+        private _imageData;
         private imageDataChanged;
     }
 }
 declare namespace feng3d {
     class CanvasTexture2D extends Texture2D {
         canvas: HTMLCanvasElement;
+        private _canvas;
         private canvasChanged;
     }
 }
 declare namespace feng3d {
     class VideoTexture2D extends Texture2D {
         video: HTMLVideoElement;
+        private _video;
         private videoChanged;
     }
 }
@@ -14555,7 +14573,9 @@ declare namespace feng3d {
      */
     class RenderTargetTexture2D extends Texture2D {
         OFFSCREEN_WIDTH: number;
+        protected _OFFSCREEN_WIDTH: number;
         OFFSCREEN_HEIGHT: number;
+        protected _OFFSCREEN_HEIGHT: number;
         format: TextureFormat;
         minFilter: TextureMinFilter;
         magFilter: TextureMagFilter;
@@ -14595,6 +14615,7 @@ declare namespace feng3d {
             type: "path";
             paths: string[];
         };
+        private _rawData;
         noPixels: ImageDatas[];
         protected _pixels: any[];
         protected _textureType: TextureType;
@@ -15411,34 +15432,42 @@ declare namespace feng3d {
          * 高度图路径
          */
         heightMap: Texture2D;
+        private _heightMap;
         /**
          * 地形宽度
          */
         width: number;
+        private _width;
         /**
          * 地形高度
          */
         height: number;
+        private _height;
         /**
          * 地形深度
          */
         depth: number;
+        private _depth;
         /**
          * 横向网格段数
          */
         segmentsW: number;
+        private _segmentsW;
         /**
          * 纵向网格段数
          */
         segmentsH: number;
+        private _segmentsH;
         /**
          * 最大地形高度
          */
         maxElevation: number;
+        private _maxElevation;
         /**
          * 最小地形高度
          */
         minElevation: number;
+        private _minElevation;
         private _heightImageData;
         /**
          * 创建高度地形 拥有segmentsW*segmentsH个顶点

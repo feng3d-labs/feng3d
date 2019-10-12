@@ -21158,26 +21158,11 @@ var feng3d;
         __extends(TextureInfo, _super);
         function TextureInfo() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            /**
-             * 格式
-             */
-            _this.format = feng3d.TextureFormat.RGB;
-            /**
-             * 数据类型
-             */
-            _this.type = feng3d.TextureDataType.UNSIGNED_BYTE;
-            /**
-             * 是否生成mipmap
-             */
-            _this.generateMipmap = false;
-            /**
-             * 对图像进行Y轴反转。默认值为false
-             */
-            _this.flipY = false;
-            /**
-             * 将图像RGB颜色值得每一个分量乘以A。默认为false
-             */
-            _this.premulAlpha = false;
+            _this._format = feng3d.TextureFormat.RGB;
+            _this._type = feng3d.TextureDataType.UNSIGNED_BYTE;
+            _this._generateMipmap = false;
+            _this._flipY = false;
+            _this._premulAlpha = false;
             _this.minFilter = feng3d.TextureMinFilter.LINEAR;
             _this.magFilter = feng3d.TextureMagFilter.LINEAR;
             /**
@@ -21196,8 +21181,8 @@ var feng3d;
              * 是否为渲染目标纹理
              */
             _this._isRenderTarget = false;
-            _this.OFFSCREEN_WIDTH = 1024;
-            _this.OFFSCREEN_HEIGHT = 1024;
+            _this._OFFSCREEN_WIDTH = 1024;
+            _this._OFFSCREEN_HEIGHT = 1024;
             /**
              * 纹理缓冲
              */
@@ -21209,6 +21194,112 @@ var feng3d;
             _this._isPowerOfTwo = false;
             return _this;
         }
+        Object.defineProperty(TextureInfo.prototype, "format", {
+            /**
+             * 格式
+             */
+            get: function () {
+                return this._format;
+            },
+            set: function (v) {
+                if (this._format == v)
+                    return;
+                this._format = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TextureInfo.prototype, "type", {
+            /**
+             * 数据类型
+             */
+            get: function () {
+                return this._type;
+            },
+            set: function (v) {
+                if (this._type == v)
+                    return;
+                this._type = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TextureInfo.prototype, "generateMipmap", {
+            /**
+             * 是否生成mipmap
+             */
+            get: function () {
+                return this._generateMipmap;
+            },
+            set: function (v) {
+                if (this._generateMipmap == v)
+                    return;
+                this._generateMipmap = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TextureInfo.prototype, "flipY", {
+            /**
+             * 对图像进行Y轴反转。默认值为false
+             */
+            get: function () {
+                return this._flipY;
+            },
+            set: function (v) {
+                if (this._flipY == v)
+                    return;
+                this._flipY = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TextureInfo.prototype, "premulAlpha", {
+            /**
+             * 将图像RGB颜色值得每一个分量乘以A。默认为false
+             */
+            get: function () {
+                return this._premulAlpha;
+            },
+            set: function (v) {
+                if (this._premulAlpha == v)
+                    return;
+                this._premulAlpha = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TextureInfo.prototype, "OFFSCREEN_WIDTH", {
+            get: function () {
+                return this._OFFSCREEN_WIDTH;
+            },
+            set: function (v) {
+                if (this._OFFSCREEN_WIDTH == v)
+                    return;
+                this._OFFSCREEN_WIDTH = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TextureInfo.prototype, "OFFSCREEN_HEIGHT", {
+            get: function () {
+                return this._OFFSCREEN_HEIGHT;
+            },
+            set: function (v) {
+                if (this._OFFSCREEN_HEIGHT == v)
+                    return;
+                this._OFFSCREEN_HEIGHT = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 是否为2的幂贴图
          */
@@ -21433,29 +21524,24 @@ var feng3d;
         };
         __decorate([
             feng3d.serialize,
-            feng3d.watch("invalidate"),
             feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.TextureFormat } })
-        ], TextureInfo.prototype, "format", void 0);
+        ], TextureInfo.prototype, "format", null);
         __decorate([
             feng3d.serialize,
-            feng3d.watch("invalidate"),
             feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.TextureDataType } })
-        ], TextureInfo.prototype, "type", void 0);
+        ], TextureInfo.prototype, "type", null);
         __decorate([
             feng3d.serialize,
-            feng3d.watch("invalidate"),
             feng3d.oav()
-        ], TextureInfo.prototype, "generateMipmap", void 0);
+        ], TextureInfo.prototype, "generateMipmap", null);
         __decorate([
             feng3d.serialize,
-            feng3d.watch("invalidate"),
             feng3d.oav()
-        ], TextureInfo.prototype, "flipY", void 0);
+        ], TextureInfo.prototype, "flipY", null);
         __decorate([
             feng3d.serialize,
-            feng3d.watch("invalidate"),
             feng3d.oav()
-        ], TextureInfo.prototype, "premulAlpha", void 0);
+        ], TextureInfo.prototype, "premulAlpha", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.TextureMinFilter } })
@@ -21476,12 +21562,6 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav()
         ], TextureInfo.prototype, "anisotropy", void 0);
-        __decorate([
-            feng3d.watch("invalidate")
-        ], TextureInfo.prototype, "OFFSCREEN_WIDTH", void 0);
-        __decorate([
-            feng3d.watch("invalidate")
-        ], TextureInfo.prototype, "OFFSCREEN_HEIGHT", void 0);
         return TextureInfo;
     }(feng3d.AssetData));
     feng3d.TextureInfo = TextureInfo;
@@ -21536,8 +21616,8 @@ var feng3d;
         function FrameBufferObject(width, height) {
             if (width === void 0) { width = 1024; }
             if (height === void 0) { height = 1024; }
-            this.OFFSCREEN_WIDTH = 1024;
-            this.OFFSCREEN_HEIGHT = 1024;
+            this._OFFSCREEN_WIDTH = 1024;
+            this._OFFSCREEN_HEIGHT = 1024;
             /**
              * 是否失效
              */
@@ -21549,6 +21629,71 @@ var feng3d;
             this.OFFSCREEN_WIDTH = width;
             this.OFFSCREEN_HEIGHT = height;
         }
+        Object.defineProperty(FrameBufferObject.prototype, "OFFSCREEN_WIDTH", {
+            get: function () {
+                return this._OFFSCREEN_WIDTH;
+            },
+            set: function (v) {
+                if (this._OFFSCREEN_WIDTH == v)
+                    return;
+                this._OFFSCREEN_WIDTH = v;
+                this.invalidateSize();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FrameBufferObject.prototype, "OFFSCREEN_HEIGHT", {
+            get: function () {
+                return this._OFFSCREEN_HEIGHT;
+            },
+            set: function (v) {
+                if (this._OFFSCREEN_HEIGHT == v)
+                    return;
+                this._OFFSCREEN_HEIGHT = v;
+                this.invalidateSize();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FrameBufferObject.prototype, "frameBuffer", {
+            get: function () {
+                return this._frameBuffer;
+            },
+            set: function (v) {
+                if (this._frameBuffer == v)
+                    return;
+                this._frameBuffer = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FrameBufferObject.prototype, "texture", {
+            get: function () {
+                return this._texture;
+            },
+            set: function (v) {
+                if (this._texture == v)
+                    return;
+                this._texture = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FrameBufferObject.prototype, "depthBuffer", {
+            get: function () {
+                return this._depthBuffer;
+            },
+            set: function (v) {
+                if (this._depthBuffer == v)
+                    return;
+                this._depthBuffer = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
         FrameBufferObject.prototype.active = function (gl) {
             if (this._invalid) {
                 this._invalid = false;
@@ -21604,21 +21749,6 @@ var feng3d;
         FrameBufferObject.prototype.clear = function () {
             this._map.clear();
         };
-        __decorate([
-            feng3d.watch("invalidateSize")
-        ], FrameBufferObject.prototype, "OFFSCREEN_WIDTH", void 0);
-        __decorate([
-            feng3d.watch("invalidateSize")
-        ], FrameBufferObject.prototype, "OFFSCREEN_HEIGHT", void 0);
-        __decorate([
-            feng3d.watch("invalidate")
-        ], FrameBufferObject.prototype, "frameBuffer", void 0);
-        __decorate([
-            feng3d.watch("invalidate")
-        ], FrameBufferObject.prototype, "texture", void 0);
-        __decorate([
-            feng3d.watch("invalidate")
-        ], FrameBufferObject.prototype, "depthBuffer", void 0);
         return FrameBufferObject;
     }());
     feng3d.FrameBufferObject = FrameBufferObject;
@@ -21627,14 +21757,40 @@ var feng3d;
 (function (feng3d) {
     var RenderBuffer = /** @class */ (function () {
         function RenderBuffer() {
-            this.OFFSCREEN_WIDTH = 1024;
-            this.OFFSCREEN_HEIGHT = 1024;
+            this._OFFSCREEN_WIDTH = 1024;
+            this._OFFSCREEN_HEIGHT = 1024;
             this._depthBufferMap = new Map();
             /**
              * 是否失效
              */
             this._invalid = true;
         }
+        Object.defineProperty(RenderBuffer.prototype, "OFFSCREEN_WIDTH", {
+            get: function () {
+                return this._OFFSCREEN_WIDTH;
+            },
+            set: function (v) {
+                if (this._OFFSCREEN_WIDTH == v)
+                    return;
+                this._OFFSCREEN_WIDTH = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RenderBuffer.prototype, "OFFSCREEN_HEIGHT", {
+            get: function () {
+                return this._OFFSCREEN_HEIGHT;
+            },
+            set: function (v) {
+                if (this._OFFSCREEN_HEIGHT == v)
+                    return;
+                this._OFFSCREEN_HEIGHT = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 使失效
          */
@@ -21673,12 +21829,6 @@ var feng3d;
             });
             this._depthBufferMap.clear();
         };
-        __decorate([
-            feng3d.watch("invalidate")
-        ], RenderBuffer.prototype, "OFFSCREEN_WIDTH", void 0);
-        __decorate([
-            feng3d.watch("invalidate")
-        ], RenderBuffer.prototype, "OFFSCREEN_HEIGHT", void 0);
         return RenderBuffer;
     }());
     feng3d.RenderBuffer = RenderBuffer;
@@ -29580,13 +29730,24 @@ var feng3d;
         function ImageTexture2D() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
+        Object.defineProperty(ImageTexture2D.prototype, "image", {
+            // __class__: "feng3d.ImageTexture2D" = "feng3d.ImageTexture2D";
+            get: function () {
+                return this._image;
+            },
+            set: function (v) {
+                if (this._image == v)
+                    return;
+                this._image = v;
+                this.imageChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
         ImageTexture2D.prototype.imageChanged = function () {
             this._pixels = this.image;
             this.invalidate();
         };
-        __decorate([
-            feng3d.watch("imageChanged")
-        ], ImageTexture2D.prototype, "image", void 0);
         return ImageTexture2D;
     }(feng3d.Texture2D));
     feng3d.ImageTexture2D = ImageTexture2D;
@@ -29598,13 +29759,23 @@ var feng3d;
         function ImageDataTexture2D() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
+        Object.defineProperty(ImageDataTexture2D.prototype, "imageData", {
+            get: function () {
+                return this._imageData;
+            },
+            set: function (v) {
+                if (this._imageData == v)
+                    return;
+                this._imageData = v;
+                this.imageDataChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
         ImageDataTexture2D.prototype.imageDataChanged = function () {
             this._pixels = this.imageData;
             this.invalidate();
         };
-        __decorate([
-            feng3d.watch("imageDataChanged")
-        ], ImageDataTexture2D.prototype, "imageData", void 0);
         return ImageDataTexture2D;
     }(feng3d.Texture2D));
     feng3d.ImageDataTexture2D = ImageDataTexture2D;
@@ -29616,13 +29787,23 @@ var feng3d;
         function CanvasTexture2D() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
+        Object.defineProperty(CanvasTexture2D.prototype, "canvas", {
+            get: function () {
+                return this._canvas;
+            },
+            set: function (v) {
+                if (this._canvas == v)
+                    return;
+                this._canvas = v;
+                this.canvasChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
         CanvasTexture2D.prototype.canvasChanged = function () {
             this._pixels = this.canvas;
             this.invalidate();
         };
-        __decorate([
-            feng3d.watch("canvasChanged")
-        ], CanvasTexture2D.prototype, "canvas", void 0);
         return CanvasTexture2D;
     }(feng3d.Texture2D));
     feng3d.CanvasTexture2D = CanvasTexture2D;
@@ -29634,13 +29815,23 @@ var feng3d;
         function VideoTexture2D() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
+        Object.defineProperty(VideoTexture2D.prototype, "video", {
+            get: function () {
+                return this._video;
+            },
+            set: function (v) {
+                if (this._video == v)
+                    return;
+                this._video = v;
+                this.videoChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
         VideoTexture2D.prototype.videoChanged = function () {
             this._pixels = this.video;
             this.invalidate();
         };
-        __decorate([
-            feng3d.watch("videoChanged")
-        ], VideoTexture2D.prototype, "video", void 0);
         return VideoTexture2D;
     }(feng3d.Texture2D));
     feng3d.VideoTexture2D = VideoTexture2D;
@@ -29654,20 +29845,40 @@ var feng3d;
         __extends(RenderTargetTexture2D, _super);
         function RenderTargetTexture2D() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.OFFSCREEN_WIDTH = 1024;
-            _this.OFFSCREEN_HEIGHT = 1024;
+            _this._OFFSCREEN_WIDTH = 1024;
+            _this._OFFSCREEN_HEIGHT = 1024;
             _this.format = feng3d.TextureFormat.RGBA;
             _this.minFilter = feng3d.TextureMinFilter.NEAREST;
             _this.magFilter = feng3d.TextureMagFilter.NEAREST;
             _this._isRenderTarget = true;
             return _this;
         }
-        __decorate([
-            feng3d.watch("invalidate")
-        ], RenderTargetTexture2D.prototype, "OFFSCREEN_WIDTH", void 0);
-        __decorate([
-            feng3d.watch("invalidate")
-        ], RenderTargetTexture2D.prototype, "OFFSCREEN_HEIGHT", void 0);
+        Object.defineProperty(RenderTargetTexture2D.prototype, "OFFSCREEN_WIDTH", {
+            get: function () {
+                return this._OFFSCREEN_WIDTH;
+            },
+            set: function (v) {
+                if (this._OFFSCREEN_WIDTH == v)
+                    return;
+                this._OFFSCREEN_WIDTH = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RenderTargetTexture2D.prototype, "OFFSCREEN_HEIGHT", {
+            get: function () {
+                return this._OFFSCREEN_HEIGHT;
+            },
+            set: function (v) {
+                if (this._OFFSCREEN_HEIGHT == v)
+                    return;
+                this._OFFSCREEN_HEIGHT = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
         return RenderTargetTexture2D;
     }(feng3d.Texture2D));
     feng3d.RenderTargetTexture2D = RenderTargetTexture2D;
@@ -29690,6 +29901,22 @@ var feng3d;
             _this._loading = [];
             return _this;
         }
+        Object.defineProperty(TextureCube.prototype, "rawData", {
+            /**
+             * 原始数据
+             */
+            get: function () {
+                return this._rawData;
+            },
+            set: function (v) {
+                if (this._rawData == v)
+                    return;
+                this._rawData = v;
+                this._rawDataChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(TextureCube.prototype, "isLoaded", {
             /**
              * 是否加载完成
@@ -29818,9 +30045,8 @@ var feng3d;
             feng3d.oav({ component: "OAVCubeMap", priority: -1 })
         ], TextureCube.prototype, "OAVCubeMap", void 0);
         __decorate([
-            feng3d.serialize,
-            feng3d.watch("_rawDataChanged")
-        ], TextureCube.prototype, "rawData", void 0);
+            feng3d.serialize
+        ], TextureCube.prototype, "rawData", null);
         return TextureCube;
     }(feng3d.TextureInfo));
     feng3d.TextureCube = TextureCube;
@@ -31990,43 +32216,147 @@ var feng3d;
          */
         function TerrainGeometry(raw) {
             var _this = _super.call(this) || this;
-            /**
-             * 高度图路径
-             */
-            _this.heightMap = feng3d.Texture2D.default;
-            /**
-             * 地形宽度
-             */
-            _this.width = 10;
-            /**
-             * 地形高度
-             */
-            _this.height = 1;
-            /**
-             * 地形深度
-             */
-            _this.depth = 10;
-            /**
-             * 横向网格段数
-             */
-            _this.segmentsW = 30;
-            /**
-             * 纵向网格段数
-             */
-            _this.segmentsH = 30;
-            /**
-             * 最大地形高度
-             */
-            _this.maxElevation = 255;
-            /**
-             * 最小地形高度
-             */
-            _this.minElevation = 0;
+            _this._heightMap = feng3d.Texture2D.default;
+            _this._width = 10;
+            _this._height = 1;
+            _this._depth = 10;
+            _this._segmentsW = 30;
+            _this._segmentsH = 30;
+            _this._maxElevation = 255;
+            _this._minElevation = 0;
             _this._heightImageData = defaultHeightMap;
             _this.name = "terrain";
             feng3d.serialization.setValue(_this, raw);
             return _this;
         }
+        Object.defineProperty(TerrainGeometry.prototype, "heightMap", {
+            /**
+             * 高度图路径
+             */
+            get: function () {
+                return this._heightMap;
+            },
+            set: function (v) {
+                if (this._heightMap == v)
+                    return;
+                this._heightMap = v;
+                this.onHeightMapChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TerrainGeometry.prototype, "width", {
+            /**
+             * 地形宽度
+             */
+            get: function () {
+                return this._width;
+            },
+            set: function (v) {
+                if (this._width == v)
+                    return;
+                this._width = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TerrainGeometry.prototype, "height", {
+            /**
+             * 地形高度
+             */
+            get: function () {
+                return this._height;
+            },
+            set: function (v) {
+                if (this._height == v)
+                    return;
+                this._height = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TerrainGeometry.prototype, "depth", {
+            /**
+             * 地形深度
+             */
+            get: function () {
+                return this._depth;
+            },
+            set: function (v) {
+                if (this._depth == v)
+                    return;
+                this._depth = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TerrainGeometry.prototype, "segmentsW", {
+            /**
+             * 横向网格段数
+             */
+            get: function () {
+                return this._segmentsW;
+            },
+            set: function (v) {
+                if (this._segmentsW == v)
+                    return;
+                this._segmentsW = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TerrainGeometry.prototype, "segmentsH", {
+            /**
+             * 纵向网格段数
+             */
+            get: function () {
+                return this._segmentsH;
+            },
+            set: function (v) {
+                if (this._segmentsH == v)
+                    return;
+                this._segmentsH = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TerrainGeometry.prototype, "maxElevation", {
+            /**
+             * 最大地形高度
+             */
+            get: function () {
+                return this._maxElevation;
+            },
+            set: function (v) {
+                if (this._maxElevation == v)
+                    return;
+                this._maxElevation = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(TerrainGeometry.prototype, "minElevation", {
+            /**
+             * 最小地形高度
+             */
+            get: function () {
+                return this._minElevation;
+            },
+            set: function (v) {
+                if (this._minElevation == v)
+                    return;
+                this._minElevation = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
         TerrainGeometry.prototype.onHeightMapChanged = function () {
             var _this = this;
             if (!this.heightMap["_pixels"]) {
@@ -32155,44 +32485,36 @@ var feng3d;
         };
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("onHeightMapChanged")
-        ], TerrainGeometry.prototype, "heightMap", void 0);
+            feng3d.oav()
+        ], TerrainGeometry.prototype, "heightMap", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], TerrainGeometry.prototype, "width", void 0);
+            feng3d.oav()
+        ], TerrainGeometry.prototype, "width", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], TerrainGeometry.prototype, "height", void 0);
+            feng3d.oav()
+        ], TerrainGeometry.prototype, "height", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], TerrainGeometry.prototype, "depth", void 0);
+            feng3d.oav()
+        ], TerrainGeometry.prototype, "depth", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], TerrainGeometry.prototype, "segmentsW", void 0);
+            feng3d.oav()
+        ], TerrainGeometry.prototype, "segmentsW", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], TerrainGeometry.prototype, "segmentsH", void 0);
+            feng3d.oav()
+        ], TerrainGeometry.prototype, "segmentsH", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], TerrainGeometry.prototype, "maxElevation", void 0);
+            feng3d.oav()
+        ], TerrainGeometry.prototype, "maxElevation", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav(),
-            feng3d.watch("invalidateGeometry")
-        ], TerrainGeometry.prototype, "minElevation", void 0);
+            feng3d.oav()
+        ], TerrainGeometry.prototype, "minElevation", null);
         return TerrainGeometry;
     }(feng3d.Geometry));
     feng3d.TerrainGeometry = TerrainGeometry;

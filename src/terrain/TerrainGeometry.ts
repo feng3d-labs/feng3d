@@ -12,64 +12,136 @@ namespace feng3d
          */
         @serialize
         @oav()
-        @watch("onHeightMapChanged")
-        heightMap = Texture2D.default;
+        get heightMap()
+        {
+            return this._heightMap;
+        }
+        set heightMap(v)
+        {
+            if (this._heightMap == v) return;
+            this._heightMap = v;
+            this.onHeightMapChanged();
+        }
+        private _heightMap = Texture2D.default;
 
         /**
          * 地形宽度
          */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        width = 10;
+        get width()
+        {
+            return this._width;
+        }
+        set width(v)
+        {
+            if (this._width == v) return;
+            this._width = v;
+            this.invalidateGeometry();
+        }
+        private _width = 10;
 
         /**
          * 地形高度
          */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        height = 1;
+        get height()
+        {
+            return this._height;
+        }
+        set height(v)
+        {
+            if (this._height == v) return;
+            this._height = v;
+            this.invalidateGeometry();
+        }
+        private _height = 1;
 
         /**
          * 地形深度
          */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        depth = 10;
+        get depth()
+        {
+            return this._depth;
+        }
+        set depth(v)
+        {
+            if (this._depth == v) return;
+            this._depth = v;
+            this.invalidateGeometry();
+        }
+        private _depth = 10;
 
         /**
          * 横向网格段数
          */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        segmentsW = 30;
+        get segmentsW()
+        {
+            return this._segmentsW;
+        }
+        set segmentsW(v)
+        {
+            if (this._segmentsW == v) return;
+            this._segmentsW = v;
+            this.invalidateGeometry();
+        }
+        private _segmentsW = 30;
 
         /**
          * 纵向网格段数
          */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        segmentsH = 30;
+        get segmentsH()
+        {
+            return this._segmentsH;
+        }
+        set segmentsH(v)
+        {
+            if (this._segmentsH == v) return;
+            this._segmentsH = v;
+            this.invalidateGeometry();
+        }
+        private _segmentsH = 30;
 
         /**
          * 最大地形高度
          */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        maxElevation = 255;
+        get maxElevation()
+        {
+            return this._maxElevation;
+        }
+        set maxElevation(v)
+        {
+            if (this._maxElevation == v) return;
+            this._maxElevation = v;
+            this.invalidateGeometry();
+        }
+        private _maxElevation = 255;
 
         /**
          * 最小地形高度
          */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        minElevation = 0;
+        get minElevation()
+        {
+            return this._minElevation;
+        }
+        set minElevation(v)
+        {
+            if (this._minElevation == v) return;
+            this._minElevation = v;
+            this.invalidateGeometry();
+        }
+        private _minElevation = 0;
 
         private _heightImageData = defaultHeightMap;
 

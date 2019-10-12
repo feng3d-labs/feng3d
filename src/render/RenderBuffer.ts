@@ -2,11 +2,29 @@ namespace feng3d
 {
     export class RenderBuffer
     {
-        @watch("invalidate")
-        OFFSCREEN_WIDTH = 1024;
+        get OFFSCREEN_WIDTH()
+        {
+            return this._OFFSCREEN_WIDTH;
+        }
+        set OFFSCREEN_WIDTH(v)
+        {
+            if (this._OFFSCREEN_WIDTH == v) return;
+            this._OFFSCREEN_WIDTH = v;
+            this.invalidate();
+        }
+        private _OFFSCREEN_WIDTH = 1024;
 
-        @watch("invalidate")
-        OFFSCREEN_HEIGHT = 1024;
+        get OFFSCREEN_HEIGHT()
+        {
+            return this._OFFSCREEN_HEIGHT;
+        }
+        set OFFSCREEN_HEIGHT(v)
+        {
+            if (this._OFFSCREEN_HEIGHT == v) return;
+            this._OFFSCREEN_HEIGHT = v;
+            this.invalidate();
+        }
+        private _OFFSCREEN_HEIGHT = 1024;
 
         protected _depthBufferMap = new Map<GL, WebGLRenderbuffer>();
 

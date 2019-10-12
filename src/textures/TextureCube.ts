@@ -37,8 +37,17 @@ namespace feng3d
          * 原始数据
          */
         @serialize
-        @watch("_rawDataChanged")
-        rawData: { type: "texture", textures: Texture2D[] } | { type: "path", paths: string[] };
+        get rawData()
+        {
+            return this._rawData;
+        }
+        set rawData(v)
+        {
+            if (this._rawData == v) return;
+            this._rawData = v;
+            this._rawDataChanged();
+        }
+        private _rawData: { type: "texture", textures: Texture2D[] } | { type: "path", paths: string[] };
 
         noPixels = [ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white, ImageDatas.white];
 
