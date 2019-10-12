@@ -1,15 +1,15 @@
 namespace feng3d
 {
-    
+
     export interface ComponentMap { PointLight: PointLight; }
-    
+
     /**
      * 点光源
      */
     export class PointLight extends Light
     {
         __class__: "feng3d.PointLight" = "feng3d.PointLight";
-        
+
         lightType = LightType.Point;
 
         /**
@@ -17,8 +17,17 @@ namespace feng3d
          */
         @oav()
         @serialize
-        @watch("invalidRange")
-        range = 10;
+        get range()
+        {
+            return this._range;
+        }
+        set range(v)
+        {
+            if (this._range == v) return;
+            this._range = v;
+            this.invalidRange();
+        }
+        private _range = 10;
 
         /**
          * 阴影图尺寸

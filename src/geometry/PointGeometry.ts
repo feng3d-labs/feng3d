@@ -17,8 +17,17 @@ namespace feng3d
          */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        points: PointInfo[] = [];
+        get points()
+        {
+            return this._points;
+        }
+        set points(v)
+        {
+            if (this._points == v) return;
+            this._points = v;
+            this.invalidateGeometry();
+        }
+        private _points: PointInfo[] = [];
 
         /**
          * 构建几何体

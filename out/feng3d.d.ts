@@ -13043,11 +13043,13 @@ declare namespace feng3d {
         /**
          * 几何体
          */
-        geometry: Geometrys;
+        geometry: CustomGeometry | PointGeometry | SegmentGeometry | PlaneGeometry | CubeGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | TerrainGeometry;
+        private _geometry;
         /**
          * 材质
          */
         material: Material;
+        private _material;
         castShadows: boolean;
         receiveShadows: boolean;
         /**
@@ -13083,8 +13085,6 @@ declare namespace feng3d {
         private _lightPicker;
         private _selfLocalBounds;
         private _selfWorldBounds;
-        private onGeometryChanged;
-        private onMaterialChanged;
         private onScenetransformChanged;
         /**
          * 更新世界边界
@@ -13118,6 +13118,7 @@ declare namespace feng3d {
     class ScriptComponent extends Behaviour {
         runEnvironment: RunEnvironment;
         scriptName: string;
+        private _scriptName;
         /**
          * 脚本对象
          */
@@ -13652,6 +13653,7 @@ declare namespace feng3d {
          * 修改数组内数据时需要手动调用 invalidateGeometry();
          */
         points: PointInfo[];
+        private _points;
         /**
          * 构建几何体
          */
@@ -13681,6 +13683,7 @@ declare namespace feng3d {
          * 修改数组内数据时需要手动调用 invalidateGeometry();
          */
         segments: Segment[];
+        private _segments;
         constructor();
         /**
          * 更新几何体
@@ -14211,22 +14214,27 @@ declare namespace feng3d {
          * 胶囊体半径
          */
         radius: number;
+        private _radius;
         /**
          * 胶囊体高度
          */
         height: number;
+        private _height;
         /**
          * 横向分割数
          */
         segmentsW: number;
+        private _segmentsW;
         /**
          * 纵向分割数
          */
         segmentsH: number;
+        private _segmentsH;
         /**
          * 正面朝向 true:Y+ false:Z+
          */
         yUp: boolean;
+        private _yUp;
         name: string;
         /**
          * 构建几何体数据
@@ -14605,16 +14613,19 @@ declare namespace feng3d {
         /**
          * shader名称
          */
-        shaderName: ShaderNames;
+        shaderName: "color" | "standard" | "texture" | "point" | "segment" | "water" | "terrain" | "particle";
+        private _shaderName;
         name: string;
         /**
          * Uniform数据
          */
-        uniforms: UniformsData;
+        uniforms: ColorUniforms | StandardUniforms | TextureUniforms | PointUniforms | SegmentUniforms | WaterUniforms | TerrainUniforms | ParticleUniforms;
+        private _uniforms;
         /**
          * 渲染参数
          */
         renderParams: RenderParams;
+        private _renderParams;
         constructor();
         beforeRender(renderAtomic: RenderAtomic): void;
         /**
@@ -14936,6 +14947,7 @@ declare namespace feng3d {
          * 光照范围
          */
         range: number;
+        private _range;
         /**
          * 阴影图尺寸
          */
@@ -14957,10 +14969,12 @@ declare namespace feng3d {
          * 光照范围
          */
         range: number;
+        private _range;
         /**
          *
          */
         angle: number;
+        private _angle;
         /**
          * 半影.
          */
@@ -17174,6 +17188,7 @@ declare namespace feng3d {
      */
     class Mouse3DManager {
         mouseInput: MouseInput;
+        private _mouseInput;
         selectedGameObject: GameObject;
         /**
          * 视窗，鼠标在该矩形内时为有效事件
@@ -17196,7 +17211,6 @@ declare namespace feng3d {
          * 统计处理click次数，判断是否达到dblclick
          */
         private gameObjectClickNum;
-        private mouseInputChanged;
         private dispatch;
         /**
          * 监听鼠标事件收集事件类型

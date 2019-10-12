@@ -13,16 +13,42 @@ namespace feng3d
          */
         @oav({ component: "OAVPick", tooltip: "几何体，提供模型以形状", componentParam: { accepttype: "geometry", datatype: "geometry" } })
         @serialize
-        @watch("onGeometryChanged")
-        geometry: Geometrys = Geometry.cube;
+        get geometry()
+        {
+            return this._geometry;
+        }
+        set geometry(v)
+        {
+            if (this._geometry == v) return;
+            if (this._geometry)
+            {
+                this._geometry.off("boundsInvalid", this.onBoundsInvalid, this);
+            }
+            this._geometry = v;
+            if (this._geometry)
+            {
+                this._geometry.on("boundsInvalid", this.onBoundsInvalid, this);
+            }
+            this.geometry = this.geometry || Geometry.cube;
+            this.onBoundsInvalid();
+        }
+        private _geometry: Geometrys = Geometry.cube;
 
         /**
          * 材质
          */
         @oav({ component: "OAVPick", tooltip: "材质，提供模型以皮肤", componentParam: { accepttype: "material", datatype: "material" } })
         @serialize
-        @watch("onMaterialChanged")
-        material: Material = Material.default;
+        get material()
+        {
+            return this._material;
+        }
+        set material(v)
+        {
+            this._material = v;
+            this._material = this._material || Material.default;
+        }
+        private _material: Material = Material.default;
 
         @oav({ tooltip: "是否投射阴影" })
         @serialize
@@ -141,25 +167,6 @@ namespace feng3d
         private _lightPicker: LightPicker;
         private _selfLocalBounds: Box;
         private _selfWorldBounds: Box;
-
-        private onGeometryChanged(property: string, oldValue: Geometrys, value: Geometrys)
-        {
-            if (oldValue)
-            {
-                oldValue.off("boundsInvalid", this.onBoundsInvalid, this);
-            }
-            if (value)
-            {
-                value.on("boundsInvalid", this.onBoundsInvalid, this);
-            }
-            this.geometry = this.geometry || Geometry.cube;
-            this.onBoundsInvalid();
-        }
-
-        private onMaterialChanged()
-        {
-            this.material = this.material || Material.default;
-        }
 
         private onScenetransformChanged()
         {

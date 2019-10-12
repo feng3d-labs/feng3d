@@ -7,17 +7,26 @@ namespace feng3d
      */
     export class SegmentGeometry extends Geometry
     {
-        
+
         __class__: "feng3d.SegmentGeometry" = "feng3d.SegmentGeometry";
-        
+
 		/**
 		 * 线段列表
          * 修改数组内数据时需要手动调用 invalidateGeometry();
 		 */
         @serialize
         @oav()
-        @watch("invalidateGeometry")
-        segments: Segment[] = [];
+        get segments()
+        {
+            return this._segments;
+        }
+        set segments(v)
+        {
+            if (this._segments == v) return;
+            this._segments = v;
+            this.invalidateGeometry();
+        }
+        private _segments: Segment[] = [];
 
         constructor()
         {

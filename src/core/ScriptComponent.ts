@@ -11,9 +11,18 @@ namespace feng3d
         runEnvironment = RunEnvironment.feng3d;
 
         @serialize
-        @watch("invalidateScriptInstance")
         @oav({ component: "OAVPick", componentParam: { accepttype: "file_script" } })
-        scriptName: string;
+        get scriptName()
+        {
+            return this._scriptName;
+        }
+        set scriptName(v)
+        {
+            if (this._scriptName == v) return;
+            this._scriptName = v;
+            this.invalidateScriptInstance();
+        }
+        private _scriptName: string;
 
         /**
          * 脚本对象

@@ -1,8 +1,8 @@
 namespace feng3d
 {
-    
+
     export interface ComponentMap { SpotLight: SpotLight; }
-    
+
     /**
      * 聚光灯光源
      */
@@ -15,16 +15,34 @@ namespace feng3d
          */
         @oav()
         @serialize
-        @watch("invalidRange")
-        range = 10;
+        get range()
+        {
+            return this._range;
+        }
+        set range(v)
+        {
+            if (this._range == v) return;
+            this._range = v;
+            this.invalidRange();
+        }
+        private _range = 10;
 
         /**
          * 
          */
         @oav()
         @serialize
-        @watch("invalidAngle")
-        angle = 60;
+        get angle()
+        {
+            return this._angle;
+        }
+        set angle(v)
+        {
+            if (this._angle == v) return;
+            this._angle = v;
+            this.invalidAngle();
+        }
+        private _angle = 60;
 
         /**
          * 半影.

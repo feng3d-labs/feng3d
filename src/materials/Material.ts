@@ -22,8 +22,17 @@ namespace feng3d
          */
         @oav({ component: "OAVMaterialName" })
         @serialize
-        @watch("onShaderChanged")
-        shaderName: ShaderNames = "standard";
+        get shaderName()
+        {
+            return this._shaderName;
+        }
+        set shaderName(v)
+        {
+            if (this._shaderName == v) return;
+            this._shaderName = v;
+            this.onShaderChanged();
+        }
+        private _shaderName: ShaderNames;
 
         @oav({ editable: false })
         @serialize
@@ -33,22 +42,43 @@ namespace feng3d
          * Uniform数据
          */
         @serialize
-        @watch("onUniformsChanged")
         @oav({ component: "OAVObjectView" })
-        uniforms: UniformsData = new StandardUniforms();
+        get uniforms()
+        {
+            return this._uniforms;
+        }
+        set uniforms(v)
+        {
+            if (this._uniforms == v) return;
+            this._uniforms = v;
+            this.onUniformsChanged();
+        }
+        private _uniforms: UniformsData;
 
         /**
          * 渲染参数
          */
         @serialize
-        @watch("onRenderParamsChanged")
         @oav({ block: "渲染参数", component: "OAVObjectView" })
-        renderParams = new RenderParams();
+        get renderParams()
+        {
+            return this._renderParams;
+        }
+        set renderParams(v)
+        {
+            if (this._renderParams == v) return;
+            this._renderParams = v;
+            this.onRenderParamsChanged();
+        }
+        private _renderParams: RenderParams;
 
         constructor()
         {
             super();
             dispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
+            this.shaderName = "standard";
+            this.uniforms = new StandardUniforms();
+            this.renderParams = new RenderParams();
         }
 
         beforeRender(renderAtomic: RenderAtomic)
