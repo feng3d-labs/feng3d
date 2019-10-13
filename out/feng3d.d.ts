@@ -20080,7 +20080,6 @@ declare namespace CANNON {
          * 当达到容差时，假定系统是收敛的。
          */
         tolerance: number;
-        constructor();
         solve(dt: number, world: World): number;
     }
 }

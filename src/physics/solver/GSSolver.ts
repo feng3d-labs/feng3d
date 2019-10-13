@@ -10,34 +10,22 @@ namespace CANNON
          * 
          * 求解器迭代的次数决定了约束条件的质量。迭代越多，模拟就越正确。然而，更多的迭代需要更多的计算。如果你的世界有很大的重力，你将需要更多的迭代。
          */
-        iterations: number;
+        iterations = 10;
 
         /**
          * 容差
          * 
          * 当达到容差时，假定系统是收敛的。
          */
-        tolerance: number;
-
-        constructor()
-        {
-            super();
-
-            this.iterations = 10;
-            this.tolerance = 1e-7;
-        }
+        tolerance = 1e-7;
 
         solve(dt: number, world: World)
         {
-            var iter = 0,
-                maxIter = this.iterations,
-                tolSquared = this.tolerance * this.tolerance,
-                equations = this.equations,
-                Neq = equations.length,
-                bodies = world.bodies,
-                Nbodies = bodies.length,
-                h = dt,
-                B: number, invC: number, deltalambda: number, deltalambdaTot: number, GWlambda: number, lambdaj: number;
+            var iter = 0;
+            var equations = this.equations;
+            var Neq = equations.length;
+            var bodies = world.bodies;
+            var Nbodies = bodies.length;
 
             // Update solve mass
             if (Neq !== 0)
@@ -49,9 +37,10 @@ namespace CANNON
             }
 
             // Things that does not change during iteration can be computed once
-            var invCs = [],
-                Bs = [],
-                lambda = [];
+            var invCs: number[] = [];
+            var Bs: number[] = [];
+            var lambda: number[] = [];
+
             invCs.length = Neq;
             Bs.length = Neq;
             lambda.length = Neq;
@@ -59,13 +48,12 @@ namespace CANNON
             {
                 var c = equations[i];
                 lambda[i] = 0.0;
-                Bs[i] = c.computeB(h, 0, 0);
+                Bs[i] = c.computeB(dt, 0, 0);
                 invCs[i] = 1.0 / c.computeC();
             }
 
             if (Neq !== 0)
             {
-
                 // Reset vlambda
                 for (var i = 0; i !== Nbodies; i++)
                 {
@@ -77,23 +65,21 @@ namespace CANNON
                 }
 
                 // Iterate over equations
-                for (iter = 0; iter !== maxIter; iter++)
+                for (iter = 0; iter !== this.iterations; iter++)
                 {
-
                     // Accumulate the total error for each iteration.
-                    deltalambdaTot = 0.0;
+                    var deltalambdaTot = 0.0;
 
                     for (var j = 0; j !== Neq; j++)
                     {
-
                         var c = equations[j];
 
                         // Compute iteration
-                        B = Bs[j];
-                        invC = invCs[j];
-                        lambdaj = lambda[j];
-                        GWlambda = c.computeGWlambda();
-                        deltalambda = invC * (B - GWlambda - c.eps * lambdaj);
+                        var B = Bs[j];
+                        var invC = invCs[j];
+                        var lambdaj = lambda[j];
+                        var GWlambda = c.computeGWlambda();
+                        var deltalambda = invC * (B - GWlambda - c.eps * lambdaj);
 
                         // Clamp if we are not within the min/max interval
                         if (lambdaj + deltalambda < c.minForce)
@@ -111,7 +97,7 @@ namespace CANNON
                     }
 
                     // If the total error is small enough - stop iterate
-                    if (deltalambdaTot * deltalambdaTot < tolSquared)
+                    if (deltalambdaTot * deltalambdaTot < this.tolerance * this.tolerance)
                     {
                         break;
                     }
@@ -133,7 +119,7 @@ namespace CANNON
 
                 // Set the .multiplier property of each equation
                 var l = equations.length;
-                var invDt = 1 / h;
+                var invDt = 1 / dt;
                 while (l--)
                 {
                     equations[l].multiplier = lambda[l] * invDt;
