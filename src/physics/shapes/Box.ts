@@ -1,8 +1,10 @@
 namespace CANNON
 {
+    /**
+     * 长方体
+     */
     export class Box extends ConvexPolyhedron
     {
-
         halfExtents: feng3d.Vector3;
 
         /**
@@ -15,17 +17,16 @@ namespace CANNON
             var sx = halfExtents.x;
             var sy = halfExtents.y;
             var sz = halfExtents.z;
-            var V = feng3d.Vector3;
 
             var vertices = [
-                new V(-sx, -sy, -sz),
-                new V(sx, -sy, -sz),
-                new V(sx, sy, -sz),
-                new V(-sx, sy, -sz),
-                new V(-sx, -sy, sz),
-                new V(sx, -sy, sz),
-                new V(sx, sy, sz),
-                new V(-sx, sy, sz)
+                new feng3d.Vector3(-sx, -sy, -sz),
+                new feng3d.Vector3(sx, -sy, -sz),
+                new feng3d.Vector3(sx, sy, -sz),
+                new feng3d.Vector3(-sx, sy, -sz),
+                new feng3d.Vector3(-sx, -sy, sz),
+                new feng3d.Vector3(sx, -sy, sz),
+                new feng3d.Vector3(sx, sy, sz),
+                new feng3d.Vector3(-sx, sy, sz)
             ];
 
             var indices = [
@@ -60,7 +61,8 @@ namespace CANNON
         }
 
         /**
-         * Get the box 6 side normals
+         * 得到盒子6边的法线
+         * 
          * @param sixTargetVectors An array of 6 vectors, to store the resulting side normals in.
          * @param quat             Orientation to apply to the normal vectors. If not provided, the vectors will be in respect to the local frame.
          */

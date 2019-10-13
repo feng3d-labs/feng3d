@@ -18033,6 +18033,9 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
+    /**
+     * 长方体
+     */
     class Box extends ConvexPolyhedron {
         halfExtents: feng3d.Vector3;
         /**
@@ -18044,7 +18047,8 @@ declare namespace CANNON {
         calculateLocalInertia(mass: number, target?: feng3d.Vector3): feng3d.Vector3;
         static calculateInertia(halfExtents: feng3d.Vector3, mass: number, target: feng3d.Vector3): void;
         /**
-         * Get the box 6 side normals
+         * 得到盒子6边的法线
+         *
          * @param sixTargetVectors An array of 6 vectors, to store the resulting side normals in.
          * @param quat             Orientation to apply to the normal vectors. If not provided, the vectors will be in respect to the local frame.
          */
@@ -20419,10 +20423,10 @@ declare namespace CANNON {
          * @param {array} oldcontacts Optional. Array of reusable contact objects
          */
         getContacts(p1: Body[], p2: Body[], world: World, result: any[], oldcontacts: any[], frictionResult: any[], frictionPool: any[]): void;
-        boxBox(si: ConvexPolyhedron, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        boxConvex(si: ConvexPolyhedron, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        boxParticle(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        sphereSphere(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        boxBox(si: Box, sj: Box, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        boxConvex(si: Box, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        boxParticle(si: Box, sj: Particle, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereSphere(si: Sphere, sj: Sphere, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         /**
          * @method planeTrimesh
          * @param  {Shape}      si
@@ -20434,13 +20438,13 @@ declare namespace CANNON {
          * @param  {Body}       bi
          * @param  {Body}       bj
          */
-        planeTrimesh(planeShape: Shape, trimeshShape: any, planeTransform: Transform, trimeshTransform: Transform, planeBody: Body, trimeshBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        sphereTrimesh(sphereShape: Shape, trimeshShape: any, sphereTransform: Transform, trimeshTransform: Transform, sphereBody: Body, trimeshBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        spherePlane(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        sphereBox(si: Shape, sj: any, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        sphereConvex(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        planeBox(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        planeConvex(planeShape: Shape, convexShape: any, planeTransform: Transform, convexTransform: Transform, planeBody: Body, convexBody: Body, si: Shape, sj: Shape, justTest: boolean): boolean;
+        planeTrimesh(planeShape: Plane, trimeshShape: Trimesh, planeTransform: Transform, trimeshTransform: Transform, planeBody: Body, trimeshBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereTrimesh(sphereShape: Sphere, trimeshShape: Trimesh, sphereTransform: Transform, trimeshTransform: Transform, sphereBody: Body, trimeshBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        spherePlane(si: Sphere, sj: Plane, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereBox(si: Sphere, sj: Box, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereConvex(si: Sphere, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        planeBox(si: Plane, sj: Box, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        planeConvex(planeShape: Plane, convexShape: ConvexPolyhedron, planeTransform: Transform, convexTransform: Transform, planeBody: Body, convexBody: Body, si: Shape, sj: Shape, justTest: boolean): boolean;
         convexConvex(si: ConvexPolyhedron, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean, faceListA?: any[], faceListB?: any[]): boolean;
         /**
          * @method convexTrimesh
@@ -20454,12 +20458,12 @@ declare namespace CANNON {
          * @param  {Body}       bi
          * @param  {Body}       bj
          */
-        planeParticle(sj: Shape, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        planeParticle(sj: Plane, si: Particle, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         sphereParticle(sj: Shape, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        convexParticle(sj: any, si: Shape, transformi: Transform, transformj: Transform, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        boxHeightfield(si: ConvexPolyhedron, sj: Heightfield, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        convexParticle(sj: ConvexPolyhedron, si: Particle, transformi: Transform, transformj: Transform, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        boxHeightfield(si: Box, sj: Heightfield, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         convexHeightfield(convexShape: ConvexPolyhedron, hfShape: Heightfield, convexTransform: Transform, hfTransform: Transform, convexBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        sphereHeightfield(sphereShape: Shape, hfShape: any, sphereTransform: Transform, hfTransform: Transform, sphereBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereHeightfield(sphereShape: Sphere, hfShape: Heightfield, sphereTransform: Transform, hfTransform: Transform, sphereBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
     }
 }
 declare namespace feng3d {

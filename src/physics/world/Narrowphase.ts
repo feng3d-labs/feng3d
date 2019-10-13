@@ -297,7 +297,7 @@ namespace CANNON
             }
         }
 
-        boxBox(si: ConvexPolyhedron, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        boxBox(si: Box, sj: Box, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             si.material = si.material;
             sj.material = sj.material;
@@ -306,21 +306,21 @@ namespace CANNON
             return this.convexConvex(si, sj, transformi, transformj, bi, bj, si, sj, justTest);
         }
 
-        boxConvex(si: ConvexPolyhedron, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        boxConvex(si: Box, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             si.material = si.material;
             si.collisionResponse = si.collisionResponse;
             return this.convexConvex(si, sj, transformi, transformj, bi, bj, si, sj, justTest);
         }
 
-        boxParticle(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        boxParticle(si: Box, sj: Particle, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             si.material = si.material;
             si.collisionResponse = si.collisionResponse;
             return this.convexParticle(si, sj, transformi, transformj, bi, bj, si, sj, justTest);
         }
 
-        sphereSphere(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        sphereSphere(si: Sphere, sj: Sphere, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             if (justTest)
             {
@@ -363,8 +363,8 @@ namespace CANNON
          * @param  {Body}       bj
          */
         planeTrimesh(
-            planeShape: Shape,
-            trimeshShape: any,
+            planeShape: Plane,
+            trimeshShape: Trimesh,
             planeTransform: Transform,
             trimeshTransform: Transform,
             planeBody: Body,
@@ -429,8 +429,8 @@ namespace CANNON
         }
 
         sphereTrimesh(
-            sphereShape: Shape,
-            trimeshShape: any,
+            sphereShape: Sphere,
+            trimeshShape: Trimesh,
             sphereTransform: Transform,
             trimeshTransform: Transform,
             sphereBody: Body,
@@ -620,7 +620,7 @@ namespace CANNON
             triangles.length = 0;
         }
 
-        spherePlane(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        spherePlane(si: Sphere, sj: Plane, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             var xi = transformi.position, xj = transformj.position, qi = transformi.quaternion, qj = transformj.quaternion;
 
@@ -662,7 +662,7 @@ namespace CANNON
             }
         }
 
-        sphereBox(si: Shape, sj: any, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        sphereBox(si: Sphere, sj: Box, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             var xi = transformi.position, xj = transformj.position, qi = transformi.quaternion, qj = transformj.quaternion;
 
@@ -671,7 +671,6 @@ namespace CANNON
             xi.subTo(xj, box_to_sphere);
             sj.getSideNormals(sides, qj);
             var R = si.radius;
-            var penetrating_sides = [];
 
             // Check side (plane) intersections
             var found = false;
@@ -891,7 +890,7 @@ namespace CANNON
             }
         }
 
-        sphereConvex(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        sphereConvex(si: Sphere, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             var xi = transformi.position, xj = transformj.position, qj = transformj.quaternion;
 
@@ -1091,7 +1090,7 @@ namespace CANNON
             }
         }
 
-        planeBox(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        planeBox(si: Plane, sj: Box, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             sj.material = sj.material;
             sj.collisionResponse = sj.collisionResponse;
@@ -1100,8 +1099,8 @@ namespace CANNON
         }
 
         planeConvex(
-            planeShape: Shape,
-            convexShape: any,
+            planeShape: Plane,
+            convexShape: ConvexPolyhedron,
             planeTransform: Transform,
             convexTransform: Transform,
             planeBody: Body,
@@ -1310,7 +1309,7 @@ namespace CANNON
         //     }
         // };
 
-        planeParticle(sj: Shape, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        planeParticle(sj: Plane, si: Particle, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             var normal = particlePlane_normal;
             normal.init(0, 1, 0);
@@ -1370,7 +1369,7 @@ namespace CANNON
             }
         }
 
-        convexParticle(sj: any, si: Shape, transformi: Transform, transformj: Transform, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        convexParticle(sj: ConvexPolyhedron, si: Particle, transformi: Transform, transformj: Transform, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             var xj = transformi.position, xi = transformj.position, qj = transformi.quaternion, qi = transformj.quaternion;
 
@@ -1460,7 +1459,7 @@ namespace CANNON
             }
         }
 
-        boxHeightfield(si: ConvexPolyhedron, sj: Heightfield, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        boxHeightfield(si: Box, sj: Heightfield, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             si.material = si.material;
             si.collisionResponse = si.collisionResponse;
@@ -1562,8 +1561,8 @@ namespace CANNON
         };
 
         sphereHeightfield(
-            sphereShape: Shape,
-            hfShape: any,
+            sphereShape: Sphere,
+            hfShape: Heightfield,
             sphereTransform: Transform,
             hfTransform: Transform,
             sphereBody: Body,

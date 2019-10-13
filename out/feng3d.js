@@ -39749,6 +39749,9 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
+    /**
+     * 长方体
+     */
     var Box = /** @class */ (function (_super) {
         __extends(Box, _super);
         /**
@@ -39761,16 +39764,15 @@ var CANNON;
             var sx = halfExtents.x;
             var sy = halfExtents.y;
             var sz = halfExtents.z;
-            var V = feng3d.Vector3;
             var vertices = [
-                new V(-sx, -sy, -sz),
-                new V(sx, -sy, -sz),
-                new V(sx, sy, -sz),
-                new V(-sx, sy, -sz),
-                new V(-sx, -sy, sz),
-                new V(sx, -sy, sz),
-                new V(sx, sy, sz),
-                new V(-sx, sy, sz)
+                new feng3d.Vector3(-sx, -sy, -sz),
+                new feng3d.Vector3(sx, -sy, -sz),
+                new feng3d.Vector3(sx, sy, -sz),
+                new feng3d.Vector3(-sx, sy, -sz),
+                new feng3d.Vector3(-sx, -sy, sz),
+                new feng3d.Vector3(sx, -sy, sz),
+                new feng3d.Vector3(sx, sy, sz),
+                new feng3d.Vector3(-sx, sy, sz)
             ];
             var indices = [
                 [3, 2, 1, 0],
@@ -39798,7 +39800,8 @@ var CANNON;
             target.z = 1.0 / 12.0 * mass * (2 * e.y * 2 * e.y + 2 * e.x * 2 * e.x);
         };
         /**
-         * Get the box 6 side normals
+         * 得到盒子6边的法线
+         *
          * @param sixTargetVectors An array of 6 vectors, to store the resulting side normals in.
          * @param quat             Orientation to apply to the normal vectors. If not provided, the vectors will be in respect to the local frame.
          */
@@ -46299,7 +46302,6 @@ var CANNON;
             xi.subTo(xj, box_to_sphere);
             sj.getSideNormals(sides, qj);
             var R = si.radius;
-            var penetrating_sides = [];
             // Check side (plane) intersections
             var found = false;
             // Store the resulting side penetration info
