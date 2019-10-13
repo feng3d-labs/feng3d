@@ -1,26 +1,24 @@
 namespace CANNON
 {
+    /**
+     * 平面
+     */
     export class Plane extends Shape
     {
-        worldNormal: feng3d.Vector3;
-        worldNormalNeedsUpdate: boolean;
+        worldNormal = new feng3d.Vector3();
+
+        worldNormalNeedsUpdate = true;
+
+        boundingSphereRadius = Number.MAX_VALUE;
 
         /**
-         * A plane, facing in the Z direction. The plane has its surface at z=0 and everything below z=0 is assumed to be solid plane. To make the plane face in some other direction than z, you must put it inside a Body and rotate that body. See the demos.
          * 
-         * @author schteppe
          */
         constructor()
         {
             super({
                 type: ShapeType.PLANE
             });
-
-            // World oriented normal
-            this.worldNormal = new feng3d.Vector3();
-            this.worldNormalNeedsUpdate = true;
-
-            this.boundingSphereRadius = Number.MAX_VALUE;
         }
 
         computeWorldNormal(quat: feng3d.Quaternion)
@@ -38,13 +36,12 @@ namespace CANNON
 
         volume()
         {
-            return Number.MAX_VALUE; // The plane is infinite...
+            return Number.MAX_VALUE;
         }
 
         calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
         {
-            // The plane AABB is infinite, except if the normal is pointing along any axis
-            tempNormal.init(0, 1, 0); // Default plane normal is y
+            var tempNormal = new feng3d.Vector3(0, 1, 0);
             quat.vmult(tempNormal, tempNormal);
             var maxVal = Number.MAX_VALUE;
             min.init(-maxVal, -maxVal, -maxVal);
@@ -64,7 +61,4 @@ namespace CANNON
             this.boundingSphereRadius = Number.MAX_VALUE;
         }
     }
-
-    var tempNormal = new feng3d.Vector3();
-
 }
