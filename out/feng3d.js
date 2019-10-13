@@ -42326,8 +42326,9 @@ var CANNON;
             this.hasHit = false;
             this.result.reset();
             this._updateDirection();
+            var tmpAABB = new CANNON.AABB();
             this.getAABB(tmpAABB);
-            tmpArray.length = 0;
+            var tmpArray = [];
             world.broadphase.aabbQuery(world, tmpAABB, tmpArray);
             this.intersectBodies(tmpArray);
             return this.hasHit;
@@ -42349,8 +42350,8 @@ var CANNON;
             if ((this.collisionFilterGroup & body.collisionFilterMask) === 0 || (body.collisionFilterGroup & this.collisionFilterMask) === 0) {
                 return;
             }
-            var xi = intersectBody_xi;
-            var qi = intersectBody_qi;
+            var xi = new feng3d.Vector3();
+            var qi = new feng3d.Quaternion();
             for (var i = 0, N = body.shapes.length; i < N; i++) {
                 var shape = body.shapes[i];
                 if (checkCollisionResponse && !shape.collisionResponse) {
@@ -42450,16 +42451,15 @@ var CANNON;
         };
         Ray.prototype.intersectHeightfield = function (shape, transform, body, reportedShape) {
             var quat = transform.quaternion;
-            var data = shape.data, w = shape.elementSize;
             // Convert the ray to local heightfield coordinates
-            var localRay = intersectHeightfield_localRay; //new Ray(this.from, this.to);
+            var localRay = new Ray(); //new Ray(this.from, this.to);
             localRay.from.copy(this.from);
             localRay.to.copy(this.to);
             CANNON.Transform.pointToLocalFrame(transform, localRay.from, localRay.from);
             CANNON.Transform.pointToLocalFrame(transform, localRay.to, localRay.to);
             localRay._updateDirection();
             // Get the index of the data points to test against
-            var index = intersectHeightfield_index;
+            var index = [];
             var iMinX, iMinY, iMaxX, iMaxY;
             // Set to max
             iMinX = iMinY = 0;
@@ -42472,6 +42472,10 @@ var CANNON;
             shape.getIndexOfPosition(aabb.upperBound.x, aabb.upperBound.y, index, true);
             iMaxX = Math.min(iMaxX, index[0] + 1);
             iMaxY = Math.min(iMaxY, index[1] + 1);
+            var intersectConvexOptions = {
+                faceList: [0]
+            };
+            var worldPillarOffset = new feng3d.Vector3();
             for (var i = iMinX; i < iMaxX; i++) {
                 for (var j = iMinY; j < iMaxY; j++) {
                     if (this.result._shouldStop) {
@@ -42501,8 +42505,8 @@ var CANNON;
             var b = 2 * ((to.x - from.x) * (from.x - position.x) + (to.y - from.y) * (from.y - position.y) + (to.z - from.z) * (from.z - position.z));
             var c = Math.pow(from.x - position.x, 2) + Math.pow(from.y - position.y, 2) + Math.pow(from.z - position.z, 2) - Math.pow(r, 2);
             var delta = Math.pow(b, 2) - 4 * a * c;
-            var intersectionPoint = Ray_intersectSphere_intersectionPoint;
-            var normal = Ray_intersectSphere_normal;
+            var intersectionPoint = new feng3d.Vector3();
+            var normal = new feng3d.Vector3();
             if (delta < 0) {
                 // No intersection
                 return;
@@ -42536,10 +42540,8 @@ var CANNON;
         };
         Ray.prototype.intersectConvex = function (shape, quat, position, body, reportedShape, options) {
             if (options === void 0) { options = {}; }
-            var minDistNormal = intersectConvex_minDistNormal;
-            var normal = intersectConvex_normal;
-            var vector = intersectConvex_vector;
-            var minDistIntersect = intersectConvex_minDistIntersect;
+            var normal = new feng3d.Vector3();
+            var vector = new feng3d.Vector3();
             var faceList = (options && options.faceList) || null;
             // Checking faces
             var faces = shape.faces, vertices = shape.vertices, normals = shape.faceNormals;
@@ -42547,9 +42549,11 @@ var CANNON;
             var from = this.from;
             var to = this.to;
             var fromToDistance = from.distance(to);
-            var minDist = -1;
             var Nfaces = faceList ? faceList.length : faces.length;
             var result = this.result;
+            var a = new feng3d.Vector3();
+            var b = new feng3d.Vector3();
+            var c = new feng3d.Vector3();
             for (var j = 0; !result._shouldStop && j < Nfaces; j++) {
                 var fi = faceList ? faceList[j] : j;
                 var face = faces[fi];
@@ -42604,46 +42608,31 @@ var CANNON;
             }
         };
         /**
-         * @method intersectTrimesh
-         * @private
-         * @param  {Shape} shape
-         * @param  {Quaternion} quat
-         * @param  {Vector3} position
-         * @param  {Body} body
-         * @param {object} [options]
-         */
-        /**
          *
          * @param mesh
          * @param quat
          * @param position
          * @param body
          * @param reportedShape
-         * @param options
          *
          * @todo Optimize by transforming the world to local space first.
          * @todo Use Octree lookup
          */
-        Ray.prototype.intersectTrimesh = function (mesh, quat, position, body, reportedShape, options) {
-            var normal = intersectTrimesh_normal;
-            var triangles = intersectTrimesh_triangles;
-            var treeTransform = intersectTrimesh_treeTransform;
-            var minDistNormal = intersectConvex_minDistNormal;
-            var vector = intersectConvex_vector;
-            var minDistIntersect = intersectConvex_minDistIntersect;
-            var localAABB = intersectTrimesh_localAABB;
-            var localDirection = intersectTrimesh_localDirection;
-            var localFrom = intersectTrimesh_localFrom;
-            var localTo = intersectTrimesh_localTo;
-            var worldIntersectPoint = intersectTrimesh_worldIntersectPoint;
-            var worldNormal = intersectTrimesh_worldNormal;
-            var faceList = (options && options.faceList) || null;
+        Ray.prototype.intersectTrimesh = function (mesh, quat, position, body, reportedShape) {
+            var normal = new feng3d.Vector3();
+            var triangles = [];
+            var treeTransform = new CANNON.Transform();
+            var vector = new feng3d.Vector3();
+            var localDirection = new feng3d.Vector3();
+            var localFrom = new feng3d.Vector3();
+            var localTo = new feng3d.Vector3();
+            var worldIntersectPoint = new feng3d.Vector3();
+            var worldNormal = new feng3d.Vector3();
             // Checking faces
-            var indices = mesh.indices, vertices = mesh.vertices, normals = mesh.faceNormals;
+            var indices = mesh.indices;
             var from = this.from;
             var to = this.to;
             var direction = this._direction;
-            var minDist = -1;
             treeTransform.position.copy(position);
             treeTransform.quaternion.copy(quat);
             // Transform ray to local space!
@@ -42660,6 +42649,9 @@ var CANNON;
             localDirection.normalize();
             var fromToDistanceSquared = localFrom.distanceSquared(localTo);
             mesh.tree.rayQuery(this, treeTransform, triangles);
+            var a = new feng3d.Vector3();
+            var b = new feng3d.Vector3();
+            var c = new feng3d.Vector3();
             for (var i = 0, N = triangles.length; !this.result._shouldStop && i !== N; i++) {
                 var trianglesIndex = triangles[i];
                 mesh.getNormal(trianglesIndex, normal);
@@ -42736,6 +42728,9 @@ var CANNON;
          * As per "Barycentric Technique" as named here http://www.blackpawn.com/texts/pointinpoly/default.html But without the division
          */
         Ray.pointInTriangle = function (p, a, b, c) {
+            var v0 = new feng3d.Vector3();
+            var v1 = new feng3d.Vector3();
+            var v2 = new feng3d.Vector3();
             c.subTo(a, v0);
             b.subTo(a, v1);
             p.subTo(a, v2);
@@ -42755,44 +42750,7 @@ var CANNON;
         return Ray;
     }());
     CANNON.Ray = Ray;
-    var tmpAABB = new CANNON.AABB();
-    var tmpArray = [];
-    var v1 = new feng3d.Vector3();
-    var v2 = new feng3d.Vector3();
-    var intersectBody_xi = new feng3d.Vector3();
-    var intersectBody_qi = new feng3d.Quaternion();
-    var vector = new feng3d.Vector3();
-    var normal = new feng3d.Vector3();
     var intersectPoint = new feng3d.Vector3();
-    var a = new feng3d.Vector3();
-    var b = new feng3d.Vector3();
-    var c = new feng3d.Vector3();
-    var d = new feng3d.Vector3();
-    var tmpRaycastResult = new CANNON.RaycastResult();
-    var v0 = new feng3d.Vector3();
-    var intersect = new feng3d.Vector3();
-    var intersectTrimesh_normal = new feng3d.Vector3();
-    var intersectTrimesh_localDirection = new feng3d.Vector3();
-    var intersectTrimesh_localFrom = new feng3d.Vector3();
-    var intersectTrimesh_localTo = new feng3d.Vector3();
-    var intersectTrimesh_worldNormal = new feng3d.Vector3();
-    var intersectTrimesh_worldIntersectPoint = new feng3d.Vector3();
-    var intersectTrimesh_localAABB = new CANNON.AABB();
-    var intersectTrimesh_triangles = [];
-    var intersectTrimesh_treeTransform = new CANNON.Transform();
-    var intersectConvexOptions = {
-        faceList: [0]
-    };
-    var worldPillarOffset = new feng3d.Vector3();
-    var intersectHeightfield_localRay = new Ray();
-    var intersectHeightfield_index = [];
-    var intersectHeightfield_minMax = [];
-    var Ray_intersectSphere_intersectionPoint = new feng3d.Vector3();
-    var Ray_intersectSphere_normal = new feng3d.Vector3();
-    var intersectConvex_normal = new feng3d.Vector3();
-    var intersectConvex_minDistNormal = new feng3d.Vector3();
-    var intersectConvex_minDistIntersect = new feng3d.Vector3();
-    var intersectConvex_vector = new feng3d.Vector3();
     Ray.prototype[CANNON.ShapeType.BOX] = Ray.prototype["intersectBox"];
     Ray.prototype[CANNON.ShapeType.PLANE] = Ray.prototype["intersectPlane"];
     Ray.prototype[CANNON.ShapeType.HEIGHTFIELD] = Ray.prototype["intersectHeightfield"];
@@ -42801,12 +42759,12 @@ var CANNON;
     Ray.prototype[CANNON.ShapeType.CONVEXPOLYHEDRON] = Ray.prototype["intersectConvex"];
     function distanceFromIntersection(from, direction, position) {
         // v0 is vector from from to position
-        position.vsub(from, v0);
+        var v0 = position.subTo(from);
         var dot = v0.dot(direction);
         // intersect = direction*dot + from
-        direction.mult(dot, intersect);
+        var intersect = direction.multiplyNumberTo(dot);
         intersect.addTo(from, intersect);
-        var distance = position.distanceTo(intersect);
+        var distance = position.distance(intersect);
         return distance;
     }
 })(CANNON || (CANNON = {}));

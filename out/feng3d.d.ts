@@ -19013,22 +19013,12 @@ declare namespace CANNON {
         private intersectSphere;
         private intersectConvex;
         /**
-         * @method intersectTrimesh
-         * @private
-         * @param  {Shape} shape
-         * @param  {Quaternion} quat
-         * @param  {Vector3} position
-         * @param  {Body} body
-         * @param {object} [options]
-         */
-        /**
          *
          * @param mesh
          * @param quat
          * @param position
          * @param body
          * @param reportedShape
-         * @param options
          *
          * @todo Optimize by transforming the world to local space first.
          * @todo Use Octree lookup
