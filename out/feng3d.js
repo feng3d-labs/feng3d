@@ -38965,7 +38965,6 @@ var CANNON;
 (function (CANNON) {
     var Shape = /** @class */ (function () {
         /**
-         * Base class for shapes
          *
          * @param options
          * @author schteppe
@@ -38982,29 +38981,8 @@ var CANNON;
             this.body = null;
         }
         /**
-         * Computes the bounding sphere radius. The result is stored in the property .boundingSphereRadius
+         * 编号计数器
          */
-        Shape.prototype.updateBoundingSphereRadius = function () {
-            throw "computeBoundingSphereRadius() not implemented for shape type " + this.type;
-        };
-        /**
-         * Get the volume of this shape
-         */
-        Shape.prototype.volume = function () {
-            throw "volume() not implemented for shape type " + this.type;
-        };
-        /**
-         * Calculates the inertia in the local frame for this shape.
-         * @param mass
-         * @param target
-         * @see http://en.wikipedia.org/wiki/List_of_moments_of_inertia
-         */
-        Shape.prototype.calculateLocalInertia = function (mass, target) {
-            throw "calculateLocalInertia() not implemented for shape type " + this.type;
-        };
-        Shape.prototype.calculateWorldAABB = function (pos, quat, min, max) {
-            throw "未实现";
-        };
         Shape.idCounter = 0;
         return Shape;
     }());
@@ -40624,6 +40602,9 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
+    /**
+     * 球体
+     */
     var Sphere = /** @class */ (function (_super) {
         __extends(Sphere, _super);
         /**
@@ -40638,9 +40619,7 @@ var CANNON;
                 type: CANNON.ShapeType.SPHERE
             }) || this;
             _this.radius = radius;
-            if (_this.radius < 0) {
-                throw new Error('The sphere radius cannot be negative.');
-            }
+            console.assert(radius >= 0, "\u7403\u9762\u534A\u5F84\u4E0D\u80FD\u662F\u8D1F\u7684\u3002");
             _this.updateBoundingSphereRadius();
             return _this;
         }
@@ -40659,13 +40638,8 @@ var CANNON;
             this.boundingSphereRadius = this.radius;
         };
         Sphere.prototype.calculateWorldAABB = function (pos, quat, min, max) {
-            var r = this.radius;
-            var axes = ['x', 'y', 'z'];
-            for (var i = 0; i < axes.length; i++) {
-                var ax = axes[i];
-                min[ax] = pos[ax] - r;
-                max[ax] = pos[ax] + r;
-            }
+            pos.subNumberTo(this.radius, min);
+            pos.addNumberTo(this.radius, max);
         };
         return Sphere;
     }(CANNON.Shape));
@@ -46395,7 +46369,8 @@ var CANNON;
             }
             triangles.length = 0;
         };
-        Narrowphase.prototype.spherePlane = function (si, sj, xi, xj, qi, qj, bi, bj, rsi, rsj, justTest) {
+        Narrowphase.prototype.spherePlane = function (si, sj, transformi, transformj, bi, bj, rsi, rsj, justTest) {
+            var xi = transformi.position, xj = transformj.position, qi = transformi.quaternion, qj = transformj.quaternion;
             // We will have one contact in this case
             var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
             // Contact normal
@@ -46424,7 +46399,8 @@ var CANNON;
                 this.createFrictionEquationsFromContact(r, this.frictionResult);
             }
         };
-        Narrowphase.prototype.sphereBox = function (si, sj, xi, xj, qi, qj, bi, bj, rsi, rsj, justTest) {
+        Narrowphase.prototype.sphereBox = function (si, sj, transformi, transformj, bi, bj, rsi, rsj, justTest) {
+            var xi = transformi.position, xj = transformj.position, qi = transformi.quaternion, qj = transformj.quaternion;
             // we refer to the box as body j
             var sides = sphereBox_sides;
             xi.subTo(xj, box_to_sphere);

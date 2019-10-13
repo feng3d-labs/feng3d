@@ -1,7 +1,13 @@
 namespace CANNON
 {
+    /**
+     * 球体
+     */
     export class Sphere extends Shape
     {
+        /**
+         * 半径
+         */
         radius: number;
 
         /**
@@ -18,10 +24,7 @@ namespace CANNON
 
             this.radius = radius;
 
-            if (this.radius < 0)
-            {
-                throw new Error('The sphere radius cannot be negative.');
-            }
+            console.assert(radius >= 0, `球面半径不能是负的。`);
 
             this.updateBoundingSphereRadius();
         }
@@ -47,15 +50,8 @@ namespace CANNON
 
         calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
         {
-            var r = this.radius;
-            var axes = ['x', 'y', 'z'];
-            for (var i = 0; i < axes.length; i++)
-            {
-                var ax = axes[i];
-                min[ax] = pos[ax] - r;
-                max[ax] = pos[ax] + r;
-            }
+            pos.subNumberTo(this.radius, min);
+            pos.addNumberTo(this.radius, max);
         }
-
     }
 }

@@ -1,24 +1,25 @@
 namespace CANNON
 {
-    export class Shape
+    export abstract class Shape
     {
         /**
-         * Identifyer of the Shape.
+         * 编号
          */
         id: number;
 
         /**
-         * The type of this shape. Must be set to an int > 0 by subclasses.
+         * 形状类型
          */
-        type: number;
+        type: ShapeType;
 
         /**
-         * The local bounding sphere radius of this shape.
+         * 此形状的局部包围球半径
          */
         boundingSphereRadius: number;
 
         /**
          * Whether to produce contact forces when in contact with other bodies. Note that contacts will be generated, but they will be disabled.
+         * 是否响应碰撞
          */
         collisionResponse: boolean;
 
@@ -26,20 +27,44 @@ namespace CANNON
 
         collisionFilterMask: number;
 
+        /**
+         * 材质
+         */
         material: Material;
 
+        /**
+         * 物体
+         */
         body: Body;
 
+        /**
+         * 面数组
+         */
         faces: number[][];
+        /**
+         * 顶点索引数组
+         */
         indices: number[];
+        /**
+         * 顶点坐标数组
+         */
         vertices: feng3d.Vector3[] | number[];
+        /**
+         * 面法线数组
+         */
         faceNormals: feng3d.Vector3[];
 
+        /**
+         * 凸多面体
+         */
         convexPolyhedronRepresentation: ConvexPolyhedron;
+
+        /**
+         * 半径
+         */
         radius: number;
 
         /**
-         * Base class for shapes
          * 
          * @param options 
          * @author schteppe
@@ -61,37 +86,37 @@ namespace CANNON
         }
 
         /**
-         * Computes the bounding sphere radius. The result is stored in the property .boundingSphereRadius
+         * 计算包围球半径。结果存储在.boundingSphereRadius属性中
          */
-        updateBoundingSphereRadius()
-        {
-            throw "computeBoundingSphereRadius() not implemented for shape type " + this.type;
-        }
+        abstract updateBoundingSphereRadius(): void;
 
         /**
-         * Get the volume of this shape
+         * 得到这个形状的体积
          */
-        volume()
-        {
-            throw "volume() not implemented for shape type " + this.type;
-        }
+        abstract volume(): number;
 
         /**
-         * Calculates the inertia in the local frame for this shape.
-         * @param mass
+         * 计算此形状在局部框架中的惯性。
+         * 
+         * @param mass 质量
          * @param target
          * @see http://en.wikipedia.org/wiki/List_of_moments_of_inertia
          */
-        calculateLocalInertia(mass: number, target: feng3d.Vector3)
-        {
-            throw "calculateLocalInertia() not implemented for shape type " + this.type;
-        }
+        abstract calculateLocalInertia(mass: number, target: feng3d.Vector3): void;
 
-        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
-        {
-            throw "未实现";
-        }
+        /**
+         * 计算世界包围盒
+         * 
+         * @param pos 世界坐标
+         * @param quat 世界旋转
+         * @param min 最小坐标
+         * @param max 最大坐标
+         */
+        abstract calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
 
+        /**
+         * 编号计数器
+         */
         static idCounter = 0;
     }
 }

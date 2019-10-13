@@ -17759,35 +17759,59 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    class Shape {
+    abstract class Shape {
         /**
-         * Identifyer of the Shape.
+         * 编号
          */
         id: number;
         /**
-         * The type of this shape. Must be set to an int > 0 by subclasses.
+         * 形状类型
          */
-        type: number;
+        type: ShapeType;
         /**
-         * The local bounding sphere radius of this shape.
+         * 此形状的局部包围球半径
          */
         boundingSphereRadius: number;
         /**
          * Whether to produce contact forces when in contact with other bodies. Note that contacts will be generated, but they will be disabled.
+         * 是否响应碰撞
          */
         collisionResponse: boolean;
         collisionFilterGroup: number;
         collisionFilterMask: number;
+        /**
+         * 材质
+         */
         material: Material;
+        /**
+         * 物体
+         */
         body: Body;
+        /**
+         * 面数组
+         */
         faces: number[][];
+        /**
+         * 顶点索引数组
+         */
         indices: number[];
+        /**
+         * 顶点坐标数组
+         */
         vertices: feng3d.Vector3[] | number[];
+        /**
+         * 面法线数组
+         */
         faceNormals: feng3d.Vector3[];
+        /**
+         * 凸多面体
+         */
         convexPolyhedronRepresentation: ConvexPolyhedron;
+        /**
+         * 半径
+         */
         radius: number;
         /**
-         * Base class for shapes
          *
          * @param options
          * @author schteppe
@@ -17800,21 +17824,33 @@ declare namespace CANNON {
             material?: any;
         });
         /**
-         * Computes the bounding sphere radius. The result is stored in the property .boundingSphereRadius
+         * 计算包围球半径。结果存储在.boundingSphereRadius属性中
          */
-        updateBoundingSphereRadius(): void;
+        abstract updateBoundingSphereRadius(): void;
         /**
-         * Get the volume of this shape
+         * 得到这个形状的体积
          */
-        volume(): void;
+        abstract volume(): number;
         /**
-         * Calculates the inertia in the local frame for this shape.
-         * @param mass
+         * 计算此形状在局部框架中的惯性。
+         *
+         * @param mass 质量
          * @param target
          * @see http://en.wikipedia.org/wiki/List_of_moments_of_inertia
          */
-        calculateLocalInertia(mass: number, target: feng3d.Vector3): void;
-        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
+        abstract calculateLocalInertia(mass: number, target: feng3d.Vector3): void;
+        /**
+         * 计算世界包围盒
+         *
+         * @param pos 世界坐标
+         * @param quat 世界旋转
+         * @param min 最小坐标
+         * @param max 最大坐标
+         */
+        abstract calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
+        /**
+         * 编号计数器
+         */
         static idCounter: number;
     }
 }
@@ -18239,7 +18275,13 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
+    /**
+     * 球体
+     */
     class Sphere extends Shape {
+        /**
+         * 半径
+         */
         radius: number;
         /**
          * 球体
@@ -20409,8 +20451,8 @@ declare namespace CANNON {
          */
         planeTrimesh(planeShape: Shape, trimeshShape: any, planeTransform: Transform, trimeshTransform: Transform, planeBody: Body, trimeshBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         sphereTrimesh(sphereShape: Shape, trimeshShape: any, sphereTransform: Transform, trimeshTransform: Transform, sphereBody: Body, trimeshBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        spherePlane(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        sphereBox(si: Shape, sj: any, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        spherePlane(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereBox(si: Shape, sj: any, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         sphereConvex(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         planeBox(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         planeConvex(planeShape: Shape, convexShape: any, planeTransform: Transform, convexTransform: Transform, planeBody: Body, convexBody: Body, si: Shape, sj: Shape, justTest: boolean): boolean;

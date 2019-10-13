@@ -620,8 +620,10 @@ namespace CANNON
             triangles.length = 0;
         }
 
-        spherePlane(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        spherePlane(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
+            var xi = transformi.position, xj = transformj.position, qi = transformi.quaternion, qj = transformj.quaternion;
+
             // We will have one contact in this case
             var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
 
@@ -660,8 +662,10 @@ namespace CANNON
             }
         }
 
-        sphereBox(si: Shape, sj: any, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        sphereBox(si: Shape, sj: any, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
+            var xi = transformi.position, xj = transformj.position, qi = transformi.quaternion, qj = transformj.quaternion;
+
             // we refer to the box as body j
             var sides = sphereBox_sides;
             xi.subTo(xj, box_to_sphere);
@@ -1181,7 +1185,7 @@ namespace CANNON
                 return;
             }
 
-            if (si.findSeparatingAxis(sj, transformi,transformj, sepAxis, faceListA, faceListB))
+            if (si.findSeparatingAxis(sj, transformi, transformj, sepAxis, faceListA, faceListB))
             {
                 var res = [];
                 var q = convexConvex_q;
