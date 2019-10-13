@@ -297,27 +297,27 @@ namespace CANNON
             }
         }
 
-        boxBox(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        boxBox(si: ConvexPolyhedron, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
-            si.convexPolyhedronRepresentation.material = si.material;
-            sj.convexPolyhedronRepresentation.material = sj.material;
-            si.convexPolyhedronRepresentation.collisionResponse = si.collisionResponse;
-            sj.convexPolyhedronRepresentation.collisionResponse = sj.collisionResponse;
-            return this.convexConvex(si.convexPolyhedronRepresentation, sj.convexPolyhedronRepresentation, transformi, transformj, bi, bj, si, sj, justTest);
+            si.material = si.material;
+            sj.material = sj.material;
+            si.collisionResponse = si.collisionResponse;
+            sj.collisionResponse = sj.collisionResponse;
+            return this.convexConvex(si, sj, transformi, transformj, bi, bj, si, sj, justTest);
         }
 
-        boxConvex(si: Shape, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        boxConvex(si: ConvexPolyhedron, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
-            si.convexPolyhedronRepresentation.material = si.material;
-            si.convexPolyhedronRepresentation.collisionResponse = si.collisionResponse;
-            return this.convexConvex(si.convexPolyhedronRepresentation, sj, transformi, transformj, bi, bj, si, sj, justTest);
+            si.material = si.material;
+            si.collisionResponse = si.collisionResponse;
+            return this.convexConvex(si, sj, transformi, transformj, bi, bj, si, sj, justTest);
         }
 
         boxParticle(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
-            si.convexPolyhedronRepresentation.material = si.material;
-            si.convexPolyhedronRepresentation.collisionResponse = si.collisionResponse;
-            return this.convexParticle(si.convexPolyhedronRepresentation, sj, transformi, transformj, bi, bj, si, sj, justTest);
+            si.material = si.material;
+            si.collisionResponse = si.collisionResponse;
+            return this.convexParticle(si, sj, transformi, transformj, bi, bj, si, sj, justTest);
         }
 
         sphereSphere(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
@@ -1093,10 +1093,10 @@ namespace CANNON
 
         planeBox(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
-            sj.convexPolyhedronRepresentation.material = sj.material;
-            sj.convexPolyhedronRepresentation.collisionResponse = sj.collisionResponse;
-            sj.convexPolyhedronRepresentation.id = sj.id;
-            return this.planeConvex(si, sj.convexPolyhedronRepresentation, transformi, transformj, bi, bj, si, sj, justTest);
+            sj.material = sj.material;
+            sj.collisionResponse = sj.collisionResponse;
+            sj.id = sj.id;
+            return this.planeConvex(si, sj, transformi, transformj, bi, bj, si, sj, justTest);
         }
 
         planeConvex(
@@ -1460,11 +1460,11 @@ namespace CANNON
             }
         }
 
-        boxHeightfield(si: Shape, sj: Heightfield, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
+        boxHeightfield(si: ConvexPolyhedron, sj: Heightfield, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
-            si.convexPolyhedronRepresentation.material = si.material;
-            si.convexPolyhedronRepresentation.collisionResponse = si.collisionResponse;
-            return this.convexHeightfield(si.convexPolyhedronRepresentation, sj, transformi, transformj, bi, bj, si, sj, justTest);
+            si.material = si.material;
+            si.collisionResponse = si.collisionResponse;
+            return this.convexHeightfield(si, sj, transformi, transformj, bi, bj, si, sj, justTest);
         }
 
         convexHeightfield(

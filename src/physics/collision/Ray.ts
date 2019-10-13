@@ -211,7 +211,7 @@ namespace CANNON
 
         private intersectBox(shape: Shape, quat: feng3d.Quaternion, position: feng3d.Vector3, body: Body, reportedShape: Shape)
         {
-            return this.intersectConvex(shape.convexPolyhedronRepresentation, quat, position, body, reportedShape);
+            return this.intersectConvex(shape, quat, position, body, reportedShape);
         }
 
         private intersectPlane(shape: Shape, quat: feng3d.Quaternion, position: feng3d.Vector3, body: Body, reportedShape: Shape)

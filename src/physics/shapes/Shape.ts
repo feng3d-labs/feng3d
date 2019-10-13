@@ -55,11 +55,6 @@ namespace CANNON
         faceNormals: feng3d.Vector3[];
 
         /**
-         * 凸多面体
-         */
-        convexPolyhedronRepresentation: ConvexPolyhedron;
-
-        /**
          * 半径
          */
         radius: number;

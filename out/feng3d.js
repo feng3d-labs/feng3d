@@ -39757,22 +39757,10 @@ var CANNON;
          * @author schteppe
          */
         function Box(halfExtents) {
-            var _this = _super.call(this, {
-                type: CANNON.ShapeType.BOX
-            }) || this;
-            _this.halfExtents = halfExtents;
-            _this.convexPolyhedronRepresentation = null;
-            _this.updateConvexPolyhedronRepresentation();
-            _this.updateBoundingSphereRadius();
-            return _this;
-        }
-        /**
-         * Updates the local convex polyhedron representation used for some collisions.
-         */
-        Box.prototype.updateConvexPolyhedronRepresentation = function () {
-            var sx = this.halfExtents.x;
-            var sy = this.halfExtents.y;
-            var sz = this.halfExtents.z;
+            var _this = this;
+            var sx = halfExtents.x;
+            var sy = halfExtents.y;
+            var sz = halfExtents.z;
             var V = feng3d.Vector3;
             var vertices = [
                 new V(-sx, -sy, -sz),
@@ -39792,10 +39780,12 @@ var CANNON;
                 [0, 4, 7, 3],
                 [1, 2, 6, 5],
             ];
-            var h = new CANNON.ConvexPolyhedron(vertices, indices);
-            this.convexPolyhedronRepresentation = h;
-            h.material = this.material;
-        };
+            _this = _super.call(this, vertices, indices) || this;
+            _this.type = CANNON.ShapeType.BOX;
+            _this.halfExtents = halfExtents;
+            _this.updateBoundingSphereRadius();
+            return _this;
+        }
         Box.prototype.calculateLocalInertia = function (mass, target) {
             if (target === void 0) { target = new feng3d.Vector3(); }
             Box.calculateInertia(this.halfExtents, mass, target);
@@ -39831,105 +39821,9 @@ var CANNON;
         Box.prototype.volume = function () {
             return 8.0 * this.halfExtents.x * this.halfExtents.y * this.halfExtents.z;
         };
-        Box.prototype.updateBoundingSphereRadius = function () {
-            this.boundingSphereRadius = this.halfExtents.length;
-        };
-        Box.prototype.forEachWorldCorner = function (pos, quat, callback) {
-            var e = this.halfExtents;
-            var corners = [[e.x, e.y, e.z],
-                [-e.x, e.y, e.z],
-                [-e.x, -e.y, e.z],
-                [-e.x, -e.y, -e.z],
-                [e.x, -e.y, -e.z],
-                [e.x, e.y, -e.z],
-                [-e.x, e.y, -e.z],
-                [e.x, -e.y, e.z]];
-            var temp = new feng3d.Vector3();
-            for (var i = 0; i < corners.length; i++) {
-                temp.init(corners[i][0], corners[i][1], corners[i][2]);
-                quat.vmult(temp, temp);
-                pos.addTo(temp, temp);
-                callback(temp.x, temp.y, temp.z);
-            }
-        };
-        Box.prototype.calculateWorldAABB = function (pos, quat, min, max) {
-            var e = this.halfExtents;
-            worldCornersTemp[0].init(e.x, e.y, e.z);
-            worldCornersTemp[1].init(-e.x, e.y, e.z);
-            worldCornersTemp[2].init(-e.x, -e.y, e.z);
-            worldCornersTemp[3].init(-e.x, -e.y, -e.z);
-            worldCornersTemp[4].init(e.x, -e.y, -e.z);
-            worldCornersTemp[5].init(e.x, e.y, -e.z);
-            worldCornersTemp[6].init(-e.x, e.y, -e.z);
-            worldCornersTemp[7].init(e.x, -e.y, e.z);
-            var wc = worldCornersTemp[0];
-            quat.vmult(wc, wc);
-            pos.addTo(wc, wc);
-            max.copy(wc);
-            min.copy(wc);
-            for (var i = 1; i < 8; i++) {
-                var wc = worldCornersTemp[i];
-                quat.vmult(wc, wc);
-                pos.addTo(wc, wc);
-                var x = wc.x;
-                var y = wc.y;
-                var z = wc.z;
-                if (x > max.x) {
-                    max.x = x;
-                }
-                if (y > max.y) {
-                    max.y = y;
-                }
-                if (z > max.z) {
-                    max.z = z;
-                }
-                if (x < min.x) {
-                    min.x = x;
-                }
-                if (y < min.y) {
-                    min.y = y;
-                }
-                if (z < min.z) {
-                    min.z = z;
-                }
-            }
-            // Get each axis max
-            // min.set(Infinity,Infinity,Infinity);
-            // max.set(-Infinity,-Infinity,-Infinity);
-            // this.forEachWorldCorner(pos,quat,function(x,y,z){
-            //     if(x > max.x){
-            //         max.x = x;
-            //     }
-            //     if(y > max.y){
-            //         max.y = y;
-            //     }
-            //     if(z > max.z){
-            //         max.z = z;
-            //     }
-            //     if(x < min.x){
-            //         min.x = x;
-            //     }
-            //     if(y < min.y){
-            //         min.y = y;
-            //     }
-            //     if(z < min.z){
-            //         min.z = z;
-            //     }
-            // });
-        };
         return Box;
-    }(CANNON.Shape));
+    }(CANNON.ConvexPolyhedron));
     CANNON.Box = Box;
-    var worldCornersTemp = [
-        new feng3d.Vector3(),
-        new feng3d.Vector3(),
-        new feng3d.Vector3(),
-        new feng3d.Vector3(),
-        new feng3d.Vector3(),
-        new feng3d.Vector3(),
-        new feng3d.Vector3(),
-        new feng3d.Vector3()
-    ];
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -42503,7 +42397,7 @@ var CANNON;
             }
         };
         Ray.prototype.intersectBox = function (shape, quat, position, body, reportedShape) {
-            return this.intersectConvex(shape.convexPolyhedronRepresentation, quat, position, body, reportedShape);
+            return this.intersectConvex(shape, quat, position, body, reportedShape);
         };
         Ray.prototype.intersectPlane = function (shape, quat, position, body, reportedShape) {
             var from = this.from;
@@ -46156,21 +46050,21 @@ var CANNON;
             }
         };
         Narrowphase.prototype.boxBox = function (si, sj, transformi, transformj, bi, bj, rsi, rsj, justTest) {
-            si.convexPolyhedronRepresentation.material = si.material;
-            sj.convexPolyhedronRepresentation.material = sj.material;
-            si.convexPolyhedronRepresentation.collisionResponse = si.collisionResponse;
-            sj.convexPolyhedronRepresentation.collisionResponse = sj.collisionResponse;
-            return this.convexConvex(si.convexPolyhedronRepresentation, sj.convexPolyhedronRepresentation, transformi, transformj, bi, bj, si, sj, justTest);
+            si.material = si.material;
+            sj.material = sj.material;
+            si.collisionResponse = si.collisionResponse;
+            sj.collisionResponse = sj.collisionResponse;
+            return this.convexConvex(si, sj, transformi, transformj, bi, bj, si, sj, justTest);
         };
         Narrowphase.prototype.boxConvex = function (si, sj, transformi, transformj, bi, bj, rsi, rsj, justTest) {
-            si.convexPolyhedronRepresentation.material = si.material;
-            si.convexPolyhedronRepresentation.collisionResponse = si.collisionResponse;
-            return this.convexConvex(si.convexPolyhedronRepresentation, sj, transformi, transformj, bi, bj, si, sj, justTest);
+            si.material = si.material;
+            si.collisionResponse = si.collisionResponse;
+            return this.convexConvex(si, sj, transformi, transformj, bi, bj, si, sj, justTest);
         };
         Narrowphase.prototype.boxParticle = function (si, sj, transformi, transformj, bi, bj, rsi, rsj, justTest) {
-            si.convexPolyhedronRepresentation.material = si.material;
-            si.convexPolyhedronRepresentation.collisionResponse = si.collisionResponse;
-            return this.convexParticle(si.convexPolyhedronRepresentation, sj, transformi, transformj, bi, bj, si, sj, justTest);
+            si.material = si.material;
+            si.collisionResponse = si.collisionResponse;
+            return this.convexParticle(si, sj, transformi, transformj, bi, bj, si, sj, justTest);
         };
         Narrowphase.prototype.sphereSphere = function (si, sj, xi, xj, qi, qj, bi, bj, rsi, rsj, justTest) {
             if (justTest) {
@@ -46737,10 +46631,10 @@ var CANNON;
             }
         };
         Narrowphase.prototype.planeBox = function (si, sj, transformi, transformj, bi, bj, rsi, rsj, justTest) {
-            sj.convexPolyhedronRepresentation.material = sj.material;
-            sj.convexPolyhedronRepresentation.collisionResponse = sj.collisionResponse;
-            sj.convexPolyhedronRepresentation.id = sj.id;
-            return this.planeConvex(si, sj.convexPolyhedronRepresentation, transformi, transformj, bi, bj, si, sj, justTest);
+            sj.material = sj.material;
+            sj.collisionResponse = sj.collisionResponse;
+            sj.id = sj.id;
+            return this.planeConvex(si, sj, transformi, transformj, bi, bj, si, sj, justTest);
         };
         Narrowphase.prototype.planeConvex = function (planeShape, convexShape, planeTransform, convexTransform, planeBody, convexBody, si, sj, justTest) {
             var planePosition = planeTransform.position, convexPosition = convexTransform.position, planeQuat = planeTransform.quaternion, convexQuat = convexTransform.quaternion;
@@ -47006,9 +46900,9 @@ var CANNON;
             }
         };
         Narrowphase.prototype.boxHeightfield = function (si, sj, transformi, transformj, bi, bj, rsi, rsj, justTest) {
-            si.convexPolyhedronRepresentation.material = si.material;
-            si.convexPolyhedronRepresentation.collisionResponse = si.collisionResponse;
-            return this.convexHeightfield(si.convexPolyhedronRepresentation, sj, transformi, transformj, bi, bj, si, sj, justTest);
+            si.material = si.material;
+            si.collisionResponse = si.collisionResponse;
+            return this.convexHeightfield(si, sj, transformi, transformj, bi, bj, si, sj, justTest);
         };
         Narrowphase.prototype.convexHeightfield = function (convexShape, hfShape, convexTransform, hfTransform, convexBody, hfBody, rsi, rsj, justTest) {
             var convexPos = convexTransform.position;

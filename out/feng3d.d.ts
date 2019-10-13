@@ -17804,10 +17804,6 @@ declare namespace CANNON {
          */
         faceNormals: feng3d.Vector3[];
         /**
-         * 凸多面体
-         */
-        convexPolyhedronRepresentation: ConvexPolyhedron;
-        /**
          * 半径
          */
         radius: number;
@@ -18037,22 +18033,14 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    class Box extends Shape {
+    class Box extends ConvexPolyhedron {
         halfExtents: feng3d.Vector3;
-        /**
-         * Used by the contact generator to make contacts with other convex polyhedra for example
-         */
-        convexPolyhedronRepresentation: ConvexPolyhedron;
         /**
          * A 3d box shape.
          * @param halfExtents
          * @author schteppe
          */
         constructor(halfExtents: feng3d.Vector3);
-        /**
-         * Updates the local convex polyhedron representation used for some collisions.
-         */
-        updateConvexPolyhedronRepresentation(): void;
         calculateLocalInertia(mass: number, target?: feng3d.Vector3): feng3d.Vector3;
         static calculateInertia(halfExtents: feng3d.Vector3, mass: number, target: feng3d.Vector3): void;
         /**
@@ -18062,9 +18050,6 @@ declare namespace CANNON {
          */
         getSideNormals(sixTargetVectors: feng3d.Vector3[], quat: feng3d.Quaternion): feng3d.Vector3[];
         volume(): number;
-        updateBoundingSphereRadius(): void;
-        forEachWorldCorner(pos: feng3d.Vector3, quat: feng3d.Quaternion, callback: Function): void;
-        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
     }
 }
 declare namespace CANNON {
@@ -20434,8 +20419,8 @@ declare namespace CANNON {
          * @param {array} oldcontacts Optional. Array of reusable contact objects
          */
         getContacts(p1: Body[], p2: Body[], world: World, result: any[], oldcontacts: any[], frictionResult: any[], frictionPool: any[]): void;
-        boxBox(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        boxConvex(si: Shape, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        boxBox(si: ConvexPolyhedron, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        boxConvex(si: ConvexPolyhedron, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         boxParticle(si: Shape, sj: Shape, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         sphereSphere(si: Shape, sj: Shape, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         /**
@@ -20472,7 +20457,7 @@ declare namespace CANNON {
         planeParticle(sj: Shape, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         sphereParticle(sj: Shape, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         convexParticle(sj: any, si: Shape, transformi: Transform, transformj: Transform, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        boxHeightfield(si: Shape, sj: Heightfield, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        boxHeightfield(si: ConvexPolyhedron, sj: Heightfield, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         convexHeightfield(convexShape: ConvexPolyhedron, hfShape: Heightfield, convexTransform: Transform, hfTransform: Transform, convexBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         sphereHeightfield(sphereShape: Shape, hfShape: any, sphereTransform: Transform, hfTransform: Transform, sphereBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
     }

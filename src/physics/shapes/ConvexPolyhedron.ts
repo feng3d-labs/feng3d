@@ -780,7 +780,7 @@ namespace CANNON
         calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
         {
             var n = this.vertices.length, verts = this.vertices;
-            var minx, miny, minz, maxx, maxy, maxz;
+            var minx: number, miny: number, minz: number, maxx: number, maxy: number, maxz: number;
             for (var i = 0; i < n; i++)
             {
                 tempWorldVertex.copy(verts[i]);

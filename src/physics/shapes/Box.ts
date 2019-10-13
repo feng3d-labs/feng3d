@@ -1,14 +1,9 @@
 namespace CANNON
 {
-    export class Box extends Shape
+    export class Box extends ConvexPolyhedron
     {
 
         halfExtents: feng3d.Vector3;
-
-        /**
-         * Used by the contact generator to make contacts with other convex polyhedra for example
-         */
-        convexPolyhedronRepresentation: ConvexPolyhedron;
 
         /**
          * A 3d box shape.
@@ -17,25 +12,9 @@ namespace CANNON
          */
         constructor(halfExtents: feng3d.Vector3)
         {
-            super({
-                type: ShapeType.BOX
-            });
-
-            this.halfExtents = halfExtents;
-            this.convexPolyhedronRepresentation = null;
-
-            this.updateConvexPolyhedronRepresentation();
-            this.updateBoundingSphereRadius();
-        }
-
-        /**
-         * Updates the local convex polyhedron representation used for some collisions.
-         */
-        updateConvexPolyhedronRepresentation()
-        {
-            var sx = this.halfExtents.x;
-            var sy = this.halfExtents.y;
-            var sz = this.halfExtents.z;
+            var sx = halfExtents.x;
+            var sy = halfExtents.y;
+            var sz = halfExtents.z;
             var V = feng3d.Vector3;
 
             var vertices = [
@@ -58,9 +37,12 @@ namespace CANNON
                 [1, 2, 6, 5], // +x
             ];
 
-            var h = new ConvexPolyhedron(vertices, indices);
-            this.convexPolyhedronRepresentation = h;
-            h.material = this.material;
+            super(vertices, indices);
+            this.type = ShapeType.BOX;
+
+            this.halfExtents = halfExtents;
+
+            this.updateBoundingSphereRadius();
         }
 
         calculateLocalInertia(mass: number, target = new feng3d.Vector3())
@@ -108,120 +90,5 @@ namespace CANNON
         {
             return 8.0 * this.halfExtents.x * this.halfExtents.y * this.halfExtents.z;
         }
-
-        updateBoundingSphereRadius()
-        {
-            this.boundingSphereRadius = this.halfExtents.length;
-        }
-
-        forEachWorldCorner(pos: feng3d.Vector3, quat: feng3d.Quaternion, callback: Function)
-        {
-            var e = this.halfExtents;
-            var corners = [[e.x, e.y, e.z],
-            [-e.x, e.y, e.z],
-            [-e.x, -e.y, e.z],
-            [-e.x, -e.y, -e.z],
-            [e.x, -e.y, -e.z],
-            [e.x, e.y, -e.z],
-            [-e.x, e.y, -e.z],
-            [e.x, -e.y, e.z]];
-            var temp = new feng3d.Vector3();
-            for (var i = 0; i < corners.length; i++)
-            {
-                temp.init(corners[i][0], corners[i][1], corners[i][2]);
-                quat.vmult(temp, temp);
-                pos.addTo(temp, temp);
-                callback(temp.x, temp.y, temp.z);
-            }
-        }
-
-        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
-        {
-            var e = this.halfExtents;
-            worldCornersTemp[0].init(e.x, e.y, e.z);
-            worldCornersTemp[1].init(-e.x, e.y, e.z);
-            worldCornersTemp[2].init(-e.x, -e.y, e.z);
-            worldCornersTemp[3].init(-e.x, -e.y, -e.z);
-            worldCornersTemp[4].init(e.x, -e.y, -e.z);
-            worldCornersTemp[5].init(e.x, e.y, -e.z);
-            worldCornersTemp[6].init(-e.x, e.y, -e.z);
-            worldCornersTemp[7].init(e.x, -e.y, e.z);
-
-            var wc = worldCornersTemp[0];
-            quat.vmult(wc, wc);
-            pos.addTo(wc, wc);
-            max.copy(wc);
-            min.copy(wc);
-            for (var i = 1; i < 8; i++)
-            {
-                var wc = worldCornersTemp[i];
-                quat.vmult(wc, wc);
-                pos.addTo(wc, wc);
-                var x = wc.x;
-                var y = wc.y;
-                var z = wc.z;
-                if (x > max.x)
-                {
-                    max.x = x;
-                }
-                if (y > max.y)
-                {
-                    max.y = y;
-                }
-                if (z > max.z)
-                {
-                    max.z = z;
-                }
-
-                if (x < min.x)
-                {
-                    min.x = x;
-                }
-                if (y < min.y)
-                {
-                    min.y = y;
-                }
-                if (z < min.z)
-                {
-                    min.z = z;
-                }
-            }
-
-            // Get each axis max
-            // min.set(Infinity,Infinity,Infinity);
-            // max.set(-Infinity,-Infinity,-Infinity);
-            // this.forEachWorldCorner(pos,quat,function(x,y,z){
-            //     if(x > max.x){
-            //         max.x = x;
-            //     }
-            //     if(y > max.y){
-            //         max.y = y;
-            //     }
-            //     if(z > max.z){
-            //         max.z = z;
-            //     }
-
-            //     if(x < min.x){
-            //         min.x = x;
-            //     }
-            //     if(y < min.y){
-            //         min.y = y;
-            //     }
-            //     if(z < min.z){
-            //         min.z = z;
-            //     }
-            // });
-        }
     }
-
-    var worldCornersTemp = [
-        new feng3d.Vector3(),
-        new feng3d.Vector3(),
-        new feng3d.Vector3(),
-        new feng3d.Vector3(),
-        new feng3d.Vector3(),
-        new feng3d.Vector3(),
-        new feng3d.Vector3(),
-        new feng3d.Vector3()
-    ];
 }
