@@ -39830,23 +39830,31 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
+    /**
+     * 圆柱体
+     */
     var Cylinder = /** @class */ (function (_super) {
         __extends(Cylinder, _super);
         /**
-         * @param radiusTop
-         * @param radiusBottom
-         * @param height
-         * @param numSegments The number of segments to build the cylinder out of
-         *
-         * @author schteppe / https://github.com/schteppe
+         * @param radiusTop 顶部半径
+         * @param radiusBottom 底部半径
+         * @param height 高度
+         * @param numSegments 圆周分段数
          */
         function Cylinder(radiusTop, radiusBottom, height, numSegments) {
             var _this = this;
-            var N = numSegments, verts = [], axes = [], faces = [], bottomface = [], topface = [], cos = Math.cos, sin = Math.sin;
-            // First bottom point
+            var N = numSegments;
+            var verts = [];
+            var axes = [];
+            var faces = [];
+            var bottomface = [];
+            var topface = [];
+            var cos = Math.cos;
+            var sin = Math.sin;
+            // 第一个底部顶点
             verts.push(new feng3d.Vector3(radiusBottom * cos(0), radiusBottom * sin(0), -height * 0.5));
             bottomface.push(0);
-            // First top point
+            // 第一个顶部顶点
             verts.push(new feng3d.Vector3(radiusTop * cos(0), radiusTop * sin(0), height * 0.5));
             topface.push(1);
             for (var i = 0; i < N; i++) {

@@ -18057,14 +18057,15 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
+    /**
+     * 圆柱体
+     */
     class Cylinder extends ConvexPolyhedron {
         /**
-         * @param radiusTop
-         * @param radiusBottom
-         * @param height
-         * @param numSegments The number of segments to build the cylinder out of
-         *
-         * @author schteppe / https://github.com/schteppe
+         * @param radiusTop 顶部半径
+         * @param radiusBottom 底部半径
+         * @param height 高度
+         * @param numSegments 圆周分段数
          */
         constructor(radiusTop: number, radiusBottom: number, height: number, numSegments: number);
     }

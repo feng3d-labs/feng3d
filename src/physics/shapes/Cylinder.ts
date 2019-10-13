@@ -1,33 +1,34 @@
 namespace CANNON
 {
+    /**
+     * 圆柱体
+     */
     export class Cylinder extends ConvexPolyhedron
     {
         /**
-         * @param radiusTop
-         * @param radiusBottom
-         * @param height
-         * @param numSegments The number of segments to build the cylinder out of
-         * 
-         * @author schteppe / https://github.com/schteppe
+         * @param radiusTop 顶部半径
+         * @param radiusBottom 底部半径
+         * @param height 高度
+         * @param numSegments 圆周分段数
          */
         constructor(radiusTop: number, radiusBottom: number, height: number, numSegments: number)
         {
-            var N = numSegments,
-                verts = [],
-                axes = [],
-                faces = [],
-                bottomface = [],
-                topface = [],
-                cos = Math.cos,
-                sin = Math.sin;
+            var N = numSegments;
+            var verts: feng3d.Vector3[] = [];
+            var axes: feng3d.Vector3[] = [];
+            var faces: number[][] = [];
+            var bottomface: number[] = [];
+            var topface: number[] = [];
+            var cos = Math.cos;
+            var sin = Math.sin;
 
-            // First bottom point
+            // 第一个底部顶点
             verts.push(new feng3d.Vector3(radiusBottom * cos(0),
                 radiusBottom * sin(0),
                 -height * 0.5));
             bottomface.push(0);
 
-            // First top point
+            // 第一个顶部顶点
             verts.push(new feng3d.Vector3(radiusTop * cos(0),
                 radiusTop * sin(0),
                 height * 0.5));
