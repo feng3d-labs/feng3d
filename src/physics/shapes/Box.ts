@@ -8,7 +8,7 @@ namespace CANNON
         halfExtents: feng3d.Vector3;
 
         /**
-         * A 3d box shape.
+         * 
          * @param halfExtents
          * @author schteppe
          */
@@ -61,10 +61,10 @@ namespace CANNON
         }
 
         /**
-         * 得到盒子6边的法线
+         * 得到长方体6面的法线
          * 
-         * @param sixTargetVectors An array of 6 vectors, to store the resulting side normals in.
-         * @param quat             Orientation to apply to the normal vectors. If not provided, the vectors will be in respect to the local frame.
+         * @param sixTargetVectors 一个由6个向量组成的数组，用来存储产生的面法线。
+         * @param quat             将方向应用于法向量。如果没有提供，向量将是关于局部坐标系的。
          */
         getSideNormals(sixTargetVectors: feng3d.Vector3[], quat: feng3d.Quaternion)
         {

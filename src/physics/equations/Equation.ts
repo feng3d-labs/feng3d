@@ -1,5 +1,8 @@
 namespace CANNON
 {
+    /**
+     * 方程式
+     */
     export class Equation
     {
 

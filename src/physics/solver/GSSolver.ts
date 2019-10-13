@@ -1,25 +1,24 @@
 namespace CANNON
 {
+    /**
+     * 约束方程 Gauss-Seidel 求解器
+     */
     export class GSSolver extends Solver
     {
-
         /**
-         * The number of solver iterations determines quality of the constraints in the world. The more iterations, the more correct simulation. More iterations need more computations though. If you have a large gravity force in your world, you will need more iterations.
-         * @todo write more about solver and iterations in the wiki
+         * 求解器迭代的次数
+         * 
+         * 求解器迭代的次数决定了约束条件的质量。迭代越多，模拟就越正确。然而，更多的迭代需要更多的计算。如果你的世界有很大的重力，你将需要更多的迭代。
          */
         iterations: number;
 
         /**
-         * When tolerance is reached, the system is assumed to be converged.
+         * 容差
+         * 
+         * 当达到容差时，假定系统是收敛的。
          */
         tolerance: number;
 
-        /**
-         * Constraint equation Gauss-Seidel solver.
-         * @todo The spook parameters should be specified for each constraint, not globally.
-         * @author schteppe / https://github.com/schteppe
-         * @see https://www8.cs.umu.se/kurser/5DV058/VT09/lectures/spooknotes.pdf
-         */
         constructor()
         {
             super();
@@ -38,7 +37,7 @@ namespace CANNON
                 bodies = world.bodies,
                 Nbodies = bodies.length,
                 h = dt,
-                q, B, invC, deltalambda, deltalambdaTot, GWlambda, lambdaj;
+                B: number, invC: number, deltalambda: number, deltalambdaTot: number, GWlambda: number, lambdaj: number;
 
             // Update solve mass
             if (Neq !== 0)
@@ -50,9 +49,9 @@ namespace CANNON
             }
 
             // Things that does not change during iteration can be computed once
-            var invCs = GSSolver_solve_invCs,
-                Bs = GSSolver_solve_Bs,
-                lambda = GSSolver_solve_lambda;
+            var invCs = [],
+                Bs = [],
+                lambda = [];
             invCs.length = Neq;
             Bs.length = Neq;
             lambda.length = Neq;
@@ -145,8 +144,4 @@ namespace CANNON
         }
 
     }
-
-    var GSSolver_solve_lambda = []; // Just temporary number holders that we want to reuse each solve.
-    var GSSolver_solve_invCs = [];
-    var GSSolver_solve_Bs = [];
 }

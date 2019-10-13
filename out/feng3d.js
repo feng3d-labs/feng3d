@@ -39755,7 +39755,7 @@ var CANNON;
     var Box = /** @class */ (function (_super) {
         __extends(Box, _super);
         /**
-         * A 3d box shape.
+         *
          * @param halfExtents
          * @author schteppe
          */
@@ -39800,10 +39800,10 @@ var CANNON;
             target.z = 1.0 / 12.0 * mass * (2 * e.y * 2 * e.y + 2 * e.x * 2 * e.x);
         };
         /**
-         * 得到盒子6边的法线
+         * 得到长方体6面的法线
          *
-         * @param sixTargetVectors An array of 6 vectors, to store the resulting side normals in.
-         * @param quat             Orientation to apply to the normal vectors. If not provided, the vectors will be in respect to the local frame.
+         * @param sixTargetVectors 一个由6个向量组成的数组，用来存储产生的面法线。
+         * @param quat             将方向应用于法向量。如果没有提供，向量将是关于局部坐标系的。
          */
         Box.prototype.getSideNormals = function (sixTargetVectors, quat) {
             var sides = sixTargetVectors;
@@ -44406,6 +44406,9 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
+    /**
+     * 方程式
+     */
     var Equation = /** @class */ (function () {
         /**
          * Equation base class
@@ -44771,25 +44774,19 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
+    /**
+     * 求解器
+     */
     var Solver = /** @class */ (function () {
         /**
-         * Constraint equation solver base class.
-         * @author schteppe / https://github.com/schteppe
+         * 约束方程求解器基类
          */
         function Solver() {
             this.equations = [];
         }
         /**
-         * Should be implemented in subclasses!
-         * @param dt
-         * @param world
-         */
-        Solver.prototype.solve = function (dt, world) {
-            // Should return the number of iterations done!
-            return 0;
-        };
-        /**
-         * Add an equation
+         * 添加方程
+         *
          * @param eq
          */
         Solver.prototype.addEquation = function (eq) {
@@ -44798,7 +44795,8 @@ var CANNON;
             }
         };
         /**
-         * Remove an equation
+         * 移除方程式
+         *
          * @param eq
          */
         Solver.prototype.removeEquation = function (eq) {
@@ -44809,7 +44807,7 @@ var CANNON;
             }
         };
         /**
-         * Add all equations
+         * 移除所有方程式
          */
         Solver.prototype.removeAllEquations = function () {
             this.equations.length = 0;
@@ -44820,14 +44818,11 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
+    /**
+     * 约束方程 Gauss-Seidel 求解器
+     */
     var GSSolver = /** @class */ (function (_super) {
         __extends(GSSolver, _super);
-        /**
-         * Constraint equation Gauss-Seidel solver.
-         * @todo The spook parameters should be specified for each constraint, not globally.
-         * @author schteppe / https://github.com/schteppe
-         * @see https://www8.cs.umu.se/kurser/5DV058/VT09/lectures/spooknotes.pdf
-         */
         function GSSolver() {
             var _this = _super.call(this) || this;
             _this.iterations = 10;
@@ -44835,7 +44830,7 @@ var CANNON;
             return _this;
         }
         GSSolver.prototype.solve = function (dt, world) {
-            var iter = 0, maxIter = this.iterations, tolSquared = this.tolerance * this.tolerance, equations = this.equations, Neq = equations.length, bodies = world.bodies, Nbodies = bodies.length, h = dt, q, B, invC, deltalambda, deltalambdaTot, GWlambda, lambdaj;
+            var iter = 0, maxIter = this.iterations, tolSquared = this.tolerance * this.tolerance, equations = this.equations, Neq = equations.length, bodies = world.bodies, Nbodies = bodies.length, h = dt, B, invC, deltalambda, deltalambdaTot, GWlambda, lambdaj;
             // Update solve mass
             if (Neq !== 0) {
                 for (var i = 0; i !== Nbodies; i++) {
@@ -44843,7 +44838,7 @@ var CANNON;
                 }
             }
             // Things that does not change during iteration can be computed once
-            var invCs = GSSolver_solve_invCs, Bs = GSSolver_solve_Bs, lambda = GSSolver_solve_lambda;
+            var invCs = [], Bs = [], lambda = [];
             invCs.length = Neq;
             Bs.length = Neq;
             lambda.length = Neq;
@@ -44908,9 +44903,6 @@ var CANNON;
         return GSSolver;
     }(CANNON.Solver));
     CANNON.GSSolver = GSSolver;
-    var GSSolver_solve_lambda = []; // Just temporary number holders that we want to reuse each solve.
-    var GSSolver_solve_invCs = [];
-    var GSSolver_solve_Bs = [];
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {

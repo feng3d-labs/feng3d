@@ -18039,7 +18039,7 @@ declare namespace CANNON {
     class Box extends ConvexPolyhedron {
         halfExtents: feng3d.Vector3;
         /**
-         * A 3d box shape.
+         *
          * @param halfExtents
          * @author schteppe
          */
@@ -18047,10 +18047,10 @@ declare namespace CANNON {
         calculateLocalInertia(mass: number, target?: feng3d.Vector3): feng3d.Vector3;
         static calculateInertia(halfExtents: feng3d.Vector3, mass: number, target: feng3d.Vector3): void;
         /**
-         * 得到盒子6边的法线
+         * 得到长方体6面的法线
          *
-         * @param sixTargetVectors An array of 6 vectors, to store the resulting side normals in.
-         * @param quat             Orientation to apply to the normal vectors. If not provided, the vectors will be in respect to the local frame.
+         * @param sixTargetVectors 一个由6个向量组成的数组，用来存储产生的面法线。
+         * @param quat             将方向应用于法向量。如果没有提供，向量将是关于局部坐标系的。
          */
         getSideNormals(sixTargetVectors: feng3d.Vector3[], quat: feng3d.Quaternion): feng3d.Vector3[];
         volume(): number;
@@ -19825,6 +19825,9 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
+    /**
+     * 方程式
+     */
     class Equation {
         id: number;
         minForce: number;
@@ -20023,55 +20026,60 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    class Solver {
+    /**
+     * 求解器
+     */
+    abstract class Solver {
         /**
-         * All equations to be solved
+         * 求解的方程数组
          */
         equations: Equation[];
         /**
-         * Constraint equation solver base class.
-         * @author schteppe / https://github.com/schteppe
+         * 约束方程求解器基类
          */
         constructor();
         /**
-         * Should be implemented in subclasses!
+         * 求解
+         *
          * @param dt
          * @param world
          */
-        solve(dt: number, world: World): number;
+        abstract solve(dt: number, world: World): number;
         /**
-         * Add an equation
+         * 添加方程
+         *
          * @param eq
          */
         addEquation(eq: Equation): void;
         /**
-         * Remove an equation
+         * 移除方程式
+         *
          * @param eq
          */
         removeEquation(eq: Equation): void;
         /**
-         * Add all equations
+         * 移除所有方程式
          */
         removeAllEquations(): void;
     }
 }
 declare namespace CANNON {
+    /**
+     * 约束方程 Gauss-Seidel 求解器
+     */
     class GSSolver extends Solver {
         /**
-         * The number of solver iterations determines quality of the constraints in the world. The more iterations, the more correct simulation. More iterations need more computations though. If you have a large gravity force in your world, you will need more iterations.
-         * @todo write more about solver and iterations in the wiki
+         * 求解器迭代的次数
+         *
+         * 求解器迭代的次数决定了约束条件的质量。迭代越多，模拟就越正确。然而，更多的迭代需要更多的计算。如果你的世界有很大的重力，你将需要更多的迭代。
          */
         iterations: number;
         /**
-         * When tolerance is reached, the system is assumed to be converged.
+         * 容差
+         *
+         * 当达到容差时，假定系统是收敛的。
          */
         tolerance: number;
-        /**
-         * Constraint equation Gauss-Seidel solver.
-         * @todo The spook parameters should be specified for each constraint, not globally.
-         * @author schteppe / https://github.com/schteppe
-         * @see https://www8.cs.umu.se/kurser/5DV058/VT09/lectures/spooknotes.pdf
-         */
         constructor();
         solve(dt: number, world: World): number;
     }
