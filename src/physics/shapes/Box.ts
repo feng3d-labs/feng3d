@@ -125,14 +125,13 @@ namespace CANNON
             [e.x, e.y, -e.z],
             [-e.x, e.y, -e.z],
             [e.x, -e.y, e.z]];
+            var temp = new feng3d.Vector3();
             for (var i = 0; i < corners.length; i++)
             {
-                worldCornerTempPos.init(corners[i][0], corners[i][1], corners[i][2]);
-                quat.vmult(worldCornerTempPos, worldCornerTempPos);
-                pos.addTo(worldCornerTempPos, worldCornerTempPos);
-                callback(worldCornerTempPos.x,
-                    worldCornerTempPos.y,
-                    worldCornerTempPos.z);
+                temp.init(corners[i][0], corners[i][1], corners[i][2]);
+                quat.vmult(temp, temp);
+                pos.addTo(temp, temp);
+                callback(temp.x, temp.y, temp.z);
             }
         }
 
@@ -214,10 +213,6 @@ namespace CANNON
             // });
         }
     }
-
-
-    var worldCornerTempPos = new feng3d.Vector3();
-    var worldCornerTempNeg = new feng3d.Vector3();
 
     var worldCornersTemp = [
         new feng3d.Vector3(),
