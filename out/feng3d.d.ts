@@ -18368,26 +18368,32 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
+    /**
+     * 三角网格
+     */
     class Trimesh extends Shape {
+        /**
+         * 顶点坐标数据
+         */
         vertices: number[];
         /**
-         * The normals data.
+         * 面法线数据
          */
-        normals: Float32Array;
+        normals: number[];
         /**
-         * The local AABB of the mesh.
+         * 包围盒
          */
         aabb: AABB;
         /**
-         * References to vertex pairs, making up all unique edges in the trimesh.
+         * 边数组
          */
-        edges: any[];
+        edges: number[];
         /**
-         * Local scaling of the mesh. Use .setScale() to set it.
+         * 网格的局部缩放。使用. setscale()设置它。
          */
         scale: feng3d.Vector3;
         /**
-         * The indexed triangles. Use .updateTree() to update it.
+         * 索引的三角形。使用. updatetree()更新它。
          */
         tree: Octree;
         /**
@@ -18424,7 +18430,7 @@ declare namespace CANNON {
          */
         updateNormals(): void;
         /**
-         * Update the .edges property
+         * 更新边数组
          */
         updateEdges(): void;
         /**

@@ -238,7 +238,6 @@ namespace CANNON
          */
         toWorldFrame(frame: Transform, target: AABB)
         {
-
             var corners = transformIntoFrame_corners;
             var a = corners[0];
             var b = corners[1];

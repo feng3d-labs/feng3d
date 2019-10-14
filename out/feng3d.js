@@ -40793,6 +40793,9 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
+    /**
+     * 三角网格
+     */
     var Trimesh = /** @class */ (function (_super) {
         __extends(Trimesh, _super);
         /**
@@ -40815,12 +40818,9 @@ var CANNON;
             var _this = _super.call(this, {
                 type: CANNON.ShapeType.TRIMESH
             }) || this;
-            _this.vertices = new Float32Array(vertices);
-            /**
-             * Array of integers, indicating which vertices each triangle consists of. The length of this array is thus 3 times the number of triangles.
-             */
-            _this.indices = new Int16Array(indices);
-            _this.normals = new Float32Array(indices.length);
+            _this.vertices = vertices;
+            _this.indices = indices;
+            _this.normals.length = indices.length;
             _this.aabb = new CANNON.AABB();
             _this.edges = null;
             _this.scale = new feng3d.Vector3(1, 1, 1);
@@ -40920,11 +40920,11 @@ var CANNON;
             }
         };
         /**
-         * Update the .edges property
+         * 更新边数组
          */
         Trimesh.prototype.updateEdges = function () {
             var edges = {};
-            var add = function (indexA, indexB) {
+            var add = function (a, b) {
                 var key = a < b ? a + '_' + b : b + '_' + a;
                 edges[key] = true;
             };
@@ -40936,7 +40936,7 @@ var CANNON;
                 add(c, a);
             }
             var keys = Object.keys(edges);
-            this.edges = new Int16Array(keys.length * 2);
+            this.edges = [];
             for (var i = 0; i < keys.length; i++) {
                 var indices = keys[i].split('_');
                 this.edges[2 * i] = parseInt(indices[0], 10);
@@ -41118,37 +41118,6 @@ var CANNON;
             this.boundingSphereRadius = Math.sqrt(max2);
         };
         Trimesh.prototype.calculateWorldAABB = function (pos, quat, min, max) {
-            /*
-            var n = this.vertices.length / 3,
-                verts = this.vertices;
-            var minx,miny,minz,maxx,maxy,maxz;
-        
-            var v = tempWorldVertex;
-            for(var i=0; i<n; i++){
-                this.getVertex(i, v);
-                quat.vmult(v, v);
-                pos.vadd(v, v);
-                if (v.x < minx || minx===undefined){
-                    minx = v.x;
-                } else if(v.x > maxx || maxx===undefined){
-                    maxx = v.x;
-                }
-        
-                if (v.y < miny || miny===undefined){
-                    miny = v.y;
-                } else if(v.y > maxy || maxy===undefined){
-                    maxy = v.y;
-                }
-        
-                if (v.z < minz || minz===undefined){
-                    minz = v.z;
-                } else if(v.z > maxz || maxz===undefined){
-                    maxz = v.z;
-                }
-            }
-            min.set(minx,miny,minz);
-            max.set(maxx,maxy,maxz);
-            */
             // Faster approximation using local AABB
             var frame = calculateWorldAABB_frame;
             var result = calculateWorldAABB_aabb;
@@ -41221,7 +41190,6 @@ var CANNON;
     var vc = new feng3d.Vector3();
     var cli_aabb = new CANNON.AABB();
     var computeLocalAABB_worldVert = new feng3d.Vector3();
-    var tempWorldVertex = new feng3d.Vector3();
     var calculateWorldAABB_frame = new CANNON.Transform();
     var calculateWorldAABB_aabb = new CANNON.AABB();
 })(CANNON || (CANNON = {}));

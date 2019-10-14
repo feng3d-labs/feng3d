@@ -1,27 +1,33 @@
 namespace CANNON
 {
+    /**
+     * 三角网格
+     */
     export class Trimesh extends Shape
     {
+        /**
+         * 顶点坐标数据
+         */
         vertices: number[];
         /**
-         * The normals data.
+         * 面法线数据
          */
-        normals: Float32Array;
+        normals: number[];
         /**
-         * The local AABB of the mesh.
+         * 包围盒
          */
         aabb: AABB;
         /**
-         * References to vertex pairs, making up all unique edges in the trimesh.
+         * 边数组
          */
-        edges: any[];
+        edges: number[];
         /**
-         * Local scaling of the mesh. Use .setScale() to set it.
+         * 网格的局部缩放。使用. setscale()设置它。
          */
         scale: feng3d.Vector3;
 
         /**
-         * The indexed triangles. Use .updateTree() to update it.
+         * 索引的三角形。使用. updatetree()更新它。
          */
         tree: Octree;
 
@@ -47,14 +53,11 @@ namespace CANNON
                 type: ShapeType.TRIMESH
             });
 
-            this.vertices = <any>new Float32Array(vertices);
+            this.vertices = vertices;
 
-            /**
-             * Array of integers, indicating which vertices each triangle consists of. The length of this array is thus 3 times the number of triangles.
-             */
-            this.indices = <any>new Int16Array(indices);
+            this.indices = indices;
 
-            this.normals = new Float32Array(indices.length);
+            this.normals.length = indices.length;
 
             this.aabb = new AABB();
 
@@ -185,12 +188,12 @@ namespace CANNON
         }
 
         /**
-         * Update the .edges property
+         * 更新边数组
          */
         updateEdges()
         {
             var edges = {};
-            var add = function (indexA, indexB)
+            var add = function (a: number, b: number)
             {
                 var key = a < b ? a + '_' + b : b + '_' + a;
                 edges[key] = true;
@@ -206,7 +209,7 @@ namespace CANNON
                 add(c, a);
             }
             var keys = Object.keys(edges);
-            this.edges = <any>new Int16Array(keys.length * 2);
+            this.edges = [];
             for (var i = 0; i < keys.length; i++)
             {
                 var indices = keys[i].split('_');
@@ -445,38 +448,6 @@ namespace CANNON
 
         calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
         {
-            /*
-            var n = this.vertices.length / 3,
-                verts = this.vertices;
-            var minx,miny,minz,maxx,maxy,maxz;
-        
-            var v = tempWorldVertex;
-            for(var i=0; i<n; i++){
-                this.getVertex(i, v);
-                quat.vmult(v, v);
-                pos.vadd(v, v);
-                if (v.x < minx || minx===undefined){
-                    minx = v.x;
-                } else if(v.x > maxx || maxx===undefined){
-                    maxx = v.x;
-                }
-        
-                if (v.y < miny || miny===undefined){
-                    miny = v.y;
-                } else if(v.y > maxy || maxy===undefined){
-                    maxy = v.y;
-                }
-        
-                if (v.z < minz || minz===undefined){
-                    minz = v.z;
-                } else if(v.z > maxz || maxz===undefined){
-                    maxz = v.z;
-                }
-            }
-            min.set(minx,miny,minz);
-            max.set(maxx,maxy,maxz);
-            */
-
             // Faster approximation using local AABB
             var frame = calculateWorldAABB_frame;
             var result = calculateWorldAABB_aabb;
@@ -568,7 +539,6 @@ namespace CANNON
 
     var computeLocalAABB_worldVert = new feng3d.Vector3();
 
-    var tempWorldVertex = new feng3d.Vector3();
     var calculateWorldAABB_frame = new Transform();
     var calculateWorldAABB_aabb = new AABB();
 
