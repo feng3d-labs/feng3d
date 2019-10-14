@@ -23,15 +23,11 @@ namespace CANNON
             var sin = Math.sin;
 
             // 第一个底部顶点
-            verts.push(new feng3d.Vector3(radiusBottom * cos(0),
-                radiusBottom * sin(0),
-                -height * 0.5));
+            verts.push(new feng3d.Vector3(radiusBottom * cos(0), -height * 0.5, radiusBottom * sin(0)));
             bottomface.push(0);
 
             // 第一个顶部顶点
-            verts.push(new feng3d.Vector3(radiusTop * cos(0),
-                radiusTop * sin(0),
-                height * 0.5));
+            verts.push(new feng3d.Vector3(radiusTop * cos(0), height * 0.5, radiusTop * sin(0)));
             topface.push(1);
 
             for (var i = 0; i < N; i++)
@@ -41,14 +37,10 @@ namespace CANNON
                 if (i < N - 1)
                 {
                     // 底部
-                    verts.push(new feng3d.Vector3(radiusBottom * cos(theta),
-                        radiusBottom * sin(theta),
-                        -height * 0.5));
+                    verts.push(new feng3d.Vector3(radiusBottom * cos(theta), -height * 0.5, radiusBottom * sin(theta)));
                     bottomface.push(2 * i + 2);
                     // 顶部
-                    verts.push(new feng3d.Vector3(radiusTop * cos(theta),
-                        radiusTop * sin(theta),
-                        height * 0.5));
+                    verts.push(new feng3d.Vector3(radiusTop * cos(theta), height * 0.5, radiusTop * sin(theta)));
                     topface.push(2 * i + 3);
 
                     // 侧面
@@ -61,11 +53,11 @@ namespace CANNON
                 // 如果是偶数段，我们可以切掉一半
                 if (N % 2 === 1 || i < N / 2)
                 {
-                    axes.push(new feng3d.Vector3(cos(thetaN), sin(thetaN), 0));
+                    axes.push(new feng3d.Vector3(cos(thetaN), 0, sin(thetaN)));
                 }
             }
             faces.push(topface);
-            axes.push(new feng3d.Vector3(0, 0, 1));
+            axes.push(new feng3d.Vector3(0, 1, 0));
 
             // 反转地面
             var temp = bottomface.reverse();

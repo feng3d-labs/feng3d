@@ -134,7 +134,6 @@ namespace CANNON
 
                 var n = this.faceNormals[i] || new feng3d.Vector3();
                 this.getFaceNormal(i, n);
-                n.negateTo(n);
                 this.faceNormals[i] = n;
                 var vertex = this.vertices[this.faces[i][0]];
                 if (n.dot(vertex) < 0)
