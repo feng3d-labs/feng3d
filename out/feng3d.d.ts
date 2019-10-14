@@ -18413,20 +18413,25 @@ declare namespace CANNON {
          *     var trimeshShape = new Trimesh(vertices, indices);
          */
         constructor(vertices: number[], indices: number[]);
+        /**
+         * 更新树
+         */
         updateTree(): void;
         /**
-         * Get triangles in a local AABB from the trimesh.
+         * 从trimesh获取本地AABB中的三角形。
          *
          * @param aabb
-         * @param result An array of integers, referencing the queried triangles.
+         * @param result 一个整数数组，引用查询的三角形。
          */
-        getTrianglesInAABB(aabb: AABB, result: number[]): any[];
+        getTrianglesInAABB(aabb: AABB, result: number[]): number[];
         /**
+         * 设置缩放
+         *
          * @param scale
          */
         setScale(scale: feng3d.Vector3): void;
         /**
-         * Compute the normals of the faces. Will save in the .normals array.
+         * 计算法线
          */
         updateNormals(): void;
         /**
@@ -18434,22 +18439,22 @@ declare namespace CANNON {
          */
         updateEdges(): void;
         /**
-         * Get an edge vertex
+         * 获取边的顶点
          *
          * @param edgeIndex
-         * @param firstOrSecond 0 or 1, depending on which one of the vertices you need.
-         * @param vertexStore Where to store the result
+         * @param firstOrSecond 0还是1，取决于你需要哪个顶点。
+         * @param vertexStore 保存结果
          */
         getEdgeVertex(edgeIndex: number, firstOrSecond: number, vertexStore: feng3d.Vector3): void;
         /**
-         * Get a vector along an edge.
+         * 沿着一条边得到一个向量。
          *
          * @param edgeIndex
          * @param vectorStore
          */
         getEdgeVector(edgeIndex: number, vectorStore: feng3d.Vector3): void;
         /**
-         * Get face normal given 3 vertices
+         * 得到3个顶点的法向量
          *
          * @param va
          * @param vb
@@ -18458,7 +18463,7 @@ declare namespace CANNON {
          */
         static computeNormal(va: feng3d.Vector3, vb: feng3d.Vector3, vc: feng3d.Vector3, target: feng3d.Vector3): void;
         /**
-         * Get vertex i.
+         * 获取顶点
          *
          * @param i
          * @param out
@@ -18466,7 +18471,7 @@ declare namespace CANNON {
          */
         getVertex(i: number, out: feng3d.Vector3): feng3d.Vector3;
         /**
-         * Get raw vertex i
+         * 获取原始顶点
          *
          * @param i
          * @param out
@@ -18474,7 +18479,7 @@ declare namespace CANNON {
          */
         private _getUnscaledVertex;
         /**
-         * Get a vertex from the trimesh,transformed by the given position and quaternion.
+         * 通过给定的位置和四元数转换，从三元组中得到一个顶点。
          *
          * @param i
          * @param pos
@@ -18484,7 +18489,7 @@ declare namespace CANNON {
          */
         getWorldVertex(i: number, transform: Transform, out: feng3d.Vector3): feng3d.Vector3;
         /**
-         * Get the three vertices for triangle i.
+         * 从三角形中获取三个顶点
          *
          * @param i
          * @param a
@@ -18493,7 +18498,7 @@ declare namespace CANNON {
          */
         getTriangleVertices(i: number, a: feng3d.Vector3, b: feng3d.Vector3, c: feng3d.Vector3): void;
         /**
-         * Compute the normal of triangle i.
+         * 获取三角形的法线
          *
          * @param i
          * @param target
@@ -18508,36 +18513,32 @@ declare namespace CANNON {
          */
         calculateLocalInertia(mass: number, target: feng3d.Vector3): feng3d.Vector3;
         /**
-         * Compute the local AABB for the trimesh
+         * 计算包围盒
          *
          * @param aabb
          */
         computeLocalAABB(aabb: AABB): void;
         /**
-         * Update the .aabb property
+         * 更新包围盒
          */
         updateAABB(): void;
         /**
-         * Will update the .boundingSphereRadius property
+         * 更新此形状的局部包围球半径
          */
         updateBoundingSphereRadius(): void;
+        /**
+         * 计算世界包围盒
+         *
+         * @param pos
+         * @param quat
+         * @param min
+         * @param max
+         */
         calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
         /**
-         * Get approximate volume
+         * 得到近似体积
          */
         volume(): number;
-        /**
-         * Create a Trimesh instance, shaped as a torus.
-         *
-         * @param radius
-         * @param tube
-         * @param radialSegments
-         * @param tubularSegments
-         * @param arc
-         *
-         * @return A torus
-         */
-        static createTorus(radius: number, tube: number, radialSegments: number, tubularSegments: number, arc: number): Trimesh;
     }
 }
 declare namespace CANNON {
@@ -18588,7 +18589,7 @@ declare namespace CANNON {
          * @param result
          * @return The "result" object
          */
-        aabbQuery(aabb: AABB, result: any[]): any[];
+        aabbQuery(aabb: AABB, result: number[]): number[];
         /**
          * Get all data, potentially intersected by a ray.
          *

@@ -145,7 +145,7 @@ namespace CANNON
          * @param result
          * @return The "result" object
          */
-        aabbQuery(aabb: AABB, result: any[])
+        aabbQuery(aabb: AABB, result: number[])
         {
             var nodeData = this.data;
 
