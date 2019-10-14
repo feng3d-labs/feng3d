@@ -40,25 +40,25 @@ namespace CANNON
                 var thetaN = 2 * Math.PI / N * (i + 0.5);
                 if (i < N - 1)
                 {
-                    // Bottom
+                    // 底部
                     verts.push(new feng3d.Vector3(radiusBottom * cos(theta),
                         radiusBottom * sin(theta),
                         -height * 0.5));
                     bottomface.push(2 * i + 2);
-                    // Top
+                    // 顶部
                     verts.push(new feng3d.Vector3(radiusTop * cos(theta),
                         radiusTop * sin(theta),
                         height * 0.5));
                     topface.push(2 * i + 3);
 
-                    // Face
+                    // 侧面
                     faces.push([2 * i + 2, 2 * i + 3, 2 * i + 1, 2 * i]);
                 } else
                 {
-                    faces.push([0, 1, 2 * i + 1, 2 * i]); // Connect
+                    faces.push([0, 1, 2 * i + 1, 2 * i]); // 连接处
                 }
 
-                // Axis: we can cut off half of them if we have even number of segments
+                // 如果是偶数段，我们可以切掉一半
                 if (N % 2 === 1 || i < N / 2)
                 {
                     axes.push(new feng3d.Vector3(cos(thetaN), sin(thetaN), 0));
@@ -67,12 +67,8 @@ namespace CANNON
             faces.push(topface);
             axes.push(new feng3d.Vector3(0, 0, 1));
 
-            // Reorder bottom face
-            var temp = [];
-            for (var i = 0; i < bottomface.length; i++)
-            {
-                temp.push(bottomface[bottomface.length - i - 1]);
-            }
+            // 反转地面
+            var temp = bottomface.reverse();
             faces.push(temp);
 
             super(verts, faces, axes);
