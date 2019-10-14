@@ -18071,23 +18071,24 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
+    /**
+     * 高度场
+     */
     class Heightfield extends Shape {
         /**
-         * An array of numbers, or height values, that are spread out along the x axis.
-         * @property {array} data
+         * 沿x轴展开的一组数字或高度值。
          */
-        data: any[];
+        data: number[][];
         /**
-         * Max value of the data
+         * 最大值
          */
         maxValue: number;
         /**
-         * Max value of the data
+         * 最小值
          */
         minValue: number;
         /**
-          * The width of each element
-          * @todo elementSizeX and Y
+          * 每个元素的宽度
           */
         elementSize: number;
         cacheEnabled: boolean;
@@ -18121,30 +18122,25 @@ declare namespace CANNON {
          *     heightfieldBody.addShape(heightfieldShape);
          *     world.addBody(heightfieldBody);
          */
-        /**
-         *
-         * @param data
-         * @param options
-         */
-        constructor(data: any[], options?: {
+        constructor(data: number[][], options?: {
             maxValue?: number;
             minValue?: number;
             elementSize?: number;
         });
         /**
-         * Call whenever you change the data array.
+         * 更新
          */
         update(): void;
         /**
-         * Update the .minValue property
+         * 更新最小值
          */
         updateMinValue(): void;
         /**
-         * Update the .maxValue property
+         * 更新最大值
          */
         updateMaxValue(): void;
         /**
-         * Set the height value at an index. Don't forget to update maxValue and minValue after you're done.
+         * 在索引处设置高度值。完成后不要忘记更新maxValue和minValue。
          *
          * @param xi
          * @param yi
@@ -18152,29 +18148,46 @@ declare namespace CANNON {
          */
         setHeightValueAtIndex(xi: number, yi: number, value: number): void;
         /**
-         * Get max/min in a rectangle in the matrix data
+         * 获取矩形数据中的最大最小值
          *
          * @param iMinX
          * @param iMinY
          * @param iMaxX
          * @param iMaxY
-         * @param result An array to store the results in.
-         * @return The result array, if it was passed in. Minimum will be at position 0 and max at 1.
+         * @param result
          */
-        getRectMinMax(iMinX: number, iMinY: number, iMaxX: number, iMaxY: number, result: any[]): void;
+        getRectMinMax(iMinX: number, iMinY: number, iMaxX: number, iMaxY: number, result: number[]): void;
         /**
-         * Get the index of a local position on the heightfield. The indexes indicate the rectangles, so if your terrain is made of N x N height data points, you will have rectangle indexes ranging from 0 to N-1.
+         * 获取heightfield上本地位置的索引。索引表示矩形，因此，如果地形由N x N个高度数据点组成，则矩形索引的范围为0到N-1。
          *
          * @param x
          * @param y
-         * @param result Two-element array
-         * @param clamp If the position should be clamped to the heightfield edge.
+         * @param result
+         * @param clamp
          */
-        getIndexOfPosition(x: number, y: number, result: any[], clamp: boolean): boolean;
+        getIndexOfPosition(x: number, y: number, result: number[], clamp: boolean): boolean;
+        /**
+         * 获取三角形
+         *
+         * @param x
+         * @param y
+         * @param edgeClamp
+         * @param a
+         * @param b
+         * @param c
+         */
         getTriangleAt(x: number, y: number, edgeClamp: boolean, a: feng3d.Vector3, b: feng3d.Vector3, c: feng3d.Vector3): boolean;
+        /**
+         * 获取法线
+         *
+         * @param x
+         * @param y
+         * @param edgeClamp
+         * @param result
+         */
         getNormalAt(x: number, y: number, edgeClamp: boolean, result: feng3d.Vector3): void;
         /**
-         * Get an AABB of a square in the heightfield
+         * 获取指定位置的包围盒
          *
          * @param xi
          * @param yi
@@ -18182,19 +18195,52 @@ declare namespace CANNON {
          */
         getAabbAtIndex(xi: number, yi: number, result: AABB): void;
         /**
-         * Get the height in the heightfield at a given position
+         * 获取指定位置高度
          *
          * @param x
          * @param y
          * @param edgeClamp
          */
         getHeightAt(x: number, y: number, edgeClamp: boolean): number;
+        /**
+         * 获取缓冲键值
+         *
+         * @param xi
+         * @param yi
+         * @param getUpperTriangle
+         */
         getCacheConvexTrianglePillarKey(xi: number, yi: number, getUpperTriangle: boolean): string;
-        getCachedConvexTrianglePillar(xi: number, yi: number, getUpperTriangle: boolean): any;
+        /**
+         * 获取缓冲值
+         *
+         * @param xi
+         * @param yi
+         * @param getUpperTriangle
+         */
+        getCachedConvexTrianglePillar(xi: number, yi: number, getUpperTriangle: boolean): {
+            convex: ConvexPolyhedron;
+            offset: feng3d.Vector3;
+        };
+        /**
+         * 设置缓冲值
+         *
+         * @param xi
+         * @param yi
+         * @param getUpperTriangle
+         * @param convex
+         * @param offset
+         */
         setCachedConvexTrianglePillar(xi: number, yi: number, getUpperTriangle: boolean, convex: ConvexPolyhedron, offset: feng3d.Vector3): void;
+        /**
+         * 清楚缓冲
+         *
+         * @param xi
+         * @param yi
+         * @param getUpperTriangle
+         */
         clearCachedConvexTrianglePillar(xi: number, yi: number, getUpperTriangle: boolean): void;
         /**
-         * Get a triangle from the heightfield
+         * 获取三角形
          *
          * @param xi
          * @param yi
@@ -18205,7 +18251,7 @@ declare namespace CANNON {
          */
         getTriangle(xi: number, yi: number, upper: boolean, a: feng3d.Vector3, b: feng3d.Vector3, c: feng3d.Vector3): void;
         /**
-         * Get a triangle in the terrain in the form of a triangular convex shape.
+         * 在地形中以三角形凸形的形式得到一个三角形。
          *
          * @param i
          * @param j
@@ -18217,7 +18263,7 @@ declare namespace CANNON {
         calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
         updateBoundingSphereRadius(): void;
         /**
-         * Sets the height values from an image. Currently only supported in browser.
+         * 设置图像的高度值。目前只支持浏览器。
          *
          * @param image
          * @param scale

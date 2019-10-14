@@ -1,29 +1,35 @@
 namespace CANNON
 {
+    /**
+     * 高度场
+     */
     export class Heightfield extends Shape
     {
         /**
-         * An array of numbers, or height values, that are spread out along the x axis.
-         * @property {array} data
+         * 沿x轴展开的一组数字或高度值。
          */
-        data: any[];
+        data: number[][];
         /**
-         * Max value of the data
+         * 最大值
          */
         maxValue: number;
         /**
-         * Max value of the data
+         * 最小值
          */
         minValue: number;
         /**
-          * The width of each element
-          * @todo elementSizeX and Y
+          * 每个元素的宽度
           */
         elementSize: number;
         cacheEnabled: boolean;
         pillarConvex: ConvexPolyhedron;
         pillarOffset: feng3d.Vector3;
-        private _cachedPillars: {};
+        private _cachedPillars: {
+            [key: string]: {
+                convex: ConvexPolyhedron,
+                offset: feng3d.Vector3
+            }
+        };
 
         /**
          * Heightfield shape class. Height data is given as an array. These data points are spread out evenly with a given distance.
@@ -52,12 +58,7 @@ namespace CANNON
          *     heightfieldBody.addShape(heightfieldShape);
          *     world.addBody(heightfieldBody);
          */
-        /**
-         * 
-         * @param data 
-         * @param options 
-         */
-        constructor(data: any[], options: { maxValue?: number, minValue?: number, elementSize?: number } = {})
+        constructor(data: number[][], options: { maxValue?: number, minValue?: number, elementSize?: number } = {})
         {
             super();
             options = Utils.defaults(options, {
@@ -94,14 +95,11 @@ namespace CANNON
 
             this.updateBoundingSphereRadius();
 
-            // "i_j_isUpper" => { convex: ..., offset: ... }
-            // for example:
-            // _cachedPillars["0_2_1"]
             this._cachedPillars = {};
         }
 
         /**
-         * Call whenever you change the data array.
+         * 更新
          */
         update()
         {
@@ -109,7 +107,7 @@ namespace CANNON
         }
 
         /**
-         * Update the .minValue property
+         * 更新最小值
          */
         updateMinValue()
         {
@@ -130,7 +128,7 @@ namespace CANNON
         }
 
         /**
-         * Update the .maxValue property
+         * 更新最大值
          */
         updateMaxValue()
         {
@@ -151,7 +149,7 @@ namespace CANNON
         }
 
         /**
-         * Set the height value at an index. Don't forget to update maxValue and minValue after you're done.
+         * 在索引处设置高度值。完成后不要忘记更新maxValue和minValue。
          * 
          * @param xi
          * @param yi
@@ -181,16 +179,15 @@ namespace CANNON
         }
 
         /**
-         * Get max/min in a rectangle in the matrix data
+         * 获取矩形数据中的最大最小值
          * 
          * @param iMinX
          * @param iMinY
          * @param iMaxX
          * @param iMaxY
-         * @param result An array to store the results in.
-         * @return The result array, if it was passed in. Minimum will be at position 0 and max at 1.
+         * @param result
          */
-        getRectMinMax(iMinX: number, iMinY: number, iMaxX: number, iMaxY: number, result: any[])
+        getRectMinMax(iMinX: number, iMinY: number, iMaxX: number, iMaxY: number, result: number[])
         {
             result = result || [];
 
@@ -214,14 +211,14 @@ namespace CANNON
         }
 
         /**
-         * Get the index of a local position on the heightfield. The indexes indicate the rectangles, so if your terrain is made of N x N height data points, you will have rectangle indexes ranging from 0 to N-1.
+         * 获取heightfield上本地位置的索引。索引表示矩形，因此，如果地形由N x N个高度数据点组成，则矩形索引的范围为0到N-1。
          * 
          * @param x
          * @param y
-         * @param result Two-element array
-         * @param clamp If the position should be clamped to the heightfield edge.
+         * @param result
+         * @param clamp
          */
-        getIndexOfPosition(x: number, y: number, result: any[], clamp: boolean)
+        getIndexOfPosition(x: number, y: number, result: number[], clamp: boolean)
         {
             // Get the index of the data points to test against
             var w = this.elementSize;
@@ -250,9 +247,19 @@ namespace CANNON
             return true;
         }
 
+        /**
+         * 获取三角形
+         * 
+         * @param x 
+         * @param y 
+         * @param edgeClamp 
+         * @param a 
+         * @param b 
+         * @param c 
+         */
         getTriangleAt(x: number, y: number, edgeClamp: boolean, a: feng3d.Vector3, b: feng3d.Vector3, c: feng3d.Vector3)
         {
-            var idx = getHeightAt_idx;
+            var idx: number[] = [];
             this.getIndexOfPosition(x, y, idx, edgeClamp);
             var xi = idx[0];
             var yi = idx[1];
@@ -272,13 +279,21 @@ namespace CANNON
             return upper;
         }
 
+        /**
+         * 获取法线
+         * 
+         * @param x 
+         * @param y 
+         * @param edgeClamp 
+         * @param result 
+         */
         getNormalAt(x: number, y: number, edgeClamp: boolean, result: feng3d.Vector3)
         {
-            var a = getNormalAt_a;
-            var b = getNormalAt_b;
-            var c = getNormalAt_c;
-            var e0 = getNormalAt_e0;
-            var e1 = getNormalAt_e1;
+            var a = new feng3d.Vector3();
+            var b = new feng3d.Vector3();
+            var c = new feng3d.Vector3();
+            var e0 = new feng3d.Vector3();
+            var e1 = new feng3d.Vector3();
             this.getTriangleAt(x, y, edgeClamp, a, b, c);
             b.subTo(a, e0);
             c.subTo(a, e1);
@@ -287,7 +302,7 @@ namespace CANNON
         }
 
         /**
-         * Get an AABB of a square in the heightfield
+         * 获取指定位置的包围盒
          * 
          * @param xi
          * @param yi
@@ -311,7 +326,7 @@ namespace CANNON
         }
 
         /**
-         * Get the height in the heightfield at a given position
+         * 获取指定位置高度
          * 
          * @param x
          * @param y
@@ -320,10 +335,13 @@ namespace CANNON
         getHeightAt(x: number, y: number, edgeClamp: boolean)
         {
             var data = this.data;
-            var a = getHeightAt_a;
-            var b = getHeightAt_b;
-            var c = getHeightAt_c;
-            var idx = getHeightAt_idx;
+
+            var getHeightAt_weights = new feng3d.Vector3();
+
+            var a = new feng3d.Vector3();
+            var b = new feng3d.Vector3();
+            var c = new feng3d.Vector3();
+            var idx: number[] = [];
 
             this.getIndexOfPosition(x, y, idx, edgeClamp);
             var xi = idx[0];
@@ -340,28 +358,49 @@ namespace CANNON
 
             if (upper)
             {
-
                 // Top triangle verts
                 return data[xi + 1][yi + 1] * w.x + data[xi][yi + 1] * w.y + data[xi + 1][yi] * w.z;
 
             } else
             {
-
                 // Top triangle verts
                 return data[xi][yi] * w.x + data[xi + 1][yi] * w.y + data[xi][yi + 1] * w.z;
             }
         }
 
+        /**
+         * 获取缓冲键值
+         * 
+         * @param xi 
+         * @param yi 
+         * @param getUpperTriangle 
+         */
         getCacheConvexTrianglePillarKey(xi: number, yi: number, getUpperTriangle: boolean)
         {
             return xi + '_' + yi + '_' + (getUpperTriangle ? 1 : 0);
         }
 
+        /**
+         * 获取缓冲值
+         * 
+         * @param xi 
+         * @param yi 
+         * @param getUpperTriangle 
+         */
         getCachedConvexTrianglePillar(xi: number, yi: number, getUpperTriangle: boolean)
         {
             return this._cachedPillars[this.getCacheConvexTrianglePillarKey(xi, yi, getUpperTriangle)];
         }
 
+        /**
+         * 设置缓冲值
+         * 
+         * @param xi 
+         * @param yi 
+         * @param getUpperTriangle 
+         * @param convex 
+         * @param offset 
+         */
         setCachedConvexTrianglePillar(xi: number, yi: number, getUpperTriangle: boolean, convex: ConvexPolyhedron, offset: feng3d.Vector3)
         {
             this._cachedPillars[this.getCacheConvexTrianglePillarKey(xi, yi, getUpperTriangle)] = {
@@ -370,13 +409,20 @@ namespace CANNON
             };
         }
 
+        /**
+         * 清楚缓冲
+         * 
+         * @param xi 
+         * @param yi 
+         * @param getUpperTriangle 
+         */
         clearCachedConvexTrianglePillar(xi: number, yi: number, getUpperTriangle: boolean)
         {
             delete this._cachedPillars[this.getCacheConvexTrianglePillarKey(xi, yi, getUpperTriangle)];
         }
 
         /**
-         * Get a triangle from the heightfield
+         * 获取三角形
          * 
          * @param xi
          * @param yi
@@ -394,46 +440,21 @@ namespace CANNON
             {
 
                 // Top triangle verts
-                a.init(
-                    (xi + 1) * elementSize,
-                    (yi + 1) * elementSize,
-                    data[xi + 1][yi + 1]
-                );
-                b.init(
-                    xi * elementSize,
-                    (yi + 1) * elementSize,
-                    data[xi][yi + 1]
-                );
-                c.init(
-                    (xi + 1) * elementSize,
-                    yi * elementSize,
-                    data[xi + 1][yi]
-                );
+                a.init((xi + 1) * elementSize, (yi + 1) * elementSize, data[xi + 1][yi + 1]);
+                b.init(xi * elementSize, (yi + 1) * elementSize, data[xi][yi + 1]);
+                c.init((xi + 1) * elementSize, yi * elementSize, data[xi + 1][yi]);
 
             } else
             {
-
                 // Top triangle verts
-                a.init(
-                    xi * elementSize,
-                    yi * elementSize,
-                    data[xi][yi]
-                );
-                b.init(
-                    (xi + 1) * elementSize,
-                    yi * elementSize,
-                    data[xi + 1][yi]
-                );
-                c.init(
-                    xi * elementSize,
-                    (yi + 1) * elementSize,
-                    data[xi][yi + 1]
-                );
+                a.init(xi * elementSize, yi * elementSize, data[xi][yi]);
+                b.init((xi + 1) * elementSize, yi * elementSize, data[xi + 1][yi]);
+                c.init(xi * elementSize, (yi + 1) * elementSize, data[xi][yi + 1]);
             }
         };
 
         /**
-         * Get a triangle in the terrain in the form of a triangular convex shape.
+         * 在地形中以三角形凸形的形式得到一个三角形。
          * 
          * @param i
          * @param j
@@ -496,7 +517,6 @@ namespace CANNON
 
             if (!getUpperTriangle)
             {
-
                 // Center of the triangle pillar - all polygons are given relative to this one
                 offsetResult.init(
                     (xi + 0.25) * elementSize, // sort of center of a triangle
@@ -565,7 +585,6 @@ namespace CANNON
                 faces[4][1] = 5;
                 faces[4][2] = 2;
                 faces[4][3] = 1;
-
 
             } else
             {
@@ -674,7 +693,7 @@ namespace CANNON
         }
 
         /**
-         * Sets the height values from an image. Currently only supported in browser.
+         * 设置图像的高度值。目前只支持浏览器。
          * 
          * @param image
          * @param scale
@@ -722,22 +741,8 @@ namespace CANNON
         }
     }
 
-    var getHeightAt_idx = [];
-    var getHeightAt_weights = new feng3d.Vector3();
-    var getHeightAt_a = new feng3d.Vector3();
-    var getHeightAt_b = new feng3d.Vector3();
-    var getHeightAt_c = new feng3d.Vector3();
-
-
-    var getNormalAt_a = new feng3d.Vector3();
-    var getNormalAt_b = new feng3d.Vector3();
-    var getNormalAt_c = new feng3d.Vector3();
-    var getNormalAt_e0 = new feng3d.Vector3();
-    var getNormalAt_e1 = new feng3d.Vector3();
-
-
     // from https://en.wikipedia.org/wiki/Barycentric_coordinate_system
-    function barycentricWeights(x, y, ax, ay, bx, by, cx, cy, result)
+    function barycentricWeights(x: number, y: number, ax: number, ay: number, bx: number, by: number, cx: number, cy: number, result: feng3d.Vector3)
     {
         result.x = ((by - cy) * (x - cx) + (cx - bx) * (y - cy)) / ((by - cy) * (ax - cx) + (cx - bx) * (ay - cy));
         result.y = ((cy - ay) * (x - cx) + (ax - cx) * (y - cy)) / ((by - cy) * (ax - cx) + (cx - bx) * (ay - cy));

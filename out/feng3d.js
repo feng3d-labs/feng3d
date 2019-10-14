@@ -39894,6 +39894,9 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
+    /**
+     * 高度场
+     */
     var Heightfield = /** @class */ (function (_super) {
         __extends(Heightfield, _super);
         /**
@@ -39923,11 +39926,6 @@ var CANNON;
          *     heightfieldBody.addShape(heightfieldShape);
          *     world.addBody(heightfieldBody);
          */
-        /**
-         *
-         * @param data
-         * @param options
-         */
         function Heightfield(data, options) {
             if (options === void 0) { options = {}; }
             var _this = _super.call(this) || this;
@@ -39953,20 +39951,17 @@ var CANNON;
             _this.pillarConvex = new CANNON.ConvexPolyhedron();
             _this.pillarOffset = new feng3d.Vector3();
             _this.updateBoundingSphereRadius();
-            // "i_j_isUpper" => { convex: ..., offset: ... }
-            // for example:
-            // _cachedPillars["0_2_1"]
             _this._cachedPillars = {};
             return _this;
         }
         /**
-         * Call whenever you change the data array.
+         * 更新
          */
         Heightfield.prototype.update = function () {
             this._cachedPillars = {};
         };
         /**
-         * Update the .minValue property
+         * 更新最小值
          */
         Heightfield.prototype.updateMinValue = function () {
             var data = this.data;
@@ -39982,7 +39977,7 @@ var CANNON;
             this.minValue = minValue;
         };
         /**
-         * Update the .maxValue property
+         * 更新最大值
          */
         Heightfield.prototype.updateMaxValue = function () {
             var data = this.data;
@@ -39998,7 +39993,7 @@ var CANNON;
             this.maxValue = maxValue;
         };
         /**
-         * Set the height value at an index. Don't forget to update maxValue and minValue after you're done.
+         * 在索引处设置高度值。完成后不要忘记更新maxValue和minValue。
          *
          * @param xi
          * @param yi
@@ -40022,14 +40017,13 @@ var CANNON;
             }
         };
         /**
-         * Get max/min in a rectangle in the matrix data
+         * 获取矩形数据中的最大最小值
          *
          * @param iMinX
          * @param iMinY
          * @param iMaxX
          * @param iMaxY
-         * @param result An array to store the results in.
-         * @return The result array, if it was passed in. Minimum will be at position 0 and max at 1.
+         * @param result
          */
         Heightfield.prototype.getRectMinMax = function (iMinX, iMinY, iMaxX, iMaxY, result) {
             result = result || [];
@@ -40047,12 +40041,12 @@ var CANNON;
             result[1] = max;
         };
         /**
-         * Get the index of a local position on the heightfield. The indexes indicate the rectangles, so if your terrain is made of N x N height data points, you will have rectangle indexes ranging from 0 to N-1.
+         * 获取heightfield上本地位置的索引。索引表示矩形，因此，如果地形由N x N个高度数据点组成，则矩形索引的范围为0到N-1。
          *
          * @param x
          * @param y
-         * @param result Two-element array
-         * @param clamp If the position should be clamped to the heightfield edge.
+         * @param result
+         * @param clamp
          */
         Heightfield.prototype.getIndexOfPosition = function (x, y, result, clamp) {
             // Get the index of the data points to test against
@@ -40083,8 +40077,18 @@ var CANNON;
             }
             return true;
         };
+        /**
+         * 获取三角形
+         *
+         * @param x
+         * @param y
+         * @param edgeClamp
+         * @param a
+         * @param b
+         * @param c
+         */
         Heightfield.prototype.getTriangleAt = function (x, y, edgeClamp, a, b, c) {
-            var idx = getHeightAt_idx;
+            var idx = [];
             this.getIndexOfPosition(x, y, idx, edgeClamp);
             var xi = idx[0];
             var yi = idx[1];
@@ -40100,12 +40104,20 @@ var CANNON;
             this.getTriangle(xi, yi, upper, a, b, c);
             return upper;
         };
+        /**
+         * 获取法线
+         *
+         * @param x
+         * @param y
+         * @param edgeClamp
+         * @param result
+         */
         Heightfield.prototype.getNormalAt = function (x, y, edgeClamp, result) {
-            var a = getNormalAt_a;
-            var b = getNormalAt_b;
-            var c = getNormalAt_c;
-            var e0 = getNormalAt_e0;
-            var e1 = getNormalAt_e1;
+            var a = new feng3d.Vector3();
+            var b = new feng3d.Vector3();
+            var c = new feng3d.Vector3();
+            var e0 = new feng3d.Vector3();
+            var e1 = new feng3d.Vector3();
             this.getTriangleAt(x, y, edgeClamp, a, b, c);
             b.subTo(a, e0);
             c.subTo(a, e1);
@@ -40113,7 +40125,7 @@ var CANNON;
             result.normalize();
         };
         /**
-         * Get an AABB of a square in the heightfield
+         * 获取指定位置的包围盒
          *
          * @param xi
          * @param yi
@@ -40126,7 +40138,7 @@ var CANNON;
             result.upperBound.init((xi + 1) * elementSize, (yi + 1) * elementSize, data[xi + 1][yi + 1]);
         };
         /**
-         * Get the height in the heightfield at a given position
+         * 获取指定位置高度
          *
          * @param x
          * @param y
@@ -40134,10 +40146,11 @@ var CANNON;
          */
         Heightfield.prototype.getHeightAt = function (x, y, edgeClamp) {
             var data = this.data;
-            var a = getHeightAt_a;
-            var b = getHeightAt_b;
-            var c = getHeightAt_c;
-            var idx = getHeightAt_idx;
+            var getHeightAt_weights = new feng3d.Vector3();
+            var a = new feng3d.Vector3();
+            var b = new feng3d.Vector3();
+            var c = new feng3d.Vector3();
+            var idx = [];
             this.getIndexOfPosition(x, y, idx, edgeClamp);
             var xi = idx[0];
             var yi = idx[1];
@@ -40157,23 +40170,53 @@ var CANNON;
                 return data[xi][yi] * w.x + data[xi + 1][yi] * w.y + data[xi][yi + 1] * w.z;
             }
         };
+        /**
+         * 获取缓冲键值
+         *
+         * @param xi
+         * @param yi
+         * @param getUpperTriangle
+         */
         Heightfield.prototype.getCacheConvexTrianglePillarKey = function (xi, yi, getUpperTriangle) {
             return xi + '_' + yi + '_' + (getUpperTriangle ? 1 : 0);
         };
+        /**
+         * 获取缓冲值
+         *
+         * @param xi
+         * @param yi
+         * @param getUpperTriangle
+         */
         Heightfield.prototype.getCachedConvexTrianglePillar = function (xi, yi, getUpperTriangle) {
             return this._cachedPillars[this.getCacheConvexTrianglePillarKey(xi, yi, getUpperTriangle)];
         };
+        /**
+         * 设置缓冲值
+         *
+         * @param xi
+         * @param yi
+         * @param getUpperTriangle
+         * @param convex
+         * @param offset
+         */
         Heightfield.prototype.setCachedConvexTrianglePillar = function (xi, yi, getUpperTriangle, convex, offset) {
             this._cachedPillars[this.getCacheConvexTrianglePillarKey(xi, yi, getUpperTriangle)] = {
                 convex: convex,
                 offset: offset
             };
         };
+        /**
+         * 清楚缓冲
+         *
+         * @param xi
+         * @param yi
+         * @param getUpperTriangle
+         */
         Heightfield.prototype.clearCachedConvexTrianglePillar = function (xi, yi, getUpperTriangle) {
             delete this._cachedPillars[this.getCacheConvexTrianglePillarKey(xi, yi, getUpperTriangle)];
         };
         /**
-         * Get a triangle from the heightfield
+         * 获取三角形
          *
          * @param xi
          * @param yi
@@ -40200,7 +40243,7 @@ var CANNON;
         };
         ;
         /**
-         * Get a triangle in the terrain in the form of a triangular convex shape.
+         * 在地形中以三角形凸形的形式得到一个三角形。
          *
          * @param i
          * @param j
@@ -40339,7 +40382,7 @@ var CANNON;
             this.boundingSphereRadius = new feng3d.Vector3(data.length * s, data[0].length * s, Math.max(Math.abs(this.maxValue), Math.abs(this.minValue))).length;
         };
         /**
-         * Sets the height values from an image. Currently only supported in browser.
+         * 设置图像的高度值。目前只支持浏览器。
          *
          * @param image
          * @param scale
@@ -40382,16 +40425,6 @@ var CANNON;
         return Heightfield;
     }(CANNON.Shape));
     CANNON.Heightfield = Heightfield;
-    var getHeightAt_idx = [];
-    var getHeightAt_weights = new feng3d.Vector3();
-    var getHeightAt_a = new feng3d.Vector3();
-    var getHeightAt_b = new feng3d.Vector3();
-    var getHeightAt_c = new feng3d.Vector3();
-    var getNormalAt_a = new feng3d.Vector3();
-    var getNormalAt_b = new feng3d.Vector3();
-    var getNormalAt_c = new feng3d.Vector3();
-    var getNormalAt_e0 = new feng3d.Vector3();
-    var getNormalAt_e1 = new feng3d.Vector3();
     // from https://en.wikipedia.org/wiki/Barycentric_coordinate_system
     function barycentricWeights(x, y, ax, ay, bx, by, cx, cy, result) {
         result.x = ((by - cy) * (x - cx) + (cx - bx) * (y - cy)) / ((by - cy) * (ax - cx) + (cx - bx) * (ay - cy));
