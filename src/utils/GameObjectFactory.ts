@@ -75,10 +75,13 @@ namespace feng3d
 
         createCapsule(name = "capsule")
         {
-            return serialization.setValue(new GameObject(), {
+            var g = serialization.setValue(new GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.capsule },]
             });
+            g.addComponent(CapsuleCollider);
+            g.addComponent(Rigidbody);
+            return g;
         }
 
         createTerrain(name = "Terrain")

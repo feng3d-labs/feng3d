@@ -57,7 +57,7 @@ namespace CANNON
 
             this.indices = indices;
 
-            this.normals.length = indices.length;
+            this.normals = [];
 
             this.aabb = new AABB();
 

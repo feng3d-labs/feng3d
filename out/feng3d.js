@@ -38057,10 +38057,13 @@ var feng3d;
         };
         GameObjectFactory.prototype.createCapsule = function (name) {
             if (name === void 0) { name = "capsule"; }
-            return feng3d.serialization.setValue(new feng3d.GameObject(), {
+            var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.capsule },]
             });
+            g.addComponent(feng3d.CapsuleCollider);
+            g.addComponent(feng3d.Rigidbody);
+            return g;
         };
         GameObjectFactory.prototype.createTerrain = function (name) {
             if (name === void 0) { name = "Terrain"; }
@@ -40820,7 +40823,7 @@ var CANNON;
             }) || this;
             _this.vertices = vertices;
             _this.indices = indices;
-            _this.normals.length = indices.length;
+            _this.normals = [];
             _this.aabb = new CANNON.AABB();
             _this.edges = null;
             _this.scale = new feng3d.Vector3(1, 1, 1);
@@ -47325,6 +47328,139 @@ var feng3d;
         return CylinderCollider;
     }(feng3d.Collider));
     feng3d.CylinderCollider = CylinderCollider;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 胶囊体碰撞体
+     */
+    var CapsuleCollider = /** @class */ (function (_super) {
+        __extends(CapsuleCollider, _super);
+        function CapsuleCollider() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this._radius = 0.5;
+            _this._height = 1;
+            _this._segmentsW = 16;
+            _this._segmentsH = 15;
+            _this._yUp = true;
+            return _this;
+        }
+        Object.defineProperty(CapsuleCollider.prototype, "radius", {
+            /**
+             * 胶囊体半径
+             */
+            get: function () {
+                return this._radius;
+            },
+            set: function (v) {
+                if (this._radius == v)
+                    return;
+                this._radius = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CapsuleCollider.prototype, "height", {
+            /**
+             * 胶囊体高度
+             */
+            get: function () {
+                return this._height;
+            },
+            set: function (v) {
+                if (this._height == v)
+                    return;
+                this._height = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CapsuleCollider.prototype, "segmentsW", {
+            /**
+             * 横向分割数
+             */
+            get: function () {
+                return this._segmentsW;
+            },
+            set: function (v) {
+                if (this._segmentsW == v)
+                    return;
+                this._segmentsW = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CapsuleCollider.prototype, "segmentsH", {
+            /**
+             * 纵向分割数
+             */
+            get: function () {
+                return this._segmentsH;
+            },
+            set: function (v) {
+                if (this._segmentsH == v)
+                    return;
+                this._segmentsH = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CapsuleCollider.prototype, "yUp", {
+            /**
+             * 正面朝向 true:Y+ false:Z+
+             */
+            get: function () {
+                return this._yUp;
+            },
+            set: function (v) {
+                if (this._yUp == v)
+                    return;
+                this._yUp = v;
+                this.invalidateGeometry();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        CapsuleCollider.prototype.init = function () {
+            this.invalidateGeometry();
+        };
+        CapsuleCollider.prototype.invalidateGeometry = function () {
+            var g = new feng3d.CapsuleGeometry();
+            g.radius = this._radius;
+            g.height = this._height;
+            g.segmentsW = this._segmentsW;
+            g.segmentsH = this._segmentsH;
+            g.yUp = this._yUp;
+            g.updateGrometry();
+            this._shape = new CANNON.Trimesh(g.positions, g.indices);
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], CapsuleCollider.prototype, "radius", null);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], CapsuleCollider.prototype, "height", null);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], CapsuleCollider.prototype, "segmentsW", null);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], CapsuleCollider.prototype, "segmentsH", null);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], CapsuleCollider.prototype, "yUp", null);
+        return CapsuleCollider;
+    }(feng3d.Collider));
+    feng3d.CapsuleCollider = CapsuleCollider;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

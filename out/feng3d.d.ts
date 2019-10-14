@@ -20562,6 +20562,42 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 胶囊体碰撞体
+     */
+    class CapsuleCollider extends Collider {
+        /**
+         * 胶囊体半径
+         */
+        radius: number;
+        private _radius;
+        /**
+         * 胶囊体高度
+         */
+        height: number;
+        private _height;
+        /**
+         * 横向分割数
+         */
+        segmentsW: number;
+        private _segmentsW;
+        /**
+         * 纵向分割数
+         */
+        segmentsH: number;
+        private _segmentsH;
+        /**
+         * 正面朝向 true:Y+ false:Z+
+         */
+        yUp: boolean;
+        private _yUp;
+        readonly shape: CANNON.Trimesh;
+        protected _shape: CANNON.Trimesh;
+        init(): void;
+        private invalidateGeometry;
+    }
+}
+declare namespace feng3d {
+    /**
      * 平面碰撞体
      */
     class PlaneCollider extends Collider {
