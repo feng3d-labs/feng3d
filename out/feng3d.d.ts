@@ -18389,10 +18389,6 @@ declare namespace CANNON {
          */
         edges: number[];
         /**
-         * 网格的局部缩放。使用. setscale()设置它。
-         */
-        scale: feng3d.Vector3;
-        /**
          * 索引的三角形。使用. updatetree()更新它。
          */
         tree: Octree;
@@ -18424,12 +18420,6 @@ declare namespace CANNON {
          * @param result 一个整数数组，引用查询的三角形。
          */
         getTrianglesInAABB(aabb: AABB, result: number[]): number[];
-        /**
-         * 设置缩放
-         *
-         * @param scale
-         */
-        setScale(scale: feng3d.Vector3): void;
         /**
          * 计算法线
          */
@@ -18470,14 +18460,6 @@ declare namespace CANNON {
          * @return The "out" vector object
          */
         getVertex(i: number, out: feng3d.Vector3): feng3d.Vector3;
-        /**
-         * 获取原始顶点
-         *
-         * @param i
-         * @param out
-         * @return The "out" vector object
-         */
-        private _getUnscaledVertex;
         /**
          * 通过给定的位置和四元数转换，从三元组中得到一个顶点。
          *

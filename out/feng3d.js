@@ -40826,7 +40826,6 @@ var CANNON;
             _this.normals = [];
             _this.aabb = new CANNON.AABB();
             _this.edges = null;
-            _this.scale = new feng3d.Vector3(1, 1, 1);
             _this.tree = new CANNON.Octree();
             _this.updateEdges();
             _this.updateNormals();
@@ -40842,13 +40841,6 @@ var CANNON;
             var tree = this.tree;
             tree.reset();
             tree.aabb.copy(this.aabb);
-            var scale = this.scale; // The local mesh AABB is scaled, but the octree AABB should be unscaled
-            tree.aabb.lowerBound.x *= 1 / scale.x;
-            tree.aabb.lowerBound.y *= 1 / scale.y;
-            tree.aabb.lowerBound.z *= 1 / scale.z;
-            tree.aabb.upperBound.x *= 1 / scale.x;
-            tree.aabb.upperBound.y *= 1 / scale.y;
-            tree.aabb.upperBound.z *= 1 / scale.z;
             // Insert all triangles
             var triangleAABB = new CANNON.AABB();
             var a = new feng3d.Vector3();
@@ -40856,12 +40848,11 @@ var CANNON;
             var c = new feng3d.Vector3();
             var points = [a, b, c];
             for (var i = 0; i < this.indices.length / 3; i++) {
-                //this.getTriangleVertices(i, a, b, c);
                 // Get unscaled triangle verts
                 var i3 = i * 3;
-                this._getUnscaledVertex(this.indices[i3], a);
-                this._getUnscaledVertex(this.indices[i3 + 1], b);
-                this._getUnscaledVertex(this.indices[i3 + 2], c);
+                this.getVertex(this.indices[i3], a);
+                this.getVertex(this.indices[i3 + 1], b);
+                this.getVertex(this.indices[i3 + 2], c);
                 triangleAABB.setFromPoints(points);
                 tree.insert(triangleAABB, i);
             }
@@ -40876,38 +40867,7 @@ var CANNON;
         Trimesh.prototype.getTrianglesInAABB = function (aabb, result) {
             var unscaledAABB = new CANNON.AABB();
             unscaledAABB.copy(aabb);
-            // Scale it to local
-            var scale = this.scale;
-            var isx = scale.x;
-            var isy = scale.y;
-            var isz = scale.z;
-            var l = unscaledAABB.lowerBound;
-            var u = unscaledAABB.upperBound;
-            l.x /= isx;
-            l.y /= isy;
-            l.z /= isz;
-            u.x /= isx;
-            u.y /= isy;
-            u.z /= isz;
             return this.tree.aabbQuery(unscaledAABB, result);
-        };
-        /**
-         * 设置缩放
-         *
-         * @param scale
-         */
-        Trimesh.prototype.setScale = function (scale) {
-            // var wasUniform = this.scale.x === this.scale.y === this.scale.z;// 等价下面代码?
-            var wasUniform = this.scale.x === this.scale.y && this.scale.y === this.scale.z; //?
-            // var isUniform = scale.x === scale.y === scale.z;// 等价下面代码?
-            var isUniform = scale.x === scale.y && scale.y === scale.z; //?
-            if (!(wasUniform && isUniform)) {
-                // Non-uniform scaling. Need to update normals.
-                this.updateNormals();
-            }
-            this.scale.copy(scale);
-            this.updateAABB();
-            this.updateBoundingSphereRadius();
         };
         /**
          * 计算法线
@@ -41005,21 +40965,6 @@ var CANNON;
          * @return The "out" vector object
          */
         Trimesh.prototype.getVertex = function (i, out) {
-            var scale = this.scale;
-            this._getUnscaledVertex(i, out);
-            out.x *= scale.x;
-            out.y *= scale.y;
-            out.z *= scale.z;
-            return out;
-        };
-        /**
-         * 获取原始顶点
-         *
-         * @param i
-         * @param out
-         * @return The "out" vector object
-         */
-        Trimesh.prototype._getUnscaledVertex = function (i, out) {
             var i3 = i * 3;
             var vertices = this.vertices;
             return out.init(vertices[i3], vertices[i3 + 1], vertices[i3 + 2]);
@@ -41141,7 +41086,7 @@ var CANNON;
          * @param max
          */
         Trimesh.prototype.calculateWorldAABB = function (pos, quat, min, max) {
-            // Faster approximation using local AABB
+            // 使用局部AABB进行更快的近似
             var frame = new CANNON.Transform();
             var result = new CANNON.AABB();
             frame.position = pos;

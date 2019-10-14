@@ -21,10 +21,6 @@ namespace CANNON
          * 边数组
          */
         edges: number[];
-        /**
-         * 网格的局部缩放。使用. setscale()设置它。
-         */
-        scale: feng3d.Vector3;
 
         /**
          * 索引的三角形。使用. updatetree()更新它。
@@ -63,8 +59,6 @@ namespace CANNON
 
             this.edges = null;
 
-            this.scale = new feng3d.Vector3(1, 1, 1);
-
             this.tree = new Octree();
 
             this.updateEdges();
@@ -83,13 +77,6 @@ namespace CANNON
 
             tree.reset();
             tree.aabb.copy(this.aabb);
-            var scale = this.scale; // The local mesh AABB is scaled, but the octree AABB should be unscaled
-            tree.aabb.lowerBound.x *= 1 / scale.x;
-            tree.aabb.lowerBound.y *= 1 / scale.y;
-            tree.aabb.lowerBound.z *= 1 / scale.z;
-            tree.aabb.upperBound.x *= 1 / scale.x;
-            tree.aabb.upperBound.y *= 1 / scale.y;
-            tree.aabb.upperBound.z *= 1 / scale.z;
 
             // Insert all triangles
             var triangleAABB = new AABB();
@@ -99,13 +86,11 @@ namespace CANNON
             var points = [a, b, c];
             for (var i = 0; i < this.indices.length / 3; i++)
             {
-                //this.getTriangleVertices(i, a, b, c);
-
                 // Get unscaled triangle verts
                 var i3 = i * 3;
-                this._getUnscaledVertex(this.indices[i3], a);
-                this._getUnscaledVertex(this.indices[i3 + 1], b);
-                this._getUnscaledVertex(this.indices[i3 + 2], c);
+                this.getVertex(this.indices[i3], a);
+                this.getVertex(this.indices[i3 + 1], b);
+                this.getVertex(this.indices[i3 + 2], c);
 
                 triangleAABB.setFromPoints(points);
                 tree.insert(triangleAABB, i);
@@ -124,44 +109,7 @@ namespace CANNON
             var unscaledAABB = new AABB();
             unscaledAABB.copy(aabb);
 
-            // Scale it to local
-            var scale = this.scale;
-            var isx = scale.x;
-            var isy = scale.y;
-            var isz = scale.z;
-            var l = unscaledAABB.lowerBound;
-            var u = unscaledAABB.upperBound;
-            l.x /= isx;
-            l.y /= isy;
-            l.z /= isz;
-            u.x /= isx;
-            u.y /= isy;
-            u.z /= isz;
-
             return this.tree.aabbQuery(unscaledAABB, result);
-        }
-
-        /**
-         * 设置缩放
-         * 
-         * @param scale
-         */
-        setScale(scale: feng3d.Vector3)
-        {
-            // var wasUniform = this.scale.x === this.scale.y === this.scale.z;// 等价下面代码?
-            var wasUniform = this.scale.x === this.scale.y && this.scale.y === this.scale.z;//?
-
-            // var isUniform = scale.x === scale.y === scale.z;// 等价下面代码?
-            var isUniform = scale.x === scale.y && scale.y === scale.z;//?
-
-            if (!(wasUniform && isUniform))
-            {
-                // Non-uniform scaling. Need to update normals.
-                this.updateNormals();
-            }
-            this.scale.copy(scale);
-            this.updateAABB();
-            this.updateBoundingSphereRadius();
         }
 
         /**
@@ -285,23 +233,6 @@ namespace CANNON
          * @return The "out" vector object
          */
         getVertex(i: number, out: feng3d.Vector3)
-        {
-            var scale = this.scale;
-            this._getUnscaledVertex(i, out);
-            out.x *= scale.x;
-            out.y *= scale.y;
-            out.z *= scale.z;
-            return out;
-        }
-
-        /**
-         * 获取原始顶点
-         * 
-         * @param i
-         * @param out
-         * @return The "out" vector object
-         */
-        private _getUnscaledVertex(i: number, out: feng3d.Vector3)
         {
             var i3 = i * 3;
             var vertices = this.vertices;
@@ -468,7 +399,7 @@ namespace CANNON
          */
         calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
         {
-            // Faster approximation using local AABB
+            // 使用局部AABB进行更快的近似
             var frame = new Transform();
             var result = new AABB();
             frame.position = pos;
