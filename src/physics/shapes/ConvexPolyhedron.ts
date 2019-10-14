@@ -1,5 +1,8 @@
 namespace CANNON
 {
+    /**
+     * 凸多面体
+     */
     export class ConvexPolyhedron extends Shape
     {
 
@@ -72,13 +75,12 @@ namespace CANNON
         }
 
         /**
-         * Computes uniqueEdges
+         * 计算边数组
          */
         computeEdges()
         {
             var faces = this.faces;
             var vertices = this.vertices;
-            var nv = vertices.length;
             var edges = this.uniqueEdges;
 
             edges.length = 0;
@@ -113,7 +115,7 @@ namespace CANNON
         }
 
         /**
-         * Compute the normals of the faces. Will reuse existing Vec3 objects in the .faceNormals array if they exist.
+         * 计算这些面的法线。将重用. facenormals数组中现有的Vec3对象(如果它们存在的话)。
          */
         computeNormals()
         {
@@ -148,7 +150,7 @@ namespace CANNON
         }
 
         /**
-         * Get face normal given 3 vertices
+         * 得到3个顶点的法向量
          * 
          * @param va 
          * @param vb 
@@ -167,7 +169,7 @@ namespace CANNON
         }
 
         /**
-         * Compute the normal of a face from its vertices
+         * 从顶点计算面法线
          * 
          * @param i 
          * @param target 
@@ -196,8 +198,6 @@ namespace CANNON
         clipAgainstHull(posA: feng3d.Vector3, quatA: feng3d.Quaternion, hullB: ConvexPolyhedron, posB: feng3d.Vector3, quatB: feng3d.Quaternion, separatingNormal: feng3d.Vector3, minDist: number, maxDist: number, result: number[])
         {
             var WorldNormal = cah_WorldNormal;
-            var hullA = this;
-            var curMaxDist = maxDist;
             var closestFaceB = -1;
             var dmax = -Number.MAX_VALUE;
             for (var face = 0; face < hullB.faces.length; face++)
@@ -263,7 +263,6 @@ namespace CANNON
 
             if (!hullA.uniqueAxes)
             {
-
                 var numFacesA = faceListA ? faceListA.length : hullA.faces.length;
 
                 // Test face normals from hullA

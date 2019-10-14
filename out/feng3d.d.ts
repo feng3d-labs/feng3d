@@ -17851,6 +17851,9 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
+    /**
+     * 凸多面体
+     */
     class ConvexPolyhedron extends Shape {
         vertices: feng3d.Vector3[];
         worldVertices: feng3d.Vector3[];
@@ -17890,15 +17893,15 @@ declare namespace CANNON {
          */
         constructor(points?: feng3d.Vector3[], faces?: number[][], uniqueAxes?: any[]);
         /**
-         * Computes uniqueEdges
+         * 计算边数组
          */
         computeEdges(): void;
         /**
-         * Compute the normals of the faces. Will reuse existing Vec3 objects in the .faceNormals array if they exist.
+         * 计算这些面的法线。将重用. facenormals数组中现有的Vec3对象(如果它们存在的话)。
          */
         computeNormals(): void;
         /**
-         * Get face normal given 3 vertices
+         * 得到3个顶点的法向量
          *
          * @param va
          * @param vb
@@ -17907,7 +17910,7 @@ declare namespace CANNON {
          */
         static computeNormal(va: feng3d.Vector3, vb: feng3d.Vector3, vc: feng3d.Vector3, target: feng3d.Vector3): void;
         /**
-         * Compute the normal of a face from its vertices
+         * 从顶点计算面法线
          *
          * @param i
          * @param target
@@ -18272,16 +18275,14 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
+    /**
+     * 粒子
+     */
     class Particle extends Shape {
         position: feng3d.Vector3;
         velocity: feng3d.Vector3;
         mass: number;
         force: feng3d.Vector3;
-        /**
-         * Particle shape.
-         *
-         * @author schteppe
-         */
         constructor();
         /**
          * @param mass

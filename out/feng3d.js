@@ -38993,6 +38993,9 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
+    /**
+     * 凸多面体
+     */
     var ConvexPolyhedron = /** @class */ (function (_super) {
         __extends(ConvexPolyhedron, _super);
         /**
@@ -39033,12 +39036,11 @@ var CANNON;
             return _this;
         }
         /**
-         * Computes uniqueEdges
+         * 计算边数组
          */
         ConvexPolyhedron.prototype.computeEdges = function () {
             var faces = this.faces;
             var vertices = this.vertices;
-            var nv = vertices.length;
             var edges = this.uniqueEdges;
             edges.length = 0;
             var edge = computeEdges_tmpEdge;
@@ -39063,7 +39065,7 @@ var CANNON;
             }
         };
         /**
-         * Compute the normals of the faces. Will reuse existing Vec3 objects in the .faceNormals array if they exist.
+         * 计算这些面的法线。将重用. facenormals数组中现有的Vec3对象(如果它们存在的话)。
          */
         ConvexPolyhedron.prototype.computeNormals = function () {
             this.faceNormals.length = this.faces.length;
@@ -39088,7 +39090,7 @@ var CANNON;
             }
         };
         /**
-         * Get face normal given 3 vertices
+         * 得到3个顶点的法向量
          *
          * @param va
          * @param vb
@@ -39104,7 +39106,7 @@ var CANNON;
             }
         };
         /**
-         * Compute the normal of a face from its vertices
+         * 从顶点计算面法线
          *
          * @param i
          * @param target
@@ -39130,8 +39132,6 @@ var CANNON;
          */
         ConvexPolyhedron.prototype.clipAgainstHull = function (posA, quatA, hullB, posB, quatB, separatingNormal, minDist, maxDist, result) {
             var WorldNormal = cah_WorldNormal;
-            var hullA = this;
-            var curMaxDist = maxDist;
             var closestFaceB = -1;
             var dmax = -Number.MAX_VALUE;
             for (var face = 0; face < hullB.faces.length; face++) {
@@ -40434,13 +40434,11 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
+    /**
+     * 粒子
+     */
     var Particle = /** @class */ (function (_super) {
         __extends(Particle, _super);
-        /**
-         * Particle shape.
-         *
-         * @author schteppe
-         */
         function Particle() {
             return _super.call(this, {
                 type: CANNON.ShapeType.PARTICLE
@@ -40462,7 +40460,6 @@ var CANNON;
             this.boundingSphereRadius = 0;
         };
         Particle.prototype.calculateWorldAABB = function (pos, quat, min, max) {
-            // Get each axis max
             min.copy(pos);
             max.copy(pos);
         };

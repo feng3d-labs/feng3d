@@ -1,5 +1,8 @@
 namespace CANNON
 {
+    /**
+     * 粒子
+     */
     export class Particle extends Shape
     {
         position: feng3d.Vector3;
@@ -7,11 +10,6 @@ namespace CANNON
         mass: number;
         force: feng3d.Vector3;
 
-        /**
-         * Particle shape.
-         * 
-         * @author schteppe
-         */
         constructor()
         {
             super({
@@ -42,7 +40,6 @@ namespace CANNON
 
         calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
         {
-            // Get each axis max
             min.copy(pos);
             max.copy(pos);
         }
