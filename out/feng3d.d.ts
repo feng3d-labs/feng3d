@@ -6223,7 +6223,7 @@ declare namespace feng3d {
          * @param dy y方向膨胀量
          * @param dz z方向膨胀量
          */
-        inflate(dx: any, dy: any, dz: any): void;
+        inflate(dx: number, dy: number, dz: number): void;
         /**
          * 膨胀盒子
          * @param delta 膨胀量
@@ -6253,11 +6253,10 @@ declare namespace feng3d {
          */
         rayIntersection(position: Vector3, direction: Vector3, targetNormal: Vector3): number;
         /**
-         * Finds the closest point on the Box to another given point. This can be used for maximum error calculations for content within a given Box.
+         * 获取长方体上距离指定点最近的点
          *
-         * @param point The point for which to find the closest point on the Box
-         * @param target An optional Vector3 to store the result to prevent creating a new object.
-         * @return
+         * @param point 指定点
+         * @param target 存储最近的点
          */
         closestPointToPoint(point: Vector3, target?: Vector3): Vector3;
         /**
@@ -6293,6 +6292,7 @@ declare namespace feng3d {
          */
         intersectsSphere(sphere: Sphere): boolean;
         /**
+         * 夹紧？
          *
          * @param point 点
          * @param pout 输出点
@@ -18007,6 +18007,12 @@ declare namespace CANNON {
          * @param planeConstant The constant in the mathematical plane equation
          */
         clipFaceAgainstPlane(inVertices: feng3d.Vector3[], outVertices: feng3d.Vector3[], planeNormal: feng3d.Vector3, planeConstant: number): feng3d.Vector3[];
+        /**
+         * 计算世界空间顶点数组
+         *
+         * @param position
+         * @param quat
+         */
         computeWorldVertices(position: feng3d.Vector3, quat: feng3d.Quaternion): void;
         computeLocalAABB(aabbmin: feng3d.Vector3, aabbmax: feng3d.Vector3): void;
         /**

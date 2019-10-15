@@ -71,7 +71,7 @@ namespace CANNON
 
             this.vertices = points || [];
 
-            this.worldVertices = []; // World transformed version of .vertices
+            this.worldVertices = [];
             this.worldVerticesNeedsUpdate = true;
 
             this.faces = <any>faces || [];
@@ -80,7 +80,7 @@ namespace CANNON
             this.computeNormals();
 
             this.worldFaceNormalsNeedsUpdate = true;
-            this.worldFaceNormals = []; // World transformed version of .faceNormals
+            this.worldFaceNormals = [];
 
             this.uniqueEdges = [];
 
@@ -137,10 +137,8 @@ namespace CANNON
         {
             this.faceNormals.length = this.faces.length;
 
-            // Generate normals
             for (var i = 0; i < this.faces.length; i++)
             {
-
                 // Check so all vertices exists for this face
                 for (var j = 0; j < this.faces[i].length; j++)
                 {
@@ -668,7 +666,12 @@ namespace CANNON
             return outVertices;
         }
 
-        // Updates .worldVertices and sets .worldVerticesNeedsUpdate to false.
+        /**
+         * 计算世界空间顶点数组
+         * 
+         * @param position 
+         * @param quat 
+         */
         computeWorldVertices(position: feng3d.Vector3, quat: feng3d.Quaternion)
         {
             var N = this.vertices.length;

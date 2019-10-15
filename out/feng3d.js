@@ -13742,7 +13742,7 @@ var feng3d;
             var iy;
             var iz;
             var rayEntryDistance = -1;
-            // ray-plane tests
+            // 射线与平面相交测试
             var intersects = false;
             if (vx < 0) {
                 rayEntryDistance = (halfExtentsX - px) / vx;
@@ -13825,35 +13825,14 @@ var feng3d;
             return intersects ? rayEntryDistance : -1;
         };
         /**
-         * Finds the closest point on the Box to another given point. This can be used for maximum error calculations for content within a given Box.
+         * 获取长方体上距离指定点最近的点
          *
-         * @param point The point for which to find the closest point on the Box
-         * @param target An optional Vector3 to store the result to prevent creating a new object.
-         * @return
+         * @param point 指定点
+         * @param target 存储最近的点
          */
         Box.prototype.closestPointToPoint = function (point, target) {
-            var p;
-            if (target == null)
-                target = new feng3d.Vector3();
-            p = point.x;
-            if (p < this.min.x)
-                p = this.min.x;
-            if (p > this.max.x)
-                p = this.max.x;
-            target.x = p;
-            p = point.y;
-            if (p < this.max.y)
-                p = this.max.y;
-            if (p > this.min.y)
-                p = this.min.y;
-            target.y = p;
-            p = point.z;
-            if (p < this.min.z)
-                p = this.min.z;
-            if (p > this.max.z)
-                p = this.max.z;
-            target.z = p;
-            return target;
+            if (target === void 0) { target = new feng3d.Vector3(); }
+            return this.clampPoint(point, target);
         };
         /**
          * 清空盒子
@@ -13906,12 +13885,11 @@ var feng3d;
          */
         Box.prototype.intersectsSphere = function (sphere) {
             var closestPoint = new feng3d.Vector3();
-            // Find the point on the AABB closest to the sphere center.
             this.clampPoint(sphere.center, closestPoint);
-            // If that point is inside the sphere, the AABB and sphere intersect.
             return closestPoint.distanceSquared(sphere.center) <= (sphere.radius * sphere.radius);
         };
         /**
+         * 夹紧？
          *
          * @param point 点
          * @param pout 输出点
@@ -13942,14 +13920,14 @@ var feng3d;
             if (this.isEmpty()) {
                 return false;
             }
-            // compute box center and extents
+            // 计算长方体中心和区段
             var center = this.getCenter();
             var extents = this.max.subTo(center);
-            // translate triangle to aabb origin
+            // 把三角形顶点转换长方体空间
             var v0 = triangle.p0.subTo(center);
             var v1 = triangle.p1.subTo(center);
             var v2 = triangle.p2.subTo(center);
-            // compute edge vectors for triangle
+            // 计算三边向量
             var f0 = v1.subTo(v0);
             var f1 = v2.subTo(v1);
             var f2 = v0.subTo(v2);
@@ -39022,13 +39000,13 @@ var CANNON;
                 type: CANNON.ShapeType.CONVEXPOLYHEDRON
             }) || this;
             _this.vertices = points || [];
-            _this.worldVertices = []; // World transformed version of .vertices
+            _this.worldVertices = [];
             _this.worldVerticesNeedsUpdate = true;
             _this.faces = faces || [];
             _this.faceNormals = [];
             _this.computeNormals();
             _this.worldFaceNormalsNeedsUpdate = true;
-            _this.worldFaceNormals = []; // World transformed version of .faceNormals
+            _this.worldFaceNormals = [];
             _this.uniqueEdges = [];
             _this.uniqueAxes = uniqueAxes ? uniqueAxes.slice() : null;
             _this.computeEdges();
@@ -39069,7 +39047,6 @@ var CANNON;
          */
         ConvexPolyhedron.prototype.computeNormals = function () {
             this.faceNormals.length = this.faces.length;
-            // Generate normals
             for (var i = 0; i < this.faces.length; i++) {
                 // Check so all vertices exists for this face
                 for (var j = 0; j < this.faces[i].length; j++) {
@@ -39478,7 +39455,12 @@ var CANNON;
             }
             return outVertices;
         };
-        // Updates .worldVertices and sets .worldVerticesNeedsUpdate to false.
+        /**
+         * 计算世界空间顶点数组
+         *
+         * @param position
+         * @param quat
+         */
         ConvexPolyhedron.prototype.computeWorldVertices = function (position, quat) {
             var N = this.vertices.length;
             while (this.worldVertices.length < N) {

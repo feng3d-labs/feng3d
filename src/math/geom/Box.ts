@@ -242,7 +242,7 @@ namespace feng3d
          * @param dy y方向膨胀量
          * @param dz z方向膨胀量
          */
-        inflate(dx, dy, dz)
+        inflate(dx: number, dy: number, dz: number)
         {
             this.min.x -= dx / 2;
             this.min.y -= dy / 2;
@@ -322,12 +322,12 @@ namespace feng3d
             var vy = direction.y;
             var vz = direction.z;
 
-            var ix;
-            var iy;
-            var iz;
+            var ix: number;
+            var iy: number;
+            var iz: number;
             var rayEntryDistance = -1;
 
-            // ray-plane tests
+            // 射线与平面相交测试
             var intersects = false;
             if (vx < 0)
             {
@@ -431,41 +431,14 @@ namespace feng3d
         }
 
         /**
-         * Finds the closest point on the Box to another given point. This can be used for maximum error calculations for content within a given Box.
+         * 获取长方体上距离指定点最近的点
          *
-         * @param point The point for which to find the closest point on the Box
-         * @param target An optional Vector3 to store the result to prevent creating a new object.
-         * @return
+         * @param point 指定点
+         * @param target 存储最近的点
          */
-        closestPointToPoint(point: Vector3, target?: Vector3): Vector3
+        closestPointToPoint(point: Vector3, target = new Vector3())
         {
-            var p;
-
-            if (target == null)
-                target = new Vector3();
-
-            p = point.x;
-            if (p < this.min.x)
-                p = this.min.x;
-            if (p > this.max.x)
-                p = this.max.x;
-            target.x = p;
-
-            p = point.y;
-            if (p < this.max.y)
-                p = this.max.y;
-            if (p > this.min.y)
-                p = this.min.y;
-            target.y = p;
-
-            p = point.z;
-            if (p < this.min.z)
-                p = this.min.z;
-            if (p > this.max.z)
-                p = this.max.z;
-            target.z = p;
-
-            return target;
+            return this.clampPoint(point, target);
         }
 
         /**
@@ -532,14 +505,12 @@ namespace feng3d
         intersectsSphere(sphere: Sphere)
         {
             var closestPoint = new Vector3();
-            // Find the point on the AABB closest to the sphere center.
             this.clampPoint(sphere.center, closestPoint);
-
-            // If that point is inside the sphere, the AABB and sphere intersect.
             return closestPoint.distanceSquared(sphere.center) <= (sphere.radius * sphere.radius);
         }
 
         /**
+         * 夹紧？
          * 
          * @param point 点
          * @param pout 输出点
@@ -576,16 +547,16 @@ namespace feng3d
             {
                 return false;
             }
-            // compute box center and extents
+            // 计算长方体中心和区段
             var center = this.getCenter();
             var extents = this.max.subTo(center);
 
-            // translate triangle to aabb origin
+            // 把三角形顶点转换长方体空间
             var v0 = triangle.p0.subTo(center);
             var v1 = triangle.p1.subTo(center);
             var v2 = triangle.p2.subTo(center);
 
-            // compute edge vectors for triangle
+            // 计算三边向量
             var f0 = v1.subTo(v0);
             var f1 = v2.subTo(v1);
             var f2 = v0.subTo(v2);
@@ -617,7 +588,7 @@ namespace feng3d
 
             function satForAxes(axes: number[])
             {
-                var i, j;
+                var i: number, j: number;
                 for (i = 0, j = axes.length - 3; i <= j; i += 3)
                 {
                     var testAxis = Vector3.fromArray(axes, i);
