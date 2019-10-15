@@ -13931,46 +13931,24 @@ var feng3d;
             var f0 = v1.subTo(v0);
             var f1 = v2.subTo(v1);
             var f2 = v0.subTo(v2);
-            // test against axes that are given by cross product combinations of the edges of the triangle and the edges of the aabb
-            // make an axis testing of each of the 3 sides of the aabb against each of the 3 sides of the triangle = 9 axis of separation
-            // axis_ij = u_i x f_j (u0, u1, u2 = face normals of aabb = x,y,z axes vectors since aabb is axis aligned)
+            // 测试三边向量分别所在三个轴面上的法线
             var axes = [
                 0, -f0.z, f0.y, 0, -f1.z, f1.y, 0, -f2.z, f2.y,
                 f0.z, 0, -f0.x, f1.z, 0, -f1.x, f2.z, 0, -f2.x,
                 -f0.y, f0.x, 0, -f1.y, f1.x, 0, -f2.y, f2.x, 0
             ];
-            if (!satForAxes(axes)) {
+            if (!satForAxes(axes, v0, v1, v2, extents)) {
                 return false;
             }
-            // test 3 face normals from the aabb
+            // 测试三个面法线
             axes = [1, 0, 0, 0, 1, 0, 0, 0, 1];
-            if (!satForAxes(axes)) {
+            if (!satForAxes(axes, v0, v1, v2, extents)) {
                 return false;
             }
-            // finally testing the face normal of the triangle
-            // use already existing triangle edge vectors here
+            // 检测三角形面法线
             var triangleNormal = f0.crossTo(f1);
             axes = [triangleNormal.x, triangleNormal.y, triangleNormal.z];
-            return satForAxes(axes);
-            function satForAxes(axes) {
-                var i, j;
-                for (i = 0, j = axes.length - 3; i <= j; i += 3) {
-                    var testAxis = feng3d.Vector3.fromArray(axes, i);
-                    // project the aabb onto the seperating axis
-                    var r = extents.x * Math.abs(testAxis.x) + extents.y * Math.abs(testAxis.y) + extents.z * Math.abs(testAxis.z);
-                    // project all 3 vertices of the triangle onto the seperating axis
-                    var p0 = v0.dot(testAxis);
-                    var p1 = v1.dot(testAxis);
-                    var p2 = v2.dot(testAxis);
-                    // actual test, basically see if either of the most extreme of the triangle points intersects r
-                    if (Math.max(-Math.max(p0, p1, p2), Math.min(p0, p1, p2)) > r) {
-                        // points of the projected triangle are outside the projected half-length of the aabb
-                        // the axis is seperating and we can exit
-                        return false;
-                    }
-                }
-                return true;
-            }
+            return satForAxes(axes, v0, v1, v2, extents);
         };
         /**
          * 转换为三角形列表
@@ -13997,6 +13975,31 @@ var feng3d;
         return Box;
     }());
     feng3d.Box = Box;
+    /**
+     * 判断三角形三个点是否可能与长方体在指定轴（列表）上投影相交
+     *
+     * @param axes
+     * @param v0
+     * @param v1
+     * @param v2
+     * @param extents
+     */
+    function satForAxes(axes, v0, v1, v2, extents) {
+        for (var i = 0, j = axes.length - 3; i <= j; i += 3) {
+            var testAxis = feng3d.Vector3.fromArray(axes, i);
+            // 投影长方体到指定轴的长度
+            var r = extents.x * Math.abs(testAxis.x) + extents.y * Math.abs(testAxis.y) + extents.z * Math.abs(testAxis.z);
+            // 投影三角形的三个点到指定轴
+            var p0 = v0.dot(testAxis);
+            var p1 = v1.dot(testAxis);
+            var p2 = v2.dot(testAxis);
+            // 三个点在长方体投影外同侧
+            if (Math.min(p0, p1, p2) > r || Math.max(p0, p1, p2) < -r) {
+                return false;
+            }
+        }
+        return true;
+    }
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
