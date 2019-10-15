@@ -17855,23 +17855,39 @@ declare namespace CANNON {
      * 凸多面体
      */
     class ConvexPolyhedron extends Shape {
+        /**
+         * 顶点数组
+         */
         vertices: feng3d.Vector3[];
+        /**
+         * 世界空间顶点数组
+         */
         worldVertices: feng3d.Vector3[];
+        /**
+         * 是否需要更新世界空间顶点数组
+         */
         worldVerticesNeedsUpdate: boolean;
         /**
          * Array of integer arrays, indicating which vertices each face consists of
          */
-        faces: ({
-            connectedFaces: number[];
-        } & (number[]))[];
+        faces: number[][];
+        /**
+         * 面法线数组
+         */
         faceNormals: feng3d.Vector3[];
         worldFaceNormalsNeedsUpdate: boolean;
+        /**
+         * 世界空间面法线数组
+         */
         worldFaceNormals: feng3d.Vector3[];
+        /**
+         * 边数组
+         */
         uniqueEdges: feng3d.Vector3[];
         /**
          * If given, these locally defined, normalized axes are the only ones being checked when doing separating axis check.
          */
-        uniqueAxes: any[];
+        uniqueAxes: feng3d.Vector3[];
         /**
          * A set of polygons describing a convex shape.
          * @class ConvexPolyhedron
@@ -17891,7 +17907,7 @@ declare namespace CANNON {
          * @todo Move the clipping functions to ContactGenerator?
          * @todo Automatically merge coplanar polygons in constructor.
          */
-        constructor(points?: feng3d.Vector3[], faces?: number[][], uniqueAxes?: any[]);
+        constructor(points?: feng3d.Vector3[], faces?: number[][], uniqueAxes?: feng3d.Vector3[]);
         /**
          * 计算边数组
          */
@@ -17928,7 +17944,11 @@ declare namespace CANNON {
          * @param result The an array of contact point objects, see clipFaceAgainstHull
          * @see http://bullet.googlecode.com/svn/trunk/src/BulletCollision/NarrowPhaseCollision/btPolyhedralContactClipping.cpp
          */
-        clipAgainstHull(posA: feng3d.Vector3, quatA: feng3d.Quaternion, hullB: ConvexPolyhedron, posB: feng3d.Vector3, quatB: feng3d.Quaternion, separatingNormal: feng3d.Vector3, minDist: number, maxDist: number, result: number[]): void;
+        clipAgainstHull(posA: feng3d.Vector3, quatA: feng3d.Quaternion, hullB: ConvexPolyhedron, posB: feng3d.Vector3, quatB: feng3d.Quaternion, separatingNormal: feng3d.Vector3, minDist: number, maxDist: number, result: {
+            point: feng3d.Vector3;
+            normal: feng3d.Vector3;
+            depth: number;
+        }[]): void;
         /**
          * Find the separating axis between this hull and another
          *
@@ -17973,7 +17993,11 @@ declare namespace CANNON {
          * @param maxDist
          * @param result Array to store resulting contact points in. Will be objects with properties: point, depth, normal. These are represented in world coordinates.
          */
-        clipFaceAgainstHull(separatingNormal: feng3d.Vector3, posA: feng3d.Vector3, quatA: feng3d.Quaternion, worldVertsB1: feng3d.Vector3[], minDist: number, maxDist: number, result: any[]): void;
+        clipFaceAgainstHull(separatingNormal: feng3d.Vector3, posA: feng3d.Vector3, quatA: feng3d.Quaternion, worldVertsB1: feng3d.Vector3[], minDist: number, maxDist: number, result: {
+            point: feng3d.Vector3;
+            normal: feng3d.Vector3;
+            depth: number;
+        }[]): void;
         /**
          * Clip a face in a hull against the back of a plane.
          *

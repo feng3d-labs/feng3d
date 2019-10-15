@@ -5,28 +5,44 @@ namespace CANNON
      */
     export class ConvexPolyhedron extends Shape
     {
-
+        /**
+         * 顶点数组
+         */
         vertices: feng3d.Vector3[];
-
+        /**
+         * 世界空间顶点数组
+         */
         worldVertices: feng3d.Vector3[];
+        /**
+         * 是否需要更新世界空间顶点数组
+         */
         worldVerticesNeedsUpdate: boolean;
 
         /**
          * Array of integer arrays, indicating which vertices each face consists of
          */
-        faces: ({ connectedFaces: number[] } & (number[]))[];
+        faces: number[][];
 
+        /**
+         * 面法线数组
+         */
         faceNormals: feng3d.Vector3[];
 
         worldFaceNormalsNeedsUpdate: boolean;
+        /**
+         * 世界空间面法线数组
+         */
         worldFaceNormals: feng3d.Vector3[];
 
+        /**
+         * 边数组
+         */
         uniqueEdges: feng3d.Vector3[];
 
         /**
          * If given, these locally defined, normalized axes are the only ones being checked when doing separating axis check.
          */
-        uniqueAxes: any[];
+        uniqueAxes: feng3d.Vector3[];
 
         /**
          * A set of polygons describing a convex shape.
@@ -47,7 +63,7 @@ namespace CANNON
          * @todo Move the clipping functions to ContactGenerator?
          * @todo Automatically merge coplanar polygons in constructor.
          */
-        constructor(points?: feng3d.Vector3[], faces?: number[][], uniqueAxes?: any[])
+        constructor(points?: feng3d.Vector3[], faces?: number[][], uniqueAxes?: feng3d.Vector3[])
         {
             super({
                 type: ShapeType.CONVEXPOLYHEDRON
@@ -195,7 +211,7 @@ namespace CANNON
          * @param result The an array of contact point objects, see clipFaceAgainstHull
          * @see http://bullet.googlecode.com/svn/trunk/src/BulletCollision/NarrowPhaseCollision/btPolyhedralContactClipping.cpp
          */
-        clipAgainstHull(posA: feng3d.Vector3, quatA: feng3d.Quaternion, hullB: ConvexPolyhedron, posB: feng3d.Vector3, quatB: feng3d.Quaternion, separatingNormal: feng3d.Vector3, minDist: number, maxDist: number, result: number[])
+        clipAgainstHull(posA: feng3d.Vector3, quatA: feng3d.Quaternion, hullB: ConvexPolyhedron, posB: feng3d.Vector3, quatB: feng3d.Quaternion, separatingNormal: feng3d.Vector3, minDist: number, maxDist: number, result: { point: feng3d.Vector3; normal: feng3d.Vector3; depth: number; }[])
         {
             var WorldNormal = cah_WorldNormal;
             var closestFaceB = -1;
@@ -227,13 +243,7 @@ namespace CANNON
 
             if (closestFaceB >= 0)
             {
-                this.clipFaceAgainstHull(separatingNormal,
-                    posA,
-                    quatA,
-                    worldVertsB1,
-                    minDist,
-                    maxDist,
-                    result);
+                this.clipFaceAgainstHull(separatingNormal, posA, quatA, worldVertsB1, minDist, maxDist, result);
             }
         }
 
@@ -468,16 +478,16 @@ namespace CANNON
          * @param maxDist
          * @param result Array to store resulting contact points in. Will be objects with properties: point, depth, normal. These are represented in world coordinates.
          */
-        clipFaceAgainstHull(separatingNormal: feng3d.Vector3, posA: feng3d.Vector3, quatA: feng3d.Quaternion, worldVertsB1: feng3d.Vector3[], minDist: number, maxDist: number, result: any[])
+        clipFaceAgainstHull(separatingNormal: feng3d.Vector3, posA: feng3d.Vector3, quatA: feng3d.Quaternion, worldVertsB1: feng3d.Vector3[], minDist: number, maxDist: number, result: { point: feng3d.Vector3; normal: feng3d.Vector3; depth: number; }[])
         {
-            var faceANormalWS = cfah_faceANormalWS,
-                edge0 = cfah_edge0,
-                WorldEdge0 = cfah_WorldEdge0,
-                worldPlaneAnormal1 = cfah_worldPlaneAnormal1,
-                planeNormalWS1 = cfah_planeNormalWS1,
-                worldA1 = cfah_worldA1,
-                localPlaneNormal = cfah_localPlaneNormal,
-                planeNormalWS = cfah_planeNormalWS;
+            var faceANormalWS = new feng3d.Vector3();
+            var edge0 = new feng3d.Vector3();
+            var WorldEdge0 = new feng3d.Vector3();
+            var worldPlaneAnormal1 = new feng3d.Vector3();
+            var planeNormalWS1 = new feng3d.Vector3();
+            var worldA1 = new feng3d.Vector3();
+            var localPlaneNormal = new feng3d.Vector3();
+            var planeNormalWS = new feng3d.Vector3();
 
             var hullA = this;
             var worldVertsB2 = [];
@@ -506,21 +516,19 @@ namespace CANNON
             //console.log("closest A: ",closestFaceA);
             // Get the face and construct connected faces
             var polyA = hullA.faces[closestFaceA];
-            polyA.connectedFaces = [];
+            var connectedFaces: number[] = [];
             for (var i = 0; i < hullA.faces.length; i++)
             {
                 for (var j = 0; j < hullA.faces[i].length; j++)
                 {
-                    if (polyA.indexOf(hullA.faces[i][j]) !== -1 /* Sharing a vertex*/ && i !== closestFaceA /* Not the one we are looking for connections from */ && polyA.connectedFaces.indexOf(i) === -1 /* Not already added */)
+                    if (polyA.indexOf(hullA.faces[i][j]) !== -1 /* Sharing a vertex*/ && i !== closestFaceA /* Not the one we are looking for connections from */ && connectedFaces.indexOf(i) === -1 /* Not already added */)
                     {
-                        polyA.connectedFaces.push(i);
+                        connectedFaces.push(i);
                     }
                 }
             }
             // Clip the polygon to the back of the planes of all faces of hull A, that are adjacent to the witness face
-            var numContacts = pVtxIn.length;
             var numVerticesA = polyA.length;
-            var res = [];
             for (var e0 = 0; e0 < numVerticesA; e0++)
             {
                 var a = hullA.vertices[polyA[e0]];
@@ -537,23 +545,15 @@ namespace CANNON
                 worldA1.copy(a);
                 quatA.vmult(worldA1, worldA1);
                 posA.addTo(worldA1, worldA1);
-                var planeEqWS1 = -worldA1.dot(planeNormalWS1);
-                var planeEqWS: number;
-                if (true)
-                {
-                    var otherFace = polyA.connectedFaces[e0];
-                    localPlaneNormal.copy(this.faceNormals[otherFace]);
-                    var localPlaneEq = this.getPlaneConstantOfFace(otherFace);
 
-                    planeNormalWS.copy(localPlaneNormal);
-                    quatA.vmult(planeNormalWS, planeNormalWS);
-                    //posA.vadd(planeNormalWS,planeNormalWS);
-                    var planeEqWS = localPlaneEq - planeNormalWS.dot(posA);
-                } else
-                {
-                    planeNormalWS.copy(planeNormalWS1);
-                    planeEqWS = planeEqWS1;
-                }
+                var otherFace = connectedFaces[e0];
+                localPlaneNormal.copy(this.faceNormals[otherFace]);
+                var localPlaneEq = this.getPlaneConstantOfFace(otherFace);
+
+                planeNormalWS.copy(localPlaneNormal);
+                quatA.vmult(planeNormalWS, planeNormalWS);
+                //posA.vadd(planeNormalWS,planeNormalWS);
+                var planeEqWS = localPlaneEq - planeNormalWS.dot(posA);
 
                 // Clip face against our constructed plane
                 this.clipFaceAgainstPlane(pVtxIn, pVtxOut, planeNormalWS, planeEqWS);
@@ -582,7 +582,6 @@ namespace CANNON
             for (var i = 0; i < pVtxIn.length; i++)
             {
                 var depth = planeNormalWS.dot(pVtxIn[i]) + planeEqWS; //???
-                /*console.log("depth calc from normal=",planeNormalWS.toString()," and constant "+planeEqWS+" and vertex ",pVtxIn[i].toString()," gives "+depth);*/
                 if (depth <= minDist)
                 {
                     console.log("clamped: depth=" + depth + " to minDist=" + (minDist + ""));
@@ -594,16 +593,7 @@ namespace CANNON
                     var point = pVtxIn[i];
                     if (depth <= 0)
                     {
-                        /*console.log("Got contact point ",point.toString(),
-                          ", depth=",depth,
-                          "contact normal=",separatingNormal.toString(),
-                          "plane",planeNormalWS.toString(),
-                          "planeConstant",planeEqWS);*/
-                        var p = {
-                            point: point,
-                            normal: planeNormalWS,
-                            depth: depth,
-                        };
+                        var p = { point: point, normal: planeNormalWS, depth: depth, };
                         result.push(p);
                     }
                 }
@@ -1003,15 +993,6 @@ namespace CANNON
 
     var cli_aabbmin = new feng3d.Vector3();
     var cli_aabbmax = new feng3d.Vector3();
-
-    var cfah_faceANormalWS = new feng3d.Vector3();
-    var cfah_edge0 = new feng3d.Vector3();
-    var cfah_WorldEdge0 = new feng3d.Vector3();
-    var cfah_worldPlaneAnormal1 = new feng3d.Vector3();
-    var cfah_planeNormalWS1 = new feng3d.Vector3();
-    var cfah_worldA1 = new feng3d.Vector3();
-    var cfah_localPlaneNormal = new feng3d.Vector3();
-    var cfah_planeNormalWS = new feng3d.Vector3();
 
     var computeLocalAABB_worldVert = new feng3d.Vector3();
 

@@ -1186,7 +1186,7 @@ namespace CANNON
 
             if (si.findSeparatingAxis(sj, transformi, transformj, sepAxis, faceListA, faceListB))
             {
-                var res = [];
+                var res: { point: feng3d.Vector3; normal: feng3d.Vector3; depth: number; }[] = [];
                 var q = convexConvex_q;
                 si.clipAgainstHull(xi, qi, sj, xj, qj, sepAxis, -100, 100, res);
                 var numContacts = 0;
@@ -1200,8 +1200,8 @@ namespace CANNON
                         ri = r.ri,
                         rj = r.rj;
                     sepAxis.negateTo(r.ni);
-                    res[j].normal.negate(q);
-                    q.multiplyTo(res[j].depth, q);
+                    res[j].normal.negateTo(q);
+                    q.multiplyNumberTo(res[j].depth, q);
                     res[j].point.addTo(q, ri);
                     rj.copy(res[j].point);
 
