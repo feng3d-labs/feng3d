@@ -18008,7 +18008,7 @@ declare namespace CANNON {
          */
         clipFaceAgainstPlane(inVertices: feng3d.Vector3[], outVertices: feng3d.Vector3[], planeNormal: feng3d.Vector3, planeConstant: number): feng3d.Vector3[];
         computeWorldVertices(position: feng3d.Vector3, quat: feng3d.Quaternion): void;
-        computeLocalAABB(aabbmin: any, aabbmax: any): void;
+        computeLocalAABB(aabbmin: feng3d.Vector3, aabbmax: feng3d.Vector3): void;
         /**
          * Updates .worldVertices and sets .worldVerticesNeedsUpdate to false.
          *

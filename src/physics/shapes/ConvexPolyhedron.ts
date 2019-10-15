@@ -101,7 +101,7 @@ namespace CANNON
 
             edges.length = 0;
 
-            var edge = computeEdges_tmpEdge;
+            var edge = new feng3d.Vector3();
 
             for (var i = 0; i !== faces.length; i++)
             {
@@ -175,6 +175,8 @@ namespace CANNON
          */
         static computeNormal(va: feng3d.Vector3, vb: feng3d.Vector3, vc: feng3d.Vector3, target: feng3d.Vector3)
         {
+            var cb = new feng3d.Vector3();
+            var ab = new feng3d.Vector3();
             vb.subTo(va, ab);
             vc.subTo(vb, cb);
             cb.crossTo(ab, target);
@@ -213,7 +215,7 @@ namespace CANNON
          */
         clipAgainstHull(posA: feng3d.Vector3, quatA: feng3d.Quaternion, hullB: ConvexPolyhedron, posB: feng3d.Vector3, quatB: feng3d.Quaternion, separatingNormal: feng3d.Vector3, minDist: number, maxDist: number, result: { point: feng3d.Vector3; normal: feng3d.Vector3; depth: number; }[])
         {
-            var WorldNormal = cah_WorldNormal;
+            var WorldNormal = new feng3d.Vector3();
             var closestFaceB = -1;
             var dmax = -Number.MAX_VALUE;
             for (var face = 0; face < hullB.faces.length; face++)
@@ -260,12 +262,12 @@ namespace CANNON
          */
         findSeparatingAxis(hullB: ConvexPolyhedron, transformA: ITransform, transformB: Transform, target: feng3d.Vector3, faceListA: number[], faceListB: number[])
         {
-            var faceANormalWS3 = fsa_faceANormalWS3,
-                Worldnormal1 = fsa_Worldnormal1,
-                deltaC = fsa_deltaC,
-                worldEdge0 = fsa_worldEdge0,
-                worldEdge1 = fsa_worldEdge1,
-                Cross = fsa_Cross;
+            var faceANormalWS3 = new feng3d.Vector3(),
+                Worldnormal1 = new feng3d.Vector3(),
+                deltaC = new feng3d.Vector3(),
+                worldEdge0 = new feng3d.Vector3(),
+                worldEdge1 = new feng3d.Vector3(),
+                Cross = new feng3d.Vector3();
 
             var dmin = Number.MAX_VALUE;
             var hullA = this;
@@ -420,6 +422,7 @@ namespace CANNON
         testSepAxis(axis: feng3d.Vector3, hullB: ConvexPolyhedron, transformA: Transform, transformB: Transform)
         {
             var hullA = this;
+            var maxminA: number[] = [], maxminB: number[] = [];
             ConvexPolyhedron.project(hullA, axis, transformA, maxminA);
             ConvexPolyhedron.project(hullB, axis, transformB, maxminB);
             var maxA = maxminA[0];
@@ -445,6 +448,8 @@ namespace CANNON
         {
             // Approximate with box inertia
             // Exact inertia calculation is overkill, but see http://geometrictools.com/Documentation/PolyhedralMassProperties.pdf for the correct way to do it
+            var cli_aabbmin = new feng3d.Vector3();
+            var cli_aabbmax = new feng3d.Vector3();
             this.computeLocalAABB(cli_aabbmin, cli_aabbmax);
             var x = cli_aabbmax.x - cli_aabbmin.x,
                 y = cli_aabbmax.y - cli_aabbmin.y,
@@ -683,14 +688,13 @@ namespace CANNON
             this.worldVerticesNeedsUpdate = false;
         }
 
-        computeLocalAABB(aabbmin, aabbmax)
+        computeLocalAABB(aabbmin: feng3d.Vector3, aabbmax: feng3d.Vector3)
         {
-            var n = this.vertices.length,
-                vertices = this.vertices,
-                worldVert = computeLocalAABB_worldVert;
+            var n = this.vertices.length;
+            var vertices = this.vertices;
 
-            aabbmin.set(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-            aabbmax.set(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+            aabbmin.init(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            aabbmax.init(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
             for (var i = 0; i < n; i++)
             {
@@ -769,6 +773,8 @@ namespace CANNON
         {
             var n = this.vertices.length, verts = this.vertices;
             var minx: number, miny: number, minz: number, maxx: number, maxy: number, maxz: number;
+
+            var tempWorldVertex = new feng3d.Vector3();
             for (var i = 0; i < n; i++)
             {
                 tempWorldVertex.copy(verts[i]);
@@ -881,26 +887,25 @@ namespace CANNON
          */
         pointIsInside(p: feng3d.Vector3)
         {
-            var n = this.vertices.length,
-                verts = this.vertices,
-                faces = this.faces,
-                normals = this.faceNormals;
+            var vToP = new feng3d.Vector3();
+            var vToPointInside = new feng3d.Vector3();
+            //
+            var verts = this.vertices;
+            var faces = this.faces;
+            var normals = this.faceNormals;
             var positiveResult = null;
             var N = this.faces.length;
-            var pointInside = ConvexPolyhedron_pointIsInside;
+            var pointInside = new feng3d.Vector3();
             this.getAveragePointLocal(pointInside);
             for (var i = 0; i < N; i++)
             {
-                var numVertices = this.faces[i].length;
                 var n0 = normals[i];
                 var v = verts[faces[i][0]]; // We only need one point in the face
 
                 // This dot product determines which side of the edge the point is
-                var vToP = ConvexPolyhedron_vToP;
                 p.subTo(v, vToP);
                 var r1 = n0.dot(vToP);
 
-                var vToPointInside = ConvexPolyhedron_vToPointInside;
                 pointInside.subTo(v, vToPointInside);
                 var r2 = n0.dot(vToPointInside);
 
@@ -927,13 +932,12 @@ namespace CANNON
          */
         static project(hull: ConvexPolyhedron, axis: feng3d.Vector3, transform: Transform, result: number[])
         {
-            var n = hull.vertices.length,
-                worldVertex = project_worldVertex,
-                localAxis = project_localAxis,
-                max = 0,
-                min = 0,
-                localOrigin = project_localOrigin,
-                vs = hull.vertices;
+            var n = hull.vertices.length;
+            var localAxis = new feng3d.Vector3();
+            var max = 0;
+            var min = 0;
+            var localOrigin = new feng3d.Vector3();
+            var vs = hull.vertices;
 
             localOrigin.setZero();
 
@@ -975,33 +979,4 @@ namespace CANNON
         };
     }
 
-    var computeEdges_tmpEdge = new feng3d.Vector3();
-
-    var cb = new feng3d.Vector3();
-    var ab = new feng3d.Vector3();
-    var cah_WorldNormal = new feng3d.Vector3();
-
-
-    var fsa_faceANormalWS3 = new feng3d.Vector3();
-    var fsa_Worldnormal1 = new feng3d.Vector3();
-    var fsa_deltaC = new feng3d.Vector3();
-    var fsa_worldEdge0 = new feng3d.Vector3();
-    var fsa_worldEdge1 = new feng3d.Vector3();
-    var fsa_Cross = new feng3d.Vector3();
-
-    var maxminA = [], maxminB = [];
-
-    var cli_aabbmin = new feng3d.Vector3();
-    var cli_aabbmax = new feng3d.Vector3();
-
-    var computeLocalAABB_worldVert = new feng3d.Vector3();
-
-    var tempWorldVertex = new feng3d.Vector3();
-
-    var ConvexPolyhedron_pointIsInside = new feng3d.Vector3();
-    var ConvexPolyhedron_vToP = new feng3d.Vector3();
-    var ConvexPolyhedron_vToPointInside = new feng3d.Vector3();
-    var project_worldVertex = new feng3d.Vector3();
-    var project_localAxis = new feng3d.Vector3();
-    var project_localOrigin = new feng3d.Vector3();
 }
