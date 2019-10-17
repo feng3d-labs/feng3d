@@ -38469,52 +38469,6 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
-    var TupleDictionary = /** @class */ (function () {
-        function TupleDictionary() {
-            /**
-             * The data storage
-             */
-            this.data = { keys: [] };
-        }
-        /**
-         * @param i
-         * @param j
-         */
-        TupleDictionary.prototype.get = function (i, j) {
-            if (i > j) {
-                // swap
-                var temp = j;
-                j = i;
-                i = temp;
-            }
-            return this.data[i + '-' + j];
-        };
-        TupleDictionary.prototype.set = function (i, j, value) {
-            if (i > j) {
-                var temp = j;
-                j = i;
-                i = temp;
-            }
-            var key = i + '-' + j;
-            // Check if key already exists
-            if (!this.get(i, j)) {
-                this.data.keys.push(key);
-            }
-            this.data[key] = value;
-        };
-        TupleDictionary.prototype.reset = function () {
-            var data = this.data, keys = data.keys;
-            while (keys.length > 0) {
-                var key = keys.pop();
-                delete data[key];
-            }
-        };
-        return TupleDictionary;
-    }());
-    CANNON.TupleDictionary = TupleDictionary;
-})(CANNON || (CANNON = {}));
-var CANNON;
-(function (CANNON) {
     var Constraint = /** @class */ (function () {
         /**
          * Constraint base class
@@ -40961,61 +40915,6 @@ var CANNON;
         return Octree;
     }(OctreeNode));
     CANNON.Octree = Octree;
-})(CANNON || (CANNON = {}));
-var CANNON;
-(function (CANNON) {
-    var ObjectCollisionMatrix = /** @class */ (function () {
-        /**
-         * Records what objects are colliding with each other
-         */
-        function ObjectCollisionMatrix() {
-            /**
-             * The matrix storage
-             */
-            this.matrix = {};
-            this.matrix = {};
-        }
-        ObjectCollisionMatrix.prototype.get = function (i0, j0) {
-            var i = i0.id;
-            var j = j0.id;
-            if (j > i) {
-                var temp = j;
-                j = i;
-                i = temp;
-            }
-            return i + '-' + j in this.matrix;
-        };
-        ObjectCollisionMatrix.prototype.set = function (i0, j0, value) {
-            var i = i0.id;
-            var j = j0.id;
-            if (j > i) {
-                var temp = j;
-                j = i;
-                i = temp;
-            }
-            if (value) {
-                this.matrix[i + '-' + j] = true;
-            }
-            else {
-                delete this.matrix[i + '-' + j];
-            }
-        };
-        /**
-         * Empty the matrix
-         */
-        ObjectCollisionMatrix.prototype.reset = function () {
-            this.matrix = {};
-        };
-        /**
-         * Set max number of objects
-         *
-         * @param n
-         */
-        ObjectCollisionMatrix.prototype.setNumObjects = function (n) {
-        };
-        return ObjectCollisionMatrix;
-    }());
-    CANNON.ObjectCollisionMatrix = ObjectCollisionMatrix;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -44703,7 +44602,7 @@ var CANNON;
             _this.shapeOverlapKeeper = new CANNON.OverlapKeeper();
             _this.materials = [];
             _this.contactmaterials = [];
-            _this.contactMaterialTable = new CANNON.TupleDictionary();
+            _this.contactMaterialTable = {};
             _this.defaultMaterial = new CANNON.Material("default");
             _this.defaultContactMaterial = new CANNON.ContactMaterial(_this.defaultMaterial, _this.defaultMaterial, { friction: 0.3, restitution: 0.0 });
             _this.doProfiling = false;
@@ -44735,7 +44634,7 @@ var CANNON;
          * @return  The contact material if it was found.
          */
         World.prototype.getContactMaterial = function (m1, m2) {
-            return this.contactMaterialTable.get(m1.id, m2.id); //this.contactmaterials[this.mats2cmat[i+j*this.materials.length]];
+            return this.contactMaterialTable[m1.id + "_" + m2.id];
         };
         /**
          * Get number of objects in the world.
@@ -44964,7 +44863,10 @@ var CANNON;
             // Add contact material
             this.contactmaterials.push(cmat);
             // Add current contact material to the material table
-            this.contactMaterialTable.set(cmat.materials[0].id, cmat.materials[1].id, cmat);
+            var id0 = cmat.materials[0].id;
+            var id1 = cmat.materials[1].id;
+            this.contactMaterialTable[id0 + "_" + id1] = cmat;
+            this.contactMaterialTable[id1 + "_" + id0] = cmat;
         };
         /**
          * 让物理世界在时间上向前迈进。
@@ -47010,7 +46912,6 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

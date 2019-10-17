@@ -17495,23 +17495,6 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    class TupleDictionary {
-        /**
-         * The data storage
-         */
-        data: {
-            keys: any[];
-        };
-        /**
-         * @param i
-         * @param j
-         */
-        get(i: number, j: number): any;
-        set(i: number, j: number, value: any): void;
-        reset(): void;
-    }
-}
-declare namespace CANNON {
     class Constraint {
         /**
          * Equations to be solved in this constraint
@@ -18574,38 +18557,6 @@ declare namespace CANNON {
             aabb?: feng3d.AABB;
             maxDepth?: number;
         });
-    }
-}
-declare namespace CANNON {
-    class ObjectCollisionMatrix {
-        /**
-         * The matrix storage
-         */
-        matrix: {};
-        /**
-         * Records what objects are colliding with each other
-         */
-        constructor();
-        get(i0: {
-            id: number;
-        }, j0: {
-            id: number;
-        }): boolean;
-        set(i0: {
-            id: number;
-        }, j0: {
-            id: number;
-        }, value: number): void;
-        /**
-         * Empty the matrix
-         */
-        reset(): void;
-        /**
-         * Set max number of objects
-         *
-         * @param n
-         */
-        setNumObjects(n: number): void;
     }
 }
 declare namespace CANNON {
@@ -20101,7 +20052,9 @@ declare namespace CANNON {
         /**
          * Used to look up a ContactMaterial given two instances of Material.
          */
-        contactMaterialTable: TupleDictionary;
+        contactMaterialTable: {
+            [key: string]: any;
+        };
         defaultMaterial: Material;
         /**
          * This contact material is used if no suitable contactmaterial is found for a contact.

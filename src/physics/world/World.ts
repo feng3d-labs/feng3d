@@ -81,7 +81,7 @@ namespace CANNON
         /**
          * Used to look up a ContactMaterial given two instances of Material.
          */
-        contactMaterialTable: TupleDictionary;
+        contactMaterialTable: { [key: string]: any };
 
         defaultMaterial: Material;
 
@@ -160,7 +160,7 @@ namespace CANNON
             this.shapeOverlapKeeper = new OverlapKeeper();
             this.materials = [];
             this.contactmaterials = [];
-            this.contactMaterialTable = new TupleDictionary();
+            this.contactMaterialTable = {};
 
             this.defaultMaterial = new Material("default");
             this.defaultContactMaterial = new ContactMaterial(this.defaultMaterial, this.defaultMaterial, { friction: 0.3, restitution: 0.0 });
@@ -196,7 +196,7 @@ namespace CANNON
          */
         getContactMaterial(m1: Material, m2: Material)
         {
-            return this.contactMaterialTable.get(m1.id, m2.id); //this.contactmaterials[this.mats2cmat[i+j*this.materials.length]];
+            return this.contactMaterialTable[m1.id + "_" + m2.id];
         }
 
         /**
@@ -481,7 +481,10 @@ namespace CANNON
             this.contactmaterials.push(cmat);
 
             // Add current contact material to the material table
-            this.contactMaterialTable.set(cmat.materials[0].id, cmat.materials[1].id, cmat);
+            var id0 = cmat.materials[0].id;
+            var id1 = cmat.materials[1].id;
+            this.contactMaterialTable[id0 + "_" + id1] = cmat;
+            this.contactMaterialTable[id1 + "_" + id0] = cmat;
         }
 
         /**
