@@ -32,29 +32,18 @@ namespace CANNON
          * @param skinSize
          * @return The self object
          */
-        setFromPoints(points: feng3d.Vector3[], position?: feng3d.Vector3, quaternion?: feng3d.Quaternion, skinSize?: number)
+        fromPoints(points: feng3d.Vector3[])
         {
             var l = this.min,
-                u = this.max,
-                q = quaternion;
+                u = this.max;
 
             // Set to the first point
             l.copy(points[0]);
-            if (q)
-            {
-                q.vmult(l, l);
-            }
             u.copy(l);
 
             for (var i = 1; i < points.length; i++)
             {
                 var p = points[i];
-
-                if (q)
-                {
-                    q.vmult(p, tmp);
-                    p = tmp;
-                }
 
                 if (p.x > u.x) { u.x = p.x; }
                 if (p.x < l.x) { l.x = p.x; }
@@ -62,23 +51,6 @@ namespace CANNON
                 if (p.y < l.y) { l.y = p.y; }
                 if (p.z > u.z) { u.z = p.z; }
                 if (p.z < l.z) { l.z = p.z; }
-            }
-
-            // Add offset
-            if (position)
-            {
-                position.addTo(l, l);
-                position.addTo(u, u);
-            }
-
-            if (skinSize)
-            {
-                l.x -= skinSize;
-                l.y -= skinSize;
-                l.z -= skinSize;
-                u.x += skinSize;
-                u.y += skinSize;
-                u.z += skinSize;
             }
 
             return this;
@@ -108,7 +80,7 @@ namespace CANNON
          * Extend this AABB so that it covers the given AABB too.
          * @param aabb
          */
-        extend(aabb: AABB)
+        union(aabb: AABB)
         {
             this.min.x = Math.min(this.min.x, aabb.min.x);
             this.max.x = Math.max(this.max.x, aabb.max.x);
@@ -122,7 +94,7 @@ namespace CANNON
          * Returns true if the given AABB overlaps this AABB.
          * @param aabb
          */
-        overlaps(aabb: AABB)
+        intersects(aabb: AABB)
         {
             var l1 = this.min,
                 u1 = this.max,
@@ -140,17 +112,6 @@ namespace CANNON
 
             return overlapsX && overlapsY && overlapsZ;
         }
-
-        /**
-         * Mostly for debugging
-         */
-        volume()
-        {
-            var l = this.min,
-                u = this.max;
-            return (u.x - l.x) * (u.y - l.y) * (u.z - l.z);
-        }
-
 
         /**
          * Returns true if the given AABB is fully contained in this AABB.
@@ -218,7 +179,7 @@ namespace CANNON
                 Transform.pointToLocalFrame(frame, corner, corner);
             }
 
-            return target.setFromPoints(corners);
+            return target.fromPoints(corners);
         }
 
         /**
@@ -249,7 +210,7 @@ namespace CANNON
                 Transform.pointToWorldFrame(frame, corner, corner);
             }
 
-            return target.setFromPoints(corners);
+            return target.fromPoints(corners);
         }
 
         /**

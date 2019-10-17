@@ -6204,19 +6204,19 @@ declare namespace feng3d {
         containsPoint(p: Vector3): boolean;
         /**
          * 是否包含包围盒
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        containsBox(box: AABB): boolean;
+        contains(aabb: AABB): boolean;
         /**
          * 拷贝
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        copy(box: AABB): this;
+        copy(aabb: AABB): this;
         /**
          * 比较包围盒是否相等
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        equals(box: AABB): boolean;
+        equals(aabb: AABB): boolean;
         /**
          * 膨胀包围盒
          * @param dx x方向膨胀量
@@ -6231,19 +6231,19 @@ declare namespace feng3d {
         inflatePoint(delta: Vector3): void;
         /**
          * 与包围盒相交
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        intersection(box: AABB): this;
+        intersection(aabb: AABB): this;
         /**
          * 与包围盒相交
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        intersectionTo(box: AABB, vbox?: AABB): AABB;
+        intersectionTo(aabb: AABB, out?: AABB): AABB;
         /**
          * 包围盒是否相交
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        intersects(box: AABB): boolean;
+        intersects(aabb: AABB): boolean;
         /**
          * 与射线相交
          * @param position 射线起点
@@ -6253,7 +6253,7 @@ declare namespace feng3d {
          */
         rayIntersection(position: Vector3, direction: Vector3, targetNormal: Vector3): number;
         /**
-         * 获取长方体上距离指定点最近的点
+         * 获取包围盒上距离指定点最近的点
          *
          * @param point 指定点
          * @param target 存储最近的点
@@ -6283,9 +6283,9 @@ declare namespace feng3d {
         toString(): string;
         /**
          * 联合包围盒
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        union(box: AABB): AABB;
+        union(aabb: AABB): this;
         /**
          * 是否与球相交
          * @param sphere 球
@@ -6295,9 +6295,9 @@ declare namespace feng3d {
          * 夹紧？
          *
          * @param point 点
-         * @param pout 输出点
+         * @param out 输出点
          */
-        clampPoint(point: Vector3, pout?: Vector3): Vector3;
+        clampPoint(point: Vector3, out?: Vector3): Vector3;
         /**
          * 是否与平面相交
          * @param plane 平面
@@ -18390,7 +18390,7 @@ declare namespace CANNON {
          * @param skinSize
          * @return The self object
          */
-        setFromPoints(points: feng3d.Vector3[], position?: feng3d.Vector3, quaternion?: feng3d.Quaternion, skinSize?: number): this;
+        fromPoints(points: feng3d.Vector3[]): this;
         /**
          * Copy bounds from an AABB to this AABB
          * @param aabb Source to copy from
@@ -18405,16 +18405,12 @@ declare namespace CANNON {
          * Extend this AABB so that it covers the given AABB too.
          * @param aabb
          */
-        extend(aabb: AABB): void;
+        union(aabb: AABB): void;
         /**
          * Returns true if the given AABB overlaps this AABB.
          * @param aabb
          */
-        overlaps(aabb: AABB): boolean;
-        /**
-         * Mostly for debugging
-         */
-        volume(): number;
+        intersects(aabb: AABB): boolean;
         /**
          * Returns true if the given AABB is fully contained in this AABB.
          * @param aabb

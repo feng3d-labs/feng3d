@@ -170,7 +170,7 @@ namespace CANNON
             while (queue.length)
             {
                 var node = queue.pop();
-                if (node.aabb.overlaps(aabb))
+                if (node.aabb.intersects(aabb))
                 {
                     Array.prototype.push.apply(result, node.data);
                 }

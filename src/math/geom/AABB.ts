@@ -209,31 +209,31 @@ namespace feng3d
 
         /**
          * 是否包含包围盒
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        containsBox(box: AABB): boolean
+        contains(aabb: AABB)
         {
-            return this.min.lessequal(box.min) && this.max.greaterequal(box.max);
+            return this.min.lessequal(aabb.min) && this.max.greaterequal(aabb.max);
         }
 
         /**
          * 拷贝
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        copy(box: AABB)
+        copy(aabb: AABB)
         {
-            this.min.copy(box.min);
-            this.max.copy(box.max);
+            this.min.copy(aabb.min);
+            this.max.copy(aabb.max);
             return this;
         }
 
         /**
          * 比较包围盒是否相等
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        equals(box: AABB)
+        equals(aabb: AABB)
         {
-            return this.min.equals(box.min) && this.max.equals(box.max);
+            return this.min.equals(aabb.min) && this.max.equals(aabb.max);
         }
 
         /**
@@ -265,33 +265,33 @@ namespace feng3d
 
         /**
          * 与包围盒相交
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        intersection(box: AABB)
+        intersection(aabb: AABB)
         {
-            this.min.clamp(box.min, box.max);
-            this.max.clamp(box.min, box.max);
+            this.min.clamp(aabb.min, aabb.max);
+            this.max.clamp(aabb.min, aabb.max);
             return this;
         }
 
         /**
          * 与包围盒相交
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        intersectionTo(box: AABB, vbox = new AABB())
+        intersectionTo(aabb: AABB, out = new AABB())
         {
-            return vbox.copy(this).intersection(box);
+            return out.copy(this).intersection(aabb);
         }
 
         /**
          * 包围盒是否相交
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        intersects(box: AABB)
+        intersects(aabb: AABB)
         {
-            var b = this.intersectionTo(box);
+            var b = this.intersectionTo(aabb);
             var c = b.getCenter();
-            return this.containsPoint(c) && box.containsPoint(c);
+            return this.containsPoint(c) && aabb.containsPoint(c);
         }
 
         /**
@@ -431,7 +431,7 @@ namespace feng3d
         }
 
         /**
-         * 获取长方体上距离指定点最近的点
+         * 获取包围盒上距离指定点最近的点
          *
          * @param point 指定点
          * @param target 存储最近的点
@@ -484,17 +484,17 @@ namespace feng3d
 
         toString(): string
         {
-            return "[Box] (min=" + this.min.toString() + ", max=" + this.max.toString() + ")";
+            return "[AABB] (min=" + this.min.toString() + ", max=" + this.max.toString() + ")";
         }
 
         /**
          * 联合包围盒
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        union(box: AABB): AABB
+        union(aabb: AABB)
         {
-            this.min.min(box.min);
-            this.max.max(box.max);
+            this.min.min(aabb.min);
+            this.max.max(aabb.max);
             return this;
         }
 
@@ -513,11 +513,11 @@ namespace feng3d
          * 夹紧？
          * 
          * @param point 点
-         * @param pout 输出点
+         * @param out 输出点
          */
-        clampPoint(point: Vector3, pout = new Vector3())
+        clampPoint(point: Vector3, out = new Vector3())
         {
-            return pout.copy(point).clamp(this.min, this.max);
+            return out.copy(point).clamp(this.min, this.max);
         }
 
         /**
@@ -547,11 +547,11 @@ namespace feng3d
             {
                 return false;
             }
-            // 计算长方体中心和区段
+            // 计算包围盒中心和区段
             var center = this.getCenter();
             var extents = this.max.subTo(center);
 
-            // 把三角形顶点转换长方体空间
+            // 把三角形顶点转换包围盒空间
             var v0 = triangle.p0.subTo(center);
             var v1 = triangle.p1.subTo(center);
             var v2 = triangle.p2.subTo(center);
@@ -616,7 +616,7 @@ namespace feng3d
     }
 
     /**
-     * 判断三角形三个点是否可能与长方体在指定轴（列表）上投影相交
+     * 判断三角形三个点是否可能与包围盒在指定轴（列表）上投影相交
      * 
      * @param axes 
      * @param v0 
@@ -629,13 +629,13 @@ namespace feng3d
         for (var i = 0, j = axes.length - 3; i <= j; i += 3)
         {
             var testAxis = Vector3.fromArray(axes, i);
-            // 投影长方体到指定轴的长度
+            // 投影包围盒到指定轴的长度
             var r = extents.x * Math.abs(testAxis.x) + extents.y * Math.abs(testAxis.y) + extents.z * Math.abs(testAxis.z);
             // 投影三角形的三个点到指定轴
             var p0 = v0.dot(testAxis);
             var p1 = v1.dot(testAxis);
             var p2 = v2.dot(testAxis);
-            // 三个点在长方体投影外同侧
+            // 三个点在包围盒投影外同侧
             if (Math.min(p0, p1, p2) > r || Math.max(p0, p1, p2) < -r)
             {
                 return false;

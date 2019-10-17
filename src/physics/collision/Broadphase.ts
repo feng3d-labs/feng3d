@@ -125,7 +125,7 @@ namespace CANNON
             }
 
             // Check AABB / AABB
-            if (bodyA.aabb.overlaps(bodyB.aabb))
+            if (bodyA.aabb.intersects(bodyB.aabb))
             {
                 pairs1.push(bodyA);
                 pairs2.push(bodyB);

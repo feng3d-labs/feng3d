@@ -13646,26 +13646,26 @@ var feng3d;
         };
         /**
          * 是否包含包围盒
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        AABB.prototype.containsBox = function (box) {
-            return this.min.lessequal(box.min) && this.max.greaterequal(box.max);
+        AABB.prototype.contains = function (aabb) {
+            return this.min.lessequal(aabb.min) && this.max.greaterequal(aabb.max);
         };
         /**
          * 拷贝
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        AABB.prototype.copy = function (box) {
-            this.min.copy(box.min);
-            this.max.copy(box.max);
+        AABB.prototype.copy = function (aabb) {
+            this.min.copy(aabb.min);
+            this.max.copy(aabb.max);
             return this;
         };
         /**
          * 比较包围盒是否相等
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        AABB.prototype.equals = function (box) {
-            return this.min.equals(box.min) && this.max.equals(box.max);
+        AABB.prototype.equals = function (aabb) {
+            return this.min.equals(aabb.min) && this.max.equals(aabb.max);
         };
         /**
          * 膨胀包围盒
@@ -13692,29 +13692,29 @@ var feng3d;
         };
         /**
          * 与包围盒相交
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        AABB.prototype.intersection = function (box) {
-            this.min.clamp(box.min, box.max);
-            this.max.clamp(box.min, box.max);
+        AABB.prototype.intersection = function (aabb) {
+            this.min.clamp(aabb.min, aabb.max);
+            this.max.clamp(aabb.min, aabb.max);
             return this;
         };
         /**
          * 与包围盒相交
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        AABB.prototype.intersectionTo = function (box, vbox) {
-            if (vbox === void 0) { vbox = new AABB(); }
-            return vbox.copy(this).intersection(box);
+        AABB.prototype.intersectionTo = function (aabb, out) {
+            if (out === void 0) { out = new AABB(); }
+            return out.copy(this).intersection(aabb);
         };
         /**
          * 包围盒是否相交
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        AABB.prototype.intersects = function (box) {
-            var b = this.intersectionTo(box);
+        AABB.prototype.intersects = function (aabb) {
+            var b = this.intersectionTo(aabb);
             var c = b.getCenter();
-            return this.containsPoint(c) && box.containsPoint(c);
+            return this.containsPoint(c) && aabb.containsPoint(c);
         };
         /**
          * 与射线相交
@@ -13825,7 +13825,7 @@ var feng3d;
             return intersects ? rayEntryDistance : -1;
         };
         /**
-         * 获取长方体上距离指定点最近的点
+         * 获取包围盒上距离指定点最近的点
          *
          * @param point 指定点
          * @param target 存储最近的点
@@ -13868,15 +13868,15 @@ var feng3d;
             return this;
         };
         AABB.prototype.toString = function () {
-            return "[Box] (min=" + this.min.toString() + ", max=" + this.max.toString() + ")";
+            return "[AABB] (min=" + this.min.toString() + ", max=" + this.max.toString() + ")";
         };
         /**
          * 联合包围盒
-         * @param box 包围盒
+         * @param aabb 包围盒
          */
-        AABB.prototype.union = function (box) {
-            this.min.min(box.min);
-            this.max.max(box.max);
+        AABB.prototype.union = function (aabb) {
+            this.min.min(aabb.min);
+            this.max.max(aabb.max);
             return this;
         };
         /**
@@ -13892,11 +13892,11 @@ var feng3d;
          * 夹紧？
          *
          * @param point 点
-         * @param pout 输出点
+         * @param out 输出点
          */
-        AABB.prototype.clampPoint = function (point, pout) {
-            if (pout === void 0) { pout = new feng3d.Vector3(); }
-            return pout.copy(point).clamp(this.min, this.max);
+        AABB.prototype.clampPoint = function (point, out) {
+            if (out === void 0) { out = new feng3d.Vector3(); }
+            return out.copy(point).clamp(this.min, this.max);
         };
         /**
          * 是否与平面相交
@@ -13920,10 +13920,10 @@ var feng3d;
             if (this.isEmpty()) {
                 return false;
             }
-            // 计算长方体中心和区段
+            // 计算包围盒中心和区段
             var center = this.getCenter();
             var extents = this.max.subTo(center);
-            // 把三角形顶点转换长方体空间
+            // 把三角形顶点转换包围盒空间
             var v0 = triangle.p0.subTo(center);
             var v1 = triangle.p1.subTo(center);
             var v2 = triangle.p2.subTo(center);
@@ -13976,7 +13976,7 @@ var feng3d;
     }());
     feng3d.AABB = AABB;
     /**
-     * 判断三角形三个点是否可能与长方体在指定轴（列表）上投影相交
+     * 判断三角形三个点是否可能与包围盒在指定轴（列表）上投影相交
      *
      * @param axes
      * @param v0
@@ -13987,13 +13987,13 @@ var feng3d;
     function satForAxes(axes, v0, v1, v2, extents) {
         for (var i = 0, j = axes.length - 3; i <= j; i += 3) {
             var testAxis = feng3d.Vector3.fromArray(axes, i);
-            // 投影长方体到指定轴的长度
+            // 投影包围盒到指定轴的长度
             var r = extents.x * Math.abs(testAxis.x) + extents.y * Math.abs(testAxis.y) + extents.z * Math.abs(testAxis.z);
             // 投影三角形的三个点到指定轴
             var p0 = v0.dot(testAxis);
             var p1 = v1.dot(testAxis);
             var p2 = v2.dot(testAxis);
-            // 三个点在长方体投影外同侧
+            // 三个点在包围盒投影外同侧
             if (Math.min(p0, p1, p2) > r || Math.max(p0, p1, p2) < -r) {
                 return false;
             }
@@ -40556,20 +40556,13 @@ var CANNON;
          * @param skinSize
          * @return The self object
          */
-        AABB.prototype.setFromPoints = function (points, position, quaternion, skinSize) {
-            var l = this.min, u = this.max, q = quaternion;
+        AABB.prototype.fromPoints = function (points) {
+            var l = this.min, u = this.max;
             // Set to the first point
             l.copy(points[0]);
-            if (q) {
-                q.vmult(l, l);
-            }
             u.copy(l);
             for (var i = 1; i < points.length; i++) {
                 var p = points[i];
-                if (q) {
-                    q.vmult(p, tmp);
-                    p = tmp;
-                }
                 if (p.x > u.x) {
                     u.x = p.x;
                 }
@@ -40588,19 +40581,6 @@ var CANNON;
                 if (p.z < l.z) {
                     l.z = p.z;
                 }
-            }
-            // Add offset
-            if (position) {
-                position.addTo(l, l);
-                position.addTo(u, u);
-            }
-            if (skinSize) {
-                l.x -= skinSize;
-                l.y -= skinSize;
-                l.z -= skinSize;
-                u.x += skinSize;
-                u.y += skinSize;
-                u.z += skinSize;
             }
             return this;
         };
@@ -40624,7 +40604,7 @@ var CANNON;
          * Extend this AABB so that it covers the given AABB too.
          * @param aabb
          */
-        AABB.prototype.extend = function (aabb) {
+        AABB.prototype.union = function (aabb) {
             this.min.x = Math.min(this.min.x, aabb.min.x);
             this.max.x = Math.max(this.max.x, aabb.max.x);
             this.min.y = Math.min(this.min.y, aabb.min.y);
@@ -40636,7 +40616,7 @@ var CANNON;
          * Returns true if the given AABB overlaps this AABB.
          * @param aabb
          */
-        AABB.prototype.overlaps = function (aabb) {
+        AABB.prototype.intersects = function (aabb) {
             var l1 = this.min, u1 = this.max, l2 = aabb.min, u2 = aabb.max;
             //      l2        u2
             //      |---------|
@@ -40646,13 +40626,6 @@ var CANNON;
             var overlapsY = ((l2.y <= u1.y && u1.y <= u2.y) || (l1.y <= u2.y && u2.y <= u1.y));
             var overlapsZ = ((l2.z <= u1.z && u1.z <= u2.z) || (l1.z <= u2.z && u2.z <= u1.z));
             return overlapsX && overlapsY && overlapsZ;
-        };
-        /**
-         * Mostly for debugging
-         */
-        AABB.prototype.volume = function () {
-            var l = this.min, u = this.max;
-            return (u.x - l.x) * (u.y - l.y) * (u.z - l.z);
         };
         /**
          * Returns true if the given AABB is fully contained in this AABB.
@@ -40702,7 +40675,7 @@ var CANNON;
                 var corner = corners[i];
                 CANNON.Transform.pointToLocalFrame(frame, corner, corner);
             }
-            return target.setFromPoints(corners);
+            return target.fromPoints(corners);
         };
         /**
          * Get the representation of an AABB in the global frame.
@@ -40727,7 +40700,7 @@ var CANNON;
                 var corner = corners[i];
                 CANNON.Transform.pointToWorldFrame(frame, corner, corner);
             }
-            return target.setFromPoints(corners);
+            return target.fromPoints(corners);
         };
         /**
          * Check if the AABB is hit by a ray.
@@ -40835,7 +40808,7 @@ var CANNON;
                 this.getVertex(this.indices[i3], a);
                 this.getVertex(this.indices[i3 + 1], b);
                 this.getVertex(this.indices[i3 + 2], c);
-                triangleAABB.setFromPoints(points);
+                triangleAABB.fromPoints(points);
                 tree.insert(triangleAABB, i);
             }
             tree.removeEmptyNodes();
@@ -41192,7 +41165,7 @@ var CANNON;
             var queue = [this];
             while (queue.length) {
                 var node = queue.pop();
-                if (node.aabb.overlaps(aabb)) {
+                if (node.aabb.intersects(aabb)) {
                     Array.prototype.push.apply(result, node.data);
                 }
                 Array.prototype.push.apply(queue, node.children);
@@ -41592,7 +41565,7 @@ var CANNON;
                 bodyB.computeAABB();
             }
             // Check AABB / AABB
-            if (bodyA.aabb.overlaps(bodyB.aabb)) {
+            if (bodyA.aabb.intersects(bodyB.aabb)) {
                 pairs1.push(bodyA);
                 pairs2.push(bodyB);
             }
@@ -41904,7 +41877,7 @@ var CANNON;
                     b.computeAABB();
                 }
                 // Ugly hack until Body gets aabb
-                if (b.aabb.overlaps(aabb)) {
+                if (b.aabb.intersects(aabb)) {
                     result.push(b);
                 }
             }
@@ -42967,7 +42940,7 @@ var CANNON;
                     aabb.copy(shapeAABB);
                 }
                 else {
-                    aabb.extend(shapeAABB);
+                    aabb.union(shapeAABB);
                 }
             }
             this.aabbNeedsUpdate = false;

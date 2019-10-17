@@ -92,7 +92,7 @@ namespace CANNON
                 this.getVertex(this.indices[i3 + 1], b);
                 this.getVertex(this.indices[i3 + 2], c);
 
-                triangleAABB.setFromPoints(points);
+                triangleAABB.fromPoints(points);
                 tree.insert(triangleAABB, i);
             }
             tree.removeEmptyNodes();

@@ -63,7 +63,7 @@ namespace CANNON
                 }
 
                 // Ugly hack until Body gets aabb
-                if (b.aabb.overlaps(aabb))
+                if (b.aabb.intersects(aabb))
                 {
                     result.push(b);
                 }

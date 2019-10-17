@@ -580,7 +580,7 @@ namespace CANNON
                     aabb.copy(shapeAABB);
                 } else
                 {
-                    aabb.extend(shapeAABB);
+                    aabb.union(shapeAABB);
                 }
             }
 
