@@ -1112,9 +1112,12 @@ var feng3d;
             var spv = source[property];
             if (tpv == null || tpv.constructor != spv.constructor) {
                 var className = feng3d.classUtils.getQualifiedClassName(spv);
-                // 获取或创建对象默认实例
+                // 获取或创建对象默认实例，把默认实例保存在构造函数上省去使用map保存。
                 var inst = spv.constructor.inst;
                 if (!inst)
+                    inst = spv.constructor.inst = new spv.constructor();
+                // .constructor 上的属性会被继承
+                if (!(inst instanceof spv.constructor))
                     inst = spv.constructor.inst = new spv.constructor();
                 var diff = serialization.different(spv, inst);
                 diff[feng3d.CLASS_KEY] = className;
