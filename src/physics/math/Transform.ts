@@ -17,6 +17,13 @@ namespace CANNON
             this.quaternion = quaternion;
         }
 
+        toMatrix3D()
+        {
+            var matrix3D = this.quaternion.toMatrix3D();
+            matrix3D.appendTranslation(this.position.x, this.position.y, this.position.z);
+            return matrix3D;
+        }
+
         /**
          * @param position
          * @param quaternion

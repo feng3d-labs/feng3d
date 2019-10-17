@@ -258,7 +258,7 @@ namespace CANNON
          * @param faceListB 
          * @returns Returns false if a separation is found, else true
          */
-        findSeparatingAxis(hullB: ConvexPolyhedron, transformA: ITransform, transformB: Transform, target: feng3d.Vector3, faceListA: number[], faceListB: number[])
+        findSeparatingAxis(hullB: ConvexPolyhedron, transformA: Transform, transformB: Transform, target: feng3d.Vector3, faceListA: number[], faceListB: number[])
         {
             var faceANormalWS3 = new feng3d.Vector3(),
                 Worldnormal1 = new feng3d.Vector3(),

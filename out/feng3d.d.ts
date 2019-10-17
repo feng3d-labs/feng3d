@@ -5490,6 +5490,10 @@ declare namespace feng3d {
     class Quaternion {
         static fromArray(array: ArrayLike<number>, offset?: number): Quaternion;
         /**
+         * 随机四元数
+         */
+        static random(): Quaternion;
+        /**
          * 虚基向量i的乘子
          */
         x: number;
@@ -5616,7 +5620,7 @@ declare namespace feng3d {
          * @param    ay        The angle in radians of the rotation around the ay axis.
          * @param    az        The angle in radians of the rotation around the az axis.
          */
-        fromEulerAngles(ax: number, ay: number, az: number): void;
+        fromEulerAngles(ax: number, ay: number, az: number): this;
         /**
          * Fills a target Vector3 object with the Euler angles that form the rotation represented by this quaternion.
          * @param target An optional Vector3 object to contain the Euler angles. If not provided, a new object is created.
@@ -5624,7 +5628,7 @@ declare namespace feng3d {
          */
         toEulerAngles(target?: Vector3): Vector3;
         /**
-         * Normalises the quaternion object.
+         * 四元数归一化
          */
         normalize(val?: number): this;
         /**
@@ -17426,6 +17430,7 @@ declare namespace CANNON {
         position: feng3d.Vector3;
         quaternion: feng3d.Quaternion;
         constructor(position?: feng3d.Vector3, quaternion?: feng3d.Quaternion);
+        toMatrix3D(): feng3d.Matrix4x4;
         /**
          * @param position
          * @param quaternion
@@ -17960,7 +17965,7 @@ declare namespace CANNON {
          * @param faceListB
          * @returns Returns false if a separation is found, else true
          */
-        findSeparatingAxis(hullB: ConvexPolyhedron, transformA: ITransform, transformB: Transform, target: feng3d.Vector3, faceListA: number[], faceListB: number[]): boolean;
+        findSeparatingAxis(hullB: ConvexPolyhedron, transformA: Transform, transformB: Transform, target: feng3d.Vector3, faceListA: number[], faceListB: number[]): boolean;
         /**
          * Test separating axis against two hulls. Both hulls are projected onto the axis and the overlap size is returned if there is one.
          *

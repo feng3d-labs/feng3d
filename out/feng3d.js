@@ -12133,6 +12133,12 @@ var feng3d;
             if (offset === void 0) { offset = 0; }
             return new Quaternion().fromArray(array, offset);
         };
+        /**
+         * 随机四元数
+         */
+        Quaternion.random = function () {
+            return new Quaternion().fromEulerAngles(Math.PI * 2 * Math.random(), Math.PI * 2 * Math.random(), Math.PI * 2 * Math.random());
+        };
         Object.defineProperty(Quaternion.prototype, "magnitude", {
             /**
              * 返回四元数对象的大小
@@ -12423,6 +12429,7 @@ var feng3d;
             this.x = sinX * cosY * cosZ - cosX * sinY * sinZ;
             this.y = cosX * sinY * cosZ + sinX * cosY * sinZ;
             this.z = cosX * cosY * sinZ - sinX * sinY * cosZ;
+            return this;
         };
         /**
          * Fills a target Vector3 object with the Euler angles that form the rotation represented by this quaternion.
@@ -12440,7 +12447,7 @@ var feng3d;
             return target;
         };
         /**
-         * Normalises the quaternion object.
+         * 四元数归一化
          */
         Quaternion.prototype.normalize = function (val) {
             if (val === void 0) { val = 1; }
@@ -12449,7 +12456,7 @@ var feng3d;
                 this.x = 0;
                 this.y = 0;
                 this.z = 0;
-                this.w = 0;
+                this.w = 1;
             }
             else {
                 l = Math.sqrt(l);
@@ -38327,6 +38334,11 @@ var CANNON;
             this.position = position;
             this.quaternion = quaternion;
         }
+        Transform.prototype.toMatrix3D = function () {
+            var matrix3D = this.quaternion.toMatrix3D();
+            matrix3D.appendTranslation(this.position.x, this.position.y, this.position.z);
+            return matrix3D;
+        };
         /**
          * @param position
          * @param quaternion
@@ -40706,7 +40718,6 @@ var CANNON;
          * Check if the AABB is hit by a ray.
          */
         AABB.prototype.overlapsRay = function (ray) {
-            var t = 0;
             // ray.direction is unit direction vector of ray
             var dirFracX = 1 / ray._direction.x;
             var dirFracY = 1 / ray._direction.y;
@@ -40737,7 +40748,6 @@ var CANNON;
         return AABB;
     }());
     CANNON.AABB = AABB;
-    var tmp = new feng3d.Vector3();
     var transformIntoFrame_corners = [
         new feng3d.Vector3(),
         new feng3d.Vector3(),

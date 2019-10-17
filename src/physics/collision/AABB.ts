@@ -218,8 +218,6 @@ namespace CANNON
          */
         overlapsRay(ray: Ray)
         {
-            var t = 0;
-
             // ray.direction is unit direction vector of ray
             var dirFracX = 1 / ray._direction.x;
             var dirFracY = 1 / ray._direction.y;
@@ -257,7 +255,6 @@ namespace CANNON
 
     }
 
-    var tmp = new feng3d.Vector3();
     var transformIntoFrame_corners = [
         new feng3d.Vector3(),
         new feng3d.Vector3(),

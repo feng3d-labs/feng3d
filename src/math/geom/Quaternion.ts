@@ -10,6 +10,14 @@ namespace feng3d
             return new Quaternion().fromArray(array, offset);
         }
 
+        /**
+         * 随机四元数
+         */
+        static random()
+        {
+            return new Quaternion().fromEulerAngles(Math.PI * 2 * Math.random(), Math.PI * 2 * Math.random(), Math.PI * 2 * Math.random());
+        }
+
 		/**
 		 * 虚基向量i的乘子
 		 */
@@ -391,6 +399,7 @@ namespace feng3d
             this.x = sinX * cosY * cosZ - cosX * sinY * sinZ;
             this.y = cosX * sinY * cosZ + sinX * cosY * sinZ;
             this.z = cosX * cosY * sinZ - sinX * sinY * cosZ;
+            return this;
         }
 
 		/**
@@ -411,7 +420,7 @@ namespace feng3d
         }
 
 		/**
-		 * Normalises the quaternion object.
+		 * 四元数归一化
 		 */
         normalize(val = 1)
         {
@@ -421,7 +430,7 @@ namespace feng3d
                 this.x = 0;
                 this.y = 0;
                 this.z = 0;
-                this.w = 0;
+                this.w = 1;
             } else
             {
                 l = Math.sqrt(l);
