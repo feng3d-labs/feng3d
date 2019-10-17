@@ -18566,25 +18566,10 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    class Broadphase {
-        /**
-        * The world to search for collisions in.
-        */
+    abstract class Broadphase {
         world: World;
-        /**
-         * If set to true, the broadphase uses bounding boxes for intersection test, else it uses bounding spheres.
-         */
         useBoundingBoxes: boolean;
-        /**
-         * Set to true if the objects in the world moved.
-         */
         dirty: boolean;
-        /**
-         * Base class for broadphase implementations
-         *
-         * @author schteppe
-         */
-        constructor();
         /**
          * Get the collision pairs from the world
          *
@@ -18592,7 +18577,7 @@ declare namespace CANNON {
          * @param p1 Empty array to be filled with body objects
          * @param p2 Empty array to be filled with body objects
          */
-        collisionPairs(world: World, p1: any[], p2: any[]): void;
+        abstract collisionPairs(world: World, p1: any[], p2: any[]): void;
         /**
          * Check if a body pair needs to be intersection tested at all.
          *
@@ -18637,12 +18622,6 @@ declare namespace CANNON {
          * @param {World} world
          */
         setWorld(world: World): void;
-        /**
-         * Check if the bounding spheres of two bodies overlap.
-         * @param bodyA
-         * @param bodyB
-         */
-        static boundingSphereCheck(bodyA: Body, bodyB: Body): boolean;
         /**
          * Returns all the bodies within the AABB.
          *

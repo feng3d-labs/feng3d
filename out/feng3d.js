@@ -40957,26 +40957,11 @@ var CANNON;
 var CANNON;
 (function (CANNON) {
     var Broadphase = /** @class */ (function () {
-        /**
-         * Base class for broadphase implementations
-         *
-         * @author schteppe
-         */
         function Broadphase() {
             this.world = null;
             this.useBoundingBoxes = false;
             this.dirty = true;
         }
-        /**
-         * Get the collision pairs from the world
-         *
-         * @param world The world to search in
-         * @param p1 Empty array to be filled with body objects
-         * @param p2 Empty array to be filled with body objects
-         */
-        Broadphase.prototype.collisionPairs = function (world, p1, p2) {
-            throw new Error("collisionPairs not implemented for this BroadPhase class!");
-        };
         /**
          * Check if a body pair needs to be intersection tested at all.
          *
@@ -41020,8 +41005,7 @@ var CANNON;
          * @param pairs2 bodyB is appended to this array if intersection
          */
         Broadphase.prototype.doBoundingSphereBroadphase = function (bodyA, bodyB, pairs1, pairs2) {
-            var r = Broadphase_collisionPairs_r;
-            bodyB.position.subTo(bodyA.position, r);
+            var r = bodyB.position.subTo(bodyA.position);
             var boundingRadiusSum2 = Math.pow(bodyA.boundingRadius + bodyB.boundingRadius, 2);
             var norm2 = r.lengthSquared;
             if (norm2 < boundingRadiusSum2) {
@@ -41055,11 +41039,10 @@ var CANNON;
          * @param pairs2
          */
         Broadphase.prototype.makePairsUnique = function (pairs1, pairs2) {
-            var t = Broadphase_makePairsUnique_temp, p1 = Broadphase_makePairsUnique_p1, p2 = Broadphase_makePairsUnique_p2, N = pairs1.length;
-            for (var i = 0; i !== N; i++) {
-                p1[i] = pairs1[i];
-                p2[i] = pairs2[i];
-            }
+            var t = { keys: [] };
+            var p1 = pairs1.concat();
+            var p2 = pairs2.concat();
+            var N = pairs1.length;
             pairs1.length = 0;
             pairs2.length = 0;
             for (var i = 0; i !== N; i++) {
@@ -41084,18 +41067,6 @@ var CANNON;
         Broadphase.prototype.setWorld = function (world) {
         };
         /**
-         * Check if the bounding spheres of two bodies overlap.
-         * @param bodyA
-         * @param bodyB
-         */
-        Broadphase.boundingSphereCheck = function (bodyA, bodyB) {
-            var dist = bsc_dist;
-            bodyA.position.subTo(bodyB.position, dist);
-            throw "";
-            return true;
-            // return Math.pow(bodyA.shape.boundingSphereRadius + bodyB.shape.boundingSphereRadius, 2) > dist.lengthSquared;
-        };
-        /**
          * Returns all the bodies within the AABB.
          *
          * @param world
@@ -41109,11 +41080,6 @@ var CANNON;
         return Broadphase;
     }());
     CANNON.Broadphase = Broadphase;
-    var Broadphase_collisionPairs_r = new feng3d.Vector3(); // Temp objects
-    var Broadphase_makePairsUnique_temp = { keys: [] };
-    var Broadphase_makePairsUnique_p1 = [];
-    var Broadphase_makePairsUnique_p2 = [];
-    var bsc_dist = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {

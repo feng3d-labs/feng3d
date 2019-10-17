@@ -1,34 +1,13 @@
 namespace CANNON
 {
-    export class Broadphase
+    export abstract class Broadphase
     {
 
-        /**
-        * The world to search for collisions in.
-        */
-        world: World;
+        world: World = null;
 
-        /**
-         * If set to true, the broadphase uses bounding boxes for intersection test, else it uses bounding spheres.
-         */
-        useBoundingBoxes: boolean;
+        useBoundingBoxes = false;
 
-        /**
-         * Set to true if the objects in the world moved.
-         */
-        dirty: boolean;
-
-        /**
-         * Base class for broadphase implementations
-         * 
-         * @author schteppe
-         */
-        constructor()
-        {
-            this.world = null;
-            this.useBoundingBoxes = false;
-            this.dirty = true;
-        }
+        dirty = true;
 
         /**
          * Get the collision pairs from the world
@@ -37,10 +16,7 @@ namespace CANNON
          * @param p1 Empty array to be filled with body objects
          * @param p2 Empty array to be filled with body objects
          */
-        collisionPairs(world: World, p1: any[], p2: any[])
-        {
-            throw new Error("collisionPairs not implemented for this BroadPhase class!");
-        }
+        abstract collisionPairs(world: World, p1: any[], p2: any[]): void;
 
         /**
          * Check if a body pair needs to be intersection tested at all.
@@ -95,8 +71,7 @@ namespace CANNON
          */
         doBoundingSphereBroadphase(bodyA: Body, bodyB: Body, pairs1: Body[], pairs2: Body[])
         {
-            var r = Broadphase_collisionPairs_r;
-            bodyB.position.subTo(bodyA.position, r);
+            var r = bodyB.position.subTo(bodyA.position);
             var boundingRadiusSum2 = Math.pow(bodyA.boundingRadius + bodyB.boundingRadius, 2);
             var norm2 = r.lengthSquared;
             if (norm2 < boundingRadiusSum2)
@@ -139,16 +114,10 @@ namespace CANNON
          */
         makePairsUnique(pairs1: any[], pairs2: any[])
         {
-            var t = Broadphase_makePairsUnique_temp,
-                p1 = Broadphase_makePairsUnique_p1,
-                p2 = Broadphase_makePairsUnique_p2,
-                N = pairs1.length;
-
-            for (var i = 0; i !== N; i++)
-            {
-                p1[i] = pairs1[i];
-                p2[i] = pairs2[i];
-            }
+            var t: { keys: string[] } = { keys: [] };
+            var p1 = pairs1.concat();
+            var p2 = pairs2.concat();
+            var N = pairs1.length;
 
             pairs1.length = 0;
             pairs2.length = 0;
@@ -182,20 +151,6 @@ namespace CANNON
         }
 
         /**
-         * Check if the bounding spheres of two bodies overlap.
-         * @param bodyA
-         * @param bodyB
-         */
-        static boundingSphereCheck(bodyA: Body, bodyB: Body)
-        {
-            var dist = bsc_dist;
-            bodyA.position.subTo(bodyB.position, dist);
-            throw "";
-            return true;
-            // return Math.pow(bodyA.shape.boundingSphereRadius + bodyB.shape.boundingSphereRadius, 2) > dist.lengthSquared;
-        }
-
-        /**
          * Returns all the bodies within the AABB.
          * 
          * @param world 
@@ -209,12 +164,4 @@ namespace CANNON
         }
 
     }
-
-    var Broadphase_collisionPairs_r = new feng3d.Vector3();// Temp objects
-
-    var Broadphase_makePairsUnique_temp: { keys: string[] } = { keys: [] };
-    var Broadphase_makePairsUnique_p1: any[] = [];
-    var Broadphase_makePairsUnique_p2: any[] = [];
-
-    var bsc_dist = new feng3d.Vector3();
 }
