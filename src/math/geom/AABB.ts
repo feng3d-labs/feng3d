@@ -1,36 +1,36 @@
 namespace feng3d
 {
     /**
-     * 长方体，盒子
+     * 轴向对称包围盒
      */
-    export class Box
+    export class AABB
     {
         /**
-         * 从一组顶点初始化盒子
+         * 从一组顶点初始化包围盒
          * @param positions 坐标数据列表
          */
         static formPositions(positions: number[])
         {
-            return new Box().formPositions(positions);
+            return new AABB().formPositions(positions);
         }
 
         /**
-         * 从一组点初始化盒子
+         * 从一组点初始化包围盒
          * @param ps 点列表
          */
         static fromPoints(ps: Vector3[])
         {
-            return new Box().fromPoints(ps);
+            return new AABB().fromPoints(ps);
         }
 
         /**
-         * 随机盒子
+         * 随机包围盒
          */
         static random()
         {
             var min = Vector3.random();
             var max = Vector3.random().add(min);
-            return new Box(min, max);
+            return new AABB(min, max);
         }
 
         /**
@@ -60,7 +60,7 @@ namespace feng3d
         }
 
         /**
-         * 创建盒子
+         * 创建包围盒
          * @param min 最小点
          * @param max 最大点
          */
@@ -71,7 +71,7 @@ namespace feng3d
         }
 
         /**
-         * 初始化盒子
+         * 初始化包围盒
          * @param min 最小值
          * @param max 最大值
          */
@@ -83,7 +83,7 @@ namespace feng3d
         }
 
         /**
-         * 转换为盒子八个角所在点列表
+         * 转换为包围盒八个角所在点列表
          */
         toPoints()
         {
@@ -102,7 +102,7 @@ namespace feng3d
         }
 
         /**
-         * 从一组顶点初始化盒子
+         * 从一组顶点初始化包围盒
          * @param positions 坐标数据列表
          */
         formPositions(positions: number[])
@@ -136,7 +136,7 @@ namespace feng3d
         }
 
         /**
-         * 从一组点初始化盒子
+         * 从一组点初始化包围盒
          * @param ps 点列表
          */
         fromPoints(ps: Vector3[])
@@ -150,7 +150,7 @@ namespace feng3d
         }
 
         /**
-         * 盒子内随机点
+         * 包围盒内随机点
          */
         randomPoint(pout = new Vector3())
         {
@@ -158,7 +158,7 @@ namespace feng3d
         }
 
         /**
-         * 使用点扩张盒子
+         * 使用点扩张包围盒
          * @param point 点
          */
         expandByPoint(point: Vector3)
@@ -185,7 +185,7 @@ namespace feng3d
          * 应用矩阵
          * @param mat 矩阵
          */
-        applyMatrix3DTo(mat: Matrix4x4, out = new Box())
+        applyMatrix3DTo(mat: Matrix4x4, out = new AABB())
         {
             return out.copy(this).applyMatrix3D(mat);
         }
@@ -193,9 +193,9 @@ namespace feng3d
         /**
          * 
          */
-        clone(): Box
+        clone(): AABB
         {
-            return new Box(this.min.clone(), this.max.clone());
+            return new AABB(this.min.clone(), this.max.clone());
         }
 
         /**
@@ -208,19 +208,19 @@ namespace feng3d
         }
 
         /**
-         * 是否包含盒子
-         * @param box 盒子
+         * 是否包含包围盒
+         * @param box 包围盒
          */
-        containsBox(box: Box): boolean
+        containsBox(box: AABB): boolean
         {
             return this.min.lessequal(box.min) && this.max.greaterequal(box.max);
         }
 
         /**
          * 拷贝
-         * @param box 盒子
+         * @param box 包围盒
          */
-        copy(box: Box)
+        copy(box: AABB)
         {
             this.min.copy(box.min);
             this.max.copy(box.max);
@@ -228,16 +228,16 @@ namespace feng3d
         }
 
         /**
-         * 比较盒子是否相等
-         * @param box 盒子
+         * 比较包围盒是否相等
+         * @param box 包围盒
          */
-        equals(box: Box)
+        equals(box: AABB)
         {
             return this.min.equals(box.min) && this.max.equals(box.max);
         }
 
         /**
-         * 膨胀盒子
+         * 膨胀包围盒
          * @param dx x方向膨胀量 
          * @param dy y方向膨胀量
          * @param dz z方向膨胀量
@@ -253,7 +253,7 @@ namespace feng3d
         }
 
         /**
-         * 膨胀盒子
+         * 膨胀包围盒
          * @param delta 膨胀量
          */
         inflatePoint(delta: Vector3)
@@ -264,10 +264,10 @@ namespace feng3d
         }
 
         /**
-         * 与盒子相交
-         * @param box 盒子
+         * 与包围盒相交
+         * @param box 包围盒
          */
-        intersection(box: Box)
+        intersection(box: AABB)
         {
             this.min.clamp(box.min, box.max);
             this.max.clamp(box.min, box.max);
@@ -275,19 +275,19 @@ namespace feng3d
         }
 
         /**
-         * 与盒子相交
-         * @param box 盒子
+         * 与包围盒相交
+         * @param box 包围盒
          */
-        intersectionTo(box: Box, vbox = new Box())
+        intersectionTo(box: AABB, vbox = new AABB())
         {
             return vbox.copy(this).intersection(box);
         }
 
         /**
-         * 盒子是否相交
-         * @param box 盒子
+         * 包围盒是否相交
+         * @param box 包围盒
          */
-        intersects(box: Box)
+        intersects(box: AABB)
         {
             var b = this.intersectionTo(box);
             var c = b.getCenter();
@@ -442,7 +442,7 @@ namespace feng3d
         }
 
         /**
-         * 清空盒子
+         * 清空包围盒
          */
         empty()
         {
@@ -488,10 +488,10 @@ namespace feng3d
         }
 
         /**
-         * 联合盒子
-         * @param box 盒子
+         * 联合包围盒
+         * @param box 包围盒
          */
-        union(box: Box): Box
+        union(box: AABB): AABB
         {
             this.min.min(box.min);
             this.max.max(box.max);

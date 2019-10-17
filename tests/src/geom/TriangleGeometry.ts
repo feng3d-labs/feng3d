@@ -4,7 +4,7 @@ namespace feng3d
     {
         QUnit.test("fromBox,getBox", (assert) =>
         {
-            var box = Box.random();
+            var box = AABB.random();
             var triangleGeometry = TriangleGeometry.fromBox(box);
 
             assert.ok(
@@ -15,7 +15,7 @@ namespace feng3d
 
         QUnit.test("getPoints", (assert) =>
         {
-            var box = Box.random();
+            var box = AABB.random();
             var triangleGeometry = TriangleGeometry.fromBox(box);
 
             assert.ok(triangleGeometry.getPoints().length == 8);
@@ -24,7 +24,7 @@ namespace feng3d
         QUnit.test("isClosed", (assert) =>
         {
             // var box = Box.random();
-            var box = new Box(new Vector3(), new Vector3(1, 1, 1));
+            var box = new AABB(new Vector3(), new Vector3(1, 1, 1));
             var triangleGeometry = TriangleGeometry.fromBox(box);
 
             assert.ok(
@@ -40,7 +40,7 @@ namespace feng3d
 
         QUnit.test("containsPoint", (assert) =>
         {
-            var box = Box.random();
+            var box = AABB.random();
             var triangleGeometry = TriangleGeometry.fromBox(box);
 
             assert.ok(
@@ -59,7 +59,7 @@ namespace feng3d
 
         QUnit.test("intersectionWithSegment", (assert) =>
         {
-            var box = Box.random();
+            var box = AABB.random();
             var triangleGeometry = TriangleGeometry.fromBox(box);
 
             var r = triangleGeometry.intersectionWithSegment(Segment3D.fromPoints(box.min, box.max))

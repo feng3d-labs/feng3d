@@ -310,7 +310,7 @@ namespace feng3d
         /**
          * 是否与盒子相交
          */
-        intersectsBox(box: Box)
+        intersectsBox(box: AABB)
         {
             return box.intersectsTriangle(this);
         }
@@ -428,7 +428,7 @@ namespace feng3d
          */
         rasterize()
         {
-            var aabb = feng3d.Box.fromPoints([this.p0, this.p1, this.p2]);
+            var aabb = feng3d.AABB.fromPoints([this.p0, this.p1, this.p2]);
             aabb.min.round();
             aabb.max.round();
             var point = new feng3d.Vector3();

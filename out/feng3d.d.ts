@@ -6035,7 +6035,7 @@ declare namespace feng3d {
         /**
          * 是否与盒子相交
          */
-        intersectsBox(box: Box): boolean;
+        intersectsBox(box: AABB): boolean;
         /**
          * 与指定点最近的点
          * @param point 点
@@ -6114,23 +6114,23 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 长方体，盒子
+     * 轴向对称包围盒
      */
-    class Box {
+    class AABB {
         /**
-         * 从一组顶点初始化盒子
+         * 从一组顶点初始化包围盒
          * @param positions 坐标数据列表
          */
-        static formPositions(positions: number[]): Box;
+        static formPositions(positions: number[]): AABB;
         /**
-         * 从一组点初始化盒子
+         * 从一组点初始化包围盒
          * @param ps 点列表
          */
-        static fromPoints(ps: Vector3[]): Box;
+        static fromPoints(ps: Vector3[]): AABB;
         /**
-         * 随机盒子
+         * 随机包围盒
          */
-        static random(): Box;
+        static random(): AABB;
         /**
          * 最小点
          */
@@ -6149,37 +6149,37 @@ declare namespace feng3d {
          */
         getSize(vout?: Vector3): Vector3;
         /**
-         * 创建盒子
+         * 创建包围盒
          * @param min 最小点
          * @param max 最大点
          */
         constructor(min?: Vector3, max?: Vector3);
         /**
-         * 初始化盒子
+         * 初始化包围盒
          * @param min 最小值
          * @param max 最大值
          */
         init(min: Vector3, max: Vector3): this;
         /**
-         * 转换为盒子八个角所在点列表
+         * 转换为包围盒八个角所在点列表
          */
         toPoints(): Vector3[];
         /**
-         * 从一组顶点初始化盒子
+         * 从一组顶点初始化包围盒
          * @param positions 坐标数据列表
          */
         formPositions(positions: number[]): this;
         /**
-         * 从一组点初始化盒子
+         * 从一组点初始化包围盒
          * @param ps 点列表
          */
         fromPoints(ps: Vector3[]): this;
         /**
-         * 盒子内随机点
+         * 包围盒内随机点
          */
         randomPoint(pout?: Vector3): Vector3;
         /**
-         * 使用点扩张盒子
+         * 使用点扩张包围盒
          * @param point 点
          */
         expandByPoint(point: Vector3): this;
@@ -6192,58 +6192,58 @@ declare namespace feng3d {
          * 应用矩阵
          * @param mat 矩阵
          */
-        applyMatrix3DTo(mat: Matrix4x4, out?: Box): Box;
+        applyMatrix3DTo(mat: Matrix4x4, out?: AABB): AABB;
         /**
          *
          */
-        clone(): Box;
+        clone(): AABB;
         /**
          * 是否包含指定点
          * @param p 点
          */
         containsPoint(p: Vector3): boolean;
         /**
-         * 是否包含盒子
-         * @param box 盒子
+         * 是否包含包围盒
+         * @param box 包围盒
          */
-        containsBox(box: Box): boolean;
+        containsBox(box: AABB): boolean;
         /**
          * 拷贝
-         * @param box 盒子
+         * @param box 包围盒
          */
-        copy(box: Box): this;
+        copy(box: AABB): this;
         /**
-         * 比较盒子是否相等
-         * @param box 盒子
+         * 比较包围盒是否相等
+         * @param box 包围盒
          */
-        equals(box: Box): boolean;
+        equals(box: AABB): boolean;
         /**
-         * 膨胀盒子
+         * 膨胀包围盒
          * @param dx x方向膨胀量
          * @param dy y方向膨胀量
          * @param dz z方向膨胀量
          */
         inflate(dx: number, dy: number, dz: number): void;
         /**
-         * 膨胀盒子
+         * 膨胀包围盒
          * @param delta 膨胀量
          */
         inflatePoint(delta: Vector3): void;
         /**
-         * 与盒子相交
-         * @param box 盒子
+         * 与包围盒相交
+         * @param box 包围盒
          */
-        intersection(box: Box): this;
+        intersection(box: AABB): this;
         /**
-         * 与盒子相交
-         * @param box 盒子
+         * 与包围盒相交
+         * @param box 包围盒
          */
-        intersectionTo(box: Box, vbox?: Box): Box;
+        intersectionTo(box: AABB, vbox?: AABB): AABB;
         /**
-         * 盒子是否相交
-         * @param box 盒子
+         * 包围盒是否相交
+         * @param box 包围盒
          */
-        intersects(box: Box): boolean;
+        intersects(box: AABB): boolean;
         /**
          * 与射线相交
          * @param position 射线起点
@@ -6260,7 +6260,7 @@ declare namespace feng3d {
          */
         closestPointToPoint(point: Vector3, target?: Vector3): Vector3;
         /**
-         * 清空盒子
+         * 清空包围盒
          */
         empty(): this;
         /**
@@ -6282,10 +6282,10 @@ declare namespace feng3d {
         offsetPosition(position: Vector3): this;
         toString(): string;
         /**
-         * 联合盒子
-         * @param box 盒子
+         * 联合包围盒
+         * @param box 包围盒
          */
-        union(box: Box): Box;
+        union(box: AABB): AABB;
         /**
          * 是否与球相交
          * @param sphere 球
@@ -6389,7 +6389,7 @@ declare namespace feng3d {
          * 是否与盒子相交
          * @param box 盒子
          */
-        intersectsBox(box: Box): boolean;
+        intersectsBox(box: AABB): boolean;
         /**
          * 是否与平面相交
          * @param plane 平面
@@ -6404,7 +6404,7 @@ declare namespace feng3d {
         /**
          * 获取包围盒
          */
-        getBoundingBox(box?: Box): Box;
+        getBoundingBox(box?: AABB): AABB;
         /**
          * 应用矩阵
          * @param matrix 矩阵
@@ -6599,14 +6599,14 @@ declare namespace feng3d {
          * 从盒子初始化
          * @param box 盒子
          */
-        static fromBox(box: Box): TriangleGeometry;
+        static fromBox(box: AABB): TriangleGeometry;
         triangles: Triangle3D[];
         constructor(triangles?: Triangle3D[]);
         /**
          * 从盒子初始化
          * @param box 盒子
          */
-        fromBox(box: Box): this;
+        fromBox(box: AABB): this;
         /**
          * 获取所有顶点，去除重复顶点
          */
@@ -6619,7 +6619,7 @@ declare namespace feng3d {
         /**
          * 包围盒
          */
-        getBox(box?: Box): Box;
+        getBox(box?: AABB): AABB;
         /**
          * 与指定点最近的点
          * @param point 点
@@ -12776,7 +12776,7 @@ declare namespace feng3d {
         /**
          * 世界包围盒
          */
-        readonly worldBounds: Box;
+        readonly worldBounds: AABB;
         /**
          * 监听对象的所有事件并且传播到所有组件中
          */
@@ -13071,11 +13071,11 @@ declare namespace feng3d {
         /**
          * 自身局部包围盒
          */
-        readonly selfLocalBounds: Box;
+        readonly selfLocalBounds: AABB;
         /**
          * 自身世界包围盒
          */
-        readonly selfWorldBounds: Box;
+        readonly selfWorldBounds: AABB;
         constructor();
         init(): void;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
@@ -13493,7 +13493,7 @@ declare namespace feng3d {
          * 包围盒失效
          */
         invalidateBounds(): void;
-        readonly bounding: Box;
+        readonly bounding: AABB;
         /**
          * 射线投影几何体
          * @param ray                           射线
@@ -13652,7 +13652,7 @@ declare namespace feng3d {
          * 获取包围盒
          * @param positions 顶点数据
          */
-        getAABB(positions: number[]): Box;
+        getAABB(positions: number[]): AABB;
     }
 }
 declare namespace feng3d {
@@ -13789,7 +13789,7 @@ declare namespace feng3d {
          *
          * 一个包含可视空间的最小包围盒
          */
-        readonly viewBox: Box;
+        readonly viewBox: AABB;
         /**
          * 摄像机空间坐标投影到GPU空间坐标
          * @param point3d 摄像机空间坐标
@@ -13829,7 +13829,7 @@ declare namespace feng3d {
         private _invertMatrixInvalid;
         private _inverseMatrix;
         private _viewBoxInvalid;
-        protected _viewBox: Box;
+        protected _viewBox: AABB;
         protected _matrix: Matrix4x4;
         /**
          * 投影矩阵失效
@@ -13956,7 +13956,7 @@ declare namespace feng3d {
         /**
          * 可视包围盒
          */
-        readonly viewBox: Box;
+        readonly viewBox: AABB;
         /**
          * 创建一个摄像机
          */
@@ -13993,7 +13993,7 @@ declare namespace feng3d {
          * 是否与盒子相交
          * @param box 盒子
          */
-        intersectsBox(box: Box): boolean;
+        intersectsBox(box: AABB): boolean;
         /**
          * 处理场景变换改变事件
          */

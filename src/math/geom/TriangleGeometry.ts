@@ -12,7 +12,7 @@ namespace feng3d
          * 从盒子初始化
          * @param box 盒子
          */
-        static fromBox(box: Box)
+        static fromBox(box: AABB)
         {
             return new TriangleGeometry().fromBox(box);
         }
@@ -28,7 +28,7 @@ namespace feng3d
          * 从盒子初始化
          * @param box 盒子
          */
-        fromBox(box: Box)
+        fromBox(box: AABB)
         {
             this.triangles.length = 0;
             box.toTriangles(this.triangles);
@@ -61,7 +61,7 @@ namespace feng3d
         /**
          * 包围盒
          */
-        getBox(box = new Box())
+        getBox(box = new AABB())
         {
             return box.fromPoints(this.getPoints());
         }

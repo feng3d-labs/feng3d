@@ -2324,15 +2324,15 @@ QUnit.module("Utils", function () {
 });
 var feng3d;
 (function (feng3d) {
-    QUnit.module("Box3", function () {
+    QUnit.module("AABB", function () {
         QUnit.test("intersectsTriangle", function (assert) {
-            var box = feng3d.Box.random();
+            var box = feng3d.AABB.random();
             var triangle = feng3d.Triangle3D.fromPoints(box.randomPoint(), box.randomPoint(), box.randomPoint());
             assert.ok(box.intersectsTriangle(triangle));
             var triangle1 = feng3d.Triangle3D.fromPoints(box.randomPoint(), box.randomPoint().addNumber(5), box.randomPoint().addNumber(6));
             assert.ok(box.intersectsTriangle(triangle1));
             //
-            var box2 = new feng3d.Box(new feng3d.Vector3(-1, -1, -1), new feng3d.Vector3(1, 1, 1));
+            var box2 = new feng3d.AABB(new feng3d.Vector3(-1, -1, -1), new feng3d.Vector3(1, 1, 1));
             var triangle2 = new feng3d.Triangle3D(new feng3d.Vector3(1.5, 0, 0), new feng3d.Vector3(0, 1.5, 0), new feng3d.Vector3(1.5, 1.5, 0));
             assert.ok(box2.intersectsTriangle(triangle2));
         });
@@ -2778,25 +2778,25 @@ var feng3d;
 (function (feng3d) {
     QUnit.module("TriangleGeometry", function () {
         QUnit.test("fromBox,getBox", function (assert) {
-            var box = feng3d.Box.random();
+            var box = feng3d.AABB.random();
             var triangleGeometry = feng3d.TriangleGeometry.fromBox(box);
             assert.ok(triangleGeometry.getBox().equals(box));
         });
         QUnit.test("getPoints", function (assert) {
-            var box = feng3d.Box.random();
+            var box = feng3d.AABB.random();
             var triangleGeometry = feng3d.TriangleGeometry.fromBox(box);
             assert.ok(triangleGeometry.getPoints().length == 8);
         });
         QUnit.test("isClosed", function (assert) {
             // var box = Box.random();
-            var box = new feng3d.Box(new feng3d.Vector3(), new feng3d.Vector3(1, 1, 1));
+            var box = new feng3d.AABB(new feng3d.Vector3(), new feng3d.Vector3(1, 1, 1));
             var triangleGeometry = feng3d.TriangleGeometry.fromBox(box);
             assert.ok(triangleGeometry.isClosed());
             triangleGeometry.triangles.pop();
             assert.notOk(triangleGeometry.isClosed());
         });
         QUnit.test("containsPoint", function (assert) {
-            var box = feng3d.Box.random();
+            var box = feng3d.AABB.random();
             var triangleGeometry = feng3d.TriangleGeometry.fromBox(box);
             assert.ok(triangleGeometry.containsPoint(box.randomPoint()));
             assert.ok(box.toPoints().every(function (v) {
@@ -2805,7 +2805,7 @@ var feng3d;
             assert.ok(!triangleGeometry.containsPoint(box.max.addTo(new feng3d.Vector3(1, 0, 0))));
         });
         QUnit.test("intersectionWithSegment", function (assert) {
-            var box = feng3d.Box.random();
+            var box = feng3d.AABB.random();
             var triangleGeometry = feng3d.TriangleGeometry.fromBox(box);
             var r = triangleGeometry.intersectionWithSegment(feng3d.Segment3D.fromPoints(box.min, box.max));
             assert.ok(r);

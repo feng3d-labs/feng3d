@@ -165,8 +165,8 @@ namespace feng3d
 
         //
         private _lightPicker: LightPicker;
-        private _selfLocalBounds: Box;
-        private _selfWorldBounds: Box;
+        private _selfLocalBounds: AABB;
+        private _selfWorldBounds: AABB;
 
         private onScenetransformChanged()
         {

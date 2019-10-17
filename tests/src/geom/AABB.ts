@@ -1,10 +1,10 @@
 namespace feng3d
 {
-    QUnit.module("Box3", () =>
+    QUnit.module("AABB", () =>
     {
         QUnit.test("intersectsTriangle", (assert) =>
         {
-            var box = Box.random();
+            var box = AABB.random();
             var triangle = Triangle3D.fromPoints(box.randomPoint(), box.randomPoint(), box.randomPoint());
             assert.ok(
                 box.intersectsTriangle(triangle)
@@ -16,7 +16,7 @@ namespace feng3d
             );
 
             //
-            var box2 = new Box(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
+            var box2 = new AABB(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
             var triangle2 = new Triangle3D(new Vector3(1.5, 0, 0), new Vector3(0, 1.5, 0), new Vector3(1.5, 1.5, 0));
             assert.ok(
                 box2.intersectsTriangle(triangle2)

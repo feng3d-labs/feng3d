@@ -182,7 +182,7 @@ namespace feng3d
 		private _inverseMatrix = new Matrix4x4();
 		private _viewBoxInvalid = true;
 		//
-		protected _viewBox = new Box();
+		protected _viewBox = new AABB();
 		protected _matrix = new Matrix4x4();
 
 		/**

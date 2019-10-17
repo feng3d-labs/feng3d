@@ -416,8 +416,8 @@ namespace feng3d
             {
                 var positions = this.positions;
                 if (!positions || positions.length == 0)
-                    return new Box();
-                this._bounding = Box.formPositions(this.positions);
+                    return new AABB();
+                this._bounding = AABB.formPositions(this.positions);
             }
             return this._bounding;
         }
@@ -521,7 +521,7 @@ namespace feng3d
         private _geometryInvalid = true;
         private _useFaceWeights = false;
 
-        private _bounding: Box;
+        private _bounding: AABB;
 
         private _autoAttributeDatas: { [name: string]: { data: number[], size: number } } = {};
 

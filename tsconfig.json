@@ -86,7 +86,7 @@
         "src/math/geom/Segment3D.ts",
         "src/math/geom/Ray3D.ts",
         "src/math/geom/Triangle3D.ts",
-        "src/math/geom/Box.ts",
+        "src/math/geom/AABB.ts",
         "src/math/geom/Sphere.ts",
         "src/math/geom/Plane3D.ts",
         "src/math/geom/PlaneClassification.ts",
