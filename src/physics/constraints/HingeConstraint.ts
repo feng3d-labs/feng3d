@@ -91,8 +91,8 @@ namespace CANNON
             super.update();
 
             // Get world axes
-            bodyA.quaternion.vmult(axisA, worldAxisA);
-            bodyB.quaternion.vmult(axisB, worldAxisB);
+            bodyA.quaternion.rotatePoint(axisA, worldAxisA);
+            bodyB.quaternion.rotatePoint(axisB, worldAxisB);
 
             worldAxisA.tangents(r1.axisA, r2.axisA);
             r1.axisB.copy(worldAxisB);
@@ -100,8 +100,8 @@ namespace CANNON
 
             if (this.motorEquation.enabled)
             {
-                bodyA.quaternion.vmult(this.axisA, motor.axisA);
-                bodyB.quaternion.vmult(this.axisB, motor.axisB);
+                bodyA.quaternion.rotatePoint(this.axisA, motor.axisA);
+                bodyB.quaternion.rotatePoint(this.axisB, motor.axisB);
             }
         }
     }

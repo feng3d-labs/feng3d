@@ -555,32 +555,30 @@ namespace feng3d
         }
 
 		/**
-		 * Clones the quaternion.
-		 * @return An exact duplicate of the current Quaternion.
+         * 克隆
 		 */
         clone(): Quaternion
         {
             return new Quaternion(this.x, this.y, this.z, this.w);
         }
 
-		/**
-		 * Rotates a point.
-		 * @param vector The Vector3 object to be rotated.
-		 * @param target An optional Vector3 object that will contain the rotated coordinates. If not provided, a new object will be created.
-		 * @return A Vector3 object containing the rotated point.
-		 */
-        rotatePoint(vector: Vector3, target?: Vector3): Vector3
+        /**
+         * 旋转一个顶点
+         * 
+         * @param point 被旋转的顶点
+         * @param target 旋转结果
+         */
+        rotatePoint(point: Vector3, target?: Vector3)
         {
-            var x1: number, y1: number, z1: number, w1: number;
-            var x2 = vector.x, y2 = vector.y, z2 = vector.z;
+            var x2 = point.x, y2 = point.y, z2 = point.z;
 
             target = target || new Vector3();
 
             // p*q'
-            w1 = -this.x * x2 - this.y * y2 - this.z * z2;
-            x1 = this.w * x2 + this.y * z2 - this.z * y2;
-            y1 = this.w * y2 - this.x * z2 + this.z * x2;
-            z1 = this.w * z2 + this.x * y2 - this.y * x2;
+            var w1 = -this.x * x2 - this.y * y2 - this.z * z2;
+            var x1 = this.w * x2 + this.y * z2 - this.z * y2;
+            var y1 = this.w * y2 - this.x * z2 + this.z * x2;
+            var z1 = this.w * z2 + this.x * y2 - this.y * x2;
 
             target.x = -w1 * this.x + x1 * this.w - y1 * this.z + z1 * this.y;
             target.y = -w1 * this.y + x1 * this.z + y1 * this.w - z1 * this.x;
@@ -588,37 +586,6 @@ namespace feng3d
 
             return target;
         }
-
-        /**
-          * 将四元数乘以一个向量
-          * 
-          * @param v
-          * @param target
-          */
-        vmult(v: Vector3, target = new Vector3())
-        {
-            var x = v.x,
-                y = v.y,
-                z = v.z;
-
-            var qx = this.x,
-                qy = this.y,
-                qz = this.z,
-                qw = this.w;
-
-            // q*v
-            var ix = qw * x + qy * z - qz * y,
-                iy = qw * y + qz * x - qx * z,
-                iz = qw * z + qx * y - qy * x,
-                iw = -qx * x - qy * y - qz * z;
-
-            target.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
-            target.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
-            target.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
-
-            return target;
-        }
-
 
         /**
          * 旋转一个绝对方向四元数给定一个角速度和一个时间步长

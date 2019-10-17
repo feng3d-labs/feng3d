@@ -12562,47 +12562,28 @@ var feng3d;
             }
         };
         /**
-         * Clones the quaternion.
-         * @return An exact duplicate of the current Quaternion.
+         * 克隆
          */
         Quaternion.prototype.clone = function () {
             return new Quaternion(this.x, this.y, this.z, this.w);
         };
         /**
-         * Rotates a point.
-         * @param vector The Vector3 object to be rotated.
-         * @param target An optional Vector3 object that will contain the rotated coordinates. If not provided, a new object will be created.
-         * @return A Vector3 object containing the rotated point.
+         * 旋转一个顶点
+         *
+         * @param point 被旋转的顶点
+         * @param target 旋转结果
          */
-        Quaternion.prototype.rotatePoint = function (vector, target) {
-            var x1, y1, z1, w1;
-            var x2 = vector.x, y2 = vector.y, z2 = vector.z;
+        Quaternion.prototype.rotatePoint = function (point, target) {
+            var x2 = point.x, y2 = point.y, z2 = point.z;
             target = target || new feng3d.Vector3();
             // p*q'
-            w1 = -this.x * x2 - this.y * y2 - this.z * z2;
-            x1 = this.w * x2 + this.y * z2 - this.z * y2;
-            y1 = this.w * y2 - this.x * z2 + this.z * x2;
-            z1 = this.w * z2 + this.x * y2 - this.y * x2;
+            var w1 = -this.x * x2 - this.y * y2 - this.z * z2;
+            var x1 = this.w * x2 + this.y * z2 - this.z * y2;
+            var y1 = this.w * y2 - this.x * z2 + this.z * x2;
+            var z1 = this.w * z2 + this.x * y2 - this.y * x2;
             target.x = -w1 * this.x + x1 * this.w - y1 * this.z + z1 * this.y;
             target.y = -w1 * this.y + x1 * this.z + y1 * this.w - z1 * this.x;
             target.z = -w1 * this.z - x1 * this.y + y1 * this.x + z1 * this.w;
-            return target;
-        };
-        /**
-          * 将四元数乘以一个向量
-          *
-          * @param v
-          * @param target
-          */
-        Quaternion.prototype.vmult = function (v, target) {
-            if (target === void 0) { target = new feng3d.Vector3(); }
-            var x = v.x, y = v.y, z = v.z;
-            var qx = this.x, qy = this.y, qz = this.z, qw = this.w;
-            // q*v
-            var ix = qw * x + qy * z - qz * y, iy = qw * y + qz * x - qx * z, iz = qw * z + qx * y - qy * x, iw = -qx * x - qy * y - qz * z;
-            target.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
-            target.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
-            target.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
             return target;
         };
         /**
@@ -13757,9 +13738,11 @@ var feng3d;
                     iy = py + rayEntryDistance * vy;
                     iz = pz + rayEntryDistance * vz;
                     if (iy > -halfExtentsY && iy < halfExtentsY && iz > -halfExtentsZ && iz < halfExtentsZ) {
-                        targetNormal.x = 1;
-                        targetNormal.y = 0;
-                        targetNormal.z = 0;
+                        if (targetNormal) {
+                            targetNormal.x = 1;
+                            targetNormal.y = 0;
+                            targetNormal.z = 0;
+                        }
                         intersects = true;
                     }
                 }
@@ -13770,9 +13753,11 @@ var feng3d;
                     iy = py + rayEntryDistance * vy;
                     iz = pz + rayEntryDistance * vz;
                     if (iy > -halfExtentsY && iy < halfExtentsY && iz > -halfExtentsZ && iz < halfExtentsZ) {
-                        targetNormal.x = -1;
-                        targetNormal.y = 0;
-                        targetNormal.z = 0;
+                        if (targetNormal) {
+                            targetNormal.x = -1;
+                            targetNormal.y = 0;
+                            targetNormal.z = 0;
+                        }
                         intersects = true;
                     }
                 }
@@ -13783,9 +13768,11 @@ var feng3d;
                     ix = px + rayEntryDistance * vx;
                     iz = pz + rayEntryDistance * vz;
                     if (ix > -halfExtentsX && ix < halfExtentsX && iz > -halfExtentsZ && iz < halfExtentsZ) {
-                        targetNormal.x = 0;
-                        targetNormal.y = 1;
-                        targetNormal.z = 0;
+                        if (targetNormal) {
+                            targetNormal.x = 0;
+                            targetNormal.y = 1;
+                            targetNormal.z = 0;
+                        }
                         intersects = true;
                     }
                 }
@@ -13796,9 +13783,11 @@ var feng3d;
                     ix = px + rayEntryDistance * vx;
                     iz = pz + rayEntryDistance * vz;
                     if (ix > -halfExtentsX && ix < halfExtentsX && iz > -halfExtentsZ && iz < halfExtentsZ) {
-                        targetNormal.x = 0;
-                        targetNormal.y = -1;
-                        targetNormal.z = 0;
+                        if (targetNormal) {
+                            targetNormal.x = 0;
+                            targetNormal.y = -1;
+                            targetNormal.z = 0;
+                        }
                         intersects = true;
                     }
                 }
@@ -13809,9 +13798,11 @@ var feng3d;
                     ix = px + rayEntryDistance * vx;
                     iy = py + rayEntryDistance * vy;
                     if (iy > -halfExtentsY && iy < halfExtentsY && ix > -halfExtentsX && ix < halfExtentsX) {
-                        targetNormal.x = 0;
-                        targetNormal.y = 0;
-                        targetNormal.z = 1;
+                        if (targetNormal) {
+                            targetNormal.x = 0;
+                            targetNormal.y = 0;
+                            targetNormal.z = 1;
+                        }
                         intersects = true;
                     }
                 }
@@ -13822,9 +13813,11 @@ var feng3d;
                     ix = px + rayEntryDistance * vx;
                     iy = py + rayEntryDistance * vy;
                     if (iy > -halfExtentsY && iy < halfExtentsY && ix > -halfExtentsX && ix < halfExtentsX) {
-                        targetNormal.x = 0;
-                        targetNormal.y = 0;
-                        targetNormal.z = -1;
+                        if (targetNormal) {
+                            targetNormal.x = 0;
+                            targetNormal.y = 0;
+                            targetNormal.z = -1;
+                        }
                         intersects = true;
                     }
                 }
@@ -13978,6 +13971,36 @@ var feng3d;
             // 下
             feng3d.Triangle3D.fromPoints(new feng3d.Vector3(min.x, min.y, min.z), new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(min.x, min.y, max.z)), feng3d.Triangle3D.fromPoints(new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(max.x, min.y, max.z), new feng3d.Vector3(min.x, min.y, max.z)));
             return triangles;
+        };
+        /**
+         * Get the representation of an AABB in another frame.
+         * @param frame
+         * @param target
+         * @return The "target" AABB object.
+         */
+        AABB.prototype.toLocalFrame = function (frame, target) {
+            var mat = frame.toMatrix3D();
+            mat.invert();
+            target.copy(this).applyMatrix3D(mat);
+            return target;
+        };
+        /**
+         * Get the representation of an AABB in the global frame.
+         * @param frame
+         * @param target
+         * @return The "target" AABB object.
+         */
+        AABB.prototype.toWorldFrame = function (frame, target) {
+            var mat = frame.toMatrix3D();
+            target.copy(this).applyMatrix3D(mat);
+            return target;
+        };
+        /**
+         * Check if the AABB is hit by a ray.
+         */
+        AABB.prototype.overlapsRay = function (ray) {
+            var dis = this.rayIntersection(ray.from, ray._direction);
+            return dis != -1;
         };
         return AABB;
     }());
@@ -38349,7 +38372,7 @@ var CANNON;
             if (result === void 0) { result = new feng3d.Vector3(); }
             worldPoint.subTo(transform.position, result);
             var tmpQuat = transform.quaternion.conjugateTo();
-            tmpQuat.vmult(result, result);
+            tmpQuat.rotatePoint(result, result);
             return result;
         };
         /**
@@ -38360,18 +38383,18 @@ var CANNON;
          */
         Transform.pointToWorldFrame = function (transform, localPoint, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
-            transform.quaternion.vmult(localPoint, result);
+            transform.quaternion.rotatePoint(localPoint, result);
             result.addTo(transform.position, result);
             return result;
         };
         Transform.vectorToWorldFrame = function (transform, localVector, result) {
-            transform.quaternion.vmult(localVector, result);
+            transform.quaternion.rotatePoint(localVector, result);
             return result;
         };
         Transform.vectorToLocalFrame = function (transform, worldVector, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
             transform.quaternion.w *= -1;
-            transform.quaternion.vmult(worldVector, result);
+            transform.quaternion.rotatePoint(worldVector, result);
             transform.quaternion.w *= -1;
             return result;
         };
@@ -38736,8 +38759,8 @@ var CANNON;
             var y = this.equationY;
             var z = this.equationZ;
             // Rotate the pivots to world space
-            bodyA.quaternion.vmult(this.pivotA, x.ri);
-            bodyB.quaternion.vmult(this.pivotB, x.rj);
+            bodyA.quaternion.rotatePoint(this.pivotA, x.ri);
+            bodyB.quaternion.rotatePoint(this.pivotB, x.rj);
             y.ri.copy(x.ri);
             y.rj.copy(x.rj);
             z.ri.copy(x.ri);
@@ -38856,14 +38879,14 @@ var CANNON;
             var axisB = this.axisB;
             _super.prototype.update.call(this);
             // Get world axes
-            bodyA.quaternion.vmult(axisA, worldAxisA);
-            bodyB.quaternion.vmult(axisB, worldAxisB);
+            bodyA.quaternion.rotatePoint(axisA, worldAxisA);
+            bodyB.quaternion.rotatePoint(axisB, worldAxisB);
             worldAxisA.tangents(r1.axisA, r2.axisA);
             r1.axisB.copy(worldAxisB);
             r2.axisB.copy(worldAxisB);
             if (this.motorEquation.enabled) {
-                bodyA.quaternion.vmult(this.axisA, motor.axisA);
-                bodyB.quaternion.vmult(this.axisB, motor.axisB);
+                bodyA.quaternion.rotatePoint(this.axisA, motor.axisA);
+                bodyB.quaternion.rotatePoint(this.axisB, motor.axisB);
             }
         };
         return HingeConstraint;
@@ -39130,7 +39153,7 @@ var CANNON;
             var dmax = -Number.MAX_VALUE;
             for (var face = 0; face < hullB.faces.length; face++) {
                 WorldNormal.copy(hullB.faceNormals[face]);
-                quatB.vmult(WorldNormal, WorldNormal);
+                quatB.rotatePoint(WorldNormal, WorldNormal);
                 //posB.vadd(WorldNormal,WorldNormal);
                 var d = WorldNormal.dot(separatingNormal);
                 if (d > dmax) {
@@ -39145,7 +39168,7 @@ var CANNON;
                 var b = hullB.vertices[polyB[e0]];
                 var worldb = new feng3d.Vector3();
                 worldb.copy(b);
-                quatB.vmult(worldb, worldb);
+                quatB.rotatePoint(worldb, worldb);
                 posB.addTo(worldb, worldb);
                 worldVertsB1.push(worldb);
             }
@@ -39176,7 +39199,7 @@ var CANNON;
                     var fi = faceListA ? faceListA[i] : i;
                     // Get world face normal
                     faceANormalWS3.copy(hullA.faceNormals[fi]);
-                    transformA.quaternion.vmult(faceANormalWS3, faceANormalWS3);
+                    transformA.quaternion.rotatePoint(faceANormalWS3, faceANormalWS3);
                     var d = hullA.testSepAxis(faceANormalWS3, hullB, transformA, transformB);
                     if (d === false) {
                         return false;
@@ -39191,7 +39214,7 @@ var CANNON;
                 // Test unique axes
                 for (var i = 0; i !== hullA.uniqueAxes.length; i++) {
                     // Get world axis
-                    transformA.quaternion.vmult(hullA.uniqueAxes[i], faceANormalWS3);
+                    transformA.quaternion.rotatePoint(hullA.uniqueAxes[i], faceANormalWS3);
                     var d = hullA.testSepAxis(faceANormalWS3, hullB, transformA, transformB);
                     if (d === false) {
                         return false;
@@ -39208,7 +39231,7 @@ var CANNON;
                 for (var i = 0; i < numFacesB; i++) {
                     var fi = faceListB ? faceListB[i] : i;
                     Worldnormal1.copy(hullB.faceNormals[fi]);
-                    transformB.quaternion.vmult(Worldnormal1, Worldnormal1);
+                    transformB.quaternion.rotatePoint(Worldnormal1, Worldnormal1);
                     curPlaneTests++;
                     var d = hullA.testSepAxis(Worldnormal1, hullB, transformA, transformB);
                     if (d === false) {
@@ -39223,7 +39246,7 @@ var CANNON;
             else {
                 // Test unique axes in B
                 for (var i = 0; i !== hullB.uniqueAxes.length; i++) {
-                    transformB.quaternion.vmult(hullB.uniqueAxes[i], Worldnormal1);
+                    transformB.quaternion.rotatePoint(hullB.uniqueAxes[i], Worldnormal1);
                     curPlaneTests++;
                     var d = hullA.testSepAxis(Worldnormal1, hullB, transformA, transformB);
                     if (d === false) {
@@ -39238,10 +39261,10 @@ var CANNON;
             // Test edges
             for (var e0 = 0; e0 !== hullA.uniqueEdges.length; e0++) {
                 // Get world edge
-                transformA.quaternion.vmult(hullA.uniqueEdges[e0], worldEdge0);
+                transformA.quaternion.rotatePoint(hullA.uniqueEdges[e0], worldEdge0);
                 for (var e1 = 0; e1 !== hullB.uniqueEdges.length; e1++) {
                     // Get world edge 2
-                    transformB.quaternion.vmult(hullB.uniqueEdges[e1], worldEdge1);
+                    transformB.quaternion.rotatePoint(hullB.uniqueEdges[e1], worldEdge1);
                     worldEdge0.crossTo(worldEdge1, Cross);
                     if (!Cross.almostZero()) {
                         Cross.normalize();
@@ -39344,7 +39367,7 @@ var CANNON;
             var dmin = Number.MAX_VALUE;
             for (var face = 0; face < hullA.faces.length; face++) {
                 faceANormalWS.copy(hullA.faceNormals[face]);
-                quatA.vmult(faceANormalWS, faceANormalWS);
+                quatA.rotatePoint(faceANormalWS, faceANormalWS);
                 //posA.vadd(faceANormalWS,faceANormalWS);
                 var d = faceANormalWS.dot(separatingNormal);
                 if (d < dmin) {
@@ -39374,21 +39397,21 @@ var CANNON;
                 var b = hullA.vertices[polyA[(e0 + 1) % numVerticesA]];
                 a.subTo(b, edge0);
                 WorldEdge0.copy(edge0);
-                quatA.vmult(WorldEdge0, WorldEdge0);
+                quatA.rotatePoint(WorldEdge0, WorldEdge0);
                 posA.addTo(WorldEdge0, WorldEdge0);
                 worldPlaneAnormal1.copy(this.faceNormals[closestFaceA]); //transA.getBasis()* btVector3(polyA.m_plane[0],polyA.m_plane[1],polyA.m_plane[2]);
-                quatA.vmult(worldPlaneAnormal1, worldPlaneAnormal1);
+                quatA.rotatePoint(worldPlaneAnormal1, worldPlaneAnormal1);
                 posA.addTo(worldPlaneAnormal1, worldPlaneAnormal1);
                 WorldEdge0.crossTo(worldPlaneAnormal1, planeNormalWS1);
                 planeNormalWS1.negateTo(planeNormalWS1);
                 worldA1.copy(a);
-                quatA.vmult(worldA1, worldA1);
+                quatA.rotatePoint(worldA1, worldA1);
                 posA.addTo(worldA1, worldA1);
                 var otherFace = connectedFaces[e0];
                 localPlaneNormal.copy(this.faceNormals[otherFace]);
                 var localPlaneEq = this.getPlaneConstantOfFace(otherFace);
                 planeNormalWS.copy(localPlaneNormal);
-                quatA.vmult(planeNormalWS, planeNormalWS);
+                quatA.rotatePoint(planeNormalWS, planeNormalWS);
                 //posA.vadd(planeNormalWS,planeNormalWS);
                 var planeEqWS = localPlaneEq - planeNormalWS.dot(posA);
                 // Clip face against our constructed plane
@@ -39406,7 +39429,7 @@ var CANNON;
             localPlaneNormal.copy(this.faceNormals[closestFaceA]);
             var localPlaneEq = this.getPlaneConstantOfFace(closestFaceA);
             planeNormalWS.copy(localPlaneNormal);
-            quatA.vmult(planeNormalWS, planeNormalWS);
+            quatA.rotatePoint(planeNormalWS, planeNormalWS);
             var planeEqWS = localPlaneEq - planeNormalWS.dot(posA);
             for (var i = 0; i < pVtxIn.length; i++) {
                 var depth = planeNormalWS.dot(pVtxIn[i]) + planeEqWS; //???
@@ -39483,7 +39506,7 @@ var CANNON;
             }
             var verts = this.vertices, worldVerts = this.worldVertices;
             for (var i = 0; i !== N; i++) {
-                quat.vmult(verts[i], worldVerts[i]);
+                quat.rotatePoint(verts[i], worldVerts[i]);
                 position.addTo(worldVerts[i], worldVerts[i]);
             }
             this.worldVerticesNeedsUpdate = false;
@@ -39527,7 +39550,7 @@ var CANNON;
             }
             var normals = this.faceNormals, worldNormals = this.worldFaceNormals;
             for (var i = 0; i !== N; i++) {
-                quat.vmult(normals[i], worldNormals[i]);
+                quat.rotatePoint(normals[i], worldNormals[i]);
             }
             this.worldFaceNormalsNeedsUpdate = false;
         };
@@ -39557,7 +39580,7 @@ var CANNON;
             var tempWorldVertex = new feng3d.Vector3();
             for (var i = 0; i < n; i++) {
                 tempWorldVertex.copy(verts[i]);
-                quat.vmult(tempWorldVertex, tempWorldVertex);
+                quat.rotatePoint(tempWorldVertex, tempWorldVertex);
                 pos.addTo(tempWorldVertex, tempWorldVertex);
                 var v = tempWorldVertex;
                 if (v.x < minx || minx === undefined) {
@@ -39615,12 +39638,12 @@ var CANNON;
                 // Rotate vertices
                 for (var i = 0; i < n; i++) {
                     var v = verts[i];
-                    quat.vmult(v, v);
+                    quat.rotatePoint(v, v);
                 }
                 // Rotate face normals
                 for (var i = 0; i < this.faceNormals.length; i++) {
                     var v = this.faceNormals[i];
-                    quat.vmult(v, v);
+                    quat.rotatePoint(v, v);
                 }
                 /*
                 // Rotate edges
@@ -39787,7 +39810,7 @@ var CANNON;
             sides[5].init(0, 0, -ex.z);
             if (quat !== undefined) {
                 for (var i = 0; i !== sides.length; i++) {
-                    quat.vmult(sides[i], sides[i]);
+                    quat.rotatePoint(sides[i], sides[i]);
                 }
             }
             return sides;
@@ -40458,7 +40481,7 @@ var CANNON;
         Plane.prototype.computeWorldNormal = function (quat) {
             var n = this.worldNormal;
             n.init(0, 1, 0);
-            quat.vmult(n, n);
+            quat.rotatePoint(n, n);
             this.worldNormalNeedsUpdate = false;
         };
         Plane.prototype.calculateLocalInertia = function (mass, target) {
@@ -40470,7 +40493,7 @@ var CANNON;
         };
         Plane.prototype.calculateWorldAABB = function (pos, quat, min, max) {
             var tempNormal = new feng3d.Vector3(0, 1, 0);
-            quat.vmult(tempNormal, tempNormal);
+            quat.rotatePoint(tempNormal, tempNormal);
             var maxVal = Number.MAX_VALUE;
             min.init(-maxVal, -maxVal, -maxVal);
             max.init(maxVal, maxVal, maxVal);
@@ -42206,7 +42229,7 @@ var CANNON;
                     continue; // Skip
                 }
                 body.quaternion.multTo(body.shapeOrientations[i], qi);
-                body.quaternion.vmult(body.shapeOffsets[i], xi);
+                body.quaternion.rotatePoint(body.shapeOffsets[i], xi);
                 xi.addTo(body.position, xi);
                 this.intersectShape(shape, qi, xi, body);
                 if (this.result._shouldStop) {
@@ -42257,7 +42280,7 @@ var CANNON;
             var direction = this._direction;
             // Get plane normal
             var worldNormal = new feng3d.Vector3(0, 1, 0);
-            quat.vmult(worldNormal, worldNormal);
+            quat.rotatePoint(worldNormal, worldNormal);
             var len = new feng3d.Vector3();
             from.subTo(position, len);
             var planeToFrom = len.dot(worldNormal);
@@ -42412,12 +42435,12 @@ var CANNON;
                 // note: this works regardless of the direction of the face normal
                 // Get plane point in world coordinates...
                 vector.copy(vertices[face[0]]);
-                q.vmult(vector, vector);
+                q.rotatePoint(vector, vector);
                 vector.addTo(x, vector);
                 // ...but make it relative to the ray from. We'll fix this later.
                 vector.subTo(from, vector);
                 // Get plane normal
-                q.vmult(faceNormal, normal);
+                q.rotatePoint(faceNormal, normal);
                 // If this dot product is negative, we have something interesting
                 var dot = direction.dot(normal);
                 // Bail out if ray and plane are parallel
@@ -42436,14 +42459,14 @@ var CANNON;
                 intersectPoint.addTo(from, intersectPoint);
                 // a is the point we compare points b and c with.
                 a.copy(vertices[face[0]]);
-                q.vmult(a, a);
+                q.rotatePoint(a, a);
                 x.addTo(a, a);
                 for (var i = 1; !result._shouldStop && i < face.length - 1; i++) {
                     // Transform 3 vertices to world coords
                     b.copy(vertices[face[i]]);
                     c.copy(vertices[face[i + 1]]);
-                    q.vmult(b, b);
-                    q.vmult(c, c);
+                    q.rotatePoint(b, b);
+                    q.rotatePoint(c, c);
                     x.addTo(b, b);
                     x.addTo(c, c);
                     var distance = intersectPoint.distance(from);
@@ -42852,7 +42875,7 @@ var CANNON;
         Body.prototype.pointToLocalFrame = function (worldPoint, result) {
             var result = result || new feng3d.Vector3();
             worldPoint.subTo(this.position, result);
-            this.quaternion.conjugateTo().vmult(result, result);
+            this.quaternion.conjugateTo().rotatePoint(result, result);
             return result;
         };
         /**
@@ -42863,7 +42886,7 @@ var CANNON;
          */
         Body.prototype.vectorToLocalFrame = function (worldVector, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
-            this.quaternion.conjugateTo().vmult(worldVector, result);
+            this.quaternion.conjugateTo().rotatePoint(worldVector, result);
             return result;
         };
         /**
@@ -42874,7 +42897,7 @@ var CANNON;
          */
         Body.prototype.pointToWorldFrame = function (localPoint, result) {
             var result = result || new feng3d.Vector3();
-            this.quaternion.vmult(localPoint, result);
+            this.quaternion.rotatePoint(localPoint, result);
             result.addTo(this.position, result);
             return result;
         };
@@ -42886,7 +42909,7 @@ var CANNON;
          */
         Body.prototype.vectorToWorldFrame = function (localVector, result) {
             var result = result || new feng3d.Vector3();
-            this.quaternion.vmult(localVector, result);
+            this.quaternion.rotatePoint(localVector, result);
             return result;
         };
         /**
@@ -42940,7 +42963,7 @@ var CANNON;
             for (var i = 0; i !== N; i++) {
                 var shape = shapes[i];
                 // Get shape world position
-                bodyQuat.vmult(shapeOffsets[i], offset);
+                bodyQuat.rotatePoint(shapeOffsets[i], offset);
                 offset.addTo(this.position, offset);
                 // Get shape world quaternion
                 shapeOrientations[i].multTo(bodyQuat, orientation);
@@ -45825,13 +45848,13 @@ var CANNON;
                 var justTest = (((bi.type & CANNON.Body.KINEMATIC) && (bj.type & CANNON.Body.STATIC)) || ((bi.type & CANNON.Body.STATIC) && (bj.type & CANNON.Body.KINEMATIC)) || ((bi.type & CANNON.Body.KINEMATIC) && (bj.type & CANNON.Body.KINEMATIC)));
                 for (var i = 0; i < bi.shapes.length; i++) {
                     bi.quaternion.multTo(bi.shapeOrientations[i], qi);
-                    bi.quaternion.vmult(bi.shapeOffsets[i], xi);
+                    bi.quaternion.rotatePoint(bi.shapeOffsets[i], xi);
                     xi.addTo(bi.position, xi);
                     var si = bi.shapes[i];
                     for (var j = 0; j < bj.shapes.length; j++) {
                         // Compute world transform of shapes
                         bj.quaternion.multTo(bj.shapeOrientations[j], qj);
-                        bj.quaternion.vmult(bj.shapeOffsets[j], xj);
+                        bj.quaternion.rotatePoint(bj.shapeOffsets[j], xj);
                         xj.addTo(bj.position, xj);
                         var sj = bj.shapes[j];
                         if (!((si.collisionFilterMask & sj.collisionFilterGroup) && (sj.collisionFilterMask & si.collisionFilterGroup))) {
@@ -45922,7 +45945,7 @@ var CANNON;
             var planePos = planeTransform.position;
             var normal = planeTrimesh_normal;
             normal.init(0, 1, 0);
-            planeTransform.quaternion.vmult(normal, normal); // Turn normal according to plane
+            planeTransform.quaternion.rotatePoint(normal, normal); // Turn normal according to plane
             for (var i = 0; i < trimeshShape.vertices.length / 3; i++) {
                 // Get world vertex from trimesh
                 trimeshShape.getVertex(i, v);
@@ -46085,7 +46108,7 @@ var CANNON;
             var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
             // Contact normal
             r.ni.init(0, 1, 0);
-            qj.vmult(r.ni, r.ni);
+            qj.rotatePoint(r.ni, r.ni);
             r.ni.negateTo(r.ni); // body i is the sphere, flip normal
             r.ni.normalize(); // Needed?
             // Vector from sphere center to contact point
@@ -46309,7 +46332,7 @@ var CANNON;
                 var v = verts[i];
                 // World position of corner
                 var worldCorner = sphereConvex_worldCorner;
-                qj.vmult(v, worldCorner);
+                qj.rotatePoint(v, worldCorner);
                 xj.addTo(worldCorner, worldCorner);
                 var sphere_to_corner = sphereConvex_sphereToCorner;
                 worldCorner.subTo(xi, sphere_to_corner);
@@ -46342,10 +46365,10 @@ var CANNON;
                 var face = faces[i];
                 // Get world-transformed normal of the face
                 var worldNormal = sphereConvex_worldNormal;
-                qj.vmult(normal, worldNormal);
+                qj.rotatePoint(normal, worldNormal);
                 // Get a world vertex from the face
                 var worldPoint = sphereConvex_worldPoint;
-                qj.vmult(verts[face[0]], worldPoint);
+                qj.rotatePoint(verts[face[0]], worldPoint);
                 worldPoint.addTo(xj, worldPoint);
                 // Get a point on the sphere, closest to the face normal
                 var worldSpherePointClosestToPlane = sphereConvex_worldSpherePointClosestToPlane;
@@ -46363,7 +46386,7 @@ var CANNON;
                     var faceVerts = []; // Face vertices, in world coords
                     for (var j = 0, Nverts = face.length; j !== Nverts; j++) {
                         var worldVertex = new feng3d.Vector3();
-                        qj.vmult(verts[face[j]], worldVertex);
+                        qj.rotatePoint(verts[face[j]], worldVertex);
                         xj.addTo(worldVertex, worldVertex);
                         faceVerts.push(worldVertex);
                     }
@@ -46399,8 +46422,8 @@ var CANNON;
                             // Get two world transformed vertices
                             var v1 = new feng3d.Vector3();
                             var v2 = new feng3d.Vector3();
-                            qj.vmult(verts[face[(j + 1) % face.length]], v1);
-                            qj.vmult(verts[face[(j + 2) % face.length]], v2);
+                            qj.rotatePoint(verts[face[(j + 1) % face.length]], v1);
+                            qj.rotatePoint(verts[face[(j + 2) % face.length]], v2);
                             xj.addTo(v1, v1);
                             xj.addTo(v2, v2);
                             // Construct edge vector
@@ -46457,13 +46480,13 @@ var CANNON;
             // Simply return the points behind the plane.
             var worldVertex = planeConvex_v, worldNormal = planeConvex_normal;
             worldNormal.init(0, 1, 0);
-            planeQuat.vmult(worldNormal, worldNormal); // Turn normal according to plane orientation
+            planeQuat.rotatePoint(worldNormal, worldNormal); // Turn normal according to plane orientation
             var numContacts = 0;
             var relpos = planeConvex_relpos;
             for (var i = 0; i !== convexShape.vertices.length; i++) {
                 // Get world convex vertex
                 worldVertex.copy(convexShape.vertices[i]);
-                convexQuat.vmult(worldVertex, worldVertex);
+                convexQuat.rotatePoint(worldVertex, worldVertex);
                 convexPosition.addTo(worldVertex, worldVertex);
                 worldVertex.subTo(planePosition, relpos);
                 var dot = worldNormal.dot(relpos);
@@ -46606,7 +46629,7 @@ var CANNON;
         Narrowphase.prototype.planeParticle = function (sj, si, xj, xi, qj, qi, bj, bi, rsi, rsj, justTest) {
             var normal = particlePlane_normal;
             normal.init(0, 1, 0);
-            bj.quaternion.vmult(normal, normal); // Turn normal according to plane orientation
+            bj.quaternion.rotatePoint(normal, normal); // Turn normal according to plane orientation
             var relpos = particlePlane_relpos;
             xi.subTo(bj.position, relpos);
             var dot = normal.dot(relpos);
@@ -46662,7 +46685,7 @@ var CANNON;
             local.copy(xi);
             local.subTo(xj, local); // Convert position to relative the convex origin
             qj.conjugateTo(cqj);
-            cqj.vmult(local, local);
+            cqj.rotatePoint(local, local);
             if (sj.pointIsInside(local)) {
                 if (sj.worldVerticesNeedsUpdate) {
                     sj.computeWorldVertices(xj, qj);

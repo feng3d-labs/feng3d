@@ -5660,24 +5660,16 @@ declare namespace feng3d {
          */
         toRawData(target: number[], exclude4thRow?: boolean): void;
         /**
-         * Clones the quaternion.
-         * @return An exact duplicate of the current Quaternion.
+         * 克隆
          */
         clone(): Quaternion;
         /**
-         * Rotates a point.
-         * @param vector The Vector3 object to be rotated.
-         * @param target An optional Vector3 object that will contain the rotated coordinates. If not provided, a new object will be created.
-         * @return A Vector3 object containing the rotated point.
+         * 旋转一个顶点
+         *
+         * @param point 被旋转的顶点
+         * @param target 旋转结果
          */
-        rotatePoint(vector: Vector3, target?: Vector3): Vector3;
-        /**
-          * 将四元数乘以一个向量
-          *
-          * @param v
-          * @param target
-          */
-        vmult(v: Vector3, target?: Vector3): Vector3;
+        rotatePoint(point: Vector3, target?: Vector3): Vector3;
         /**
          * 旋转一个绝对方向四元数给定一个角速度和一个时间步长
          *
@@ -6255,7 +6247,7 @@ declare namespace feng3d {
          * @param targetNormal 相交处法线
          * @return 起点到box距离
          */
-        rayIntersection(position: Vector3, direction: Vector3, targetNormal: Vector3): number;
+        rayIntersection(position: Vector3, direction: Vector3, targetNormal?: Vector3): number;
         /**
          * 获取包围盒上距离指定点最近的点
          *
@@ -6316,6 +6308,24 @@ declare namespace feng3d {
          * 转换为三角形列表
          */
         toTriangles(triangles?: Triangle3D[]): Triangle3D[];
+        /**
+         * Get the representation of an AABB in another frame.
+         * @param frame
+         * @param target
+         * @return The "target" AABB object.
+         */
+        toLocalFrame(frame: CANNON.Transform, target: AABB): AABB;
+        /**
+         * Get the representation of an AABB in the global frame.
+         * @param frame
+         * @param target
+         * @return The "target" AABB object.
+         */
+        toWorldFrame(frame: CANNON.Transform, target: AABB): AABB;
+        /**
+         * Check if the AABB is hit by a ray.
+         */
+        overlapsRay(ray: CANNON.Ray): boolean;
     }
 }
 declare namespace feng3d {

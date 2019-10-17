@@ -34,7 +34,7 @@ namespace CANNON
         {
             worldPoint.subTo(transform.position, result);
             var tmpQuat = transform.quaternion.conjugateTo();
-            tmpQuat.vmult(result, result);
+            tmpQuat.rotatePoint(result, result);
             return result;
         }
 
@@ -46,21 +46,21 @@ namespace CANNON
          */
         static pointToWorldFrame(transform: ITransform, localPoint: feng3d.Vector3, result = new feng3d.Vector3())
         {
-            transform.quaternion.vmult(localPoint, result);
+            transform.quaternion.rotatePoint(localPoint, result);
             result.addTo(transform.position, result);
             return result;
         }
 
         static vectorToWorldFrame(transform: ITransform, localVector: feng3d.Vector3, result: feng3d.Vector3)
         {
-            transform.quaternion.vmult(localVector, result);
+            transform.quaternion.rotatePoint(localVector, result);
             return result;
         }
 
         static vectorToLocalFrame(transform: ITransform, worldVector: feng3d.Vector3, result = new feng3d.Vector3())
         {
             transform.quaternion.w *= -1;
-            transform.quaternion.vmult(worldVector, result);
+            transform.quaternion.rotatePoint(worldVector, result);
             transform.quaternion.w *= -1;
             return result;
         }

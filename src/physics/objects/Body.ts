@@ -440,7 +440,7 @@ namespace CANNON
         {
             var result = result || new feng3d.Vector3();
             worldPoint.subTo(this.position, result);
-            this.quaternion.conjugateTo().vmult(result, result);
+            this.quaternion.conjugateTo().rotatePoint(result, result);
             return result;
         }
 
@@ -452,7 +452,7 @@ namespace CANNON
          */
         vectorToLocalFrame(worldVector, result = new feng3d.Vector3())
         {
-            this.quaternion.conjugateTo().vmult(worldVector, result);
+            this.quaternion.conjugateTo().rotatePoint(worldVector, result);
             return result;
         }
 
@@ -465,7 +465,7 @@ namespace CANNON
         pointToWorldFrame(localPoint: feng3d.Vector3, result: feng3d.Vector3)
         {
             var result = result || new feng3d.Vector3();
-            this.quaternion.vmult(localPoint, result);
+            this.quaternion.rotatePoint(localPoint, result);
             result.addTo(this.position, result);
             return result;
         }
@@ -479,7 +479,7 @@ namespace CANNON
         vectorToWorldFrame(localVector: feng3d.Vector3, result: feng3d.Vector3)
         {
             var result = result || new feng3d.Vector3();
-            this.quaternion.vmult(localVector, result);
+            this.quaternion.rotatePoint(localVector, result);
             return result;
         }
 
@@ -566,7 +566,7 @@ namespace CANNON
                 var shape = shapes[i];
 
                 // Get shape world position
-                bodyQuat.vmult(shapeOffsets[i], offset);
+                bodyQuat.rotatePoint(shapeOffsets[i], offset);
                 offset.addTo(this.position, offset);
 
                 // Get shape world quaternion

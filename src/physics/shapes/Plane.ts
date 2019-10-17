@@ -25,7 +25,7 @@ namespace CANNON
         {
             var n = this.worldNormal;
             n.init(0, 1, 0);
-            quat.vmult(n, n);
+            quat.rotatePoint(n, n);
             this.worldNormalNeedsUpdate = false;
         }
 
@@ -42,7 +42,7 @@ namespace CANNON
         calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
         {
             var tempNormal = new feng3d.Vector3(0, 1, 0);
-            quat.vmult(tempNormal, tempNormal);
+            quat.rotatePoint(tempNormal, tempNormal);
             var maxVal = Number.MAX_VALUE;
             min.init(-maxVal, -maxVal, -maxVal);
             max.init(maxVal, maxVal, maxVal);

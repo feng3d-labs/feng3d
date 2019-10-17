@@ -74,8 +74,8 @@ namespace CANNON
             var z = this.equationZ;
 
             // Rotate the pivots to world space
-            bodyA.quaternion.vmult(this.pivotA, x.ri);
-            bodyB.quaternion.vmult(this.pivotB, x.rj);
+            bodyA.quaternion.rotatePoint(this.pivotA, x.ri);
+            bodyB.quaternion.rotatePoint(this.pivotB, x.rj);
 
             y.ri.copy(x.ri);
             y.rj.copy(x.rj);

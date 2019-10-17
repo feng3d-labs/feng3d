@@ -81,7 +81,7 @@ namespace CANNON
             {
                 for (var i = 0; i !== sides.length; i++)
                 {
-                    quat.vmult(sides[i], sides[i]);
+                    quat.rotatePoint(sides[i], sides[i]);
                 }
             }
 

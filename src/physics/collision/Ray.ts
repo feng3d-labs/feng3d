@@ -148,7 +148,7 @@ namespace CANNON
                 }
 
                 body.quaternion.multTo(body.shapeOrientations[i], qi);
-                body.quaternion.vmult(body.shapeOffsets[i], xi);
+                body.quaternion.rotatePoint(body.shapeOffsets[i], xi);
                 xi.addTo(body.position, xi);
 
                 this.intersectShape(
@@ -223,7 +223,7 @@ namespace CANNON
 
             // Get plane normal
             var worldNormal = new feng3d.Vector3(0, 1, 0);
-            quat.vmult(worldNormal, worldNormal);
+            quat.rotatePoint(worldNormal, worldNormal);
 
             var len = new feng3d.Vector3();
             from.subTo(position, len);
@@ -449,14 +449,14 @@ namespace CANNON
 
                 // Get plane point in world coordinates...
                 vector.copy(vertices[face[0]]);
-                q.vmult(vector, vector);
+                q.rotatePoint(vector, vector);
                 vector.addTo(x, vector);
 
                 // ...but make it relative to the ray from. We'll fix this later.
                 vector.subTo(from, vector);
 
                 // Get plane normal
-                q.vmult(faceNormal, normal);
+                q.rotatePoint(faceNormal, normal);
 
                 // If this dot product is negative, we have something interesting
                 var dot = direction.dot(normal);
@@ -484,7 +484,7 @@ namespace CANNON
 
                 // a is the point we compare points b and c with.
                 a.copy(vertices[face[0]]);
-                q.vmult(a, a);
+                q.rotatePoint(a, a);
                 x.addTo(a, a);
 
                 for (var i = 1; !result._shouldStop && i < face.length - 1; i++)
@@ -492,8 +492,8 @@ namespace CANNON
                     // Transform 3 vertices to world coords
                     b.copy(vertices[face[i]]);
                     c.copy(vertices[face[i + 1]]);
-                    q.vmult(b, b);
-                    q.vmult(c, c);
+                    q.rotatePoint(b, b);
+                    q.rotatePoint(c, c);
                     x.addTo(b, b);
                     x.addTo(c, c);
 

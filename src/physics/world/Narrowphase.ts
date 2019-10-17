@@ -240,7 +240,7 @@ namespace CANNON
                 for (var i = 0; i < bi.shapes.length; i++)
                 {
                     bi.quaternion.multTo(bi.shapeOrientations[i], qi);
-                    bi.quaternion.vmult(bi.shapeOffsets[i], xi);
+                    bi.quaternion.rotatePoint(bi.shapeOffsets[i], xi);
                     xi.addTo(bi.position, xi);
                     var si = bi.shapes[i];
 
@@ -249,7 +249,7 @@ namespace CANNON
 
                         // Compute world transform of shapes
                         bj.quaternion.multTo(bj.shapeOrientations[j], qj);
-                        bj.quaternion.vmult(bj.shapeOffsets[j], xj);
+                        bj.quaternion.rotatePoint(bj.shapeOffsets[j], xj);
                         xj.addTo(bj.position, xj);
                         var sj = bj.shapes[j];
 
@@ -380,7 +380,7 @@ namespace CANNON
 
             var normal = planeTrimesh_normal;
             normal.init(0, 1, 0);
-            planeTransform.quaternion.vmult(normal, normal); // Turn normal according to plane
+            planeTransform.quaternion.rotatePoint(normal, normal); // Turn normal according to plane
 
             for (var i = 0; i < trimeshShape.vertices.length / 3; i++)
             {
@@ -629,7 +629,7 @@ namespace CANNON
 
             // Contact normal
             r.ni.init(0, 1, 0);
-            qj.vmult(r.ni, r.ni);
+            qj.rotatePoint(r.ni, r.ni);
             r.ni.negateTo(r.ni); // body i is the sphere, flip normal
             r.ni.normalize(); // Needed?
 
@@ -912,7 +912,7 @@ namespace CANNON
 
                 // World position of corner
                 var worldCorner = sphereConvex_worldCorner;
-                qj.vmult(v, worldCorner);
+                qj.rotatePoint(v, worldCorner);
                 xj.addTo(worldCorner, worldCorner);
                 var sphere_to_corner = sphereConvex_sphereToCorner;
                 worldCorner.subTo(xi, sphere_to_corner);
@@ -953,11 +953,11 @@ namespace CANNON
 
                 // Get world-transformed normal of the face
                 var worldNormal = sphereConvex_worldNormal;
-                qj.vmult(normal, worldNormal);
+                qj.rotatePoint(normal, worldNormal);
 
                 // Get a world vertex from the face
                 var worldPoint = sphereConvex_worldPoint;
-                qj.vmult(<feng3d.Vector3>verts[face[0]], worldPoint);
+                qj.rotatePoint(<feng3d.Vector3>verts[face[0]], worldPoint);
                 worldPoint.addTo(xj, worldPoint);
 
                 // Get a point on the sphere, closest to the face normal
@@ -982,7 +982,7 @@ namespace CANNON
                     for (var j = 0, Nverts = face.length; j !== Nverts; j++)
                     {
                         var worldVertex = new feng3d.Vector3();
-                        qj.vmult(<feng3d.Vector3>verts[face[j]], worldVertex);
+                        qj.rotatePoint(<feng3d.Vector3>verts[face[j]], worldVertex);
                         xj.addTo(worldVertex, worldVertex);
                         faceVerts.push(worldVertex);
                     }
@@ -1030,8 +1030,8 @@ namespace CANNON
                             // Get two world transformed vertices
                             var v1 = new feng3d.Vector3();
                             var v2 = new feng3d.Vector3();
-                            qj.vmult(<feng3d.Vector3>verts[face[(j + 1) % face.length]], v1);
-                            qj.vmult(<feng3d.Vector3>verts[face[(j + 2) % face.length]], v2);
+                            qj.rotatePoint(<feng3d.Vector3>verts[face[(j + 1) % face.length]], v1);
+                            qj.rotatePoint(<feng3d.Vector3>verts[face[(j + 2) % face.length]], v2);
                             xj.addTo(v1, v1);
                             xj.addTo(v2, v2);
 
@@ -1119,7 +1119,7 @@ namespace CANNON
             var worldVertex = planeConvex_v,
                 worldNormal = planeConvex_normal;
             worldNormal.init(0, 1, 0);
-            planeQuat.vmult(worldNormal, worldNormal); // Turn normal according to plane orientation
+            planeQuat.rotatePoint(worldNormal, worldNormal); // Turn normal according to plane orientation
 
             var numContacts = 0;
             var relpos = planeConvex_relpos;
@@ -1128,7 +1128,7 @@ namespace CANNON
 
                 // Get world convex vertex
                 worldVertex.copy(convexShape.vertices[i]);
-                convexQuat.vmult(worldVertex, worldVertex);
+                convexQuat.rotatePoint(worldVertex, worldVertex);
                 convexPosition.addTo(worldVertex, worldVertex);
                 worldVertex.subTo(planePosition, relpos);
 
@@ -1313,7 +1313,7 @@ namespace CANNON
         {
             var normal = particlePlane_normal;
             normal.init(0, 1, 0);
-            bj.quaternion.vmult(normal, normal); // Turn normal according to plane orientation
+            bj.quaternion.rotatePoint(normal, normal); // Turn normal according to plane orientation
             var relpos = particlePlane_relpos;
             xi.subTo(bj.position, relpos);
             var dot = normal.dot(relpos);
@@ -1384,7 +1384,7 @@ namespace CANNON
             local.copy(xi);
             local.subTo(xj, local); // Convert position to relative the convex origin
             qj.conjugateTo(cqj);
-            cqj.vmult(local, local);
+            cqj.rotatePoint(local, local);
 
             if (sj.pointIsInside(local))
             {

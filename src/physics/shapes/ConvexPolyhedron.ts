@@ -219,7 +219,7 @@ namespace CANNON
             for (var face = 0; face < hullB.faces.length; face++)
             {
                 WorldNormal.copy(hullB.faceNormals[face]);
-                quatB.vmult(WorldNormal, WorldNormal);
+                quatB.rotatePoint(WorldNormal, WorldNormal);
                 //posB.vadd(WorldNormal,WorldNormal);
                 var d = WorldNormal.dot(separatingNormal);
                 if (d > dmax)
@@ -236,7 +236,7 @@ namespace CANNON
                 var b = hullB.vertices[polyB[e0]];
                 var worldb = new feng3d.Vector3();
                 worldb.copy(b);
-                quatB.vmult(worldb, worldb);
+                quatB.rotatePoint(worldb, worldb);
                 posB.addTo(worldb, worldb);
                 worldVertsB1.push(worldb);
             }
@@ -282,7 +282,7 @@ namespace CANNON
 
                     // Get world face normal
                     faceANormalWS3.copy(hullA.faceNormals[fi]);
-                    transformA.quaternion.vmult(faceANormalWS3, faceANormalWS3);
+                    transformA.quaternion.rotatePoint(faceANormalWS3, faceANormalWS3);
 
                     var d = hullA.testSepAxis(faceANormalWS3, hullB, transformA, transformB);
                     if (d === false)
@@ -304,7 +304,7 @@ namespace CANNON
                 {
 
                     // Get world axis
-                    transformA.quaternion.vmult(hullA.uniqueAxes[i], faceANormalWS3);
+                    transformA.quaternion.rotatePoint(hullA.uniqueAxes[i], faceANormalWS3);
 
                     var d = hullA.testSepAxis(faceANormalWS3, hullB, transformA, transformB);
                     if (d === false)
@@ -331,7 +331,7 @@ namespace CANNON
                     var fi = faceListB ? faceListB[i] : i;
 
                     Worldnormal1.copy(hullB.faceNormals[fi]);
-                    transformB.quaternion.vmult(Worldnormal1, Worldnormal1);
+                    transformB.quaternion.rotatePoint(Worldnormal1, Worldnormal1);
                     curPlaneTests++;
                     var d = hullA.testSepAxis(Worldnormal1, hullB, transformA, transformB);
                     if (d === false)
@@ -351,7 +351,7 @@ namespace CANNON
                 // Test unique axes in B
                 for (var i = 0; i !== hullB.uniqueAxes.length; i++)
                 {
-                    transformB.quaternion.vmult(hullB.uniqueAxes[i], Worldnormal1);
+                    transformB.quaternion.rotatePoint(hullB.uniqueAxes[i], Worldnormal1);
 
                     curPlaneTests++;
                     var d = hullA.testSepAxis(Worldnormal1, hullB, transformA, transformB);
@@ -373,13 +373,13 @@ namespace CANNON
             {
 
                 // Get world edge
-                transformA.quaternion.vmult(hullA.uniqueEdges[e0], worldEdge0);
+                transformA.quaternion.rotatePoint(hullA.uniqueEdges[e0], worldEdge0);
 
                 for (var e1 = 0; e1 !== hullB.uniqueEdges.length; e1++)
                 {
 
                     // Get world edge 2
-                    transformB.quaternion.vmult(hullB.uniqueEdges[e1], worldEdge1);
+                    transformB.quaternion.rotatePoint(hullB.uniqueEdges[e1], worldEdge1);
                     worldEdge0.crossTo(worldEdge1, Cross);
 
                     if (!Cross.almostZero())
@@ -502,7 +502,7 @@ namespace CANNON
             for (var face = 0; face < hullA.faces.length; face++)
             {
                 faceANormalWS.copy(hullA.faceNormals[face]);
-                quatA.vmult(faceANormalWS, faceANormalWS);
+                quatA.rotatePoint(faceANormalWS, faceANormalWS);
                 //posA.vadd(faceANormalWS,faceANormalWS);
                 var d = faceANormalWS.dot(separatingNormal);
                 if (d < dmin)
@@ -538,15 +538,15 @@ namespace CANNON
                 var b = hullA.vertices[polyA[(e0 + 1) % numVerticesA]];
                 a.subTo(b, edge0);
                 WorldEdge0.copy(edge0);
-                quatA.vmult(WorldEdge0, WorldEdge0);
+                quatA.rotatePoint(WorldEdge0, WorldEdge0);
                 posA.addTo(WorldEdge0, WorldEdge0);
                 worldPlaneAnormal1.copy(this.faceNormals[closestFaceA]);//transA.getBasis()* btVector3(polyA.m_plane[0],polyA.m_plane[1],polyA.m_plane[2]);
-                quatA.vmult(worldPlaneAnormal1, worldPlaneAnormal1);
+                quatA.rotatePoint(worldPlaneAnormal1, worldPlaneAnormal1);
                 posA.addTo(worldPlaneAnormal1, worldPlaneAnormal1);
                 WorldEdge0.crossTo(worldPlaneAnormal1, planeNormalWS1);
                 planeNormalWS1.negateTo(planeNormalWS1);
                 worldA1.copy(a);
-                quatA.vmult(worldA1, worldA1);
+                quatA.rotatePoint(worldA1, worldA1);
                 posA.addTo(worldA1, worldA1);
 
                 var otherFace = connectedFaces[e0];
@@ -554,7 +554,7 @@ namespace CANNON
                 var localPlaneEq = this.getPlaneConstantOfFace(otherFace);
 
                 planeNormalWS.copy(localPlaneNormal);
-                quatA.vmult(planeNormalWS, planeNormalWS);
+                quatA.rotatePoint(planeNormalWS, planeNormalWS);
                 //posA.vadd(planeNormalWS,planeNormalWS);
                 var planeEqWS = localPlaneEq - planeNormalWS.dot(posA);
 
@@ -579,7 +579,7 @@ namespace CANNON
 
             var localPlaneEq = this.getPlaneConstantOfFace(closestFaceA);
             planeNormalWS.copy(localPlaneNormal);
-            quatA.vmult(planeNormalWS, planeNormalWS);
+            quatA.rotatePoint(planeNormalWS, planeNormalWS);
 
             var planeEqWS = localPlaneEq - planeNormalWS.dot(posA);
             for (var i = 0; i < pVtxIn.length; i++)
@@ -684,7 +684,7 @@ namespace CANNON
                 worldVerts = this.worldVertices;
             for (var i = 0; i !== N; i++)
             {
-                quat.vmult(verts[i], worldVerts[i]);
+                quat.rotatePoint(verts[i], worldVerts[i]);
                 position.addTo(worldVerts[i], worldVerts[i]);
             }
 
@@ -743,7 +743,7 @@ namespace CANNON
                 worldNormals = this.worldFaceNormals;
             for (var i = 0; i !== N; i++)
             {
-                quat.vmult(normals[i], worldNormals[i]);
+                quat.rotatePoint(normals[i], worldNormals[i]);
             }
 
             this.worldFaceNormalsNeedsUpdate = false;
@@ -781,7 +781,7 @@ namespace CANNON
             for (var i = 0; i < n; i++)
             {
                 tempWorldVertex.copy(verts[i]);
-                quat.vmult(tempWorldVertex, tempWorldVertex);
+                quat.rotatePoint(tempWorldVertex, tempWorldVertex);
                 pos.addTo(tempWorldVertex, tempWorldVertex);
                 var v = tempWorldVertex;
                 if (v.x < minx || minx === undefined)
@@ -856,13 +856,13 @@ namespace CANNON
                 for (var i = 0; i < n; i++)
                 {
                     var v = verts[i];
-                    quat.vmult(v, v);
+                    quat.rotatePoint(v, v);
                 }
                 // Rotate face normals
                 for (var i = 0; i < this.faceNormals.length; i++)
                 {
                     var v = this.faceNormals[i];
-                    quat.vmult(v, v);
+                    quat.rotatePoint(v, v);
                 }
                 /*
                 // Rotate edges
