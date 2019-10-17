@@ -172,7 +172,7 @@ namespace CANNON
                 world.addConstraint(constraints[i]);
             }
 
-            world.addEventListener('preStep', this._update.bind(this));
+            world.on('preStep', this._update, this);
         }
 
         private _update()
@@ -195,7 +195,7 @@ namespace CANNON
 
             for (var i = 0; i < bodies.length; i++)
             {
-                world.remove(bodies[i]);
+                world.removeBody(bodies[i]);
             }
 
             for (var i = 0; i < constraints.length; i++)

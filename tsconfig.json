@@ -354,7 +354,6 @@
         //
         "src/physics/math/Transform.ts",
         "src/physics/math/JacobianElement.ts",
-        "src/physics/utils/EventTarget.ts",
         "src/physics/utils/Utils.ts",
         "src/physics/constraints/Constraint.ts",
         "src/physics/constraints/DistanceConstraint.ts",

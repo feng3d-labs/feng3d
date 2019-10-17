@@ -245,15 +245,15 @@ namespace feng3d
         needTickerFuncItems.unique((a, b) => { return (a.func == b.func && a.thisObject == b.thisObject) });
         needTickerFuncItems.forEach(v =>
         {
-            try
-            {
-                v.func.call(v.thisObject, lazy.getvalue(v.interval));
-            } catch (error)
-            {
-                console.warn(`${v.func} 方法执行错误，从 ticker 中移除`, error)
-                var index = tickerFuncs.indexOf(v);
-                if (index != -1) tickerFuncs.splice(index, 1);
-            }
+            // try
+            // {
+            v.func.call(v.thisObject, lazy.getvalue(v.interval));
+            // } catch (error)
+            // {
+            //     console.warn(`${v.func} 方法执行错误，从 ticker 中移除`, error)
+            //     var index = tickerFuncs.indexOf(v);
+            //     if (index != -1) tickerFuncs.splice(index, 1);
+            // }
         });
         running = false;
 

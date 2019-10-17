@@ -1,6 +1,39 @@
 namespace CANNON
 {
-    export class World extends EventTarget
+    export interface WorldEventMap
+    {
+        /**
+         * 添加物体
+         */
+        addBody: Body;
+        /**
+         * 移除物体
+         */
+        removeBody: Body;
+
+        preStep: any;
+
+        postStep: any;
+
+        beginContact: { bodyA: Body, bodyB: Body };
+
+        endContact: { bodyA: Body, bodyB: Body };
+
+        beginShapeContact: { shapeA: Shape, shapeB: Shape, bodyA: Body, bodyB: Body };
+
+        endShapeContact: { shapeA: Shape, shapeB: Shape, bodyA: Body, bodyB: Body };
+    }
+
+    export interface World
+    {
+        once<K extends keyof WorldEventMap>(type: K, listener: (event: feng3d.Event<WorldEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof WorldEventMap>(type: K, data?: WorldEventMap[K], bubbles?: boolean): feng3d.Event<WorldEventMap[K]>;
+        has<K extends keyof WorldEventMap>(type: K): boolean;
+        on<K extends keyof WorldEventMap>(type: K, listener: (event: feng3d.Event<WorldEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof WorldEventMap>(type?: K, listener?: (event: feng3d.Event<WorldEventMap[K]>) => any, thisObject?: any): void;
+    }
+
+    export class World extends feng3d.EventDispatcher
     {
 
         /**
@@ -110,20 +143,20 @@ namespace CANNON
         /**
          * Dispatched after a body has been added to the world.
          */
-        addBodyEvent = {
-            type: "addBody",
-            body: null
-        };
+        // addBodyEvent = {
+        //     type: "addBody",
+        //     body: null
+        // };
 
         /**
          * Dispatched after a body has been removed from the world.
          */
-        removeBodyEvent = {
-            type: "removeBody",
-            body: null
-        };
+        // removeBodyEvent = {
+        //     type: "removeBody",
+        //     body: null
+        // };
 
-        idToBodyMap = {};
+        idToBodyMap: { [key: string]: Body } = {};
 
         /**
          * The physics world
@@ -174,14 +207,6 @@ namespace CANNON
             };
             this.accumulator = 0;
             this.subsystems = [];
-            this.addBodyEvent = {
-                type: "addBody",
-                body: null
-            };
-            this.removeBodyEvent = {
-                type: "removeBody",
-                body: null
-            };
 
             this.idToBodyMap = {};
 
@@ -224,36 +249,6 @@ namespace CANNON
 
         /**
          * Add a rigid body to the simulation.
-         * @param body
-         * 
-         * @todo If the simulation has not yet started, why recrete and copy arrays for each body? Accumulate in dynamic arrays in this case.
-         * @todo Adding an array of bodies should be possible. This would save some loops too
-         * @deprecated Use .addBody instead
-         */
-        add(body: Body)
-        {
-            if (this.bodies.indexOf(body) !== -1)
-            {
-                return;
-            }
-            body.index = this.bodies.length;
-            this.bodies.push(body);
-            body.world = this;
-            body.initPosition.copy(body.position);
-            body.initVelocity.copy(body.velocity);
-            body.timeLastSleepy = this.time;
-            if (body instanceof Body)
-            {
-                body.initAngularVelocity.copy(body.angularVelocity);
-                body.initQuaternion.copy(body.quaternion);
-            }
-            this.addBodyEvent.body = body;
-            this.idToBodyMap[body.id] = body;
-            this.dispatchEvent(this.addBodyEvent);
-        }
-
-        /**
-         * Add a rigid body to the simulation.
          * @method add
          * @param {Body} body
          * @todo If the simulation has not yet started, why recrete and copy arrays for each body? Accumulate in dynamic arrays in this case.
@@ -277,9 +272,8 @@ namespace CANNON
                 body.initAngularVelocity.copy(body.angularVelocity);
                 body.initQuaternion.copy(body.quaternion);
             }
-            this.addBodyEvent.body = body;
             this.idToBodyMap[body.id] = body;
-            this.dispatchEvent(this.addBodyEvent);
+            this.dispatch("addBody", body);
         }
 
         /**
@@ -386,33 +380,6 @@ namespace CANNON
         /**
          * Remove a rigid body from the simulation.
          * @param body
-         * @deprecated Use .removeBody instead
-         */
-        remove(body: Body)
-        {
-            body.world = null;
-            var n = this.bodies.length - 1,
-                bodies = this.bodies,
-                idx = bodies.indexOf(body);
-            if (idx !== -1)
-            {
-                bodies.splice(idx, 1); // Todo: should use a garbage free method
-
-                // Recompute index
-                for (var i = 0; i !== bodies.length; i++)
-                {
-                    bodies[i].index = i;
-                }
-
-                this.removeBodyEvent.body = body;
-                delete this.idToBodyMap[body.id];
-                this.dispatchEvent(this.removeBodyEvent);
-            }
-        }
-
-        /**
-         * Remove a rigid body from the simulation.
-         * @param body
          */
         removeBody(body: Body)
         {
@@ -430,9 +397,8 @@ namespace CANNON
                     bodies[i].index = i;
                 }
 
-                this.removeBodyEvent.body = body;
                 delete this.idToBodyMap[body.id];
-                this.dispatchEvent(this.removeBodyEvent);
+                this.dispatch("removeBody", body);
             }
         }
 
@@ -787,13 +753,8 @@ namespace CANNON
                 if (!this.collisionMatrixPrevious[bj.index + "_" + bi.index])
                 {
                     // First contact!
-                    // We reuse the collideEvent object, otherwise we will end up creating new objects for each new contact, even if there's no event listener attached.
-                    World_step_collideEvent.body = bj;
-                    World_step_collideEvent.contact = c;
-                    bi.dispatchEvent(World_step_collideEvent);
-
-                    World_step_collideEvent.body = bi;
-                    bj.dispatchEvent(World_step_collideEvent);
+                    bi.dispatch("collide", { body: bj, contact: c });
+                    bi.dispatch("collide", { body: bi, contact: c });
                 }
 
                 this.bodyOverlapKeeper.set(bi.id, bj.id);
@@ -862,7 +823,7 @@ namespace CANNON
                 }
             }
 
-            this.dispatchEvent(World_step_preStepEvent);
+            this.dispatch("preStep");
 
             // Invoke pre-step callbacks
             for (i = 0; i !== N; i++)
@@ -902,7 +863,7 @@ namespace CANNON
             this.time += dt;
             this.stepnumber += 1;
 
-            this.dispatchEvent(World_step_postStepEvent);
+            this.dispatch("postStep");
 
             // Invoke post-step callbacks
             for (i = 0; i !== N; i++)
@@ -925,108 +886,70 @@ namespace CANNON
             }
         }
 
-        emitContactEvents = (function ()
+        additions = [];
+        removals = [];
+
+        emitContactEvents()
         {
-            var additions = [];
-            var removals = [];
-            var beginContactEvent = {
-                type: 'beginContact',
-                bodyA: null,
-                bodyB: null
-            };
-            var endContactEvent = {
-                type: 'endContact',
-                bodyA: null,
-                bodyB: null
-            };
-            var beginShapeContactEvent = {
-                type: 'beginShapeContact',
-                bodyA: null,
-                bodyB: null,
-                shapeA: null,
-                shapeB: null
-            };
-            var endShapeContactEvent = {
-                type: 'endShapeContact',
-                bodyA: null,
-                bodyB: null,
-                shapeA: null,
-                shapeB: null
-            };
-            return function ()
+            var additions = this.additions;
+            var removals = this.removals;
+
+            var hasBeginContact = this.has('beginContact');
+            var hasEndContact = this.has('endContact');
+
+            if (hasBeginContact || hasEndContact)
             {
-                var hasBeginContact = this.hasAnyEventListener('beginContact');
-                var hasEndContact = this.hasAnyEventListener('endContact');
+                this.bodyOverlapKeeper.getDiff(additions, removals);
+            }
 
-                if (hasBeginContact || hasEndContact)
+            if (hasBeginContact)
+            {
+                for (var i = 0, l = additions.length; i < l; i += 2)
                 {
-                    this.bodyOverlapKeeper.getDiff(additions, removals);
+                    this.dispatch('beginContact', { bodyA: this.getBodyById(additions[i]), bodyB: this.getBodyById(additions[i + 1]) })
                 }
+            }
 
-                if (hasBeginContact)
+            if (hasEndContact)
+            {
+                for (var i = 0, l = removals.length; i < l; i += 2)
                 {
-                    for (var i = 0, l = additions.length; i < l; i += 2)
-                    {
-                        beginContactEvent.bodyA = this.getBodyById(additions[i]);
-                        beginContactEvent.bodyB = this.getBodyById(additions[i + 1]);
-                        this.dispatchEvent(beginContactEvent);
-                    }
-                    beginContactEvent.bodyA = beginContactEvent.bodyB = null;
+                    this.dispatch('endContact', { bodyA: this.getBodyById(removals[i]), bodyB: this.getBodyById(removals[i + 1]) })
                 }
+            }
 
-                if (hasEndContact)
+            additions.length = removals.length = 0;
+
+            var hasBeginShapeContact = this.has('beginShapeContact');
+            var hasEndShapeContact = this.has('endShapeContact');
+
+            if (hasBeginShapeContact || hasEndShapeContact)
+            {
+                this.shapeOverlapKeeper.getDiff(additions, removals);
+            }
+
+            if (hasBeginShapeContact)
+            {
+                for (var i = 0, l = additions.length; i < l; i += 2)
                 {
-                    for (var i = 0, l = removals.length; i < l; i += 2)
-                    {
-                        endContactEvent.bodyA = this.getBodyById(removals[i]);
-                        endContactEvent.bodyB = this.getBodyById(removals[i + 1]);
-                        this.dispatchEvent(endContactEvent);
-                    }
-                    endContactEvent.bodyA = endContactEvent.bodyB = null;
+                    var shapeA = this.getShapeById(additions[i]);
+                    var shapeB = this.getShapeById(additions[i + 1]);
+
+                    this.dispatch("beginShapeContact", { shapeA: shapeA, shapeB: shapeB, bodyA: shapeA.body, bodyB: shapeB.body })
                 }
+            }
 
-                additions.length = removals.length = 0;
-
-                var hasBeginShapeContact = this.hasAnyEventListener('beginShapeContact');
-                var hasEndShapeContact = this.hasAnyEventListener('endShapeContact');
-
-                if (hasBeginShapeContact || hasEndShapeContact)
+            if (hasEndShapeContact)
+            {
+                for (var i = 0, l = removals.length; i < l; i += 2)
                 {
-                    this.shapeOverlapKeeper.getDiff(additions, removals);
-                }
+                    var shapeA = this.getShapeById(removals[i]);
+                    var shapeB = this.getShapeById(removals[i + 1]);
 
-                if (hasBeginShapeContact)
-                {
-                    for (var i = 0, l = additions.length; i < l; i += 2)
-                    {
-                        var shapeA = this.getShapeById(additions[i]);
-                        var shapeB = this.getShapeById(additions[i + 1]);
-                        beginShapeContactEvent.shapeA = shapeA;
-                        beginShapeContactEvent.shapeB = shapeB;
-                        beginShapeContactEvent.bodyA = shapeA.body;
-                        beginShapeContactEvent.bodyB = shapeB.body;
-                        this.dispatchEvent(beginShapeContactEvent);
-                    }
-                    beginShapeContactEvent.bodyA = beginShapeContactEvent.bodyB = beginShapeContactEvent.shapeA = beginShapeContactEvent.shapeB = null;
+                    this.dispatch("endShapeContact", { shapeA: shapeA, shapeB: shapeB, bodyA: shapeA.body, bodyB: shapeB.body })
                 }
-
-                if (hasEndShapeContact)
-                {
-                    for (var i = 0, l = removals.length; i < l; i += 2)
-                    {
-                        var shapeA = this.getShapeById(removals[i]);
-                        var shapeB = this.getShapeById(removals[i + 1]);
-                        endShapeContactEvent.shapeA = shapeA;
-                        endShapeContactEvent.shapeB = shapeB;
-                        endShapeContactEvent.bodyA = shapeA.body;
-                        endShapeContactEvent.bodyB = shapeB.body;
-                        this.dispatchEvent(endShapeContactEvent);
-                    }
-                    endShapeContactEvent.bodyA = endShapeContactEvent.bodyB = endShapeContactEvent.shapeA = endShapeContactEvent.shapeB = null;
-                }
-
-            };
-        })();
+            }
+        }
 
         /**
          * Sets all body forces in the world to zero.
@@ -1070,15 +993,6 @@ namespace CANNON
         };
     }
 
-    /**
-     * Dispatched after the world has stepped forward in time.
-     */
-    var World_step_postStepEvent = { type: "postStep" }; // Reusable event objects to save memory
-    /**
-     * Dispatched before the world steps forward in time.
-     */
-    var World_step_preStepEvent = { type: "preStep" };
-    var World_step_collideEvent = { type: Body.COLLIDE_EVENT_NAME, body: null, contact: null };
     var World_step_oldContacts = [];// Pools for unused objects
     var World_step_frictionEquationPool = [];
     var World_step_p1 = []; // Reusable arrays for collision pairs

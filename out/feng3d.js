@@ -2106,15 +2106,15 @@ var feng3d;
         // 相同的函数只执行一个
         needTickerFuncItems.unique(function (a, b) { return (a.func == b.func && a.thisObject == b.thisObject); });
         needTickerFuncItems.forEach(function (v) {
-            try {
-                v.func.call(v.thisObject, feng3d.lazy.getvalue(v.interval));
-            }
-            catch (error) {
-                console.warn(v.func + " \u65B9\u6CD5\u6267\u884C\u9519\u8BEF\uFF0C\u4ECE ticker \u4E2D\u79FB\u9664", error);
-                var index = tickerFuncs.indexOf(v);
-                if (index != -1)
-                    tickerFuncs.splice(index, 1);
-            }
+            // try
+            // {
+            v.func.call(v.thisObject, feng3d.lazy.getvalue(v.interval));
+            // } catch (error)
+            // {
+            //     console.warn(`${v.func} 方法执行错误，从 ticker 中移除`, error)
+            //     var index = tickerFuncs.indexOf(v);
+            //     if (index != -1) tickerFuncs.splice(index, 1);
+            // }
         });
         running = false;
         for (var i = 0; i < affers.length; i++) {
@@ -38349,102 +38349,6 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
-    /**
-     * Base class for objects that dispatches events.
-     */
-    var EventTarget = /** @class */ (function () {
-        function EventTarget() {
-        }
-        /**
-         * Add an event listener
-         * @param  type
-         * @param  listener
-         * @return The self object, for chainability.
-         */
-        EventTarget.prototype.addEventListener = function (type, listener) {
-            if (this._listeners === undefined) {
-                this._listeners = {};
-            }
-            var listeners = this._listeners;
-            if (listeners[type] === undefined) {
-                listeners[type] = [];
-            }
-            if (listeners[type].indexOf(listener) === -1) {
-                listeners[type].push(listener);
-            }
-            return this;
-        };
-        /**
-         * Check if an event listener is added
-         * @param type
-         * @param listener
-         */
-        EventTarget.prototype.hasEventListener = function (type, listener) {
-            if (this._listeners === undefined) {
-                return false;
-            }
-            var listeners = this._listeners;
-            if (listeners[type] !== undefined && listeners[type].indexOf(listener) !== -1) {
-                return true;
-            }
-            return false;
-        };
-        /**
-         * Check if any event listener of the given type is added
-         * @param type
-         */
-        EventTarget.prototype.hasAnyEventListener = function (type) {
-            if (this._listeners === undefined) {
-                return false;
-            }
-            var listeners = this._listeners;
-            return (listeners[type] !== undefined);
-        };
-        /**
-         * Remove an event listener
-         * @param type
-         * @param listener
-         * @return The self object, for chainability.
-         */
-        EventTarget.prototype.removeEventListener = function (type, listener) {
-            if (this._listeners === undefined) {
-                return this;
-            }
-            var listeners = this._listeners;
-            if (listeners[type] === undefined) {
-                return this;
-            }
-            var index = listeners[type].indexOf(listener);
-            if (index !== -1) {
-                listeners[type].splice(index, 1);
-            }
-            return this;
-        };
-        /**
-         * Emit an event.
-         * @param event
-         * @return The self object, for chainability.
-         */
-        EventTarget.prototype.dispatchEvent = function (event) {
-            if (this._listeners === undefined) {
-                return this;
-            }
-            var listeners = this._listeners;
-            var listenerArray = listeners[event.type];
-            if (listenerArray !== undefined) {
-                event.target = this;
-                for (var i = 0, l = listenerArray.length; i < l; i++) {
-                    listenerArray[i].call(this, event);
-                }
-            }
-            return this;
-        };
-        return EventTarget;
-    }());
-    CANNON.EventTarget = EventTarget;
-})(CANNON || (CANNON = {}));
-var CANNON;
-(function (CANNON) {
     var Utils = /** @class */ (function () {
         function Utils() {
         }
@@ -41477,21 +41381,22 @@ var CANNON;
             _this.axisList = [];
             _this.world = null;
             _this.axisIndex = 0;
-            var axisList = _this.axisList;
-            _this._addBodyHandler = function (e) {
-                axisList.push(e.body);
-            };
-            _this._removeBodyHandler = function (e) {
-                var idx = axisList.indexOf(e.body);
-                if (idx !== -1) {
-                    axisList.splice(idx, 1);
-                }
-            };
             if (world) {
                 _this.setWorld(world);
             }
             return _this;
         }
+        SAPBroadphase.prototype._addBodyHandler = function (e) {
+            this.axisList.push(e.body);
+        };
+        ;
+        SAPBroadphase.prototype._removeBodyHandler = function (e) {
+            var idx = this.axisList.indexOf(e.body);
+            if (idx !== -1) {
+                this.axisList.splice(idx, 1);
+            }
+        };
+        ;
         /**
          * Change the world
          * @param world
@@ -41504,11 +41409,13 @@ var CANNON;
                 this.axisList.push(world.bodies[i]);
             }
             // Remove old handlers, if any
-            world.removeEventListener("addBody", this._addBodyHandler);
-            world.removeEventListener("removeBody", this._removeBodyHandler);
+            if (this.world) {
+                this.world.off("addBody", this._addBodyHandler, this);
+                this.world.off("removeBody", this._removeBodyHandler, this);
+            }
             // Add handlers to update the list of bodies.
-            world.addEventListener("addBody", this._addBodyHandler);
-            world.addEventListener("removeBody", this._removeBodyHandler);
+            world.on("addBody", this._addBodyHandler, this);
+            world.on("removeBody", this._removeBodyHandler, this);
             this.world = world;
             this.dirty = true;
         };
@@ -42359,7 +42266,7 @@ var CANNON;
             this.sleepState = 0;
             this._wakeUpAfterNarrowphase = false;
             if (s === Body.SLEEPING) {
-                this.dispatchEvent(Body.wakeupEvent);
+                this.dispatch("wakeup");
             }
         };
         /**
@@ -42382,14 +42289,14 @@ var CANNON;
                 if (sleepState === Body.AWAKE && speedSquared < speedLimitSquared) {
                     this.sleepState = Body.SLEEPY; // Sleepy
                     this.timeLastSleepy = time;
-                    this.dispatchEvent(Body.sleepyEvent);
+                    this.dispatch("sleepy");
                 }
                 else if (sleepState === Body.SLEEPY && speedSquared > speedLimitSquared) {
                     this.wakeUp(); // Wake up
                 }
                 else if (sleepState === Body.SLEEPY && (time - this.timeLastSleepy) > this.sleepTimeLimit) {
                     this.sleep(); // Sleeping
-                    this.dispatchEvent(Body.sleepEvent);
+                    this.dispatch("sleep");
                 }
             }
         };
@@ -42694,7 +42601,6 @@ var CANNON;
             // Update world inertia
             this.updateInertiaWorld();
         };
-        Body.COLLIDE_EVENT_NAME = "collide";
         /**
          * A dynamic body is fully simulated. Can be moved manually by the user, but normally they move according to forces. A dynamic body can collide with all body types. A dynamic body always has finite, non-zero mass.
          */
@@ -42711,27 +42617,8 @@ var CANNON;
         Body.SLEEPY = 1;
         Body.SLEEPING = 2;
         Body.idCounter = 0;
-        /**
-         * Dispatched after a sleeping body has woken up.
-         */
-        Body.wakeupEvent = {
-            type: "wakeup"
-        };
-        /**
-         * Dispatched after a body has gone in to the sleepy state.
-         */
-        Body.sleepyEvent = {
-            type: "sleepy"
-        };
-        /**
-         * Dispatched after a body has fallen asleep.
-         * @event sleep
-         */
-        Body.sleepEvent = {
-            type: "sleep"
-        };
         return Body;
-    }(CANNON.EventTarget));
+    }(feng3d.EventDispatcher));
     CANNON.Body = Body;
     var tmpVec = new feng3d.Vector3();
     var tmpQuat = new feng3d.Quaternion();
@@ -42988,6 +42875,9 @@ var CANNON;
             this.indexForwardAxis = typeof (options.indexForwardAxis) !== 'undefined' ? options.indexForwardAxis : 0;
             this.indexUpAxis = typeof (options.indexUpAxis) !== 'undefined' ? options.indexUpAxis : 2;
         }
+        RaycastVehicle.prototype.preStepCallback = function () {
+            this.updateVehicle(this.world.dt);
+        };
         /**
          * Add a wheel. For information about the options, see WheelInfo.
          *
@@ -43034,14 +42924,9 @@ var CANNON;
          * @param world
          */
         RaycastVehicle.prototype.addToWorld = function (world) {
-            var constraints = this.constraints;
             world.addBody(this.chassisBody);
-            var that = this;
-            this.preStepCallback = function () {
-                that.updateVehicle(world.dt);
-            };
-            world.addEventListener('preStep', this.preStepCallback);
             this.world = world;
+            world.on('preStep', this.preStepCallback, this);
         };
         /**
          * Get one of the wheel axles, world-oriented.
@@ -43159,9 +43044,8 @@ var CANNON;
          * @param world
          */
         RaycastVehicle.prototype.removeFromWorld = function (world) {
-            var constraints = this.constraints;
-            world.remove(this.chassisBody);
-            world.removeEventListener('preStep', this.preStepCallback);
+            world.removeBody(this.chassisBody);
+            world.off('preStep', this.preStepCallback);
             this.world = null;
         };
         RaycastVehicle.prototype.castRay = function (wheel) {
@@ -43620,7 +43504,7 @@ var CANNON;
             for (var i = 0; i < constraints.length; i++) {
                 world.addConstraint(constraints[i]);
             }
-            world.addEventListener('preStep', this._update.bind(this));
+            world.on('preStep', this._update, this);
         };
         RigidVehicle.prototype._update = function () {
             var wheelForces = this.wheelForces;
@@ -43636,7 +43520,7 @@ var CANNON;
             var constraints = this.constraints;
             var bodies = this.wheelBodies.concat([this.chassisBody]);
             for (var i = 0; i < bodies.length; i++) {
-                world.remove(bodies[i]);
+                world.removeBody(bodies[i]);
             }
             for (var i = 0; i < constraints.length; i++) {
                 world.removeConstraint(constraints[i]);
@@ -44484,99 +44368,20 @@ var CANNON;
             /**
              * Dispatched after a body has been added to the world.
              */
-            _this.addBodyEvent = {
-                type: "addBody",
-                body: null
-            };
+            // addBodyEvent = {
+            //     type: "addBody",
+            //     body: null
+            // };
             /**
              * Dispatched after a body has been removed from the world.
              */
-            _this.removeBodyEvent = {
-                type: "removeBody",
-                body: null
-            };
+            // removeBodyEvent = {
+            //     type: "removeBody",
+            //     body: null
+            // };
             _this.idToBodyMap = {};
-            _this.emitContactEvents = (function () {
-                var additions = [];
-                var removals = [];
-                var beginContactEvent = {
-                    type: 'beginContact',
-                    bodyA: null,
-                    bodyB: null
-                };
-                var endContactEvent = {
-                    type: 'endContact',
-                    bodyA: null,
-                    bodyB: null
-                };
-                var beginShapeContactEvent = {
-                    type: 'beginShapeContact',
-                    bodyA: null,
-                    bodyB: null,
-                    shapeA: null,
-                    shapeB: null
-                };
-                var endShapeContactEvent = {
-                    type: 'endShapeContact',
-                    bodyA: null,
-                    bodyB: null,
-                    shapeA: null,
-                    shapeB: null
-                };
-                return function () {
-                    var hasBeginContact = this.hasAnyEventListener('beginContact');
-                    var hasEndContact = this.hasAnyEventListener('endContact');
-                    if (hasBeginContact || hasEndContact) {
-                        this.bodyOverlapKeeper.getDiff(additions, removals);
-                    }
-                    if (hasBeginContact) {
-                        for (var i = 0, l = additions.length; i < l; i += 2) {
-                            beginContactEvent.bodyA = this.getBodyById(additions[i]);
-                            beginContactEvent.bodyB = this.getBodyById(additions[i + 1]);
-                            this.dispatchEvent(beginContactEvent);
-                        }
-                        beginContactEvent.bodyA = beginContactEvent.bodyB = null;
-                    }
-                    if (hasEndContact) {
-                        for (var i = 0, l = removals.length; i < l; i += 2) {
-                            endContactEvent.bodyA = this.getBodyById(removals[i]);
-                            endContactEvent.bodyB = this.getBodyById(removals[i + 1]);
-                            this.dispatchEvent(endContactEvent);
-                        }
-                        endContactEvent.bodyA = endContactEvent.bodyB = null;
-                    }
-                    additions.length = removals.length = 0;
-                    var hasBeginShapeContact = this.hasAnyEventListener('beginShapeContact');
-                    var hasEndShapeContact = this.hasAnyEventListener('endShapeContact');
-                    if (hasBeginShapeContact || hasEndShapeContact) {
-                        this.shapeOverlapKeeper.getDiff(additions, removals);
-                    }
-                    if (hasBeginShapeContact) {
-                        for (var i = 0, l = additions.length; i < l; i += 2) {
-                            var shapeA = this.getShapeById(additions[i]);
-                            var shapeB = this.getShapeById(additions[i + 1]);
-                            beginShapeContactEvent.shapeA = shapeA;
-                            beginShapeContactEvent.shapeB = shapeB;
-                            beginShapeContactEvent.bodyA = shapeA.body;
-                            beginShapeContactEvent.bodyB = shapeB.body;
-                            this.dispatchEvent(beginShapeContactEvent);
-                        }
-                        beginShapeContactEvent.bodyA = beginShapeContactEvent.bodyB = beginShapeContactEvent.shapeA = beginShapeContactEvent.shapeB = null;
-                    }
-                    if (hasEndShapeContact) {
-                        for (var i = 0, l = removals.length; i < l; i += 2) {
-                            var shapeA = this.getShapeById(removals[i]);
-                            var shapeB = this.getShapeById(removals[i + 1]);
-                            endShapeContactEvent.shapeA = shapeA;
-                            endShapeContactEvent.shapeB = shapeB;
-                            endShapeContactEvent.bodyA = shapeA.body;
-                            endShapeContactEvent.bodyB = shapeB.body;
-                            this.dispatchEvent(endShapeContactEvent);
-                        }
-                        endShapeContactEvent.bodyA = endShapeContactEvent.bodyB = endShapeContactEvent.shapeA = endShapeContactEvent.shapeB = null;
-                    }
-                };
-            })();
+            _this.additions = [];
+            _this.removals = [];
             _this.dt = -1;
             _this.allowSleep = !!options.allowSleep;
             _this.contacts = [];
@@ -44615,14 +44420,6 @@ var CANNON;
             };
             _this.accumulator = 0;
             _this.subsystems = [];
-            _this.addBodyEvent = {
-                type: "addBody",
-                body: null
-            };
-            _this.removeBodyEvent = {
-                type: "removeBody",
-                body: null
-            };
             _this.idToBodyMap = {};
             _this.broadphase.setWorld(_this);
             return _this;
@@ -44656,32 +44453,6 @@ var CANNON;
         };
         /**
          * Add a rigid body to the simulation.
-         * @param body
-         *
-         * @todo If the simulation has not yet started, why recrete and copy arrays for each body? Accumulate in dynamic arrays in this case.
-         * @todo Adding an array of bodies should be possible. This would save some loops too
-         * @deprecated Use .addBody instead
-         */
-        World.prototype.add = function (body) {
-            if (this.bodies.indexOf(body) !== -1) {
-                return;
-            }
-            body.index = this.bodies.length;
-            this.bodies.push(body);
-            body.world = this;
-            body.initPosition.copy(body.position);
-            body.initVelocity.copy(body.velocity);
-            body.timeLastSleepy = this.time;
-            if (body instanceof CANNON.Body) {
-                body.initAngularVelocity.copy(body.angularVelocity);
-                body.initQuaternion.copy(body.quaternion);
-            }
-            this.addBodyEvent.body = body;
-            this.idToBodyMap[body.id] = body;
-            this.dispatchEvent(this.addBodyEvent);
-        };
-        /**
-         * Add a rigid body to the simulation.
          * @method add
          * @param {Body} body
          * @todo If the simulation has not yet started, why recrete and copy arrays for each body? Accumulate in dynamic arrays in this case.
@@ -44702,9 +44473,8 @@ var CANNON;
                 body.initAngularVelocity.copy(body.angularVelocity);
                 body.initQuaternion.copy(body.quaternion);
             }
-            this.addBodyEvent.body = body;
             this.idToBodyMap[body.id] = body;
-            this.dispatchEvent(this.addBodyEvent);
+            this.dispatch("addBody", body);
         };
         /**
          * Add a constraint to the simulation.
@@ -44797,25 +44567,6 @@ var CANNON;
         /**
          * Remove a rigid body from the simulation.
          * @param body
-         * @deprecated Use .removeBody instead
-         */
-        World.prototype.remove = function (body) {
-            body.world = null;
-            var n = this.bodies.length - 1, bodies = this.bodies, idx = bodies.indexOf(body);
-            if (idx !== -1) {
-                bodies.splice(idx, 1); // Todo: should use a garbage free method
-                // Recompute index
-                for (var i = 0; i !== bodies.length; i++) {
-                    bodies[i].index = i;
-                }
-                this.removeBodyEvent.body = body;
-                delete this.idToBodyMap[body.id];
-                this.dispatchEvent(this.removeBodyEvent);
-            }
-        };
-        /**
-         * Remove a rigid body from the simulation.
-         * @param body
          */
         World.prototype.removeBody = function (body) {
             body.world = null;
@@ -44826,9 +44577,8 @@ var CANNON;
                 for (var i = 0; i !== bodies.length; i++) {
                     bodies[i].index = i;
                 }
-                this.removeBodyEvent.body = body;
                 delete this.idToBodyMap[body.id];
-                this.dispatchEvent(this.removeBodyEvent);
+                this.dispatch("removeBody", body);
             }
         };
         World.prototype.getBodyById = function (id) {
@@ -45072,12 +44822,8 @@ var CANNON;
                 this.collisionMatrix[bj.index + "_" + bi.index] = true;
                 if (!this.collisionMatrixPrevious[bj.index + "_" + bi.index]) {
                     // First contact!
-                    // We reuse the collideEvent object, otherwise we will end up creating new objects for each new contact, even if there's no event listener attached.
-                    World_step_collideEvent.body = bj;
-                    World_step_collideEvent.contact = c;
-                    bi.dispatchEvent(World_step_collideEvent);
-                    World_step_collideEvent.body = bi;
-                    bj.dispatchEvent(World_step_collideEvent);
+                    bi.dispatch("collide", { body: bj, contact: c });
+                    bi.dispatch("collide", { body: bi, contact: c });
                 }
                 this.bodyOverlapKeeper.set(bi.id, bj.id);
                 this.shapeOverlapKeeper.set(si.id, sj.id);
@@ -45127,7 +44873,7 @@ var CANNON;
                     }
                 }
             }
-            this.dispatchEvent(World_step_preStepEvent);
+            this.dispatch("preStep");
             // Invoke pre-step callbacks
             for (i = 0; i !== N; i++) {
                 var bi = bodies[i];
@@ -45155,7 +44901,7 @@ var CANNON;
             // Update world time
             this.time += dt;
             this.stepnumber += 1;
-            this.dispatchEvent(World_step_postStepEvent);
+            this.dispatch("postStep");
             // Invoke post-step callbacks
             for (i = 0; i !== N; i++) {
                 var bi = bodies[i];
@@ -45168,6 +44914,45 @@ var CANNON;
             if (this.allowSleep) {
                 for (i = 0; i !== N; i++) {
                     bodies[i].sleepTick(this.time);
+                }
+            }
+        };
+        World.prototype.emitContactEvents = function () {
+            var additions = this.additions;
+            var removals = this.removals;
+            var hasBeginContact = this.has('beginContact');
+            var hasEndContact = this.has('endContact');
+            if (hasBeginContact || hasEndContact) {
+                this.bodyOverlapKeeper.getDiff(additions, removals);
+            }
+            if (hasBeginContact) {
+                for (var i = 0, l = additions.length; i < l; i += 2) {
+                    this.dispatch('beginContact', { bodyA: this.getBodyById(additions[i]), bodyB: this.getBodyById(additions[i + 1]) });
+                }
+            }
+            if (hasEndContact) {
+                for (var i = 0, l = removals.length; i < l; i += 2) {
+                    this.dispatch('endContact', { bodyA: this.getBodyById(removals[i]), bodyB: this.getBodyById(removals[i + 1]) });
+                }
+            }
+            additions.length = removals.length = 0;
+            var hasBeginShapeContact = this.has('beginShapeContact');
+            var hasEndShapeContact = this.has('endShapeContact');
+            if (hasBeginShapeContact || hasEndShapeContact) {
+                this.shapeOverlapKeeper.getDiff(additions, removals);
+            }
+            if (hasBeginShapeContact) {
+                for (var i = 0, l = additions.length; i < l; i += 2) {
+                    var shapeA = this.getShapeById(additions[i]);
+                    var shapeB = this.getShapeById(additions[i + 1]);
+                    this.dispatch("beginShapeContact", { shapeA: shapeA, shapeB: shapeB, bodyA: shapeA.body, bodyB: shapeB.body });
+                }
+            }
+            if (hasEndShapeContact) {
+                for (var i = 0, l = removals.length; i < l; i += 2) {
+                    var shapeA = this.getShapeById(removals[i]);
+                    var shapeB = this.getShapeById(removals[i + 1]);
+                    this.dispatch("endShapeContact", { shapeA: shapeA, shapeB: shapeB, bodyA: shapeA.body, bodyB: shapeB.body });
                 }
             }
         };
@@ -45185,7 +44970,7 @@ var CANNON;
             }
         };
         return World;
-    }(CANNON.EventTarget));
+    }(feng3d.EventDispatcher));
     CANNON.World = World;
     // Temp stuff
     var tmpRay = new CANNON.Ray();
@@ -45203,15 +44988,6 @@ var CANNON;
             return Date.now() - nowOffset;
         };
     }
-    /**
-     * Dispatched after the world has stepped forward in time.
-     */
-    var World_step_postStepEvent = { type: "postStep" }; // Reusable event objects to save memory
-    /**
-     * Dispatched before the world steps forward in time.
-     */
-    var World_step_preStepEvent = { type: "preStep" };
-    var World_step_collideEvent = { type: CANNON.Body.COLLIDE_EVENT_NAME, body: null, contact: null };
     var World_step_oldContacts = []; // Pools for unused objects
     var World_step_frictionEquationPool = [];
     var World_step_p1 = []; // Reusable arrays for collision pairs

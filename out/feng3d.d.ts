@@ -17442,48 +17442,6 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    /**
-     * Base class for objects that dispatches events.
-     */
-    class EventTarget {
-        private _listeners;
-        /**
-         * Add an event listener
-         * @param  type
-         * @param  listener
-         * @return The self object, for chainability.
-         */
-        addEventListener(type: string, listener: Function): this;
-        /**
-         * Check if an event listener is added
-         * @param type
-         * @param listener
-         */
-        hasEventListener(type: string, listener: Function): boolean;
-        /**
-         * Check if any event listener of the given type is added
-         * @param type
-         */
-        hasAnyEventListener(type: string): boolean;
-        /**
-         * Remove an event listener
-         * @param type
-         * @param listener
-         * @return The self object, for chainability.
-         */
-        removeEventListener(type: string, listener: Function): this;
-        /**
-         * Emit an event.
-         * @param event
-         * @return The self object, for chainability.
-         */
-        dispatchEvent(event: {
-            type: string;
-            target?: EventTarget;
-        }): this;
-    }
-}
-declare namespace CANNON {
     class Utils {
         /**
          * Extend an options object with default values.
@@ -18987,7 +18945,23 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    class Body extends EventTarget {
+    interface BodyEventMap {
+        wakeup: any;
+        sleepy: any;
+        sleep: any;
+        collide: {
+            body: Body;
+            contact: ContactEquation;
+        };
+    }
+    interface Body {
+        once<K extends keyof BodyEventMap>(type: K, listener: (event: feng3d.Event<BodyEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof BodyEventMap>(type: K, data?: BodyEventMap[K], bubbles?: boolean): feng3d.Event<BodyEventMap[K]>;
+        has<K extends keyof BodyEventMap>(type: K): boolean;
+        on<K extends keyof BodyEventMap>(type: K, listener: (event: feng3d.Event<BodyEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof BodyEventMap>(type?: K, listener?: (event: feng3d.Event<BodyEventMap[K]>) => any, thisObject?: any): void;
+    }
+    class Body extends feng3d.EventDispatcher {
         id: number;
         /**
          * Reference to the world the body is living in
@@ -19153,7 +19127,6 @@ declare namespace CANNON {
             angularFactor?: feng3d.Vector3;
             shape?: Shape;
         }, a?: any);
-        static COLLIDE_EVENT_NAME: string;
         /**
          * A dynamic body is fully simulated. Can be moved manually by the user, but normally they move according to forces. A dynamic body can collide with all body types. A dynamic body always has finite, non-zero mass.
          */
@@ -19171,12 +19144,6 @@ declare namespace CANNON {
         static SLEEPING: number;
         static idCounter: number;
         /**
-         * Dispatched after a sleeping body has woken up.
-         */
-        static wakeupEvent: {
-            type: string;
-        };
-        /**
          * Wake the body up.
          */
         wakeUp(): void;
@@ -19184,19 +19151,6 @@ declare namespace CANNON {
          * Force body sleep
          */
         sleep(): void;
-        /**
-         * Dispatched after a body has gone in to the sleepy state.
-         */
-        static sleepyEvent: {
-            type: string;
-        };
-        /**
-         * Dispatched after a body has fallen asleep.
-         * @event sleep
-         */
-        static sleepEvent: {
-            type: string;
-        };
         /**
          * Called every timestep to update internal sleep timer and change sleep state if needed.
          */
@@ -19489,7 +19443,7 @@ declare namespace CANNON {
          */
         indexUpAxis: number;
         currentVehicleSpeedKmHour: number;
-        preStepCallback: Function;
+        preStepCallback(): void;
         constraints: any;
         /**
          * Vehicle helper class that casts rays from the wheel positions towards the ground and applies forces.
@@ -19989,7 +19943,46 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    class World extends EventTarget {
+    interface WorldEventMap {
+        /**
+         * 添加物体
+         */
+        addBody: Body;
+        /**
+         * 移除物体
+         */
+        removeBody: Body;
+        preStep: any;
+        postStep: any;
+        beginContact: {
+            bodyA: Body;
+            bodyB: Body;
+        };
+        endContact: {
+            bodyA: Body;
+            bodyB: Body;
+        };
+        beginShapeContact: {
+            shapeA: Shape;
+            shapeB: Shape;
+            bodyA: Body;
+            bodyB: Body;
+        };
+        endShapeContact: {
+            shapeA: Shape;
+            shapeB: Shape;
+            bodyA: Body;
+            bodyB: Body;
+        };
+    }
+    interface World {
+        once<K extends keyof WorldEventMap>(type: K, listener: (event: feng3d.Event<WorldEventMap[K]>) => void, thisObject?: any, priority?: number): void;
+        dispatch<K extends keyof WorldEventMap>(type: K, data?: WorldEventMap[K], bubbles?: boolean): feng3d.Event<WorldEventMap[K]>;
+        has<K extends keyof WorldEventMap>(type: K): boolean;
+        on<K extends keyof WorldEventMap>(type: K, listener: (event: feng3d.Event<WorldEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
+        off<K extends keyof WorldEventMap>(type?: K, listener?: (event: feng3d.Event<WorldEventMap[K]>) => any, thisObject?: any): void;
+    }
+    class World extends feng3d.EventDispatcher {
         /**
          * Currently / last used timestep. Is set to -1 if not available. This value is updated before each internal step, which means that it is "fresh" inside event callbacks.
          */
@@ -20076,18 +20069,12 @@ declare namespace CANNON {
         /**
          * Dispatched after a body has been added to the world.
          */
-        addBodyEvent: {
-            type: string;
-            body: any;
-        };
         /**
          * Dispatched after a body has been removed from the world.
          */
-        removeBodyEvent: {
-            type: string;
-            body: any;
+        idToBodyMap: {
+            [key: string]: Body;
         };
-        idToBodyMap: {};
         /**
          * The physics world
          * @param options
@@ -20116,15 +20103,6 @@ declare namespace CANNON {
          * Store old collision state info
          */
         collisionMatrixTick(): void;
-        /**
-         * Add a rigid body to the simulation.
-         * @param body
-         *
-         * @todo If the simulation has not yet started, why recrete and copy arrays for each body? Accumulate in dynamic arrays in this case.
-         * @todo Adding an array of bodies should be possible. This would save some loops too
-         * @deprecated Use .addBody instead
-         */
-        add(body: Body): void;
         /**
          * Add a rigid body to the simulation.
          * @method add
@@ -20215,15 +20193,9 @@ declare namespace CANNON {
         /**
          * Remove a rigid body from the simulation.
          * @param body
-         * @deprecated Use .removeBody instead
-         */
-        remove(body: Body): void;
-        /**
-         * Remove a rigid body from the simulation.
-         * @param body
          */
         removeBody(body: Body): void;
-        getBodyById(id: number): any;
+        getBodyById(id: number): Body;
         getShapeById(id: number): Shape;
         /**
          * Adds a material to the World.
@@ -20251,7 +20223,9 @@ declare namespace CANNON {
          */
         step(dt: number, timeSinceLastCalled: number, maxSubSteps: number): void;
         internalStep(dt: number): void;
-        emitContactEvents: () => void;
+        additions: any[];
+        removals: any[];
+        emitContactEvents(): void;
         /**
          * Sets all body forces in the world to zero.
          * @method clearForces
