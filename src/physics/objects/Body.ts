@@ -440,7 +440,7 @@ namespace CANNON
         {
             var result = result || new feng3d.Vector3();
             worldPoint.subTo(this.position, result);
-            this.quaternion.conjugateTo().rotatePoint(result, result);
+            this.quaternion.inverseTo().rotatePoint(result, result);
             return result;
         }
 
@@ -452,7 +452,7 @@ namespace CANNON
          */
         vectorToLocalFrame(worldVector, result = new feng3d.Vector3())
         {
-            this.quaternion.conjugateTo().rotatePoint(worldVector, result);
+            this.quaternion.inverseTo().rotatePoint(worldVector, result);
             return result;
         }
 

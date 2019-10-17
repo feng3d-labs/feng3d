@@ -138,34 +138,9 @@ namespace feng3d
         }
 
         /**
-         * 得到反四元数旋转
+         * 获取逆四元数（共轭四元数）
          */
         inverse()
-        {
-            var x = this.x, y = this.y, z = this.z, w = this.w;
-
-            this.conjugate();
-            var inorm2 = 1 / (x * x + y * y + z * z + w * w);
-            this.x *= inorm2;
-            this.y *= inorm2;
-            this.z *= inorm2;
-            this.w *= inorm2;
-
-            return this;
-        }
-
-        /**
-         * 得到反四元数旋转
-         */
-        inverseTo(target = new Quaternion())
-        {
-            return target.copy(this).inverse();
-        }
-
-        /**
-         * 得到四元数共轭
-         */
-        conjugate()
         {
             this.x = -this.x;
             this.y = -this.y;
@@ -175,13 +150,13 @@ namespace feng3d
         }
 
         /**
-         * 得到四元数共轭
+         * 获取逆四元数（共轭四元数）
          * 
          * @param target
          */
-        conjugateTo(target = new Quaternion())
+        inverseTo(target = new Quaternion())
         {
-            return target.copy(this).conjugate();
+            return target.copy(this).inverse();
         }
 
         multiplyVector(vector: Vector3, target = new Quaternion())
@@ -477,16 +452,13 @@ namespace feng3d
             return "{this.x:" + this.x + " this.y:" + this.y + " this.z:" + this.z + " this.w:" + this.w + "}";
         }
 
-		/**
-		 * Converts the quaternion to a Matrix4x4 object representing an equivalent rotation.
-		 * @param target An optional Matrix4x4 container to store the transformation in. If not provided, a new object is created.
-		 * @return A Matrix4x4 object representing an equivalent rotation.
-		 */
-        toMatrix3D(target?: Matrix4x4): Matrix4x4
+        /**
+         * 转换为矩阵
+         * 
+         * @param target 
+         */
+        toMatrix3D(target = new Matrix4x4())
         {
-            if (!target)
-                target = new Matrix4x4();
-
             var rawData = target.rawData;
             var xy2 = 2.0 * this.x * this.y, xz2 = 2.0 * this.x * this.z, xw2 = 2.0 * this.x * this.w;
             var yz2 = 2.0 * this.y * this.z, yw2 = 2.0 * this.y * this.w, zw2 = 2.0 * this.z * this.w;
@@ -514,10 +486,11 @@ namespace feng3d
             return target;
         }
 
-		/**
-		 * Extracts a quaternion rotation matrix out of a given Matrix4x4 object.
-		 * @param matrix The Matrix4x4 out of which the rotation will be extracted.
-		 */
+        /**
+         * 从矩阵初始化四元素
+         * 
+         * @param matrix 矩阵
+         */
         fromMatrix(matrix: Matrix4x4)
         {
             var v: Vector3 = matrix.decompose()[1];
@@ -526,38 +499,9 @@ namespace feng3d
         }
 
 		/**
-		 * Converts the quaternion to a Vector.&lt;number&gt; matrix representation of a rotation equivalent to this quaternion.
-		 * @param target The Vector.&lt;number&gt; to contain the raw matrix data.
-		 * @param exclude4thRow If true, the last row will be omitted, and a 4x3 matrix will be generated instead of a 4x4.
-		 */
-        toRawData(target: number[], exclude4thRow = false)
-        {
-            var xy2 = 2.0 * this.x * this.y, xz2 = 2.0 * this.x * this.z, xw2 = 2.0 * this.x * this.w;
-            var yz2 = 2.0 * this.y * this.z, yw2 = 2.0 * this.y * this.w, zw2 = 2.0 * this.z * this.w;
-            var xx = this.x * this.x, yy = this.y * this.y, zz = this.z * this.z, ww = this.w * this.w;
-
-            target[0] = xx - yy - zz + ww;
-            target[1] = xy2 - zw2;
-            target[2] = xz2 + yw2;
-            target[4] = xy2 + zw2;
-            target[5] = -xx + yy - zz + ww;
-            target[6] = yz2 - xw2;
-            target[8] = xz2 - yw2;
-            target[9] = yz2 + xw2;
-            target[10] = -xx - yy + zz + ww;
-            target[3] = target[7] = target[11] = 0;
-
-            if (!exclude4thRow)
-            {
-                target[12] = target[13] = target[14] = 0;
-                target[15] = 1;
-            }
-        }
-
-		/**
          * 克隆
 		 */
-        clone(): Quaternion
+        clone()
         {
             return new Quaternion(this.x, this.y, this.z, this.w);
         }
@@ -568,11 +512,9 @@ namespace feng3d
          * @param point 被旋转的顶点
          * @param target 旋转结果
          */
-        rotatePoint(point: Vector3, target?: Vector3)
+        rotatePoint(point: Vector3, target = new Vector3())
         {
             var x2 = point.x, y2 = point.y, z2 = point.z;
-
-            target = target || new Vector3();
 
             // p*q'
             var w1 = -this.x * x2 - this.y * y2 - this.z * z2;

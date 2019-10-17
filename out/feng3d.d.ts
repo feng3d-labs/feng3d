@@ -5554,23 +5554,15 @@ declare namespace feng3d {
          */
         multTo(q: Quaternion, target?: Quaternion): Quaternion;
         /**
-         * 得到反四元数旋转
+         * 获取逆四元数（共轭四元数）
          */
         inverse(): this;
         /**
-         * 得到反四元数旋转
-         */
-        inverseTo(target?: Quaternion): Quaternion;
-        /**
-         * 得到四元数共轭
-         */
-        conjugate(): this;
-        /**
-         * 得到四元数共轭
+         * 获取逆四元数（共轭四元数）
          *
          * @param target
          */
-        conjugateTo(target?: Quaternion): Quaternion;
+        inverseTo(target?: Quaternion): Quaternion;
         multiplyVector(vector: Vector3, target?: Quaternion): Quaternion;
         /**
          * 用表示给定绕向量旋转的值填充四元数对象。
@@ -5643,22 +5635,17 @@ declare namespace feng3d {
          */
         toString(): string;
         /**
-         * Converts the quaternion to a Matrix4x4 object representing an equivalent rotation.
-         * @param target An optional Matrix4x4 container to store the transformation in. If not provided, a new object is created.
-         * @return A Matrix4x4 object representing an equivalent rotation.
+         * 转换为矩阵
+         *
+         * @param target
          */
         toMatrix3D(target?: Matrix4x4): Matrix4x4;
         /**
-         * Extracts a quaternion rotation matrix out of a given Matrix4x4 object.
-         * @param matrix The Matrix4x4 out of which the rotation will be extracted.
+         * 从矩阵初始化四元素
+         *
+         * @param matrix 矩阵
          */
         fromMatrix(matrix: Matrix4x4): this;
-        /**
-         * Converts the quaternion to a Vector.&lt;number&gt; matrix representation of a rotation equivalent to this quaternion.
-         * @param target The Vector.&lt;number&gt; to contain the raw matrix data.
-         * @param exclude4thRow If true, the last row will be omitted, and a 4x3 matrix will be generated instead of a 4x4.
-         */
-        toRawData(target: number[], exclude4thRow?: boolean): void;
         /**
          * 克隆
          */
@@ -17447,15 +17434,15 @@ declare namespace CANNON {
          * @param worldPoint
          * @param result
          */
-        static pointToLocalFrame(transform: ITransform, worldPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        static pointToLocalFrame(transform: Transform, worldPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
         /**
          * @param position
          * @param quaternion
          * @param localPoint
          * @param result
          */
-        static pointToWorldFrame(transform: ITransform, localPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
-        static vectorToWorldFrame(transform: ITransform, localVector: feng3d.Vector3, result: feng3d.Vector3): feng3d.Vector3;
+        static pointToWorldFrame(transform: Transform, localPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        static vectorToWorldFrame(transform: ITransform, localVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
         static vectorToLocalFrame(transform: ITransform, worldVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
     }
 }

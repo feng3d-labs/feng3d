@@ -12216,42 +12216,22 @@ var feng3d;
             return target.copy(this).mult(q);
         };
         /**
-         * 得到反四元数旋转
+         * 获取逆四元数（共轭四元数）
          */
         Quaternion.prototype.inverse = function () {
-            var x = this.x, y = this.y, z = this.z, w = this.w;
-            this.conjugate();
-            var inorm2 = 1 / (x * x + y * y + z * z + w * w);
-            this.x *= inorm2;
-            this.y *= inorm2;
-            this.z *= inorm2;
-            this.w *= inorm2;
-            return this;
-        };
-        /**
-         * 得到反四元数旋转
-         */
-        Quaternion.prototype.inverseTo = function (target) {
-            if (target === void 0) { target = new Quaternion(); }
-            return target.copy(this).inverse();
-        };
-        /**
-         * 得到四元数共轭
-         */
-        Quaternion.prototype.conjugate = function () {
             this.x = -this.x;
             this.y = -this.y;
             this.z = -this.z;
             return this;
         };
         /**
-         * 得到四元数共轭
+         * 获取逆四元数（共轭四元数）
          *
          * @param target
          */
-        Quaternion.prototype.conjugateTo = function (target) {
+        Quaternion.prototype.inverseTo = function (target) {
             if (target === void 0) { target = new Quaternion(); }
-            return target.copy(this).conjugate();
+            return target.copy(this).inverse();
         };
         Quaternion.prototype.multiplyVector = function (vector, target) {
             if (target === void 0) { target = new Quaternion(); }
@@ -12497,13 +12477,12 @@ var feng3d;
             return "{this.x:" + this.x + " this.y:" + this.y + " this.z:" + this.z + " this.w:" + this.w + "}";
         };
         /**
-         * Converts the quaternion to a Matrix4x4 object representing an equivalent rotation.
-         * @param target An optional Matrix4x4 container to store the transformation in. If not provided, a new object is created.
-         * @return A Matrix4x4 object representing an equivalent rotation.
+         * 转换为矩阵
+         *
+         * @param target
          */
         Quaternion.prototype.toMatrix3D = function (target) {
-            if (!target)
-                target = new feng3d.Matrix4x4();
+            if (target === void 0) { target = new feng3d.Matrix4x4(); }
             var rawData = target.rawData;
             var xy2 = 2.0 * this.x * this.y, xz2 = 2.0 * this.x * this.z, xw2 = 2.0 * this.x * this.w;
             var yz2 = 2.0 * this.y * this.z, yw2 = 2.0 * this.y * this.w, zw2 = 2.0 * this.z * this.w;
@@ -12528,38 +12507,14 @@ var feng3d;
             return target;
         };
         /**
-         * Extracts a quaternion rotation matrix out of a given Matrix4x4 object.
-         * @param matrix The Matrix4x4 out of which the rotation will be extracted.
+         * 从矩阵初始化四元素
+         *
+         * @param matrix 矩阵
          */
         Quaternion.prototype.fromMatrix = function (matrix) {
             var v = matrix.decompose()[1];
             this.fromEulerAngles(v.x, v.y, v.z);
             return this;
-        };
-        /**
-         * Converts the quaternion to a Vector.&lt;number&gt; matrix representation of a rotation equivalent to this quaternion.
-         * @param target The Vector.&lt;number&gt; to contain the raw matrix data.
-         * @param exclude4thRow If true, the last row will be omitted, and a 4x3 matrix will be generated instead of a 4x4.
-         */
-        Quaternion.prototype.toRawData = function (target, exclude4thRow) {
-            if (exclude4thRow === void 0) { exclude4thRow = false; }
-            var xy2 = 2.0 * this.x * this.y, xz2 = 2.0 * this.x * this.z, xw2 = 2.0 * this.x * this.w;
-            var yz2 = 2.0 * this.y * this.z, yw2 = 2.0 * this.y * this.w, zw2 = 2.0 * this.z * this.w;
-            var xx = this.x * this.x, yy = this.y * this.y, zz = this.z * this.z, ww = this.w * this.w;
-            target[0] = xx - yy - zz + ww;
-            target[1] = xy2 - zw2;
-            target[2] = xz2 + yw2;
-            target[4] = xy2 + zw2;
-            target[5] = -xx + yy - zz + ww;
-            target[6] = yz2 - xw2;
-            target[8] = xz2 - yw2;
-            target[9] = yz2 + xw2;
-            target[10] = -xx - yy + zz + ww;
-            target[3] = target[7] = target[11] = 0;
-            if (!exclude4thRow) {
-                target[12] = target[13] = target[14] = 0;
-                target[15] = 1;
-            }
         };
         /**
          * 克隆
@@ -12574,8 +12529,8 @@ var feng3d;
          * @param target 旋转结果
          */
         Quaternion.prototype.rotatePoint = function (point, target) {
+            if (target === void 0) { target = new feng3d.Vector3(); }
             var x2 = point.x, y2 = point.y, z2 = point.z;
-            target = target || new feng3d.Vector3();
             // p*q'
             var w1 = -this.x * x2 - this.y * y2 - this.z * z2;
             var x1 = this.w * x2 + this.y * z2 - this.z * y2;
@@ -38370,9 +38325,8 @@ var CANNON;
          */
         Transform.pointToLocalFrame = function (transform, worldPoint, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
-            worldPoint.subTo(transform.position, result);
-            var tmpQuat = transform.quaternion.conjugateTo();
-            tmpQuat.rotatePoint(result, result);
+            var mat = transform.toMatrix3D().invert();
+            mat.transformVector(worldPoint, result);
             return result;
         };
         /**
@@ -38383,11 +38337,12 @@ var CANNON;
          */
         Transform.pointToWorldFrame = function (transform, localPoint, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
-            transform.quaternion.rotatePoint(localPoint, result);
-            result.addTo(transform.position, result);
+            var mat = transform.toMatrix3D();
+            mat.transformVector(localPoint, result);
             return result;
         };
         Transform.vectorToWorldFrame = function (transform, localVector, result) {
+            if (result === void 0) { result = new feng3d.Vector3(); }
             transform.quaternion.rotatePoint(localVector, result);
             return result;
         };
@@ -42875,7 +42830,7 @@ var CANNON;
         Body.prototype.pointToLocalFrame = function (worldPoint, result) {
             var result = result || new feng3d.Vector3();
             worldPoint.subTo(this.position, result);
-            this.quaternion.conjugateTo().rotatePoint(result, result);
+            this.quaternion.inverseTo().rotatePoint(result, result);
             return result;
         };
         /**
@@ -42886,7 +42841,7 @@ var CANNON;
          */
         Body.prototype.vectorToLocalFrame = function (worldVector, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
-            this.quaternion.conjugateTo().rotatePoint(worldVector, result);
+            this.quaternion.inverseTo().rotatePoint(worldVector, result);
             return result;
         };
         /**
@@ -46684,7 +46639,7 @@ var CANNON;
             var local = convexParticle_local;
             local.copy(xi);
             local.subTo(xj, local); // Convert position to relative the convex origin
-            qj.conjugateTo(cqj);
+            qj.inverseTo(cqj);
             cqj.rotatePoint(local, local);
             if (sj.pointIsInside(local)) {
                 if (sj.worldVerticesNeedsUpdate) {

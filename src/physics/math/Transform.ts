@@ -30,11 +30,10 @@ namespace CANNON
          * @param worldPoint
          * @param result
          */
-        static pointToLocalFrame(transform: ITransform, worldPoint: feng3d.Vector3, result = new feng3d.Vector3())
+        static pointToLocalFrame(transform: Transform, worldPoint: feng3d.Vector3, result = new feng3d.Vector3())
         {
-            worldPoint.subTo(transform.position, result);
-            var tmpQuat = transform.quaternion.conjugateTo();
-            tmpQuat.rotatePoint(result, result);
+            var mat = transform.toMatrix3D().invert();
+            mat.transformVector(worldPoint, result);
             return result;
         }
 
@@ -44,14 +43,14 @@ namespace CANNON
          * @param localPoint
          * @param result
          */
-        static pointToWorldFrame(transform: ITransform, localPoint: feng3d.Vector3, result = new feng3d.Vector3())
+        static pointToWorldFrame(transform: Transform, localPoint: feng3d.Vector3, result = new feng3d.Vector3())
         {
-            transform.quaternion.rotatePoint(localPoint, result);
-            result.addTo(transform.position, result);
+            var mat = transform.toMatrix3D();
+            mat.transformVector(localPoint, result);
             return result;
         }
 
-        static vectorToWorldFrame(transform: ITransform, localVector: feng3d.Vector3, result: feng3d.Vector3)
+        static vectorToWorldFrame(transform: ITransform, localVector: feng3d.Vector3, result = new feng3d.Vector3())
         {
             transform.quaternion.rotatePoint(localVector, result);
             return result;

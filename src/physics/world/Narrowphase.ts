@@ -1383,7 +1383,7 @@ namespace CANNON
             var local = convexParticle_local;
             local.copy(xi);
             local.subTo(xj, local); // Convert position to relative the convex origin
-            qj.conjugateTo(cqj);
+            qj.inverseTo(cqj);
             cqj.rotatePoint(local, local);
 
             if (sj.pointIsInside(local))
