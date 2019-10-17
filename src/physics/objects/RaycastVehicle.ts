@@ -484,7 +484,7 @@ namespace CANNON
                     var wheelTrans = this.getWheelTransformWorld(i);
 
                     // Get world axle
-                    Transform.vectorToWorldFrame(wheelTrans, directions[this.indexRightAxis], axlei);
+                    wheelTrans.vectorToWorldFrame(directions[this.indexRightAxis], axlei);
 
                     var surfNormalWS = wheel.raycastResult.hitNormalWorld;
                     var proj = axlei.dot(surfNormalWS);

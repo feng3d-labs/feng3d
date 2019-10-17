@@ -38310,17 +38310,13 @@ var CANNON;
             mat.transformVector(localPoint, result);
             return result;
         };
-        Transform.vectorToWorldFrame = function (transform, localVector, result) {
+        Transform.prototype.vectorToWorldFrame = function (localVector, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
-            transform.quaternion.rotatePoint(localVector, result);
-            return result;
+            return this.toMatrix3D().deltaTransformVector(localVector, result);
         };
-        Transform.vectorToLocalFrame = function (transform, worldVector, result) {
+        Transform.prototype.vectorToLocalFrame = function (worldVector, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
-            transform.quaternion.w *= -1;
-            transform.quaternion.rotatePoint(worldVector, result);
-            transform.quaternion.w *= -1;
-            return result;
+            return this.toMatrix3D().invert().deltaTransformVector(worldVector, result);
         };
         return Transform;
     }());
@@ -39635,7 +39631,7 @@ var CANNON;
             var vs = hull.vertices;
             localOrigin.setZero();
             // Transform the axis to local
-            CANNON.Transform.vectorToLocalFrame(transform, axis, localAxis);
+            transform.vectorToLocalFrame(axis, localAxis);
             transform.pointToLocalFrame(localOrigin, localOrigin);
             var add = localOrigin.dot(localAxis);
             min = max = vs[0].dot(localAxis);
@@ -42218,7 +42214,7 @@ var CANNON;
             treeTransform.position.copy(position);
             treeTransform.quaternion.copy(quat);
             // Transform ray to local space!
-            CANNON.Transform.vectorToLocalFrame(treeTransform, direction, localDirection);
+            treeTransform.vectorToLocalFrame(direction, localDirection);
             treeTransform.pointToLocalFrame(from, localFrom);
             treeTransform.pointToLocalFrame(to, localTo);
             localTo.x *= mesh.scale.x;
@@ -42266,7 +42262,7 @@ var CANNON;
                     continue;
                 }
                 // transform intersectpoint and normal to world
-                CANNON.Transform.vectorToWorldFrame(treeTransform, normal, worldNormal);
+                treeTransform.vectorToWorldFrame(normal, worldNormal);
                 treeTransform.pointToWorldFrame(intersectPoint, worldIntersectPoint);
                 this.reportIntersection(worldNormal, worldIntersectPoint, reportedShape, body, trianglesIndex);
             }
@@ -43473,7 +43469,7 @@ var CANNON;
                     var axlei = axle[i];
                     var wheelTrans = this.getWheelTransformWorld(i);
                     // Get world axle
-                    CANNON.Transform.vectorToWorldFrame(wheelTrans, directions[this.indexRightAxis], axlei);
+                    wheelTrans.vectorToWorldFrame(directions[this.indexRightAxis], axlei);
                     var surfNormalWS = wheel.raycastResult.hitNormalWorld;
                     var proj = axlei.dot(surfNormalWS);
                     surfNormalWS.scaleNumberTo(proj, surfNormalWS_scaled_proj);
@@ -45760,8 +45756,8 @@ var CANNON;
                             r.ni.scaleNumberTo(sphereShape.radius, r.ri);
                             trimeshTransform.pointToWorldFrame(tmp, tmp);
                             tmp.subTo(trimeshBody.position, r.rj);
-                            CANNON.Transform.vectorToWorldFrame(trimeshTransform, r.ni, r.ni);
-                            CANNON.Transform.vectorToWorldFrame(trimeshTransform, r.ri, r.ri);
+                            trimeshTransform.vectorToWorldFrame(r.ni, r.ni);
+                            trimeshTransform.vectorToWorldFrame(r.ri, r.ri);
                             this.result.push(r);
                             this.createFrictionEquationsFromContact(r, this.frictionResult);
                         }
@@ -45792,8 +45788,8 @@ var CANNON;
                     r.ni.scaleNumberTo(sphereShape.radius, r.ri);
                     trimeshTransform.pointToWorldFrame(tmp, tmp);
                     tmp.subTo(trimeshBody.position, r.rj);
-                    CANNON.Transform.vectorToWorldFrame(trimeshTransform, r.ni, r.ni);
-                    CANNON.Transform.vectorToWorldFrame(trimeshTransform, r.ri, r.ri);
+                    trimeshTransform.vectorToWorldFrame(r.ni, r.ni);
+                    trimeshTransform.vectorToWorldFrame(r.ri, r.ri);
                     this.result.push(r);
                     this.createFrictionEquationsFromContact(r, this.frictionResult);
                 }

@@ -568,8 +568,8 @@ namespace CANNON
                             trimeshTransform.pointToWorldFrame(tmp, tmp);
                             tmp.subTo(trimeshBody.position, r.rj);
 
-                            Transform.vectorToWorldFrame(trimeshTransform, r.ni, r.ni);
-                            Transform.vectorToWorldFrame(trimeshTransform, r.ri, r.ri);
+                            trimeshTransform.vectorToWorldFrame(r.ni, r.ni);
+                            trimeshTransform.vectorToWorldFrame(r.ri, r.ri);
 
                             this.result.push(r);
                             this.createFrictionEquationsFromContact(r, this.frictionResult);
@@ -609,8 +609,8 @@ namespace CANNON
                     trimeshTransform.pointToWorldFrame(tmp, tmp);
                     tmp.subTo(trimeshBody.position, r.rj);
 
-                    Transform.vectorToWorldFrame(trimeshTransform, r.ni, r.ni);
-                    Transform.vectorToWorldFrame(trimeshTransform, r.ri, r.ri);
+                    trimeshTransform.vectorToWorldFrame(r.ni, r.ni);
+                    trimeshTransform.vectorToWorldFrame(r.ri, r.ri);
 
                     this.result.push(r);
                     this.createFrictionEquationsFromContact(r, this.frictionResult);

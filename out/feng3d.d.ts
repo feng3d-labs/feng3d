@@ -17416,8 +17416,8 @@ declare namespace CANNON {
          * @param result
          */
         pointToWorldFrame(localPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
-        static vectorToWorldFrame(transform: Transform, localVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
-        static vectorToLocalFrame(transform: Transform, worldVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        vectorToWorldFrame(localVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        vectorToLocalFrame(worldVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
     }
 }
 declare namespace CANNON {

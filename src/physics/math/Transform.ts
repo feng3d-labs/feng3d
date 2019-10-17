@@ -40,18 +40,14 @@ namespace CANNON
             return result;
         }
 
-        static vectorToWorldFrame(transform: Transform, localVector: feng3d.Vector3, result = new feng3d.Vector3())
+        vectorToWorldFrame(localVector: feng3d.Vector3, result = new feng3d.Vector3())
         {
-            transform.quaternion.rotatePoint(localVector, result);
-            return result;
+            return this.toMatrix3D().deltaTransformVector(localVector, result);
         }
 
-        static vectorToLocalFrame(transform: Transform, worldVector: feng3d.Vector3, result = new feng3d.Vector3())
+        vectorToLocalFrame(worldVector: feng3d.Vector3, result = new feng3d.Vector3())
         {
-            transform.quaternion.w *= -1;
-            transform.quaternion.rotatePoint(worldVector, result);
-            transform.quaternion.w *= -1;
-            return result;
+            return this.toMatrix3D().invert().deltaTransformVector(worldVector, result);
         }
     }
 }

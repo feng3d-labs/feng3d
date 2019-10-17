@@ -3170,23 +3170,22 @@ QUnit.module("Transform", function () {
         var v1 = trans.pointToWorldFrame(v);
         var v2 = trans.pointToLocalFrame(v1);
         assert.ok(v.equals(v2));
-        var v = feng3d.Vector3.random();
-        var v1 = trans.pointToLocalFrame(v);
-        var v2 = trans.pointToWorldFrame(v1);
-        assert.ok(v.equals(v2));
     });
     QUnit.test("vectorToWorldFrame,vectorToLocalFrame", function (assert) {
         var trans = new CANNON.Transform();
         trans.position = feng3d.Vector3.random();
         trans.quaternion = feng3d.Quaternion.random();
         var v = feng3d.Vector3.random();
-        var v1 = CANNON.Transform.vectorToWorldFrame(trans, v);
-        var v2 = CANNON.Transform.vectorToLocalFrame(trans, v1);
+        var v1 = trans.vectorToWorldFrame(v);
+        var v2 = trans.vectorToLocalFrame(v1);
         assert.ok(v.equals(v2));
-        var v = feng3d.Vector3.random();
-        var v1 = CANNON.Transform.vectorToLocalFrame(trans, v);
-        var v2 = CANNON.Transform.vectorToWorldFrame(trans, v1);
-        assert.ok(v.equals(v2));
+        var mat = trans.toMatrix3D();
+        var v3 = mat.deltaTransformVector(v);
+        mat.invert();
+        var v4 = mat.deltaTransformVector(v3);
+        assert.ok(v.equals(v4));
+        assert.ok(v1.equals(v3));
+        assert.ok(v2.equals(v4));
     });
 });
 QUnit.module("Array", function () {

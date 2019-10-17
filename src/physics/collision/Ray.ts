@@ -550,7 +550,7 @@ namespace CANNON
             treeTransform.quaternion.copy(quat);
 
             // Transform ray to local space!
-            Transform.vectorToLocalFrame(treeTransform, direction, localDirection);
+            treeTransform.vectorToLocalFrame(direction, localDirection);
             treeTransform.pointToLocalFrame(from, localFrom);
             treeTransform.pointToLocalFrame(to, localTo);
 
@@ -620,7 +620,7 @@ namespace CANNON
                 }
 
                 // transform intersectpoint and normal to world
-                Transform.vectorToWorldFrame(treeTransform, normal, worldNormal);
+                treeTransform.vectorToWorldFrame(normal, worldNormal);
                 treeTransform.pointToWorldFrame(intersectPoint, worldIntersectPoint);
                 this.reportIntersection(worldNormal, worldIntersectPoint, reportedShape, body, trianglesIndex);
             }

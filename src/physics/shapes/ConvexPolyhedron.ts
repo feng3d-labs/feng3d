@@ -945,7 +945,7 @@ namespace CANNON
             localOrigin.setZero();
 
             // Transform the axis to local
-            Transform.vectorToLocalFrame(transform, axis, localAxis);
+            transform.vectorToLocalFrame(axis, localAxis);
             transform.pointToLocalFrame(localOrigin, localOrigin);
             var add = localOrigin.dot(localAxis);
 
