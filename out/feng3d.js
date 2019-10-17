@@ -13664,7 +13664,7 @@ var feng3d;
          * @param position 射线起点
          * @param direction 射线方向
          * @param targetNormal 相交处法线
-         * @return 起点到box距离
+         * @return 起点到包围盒距离
          */
         AABB.prototype.rayIntersection = function (position, direction, targetNormal) {
             if (this.containsPoint(position))
@@ -13926,36 +13926,6 @@ var feng3d;
             // 下
             feng3d.Triangle3D.fromPoints(new feng3d.Vector3(min.x, min.y, min.z), new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(min.x, min.y, max.z)), feng3d.Triangle3D.fromPoints(new feng3d.Vector3(max.x, min.y, min.z), new feng3d.Vector3(max.x, min.y, max.z), new feng3d.Vector3(min.x, min.y, max.z)));
             return triangles;
-        };
-        /**
-         * Get the representation of an AABB in another frame.
-         * @param frame
-         * @param target
-         * @return The "target" AABB object.
-         */
-        AABB.prototype.toLocalFrame = function (frame, target) {
-            var mat = frame.toMatrix3D();
-            mat.invert();
-            target.copy(this).applyMatrix3D(mat);
-            return target;
-        };
-        /**
-         * Get the representation of an AABB in the global frame.
-         * @param frame
-         * @param target
-         * @return The "target" AABB object.
-         */
-        AABB.prototype.toWorldFrame = function (frame, target) {
-            var mat = frame.toMatrix3D();
-            target.copy(this).applyMatrix3D(mat);
-            return target;
-        };
-        /**
-         * Check if the AABB is hit by a ray.
-         */
-        AABB.prototype.overlapsRay = function (ray) {
-            var dis = this.rayIntersection(ray.from, ray._direction);
-            return dis != -1;
         };
         return AABB;
     }());
@@ -40820,7 +40790,8 @@ var CANNON;
             var result = new feng3d.AABB();
             frame.position = pos;
             frame.quaternion = quat;
-            this.aabb.toWorldFrame(frame, result);
+            var mat = frame.toMatrix3D();
+            result.copy(this.aabb).applyMatrix3D(mat);
             min.copy(result.min);
             max.copy(result.max);
         };
@@ -40898,6 +40869,7 @@ var CANNON;
             var u = aabb.max;
             var children = this.children;
             children.push(new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 0, 0)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 0, 0)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 1, 0)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 1, 1)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 1, 1)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 0, 1)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 0, 1)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 1, 0)) }));
+            var halfDiagonal = new feng3d.Vector3();
             u.subTo(l, halfDiagonal);
             halfDiagonal.scaleNumberTo(0.5, halfDiagonal);
             var root = this.root || this;
@@ -40955,10 +40927,11 @@ var CANNON;
          * @return The "result" object
          */
         OctreeNode.prototype.rayQuery = function (ray, treeTransform, result) {
-            // Use aabb query for now.
-            // @todo implement real ray query which needs less lookups
+            var tmpAABB = new feng3d.AABB();
             ray.getAABB(tmpAABB);
-            tmpAABB.toLocalFrame(treeTransform, tmpAABB);
+            var mat = treeTransform.toMatrix3D();
+            mat.invert();
+            tmpAABB.applyMatrix3D(mat);
             this.aabbQuery(tmpAABB, result);
             return result;
         };
@@ -40997,8 +40970,6 @@ var CANNON;
         return Octree;
     }(OctreeNode));
     CANNON.Octree = Octree;
-    var halfDiagonal = new feng3d.Vector3();
-    var tmpAABB = new feng3d.AABB();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -42094,7 +42065,7 @@ var CANNON;
                         return;
                     }
                     shape.getAabbAtIndex(i, j, aabb);
-                    if (!aabb.overlapsRay(localRay)) {
+                    if (aabb.rayIntersection(localRay.from, localRay._direction) < 0) {
                         continue;
                     }
                     // Lower triangle
@@ -45373,7 +45344,7 @@ var CANNON;
             var bodies = this.bodies;
             var N = bodies.length;
             for (var i = 0; i !== N; i++) {
-                var b = bodies[i], force = b.force, tau = b.torque;
+                var b = bodies[i];
                 b.force.init(0, 0, 0);
                 b.torque.init(0, 0, 0);
             }
@@ -45397,7 +45368,6 @@ var CANNON;
             return Date.now() - nowOffset;
         };
     }
-    var step_tmp1 = new feng3d.Vector3();
     /**
      * Dispatched after the world has stepped forward in time.
      */
@@ -45411,16 +45381,6 @@ var CANNON;
     var World_step_frictionEquationPool = [];
     var World_step_p1 = []; // Reusable arrays for collision pairs
     var World_step_p2 = [];
-    var World_step_gvec = new feng3d.Vector3(); // Temporary vectors and quats
-    var World_step_vi = new feng3d.Vector3();
-    var World_step_vj = new feng3d.Vector3();
-    var World_step_wi = new feng3d.Vector3();
-    var World_step_wj = new feng3d.Vector3();
-    var World_step_t1 = new feng3d.Vector3();
-    var World_step_t2 = new feng3d.Vector3();
-    var World_step_rixn = new feng3d.Vector3();
-    var World_step_rjxn = new feng3d.Vector3();
-    var invI_tau_dt = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {

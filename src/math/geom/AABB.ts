@@ -299,7 +299,7 @@ namespace feng3d
          * @param position 射线起点
          * @param direction 射线方向
          * @param targetNormal 相交处法线
-         * @return 起点到box距离
+         * @return 起点到包围盒距离
          */
         rayIntersection(position: Vector3, direction: Vector3, targetNormal?: Vector3)
         {
@@ -630,42 +630,6 @@ namespace feng3d
                 Triangle3D.fromPoints(new Vector3(max.x, min.y, min.z), new Vector3(max.x, min.y, max.z), new Vector3(min.x, min.y, max.z)),
             );
             return triangles;
-        }
-
-        /**
-         * Get the representation of an AABB in another frame.
-         * @param frame
-         * @param target
-         * @return The "target" AABB object.
-         */
-        toLocalFrame(frame: CANNON.Transform, target: AABB)
-        {
-            var mat = frame.toMatrix3D();
-            mat.invert();
-            target.copy(this).applyMatrix3D(mat);
-            return target;
-        }
-
-        /**
-         * Get the representation of an AABB in the global frame.
-         * @param frame
-         * @param target
-         * @return The "target" AABB object.
-         */
-        toWorldFrame(frame: CANNON.Transform, target: AABB)
-        {
-            var mat = frame.toMatrix3D();
-            target.copy(this).applyMatrix3D(mat);
-            return target;
-        }
-
-        /**
-         * Check if the AABB is hit by a ray.
-         */
-        overlapsRay(ray: CANNON.Ray)
-        {
-            var dis = this.rayIntersection(ray.from, ray._direction);
-            return dis != -1;
         }
     }
 

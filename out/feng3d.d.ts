@@ -6232,7 +6232,7 @@ declare namespace feng3d {
          * @param position 射线起点
          * @param direction 射线方向
          * @param targetNormal 相交处法线
-         * @return 起点到box距离
+         * @return 起点到包围盒距离
          */
         rayIntersection(position: Vector3, direction: Vector3, targetNormal?: Vector3): number;
         /**
@@ -6295,24 +6295,6 @@ declare namespace feng3d {
          * 转换为三角形列表
          */
         toTriangles(triangles?: Triangle3D[]): Triangle3D[];
-        /**
-         * Get the representation of an AABB in another frame.
-         * @param frame
-         * @param target
-         * @return The "target" AABB object.
-         */
-        toLocalFrame(frame: CANNON.Transform, target: AABB): AABB;
-        /**
-         * Get the representation of an AABB in the global frame.
-         * @param frame
-         * @param target
-         * @return The "target" AABB object.
-         */
-        toWorldFrame(frame: CANNON.Transform, target: AABB): AABB;
-        /**
-         * Check if the AABB is hit by a ray.
-         */
-        overlapsRay(ray: CANNON.Ray): boolean;
     }
 }
 declare namespace feng3d {
@@ -18580,7 +18562,7 @@ declare namespace CANNON {
          * @param result
          * @return The "result" object
          */
-        rayQuery(ray: Ray, treeTransform: Transform, result: any[]): any[];
+        rayQuery(ray: Ray, treeTransform: Transform, result: number[]): number[];
         removeEmptyNodes(): void;
     }
     class Octree extends OctreeNode {

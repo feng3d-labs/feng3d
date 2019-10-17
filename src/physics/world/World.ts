@@ -1038,9 +1038,7 @@ namespace CANNON
             var N = bodies.length;
             for (var i = 0; i !== N; i++)
             {
-                var b = bodies[i],
-                    force = b.force,
-                    tau = b.torque;
+                var b = bodies[i];
 
                 b.force.init(0, 0, 0);
                 b.torque.init(0, 0, 0);
@@ -1072,8 +1070,6 @@ namespace CANNON
         };
     }
 
-    var step_tmp1 = new feng3d.Vector3();
-
     /**
      * Dispatched after the world has stepped forward in time.
      */
@@ -1087,14 +1083,4 @@ namespace CANNON
     var World_step_frictionEquationPool = [];
     var World_step_p1 = []; // Reusable arrays for collision pairs
     var World_step_p2 = [];
-    var World_step_gvec = new feng3d.Vector3(); // Temporary vectors and quats
-    var World_step_vi = new feng3d.Vector3();
-    var World_step_vj = new feng3d.Vector3();
-    var World_step_wi = new feng3d.Vector3();
-    var World_step_wj = new feng3d.Vector3();
-    var World_step_t1 = new feng3d.Vector3();
-    var World_step_t2 = new feng3d.Vector3();
-    var World_step_rixn = new feng3d.Vector3();
-    var World_step_rjxn = new feng3d.Vector3();
-    var invI_tau_dt = new feng3d.Vector3();
 }

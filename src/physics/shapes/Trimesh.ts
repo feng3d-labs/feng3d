@@ -404,7 +404,10 @@ namespace CANNON
             var result = new feng3d.AABB();
             frame.position = pos;
             frame.quaternion = quat;
-            this.aabb.toWorldFrame(frame, result);
+
+            var mat = frame.toMatrix3D();
+            result.copy(this.aabb).applyMatrix3D(mat);
+
             min.copy(result.min);
             max.copy(result.max);
         };

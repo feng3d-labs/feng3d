@@ -324,7 +324,7 @@ namespace CANNON
                     }
 
                     shape.getAabbAtIndex(i, j, aabb);
-                    if (!aabb.overlapsRay(localRay))
+                    if (aabb.rayIntersection(localRay.from, localRay._direction) < 0)
                     {
                         continue;
                     }

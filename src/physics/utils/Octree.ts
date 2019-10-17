@@ -113,6 +113,7 @@ namespace CANNON
                 new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 1, 0)) })
             );
 
+            var halfDiagonal = new feng3d.Vector3();
             u.subTo(l, halfDiagonal);
             halfDiagonal.scaleNumberTo(0.5, halfDiagonal);
 
@@ -188,15 +189,16 @@ namespace CANNON
          * @param result
          * @return The "result" object
          */
-        rayQuery(ray: Ray, treeTransform: Transform, result: any[])
+        rayQuery(ray: Ray, treeTransform: Transform, result: number[])
         {
-
-            // Use aabb query for now.
-            // @todo implement real ray query which needs less lookups
+            var tmpAABB = new feng3d.AABB();
             ray.getAABB(tmpAABB);
-            tmpAABB.toLocalFrame(treeTransform, tmpAABB);
-            this.aabbQuery(tmpAABB, result);
 
+            var mat = treeTransform.toMatrix3D();
+            mat.invert();
+            tmpAABB.applyMatrix3D(mat);
+
+            this.aabbQuery(tmpAABB, result);
             return result;
         }
 
@@ -241,8 +243,4 @@ namespace CANNON
             this.maxDepth = typeof (options.maxDepth) !== 'undefined' ? options.maxDepth : 8;
         }
     }
-
-    var halfDiagonal = new feng3d.Vector3();
-
-    var tmpAABB = new feng3d.AABB();
 }
