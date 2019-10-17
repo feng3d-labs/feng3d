@@ -40964,66 +40964,6 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
-    var ArrayCollisionMatrix = /** @class */ (function () {
-        /**
-         * Collision "matrix". It's actually a triangular-shaped array of whether two bodies are touching this step, for reference next step
-         */
-        function ArrayCollisionMatrix() {
-            this.matrix = [];
-        }
-        /**
-         * Get an element
-         *
-         * @param i
-         * @param j
-         */
-        ArrayCollisionMatrix.prototype.get = function (i0, j0) {
-            var i = i0.index;
-            var j = j0.index;
-            if (j > i) {
-                var temp = j;
-                j = i;
-                i = temp;
-            }
-            return this.matrix[(i * (i + 1) >> 1) + j - 1];
-        };
-        /**
-         * Set an element
-         *
-         * @param i0
-         * @param j0
-         * @param value
-         */
-        ArrayCollisionMatrix.prototype.set = function (i0, j0, value) {
-            var i = i0.index;
-            var j = j0.index;
-            if (j > i) {
-                var temp = j;
-                j = i;
-                i = temp;
-            }
-            this.matrix[(i * (i + 1) >> 1) + j - 1] = value ? 1 : 0;
-        };
-        /**
-         * Sets all elements to zero
-         */
-        ArrayCollisionMatrix.prototype.reset = function () {
-            for (var i = 0, l = this.matrix.length; i !== l; i++) {
-                this.matrix[i] = 0;
-            }
-        };
-        /**
-         * Sets the max number of objects
-         */
-        ArrayCollisionMatrix.prototype.setNumObjects = function (n) {
-            this.matrix.length = n * (n - 1) >> 1;
-        };
-        return ArrayCollisionMatrix;
-    }());
-    CANNON.ArrayCollisionMatrix = ArrayCollisionMatrix;
-})(CANNON || (CANNON = {}));
-var CANNON;
-(function (CANNON) {
     var ObjectCollisionMatrix = /** @class */ (function () {
         /**
          * Records what objects are colliding with each other
@@ -44630,6 +44570,11 @@ var CANNON;
         function World(options) {
             if (options === void 0) { options = {}; }
             var _this = _super.call(this) || this;
+            _this.collisionMatrix = {};
+            /**
+             * CollisionMatrix from the previous step.
+             */
+            _this.collisionMatrixPrevious = {};
             _this.profile = {
                 solve: 0,
                 makeContactConstraints: 0,
@@ -44752,8 +44697,8 @@ var CANNON;
             _this.solver = options.solver !== undefined ? options.solver : new CANNON.GSSolver();
             _this.constraints = [];
             _this.narrowphase = new CANNON.Narrowphase(_this);
-            _this.collisionMatrix = new CANNON.ArrayCollisionMatrix();
-            _this.collisionMatrixPrevious = new CANNON.ArrayCollisionMatrix();
+            _this.collisionMatrix = {};
+            _this.collisionMatrixPrevious = {};
             _this.bodyOverlapKeeper = new CANNON.OverlapKeeper();
             _this.shapeOverlapKeeper = new CANNON.OverlapKeeper();
             _this.materials = [];
@@ -44806,7 +44751,7 @@ var CANNON;
             var temp = this.collisionMatrixPrevious;
             this.collisionMatrixPrevious = this.collisionMatrix;
             this.collisionMatrix = temp;
-            this.collisionMatrix.reset();
+            this.collisionMatrix = {};
             this.bodyOverlapKeeper.tick();
             this.shapeOverlapKeeper.tick();
         };
@@ -44832,7 +44777,6 @@ var CANNON;
                 body.initAngularVelocity.copy(body.angularVelocity);
                 body.initQuaternion.copy(body.quaternion);
             }
-            this.collisionMatrix.setNumObjects(this.bodies.length);
             this.addBodyEvent.body = body;
             this.idToBodyMap[body.id] = body;
             this.dispatchEvent(this.addBodyEvent);
@@ -44859,7 +44803,6 @@ var CANNON;
                 body.initAngularVelocity.copy(body.angularVelocity);
                 body.initQuaternion.copy(body.quaternion);
             }
-            this.collisionMatrix.setNumObjects(this.bodies.length);
             this.addBodyEvent.body = body;
             this.idToBodyMap[body.id] = body;
             this.dispatchEvent(this.addBodyEvent);
@@ -44966,7 +44909,6 @@ var CANNON;
                 for (var i = 0; i !== bodies.length; i++) {
                     bodies[i].index = i;
                 }
-                this.collisionMatrix.setNumObjects(n);
                 this.removeBodyEvent.body = body;
                 delete this.idToBodyMap[body.id];
                 this.dispatchEvent(this.removeBodyEvent);
@@ -44985,7 +44927,6 @@ var CANNON;
                 for (var i = 0; i !== bodies.length; i++) {
                     bodies[i].index = i;
                 }
-                this.collisionMatrix.setNumObjects(n);
                 this.removeBodyEvent.body = body;
                 delete this.idToBodyMap[body.id];
                 this.dispatchEvent(this.removeBodyEvent);
@@ -45225,8 +45166,9 @@ var CANNON;
                     }
                 }
                 // Now we know that i and j are in contact. Set collision matrix state
-                this.collisionMatrix.set(bi, bj, true);
-                if (!this.collisionMatrixPrevious.get(bi, bj)) {
+                this.collisionMatrix[bi.index + "_" + bj.index] = true;
+                this.collisionMatrix[bj.index + "_" + bi.index] = true;
+                if (!this.collisionMatrixPrevious[bj.index + "_" + bi.index]) {
                     // First contact!
                     // We reuse the collideEvent object, otherwise we will end up creating new objects for each new contact, even if there's no event listener attached.
                     World_step_collideEvent.body = bj;
@@ -47068,6 +47010,7 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

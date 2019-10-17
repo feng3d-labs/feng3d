@@ -375,8 +375,6 @@
         "src/physics/shapes/Sphere.ts",
         "src/physics/shapes/Trimesh.ts",
         "src/physics/utils/Octree.ts",
-        "src/physics/collision/ArrayCollisionMatrix.ts",
-        "src/physics/collision/ObjectCollisionMatrix.ts",
         "src/physics/collision/OverlapKeeper.ts",
         "src/physics/collision/RaycastResult.ts",
         "src/physics/collision/Broadphase.ts",

@@ -61,12 +61,12 @@ namespace CANNON
 
         narrowphase: Narrowphase;
 
-        collisionMatrix: ArrayCollisionMatrix;
+        collisionMatrix: { [key: string]: boolean } = {}
 
         /**
          * CollisionMatrix from the previous step.
          */
-        collisionMatrixPrevious: ArrayCollisionMatrix;
+        collisionMatrixPrevious: { [key: string]: boolean } = {}
 
         bodyOverlapKeeper: OverlapKeeper;
         shapeOverlapKeeper: OverlapKeeper;
@@ -153,8 +153,8 @@ namespace CANNON
             this.solver = options.solver !== undefined ? options.solver : new GSSolver();
             this.constraints = [];
             this.narrowphase = new Narrowphase(this);
-            this.collisionMatrix = new ArrayCollisionMatrix();
-            this.collisionMatrixPrevious = new ArrayCollisionMatrix();
+            this.collisionMatrix = {};
+            this.collisionMatrixPrevious = {};
 
             this.bodyOverlapKeeper = new OverlapKeeper();
             this.shapeOverlapKeeper = new OverlapKeeper();
@@ -216,7 +216,7 @@ namespace CANNON
             var temp = this.collisionMatrixPrevious;
             this.collisionMatrixPrevious = this.collisionMatrix;
             this.collisionMatrix = temp;
-            this.collisionMatrix.reset();
+            this.collisionMatrix = {};
 
             this.bodyOverlapKeeper.tick();
             this.shapeOverlapKeeper.tick();
@@ -247,7 +247,6 @@ namespace CANNON
                 body.initAngularVelocity.copy(body.angularVelocity);
                 body.initQuaternion.copy(body.quaternion);
             }
-            this.collisionMatrix.setNumObjects(this.bodies.length);
             this.addBodyEvent.body = body;
             this.idToBodyMap[body.id] = body;
             this.dispatchEvent(this.addBodyEvent);
@@ -278,7 +277,6 @@ namespace CANNON
                 body.initAngularVelocity.copy(body.angularVelocity);
                 body.initQuaternion.copy(body.quaternion);
             }
-            this.collisionMatrix.setNumObjects(this.bodies.length);
             this.addBodyEvent.body = body;
             this.idToBodyMap[body.id] = body;
             this.dispatchEvent(this.addBodyEvent);
@@ -406,7 +404,6 @@ namespace CANNON
                     bodies[i].index = i;
                 }
 
-                this.collisionMatrix.setNumObjects(n);
                 this.removeBodyEvent.body = body;
                 delete this.idToBodyMap[body.id];
                 this.dispatchEvent(this.removeBodyEvent);
@@ -433,7 +430,6 @@ namespace CANNON
                     bodies[i].index = i;
                 }
 
-                this.collisionMatrix.setNumObjects(n);
                 this.removeBodyEvent.body = body;
                 delete this.idToBodyMap[body.id];
                 this.dispatchEvent(this.removeBodyEvent);
@@ -782,9 +778,10 @@ namespace CANNON
                 }
 
                 // Now we know that i and j are in contact. Set collision matrix state
-                this.collisionMatrix.set(bi, bj, true);
+                this.collisionMatrix[bi.index + "_" + bj.index] = true;
+                this.collisionMatrix[bj.index + "_" + bi.index] = true;
 
-                if (!this.collisionMatrixPrevious.get(bi, bj))
+                if (!this.collisionMatrixPrevious[bj.index + "_" + bi.index])
                 {
                     // First contact!
                     // We reuse the collideEvent object, otherwise we will end up creating new objects for each new contact, even if there's no event listener attached.

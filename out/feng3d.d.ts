@@ -18577,46 +18577,6 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    class ArrayCollisionMatrix {
-        matrix: number[];
-        /**
-         * Collision "matrix". It's actually a triangular-shaped array of whether two bodies are touching this step, for reference next step
-         */
-        constructor();
-        /**
-         * Get an element
-         *
-         * @param i
-         * @param j
-         */
-        get(i0: {
-            index: number;
-        }, j0: {
-            index: number;
-        }): number;
-        /**
-         * Set an element
-         *
-         * @param i0
-         * @param j0
-         * @param value
-         */
-        set(i0: {
-            index: number;
-        }, j0: {
-            index: number;
-        }, value: boolean): void;
-        /**
-         * Sets all elements to zero
-         */
-        reset(): void;
-        /**
-         * Sets the max number of objects
-         */
-        setNumObjects(n: number): void;
-    }
-}
-declare namespace CANNON {
     class ObjectCollisionMatrix {
         /**
          * The matrix storage
@@ -20122,11 +20082,15 @@ declare namespace CANNON {
         solver: Solver;
         constraints: Constraint[];
         narrowphase: Narrowphase;
-        collisionMatrix: ArrayCollisionMatrix;
+        collisionMatrix: {
+            [key: string]: boolean;
+        };
         /**
          * CollisionMatrix from the previous step.
          */
-        collisionMatrixPrevious: ArrayCollisionMatrix;
+        collisionMatrixPrevious: {
+            [key: string]: boolean;
+        };
         bodyOverlapKeeper: OverlapKeeper;
         shapeOverlapKeeper: OverlapKeeper;
         /**
