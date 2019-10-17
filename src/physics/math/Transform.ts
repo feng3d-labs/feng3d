@@ -24,9 +24,7 @@ namespace CANNON
          */
         pointToLocalFrame(worldPoint: feng3d.Vector3, result = new feng3d.Vector3())
         {
-            var mat = this.toMatrix3D().invert();
-            mat.transformVector(worldPoint, result);
-            return result;
+            return this.toMatrix3D().invert().transformVector(worldPoint, result);
         }
 
         /**
@@ -35,9 +33,7 @@ namespace CANNON
          */
         pointToWorldFrame(localPoint: feng3d.Vector3, result = new feng3d.Vector3())
         {
-            var mat = this.toMatrix3D();
-            mat.transformVector(localPoint, result);
-            return result;
+            return this.toMatrix3D().transformVector(localPoint, result);
         }
 
         vectorToWorldFrame(localVector: feng3d.Vector3, result = new feng3d.Vector3())

@@ -38296,9 +38296,7 @@ var CANNON;
          */
         Transform.prototype.pointToLocalFrame = function (worldPoint, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
-            var mat = this.toMatrix3D().invert();
-            mat.transformVector(worldPoint, result);
-            return result;
+            return this.toMatrix3D().invert().transformVector(worldPoint, result);
         };
         /**
          * @param localPoint
@@ -38306,9 +38304,7 @@ var CANNON;
          */
         Transform.prototype.pointToWorldFrame = function (localPoint, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
-            var mat = this.toMatrix3D();
-            mat.transformVector(localPoint, result);
-            return result;
+            return this.toMatrix3D().transformVector(localPoint, result);
         };
         Transform.prototype.vectorToWorldFrame = function (localVector, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
