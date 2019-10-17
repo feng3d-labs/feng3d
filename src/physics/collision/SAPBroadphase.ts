@@ -300,7 +300,7 @@ namespace CANNON
          * @param aabb
          * @param result An array to store resulting bodies in.
          */
-        aabbQuery(world: World, aabb: AABB, result: any[])
+        aabbQuery(world: World, aabb: feng3d.AABB, result: any[])
         {
             result = result || [];
 

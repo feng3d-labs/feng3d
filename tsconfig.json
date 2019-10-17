@@ -373,7 +373,6 @@
         "src/physics/shapes/Particle.ts",
         "src/physics/shapes/Plane.ts",
         "src/physics/shapes/Sphere.ts",
-        "src/physics/collision/AABB.ts",
         "src/physics/shapes/Trimesh.ts",
         "src/physics/utils/Octree.ts",
         "src/physics/collision/ArrayCollisionMatrix.ts",

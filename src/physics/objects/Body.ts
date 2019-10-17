@@ -171,7 +171,7 @@ namespace CANNON
         /**
          * World space bounding box of the body and its shapes.
          */
-        aabb: AABB;
+        aabb: feng3d.AABB;
 
         /**
          * Indicates if the AABB needs to be updated before use.
@@ -300,7 +300,7 @@ namespace CANNON
             {
                 this.angularFactor.copy(options.angularFactor);
             }
-            this.aabb = new AABB();
+            this.aabb = new feng3d.AABB();
             this.aabbNeedsUpdate = true;
             this.boundingRadius = 0;
 
@@ -857,5 +857,5 @@ namespace CANNON
     var uiw_m2 = new feng3d.Matrix3x3();
     var uiw_m3 = new feng3d.Matrix3x3();
 
-    var computeAABB_shapeAABB = new AABB();
+    var computeAABB_shapeAABB = new feng3d.AABB();
 }

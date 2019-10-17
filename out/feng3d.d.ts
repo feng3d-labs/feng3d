@@ -18228,7 +18228,7 @@ declare namespace CANNON {
          * @param yi
          * @param result
          */
-        getAabbAtIndex(xi: number, yi: number, result: AABB): void;
+        getAabbAtIndex(xi: number, yi: number, result: feng3d.AABB): void;
         /**
          * 获取指定位置高度
          *
@@ -18368,78 +18368,6 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    class AABB {
-        /**
-         * The lower bound of the bounding box.
-         */
-        min: feng3d.Vector3;
-        /**
-         * The upper bound of the bounding box.
-         */
-        max: feng3d.Vector3;
-        /**
-         *
-         * @param options
-         *
-         * Axis aligned bounding box class.
-         */
-        constructor(min?: feng3d.Vector3, max?: feng3d.Vector3);
-        /**
-         * Set the AABB bounds from a set of points.
-         * @param points An array of Vec3's.
-         * @param position
-         * @param quaternion
-         * @param skinSize
-         * @return The self object
-         */
-        fromPoints(points: feng3d.Vector3[]): this;
-        /**
-         * Copy bounds from an AABB to this AABB
-         * @param aabb Source to copy from
-         * @return The this object, for chainability
-         */
-        copy(aabb: AABB): this;
-        /**
-         * Clone an AABB
-         */
-        clone(): AABB;
-        /**
-         * Extend this AABB so that it covers the given AABB too.
-         * @param aabb
-         */
-        union(aabb: AABB): void;
-        /**
-         * Returns true if the given AABB overlaps this AABB.
-         * @param aabb
-         */
-        intersects(aabb: AABB): boolean;
-        /**
-         * Returns true if the given AABB is fully contained in this AABB.
-         * @param aabb
-         */
-        contains(aabb: AABB): boolean;
-        getCorners(a: feng3d.Vector3, b: feng3d.Vector3, c: feng3d.Vector3, d: feng3d.Vector3, e: feng3d.Vector3, f: feng3d.Vector3, g: feng3d.Vector3, h: feng3d.Vector3): void;
-        /**
-         * Get the representation of an AABB in another frame.
-         * @param frame
-         * @param target
-         * @return The "target" AABB object.
-         */
-        toLocalFrame(frame: Transform, target: AABB): AABB;
-        /**
-         * Get the representation of an AABB in the global frame.
-         * @param frame
-         * @param target
-         * @return The "target" AABB object.
-         */
-        toWorldFrame(frame: Transform, target: AABB): AABB;
-        /**
-         * Check if the AABB is hit by a ray.
-         */
-        overlapsRay(ray: Ray): boolean;
-    }
-}
-declare namespace CANNON {
     /**
      * 三角网格
      */
@@ -18455,7 +18383,7 @@ declare namespace CANNON {
         /**
          * 包围盒
          */
-        aabb: AABB;
+        aabb: feng3d.AABB;
         /**
          * 边数组
          */
@@ -18491,7 +18419,7 @@ declare namespace CANNON {
          * @param aabb
          * @param result 一个整数数组，引用查询的三角形。
          */
-        getTrianglesInAABB(aabb: AABB, result: number[]): number[];
+        getTrianglesInAABB(aabb: feng3d.AABB, result: number[]): number[];
         /**
          * 计算法线
          */
@@ -18571,7 +18499,7 @@ declare namespace CANNON {
          *
          * @param aabb
          */
-        computeLocalAABB(aabb: AABB): void;
+        computeLocalAABB(aabb: feng3d.AABB): void;
         /**
          * 更新包围盒
          */
@@ -18604,7 +18532,7 @@ declare namespace CANNON {
         /**
          * Boundary of this node
          */
-        aabb: AABB;
+        aabb: feng3d.AABB;
         /**
          * Contained data at the current node level.
          * @property {Array} data
@@ -18621,9 +18549,9 @@ declare namespace CANNON {
          */
         constructor(options?: {
             root?: Octree;
-            aabb?: AABB;
+            aabb?: feng3d.AABB;
         });
-        reset(aabb?: AABB, options?: any): void;
+        reset(aabb?: feng3d.AABB, options?: any): void;
         /**
          * Insert data into this node
          *
@@ -18631,7 +18559,7 @@ declare namespace CANNON {
          * @param elementData
          * @return True if successful, otherwise false
          */
-        insert(aabb: AABB, elementData: any, level?: number): boolean;
+        insert(aabb: feng3d.AABB, elementData: any, level?: number): boolean;
         /**
          * Create 8 equally sized children nodes and put them in the .children array.
          */
@@ -18643,7 +18571,7 @@ declare namespace CANNON {
          * @param result
          * @return The "result" object
          */
-        aabbQuery(aabb: AABB, result: number[]): number[];
+        aabbQuery(aabb: feng3d.AABB, result: number[]): number[];
         /**
          * Get all data, potentially intersected by a ray.
          *
@@ -18667,9 +18595,9 @@ declare namespace CANNON {
          * @param {number} [options.maxDepth=8]
          * @extends OctreeNode
          */
-        constructor(aabb?: AABB, options?: {
+        constructor(aabb?: feng3d.AABB, options?: {
             root?: any;
-            aabb?: AABB;
+            aabb?: feng3d.AABB;
             maxDepth?: number;
         });
     }
@@ -18879,7 +18807,7 @@ declare namespace CANNON {
          * @param aabb
          * @param result An array to store resulting bodies in.
          */
-        aabbQuery(world: World, aabb: AABB, result: any[]): any[];
+        aabbQuery(world: World, aabb: feng3d.AABB, result: any[]): any[];
     }
 }
 declare namespace CANNON {
@@ -18933,7 +18861,7 @@ declare namespace CANNON {
          * @param aabb
          * @param result An array to store resulting bodies in.
          */
-        aabbQuery(world: World, aabb: AABB, result: any[]): any[];
+        aabbQuery(world: World, aabb: feng3d.AABB, result: any[]): any[];
     }
 }
 declare namespace CANNON {
@@ -18988,7 +18916,7 @@ declare namespace CANNON {
          * @param aabb
          * @param result An array to store resulting bodies in.
          */
-        aabbQuery(world: World, aabb: AABB, result: any[]): any[];
+        aabbQuery(world: World, aabb: feng3d.AABB, result: any[]): any[];
     }
 }
 declare namespace CANNON {
@@ -19072,7 +19000,7 @@ declare namespace CANNON {
         /**
          * Get the world AABB of the ray.
          */
-        getAABB(result: AABB): void;
+        getAABB(result: feng3d.AABB): void;
         private intersectHeightfield;
         private intersectSphere;
         private intersectConvex;
@@ -19295,7 +19223,7 @@ declare namespace CANNON {
         /**
          * World space bounding box of the body and its shapes.
          */
-        aabb: AABB;
+        aabb: feng3d.AABB;
         /**
          * Indicates if the AABB needs to be updated before use.
          */

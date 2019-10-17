@@ -16,7 +16,7 @@ namespace CANNON
         /**
          * 包围盒
          */
-        aabb: AABB;
+        aabb: feng3d.AABB;
         /**
          * 边数组
          */
@@ -55,7 +55,7 @@ namespace CANNON
 
             this.normals = [];
 
-            this.aabb = new AABB();
+            this.aabb = new feng3d.AABB();
 
             this.edges = null;
 
@@ -79,7 +79,7 @@ namespace CANNON
             tree.aabb.copy(this.aabb);
 
             // Insert all triangles
-            var triangleAABB = new AABB();
+            var triangleAABB = new feng3d.AABB();
             var a = new feng3d.Vector3();
             var b = new feng3d.Vector3();
             var c = new feng3d.Vector3();
@@ -104,9 +104,9 @@ namespace CANNON
          * @param aabb
          * @param result 一个整数数组，引用查询的三角形。
          */
-        getTrianglesInAABB(aabb: AABB, result: number[])
+        getTrianglesInAABB(aabb: feng3d.AABB, result: number[])
         {
-            var unscaledAABB = new AABB();
+            var unscaledAABB = new feng3d.AABB();
             unscaledAABB.copy(aabb);
 
             return this.tree.aabbQuery(unscaledAABB, result);
@@ -302,7 +302,7 @@ namespace CANNON
         {
             // Approximate with box inertia
             // Exact inertia calculation is overkill, but see http://geometrictools.com/Documentation/PolyhedralMassProperties.pdf for the correct way to do it
-            var cli_aabb = new AABB();
+            var cli_aabb = new feng3d.AABB();
             this.computeLocalAABB(cli_aabb);
             var x = cli_aabb.max.x - cli_aabb.min.x,
                 y = cli_aabb.max.y - cli_aabb.min.y,
@@ -319,7 +319,7 @@ namespace CANNON
          * 
          * @param aabb
          */
-        computeLocalAABB(aabb: AABB)
+        computeLocalAABB(aabb: feng3d.AABB)
         {
             var l = aabb.min,
                 u = aabb.max,
@@ -401,7 +401,7 @@ namespace CANNON
         {
             // 使用局部AABB进行更快的近似
             var frame = new Transform();
-            var result = new AABB();
+            var result = new feng3d.AABB();
             frame.position = pos;
             frame.quaternion = quat;
             this.aabb.toWorldFrame(frame, result);

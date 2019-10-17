@@ -102,7 +102,7 @@ namespace CANNON
             this.result.reset();
             this._updateDirection();
 
-            var tmpAABB = new AABB();
+            var tmpAABB = new feng3d.AABB();
             this.getAABB(tmpAABB);
             var tmpArray = [];
             world.broadphase.aabbQuery(world, tmpAABB, tmpArray);
@@ -265,7 +265,7 @@ namespace CANNON
         /**
          * Get the world AABB of the ray.
          */
-        getAABB(result: AABB)
+        getAABB(result: feng3d.AABB)
         {
             var to = this.to;
             var from = this.from;
@@ -297,7 +297,7 @@ namespace CANNON
             iMinX = iMinY = 0;
             iMaxX = iMaxY = shape.data.length - 1;
 
-            var aabb = new AABB();
+            var aabb = new feng3d.AABB();
             localRay.getAABB(aabb);
 
             shape.getIndexOfPosition(aabb.min.x, aabb.min.y, index, true);

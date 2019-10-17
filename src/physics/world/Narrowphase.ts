@@ -1712,7 +1712,7 @@ namespace CANNON
     var sphereTrimesh_va = new feng3d.Vector3();
     var sphereTrimesh_vb = new feng3d.Vector3();
     var sphereTrimesh_vc = new feng3d.Vector3();
-    var sphereTrimesh_localSphereAABB = new AABB();
+    var sphereTrimesh_localSphereAABB = new feng3d.AABB();
     var sphereTrimesh_triangles = [];
 
     var point_on_plane_to_sphere = new feng3d.Vector3();

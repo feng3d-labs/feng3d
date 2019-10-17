@@ -2336,52 +2336,6 @@ var feng3d;
             var triangle2 = new feng3d.Triangle3D(new feng3d.Vector3(1.5, 0, 0), new feng3d.Vector3(0, 1.5, 0), new feng3d.Vector3(1.5, 1.5, 0));
             assert.ok(aabb2.intersectsTriangle(triangle2));
         });
-        QUnit.test("toLocalFrame", function (assert) {
-            var trans = new CANNON.Transform();
-            trans.position = feng3d.Vector3.random();
-            trans.quaternion = feng3d.Quaternion.random();
-            var aabb0 = feng3d.AABB.random();
-            var aabb1 = new CANNON.AABB(aabb0.min, aabb0.max);
-            var aabb2 = new feng3d.AABB();
-            var aabb3 = new CANNON.AABB();
-            aabb0.toLocalFrame(trans, aabb2);
-            aabb1.toLocalFrame(trans, aabb3);
-            var r = aabb2.min.equals(aabb3.min);
-            if (!r) {
-                console.log(aabb2.min, aabb3.min);
-                // debugger;
-            }
-            assert.ok(r);
-            var r = aabb2.max.equals(aabb3.max);
-            if (!r) {
-                console.log(aabb2.max, aabb3.max);
-                // debugger;
-            }
-            assert.ok(r);
-        });
-        QUnit.test("toWorldFrame", function (assert) {
-            var trans = new CANNON.Transform();
-            trans.position = feng3d.Vector3.random();
-            trans.quaternion = feng3d.Quaternion.random();
-            var aabb0 = feng3d.AABB.random();
-            var aabb1 = new CANNON.AABB(aabb0.min, aabb0.max);
-            var aabb2 = new feng3d.AABB();
-            var aabb3 = new CANNON.AABB();
-            aabb0.toWorldFrame(trans, aabb2);
-            aabb1.toWorldFrame(trans, aabb3);
-            var r = aabb2.min.equals(aabb3.min);
-            if (!r) {
-                console.log(aabb2.min, aabb3.min);
-                // debugger;
-            }
-            assert.ok(r);
-            var r = aabb2.max.equals(aabb3.max);
-            if (!r) {
-                console.log(aabb2.max, aabb3.max);
-                // debugger;
-            }
-            assert.ok(r);
-        });
     });
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -3221,7 +3175,7 @@ QUnit.module("Transform", function () {
         var v2 = CANNON.Transform.pointToWorldFrame(trans, v1);
         assert.ok(v.equals(v2));
     });
-    QUnit.test("vectorToWorldFrame,pointToWorldFrame", function (assert) {
+    QUnit.test("vectorToWorldFrame,vectorToLocalFrame", function (assert) {
         var trans = new CANNON.Transform();
         trans.position = feng3d.Vector3.random();
         trans.quaternion = feng3d.Quaternion.random();

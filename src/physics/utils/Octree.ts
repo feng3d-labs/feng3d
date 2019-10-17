@@ -10,7 +10,7 @@ namespace CANNON
         /**
          * Boundary of this node
          */
-        aabb: AABB;
+        aabb: feng3d.AABB;
         /**
          * Contained data at the current node level.
          * @property {Array} data
@@ -27,15 +27,15 @@ namespace CANNON
          * 
          * @param options 
          */
-        constructor(options: { root?: Octree, aabb?: AABB } = {})
+        constructor(options: { root?: Octree, aabb?: feng3d.AABB } = {})
         {
             this.root = options.root || null;
-            this.aabb = options.aabb ? options.aabb.clone() : new AABB();
+            this.aabb = options.aabb ? options.aabb.clone() : new feng3d.AABB();
             this.data = [];
             this.children = [];
         }
 
-        reset(aabb?: AABB, options?: any)
+        reset(aabb?: feng3d.AABB, options?: any)
         {
             this.children.length = this.data.length = 0;
         }
@@ -47,7 +47,7 @@ namespace CANNON
          * @param elementData
          * @return True if successful, otherwise false
          */
-        insert(aabb: AABB, elementData: any, level = 0)
+        insert(aabb: feng3d.AABB, elementData: any, level = 0)
         {
             var nodeData = this.data;
 
@@ -103,14 +103,14 @@ namespace CANNON
             var children = this.children;
 
             children.push(
-                new OctreeNode({ aabb: new AABB(new feng3d.Vector3(0, 0, 0)) }),
-                new OctreeNode({ aabb: new AABB(new feng3d.Vector3(1, 0, 0)) }),
-                new OctreeNode({ aabb: new AABB(new feng3d.Vector3(1, 1, 0)) }),
-                new OctreeNode({ aabb: new AABB(new feng3d.Vector3(1, 1, 1)) }),
-                new OctreeNode({ aabb: new AABB(new feng3d.Vector3(0, 1, 1)) }),
-                new OctreeNode({ aabb: new AABB(new feng3d.Vector3(0, 0, 1)) }),
-                new OctreeNode({ aabb: new AABB(new feng3d.Vector3(1, 0, 1)) }),
-                new OctreeNode({ aabb: new AABB(new feng3d.Vector3(0, 1, 0)) })
+                new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 0, 0)) }),
+                new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 0, 0)) }),
+                new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 1, 0)) }),
+                new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 1, 1)) }),
+                new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 1, 1)) }),
+                new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 0, 1)) }),
+                new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 0, 1)) }),
+                new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 1, 0)) })
             );
 
             u.subTo(l, halfDiagonal);
@@ -145,7 +145,7 @@ namespace CANNON
          * @param result
          * @return The "result" object
          */
-        aabbQuery(aabb: AABB, result: number[])
+        aabbQuery(aabb: feng3d.AABB, result: number[])
         {
             var nodeData = this.data;
 
@@ -232,7 +232,7 @@ namespace CANNON
          * @param {number} [options.maxDepth=8]
          * @extends OctreeNode
          */
-        constructor(aabb?: AABB, options: { root?: any, aabb?: AABB, maxDepth?: number } = {})
+        constructor(aabb?: feng3d.AABB, options: { root?: any, aabb?: feng3d.AABB, maxDepth?: number } = {})
         {
             super(options);
             options.root = null;
@@ -244,5 +244,5 @@ namespace CANNON
 
     var halfDiagonal = new feng3d.Vector3();
 
-    var tmpAABB = new AABB();
+    var tmpAABB = new feng3d.AABB();
 }

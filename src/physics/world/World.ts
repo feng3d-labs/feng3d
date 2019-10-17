@@ -1050,10 +1050,7 @@ namespace CANNON
 
 
     // Temp stuff
-    var tmpAABB1 = new AABB();
-    var tmpArray1 = [];
     var tmpRay = new Ray();
-
 
     // performance.now()
     if (typeof performance === 'undefined')

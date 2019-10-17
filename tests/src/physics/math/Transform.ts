@@ -41,7 +41,7 @@ QUnit.module("Transform", () =>
     });
 
     
-    QUnit.test("vectorToWorldFrame,pointToWorldFrame", (assert) =>
+    QUnit.test("vectorToWorldFrame,vectorToLocalFrame", (assert) =>
     {
         var trans = new CANNON.Transform();
         trans.position = feng3d.Vector3.random();

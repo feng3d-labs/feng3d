@@ -308,7 +308,7 @@ namespace CANNON
          * @param yi
          * @param result
          */
-        getAabbAtIndex(xi: number, yi: number, result: AABB)
+        getAabbAtIndex(xi: number, yi: number, result: feng3d.AABB)
         {
             var data = this.data;
             var elementSize = this.elementSize;

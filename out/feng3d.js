@@ -40525,220 +40525,6 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
-    var AABB = /** @class */ (function () {
-        /**
-         *
-         * @param options
-         *
-         * Axis aligned bounding box class.
-         */
-        function AABB(min, max) {
-            if (min === void 0) { min = new feng3d.Vector3(+Infinity, +Infinity, +Infinity); }
-            if (max === void 0) { max = new feng3d.Vector3(-Infinity, -Infinity, -Infinity); }
-            this.min = min.clone();
-            this.max = max.clone();
-        }
-        /**
-         * Set the AABB bounds from a set of points.
-         * @param points An array of Vec3's.
-         * @param position
-         * @param quaternion
-         * @param skinSize
-         * @return The self object
-         */
-        AABB.prototype.fromPoints = function (points) {
-            var l = this.min, u = this.max;
-            // Set to the first point
-            l.copy(points[0]);
-            u.copy(l);
-            for (var i = 1; i < points.length; i++) {
-                var p = points[i];
-                if (p.x > u.x) {
-                    u.x = p.x;
-                }
-                if (p.x < l.x) {
-                    l.x = p.x;
-                }
-                if (p.y > u.y) {
-                    u.y = p.y;
-                }
-                if (p.y < l.y) {
-                    l.y = p.y;
-                }
-                if (p.z > u.z) {
-                    u.z = p.z;
-                }
-                if (p.z < l.z) {
-                    l.z = p.z;
-                }
-            }
-            return this;
-        };
-        /**
-         * Copy bounds from an AABB to this AABB
-         * @param aabb Source to copy from
-         * @return The this object, for chainability
-         */
-        AABB.prototype.copy = function (aabb) {
-            this.min.copy(aabb.min);
-            this.max.copy(aabb.max);
-            return this;
-        };
-        /**
-         * Clone an AABB
-         */
-        AABB.prototype.clone = function () {
-            return new AABB().copy(this);
-        };
-        /**
-         * Extend this AABB so that it covers the given AABB too.
-         * @param aabb
-         */
-        AABB.prototype.union = function (aabb) {
-            this.min.x = Math.min(this.min.x, aabb.min.x);
-            this.max.x = Math.max(this.max.x, aabb.max.x);
-            this.min.y = Math.min(this.min.y, aabb.min.y);
-            this.max.y = Math.max(this.max.y, aabb.max.y);
-            this.min.z = Math.min(this.min.z, aabb.min.z);
-            this.max.z = Math.max(this.max.z, aabb.max.z);
-        };
-        /**
-         * Returns true if the given AABB overlaps this AABB.
-         * @param aabb
-         */
-        AABB.prototype.intersects = function (aabb) {
-            var l1 = this.min, u1 = this.max, l2 = aabb.min, u2 = aabb.max;
-            //      l2        u2
-            //      |---------|
-            // |--------|
-            // l1       u1
-            var overlapsX = ((l2.x <= u1.x && u1.x <= u2.x) || (l1.x <= u2.x && u2.x <= u1.x));
-            var overlapsY = ((l2.y <= u1.y && u1.y <= u2.y) || (l1.y <= u2.y && u2.y <= u1.y));
-            var overlapsZ = ((l2.z <= u1.z && u1.z <= u2.z) || (l1.z <= u2.z && u2.z <= u1.z));
-            return overlapsX && overlapsY && overlapsZ;
-        };
-        /**
-         * Returns true if the given AABB is fully contained in this AABB.
-         * @param aabb
-         */
-        AABB.prototype.contains = function (aabb) {
-            var l1 = this.min, u1 = this.max, l2 = aabb.min, u2 = aabb.max;
-            //      l2        u2
-            //      |---------|
-            // |---------------|
-            // l1              u1
-            return ((l1.x <= l2.x && u1.x >= u2.x) &&
-                (l1.y <= l2.y && u1.y >= u2.y) &&
-                (l1.z <= l2.z && u1.z >= u2.z));
-        };
-        AABB.prototype.getCorners = function (a, b, c, d, e, f, g, h) {
-            var l = this.min, u = this.max;
-            a.copy(l);
-            b.init(u.x, l.y, l.z);
-            c.init(u.x, u.y, l.z);
-            d.init(l.x, u.y, u.z);
-            e.init(u.x, l.y, l.z);
-            f.init(l.x, u.y, l.z);
-            g.init(l.x, l.y, u.z);
-            h.copy(u);
-        };
-        /**
-         * Get the representation of an AABB in another frame.
-         * @param frame
-         * @param target
-         * @return The "target" AABB object.
-         */
-        AABB.prototype.toLocalFrame = function (frame, target) {
-            var corners = transformIntoFrame_corners;
-            var a = corners[0];
-            var b = corners[1];
-            var c = corners[2];
-            var d = corners[3];
-            var e = corners[4];
-            var f = corners[5];
-            var g = corners[6];
-            var h = corners[7];
-            // Get corners in current frame
-            this.getCorners(a, b, c, d, e, f, g, h);
-            // Transform them to new local frame
-            for (var i = 0; i !== 8; i++) {
-                var corner = corners[i];
-                CANNON.Transform.pointToLocalFrame(frame, corner, corner);
-            }
-            return target.fromPoints(corners);
-        };
-        /**
-         * Get the representation of an AABB in the global frame.
-         * @param frame
-         * @param target
-         * @return The "target" AABB object.
-         */
-        AABB.prototype.toWorldFrame = function (frame, target) {
-            var corners = transformIntoFrame_corners;
-            var a = corners[0];
-            var b = corners[1];
-            var c = corners[2];
-            var d = corners[3];
-            var e = corners[4];
-            var f = corners[5];
-            var g = corners[6];
-            var h = corners[7];
-            // Get corners in current frame
-            this.getCorners(a, b, c, d, e, f, g, h);
-            // Transform them to new local frame
-            for (var i = 0; i !== 8; i++) {
-                var corner = corners[i];
-                CANNON.Transform.pointToWorldFrame(frame, corner, corner);
-            }
-            return target.fromPoints(corners);
-        };
-        /**
-         * Check if the AABB is hit by a ray.
-         */
-        AABB.prototype.overlapsRay = function (ray) {
-            // ray.direction is unit direction vector of ray
-            var dirFracX = 1 / ray._direction.x;
-            var dirFracY = 1 / ray._direction.y;
-            var dirFracZ = 1 / ray._direction.z;
-            // this.lowerBound is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
-            var t1 = (this.min.x - ray.from.x) * dirFracX;
-            var t2 = (this.max.x - ray.from.x) * dirFracX;
-            var t3 = (this.min.y - ray.from.y) * dirFracY;
-            var t4 = (this.max.y - ray.from.y) * dirFracY;
-            var t5 = (this.min.z - ray.from.z) * dirFracZ;
-            var t6 = (this.max.z - ray.from.z) * dirFracZ;
-            // var tmin = Math.max(Math.max(Math.min(t1, t2), Math.min(t3, t4)));
-            // var tmax = Math.min(Math.min(Math.max(t1, t2), Math.max(t3, t4)));
-            var tmin = Math.max(Math.max(Math.min(t1, t2), Math.min(t3, t4)), Math.min(t5, t6));
-            var tmax = Math.min(Math.min(Math.max(t1, t2), Math.max(t3, t4)), Math.max(t5, t6));
-            // if tmax < 0, ray (line) is intersecting AABB, but whole AABB is behing us
-            if (tmax < 0) {
-                //t = tmax;
-                return false;
-            }
-            // if tmin > tmax, ray doesn't intersect AABB
-            if (tmin > tmax) {
-                //t = tmax;
-                return false;
-            }
-            return true;
-        };
-        return AABB;
-    }());
-    CANNON.AABB = AABB;
-    var transformIntoFrame_corners = [
-        new feng3d.Vector3(),
-        new feng3d.Vector3(),
-        new feng3d.Vector3(),
-        new feng3d.Vector3(),
-        new feng3d.Vector3(),
-        new feng3d.Vector3(),
-        new feng3d.Vector3(),
-        new feng3d.Vector3()
-    ];
-})(CANNON || (CANNON = {}));
-var CANNON;
-(function (CANNON) {
     /**
      * 三角网格
      */
@@ -40767,7 +40553,7 @@ var CANNON;
             _this.vertices = vertices;
             _this.indices = indices;
             _this.normals = [];
-            _this.aabb = new CANNON.AABB();
+            _this.aabb = new feng3d.AABB();
             _this.edges = null;
             _this.tree = new CANNON.Octree();
             _this.updateEdges();
@@ -40785,7 +40571,7 @@ var CANNON;
             tree.reset();
             tree.aabb.copy(this.aabb);
             // Insert all triangles
-            var triangleAABB = new CANNON.AABB();
+            var triangleAABB = new feng3d.AABB();
             var a = new feng3d.Vector3();
             var b = new feng3d.Vector3();
             var c = new feng3d.Vector3();
@@ -40808,7 +40594,7 @@ var CANNON;
          * @param result 一个整数数组，引用查询的三角形。
          */
         Trimesh.prototype.getTrianglesInAABB = function (aabb, result) {
-            var unscaledAABB = new CANNON.AABB();
+            var unscaledAABB = new feng3d.AABB();
             unscaledAABB.copy(aabb);
             return this.tree.aabbQuery(unscaledAABB, result);
         };
@@ -40960,7 +40746,7 @@ var CANNON;
         Trimesh.prototype.calculateLocalInertia = function (mass, target) {
             // Approximate with box inertia
             // Exact inertia calculation is overkill, but see http://geometrictools.com/Documentation/PolyhedralMassProperties.pdf for the correct way to do it
-            var cli_aabb = new CANNON.AABB();
+            var cli_aabb = new feng3d.AABB();
             this.computeLocalAABB(cli_aabb);
             var x = cli_aabb.max.x - cli_aabb.min.x, y = cli_aabb.max.y - cli_aabb.min.y, z = cli_aabb.max.z - cli_aabb.min.z;
             return target.init(1.0 / 12.0 * mass * (2 * y * 2 * y + 2 * z * 2 * z), 1.0 / 12.0 * mass * (2 * x * 2 * x + 2 * z * 2 * z), 1.0 / 12.0 * mass * (2 * y * 2 * y + 2 * x * 2 * x));
@@ -41031,7 +40817,7 @@ var CANNON;
         Trimesh.prototype.calculateWorldAABB = function (pos, quat, min, max) {
             // 使用局部AABB进行更快的近似
             var frame = new CANNON.Transform();
-            var result = new CANNON.AABB();
+            var result = new feng3d.AABB();
             frame.position = pos;
             frame.quaternion = quat;
             this.aabb.toWorldFrame(frame, result);
@@ -41059,7 +40845,7 @@ var CANNON;
         function OctreeNode(options) {
             if (options === void 0) { options = {}; }
             this.root = options.root || null;
-            this.aabb = options.aabb ? options.aabb.clone() : new CANNON.AABB();
+            this.aabb = options.aabb ? options.aabb.clone() : new feng3d.AABB();
             this.data = [];
             this.children = [];
         }
@@ -41111,7 +40897,7 @@ var CANNON;
             var l = aabb.min;
             var u = aabb.max;
             var children = this.children;
-            children.push(new OctreeNode({ aabb: new CANNON.AABB(new feng3d.Vector3(0, 0, 0)) }), new OctreeNode({ aabb: new CANNON.AABB(new feng3d.Vector3(1, 0, 0)) }), new OctreeNode({ aabb: new CANNON.AABB(new feng3d.Vector3(1, 1, 0)) }), new OctreeNode({ aabb: new CANNON.AABB(new feng3d.Vector3(1, 1, 1)) }), new OctreeNode({ aabb: new CANNON.AABB(new feng3d.Vector3(0, 1, 1)) }), new OctreeNode({ aabb: new CANNON.AABB(new feng3d.Vector3(0, 0, 1)) }), new OctreeNode({ aabb: new CANNON.AABB(new feng3d.Vector3(1, 0, 1)) }), new OctreeNode({ aabb: new CANNON.AABB(new feng3d.Vector3(0, 1, 0)) }));
+            children.push(new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 0, 0)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 0, 0)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 1, 0)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 1, 1)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 1, 1)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 0, 1)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 0, 1)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 1, 0)) }));
             u.subTo(l, halfDiagonal);
             halfDiagonal.scaleNumberTo(0.5, halfDiagonal);
             var root = this.root || this;
@@ -41212,7 +40998,7 @@ var CANNON;
     }(OctreeNode));
     CANNON.Octree = Octree;
     var halfDiagonal = new feng3d.Vector3();
-    var tmpAABB = new CANNON.AABB();
+    var tmpAABB = new feng3d.AABB();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -41874,7 +41660,7 @@ var CANNON;
         return NaiveBroadphase;
     }(CANNON.Broadphase));
     CANNON.NaiveBroadphase = NaiveBroadphase;
-    var tmpAABB = new CANNON.AABB();
+    var tmpAABB = new feng3d.AABB();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -42152,7 +41938,7 @@ var CANNON;
             this.hasHit = false;
             this.result.reset();
             this._updateDirection();
-            var tmpAABB = new CANNON.AABB();
+            var tmpAABB = new feng3d.AABB();
             this.getAABB(tmpAABB);
             var tmpArray = [];
             world.broadphase.aabbQuery(world, tmpAABB, tmpArray);
@@ -42290,7 +42076,7 @@ var CANNON;
             // Set to max
             iMinX = iMinY = 0;
             iMaxX = iMaxY = shape.data.length - 1;
-            var aabb = new CANNON.AABB();
+            var aabb = new feng3d.AABB();
             localRay.getAABB(aabb);
             shape.getIndexOfPosition(aabb.min.x, aabb.min.y, index, true);
             iMinX = Math.max(iMinX, index[0]);
@@ -42754,7 +42540,7 @@ var CANNON;
             if (options.angularFactor) {
                 _this.angularFactor.copy(options.angularFactor);
             }
-            _this.aabb = new CANNON.AABB();
+            _this.aabb = new feng3d.AABB();
             _this.aabbNeedsUpdate = true;
             _this.boundingRadius = 0;
             _this.wlambda = new feng3d.Vector3();
@@ -43165,7 +42951,7 @@ var CANNON;
     var uiw_m1 = new feng3d.Matrix3x3();
     var uiw_m2 = new feng3d.Matrix3x3();
     var uiw_m3 = new feng3d.Matrix3x3();
-    var computeAABB_shapeAABB = new CANNON.AABB();
+    var computeAABB_shapeAABB = new feng3d.AABB();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -45596,8 +45382,6 @@ var CANNON;
     }(CANNON.EventTarget));
     CANNON.World = World;
     // Temp stuff
-    var tmpAABB1 = new CANNON.AABB();
-    var tmpArray1 = [];
     var tmpRay = new CANNON.Ray();
     // performance.now()
     if (typeof performance === 'undefined') {
@@ -46887,7 +46671,7 @@ var CANNON;
     var sphereTrimesh_va = new feng3d.Vector3();
     var sphereTrimesh_vb = new feng3d.Vector3();
     var sphereTrimesh_vc = new feng3d.Vector3();
-    var sphereTrimesh_localSphereAABB = new CANNON.AABB();
+    var sphereTrimesh_localSphereAABB = new feng3d.AABB();
     var sphereTrimesh_triangles = [];
     var point_on_plane_to_sphere = new feng3d.Vector3();
     var plane_to_sphere_ortho = new feng3d.Vector3();
