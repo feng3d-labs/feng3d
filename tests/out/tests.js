@@ -3158,7 +3158,7 @@ QUnit.module("Transform", function () {
         var v = feng3d.Vector3.random();
         var v1 = new feng3d.Vector3();
         var v2 = new feng3d.Vector3();
-        CANNON.Transform.pointToWorldFrame(trans, v, v1);
+        trans.pointToWorldFrame(v, v1);
         mat.transformVector(v, v2);
         assert.ok(v1.equals(v2));
     });
@@ -3167,12 +3167,12 @@ QUnit.module("Transform", function () {
         trans.position = feng3d.Vector3.random();
         trans.quaternion = feng3d.Quaternion.random();
         var v = feng3d.Vector3.random();
-        var v1 = CANNON.Transform.pointToWorldFrame(trans, v);
-        var v2 = CANNON.Transform.pointToLocalFrame(trans, v1);
+        var v1 = trans.pointToWorldFrame(v);
+        var v2 = trans.pointToLocalFrame(v1);
         assert.ok(v.equals(v2));
         var v = feng3d.Vector3.random();
-        var v1 = CANNON.Transform.pointToLocalFrame(trans, v);
-        var v2 = CANNON.Transform.pointToWorldFrame(trans, v1);
+        var v1 = trans.pointToLocalFrame(v);
+        var v2 = trans.pointToWorldFrame(v1);
         assert.ok(v.equals(v2));
     });
     QUnit.test("vectorToWorldFrame,vectorToLocalFrame", function (assert) {

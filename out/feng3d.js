@@ -38288,26 +38288,22 @@ var CANNON;
             return matrix3D;
         };
         /**
-         * @param position
-         * @param quaternion
          * @param worldPoint
          * @param result
          */
-        Transform.pointToLocalFrame = function (transform, worldPoint, result) {
+        Transform.prototype.pointToLocalFrame = function (worldPoint, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
-            var mat = transform.toMatrix3D().invert();
+            var mat = this.toMatrix3D().invert();
             mat.transformVector(worldPoint, result);
             return result;
         };
         /**
-         * @param position
-         * @param quaternion
          * @param localPoint
          * @param result
          */
-        Transform.pointToWorldFrame = function (transform, localPoint, result) {
+        Transform.prototype.pointToWorldFrame = function (localPoint, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
-            var mat = transform.toMatrix3D();
+            var mat = this.toMatrix3D();
             mat.transformVector(localPoint, result);
             return result;
         };
@@ -39637,7 +39633,7 @@ var CANNON;
             localOrigin.setZero();
             // Transform the axis to local
             CANNON.Transform.vectorToLocalFrame(transform, axis, localAxis);
-            CANNON.Transform.pointToLocalFrame(transform, localOrigin, localOrigin);
+            transform.pointToLocalFrame(localOrigin, localOrigin);
             var add = localOrigin.dot(localAxis);
             min = max = vs[0].dot(localAxis);
             for (var i = 1; i < n; i++) {
@@ -40679,7 +40675,7 @@ var CANNON;
          */
         Trimesh.prototype.getWorldVertex = function (i, transform, out) {
             this.getVertex(i, out);
-            CANNON.Transform.pointToWorldFrame(transform, out, out);
+            transform.pointToWorldFrame(out, out);
             return out;
         };
         /**
@@ -42038,8 +42034,8 @@ var CANNON;
             var localRay = new Ray(); //new Ray(this.from, this.to);
             localRay.from.copy(this.from);
             localRay.to.copy(this.to);
-            CANNON.Transform.pointToLocalFrame(transform, localRay.from, localRay.from);
-            CANNON.Transform.pointToLocalFrame(transform, localRay.to, localRay.to);
+            transform.pointToLocalFrame(localRay.from, localRay.from);
+            transform.pointToLocalFrame(localRay.to, localRay.to);
             localRay._updateDirection();
             // Get the index of the data points to test against
             var index = [];
@@ -42070,14 +42066,14 @@ var CANNON;
                     }
                     // Lower triangle
                     shape.getConvexTrianglePillar(i, j, false);
-                    CANNON.Transform.pointToWorldFrame(transform, shape.pillarOffset, worldPillarOffset);
+                    transform.pointToWorldFrame(shape.pillarOffset, worldPillarOffset);
                     this.intersectConvex(shape.pillarConvex, quat, worldPillarOffset, body, reportedShape, intersectConvexOptions);
                     if (this.result._shouldStop) {
                         return;
                     }
                     // Upper triangle
                     shape.getConvexTrianglePillar(i, j, true);
-                    CANNON.Transform.pointToWorldFrame(transform, shape.pillarOffset, worldPillarOffset);
+                    transform.pointToWorldFrame(shape.pillarOffset, worldPillarOffset);
                     this.intersectConvex(shape.pillarConvex, quat, worldPillarOffset, body, reportedShape, intersectConvexOptions);
                 }
             }
@@ -42220,8 +42216,8 @@ var CANNON;
             treeTransform.quaternion.copy(quat);
             // Transform ray to local space!
             CANNON.Transform.vectorToLocalFrame(treeTransform, direction, localDirection);
-            CANNON.Transform.pointToLocalFrame(treeTransform, from, localFrom);
-            CANNON.Transform.pointToLocalFrame(treeTransform, to, localTo);
+            treeTransform.pointToLocalFrame(from, localFrom);
+            treeTransform.pointToLocalFrame(to, localTo);
             localTo.x *= mesh.scale.x;
             localTo.y *= mesh.scale.y;
             localTo.z *= mesh.scale.z;
@@ -42268,7 +42264,7 @@ var CANNON;
                 }
                 // transform intersectpoint and normal to world
                 CANNON.Transform.vectorToWorldFrame(treeTransform, normal, worldNormal);
-                CANNON.Transform.pointToWorldFrame(treeTransform, intersectPoint, worldIntersectPoint);
+                treeTransform.pointToWorldFrame(intersectPoint, worldIntersectPoint);
                 this.reportIntersection(worldNormal, worldIntersectPoint, reportedShape, body, trianglesIndex);
             }
             triangles.length = 0;
@@ -45651,7 +45647,7 @@ var CANNON;
                 // Safe up
                 var v2 = new feng3d.Vector3();
                 v2.copy(v);
-                CANNON.Transform.pointToWorldFrame(trimeshTransform, v2, v);
+                trimeshTransform.pointToWorldFrame(v2, v);
                 // Check plane side
                 var relpos = planeTrimesh_relpos;
                 v.subTo(planePos, relpos);
@@ -45691,7 +45687,7 @@ var CANNON;
             var relpos = sphereTrimesh_relpos;
             var triangles = sphereTrimesh_triangles;
             // Convert sphere position to local in the trimesh
-            CANNON.Transform.pointToLocalFrame(trimeshTransform, spherePos, localSpherePos);
+            trimeshTransform.pointToLocalFrame(spherePos, localSpherePos);
             // Get the aabb of the sphere locally in the trimesh
             var sphereRadius = sphereShape.radius;
             localSphereAABB.min.init(localSpherePos.x - sphereRadius, localSpherePos.y - sphereRadius, localSpherePos.z - sphereRadius);
@@ -45709,7 +45705,7 @@ var CANNON;
                     if (relpos.lengthSquared <= radiusSquared) {
                         // Safe up
                         v2.copy(v);
-                        CANNON.Transform.pointToWorldFrame(trimeshTransform, v2, v);
+                        trimeshTransform.pointToWorldFrame(v2, v);
                         v.subTo(spherePos, relpos);
                         if (justTest) {
                             return true;
@@ -45759,7 +45755,7 @@ var CANNON;
                             tmp.subTo(localSpherePos, r.ni);
                             r.ni.normalize();
                             r.ni.scaleNumberTo(sphereShape.radius, r.ri);
-                            CANNON.Transform.pointToWorldFrame(trimeshTransform, tmp, tmp);
+                            trimeshTransform.pointToWorldFrame(tmp, tmp);
                             tmp.subTo(trimeshBody.position, r.rj);
                             CANNON.Transform.vectorToWorldFrame(trimeshTransform, r.ni, r.ni);
                             CANNON.Transform.vectorToWorldFrame(trimeshTransform, r.ri, r.ri);
@@ -45791,7 +45787,7 @@ var CANNON;
                     tmp.subTo(localSpherePos, r.ni);
                     r.ni.normalize();
                     r.ni.scaleNumberTo(sphereShape.radius, r.ri);
-                    CANNON.Transform.pointToWorldFrame(trimeshTransform, tmp, tmp);
+                    trimeshTransform.pointToWorldFrame(tmp, tmp);
                     tmp.subTo(trimeshBody.position, r.rj);
                     CANNON.Transform.vectorToWorldFrame(trimeshTransform, r.ni, r.ni);
                     CANNON.Transform.vectorToWorldFrame(trimeshTransform, r.ri, r.ri);
@@ -46448,7 +46444,7 @@ var CANNON;
             var data = hfShape.data, w = hfShape.elementSize, radius = convexShape.boundingSphereRadius, worldPillarOffset = convexHeightfield_tmp2, faceList = convexHeightfield_faceList;
             // Get sphere position to heightfield local!
             var localConvexPos = convexHeightfield_tmp1;
-            CANNON.Transform.pointToLocalFrame(hfTransform, convexPos, localConvexPos);
+            hfTransform.pointToLocalFrame(convexPos, localConvexPos);
             // Get the index of the data points to test against
             var iMinX = Math.floor((localConvexPos.x - radius) / w) - 1, iMaxX = Math.ceil((localConvexPos.x + radius) / w) + 1, iMinY = Math.floor((localConvexPos.y - radius) / w) - 1, iMaxY = Math.ceil((localConvexPos.y + radius) / w) + 1;
             // Bail out if we are out of the terrain
@@ -46493,7 +46489,7 @@ var CANNON;
                     var intersecting = false;
                     // Lower triangle
                     hfShape.getConvexTrianglePillar(i, j, false);
-                    CANNON.Transform.pointToWorldFrame(hfTransform, hfShape.pillarOffset, worldPillarOffset);
+                    hfTransform.pointToWorldFrame(hfShape.pillarOffset, worldPillarOffset);
                     if (convexPos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + convexShape.boundingSphereRadius) {
                         intersecting = this.convexConvex(convexShape, hfShape.pillarConvex, convexTransform, new CANNON.Transform(worldPillarOffset, hfQuat), convexBody, hfBody, null, null, justTest, faceList, null);
                     }
@@ -46502,7 +46498,7 @@ var CANNON;
                     }
                     // Upper triangle
                     hfShape.getConvexTrianglePillar(i, j, true);
-                    CANNON.Transform.pointToWorldFrame(hfTransform, hfShape.pillarOffset, worldPillarOffset);
+                    hfTransform.pointToWorldFrame(hfShape.pillarOffset, worldPillarOffset);
                     if (convexPos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + convexShape.boundingSphereRadius) {
                         intersecting = this.convexConvex(convexShape, hfShape.pillarConvex, convexTransform, new CANNON.Transform(worldPillarOffset, hfQuat), convexBody, hfBody, null, null, justTest, faceList, null);
                     }
@@ -46519,7 +46515,7 @@ var CANNON;
             var hfQuat = hfTransform.quaternion;
             // Get sphere position to heightfield local!
             var localSpherePos = sphereHeightfield_tmp1;
-            CANNON.Transform.pointToLocalFrame(hfTransform, spherePos, localSpherePos);
+            hfTransform.pointToLocalFrame(spherePos, localSpherePos);
             // Get the index of the data points to test against
             var iMinX = Math.floor((localSpherePos.x - radius) / w) - 1, iMaxX = Math.ceil((localSpherePos.x + radius) / w) + 1, iMinY = Math.floor((localSpherePos.y - radius) / w) - 1, iMaxY = Math.ceil((localSpherePos.y + radius) / w) + 1;
             // Bail out if we are out of the terrain
@@ -46566,7 +46562,7 @@ var CANNON;
                     var intersecting = false;
                     // Lower triangle
                     hfShape.getConvexTrianglePillar(i, j, false);
-                    CANNON.Transform.pointToWorldFrame(hfTransform, hfShape.pillarOffset, worldPillarOffset);
+                    hfTransform.pointToWorldFrame(hfShape.pillarOffset, worldPillarOffset);
                     if (spherePos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + sphereShape.boundingSphereRadius) {
                         intersecting = this.sphereConvex(sphereShape, hfShape.pillarConvex, sphereTransform, new CANNON.Transform(worldPillarOffset, hfQuat), sphereBody, hfBody, sphereShape, hfShape, justTest);
                     }
@@ -46575,7 +46571,7 @@ var CANNON;
                     }
                     // Upper triangle
                     hfShape.getConvexTrianglePillar(i, j, true);
-                    CANNON.Transform.pointToWorldFrame(hfTransform, hfShape.pillarOffset, worldPillarOffset);
+                    hfTransform.pointToWorldFrame(hfShape.pillarOffset, worldPillarOffset);
                     if (spherePos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + sphereShape.boundingSphereRadius) {
                         intersecting = this.sphereConvex(sphereShape, hfShape.pillarConvex, sphereTransform, new CANNON.Transform(worldPillarOffset, hfQuat), sphereBody, hfBody, sphereShape, hfShape, justTest);
                     }

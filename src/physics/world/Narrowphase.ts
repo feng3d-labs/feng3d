@@ -391,7 +391,7 @@ namespace CANNON
                 // Safe up
                 var v2 = new feng3d.Vector3();
                 v2.copy(v);
-                Transform.pointToWorldFrame(trimeshTransform, v2, v);
+                trimeshTransform.pointToWorldFrame(v2, v);
 
                 // Check plane side
                 var relpos = planeTrimesh_relpos;
@@ -454,7 +454,7 @@ namespace CANNON
             var triangles = sphereTrimesh_triangles;
 
             // Convert sphere position to local in the trimesh
-            Transform.pointToLocalFrame(trimeshTransform, spherePos, localSpherePos);
+            trimeshTransform.pointToLocalFrame(spherePos, localSpherePos);
 
             // Get the aabb of the sphere locally in the trimesh
             var sphereRadius = sphereShape.radius;
@@ -490,7 +490,7 @@ namespace CANNON
 
                         // Safe up
                         v2.copy(v);
-                        Transform.pointToWorldFrame(trimeshTransform, v2, v);
+                        trimeshTransform.pointToWorldFrame(v2, v);
 
                         v.subTo(spherePos, relpos);
 
@@ -565,7 +565,7 @@ namespace CANNON
                             r.ni.normalize();
                             r.ni.scaleNumberTo(sphereShape.radius, r.ri);
 
-                            Transform.pointToWorldFrame(trimeshTransform, tmp, tmp);
+                            trimeshTransform.pointToWorldFrame(tmp, tmp);
                             tmp.subTo(trimeshBody.position, r.rj);
 
                             Transform.vectorToWorldFrame(trimeshTransform, r.ni, r.ni);
@@ -606,7 +606,7 @@ namespace CANNON
                     r.ni.normalize();
                     r.ni.scaleNumberTo(sphereShape.radius, r.ri);
 
-                    Transform.pointToWorldFrame(trimeshTransform, tmp, tmp);
+                    trimeshTransform.pointToWorldFrame(tmp, tmp);
                     tmp.subTo(trimeshBody.position, r.rj);
 
                     Transform.vectorToWorldFrame(trimeshTransform, r.ni, r.ni);
@@ -1489,7 +1489,7 @@ namespace CANNON
 
             // Get sphere position to heightfield local!
             var localConvexPos = convexHeightfield_tmp1;
-            Transform.pointToLocalFrame(hfTransform, convexPos, localConvexPos);
+            hfTransform.pointToLocalFrame(convexPos, localConvexPos);
 
             // Get the index of the data points to test against
             var iMinX = Math.floor((localConvexPos.x - radius) / w) - 1,
@@ -1533,7 +1533,7 @@ namespace CANNON
 
                     // Lower triangle
                     hfShape.getConvexTrianglePillar(i, j, false);
-                    Transform.pointToWorldFrame(hfTransform, hfShape.pillarOffset, worldPillarOffset);
+                    hfTransform.pointToWorldFrame(hfShape.pillarOffset, worldPillarOffset);
                     if (convexPos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + convexShape.boundingSphereRadius)
                     {
                         intersecting = this.convexConvex(convexShape, hfShape.pillarConvex, convexTransform, new Transform(worldPillarOffset, hfQuat), convexBody, hfBody, null, null, justTest, faceList, null);
@@ -1546,7 +1546,7 @@ namespace CANNON
 
                     // Upper triangle
                     hfShape.getConvexTrianglePillar(i, j, true);
-                    Transform.pointToWorldFrame(hfTransform, hfShape.pillarOffset, worldPillarOffset);
+                    hfTransform.pointToWorldFrame(hfShape.pillarOffset, worldPillarOffset);
                     if (convexPos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + convexShape.boundingSphereRadius)
                     {
                         intersecting = this.convexConvex(convexShape, hfShape.pillarConvex, convexTransform, new Transform(worldPillarOffset, hfQuat), convexBody, hfBody, null, null, justTest, faceList, null);
@@ -1581,7 +1581,7 @@ namespace CANNON
 
             // Get sphere position to heightfield local!
             var localSpherePos = sphereHeightfield_tmp1;
-            Transform.pointToLocalFrame(hfTransform, spherePos, localSpherePos);
+            hfTransform.pointToLocalFrame(spherePos, localSpherePos);
 
             // Get the index of the data points to test against
             var iMinX = Math.floor((localSpherePos.x - radius) / w) - 1,
@@ -1628,7 +1628,7 @@ namespace CANNON
 
                     // Lower triangle
                     hfShape.getConvexTrianglePillar(i, j, false);
-                    Transform.pointToWorldFrame(hfTransform, hfShape.pillarOffset, worldPillarOffset);
+                    hfTransform.pointToWorldFrame(hfShape.pillarOffset, worldPillarOffset);
                     if (spherePos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + sphereShape.boundingSphereRadius)
                     {
                         intersecting = this.sphereConvex(sphereShape, hfShape.pillarConvex, sphereTransform, new Transform(worldPillarOffset, hfQuat), sphereBody, hfBody, sphereShape, hfShape, justTest);
@@ -1641,7 +1641,7 @@ namespace CANNON
 
                     // Upper triangle
                     hfShape.getConvexTrianglePillar(i, j, true);
-                    Transform.pointToWorldFrame(hfTransform, hfShape.pillarOffset, worldPillarOffset);
+                    hfTransform.pointToWorldFrame(hfShape.pillarOffset, worldPillarOffset);
                     if (spherePos.distance(worldPillarOffset) < hfShape.pillarConvex.boundingSphereRadius + sphereShape.boundingSphereRadius)
                     {
                         intersecting = this.sphereConvex(sphereShape, hfShape.pillarConvex, sphereTransform, new Transform(worldPillarOffset, hfQuat), sphereBody, hfBody, sphereShape, hfShape, justTest);

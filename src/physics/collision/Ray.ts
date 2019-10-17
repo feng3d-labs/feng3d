@@ -285,8 +285,8 @@ namespace CANNON
             var localRay = new Ray(); //new Ray(this.from, this.to);
             localRay.from.copy(this.from);
             localRay.to.copy(this.to);
-            Transform.pointToLocalFrame(transform, localRay.from, localRay.from);
-            Transform.pointToLocalFrame(transform, localRay.to, localRay.to);
+            transform.pointToLocalFrame(localRay.from, localRay.from);
+            transform.pointToLocalFrame(localRay.to, localRay.to);
             localRay._updateDirection();
 
             // Get the index of the data points to test against
@@ -331,7 +331,7 @@ namespace CANNON
 
                     // Lower triangle
                     shape.getConvexTrianglePillar(i, j, false);
-                    Transform.pointToWorldFrame(transform, shape.pillarOffset, worldPillarOffset);
+                    transform.pointToWorldFrame(shape.pillarOffset, worldPillarOffset);
                     this.intersectConvex(shape.pillarConvex, quat, worldPillarOffset, body, reportedShape, intersectConvexOptions);
 
                     if (this.result._shouldStop)
@@ -341,7 +341,7 @@ namespace CANNON
 
                     // Upper triangle
                     shape.getConvexTrianglePillar(i, j, true);
-                    Transform.pointToWorldFrame(transform, shape.pillarOffset, worldPillarOffset);
+                    transform.pointToWorldFrame(shape.pillarOffset, worldPillarOffset);
                     this.intersectConvex(shape.pillarConvex, quat, worldPillarOffset, body, reportedShape, intersectConvexOptions);
                 }
             }
@@ -551,8 +551,8 @@ namespace CANNON
 
             // Transform ray to local space!
             Transform.vectorToLocalFrame(treeTransform, direction, localDirection);
-            Transform.pointToLocalFrame(treeTransform, from, localFrom);
-            Transform.pointToLocalFrame(treeTransform, to, localTo);
+            treeTransform.pointToLocalFrame(from, localFrom);
+            treeTransform.pointToLocalFrame(to, localTo);
 
             localTo.x *= mesh.scale.x;
             localTo.y *= mesh.scale.y;
@@ -621,7 +621,7 @@ namespace CANNON
 
                 // transform intersectpoint and normal to world
                 Transform.vectorToWorldFrame(treeTransform, normal, worldNormal);
-                Transform.pointToWorldFrame(treeTransform, intersectPoint, worldIntersectPoint);
+                treeTransform.pointToWorldFrame(intersectPoint, worldIntersectPoint);
                 this.reportIntersection(worldNormal, worldIntersectPoint, reportedShape, body, trianglesIndex);
             }
             triangles.length = 0;

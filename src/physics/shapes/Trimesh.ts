@@ -255,7 +255,7 @@ namespace CANNON
         getWorldVertex(i: number, transform: Transform, out: feng3d.Vector3)
         {
             this.getVertex(i, out);
-            Transform.pointToWorldFrame(transform, out, out);
+            transform.pointToWorldFrame(out, out);
             return out;
         }
 

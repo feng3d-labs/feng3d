@@ -946,7 +946,7 @@ namespace CANNON
 
             // Transform the axis to local
             Transform.vectorToLocalFrame(transform, axis, localAxis);
-            Transform.pointToLocalFrame(transform, localOrigin, localOrigin);
+            transform.pointToLocalFrame(localOrigin, localOrigin);
             var add = localOrigin.dot(localAxis);
 
             min = max = vs[0].dot(localAxis);

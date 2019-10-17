@@ -17401,31 +17401,23 @@ declare namespace feng3d {
     }
 }
 declare namespace CANNON {
-    interface ITransform {
-        position: feng3d.Vector3;
-        quaternion: feng3d.Quaternion;
-    }
     class Transform {
         position: feng3d.Vector3;
         quaternion: feng3d.Quaternion;
         constructor(position?: feng3d.Vector3, quaternion?: feng3d.Quaternion);
         toMatrix3D(): feng3d.Matrix4x4;
         /**
-         * @param position
-         * @param quaternion
          * @param worldPoint
          * @param result
          */
-        static pointToLocalFrame(transform: Transform, worldPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        pointToLocalFrame(worldPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
         /**
-         * @param position
-         * @param quaternion
          * @param localPoint
          * @param result
          */
-        static pointToWorldFrame(transform: Transform, localPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
-        static vectorToWorldFrame(transform: ITransform, localVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
-        static vectorToLocalFrame(transform: ITransform, worldVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        pointToWorldFrame(localPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        static vectorToWorldFrame(transform: Transform, localVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        static vectorToLocalFrame(transform: Transform, worldVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
     }
 }
 declare namespace CANNON {

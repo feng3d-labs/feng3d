@@ -1,11 +1,5 @@
 namespace CANNON
 {
-    export interface ITransform
-    {
-        position: feng3d.Vector3;
-        quaternion: feng3d.Quaternion;
-    }
-
     export class Transform
     {
         position: feng3d.Vector3;
@@ -25,38 +19,34 @@ namespace CANNON
         }
 
         /**
-         * @param position
-         * @param quaternion
          * @param worldPoint
          * @param result
          */
-        static pointToLocalFrame(transform: Transform, worldPoint: feng3d.Vector3, result = new feng3d.Vector3())
+        pointToLocalFrame(worldPoint: feng3d.Vector3, result = new feng3d.Vector3())
         {
-            var mat = transform.toMatrix3D().invert();
+            var mat = this.toMatrix3D().invert();
             mat.transformVector(worldPoint, result);
             return result;
         }
 
         /**
-         * @param position
-         * @param quaternion
          * @param localPoint
          * @param result
          */
-        static pointToWorldFrame(transform: Transform, localPoint: feng3d.Vector3, result = new feng3d.Vector3())
+        pointToWorldFrame(localPoint: feng3d.Vector3, result = new feng3d.Vector3())
         {
-            var mat = transform.toMatrix3D();
+            var mat = this.toMatrix3D();
             mat.transformVector(localPoint, result);
             return result;
         }
 
-        static vectorToWorldFrame(transform: ITransform, localVector: feng3d.Vector3, result = new feng3d.Vector3())
+        static vectorToWorldFrame(transform: Transform, localVector: feng3d.Vector3, result = new feng3d.Vector3())
         {
             transform.quaternion.rotatePoint(localVector, result);
             return result;
         }
 
-        static vectorToLocalFrame(transform: ITransform, worldVector: feng3d.Vector3, result = new feng3d.Vector3())
+        static vectorToLocalFrame(transform: Transform, worldVector: feng3d.Vector3, result = new feng3d.Vector3())
         {
             transform.quaternion.w *= -1;
             transform.quaternion.rotatePoint(worldVector, result);
