@@ -315,8 +315,8 @@ namespace CANNON
             if (axisIndex === 2) { axis = 'z'; }
 
             var axisList = this.axisList;
-            var lower = aabb.lowerBound[axis];
-            var upper = aabb.upperBound[axis];
+            var lower = aabb.min[axis];
+            var upper = aabb.max[axis];
             for (var i = 0; i < axisList.length; i++)
             {
                 var b = axisList[i];

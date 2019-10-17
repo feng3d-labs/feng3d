@@ -40091,8 +40091,8 @@ var CANNON;
         Heightfield.prototype.getAabbAtIndex = function (xi, yi, result) {
             var data = this.data;
             var elementSize = this.elementSize;
-            result.lowerBound.init(xi * elementSize, yi * elementSize, data[xi][yi]);
-            result.upperBound.init((xi + 1) * elementSize, (yi + 1) * elementSize, data[xi + 1][yi + 1]);
+            result.min.init(xi * elementSize, yi * elementSize, data[xi][yi]);
+            result.max.init((xi + 1) * elementSize, (yi + 1) * elementSize, data[xi + 1][yi + 1]);
         };
         /**
          * 获取指定位置高度
@@ -40542,16 +40542,11 @@ var CANNON;
          *
          * Axis aligned bounding box class.
          */
-        function AABB(options) {
-            if (options === void 0) { options = {}; }
-            this.lowerBound = new feng3d.Vector3();
-            if (options.lowerBound) {
-                this.lowerBound.copy(options.lowerBound);
-            }
-            this.upperBound = new feng3d.Vector3();
-            if (options.upperBound) {
-                this.upperBound.copy(options.upperBound);
-            }
+        function AABB(min, max) {
+            if (min === void 0) { min = new feng3d.Vector3(+Infinity, +Infinity, +Infinity); }
+            if (max === void 0) { max = new feng3d.Vector3(-Infinity, -Infinity, -Infinity); }
+            this.min = min.clone();
+            this.max = max.clone();
         }
         /**
          * Set the AABB bounds from a set of points.
@@ -40562,7 +40557,7 @@ var CANNON;
          * @return The self object
          */
         AABB.prototype.setFromPoints = function (points, position, quaternion, skinSize) {
-            var l = this.lowerBound, u = this.upperBound, q = quaternion;
+            var l = this.min, u = this.max, q = quaternion;
             // Set to the first point
             l.copy(points[0]);
             if (q) {
@@ -40615,8 +40610,8 @@ var CANNON;
          * @return The this object, for chainability
          */
         AABB.prototype.copy = function (aabb) {
-            this.lowerBound.copy(aabb.lowerBound);
-            this.upperBound.copy(aabb.upperBound);
+            this.min.copy(aabb.min);
+            this.max.copy(aabb.max);
             return this;
         };
         /**
@@ -40630,19 +40625,19 @@ var CANNON;
          * @param aabb
          */
         AABB.prototype.extend = function (aabb) {
-            this.lowerBound.x = Math.min(this.lowerBound.x, aabb.lowerBound.x);
-            this.upperBound.x = Math.max(this.upperBound.x, aabb.upperBound.x);
-            this.lowerBound.y = Math.min(this.lowerBound.y, aabb.lowerBound.y);
-            this.upperBound.y = Math.max(this.upperBound.y, aabb.upperBound.y);
-            this.lowerBound.z = Math.min(this.lowerBound.z, aabb.lowerBound.z);
-            this.upperBound.z = Math.max(this.upperBound.z, aabb.upperBound.z);
+            this.min.x = Math.min(this.min.x, aabb.min.x);
+            this.max.x = Math.max(this.max.x, aabb.max.x);
+            this.min.y = Math.min(this.min.y, aabb.min.y);
+            this.max.y = Math.max(this.max.y, aabb.max.y);
+            this.min.z = Math.min(this.min.z, aabb.min.z);
+            this.max.z = Math.max(this.max.z, aabb.max.z);
         };
         /**
          * Returns true if the given AABB overlaps this AABB.
          * @param aabb
          */
         AABB.prototype.overlaps = function (aabb) {
-            var l1 = this.lowerBound, u1 = this.upperBound, l2 = aabb.lowerBound, u2 = aabb.upperBound;
+            var l1 = this.min, u1 = this.max, l2 = aabb.min, u2 = aabb.max;
             //      l2        u2
             //      |---------|
             // |--------|
@@ -40656,7 +40651,7 @@ var CANNON;
          * Mostly for debugging
          */
         AABB.prototype.volume = function () {
-            var l = this.lowerBound, u = this.upperBound;
+            var l = this.min, u = this.max;
             return (u.x - l.x) * (u.y - l.y) * (u.z - l.z);
         };
         /**
@@ -40664,7 +40659,7 @@ var CANNON;
          * @param aabb
          */
         AABB.prototype.contains = function (aabb) {
-            var l1 = this.lowerBound, u1 = this.upperBound, l2 = aabb.lowerBound, u2 = aabb.upperBound;
+            var l1 = this.min, u1 = this.max, l2 = aabb.min, u2 = aabb.max;
             //      l2        u2
             //      |---------|
             // |---------------|
@@ -40674,7 +40669,7 @@ var CANNON;
                 (l1.z <= l2.z && u1.z >= u2.z));
         };
         AABB.prototype.getCorners = function (a, b, c, d, e, f, g, h) {
-            var l = this.lowerBound, u = this.upperBound;
+            var l = this.min, u = this.max;
             a.copy(l);
             b.init(u.x, l.y, l.z);
             c.init(u.x, u.y, l.z);
@@ -40744,12 +40739,12 @@ var CANNON;
             var dirFracY = 1 / ray._direction.y;
             var dirFracZ = 1 / ray._direction.z;
             // this.lowerBound is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
-            var t1 = (this.lowerBound.x - ray.from.x) * dirFracX;
-            var t2 = (this.upperBound.x - ray.from.x) * dirFracX;
-            var t3 = (this.lowerBound.y - ray.from.y) * dirFracY;
-            var t4 = (this.upperBound.y - ray.from.y) * dirFracY;
-            var t5 = (this.lowerBound.z - ray.from.z) * dirFracZ;
-            var t6 = (this.upperBound.z - ray.from.z) * dirFracZ;
+            var t1 = (this.min.x - ray.from.x) * dirFracX;
+            var t2 = (this.max.x - ray.from.x) * dirFracX;
+            var t3 = (this.min.y - ray.from.y) * dirFracY;
+            var t4 = (this.max.y - ray.from.y) * dirFracY;
+            var t5 = (this.min.z - ray.from.z) * dirFracZ;
+            var t6 = (this.max.z - ray.from.z) * dirFracZ;
             // var tmin = Math.max(Math.max(Math.min(t1, t2), Math.min(t3, t4)));
             // var tmax = Math.min(Math.min(Math.max(t1, t2), Math.max(t3, t4)));
             var tmin = Math.max(Math.max(Math.min(t1, t2), Math.min(t3, t4)), Math.min(t5, t6));
@@ -41006,7 +41001,7 @@ var CANNON;
             // Exact inertia calculation is overkill, but see http://geometrictools.com/Documentation/PolyhedralMassProperties.pdf for the correct way to do it
             var cli_aabb = new CANNON.AABB();
             this.computeLocalAABB(cli_aabb);
-            var x = cli_aabb.upperBound.x - cli_aabb.lowerBound.x, y = cli_aabb.upperBound.y - cli_aabb.lowerBound.y, z = cli_aabb.upperBound.z - cli_aabb.lowerBound.z;
+            var x = cli_aabb.max.x - cli_aabb.min.x, y = cli_aabb.max.y - cli_aabb.min.y, z = cli_aabb.max.z - cli_aabb.min.z;
             return target.init(1.0 / 12.0 * mass * (2 * y * 2 * y + 2 * z * 2 * z), 1.0 / 12.0 * mass * (2 * x * 2 * x + 2 * z * 2 * z), 1.0 / 12.0 * mass * (2 * y * 2 * y + 2 * x * 2 * x));
         };
         /**
@@ -41015,7 +41010,7 @@ var CANNON;
          * @param aabb
          */
         Trimesh.prototype.computeLocalAABB = function (aabb) {
-            var l = aabb.lowerBound, u = aabb.upperBound, n = this.vertices.length, v = new feng3d.Vector3();
+            var l = aabb.min, u = aabb.max, n = this.vertices.length, v = new feng3d.Vector3();
             this.getVertex(0, v);
             l.copy(v);
             u.copy(v);
@@ -41079,8 +41074,8 @@ var CANNON;
             frame.position = pos;
             frame.quaternion = quat;
             this.aabb.toWorldFrame(frame, result);
-            min.copy(result.lowerBound);
-            max.copy(result.upperBound);
+            min.copy(result.min);
+            max.copy(result.max);
         };
         ;
         /**
@@ -41152,10 +41147,10 @@ var CANNON;
          */
         OctreeNode.prototype.subdivide = function () {
             var aabb = this.aabb;
-            var l = aabb.lowerBound;
-            var u = aabb.upperBound;
+            var l = aabb.min;
+            var u = aabb.max;
             var children = this.children;
-            children.push(new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new feng3d.Vector3(0, 0, 0) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new feng3d.Vector3(1, 0, 0) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new feng3d.Vector3(1, 1, 0) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new feng3d.Vector3(1, 1, 1) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new feng3d.Vector3(0, 1, 1) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new feng3d.Vector3(0, 0, 1) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new feng3d.Vector3(1, 0, 1) }) }), new OctreeNode({ aabb: new CANNON.AABB({ lowerBound: new feng3d.Vector3(0, 1, 0) }) }));
+            children.push(new OctreeNode({ aabb: new CANNON.AABB(new feng3d.Vector3(0, 0, 0)) }), new OctreeNode({ aabb: new CANNON.AABB(new feng3d.Vector3(1, 0, 0)) }), new OctreeNode({ aabb: new CANNON.AABB(new feng3d.Vector3(1, 1, 0)) }), new OctreeNode({ aabb: new CANNON.AABB(new feng3d.Vector3(1, 1, 1)) }), new OctreeNode({ aabb: new CANNON.AABB(new feng3d.Vector3(0, 1, 1)) }), new OctreeNode({ aabb: new CANNON.AABB(new feng3d.Vector3(0, 0, 1)) }), new OctreeNode({ aabb: new CANNON.AABB(new feng3d.Vector3(1, 0, 1)) }), new OctreeNode({ aabb: new CANNON.AABB(new feng3d.Vector3(0, 1, 0)) }));
             u.subTo(l, halfDiagonal);
             halfDiagonal.scaleNumberTo(0.5, halfDiagonal);
             var root = this.root || this;
@@ -41164,13 +41159,13 @@ var CANNON;
                 // Set current node as root
                 child.root = root;
                 // Compute bounds
-                var lowerBound = child.aabb.lowerBound;
+                var lowerBound = child.aabb.min;
                 lowerBound.x *= halfDiagonal.x;
                 lowerBound.y *= halfDiagonal.y;
                 lowerBound.z *= halfDiagonal.z;
                 lowerBound.addTo(l, lowerBound);
                 // Upper bound is always lower bound + halfDiagonal
-                lowerBound.addTo(halfDiagonal, child.aabb.upperBound);
+                lowerBound.addTo(halfDiagonal, child.aabb.max);
             }
         };
         /**
@@ -41823,7 +41818,7 @@ var CANNON;
                         if (bi.aabbNeedsUpdate) {
                             bi.computeAABB();
                         }
-                        addBoxToBins(bi.aabb.lowerBound.x, bi.aabb.lowerBound.y, bi.aabb.lowerBound.z, bi.aabb.upperBound.x, bi.aabb.upperBound.y, bi.aabb.upperBound.z, bi);
+                        addBoxToBins(bi.aabb.min.x, bi.aabb.min.y, bi.aabb.min.z, bi.aabb.max.x, bi.aabb.max.y, bi.aabb.max.z, bi);
                         break;
                 }
             }
@@ -42135,8 +42130,8 @@ var CANNON;
                 axis = 'z';
             }
             var axisList = this.axisList;
-            var lower = aabb.lowerBound[axis];
-            var upper = aabb.upperBound[axis];
+            var lower = aabb.min[axis];
+            var upper = aabb.max[axis];
             for (var i = 0; i < axisList.length; i++) {
                 var b = axisList[i];
                 if (b.aabbNeedsUpdate) {
@@ -42312,12 +42307,12 @@ var CANNON;
         Ray.prototype.getAABB = function (result) {
             var to = this.to;
             var from = this.from;
-            result.lowerBound.x = Math.min(to.x, from.x);
-            result.lowerBound.y = Math.min(to.y, from.y);
-            result.lowerBound.z = Math.min(to.z, from.z);
-            result.upperBound.x = Math.max(to.x, from.x);
-            result.upperBound.y = Math.max(to.y, from.y);
-            result.upperBound.z = Math.max(to.z, from.z);
+            result.min.x = Math.min(to.x, from.x);
+            result.min.y = Math.min(to.y, from.y);
+            result.min.z = Math.min(to.z, from.z);
+            result.max.x = Math.max(to.x, from.x);
+            result.max.y = Math.max(to.y, from.y);
+            result.max.z = Math.max(to.z, from.z);
         };
         Ray.prototype.intersectHeightfield = function (shape, transform, body, reportedShape) {
             var quat = transform.quaternion;
@@ -42336,10 +42331,10 @@ var CANNON;
             iMaxX = iMaxY = shape.data.length - 1;
             var aabb = new CANNON.AABB();
             localRay.getAABB(aabb);
-            shape.getIndexOfPosition(aabb.lowerBound.x, aabb.lowerBound.y, index, true);
+            shape.getIndexOfPosition(aabb.min.x, aabb.min.y, index, true);
             iMinX = Math.max(iMinX, index[0]);
             iMinY = Math.max(iMinY, index[1]);
-            shape.getIndexOfPosition(aabb.upperBound.x, aabb.upperBound.y, index, true);
+            shape.getIndexOfPosition(aabb.max.x, aabb.max.y, index, true);
             iMaxX = Math.min(iMaxX, index[0] + 1);
             iMaxY = Math.min(iMaxY, index[1] + 1);
             var intersectConvexOptions = {
@@ -42967,7 +42962,7 @@ var CANNON;
                 // Get shape world quaternion
                 shapeOrientations[i].multTo(bodyQuat, orientation);
                 // Get shape AABB
-                shape.calculateWorldAABB(offset, orientation, shapeAABB.lowerBound, shapeAABB.upperBound);
+                shape.calculateWorldAABB(offset, orientation, shapeAABB.min, shapeAABB.max);
                 if (i === 0) {
                     aabb.copy(shapeAABB);
                 }
@@ -43089,7 +43084,7 @@ var CANNON;
             var fixed = this.fixedRotation;
             // Approximate with AABB box
             this.computeAABB();
-            halfExtents.init((this.aabb.upperBound.x - this.aabb.lowerBound.x) / 2, (this.aabb.upperBound.y - this.aabb.lowerBound.y) / 2, (this.aabb.upperBound.z - this.aabb.lowerBound.z) / 2);
+            halfExtents.init((this.aabb.max.x - this.aabb.min.x) / 2, (this.aabb.max.y - this.aabb.min.y) / 2, (this.aabb.max.z - this.aabb.min.z) / 2);
             CANNON.Box.calculateInertia(halfExtents, this.mass, I);
             this.invInertia.init(I.x > 0 && !fixed ? 1.0 / I.x : 0, I.y > 0 && !fixed ? 1.0 / I.y : 0, I.z > 0 && !fixed ? 1.0 / I.z : 0);
             this.updateInertiaWorld(true);
@@ -45994,8 +45989,8 @@ var CANNON;
             CANNON.Transform.pointToLocalFrame(trimeshTransform, spherePos, localSpherePos);
             // Get the aabb of the sphere locally in the trimesh
             var sphereRadius = sphereShape.radius;
-            localSphereAABB.lowerBound.init(localSpherePos.x - sphereRadius, localSpherePos.y - sphereRadius, localSpherePos.z - sphereRadius);
-            localSphereAABB.upperBound.init(localSpherePos.x + sphereRadius, localSpherePos.y + sphereRadius, localSpherePos.z + sphereRadius);
+            localSphereAABB.min.init(localSpherePos.x - sphereRadius, localSpherePos.y - sphereRadius, localSpherePos.z - sphereRadius);
+            localSphereAABB.max.init(localSpherePos.x + sphereRadius, localSpherePos.y + sphereRadius, localSpherePos.z + sphereRadius);
             trimeshShape.getTrianglesInAABB(localSphereAABB, triangles);
             //for (var i = 0; i < trimeshShape.indices.length / 3; i++) triangles.push(i); // All
             // Vertices

@@ -269,12 +269,12 @@ namespace CANNON
         {
             var to = this.to;
             var from = this.from;
-            result.lowerBound.x = Math.min(to.x, from.x);
-            result.lowerBound.y = Math.min(to.y, from.y);
-            result.lowerBound.z = Math.min(to.z, from.z);
-            result.upperBound.x = Math.max(to.x, from.x);
-            result.upperBound.y = Math.max(to.y, from.y);
-            result.upperBound.z = Math.max(to.z, from.z);
+            result.min.x = Math.min(to.x, from.x);
+            result.min.y = Math.min(to.y, from.y);
+            result.min.z = Math.min(to.z, from.z);
+            result.max.x = Math.max(to.x, from.x);
+            result.max.y = Math.max(to.y, from.y);
+            result.max.z = Math.max(to.z, from.z);
         }
 
         private intersectHeightfield(shape: Heightfield, transform: Transform, body: Body, reportedShape: Shape)
@@ -300,10 +300,10 @@ namespace CANNON
             var aabb = new AABB();
             localRay.getAABB(aabb);
 
-            shape.getIndexOfPosition(aabb.lowerBound.x, aabb.lowerBound.y, index, true);
+            shape.getIndexOfPosition(aabb.min.x, aabb.min.y, index, true);
             iMinX = Math.max(iMinX, index[0]);
             iMinY = Math.max(iMinY, index[1]);
-            shape.getIndexOfPosition(aabb.upperBound.x, aabb.upperBound.y, index, true);
+            shape.getIndexOfPosition(aabb.max.x, aabb.max.y, index, true);
             iMaxX = Math.min(iMaxX, index[0] + 1);
             iMaxY = Math.min(iMaxY, index[1] + 1);
 

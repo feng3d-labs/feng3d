@@ -5,12 +5,12 @@ namespace CANNON
         /**
          * The lower bound of the bounding box.
          */
-        lowerBound: feng3d.Vector3;
+        min: feng3d.Vector3;
 
         /**
          * The upper bound of the bounding box.
          */
-        upperBound: feng3d.Vector3;
+        max: feng3d.Vector3;
 
         /**
          * 
@@ -18,19 +18,10 @@ namespace CANNON
          * 
          * Axis aligned bounding box class.
          */
-        constructor(options: { lowerBound?: feng3d.Vector3, upperBound?: feng3d.Vector3 } = {})
+        constructor(min = new feng3d.Vector3(+Infinity, + Infinity, + Infinity), max = new feng3d.Vector3(- Infinity, - Infinity, - Infinity))
         {
-            this.lowerBound = new feng3d.Vector3();
-            if (options.lowerBound)
-            {
-                this.lowerBound.copy(options.lowerBound);
-            }
-
-            this.upperBound = new feng3d.Vector3();
-            if (options.upperBound)
-            {
-                this.upperBound.copy(options.upperBound);
-            }
+            this.min = min.clone();
+            this.max = max.clone();
         }
 
         /**
@@ -43,8 +34,8 @@ namespace CANNON
          */
         setFromPoints(points: feng3d.Vector3[], position?: feng3d.Vector3, quaternion?: feng3d.Quaternion, skinSize?: number)
         {
-            var l = this.lowerBound,
-                u = this.upperBound,
+            var l = this.min,
+                u = this.max,
                 q = quaternion;
 
             // Set to the first point
@@ -100,8 +91,8 @@ namespace CANNON
          */
         copy(aabb: AABB)
         {
-            this.lowerBound.copy(aabb.lowerBound);
-            this.upperBound.copy(aabb.upperBound);
+            this.min.copy(aabb.min);
+            this.max.copy(aabb.max);
             return this;
         }
 
@@ -119,12 +110,12 @@ namespace CANNON
          */
         extend(aabb: AABB)
         {
-            this.lowerBound.x = Math.min(this.lowerBound.x, aabb.lowerBound.x);
-            this.upperBound.x = Math.max(this.upperBound.x, aabb.upperBound.x);
-            this.lowerBound.y = Math.min(this.lowerBound.y, aabb.lowerBound.y);
-            this.upperBound.y = Math.max(this.upperBound.y, aabb.upperBound.y);
-            this.lowerBound.z = Math.min(this.lowerBound.z, aabb.lowerBound.z);
-            this.upperBound.z = Math.max(this.upperBound.z, aabb.upperBound.z);
+            this.min.x = Math.min(this.min.x, aabb.min.x);
+            this.max.x = Math.max(this.max.x, aabb.max.x);
+            this.min.y = Math.min(this.min.y, aabb.min.y);
+            this.max.y = Math.max(this.max.y, aabb.max.y);
+            this.min.z = Math.min(this.min.z, aabb.min.z);
+            this.max.z = Math.max(this.max.z, aabb.max.z);
         }
 
         /**
@@ -133,10 +124,10 @@ namespace CANNON
          */
         overlaps(aabb: AABB)
         {
-            var l1 = this.lowerBound,
-                u1 = this.upperBound,
-                l2 = aabb.lowerBound,
-                u2 = aabb.upperBound;
+            var l1 = this.min,
+                u1 = this.max,
+                l2 = aabb.min,
+                u2 = aabb.max;
 
             //      l2        u2
             //      |---------|
@@ -155,8 +146,8 @@ namespace CANNON
          */
         volume()
         {
-            var l = this.lowerBound,
-                u = this.upperBound;
+            var l = this.min,
+                u = this.max;
             return (u.x - l.x) * (u.y - l.y) * (u.z - l.z);
         }
 
@@ -167,10 +158,10 @@ namespace CANNON
          */
         contains(aabb: AABB)
         {
-            var l1 = this.lowerBound,
-                u1 = this.upperBound,
-                l2 = aabb.lowerBound,
-                u2 = aabb.upperBound;
+            var l1 = this.min,
+                u1 = this.max,
+                l2 = aabb.min,
+                u2 = aabb.max;
 
             //      l2        u2
             //      |---------|
@@ -186,8 +177,8 @@ namespace CANNON
 
         getCorners(a: feng3d.Vector3, b: feng3d.Vector3, c: feng3d.Vector3, d: feng3d.Vector3, e: feng3d.Vector3, f: feng3d.Vector3, g: feng3d.Vector3, h: feng3d.Vector3)
         {
-            var l = this.lowerBound,
-                u = this.upperBound;
+            var l = this.min,
+                u = this.max;
 
             a.copy(l);
             b.init(u.x, l.y, l.z);
@@ -274,12 +265,12 @@ namespace CANNON
             var dirFracZ = 1 / ray._direction.z;
 
             // this.lowerBound is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
-            var t1 = (this.lowerBound.x - ray.from.x) * dirFracX;
-            var t2 = (this.upperBound.x - ray.from.x) * dirFracX;
-            var t3 = (this.lowerBound.y - ray.from.y) * dirFracY;
-            var t4 = (this.upperBound.y - ray.from.y) * dirFracY;
-            var t5 = (this.lowerBound.z - ray.from.z) * dirFracZ;
-            var t6 = (this.upperBound.z - ray.from.z) * dirFracZ;
+            var t1 = (this.min.x - ray.from.x) * dirFracX;
+            var t2 = (this.max.x - ray.from.x) * dirFracX;
+            var t3 = (this.min.y - ray.from.y) * dirFracY;
+            var t4 = (this.max.y - ray.from.y) * dirFracY;
+            var t5 = (this.min.z - ray.from.z) * dirFracZ;
+            var t6 = (this.max.z - ray.from.z) * dirFracZ;
 
             // var tmin = Math.max(Math.max(Math.min(t1, t2), Math.min(t3, t4)));
             // var tmax = Math.min(Math.min(Math.max(t1, t2), Math.max(t3, t4)));

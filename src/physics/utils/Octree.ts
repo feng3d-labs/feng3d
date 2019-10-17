@@ -97,20 +97,20 @@ namespace CANNON
         subdivide()
         {
             var aabb = this.aabb;
-            var l = aabb.lowerBound;
-            var u = aabb.upperBound;
+            var l = aabb.min;
+            var u = aabb.max;
 
             var children = this.children;
 
             children.push(
-                new OctreeNode({ aabb: new AABB({ lowerBound: new feng3d.Vector3(0, 0, 0) }) }),
-                new OctreeNode({ aabb: new AABB({ lowerBound: new feng3d.Vector3(1, 0, 0) }) }),
-                new OctreeNode({ aabb: new AABB({ lowerBound: new feng3d.Vector3(1, 1, 0) }) }),
-                new OctreeNode({ aabb: new AABB({ lowerBound: new feng3d.Vector3(1, 1, 1) }) }),
-                new OctreeNode({ aabb: new AABB({ lowerBound: new feng3d.Vector3(0, 1, 1) }) }),
-                new OctreeNode({ aabb: new AABB({ lowerBound: new feng3d.Vector3(0, 0, 1) }) }),
-                new OctreeNode({ aabb: new AABB({ lowerBound: new feng3d.Vector3(1, 0, 1) }) }),
-                new OctreeNode({ aabb: new AABB({ lowerBound: new feng3d.Vector3(0, 1, 0) }) })
+                new OctreeNode({ aabb: new AABB(new feng3d.Vector3(0, 0, 0)) }),
+                new OctreeNode({ aabb: new AABB(new feng3d.Vector3(1, 0, 0)) }),
+                new OctreeNode({ aabb: new AABB(new feng3d.Vector3(1, 1, 0)) }),
+                new OctreeNode({ aabb: new AABB(new feng3d.Vector3(1, 1, 1)) }),
+                new OctreeNode({ aabb: new AABB(new feng3d.Vector3(0, 1, 1)) }),
+                new OctreeNode({ aabb: new AABB(new feng3d.Vector3(0, 0, 1)) }),
+                new OctreeNode({ aabb: new AABB(new feng3d.Vector3(1, 0, 1)) }),
+                new OctreeNode({ aabb: new AABB(new feng3d.Vector3(0, 1, 0)) })
             );
 
             u.subTo(l, halfDiagonal);
@@ -126,7 +126,7 @@ namespace CANNON
                 child.root = root;
 
                 // Compute bounds
-                var lowerBound = child.aabb.lowerBound;
+                var lowerBound = child.aabb.min;
                 lowerBound.x *= halfDiagonal.x;
                 lowerBound.y *= halfDiagonal.y;
                 lowerBound.z *= halfDiagonal.z;
@@ -134,7 +134,7 @@ namespace CANNON
                 lowerBound.addTo(l, lowerBound);
 
                 // Upper bound is always lower bound + halfDiagonal
-                lowerBound.addTo(halfDiagonal, child.aabb.upperBound);
+                lowerBound.addTo(halfDiagonal, child.aabb.max);
             }
         }
 

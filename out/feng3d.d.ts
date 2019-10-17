@@ -18370,21 +18370,18 @@ declare namespace CANNON {
         /**
          * The lower bound of the bounding box.
          */
-        lowerBound: feng3d.Vector3;
+        min: feng3d.Vector3;
         /**
          * The upper bound of the bounding box.
          */
-        upperBound: feng3d.Vector3;
+        max: feng3d.Vector3;
         /**
          *
          * @param options
          *
          * Axis aligned bounding box class.
          */
-        constructor(options?: {
-            lowerBound?: feng3d.Vector3;
-            upperBound?: feng3d.Vector3;
-        });
+        constructor(min?: feng3d.Vector3, max?: feng3d.Vector3);
         /**
          * Set the AABB bounds from a set of points.
          * @param points An array of Vec3's.

@@ -458,12 +458,12 @@ namespace CANNON
 
             // Get the aabb of the sphere locally in the trimesh
             var sphereRadius = sphereShape.radius;
-            localSphereAABB.lowerBound.init(
+            localSphereAABB.min.init(
                 localSpherePos.x - sphereRadius,
                 localSpherePos.y - sphereRadius,
                 localSpherePos.z - sphereRadius
             );
-            localSphereAABB.upperBound.init(
+            localSphereAABB.max.init(
                 localSpherePos.x + sphereRadius,
                 localSpherePos.y + sphereRadius,
                 localSpherePos.z + sphereRadius

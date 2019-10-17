@@ -313,12 +313,12 @@ namespace CANNON
             var data = this.data;
             var elementSize = this.elementSize;
 
-            result.lowerBound.init(
+            result.min.init(
                 xi * elementSize,
                 yi * elementSize,
                 data[xi][yi]
             );
-            result.upperBound.init(
+            result.max.init(
                 (xi + 1) * elementSize,
                 (yi + 1) * elementSize,
                 data[xi + 1][yi + 1]

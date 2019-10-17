@@ -304,9 +304,9 @@ namespace CANNON
             // Exact inertia calculation is overkill, but see http://geometrictools.com/Documentation/PolyhedralMassProperties.pdf for the correct way to do it
             var cli_aabb = new AABB();
             this.computeLocalAABB(cli_aabb);
-            var x = cli_aabb.upperBound.x - cli_aabb.lowerBound.x,
-                y = cli_aabb.upperBound.y - cli_aabb.lowerBound.y,
-                z = cli_aabb.upperBound.z - cli_aabb.lowerBound.z;
+            var x = cli_aabb.max.x - cli_aabb.min.x,
+                y = cli_aabb.max.y - cli_aabb.min.y,
+                z = cli_aabb.max.z - cli_aabb.min.z;
             return target.init(
                 1.0 / 12.0 * mass * (2 * y * 2 * y + 2 * z * 2 * z),
                 1.0 / 12.0 * mass * (2 * x * 2 * x + 2 * z * 2 * z),
@@ -321,8 +321,8 @@ namespace CANNON
          */
         computeLocalAABB(aabb: AABB)
         {
-            var l = aabb.lowerBound,
-                u = aabb.upperBound,
+            var l = aabb.min,
+                u = aabb.max,
                 n = this.vertices.length,
                 v = new feng3d.Vector3();
 
@@ -405,8 +405,8 @@ namespace CANNON
             frame.position = pos;
             frame.quaternion = quat;
             this.aabb.toWorldFrame(frame, result);
-            min.copy(result.lowerBound);
-            max.copy(result.upperBound);
+            min.copy(result.min);
+            max.copy(result.max);
         };
 
         /**

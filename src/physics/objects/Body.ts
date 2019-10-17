@@ -573,7 +573,7 @@ namespace CANNON
                 shapeOrientations[i].multTo(bodyQuat, orientation);
 
                 // Get shape AABB
-                shape.calculateWorldAABB(offset, orientation, shapeAABB.lowerBound, shapeAABB.upperBound);
+                shape.calculateWorldAABB(offset, orientation, shapeAABB.min, shapeAABB.max);
 
                 if (i === 0)
                 {
@@ -735,9 +735,9 @@ namespace CANNON
             // Approximate with AABB box
             this.computeAABB();
             halfExtents.init(
-                (this.aabb.upperBound.x - this.aabb.lowerBound.x) / 2,
-                (this.aabb.upperBound.y - this.aabb.lowerBound.y) / 2,
-                (this.aabb.upperBound.z - this.aabb.lowerBound.z) / 2
+                (this.aabb.max.x - this.aabb.min.x) / 2,
+                (this.aabb.max.y - this.aabb.min.y) / 2,
+                (this.aabb.max.z - this.aabb.min.z) / 2
             );
             Box.calculateInertia(halfExtents, this.mass, I);
 
