@@ -31,9 +31,9 @@ namespace CANNON
         /**
          * Reference to the world the body is living in
          */
-        world: World;
+        world: World = null;
 
-        vlambda: feng3d.Vector3;
+        vlambda = new feng3d.Vector3();
 
         collisionFilterGroup: number;
 
@@ -42,36 +42,36 @@ namespace CANNON
         /**
          * Whether to produce contact forces when in contact with other bodies. Note that contacts will be generated, but they will be disabled.
          */
-        collisionResponse: boolean;
+        collisionResponse = true;
 
         /**
          * World space position of the body.
          */
-        position: feng3d.Vector3;
+        position = new feng3d.Vector3();
 
-        previousPosition: feng3d.Vector3;
+        previousPosition = new feng3d.Vector3();
 
         /**
          * Interpolated position of the body.
          */
-        interpolatedPosition: feng3d.Vector3;
+        interpolatedPosition = new feng3d.Vector3();
 
         /**
          * Initial position of the body
          */
-        initPosition: feng3d.Vector3;
+        initPosition = new feng3d.Vector3();
 
         /**
          * World space velocity of the body.
          */
-        velocity: feng3d.Vector3;
+        velocity = new feng3d.Vector3();
 
-        initVelocity: feng3d.Vector3;
+        initVelocity = new feng3d.Vector3();
 
         /**
          * Linear force on the body in world space.
          */
-        force: feng3d.Vector3;
+        force = new feng3d.Vector3();
 
         mass: number;
 
@@ -94,7 +94,7 @@ namespace CANNON
         /**
          * Current sleep state.
          */
-        sleepState: number;
+        sleepState = 0;
 
         /**
          * If the speed (the norm of the velocity) is smaller than this value, the body is considered sleepy.
@@ -106,28 +106,28 @@ namespace CANNON
          */
         sleepTimeLimit: number;
 
-        timeLastSleepy: number;
+        timeLastSleepy = 0;
 
-        _wakeUpAfterNarrowphase: boolean;
+        _wakeUpAfterNarrowphase = false;
 
         /**
          * World space rotational force on the body, around center of mass.
          */
-        torque: feng3d.Vector3;
+        torque = new feng3d.Vector3();
 
         /**
          * World space orientation of the body.
          */
-        quaternion: feng3d.Quaternion;
+        quaternion = new feng3d.Quaternion();
 
-        initQuaternion: feng3d.Quaternion;
+        initQuaternion = new feng3d.Quaternion();
 
-        previousQuaternion: feng3d.Quaternion;
+        previousQuaternion = new feng3d.Quaternion();
 
         /**
          * Interpolated orientation of the body.
          */
-        interpolatedQuaternion: feng3d.Quaternion;
+        interpolatedQuaternion = new feng3d.Quaternion();
 
 
         /**
@@ -135,32 +135,31 @@ namespace CANNON
          */
         angularVelocity: feng3d.Vector3;
 
+        initAngularVelocity = new feng3d.Vector3();
 
-        initAngularVelocity: feng3d.Vector3;
-
-        shapes: Shape[];
+        shapes: Shape[] = [];
 
         /**
          * Position of each Shape in the body, given in local Body space.
          */
-        shapeOffsets: feng3d.Vector3[];
+        shapeOffsets: feng3d.Vector3[] = [];
 
         /**
          * Orientation of each Shape, given in local Body space.
          */
-        shapeOrientations: feng3d.Quaternion[];
+        shapeOrientations: feng3d.Quaternion[] = [];
 
-        inertia: feng3d.Vector3;
+        inertia = new feng3d.Vector3();
 
-        invInertia: feng3d.Vector3;
+        invInertia = new feng3d.Vector3();
 
-        invInertiaWorld: feng3d.Matrix3x3;
+        invInertiaWorld = new feng3d.Matrix3x3();
 
-        invMassSolve: number;
+        invMassSolve = 0;
 
-        invInertiaSolve: feng3d.Vector3;
+        invInertiaSolve = new feng3d.Vector3();
 
-        invInertiaWorldSolve: feng3d.Matrix3x3;
+        invInertiaWorldSolve = new feng3d.Matrix3x3();
 
         /**
          * Set to true if you don't want the body to rotate. Make sure to run .updateMassProperties() after changing this.
@@ -172,29 +171,29 @@ namespace CANNON
         /**
          * Use this property to limit the motion along any world axis. (1,1,1) will allow motion along all axes while (0,0,0) allows none.
          */
-        linearFactor: feng3d.Vector3;
+        linearFactor = new feng3d.Vector3(1, 1, 1);
 
         /**
          * Use this property to limit the rotational motion along any world axis. (1,1,1) will allow rotation along all axes while (0,0,0) allows none.
          */
-        angularFactor: feng3d.Vector3;
+        angularFactor = new feng3d.Vector3(1, 1, 1);
 
         /**
          * World space bounding box of the body and its shapes.
          */
-        aabb: feng3d.AABB;
+        aabb = new feng3d.AABB();
 
         /**
          * Indicates if the AABB needs to be updated before use.
          */
-        aabbNeedsUpdate: boolean;
+        aabbNeedsUpdate = true;
 
         /**
          * Total bounding radius of the Body including its shapes, relative to body.position.
          */
-        boundingRadius: number;
+        boundingRadius = 0;
 
-        wlambda: feng3d.Vector3;
+        wlambda = new feng3d.Vector3();
 
         index: number;
 
@@ -222,15 +221,8 @@ namespace CANNON
             super();
 
             this.id = Body.idCounter++;
-            this.world = null;
-            this.vlambda = new feng3d.Vector3();
             this.collisionFilterGroup = typeof (options.collisionFilterGroup) === 'number' ? options.collisionFilterGroup : 1;
             this.collisionFilterMask = typeof (options.collisionFilterMask) === 'number' ? options.collisionFilterMask : -1;
-            this.collisionResponse = true;
-            this.position = new feng3d.Vector3();
-            this.previousPosition = new feng3d.Vector3();
-            this.interpolatedPosition = new feng3d.Vector3();
-            this.initPosition = new feng3d.Vector3();
 
             if (options.position)
             {
@@ -239,15 +231,11 @@ namespace CANNON
                 this.interpolatedPosition.copy(options.position);
                 this.initPosition.copy(options.position);
             }
-            this.velocity = new feng3d.Vector3();
 
             if (options.velocity)
             {
                 this.velocity.copy(options.velocity);
             }
-
-            this.initVelocity = new feng3d.Vector3();
-            this.force = new feng3d.Vector3();
 
             var mass = typeof (options.mass) === 'number' ? options.mass : 0;
             this.mass = mass;
@@ -260,18 +248,8 @@ namespace CANNON
                 this.type = options.type;
             }
             this.allowSleep = typeof (options.allowSleep) !== 'undefined' ? options.allowSleep : true;
-            this.sleepState = 0;
             this.sleepSpeedLimit = typeof (options.sleepSpeedLimit) !== 'undefined' ? options.sleepSpeedLimit : 0.1;
             this.sleepTimeLimit = typeof (options.sleepTimeLimit) !== 'undefined' ? options.sleepTimeLimit : 1;
-
-            this.timeLastSleepy = 0;
-
-            this._wakeUpAfterNarrowphase = false;
-            this.torque = new feng3d.Vector3();
-            this.quaternion = new feng3d.Quaternion();
-            this.initQuaternion = new feng3d.Quaternion();
-            this.previousQuaternion = new feng3d.Quaternion();
-            this.interpolatedQuaternion = new feng3d.Quaternion();
 
             if (options.quaternion)
             {
@@ -286,34 +264,17 @@ namespace CANNON
             {
                 this.angularVelocity.copy(options.angularVelocity);
             }
-            this.initAngularVelocity = new feng3d.Vector3();
-            this.shapes = [];
-            this.shapeOffsets = [];
-            this.shapeOrientations = [];
-            this.inertia = new feng3d.Vector3();
-            this.invInertia = new feng3d.Vector3();
-            this.invInertiaWorld = new feng3d.Matrix3x3();
 
-            this.invMassSolve = 0;
-            this.invInertiaSolve = new feng3d.Vector3();
-            this.invInertiaWorldSolve = new feng3d.Matrix3x3();
             this.fixedRotation = typeof (options.fixedRotation) !== "undefined" ? options.fixedRotation : false;
             this.angularDamping = typeof (options.angularDamping) !== 'undefined' ? options.angularDamping : 0.01;
-            this.linearFactor = new feng3d.Vector3(1, 1, 1);
             if (options.linearFactor)
             {
                 this.linearFactor.copy(options.linearFactor);
             }
-            this.angularFactor = new feng3d.Vector3(1, 1, 1);
             if (options.angularFactor)
             {
                 this.angularFactor.copy(options.angularFactor);
             }
-            this.aabb = new feng3d.AABB();
-            this.aabbNeedsUpdate = true;
-            this.boundingRadius = 0;
-
-            this.wlambda = new feng3d.Vector3();
 
             if (options.shape)
             {

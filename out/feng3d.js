@@ -41471,28 +41471,106 @@ var CANNON;
             if (options === void 0) { options = {}; }
             if (a === void 0) { a = undefined; }
             var _this = _super.call(this) || this;
-            _this.id = Body.idCounter++;
+            /**
+             * Reference to the world the body is living in
+             */
             _this.world = null;
             _this.vlambda = new feng3d.Vector3();
-            _this.collisionFilterGroup = typeof (options.collisionFilterGroup) === 'number' ? options.collisionFilterGroup : 1;
-            _this.collisionFilterMask = typeof (options.collisionFilterMask) === 'number' ? options.collisionFilterMask : -1;
+            /**
+             * Whether to produce contact forces when in contact with other bodies. Note that contacts will be generated, but they will be disabled.
+             */
             _this.collisionResponse = true;
+            /**
+             * World space position of the body.
+             */
             _this.position = new feng3d.Vector3();
             _this.previousPosition = new feng3d.Vector3();
+            /**
+             * Interpolated position of the body.
+             */
             _this.interpolatedPosition = new feng3d.Vector3();
+            /**
+             * Initial position of the body
+             */
             _this.initPosition = new feng3d.Vector3();
+            /**
+             * World space velocity of the body.
+             */
+            _this.velocity = new feng3d.Vector3();
+            _this.initVelocity = new feng3d.Vector3();
+            /**
+             * Linear force on the body in world space.
+             */
+            _this.force = new feng3d.Vector3();
+            /**
+             * Current sleep state.
+             */
+            _this.sleepState = 0;
+            _this.timeLastSleepy = 0;
+            _this._wakeUpAfterNarrowphase = false;
+            /**
+             * World space rotational force on the body, around center of mass.
+             */
+            _this.torque = new feng3d.Vector3();
+            /**
+             * World space orientation of the body.
+             */
+            _this.quaternion = new feng3d.Quaternion();
+            _this.initQuaternion = new feng3d.Quaternion();
+            _this.previousQuaternion = new feng3d.Quaternion();
+            /**
+             * Interpolated orientation of the body.
+             */
+            _this.interpolatedQuaternion = new feng3d.Quaternion();
+            _this.initAngularVelocity = new feng3d.Vector3();
+            _this.shapes = [];
+            /**
+             * Position of each Shape in the body, given in local Body space.
+             */
+            _this.shapeOffsets = [];
+            /**
+             * Orientation of each Shape, given in local Body space.
+             */
+            _this.shapeOrientations = [];
+            _this.inertia = new feng3d.Vector3();
+            _this.invInertia = new feng3d.Vector3();
+            _this.invInertiaWorld = new feng3d.Matrix3x3();
+            _this.invMassSolve = 0;
+            _this.invInertiaSolve = new feng3d.Vector3();
+            _this.invInertiaWorldSolve = new feng3d.Matrix3x3();
+            /**
+             * Use this property to limit the motion along any world axis. (1,1,1) will allow motion along all axes while (0,0,0) allows none.
+             */
+            _this.linearFactor = new feng3d.Vector3(1, 1, 1);
+            /**
+             * Use this property to limit the rotational motion along any world axis. (1,1,1) will allow rotation along all axes while (0,0,0) allows none.
+             */
+            _this.angularFactor = new feng3d.Vector3(1, 1, 1);
+            /**
+             * World space bounding box of the body and its shapes.
+             */
+            _this.aabb = new feng3d.AABB();
+            /**
+             * Indicates if the AABB needs to be updated before use.
+             */
+            _this.aabbNeedsUpdate = true;
+            /**
+             * Total bounding radius of the Body including its shapes, relative to body.position.
+             */
+            _this.boundingRadius = 0;
+            _this.wlambda = new feng3d.Vector3();
+            _this.id = Body.idCounter++;
+            _this.collisionFilterGroup = typeof (options.collisionFilterGroup) === 'number' ? options.collisionFilterGroup : 1;
+            _this.collisionFilterMask = typeof (options.collisionFilterMask) === 'number' ? options.collisionFilterMask : -1;
             if (options.position) {
                 _this.position.copy(options.position);
                 _this.previousPosition.copy(options.position);
                 _this.interpolatedPosition.copy(options.position);
                 _this.initPosition.copy(options.position);
             }
-            _this.velocity = new feng3d.Vector3();
             if (options.velocity) {
                 _this.velocity.copy(options.velocity);
             }
-            _this.initVelocity = new feng3d.Vector3();
-            _this.force = new feng3d.Vector3();
             var mass = typeof (options.mass) === 'number' ? options.mass : 0;
             _this.mass = mass;
             _this.invMass = mass > 0 ? 1.0 / mass : 0;
@@ -41503,16 +41581,8 @@ var CANNON;
                 _this.type = options.type;
             }
             _this.allowSleep = typeof (options.allowSleep) !== 'undefined' ? options.allowSleep : true;
-            _this.sleepState = 0;
             _this.sleepSpeedLimit = typeof (options.sleepSpeedLimit) !== 'undefined' ? options.sleepSpeedLimit : 0.1;
             _this.sleepTimeLimit = typeof (options.sleepTimeLimit) !== 'undefined' ? options.sleepTimeLimit : 1;
-            _this.timeLastSleepy = 0;
-            _this._wakeUpAfterNarrowphase = false;
-            _this.torque = new feng3d.Vector3();
-            _this.quaternion = new feng3d.Quaternion();
-            _this.initQuaternion = new feng3d.Quaternion();
-            _this.previousQuaternion = new feng3d.Quaternion();
-            _this.interpolatedQuaternion = new feng3d.Quaternion();
             if (options.quaternion) {
                 _this.quaternion.copy(options.quaternion);
                 _this.initQuaternion.copy(options.quaternion);
@@ -41523,30 +41593,14 @@ var CANNON;
             if (options.angularVelocity) {
                 _this.angularVelocity.copy(options.angularVelocity);
             }
-            _this.initAngularVelocity = new feng3d.Vector3();
-            _this.shapes = [];
-            _this.shapeOffsets = [];
-            _this.shapeOrientations = [];
-            _this.inertia = new feng3d.Vector3();
-            _this.invInertia = new feng3d.Vector3();
-            _this.invInertiaWorld = new feng3d.Matrix3x3();
-            _this.invMassSolve = 0;
-            _this.invInertiaSolve = new feng3d.Vector3();
-            _this.invInertiaWorldSolve = new feng3d.Matrix3x3();
             _this.fixedRotation = typeof (options.fixedRotation) !== "undefined" ? options.fixedRotation : false;
             _this.angularDamping = typeof (options.angularDamping) !== 'undefined' ? options.angularDamping : 0.01;
-            _this.linearFactor = new feng3d.Vector3(1, 1, 1);
             if (options.linearFactor) {
                 _this.linearFactor.copy(options.linearFactor);
             }
-            _this.angularFactor = new feng3d.Vector3(1, 1, 1);
             if (options.angularFactor) {
                 _this.angularFactor.copy(options.angularFactor);
             }
-            _this.aabb = new feng3d.AABB();
-            _this.aabbNeedsUpdate = true;
-            _this.boundingRadius = 0;
-            _this.wlambda = new feng3d.Vector3();
             if (options.shape) {
                 _this.addShape(options.shape);
             }
