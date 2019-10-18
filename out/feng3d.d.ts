@@ -17496,25 +17496,6 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    class DistanceConstraint extends Constraint {
-        distance: number;
-        distanceEquation: ContactEquation;
-        /**
-         * Constrains two bodies to be at a constant distance from each others center of mass.
-         *
-         * @param bodyA
-         * @param bodyB
-         * @param distance The distance to keep. If undefined, it will be set to the current distance between bodyA and bodyB
-         * @param maxForce
-         * @param number
-         *
-         * @author schteppe
-         */
-        constructor(bodyA: Body, bodyB: Body, distance?: number, maxForce?: number);
-        update(): void;
-    }
-}
-declare namespace CANNON {
     class PointToPointConstraint extends Constraint {
         /**
          * Pivot, defined locally in bodyA.
@@ -17551,36 +17532,6 @@ declare namespace CANNON {
          *     world.addConstraint(constraint);
          */
         constructor(bodyA: Body, pivotA: feng3d.Vector3, bodyB: Body, pivotB: feng3d.Vector3, maxForce?: number);
-        update(): void;
-    }
-}
-declare namespace CANNON {
-    class ConeTwistConstraint extends PointToPointConstraint {
-        axisA: feng3d.Vector3;
-        axisB: feng3d.Vector3;
-        angle: number;
-        coneEquation: ConeEquation;
-        twistEquation: RotationalEquation;
-        twistAngle: number;
-        /**
-         * @class ConeTwistConstraint
-         *
-         * @param bodyA
-         * @param bodyB
-         * @param options
-         *
-         * @author schteppe
-         */
-        constructor(bodyA: Body, bodyB: Body, options?: {
-            pivotA?: feng3d.Vector3;
-            pivotB?: feng3d.Vector3;
-            maxForce?: number;
-            axisA?: feng3d.Vector3;
-            axisB?: feng3d.Vector3;
-            collideConnected?: boolean;
-            angle?: number;
-            twistAngle?: number;
-        });
         update(): void;
     }
 }
@@ -17622,33 +17573,6 @@ declare namespace CANNON {
         disableMotor(): void;
         setMotorSpeed(speed: number): void;
         setMotorMaxForce(maxForce: number): void;
-        update(): void;
-    }
-}
-declare namespace CANNON {
-    class LockConstraint extends PointToPointConstraint {
-        xA: feng3d.Vector3;
-        xB: any;
-        yA: feng3d.Vector3;
-        yB: any;
-        zA: feng3d.Vector3;
-        zB: any;
-        rotationalEquation1: RotationalEquation;
-        rotationalEquation2: RotationalEquation;
-        rotationalEquation3: RotationalEquation;
-        motorEquation: any;
-        /**
-         * Lock constraint. Will remove all degrees of freedom between the bodies.
-         *
-         * @param bodyA
-         * @param bodyB
-         * @param options
-         *
-         * @author schteppe
-         */
-        constructor(bodyA: Body, bodyB: Body, options?: {
-            maxForce?: number;
-        });
         update(): void;
     }
 }

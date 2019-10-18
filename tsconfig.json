@@ -356,11 +356,8 @@
         "src/physics/math/JacobianElement.ts",
         "src/physics/utils/Utils.ts",
         "src/physics/constraints/Constraint.ts",
-        "src/physics/constraints/DistanceConstraint.ts",
         "src/physics/constraints/PointToPointConstraint.ts",
-        "src/physics/constraints/ConeTwistConstraint.ts",
         "src/physics/constraints/HingeConstraint.ts",
-        "src/physics/constraints/LockConstraint.ts",
         //
         "src/physics/shapes/ShapeType.ts",
         "src/physics/shapes/Shape.ts",

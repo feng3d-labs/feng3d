@@ -38430,55 +38430,6 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
-    var DistanceConstraint = /** @class */ (function (_super) {
-        __extends(DistanceConstraint, _super);
-        /**
-         * Constrains two bodies to be at a constant distance from each others center of mass.
-         *
-         * @param bodyA
-         * @param bodyB
-         * @param distance The distance to keep. If undefined, it will be set to the current distance between bodyA and bodyB
-         * @param maxForce
-         * @param number
-         *
-         * @author schteppe
-         */
-        function DistanceConstraint(bodyA, bodyB, distance, maxForce) {
-            var _this = _super.call(this, bodyA, bodyB) || this;
-            if (typeof (distance) === "undefined") {
-                distance = bodyA.position.distance(bodyB.position);
-            }
-            if (typeof (maxForce) === "undefined") {
-                maxForce = 1e6;
-            }
-            _this.distance = distance;
-            /**
-             * @property {ContactEquation} distanceEquation
-             */
-            var eq = _this.distanceEquation = new CANNON.ContactEquation(bodyA, bodyB);
-            _this.equations.push(eq);
-            // Make it bidirectional
-            eq.minForce = -maxForce;
-            eq.maxForce = maxForce;
-            return _this;
-        }
-        DistanceConstraint.prototype.update = function () {
-            var bodyA = this.bodyA;
-            var bodyB = this.bodyB;
-            var eq = this.distanceEquation;
-            var halfDist = this.distance * 0.5;
-            var normal = eq.ni;
-            bodyB.position.subTo(bodyA.position, normal);
-            normal.normalize();
-            normal.scaleNumberTo(halfDist, eq.ri);
-            normal.scaleNumberTo(-halfDist, eq.rj);
-        };
-        return DistanceConstraint;
-    }(CANNON.Constraint));
-    CANNON.DistanceConstraint = DistanceConstraint;
-})(CANNON || (CANNON = {}));
-var CANNON;
-(function (CANNON) {
     var PointToPointConstraint = /** @class */ (function (_super) {
         __extends(PointToPointConstraint, _super);
         /**
@@ -38539,63 +38490,6 @@ var CANNON;
         return PointToPointConstraint;
     }(CANNON.Constraint));
     CANNON.PointToPointConstraint = PointToPointConstraint;
-})(CANNON || (CANNON = {}));
-var CANNON;
-(function (CANNON) {
-    var ConeTwistConstraint = /** @class */ (function (_super) {
-        __extends(ConeTwistConstraint, _super);
-        /**
-         * @class ConeTwistConstraint
-         *
-         * @param bodyA
-         * @param bodyB
-         * @param options
-         *
-         * @author schteppe
-         */
-        function ConeTwistConstraint(bodyA, bodyB, options) {
-            if (options === void 0) { options = {}; }
-            var _this = _super.call(this, bodyA, options.pivotA ? options.pivotA.clone() : new feng3d.Vector3(), bodyB, options.pivotB ? options.pivotB.clone() : new feng3d.Vector3(), typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6) || this;
-            _this.axisA = options.axisA ? options.axisA.clone() : new feng3d.Vector3();
-            _this.axisB = options.axisB ? options.axisB.clone() : new feng3d.Vector3();
-            var maxForce = typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6;
-            _this.collideConnected = !!options.collideConnected;
-            _this.angle = typeof (options.angle) !== 'undefined' ? options.angle : 0;
-            /**
-             * @property {ConeEquation} coneEquation
-             */
-            var c = _this.coneEquation = new CANNON.ConeEquation(bodyA, bodyB, options);
-            /**
-             * @property {RotationalEquation} twistEquation
-             */
-            var t = _this.twistEquation = new CANNON.RotationalEquation(bodyA, bodyB, options);
-            _this.twistAngle = typeof (options.twistAngle) !== 'undefined' ? options.twistAngle : 0;
-            // Make the cone equation push the bodies toward the cone axis, not outward
-            c.maxForce = 0;
-            c.minForce = -maxForce;
-            // Make the twist equation add torque toward the initial position
-            t.maxForce = 0;
-            t.minForce = -maxForce;
-            _this.equations.push(c, t);
-            return _this;
-        }
-        ConeTwistConstraint.prototype.update = function () {
-            var bodyA = this.bodyA, bodyB = this.bodyB, cone = this.coneEquation, twist = this.twistEquation;
-            _super.prototype.update.call(this);
-            // Update the axes to the cone constraint
-            bodyA.vectorToWorldFrame(this.axisA, cone.axisA);
-            bodyB.vectorToWorldFrame(this.axisB, cone.axisB);
-            // Update the world axes in the twist constraint
-            this.axisA.tangents(twist.axisA, twist.axisA);
-            bodyA.vectorToWorldFrame(twist.axisA, twist.axisA);
-            this.axisB.tangents(twist.axisB, twist.axisB);
-            bodyB.vectorToWorldFrame(twist.axisB, twist.axisB);
-            cone.angle = this.angle;
-            twist.maxAngle = this.twistAngle;
-        };
-        return ConeTwistConstraint;
-    }(CANNON.PointToPointConstraint));
-    CANNON.ConeTwistConstraint = ConeTwistConstraint;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -38662,64 +38556,6 @@ var CANNON;
     CANNON.HingeConstraint = HingeConstraint;
     var HingeConstraint_update_tmpVec1 = new feng3d.Vector3();
     var HingeConstraint_update_tmpVec2 = new feng3d.Vector3();
-})(CANNON || (CANNON = {}));
-var CANNON;
-(function (CANNON) {
-    var LockConstraint = /** @class */ (function (_super) {
-        __extends(LockConstraint, _super);
-        /**
-         * Lock constraint. Will remove all degrees of freedom between the bodies.
-         *
-         * @param bodyA
-         * @param bodyB
-         * @param options
-         *
-         * @author schteppe
-         */
-        function LockConstraint(bodyA, bodyB, options) {
-            if (options === void 0) { options = {}; }
-            var _this = 
-            // The point-to-point constraint will keep a point shared between the bodies
-            _super.call(this, bodyA, new feng3d.Vector3(), bodyB, new feng3d.Vector3(), typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6) || this;
-            // Set pivot point in between
-            var pivotA = _this.pivotA;
-            var pivotB = _this.pivotB;
-            var halfWay = new feng3d.Vector3();
-            bodyA.position.addTo(bodyB.position, halfWay);
-            halfWay.scaleNumberTo(0.5, halfWay);
-            bodyB.pointToLocalFrame(halfWay, pivotB);
-            bodyA.pointToLocalFrame(halfWay, pivotA);
-            // Store initial rotation of the bodies as unit vectors in the local body spaces
-            _this.xA = bodyA.vectorToLocalFrame(feng3d.Vector3.X_AXIS);
-            _this.xB = bodyB.vectorToLocalFrame(feng3d.Vector3.X_AXIS);
-            _this.yA = bodyA.vectorToLocalFrame(feng3d.Vector3.Y_AXIS);
-            _this.yB = bodyB.vectorToLocalFrame(feng3d.Vector3.Y_AXIS);
-            _this.zA = bodyA.vectorToLocalFrame(feng3d.Vector3.Z_AXIS);
-            _this.zB = bodyB.vectorToLocalFrame(feng3d.Vector3.Z_AXIS);
-            // ...and the following rotational equations will keep all rotational DOF's in place
-            var r1 = _this.rotationalEquation1 = new CANNON.RotationalEquation(bodyA, bodyB, options);
-            var r2 = _this.rotationalEquation2 = new CANNON.RotationalEquation(bodyA, bodyB, options);
-            var r3 = _this.rotationalEquation3 = new CANNON.RotationalEquation(bodyA, bodyB, options);
-            _this.equations.push(r1, r2, r3);
-            return _this;
-        }
-        LockConstraint.prototype.update = function () {
-            var bodyA = this.bodyA, bodyB = this.bodyB, motor = this.motorEquation, r1 = this.rotationalEquation1, r2 = this.rotationalEquation2, r3 = this.rotationalEquation3, worldAxisA = LockConstraint_update_tmpVec1, worldAxisB = LockConstraint_update_tmpVec2;
-            _super.prototype.update.call(this);
-            // These vector pairs must be orthogonal
-            bodyA.vectorToWorldFrame(this.xA, r1.axisA);
-            bodyB.vectorToWorldFrame(this.yB, r1.axisB);
-            bodyA.vectorToWorldFrame(this.yA, r2.axisA);
-            bodyB.vectorToWorldFrame(this.zB, r2.axisB);
-            bodyA.vectorToWorldFrame(this.zA, r3.axisA);
-            bodyB.vectorToWorldFrame(this.xB, r3.axisB);
-        };
-        ;
-        return LockConstraint;
-    }(CANNON.PointToPointConstraint));
-    CANNON.LockConstraint = LockConstraint;
-    var LockConstraint_update_tmpVec1 = new feng3d.Vector3();
-    var LockConstraint_update_tmpVec2 = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
