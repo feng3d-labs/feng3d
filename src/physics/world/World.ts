@@ -196,7 +196,7 @@ namespace CANNON
             this.contactMaterialTable = {};
 
             this.defaultMaterial = new Material("default");
-            this.defaultContactMaterial = new ContactMaterial(this.defaultMaterial, this.defaultMaterial, { friction: 0.3, restitution: 0.0 });
+            this.defaultContactMaterial = new ContactMaterial(this.defaultMaterial, this.defaultMaterial, 0.3, 0.0);
             this.doProfiling = false;
             this.profile = {
                 solve: 0,

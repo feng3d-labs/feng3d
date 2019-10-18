@@ -18,14 +18,14 @@ namespace CANNON
          * 
          * @author schteppe
          */
-        constructor(bodyA: Body, bodyB: Body, options: { maxForce?: number, axisA?: feng3d.Vector3, axisB?: feng3d.Vector3, angle?: number } = {})
+        constructor(bodyA: Body, bodyB: Body, maxForce = 1e6, axisA = new feng3d.Vector3(1, 0, 0), axisB = new feng3d.Vector3(0, 1, 0), angle = 0)
         {
-            super(bodyA, bodyB, -(typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6), typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6);
+            super(bodyA, bodyB, maxForce, maxForce);
 
-            this.axisA = options.axisA ? options.axisA.clone() : new feng3d.Vector3(1, 0, 0);
-            this.axisB = options.axisB ? options.axisB.clone() : new feng3d.Vector3(0, 1, 0);
+            this.axisA = axisA.clone();
+            this.axisB = axisB.clone();
 
-            this.angle = typeof (options.angle) !== 'undefined' ? options.angle : 0;
+            this.angle = angle;
         }
 
         computeB(h: number)
@@ -36,23 +36,13 @@ namespace CANNON
                 ni = this.axisA,
                 nj = this.axisB,
 
-                nixnj = tmpVec1,
-                njxni = tmpVec2,
-
                 GA = this.jacobianElementA,
                 GB = this.jacobianElementB;
 
             // Caluclate cross products
-            ni.crossTo(nj, nixnj);
-            nj.crossTo(ni, njxni);
+            var nixnj = ni.crossTo(nj);
+            var njxni = nj.crossTo(ni);
 
-            // The angle between two vector is:
-            // cos(theta) = a * b / (length(a) * length(b) = { len(a) = len(b) = 1 } = a * b
-
-            // g = a * b
-            // gdot = (b x a) * wi + (a x b) * wj
-            // G = [0 bxa 0 axb]
-            // W = [vi wi vj wj]
             GA.rotational.copy(njxni);
             GB.rotational.copy(nixnj);
 
@@ -66,7 +56,4 @@ namespace CANNON
         }
 
     }
-
-    var tmpVec1 = new feng3d.Vector3();
-    var tmpVec2 = new feng3d.Vector3();
 }

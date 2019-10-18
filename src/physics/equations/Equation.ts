@@ -19,33 +19,30 @@ namespace CANNON
 
         bj: Body;
 
-        a: number;
+        a = 0.0;
 
-        b: number;
+        b = 0.0;
 
         /**
          * SPOOK parameter
          */
-        eps: number;
+        eps = 0.0;
 
-        jacobianElementA: JacobianElement;
+        jacobianElementA = new JacobianElement();
 
-        jacobianElementB: JacobianElement;
+        jacobianElementB = new JacobianElement();
 
         /**
          * 是否启用
          */
-        enabled: boolean;
+        enabled = true;
 
         /**
-         * Equation base class
-         * @class Equation
-         * @constructor
-         * @author schteppe
-         * @param {Body} bi
-         * @param {Body} bj
-         * @param {Number} minForce Minimum (read: negative max) force to be applied by the constraint.
-         * @param {Number} maxForce Maximum (read: positive max) force to be applied by the constraint.
+         * 
+         * @param bi 
+         * @param bj 
+         * @param minForce 
+         * @param maxForce 
          */
         constructor(bi: Body, bj: Body, minForce = -1e6, maxForce = 1e6)
         {
@@ -53,12 +50,6 @@ namespace CANNON
             this.maxForce = maxForce;
             this.bi = bi;
             this.bj = bj;
-            this.a = 0.0;
-            this.b = 0.0;
-            this.eps = 0.0;
-            this.jacobianElementA = new JacobianElement();
-            this.jacobianElementB = new JacobianElement();
-            this.enabled = true;
 
             // Set typical spook params
             this.setSpookParams(1e7, 4, 1 / 60);
@@ -152,11 +143,11 @@ namespace CANNON
                 invMassi = bi.invMassSolve,
                 invMassj = bj.invMassSolve;
 
-            fi.scaleNumberTo(invMassi, iMfi);
-            fj.scaleNumberTo(invMassj, iMfj);
+            var iMfi = fi.scaleNumberTo(invMassi);
+            var iMfj = fj.scaleNumberTo(invMassj);
 
-            bi.invInertiaWorldSolve.vmult(ti, invIi_vmult_taui);
-            bj.invInertiaWorldSolve.vmult(tj, invIj_vmult_tauj);
+            var invIi_vmult_taui = bi.invInertiaWorldSolve.vmult(ti);
+            var invIj_vmult_tauj = bj.invInertiaWorldSolve.vmult(tj);
 
             return GA.multiplyVectors(iMfi, invIi_vmult_taui) + GB.multiplyVectors(iMfj, invIj_vmult_tauj);
         }
@@ -176,7 +167,7 @@ namespace CANNON
                 invIj = bj.invInertiaWorldSolve,
                 result = invMassi + invMassj;
 
-            invIi.vmult(GA.rotational, tmp);
+            var tmp = invIi.vmult(GA.rotational);
             result += tmp.dot(GA.rotational);
 
             invIj.vmult(GB.rotational, tmp);
@@ -194,22 +185,22 @@ namespace CANNON
                 GB = this.jacobianElementB,
                 bi = this.bi,
                 bj = this.bj,
-                temp = addToWlambda_temp;
+                temp = new feng3d.Vector3();
 
 
 
             // Add to linear velocity
             // v_lambda += inv(M) * delta_lamba * G
 
-            bi.vlambda.addTo(GA.spatial.scaleNumberTo(bi.invMassSolve * deltalambda, addToWlambda_Gi), bi.vlambda);
-            bj.vlambda.addTo(GB.spatial.scaleNumberTo(bj.invMassSolve * deltalambda, addToWlambda_Gi), bj.vlambda);
+            bi.vlambda.addTo(GA.spatial.scaleNumberTo(bi.invMassSolve * deltalambda), bi.vlambda);
+            bj.vlambda.addTo(GB.spatial.scaleNumberTo(bj.invMassSolve * deltalambda), bj.vlambda);
 
             // Add to angular velocity
             bi.invInertiaWorldSolve.vmult(GA.rotational, temp);
-            bi.wlambda.addTo(temp.scaleNumberTo(deltalambda, addToWlambda_Gi), bi.wlambda);
+            bi.wlambda.addTo(temp.scaleNumberTo(deltalambda), bi.wlambda);
 
             bj.invInertiaWorldSolve.vmult(GB.rotational, temp);
-            bj.wlambda.addTo(temp.scaleNumberTo(deltalambda, addToWlambda_Gi), bj.wlambda);
+            bj.wlambda.addTo(temp.scaleNumberTo(deltalambda), bj.wlambda);
         }
 
         /**
@@ -221,18 +212,4 @@ namespace CANNON
         }
     }
 
-    var zero = new feng3d.Vector3();
-    var iMfi = new feng3d.Vector3();
-    var iMfj = new feng3d.Vector3();
-    var invIi_vmult_taui = new feng3d.Vector3();
-    var invIj_vmult_tauj = new feng3d.Vector3();
-    var tmp = new feng3d.Vector3();
-
-
-    var addToWlambda_temp = new feng3d.Vector3();
-    var addToWlambda_Gi = new feng3d.Vector3();
-    var addToWlambda_Gj = new feng3d.Vector3();
-    var addToWlambda_ri = new feng3d.Vector3();
-    var addToWlambda_rj = new feng3d.Vector3();
-    var addToWlambda_Mdiag = new feng3d.Vector3();
 }

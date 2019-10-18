@@ -5,7 +5,7 @@ namespace CANNON
         axisA: feng3d.Vector3;
         axisB: feng3d.Vector3;
 
-        maxAngle: number;
+        maxAngle = Math.PI / 2;
 
         /**
          * Rotational constraint. Works to keep the local vectors orthogonal to each other in world space.
@@ -22,8 +22,6 @@ namespace CANNON
 
             this.axisA = axisA.clone();
             this.axisB = axisB.clone();
-
-            this.maxAngle = Math.PI / 2;
         }
 
         computeB(h: number)
@@ -34,20 +32,13 @@ namespace CANNON
                 ni = this.axisA,
                 nj = this.axisB,
 
-                nixnj = tmpVec1,
-                njxni = tmpVec2,
-
                 GA = this.jacobianElementA,
                 GB = this.jacobianElementB;
 
             // Caluclate cross products
-            ni.crossTo(nj, nixnj);
-            nj.crossTo(ni, njxni);
+            var nixnj = ni.crossTo(nj);
+            var njxni = nj.crossTo(ni);
 
-            // g = ni * nj
-            // gdot = (nj x ni) * wi + (ni x nj) * wj
-            // G = [0 njxni 0 nixnj]
-            // W = [vi wi vj wj]
             GA.rotational.copy(njxni);
             GB.rotational.copy(nixnj);
 
@@ -61,7 +52,4 @@ namespace CANNON
         }
 
     }
-
-    var tmpVec1 = new feng3d.Vector3();
-    var tmpVec2 = new feng3d.Vector3();
 }

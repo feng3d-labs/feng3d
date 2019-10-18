@@ -4,11 +4,6 @@ namespace CANNON
     {
 
         /**
-         * Identifier of this material
-         */
-        id: number;
-
-        /**
          * Participating materials
          * @todo  Should be .materialA and .materialB instead
          */
@@ -17,32 +12,32 @@ namespace CANNON
         /**
          * Friction coefficient
          */
-        friction: number;
+        friction = 0.3;
 
         /**
          * Restitution coefficient
          */
-        restitution: number;
+        restitution = 0.3;
 
         /**
          * Stiffness of the produced contact equations
          */
-        contactEquationStiffness: number;
+        contactEquationStiffness = 1e7;
 
         /**
          * Relaxation time of the produced contact equations
          */
-        contactEquationRelaxation: number;
+        contactEquationRelaxation = 3;
 
         /**
          * Stiffness of the produced friction equations
          */
-        frictionEquationStiffness: number;
+        frictionEquationStiffness = 1e7;
 
         /**
          * Relaxation time of the produced friction equations
          */
-        frictionEquationRelaxation: number;
+        frictionEquationRelaxation = 3;
 
         /**
          * Defines what happens when two materials meet.
@@ -51,33 +46,11 @@ namespace CANNON
          * @param m2 
          * @param options 
          */
-        constructor(m1: Material, m2: Material, options: {
-            friction?: number, restitution?: number,
-            contactEquationStiffness?: number,
-            contactEquationRelaxation?: number,
-            frictionEquationStiffness?: number,
-            frictionEquationRelaxation?: number
-        } = {})
+        constructor(m1: Material, m2: Material, friction = 0.3, restitution = 0.0)
         {
-            options = Utils.defaults(options, {
-                friction: 0.3,
-                restitution: 0.3,
-                contactEquationStiffness: 1e7,
-                contactEquationRelaxation: 3,
-                frictionEquationStiffness: 1e7,
-                frictionEquationRelaxation: 3
-            });
-
-            this.id = ContactMaterial.idCounter++;
             this.materials = [m1, m2];
-            this.friction = options.friction;
-            this.restitution = options.restitution;
-            this.contactEquationStiffness = options.contactEquationStiffness;
-            this.contactEquationRelaxation = options.contactEquationRelaxation;
-            this.frictionEquationStiffness = options.frictionEquationStiffness;
-            this.frictionEquationRelaxation = options.frictionEquationRelaxation;
+            this.friction = friction;
+            this.restitution = restitution;
         }
-
-        static idCounter = 0;
     }
 }

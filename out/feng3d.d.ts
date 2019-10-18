@@ -18631,19 +18631,12 @@ declare namespace CANNON {
          * @param options
          * @author schteppe
          */
-        constructor(options?: {
-            friction?: number;
-            restitution?: number;
-        } | string);
+        constructor(name?: string, friction?: number, restitution?: number);
         static idCounter: number;
     }
 }
 declare namespace CANNON {
     class ContactMaterial {
-        /**
-         * Identifier of this material
-         */
-        id: number;
         /**
          * Participating materials
          * @todo  Should be .materialA and .materialB instead
@@ -18680,15 +18673,7 @@ declare namespace CANNON {
          * @param m2
          * @param options
          */
-        constructor(m1: Material, m2: Material, options?: {
-            friction?: number;
-            restitution?: number;
-            contactEquationStiffness?: number;
-            contactEquationRelaxation?: number;
-            frictionEquationStiffness?: number;
-            frictionEquationRelaxation?: number;
-        });
-        static idCounter: number;
+        constructor(m1: Material, m2: Material, friction?: number, restitution?: number);
     }
 }
 declare namespace CANNON {
@@ -19385,14 +19370,11 @@ declare namespace CANNON {
          */
         enabled: boolean;
         /**
-         * Equation base class
-         * @class Equation
-         * @constructor
-         * @author schteppe
-         * @param {Body} bi
-         * @param {Body} bj
-         * @param {Number} minForce Minimum (read: negative max) force to be applied by the constraint.
-         * @param {Number} maxForce Maximum (read: positive max) force to be applied by the constraint.
+         *
+         * @param bi
+         * @param bj
+         * @param minForce
+         * @param maxForce
          */
         constructor(bi: Body, bj: Body, minForce?: number, maxForce?: number);
         /**
@@ -19450,12 +19432,7 @@ declare namespace CANNON {
          *
          * @author schteppe
          */
-        constructor(bodyA: Body, bodyB: Body, options?: {
-            maxForce?: number;
-            axisA?: feng3d.Vector3;
-            axisB?: feng3d.Vector3;
-            angle?: number;
-        });
+        constructor(bodyA: Body, bodyB: Body, maxForce?: number, axisA?: feng3d.Vector3, axisB?: feng3d.Vector3, angle?: number);
         computeB(h: number): number;
     }
 }
@@ -19498,14 +19475,10 @@ declare namespace CANNON {
         rj: feng3d.Vector3;
         t: feng3d.Vector3;
         /**
-         * Constrains the slipping in a contact along a tangent
-         * @class FrictionEquation
-         * @constructor
-         * @author schteppe
-         * @param {Body} bodyA
-         * @param {Body} bodyB
-         * @param {Number} slipForce should be +-F_friction = +-mu * F_normal = +-mu * m * g
-         * @extends Equation
+         *
+         * @param bodyA
+         * @param bodyB
+         * @param slipForce
          */
         constructor(bodyA: Body, bodyB: Body, slipForce: number);
         computeB(h: number): number;
@@ -19549,10 +19522,8 @@ declare namespace CANNON {
          * @param bodyA
          * @param bodyB
          * @param maxForce
-         *
-         * @author schteppe
          */
-        constructor(bodyA: Body, bodyB: Body, maxForce: number);
+        constructor(bodyA: Body, bodyB: Body, maxForce?: number);
         computeB(h: number): number;
     }
 }

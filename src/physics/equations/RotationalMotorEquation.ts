@@ -24,12 +24,10 @@ namespace CANNON
          * @param bodyA 
          * @param bodyB 
          * @param maxForce 
-         * 
-         * @author schteppe
          */
-        constructor(bodyA: Body, bodyB: Body, maxForce: number)
+        constructor(bodyA: Body, bodyB: Body, maxForce = 1e6)
         {
-            super(bodyA, bodyB, -(typeof (maxForce) !== 'undefined' ? maxForce : 1e6), typeof (maxForce) !== 'undefined' ? maxForce : 1e6);
+            super(bodyA, bodyB, -maxForce, maxForce);
 
             this.axisA = new feng3d.Vector3();
             this.axisB = new feng3d.Vector3(); // World oriented rotational axis
@@ -38,22 +36,13 @@ namespace CANNON
 
         computeB(h: number)
         {
-            var a = this.a,
-                b = this.b,
-                bi = this.bi,
-                bj = this.bj,
+            var b = this.b,
 
                 axisA = this.axisA,
                 axisB = this.axisB,
 
                 GA = this.jacobianElementA,
                 GB = this.jacobianElementB;
-
-            // g = 0
-            // gdot = axisA * wi - axisB * wj
-            // gdot = G * W = G * [vi wi vj wj]
-            // =>
-            // G = [0 axisA 0 -axisB]
 
             GA.rotational.copy(axisA);
             axisB.negateTo(GB.rotational);

@@ -2,23 +2,23 @@ namespace CANNON
 {
     export class ContactEquation extends Equation
     {
-
-        restitution: number; // "bounciness": u1 = -e*u0
+        restitution = 0.0; // "bounciness": u1 = -e*u0
 
         /**
          * World-oriented vector that goes from the center of bi to the contact point.
          */
-        ri: feng3d.Vector3;
+        ri = new feng3d.Vector3();
 
         /**
          * World-oriented vector that starts in body j position and goes to the contact point.
          */
-        rj: feng3d.Vector3;
+        rj = new feng3d.Vector3();
 
         /**
          * Contact normal, pointing out of body i.
          */
-        ni: feng3d.Vector3;
+        ni = new feng3d.Vector3();
+
         si: Shape;
         sj: Shape;
 
@@ -30,14 +30,9 @@ namespace CANNON
          * 
          * @author schteppe
          */
-        constructor(bodyA: Body, bodyB: Body, maxForce?: number)
+        constructor(bodyA: Body, bodyB: Body, maxForce = 1e6)
         {
-            super(bodyA, bodyB, 0, typeof (maxForce) !== 'undefined' ? maxForce : 1e6);
-
-            this.restitution = 0.0; // "bounciness": u1 = -e*u0
-            this.ri = new feng3d.Vector3();
-            this.rj = new feng3d.Vector3();
-            this.ni = new feng3d.Vector3();
+            super(bodyA, bodyB, 0, maxForce);
         }
 
         computeB(h: number)
@@ -48,20 +43,14 @@ namespace CANNON
                 bj = this.bj,
                 ri = this.ri,
                 rj = this.rj,
-                rixn = ContactEquation_computeB_temp1,
-                rjxn = ContactEquation_computeB_temp2,
 
                 vi = bi.velocity,
                 wi = bi.angularVelocity,
-                fi = bi.force,
-                taui = bi.torque,
 
                 vj = bj.velocity,
                 wj = bj.angularVelocity,
-                fj = bj.force,
-                tauj = bj.torque,
 
-                penetrationVec = ContactEquation_computeB_temp3,
+                penetrationVec = new feng3d.Vector3(),
 
                 GA = this.jacobianElementA,
                 GB = this.jacobianElementB,
@@ -69,8 +58,8 @@ namespace CANNON
                 n = this.ni;
 
             // Caluclate cross products
-            ri.crossTo(n, rixn);
-            rj.crossTo(n, rjxn);
+            var rixn = ri.crossTo(n);
+            var rjxn = rj.crossTo(n);
 
             // g = xj+rj -(xi+ri)
             // G = [ -ni  -rixn  ni  rjxn ]
@@ -102,33 +91,17 @@ namespace CANNON
          */
         getImpactVelocityAlongNormal()
         {
-            var vi = ContactEquation_getImpactVelocityAlongNormal_vi;
-            var vj = ContactEquation_getImpactVelocityAlongNormal_vj;
-            var xi = ContactEquation_getImpactVelocityAlongNormal_xi;
-            var xj = ContactEquation_getImpactVelocityAlongNormal_xj;
-            var relVel = ContactEquation_getImpactVelocityAlongNormal_relVel;
 
-            this.bi.position.addTo(this.ri, xi);
-            this.bj.position.addTo(this.rj, xj);
+            var xi = this.bi.position.addTo(this.ri);
+            var xj = this.bj.position.addTo(this.rj);
 
-            this.bi.getVelocityAtWorldPoint(xi, vi);
-            this.bj.getVelocityAtWorldPoint(xj, vj);
+            var vi = this.bi.getVelocityAtWorldPoint(xi);
+            var vj = this.bj.getVelocityAtWorldPoint(xj);
 
-            vi.subTo(vj, relVel);
+            var relVel = vi.subTo(vj);
 
             return this.ni.dot(relVel);
         }
 
     }
-
-    var ContactEquation_computeB_temp1 = new feng3d.Vector3(); // Temp vectors
-    var ContactEquation_computeB_temp2 = new feng3d.Vector3();
-    var ContactEquation_computeB_temp3 = new feng3d.Vector3();
-
-
-    var ContactEquation_getImpactVelocityAlongNormal_vi = new feng3d.Vector3();
-    var ContactEquation_getImpactVelocityAlongNormal_vj = new feng3d.Vector3();
-    var ContactEquation_getImpactVelocityAlongNormal_xi = new feng3d.Vector3();
-    var ContactEquation_getImpactVelocityAlongNormal_xj = new feng3d.Vector3();
-    var ContactEquation_getImpactVelocityAlongNormal_relVel = new feng3d.Vector3();
 }

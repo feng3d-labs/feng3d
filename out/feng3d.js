@@ -41390,21 +41390,14 @@ var CANNON;
          * @param options
          * @author schteppe
          */
-        function Material(options) {
-            if (options === void 0) { options = {}; }
-            var name = '';
-            // Backwards compatibility fix
-            if (typeof (options) === 'string') {
-                name = options;
-                options = {};
-            }
-            else if (typeof (options) === 'object') {
-                name = '';
-            }
+        function Material(name, friction, restitution) {
+            if (name === void 0) { name = ""; }
+            if (friction === void 0) { friction = -1; }
+            if (restitution === void 0) { restitution = -1; }
             this.name = name;
             this.id = Material.idCounter++;
-            this.friction = typeof (options.friction) !== 'undefined' ? options.friction : -1;
-            this.restitution = typeof (options.restitution) !== 'undefined' ? options.restitution : -1;
+            this.friction = friction;
+            this.restitution = restitution;
         }
         Material.idCounter = 0;
         return Material;
@@ -41421,26 +41414,37 @@ var CANNON;
          * @param m2
          * @param options
          */
-        function ContactMaterial(m1, m2, options) {
-            if (options === void 0) { options = {}; }
-            options = CANNON.Utils.defaults(options, {
-                friction: 0.3,
-                restitution: 0.3,
-                contactEquationStiffness: 1e7,
-                contactEquationRelaxation: 3,
-                frictionEquationStiffness: 1e7,
-                frictionEquationRelaxation: 3
-            });
-            this.id = ContactMaterial.idCounter++;
+        function ContactMaterial(m1, m2, friction, restitution) {
+            if (friction === void 0) { friction = 0.3; }
+            if (restitution === void 0) { restitution = 0.0; }
+            /**
+             * Friction coefficient
+             */
+            this.friction = 0.3;
+            /**
+             * Restitution coefficient
+             */
+            this.restitution = 0.3;
+            /**
+             * Stiffness of the produced contact equations
+             */
+            this.contactEquationStiffness = 1e7;
+            /**
+             * Relaxation time of the produced contact equations
+             */
+            this.contactEquationRelaxation = 3;
+            /**
+             * Stiffness of the produced friction equations
+             */
+            this.frictionEquationStiffness = 1e7;
+            /**
+             * Relaxation time of the produced friction equations
+             */
+            this.frictionEquationRelaxation = 3;
             this.materials = [m1, m2];
-            this.friction = options.friction;
-            this.restitution = options.restitution;
-            this.contactEquationStiffness = options.contactEquationStiffness;
-            this.contactEquationRelaxation = options.contactEquationRelaxation;
-            this.frictionEquationStiffness = options.frictionEquationStiffness;
-            this.frictionEquationRelaxation = options.frictionEquationRelaxation;
+            this.friction = friction;
+            this.restitution = restitution;
         }
-        ContactMaterial.idCounter = 0;
         return ContactMaterial;
     }());
     CANNON.ContactMaterial = ContactMaterial;
@@ -42953,28 +42957,31 @@ var CANNON;
      */
     var Equation = /** @class */ (function () {
         /**
-         * Equation base class
-         * @class Equation
-         * @constructor
-         * @author schteppe
-         * @param {Body} bi
-         * @param {Body} bj
-         * @param {Number} minForce Minimum (read: negative max) force to be applied by the constraint.
-         * @param {Number} maxForce Maximum (read: positive max) force to be applied by the constraint.
+         *
+         * @param bi
+         * @param bj
+         * @param minForce
+         * @param maxForce
          */
         function Equation(bi, bj, minForce, maxForce) {
             if (minForce === void 0) { minForce = -1e6; }
             if (maxForce === void 0) { maxForce = 1e6; }
+            this.a = 0.0;
+            this.b = 0.0;
+            /**
+             * SPOOK parameter
+             */
+            this.eps = 0.0;
+            this.jacobianElementA = new CANNON.JacobianElement();
+            this.jacobianElementB = new CANNON.JacobianElement();
+            /**
+             * 是否启用
+             */
+            this.enabled = true;
             this.minForce = minForce;
             this.maxForce = maxForce;
             this.bi = bi;
             this.bj = bj;
-            this.a = 0.0;
-            this.b = 0.0;
-            this.eps = 0.0;
-            this.jacobianElementA = new CANNON.JacobianElement();
-            this.jacobianElementB = new CANNON.JacobianElement();
-            this.enabled = true;
             // Set typical spook params
             this.setSpookParams(1e7, 4, 1 / 60);
         }
@@ -43020,10 +43027,10 @@ var CANNON;
          */
         Equation.prototype.computeGiMf = function () {
             var GA = this.jacobianElementA, GB = this.jacobianElementB, bi = this.bi, bj = this.bj, fi = bi.force, ti = bi.torque, fj = bj.force, tj = bj.torque, invMassi = bi.invMassSolve, invMassj = bj.invMassSolve;
-            fi.scaleNumberTo(invMassi, iMfi);
-            fj.scaleNumberTo(invMassj, iMfj);
-            bi.invInertiaWorldSolve.vmult(ti, invIi_vmult_taui);
-            bj.invInertiaWorldSolve.vmult(tj, invIj_vmult_tauj);
+            var iMfi = fi.scaleNumberTo(invMassi);
+            var iMfj = fj.scaleNumberTo(invMassj);
+            var invIi_vmult_taui = bi.invInertiaWorldSolve.vmult(ti);
+            var invIj_vmult_tauj = bj.invInertiaWorldSolve.vmult(tj);
             return GA.multiplyVectors(iMfi, invIi_vmult_taui) + GB.multiplyVectors(iMfj, invIj_vmult_tauj);
         };
         /**
@@ -43031,7 +43038,7 @@ var CANNON;
          */
         Equation.prototype.computeGiMGt = function () {
             var GA = this.jacobianElementA, GB = this.jacobianElementB, bi = this.bi, bj = this.bj, invMassi = bi.invMassSolve, invMassj = bj.invMassSolve, invIi = bi.invInertiaWorldSolve, invIj = bj.invInertiaWorldSolve, result = invMassi + invMassj;
-            invIi.vmult(GA.rotational, tmp);
+            var tmp = invIi.vmult(GA.rotational);
             result += tmp.dot(GA.rotational);
             invIj.vmult(GB.rotational, tmp);
             result += tmp.dot(GB.rotational);
@@ -43041,16 +43048,16 @@ var CANNON;
          * Add constraint velocity to the bodies.
          */
         Equation.prototype.addToWlambda = function (deltalambda) {
-            var GA = this.jacobianElementA, GB = this.jacobianElementB, bi = this.bi, bj = this.bj, temp = addToWlambda_temp;
+            var GA = this.jacobianElementA, GB = this.jacobianElementB, bi = this.bi, bj = this.bj, temp = new feng3d.Vector3();
             // Add to linear velocity
             // v_lambda += inv(M) * delta_lamba * G
-            bi.vlambda.addTo(GA.spatial.scaleNumberTo(bi.invMassSolve * deltalambda, addToWlambda_Gi), bi.vlambda);
-            bj.vlambda.addTo(GB.spatial.scaleNumberTo(bj.invMassSolve * deltalambda, addToWlambda_Gi), bj.vlambda);
+            bi.vlambda.addTo(GA.spatial.scaleNumberTo(bi.invMassSolve * deltalambda), bi.vlambda);
+            bj.vlambda.addTo(GB.spatial.scaleNumberTo(bj.invMassSolve * deltalambda), bj.vlambda);
             // Add to angular velocity
             bi.invInertiaWorldSolve.vmult(GA.rotational, temp);
-            bi.wlambda.addTo(temp.scaleNumberTo(deltalambda, addToWlambda_Gi), bi.wlambda);
+            bi.wlambda.addTo(temp.scaleNumberTo(deltalambda), bi.wlambda);
             bj.invInertiaWorldSolve.vmult(GB.rotational, temp);
-            bj.wlambda.addTo(temp.scaleNumberTo(deltalambda, addToWlambda_Gi), bj.wlambda);
+            bj.wlambda.addTo(temp.scaleNumberTo(deltalambda), bj.wlambda);
         };
         /**
          * Compute the denominator part of the SPOOK equation: C = G*inv(M)*G' + eps
@@ -43061,18 +43068,6 @@ var CANNON;
         return Equation;
     }());
     CANNON.Equation = Equation;
-    var zero = new feng3d.Vector3();
-    var iMfi = new feng3d.Vector3();
-    var iMfj = new feng3d.Vector3();
-    var invIi_vmult_taui = new feng3d.Vector3();
-    var invIj_vmult_tauj = new feng3d.Vector3();
-    var tmp = new feng3d.Vector3();
-    var addToWlambda_temp = new feng3d.Vector3();
-    var addToWlambda_Gi = new feng3d.Vector3();
-    var addToWlambda_Gj = new feng3d.Vector3();
-    var addToWlambda_ri = new feng3d.Vector3();
-    var addToWlambda_rj = new feng3d.Vector3();
-    var addToWlambda_Mdiag = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -43087,25 +43082,22 @@ var CANNON;
          *
          * @author schteppe
          */
-        function ConeEquation(bodyA, bodyB, options) {
-            if (options === void 0) { options = {}; }
-            var _this = _super.call(this, bodyA, bodyB, -(typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6), typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6) || this;
-            _this.axisA = options.axisA ? options.axisA.clone() : new feng3d.Vector3(1, 0, 0);
-            _this.axisB = options.axisB ? options.axisB.clone() : new feng3d.Vector3(0, 1, 0);
-            _this.angle = typeof (options.angle) !== 'undefined' ? options.angle : 0;
+        function ConeEquation(bodyA, bodyB, maxForce, axisA, axisB, angle) {
+            if (maxForce === void 0) { maxForce = 1e6; }
+            if (axisA === void 0) { axisA = new feng3d.Vector3(1, 0, 0); }
+            if (axisB === void 0) { axisB = new feng3d.Vector3(0, 1, 0); }
+            if (angle === void 0) { angle = 0; }
+            var _this = _super.call(this, bodyA, bodyB, maxForce, maxForce) || this;
+            _this.axisA = axisA.clone();
+            _this.axisB = axisB.clone();
+            _this.angle = angle;
             return _this;
         }
         ConeEquation.prototype.computeB = function (h) {
-            var a = this.a, b = this.b, ni = this.axisA, nj = this.axisB, nixnj = tmpVec1, njxni = tmpVec2, GA = this.jacobianElementA, GB = this.jacobianElementB;
+            var a = this.a, b = this.b, ni = this.axisA, nj = this.axisB, GA = this.jacobianElementA, GB = this.jacobianElementB;
             // Caluclate cross products
-            ni.crossTo(nj, nixnj);
-            nj.crossTo(ni, njxni);
-            // The angle between two vector is:
-            // cos(theta) = a * b / (length(a) * length(b) = { len(a) = len(b) = 1 } = a * b
-            // g = a * b
-            // gdot = (b x a) * wi + (a x b) * wj
-            // G = [0 bxa 0 axb]
-            // W = [vi wi vj wj]
+            var nixnj = ni.crossTo(nj);
+            var njxni = nj.crossTo(ni);
             GA.rotational.copy(njxni);
             GB.rotational.copy(nixnj);
             var g = Math.cos(this.angle) - ni.dot(nj), GW = this.computeGW(), GiMf = this.computeGiMf();
@@ -43115,8 +43107,6 @@ var CANNON;
         return ConeEquation;
     }(CANNON.Equation));
     CANNON.ConeEquation = ConeEquation;
-    var tmpVec1 = new feng3d.Vector3();
-    var tmpVec2 = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -43131,18 +43121,28 @@ var CANNON;
          * @author schteppe
          */
         function ContactEquation(bodyA, bodyB, maxForce) {
-            var _this = _super.call(this, bodyA, bodyB, 0, typeof (maxForce) !== 'undefined' ? maxForce : 1e6) || this;
+            if (maxForce === void 0) { maxForce = 1e6; }
+            var _this = _super.call(this, bodyA, bodyB, 0, maxForce) || this;
             _this.restitution = 0.0; // "bounciness": u1 = -e*u0
+            /**
+             * World-oriented vector that goes from the center of bi to the contact point.
+             */
             _this.ri = new feng3d.Vector3();
+            /**
+             * World-oriented vector that starts in body j position and goes to the contact point.
+             */
             _this.rj = new feng3d.Vector3();
+            /**
+             * Contact normal, pointing out of body i.
+             */
             _this.ni = new feng3d.Vector3();
             return _this;
         }
         ContactEquation.prototype.computeB = function (h) {
-            var a = this.a, b = this.b, bi = this.bi, bj = this.bj, ri = this.ri, rj = this.rj, rixn = ContactEquation_computeB_temp1, rjxn = ContactEquation_computeB_temp2, vi = bi.velocity, wi = bi.angularVelocity, fi = bi.force, taui = bi.torque, vj = bj.velocity, wj = bj.angularVelocity, fj = bj.force, tauj = bj.torque, penetrationVec = ContactEquation_computeB_temp3, GA = this.jacobianElementA, GB = this.jacobianElementB, n = this.ni;
+            var a = this.a, b = this.b, bi = this.bi, bj = this.bj, ri = this.ri, rj = this.rj, vi = bi.velocity, wi = bi.angularVelocity, vj = bj.velocity, wj = bj.angularVelocity, penetrationVec = new feng3d.Vector3(), GA = this.jacobianElementA, GB = this.jacobianElementB, n = this.ni;
             // Caluclate cross products
-            ri.crossTo(n, rixn);
-            rj.crossTo(n, rjxn);
+            var rixn = ri.crossTo(n);
+            var rjxn = rj.crossTo(n);
             // g = xj+rj -(xi+ri)
             // G = [ -ni  -rixn  ni  rjxn ]
             n.negateTo(GA.spatial);
@@ -43166,43 +43166,26 @@ var CANNON;
          * Get the current relative velocity in the contact point.
          */
         ContactEquation.prototype.getImpactVelocityAlongNormal = function () {
-            var vi = ContactEquation_getImpactVelocityAlongNormal_vi;
-            var vj = ContactEquation_getImpactVelocityAlongNormal_vj;
-            var xi = ContactEquation_getImpactVelocityAlongNormal_xi;
-            var xj = ContactEquation_getImpactVelocityAlongNormal_xj;
-            var relVel = ContactEquation_getImpactVelocityAlongNormal_relVel;
-            this.bi.position.addTo(this.ri, xi);
-            this.bj.position.addTo(this.rj, xj);
-            this.bi.getVelocityAtWorldPoint(xi, vi);
-            this.bj.getVelocityAtWorldPoint(xj, vj);
-            vi.subTo(vj, relVel);
+            var xi = this.bi.position.addTo(this.ri);
+            var xj = this.bj.position.addTo(this.rj);
+            var vi = this.bi.getVelocityAtWorldPoint(xi);
+            var vj = this.bj.getVelocityAtWorldPoint(xj);
+            var relVel = vi.subTo(vj);
             return this.ni.dot(relVel);
         };
         return ContactEquation;
     }(CANNON.Equation));
     CANNON.ContactEquation = ContactEquation;
-    var ContactEquation_computeB_temp1 = new feng3d.Vector3(); // Temp vectors
-    var ContactEquation_computeB_temp2 = new feng3d.Vector3();
-    var ContactEquation_computeB_temp3 = new feng3d.Vector3();
-    var ContactEquation_getImpactVelocityAlongNormal_vi = new feng3d.Vector3();
-    var ContactEquation_getImpactVelocityAlongNormal_vj = new feng3d.Vector3();
-    var ContactEquation_getImpactVelocityAlongNormal_xi = new feng3d.Vector3();
-    var ContactEquation_getImpactVelocityAlongNormal_xj = new feng3d.Vector3();
-    var ContactEquation_getImpactVelocityAlongNormal_relVel = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
     var FrictionEquation = /** @class */ (function (_super) {
         __extends(FrictionEquation, _super);
         /**
-         * Constrains the slipping in a contact along a tangent
-         * @class FrictionEquation
-         * @constructor
-         * @author schteppe
-         * @param {Body} bodyA
-         * @param {Body} bodyB
-         * @param {Number} slipForce should be +-F_friction = +-mu * F_normal = +-mu * m * g
-         * @extends Equation
+         *
+         * @param bodyA
+         * @param bodyB
+         * @param slipForce
          */
         function FrictionEquation(bodyA, bodyB, slipForce) {
             var _this = _super.call(this, bodyA, bodyB, -slipForce, slipForce) || this;
@@ -43212,10 +43195,10 @@ var CANNON;
             return _this;
         }
         FrictionEquation.prototype.computeB = function (h) {
-            var a = this.a, b = this.b, bi = this.bi, bj = this.bj, ri = this.ri, rj = this.rj, rixt = FrictionEquation_computeB_temp1, rjxt = FrictionEquation_computeB_temp2, t = this.t;
+            var b = this.b, ri = this.ri, rj = this.rj, t = this.t;
             // Caluclate cross products
-            ri.crossTo(t, rixt);
-            rj.crossTo(t, rjxt);
+            var rixt = ri.crossTo(t);
+            var rjxt = rj.crossTo(t);
             // G = [-t -rixt t rjxt]
             // And remember, this is a pure velocity constraint, g is always zero!
             var GA = this.jacobianElementA, GB = this.jacobianElementB;
@@ -43231,8 +43214,6 @@ var CANNON;
         return FrictionEquation;
     }(CANNON.Equation));
     CANNON.FrictionEquation = FrictionEquation;
-    var FrictionEquation_computeB_temp1 = new feng3d.Vector3();
-    var FrictionEquation_computeB_temp2 = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -43252,20 +43233,16 @@ var CANNON;
             if (axisB === void 0) { axisB = new feng3d.Vector3(0, 1, 0); }
             if (maxForce === void 0) { maxForce = 1e6; }
             var _this = _super.call(this, bodyA, bodyB, -maxForce, maxForce) || this;
+            _this.maxAngle = Math.PI / 2;
             _this.axisA = axisA.clone();
             _this.axisB = axisB.clone();
-            _this.maxAngle = Math.PI / 2;
             return _this;
         }
         RotationalEquation.prototype.computeB = function (h) {
-            var a = this.a, b = this.b, ni = this.axisA, nj = this.axisB, nixnj = tmpVec1, njxni = tmpVec2, GA = this.jacobianElementA, GB = this.jacobianElementB;
+            var a = this.a, b = this.b, ni = this.axisA, nj = this.axisB, GA = this.jacobianElementA, GB = this.jacobianElementB;
             // Caluclate cross products
-            ni.crossTo(nj, nixnj);
-            nj.crossTo(ni, njxni);
-            // g = ni * nj
-            // gdot = (nj x ni) * wi + (ni x nj) * wj
-            // G = [0 njxni 0 nixnj]
-            // W = [vi wi vj wj]
+            var nixnj = ni.crossTo(nj);
+            var njxni = nj.crossTo(ni);
             GA.rotational.copy(njxni);
             GB.rotational.copy(nixnj);
             var g = Math.cos(this.maxAngle) - ni.dot(nj), GW = this.computeGW(), GiMf = this.computeGiMf();
@@ -43275,8 +43252,6 @@ var CANNON;
         return RotationalEquation;
     }(CANNON.Equation));
     CANNON.RotationalEquation = RotationalEquation;
-    var tmpVec1 = new feng3d.Vector3();
-    var tmpVec2 = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -43288,23 +43263,17 @@ var CANNON;
          * @param bodyA
          * @param bodyB
          * @param maxForce
-         *
-         * @author schteppe
          */
         function RotationalMotorEquation(bodyA, bodyB, maxForce) {
-            var _this = _super.call(this, bodyA, bodyB, -(typeof (maxForce) !== 'undefined' ? maxForce : 1e6), typeof (maxForce) !== 'undefined' ? maxForce : 1e6) || this;
+            if (maxForce === void 0) { maxForce = 1e6; }
+            var _this = _super.call(this, bodyA, bodyB, -maxForce, maxForce) || this;
             _this.axisA = new feng3d.Vector3();
             _this.axisB = new feng3d.Vector3(); // World oriented rotational axis
             _this.targetVelocity = 0;
             return _this;
         }
         RotationalMotorEquation.prototype.computeB = function (h) {
-            var a = this.a, b = this.b, bi = this.bi, bj = this.bj, axisA = this.axisA, axisB = this.axisB, GA = this.jacobianElementA, GB = this.jacobianElementB;
-            // g = 0
-            // gdot = axisA * wi - axisB * wj
-            // gdot = G * W = G * [vi wi vj wj]
-            // =>
-            // G = [0 axisA 0 -axisB]
+            var b = this.b, axisA = this.axisA, axisB = this.axisB, GA = this.jacobianElementA, GB = this.jacobianElementB;
             GA.rotational.copy(axisA);
             axisB.negateTo(GB.rotational);
             var GW = this.computeGW() - this.targetVelocity, GiMf = this.computeGiMf();
@@ -43649,7 +43618,7 @@ var CANNON;
             _this.contactmaterials = [];
             _this.contactMaterialTable = {};
             _this.defaultMaterial = new CANNON.Material("default");
-            _this.defaultContactMaterial = new CANNON.ContactMaterial(_this.defaultMaterial, _this.defaultMaterial, { friction: 0.3, restitution: 0.0 });
+            _this.defaultContactMaterial = new CANNON.ContactMaterial(_this.defaultMaterial, _this.defaultMaterial, 0.3, 0.0);
             _this.doProfiling = false;
             _this.profile = {
                 solve: 0,

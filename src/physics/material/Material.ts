@@ -26,27 +26,14 @@ namespace CANNON
          * @param options 
          * @author schteppe
          */
-        constructor(options: { friction?: number, restitution?: number } | string = {})
+        constructor(name = "", friction = -1, restitution = -1)
         {
-            var name = '';
-
-            // Backwards compatibility fix
-            if (typeof (options) === 'string')
-            {
-                name = options;
-                options = {};
-            } else if (typeof (options) === 'object')
-            {
-                name = '';
-            }
-
             this.name = name;
             this.id = Material.idCounter++;
-            this.friction = typeof (options.friction) !== 'undefined' ? options.friction : -1;
-            this.restitution = typeof (options.restitution) !== 'undefined' ? options.restitution : -1;
+            this.friction = friction;
+            this.restitution = restitution;
         }
 
         static idCounter = 0;
-
     }
 }
