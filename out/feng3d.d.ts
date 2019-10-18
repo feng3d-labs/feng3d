@@ -19216,7 +19216,7 @@ declare namespace CANNON {
          * @param  {Vector3} result
          * @return {Vector3} The result vector.
          */
-        getVelocityAtWorldPoint(worldPoint: feng3d.Vector3, result: feng3d.Vector3): feng3d.Vector3;
+        getVelocityAtWorldPoint(worldPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
         /**
          * Move the body forward in time.
          * @param dt Time step
@@ -19411,7 +19411,6 @@ declare namespace CANNON {
         indexUpAxis: number;
         currentVehicleSpeedKmHour: number;
         preStepCallback(): void;
-        constraints: any;
         /**
          * Vehicle helper class that casts rays from the wheel positions towards the ground and applies forces.
          *

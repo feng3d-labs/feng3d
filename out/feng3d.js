@@ -42498,6 +42498,7 @@ var CANNON;
          * @return {Vector3} The result vector.
          */
         Body.prototype.getVelocityAtWorldPoint = function (worldPoint, result) {
+            if (result === void 0) { result = new feng3d.Vector3(); }
             var r = new feng3d.Vector3();
             worldPoint.subTo(this.position, r);
             this.angularVelocity.crossTo(r, result);
@@ -42995,8 +42996,8 @@ var CANNON;
             this.world = null;
         };
         RaycastVehicle.prototype.castRay = function (wheel) {
-            var rayvector = castRay_rayvector;
-            var target = castRay_target;
+            var rayvector = new feng3d.Vector3();
+            var target = new feng3d.Vector3();
             this.updateWheelTransformWorld(wheel);
             var chassisBody = this.chassisBody;
             var depth = -1;
@@ -43067,9 +43068,9 @@ var CANNON;
          * @param wheelIndex The wheel index to update.
          */
         RaycastVehicle.prototype.updateWheelTransform = function (wheelIndex) {
-            var up = tmpVec4;
-            var right = tmpVec5;
-            var fwd = tmpVec6;
+            var up = new feng3d.Vector3();
+            var right = new feng3d.Vector3();
+            var fwd = new feng3d.Vector3();
             var wheel = this.wheelInfos[wheelIndex];
             this.updateWheelTransformWorld(wheel);
             wheel.directionLocal.scaleNumberTo(-1, up);
@@ -43103,20 +43104,15 @@ var CANNON;
             return this.wheelInfos[wheelIndex].worldTransform;
         };
         RaycastVehicle.prototype.updateFriction = function (timeStep) {
-            var surfNormalWS_scaled_proj = updateFriction_surfNormalWS_scaled_proj;
+            var surfNormalWS_scaled_proj = new feng3d.Vector3();
             //calculate the impulse, so that the wheels don't move sidewards
             var wheelInfos = this.wheelInfos;
             var numWheels = wheelInfos.length;
             var chassisBody = this.chassisBody;
-            var forwardWS = updateFriction_forwardWS;
-            var axle = updateFriction_axle;
-            var numWheelsOnGround = 0;
+            var forwardWS = [];
+            var axle = [];
             for (var i = 0; i < numWheels; i++) {
                 var wheel = wheelInfos[i];
-                var groundObject = wheel.raycastResult.body;
-                if (groundObject) {
-                    numWheelsOnGround++;
-                }
                 wheel.sideImpulse = 0;
                 wheel.forwardImpulse = 0;
                 if (!forwardWS[i]) {
@@ -43137,12 +43133,11 @@ var CANNON;
                     var surfNormalWS = wheel.raycastResult.hitNormalWorld;
                     var proj = axlei.dot(surfNormalWS);
                     surfNormalWS.scaleNumberTo(proj, surfNormalWS_scaled_proj);
-                    axlei.vsub(surfNormalWS_scaled_proj, axlei);
+                    axlei.subTo(surfNormalWS_scaled_proj, axlei);
                     axlei.normalize();
                     surfNormalWS.crossTo(axlei, forwardWS[i]);
                     forwardWS[i].normalize();
                     wheel.sideImpulse = resolveSingleBilateral(chassisBody, wheel.raycastResult.hitPointWorld, groundObject, wheel.raycastResult.hitPointWorld, axlei);
-                    wheel.sideImpulse *= sideFrictionStiffness2;
                 }
             }
             var sideFactor = 1;
@@ -43156,15 +43151,12 @@ var CANNON;
                 if (groundObject) {
                     var defaultRollingFrictionImpulse = 0;
                     var maxImpulse = wheel.brake ? wheel.brake : defaultRollingFrictionImpulse;
-                    // btWheelContactPoint contactPt(chassisBody,groundObject,wheelInfraycastInfo.hitPointWorld,forwardWS[wheel],maxImpulse);
-                    // rollingFriction = calcRollingFriction(contactPt);
                     rollingFriction = calcRollingFriction(chassisBody, groundObject, wheel.raycastResult.hitPointWorld, forwardWS[i], maxImpulse);
                     rollingFriction += wheel.engineForce * timeStep;
                     // rollingFriction = 0;
                     var factor = maxImpulse / rollingFriction;
                     wheel.slipInfo *= factor;
                 }
-                //switch between active rolling (throttle), braking and non-active rolling friction (nthrottle/break)
                 wheel.forwardImpulse = 0;
                 wheel.skidInfo = 1;
                 if (groundObject) {
@@ -43201,20 +43193,15 @@ var CANNON;
                 var wheel = wheelInfos[i];
                 var rel_pos = new feng3d.Vector3();
                 wheel.raycastResult.hitPointWorld.subTo(chassisBody.position, rel_pos);
-                // cannons applyimpulse is using world coord for the position
-                //rel_pos.copy(wheel.raycastResult.hitPointWorld);
                 if (wheel.forwardImpulse !== 0) {
                     var impulse = new feng3d.Vector3();
-                    forwardWS[i].scale(wheel.forwardImpulse, impulse);
+                    forwardWS[i].scaleNumberTo(wheel.forwardImpulse, impulse);
                     chassisBody.applyImpulse(impulse, rel_pos);
                 }
                 if (wheel.sideImpulse !== 0) {
                     var groundObject = wheel.raycastResult.body;
-                    var rel_pos2 = new feng3d.Vector3();
-                    wheel.raycastResult.hitPointWorld.subTo(groundObject.position, rel_pos2);
-                    //rel_pos2.copy(wheel.raycastResult.hitPointWorld);
-                    var sideImp = new feng3d.Vector3();
-                    axle[i].scale(wheel.sideImpulse, sideImp);
+                    var rel_pos2 = wheel.raycastResult.hitPointWorld.subTo(groundObject.position);
+                    var sideImp = axle[i].scaleNumberTo(wheel.sideImpulse);
                     // Scale the relative position in the up direction with rollInfluence.
                     // If rollInfluence is 1, the impulse will be applied on the hitPoint (easy to roll over), if it is zero it will be applied in the same plane as the center of mass (not easy to roll over).
                     chassisBody.vectorToLocalFrame(rel_pos, rel_pos);
@@ -43230,41 +43217,17 @@ var CANNON;
         return RaycastVehicle;
     }());
     CANNON.RaycastVehicle = RaycastVehicle;
-    var tmpVec1 = new feng3d.Vector3();
-    var tmpVec2 = new feng3d.Vector3();
-    var tmpVec3 = new feng3d.Vector3();
-    var tmpVec4 = new feng3d.Vector3();
-    var tmpVec5 = new feng3d.Vector3();
-    var tmpVec6 = new feng3d.Vector3();
-    var tmpRay = new CANNON.Ray();
-    var torque = new feng3d.Vector3();
-    var castRay_rayvector = new feng3d.Vector3();
-    var castRay_target = new feng3d.Vector3();
     var directions = [
         new feng3d.Vector3(1, 0, 0),
         new feng3d.Vector3(0, 1, 0),
         new feng3d.Vector3(0, 0, 1)
     ];
-    var updateFriction_surfNormalWS_scaled_proj = new feng3d.Vector3();
-    var updateFriction_axle = [];
-    var updateFriction_forwardWS = [];
-    var sideFrictionStiffness2 = 1;
-    var calcRollingFriction_vel1 = new feng3d.Vector3();
-    var calcRollingFriction_vel2 = new feng3d.Vector3();
-    var calcRollingFriction_vel = new feng3d.Vector3();
     function calcRollingFriction(body0, body1, frictionPosWorld, frictionDirectionWorld, maxImpulse) {
         var j1 = 0;
         var contactPosWorld = frictionPosWorld;
-        // var rel_pos1 = new Vec3();
-        // var rel_pos2 = new Vec3();
-        var vel1 = calcRollingFriction_vel1;
-        var vel2 = calcRollingFriction_vel2;
-        var vel = calcRollingFriction_vel;
-        // contactPosWorld.vsub(body0.position, rel_pos1);
-        // contactPosWorld.vsub(body1.position, rel_pos2);
-        body0.getVelocityAtWorldPoint(contactPosWorld, vel1);
-        body1.getVelocityAtWorldPoint(contactPosWorld, vel2);
-        vel1.subTo(vel2, vel);
+        var vel1 = body0.getVelocityAtWorldPoint(contactPosWorld);
+        var vel2 = body1.getVelocityAtWorldPoint(contactPosWorld);
+        var vel = vel1.subTo(vel2);
         var vrel = frictionDirectionWorld.dot(vel);
         var denom0 = computeImpulseDenominator(body0, frictionPosWorld, frictionDirectionWorld);
         var denom1 = computeImpulseDenominator(body1, frictionPosWorld, frictionDirectionWorld);
@@ -43280,40 +43243,22 @@ var CANNON;
         }
         return j1;
     }
-    var computeImpulseDenominator_r0 = new feng3d.Vector3();
-    var computeImpulseDenominator_c0 = new feng3d.Vector3();
-    var computeImpulseDenominator_vec = new feng3d.Vector3();
-    var computeImpulseDenominator_m = new feng3d.Vector3();
     function computeImpulseDenominator(body, pos, normal) {
-        var r0 = computeImpulseDenominator_r0;
-        var c0 = computeImpulseDenominator_c0;
-        var vec = computeImpulseDenominator_vec;
-        var m = computeImpulseDenominator_m;
-        pos.subTo(body.position, r0);
-        r0.crossTo(normal, c0);
-        body.invInertiaWorld.vmult(c0, m);
-        m.crossTo(r0, vec);
+        var r0 = pos.subTo(body.position);
+        var c0 = r0.crossTo(normal);
+        var m = body.invInertiaWorld.vmult(c0);
+        var vec = m.crossTo(r0);
         return body.invMass + normal.dot(vec);
     }
-    var resolveSingleBilateral_vel1 = new feng3d.Vector3();
-    var resolveSingleBilateral_vel2 = new feng3d.Vector3();
-    var resolveSingleBilateral_vel = new feng3d.Vector3();
     //bilateral constraint between two dynamic objects
     function resolveSingleBilateral(body1, pos1, body2, pos2, normal) {
         var normalLenSqr = normal.lengthSquared;
         if (normalLenSqr > 1.1) {
             return 0; // no impulse
         }
-        // var rel_pos1 = new Vec3();
-        // var rel_pos2 = new Vec3();
-        // pos1.vsub(body1.position, rel_pos1);
-        // pos2.vsub(body2.position, rel_pos2);
-        var vel1 = resolveSingleBilateral_vel1;
-        var vel2 = resolveSingleBilateral_vel2;
-        var vel = resolveSingleBilateral_vel;
-        body1.getVelocityAtWorldPoint(pos1, vel1);
-        body2.getVelocityAtWorldPoint(pos2, vel2);
-        vel1.subTo(vel2, vel);
+        var vel1 = body1.getVelocityAtWorldPoint(pos1);
+        var vel2 = body2.getVelocityAtWorldPoint(pos2, vel2);
+        var vel = vel1.subTo(vel2);
         var rel_vel = normal.dot(vel);
         var contactDamping = 0.2;
         var massTerm = 1 / (body1.invMass + body2.invMass);

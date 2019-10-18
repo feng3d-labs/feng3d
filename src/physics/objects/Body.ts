@@ -740,7 +740,7 @@ namespace CANNON
          * @param  {Vector3} result
          * @return {Vector3} The result vector.
          */
-        getVelocityAtWorldPoint(worldPoint: feng3d.Vector3, result: feng3d.Vector3)
+        getVelocityAtWorldPoint(worldPoint: feng3d.Vector3, result = new feng3d.Vector3())
         {
             var r = new feng3d.Vector3();
             worldPoint.subTo(this.position, r);
