@@ -18571,7 +18571,7 @@ declare namespace CANNON {
         useBoundingBoxes: boolean;
         dirty: boolean;
         /**
-         * Get the collision pairs from the world
+         * 从世界获取冲突对
          *
          * @param world The world to search in
          * @param p1 Empty array to be filled with body objects
@@ -18617,19 +18617,18 @@ declare namespace CANNON {
          */
         makePairsUnique(pairs1: any[], pairs2: any[]): void;
         /**
-         * To be implemented by subcasses
-         * @method setWorld
-         * @param {World} world
+         *
+         * @param world
          */
         setWorld(world: World): void;
         /**
-         * Returns all the bodies within the AABB.
+         * 获取包围盒内所有物体
          *
          * @param world
          * @param aabb
          * @param result An array to store resulting bodies in.
          */
-        aabbQuery(world: World, aabb: feng3d.AABB, result: any[]): any[];
+        aabbQuery(world: World, aabb: feng3d.AABB, result: Body[]): Body[];
     }
 }
 declare namespace CANNON {
@@ -18683,7 +18682,7 @@ declare namespace CANNON {
          * @param aabb
          * @param result An array to store resulting bodies in.
          */
-        aabbQuery(world: World, aabb: feng3d.AABB, result: any[]): any[];
+        aabbQuery(world: World, aabb: feng3d.AABB, result?: Body[]): Body[];
     }
 }
 declare namespace CANNON {
@@ -18738,7 +18737,7 @@ declare namespace CANNON {
          * @param aabb
          * @param result An array to store resulting bodies in.
          */
-        aabbQuery(world: World, aabb: feng3d.AABB, result: any[]): any[];
+        aabbQuery(world: World, aabb: feng3d.AABB, result?: Body[]): Body[];
     }
 }
 declare namespace CANNON {
@@ -18946,16 +18945,6 @@ declare namespace CANNON {
          * Reference to the world the body is living in
          */
         world: World;
-        /**
-         * Callback function that is used BEFORE stepping the system. Use it to apply forces, for example. Inside the function, "this" will refer to this Body object.
-         * @deprecated Use World events instead
-         */
-        preStep: Function;
-        /**
-         * Callback function that is used AFTER stepping the system. Inside the function, "this" will refer to this Body object.
-         * @deprecated Use World events instead
-         */
-        postStep: Function;
         vlambda: feng3d.Vector3;
         collisionFilterGroup: number;
         collisionFilterMask: number;
@@ -19168,7 +19157,6 @@ declare namespace CANNON {
         vectorToWorldFrame(localVector: feng3d.Vector3, result: feng3d.Vector3): feng3d.Vector3;
         /**
          * Add a shape to the body with a local offset and orientation.
-         *
          * @param shape
          * @param _offset
          * @param_orientation
@@ -20074,21 +20062,12 @@ declare namespace CANNON {
          */
         getContactMaterial(m1: Material, m2: Material): any;
         /**
-         * Get number of objects in the world.
-         * @deprecated
-         */
-        numObjects(): number;
-        /**
          * Store old collision state info
          */
         collisionMatrixTick(): void;
         /**
-         * Add a rigid body to the simulation.
-         * @method add
-         * @param {Body} body
-         * @todo If the simulation has not yet started, why recrete and copy arrays for each body? Accumulate in dynamic arrays in this case.
-         * @todo Adding an array of bodies should be possible. This would save some loops too
-         * @deprecated Use .addBody instead
+         *
+         * @param body
          */
         addBody(body: Body): void;
         /**

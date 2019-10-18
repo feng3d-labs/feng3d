@@ -304,8 +304,6 @@ namespace CANNON
             source.addTo(rayvector, target);
             var raycastResult = wheel.raycastResult;
 
-            var param = 0;
-
             raycastResult.reset();
             // Turn off ray collision with the chassis temporarily
             var oldState = chassisBody.collisionResponse;

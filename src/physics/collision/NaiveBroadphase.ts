@@ -49,10 +49,8 @@ namespace CANNON
          * @param aabb
          * @param result An array to store resulting bodies in.
          */
-        aabbQuery(world: World, aabb: feng3d.AABB, result: any[])
+        aabbQuery(world: World, aabb: feng3d.AABB, result: Body[] = [])
         {
-            result = result || [];
-
             for (var i = 0; i < world.bodies.length; i++)
             {
                 var b = world.bodies[i];
@@ -72,6 +70,4 @@ namespace CANNON
             return result;
         }
     }
-
-    var tmpAABB = new feng3d.AABB();
 }

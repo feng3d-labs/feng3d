@@ -225,15 +225,6 @@ namespace CANNON
         }
 
         /**
-         * Get number of objects in the world.
-         * @deprecated
-         */
-        numObjects()
-        {
-            return this.bodies.length;
-        }
-
-        /**
          * Store old collision state info
          */
         collisionMatrixTick()
@@ -248,12 +239,8 @@ namespace CANNON
         }
 
         /**
-         * Add a rigid body to the simulation.
-         * @method add
-         * @param {Body} body
-         * @todo If the simulation has not yet started, why recrete and copy arrays for each body? Accumulate in dynamic arrays in this case.
-         * @todo Adding an array of bodies should be possible. This would save some loops too
-         * @deprecated Use .addBody instead
+         * 
+         * @param body 
          */
         addBody(body: Body)
         {
@@ -402,7 +389,6 @@ namespace CANNON
             }
         }
 
-
         getBodyById(id: number)
         {
             return this.idToBodyMap[id];
@@ -513,7 +499,7 @@ namespace CANNON
                 contacts = this.contacts,
                 p1 = World_step_p1,
                 p2 = World_step_p2,
-                N = this.numObjects(),
+                N = this.bodies.length,
                 bodies = this.bodies,
                 solver = this.solver,
                 gravity = this.gravity,
@@ -825,16 +811,6 @@ namespace CANNON
 
             this.dispatch("preStep");
 
-            // Invoke pre-step callbacks
-            for (i = 0; i !== N; i++)
-            {
-                var bi = bodies[i];
-                if (bi.preStep)
-                {
-                    bi.preStep.call(bi);
-                }
-            }
-
             // Leap frog
             // vnew = v + h*f/m
             // xnew = x + h*vnew
@@ -864,17 +840,6 @@ namespace CANNON
             this.stepnumber += 1;
 
             this.dispatch("postStep");
-
-            // Invoke post-step callbacks
-            for (i = 0; i !== N; i++)
-            {
-                var bi = bodies[i];
-                var postStep = bi.postStep;
-                if (postStep)
-                {
-                    postStep.call(bi);
-                }
-            }
 
             // Sleeping update
             if (this.allowSleep)

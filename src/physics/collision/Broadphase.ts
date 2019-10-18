@@ -10,7 +10,7 @@ namespace CANNON
         dirty = true;
 
         /**
-         * Get the collision pairs from the world
+         * 从世界获取冲突对
          * 
          * @param world The world to search in
          * @param p1 Empty array to be filled with body objects
@@ -142,26 +142,23 @@ namespace CANNON
         }
 
         /**
-         * To be implemented by subcasses
-         * @method setWorld
-         * @param {World} world
+         * 
+         * @param world 
          */
         setWorld(world: World)
         {
         }
 
         /**
-         * Returns all the bodies within the AABB.
+         * 获取包围盒内所有物体
          * 
          * @param world 
          * @param aabb 
          * @param result An array to store resulting bodies in.
          */
-        aabbQuery(world: World, aabb: feng3d.AABB, result: any[])
+        aabbQuery(world: World, aabb: feng3d.AABB, result: Body[])
         {
-            console.warn('.aabbQuery is not implemented in this Broadphase subclass.');
-            return [];
+            return result;
         }
-
     }
 }

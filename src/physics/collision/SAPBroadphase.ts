@@ -298,10 +298,8 @@ namespace CANNON
          * @param aabb
          * @param result An array to store resulting bodies in.
          */
-        aabbQuery(world: World, aabb: feng3d.AABB, result: any[])
+        aabbQuery(world: World, aabb: feng3d.AABB, result: Body[] = [])
         {
-            result = result || [];
-
             if (this.dirty)
             {
                 this.sortList();

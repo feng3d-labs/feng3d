@@ -41060,22 +41060,20 @@ var CANNON;
             }
         };
         /**
-         * To be implemented by subcasses
-         * @method setWorld
-         * @param {World} world
+         *
+         * @param world
          */
         Broadphase.prototype.setWorld = function (world) {
         };
         /**
-         * Returns all the bodies within the AABB.
+         * 获取包围盒内所有物体
          *
          * @param world
          * @param aabb
          * @param result An array to store resulting bodies in.
          */
         Broadphase.prototype.aabbQuery = function (world, aabb, result) {
-            console.warn('.aabbQuery is not implemented in this Broadphase subclass.');
-            return [];
+            return result;
         };
         return Broadphase;
     }());
@@ -41125,7 +41123,7 @@ var CANNON;
          * @param pairs2
          */
         GridBroadphase.prototype.collisionPairs = function (world, pairs1, pairs2) {
-            var N = world.numObjects(), bodies = world.bodies;
+            var N = world.bodies.length, bodies = world.bodies;
             var max = this.aabbMax, min = this.aabbMin, nx = this.nx, ny = this.ny, nz = this.nz;
             var xstep = ny * nz;
             var ystep = nz;
@@ -41219,8 +41217,7 @@ var CANNON;
                         //Relative position from origin of plane object to the first bin
                         //Incremented as we iterate through the bins
                         var xreset = xmin + binsizeX * 0.5 - bi.position.x, yreset = ymin + binsizeY * 0.5 - bi.position.y, zreset = zmin + binsizeZ * 0.5 - bi.position.z;
-                        var d = GridBroadphase_collisionPairs_d;
-                        d.init(xreset, yreset, zreset);
+                        var d = new feng3d.Vector3(xreset, yreset, zreset);
                         for (var xi = 0, xoff = 0; xi !== nx; xi++, xoff += xstep, d.y = yreset, d.x += binsizeX) {
                             for (var yi = 0, yoff = 0; yi !== ny; yi++, yoff += ystep, d.z = zreset, d.y += binsizeY) {
                                 for (var zi = 0, zoff = 0; zi !== nz; zi++, zoff += zstep, d.z += binsizeZ) {
@@ -41258,24 +41255,11 @@ var CANNON;
                     }
                 }
             }
-            //	for (var zi = 0, zoff=0; zi < nz; zi++, zoff+= zstep) {
-            //		console.log("layer "+zi);
-            //		for (var yi = 0, yoff=0; yi < ny; yi++, yoff += ystep) {
-            //			var row = '';
-            //			for (var xi = 0, xoff=0; xi < nx; xi++, xoff += xstep) {
-            //				var idx = xoff + yoff + zoff;
-            //				row += ' ' + binLengths[idx];
-            //			}
-            //			console.log(row);
-            //		}
-            //	}
             this.makePairsUnique(pairs1, pairs2);
         };
         return GridBroadphase;
     }(CANNON.Broadphase));
     CANNON.GridBroadphase = GridBroadphase;
-    var GridBroadphase_collisionPairs_d = new feng3d.Vector3();
-    var GridBroadphase_collisionPairs_binPos = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -41315,7 +41299,7 @@ var CANNON;
          * @param result An array to store resulting bodies in.
          */
         NaiveBroadphase.prototype.aabbQuery = function (world, aabb, result) {
-            result = result || [];
+            if (result === void 0) { result = []; }
             for (var i = 0; i < world.bodies.length; i++) {
                 var b = world.bodies[i];
                 if (b.aabbNeedsUpdate) {
@@ -41331,7 +41315,6 @@ var CANNON;
         return NaiveBroadphase;
     }(CANNON.Broadphase));
     CANNON.NaiveBroadphase = NaiveBroadphase;
-    var tmpAABB = new feng3d.AABB();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -41538,7 +41521,7 @@ var CANNON;
          * @param result An array to store resulting bodies in.
          */
         SAPBroadphase.prototype.aabbQuery = function (world, aabb, result) {
-            result = result || [];
+            if (result === void 0) { result = []; }
             if (this.dirty) {
                 this.sortList();
                 this.dirty = false;
@@ -42142,8 +42125,6 @@ var CANNON;
             var _this = _super.call(this) || this;
             _this.id = Body.idCounter++;
             _this.world = null;
-            _this.preStep = null;
-            _this.postStep = null;
             _this.vlambda = new feng3d.Vector3();
             _this.collisionFilterGroup = typeof (options.collisionFilterGroup) === 'number' ? options.collisionFilterGroup : 1;
             _this.collisionFilterMask = typeof (options.collisionFilterMask) === 'number' ? options.collisionFilterMask : -1;
@@ -42329,7 +42310,6 @@ var CANNON;
         };
         /**
          * Add a shape to the body with a local offset and orientation.
-         *
          * @param shape
          * @param _offset
          * @param_orientation
@@ -43025,7 +43005,6 @@ var CANNON;
             var source = wheel.chassisConnectionPointWorld;
             source.addTo(rayvector, target);
             var raycastResult = wheel.raycastResult;
-            var param = 0;
             raycastResult.reset();
             // Turn off ray collision with the chassis temporarily
             var oldState = chassisBody.collisionResponse;
@@ -44400,13 +44379,6 @@ var CANNON;
             return this.contactMaterialTable[m1.id + "_" + m2.id];
         };
         /**
-         * Get number of objects in the world.
-         * @deprecated
-         */
-        World.prototype.numObjects = function () {
-            return this.bodies.length;
-        };
-        /**
          * Store old collision state info
          */
         World.prototype.collisionMatrixTick = function () {
@@ -44418,12 +44390,8 @@ var CANNON;
             this.shapeOverlapKeeper.tick();
         };
         /**
-         * Add a rigid body to the simulation.
-         * @method add
-         * @param {Body} body
-         * @todo If the simulation has not yet started, why recrete and copy arrays for each body? Accumulate in dynamic arrays in this case.
-         * @todo Adding an array of bodies should be possible. This would save some loops too
-         * @deprecated Use .addBody instead
+         *
+         * @param body
          */
         World.prototype.addBody = function (body) {
             if (this.bodies.indexOf(body) !== -1) {
@@ -44626,7 +44594,7 @@ var CANNON;
         };
         World.prototype.internalStep = function (dt) {
             this.dt = dt;
-            var world = this, that = this, contacts = this.contacts, p1 = World_step_p1, p2 = World_step_p2, N = this.numObjects(), bodies = this.bodies, solver = this.solver, gravity = this.gravity, doProfiling = this.doProfiling, profile = this.profile, DYNAMIC = CANNON.Body.DYNAMIC, profilingStart, constraints = this.constraints, frictionEquationPool = World_step_frictionEquationPool, gnorm = gravity.length, gx = gravity.x, gy = gravity.y, gz = gravity.z, i = 0;
+            var world = this, that = this, contacts = this.contacts, p1 = World_step_p1, p2 = World_step_p2, N = this.bodies.length, bodies = this.bodies, solver = this.solver, gravity = this.gravity, doProfiling = this.doProfiling, profile = this.profile, DYNAMIC = CANNON.Body.DYNAMIC, profilingStart, constraints = this.constraints, frictionEquationPool = World_step_frictionEquationPool, gnorm = gravity.length, gx = gravity.x, gy = gravity.y, gz = gravity.z, i = 0;
             if (doProfiling) {
                 profilingStart = performance.now();
             }
@@ -44840,13 +44808,6 @@ var CANNON;
                 }
             }
             this.dispatch("preStep");
-            // Invoke pre-step callbacks
-            for (i = 0; i !== N; i++) {
-                var bi = bodies[i];
-                if (bi.preStep) {
-                    bi.preStep.call(bi);
-                }
-            }
             // Leap frog
             // vnew = v + h*f/m
             // xnew = x + h*vnew
@@ -44868,14 +44829,6 @@ var CANNON;
             this.time += dt;
             this.stepnumber += 1;
             this.dispatch("postStep");
-            // Invoke post-step callbacks
-            for (i = 0; i !== N; i++) {
-                var bi = bodies[i];
-                var postStep = bi.postStep;
-                if (postStep) {
-                    postStep.call(bi);
-                }
-            }
             // Sleeping update
             if (this.allowSleep) {
                 for (i = 0; i !== N; i++) {

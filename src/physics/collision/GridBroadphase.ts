@@ -54,7 +54,7 @@ namespace CANNON
 		 */
 		collisionPairs(world: World, pairs1: any[], pairs2: any[])
 		{
-			var N = world.numObjects(),
+			var N = world.bodies.length,
 				bodies = world.bodies;
 
 			var max = this.aabbMax,
@@ -175,8 +175,7 @@ namespace CANNON
 							yreset = ymin + binsizeY * 0.5 - bi.position.y,
 							zreset = zmin + binsizeZ * 0.5 - bi.position.z;
 
-						var d = GridBroadphase_collisionPairs_d;
-						d.init(xreset, yreset, zreset);
+						var d = new feng3d.Vector3(xreset, yreset, zreset);
 
 						for (var xi = 0, xoff = 0; xi !== nx; xi++ , xoff += xstep, d.y = yreset, d.x += binsizeX)
 						{
@@ -237,23 +236,8 @@ namespace CANNON
 				}
 			}
 
-			//	for (var zi = 0, zoff=0; zi < nz; zi++, zoff+= zstep) {
-			//		console.log("layer "+zi);
-			//		for (var yi = 0, yoff=0; yi < ny; yi++, yoff += ystep) {
-			//			var row = '';
-			//			for (var xi = 0, xoff=0; xi < nx; xi++, xoff += xstep) {
-			//				var idx = xoff + yoff + zoff;
-			//				row += ' ' + binLengths[idx];
-			//			}
-			//			console.log(row);
-			//		}
-			//	}
-
 			this.makePairsUnique(pairs1, pairs2);
 		}
 	}
 
-
-	var GridBroadphase_collisionPairs_d = new feng3d.Vector3();
-	var GridBroadphase_collisionPairs_binPos = new feng3d.Vector3();
 }
