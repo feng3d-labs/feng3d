@@ -181,7 +181,7 @@ namespace CANNON
             {
                 this.gravity.copy(options.gravity);
             }
-            this.broadphase = options.broadphase !== undefined ? options.broadphase : new NaiveBroadphase();
+            this.broadphase = options.broadphase !== undefined ? options.broadphase : new Broadphase();
             this.bodies = [];
             this.solver = options.solver !== undefined ? options.solver : new GSSolver();
             this.constraints = [];

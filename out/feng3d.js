@@ -40963,6 +40963,27 @@ var CANNON;
             this.dirty = true;
         }
         /**
+         * 得到物理世界中所有的碰撞对
+         *
+         * @param world
+         * @param pairs1
+         * @param pairs2
+         */
+        Broadphase.prototype.collisionPairs = function (world, pairs1, pairs2) {
+            var bodies = world.bodies, n = bodies.length, i, j, bi, bj;
+            // Naive N^2 ftw!
+            for (i = 0; i !== n; i++) {
+                for (j = 0; j !== i; j++) {
+                    bi = bodies[i];
+                    bj = bodies[j];
+                    if (!this.needBroadphaseCollision(bi, bj)) {
+                        continue;
+                    }
+                    this.intersectionTest(bi, bj, pairs1, pairs2);
+                }
+            }
+        };
+        /**
          * 是否需要碰撞检测
          *
          * @param bodyA
@@ -41070,238 +41091,11 @@ var CANNON;
         };
         /**
          * 获取包围盒内所有物体
-         *
          * @param world
          * @param aabb
          * @param result
          */
         Broadphase.prototype.aabbQuery = function (world, aabb, result) {
-            return result;
-        };
-        return Broadphase;
-    }());
-    CANNON.Broadphase = Broadphase;
-})(CANNON || (CANNON = {}));
-var CANNON;
-(function (CANNON) {
-    var GridBroadphase = /** @class */ (function (_super) {
-        __extends(GridBroadphase, _super);
-        /**
-         * Axis aligned uniform grid broadphase.
-         *
-         * @param aabbMin
-         * @param aabbMax
-         * @param nx Number of boxes along x
-         * @param ny Number of boxes along y
-         * @param nz Number of boxes along z
-         *
-         * @todo Needs support for more than just planes and spheres.
-         */
-        function GridBroadphase(aabbMin, aabbMax, nx, ny, nz) {
-            var _this = _super.call(this) || this;
-            _this.nx = nx || 10;
-            _this.ny = ny || 10;
-            _this.nz = nz || 10;
-            _this.aabbMin = aabbMin || new feng3d.Vector3(100, 100, 100);
-            _this.aabbMax = aabbMax || new feng3d.Vector3(-100, -100, -100);
-            var nbins = _this.nx * _this.ny * _this.nz;
-            if (nbins <= 0) {
-                throw "GridBroadphase: Each dimension's n must be >0";
-            }
-            _this.bins = [];
-            _this.binLengths = []; //Rather than continually resizing arrays (thrashing the memory), just record length and allow them to grow
-            _this.bins.length = nbins;
-            _this.binLengths.length = nbins;
-            for (var i = 0; i < nbins; i++) {
-                _this.bins[i] = [];
-                _this.binLengths[i] = 0;
-            }
-            return _this;
-        }
-        /**
-         * Get all the collision pairs in the physics world
-         *
-         * @param world
-         * @param pairs1
-         * @param pairs2
-         */
-        GridBroadphase.prototype.collisionPairs = function (world, pairs1, pairs2) {
-            var N = world.bodies.length, bodies = world.bodies;
-            var max = this.aabbMax, min = this.aabbMin, nx = this.nx, ny = this.ny, nz = this.nz;
-            var xstep = ny * nz;
-            var ystep = nz;
-            var zstep = 1;
-            var xmax = max.x, ymax = max.y, zmax = max.z, xmin = min.x, ymin = min.y, zmin = min.z;
-            var xmult = nx / (xmax - xmin), ymult = ny / (ymax - ymin), zmult = nz / (zmax - zmin);
-            var binsizeX = (xmax - xmin) / nx, binsizeY = (ymax - ymin) / ny, binsizeZ = (zmax - zmin) / nz;
-            var binRadius = Math.sqrt(binsizeX * binsizeX + binsizeY * binsizeY + binsizeZ * binsizeZ) * 0.5;
-            var SPHERE = CANNON.ShapeType.SPHERE, PLANE = CANNON.ShapeType.PLANE, BOX = CANNON.ShapeType.BOX, COMPOUND = CANNON.ShapeType.COMPOUND, CONVEXPOLYHEDRON = CANNON.ShapeType.CONVEXPOLYHEDRON;
-            var bins = this.bins, binLengths = this.binLengths, Nbins = this.bins.length;
-            // Reset bins
-            for (var i = 0; i !== Nbins; i++) {
-                binLengths[i] = 0;
-            }
-            var ceil = Math.ceil;
-            // var min = Math.min;
-            // var max = Math.max;
-            function addBoxToBins(x0, y0, z0, x1, y1, z1, bi) {
-                var xoff0 = ((x0 - xmin) * xmult) | 0, yoff0 = ((y0 - ymin) * ymult) | 0, zoff0 = ((z0 - zmin) * zmult) | 0, xoff1 = ceil((x1 - xmin) * xmult), yoff1 = ceil((y1 - ymin) * ymult), zoff1 = ceil((z1 - zmin) * zmult);
-                if (xoff0 < 0) {
-                    xoff0 = 0;
-                }
-                else if (xoff0 >= nx) {
-                    xoff0 = nx - 1;
-                }
-                if (yoff0 < 0) {
-                    yoff0 = 0;
-                }
-                else if (yoff0 >= ny) {
-                    yoff0 = ny - 1;
-                }
-                if (zoff0 < 0) {
-                    zoff0 = 0;
-                }
-                else if (zoff0 >= nz) {
-                    zoff0 = nz - 1;
-                }
-                if (xoff1 < 0) {
-                    xoff1 = 0;
-                }
-                else if (xoff1 >= nx) {
-                    xoff1 = nx - 1;
-                }
-                if (yoff1 < 0) {
-                    yoff1 = 0;
-                }
-                else if (yoff1 >= ny) {
-                    yoff1 = ny - 1;
-                }
-                if (zoff1 < 0) {
-                    zoff1 = 0;
-                }
-                else if (zoff1 >= nz) {
-                    zoff1 = nz - 1;
-                }
-                xoff0 *= xstep;
-                yoff0 *= ystep;
-                zoff0 *= zstep;
-                xoff1 *= xstep;
-                yoff1 *= ystep;
-                zoff1 *= zstep;
-                for (var xoff = xoff0; xoff <= xoff1; xoff += xstep) {
-                    for (var yoff = yoff0; yoff <= yoff1; yoff += ystep) {
-                        for (var zoff = zoff0; zoff <= zoff1; zoff += zstep) {
-                            var idx = xoff + yoff + zoff;
-                            bins[idx][binLengths[idx]++] = bi;
-                        }
-                    }
-                }
-            }
-            // Put all bodies into the bins
-            for (var i = 0; i !== N; i++) {
-                var bi = bodies[i];
-                throw "";
-                // var si = bi.shape;
-                var si;
-                switch (si.type) {
-                    case SPHERE:
-                        // Put in bin
-                        // check if overlap with other bins
-                        var x = bi.position.x, y = bi.position.y, z = bi.position.z;
-                        var r = si.radius;
-                        addBoxToBins(x - r, y - r, z - r, x + r, y + r, z + r, bi);
-                        break;
-                    case PLANE:
-                        var plane = si;
-                        if (plane.worldNormalNeedsUpdate) {
-                            plane.computeWorldNormal(bi.quaternion);
-                        }
-                        var planeNormal = plane.worldNormal;
-                        //Relative position from origin of plane object to the first bin
-                        //Incremented as we iterate through the bins
-                        var xreset = xmin + binsizeX * 0.5 - bi.position.x, yreset = ymin + binsizeY * 0.5 - bi.position.y, zreset = zmin + binsizeZ * 0.5 - bi.position.z;
-                        var d = new feng3d.Vector3(xreset, yreset, zreset);
-                        for (var xi = 0, xoff = 0; xi !== nx; xi++, xoff += xstep, d.y = yreset, d.x += binsizeX) {
-                            for (var yi = 0, yoff = 0; yi !== ny; yi++, yoff += ystep, d.z = zreset, d.y += binsizeY) {
-                                for (var zi = 0, zoff = 0; zi !== nz; zi++, zoff += zstep, d.z += binsizeZ) {
-                                    if (d.dot(planeNormal) < binRadius) {
-                                        var idx = xoff + yoff + zoff;
-                                        bins[idx][binLengths[idx]++] = bi;
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                    default:
-                        if (bi.aabbNeedsUpdate) {
-                            bi.computeAABB();
-                        }
-                        addBoxToBins(bi.aabb.min.x, bi.aabb.min.y, bi.aabb.min.z, bi.aabb.max.x, bi.aabb.max.y, bi.aabb.max.z, bi);
-                        break;
-                }
-            }
-            // Check each bin
-            for (var i = 0; i !== Nbins; i++) {
-                var binLength = binLengths[i];
-                //Skip bins with no potential collisions
-                if (binLength > 1) {
-                    var bin = bins[i];
-                    // Do N^2 broadphase inside
-                    for (var xi = 0; xi !== binLength; xi++) {
-                        var bi = bin[xi];
-                        for (var yi = 0; yi !== xi; yi++) {
-                            var bj = bin[yi];
-                            if (this.needBroadphaseCollision(bi, bj)) {
-                                this.intersectionTest(bi, bj, pairs1, pairs2);
-                            }
-                        }
-                    }
-                }
-            }
-            this.makePairsUnique(pairs1, pairs2);
-        };
-        return GridBroadphase;
-    }(CANNON.Broadphase));
-    CANNON.GridBroadphase = GridBroadphase;
-})(CANNON || (CANNON = {}));
-var CANNON;
-(function (CANNON) {
-    var NaiveBroadphase = /** @class */ (function (_super) {
-        __extends(NaiveBroadphase, _super);
-        /**
-         * Naive broadphase implementation, used in lack of better ones.
-         * @description The naive broadphase looks at all possible pairs without restriction, therefore it has complexity N^2 (which is bad)
-         */
-        function NaiveBroadphase() {
-            return _super.call(this) || this;
-        }
-        /**
-         * Get all the collision pairs in the physics world
-         * @param world
-         * @param pairs1
-         * @param pairs2
-         */
-        NaiveBroadphase.prototype.collisionPairs = function (world, pairs1, pairs2) {
-            var bodies = world.bodies, n = bodies.length, i, j, bi, bj;
-            // Naive N^2 ftw!
-            for (i = 0; i !== n; i++) {
-                for (j = 0; j !== i; j++) {
-                    bi = bodies[i];
-                    bj = bodies[j];
-                    if (!this.needBroadphaseCollision(bi, bj)) {
-                        continue;
-                    }
-                    this.intersectionTest(bi, bj, pairs1, pairs2);
-                }
-            }
-        };
-        /**
-         * Returns all the bodies within an AABB.
-         * @param world
-         * @param aabb
-         * @param result An array to store resulting bodies in.
-         */
-        NaiveBroadphase.prototype.aabbQuery = function (world, aabb, result) {
             if (result === void 0) { result = []; }
             for (var i = 0; i < world.bodies.length; i++) {
                 var b = world.bodies[i];
@@ -41315,242 +41109,24 @@ var CANNON;
             }
             return result;
         };
-        return NaiveBroadphase;
-    }(CANNON.Broadphase));
-    CANNON.NaiveBroadphase = NaiveBroadphase;
+        return Broadphase;
+    }());
+    CANNON.Broadphase = Broadphase;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
-    var SAPBroadphase = /** @class */ (function (_super) {
-        __extends(SAPBroadphase, _super);
+    var NaiveBroadphase = /** @class */ (function (_super) {
+        __extends(NaiveBroadphase, _super);
         /**
-         * Sweep and prune broadphase along one axis.
-         *
-         * @param world
+         * Naive broadphase implementation, used in lack of better ones.
+         * @description The naive broadphase looks at all possible pairs without restriction, therefore it has complexity N^2 (which is bad)
          */
-        function SAPBroadphase(world) {
-            var _this = _super.call(this) || this;
-            _this.axisList = [];
-            _this.world = null;
-            _this.axisIndex = 0;
-            if (world) {
-                _this.setWorld(world);
-            }
-            return _this;
+        function NaiveBroadphase() {
+            return _super.call(this) || this;
         }
-        SAPBroadphase.prototype._addBodyHandler = function (e) {
-            this.axisList.push(e.data);
-        };
-        SAPBroadphase.prototype._removeBodyHandler = function (e) {
-            var idx = this.axisList.indexOf(e.data);
-            if (idx !== -1) {
-                this.axisList.splice(idx, 1);
-            }
-        };
-        /**
-         * Change the world
-         * @param world
-         */
-        SAPBroadphase.prototype.setWorld = function (world) {
-            // Clear the old axis array
-            this.axisList.length = 0;
-            // Add all bodies from the new world
-            for (var i = 0; i < world.bodies.length; i++) {
-                this.axisList.push(world.bodies[i]);
-            }
-            // Remove old handlers, if any
-            if (this.world) {
-                this.world.off("addBody", this._addBodyHandler, this);
-                this.world.off("removeBody", this._removeBodyHandler, this);
-            }
-            // Add handlers to update the list of bodies.
-            world.on("addBody", this._addBodyHandler, this);
-            world.on("removeBody", this._removeBodyHandler, this);
-            this.world = world;
-            this.dirty = true;
-        };
-        SAPBroadphase.insertionSortX = function (a) {
-            for (var i = 1, l = a.length; i < l; i++) {
-                var v = a[i];
-                for (var j = i - 1; j >= 0; j--) {
-                    if (a[j].aabb.lowerBound.x <= v.aabb.lowerBound.x) {
-                        break;
-                    }
-                    a[j + 1] = a[j];
-                }
-                a[j + 1] = v;
-            }
-            return a;
-        };
-        SAPBroadphase.insertionSortY = function (a) {
-            for (var i = 1, l = a.length; i < l; i++) {
-                var v = a[i];
-                for (var j = i - 1; j >= 0; j--) {
-                    if (a[j].aabb.lowerBound.y <= v.aabb.lowerBound.y) {
-                        break;
-                    }
-                    a[j + 1] = a[j];
-                }
-                a[j + 1] = v;
-            }
-            return a;
-        };
-        SAPBroadphase.insertionSortZ = function (a) {
-            for (var i = 1, l = a.length; i < l; i++) {
-                var v = a[i];
-                for (var j = i - 1; j >= 0; j--) {
-                    if (a[j].aabb.lowerBound.z <= v.aabb.lowerBound.z) {
-                        break;
-                    }
-                    a[j + 1] = a[j];
-                }
-                a[j + 1] = v;
-            }
-            return a;
-        };
-        /**
-         * Collect all collision pairs
-         * @param world
-         * @param p1
-         * @param p2
-         */
-        SAPBroadphase.prototype.collisionPairs = function (world, p1, p2) {
-            var bodies = this.axisList, N = bodies.length, axisIndex = this.axisIndex;
-            if (this.dirty) {
-                this.sortList();
-                this.dirty = false;
-            }
-            // Look through the list
-            for (var i = 0; i !== N; i++) {
-                var bi = bodies[i];
-                for (var j = i + 1; j < N; j++) {
-                    var bj = bodies[j];
-                    if (!this.needBroadphaseCollision(bi, bj)) {
-                        continue;
-                    }
-                    if (!SAPBroadphase.checkBounds(bi, bj, axisIndex)) {
-                        break;
-                    }
-                    this.intersectionTest(bi, bj, p1, p2);
-                }
-            }
-        };
-        SAPBroadphase.prototype.sortList = function () {
-            var axisList = this.axisList;
-            var axisIndex = this.axisIndex;
-            var N = axisList.length;
-            // Update AABBs
-            for (var i = 0; i !== N; i++) {
-                var bi = axisList[i];
-                if (bi.aabbNeedsUpdate) {
-                    bi.computeAABB();
-                }
-            }
-            // Sort the list
-            if (axisIndex === 0) {
-                SAPBroadphase.insertionSortX(axisList);
-            }
-            else if (axisIndex === 1) {
-                SAPBroadphase.insertionSortY(axisList);
-            }
-            else if (axisIndex === 2) {
-                SAPBroadphase.insertionSortZ(axisList);
-            }
-        };
-        /**
-         * Check if the bounds of two bodies overlap, along the given SAP axis.
-         * @param bi
-         * @param bj
-         * @param axisIndex
-         */
-        SAPBroadphase.checkBounds = function (bi, bj, axisIndex) {
-            var biPos;
-            var bjPos;
-            if (axisIndex === 0) {
-                biPos = bi.position.x;
-                bjPos = bj.position.x;
-            }
-            else if (axisIndex === 1) {
-                biPos = bi.position.y;
-                bjPos = bj.position.y;
-            }
-            else if (axisIndex === 2) {
-                biPos = bi.position.z;
-                bjPos = bj.position.z;
-            }
-            var ri = bi.boundingRadius, rj = bj.boundingRadius, boundA1 = biPos - ri, boundA2 = biPos + ri, boundB1 = bjPos - rj, boundB2 = bjPos + rj;
-            return boundB1 < boundA2;
-        };
-        /**
-         * Computes the variance of the body positions and estimates the best
-         * axis to use. Will automatically set property .axisIndex.
-         */
-        SAPBroadphase.prototype.autoDetectAxis = function () {
-            var sumX = 0, sumX2 = 0, sumY = 0, sumY2 = 0, sumZ = 0, sumZ2 = 0, bodies = this.axisList, N = bodies.length, invN = 1 / N;
-            for (var i = 0; i !== N; i++) {
-                var b = bodies[i];
-                var centerX = b.position.x;
-                sumX += centerX;
-                sumX2 += centerX * centerX;
-                var centerY = b.position.y;
-                sumY += centerY;
-                sumY2 += centerY * centerY;
-                var centerZ = b.position.z;
-                sumZ += centerZ;
-                sumZ2 += centerZ * centerZ;
-            }
-            var varianceX = sumX2 - sumX * sumX * invN, varianceY = sumY2 - sumY * sumY * invN, varianceZ = sumZ2 - sumZ * sumZ * invN;
-            if (varianceX > varianceY) {
-                if (varianceX > varianceZ) {
-                    this.axisIndex = 0;
-                }
-                else {
-                    this.axisIndex = 2;
-                }
-            }
-            else if (varianceY > varianceZ) {
-                this.axisIndex = 1;
-            }
-            else {
-                this.axisIndex = 2;
-            }
-        };
-        /**
-         * Returns all the bodies within an AABB.
-         * @param world
-         * @param aabb
-         * @param result An array to store resulting bodies in.
-         */
-        SAPBroadphase.prototype.aabbQuery = function (world, aabb, result) {
-            if (result === void 0) { result = []; }
-            if (this.dirty) {
-                this.sortList();
-                this.dirty = false;
-            }
-            var axisIndex = this.axisIndex, axis = 'x';
-            if (axisIndex === 1) {
-                axis = 'y';
-            }
-            if (axisIndex === 2) {
-                axis = 'z';
-            }
-            var axisList = this.axisList;
-            var lower = aabb.min[axis];
-            var upper = aabb.max[axis];
-            for (var i = 0; i < axisList.length; i++) {
-                var b = axisList[i];
-                if (b.aabbNeedsUpdate) {
-                    b.computeAABB();
-                }
-                if (b.aabb.overlaps(aabb)) {
-                    result.push(b);
-                }
-            }
-            return result;
-        };
-        return SAPBroadphase;
+        return NaiveBroadphase;
     }(CANNON.Broadphase));
-    CANNON.SAPBroadphase = SAPBroadphase;
+    CANNON.NaiveBroadphase = NaiveBroadphase;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -44287,7 +43863,7 @@ var CANNON;
             if (options.gravity) {
                 _this.gravity.copy(options.gravity);
             }
-            _this.broadphase = options.broadphase !== undefined ? options.broadphase : new CANNON.NaiveBroadphase();
+            _this.broadphase = options.broadphase !== undefined ? options.broadphase : new CANNON.Broadphase();
             _this.bodies = [];
             _this.solver = options.solver !== undefined ? options.solver : new CANNON.GSSolver();
             _this.constraints = [];
@@ -46551,6 +46127,7 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");

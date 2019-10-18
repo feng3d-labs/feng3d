@@ -18566,14 +18566,18 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    abstract class Broadphase {
+    class Broadphase {
         world: World;
         useBoundingBoxes: boolean;
         dirty: boolean;
         /**
-         * 从世界获取冲突对
+         * 得到物理世界中所有的碰撞对
+         *
+         * @param world
+         * @param pairs1
+         * @param pairs2
          */
-        abstract collisionPairs(world: World, p1: Body[], p2: Body[]): void;
+        collisionPairs(world: World, pairs1: Body[], pairs2: Body[]): void;
         /**
          * 是否需要碰撞检测
          *
@@ -18623,43 +18627,11 @@ declare namespace CANNON {
         setWorld(world: World): void;
         /**
          * 获取包围盒内所有物体
-         *
          * @param world
          * @param aabb
          * @param result
          */
-        aabbQuery(world: World, aabb: feng3d.AABB, result: Body[]): Body[];
-    }
-}
-declare namespace CANNON {
-    class GridBroadphase extends Broadphase {
-        nx: number;
-        ny: number;
-        nz: number;
-        aabbMin: feng3d.Vector3;
-        aabbMax: feng3d.Vector3;
-        bins: any[];
-        binLengths: any[];
-        /**
-         * Axis aligned uniform grid broadphase.
-         *
-         * @param aabbMin
-         * @param aabbMax
-         * @param nx Number of boxes along x
-         * @param ny Number of boxes along y
-         * @param nz Number of boxes along z
-         *
-         * @todo Needs support for more than just planes and spheres.
-         */
-        constructor(aabbMin: feng3d.Vector3, aabbMax: feng3d.Vector3, nx: number, ny: number, nz: number);
-        /**
-         * Get all the collision pairs in the physics world
-         *
-         * @param world
-         * @param pairs1
-         * @param pairs2
-         */
-        collisionPairs(world: World, pairs1: Body[], pairs2: Body[]): void;
+        aabbQuery(world: World, aabb: feng3d.AABB, result?: Body[]): Body[];
     }
 }
 declare namespace CANNON {
@@ -18669,75 +18641,6 @@ declare namespace CANNON {
          * @description The naive broadphase looks at all possible pairs without restriction, therefore it has complexity N^2 (which is bad)
          */
         constructor();
-        /**
-         * Get all the collision pairs in the physics world
-         * @param world
-         * @param pairs1
-         * @param pairs2
-         */
-        collisionPairs(world: World, pairs1: Body[], pairs2: Body[]): void;
-        /**
-         * Returns all the bodies within an AABB.
-         * @param world
-         * @param aabb
-         * @param result An array to store resulting bodies in.
-         */
-        aabbQuery(world: World, aabb: feng3d.AABB, result?: Body[]): Body[];
-    }
-}
-declare namespace CANNON {
-    class SAPBroadphase extends Broadphase {
-        /**
-         * List of bodies currently in the broadphase.
-         */
-        axisList: any[];
-        /**
-         * Axis to sort the bodies along. Set to 0 for x axis, and 1 for y axis. For best performance, choose an axis that the bodies are spread out more on.
-         */
-        axisIndex: number;
-        private _addBodyHandler;
-        private _removeBodyHandler;
-        /**
-         * Sweep and prune broadphase along one axis.
-         *
-         * @param world
-         */
-        constructor(world: World);
-        /**
-         * Change the world
-         * @param world
-         */
-        setWorld(world: World): void;
-        static insertionSortX(a: any[]): any[];
-        static insertionSortY(a: any[]): any[];
-        static insertionSortZ(a: any[]): any[];
-        /**
-         * Collect all collision pairs
-         * @param world
-         * @param p1
-         * @param p2
-         */
-        collisionPairs(world: World, p1: Body[], p2: Body[]): void;
-        sortList(): void;
-        /**
-         * Check if the bounds of two bodies overlap, along the given SAP axis.
-         * @param bi
-         * @param bj
-         * @param axisIndex
-         */
-        static checkBounds(bi: Body, bj: Body, axisIndex: number): boolean;
-        /**
-         * Computes the variance of the body positions and estimates the best
-         * axis to use. Will automatically set property .axisIndex.
-         */
-        autoDetectAxis(): void;
-        /**
-         * Returns all the bodies within an AABB.
-         * @param world
-         * @param aabb
-         * @param result An array to store resulting bodies in.
-         */
-        aabbQuery(world: World, aabb: feng3d.AABB, result?: Body[]): Body[];
     }
 }
 declare namespace CANNON {

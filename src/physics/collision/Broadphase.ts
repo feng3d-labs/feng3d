@@ -1,6 +1,6 @@
 namespace CANNON
 {
-    export abstract class Broadphase
+    export class Broadphase
     {
         world: World = null;
 
@@ -9,9 +9,37 @@ namespace CANNON
         dirty = true;
 
         /**
-         * 从世界获取冲突对
+         * 得到物理世界中所有的碰撞对
+         * 
+         * @param world
+         * @param pairs1
+         * @param pairs2
          */
-        abstract collisionPairs(world: World, p1: Body[], p2: Body[]): void;
+        collisionPairs(world: World, pairs1: Body[], pairs2: Body[])
+        {
+            var bodies = world.bodies,
+                n = bodies.length,
+                i, j, bi, bj;
+
+            // Naive N^2 ftw!
+            for (i = 0; i !== n; i++)
+            {
+                for (j = 0; j !== i; j++)
+                {
+
+                    bi = bodies[i];
+                    bj = bodies[j];
+
+                    if (!this.needBroadphaseCollision(bi, bj))
+                    {
+                        continue;
+                    }
+
+                    this.intersectionTest(bi, bj, pairs1, pairs2);
+                }
+            }
+        }
+
 
         /**
          * 是否需要碰撞检测
@@ -149,13 +177,28 @@ namespace CANNON
 
         /**
          * 获取包围盒内所有物体
-         * 
-         * @param world 
-         * @param aabb 
+         * @param world
+         * @param aabb
          * @param result
          */
-        aabbQuery(world: World, aabb: feng3d.AABB, result: Body[])
+        aabbQuery(world: World, aabb: feng3d.AABB, result: Body[] = [])
         {
+            for (var i = 0; i < world.bodies.length; i++)
+            {
+                var b = world.bodies[i];
+
+                if (b.aabbNeedsUpdate)
+                {
+                    b.computeAABB();
+                }
+
+                // Ugly hack until Body gets aabb
+                if (b.aabb.intersects(aabb))
+                {
+                    result.push(b);
+                }
+            }
+
             return result;
         }
     }
