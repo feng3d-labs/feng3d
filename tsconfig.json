@@ -390,7 +390,6 @@
         "src/physics/equations/RotationalMotorEquation.ts",
         "src/physics/solver/Solver.ts",
         "src/physics/solver/GSSolver.ts",
-        "src/physics/solver/SplitSolver.ts",
         "src/physics/world/World.ts",
         "src/physics/world/Narrowphase.ts",
         //

@@ -43542,7 +43542,7 @@ var CANNON;
          * @param  {World} world
          */
         SplitSolver.prototype.solve = function (dt, world) {
-            var nodes = SplitSolver_solve_nodes, nodePool = this.nodePool, bodies = world.bodies, equations = this.equations, Neq = equations.length, Nbodies = bodies.length, subsolver = this.subsolver;
+            var nodes = [], nodePool = this.nodePool, bodies = world.bodies, equations = this.equations, Neq = equations.length, Nbodies = bodies.length, subsolver = this.subsolver;
             // Create needed nodes, reuse if possible
             while (nodePool.length < Nbodies) {
                 nodePool.push(this.createNode());
@@ -43566,10 +43566,10 @@ var CANNON;
                 nj.children.push(ni);
                 nj.eqs.push(eq);
             }
-            var child, n = 0, eqs = SplitSolver_solve_eqs;
+            var child, n = 0, eqs = [];
             subsolver.tolerance = this.tolerance;
             subsolver.iterations = this.iterations;
-            var dummyWorld = SplitSolver_solve_dummyWorld;
+            var dummyWorld = { bodies: [] };
             while ((child = getUnvisitedNode(nodes))) {
                 eqs.length = 0;
                 dummyWorld.bodies.length = 0;
@@ -43588,18 +43588,11 @@ var CANNON;
         return SplitSolver;
     }(CANNON.Solver));
     CANNON.SplitSolver = SplitSolver;
-    // Returns the number of subsystems
-    var SplitSolver_solve_nodes = []; // All allocated node objects
-    var SplitSolver_solve_nodePool = []; // All allocated node objects
-    var SplitSolver_solve_eqs = []; // Temp array
-    var SplitSolver_solve_bds = []; // Temp array
-    var SplitSolver_solve_dummyWorld = { bodies: [] }; // Temp object
-    var STATIC = CANNON.Body.STATIC;
     function getUnvisitedNode(nodes) {
         var Nnodes = nodes.length;
         for (var i = 0; i !== Nnodes; i++) {
             var node = nodes[i];
-            if (!node.visited && !(node.body.type & STATIC)) {
+            if (!node.visited && !(node.body.type & CANNON.Body.STATIC)) {
                 return node;
             }
         }
@@ -45893,6 +45886,9 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+console.log("feng3d-0.1.3");
+console.log("feng3d-0.1.3");
+console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

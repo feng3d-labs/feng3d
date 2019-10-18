@@ -19565,7 +19565,7 @@ declare namespace CANNON {
     class SplitSolver extends Solver {
         iterations: number;
         tolerance: number;
-        subsolver: any;
+        subsolver: SplitSolver;
         nodes: any[];
         nodePool: any[];
         /**
@@ -19573,7 +19573,7 @@ declare namespace CANNON {
          *
          * @param subsolver
          */
-        constructor(subsolver: Solver);
+        constructor(subsolver: SplitSolver);
         createNode(): {
             body: any;
             children: any[];
