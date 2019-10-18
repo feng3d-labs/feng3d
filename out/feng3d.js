@@ -38459,10 +38459,12 @@ var CANNON;
          *     world.addConstraint(constraint);
          */
         function PointToPointConstraint(bodyA, pivotA, bodyB, pivotB, maxForce) {
+            if (pivotA === void 0) { pivotA = new feng3d.Vector3(); }
+            if (pivotB === void 0) { pivotB = new feng3d.Vector3(); }
+            if (maxForce === void 0) { maxForce = 1e6; }
             var _this = _super.call(this, bodyA, bodyB) || this;
-            maxForce = typeof (maxForce) !== 'undefined' ? maxForce : 1e6;
-            _this.pivotA = pivotA ? pivotA.clone() : new feng3d.Vector3();
-            _this.pivotB = pivotB ? pivotB.clone() : new feng3d.Vector3();
+            _this.pivotA = pivotA.clone();
+            _this.pivotB = pivotB.clone();
             var x = _this.equationX = new CANNON.ContactEquation(bodyA, bodyB);
             var y = _this.equationY = new CANNON.ContactEquation(bodyA, bodyB);
             var z = _this.equationZ = new CANNON.ContactEquation(bodyA, bodyB);
@@ -38507,22 +38509,23 @@ var CANNON;
          *
          * @author schteppe
          */
-        function HingeConstraint(bodyA, bodyB, options) {
-            if (options === void 0) { options = {}; }
-            var _this = _super.call(this, bodyA, options.pivotA ? options.pivotA.clone() : new feng3d.Vector3(), bodyB, options.pivotB ? options.pivotB.clone() : new feng3d.Vector3(), maxForce) || this;
-            var maxForce = typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6;
-            var axisA = _this.axisA = options.axisA ? options.axisA.clone() : new feng3d.Vector3(1, 0, 0);
+        function HingeConstraint(bodyA, bodyB, pivotA, pivotB, axisA, axisB, maxForce) {
+            if (pivotA === void 0) { pivotA = new feng3d.Vector3(); }
+            if (pivotB === void 0) { pivotB = new feng3d.Vector3(); }
+            if (axisA === void 0) { axisA = new feng3d.Vector3(1, 0, 0); }
+            if (axisB === void 0) { axisB = new feng3d.Vector3(1, 0, 0); }
+            if (maxForce === void 0) { maxForce = 1e6; }
+            var _this = _super.call(this, bodyA, pivotA, bodyB, pivotB, maxForce) || this;
+            axisA = _this.axisA = axisA.clone();
             axisA.normalize();
-            var axisB = _this.axisB = options.axisB ? options.axisB.clone() : new feng3d.Vector3(1, 0, 0);
+            axisB = _this.axisB = axisB.clone();
             axisB.normalize();
-            var r1 = _this.rotationalEquation1 = new CANNON.RotationalEquation(bodyA, bodyB, options);
-            var r2 = _this.rotationalEquation2 = new CANNON.RotationalEquation(bodyA, bodyB, options);
+            var r1 = _this.rotationalEquation1 = new CANNON.RotationalEquation(bodyA, bodyB, axisA, axisB, maxForce);
+            var r2 = _this.rotationalEquation2 = new CANNON.RotationalEquation(bodyA, bodyB, axisA, axisB, maxForce);
             var motor = _this.motorEquation = new CANNON.RotationalMotorEquation(bodyA, bodyB, maxForce);
             motor.enabled = false; // Not enabled by default
             // Equations to be fed to the solver
-            _this.equations.push(r1, // rotational1
-            r2, // rotational2
-            motor);
+            _this.equations.push(r1, r2, motor);
             return _this;
         }
         HingeConstraint.prototype.enableMotor = function () {
@@ -38539,13 +38542,13 @@ var CANNON;
             this.motorEquation.minForce = -maxForce;
         };
         HingeConstraint.prototype.update = function () {
-            var bodyA = this.bodyA, bodyB = this.bodyB, motor = this.motorEquation, r1 = this.rotationalEquation1, r2 = this.rotationalEquation2, worldAxisA = HingeConstraint_update_tmpVec1, worldAxisB = HingeConstraint_update_tmpVec2;
+            var bodyA = this.bodyA, bodyB = this.bodyB, motor = this.motorEquation, r1 = this.rotationalEquation1, r2 = this.rotationalEquation2, worldAxisA = new feng3d.Vector3();
             var axisA = this.axisA;
             var axisB = this.axisB;
             _super.prototype.update.call(this);
             // Get world axes
-            bodyA.quaternion.rotatePoint(axisA, worldAxisA);
-            bodyB.quaternion.rotatePoint(axisB, worldAxisB);
+            var worldAxisA = bodyA.quaternion.rotatePoint(axisA);
+            var worldAxisB = bodyB.quaternion.rotatePoint(axisB);
             worldAxisA.tangents(r1.axisA, r2.axisA);
             r1.axisB.copy(worldAxisB);
             r2.axisB.copy(worldAxisB);
@@ -38557,8 +38560,6 @@ var CANNON;
         return HingeConstraint;
     }(CANNON.PointToPointConstraint));
     CANNON.HingeConstraint = HingeConstraint;
-    var HingeConstraint_update_tmpVec1 = new feng3d.Vector3();
-    var HingeConstraint_update_tmpVec2 = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -41165,6 +41166,7 @@ var CANNON;
             var a = new feng3d.Vector3();
             var b = new feng3d.Vector3();
             var c = new feng3d.Vector3();
+            var intersectPoint = new feng3d.Vector3();
             for (var j = 0; !result._shouldStop && j < Nfaces; j++) {
                 var fi = faceList ? faceList[j] : j;
                 var face = faces[fi];
@@ -41263,6 +41265,7 @@ var CANNON;
             var a = new feng3d.Vector3();
             var b = new feng3d.Vector3();
             var c = new feng3d.Vector3();
+            var intersectPoint = new feng3d.Vector3();
             for (var i = 0, N = triangles.length; !this.result._shouldStop && i !== N; i++) {
                 var trianglesIndex = triangles[i];
                 mesh.getNormal(trianglesIndex, normal);
@@ -41302,6 +41305,7 @@ var CANNON;
             triangles.length = 0;
         };
         Ray.prototype.reportIntersection = function (normal, hitPointWorld, shape, body, hitFaceIndex) {
+            if (hitFaceIndex === void 0) { hitFaceIndex = -1; }
             var from = this.from;
             var to = this.to;
             var distance = from.distance(hitPointWorld);
@@ -41310,13 +41314,12 @@ var CANNON;
             if (this.skipBackfaces && normal.dot(this._direction) > 0) {
                 return;
             }
-            result.hitFaceIndex = typeof (hitFaceIndex) !== 'undefined' ? hitFaceIndex : -1;
+            result.hitFaceIndex = hitFaceIndex;
             switch (this.mode) {
                 case Ray.ALL:
                     this.hasHit = true;
                     result.set(normal, hitPointWorld, shape, body, distance);
                     result.hasHit = true;
-                    this.callback(result);
                     break;
                 case Ray.CLOSEST:
                     // Store if closer than current closest
@@ -41361,7 +41364,6 @@ var CANNON;
         return Ray;
     }());
     CANNON.Ray = Ray;
-    var intersectPoint = new feng3d.Vector3();
     Ray.prototype[CANNON.ShapeType.BOX] = Ray.prototype["intersectBox"];
     Ray.prototype[CANNON.ShapeType.PLANE] = Ray.prototype["intersectPlane"];
     Ray.prototype[CANNON.ShapeType.HEIGHTFIELD] = Ray.prototype["intersectHeightfield"];
@@ -42678,13 +42680,7 @@ var CANNON;
             var worldPosition = this.chassisBody.pointToWorldFrame(position);
             body.position.init(worldPosition.x, worldPosition.y, worldPosition.z);
             this.wheelAxes.push(axis);
-            var hingeConstraint = new CANNON.HingeConstraint(this.chassisBody, body, {
-                pivotA: position,
-                axisA: axis,
-                pivotB: feng3d.Vector3.ZERO,
-                axisB: axis,
-                collideConnected: false
-            });
+            var hingeConstraint = new CANNON.HingeConstraint(this.chassisBody, body, position, feng3d.Vector3.ZERO, axis, axis);
             this.constraints.push(hingeConstraint);
             return this.wheelBodies.length - 1;
         };
@@ -42967,8 +42963,10 @@ var CANNON;
          * @param {Number} maxForce Maximum (read: positive max) force to be applied by the constraint.
          */
         function Equation(bi, bj, minForce, maxForce) {
-            this.minForce = typeof (minForce) === "undefined" ? -1e6 : minForce;
-            this.maxForce = typeof (maxForce) === "undefined" ? 1e6 : maxForce;
+            if (minForce === void 0) { minForce = -1e6; }
+            if (maxForce === void 0) { maxForce = 1e6; }
+            this.minForce = minForce;
+            this.maxForce = maxForce;
             this.bi = bi;
             this.bj = bj;
             this.a = 0.0;
@@ -43249,11 +43247,13 @@ var CANNON;
          *
          * @author schteppe
          */
-        function RotationalEquation(bodyA, bodyB, options) {
-            if (options === void 0) { options = {}; }
-            var _this = _super.call(this, bodyA, bodyB, -(typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6), typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6) || this;
-            _this.axisA = options.axisA ? options.axisA.clone() : new feng3d.Vector3(1, 0, 0);
-            _this.axisB = options.axisB ? options.axisB.clone() : new feng3d.Vector3(0, 1, 0);
+        function RotationalEquation(bodyA, bodyB, axisA, axisB, maxForce) {
+            if (axisA === void 0) { axisA = new feng3d.Vector3(1, 0, 0); }
+            if (axisB === void 0) { axisB = new feng3d.Vector3(0, 1, 0); }
+            if (maxForce === void 0) { maxForce = 1e6; }
+            var _this = _super.call(this, bodyA, bodyB, -maxForce, maxForce) || this;
+            _this.axisA = axisA.clone();
+            _this.axisB = axisB.clone();
             _this.maxAngle = Math.PI / 2;
             return _this;
         }

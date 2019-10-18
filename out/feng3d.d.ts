@@ -17534,7 +17534,7 @@ declare namespace CANNON {
          *     var constraint = new PointToPointConstraint(bodyA, localPivotA, bodyB, localPivotB);
          *     world.addConstraint(constraint);
          */
-        constructor(bodyA: Body, pivotA: feng3d.Vector3, bodyB: Body, pivotB: feng3d.Vector3, maxForce?: number);
+        constructor(bodyA: Body, pivotA: feng3d.Vector3, bodyB: Body, pivotB?: feng3d.Vector3, maxForce?: number);
         update(): void;
     }
 }
@@ -17564,14 +17564,7 @@ declare namespace CANNON {
          *
          * @author schteppe
          */
-        constructor(bodyA: Body, bodyB: Body, options?: {
-            pivotA?: feng3d.Vector3;
-            pivotB?: feng3d.Vector3;
-            maxForce?: number;
-            axisA?: feng3d.Vector3;
-            axisB?: feng3d.Vector3;
-            collideConnected?: boolean;
-        });
+        constructor(bodyA: Body, bodyB: Body, pivotA?: feng3d.Vector3, pivotB?: feng3d.Vector3, axisA?: feng3d.Vector3, axisB?: feng3d.Vector3, maxForce?: number);
         enableMotor(): void;
         disableMotor(): void;
         setMotorSpeed(speed: number): void;
@@ -19401,7 +19394,7 @@ declare namespace CANNON {
          * @param {Number} minForce Minimum (read: negative max) force to be applied by the constraint.
          * @param {Number} maxForce Maximum (read: positive max) force to be applied by the constraint.
          */
-        constructor(bi: Body, bj: Body, minForce: number, maxForce: number);
+        constructor(bi: Body, bj: Body, minForce?: number, maxForce?: number);
         /**
          * Recalculates a,b,eps.
          */
@@ -19532,11 +19525,7 @@ declare namespace CANNON {
          *
          * @author schteppe
          */
-        constructor(bodyA: Body, bodyB: Body, options?: {
-            axisA?: feng3d.Vector3;
-            axisB?: feng3d.Vector3;
-            maxForce?: number;
-        });
+        constructor(bodyA: Body, bodyB: Body, axisA?: feng3d.Vector3, axisB?: feng3d.Vector3, maxForce?: number);
         computeB(h: number): number;
     }
 }

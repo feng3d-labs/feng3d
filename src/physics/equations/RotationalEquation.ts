@@ -16,12 +16,12 @@ namespace CANNON
          * 
          * @author schteppe
          */
-        constructor(bodyA: Body, bodyB: Body, options: { axisA?: feng3d.Vector3, axisB?: feng3d.Vector3, maxForce?: number } = {})
+        constructor(bodyA: Body, bodyB: Body, axisA = new feng3d.Vector3(1, 0, 0), axisB = new feng3d.Vector3(0, 1, 0), maxForce = 1e6)
         {
-            super(bodyA, bodyB, -(typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6), typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6);
+            super(bodyA, bodyB, -maxForce, maxForce);
 
-            this.axisA = options.axisA ? options.axisA.clone() : new feng3d.Vector3(1, 0, 0);
-            this.axisB = options.axisB ? options.axisB.clone() : new feng3d.Vector3(0, 1, 0);
+            this.axisA = axisA.clone();
+            this.axisB = axisB.clone();
 
             this.maxAngle = Math.PI / 2;
         }

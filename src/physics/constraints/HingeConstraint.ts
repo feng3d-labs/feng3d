@@ -27,31 +27,25 @@ namespace CANNON
          * 
          * @author schteppe
          */
-        constructor(bodyA: Body, bodyB: Body, options: { pivotA?: feng3d.Vector3, pivotB?: feng3d.Vector3, maxForce?: number, axisA?: feng3d.Vector3, axisB?: feng3d.Vector3, collideConnected?: boolean } = {})
+        constructor(bodyA: Body, bodyB: Body, pivotA = new feng3d.Vector3(), pivotB = new feng3d.Vector3(), axisA = new feng3d.Vector3(1, 0, 0), axisB = new feng3d.Vector3(1, 0, 0), maxForce = 1e6)
         {
-            super(bodyA, options.pivotA ? options.pivotA.clone() : new feng3d.Vector3(), bodyB, options.pivotB ? options.pivotB.clone() : new feng3d.Vector3(), maxForce);
+            super(bodyA, pivotA, bodyB, pivotB, maxForce);
 
-            var maxForce = typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6;
-
-            var axisA = this.axisA = options.axisA ? options.axisA.clone() : new feng3d.Vector3(1, 0, 0);
+            axisA = this.axisA = axisA.clone();
             axisA.normalize();
 
-            var axisB = this.axisB = options.axisB ? options.axisB.clone() : new feng3d.Vector3(1, 0, 0);
+            axisB = this.axisB = axisB.clone();
             axisB.normalize();
 
-            var r1 = this.rotationalEquation1 = new RotationalEquation(bodyA, bodyB, options);
+            var r1 = this.rotationalEquation1 = new RotationalEquation(bodyA, bodyB, axisA, axisB, maxForce);
 
-            var r2 = this.rotationalEquation2 = new RotationalEquation(bodyA, bodyB, options);
+            var r2 = this.rotationalEquation2 = new RotationalEquation(bodyA, bodyB, axisA, axisB, maxForce);
 
             var motor = this.motorEquation = new RotationalMotorEquation(bodyA, bodyB, maxForce);
             motor.enabled = false; // Not enabled by default
 
             // Equations to be fed to the solver
-            this.equations.push(
-                r1, // rotational1
-                r2, // rotational2
-                motor
-            );
+            this.equations.push(r1, r2, motor);
         }
 
         enableMotor()
@@ -82,8 +76,7 @@ namespace CANNON
                 motor = this.motorEquation,
                 r1 = this.rotationalEquation1,
                 r2 = this.rotationalEquation2,
-                worldAxisA = HingeConstraint_update_tmpVec1,
-                worldAxisB = HingeConstraint_update_tmpVec2;
+                worldAxisA = new feng3d.Vector3();
 
             var axisA = this.axisA;
             var axisB = this.axisB;
@@ -91,8 +84,8 @@ namespace CANNON
             super.update();
 
             // Get world axes
-            bodyA.quaternion.rotatePoint(axisA, worldAxisA);
-            bodyB.quaternion.rotatePoint(axisB, worldAxisB);
+            var worldAxisA = bodyA.quaternion.rotatePoint(axisA);
+            var worldAxisB = bodyB.quaternion.rotatePoint(axisB);
 
             worldAxisA.tangents(r1.axisA, r2.axisA);
             r1.axisB.copy(worldAxisB);
@@ -105,8 +98,4 @@ namespace CANNON
             }
         }
     }
-
-
-    var HingeConstraint_update_tmpVec1 = new feng3d.Vector3();
-    var HingeConstraint_update_tmpVec2 = new feng3d.Vector3();
 }

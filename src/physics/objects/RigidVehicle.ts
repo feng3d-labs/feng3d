@@ -40,13 +40,7 @@ namespace CANNON
 
             this.wheelAxes.push(axis);
 
-            var hingeConstraint = new HingeConstraint(this.chassisBody, body, {
-                pivotA: position,
-                axisA: axis,
-                pivotB: feng3d.Vector3.ZERO,
-                axisB: axis,
-                collideConnected: false
-            });
+            var hingeConstraint = new HingeConstraint(this.chassisBody, body, position, feng3d.Vector3.ZERO, axis, axis);
             this.constraints.push(hingeConstraint);
 
             return this.wheelBodies.length - 1;

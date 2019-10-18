@@ -40,15 +40,13 @@ namespace CANNON
          *     var constraint = new PointToPointConstraint(bodyA, localPivotA, bodyB, localPivotB);
          *     world.addConstraint(constraint);
          */
-        constructor(bodyA: Body, pivotA: feng3d.Vector3, bodyB: Body, pivotB: feng3d.Vector3, maxForce?: number)
+        constructor(bodyA: Body, pivotA = new feng3d.Vector3(), bodyB: Body, pivotB = new feng3d.Vector3(), maxForce = 1e6)
         {
             super(bodyA, bodyB);
 
-            maxForce = typeof (maxForce) !== 'undefined' ? maxForce : 1e6;
+            this.pivotA = pivotA.clone();
 
-            this.pivotA = pivotA ? pivotA.clone() : new feng3d.Vector3();
-
-            this.pivotB = pivotB ? pivotB.clone() : new feng3d.Vector3();
+            this.pivotB = pivotB.clone();
 
             var x = this.equationX = new ContactEquation(bodyA, bodyB);
 

@@ -416,6 +416,7 @@ namespace CANNON
             var a = new feng3d.Vector3();
             var b = new feng3d.Vector3();
             var c = new feng3d.Vector3();
+            var intersectPoint = new feng3d.Vector3();
 
             for (var j = 0; !result._shouldStop && j < Nfaces; j++)
             {
@@ -503,13 +504,7 @@ namespace CANNON
          * @todo Optimize by transforming the world to local space first.
          * @todo Use Octree lookup
          */
-        private intersectTrimesh(
-            mesh: any,
-            quat: feng3d.Quaternion,
-            position: feng3d.Vector3,
-            body: Body,
-            reportedShape: Shape,
-        )
+        private intersectTrimesh(mesh: any, quat: feng3d.Quaternion, position: feng3d.Vector3, body: Body, reportedShape: Shape)
         {
             var normal = new feng3d.Vector3();
             var triangles = [];
@@ -553,6 +548,7 @@ namespace CANNON
             var a = new feng3d.Vector3();
             var b = new feng3d.Vector3();
             var c = new feng3d.Vector3();
+            var intersectPoint = new feng3d.Vector3();
 
             for (var i = 0, N = triangles.length; !this.result._shouldStop && i !== N; i++)
             {
@@ -609,7 +605,7 @@ namespace CANNON
             triangles.length = 0;
         }
 
-        private reportIntersection(normal: feng3d.Vector3, hitPointWorld: feng3d.Vector3, shape: Shape, body: Body, hitFaceIndex?: number)
+        private reportIntersection(normal: feng3d.Vector3, hitPointWorld: feng3d.Vector3, shape: Shape, body: Body, hitFaceIndex = - 1)
         {
             var from = this.from;
             var to = this.to;
@@ -622,21 +618,14 @@ namespace CANNON
                 return;
             }
 
-            result.hitFaceIndex = typeof (hitFaceIndex) !== 'undefined' ? hitFaceIndex : -1;
+            result.hitFaceIndex = hitFaceIndex;
 
             switch (this.mode)
             {
                 case Ray.ALL:
                     this.hasHit = true;
-                    result.set(
-                        normal,
-                        hitPointWorld,
-                        shape,
-                        body,
-                        distance
-                    );
+                    result.set(normal, hitPointWorld, shape, body, distance);
                     result.hasHit = true;
-                    this.callback(result);
                     break;
 
                 case Ray.CLOSEST:
@@ -646,13 +635,7 @@ namespace CANNON
                     {
                         this.hasHit = true;
                         result.hasHit = true;
-                        result.set(
-                            normal,
-                            hitPointWorld,
-                            shape,
-                            body,
-                            distance
-                        );
+                        result.set(normal, hitPointWorld, shape, body, distance);
                     }
                     break;
 
@@ -661,13 +644,7 @@ namespace CANNON
                     // Report and stop.
                     this.hasHit = true;
                     result.hasHit = true;
-                    result.set(
-                        normal,
-                        hitPointWorld,
-                        shape,
-                        body,
-                        distance
-                    );
+                    result.set(normal, hitPointWorld, shape, body, distance);
                     result._shouldStop = true;
                     break;
             }
@@ -700,8 +677,6 @@ namespace CANNON
         }
 
     }
-
-    var intersectPoint = new feng3d.Vector3();
 
     Ray.prototype[ShapeType.BOX] = Ray.prototype["intersectBox"];
     Ray.prototype[ShapeType.PLANE] = Ray.prototype["intersectPlane"];
