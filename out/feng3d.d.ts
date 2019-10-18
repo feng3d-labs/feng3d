@@ -18561,10 +18561,6 @@ declare namespace CANNON {
          */
         hasHit: boolean;
         /**
-         * Current, user-provided result callback. Will be used if mode is Ray.ALL.
-         */
-        callback: Function;
-        /**
          * A line in 3D space that intersects bodies and return points.
          * @param from
          * @param to
@@ -18579,16 +18575,7 @@ declare namespace CANNON {
          * @param options
          * @return True if the ray hit anything, otherwise false.
          */
-        intersectWorld(world: World, options: {
-            mode?: number;
-            result?: RaycastResult;
-            skipBackfaces?: boolean;
-            collisionFilterMask?: number;
-            collisionFilterGroup?: number;
-            from?: feng3d.Vector3;
-            to?: feng3d.Vector3;
-            callback?: Function;
-        }): boolean;
+        intersectWorld(world: World, from?: feng3d.Vector3, to?: feng3d.Vector3, result?: RaycastResult, mode?: number, skipBackfaces?: boolean, collisionFilterMask?: number, collisionFilterGroup?: number): boolean;
         /**
          * Shoot a ray at a body, get back information about the hit.
          * @param body
@@ -19838,53 +19825,6 @@ declare namespace CANNON {
          */
         removeConstraint(c: Constraint): void;
         /**
-         * Raycast test
-         * @param from
-         * @param to
-         * @param result
-         * @deprecated Use .raycastAll, .raycastClosest or .raycastAny instead.
-         */
-        rayTest(from: feng3d.Vector3, to: feng3d.Vector3, result: RaycastResult): void;
-        /**
-         * Ray cast against all bodies. The provided callback will be executed for each hit with a RaycastResult as single argument.
-         * @param from
-         * @param to
-         * @param options
-         * @param callback
-         * @return True if any body was hit.
-         */
-        raycastAll(from: feng3d.Vector3, to: feng3d.Vector3, options: {
-            collisionFilterMask?: number;
-            collisionFilterGroup?: number;
-            skipBackfaces?: boolean;
-            checkCollisionResponse?: boolean;
-            mode?: number;
-            from?: feng3d.Vector3;
-            to?: feng3d.Vector3;
-            callback?: Function;
-        }, callback: Function): boolean;
-        /**
-         * Ray cast, and stop at the first result. Note that the order is random - but the method is fast.
-         *
-         * @param from
-         * @param to
-         * @param options
-         * @param result
-         *
-         * @return True if any body was hit.
-         */
-        raycastAny(from: feng3d.Vector3, to: feng3d.Vector3, options: {
-            collisionFilterMask?: number;
-            collisionFilterGroup?: number;
-            skipBackfaces?: boolean;
-            checkCollisionResponse?: boolean;
-            mode?: number;
-            from?: feng3d.Vector3;
-            to?: feng3d.Vector3;
-            callback?: Function;
-            result?: RaycastResult;
-        }, result: RaycastResult): boolean;
-        /**
          * Ray cast, and return information of the closest hit.
          *
          * @param from
@@ -19894,17 +19834,7 @@ declare namespace CANNON {
          *
          * @return True if any body was hit.
          */
-        raycastClosest(from: feng3d.Vector3, to: feng3d.Vector3, options: {
-            collisionFilterMask?: number;
-            collisionFilterGroup?: number;
-            skipBackfaces?: boolean;
-            checkCollisionResponse?: boolean;
-            mode?: number;
-            from?: feng3d.Vector3;
-            to?: feng3d.Vector3;
-            callback?: Function;
-            result?: RaycastResult;
-        }, result: RaycastResult): boolean;
+        raycast(from: feng3d.Vector3, to: feng3d.Vector3, result: RaycastResult, mode?: number, skipBackfaces?: boolean): boolean;
         /**
          * Remove a rigid body from the simulation.
          * @param body

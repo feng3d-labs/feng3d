@@ -40875,18 +40875,39 @@ var CANNON;
          * @param to
          */
         function Ray(from, to) {
-            this.from = from ? from.clone() : new feng3d.Vector3();
-            this.to = to ? to.clone() : new feng3d.Vector3();
+            if (from === void 0) { from = new feng3d.Vector3(); }
+            if (to === void 0) { to = new feng3d.Vector3(); }
+            this.from = new feng3d.Vector3();
+            this.to = new feng3d.Vector3();
             this._direction = new feng3d.Vector3();
+            /**
+             * The precision of the ray. Used when checking parallelity etc.
+             */
             this.precision = 0.0001;
+            /**
+             * Set to true if you want the Ray to take .collisionResponse flags into account on bodies and shapes.
+             */
             this.checkCollisionResponse = true;
+            /**
+             * If set to true, the ray skips any hits with normal.dot(rayDirection) < 0.
+             */
             this.skipBackfaces = false;
             this.collisionFilterMask = -1;
             this.collisionFilterGroup = -1;
+            /**
+             * The intersection mode. Should be Ray.ANY, Ray.ALL or Ray.CLOSEST.
+             */
             this.mode = Ray.ANY;
+            /**
+             * Current result object.
+             */
             this.result = new CANNON.RaycastResult();
+            /**
+             * Will be set to true during intersectWorld() if the ray hit anything.
+             */
             this.hasHit = false;
-            this.callback = function (result) { };
+            this.from = from;
+            this.to = to;
         }
         /**
          * Do itersection against all bodies in the given World.
@@ -40894,19 +40915,25 @@ var CANNON;
          * @param options
          * @return True if the ray hit anything, otherwise false.
          */
-        Ray.prototype.intersectWorld = function (world, options) {
-            this.mode = options.mode || Ray.ANY;
-            this.result = options.result || new CANNON.RaycastResult();
-            this.skipBackfaces = !!options.skipBackfaces;
-            this.collisionFilterMask = typeof (options.collisionFilterMask) !== 'undefined' ? options.collisionFilterMask : -1;
-            this.collisionFilterGroup = typeof (options.collisionFilterGroup) !== 'undefined' ? options.collisionFilterGroup : -1;
-            if (options.from) {
-                this.from.copy(options.from);
+        Ray.prototype.intersectWorld = function (world, from, to, result, mode, skipBackfaces, collisionFilterMask, collisionFilterGroup) {
+            if (from === void 0) { from = new feng3d.Vector3(); }
+            if (to === void 0) { to = new feng3d.Vector3(); }
+            if (result === void 0) { result = new CANNON.RaycastResult(); }
+            if (mode === void 0) { mode = Ray.ANY; }
+            if (skipBackfaces === void 0) { skipBackfaces = false; }
+            if (collisionFilterMask === void 0) { collisionFilterMask = -1; }
+            if (collisionFilterGroup === void 0) { collisionFilterGroup = -1; }
+            this.mode = mode;
+            this.result = result;
+            this.skipBackfaces = skipBackfaces;
+            this.collisionFilterMask = collisionFilterMask;
+            this.collisionFilterGroup = collisionFilterGroup;
+            if (from) {
+                this.from.copy(from);
             }
-            if (options.to) {
-                this.to.copy(options.to);
+            if (to) {
+                this.to.copy(to);
             }
-            this.callback = options.callback || function () { };
             this.hasHit = false;
             this.result.reset();
             this._updateDirection();
@@ -42372,7 +42399,7 @@ var CANNON;
             var oldState = chassisBody.collisionResponse;
             chassisBody.collisionResponse = false;
             // Cast ray against world
-            this.world.rayTest(source, target, raycastResult);
+            this.world.raycast(source, target, raycastResult);
             chassisBody.collisionResponse = oldState;
             var object = raycastResult.body;
             if (object) {
@@ -43695,60 +43722,6 @@ var CANNON;
             }
         };
         /**
-         * Raycast test
-         * @param from
-         * @param to
-         * @param result
-         * @deprecated Use .raycastAll, .raycastClosest or .raycastAny instead.
-         */
-        World.prototype.rayTest = function (from, to, result) {
-            if (result instanceof CANNON.RaycastResult) {
-                // Do raycastclosest
-                this.raycastClosest(from, to, {
-                    skipBackfaces: true
-                }, result);
-            }
-            else {
-                // Do raycastAll
-                this.raycastAll(from, to, {
-                    skipBackfaces: true
-                }, result);
-            }
-        };
-        /**
-         * Ray cast against all bodies. The provided callback will be executed for each hit with a RaycastResult as single argument.
-         * @param from
-         * @param to
-         * @param options
-         * @param callback
-         * @return True if any body was hit.
-         */
-        World.prototype.raycastAll = function (from, to, options, callback) {
-            if (options === void 0) { options = {}; }
-            options.mode = CANNON.Ray.ALL;
-            options.from = from;
-            options.to = to;
-            options.callback = callback;
-            return tmpRay.intersectWorld(this, options);
-        };
-        /**
-         * Ray cast, and stop at the first result. Note that the order is random - but the method is fast.
-         *
-         * @param from
-         * @param to
-         * @param options
-         * @param result
-         *
-         * @return True if any body was hit.
-         */
-        World.prototype.raycastAny = function (from, to, options, result) {
-            options.mode = CANNON.Ray.ANY;
-            options.from = from;
-            options.to = to;
-            options.result = result;
-            return tmpRay.intersectWorld(this, options);
-        };
-        /**
          * Ray cast, and return information of the closest hit.
          *
          * @param from
@@ -43758,12 +43731,10 @@ var CANNON;
          *
          * @return True if any body was hit.
          */
-        World.prototype.raycastClosest = function (from, to, options, result) {
-            options.mode = CANNON.Ray.CLOSEST;
-            options.from = from;
-            options.to = to;
-            options.result = result;
-            return tmpRay.intersectWorld(this, options);
+        World.prototype.raycast = function (from, to, result, mode, skipBackfaces) {
+            if (mode === void 0) { mode = CANNON.Ray.CLOSEST; }
+            if (skipBackfaces === void 0) { skipBackfaces = true; }
+            return tmpRay.intersectWorld(this, from, to, result, mode, skipBackfaces);
         };
         /**
          * Remove a rigid body from the simulation.

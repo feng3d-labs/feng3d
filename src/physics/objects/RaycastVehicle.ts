@@ -307,7 +307,7 @@ namespace CANNON
             chassisBody.collisionResponse = false;
 
             // Cast ray against world
-            this.world.rayTest(source, target, raycastResult);
+            this.world.raycast(source, target, raycastResult);
             chassisBody.collisionResponse = oldState;
 
             var object = raycastResult.body;

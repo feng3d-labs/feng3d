@@ -284,66 +284,6 @@ namespace CANNON
         }
 
         /**
-         * Raycast test
-         * @param from
-         * @param to
-         * @param result
-         * @deprecated Use .raycastAll, .raycastClosest or .raycastAny instead.
-         */
-        rayTest(from: feng3d.Vector3, to: feng3d.Vector3, result: RaycastResult)
-        {
-            if (result instanceof RaycastResult)
-            {
-                // Do raycastclosest
-                this.raycastClosest(from, to, {
-                    skipBackfaces: true
-                }, result);
-            } else
-            {
-                // Do raycastAll
-                this.raycastAll(from, to, {
-                    skipBackfaces: true
-                }, result);
-            }
-        }
-
-        /**
-         * Ray cast against all bodies. The provided callback will be executed for each hit with a RaycastResult as single argument.
-         * @param from 
-         * @param to 
-         * @param options 
-         * @param callback 
-         * @return True if any body was hit.
-         */
-        raycastAll(from: feng3d.Vector3, to: feng3d.Vector3, options: { collisionFilterMask?: number, collisionFilterGroup?: number, skipBackfaces?: boolean, checkCollisionResponse?: boolean, mode?: number, from?: feng3d.Vector3, to?: feng3d.Vector3, callback?: Function } = {}, callback: Function)
-        {
-            options.mode = Ray.ALL;
-            options.from = from;
-            options.to = to;
-            options.callback = callback;
-            return tmpRay.intersectWorld(this, options);
-        }
-
-        /**
-         * Ray cast, and stop at the first result. Note that the order is random - but the method is fast.
-         * 
-         * @param from 
-         * @param to 
-         * @param options 
-         * @param result 
-         * 
-         * @return True if any body was hit.
-         */
-        raycastAny(from: feng3d.Vector3, to: feng3d.Vector3, options: { collisionFilterMask?: number, collisionFilterGroup?: number, skipBackfaces?: boolean, checkCollisionResponse?: boolean, mode?: number, from?: feng3d.Vector3, to?: feng3d.Vector3, callback?: Function, result?: RaycastResult }, result: RaycastResult)
-        {
-            options.mode = Ray.ANY;
-            options.from = from;
-            options.to = to;
-            options.result = result;
-            return tmpRay.intersectWorld(this, options);
-        }
-
-        /**
          * Ray cast, and return information of the closest hit.
          * 
          * @param from 
@@ -353,13 +293,9 @@ namespace CANNON
          * 
          * @return True if any body was hit.
          */
-        raycastClosest(from: feng3d.Vector3, to: feng3d.Vector3, options: { collisionFilterMask?: number, collisionFilterGroup?: number, skipBackfaces?: boolean, checkCollisionResponse?: boolean, mode?: number, from?: feng3d.Vector3, to?: feng3d.Vector3, callback?: Function, result?: RaycastResult }, result: RaycastResult)
+        raycast(from: feng3d.Vector3, to: feng3d.Vector3, result: RaycastResult, mode = Ray.CLOSEST, skipBackfaces = true)
         {
-            options.mode = Ray.CLOSEST;
-            options.from = from;
-            options.to = to;
-            options.result = result;
-            return tmpRay.intersectWorld(this, options);
+            return tmpRay.intersectWorld(this, from, to, result, mode, skipBackfaces);
         }
 
         /**

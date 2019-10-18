@@ -2,70 +2,55 @@ namespace CANNON
 {
     export class Ray
     {
-        from: feng3d.Vector3;
+        from = new feng3d.Vector3();
 
-        to: feng3d.Vector3;
+        to = new feng3d.Vector3();
 
-        _direction: feng3d.Vector3;
+        _direction = new feng3d.Vector3();
 
         /**
          * The precision of the ray. Used when checking parallelity etc.
          */
-        precision: number;
+        precision = 0.0001;
 
         /**
          * Set to true if you want the Ray to take .collisionResponse flags into account on bodies and shapes.
          */
-        checkCollisionResponse: boolean;
+        checkCollisionResponse = true;
 
         /**
          * If set to true, the ray skips any hits with normal.dot(rayDirection) < 0.
          */
-        skipBackfaces: boolean;
+        skipBackfaces = false;
 
-        collisionFilterMask: number;
+        collisionFilterMask = -1;
 
-        collisionFilterGroup: number;
+        collisionFilterGroup = -1;
 
         /**
          * The intersection mode. Should be Ray.ANY, Ray.ALL or Ray.CLOSEST.
          */
-        mode: number;
+        mode = Ray.ANY;
 
         /**
          * Current result object.
          */
-        result: RaycastResult;
+        result = new RaycastResult();
 
         /**
          * Will be set to true during intersectWorld() if the ray hit anything.
          */
-        hasHit: boolean;
-
-        /**
-         * Current, user-provided result callback. Will be used if mode is Ray.ALL.
-         */
-        callback: Function;
+        hasHit = false;
 
         /**
          * A line in 3D space that intersects bodies and return points.
          * @param from
          * @param to
          */
-        constructor(from?: feng3d.Vector3, to?: feng3d.Vector3)
+        constructor(from = new feng3d.Vector3(), to = new feng3d.Vector3())
         {
-            this.from = from ? from.clone() : new feng3d.Vector3();
-            this.to = to ? to.clone() : new feng3d.Vector3();
-            this._direction = new feng3d.Vector3();
-            this.precision = 0.0001;
-            this.checkCollisionResponse = true;
-            this.skipBackfaces = false;
-            this.collisionFilterMask = -1;
-            this.collisionFilterGroup = -1;
-            this.mode = Ray.ANY;
-            this.result = new RaycastResult();
-            this.hasHit = false;
-            this.callback = function (result) { };
+            this.from = from;
+            this.to = to;
         }
 
         static CLOSEST = 1;
@@ -78,25 +63,22 @@ namespace CANNON
          * @param options
          * @return True if the ray hit anything, otherwise false.
          */
-        intersectWorld(world: World, options: {
-            mode?: number, result?: RaycastResult, skipBackfaces?: boolean, collisionFilterMask?: number,
-            collisionFilterGroup?: number, from?: feng3d.Vector3, to?: feng3d.Vector3, callback?: Function
-        })
+        intersectWorld(world: World, from = new feng3d.Vector3(), to = new feng3d.Vector3(), result = new RaycastResult(), mode = Ray.ANY, skipBackfaces = false, collisionFilterMask = -1,
+            collisionFilterGroup = -1)
         {
-            this.mode = options.mode || Ray.ANY;
-            this.result = options.result || new RaycastResult();
-            this.skipBackfaces = !!options.skipBackfaces;
-            this.collisionFilterMask = typeof (options.collisionFilterMask) !== 'undefined' ? options.collisionFilterMask : -1;
-            this.collisionFilterGroup = typeof (options.collisionFilterGroup) !== 'undefined' ? options.collisionFilterGroup : -1;
-            if (options.from)
+            this.mode = mode;
+            this.result = result;
+            this.skipBackfaces = skipBackfaces;
+            this.collisionFilterMask = collisionFilterMask;
+            this.collisionFilterGroup = collisionFilterGroup;
+            if (from)
             {
-                this.from.copy(options.from);
+                this.from.copy(from);
             }
-            if (options.to)
+            if (to)
             {
-                this.to.copy(options.to);
+                this.to.copy(to);
             }
-            this.callback = options.callback || function () { };
             this.hasHit = false;
 
             this.result.reset();
