@@ -18,9 +18,9 @@ namespace CANNON
          */
         viscosity: number;
         eps: number;
-        pressures: any[];
-        densities: any[];
-        neighbors: any[];
+        pressures: number[];
+        densities: number[];
+        neighbors: Particle[][];
 
         /**
          * Smoothed-particle hydrodynamics system
@@ -85,8 +85,9 @@ namespace CANNON
         {
             var N = this.particles.length,
                 id = particle.id,
-                R2 = this.smoothingRadius * this.smoothingRadius,
-                dist = SPHSystem_getNeighbors_dist;
+                R2 = this.smoothingRadius * this.smoothingRadius;
+
+            var dist = new feng3d.Vector3();
             for (var i = 0; i !== N; i++)
             {
                 var p = this.particles[i];
@@ -101,9 +102,11 @@ namespace CANNON
         update()
         {
             var N = this.particles.length,
-                dist = SPHSystem_update_dist,
                 cs = this.speedOfSound,
                 eps = this.eps;
+
+
+            var dist = new feng3d.Vector3();
 
             for (var i = 0; i !== N; i++)
             {
@@ -120,7 +123,6 @@ namespace CANNON
                 var sum = 0.0;
                 for (var j = 0; j !== numNeighbors; j++)
                 {
-
                     //printf("Current particle has position %f %f %f\n",objects[id].pos.x(),objects[id].pos.y(),objects[id].pos.z());
                     p.position.subTo(neighbors[j].position, dist);
                     var len = dist.length;
@@ -137,15 +139,14 @@ namespace CANNON
             // Add forces
 
             // Sum to these accelerations
-            var a_pressure = SPHSystem_update_a_pressure;
-            var a_visc = SPHSystem_update_a_visc;
-            var gradW = SPHSystem_update_gradW;
-            var r_vec = SPHSystem_update_r_vec;
-            var u = SPHSystem_update_u;
+            var a_pressure = new feng3d.Vector3();
+            var a_visc = new feng3d.Vector3();
+            var gradW = new feng3d.Vector3();
+            var r_vec = new feng3d.Vector3();
+            var u = new feng3d.Vector3();
 
             for (var i = 0; i !== N; i++)
             {
-
                 var particle = this.particles[i];
 
                 a_pressure.init(0, 0, 0);
@@ -154,7 +155,6 @@ namespace CANNON
                 // Init vars
                 var Pij: number;
                 var nabla: number;
-                var Vij;
 
                 // Sum up for all other neighbors
                 var neighbors = this.neighbors[i];
@@ -163,7 +163,6 @@ namespace CANNON
                 //printf("Neighbors: ");
                 for (var j = 0; j !== numNeighbors; j++)
                 {
-
                     var neighbor = neighbors[j];
                     //printf("%d ",nj);
 
@@ -222,12 +221,4 @@ namespace CANNON
         }
     }
 
-
-    var SPHSystem_getNeighbors_dist = new feng3d.Vector3();
-    var SPHSystem_update_dist = new feng3d.Vector3();
-    var SPHSystem_update_a_pressure = new feng3d.Vector3();
-    var SPHSystem_update_a_visc = new feng3d.Vector3();
-    var SPHSystem_update_gradW = new feng3d.Vector3();
-    var SPHSystem_update_r_vec = new feng3d.Vector3();
-    var SPHSystem_update_u = new feng3d.Vector3(); // Relative velocity
 }

@@ -41951,10 +41951,8 @@ var CANNON;
         };
         /**
          * Get world velocity of a point in the body.
-         * @method getVelocityAtWorldPoint
-         * @param  {Vector3} worldPoint
-         * @param  {Vector3} result
-         * @return {Vector3} The result vector.
+         * @param worldPoint
+         * @param result
          */
         Body.prototype.getVelocityAtWorldPoint = function (worldPoint, result) {
             if (result === void 0) { result = new feng3d.Vector3(); }
@@ -42934,7 +42932,8 @@ var CANNON;
          * @param neighbors
          */
         SPHSystem.prototype.getNeighbors = function (particle, neighbors) {
-            var N = this.particles.length, id = particle.id, R2 = this.smoothingRadius * this.smoothingRadius, dist = SPHSystem_getNeighbors_dist;
+            var N = this.particles.length, id = particle.id, R2 = this.smoothingRadius * this.smoothingRadius;
+            var dist = new feng3d.Vector3();
             for (var i = 0; i !== N; i++) {
                 var p = this.particles[i];
                 p.position.subTo(particle.position, dist);
@@ -42944,7 +42943,8 @@ var CANNON;
             }
         };
         SPHSystem.prototype.update = function () {
-            var N = this.particles.length, dist = SPHSystem_update_dist, cs = this.speedOfSound, eps = this.eps;
+            var N = this.particles.length, cs = this.speedOfSound, eps = this.eps;
+            var dist = new feng3d.Vector3();
             for (var i = 0; i !== N; i++) {
                 var p = this.particles[i]; // Current particle
                 var neighbors = this.neighbors[i];
@@ -42968,11 +42968,11 @@ var CANNON;
             }
             // Add forces
             // Sum to these accelerations
-            var a_pressure = SPHSystem_update_a_pressure;
-            var a_visc = SPHSystem_update_a_visc;
-            var gradW = SPHSystem_update_gradW;
-            var r_vec = SPHSystem_update_r_vec;
-            var u = SPHSystem_update_u;
+            var a_pressure = new feng3d.Vector3();
+            var a_visc = new feng3d.Vector3();
+            var gradW = new feng3d.Vector3();
+            var r_vec = new feng3d.Vector3();
+            var u = new feng3d.Vector3();
             for (var i = 0; i !== N; i++) {
                 var particle = this.particles[i];
                 a_pressure.init(0, 0, 0);
@@ -42980,7 +42980,6 @@ var CANNON;
                 // Init vars
                 var Pij;
                 var nabla;
-                var Vij;
                 // Sum up for all other neighbors
                 var neighbors = this.neighbors[i];
                 var numNeighbors = neighbors.length;
@@ -43033,13 +43032,6 @@ var CANNON;
         return SPHSystem;
     }());
     CANNON.SPHSystem = SPHSystem;
-    var SPHSystem_getNeighbors_dist = new feng3d.Vector3();
-    var SPHSystem_update_dist = new feng3d.Vector3();
-    var SPHSystem_update_a_pressure = new feng3d.Vector3();
-    var SPHSystem_update_a_visc = new feng3d.Vector3();
-    var SPHSystem_update_gradW = new feng3d.Vector3();
-    var SPHSystem_update_r_vec = new feng3d.Vector3();
-    var SPHSystem_update_u = new feng3d.Vector3(); // Relative velocity
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {

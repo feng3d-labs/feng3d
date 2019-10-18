@@ -18953,10 +18953,8 @@ declare namespace CANNON {
         updateMassProperties(): void;
         /**
          * Get world velocity of a point in the body.
-         * @method getVelocityAtWorldPoint
-         * @param  {Vector3} worldPoint
-         * @param  {Vector3} result
-         * @return {Vector3} The result vector.
+         * @param worldPoint
+         * @param result
          */
         getVelocityAtWorldPoint(worldPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
         /**
@@ -19298,9 +19296,9 @@ declare namespace CANNON {
          */
         viscosity: number;
         eps: number;
-        pressures: any[];
-        densities: any[];
-        neighbors: any[];
+        pressures: number[];
+        densities: number[];
+        neighbors: Particle[][];
         /**
          * Smoothed-particle hydrodynamics system
          */

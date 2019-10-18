@@ -680,10 +680,8 @@ namespace CANNON
 
         /**
          * Get world velocity of a point in the body.
-         * @method getVelocityAtWorldPoint
-         * @param  {Vector3} worldPoint
-         * @param  {Vector3} result
-         * @return {Vector3} The result vector.
+         * @param worldPoint 
+         * @param result 
          */
         getVelocityAtWorldPoint(worldPoint: feng3d.Vector3, result = new feng3d.Vector3())
         {
