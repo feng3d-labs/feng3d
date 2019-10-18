@@ -2,12 +2,6 @@ namespace CANNON
 {
     export class Broadphase
     {
-        world: World = null;
-
-        useBoundingBoxes = false;
-
-        dirty = true;
-
         /**
          * 得到物理世界中所有的碰撞对
          * 
@@ -17,29 +11,22 @@ namespace CANNON
          */
         collisionPairs(world: World, pairs1: Body[], pairs2: Body[])
         {
-            var bodies = world.bodies,
-                n = bodies.length,
-                i, j, bi, bj;
-
-            // Naive N^2 ftw!
-            for (i = 0; i !== n; i++)
+            for (var i = 0, n = world.bodies.length; i < n; i++)
             {
-                for (j = 0; j !== i; j++)
+                for (var j = 0; j < i; j++)
                 {
-
-                    bi = bodies[i];
-                    bj = bodies[j];
+                    var bi = world.bodies[i];
+                    var bj = world.bodies[j];
 
                     if (!this.needBroadphaseCollision(bi, bj))
                     {
                         continue;
                     }
 
-                    this.intersectionTest(bi, bj, pairs1, pairs2);
+                    this.doBoundingSphereBroadphase(bi, bj, pairs1, pairs2);
                 }
             }
         }
-
 
         /**
          * 是否需要碰撞检测
@@ -55,34 +42,13 @@ namespace CANNON
                 return false;
             }
 
-            // Check types
             if (((bodyA.type & Body.STATIC) !== 0 || bodyA.sleepState === Body.SLEEPING) &&
                 ((bodyB.type & Body.STATIC) !== 0 || bodyB.sleepState === Body.SLEEPING))
             {
-                // Both bodies are static or sleeping. Skip.
                 return false;
             }
 
             return true;
-        }
-
-        /**
-         * 检查两个物体的边界是否相交。
-          * 
-          * @param bodyA 
-          * @param bodyB 
-          * @param pairs1 
-          * @param pairs2 
-          */
-        intersectionTest(bodyA: Body, bodyB: Body, pairs1: any[], pairs2: any[])
-        {
-            if (this.useBoundingBoxes)
-            {
-                this.doBoundingBoxBroadphase(bodyA, bodyB, pairs1, pairs2);
-            } else
-            {
-                this.doBoundingSphereBroadphase(bodyA, bodyB, pairs1, pairs2);
-            }
         }
 
         /**
@@ -99,32 +65,6 @@ namespace CANNON
             var boundingRadiusSum2 = Math.pow(bodyA.boundingRadius + bodyB.boundingRadius, 2);
             var norm2 = r.lengthSquared;
             if (norm2 < boundingRadiusSum2)
-            {
-                pairs1.push(bodyA);
-                pairs2.push(bodyB);
-            }
-        }
-
-        /**
-         * 检查两个物体的包围盒是否相交。
-         * 
-         * @param bodyA
-         * @param bodyB
-         * @param pairs1
-         * @param pairs2
-         */
-        doBoundingBoxBroadphase(bodyA: Body, bodyB: Body, pairs1: Body[], pairs2: Body[])
-        {
-            if (bodyA.aabbNeedsUpdate)
-            {
-                bodyA.computeAABB();
-            }
-            if (bodyB.aabbNeedsUpdate)
-            {
-                bodyB.computeAABB();
-            }
-
-            if (bodyA.aabb.intersects(bodyB.aabb))
             {
                 pairs1.push(bodyA);
                 pairs2.push(bodyB);
@@ -167,15 +107,6 @@ namespace CANNON
         }
 
         /**
-         * 设置世界
-         * 
-         * @param world 
-         */
-        setWorld(world: World)
-        {
-        }
-
-        /**
          * 获取包围盒内所有物体
          * @param world
          * @param aabb
@@ -192,7 +123,6 @@ namespace CANNON
                     b.computeAABB();
                 }
 
-                // Ugly hack until Body gets aabb
                 if (b.aabb.intersects(aabb))
                 {
                     result.push(b);

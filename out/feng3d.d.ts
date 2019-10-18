@@ -18496,9 +18496,6 @@ declare namespace CANNON {
 }
 declare namespace CANNON {
     class Broadphase {
-        world: World;
-        useBoundingBoxes: boolean;
-        dirty: boolean;
         /**
          * 得到物理世界中所有的碰撞对
          *
@@ -18515,15 +18512,6 @@ declare namespace CANNON {
          */
         needBroadphaseCollision(bodyA: Body, bodyB: Body): boolean;
         /**
-         * 检查两个物体的边界是否相交。
-          *
-          * @param bodyA
-          * @param bodyB
-          * @param pairs1
-          * @param pairs2
-          */
-        intersectionTest(bodyA: Body, bodyB: Body, pairs1: any[], pairs2: any[]): void;
-        /**
          * 检查两个物体的边界球是否相交。
          *
          * @param bodyA
@@ -18533,27 +18521,12 @@ declare namespace CANNON {
          */
         doBoundingSphereBroadphase(bodyA: Body, bodyB: Body, pairs1: Body[], pairs2: Body[]): void;
         /**
-         * 检查两个物体的包围盒是否相交。
-         *
-         * @param bodyA
-         * @param bodyB
-         * @param pairs1
-         * @param pairs2
-         */
-        doBoundingBoxBroadphase(bodyA: Body, bodyB: Body, pairs1: Body[], pairs2: Body[]): void;
-        /**
          * 从对数组中删除重复的对。
          *
          * @param pairs1
          * @param pairs2
          */
         makePairsUnique(pairs1: any[], pairs2: any[]): void;
-        /**
-         * 设置世界
-         *
-         * @param world
-         */
-        setWorld(world: World): void;
         /**
          * 获取包围盒内所有物体
          * @param world

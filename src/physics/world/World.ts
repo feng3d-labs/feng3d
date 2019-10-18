@@ -209,8 +209,6 @@ namespace CANNON
             this.subsystems = [];
 
             this.idToBodyMap = {};
-
-            this.broadphase.setWorld(this);
         }
 
         /**
@@ -825,8 +823,6 @@ namespace CANNON
                 bodies[i].integrate(dt, quatNormalize, quatNormalizeFast);
             }
             this.clearForces();
-
-            this.broadphase.dirty = true;
 
             if (doProfiling)
             {
