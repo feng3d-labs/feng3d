@@ -18451,7 +18451,7 @@ declare namespace CANNON {
         current: any[];
         previous: any[];
         constructor();
-        getKey(i: number, j: number): number;
+        private getKey;
         set(i: number, j: number): void;
         tick(): void;
         unpackAndPush(array: number[], key: number): void;
@@ -18497,7 +18497,7 @@ declare namespace CANNON {
 declare namespace CANNON {
     class Broadphase {
         /**
-         * 得到物理世界中所有的碰撞对
+         * 获取物理世界中所有的碰撞对
          *
          * @param world
          * @param pairs1
@@ -18521,14 +18521,8 @@ declare namespace CANNON {
          */
         doBoundingSphereBroadphase(bodyA: Body, bodyB: Body, pairs1: Body[], pairs2: Body[]): void;
         /**
-         * 从对数组中删除重复的对。
-         *
-         * @param pairs1
-         * @param pairs2
-         */
-        makePairsUnique(pairs1: any[], pairs2: any[]): void;
-        /**
          * 获取包围盒内所有物体
+         *
          * @param world
          * @param aabb
          * @param result
@@ -19978,8 +19972,8 @@ declare namespace CANNON {
          */
         step(dt: number, timeSinceLastCalled: number, maxSubSteps: number): void;
         internalStep(dt: number): void;
-        additions: any[];
-        removals: any[];
+        additions: number[];
+        removals: number[];
         emitContactEvents(): void;
         /**
          * Sets all body forces in the world to zero.

@@ -845,8 +845,8 @@ namespace CANNON
             }
         }
 
-        additions = [];
-        removals = [];
+        additions: number[] = [];
+        removals: number[] = [];
 
         emitContactEvents()
         {

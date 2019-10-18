@@ -40793,7 +40793,7 @@ var CANNON;
         function Broadphase() {
         }
         /**
-         * 得到物理世界中所有的碰撞对
+         * 获取物理世界中所有的碰撞对
          *
          * @param world
          * @param pairs1
@@ -40846,34 +40846,8 @@ var CANNON;
             }
         };
         /**
-         * 从对数组中删除重复的对。
-         *
-         * @param pairs1
-         * @param pairs2
-         */
-        Broadphase.prototype.makePairsUnique = function (pairs1, pairs2) {
-            var t = { keys: [] };
-            var p1 = pairs1.concat();
-            var p2 = pairs2.concat();
-            var N = pairs1.length;
-            pairs1.length = 0;
-            pairs2.length = 0;
-            for (var i = 0; i !== N; i++) {
-                var id1 = p1[i].id, id2 = p2[i].id;
-                var key = id1 < id2 ? id1 + "," + id2 : id2 + "," + id1;
-                t[key] = i;
-                t.keys.push(key);
-            }
-            for (var i = 0; i !== t.keys.length; i++) {
-                var key = t.keys.pop();
-                var pairIndex = t[key];
-                pairs1.push(p1[pairIndex]);
-                pairs2.push(p2[pairIndex]);
-                delete t[key];
-            }
-        };
-        /**
          * 获取包围盒内所有物体
+         *
          * @param world
          * @param aabb
          * @param result
