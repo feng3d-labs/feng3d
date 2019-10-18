@@ -1,46 +1,48 @@
 namespace CANNON
 {
+    /**
+     * 约束
+     */
     export class Constraint
     {
         /**
-         * Equations to be solved in this constraint
+         * 方程组
          */
-        equations: any[];
-        bodyA: Body;
-        id: number;
+        equations: Equation[];
+
         /**
-         * Set to true if you want the bodies to collide when they are connected.
+         * 关联的两个物体是否发生碰撞
          */
         collideConnected: boolean;
+
+        /**
+         * 物体A
+         */
+        bodyA: Body;
+
+        /**
+         * 物体B
+         */
         bodyB: Body;
 
         /**
-         * Constraint base class
          * 
          * @param bodyA 
          * @param bodyB 
-         * @param options 
-         * 
-         * @author schteppe
+         * @param collideConnected 
+         * @param wakeUpBodies 
          */
-        constructor(bodyA: Body, bodyB: Body, options: { collideConnected?: boolean, wakeUpBodies?: boolean } = {})
+        constructor(bodyA: Body, bodyB: Body, collideConnected = true, wakeUpBodies = true)
         {
-            options = Utils.defaults(options, {
-                collideConnected: true,
-                wakeUpBodies: true,
-            });
-
             this.equations = [];
 
             this.bodyA = bodyA;
 
             this.bodyB = bodyB;
 
-            this.id = Constraint.idCounter++;
+            this.collideConnected = collideConnected;
 
-            this.collideConnected = options.collideConnected;
-
-            if (options.wakeUpBodies)
+            if (wakeUpBodies)
             {
                 if (bodyA)
                 {
@@ -54,7 +56,7 @@ namespace CANNON
         }
 
         /**
-         * Update all the equations with data.
+         * 更新所有方程
          */
         update()
         {
@@ -62,7 +64,7 @@ namespace CANNON
         }
 
         /**
-         * Enables all equations in the constraint.
+         * 启用所有方程
          */
         enable()
         {
@@ -74,7 +76,7 @@ namespace CANNON
         }
 
         /**
-         * Disables all equations in the constraint.
+         * 禁用所有方程
          */
         disable()
         {
@@ -84,7 +86,5 @@ namespace CANNON
                 eqs[i].enabled = false;
             }
         }
-
-        static idCounter = 0;
     }
 }

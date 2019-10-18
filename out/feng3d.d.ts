@@ -17453,49 +17453,51 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
+    /**
+     * 约束
+     */
     class Constraint {
         /**
-         * Equations to be solved in this constraint
+         * 方程组
          */
-        equations: any[];
-        bodyA: Body;
-        id: number;
+        equations: Equation[];
         /**
-         * Set to true if you want the bodies to collide when they are connected.
+         * 关联的两个物体是否发生碰撞
          */
         collideConnected: boolean;
+        /**
+         * 物体A
+         */
+        bodyA: Body;
+        /**
+         * 物体B
+         */
         bodyB: Body;
         /**
-         * Constraint base class
          *
          * @param bodyA
          * @param bodyB
-         * @param options
-         *
-         * @author schteppe
+         * @param collideConnected
+         * @param wakeUpBodies
          */
-        constructor(bodyA: Body, bodyB: Body, options?: {
-            collideConnected?: boolean;
-            wakeUpBodies?: boolean;
-        });
+        constructor(bodyA: Body, bodyB: Body, collideConnected?: boolean, wakeUpBodies?: boolean);
         /**
-         * Update all the equations with data.
+         * 更新所有方程
          */
         update(): void;
         /**
-         * Enables all equations in the constraint.
+         * 启用所有方程
          */
         enable(): void;
         /**
-         * Disables all equations in the constraint.
+         * 禁用所有方程
          */
         disable(): void;
-        static idCounter: number;
     }
 }
 declare namespace CANNON {
     class DistanceConstraint extends Constraint {
-        distance: any;
+        distance: number;
         distanceEquation: ContactEquation;
         /**
          * Constrains two bodies to be at a constant distance from each others center of mass.
@@ -18632,15 +18634,6 @@ declare namespace CANNON {
          * @param result
          */
         aabbQuery(world: World, aabb: feng3d.AABB, result?: Body[]): Body[];
-    }
-}
-declare namespace CANNON {
-    class NaiveBroadphase extends Broadphase {
-        /**
-         * Naive broadphase implementation, used in lack of better ones.
-         * @description The naive broadphase looks at all possible pairs without restriction, therefore it has complexity N^2 (which is bad)
-         */
-        constructor();
     }
 }
 declare namespace CANNON {

@@ -38373,28 +38373,25 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
+    /**
+     * 约束
+     */
     var Constraint = /** @class */ (function () {
         /**
-         * Constraint base class
          *
          * @param bodyA
          * @param bodyB
-         * @param options
-         *
-         * @author schteppe
+         * @param collideConnected
+         * @param wakeUpBodies
          */
-        function Constraint(bodyA, bodyB, options) {
-            if (options === void 0) { options = {}; }
-            options = CANNON.Utils.defaults(options, {
-                collideConnected: true,
-                wakeUpBodies: true,
-            });
+        function Constraint(bodyA, bodyB, collideConnected, wakeUpBodies) {
+            if (collideConnected === void 0) { collideConnected = true; }
+            if (wakeUpBodies === void 0) { wakeUpBodies = true; }
             this.equations = [];
             this.bodyA = bodyA;
             this.bodyB = bodyB;
-            this.id = Constraint.idCounter++;
-            this.collideConnected = options.collideConnected;
-            if (options.wakeUpBodies) {
+            this.collideConnected = collideConnected;
+            if (wakeUpBodies) {
                 if (bodyA) {
                     bodyA.wakeUp();
                 }
@@ -38404,13 +38401,13 @@ var CANNON;
             }
         }
         /**
-         * Update all the equations with data.
+         * 更新所有方程
          */
         Constraint.prototype.update = function () {
             throw new Error("method update() not implmemented in this Constraint subclass!");
         };
         /**
-         * Enables all equations in the constraint.
+         * 启用所有方程
          */
         Constraint.prototype.enable = function () {
             var eqs = this.equations;
@@ -38419,7 +38416,7 @@ var CANNON;
             }
         };
         /**
-         * Disables all equations in the constraint.
+         * 禁用所有方程
          */
         Constraint.prototype.disable = function () {
             var eqs = this.equations;
@@ -38427,7 +38424,6 @@ var CANNON;
                 eqs[i].enabled = false;
             }
         };
-        Constraint.idCounter = 0;
         return Constraint;
     }());
     CANNON.Constraint = Constraint;
@@ -38600,8 +38596,6 @@ var CANNON;
         return ConeTwistConstraint;
     }(CANNON.PointToPointConstraint));
     CANNON.ConeTwistConstraint = ConeTwistConstraint;
-    var ConeTwistConstraint_update_tmpVec1 = new feng3d.Vector3();
-    var ConeTwistConstraint_update_tmpVec2 = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -41112,21 +41106,6 @@ var CANNON;
         return Broadphase;
     }());
     CANNON.Broadphase = Broadphase;
-})(CANNON || (CANNON = {}));
-var CANNON;
-(function (CANNON) {
-    var NaiveBroadphase = /** @class */ (function (_super) {
-        __extends(NaiveBroadphase, _super);
-        /**
-         * Naive broadphase implementation, used in lack of better ones.
-         * @description The naive broadphase looks at all possible pairs without restriction, therefore it has complexity N^2 (which is bad)
-         */
-        function NaiveBroadphase() {
-            return _super.call(this) || this;
-        }
-        return NaiveBroadphase;
-    }(CANNON.Broadphase));
-    CANNON.NaiveBroadphase = NaiveBroadphase;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -46127,9 +46106,6 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-console.log("feng3d-0.1.3");
-console.log("feng3d-0.1.3");
-console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

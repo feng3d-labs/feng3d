@@ -83,7 +83,4 @@ namespace CANNON
 
     }
 
-    var ConeTwistConstraint_update_tmpVec1 = new feng3d.Vector3();
-    var ConeTwistConstraint_update_tmpVec2 = new feng3d.Vector3();
-
 }
