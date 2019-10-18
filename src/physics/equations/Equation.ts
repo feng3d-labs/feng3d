@@ -5,11 +5,14 @@ namespace CANNON
      */
     export class Equation
     {
-
-        id: number;
-
+        /**
+         * 最小力
+         */
         minForce: number;
 
+        /**
+         * 最大力
+         */
         maxForce: number;
 
         bi: Body;
@@ -29,13 +32,10 @@ namespace CANNON
 
         jacobianElementB: JacobianElement;
 
-        enabled: boolean;
-
         /**
-         * A number, proportional to the force added to the bodies.
-         * @readonly
+         * 是否启用
          */
-        multiplier: number;
+        enabled: boolean;
 
         /**
          * Equation base class
@@ -49,8 +49,6 @@ namespace CANNON
          */
         constructor(bi: Body, bj: Body, minForce: number, maxForce: number)
         {
-            this.id = Equation.id++;
-
             this.minForce = typeof (minForce) === "undefined" ? -1e6 : minForce;
             this.maxForce = typeof (maxForce) === "undefined" ? 1e6 : maxForce;
             this.bi = bi;
@@ -61,13 +59,10 @@ namespace CANNON
             this.jacobianElementA = new JacobianElement();
             this.jacobianElementB = new JacobianElement();
             this.enabled = true;
-            this.multiplier = 0;
 
             // Set typical spook params
             this.setSpookParams(1e7, 4, 1 / 60);
         }
-
-        static id = 0;
 
         /**
          * Recalculates a,b,eps.

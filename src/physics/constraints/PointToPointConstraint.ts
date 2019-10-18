@@ -1,13 +1,16 @@
 namespace CANNON
 {
+    /**
+     * 点到点约束
+     */
     export class PointToPointConstraint extends Constraint
     {
         /**
-         * Pivot, defined locally in bodyA.
+         * 物体A的中心点
          */
         pivotA: feng3d.Vector3;
         /**
-         * Pivot, defined locally in bodyB.
+         * 物体B的中心点
          */
         pivotB: feng3d.Vector3;
         equationX: ContactEquation;

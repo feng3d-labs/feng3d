@@ -117,13 +117,6 @@ namespace CANNON
                     w.addTo(b.wlambda, w);
                 }
 
-                // Set the .multiplier property of each equation
-                var l = equations.length;
-                var invDt = 1 / dt;
-                while (l--)
-                {
-                    equations[l].multiplier = lambda[l] * invDt;
-                }
             }
 
             return iter;

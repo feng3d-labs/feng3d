@@ -17496,13 +17496,16 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
+    /**
+     * 点到点约束
+     */
     class PointToPointConstraint extends Constraint {
         /**
-         * Pivot, defined locally in bodyA.
+         * 物体A的中心点
          */
         pivotA: feng3d.Vector3;
         /**
-         * Pivot, defined locally in bodyB.
+         * 物体B的中心点
          */
         pivotB: feng3d.Vector3;
         equationX: ContactEquation;
@@ -19446,8 +19449,13 @@ declare namespace CANNON {
      * 方程式
      */
     class Equation {
-        id: number;
+        /**
+         * 最小力
+         */
         minForce: number;
+        /**
+         * 最大力
+         */
         maxForce: number;
         bi: Body;
         bj: Body;
@@ -19459,12 +19467,10 @@ declare namespace CANNON {
         eps: number;
         jacobianElementA: JacobianElement;
         jacobianElementB: JacobianElement;
-        enabled: boolean;
         /**
-         * A number, proportional to the force added to the bodies.
-         * @readonly
+         * 是否启用
          */
-        multiplier: number;
+        enabled: boolean;
         /**
          * Equation base class
          * @class Equation
@@ -19476,7 +19482,6 @@ declare namespace CANNON {
          * @param {Number} maxForce Maximum (read: positive max) force to be applied by the constraint.
          */
         constructor(bi: Body, bj: Body, minForce: number, maxForce: number);
-        static id: number;
         /**
          * Recalculates a,b,eps.
          */

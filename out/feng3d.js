@@ -38430,6 +38430,9 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
+    /**
+     * 点到点约束
+     */
     var PointToPointConstraint = /** @class */ (function (_super) {
         __extends(PointToPointConstraint, _super);
         /**
@@ -43000,7 +43003,6 @@ var CANNON;
          * @param {Number} maxForce Maximum (read: positive max) force to be applied by the constraint.
          */
         function Equation(bi, bj, minForce, maxForce) {
-            this.id = Equation.id++;
             this.minForce = typeof (minForce) === "undefined" ? -1e6 : minForce;
             this.maxForce = typeof (maxForce) === "undefined" ? 1e6 : maxForce;
             this.bi = bi;
@@ -43011,7 +43013,6 @@ var CANNON;
             this.jacobianElementA = new CANNON.JacobianElement();
             this.jacobianElementB = new CANNON.JacobianElement();
             this.enabled = true;
-            this.multiplier = 0;
             // Set typical spook params
             this.setSpookParams(1e7, 4, 1 / 60);
         }
@@ -43095,7 +43096,6 @@ var CANNON;
         Equation.prototype.computeC = function () {
             return this.computeGiMGt() + this.eps;
         };
-        Equation.id = 0;
         return Equation;
     }());
     CANNON.Equation = Equation;
@@ -43485,12 +43485,6 @@ var CANNON;
                     v.addTo(b.vlambda, v);
                     b.wlambda.scaleTo(b.angularFactor, b.wlambda);
                     w.addTo(b.wlambda, w);
-                }
-                // Set the .multiplier property of each equation
-                var l = equations.length;
-                var invDt = 1 / dt;
-                while (l--) {
-                    equations[l].multiplier = lambda[l] * invDt;
                 }
             }
             return iter;
