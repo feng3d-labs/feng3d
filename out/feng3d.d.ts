@@ -18922,7 +18922,7 @@ declare namespace CANNON {
          * @param worldPoint
          * @param result
          */
-        pointToLocalFrame(worldPoint: feng3d.Vector3, result: feng3d.Vector3): feng3d.Vector3;
+        pointToLocalFrame(worldPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
         /**
          * Convert a world vector to local body frame.
          *
@@ -18936,14 +18936,14 @@ declare namespace CANNON {
          * @param localPoint
          * @param result
          */
-        pointToWorldFrame(localPoint: feng3d.Vector3, result: feng3d.Vector3): feng3d.Vector3;
+        pointToWorldFrame(localPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
         /**
          * Convert a local body point to world frame.
          *
          * @param localVector
          * @param result
          */
-        vectorToWorldFrame(localVector: feng3d.Vector3, result: feng3d.Vector3): feng3d.Vector3;
+        vectorToWorldFrame(localVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
         /**
          * Add a shape to the body with a local offset and orientation.
          * @param shape
@@ -19277,40 +19277,29 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
+    /**
+     * 刚性车
+     */
     class RigidVehicle {
-        wheelBodies: any[];
-        coordinateSystem: any;
-        chassisBody: any;
-        constraints: any[];
-        wheelAxes: any[];
+        wheelBodies: Body[];
+        chassisBody: Body;
+        constraints: HingeConstraint[];
+        wheelAxes: feng3d.Vector3[];
         wheelForces: any[];
+        constructor(chassisBody: Body);
         /**
-         * Simple vehicle helper class with spherical rigid body wheels.
+         * 添加轮子
          *
-         * @param options
+         * @param body
+         * @param position
+         * @param axis
          */
-        constructor(options?: {
-            coordinateSystem?: any;
-            chassisBody?: Body;
-        });
+        addWheel(body: Body, position?: feng3d.Vector3, axis?: feng3d.Vector3): number;
         /**
-         * Add a wheel
-         *
-         * @param options
-         */
-        addWheel(options?: {
-            body?: Body;
-            isFrontWheel?: boolean;
-            position?: feng3d.Vector3;
-            axis?: feng3d.Vector3;
-        }): number;
-        /**
-         * Set the steering value of a wheel.
+         * 设置车轮的转向值
          *
          * @param value
          * @param wheelIndex
-         *
-         * @todo check coordinateSystem
          */
         setSteeringValue(value: number, wheelIndex: number): void;
         /**
@@ -19357,7 +19346,7 @@ declare namespace CANNON {
          *
          * @param wheelIndex
          */
-        getWheelSpeed(wheelIndex: number): any;
+        getWheelSpeed(wheelIndex: number): number;
     }
 }
 declare namespace CANNON {

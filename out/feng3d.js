@@ -41584,7 +41584,7 @@ var CANNON;
          * @param result
          */
         Body.prototype.pointToLocalFrame = function (worldPoint, result) {
-            var result = result || new feng3d.Vector3();
+            if (result === void 0) { result = new feng3d.Vector3(); }
             worldPoint.subTo(this.position, result);
             this.quaternion.inverseTo().rotatePoint(result, result);
             return result;
@@ -41607,7 +41607,7 @@ var CANNON;
          * @param result
          */
         Body.prototype.pointToWorldFrame = function (localPoint, result) {
-            var result = result || new feng3d.Vector3();
+            if (result === void 0) { result = new feng3d.Vector3(); }
             this.quaternion.rotatePoint(localPoint, result);
             result.addTo(this.position, result);
             return result;
@@ -41619,7 +41619,7 @@ var CANNON;
          * @param result
          */
         Body.prototype.vectorToWorldFrame = function (localVector, result) {
-            var result = result || new feng3d.Vector3();
+            if (result === void 0) { result = new feng3d.Vector3(); }
             this.quaternion.rotatePoint(localVector, result);
             return result;
         };
@@ -42581,52 +42581,34 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
+    /**
+     * 刚性车
+     */
     var RigidVehicle = /** @class */ (function () {
-        /**
-         * Simple vehicle helper class with spherical rigid body wheels.
-         *
-         * @param options
-         */
-        function RigidVehicle(options) {
-            if (options === void 0) { options = {}; }
+        function RigidVehicle(chassisBody) {
             this.wheelBodies = [];
-            this.coordinateSystem = typeof (options.coordinateSystem) === 'undefined' ? new feng3d.Vector3(1, 2, 3) : options.coordinateSystem.clone();
-            this.chassisBody = options.chassisBody;
-            if (!this.chassisBody) {
-                // No chassis body given. Create it!
-                var chassisShape = new CANNON.Box(new feng3d.Vector3(5, 2, 0.5));
-                throw "下一行代码有问题？！";
-                // this.chassisBody = new Body(1, chassisShape);
-            }
+            this.chassisBody = chassisBody;
             this.constraints = [];
             this.wheelAxes = [];
             this.wheelForces = [];
         }
         /**
-         * Add a wheel
+         * 添加轮子
          *
-         * @param options
+         * @param body
+         * @param position
+         * @param axis
          */
-        RigidVehicle.prototype.addWheel = function (options) {
-            if (options === void 0) { options = {}; }
-            var wheelBody = options.body;
-            if (!wheelBody) {
-                throw "下一行代码有问题？！";
-                // wheelBody = new Body(1, new Sphere(1.2));
-            }
-            this.wheelBodies.push(wheelBody);
+        RigidVehicle.prototype.addWheel = function (body, position, axis) {
+            if (position === void 0) { position = new feng3d.Vector3(); }
+            if (axis === void 0) { axis = new feng3d.Vector3(0, 1, 0); }
+            this.wheelBodies.push(body);
             this.wheelForces.push(0);
-            // Position constrain wheels
-            var zero = new feng3d.Vector3();
-            var position = typeof (options.position) !== 'undefined' ? options.position.clone() : new feng3d.Vector3();
-            // Set position locally to the chassis
-            var worldPosition = new feng3d.Vector3();
-            this.chassisBody.pointToWorldFrame(position, worldPosition);
-            wheelBody.position.init(worldPosition.x, worldPosition.y, worldPosition.z);
-            // Constrain wheel
-            var axis = typeof (options.axis) !== 'undefined' ? options.axis.clone() : new feng3d.Vector3(0, 1, 0);
+            // 设置底盘的位置
+            var worldPosition = this.chassisBody.pointToWorldFrame(position);
+            body.position.init(worldPosition.x, worldPosition.y, worldPosition.z);
             this.wheelAxes.push(axis);
-            var hingeConstraint = new CANNON.HingeConstraint(this.chassisBody, wheelBody, {
+            var hingeConstraint = new CANNON.HingeConstraint(this.chassisBody, body, {
                 pivotA: position,
                 axisA: axis,
                 pivotB: feng3d.Vector3.ZERO,
@@ -42637,18 +42619,15 @@ var CANNON;
             return this.wheelBodies.length - 1;
         };
         /**
-         * Set the steering value of a wheel.
+         * 设置车轮的转向值
          *
          * @param value
          * @param wheelIndex
-         *
-         * @todo check coordinateSystem
          */
         RigidVehicle.prototype.setSteeringValue = function (value, wheelIndex) {
-            // Set angle of the hinge axis
             var axis = this.wheelAxes[wheelIndex];
             var c = Math.cos(value), s = Math.sin(value), x = axis.x, y = axis.y;
-            this.constraints[wheelIndex].axisA.set(c * x - s * y, s * x + c * y, 0);
+            this.constraints[wheelIndex].axisA.init(c * x - s * y, s * x + c * y, 0);
         };
         /**
          * Set the target rotational speed of the hinge constraint.
@@ -42659,7 +42638,6 @@ var CANNON;
         RigidVehicle.prototype.setMotorSpeed = function (value, wheelIndex) {
             var hingeConstraint = this.constraints[wheelIndex];
             hingeConstraint.enableMotor();
-            hingeConstraint.motorTargetVelocity = value;
         };
         /**
          * Set the target rotational speed of the hinge constraint.
@@ -42689,9 +42667,9 @@ var CANNON;
             var axis = this.wheelAxes[wheelIndex];
             var wheelBody = this.wheelBodies[wheelIndex];
             var bodyTorque = wheelBody.torque;
-            axis.scale(value, torque);
+            var torque = axis.scaleNumberTo(value);
             wheelBody.vectorToWorldFrame(torque, torque);
-            bodyTorque.vadd(torque, bodyTorque);
+            bodyTorque.addTo(torque, bodyTorque);
         };
         /**
          * Add the vehicle including its constraints to the world.
@@ -42738,14 +42716,12 @@ var CANNON;
             var axis = this.wheelAxes[wheelIndex];
             var wheelBody = this.wheelBodies[wheelIndex];
             var w = wheelBody.angularVelocity;
-            this.chassisBody.vectorToWorldFrame(axis, worldAxis);
+            var worldAxis = this.chassisBody.vectorToWorldFrame(axis);
             return w.dot(worldAxis);
         };
         return RigidVehicle;
     }());
     CANNON.RigidVehicle = RigidVehicle;
-    var torque = new feng3d.Vector3();
-    var worldAxis = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {

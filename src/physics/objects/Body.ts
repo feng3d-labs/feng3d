@@ -421,9 +421,8 @@ namespace CANNON
          * @param worldPoint
          * @param result
          */
-        pointToLocalFrame(worldPoint: feng3d.Vector3, result: feng3d.Vector3)
+        pointToLocalFrame(worldPoint: feng3d.Vector3, result = new feng3d.Vector3())
         {
-            var result = result || new feng3d.Vector3();
             worldPoint.subTo(this.position, result);
             this.quaternion.inverseTo().rotatePoint(result, result);
             return result;
@@ -447,9 +446,8 @@ namespace CANNON
          * @param localPoint
          * @param result
          */
-        pointToWorldFrame(localPoint: feng3d.Vector3, result: feng3d.Vector3)
+        pointToWorldFrame(localPoint: feng3d.Vector3, result = new feng3d.Vector3())
         {
-            var result = result || new feng3d.Vector3();
             this.quaternion.rotatePoint(localPoint, result);
             result.addTo(this.position, result);
             return result;
@@ -461,9 +459,8 @@ namespace CANNON
          * @param localVector
          * @param result
          */
-        vectorToWorldFrame(localVector: feng3d.Vector3, result: feng3d.Vector3)
+        vectorToWorldFrame(localVector: feng3d.Vector3, result = new feng3d.Vector3())
         {
-            var result = result || new feng3d.Vector3();
             this.quaternion.rotatePoint(localVector, result);
             return result;
         }
