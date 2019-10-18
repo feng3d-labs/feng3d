@@ -19003,15 +19003,7 @@ declare namespace CANNON {
          * @param bodyB
          * @param options
          */
-        constructor(bodyA: Body, bodyB: Body, options?: {
-            restLength?: number;
-            stiffness?: number;
-            damping?: number;
-            localAnchorA?: feng3d.Vector3;
-            localAnchorB?: feng3d.Vector3;
-            worldAnchorA?: feng3d.Vector3;
-            worldAnchorB?: feng3d.Vector3;
-        });
+        constructor(bodyA: Body, bodyB: Body);
         /**
          * Set the anchor point on body A, using world coordinates.
          * @param worldAnchorA

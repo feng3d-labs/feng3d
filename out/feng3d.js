@@ -42035,27 +42035,29 @@ var CANNON;
          * @param bodyB
          * @param options
          */
-        function Spring(bodyA, bodyB, options) {
-            if (options === void 0) { options = {}; }
-            this.restLength = typeof (options.restLength) === "number" ? options.restLength : 1;
-            this.stiffness = options.stiffness || 100;
-            this.damping = options.damping || 1;
+        function Spring(bodyA, bodyB) {
+            /**
+             * Rest length of the spring.
+             */
+            this.restLength = 1;
+            /**
+             * Stiffness of the spring.
+             */
+            this.stiffness = 100;
+            /**
+             * Damping of the spring.
+             */
+            this.damping = 1;
+            /**
+             * Anchor for bodyA in local bodyA coordinates.
+             */
+            this.localAnchorA = new feng3d.Vector3();
+            /**
+             * Anchor for bodyB in local bodyB coordinates.
+             */
+            this.localAnchorB = new feng3d.Vector3();
             this.bodyA = bodyA;
             this.bodyB = bodyB;
-            this.localAnchorA = new feng3d.Vector3();
-            this.localAnchorB = new feng3d.Vector3();
-            if (options.localAnchorA) {
-                this.localAnchorA.copy(options.localAnchorA);
-            }
-            if (options.localAnchorB) {
-                this.localAnchorB.copy(options.localAnchorB);
-            }
-            if (options.worldAnchorA) {
-                this.setWorldAnchorA(options.worldAnchorA);
-            }
-            if (options.worldAnchorB) {
-                this.setWorldAnchorB(options.worldAnchorB);
-            }
         }
         /**
          * Set the anchor point on body A, using world coordinates.
@@ -42089,8 +42091,13 @@ var CANNON;
          * Apply the spring force to the connected bodies.
          */
         Spring.prototype.applyForce = function () {
-            var k = this.stiffness, d = this.damping, l = this.restLength, bodyA = this.bodyA, bodyB = this.bodyB, r = applyForce_r, r_unit = applyForce_r_unit, u = applyForce_u, f = applyForce_f, tmp = applyForce_tmp;
-            var worldAnchorA = applyForce_worldAnchorA, worldAnchorB = applyForce_worldAnchorB, ri = applyForce_ri, rj = applyForce_rj, ri_x_f = applyForce_ri_x_f, rj_x_f = applyForce_rj_x_f;
+            var k = this.stiffness, d = this.damping, l = this.restLength, bodyA = this.bodyA, bodyB = this.bodyB;
+            // r = new feng3d.Vector3(),
+            // r_unit = new feng3d.Vector3(),
+            // u = new feng3d.Vector3(),
+            // f = new feng3d.Vector3(),
+            // tmp = new feng3d.Vector3();
+            var worldAnchorA = new feng3d.Vector3(), worldAnchorB = new feng3d.Vector3(), ri = new feng3d.Vector3(), rj = new feng3d.Vector3(), ri_x_f = new feng3d.Vector3(), rj_x_f = new feng3d.Vector3();
             // Get world anchors
             this.getWorldAnchorA(worldAnchorA);
             this.getWorldAnchorB(worldAnchorB);
@@ -42098,19 +42105,19 @@ var CANNON;
             worldAnchorA.subTo(bodyA.position, ri);
             worldAnchorB.subTo(bodyB.position, rj);
             // Compute distance vector between world anchor points
-            worldAnchorB.subTo(worldAnchorA, r);
+            var r = worldAnchorB.subTo(worldAnchorA, r);
             var rlen = r.length;
-            r_unit.copy(r);
+            var r_unit = r.clone();
             r_unit.normalize();
             // Compute relative velocity of the anchor points, u
-            bodyB.velocity.subTo(bodyA.velocity, u);
+            var u = bodyB.velocity.subTo(bodyA.velocity);
             // Add rotational velocity
-            bodyB.angularVelocity.crossTo(rj, tmp);
+            var tmp = bodyB.angularVelocity.crossTo(rj);
             u.addTo(tmp, u);
             bodyA.angularVelocity.crossTo(ri, tmp);
             u.subTo(tmp, u);
             // F = - k * ( x - L ) - D * ( u )
-            r_unit.scaleNumberTo(-k * (rlen - l) - d * u.dot(r_unit), f);
+            var f = r_unit.scaleNumberTo(-k * (rlen - l) - d * u.dot(r_unit));
             // Add forces to bodies
             bodyA.force.subTo(f, bodyA.force);
             bodyB.force.addTo(f, bodyB.force);
@@ -42123,17 +42130,6 @@ var CANNON;
         return Spring;
     }());
     CANNON.Spring = Spring;
-    var applyForce_r = new feng3d.Vector3();
-    var applyForce_r_unit = new feng3d.Vector3();
-    var applyForce_u = new feng3d.Vector3();
-    var applyForce_f = new feng3d.Vector3();
-    var applyForce_worldAnchorA = new feng3d.Vector3();
-    var applyForce_worldAnchorB = new feng3d.Vector3();
-    var applyForce_ri = new feng3d.Vector3();
-    var applyForce_rj = new feng3d.Vector3();
-    var applyForce_ri_x_f = new feng3d.Vector3();
-    var applyForce_rj_x_f = new feng3d.Vector3();
-    var applyForce_tmp = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
