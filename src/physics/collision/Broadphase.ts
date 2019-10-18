@@ -11,7 +11,7 @@ namespace CANNON
         /**
          * 从世界获取冲突对
          */
-        abstract collisionPairs(world: World, p1: any[], p2: any[]): void;
+        abstract collisionPairs(world: World, p1: Body[], p2: Body[]): void;
 
         /**
          * 是否需要碰撞检测

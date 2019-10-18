@@ -52,7 +52,7 @@ namespace CANNON
 		 * @param pairs1
 		 * @param pairs2
 		 */
-		collisionPairs(world: World, pairs1: any[], pairs2: any[])
+		collisionPairs(world: World, pairs1: Body[], pairs2: Body[])
 		{
 			var N = world.bodies.length,
 				bodies = world.bodies;

@@ -41339,16 +41339,14 @@ var CANNON;
             return _this;
         }
         SAPBroadphase.prototype._addBodyHandler = function (e) {
-            this.axisList.push(e.body);
+            this.axisList.push(e.data);
         };
-        ;
         SAPBroadphase.prototype._removeBodyHandler = function (e) {
-            var idx = this.axisList.indexOf(e.body);
+            var idx = this.axisList.indexOf(e.data);
             if (idx !== -1) {
                 this.axisList.splice(idx, 1);
             }
         };
-        ;
         /**
          * Change the world
          * @param world
@@ -41417,15 +41415,15 @@ var CANNON;
          * @param p2
          */
         SAPBroadphase.prototype.collisionPairs = function (world, p1, p2) {
-            var bodies = this.axisList, N = bodies.length, axisIndex = this.axisIndex, i, j;
+            var bodies = this.axisList, N = bodies.length, axisIndex = this.axisIndex;
             if (this.dirty) {
                 this.sortList();
                 this.dirty = false;
             }
             // Look through the list
-            for (i = 0; i !== N; i++) {
+            for (var i = 0; i !== N; i++) {
                 var bi = bodies[i];
-                for (j = i + 1; j < N; j++) {
+                for (var j = i + 1; j < N; j++) {
                     var bj = bodies[j];
                     if (!this.needBroadphaseCollision(bi, bj)) {
                         continue;
@@ -44542,7 +44540,7 @@ var CANNON;
         };
         World.prototype.internalStep = function (dt) {
             this.dt = dt;
-            var world = this, that = this, contacts = this.contacts, p1 = World_step_p1, p2 = World_step_p2, N = this.bodies.length, bodies = this.bodies, solver = this.solver, gravity = this.gravity, doProfiling = this.doProfiling, profile = this.profile, DYNAMIC = CANNON.Body.DYNAMIC, profilingStart, constraints = this.constraints, frictionEquationPool = World_step_frictionEquationPool, gnorm = gravity.length, gx = gravity.x, gy = gravity.y, gz = gravity.z, i = 0;
+            var contacts = this.contacts, p1 = [], p2 = [], N = this.bodies.length, bodies = this.bodies, solver = this.solver, gravity = this.gravity, doProfiling = this.doProfiling, profile = this.profile, DYNAMIC = CANNON.Body.DYNAMIC, profilingStart, constraints = this.constraints, frictionEquationPool = World_step_frictionEquationPool, gnorm = gravity.length, gx = gravity.x, gy = gravity.y, gz = gravity.z, i = 0;
             if (doProfiling) {
                 profilingStart = performance.now();
             }
@@ -44857,8 +44855,6 @@ var CANNON;
     }
     var World_step_oldContacts = []; // Pools for unused objects
     var World_step_frictionEquationPool = [];
-    var World_step_p1 = []; // Reusable arrays for collision pairs
-    var World_step_p2 = [];
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -46555,6 +46551,8 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+console.log("feng3d-0.1.3");
+console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

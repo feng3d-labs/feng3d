@@ -18573,7 +18573,7 @@ declare namespace CANNON {
         /**
          * 从世界获取冲突对
          */
-        abstract collisionPairs(world: World, p1: any[], p2: any[]): void;
+        abstract collisionPairs(world: World, p1: Body[], p2: Body[]): void;
         /**
          * 是否需要碰撞检测
          *
@@ -18659,7 +18659,7 @@ declare namespace CANNON {
          * @param pairs1
          * @param pairs2
          */
-        collisionPairs(world: World, pairs1: any[], pairs2: any[]): void;
+        collisionPairs(world: World, pairs1: Body[], pairs2: Body[]): void;
     }
 }
 declare namespace CANNON {
@@ -18675,7 +18675,7 @@ declare namespace CANNON {
          * @param pairs1
          * @param pairs2
          */
-        collisionPairs(world: World, pairs1: any[], pairs2: any[]): void;
+        collisionPairs(world: World, pairs1: Body[], pairs2: Body[]): void;
         /**
          * Returns all the bodies within an AABB.
          * @param world
@@ -18717,7 +18717,7 @@ declare namespace CANNON {
          * @param p1
          * @param p2
          */
-        collisionPairs(world: World, p1: any[], p2: any[]): void;
+        collisionPairs(world: World, p1: Body[], p2: Body[]): void;
         sortList(): void;
         /**
          * Check if the bounds of two bodies overlap, along the given SAP axis.

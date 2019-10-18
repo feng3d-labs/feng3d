@@ -18,7 +18,7 @@ namespace CANNON
          * @param pairs1
          * @param pairs2
          */
-        collisionPairs(world: World, pairs1: any[], pairs2: any[])
+        collisionPairs(world: World, pairs1: Body[], pairs2: Body[])
         {
             var bodies = world.bodies,
                 n = bodies.length,

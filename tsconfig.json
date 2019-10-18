@@ -378,7 +378,6 @@
         "src/physics/collision/Broadphase.ts",
         "src/physics/collision/GridBroadphase.ts",
         "src/physics/collision/NaiveBroadphase.ts",
-        "src/physics/collision/SAPBroadphase.ts",
         "src/physics/collision/Ray.ts",
         "src/physics/material/Material.ts",
         "src/physics/material/ContactMaterial.ts",

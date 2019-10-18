@@ -494,11 +494,9 @@ namespace CANNON
         {
             this.dt = dt;
 
-            var world = this,
-                that = this,
-                contacts = this.contacts,
-                p1 = World_step_p1,
-                p2 = World_step_p2,
+            var contacts = this.contacts,
+                p1: Body[] = [],
+                p2: Body[] = [],
                 N = this.bodies.length,
                 bodies = this.bodies,
                 solver = this.solver,
@@ -960,6 +958,4 @@ namespace CANNON
 
     var World_step_oldContacts = [];// Pools for unused objects
     var World_step_frictionEquationPool = [];
-    var World_step_p1 = []; // Reusable arrays for collision pairs
-    var World_step_p2 = [];
 }
