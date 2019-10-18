@@ -18572,21 +18572,17 @@ declare namespace CANNON {
         dirty: boolean;
         /**
          * 从世界获取冲突对
-         *
-         * @param world The world to search in
-         * @param p1 Empty array to be filled with body objects
-         * @param p2 Empty array to be filled with body objects
          */
         abstract collisionPairs(world: World, p1: any[], p2: any[]): void;
         /**
-         * Check if a body pair needs to be intersection tested at all.
+         * 是否需要碰撞检测
          *
          * @param bodyA
          * @param bodyB
          */
         needBroadphaseCollision(bodyA: Body, bodyB: Body): boolean;
         /**
-         * Check if the bounding volumes of two bodies intersect.
+         * 检查两个物体的边界是否相交。
           *
           * @param bodyA
           * @param bodyB
@@ -18595,15 +18591,17 @@ declare namespace CANNON {
           */
         intersectionTest(bodyA: Body, bodyB: Body, pairs1: any[], pairs2: any[]): void;
         /**
-         * Check if the bounding spheres of two bodies are intersecting.
+         * 检查两个物体的边界球是否相交。
+         *
          * @param bodyA
          * @param bodyB
-         * @param pairs1 bodyA is appended to this array if intersection
-         * @param pairs2 bodyB is appended to this array if intersection
+         * @param pairs1
+         * @param pairs2
          */
         doBoundingSphereBroadphase(bodyA: Body, bodyB: Body, pairs1: Body[], pairs2: Body[]): void;
         /**
-         * Check if the bounding boxes of two bodies are intersecting.
+         * 检查两个物体的包围盒是否相交。
+         *
          * @param bodyA
          * @param bodyB
          * @param pairs1
@@ -18611,12 +18609,14 @@ declare namespace CANNON {
          */
         doBoundingBoxBroadphase(bodyA: Body, bodyB: Body, pairs1: Body[], pairs2: Body[]): void;
         /**
-         * Removes duplicate pairs from the pair arrays.
+         * 从对数组中删除重复的对。
+         *
          * @param pairs1
          * @param pairs2
          */
         makePairsUnique(pairs1: any[], pairs2: any[]): void;
         /**
+         * 设置世界
          *
          * @param world
          */
@@ -18626,7 +18626,7 @@ declare namespace CANNON {
          *
          * @param world
          * @param aabb
-         * @param result An array to store resulting bodies in.
+         * @param result
          */
         aabbQuery(world: World, aabb: feng3d.AABB, result: Body[]): Body[];
     }

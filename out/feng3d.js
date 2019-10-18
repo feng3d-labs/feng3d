@@ -40963,13 +40963,13 @@ var CANNON;
             this.dirty = true;
         }
         /**
-         * Check if a body pair needs to be intersection tested at all.
+         * 是否需要碰撞检测
          *
          * @param bodyA
          * @param bodyB
          */
         Broadphase.prototype.needBroadphaseCollision = function (bodyA, bodyB) {
-            // Check collision filter masks
+            // 检查冲突过滤器掩码
             if ((bodyA.collisionFilterGroup & bodyB.collisionFilterMask) === 0 || (bodyB.collisionFilterGroup & bodyA.collisionFilterMask) === 0) {
                 return false;
             }
@@ -40982,7 +40982,7 @@ var CANNON;
             return true;
         };
         /**
-         * Check if the bounding volumes of two bodies intersect.
+         * 检查两个物体的边界是否相交。
           *
           * @param bodyA
           * @param bodyB
@@ -40998,11 +40998,12 @@ var CANNON;
             }
         };
         /**
-         * Check if the bounding spheres of two bodies are intersecting.
+         * 检查两个物体的边界球是否相交。
+         *
          * @param bodyA
          * @param bodyB
-         * @param pairs1 bodyA is appended to this array if intersection
-         * @param pairs2 bodyB is appended to this array if intersection
+         * @param pairs1
+         * @param pairs2
          */
         Broadphase.prototype.doBoundingSphereBroadphase = function (bodyA, bodyB, pairs1, pairs2) {
             var r = bodyB.position.subTo(bodyA.position);
@@ -41014,7 +41015,8 @@ var CANNON;
             }
         };
         /**
-         * Check if the bounding boxes of two bodies are intersecting.
+         * 检查两个物体的包围盒是否相交。
+         *
          * @param bodyA
          * @param bodyB
          * @param pairs1
@@ -41027,14 +41029,14 @@ var CANNON;
             if (bodyB.aabbNeedsUpdate) {
                 bodyB.computeAABB();
             }
-            // Check AABB / AABB
             if (bodyA.aabb.intersects(bodyB.aabb)) {
                 pairs1.push(bodyA);
                 pairs2.push(bodyB);
             }
         };
         /**
-         * Removes duplicate pairs from the pair arrays.
+         * 从对数组中删除重复的对。
+         *
          * @param pairs1
          * @param pairs2
          */
@@ -41060,6 +41062,7 @@ var CANNON;
             }
         };
         /**
+         * 设置世界
          *
          * @param world
          */
@@ -41070,7 +41073,7 @@ var CANNON;
          *
          * @param world
          * @param aabb
-         * @param result An array to store resulting bodies in.
+         * @param result
          */
         Broadphase.prototype.aabbQuery = function (world, aabb, result) {
             return result;
