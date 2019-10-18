@@ -647,8 +647,6 @@ namespace CANNON
                 case Ray.ALL:
                     this.hasHit = true;
                     result.set(
-                        from,
-                        to,
                         normal,
                         hitPointWorld,
                         shape,
@@ -667,8 +665,6 @@ namespace CANNON
                         this.hasHit = true;
                         result.hasHit = true;
                         result.set(
-                            from,
-                            to,
                             normal,
                             hitPointWorld,
                             shape,
@@ -684,8 +680,6 @@ namespace CANNON
                     this.hasHit = true;
                     result.hasHit = true;
                     result.set(
-                        from,
-                        to,
                         normal,
                         hitPointWorld,
                         shape,

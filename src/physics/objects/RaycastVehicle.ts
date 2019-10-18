@@ -313,8 +313,6 @@ namespace CANNON
 
             var object = raycastResult.body;
 
-            wheel.raycastResult.groundObject = 0;//?
-
             if (object)
             {
                 depth = raycastResult.distance;

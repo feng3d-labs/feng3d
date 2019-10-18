@@ -18459,9 +18459,10 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
+    /**
+     * 射线捕获结果
+     */
     class RaycastResult {
-        rayFromWorld: feng3d.Vector3;
-        rayToWorld: feng3d.Vector3;
         hitNormalWorld: feng3d.Vector3;
         hitPointWorld: feng3d.Vector3;
         hasHit: boolean;
@@ -18475,13 +18476,11 @@ declare namespace CANNON {
          * Distance to the hit. Will be set to -1 if there was no hit.
          */
         distance: number;
-        suspensionLength: number;
         directionWorld: feng3d.Vector3;
         /**
          * If the ray should stop traversing the bodies.
          */
         _shouldStop: boolean;
-        groundObject: number;
         /**
          * Storage for Ray casting data.
          */
@@ -18491,7 +18490,7 @@ declare namespace CANNON {
          */
         reset(): void;
         abort(): void;
-        set(rayFromWorld: feng3d.Vector3, rayToWorld: feng3d.Vector3, hitNormalWorld: feng3d.Vector3, hitPointWorld: feng3d.Vector3, shape: Shape, body: Body, distance: number): void;
+        set(hitNormalWorld: feng3d.Vector3, hitPointWorld: feng3d.Vector3, shape: Shape, body: Body, distance: number): void;
     }
 }
 declare namespace CANNON {

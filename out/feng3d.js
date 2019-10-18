@@ -40731,13 +40731,14 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
+    /**
+     * 射线捕获结果
+     */
     var RaycastResult = /** @class */ (function () {
         /**
          * Storage for Ray casting data.
          */
         function RaycastResult() {
-            this.rayFromWorld = new feng3d.Vector3();
-            this.rayToWorld = new feng3d.Vector3();
             this.hitNormalWorld = new feng3d.Vector3();
             this.hitPointWorld = new feng3d.Vector3();
             this.hasHit = false;
@@ -40760,8 +40761,6 @@ var CANNON;
          * Reset all result data.
          */
         RaycastResult.prototype.reset = function () {
-            this.rayFromWorld.setZero();
-            this.rayToWorld.setZero();
             this.hitNormalWorld.setZero();
             this.hitPointWorld.setZero();
             this.hasHit = false;
@@ -40774,9 +40773,7 @@ var CANNON;
         RaycastResult.prototype.abort = function () {
             this._shouldStop = true;
         };
-        RaycastResult.prototype.set = function (rayFromWorld, rayToWorld, hitNormalWorld, hitPointWorld, shape, body, distance) {
-            this.rayFromWorld.copy(rayFromWorld);
-            this.rayToWorld.copy(rayToWorld);
+        RaycastResult.prototype.set = function (hitNormalWorld, hitPointWorld, shape, body, distance) {
             this.hitNormalWorld.copy(hitNormalWorld);
             this.hitPointWorld.copy(hitPointWorld);
             this.shape = shape;
@@ -41290,7 +41287,7 @@ var CANNON;
             switch (this.mode) {
                 case Ray.ALL:
                     this.hasHit = true;
-                    result.set(from, to, normal, hitPointWorld, shape, body, distance);
+                    result.set(normal, hitPointWorld, shape, body, distance);
                     result.hasHit = true;
                     this.callback(result);
                     break;
@@ -41299,14 +41296,14 @@ var CANNON;
                     if (distance < result.distance || !result.hasHit) {
                         this.hasHit = true;
                         result.hasHit = true;
-                        result.set(from, to, normal, hitPointWorld, shape, body, distance);
+                        result.set(normal, hitPointWorld, shape, body, distance);
                     }
                     break;
                 case Ray.ANY:
                     // Report and stop.
                     this.hasHit = true;
                     result.hasHit = true;
-                    result.set(from, to, normal, hitPointWorld, shape, body, distance);
+                    result.set(normal, hitPointWorld, shape, body, distance);
                     result._shouldStop = true;
                     break;
             }
@@ -42109,7 +42106,6 @@ var CANNON;
             }
             else {
                 // Not in contact : position wheel in a nice (rest length) position
-                raycastResult.suspensionLength = this.suspensionRestLength;
                 this.suspensionRelativeVelocity = 0.0;
                 raycastResult.directionWorld.scaleNumberTo(-1, raycastResult.hitNormalWorld);
                 this.clippedInvContactDotSuspension = 1.0;
@@ -42332,7 +42328,6 @@ var CANNON;
             this.world.rayTest(source, target, raycastResult);
             chassisBody.collisionResponse = oldState;
             var object = raycastResult.body;
-            wheel.raycastResult.groundObject = 0; //?
             if (object) {
                 depth = raycastResult.distance;
                 wheel.raycastResult.hitNormalWorld = raycastResult.hitNormalWorld;

@@ -1,11 +1,10 @@
 namespace CANNON
 {
+	/**
+	 * 射线捕获结果
+	 */
 	export class RaycastResult
 	{
-		rayFromWorld = new feng3d.Vector3();
-
-		rayToWorld = new feng3d.Vector3();
-
 		hitNormalWorld = new feng3d.Vector3();
 
 		hitPointWorld = new feng3d.Vector3();
@@ -26,14 +25,12 @@ namespace CANNON
 		 */
 		distance = -1;
 
-		suspensionLength: number;
 		directionWorld: feng3d.Vector3;
 
 		/**
 		 * If the ray should stop traversing the bodies.
 		 */
 		_shouldStop = false;
-        groundObject: number;
 
 		/**
 		 * Storage for Ray casting data.
@@ -48,8 +45,6 @@ namespace CANNON
 		 */
 		reset()
 		{
-			this.rayFromWorld.setZero();
-			this.rayToWorld.setZero();
 			this.hitNormalWorld.setZero();
 			this.hitPointWorld.setZero();
 			this.hasHit = false;
@@ -65,18 +60,8 @@ namespace CANNON
 			this._shouldStop = true;
 		}
 
-		set(
-			rayFromWorld: feng3d.Vector3,
-			rayToWorld: feng3d.Vector3,
-			hitNormalWorld: feng3d.Vector3,
-			hitPointWorld: feng3d.Vector3,
-			shape: Shape,
-			body: Body,
-			distance: number
-		)
+		set(hitNormalWorld: feng3d.Vector3, hitPointWorld: feng3d.Vector3, shape: Shape, body: Body, distance: number)
 		{
-			this.rayFromWorld.copy(rayFromWorld);
-			this.rayToWorld.copy(rayToWorld);
 			this.hitNormalWorld.copy(hitNormalWorld);
 			this.hitPointWorld.copy(hitPointWorld);
 			this.shape = shape;
