@@ -5,6 +5,8 @@ namespace CANNON
      */
     export class ConvexPolyhedron extends Shape
     {
+        type = ShapeType.CONVEXPOLYHEDRON;
+
         /**
          * 顶点数组
          */
@@ -65,9 +67,7 @@ namespace CANNON
          */
         constructor(points?: feng3d.Vector3[], faces?: number[][], uniqueAxes?: feng3d.Vector3[])
         {
-            super({
-                type: ShapeType.CONVEXPOLYHEDRON
-            });
+            super();
 
             this.vertices = points || [];
 

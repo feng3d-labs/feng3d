@@ -5,6 +5,8 @@ namespace CANNON
      */
     export class Particle extends Shape
     {
+        type = ShapeType.PARTICLE;
+
         position: feng3d.Vector3;
         velocity: feng3d.Vector3;
         mass: number;
@@ -12,9 +14,7 @@ namespace CANNON
 
         constructor()
         {
-            super({
-                type: ShapeType.PARTICLE
-            });
+            super();
         }
 
         /**

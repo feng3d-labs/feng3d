@@ -5,6 +5,8 @@ namespace CANNON
      */
     export class Cylinder extends ConvexPolyhedron
     {
+        // type = ShapeType.CYLINDER;
+
         /**
          * @param radiusTop 顶部半径
          * @param radiusBottom 底部半径
@@ -64,6 +66,8 @@ namespace CANNON
             faces.push(temp);
 
             super(verts, faces, axes);
+
+            this.type = ShapeType.CYLINDER;
         }
 
     }

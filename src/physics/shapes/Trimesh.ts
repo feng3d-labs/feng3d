@@ -5,6 +5,8 @@ namespace CANNON
      */
     export class Trimesh extends Shape
     {
+        type = ShapeType.TRIMESH;
+
         /**
          * 顶点坐标数据
          */
@@ -45,9 +47,7 @@ namespace CANNON
          */
         constructor(vertices: number[], indices: number[])
         {
-            super({
-                type: ShapeType.TRIMESH
-            });
+            super();
 
             this.vertices = vertices;
 

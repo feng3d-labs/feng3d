@@ -5,6 +5,8 @@ namespace CANNON
      */
     export class Plane extends Shape
     {
+        type = ShapeType.PLANE;
+
         worldNormal = new feng3d.Vector3();
 
         worldNormalNeedsUpdate = true;
@@ -16,9 +18,7 @@ namespace CANNON
          */
         constructor()
         {
-            super({
-                type: ShapeType.PLANE
-            });
+            super();
         }
 
         computeWorldNormal(quat: feng3d.Quaternion)

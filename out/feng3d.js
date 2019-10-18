@@ -38593,19 +38593,32 @@ var CANNON;
     var Shape = /** @class */ (function () {
         /**
          *
-         * @param options
-         * @author schteppe
          */
-        function Shape(options) {
-            if (options === void 0) { options = {}; }
-            this.id = Shape.idCounter++;
-            this.type = options.type || 0;
+        function Shape() {
+            /**
+             * 形状类型
+             */
+            this.type = 0;
+            /**
+             * 此形状的局部包围球半径
+             */
             this.boundingSphereRadius = 0;
-            this.collisionResponse = options.collisionResponse ? options.collisionResponse : true;
-            this.collisionFilterGroup = options.collisionFilterGroup !== undefined ? options.collisionFilterGroup : 1;
-            this.collisionFilterMask = options.collisionFilterMask !== undefined ? options.collisionFilterMask : -1;
-            this.material = options.material ? options.material : null;
+            /**
+             * Whether to produce contact forces when in contact with other bodies. Note that contacts will be generated, but they will be disabled.
+             * 是否响应碰撞
+             */
+            this.collisionResponse = true;
+            this.collisionFilterGroup = 1;
+            this.collisionFilterMask = -1;
+            /**
+             * 材质
+             */
+            this.material = null;
+            /**
+             * 物体
+             */
             this.body = null;
+            this.id = Shape.idCounter++;
         }
         /**
          * 编号计数器
@@ -38642,9 +38655,8 @@ var CANNON;
          * @todo Automatically merge coplanar polygons in constructor.
          */
         function ConvexPolyhedron(points, faces, uniqueAxes) {
-            var _this = _super.call(this, {
-                type: CANNON.ShapeType.CONVEXPOLYHEDRON
-            }) || this;
+            var _this = _super.call(this) || this;
+            _this.type = CANNON.ShapeType.CONVEXPOLYHEDRON;
             _this.vertices = points || [];
             _this.worldVertices = [];
             _this.worldVerticesNeedsUpdate = true;
@@ -39437,6 +39449,7 @@ var CANNON;
      */
     var Cylinder = /** @class */ (function (_super) {
         __extends(Cylinder, _super);
+        // type = ShapeType.CYLINDER;
         /**
          * @param radiusTop 顶部半径
          * @param radiusBottom 底部半径
@@ -39486,6 +39499,7 @@ var CANNON;
             var temp = bottomface.reverse();
             faces.push(temp);
             _this = _super.call(this, verts, faces, axes) || this;
+            _this.type = CANNON.ShapeType.CYLINDER;
             return _this;
         }
         return Cylinder;
@@ -39529,6 +39543,9 @@ var CANNON;
         function Heightfield(data, options) {
             if (options === void 0) { options = {}; }
             var _this = _super.call(this) || this;
+            _this.type = CANNON.ShapeType.HEIGHTFIELD;
+            _this.pillarConvex = new CANNON.ConvexPolyhedron();
+            _this.pillarOffset = new feng3d.Vector3();
             options = CANNON.Utils.defaults(options, {
                 maxValue: null,
                 minValue: null,
@@ -39545,11 +39562,7 @@ var CANNON;
                 _this.updateMaxValue();
             }
             _this.cacheEnabled = true;
-            CANNON.Shape.call(_this, {
-                type: CANNON.ShapeType.HEIGHTFIELD
-            });
-            _this.pillarConvex = new CANNON.ConvexPolyhedron();
-            _this.pillarOffset = new feng3d.Vector3();
+            _this = _super.call(this) || this;
             _this.updateBoundingSphereRadius();
             _this._cachedPillars = {};
             return _this;
@@ -40040,9 +40053,9 @@ var CANNON;
     var Particle = /** @class */ (function (_super) {
         __extends(Particle, _super);
         function Particle() {
-            return _super.call(this, {
-                type: CANNON.ShapeType.PARTICLE
-            }) || this;
+            var _this = _super.call(this) || this;
+            _this.type = CANNON.ShapeType.PARTICLE;
+            return _this;
         }
         /**
          * @param mass
@@ -40078,9 +40091,8 @@ var CANNON;
          *
          */
         function Plane() {
-            var _this = _super.call(this, {
-                type: CANNON.ShapeType.PLANE
-            }) || this;
+            var _this = _super.call(this) || this;
+            _this.type = CANNON.ShapeType.PLANE;
             _this.worldNormal = new feng3d.Vector3();
             _this.worldNormalNeedsUpdate = true;
             _this.boundingSphereRadius = Number.MAX_VALUE;
@@ -40146,9 +40158,8 @@ var CANNON;
          */
         function Sphere(radius) {
             if (radius === void 0) { radius = 1; }
-            var _this = _super.call(this, {
-                type: CANNON.ShapeType.SPHERE
-            }) || this;
+            var _this = _super.call(this) || this;
+            _this.type = CANNON.ShapeType.SPHERE;
             _this.radius = radius;
             console.assert(radius >= 0, "\u7403\u9762\u534A\u5F84\u4E0D\u80FD\u662F\u8D1F\u7684\u3002");
             _this.updateBoundingSphereRadius();
@@ -40200,9 +40211,8 @@ var CANNON;
          *     var trimeshShape = new Trimesh(vertices, indices);
          */
         function Trimesh(vertices, indices) {
-            var _this = _super.call(this, {
-                type: CANNON.ShapeType.TRIMESH
-            }) || this;
+            var _this = _super.call(this) || this;
+            _this.type = CANNON.ShapeType.TRIMESH;
             _this.vertices = vertices;
             _this.indices = indices;
             _this.normals = [];
@@ -42092,11 +42102,6 @@ var CANNON;
          */
         Spring.prototype.applyForce = function () {
             var k = this.stiffness, d = this.damping, l = this.restLength, bodyA = this.bodyA, bodyB = this.bodyB;
-            // r = new feng3d.Vector3(),
-            // r_unit = new feng3d.Vector3(),
-            // u = new feng3d.Vector3(),
-            // f = new feng3d.Vector3(),
-            // tmp = new feng3d.Vector3();
             var worldAnchorA = new feng3d.Vector3(), worldAnchorB = new feng3d.Vector3(), ri = new feng3d.Vector3(), rj = new feng3d.Vector3(), ri_x_f = new feng3d.Vector3(), rj_x_f = new feng3d.Vector3();
             // Get world anchors
             this.getWorldAnchorA(worldAnchorA);

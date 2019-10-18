@@ -17648,16 +17648,8 @@ declare namespace CANNON {
         radius: number;
         /**
          *
-         * @param options
-         * @author schteppe
          */
-        constructor(options?: {
-            type?: ShapeType;
-            collisionFilterGroup?: number;
-            collisionFilterMask?: number;
-            collisionResponse?: boolean;
-            material?: any;
-        });
+        constructor();
         /**
          * 计算包围球半径。结果存储在.boundingSphereRadius属性中
          */
@@ -17694,6 +17686,7 @@ declare namespace CANNON {
      * 凸多面体
      */
     class ConvexPolyhedron extends Shape {
+        type: ShapeType;
         /**
          * 顶点数组
          */
@@ -17947,6 +17940,7 @@ declare namespace CANNON {
      * 高度场
      */
     class Heightfield extends Shape {
+        type: ShapeType;
         /**
          * 沿x轴展开的一组数字或高度值。
          */
@@ -17995,9 +17989,9 @@ declare namespace CANNON {
          *     world.addBody(heightfieldBody);
          */
         constructor(data: number[][], options?: {
-            maxValue?: number;
-            minValue?: number;
             elementSize?: number;
+            minValue?: number;
+            maxValue?: number;
         });
         /**
          * 更新
@@ -18148,6 +18142,7 @@ declare namespace CANNON {
      * 粒子
      */
     class Particle extends Shape {
+        type: ShapeType;
         position: feng3d.Vector3;
         velocity: feng3d.Vector3;
         mass: number;
@@ -18168,6 +18163,7 @@ declare namespace CANNON {
      * 平面
      */
     class Plane extends Shape {
+        type: ShapeType;
         worldNormal: feng3d.Vector3;
         worldNormalNeedsUpdate: boolean;
         boundingSphereRadius: number;
@@ -18187,6 +18183,7 @@ declare namespace CANNON {
      * 球体
      */
     class Sphere extends Shape {
+        type: ShapeType;
         /**
          * 半径
          */
@@ -18209,6 +18206,7 @@ declare namespace CANNON {
      * 三角网格
      */
     class Trimesh extends Shape {
+        type: ShapeType;
         /**
          * 顶点坐标数据
          */

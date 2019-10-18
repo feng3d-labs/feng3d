@@ -5,6 +5,8 @@ namespace CANNON
      */
     export class Sphere extends Shape
     {
+        type = ShapeType.SPHERE;
+
         /**
          * 半径
          */
@@ -18,9 +20,7 @@ namespace CANNON
          */
         constructor(radius = 1)
         {
-            super({
-                type: ShapeType.SPHERE
-            });
+            super();
 
             this.radius = radius;
 

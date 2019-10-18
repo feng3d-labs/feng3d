@@ -10,32 +10,32 @@ namespace CANNON
         /**
          * 形状类型
          */
-        type: ShapeType;
+        type: ShapeType = 0;
 
         /**
          * 此形状的局部包围球半径
          */
-        boundingSphereRadius: number;
+        boundingSphereRadius = 0;
 
         /**
          * Whether to produce contact forces when in contact with other bodies. Note that contacts will be generated, but they will be disabled.
          * 是否响应碰撞
          */
-        collisionResponse: boolean;
+        collisionResponse = true;
 
-        collisionFilterGroup: number;
+        collisionFilterGroup = 1;
 
-        collisionFilterMask: number;
+        collisionFilterMask = -1;
 
         /**
          * 材质
          */
-        material: Material;
+        material: Material = null;
 
         /**
          * 物体
          */
-        body: Body;
+        body: Body = null;
 
         /**
          * 面数组
@@ -61,23 +61,10 @@ namespace CANNON
 
         /**
          * 
-         * @param options 
-         * @author schteppe
          */
-        constructor(options: { type?: ShapeType, collisionFilterGroup?: number, collisionFilterMask?: number, collisionResponse?: boolean, material?: any } = {})
+        constructor()
         {
             this.id = Shape.idCounter++;
-            this.type = options.type || 0;
-
-            this.boundingSphereRadius = 0;
-            this.collisionResponse = options.collisionResponse ? options.collisionResponse : true;
-
-            this.collisionFilterGroup = options.collisionFilterGroup !== undefined ? options.collisionFilterGroup : 1;
-
-            this.collisionFilterMask = options.collisionFilterMask !== undefined ? options.collisionFilterMask : -1;
-
-            this.material = options.material ? options.material : null;
-            this.body = null;
         }
 
         /**

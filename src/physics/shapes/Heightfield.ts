@@ -5,6 +5,8 @@ namespace CANNON
      */
     export class Heightfield extends Shape
     {
+        type = ShapeType.HEIGHTFIELD;
+
         /**
          * 沿x轴展开的一组数字或高度值。
          */
@@ -22,8 +24,11 @@ namespace CANNON
           */
         elementSize: number;
         cacheEnabled: boolean;
-        pillarConvex: ConvexPolyhedron;
-        pillarOffset: feng3d.Vector3;
+
+        pillarConvex = new ConvexPolyhedron();
+
+        pillarOffset = new feng3d.Vector3();
+
         private _cachedPillars: {
             [key: string]: {
                 convex: ConvexPolyhedron,
@@ -58,7 +63,7 @@ namespace CANNON
          *     heightfieldBody.addShape(heightfieldShape);
          *     world.addBody(heightfieldBody);
          */
-        constructor(data: number[][], options: { maxValue?: number, minValue?: number, elementSize?: number } = {})
+        constructor(data: number[][], options: { elementSize?: number, minValue?: number, maxValue?: number } = {})
         {
             super();
             options = Utils.defaults(options, {
@@ -86,12 +91,7 @@ namespace CANNON
 
             this.cacheEnabled = true;
 
-            Shape.call(this, {
-                type: ShapeType.HEIGHTFIELD
-            });
-
-            this.pillarConvex = new ConvexPolyhedron();
-            this.pillarOffset = new feng3d.Vector3();
+            super();
 
             this.updateBoundingSphereRadius();
 
