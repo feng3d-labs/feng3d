@@ -17,9 +17,7 @@ namespace feng3d
 
         init()
         {
-            this.body = new CANNON.Body({
-                mass: this.mass, // kg
-            });
+            this.body = new CANNON.Body(this.mass);
 
             this.body.position = this.transform.position;
 

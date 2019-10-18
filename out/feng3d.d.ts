@@ -18710,6 +18710,7 @@ declare namespace CANNON {
          * World space position of the body.
          */
         position: feng3d.Vector3;
+        private _position;
         previousPosition: feng3d.Vector3;
         /**
          * Interpolated position of the body.
@@ -18723,12 +18724,14 @@ declare namespace CANNON {
          * World space velocity of the body.
          */
         velocity: feng3d.Vector3;
+        private _velocity;
         initVelocity: feng3d.Vector3;
         /**
          * Linear force on the body in world space.
          */
         force: feng3d.Vector3;
         mass: number;
+        private _mass;
         invMass: number;
         material: Material;
         linearDamping: number;
@@ -18762,6 +18765,7 @@ declare namespace CANNON {
          * World space orientation of the body.
          */
         quaternion: feng3d.Quaternion;
+        private _quaternion;
         initQuaternion: feng3d.Quaternion;
         previousQuaternion: feng3d.Quaternion;
         /**
@@ -18772,6 +18776,7 @@ declare namespace CANNON {
          * Angular velocity of the body, in world space. Think of the angular velocity as a vector, which the body rotates around. The length of this vector determines how fast (in radians per second) the body rotates.
          */
         angularVelocity: feng3d.Vector3;
+        private _angularVelocity;
         initAngularVelocity: feng3d.Vector3;
         shapes: Shape[];
         /**
@@ -18797,10 +18802,12 @@ declare namespace CANNON {
          * Use this property to limit the motion along any world axis. (1,1,1) will allow motion along all axes while (0,0,0) allows none.
          */
         linearFactor: feng3d.Vector3;
+        private _linearFactor;
         /**
          * Use this property to limit the rotational motion along any world axis. (1,1,1) will allow rotation along all axes while (0,0,0) allows none.
          */
         angularFactor: feng3d.Vector3;
+        private _angularFactor;
         /**
          * World space bounding box of the body and its shapes.
          */
@@ -18829,26 +18836,7 @@ declare namespace CANNON {
          *     body.addShape(shape);
          *     world.addBody(body);
          */
-        constructor(options?: {
-            collisionFilterGroup?: number;
-            collisionFilterMask?: number;
-            position?: feng3d.Vector3;
-            velocity?: feng3d.Vector3;
-            material?: Material;
-            mass?: number;
-            linearDamping?: number;
-            type?: number;
-            allowSleep?: boolean;
-            sleepSpeedLimit?: number;
-            sleepTimeLimit?: number;
-            quaternion?: feng3d.Quaternion;
-            angularVelocity?: feng3d.Vector3;
-            fixedRotation?: boolean;
-            angularDamping?: number;
-            linearFactor?: feng3d.Vector3;
-            angularFactor?: feng3d.Vector3;
-            shape?: Shape;
-        }, a?: any);
+        constructor(mass?: number);
         /**
          * A dynamic body is fully simulated. Can be moved manually by the user, but normally they move according to forces. A dynamic body can collide with all body types. A dynamic body always has finite, non-zero mass.
          */
@@ -18912,11 +18900,11 @@ declare namespace CANNON {
         /**
          * Add a shape to the body with a local offset and orientation.
          * @param shape
-         * @param _offset
+         * @param offset
          * @param_orientation
          * @return The body object, for chainability.
          */
-        addShape(shape: Shape, _offset?: feng3d.Vector3, _orientation?: feng3d.Quaternion): this;
+        addShape(shape: Shape, offset?: feng3d.Vector3, orientation?: feng3d.Quaternion): this;
         /**
          * Update the bounding radius of the body. Should be done if any of the shapes are changed.
          */

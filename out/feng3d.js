@@ -41467,23 +41467,21 @@ var CANNON;
          *     body.addShape(shape);
          *     world.addBody(body);
          */
-        function Body(options, a) {
-            if (options === void 0) { options = {}; }
-            if (a === void 0) { a = undefined; }
+        function Body(mass) {
+            if (mass === void 0) { mass = 0; }
             var _this = _super.call(this) || this;
             /**
              * Reference to the world the body is living in
              */
             _this.world = null;
             _this.vlambda = new feng3d.Vector3();
+            _this.collisionFilterGroup = 1;
+            _this.collisionFilterMask = -1;
             /**
              * Whether to produce contact forces when in contact with other bodies. Note that contacts will be generated, but they will be disabled.
              */
             _this.collisionResponse = true;
-            /**
-             * World space position of the body.
-             */
-            _this.position = new feng3d.Vector3();
+            _this._position = new feng3d.Vector3();
             _this.previousPosition = new feng3d.Vector3();
             /**
              * Interpolated position of the body.
@@ -41493,35 +41491,50 @@ var CANNON;
              * Initial position of the body
              */
             _this.initPosition = new feng3d.Vector3();
-            /**
-             * World space velocity of the body.
-             */
-            _this.velocity = new feng3d.Vector3();
+            _this._velocity = new feng3d.Vector3();
             _this.initVelocity = new feng3d.Vector3();
             /**
              * Linear force on the body in world space.
              */
             _this.force = new feng3d.Vector3();
+            _this._mass = 0;
+            _this.invMass = 0;
+            _this.material = null;
+            _this.linearDamping = 0.01;
+            /**
+             * One of: Body.DYNAMIC, Body.STATIC and Body.KINEMATIC.
+             */
+            _this.type = Body.STATIC;
+            /**
+             * If true, the body will automatically fall to sleep.
+             */
+            _this.allowSleep = true;
             /**
              * Current sleep state.
              */
             _this.sleepState = 0;
+            /**
+             * If the speed (the norm of the velocity) is smaller than this value, the body is considered sleepy.
+             */
+            _this.sleepSpeedLimit = 0.1;
+            /**
+             * If the body has been sleepy for this sleepTimeLimit seconds, it is considered sleeping.
+             */
+            _this.sleepTimeLimit = 1;
             _this.timeLastSleepy = 0;
             _this._wakeUpAfterNarrowphase = false;
             /**
              * World space rotational force on the body, around center of mass.
              */
             _this.torque = new feng3d.Vector3();
-            /**
-             * World space orientation of the body.
-             */
-            _this.quaternion = new feng3d.Quaternion();
+            _this._quaternion = new feng3d.Quaternion();
             _this.initQuaternion = new feng3d.Quaternion();
             _this.previousQuaternion = new feng3d.Quaternion();
             /**
              * Interpolated orientation of the body.
              */
             _this.interpolatedQuaternion = new feng3d.Quaternion();
+            _this._angularVelocity = new feng3d.Vector3();
             _this.initAngularVelocity = new feng3d.Vector3();
             _this.shapes = [];
             /**
@@ -41539,13 +41552,12 @@ var CANNON;
             _this.invInertiaSolve = new feng3d.Vector3();
             _this.invInertiaWorldSolve = new feng3d.Matrix3x3();
             /**
-             * Use this property to limit the motion along any world axis. (1,1,1) will allow motion along all axes while (0,0,0) allows none.
+             * Set to true if you don't want the body to rotate. Make sure to run .updateMassProperties() after changing this.
              */
-            _this.linearFactor = new feng3d.Vector3(1, 1, 1);
-            /**
-             * Use this property to limit the rotational motion along any world axis. (1,1,1) will allow rotation along all axes while (0,0,0) allows none.
-             */
-            _this.angularFactor = new feng3d.Vector3(1, 1, 1);
+            _this.fixedRotation = false;
+            _this.angularDamping = 0.01;
+            _this._linearFactor = new feng3d.Vector3(1, 1, 1);
+            _this._angularFactor = new feng3d.Vector3(1, 1, 1);
             /**
              * World space bounding box of the body and its shapes.
              */
@@ -41560,53 +41572,106 @@ var CANNON;
             _this.boundingRadius = 0;
             _this.wlambda = new feng3d.Vector3();
             _this.id = Body.idCounter++;
-            _this.collisionFilterGroup = typeof (options.collisionFilterGroup) === 'number' ? options.collisionFilterGroup : 1;
-            _this.collisionFilterMask = typeof (options.collisionFilterMask) === 'number' ? options.collisionFilterMask : -1;
-            if (options.position) {
-                _this.position.copy(options.position);
-                _this.previousPosition.copy(options.position);
-                _this.interpolatedPosition.copy(options.position);
-                _this.initPosition.copy(options.position);
-            }
-            if (options.velocity) {
-                _this.velocity.copy(options.velocity);
-            }
-            var mass = typeof (options.mass) === 'number' ? options.mass : 0;
             _this.mass = mass;
-            _this.invMass = mass > 0 ? 1.0 / mass : 0;
-            _this.material = options.material || null;
-            _this.linearDamping = typeof (options.linearDamping) === 'number' ? options.linearDamping : 0.01;
-            _this.type = (mass <= 0.0 ? Body.STATIC : Body.DYNAMIC);
-            if (typeof (options.type) === typeof (Body.STATIC)) {
-                _this.type = options.type;
-            }
-            _this.allowSleep = typeof (options.allowSleep) !== 'undefined' ? options.allowSleep : true;
-            _this.sleepSpeedLimit = typeof (options.sleepSpeedLimit) !== 'undefined' ? options.sleepSpeedLimit : 0.1;
-            _this.sleepTimeLimit = typeof (options.sleepTimeLimit) !== 'undefined' ? options.sleepTimeLimit : 1;
-            if (options.quaternion) {
-                _this.quaternion.copy(options.quaternion);
-                _this.initQuaternion.copy(options.quaternion);
-                _this.previousQuaternion.copy(options.quaternion);
-                _this.interpolatedQuaternion.copy(options.quaternion);
-            }
-            _this.angularVelocity = new feng3d.Vector3();
-            if (options.angularVelocity) {
-                _this.angularVelocity.copy(options.angularVelocity);
-            }
-            _this.fixedRotation = typeof (options.fixedRotation) !== "undefined" ? options.fixedRotation : false;
-            _this.angularDamping = typeof (options.angularDamping) !== 'undefined' ? options.angularDamping : 0.01;
-            if (options.linearFactor) {
-                _this.linearFactor.copy(options.linearFactor);
-            }
-            if (options.angularFactor) {
-                _this.angularFactor.copy(options.angularFactor);
-            }
-            if (options.shape) {
-                _this.addShape(options.shape);
-            }
             _this.updateMassProperties();
             return _this;
         }
+        Object.defineProperty(Body.prototype, "position", {
+            /**
+             * World space position of the body.
+             */
+            get: function () {
+                return this._position;
+            },
+            set: function (v) {
+                this._position.copy(v);
+                this.previousPosition.copy(v);
+                this.interpolatedPosition.copy(v);
+                this.initPosition.copy(v);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Body.prototype, "velocity", {
+            /**
+             * World space velocity of the body.
+             */
+            get: function () {
+                return this._velocity;
+            },
+            set: function (v) {
+                this._velocity.copy(v);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Body.prototype, "mass", {
+            get: function () {
+                return this._mass;
+            },
+            set: function (v) {
+                this._mass = v;
+                this.invMass = v > 0 ? 1.0 / v : 0;
+                this.type = (v <= 0.0 ? Body.STATIC : Body.DYNAMIC);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Body.prototype, "quaternion", {
+            /**
+             * World space orientation of the body.
+             */
+            get: function () {
+                return this._quaternion;
+            },
+            set: function (v) {
+                this._quaternion.copy(v);
+                this.initQuaternion.copy(v);
+                this.previousQuaternion.copy(v);
+                this.interpolatedQuaternion.copy(v);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Body.prototype, "angularVelocity", {
+            /**
+             * Angular velocity of the body, in world space. Think of the angular velocity as a vector, which the body rotates around. The length of this vector determines how fast (in radians per second) the body rotates.
+             */
+            get: function () {
+                return this._angularVelocity;
+            },
+            set: function (v) {
+                this._angularVelocity.copy(v);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Body.prototype, "linearFactor", {
+            /**
+             * Use this property to limit the motion along any world axis. (1,1,1) will allow motion along all axes while (0,0,0) allows none.
+             */
+            get: function () {
+                return this._linearFactor;
+            },
+            set: function (v) {
+                this._linearFactor.copy(v);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Body.prototype, "angularFactor", {
+            /**
+             * Use this property to limit the rotational motion along any world axis. (1,1,1) will allow rotation along all axes while (0,0,0) allows none.
+             */
+            get: function () {
+                return this._angularFactor;
+            },
+            set: function (v) {
+                this._angularFactor.copy(v);
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Wake the body up.
          */
@@ -41713,22 +41778,16 @@ var CANNON;
         /**
          * Add a shape to the body with a local offset and orientation.
          * @param shape
-         * @param _offset
+         * @param offset
          * @param_orientation
          * @return The body object, for chainability.
          */
-        Body.prototype.addShape = function (shape, _offset, _orientation) {
-            var offset = new feng3d.Vector3();
-            var orientation = new feng3d.Quaternion();
-            if (_offset) {
-                offset.copy(_offset);
-            }
-            if (_orientation) {
-                orientation.copy(_orientation);
-            }
+        Body.prototype.addShape = function (shape, offset, orientation) {
+            if (offset === void 0) { offset = new feng3d.Vector3(); }
+            if (orientation === void 0) { orientation = new feng3d.Quaternion(); }
             this.shapes.push(shape);
-            this.shapeOffsets.push(offset);
-            this.shapeOrientations.push(orientation);
+            this.shapeOffsets.push(offset.clone());
+            this.shapeOrientations.push(orientation.clone());
             this.updateMassProperties();
             this.updateBoundingRadius();
             this.aabbNeedsUpdate = true;
@@ -41756,7 +41815,10 @@ var CANNON;
          * @todo rename to updateAABB()
          */
         Body.prototype.computeAABB = function () {
-            var shapes = this.shapes, shapeOffsets = this.shapeOffsets, shapeOrientations = this.shapeOrientations, N = shapes.length, offset = tmpVec, orientation = tmpQuat, bodyQuat = this.quaternion, aabb = this.aabb, shapeAABB = computeAABB_shapeAABB;
+            var shapes = this.shapes, shapeOffsets = this.shapeOffsets, shapeOrientations = this.shapeOrientations, N = shapes.length, bodyQuat = this.quaternion, aabb = this.aabb;
+            var shapeAABB = new feng3d.AABB();
+            var offset = new feng3d.Vector3();
+            var orientation = new feng3d.Quaternion();
             for (var i = 0; i !== N; i++) {
                 var shape = shapes[i];
                 // Get shape world position
@@ -41788,7 +41850,8 @@ var CANNON;
                 // inertia diagonal entries are equal.
             }
             else {
-                var m1 = uiw_m1, m2 = uiw_m2, m3 = uiw_m3;
+                var m1 = new feng3d.Matrix3x3();
+                var m2 = new feng3d.Matrix3x3();
                 m1.setRotationFromQuaternion(this.quaternion);
                 m1.transposeTo(m2);
                 m1.scale(I, m1);
@@ -41806,8 +41869,7 @@ var CANNON;
                 return;
             }
             // Compute produced rotational force
-            var rotForce = Body_applyForce_rotForce;
-            relativePoint.crossTo(force, rotForce);
+            var rotForce = relativePoint.crossTo(force);
             // Add linear force
             this.force.addTo(force, this.force);
             // Add rotational force
@@ -41823,11 +41885,9 @@ var CANNON;
             if (this.type !== Body.DYNAMIC) {
                 return;
             }
-            var worldForce = Body_applyLocalForce_worldForce;
-            var relativePointWorld = Body_applyLocalForce_relativePointWorld;
             // Transform the force vector to world space
-            this.vectorToWorldFrame(localForce, worldForce);
-            this.vectorToWorldFrame(localPoint, relativePointWorld);
+            var worldForce = this.vectorToWorldFrame(localForce);
+            var relativePointWorld = this.vectorToWorldFrame(localPoint);
             this.applyForce(worldForce, relativePointWorld);
         };
         /**
@@ -41843,14 +41903,13 @@ var CANNON;
             // Compute point position relative to the body center
             var r = relativePoint;
             // Compute produced central impulse velocity
-            var velo = Body_applyImpulse_velo;
+            var velo = new feng3d.Vector3();
             velo.copy(impulse);
             velo.scaleNumberTo(this.invMass, velo);
             // Add linear impulse
             this.velocity.addTo(velo, this.velocity);
             // Compute produced rotational impulse velocity
-            var rotVelo = Body_applyImpulse_rotVelo;
-            r.crossTo(impulse, rotVelo);
+            var rotVelo = r.crossTo(impulse);
             /*
             rotVelo.x *= this.invInertia.x;
             rotVelo.y *= this.invInertia.y;
@@ -41870,18 +41929,16 @@ var CANNON;
             if (this.type !== Body.DYNAMIC) {
                 return;
             }
-            var worldImpulse = Body_applyLocalImpulse_worldImpulse;
-            var relativePointWorld = Body_applyLocalImpulse_relativePoint;
             // Transform the force vector to world space
-            this.vectorToWorldFrame(localImpulse, worldImpulse);
-            this.vectorToWorldFrame(localPoint, relativePointWorld);
+            var worldImpulse = this.vectorToWorldFrame(localImpulse);
+            var relativePointWorld = this.vectorToWorldFrame(localPoint);
             this.applyImpulse(worldImpulse, relativePointWorld);
         };
         /**
          * Should be called whenever you change the body shape or mass.
          */
         Body.prototype.updateMassProperties = function () {
-            var halfExtents = Body_updateMassProperties_halfExtents;
+            var halfExtents = new feng3d.Vector3();
             this.invMass = this.mass > 0 ? 1.0 / this.mass : 0;
             var I = this.inertia;
             var fixed = this.fixedRotation;
@@ -41969,26 +42026,6 @@ var CANNON;
         return Body;
     }(feng3d.EventDispatcher));
     CANNON.Body = Body;
-    var tmpVec = new feng3d.Vector3();
-    var tmpQuat = new feng3d.Quaternion();
-    var torque = new feng3d.Vector3();
-    var invI_tau_dt = new feng3d.Vector3();
-    var w = new feng3d.Quaternion();
-    var wq = new feng3d.Quaternion();
-    var Body_updateMassProperties_halfExtents = new feng3d.Vector3();
-    var Body_applyForce_r = new feng3d.Vector3();
-    var Body_applyForce_rotForce = new feng3d.Vector3();
-    var Body_applyLocalForce_worldForce = new feng3d.Vector3();
-    var Body_applyLocalForce_relativePointWorld = new feng3d.Vector3();
-    var Body_applyImpulse_r = new feng3d.Vector3();
-    var Body_applyImpulse_velo = new feng3d.Vector3();
-    var Body_applyImpulse_rotVelo = new feng3d.Vector3();
-    var Body_applyLocalImpulse_worldImpulse = new feng3d.Vector3();
-    var Body_applyLocalImpulse_relativePoint = new feng3d.Vector3();
-    var uiw_m1 = new feng3d.Matrix3x3();
-    var uiw_m2 = new feng3d.Matrix3x3();
-    var uiw_m3 = new feng3d.Matrix3x3();
-    var computeAABB_shapeAABB = new feng3d.AABB();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -45536,9 +45573,7 @@ var feng3d;
         }
         Rigidbody.prototype.init = function () {
             var _this = this;
-            this.body = new CANNON.Body({
-                mass: this.mass,
-            });
+            this.body = new CANNON.Body(this.mass);
             this.body.position = this.transform.position;
             var colliders = this.gameObject.getComponents(feng3d.Collider);
             colliders.forEach(function (element) {
