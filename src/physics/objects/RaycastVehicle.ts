@@ -44,15 +44,15 @@ namespace CANNON
          * 
          * @param options 
          */
-        constructor(options: { chassisBody?: Body, indexRightAxis?: number, indexForwardAxis?: number, indexUpAxis?: number } = {})
+        constructor(chassisBody: Body, indexRightAxis = 1, indexForwardAxis = 0, indexUpAxis = 1)
         {
-            this.chassisBody = options.chassisBody;
+            this.chassisBody = chassisBody;
             this.wheelInfos = [];
             this.sliding = false;
             this.world = null;
-            this.indexRightAxis = typeof (options.indexRightAxis) !== 'undefined' ? options.indexRightAxis : 1;
-            this.indexForwardAxis = typeof (options.indexForwardAxis) !== 'undefined' ? options.indexForwardAxis : 0;
-            this.indexUpAxis = typeof (options.indexUpAxis) !== 'undefined' ? options.indexUpAxis : 2;
+            this.indexRightAxis = indexRightAxis;
+            this.indexForwardAxis = indexForwardAxis;
+            this.indexUpAxis = indexUpAxis;
         }
 
         /**
@@ -60,9 +60,8 @@ namespace CANNON
          * 
          * @param options
          */
-        addWheel(options = {})
+        addWheel(info: WheelInfo)
         {
-            var info = new WheelInfo(options);
             var index = this.wheelInfos.length;
             this.wheelInfos.push(info);
 
@@ -499,7 +498,6 @@ namespace CANNON
 
                 var rollingFriction = 0;
 
-                wheel.slipInfo = 1;
                 if (groundObject)
                 {
                     var defaultRollingFrictionImpulse = 0;
@@ -508,10 +506,6 @@ namespace CANNON
                     rollingFriction = calcRollingFriction(chassisBody, groundObject, wheel.raycastResult.hitPointWorld, forwardWS[i], maxImpulse);
 
                     rollingFriction += wheel.engineForce * timeStep;
-
-                    // rollingFriction = 0;
-                    var factor = maxImpulse / rollingFriction;
-                    wheel.slipInfo *= factor;
                 }
 
                 wheel.forwardImpulse = 0;

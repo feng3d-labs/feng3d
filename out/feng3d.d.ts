@@ -19088,11 +19088,14 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
+    /**
+     * 轮子信息
+     */
     class WheelInfo {
         /**
          * Max travel distance of the suspension, in meters.
          */
-        maxSuspensionTravel: any;
+        maxSuspensionTravel: number;
         /**
          * Speed to apply to the wheel rotation when the wheel is sliding.
          */
@@ -19106,18 +19109,24 @@ declare namespace CANNON {
          * Connection point, defined locally in the chassis body frame.
          */
         chassisConnectionPointLocal: feng3d.Vector3;
+        private _chassisConnectionPointLocal;
         chassisConnectionPointWorld: feng3d.Vector3;
+        private _chassisConnectionPointWorld;
         directionLocal: feng3d.Vector3;
+        private _directionLocal;
         directionWorld: feng3d.Vector3;
+        private _directionWorld;
         axleLocal: feng3d.Vector3;
+        private _axleLocal;
         axleWorld: feng3d.Vector3;
+        private _axleWorld;
         suspensionRestLength: number;
         suspensionMaxLength: number;
         radius: number;
         suspensionStiffness: number;
         dampingCompression: number;
         dampingRelaxation: number;
-        frictionSlip: any;
+        frictionSlip: number;
         steering: number;
         /**
          * Rotation value, in radians.
@@ -19128,7 +19137,7 @@ declare namespace CANNON {
         maxSuspensionForce: number;
         engineForce: number;
         brake: number;
-        isFrontWheel: number;
+        isFrontWheel: boolean;
         clippedInvContactDotSuspension: number;
         suspensionRelativeVelocity: number;
         suspensionForce: number;
@@ -19145,32 +19154,6 @@ declare namespace CANNON {
          */
         worldTransform: Transform;
         isInContact: boolean;
-        slipInfo: number;
-        /**
-         *
-         * @param options
-         */
-        constructor(options?: {
-            maxSuspensionTravel?: number;
-            customSlidingRotationalSpeed?: number;
-            useCustomSlidingRotationalSpeed?: boolean;
-            chassisConnectionPointLocal?: feng3d.Vector3;
-            chassisConnectionPointWorld?: feng3d.Vector3;
-            directionLocal?: feng3d.Vector3;
-            directionWorld?: feng3d.Vector3;
-            axleLocal?: feng3d.Vector3;
-            axleWorld?: feng3d.Vector3;
-            suspensionRestLength?: number;
-            suspensionMaxLength?: number;
-            radius?: number;
-            suspensionStiffness?: number;
-            dampingCompression?: number;
-            dampingRelaxation?: number;
-            frictionSlip?: number;
-            rollInfluence?: number;
-            maxSuspensionForce?: number;
-            isFrontWheel?: number;
-        });
         updateWheel(chassis: Body): void;
     }
 }
@@ -19205,18 +19188,13 @@ declare namespace CANNON {
          *
          * @param options
          */
-        constructor(options?: {
-            chassisBody?: Body;
-            indexRightAxis?: number;
-            indexForwardAxis?: number;
-            indexUpAxis?: number;
-        });
+        constructor(chassisBody: Body, indexRightAxis?: number, indexForwardAxis?: number, indexUpAxis?: number);
         /**
          * Add a wheel. For information about the options, see WheelInfo.
          *
          * @param options
          */
-        addWheel(options?: {}): number;
+        addWheel(info: WheelInfo): number;
         /**
          * Set the steering value of a wheel.
          *
@@ -19285,7 +19263,7 @@ declare namespace CANNON {
         chassisBody: Body;
         constraints: HingeConstraint[];
         wheelAxes: feng3d.Vector3[];
-        wheelForces: any[];
+        wheelForces: number[];
         constructor(chassisBody: Body);
         /**
          * 添加轮子

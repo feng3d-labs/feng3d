@@ -42015,67 +42015,48 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
+    /**
+     * 轮子信息
+     */
     var WheelInfo = /** @class */ (function () {
-        /**
-         *
-         * @param options
-         */
-        function WheelInfo(options) {
-            if (options === void 0) { options = {}; }
-            options = CANNON.Utils.defaults(options, {
-                chassisConnectionPointLocal: new feng3d.Vector3(),
-                chassisConnectionPointWorld: new feng3d.Vector3(),
-                directionLocal: new feng3d.Vector3(),
-                directionWorld: new feng3d.Vector3(),
-                axleLocal: new feng3d.Vector3(),
-                axleWorld: new feng3d.Vector3(),
-                suspensionRestLength: 1,
-                suspensionMaxLength: 2,
-                radius: 1,
-                suspensionStiffness: 100,
-                dampingCompression: 10,
-                dampingRelaxation: 10,
-                frictionSlip: 10000,
-                steering: 0,
-                rotation: 0,
-                deltaRotation: 0,
-                rollInfluence: 0.01,
-                maxSuspensionForce: Number.MAX_VALUE,
-                isFrontWheel: true,
-                clippedInvContactDotSuspension: 1,
-                suspensionRelativeVelocity: 0,
-                suspensionForce: 0,
-                skidInfo: 0,
-                suspensionLength: 0,
-                maxSuspensionTravel: 1,
-                useCustomSlidingRotationalSpeed: false,
-                customSlidingRotationalSpeed: -0.1
-            });
-            this.maxSuspensionTravel = options.maxSuspensionTravel;
-            this.customSlidingRotationalSpeed = options.customSlidingRotationalSpeed;
-            this.useCustomSlidingRotationalSpeed = options.useCustomSlidingRotationalSpeed;
+        function WheelInfo() {
+            /**
+             * Max travel distance of the suspension, in meters.
+             */
+            this.maxSuspensionTravel = 1;
+            /**
+             * Speed to apply to the wheel rotation when the wheel is sliding.
+             */
+            this.customSlidingRotationalSpeed = -0.1;
+            /**
+             * If the customSlidingRotationalSpeed should be used.
+             */
+            this.useCustomSlidingRotationalSpeed = false;
             this.sliding = false;
-            this.chassisConnectionPointLocal = options.chassisConnectionPointLocal.clone();
-            this.chassisConnectionPointWorld = options.chassisConnectionPointWorld.clone();
-            this.directionLocal = options.directionLocal.clone();
-            this.directionWorld = options.directionWorld.clone();
-            this.axleLocal = options.axleLocal.clone();
-            this.axleWorld = options.axleWorld.clone();
-            this.suspensionRestLength = options.suspensionRestLength;
-            this.suspensionMaxLength = options.suspensionMaxLength;
-            this.radius = options.radius;
-            this.suspensionStiffness = options.suspensionStiffness;
-            this.dampingCompression = options.dampingCompression;
-            this.dampingRelaxation = options.dampingRelaxation;
-            this.frictionSlip = options.frictionSlip;
+            this._chassisConnectionPointLocal = new feng3d.Vector3();
+            this._chassisConnectionPointWorld = new feng3d.Vector3();
+            this._directionLocal = new feng3d.Vector3();
+            this._directionWorld = new feng3d.Vector3();
+            this._axleLocal = new feng3d.Vector3();
+            this._axleWorld = new feng3d.Vector3();
+            this.suspensionRestLength = 1;
+            this.suspensionMaxLength = 2;
+            this.radius = 1;
+            this.suspensionStiffness = 100;
+            this.dampingCompression = 10;
+            this.dampingRelaxation = 10;
+            this.frictionSlip = 10000;
             this.steering = 0;
+            /**
+             * Rotation value, in radians.
+             */
             this.rotation = 0;
             this.deltaRotation = 0;
-            this.rollInfluence = options.rollInfluence;
-            this.maxSuspensionForce = options.maxSuspensionForce;
+            this.rollInfluence = 0.01;
+            this.maxSuspensionForce = Number.MAX_VALUE;
             this.engineForce = 0;
             this.brake = 0;
-            this.isFrontWheel = options.isFrontWheel;
+            this.isFrontWheel = true;
             this.clippedInvContactDotSuspension = 1;
             this.suspensionRelativeVelocity = 0;
             this.suspensionForce = 0;
@@ -42083,16 +42064,85 @@ var CANNON;
             this.suspensionLength = 0;
             this.sideImpulse = 0;
             this.forwardImpulse = 0;
+            /**
+             * The result from raycasting
+             */
             this.raycastResult = new CANNON.RaycastResult();
+            /**
+             * Wheel world transform
+             */
             this.worldTransform = new CANNON.Transform();
             this.isInContact = false;
         }
+        Object.defineProperty(WheelInfo.prototype, "chassisConnectionPointLocal", {
+            /**
+             * Connection point, defined locally in the chassis body frame.
+             */
+            get: function () {
+                return this._chassisConnectionPointLocal;
+            },
+            set: function (v) {
+                this._chassisConnectionPointLocal.copy(v);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WheelInfo.prototype, "chassisConnectionPointWorld", {
+            get: function () {
+                return this._chassisConnectionPointWorld;
+            },
+            set: function (v) {
+                this._chassisConnectionPointWorld.copy(v);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WheelInfo.prototype, "directionLocal", {
+            get: function () {
+                return this._directionLocal;
+            },
+            set: function (v) {
+                this._directionLocal.copy(v);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WheelInfo.prototype, "directionWorld", {
+            get: function () {
+                return this._directionWorld;
+            },
+            set: function (v) {
+                this._directionWorld.copy(v);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WheelInfo.prototype, "axleLocal", {
+            get: function () {
+                return this._axleLocal;
+            },
+            set: function (v) {
+                this._axleLocal.copy(v);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WheelInfo.prototype, "axleWorld", {
+            get: function () {
+                return this._axleWorld;
+            },
+            set: function (v) {
+                this._axleWorld.copy(v);
+            },
+            enumerable: true,
+            configurable: true
+        });
         WheelInfo.prototype.updateWheel = function (chassis) {
             var raycastResult = this.raycastResult;
             if (this.isInContact) {
                 var project = raycastResult.hitNormalWorld.dot(raycastResult.directionWorld);
-                raycastResult.hitPointWorld.subTo(chassis.position, relpos);
-                chassis.getVelocityAtWorldPoint(relpos, chassis_velocity_at_contactPoint);
+                var relpos = raycastResult.hitPointWorld.subTo(chassis.position);
+                var chassis_velocity_at_contactPoint = chassis.getVelocityAtWorldPoint(relpos);
                 var projVel = raycastResult.hitNormalWorld.dot(chassis_velocity_at_contactPoint);
                 if (project >= -0.1) {
                     this.suspensionRelativeVelocity = 0.0;
@@ -42114,9 +42164,6 @@ var CANNON;
         return WheelInfo;
     }());
     CANNON.WheelInfo = WheelInfo;
-    var chassis_velocity_at_contactPoint = new feng3d.Vector3();
-    var relpos = new feng3d.Vector3();
-    var chassis_velocity_at_contactPoint = new feng3d.Vector3();
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -42126,15 +42173,17 @@ var CANNON;
          *
          * @param options
          */
-        function RaycastVehicle(options) {
-            if (options === void 0) { options = {}; }
-            this.chassisBody = options.chassisBody;
+        function RaycastVehicle(chassisBody, indexRightAxis, indexForwardAxis, indexUpAxis) {
+            if (indexRightAxis === void 0) { indexRightAxis = 1; }
+            if (indexForwardAxis === void 0) { indexForwardAxis = 0; }
+            if (indexUpAxis === void 0) { indexUpAxis = 1; }
+            this.chassisBody = chassisBody;
             this.wheelInfos = [];
             this.sliding = false;
             this.world = null;
-            this.indexRightAxis = typeof (options.indexRightAxis) !== 'undefined' ? options.indexRightAxis : 1;
-            this.indexForwardAxis = typeof (options.indexForwardAxis) !== 'undefined' ? options.indexForwardAxis : 0;
-            this.indexUpAxis = typeof (options.indexUpAxis) !== 'undefined' ? options.indexUpAxis : 2;
+            this.indexRightAxis = indexRightAxis;
+            this.indexForwardAxis = indexForwardAxis;
+            this.indexUpAxis = indexUpAxis;
         }
         RaycastVehicle.prototype.preStepCallback = function () {
             this.updateVehicle(this.world.dt);
@@ -42144,9 +42193,7 @@ var CANNON;
          *
          * @param options
          */
-        RaycastVehicle.prototype.addWheel = function (options) {
-            if (options === void 0) { options = {}; }
-            var info = new CANNON.WheelInfo(options);
+        RaycastVehicle.prototype.addWheel = function (info) {
             var index = this.wheelInfos.length;
             this.wheelInfos.push(info);
             return index;
@@ -42460,15 +42507,11 @@ var CANNON;
                 var wheel = wheelInfos[i];
                 var groundObject = wheel.raycastResult.body;
                 var rollingFriction = 0;
-                wheel.slipInfo = 1;
                 if (groundObject) {
                     var defaultRollingFrictionImpulse = 0;
                     var maxImpulse = wheel.brake ? wheel.brake : defaultRollingFrictionImpulse;
                     rollingFriction = calcRollingFriction(chassisBody, groundObject, wheel.raycastResult.hitPointWorld, forwardWS[i], maxImpulse);
                     rollingFriction += wheel.engineForce * timeStep;
-                    // rollingFriction = 0;
-                    var factor = maxImpulse / rollingFriction;
-                    wheel.slipInfo *= factor;
                 }
                 wheel.forwardImpulse = 0;
                 wheel.skidInfo = 1;

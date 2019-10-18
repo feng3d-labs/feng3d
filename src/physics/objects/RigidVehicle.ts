@@ -9,7 +9,7 @@ namespace CANNON
         chassisBody: Body;
         constraints: HingeConstraint[];
         wheelAxes: feng3d.Vector3[];
-        wheelForces: any[];
+        wheelForces: number[];
 
         constructor(chassisBody: Body)
         {
