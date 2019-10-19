@@ -200,10 +200,13 @@ namespace CANNON
         }
     }
 
+    /**
+     * 八叉树
+     */
     export class Octree extends OctreeNode
     {
         /**
-         * Maximum subdivision depth
+         * 最大细分深度
          */
         maxDepth: number;
 

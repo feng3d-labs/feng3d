@@ -63,35 +63,27 @@ namespace CANNON
          *     heightfieldBody.addShape(heightfieldShape);
          *     world.addBody(heightfieldBody);
          */
-        constructor(data: number[][], options: { elementSize?: number, minValue?: number, maxValue?: number } = {})
+        constructor(data: number[][], elementSize = 1, minValue = NaN, maxValue = NaN)
         {
             super();
-            options = Utils.defaults(options, {
-                maxValue: null,
-                minValue: null,
-                elementSize: 1
-            });
-
             this.data = data;
 
-            this.maxValue = options.maxValue;
+            this.maxValue = maxValue;
 
-            this.minValue = options.minValue;
+            this.minValue = minValue;
 
-            this.elementSize = options.elementSize;
+            this.elementSize = elementSize;
 
-            if (options.minValue === null)
+            if (isNaN(minValue))
             {
                 this.updateMinValue();
             }
-            if (options.maxValue === null)
+            if (isNaN(maxValue))
             {
                 this.updateMaxValue();
             }
 
             this.cacheEnabled = true;
-
-            super();
 
             this.updateBoundingSphereRadius();
 

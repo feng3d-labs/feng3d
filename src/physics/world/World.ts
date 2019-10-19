@@ -440,8 +440,7 @@ namespace CANNON
                 DYNAMIC = Body.DYNAMIC,
                 profilingStart,
                 constraints = this.constraints,
-                frictionEquationPool = World_step_frictionEquationPool,
-                gnorm = gravity.length,
+                frictionEquationPool: FrictionEquation[] = [],
                 gx = gravity.x,
                 gy = gravity.y,
                 gz = gravity.z,
@@ -501,7 +500,7 @@ namespace CANNON
 
             // Generate contacts
             if (doProfiling) { profilingStart = performance.now(); }
-            var oldcontacts = World_step_oldContacts;
+            var oldcontacts: ContactEquation[] = [];
             var NoldContacts = contacts.length;
 
             for (i = 0; i !== NoldContacts; i++)
@@ -887,7 +886,4 @@ namespace CANNON
             return Date.now() - nowOffset;
         };
     }
-
-    var World_step_oldContacts = [];// Pools for unused objects
-    var World_step_frictionEquationPool = [];
 }

@@ -5,21 +5,17 @@ namespace CANNON
         /**
          * Internal storage of pooled contact points.
          */
-        contactPointPool: any[];
-        frictionEquationPool: any[];
-        result: any[];
-        frictionResult: any[];
+        contactPointPool: ContactEquation[];
+        frictionEquationPool: FrictionEquation[];
+        result: ContactEquation[];
+        frictionResult: FrictionEquation[];
         world: World;
         currentContactMaterial: any;
         enableFrictionReduction: boolean;
 
         /**
-         * Helper class for the World. Generates ContactEquations.
-         * @class Narrowphase
-         * @constructor
-         * @todo Sphere-ConvexPolyhedron contacts
-         * @todo Contact reduction
-         * @todo  should move methods to prototype
+         * 
+         * @param world 
          */
         constructor(world: World)
         {
@@ -159,16 +155,17 @@ namespace CANNON
             var f1 = this.frictionResult[this.frictionResult.length - 2];
             var f2 = this.frictionResult[this.frictionResult.length - 1];
 
-            averageNormal.setZero();
-            averageContactPointA.setZero();
-            averageContactPointB.setZero();
+
+            var averageNormal = new feng3d.Vector3();
+            var averageContactPointA = new feng3d.Vector3();
+            var averageContactPointB = new feng3d.Vector3();
 
             var bodyA = c.bi;
             var bodyB = c.bj;
             for (var i = 0; i !== numContacts; i++)
             {
                 c = this.result[this.result.length - 1 - i];
-                if (c.bodyA !== bodyA)
+                if (c.bi !== bodyA)
                 {
                     averageNormal.addTo(c.ni, averageNormal);
                     averageContactPointA.addTo(c.ri, averageContactPointA);
@@ -200,7 +197,7 @@ namespace CANNON
          * @param {array} result Array to store generated contacts
          * @param {array} oldcontacts Optional. Array of reusable contact objects
          */
-        getContacts(p1: Body[], p2: Body[], world: World, result: any[], oldcontacts: any[], frictionResult: any[], frictionPool: any[])
+        getContacts(p1: Body[], p2: Body[], world: World, result: ContactEquation[], oldcontacts: ContactEquation[], frictionResult: FrictionEquation[], frictionPool: FrictionEquation[])
         {
             // Save old contact objects
             this.contactPointPool = oldcontacts;
@@ -208,14 +205,13 @@ namespace CANNON
             this.result = result;
             this.frictionResult = frictionResult;
 
-            var qi = tmpQuat1;
-            var qj = tmpQuat2;
-            var xi = tmpVec1;
-            var xj = tmpVec2;
+            var qi = new feng3d.Quaternion();
+            var qj = new feng3d.Quaternion();
+            var xi = new feng3d.Vector3();
+            var xj = new feng3d.Vector3();
 
             for (var k = 0, N = p1.length; k !== N; k++)
             {
-
                 // Get current collision bodies
                 var bi = p1[k],
                     bj = p2[k];
@@ -378,13 +374,14 @@ namespace CANNON
             var v = new feng3d.Vector3();
             var planePos = planeTransform.position;
 
-            var normal = planeTrimesh_normal;
-            normal.init(0, 1, 0);
+            var relpos = new feng3d.Vector3();
+            var projected = new feng3d.Vector3();
+
+            var normal = new feng3d.Vector3(0, 1, 0);
             planeTransform.quaternion.rotatePoint(normal, normal); // Turn normal according to plane
 
             for (var i = 0; i < trimeshShape.vertices.length / 3; i++)
             {
-
                 // Get world vertex from trimesh
                 trimeshShape.getVertex(i, v);
 
@@ -394,7 +391,6 @@ namespace CANNON
                 trimeshTransform.pointToWorldFrame(v2, v);
 
                 // Check plane side
-                var relpos = planeTrimesh_relpos;
                 v.subTo(planePos, relpos);
                 var dot = normal.dot(relpos);
 
@@ -410,7 +406,6 @@ namespace CANNON
                     r.ni.copy(normal); // Contact normal is the plane normal
 
                     // Get vertex position projected on plane
-                    var projected = planeTrimesh_projected;
                     normal.scaleNumberTo(relpos.dot(normal), projected);
                     v.subTo(projected, projected);
 
@@ -442,16 +437,16 @@ namespace CANNON
         {
             var spherePos = sphereTransform.position;
             //
-            var edgeVertexA = sphereTrimesh_edgeVertexA;
-            var edgeVertexB = sphereTrimesh_edgeVertexB;
-            var edgeVector = sphereTrimesh_edgeVector;
-            var edgeVectorUnit = sphereTrimesh_edgeVectorUnit;
-            var localSpherePos = sphereTrimesh_localSpherePos;
-            var tmp = sphereTrimesh_tmp;
-            var localSphereAABB = sphereTrimesh_localSphereAABB;
-            var v2 = sphereTrimesh_v2;
-            var relpos = sphereTrimesh_relpos;
-            var triangles = sphereTrimesh_triangles;
+            var edgeVertexA = new feng3d.Vector3();
+            var edgeVertexB = new feng3d.Vector3();
+            var edgeVector = new feng3d.Vector3();
+            var edgeVectorUnit = new feng3d.Vector3();
+            var localSpherePos = new feng3d.Vector3();
+            var tmp = new feng3d.Vector3();
+            var localSphereAABB = new feng3d.AABB();
+            var v2 = new feng3d.Vector3();
+            var relpos = new feng3d.Vector3();
+            var triangles: number[] = [];
 
             // Convert sphere position to local in the trimesh
             trimeshTransform.pointToLocalFrame(spherePos, localSpherePos);
@@ -470,10 +465,9 @@ namespace CANNON
             );
 
             trimeshShape.getTrianglesInAABB(localSphereAABB, triangles);
-            //for (var i = 0; i < trimeshShape.indices.length / 3; i++) triangles.push(i); // All
 
             // Vertices
-            var v = sphereTrimesh_v;
+            var v = new feng3d.Vector3();
             var radiusSquared = sphereShape.radius * sphereShape.radius;
             for (var i = 0; i < triangles.length; i++)
             {
@@ -487,7 +481,6 @@ namespace CANNON
 
                     if (relpos.lengthSquared <= radiusSquared)
                     {
-
                         // Safe up
                         v2.copy(v);
                         trimeshTransform.pointToWorldFrame(v2, v);
@@ -538,7 +531,6 @@ namespace CANNON
 
                     if (positionAlongEdgeA > 0 && positionAlongEdgeB < 0)
                     {
-
                         // Now check the orthogonal distance from edge to sphere center
                         localSpherePos.subTo(edgeVertexA, tmp);
 
@@ -553,7 +545,6 @@ namespace CANNON
                         var dist = tmp.distance(localSpherePos);
                         if (dist < sphereShape.radius)
                         {
-
                             if (justTest)
                             {
                                 return true;
@@ -579,10 +570,11 @@ namespace CANNON
             }
 
             // Triangle faces
-            var va = sphereTrimesh_va;
-            var vb = sphereTrimesh_vb;
-            var vc = sphereTrimesh_vc;
-            var normal = sphereTrimesh_normal;
+            var va = new feng3d.Vector3();
+            var vb = new feng3d.Vector3();
+            var vc = new feng3d.Vector3();
+
+            var normal = new feng3d.Vector3();
             for (var i = 0, N = triangles.length; i !== N; i++)
             {
                 trimeshShape.getTriangleVertices(triangles[i], va, vb, vc);
@@ -637,18 +629,16 @@ namespace CANNON
             r.ni.scaleNumberTo(si.radius, r.ri);
 
             // Project down sphere on plane
-            xi.subTo(xj, point_on_plane_to_sphere);
-            r.ni.scaleNumberTo(r.ni.dot(point_on_plane_to_sphere), plane_to_sphere_ortho);
+            var point_on_plane_to_sphere = xi.subTo(xj);
+            var plane_to_sphere_ortho = r.ni.scaleNumberTo(r.ni.dot(point_on_plane_to_sphere));
             point_on_plane_to_sphere.subTo(plane_to_sphere_ortho, r.rj); // The sphere position projected to plane
 
             if (-point_on_plane_to_sphere.dot(r.ni) <= si.radius)
             {
-
                 if (justTest)
                 {
                     return true;
                 }
-
                 // Make it relative to the body
                 var ri = r.ri;
                 var rj = r.rj;
@@ -899,11 +889,6 @@ namespace CANNON
             var faces = sj.faces;
             var verts = sj.vertices;
             var R = si.radius;
-            var penetrating_sides = [];
-
-            // if(convex_to_sphere.norm2() > si.boundingSphereRadius + sj.boundingSphereRadius){
-            //     return;
-            // }
 
             // Check corners
             for (var i = 0; i !== verts.length; i++)
@@ -1125,7 +1110,6 @@ namespace CANNON
             var relpos = planeConvex_relpos;
             for (var i = 0; i !== convexShape.vertices.length; i++)
             {
-
                 // Get world convex vertex
                 worldVertex.copy(convexShape.vertices[i]);
                 convexQuat.rotatePoint(worldVertex, worldVertex);
@@ -1229,86 +1213,6 @@ namespace CANNON
             }
         }
 
-        /**
-         * @method convexTrimesh
-         * @param  {Array}      result
-         * @param  {Shape}      si
-         * @param  {Shape}      sj
-         * @param  {Vector3}       xi
-         * @param  {Vector3}       xj
-         * @param  {Quaternion} qi
-         * @param  {Quaternion} qj
-         * @param  {Body}       bi
-         * @param  {Body}       bj
-         */
-        // Narrowphase.prototype[ShapeType.CONVEXPOLYHEDRON | ShapeType.TRIMESH] =
-        // Narrowphase.prototype.convexTrimesh = function(si,sj,xi,xj,qi,qj,bi,bj,rsi,rsj,faceListA,faceListB){
-        //     var sepAxis = convexConvex_sepAxis;
-
-        //     if(xi.distanceTo(xj) > si.boundingSphereRadius + sj.boundingSphereRadius){
-        //         return;
-        //     }
-
-        //     // Construct a temp hull for each triangle
-        //     var hullB = new ConvexPolyhedron();
-
-        //     hullB.faces = [[0,1,2]];
-        //     var va = new Vec3();
-        //     var vb = new Vec3();
-        //     var vc = new Vec3();
-        //     hullB.vertices = [
-        //         va,
-        //         vb,
-        //         vc
-        //     ];
-
-        //     for (var i = 0; i < sj.indices.length / 3; i++) {
-
-        //         var triangleNormal = new Vec3();
-        //         sj.getNormal(i, triangleNormal);
-        //         hullB.faceNormals = [triangleNormal];
-
-        //         sj.getTriangleVertices(i, va, vb, vc);
-
-        //         var d = si.testSepAxis(triangleNormal, hullB, xi, qi, xj, qj);
-        //         if(!d){
-        //             triangleNormal.scale(-1, triangleNormal);
-        //             d = si.testSepAxis(triangleNormal, hullB, xi, qi, xj, qj);
-
-        //             if(!d){
-        //                 continue;
-        //             }
-        //         }
-
-        //         var res = [];
-        //         var q = convexConvex_q;
-        //         si.clipAgainstHull(xi,qi,hullB,xj,qj,triangleNormal,-100,100,res);
-        //         for(var j = 0; j !== res.length; j++){
-        //             var r = this.createContactEquation(bi,bj,si,sj,rsi,rsj),
-        //                 ri = r.ri,
-        //                 rj = r.rj;
-        //             r.ni.copy(triangleNormal);
-        //             r.ni.negate(r.ni);
-        //             res[j].normal.negate(q);
-        //             q.mult(res[j].depth, q);
-        //             res[j].point.addTo(q, ri);
-        //             rj.copy(res[j].point);
-
-        //             // Contact points are in world coordinates. Transform back to relative
-        //             ri.subTo(xi,ri);
-        //             rj.subTo(xj,rj);
-
-        //             // Make relative to bodies
-        //             ri.addTo(xi, ri);
-        //             ri.subTo(bi.position, ri);
-        //             rj.addTo(xj, rj);
-        //             rj.subTo(bj.position, rj);
-
-        //             result.push(r);
-        //         }
-        //     }
-        // };
-
         planeParticle(sj: Plane, si: Particle, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             var normal = particlePlane_normal;
@@ -1319,7 +1223,6 @@ namespace CANNON
             var dot = normal.dot(relpos);
             if (dot <= 0.0)
             {
-
                 if (justTest)
                 {
                     return true;
@@ -1388,7 +1291,6 @@ namespace CANNON
 
             if (sj.pointIsInside(local))
             {
-
                 if (sj.worldVerticesNeedsUpdate)
                 {
                     sj.computeWorldVertices(xj, qj);
@@ -1401,7 +1303,6 @@ namespace CANNON
                 // For each world polygon in the polyhedra
                 for (var i = 0, nfaces = sj.faces.length; i !== nfaces; i++)
                 {
-
                     // Construct world face vertices
                     var verts = [sj.worldVertices[sj.faces[i][0]]];
                     var normal = sj.worldFaceNormals[i];
@@ -1411,7 +1312,6 @@ namespace CANNON
                     var penetration = -normal.dot(convexParticle_vertexToParticle);
                     if (minPenetration === null || Math.abs(penetration) < Math.abs(minPenetration))
                     {
-
                         if (justTest)
                         {
                             return true;
@@ -1434,10 +1334,7 @@ namespace CANNON
                     worldPenetrationVec.addTo(xi, worldPenetrationVec);
                     worldPenetrationVec.subTo(xj, worldPenetrationVec);
                     r.rj.copy(worldPenetrationVec);
-                    //var projectedToFace = xi.subTo(xj).addTo(worldPenetrationVec);
-                    //projectedToFace.copy(r.rj);
 
-                    //qj.vmult(r.rj,r.rj);
                     penetratedFaceNormal.negateTo(r.ni); // Contact normal
                     r.ri.init(0, 0, 0); // Center of particle
 
@@ -1558,7 +1455,7 @@ namespace CANNON
                     }
                 }
             }
-        };
+        }
 
         sphereHeightfield(
             sphereShape: Sphere,
@@ -1658,89 +1555,31 @@ namespace CANNON
                     {
                         return;
                     }
-                    /*
-                    // Skip all but 1
-                    for (var k = 0; k < numContacts - 1; k++) {
-                        result.pop();
-                    }
-                    */
                 }
             }
         }
-
     }
-
-    var averageNormal = new feng3d.Vector3();
-    var averageContactPointA = new feng3d.Vector3();
-    var averageContactPointB = new feng3d.Vector3();
-
-    var tmpVec1 = new feng3d.Vector3();
-    var tmpVec2 = new feng3d.Vector3();
-    var tmpQuat1 = new feng3d.Quaternion();
-    var tmpQuat2 = new feng3d.Quaternion();
-
-    var numWarnings = 0;
-    var maxWarnings = 10;
-
-    function warn(msg)
-    {
-        if (numWarnings > maxWarnings)
-        {
-            return;
-        }
-
-        numWarnings++;
-
-        console.warn(msg);
-    }
-
-    var planeTrimesh_normal = new feng3d.Vector3();
-    var planeTrimesh_relpos = new feng3d.Vector3();
-    var planeTrimesh_projected = new feng3d.Vector3();
-
-    var sphereTrimesh_normal = new feng3d.Vector3();
-    var sphereTrimesh_relpos = new feng3d.Vector3();
-    var sphereTrimesh_projected = new feng3d.Vector3();
-    var sphereTrimesh_v = new feng3d.Vector3();
-    var sphereTrimesh_v2 = new feng3d.Vector3();
-    var sphereTrimesh_edgeVertexA = new feng3d.Vector3();
-    var sphereTrimesh_edgeVertexB = new feng3d.Vector3();
-    var sphereTrimesh_edgeVector = new feng3d.Vector3();
-    var sphereTrimesh_edgeVectorUnit = new feng3d.Vector3();
-    var sphereTrimesh_localSpherePos = new feng3d.Vector3();
-    var sphereTrimesh_tmp = new feng3d.Vector3();
-    var sphereTrimesh_va = new feng3d.Vector3();
-    var sphereTrimesh_vb = new feng3d.Vector3();
-    var sphereTrimesh_vc = new feng3d.Vector3();
-    var sphereTrimesh_localSphereAABB = new feng3d.AABB();
-    var sphereTrimesh_triangles = [];
-
-    var point_on_plane_to_sphere = new feng3d.Vector3();
-    var plane_to_sphere_ortho = new feng3d.Vector3();
 
     // See http://bulletphysics.com/Bullet/BulletFull/SphereTriangleDetector_8cpp_source.html
-    var pointInPolygon_edge = new feng3d.Vector3();
-    var pointInPolygon_edge_x_normal = new feng3d.Vector3();
-    var pointInPolygon_vtp = new feng3d.Vector3();
-    function pointInPolygon(verts: feng3d.Vector3[], normal, p)
+    function pointInPolygon(verts: feng3d.Vector3[], normal: feng3d.Vector3, p: feng3d.Vector3)
     {
         var positiveResult = null;
         var N = verts.length;
+        var edge = new feng3d.Vector3();
+        var edge_x_normal = new feng3d.Vector3();
+        var vertex_to_p = new feng3d.Vector3();
+
         for (var i = 0; i !== N; i++)
         {
             var v = verts[i];
 
             // Get edge to the next vertex
-            var edge = pointInPolygon_edge;
             verts[(i + 1) % (N)].subTo(v, edge);
 
             // Get cross product between polygon normal and the edge
-            var edge_x_normal = pointInPolygon_edge_x_normal;
-            //var edge_x_normal = new Vec3();
             edge.crossTo(normal, edge_x_normal);
 
             // Get vector between point and current vertex
-            var vertex_to_p = pointInPolygon_vtp;
             p.subTo(v, vertex_to_p);
 
             // This dot product determines which side of the edge the point is
