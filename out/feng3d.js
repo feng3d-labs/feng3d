@@ -43512,124 +43512,6 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
-    var SplitSolver = /** @class */ (function (_super) {
-        __extends(SplitSolver, _super);
-        /**
-         * Splits the equations into islands and solves them independently. Can improve performance.
-         *
-         * @param subsolver
-         */
-        function SplitSolver(subsolver) {
-            var _this = _super.call(this) || this;
-            _this.iterations = 10;
-            _this.tolerance = 1e-7;
-            _this.subsolver = subsolver;
-            _this.nodes = [];
-            _this.nodePool = [];
-            // Create needed nodes, reuse if possible
-            while (_this.nodePool.length < 128) {
-                _this.nodePool.push(_this.createNode());
-            }
-            return _this;
-        }
-        SplitSolver.prototype.createNode = function () {
-            return { body: null, children: [], eqs: [], visited: false };
-        };
-        /**
-         * Solve the subsystems
-         * @method solve
-         * @param  {Number} dt
-         * @param  {World} world
-         */
-        SplitSolver.prototype.solve = function (dt, world) {
-            var nodes = [], nodePool = this.nodePool, bodies = world.bodies, equations = this.equations, Neq = equations.length, Nbodies = bodies.length, subsolver = this.subsolver;
-            // Create needed nodes, reuse if possible
-            while (nodePool.length < Nbodies) {
-                nodePool.push(this.createNode());
-            }
-            nodes.length = Nbodies;
-            for (var i = 0; i < Nbodies; i++) {
-                nodes[i] = nodePool[i];
-            }
-            // Reset node values
-            for (var i = 0; i !== Nbodies; i++) {
-                var node = nodes[i];
-                node.body = bodies[i];
-                node.children.length = 0;
-                node.eqs.length = 0;
-                node.visited = false;
-            }
-            for (var k = 0; k !== Neq; k++) {
-                var eq = equations[k], i0 = bodies.indexOf(eq.bi), j = bodies.indexOf(eq.bj), ni = nodes[i0], nj = nodes[j];
-                ni.children.push(nj);
-                ni.eqs.push(eq);
-                nj.children.push(ni);
-                nj.eqs.push(eq);
-            }
-            var child, n = 0, eqs = [];
-            subsolver.tolerance = this.tolerance;
-            subsolver.iterations = this.iterations;
-            var dummyWorld = { bodies: [] };
-            while ((child = getUnvisitedNode(nodes))) {
-                eqs.length = 0;
-                dummyWorld.bodies.length = 0;
-                bfs(child, visitFunc, dummyWorld.bodies, eqs);
-                var Neqs = eqs.length;
-                eqs = eqs.sort(sortById);
-                for (var i = 0; i !== Neqs; i++) {
-                    subsolver.addEquation(eqs[i]);
-                }
-                var iter = subsolver.solve(dt, dummyWorld);
-                subsolver.removeAllEquations();
-                n++;
-            }
-            return n;
-        };
-        return SplitSolver;
-    }(CANNON.Solver));
-    CANNON.SplitSolver = SplitSolver;
-    function getUnvisitedNode(nodes) {
-        var Nnodes = nodes.length;
-        for (var i = 0; i !== Nnodes; i++) {
-            var node = nodes[i];
-            if (!node.visited && !(node.body.type & CANNON.Body.STATIC)) {
-                return node;
-            }
-        }
-        return false;
-    }
-    var queue = [];
-    function bfs(root, visitFunc, bds, eqs) {
-        queue.push(root);
-        root.visited = true;
-        visitFunc(root, bds, eqs);
-        while (queue.length) {
-            var node = queue.pop();
-            // Loop over unvisited child nodes
-            var child;
-            while ((child = getUnvisitedNode(node.children))) {
-                child.visited = true;
-                visitFunc(child, bds, eqs);
-                queue.push(child);
-            }
-        }
-    }
-    function visitFunc(node, bds, eqs) {
-        bds.push(node.body);
-        var Neqs = node.eqs.length;
-        for (var i = 0; i !== Neqs; i++) {
-            var eq = node.eqs[i];
-            if (eqs.indexOf(eq) === -1) {
-                eqs.push(eq);
-            }
-        }
-    }
-    function sortById(a, b) {
-        return b.id - a.id;
-    }
-})(CANNON || (CANNON = {}));
-var CANNON;
-(function (CANNON) {
     var World = /** @class */ (function (_super) {
         __extends(World, _super);
         /**
@@ -45886,9 +45768,6 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-console.log("feng3d-0.1.3");
-console.log("feng3d-0.1.3");
-console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

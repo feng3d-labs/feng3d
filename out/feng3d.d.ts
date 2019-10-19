@@ -19562,34 +19562,6 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    class SplitSolver extends Solver {
-        iterations: number;
-        tolerance: number;
-        subsolver: SplitSolver;
-        nodes: any[];
-        nodePool: any[];
-        /**
-         * Splits the equations into islands and solves them independently. Can improve performance.
-         *
-         * @param subsolver
-         */
-        constructor(subsolver: SplitSolver);
-        createNode(): {
-            body: any;
-            children: any[];
-            eqs: any[];
-            visited: boolean;
-        };
-        /**
-         * Solve the subsystems
-         * @method solve
-         * @param  {Number} dt
-         * @param  {World} world
-         */
-        solve(dt: number, world: World): number;
-    }
-}
-declare namespace CANNON {
     interface WorldEventMap {
         /**
          * 添加物体

@@ -13,9 +13,8 @@ namespace CANNON
         aabb: feng3d.AABB;
         /**
          * Contained data at the current node level.
-         * @property {Array} data
          */
-        data: any[];
+        data: number[];
 
         /**
          * Children to this node
@@ -27,10 +26,10 @@ namespace CANNON
          * 
          * @param options 
          */
-        constructor(options: { root?: Octree, aabb?: feng3d.AABB } = {})
+        constructor(root: Octree = null, aabb = new feng3d.AABB())
         {
-            this.root = options.root || null;
-            this.aabb = options.aabb ? options.aabb.clone() : new feng3d.AABB();
+            this.root = root;
+            this.aabb = aabb.clone();
             this.data = [];
             this.children = [];
         }
@@ -47,7 +46,7 @@ namespace CANNON
          * @param elementData
          * @return True if successful, otherwise false
          */
-        insert(aabb: feng3d.AABB, elementData: any, level = 0)
+        insert(aabb: feng3d.AABB, elementData: number, level = 0)
         {
             var nodeData = this.data;
 
@@ -103,14 +102,14 @@ namespace CANNON
             var children = this.children;
 
             children.push(
-                new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 0, 0)) }),
-                new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 0, 0)) }),
-                new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 1, 0)) }),
-                new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 1, 1)) }),
-                new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 1, 1)) }),
-                new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 0, 1)) }),
-                new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 0, 1)) }),
-                new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 1, 0)) })
+                new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(0, 0, 0))),
+                new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(1, 0, 0))),
+                new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(1, 1, 0))),
+                new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(1, 1, 1))),
+                new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(0, 1, 1))),
+                new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(0, 0, 1))),
+                new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(1, 0, 1))),
+                new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(0, 1, 0)))
             );
 
             var halfDiagonal = new feng3d.Vector3();
@@ -148,25 +147,6 @@ namespace CANNON
          */
         aabbQuery(aabb: feng3d.AABB, result: number[])
         {
-            var nodeData = this.data;
-
-            // abort if the range does not intersect this node
-            // if (!this.aabb.overlaps(aabb)){
-            //     return result;
-            // }
-
-            // Add objects at this level
-            // Array.prototype.push.apply(result, nodeData);
-
-            // Add child data
-            // @todo unwrap recursion into a queue / loop, that's faster in JS
-            var children = this.children;
-
-
-            // for (var i = 0, N = this.children.length; i !== N; i++) {
-            //     children[i].aabbQuery(aabb, result);
-            // }
-
             var queue = [this];
             while (queue.length)
             {
@@ -228,19 +208,14 @@ namespace CANNON
         maxDepth: number;
 
         /**
-         * @class Octree
-         * @param {AABB} aabb The total AABB of the tree
-         * @param {object} [options]
-         * @param {number} [options.maxDepth=8]
-         * @extends OctreeNode
+         * 
+         * @param aabb 
+         * @param maxDepth 
          */
-        constructor(aabb?: feng3d.AABB, options: { root?: any, aabb?: feng3d.AABB, maxDepth?: number } = {})
+        constructor(aabb: feng3d.AABB = null, maxDepth = 8)
         {
-            super(options);
-            options.root = null;
-            options.aabb = aabb;
-
-            this.maxDepth = typeof (options.maxDepth) !== 'undefined' ? options.maxDepth : 8;
+            super(null, aabb);
+            this.maxDepth = maxDepth;
         }
     }
 }
