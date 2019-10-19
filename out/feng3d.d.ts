@@ -17442,17 +17442,6 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    class Utils {
-        /**
-         * Extend an options object with default values.
-         * @param  options The options object. May be falsy: in this case, a new object is created and returned.
-         * @param  defaults An object containing default values.
-         * @return The modified options object.
-         */
-        static defaults(options: Object, defaults: Object): Object;
-    }
-}
-declare namespace CANNON {
     /**
      * 约束
      */
@@ -17988,11 +17977,7 @@ declare namespace CANNON {
          *     heightfieldBody.addShape(heightfieldShape);
          *     world.addBody(heightfieldBody);
          */
-        constructor(data: number[][], options?: {
-            elementSize?: number;
-            minValue?: number;
-            maxValue?: number;
-        });
+        constructor(data: number[][], elementSize?: number, minValue?: number, maxValue?: number);
         /**
          * 更新
          */
@@ -18370,9 +18355,8 @@ declare namespace CANNON {
         aabb: feng3d.AABB;
         /**
          * Contained data at the current node level.
-         * @property {Array} data
          */
-        data: any[];
+        data: number[];
         /**
          * Children to this node
          */
@@ -18382,10 +18366,7 @@ declare namespace CANNON {
          *
          * @param options
          */
-        constructor(options?: {
-            root?: Octree;
-            aabb?: feng3d.AABB;
-        });
+        constructor(root?: Octree, aabb?: feng3d.AABB);
         reset(aabb?: feng3d.AABB, options?: any): void;
         /**
          * Insert data into this node
@@ -18394,7 +18375,7 @@ declare namespace CANNON {
          * @param elementData
          * @return True if successful, otherwise false
          */
-        insert(aabb: feng3d.AABB, elementData: any, level?: number): boolean;
+        insert(aabb: feng3d.AABB, elementData: number, level?: number): boolean;
         /**
          * Create 8 equally sized children nodes and put them in the .children array.
          */
@@ -18418,23 +18399,20 @@ declare namespace CANNON {
         rayQuery(ray: Ray, treeTransform: Transform, result: number[]): number[];
         removeEmptyNodes(): void;
     }
+    /**
+     * 八叉树
+     */
     class Octree extends OctreeNode {
         /**
-         * Maximum subdivision depth
+         * 最大细分深度
          */
         maxDepth: number;
         /**
-         * @class Octree
-         * @param {AABB} aabb The total AABB of the tree
-         * @param {object} [options]
-         * @param {number} [options.maxDepth=8]
-         * @extends OctreeNode
+         *
+         * @param aabb
+         * @param maxDepth
          */
-        constructor(aabb?: feng3d.AABB, options?: {
-            root?: any;
-            aabb?: feng3d.AABB;
-            maxDepth?: number;
-        });
+        constructor(aabb?: feng3d.AABB, maxDepth?: number);
     }
 }
 declare namespace CANNON {
@@ -19791,20 +19769,16 @@ declare namespace CANNON {
         /**
          * Internal storage of pooled contact points.
          */
-        contactPointPool: any[];
-        frictionEquationPool: any[];
-        result: any[];
-        frictionResult: any[];
+        contactPointPool: ContactEquation[];
+        frictionEquationPool: FrictionEquation[];
+        result: ContactEquation[];
+        frictionResult: FrictionEquation[];
         world: World;
         currentContactMaterial: any;
         enableFrictionReduction: boolean;
         /**
-         * Helper class for the World. Generates ContactEquations.
-         * @class Narrowphase
-         * @constructor
-         * @todo Sphere-ConvexPolyhedron contacts
-         * @todo Contact reduction
-         * @todo  should move methods to prototype
+         *
+         * @param world
          */
         constructor(world: World);
         /**
@@ -19829,7 +19803,7 @@ declare namespace CANNON {
          * @param {array} result Array to store generated contacts
          * @param {array} oldcontacts Optional. Array of reusable contact objects
          */
-        getContacts(p1: Body[], p2: Body[], world: World, result: any[], oldcontacts: any[], frictionResult: any[], frictionPool: any[]): void;
+        getContacts(p1: Body[], p2: Body[], world: World, result: ContactEquation[], oldcontacts: ContactEquation[], frictionResult: FrictionEquation[], frictionPool: FrictionEquation[]): void;
         boxBox(si: Box, sj: Box, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         boxConvex(si: Box, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         boxParticle(si: Box, sj: Particle, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
@@ -19853,18 +19827,6 @@ declare namespace CANNON {
         planeBox(si: Plane, sj: Box, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         planeConvex(planeShape: Plane, convexShape: ConvexPolyhedron, planeTransform: Transform, convexTransform: Transform, planeBody: Body, convexBody: Body, si: Shape, sj: Shape, justTest: boolean): boolean;
         convexConvex(si: ConvexPolyhedron, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean, faceListA?: any[], faceListB?: any[]): boolean;
-        /**
-         * @method convexTrimesh
-         * @param  {Array}      result
-         * @param  {Shape}      si
-         * @param  {Shape}      sj
-         * @param  {Vector3}       xi
-         * @param  {Vector3}       xj
-         * @param  {Quaternion} qi
-         * @param  {Quaternion} qj
-         * @param  {Body}       bi
-         * @param  {Body}       bj
-         */
         planeParticle(sj: Plane, si: Particle, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         sphereParticle(sj: Shape, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         convexParticle(sj: ConvexPolyhedron, si: Particle, transformi: Transform, transformj: Transform, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;

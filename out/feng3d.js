@@ -38349,30 +38349,6 @@ var CANNON;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
-    var Utils = /** @class */ (function () {
-        function Utils() {
-        }
-        /**
-         * Extend an options object with default values.
-         * @param  options The options object. May be falsy: in this case, a new object is created and returned.
-         * @param  defaults An object containing default values.
-         * @return The modified options object.
-         */
-        Utils.defaults = function (options, defaults) {
-            options = options || {};
-            for (var key in defaults) {
-                if (!(key in options)) {
-                    options[key] = defaults[key];
-                }
-            }
-            return options;
-        };
-        return Utils;
-    }());
-    CANNON.Utils = Utils;
-})(CANNON || (CANNON = {}));
-var CANNON;
-(function (CANNON) {
     /**
      * 约束
      */
@@ -39540,29 +39516,25 @@ var CANNON;
          *     heightfieldBody.addShape(heightfieldShape);
          *     world.addBody(heightfieldBody);
          */
-        function Heightfield(data, options) {
-            if (options === void 0) { options = {}; }
+        function Heightfield(data, elementSize, minValue, maxValue) {
+            if (elementSize === void 0) { elementSize = 1; }
+            if (minValue === void 0) { minValue = NaN; }
+            if (maxValue === void 0) { maxValue = NaN; }
             var _this = _super.call(this) || this;
             _this.type = CANNON.ShapeType.HEIGHTFIELD;
             _this.pillarConvex = new CANNON.ConvexPolyhedron();
             _this.pillarOffset = new feng3d.Vector3();
-            options = CANNON.Utils.defaults(options, {
-                maxValue: null,
-                minValue: null,
-                elementSize: 1
-            });
             _this.data = data;
-            _this.maxValue = options.maxValue;
-            _this.minValue = options.minValue;
-            _this.elementSize = options.elementSize;
-            if (options.minValue === null) {
+            _this.maxValue = maxValue;
+            _this.minValue = minValue;
+            _this.elementSize = elementSize;
+            if (isNaN(minValue)) {
                 _this.updateMinValue();
             }
-            if (options.maxValue === null) {
+            if (isNaN(maxValue)) {
                 _this.updateMaxValue();
             }
             _this.cacheEnabled = true;
-            _this = _super.call(this) || this;
             _this.updateBoundingSphereRadius();
             _this._cachedPillars = {};
             return _this;
@@ -40506,10 +40478,11 @@ var CANNON;
          *
          * @param options
          */
-        function OctreeNode(options) {
-            if (options === void 0) { options = {}; }
-            this.root = options.root || null;
-            this.aabb = options.aabb ? options.aabb.clone() : new feng3d.AABB();
+        function OctreeNode(root, aabb) {
+            if (root === void 0) { root = null; }
+            if (aabb === void 0) { aabb = new feng3d.AABB(); }
+            this.root = root;
+            this.aabb = aabb.clone();
             this.data = [];
             this.children = [];
         }
@@ -40561,7 +40534,7 @@ var CANNON;
             var l = aabb.min;
             var u = aabb.max;
             var children = this.children;
-            children.push(new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 0, 0)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 0, 0)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 1, 0)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 1, 1)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 1, 1)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 0, 1)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(1, 0, 1)) }), new OctreeNode({ aabb: new feng3d.AABB(new feng3d.Vector3(0, 1, 0)) }));
+            children.push(new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(0, 0, 0))), new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(1, 0, 0))), new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(1, 1, 0))), new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(1, 1, 1))), new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(0, 1, 1))), new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(0, 0, 1))), new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(1, 0, 1))), new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(0, 1, 0))));
             var halfDiagonal = new feng3d.Vector3();
             u.subTo(l, halfDiagonal);
             halfDiagonal.scaleNumberTo(0.5, halfDiagonal);
@@ -40588,19 +40561,6 @@ var CANNON;
          * @return The "result" object
          */
         OctreeNode.prototype.aabbQuery = function (aabb, result) {
-            var nodeData = this.data;
-            // abort if the range does not intersect this node
-            // if (!this.aabb.overlaps(aabb)){
-            //     return result;
-            // }
-            // Add objects at this level
-            // Array.prototype.push.apply(result, nodeData);
-            // Add child data
-            // @todo unwrap recursion into a queue / loop, that's faster in JS
-            var children = this.children;
-            // for (var i = 0, N = this.children.length; i !== N; i++) {
-            //     children[i].aabbQuery(aabb, result);
-            // }
             var queue = [this];
             while (queue.length) {
                 var node = queue.pop();
@@ -40643,21 +40603,21 @@ var CANNON;
         return OctreeNode;
     }());
     CANNON.OctreeNode = OctreeNode;
+    /**
+     * 八叉树
+     */
     var Octree = /** @class */ (function (_super) {
         __extends(Octree, _super);
         /**
-         * @class Octree
-         * @param {AABB} aabb The total AABB of the tree
-         * @param {object} [options]
-         * @param {number} [options.maxDepth=8]
-         * @extends OctreeNode
+         *
+         * @param aabb
+         * @param maxDepth
          */
-        function Octree(aabb, options) {
-            if (options === void 0) { options = {}; }
-            var _this = _super.call(this, options) || this;
-            options.root = null;
-            options.aabb = aabb;
-            _this.maxDepth = typeof (options.maxDepth) !== 'undefined' ? options.maxDepth : 8;
+        function Octree(aabb, maxDepth) {
+            if (aabb === void 0) { aabb = null; }
+            if (maxDepth === void 0) { maxDepth = 8; }
+            var _this = _super.call(this, null, aabb) || this;
+            _this.maxDepth = maxDepth;
             return _this;
         }
         return Octree;
@@ -43760,7 +43720,7 @@ var CANNON;
         };
         World.prototype.internalStep = function (dt) {
             this.dt = dt;
-            var contacts = this.contacts, p1 = [], p2 = [], N = this.bodies.length, bodies = this.bodies, solver = this.solver, gravity = this.gravity, doProfiling = this.doProfiling, profile = this.profile, DYNAMIC = CANNON.Body.DYNAMIC, profilingStart, constraints = this.constraints, frictionEquationPool = World_step_frictionEquationPool, gnorm = gravity.length, gx = gravity.x, gy = gravity.y, gz = gravity.z, i = 0;
+            var contacts = this.contacts, p1 = [], p2 = [], N = this.bodies.length, bodies = this.bodies, solver = this.solver, gravity = this.gravity, doProfiling = this.doProfiling, profile = this.profile, DYNAMIC = CANNON.Body.DYNAMIC, profilingStart, constraints = this.constraints, frictionEquationPool = [], gx = gravity.x, gy = gravity.y, gz = gravity.z, i = 0;
             if (doProfiling) {
                 profilingStart = performance.now();
             }
@@ -43807,7 +43767,7 @@ var CANNON;
             if (doProfiling) {
                 profilingStart = performance.now();
             }
-            var oldcontacts = World_step_oldContacts;
+            var oldcontacts = [];
             var NoldContacts = contacts.length;
             for (i = 0; i !== NoldContacts; i++) {
                 oldcontacts.push(contacts[i]);
@@ -44072,19 +44032,13 @@ var CANNON;
             return Date.now() - nowOffset;
         };
     }
-    var World_step_oldContacts = []; // Pools for unused objects
-    var World_step_frictionEquationPool = [];
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
     var Narrowphase = /** @class */ (function () {
         /**
-         * Helper class for the World. Generates ContactEquations.
-         * @class Narrowphase
-         * @constructor
-         * @todo Sphere-ConvexPolyhedron contacts
-         * @todo Contact reduction
-         * @todo  should move methods to prototype
+         *
+         * @param world
          */
         function Narrowphase(world) {
             this.contactPointPool = [];
@@ -44183,14 +44137,14 @@ var CANNON;
             }
             var f1 = this.frictionResult[this.frictionResult.length - 2];
             var f2 = this.frictionResult[this.frictionResult.length - 1];
-            averageNormal.setZero();
-            averageContactPointA.setZero();
-            averageContactPointB.setZero();
+            var averageNormal = new feng3d.Vector3();
+            var averageContactPointA = new feng3d.Vector3();
+            var averageContactPointB = new feng3d.Vector3();
             var bodyA = c.bi;
             var bodyB = c.bj;
             for (var i = 0; i !== numContacts; i++) {
                 c = this.result[this.result.length - 1 - i];
-                if (c.bodyA !== bodyA) {
+                if (c.bi !== bodyA) {
                     averageNormal.addTo(c.ni, averageNormal);
                     averageContactPointA.addTo(c.ri, averageContactPointA);
                     averageContactPointB.addTo(c.rj, averageContactPointB);
@@ -44225,10 +44179,10 @@ var CANNON;
             this.frictionEquationPool = frictionPool;
             this.result = result;
             this.frictionResult = frictionResult;
-            var qi = tmpQuat1;
-            var qj = tmpQuat2;
-            var xi = tmpVec1;
-            var xj = tmpVec2;
+            var qi = new feng3d.Quaternion();
+            var qj = new feng3d.Quaternion();
+            var xi = new feng3d.Vector3();
+            var xj = new feng3d.Vector3();
             for (var k = 0, N = p1.length; k !== N; k++) {
                 // Get current collision bodies
                 var bi = p1[k], bj = p2[k];
@@ -44335,8 +44289,9 @@ var CANNON;
             // Make contacts!
             var v = new feng3d.Vector3();
             var planePos = planeTransform.position;
-            var normal = planeTrimesh_normal;
-            normal.init(0, 1, 0);
+            var relpos = new feng3d.Vector3();
+            var projected = new feng3d.Vector3();
+            var normal = new feng3d.Vector3(0, 1, 0);
             planeTransform.quaternion.rotatePoint(normal, normal); // Turn normal according to plane
             for (var i = 0; i < trimeshShape.vertices.length / 3; i++) {
                 // Get world vertex from trimesh
@@ -44346,7 +44301,6 @@ var CANNON;
                 v2.copy(v);
                 trimeshTransform.pointToWorldFrame(v2, v);
                 // Check plane side
-                var relpos = planeTrimesh_relpos;
                 v.subTo(planePos, relpos);
                 var dot = normal.dot(relpos);
                 if (dot <= 0.0) {
@@ -44356,7 +44310,6 @@ var CANNON;
                     var r = this.createContactEquation(planeBody, trimeshBody, planeShape, trimeshShape, rsi, rsj);
                     r.ni.copy(normal); // Contact normal is the plane normal
                     // Get vertex position projected on plane
-                    var projected = planeTrimesh_projected;
                     normal.scaleNumberTo(relpos.dot(normal), projected);
                     v.subTo(projected, projected);
                     // ri is the projected world position minus plane position
@@ -44373,16 +44326,16 @@ var CANNON;
         Narrowphase.prototype.sphereTrimesh = function (sphereShape, trimeshShape, sphereTransform, trimeshTransform, sphereBody, trimeshBody, rsi, rsj, justTest) {
             var spherePos = sphereTransform.position;
             //
-            var edgeVertexA = sphereTrimesh_edgeVertexA;
-            var edgeVertexB = sphereTrimesh_edgeVertexB;
-            var edgeVector = sphereTrimesh_edgeVector;
-            var edgeVectorUnit = sphereTrimesh_edgeVectorUnit;
-            var localSpherePos = sphereTrimesh_localSpherePos;
-            var tmp = sphereTrimesh_tmp;
-            var localSphereAABB = sphereTrimesh_localSphereAABB;
-            var v2 = sphereTrimesh_v2;
-            var relpos = sphereTrimesh_relpos;
-            var triangles = sphereTrimesh_triangles;
+            var edgeVertexA = new feng3d.Vector3();
+            var edgeVertexB = new feng3d.Vector3();
+            var edgeVector = new feng3d.Vector3();
+            var edgeVectorUnit = new feng3d.Vector3();
+            var localSpherePos = new feng3d.Vector3();
+            var tmp = new feng3d.Vector3();
+            var localSphereAABB = new feng3d.AABB();
+            var v2 = new feng3d.Vector3();
+            var relpos = new feng3d.Vector3();
+            var triangles = [];
             // Convert sphere position to local in the trimesh
             trimeshTransform.pointToLocalFrame(spherePos, localSpherePos);
             // Get the aabb of the sphere locally in the trimesh
@@ -44390,9 +44343,8 @@ var CANNON;
             localSphereAABB.min.init(localSpherePos.x - sphereRadius, localSpherePos.y - sphereRadius, localSpherePos.z - sphereRadius);
             localSphereAABB.max.init(localSpherePos.x + sphereRadius, localSpherePos.y + sphereRadius, localSpherePos.z + sphereRadius);
             trimeshShape.getTrianglesInAABB(localSphereAABB, triangles);
-            //for (var i = 0; i < trimeshShape.indices.length / 3; i++) triangles.push(i); // All
             // Vertices
-            var v = sphereTrimesh_v;
+            var v = new feng3d.Vector3();
             var radiusSquared = sphereShape.radius * sphereShape.radius;
             for (var i = 0; i < triangles.length; i++) {
                 for (var j = 0; j < 3; j++) {
@@ -44463,10 +44415,10 @@ var CANNON;
                 }
             }
             // Triangle faces
-            var va = sphereTrimesh_va;
-            var vb = sphereTrimesh_vb;
-            var vc = sphereTrimesh_vc;
-            var normal = sphereTrimesh_normal;
+            var va = new feng3d.Vector3();
+            var vb = new feng3d.Vector3();
+            var vc = new feng3d.Vector3();
+            var normal = new feng3d.Vector3();
             for (var i = 0, N = triangles.length; i !== N; i++) {
                 trimeshShape.getTriangleVertices(triangles[i], va, vb, vc);
                 trimeshShape.getNormal(triangles[i], normal);
@@ -44506,8 +44458,8 @@ var CANNON;
             // Vector from sphere center to contact point
             r.ni.scaleNumberTo(si.radius, r.ri);
             // Project down sphere on plane
-            xi.subTo(xj, point_on_plane_to_sphere);
-            r.ni.scaleNumberTo(r.ni.dot(point_on_plane_to_sphere), plane_to_sphere_ortho);
+            var point_on_plane_to_sphere = xi.subTo(xj);
+            var plane_to_sphere_ortho = r.ni.scaleNumberTo(r.ni.dot(point_on_plane_to_sphere));
             point_on_plane_to_sphere.subTo(plane_to_sphere_ortho, r.rj); // The sphere position projected to plane
             if (-point_on_plane_to_sphere.dot(r.ni) <= si.radius) {
                 if (justTest) {
@@ -44527,16 +44479,16 @@ var CANNON;
         Narrowphase.prototype.sphereBox = function (si, sj, transformi, transformj, bi, bj, rsi, rsj, justTest) {
             var xi = transformi.position, xj = transformj.position, qi = transformi.quaternion, qj = transformj.quaternion;
             // we refer to the box as body j
-            var sides = sphereBox_sides;
-            xi.subTo(xj, box_to_sphere);
+            var sides = [new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3()];
+            var box_to_sphere = xi.subTo(xj);
             sj.getSideNormals(sides, qj);
             var R = si.radius;
             // Check side (plane) intersections
             var found = false;
             // Store the resulting side penetration info
-            var side_ns = sphereBox_side_ns;
-            var side_ns1 = sphereBox_side_ns1;
-            var side_ns2 = sphereBox_side_ns2;
+            var side_ns = new feng3d.Vector3();
+            var side_ns1 = new feng3d.Vector3();
+            var side_ns2 = new feng3d.Vector3();
             var side_h = null;
             var side_penetrations = 0;
             var side_dot1 = 0;
@@ -44544,7 +44496,7 @@ var CANNON;
             var side_distance = null;
             for (var idx = 0, nsides = sides.length; idx !== nsides && found === false; idx++) {
                 // Get the plane side normal (ns)
-                var ns = sphereBox_ns;
+                var ns = new feng3d.Vector3();
                 ns.copy(sides[idx]);
                 var h = ns.length;
                 ns.normalize();
@@ -44552,8 +44504,8 @@ var CANNON;
                 var dot = box_to_sphere.dot(ns);
                 if (dot < h + R && dot > 0) {
                     // Intersects plane. Now check the other two dimensions
-                    var ns1 = sphereBox_ns1;
-                    var ns2 = sphereBox_ns2;
+                    var ns1 = new feng3d.Vector3();
+                    var ns2 = new feng3d.Vector3();
                     ns1.copy(sides[(idx + 1) % 3]);
                     ns2.copy(sides[(idx + 2) % 3]);
                     var h1 = ns1.length;
@@ -44601,7 +44553,7 @@ var CANNON;
             }
             // Check corners
             var rj = new feng3d.Vector3();
-            var sphere_to_corner = sphereBox_sphere_to_corner;
+            var sphere_to_corner = new feng3d.Vector3();
             for (var j = 0; j !== 2 && !found; j++) {
                 for (var k = 0; k !== 2 && !found; k++) {
                     for (var l = 0; l !== 2 && !found; l++) {
@@ -44710,23 +44662,18 @@ var CANNON;
         };
         Narrowphase.prototype.sphereConvex = function (si, sj, transformi, transformj, bi, bj, rsi, rsj, justTest) {
             var xi = transformi.position, xj = transformj.position, qj = transformj.quaternion;
-            xi.subTo(xj, convex_to_sphere);
             var normals = sj.faceNormals;
             var faces = sj.faces;
             var verts = sj.vertices;
             var R = si.radius;
-            var penetrating_sides = [];
-            // if(convex_to_sphere.norm2() > si.boundingSphereRadius + sj.boundingSphereRadius){
-            //     return;
-            // }
             // Check corners
             for (var i = 0; i !== verts.length; i++) {
                 var v = verts[i];
                 // World position of corner
-                var worldCorner = sphereConvex_worldCorner;
+                var worldCorner = new feng3d.Vector3();
                 qj.rotatePoint(v, worldCorner);
                 xj.addTo(worldCorner, worldCorner);
-                var sphere_to_corner = sphereConvex_sphereToCorner;
+                var sphere_to_corner = new feng3d.Vector3();
                 worldCorner.subTo(xi, sphere_to_corner);
                 if (sphere_to_corner.lengthSquared < R * R) {
                     if (justTest) {
@@ -44756,22 +44703,22 @@ var CANNON;
                 var normal = normals[i];
                 var face = faces[i];
                 // Get world-transformed normal of the face
-                var worldNormal = sphereConvex_worldNormal;
+                var worldNormal = new feng3d.Vector3();
                 qj.rotatePoint(normal, worldNormal);
                 // Get a world vertex from the face
-                var worldPoint = sphereConvex_worldPoint;
+                var worldPoint = new feng3d.Vector3();
                 qj.rotatePoint(verts[face[0]], worldPoint);
                 worldPoint.addTo(xj, worldPoint);
                 // Get a point on the sphere, closest to the face normal
-                var worldSpherePointClosestToPlane = sphereConvex_worldSpherePointClosestToPlane;
+                var worldSpherePointClosestToPlane = new feng3d.Vector3();
                 worldNormal.scaleNumberTo(-R, worldSpherePointClosestToPlane);
                 xi.addTo(worldSpherePointClosestToPlane, worldSpherePointClosestToPlane);
                 // Vector from a face point to the closest point on the sphere
-                var penetrationVec = sphereConvex_penetrationVec;
+                var penetrationVec = new feng3d.Vector3();
                 worldSpherePointClosestToPlane.subTo(worldPoint, penetrationVec);
                 // The penetration. Negative value means overlap.
                 var penetration = penetrationVec.dot(worldNormal);
-                var worldPointToSphere = sphereConvex_sphereToWorldPoint;
+                var worldPointToSphere = new feng3d.Vector3();
                 xi.subTo(worldPoint, worldPointToSphere);
                 if (penetration < 0 && worldPointToSphere.dot(worldNormal) > 0) {
                     // Intersects plane. Now check if the sphere is inside the face polygon
@@ -44819,10 +44766,10 @@ var CANNON;
                             xj.addTo(v1, v1);
                             xj.addTo(v2, v2);
                             // Construct edge vector
-                            var edge = sphereConvex_edge;
+                            var edge = new feng3d.Vector3();
                             v2.subTo(v1, edge);
                             // Construct the same vector, but normalized
-                            var edgeUnit = sphereConvex_edgeUnit;
+                            var edgeUnit = new feng3d.Vector3();
                             edge.unit(edgeUnit);
                             // p is xi projected onto the edge
                             var p = new feng3d.Vector3();
@@ -44870,11 +44817,10 @@ var CANNON;
         Narrowphase.prototype.planeConvex = function (planeShape, convexShape, planeTransform, convexTransform, planeBody, convexBody, si, sj, justTest) {
             var planePosition = planeTransform.position, convexPosition = convexTransform.position, planeQuat = planeTransform.quaternion, convexQuat = convexTransform.quaternion;
             // Simply return the points behind the plane.
-            var worldVertex = planeConvex_v, worldNormal = planeConvex_normal;
-            worldNormal.init(0, 1, 0);
+            var worldVertex = new feng3d.Vector3(), worldNormal = new feng3d.Vector3(0, 1, 0);
             planeQuat.rotatePoint(worldNormal, worldNormal); // Turn normal according to plane orientation
             var numContacts = 0;
-            var relpos = planeConvex_relpos;
+            var relpos = new feng3d.Vector3();
             for (var i = 0; i !== convexShape.vertices.length; i++) {
                 // Get world convex vertex
                 worldVertex.copy(convexShape.vertices[i]);
@@ -44888,7 +44834,7 @@ var CANNON;
                     }
                     var r = this.createContactEquation(planeBody, convexBody, planeShape, convexShape, si, sj);
                     // Get vertex position projected on plane
-                    var projected = planeConvex_projected;
+                    var projected = new feng3d.Vector3();
                     worldNormal.scaleNumberTo(worldNormal.dot(relpos), projected);
                     worldVertex.subTo(projected, projected);
                     projected.subTo(planePosition, r.ri); // From plane to vertex projected on plane
@@ -44913,13 +44859,13 @@ var CANNON;
         };
         Narrowphase.prototype.convexConvex = function (si, sj, transformi, transformj, bi, bj, rsi, rsj, justTest, faceListA, faceListB) {
             var xi = transformi.position, xj = transformj.position, qi = transformi.quaternion, qj = transformj.quaternion;
-            var sepAxis = convexConvex_sepAxis;
+            var sepAxis = new feng3d.Vector3();
             if (xi.distance(xj) > si.boundingSphereRadius + sj.boundingSphereRadius) {
                 return;
             }
             if (si.findSeparatingAxis(sj, transformi, transformj, sepAxis, faceListA, faceListB)) {
                 var res = [];
-                var q = convexConvex_q;
+                var q = new feng3d.Vector3();
                 si.clipAgainstHull(xi, qi, sj, xj, qj, sepAxis, -100, 100, res);
                 var numContacts = 0;
                 for (var j = 0; j !== res.length; j++) {
@@ -44951,78 +44897,11 @@ var CANNON;
                 }
             }
         };
-        /**
-         * @method convexTrimesh
-         * @param  {Array}      result
-         * @param  {Shape}      si
-         * @param  {Shape}      sj
-         * @param  {Vector3}       xi
-         * @param  {Vector3}       xj
-         * @param  {Quaternion} qi
-         * @param  {Quaternion} qj
-         * @param  {Body}       bi
-         * @param  {Body}       bj
-         */
-        // Narrowphase.prototype[ShapeType.CONVEXPOLYHEDRON | ShapeType.TRIMESH] =
-        // Narrowphase.prototype.convexTrimesh = function(si,sj,xi,xj,qi,qj,bi,bj,rsi,rsj,faceListA,faceListB){
-        //     var sepAxis = convexConvex_sepAxis;
-        //     if(xi.distanceTo(xj) > si.boundingSphereRadius + sj.boundingSphereRadius){
-        //         return;
-        //     }
-        //     // Construct a temp hull for each triangle
-        //     var hullB = new ConvexPolyhedron();
-        //     hullB.faces = [[0,1,2]];
-        //     var va = new Vec3();
-        //     var vb = new Vec3();
-        //     var vc = new Vec3();
-        //     hullB.vertices = [
-        //         va,
-        //         vb,
-        //         vc
-        //     ];
-        //     for (var i = 0; i < sj.indices.length / 3; i++) {
-        //         var triangleNormal = new Vec3();
-        //         sj.getNormal(i, triangleNormal);
-        //         hullB.faceNormals = [triangleNormal];
-        //         sj.getTriangleVertices(i, va, vb, vc);
-        //         var d = si.testSepAxis(triangleNormal, hullB, xi, qi, xj, qj);
-        //         if(!d){
-        //             triangleNormal.scale(-1, triangleNormal);
-        //             d = si.testSepAxis(triangleNormal, hullB, xi, qi, xj, qj);
-        //             if(!d){
-        //                 continue;
-        //             }
-        //         }
-        //         var res = [];
-        //         var q = convexConvex_q;
-        //         si.clipAgainstHull(xi,qi,hullB,xj,qj,triangleNormal,-100,100,res);
-        //         for(var j = 0; j !== res.length; j++){
-        //             var r = this.createContactEquation(bi,bj,si,sj,rsi,rsj),
-        //                 ri = r.ri,
-        //                 rj = r.rj;
-        //             r.ni.copy(triangleNormal);
-        //             r.ni.negate(r.ni);
-        //             res[j].normal.negate(q);
-        //             q.mult(res[j].depth, q);
-        //             res[j].point.addTo(q, ri);
-        //             rj.copy(res[j].point);
-        //             // Contact points are in world coordinates. Transform back to relative
-        //             ri.subTo(xi,ri);
-        //             rj.subTo(xj,rj);
-        //             // Make relative to bodies
-        //             ri.addTo(xi, ri);
-        //             ri.subTo(bi.position, ri);
-        //             rj.addTo(xj, rj);
-        //             rj.subTo(bj.position, rj);
-        //             result.push(r);
-        //         }
-        //     }
-        // };
         Narrowphase.prototype.planeParticle = function (sj, si, xj, xi, qj, qi, bj, bi, rsi, rsj, justTest) {
-            var normal = particlePlane_normal;
+            var normal = new feng3d.Vector3();
             normal.init(0, 1, 0);
             bj.quaternion.rotatePoint(normal, normal); // Turn normal according to plane orientation
-            var relpos = particlePlane_relpos;
+            var relpos = new feng3d.Vector3();
             xi.subTo(bj.position, relpos);
             var dot = normal.dot(relpos);
             if (dot <= 0.0) {
@@ -45034,7 +44913,7 @@ var CANNON;
                 r.ni.negateTo(r.ni);
                 r.ri.init(0, 0, 0); // Center of particle
                 // Get particle position projected on plane
-                var projected = particlePlane_projected;
+                var projected = new feng3d.Vector3();
                 normal.scaleNumberTo(normal.dot(xi), projected);
                 xi.subTo(projected, projected);
                 //projected.addTo(bj.position,projected);
@@ -45046,8 +44925,7 @@ var CANNON;
         };
         Narrowphase.prototype.sphereParticle = function (sj, si, xj, xi, qj, qi, bj, bi, rsi, rsj, justTest) {
             // The normal is the unit vector from sphere center to particle center
-            var normal = particleSphere_normal;
-            normal.init(0, 1, 0);
+            var normal = new feng3d.Vector3(0, 1, 0);
             xi.subTo(xj, normal);
             var lengthSquared = normal.lengthSquared;
             if (lengthSquared <= sj.radius * sj.radius) {
@@ -45068,15 +44946,14 @@ var CANNON;
         Narrowphase.prototype.convexParticle = function (sj, si, transformi, transformj, bj, bi, rsi, rsj, justTest) {
             var xj = transformi.position, xi = transformj.position, qj = transformi.quaternion, qi = transformj.quaternion;
             var penetratedFaceIndex = -1;
-            var penetratedFaceNormal = convexParticle_penetratedFaceNormal;
-            var worldPenetrationVec = convexParticle_worldPenetrationVec;
+            var penetratedFaceNormal = new feng3d.Vector3();
+            var worldPenetrationVec = new feng3d.Vector3();
             var minPenetration = null;
-            var numDetectedFaces = 0;
             // Convert particle position xi to local coords in the convex
-            var local = convexParticle_local;
+            var local = new feng3d.Vector3();
             local.copy(xi);
             local.subTo(xj, local); // Convert position to relative the convex origin
-            qj.inverseTo(cqj);
+            var cqj = qj.inverseTo();
             cqj.rotatePoint(local, local);
             if (sj.pointIsInside(local)) {
                 if (sj.worldVerticesNeedsUpdate) {
@@ -45091,7 +44968,7 @@ var CANNON;
                     var verts = [sj.worldVertices[sj.faces[i][0]]];
                     var normal = sj.worldFaceNormals[i];
                     // Check how much the particle penetrates the polygon plane.
-                    xi.subTo(verts[0], convexParticle_vertexToParticle);
+                    var convexParticle_vertexToParticle = xi.subTo(verts[0]);
                     var penetration = -normal.dot(convexParticle_vertexToParticle);
                     if (minPenetration === null || Math.abs(penetration) < Math.abs(minPenetration)) {
                         if (justTest) {
@@ -45100,7 +44977,6 @@ var CANNON;
                         minPenetration = penetration;
                         penetratedFaceIndex = i;
                         penetratedFaceNormal.copy(normal);
-                        numDetectedFaces++;
                     }
                 }
                 if (penetratedFaceIndex !== -1) {
@@ -45111,9 +44987,6 @@ var CANNON;
                     worldPenetrationVec.addTo(xi, worldPenetrationVec);
                     worldPenetrationVec.subTo(xj, worldPenetrationVec);
                     r.rj.copy(worldPenetrationVec);
-                    //var projectedToFace = xi.subTo(xj).addTo(worldPenetrationVec);
-                    //projectedToFace.copy(r.rj);
-                    //qj.vmult(r.rj,r.rj);
                     penetratedFaceNormal.negateTo(r.ni); // Contact normal
                     r.ri.init(0, 0, 0); // Center of particle
                     var ri = r.ri, rj = r.rj;
@@ -45138,9 +45011,9 @@ var CANNON;
         Narrowphase.prototype.convexHeightfield = function (convexShape, hfShape, convexTransform, hfTransform, convexBody, hfBody, rsi, rsj, justTest) {
             var convexPos = convexTransform.position;
             var hfQuat = hfTransform.quaternion;
-            var data = hfShape.data, w = hfShape.elementSize, radius = convexShape.boundingSphereRadius, worldPillarOffset = convexHeightfield_tmp2, faceList = convexHeightfield_faceList;
+            var data = hfShape.data, w = hfShape.elementSize, radius = convexShape.boundingSphereRadius, worldPillarOffset = new feng3d.Vector3(), faceList = [0];
             // Get sphere position to heightfield local!
-            var localConvexPos = convexHeightfield_tmp1;
+            var localConvexPos = new feng3d.Vector3();
             hfTransform.pointToLocalFrame(convexPos, localConvexPos);
             // Get the index of the data points to test against
             var iMinX = Math.floor((localConvexPos.x - radius) / w) - 1, iMaxX = Math.ceil((localConvexPos.x + radius) / w) + 1, iMinY = Math.floor((localConvexPos.y - radius) / w) - 1, iMaxY = Math.ceil((localConvexPos.y + radius) / w) + 1;
@@ -45205,13 +45078,12 @@ var CANNON;
                 }
             }
         };
-        ;
         Narrowphase.prototype.sphereHeightfield = function (sphereShape, hfShape, sphereTransform, hfTransform, sphereBody, hfBody, rsi, rsj, justTest) {
-            var data = hfShape.data, radius = sphereShape.radius, w = hfShape.elementSize, worldPillarOffset = sphereHeightfield_tmp2;
+            var data = hfShape.data, radius = sphereShape.radius, w = hfShape.elementSize, worldPillarOffset = new feng3d.Vector3();
             var spherePos = sphereTransform.position;
             var hfQuat = hfTransform.quaternion;
             // Get sphere position to heightfield local!
-            var localSpherePos = sphereHeightfield_tmp1;
+            var localSpherePos = new feng3d.Vector3();
             hfTransform.pointToLocalFrame(spherePos, localSpherePos);
             // Get the index of the data points to test against
             var iMinX = Math.floor((localSpherePos.x - radius) / w) - 1, iMaxX = Math.ceil((localSpherePos.x + radius) / w) + 1, iMinY = Math.floor((localSpherePos.y - radius) / w) - 1, iMaxY = Math.ceil((localSpherePos.y + radius) / w) + 1;
@@ -45279,73 +45151,26 @@ var CANNON;
                     if (numContacts > 2) {
                         return;
                     }
-                    /*
-                    // Skip all but 1
-                    for (var k = 0; k < numContacts - 1; k++) {
-                        result.pop();
-                    }
-                    */
                 }
             }
         };
         return Narrowphase;
     }());
     CANNON.Narrowphase = Narrowphase;
-    var averageNormal = new feng3d.Vector3();
-    var averageContactPointA = new feng3d.Vector3();
-    var averageContactPointB = new feng3d.Vector3();
-    var tmpVec1 = new feng3d.Vector3();
-    var tmpVec2 = new feng3d.Vector3();
-    var tmpQuat1 = new feng3d.Quaternion();
-    var tmpQuat2 = new feng3d.Quaternion();
-    var numWarnings = 0;
-    var maxWarnings = 10;
-    function warn(msg) {
-        if (numWarnings > maxWarnings) {
-            return;
-        }
-        numWarnings++;
-        console.warn(msg);
-    }
-    var planeTrimesh_normal = new feng3d.Vector3();
-    var planeTrimesh_relpos = new feng3d.Vector3();
-    var planeTrimesh_projected = new feng3d.Vector3();
-    var sphereTrimesh_normal = new feng3d.Vector3();
-    var sphereTrimesh_relpos = new feng3d.Vector3();
-    var sphereTrimesh_projected = new feng3d.Vector3();
-    var sphereTrimesh_v = new feng3d.Vector3();
-    var sphereTrimesh_v2 = new feng3d.Vector3();
-    var sphereTrimesh_edgeVertexA = new feng3d.Vector3();
-    var sphereTrimesh_edgeVertexB = new feng3d.Vector3();
-    var sphereTrimesh_edgeVector = new feng3d.Vector3();
-    var sphereTrimesh_edgeVectorUnit = new feng3d.Vector3();
-    var sphereTrimesh_localSpherePos = new feng3d.Vector3();
-    var sphereTrimesh_tmp = new feng3d.Vector3();
-    var sphereTrimesh_va = new feng3d.Vector3();
-    var sphereTrimesh_vb = new feng3d.Vector3();
-    var sphereTrimesh_vc = new feng3d.Vector3();
-    var sphereTrimesh_localSphereAABB = new feng3d.AABB();
-    var sphereTrimesh_triangles = [];
-    var point_on_plane_to_sphere = new feng3d.Vector3();
-    var plane_to_sphere_ortho = new feng3d.Vector3();
     // See http://bulletphysics.com/Bullet/BulletFull/SphereTriangleDetector_8cpp_source.html
-    var pointInPolygon_edge = new feng3d.Vector3();
-    var pointInPolygon_edge_x_normal = new feng3d.Vector3();
-    var pointInPolygon_vtp = new feng3d.Vector3();
     function pointInPolygon(verts, normal, p) {
         var positiveResult = null;
         var N = verts.length;
+        var edge = new feng3d.Vector3();
+        var edge_x_normal = new feng3d.Vector3();
+        var vertex_to_p = new feng3d.Vector3();
         for (var i = 0; i !== N; i++) {
             var v = verts[i];
             // Get edge to the next vertex
-            var edge = pointInPolygon_edge;
             verts[(i + 1) % (N)].subTo(v, edge);
             // Get cross product between polygon normal and the edge
-            var edge_x_normal = pointInPolygon_edge_x_normal;
-            //var edge_x_normal = new Vec3();
             edge.crossTo(normal, edge_x_normal);
             // Get vector between point and current vertex
-            var vertex_to_p = pointInPolygon_vtp;
             p.subTo(v, vertex_to_p);
             // This dot product determines which side of the edge the point is
             var r = edge_x_normal.dot(vertex_to_p);
@@ -45363,49 +45188,6 @@ var CANNON;
         // If we got here, all dot products were of the same sign.
         return true;
     }
-    var box_to_sphere = new feng3d.Vector3();
-    var sphereBox_ns = new feng3d.Vector3();
-    var sphereBox_ns1 = new feng3d.Vector3();
-    var sphereBox_ns2 = new feng3d.Vector3();
-    var sphereBox_sides = [new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3()];
-    var sphereBox_sphere_to_corner = new feng3d.Vector3();
-    var sphereBox_side_ns = new feng3d.Vector3();
-    var sphereBox_side_ns1 = new feng3d.Vector3();
-    var sphereBox_side_ns2 = new feng3d.Vector3();
-    var convex_to_sphere = new feng3d.Vector3();
-    var sphereConvex_edge = new feng3d.Vector3();
-    var sphereConvex_edgeUnit = new feng3d.Vector3();
-    var sphereConvex_sphereToCorner = new feng3d.Vector3();
-    var sphereConvex_worldCorner = new feng3d.Vector3();
-    var sphereConvex_worldNormal = new feng3d.Vector3();
-    var sphereConvex_worldPoint = new feng3d.Vector3();
-    var sphereConvex_worldSpherePointClosestToPlane = new feng3d.Vector3();
-    var sphereConvex_penetrationVec = new feng3d.Vector3();
-    var sphereConvex_sphereToWorldPoint = new feng3d.Vector3();
-    var planeBox_normal = new feng3d.Vector3();
-    var plane_to_corner = new feng3d.Vector3();
-    var planeConvex_v = new feng3d.Vector3();
-    var planeConvex_normal = new feng3d.Vector3();
-    var planeConvex_relpos = new feng3d.Vector3();
-    var planeConvex_projected = new feng3d.Vector3();
-    var convexConvex_sepAxis = new feng3d.Vector3();
-    var convexConvex_q = new feng3d.Vector3();
-    var particlePlane_normal = new feng3d.Vector3();
-    var particlePlane_relpos = new feng3d.Vector3();
-    var particlePlane_projected = new feng3d.Vector3();
-    var particleSphere_normal = new feng3d.Vector3();
-    // WIP
-    var cqj = new feng3d.Quaternion();
-    var convexParticle_local = new feng3d.Vector3();
-    var convexParticle_normal = new feng3d.Vector3();
-    var convexParticle_penetratedFaceNormal = new feng3d.Vector3();
-    var convexParticle_vertexToParticle = new feng3d.Vector3();
-    var convexParticle_worldPenetrationVec = new feng3d.Vector3();
-    var convexHeightfield_tmp1 = new feng3d.Vector3();
-    var convexHeightfield_tmp2 = new feng3d.Vector3();
-    var convexHeightfield_faceList = [0];
-    var sphereHeightfield_tmp1 = new feng3d.Vector3();
-    var sphereHeightfield_tmp2 = new feng3d.Vector3();
     Narrowphase.prototype[CANNON.ShapeType.BOX | CANNON.ShapeType.BOX] = Narrowphase.prototype.boxBox;
     Narrowphase.prototype[CANNON.ShapeType.BOX | CANNON.ShapeType.CONVEXPOLYHEDRON] = Narrowphase.prototype.boxConvex;
     Narrowphase.prototype[CANNON.ShapeType.BOX | CANNON.ShapeType.PARTICLE] = Narrowphase.prototype.boxParticle;

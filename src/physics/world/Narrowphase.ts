@@ -657,8 +657,8 @@ namespace CANNON
             var xi = transformi.position, xj = transformj.position, qi = transformi.quaternion, qj = transformj.quaternion;
 
             // we refer to the box as body j
-            var sides = sphereBox_sides;
-            xi.subTo(xj, box_to_sphere);
+            var sides = [new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3()];
+            var box_to_sphere = xi.subTo(xj);
             sj.getSideNormals(sides, qj);
             var R = si.radius;
 
@@ -666,9 +666,10 @@ namespace CANNON
             var found = false;
 
             // Store the resulting side penetration info
-            var side_ns = sphereBox_side_ns;
-            var side_ns1 = sphereBox_side_ns1;
-            var side_ns2 = sphereBox_side_ns2;
+            var side_ns = new feng3d.Vector3();
+            var side_ns1 = new feng3d.Vector3();
+            var side_ns2 = new feng3d.Vector3();
+
             var side_h: null | number = null;
             var side_penetrations = 0;
             var side_dot1 = 0;
@@ -677,7 +678,7 @@ namespace CANNON
             for (var idx = 0, nsides = sides.length; idx !== nsides && found === false; idx++)
             {
                 // Get the plane side normal (ns)
-                var ns = sphereBox_ns;
+                var ns = new feng3d.Vector3();
                 ns.copy(sides[idx]);
 
                 var h = ns.length;
@@ -689,8 +690,8 @@ namespace CANNON
                 if (dot < h + R && dot > 0)
                 {
                     // Intersects plane. Now check the other two dimensions
-                    var ns1 = sphereBox_ns1;
-                    var ns2 = sphereBox_ns2;
+                    var ns1 = new feng3d.Vector3();
+                    var ns2 = new feng3d.Vector3();
                     ns1.copy(sides[(idx + 1) % 3]);
                     ns2.copy(sides[(idx + 2) % 3]);
                     var h1 = ns1.length;
@@ -746,7 +747,7 @@ namespace CANNON
 
             // Check corners
             var rj = new feng3d.Vector3();
-            var sphere_to_corner = sphereBox_sphere_to_corner;
+            var sphere_to_corner = new feng3d.Vector3();
             for (var j = 0; j !== 2 && !found; j++)
             {
                 for (var k = 0; k !== 2 && !found; k++)
@@ -884,7 +885,6 @@ namespace CANNON
         {
             var xi = transformi.position, xj = transformj.position, qj = transformj.quaternion;
 
-            xi.subTo(xj, convex_to_sphere);
             var normals = sj.faceNormals;
             var faces = sj.faces;
             var verts = sj.vertices;
@@ -896,10 +896,10 @@ namespace CANNON
                 var v = <feng3d.Vector3>verts[i];
 
                 // World position of corner
-                var worldCorner = sphereConvex_worldCorner;
+                var worldCorner = new feng3d.Vector3();
                 qj.rotatePoint(v, worldCorner);
                 xj.addTo(worldCorner, worldCorner);
-                var sphere_to_corner = sphereConvex_sphereToCorner;
+                var sphere_to_corner = new feng3d.Vector3();
                 worldCorner.subTo(xi, sphere_to_corner);
                 if (sphere_to_corner.lengthSquared < R * R)
                 {
@@ -937,27 +937,27 @@ namespace CANNON
                 var face = faces[i];
 
                 // Get world-transformed normal of the face
-                var worldNormal = sphereConvex_worldNormal;
+                var worldNormal = new feng3d.Vector3();
                 qj.rotatePoint(normal, worldNormal);
 
                 // Get a world vertex from the face
-                var worldPoint = sphereConvex_worldPoint;
+                var worldPoint = new feng3d.Vector3();
                 qj.rotatePoint(<feng3d.Vector3>verts[face[0]], worldPoint);
                 worldPoint.addTo(xj, worldPoint);
 
                 // Get a point on the sphere, closest to the face normal
-                var worldSpherePointClosestToPlane = sphereConvex_worldSpherePointClosestToPlane;
+                var worldSpherePointClosestToPlane = new feng3d.Vector3();
                 worldNormal.scaleNumberTo(-R, worldSpherePointClosestToPlane);
                 xi.addTo(worldSpherePointClosestToPlane, worldSpherePointClosestToPlane);
 
                 // Vector from a face point to the closest point on the sphere
-                var penetrationVec = sphereConvex_penetrationVec;
+                var penetrationVec = new feng3d.Vector3();
                 worldSpherePointClosestToPlane.subTo(worldPoint, penetrationVec);
 
                 // The penetration. Negative value means overlap.
                 var penetration = penetrationVec.dot(worldNormal);
 
-                var worldPointToSphere = sphereConvex_sphereToWorldPoint;
+                var worldPointToSphere = new feng3d.Vector3();
                 xi.subTo(worldPoint, worldPointToSphere);
 
                 if (penetration < 0 && worldPointToSphere.dot(worldNormal) > 0)
@@ -1021,11 +1021,11 @@ namespace CANNON
                             xj.addTo(v2, v2);
 
                             // Construct edge vector
-                            var edge = sphereConvex_edge;
+                            var edge = new feng3d.Vector3();
                             v2.subTo(v1, edge);
 
                             // Construct the same vector, but normalized
-                            var edgeUnit = sphereConvex_edgeUnit;
+                            var edgeUnit = new feng3d.Vector3();
                             edge.unit(edgeUnit);
 
                             // p is xi projected onto the edge
@@ -1101,13 +1101,12 @@ namespace CANNON
                 convexQuat = convexTransform.quaternion;
 
             // Simply return the points behind the plane.
-            var worldVertex = planeConvex_v,
-                worldNormal = planeConvex_normal;
-            worldNormal.init(0, 1, 0);
+            var worldVertex = new feng3d.Vector3(),
+                worldNormal = new feng3d.Vector3(0, 1, 0);
             planeQuat.rotatePoint(worldNormal, worldNormal); // Turn normal according to plane orientation
 
             var numContacts = 0;
-            var relpos = planeConvex_relpos;
+            var relpos = new feng3d.Vector3();
             for (var i = 0; i !== convexShape.vertices.length; i++)
             {
                 // Get world convex vertex
@@ -1127,7 +1126,7 @@ namespace CANNON
                     var r = this.createContactEquation(planeBody, convexBody, planeShape, convexShape, si, sj);
 
                     // Get vertex position projected on plane
-                    var projected = planeConvex_projected;
+                    var projected = new feng3d.Vector3();
                     worldNormal.scaleNumberTo(worldNormal.dot(relpos), projected);
                     worldVertex.subTo(projected, projected);
                     projected.subTo(planePosition, r.ri); // From plane to vertex projected on plane
@@ -1161,7 +1160,7 @@ namespace CANNON
         convexConvex(si: ConvexPolyhedron, sj: ConvexPolyhedron, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean, faceListA?: any[], faceListB?: any[])
         {
             var xi = transformi.position, xj = transformj.position, qi = transformi.quaternion, qj = transformj.quaternion;
-            var sepAxis = convexConvex_sepAxis;
+            var sepAxis = new feng3d.Vector3();
 
             if (xi.distance(xj) > si.boundingSphereRadius + sj.boundingSphereRadius)
             {
@@ -1171,7 +1170,7 @@ namespace CANNON
             if (si.findSeparatingAxis(sj, transformi, transformj, sepAxis, faceListA, faceListB))
             {
                 var res: { point: feng3d.Vector3; normal: feng3d.Vector3; depth: number; }[] = [];
-                var q = convexConvex_q;
+                var q = new feng3d.Vector3();
                 si.clipAgainstHull(xi, qi, sj, xj, qj, sepAxis, -100, 100, res);
                 var numContacts = 0;
                 for (var j = 0; j !== res.length; j++)
@@ -1215,10 +1214,10 @@ namespace CANNON
 
         planeParticle(sj: Plane, si: Particle, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
-            var normal = particlePlane_normal;
+            var normal = new feng3d.Vector3();
             normal.init(0, 1, 0);
             bj.quaternion.rotatePoint(normal, normal); // Turn normal according to plane orientation
-            var relpos = particlePlane_relpos;
+            var relpos = new feng3d.Vector3();
             xi.subTo(bj.position, relpos);
             var dot = normal.dot(relpos);
             if (dot <= 0.0)
@@ -1234,7 +1233,7 @@ namespace CANNON
                 r.ri.init(0, 0, 0); // Center of particle
 
                 // Get particle position projected on plane
-                var projected = particlePlane_projected;
+                var projected = new feng3d.Vector3();
                 normal.scaleNumberTo(normal.dot(xi), projected);
                 xi.subTo(projected, projected);
                 //projected.addTo(bj.position,projected);
@@ -1249,8 +1248,7 @@ namespace CANNON
         sphereParticle(sj: Shape, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean)
         {
             // The normal is the unit vector from sphere center to particle center
-            var normal = particleSphere_normal;
-            normal.init(0, 1, 0);
+            var normal = new feng3d.Vector3(0, 1, 0);
             xi.subTo(xj, normal);
             var lengthSquared = normal.lengthSquared;
 
@@ -1277,16 +1275,15 @@ namespace CANNON
             var xj = transformi.position, xi = transformj.position, qj = transformi.quaternion, qi = transformj.quaternion;
 
             var penetratedFaceIndex = -1;
-            var penetratedFaceNormal = convexParticle_penetratedFaceNormal;
-            var worldPenetrationVec = convexParticle_worldPenetrationVec;
+            var penetratedFaceNormal = new feng3d.Vector3();
+            var worldPenetrationVec = new feng3d.Vector3();
             var minPenetration = null;
-            var numDetectedFaces = 0;
 
             // Convert particle position xi to local coords in the convex
-            var local = convexParticle_local;
+            var local = new feng3d.Vector3();
             local.copy(xi);
             local.subTo(xj, local); // Convert position to relative the convex origin
-            qj.inverseTo(cqj);
+            var cqj = qj.inverseTo();
             cqj.rotatePoint(local, local);
 
             if (sj.pointIsInside(local))
@@ -1308,7 +1305,7 @@ namespace CANNON
                     var normal = sj.worldFaceNormals[i];
 
                     // Check how much the particle penetrates the polygon plane.
-                    xi.subTo(verts[0], convexParticle_vertexToParticle);
+                    var convexParticle_vertexToParticle = xi.subTo(verts[0]);
                     var penetration = -normal.dot(convexParticle_vertexToParticle);
                     if (minPenetration === null || Math.abs(penetration) < Math.abs(minPenetration))
                     {
@@ -1320,7 +1317,6 @@ namespace CANNON
                         minPenetration = penetration;
                         penetratedFaceIndex = i;
                         penetratedFaceNormal.copy(normal);
-                        numDetectedFaces++;
                     }
                 }
 
@@ -1381,11 +1377,11 @@ namespace CANNON
             var data = hfShape.data,
                 w = hfShape.elementSize,
                 radius = convexShape.boundingSphereRadius,
-                worldPillarOffset = convexHeightfield_tmp2,
-                faceList = convexHeightfield_faceList;
+                worldPillarOffset = new feng3d.Vector3(),
+                faceList = [0];
 
             // Get sphere position to heightfield local!
-            var localConvexPos = convexHeightfield_tmp1;
+            var localConvexPos = new feng3d.Vector3();
             hfTransform.pointToLocalFrame(convexPos, localConvexPos);
 
             // Get the index of the data points to test against
@@ -1472,12 +1468,12 @@ namespace CANNON
             var data = hfShape.data,
                 radius = sphereShape.radius,
                 w = hfShape.elementSize,
-                worldPillarOffset = sphereHeightfield_tmp2;
+                worldPillarOffset = new feng3d.Vector3();
             var spherePos = sphereTransform.position;
             var hfQuat = hfTransform.quaternion;
 
             // Get sphere position to heightfield local!
-            var localSpherePos = sphereHeightfield_tmp1;
+            var localSpherePos = new feng3d.Vector3();
             hfTransform.pointToLocalFrame(spherePos, localSpherePos);
 
             // Get the index of the data points to test against
@@ -1602,60 +1598,6 @@ namespace CANNON
         // If we got here, all dot products were of the same sign.
         return true;
     }
-
-    var box_to_sphere = new feng3d.Vector3();
-    var sphereBox_ns = new feng3d.Vector3();
-    var sphereBox_ns1 = new feng3d.Vector3();
-    var sphereBox_ns2 = new feng3d.Vector3();
-    var sphereBox_sides = [new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3()];
-    var sphereBox_sphere_to_corner = new feng3d.Vector3();
-    var sphereBox_side_ns = new feng3d.Vector3();
-    var sphereBox_side_ns1 = new feng3d.Vector3();
-    var sphereBox_side_ns2 = new feng3d.Vector3();
-
-    var convex_to_sphere = new feng3d.Vector3();
-    var sphereConvex_edge = new feng3d.Vector3();
-    var sphereConvex_edgeUnit = new feng3d.Vector3();
-    var sphereConvex_sphereToCorner = new feng3d.Vector3();
-    var sphereConvex_worldCorner = new feng3d.Vector3();
-    var sphereConvex_worldNormal = new feng3d.Vector3();
-    var sphereConvex_worldPoint = new feng3d.Vector3();
-    var sphereConvex_worldSpherePointClosestToPlane = new feng3d.Vector3();
-    var sphereConvex_penetrationVec = new feng3d.Vector3();
-    var sphereConvex_sphereToWorldPoint = new feng3d.Vector3();
-
-    var planeBox_normal = new feng3d.Vector3();
-    var plane_to_corner = new feng3d.Vector3();
-
-    var planeConvex_v = new feng3d.Vector3();
-    var planeConvex_normal = new feng3d.Vector3();
-    var planeConvex_relpos = new feng3d.Vector3();
-    var planeConvex_projected = new feng3d.Vector3();
-
-    var convexConvex_sepAxis = new feng3d.Vector3();
-    var convexConvex_q = new feng3d.Vector3();
-
-    var particlePlane_normal = new feng3d.Vector3();
-    var particlePlane_relpos = new feng3d.Vector3();
-    var particlePlane_projected = new feng3d.Vector3();
-
-    var particleSphere_normal = new feng3d.Vector3();
-
-    // WIP
-    var cqj = new feng3d.Quaternion();
-    var convexParticle_local = new feng3d.Vector3();
-    var convexParticle_normal = new feng3d.Vector3();
-    var convexParticle_penetratedFaceNormal = new feng3d.Vector3();
-    var convexParticle_vertexToParticle = new feng3d.Vector3();
-    var convexParticle_worldPenetrationVec = new feng3d.Vector3();
-
-    var convexHeightfield_tmp1 = new feng3d.Vector3();
-    var convexHeightfield_tmp2 = new feng3d.Vector3();
-    var convexHeightfield_faceList = [0];
-
-    var sphereHeightfield_tmp1 = new feng3d.Vector3();
-    var sphereHeightfield_tmp2 = new feng3d.Vector3();
-
 
     Narrowphase.prototype[ShapeType.BOX | ShapeType.BOX] = Narrowphase.prototype.boxBox;
     Narrowphase.prototype[ShapeType.BOX | ShapeType.CONVEXPOLYHEDRON] = Narrowphase.prototype.boxConvex;
