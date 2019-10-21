@@ -17738,21 +17738,12 @@ declare namespace CANNON {
          */
         computeNormals(): void;
         /**
-         * 得到3个顶点的法向量
-         *
-         * @param va
-         * @param vb
-         * @param vc
-         * @param target
-         */
-        static computeNormal(va: feng3d.Vector3, vb: feng3d.Vector3, vc: feng3d.Vector3, target: feng3d.Vector3): void;
-        /**
          * 从顶点计算面法线
          *
          * @param i
          * @param target
          */
-        getFaceNormal(i: number, target: feng3d.Vector3): void;
+        getFaceNormal(i: number, target: feng3d.Vector3): feng3d.Vector3;
         /**
          * @param posA
          * @param quatA

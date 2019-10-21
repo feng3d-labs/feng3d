@@ -38701,24 +38701,6 @@ var CANNON;
             }
         };
         /**
-         * 得到3个顶点的法向量
-         *
-         * @param va
-         * @param vb
-         * @param vc
-         * @param target
-         */
-        ConvexPolyhedron.computeNormal = function (va, vb, vc, target) {
-            var cb = new feng3d.Vector3();
-            var ab = new feng3d.Vector3();
-            vb.subTo(va, ab);
-            vc.subTo(vb, cb);
-            cb.crossTo(ab, target);
-            if (!target.isZero()) {
-                target.normalize();
-            }
-        };
-        /**
          * 从顶点计算面法线
          *
          * @param i
@@ -38729,7 +38711,9 @@ var CANNON;
             var va = this.vertices[f[0]];
             var vb = this.vertices[f[1]];
             var vc = this.vertices[f[2]];
-            return ConvexPolyhedron.computeNormal(va, vb, vc, target);
+            var tri = new feng3d.Triangle3D(va, vb, vc);
+            tri.getNormal(target);
+            return target;
         };
         /**
          * @param posA
