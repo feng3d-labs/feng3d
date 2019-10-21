@@ -8747,6 +8747,16 @@ var feng3d;
             * Vector3 对象中的第一个元素，例如，三维空间中某个点的 x 坐标。默认值为 0
             */
             this.x = 0;
+            // get x()
+            // {
+            //     return this._x;
+            // }
+            // set x(v)
+            // {
+            //     console.assert(!isNaN(v))
+            //     this._x = v;
+            // }
+            // private _x = 0;
             /**
              * Vector3 对象中的第二个元素，例如，三维空间中某个点的 y 坐标。默认值为 0
              */
@@ -13430,8 +13440,8 @@ var feng3d;
          * @param max 最大点
          */
         function AABB(min, max) {
-            if (min === void 0) { min = new feng3d.Vector3(+Infinity, +Infinity, +Infinity); }
-            if (max === void 0) { max = new feng3d.Vector3(-Infinity, -Infinity, -Infinity); }
+            if (min === void 0) { min = new feng3d.Vector3(); }
+            if (max === void 0) { max = new feng3d.Vector3(); }
             this.min = min.clone();
             this.max = max.clone();
         }
@@ -43443,9 +43453,6 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-console.log("feng3d-0.1.3");
-console.log("feng3d-0.1.3");
-console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

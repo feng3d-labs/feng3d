@@ -64,7 +64,7 @@ namespace feng3d
          * @param min 最小点
          * @param max 最大点
          */
-        constructor(min = new Vector3(+Infinity, + Infinity, + Infinity), max = new Vector3(- Infinity, - Infinity, - Infinity))
+        constructor(min = new Vector3(), max = new Vector3())
         {
             this.min = min.clone();
             this.max = max.clone();
