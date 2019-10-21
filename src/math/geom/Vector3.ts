@@ -80,7 +80,7 @@ namespace feng3d
         /**
         * 当前 Vector3 对象的长度（大小），即从原点 (0,0,0) 到该对象的 x、y 和 z 坐标的距离。w 属性将被忽略。单位矢量具有的长度或大小为一。
         */
-        get length(): number
+        get length()
         {
             return Math.sqrt(this.lengthSquared);
         }

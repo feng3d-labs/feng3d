@@ -6,7 +6,7 @@ namespace feng3d
      */
     export class TrackballControls extends EventDispatcher
     {
-        object: any;
+        object: GameObject;
         domElement: any;
         enabled: boolean;
         screen: { left: number; top: number; width: number; height: number; };
@@ -30,7 +30,10 @@ namespace feng3d
         rotateCamera: () => void;
         zoomCamera: () => void;
         panCamera: () => void;
-        constructor(object, domElement)
+        checkDistances: () => void;
+        update: () => void;
+
+        constructor(object: GameObject, domElement)
         {
             super();
             var _this = this;
@@ -90,8 +93,8 @@ namespace feng3d
             // for reset
 
             this.target0 = this.target.clone();
-            this.position0 = this.object.position.clone();
-            this.up0 = this.object.up.clone();
+            this.position0 = this.object.transform.position.clone();
+            this.up0 = this.object.transform.upVector.clone();
 
             // events
 
@@ -204,10 +207,10 @@ namespace feng3d
 
                     }
 
-                    _eye.copy(_this.object.position).sub(_this.target);
+                    _eye.copy(_this.object.transform.position).sub(_this.target);
 
-                    vector.copy(_this.object.up).setLength(mouseOnBall.y)
-                    vector.add(objectUp.copy(_this.object.up).cross(_eye).setLength(mouseOnBall.x));
+                    vector.copy(_this.object.transform.upVector).setLength(mouseOnBall.y)
+                    vector.add(objectUp.copy(_this.object.transform.upVector).cross(_eye).setLength(mouseOnBall.x));
                     vector.add(_eye.setLength(mouseOnBall.z));
 
                     return vector;
@@ -236,7 +239,7 @@ namespace feng3d
                         quaternion.fromAxisAngle(axis, -angle);
 
                         _eye.applyQuaternion(quaternion);
-                        _this.object.up.applyQuaternion(quaternion);
+                        _this.object.transform.upVector.applyQuaternion(quaternion);
 
                         _rotateEnd.applyQuaternion(quaternion);
 
@@ -306,26 +309,23 @@ namespace feng3d
 
                     mouseChange.copy(_panEnd).sub(_panStart);
 
-                    if (mouseChange.lengthSq())
+                    if (mouseChange.lengthSquared)
                     {
+                        mouseChange.scaleNumber(_eye.length * _this.panSpeed);
 
-                        mouseChange.multiplyScalar(_eye.length() * _this.panSpeed);
-
-                        pan.copy(_eye).cross(_this.object.up).setLength(mouseChange.x);
-                        pan.add(objectUp.copy(_this.object.up).setLength(mouseChange.y));
+                        pan.copy(_eye).cross(_this.object.transform.upVector).setLength(mouseChange.x);
+                        pan.add(objectUp.copy(_this.object.transform.upVector).setLength(mouseChange.y));
 
                         _this.object.position.add(pan);
                         _this.target.add(pan);
 
                         if (_this.staticMoving)
                         {
-
                             _panStart.copy(_panEnd);
-
                         } else
                         {
 
-                            _panStart.add(mouseChange.subVectors(_panEnd, _panStart).multiplyScalar(_this.dynamicDampingFactor));
+                            _panStart.add(_panEnd.subTo(_panStart, mouseChange).scaleNumber(_this.dynamicDampingFactor));
 
                         }
 
@@ -340,14 +340,14 @@ namespace feng3d
                 if (!_this.noZoom || !_this.noPan)
                 {
 
-                    if (_eye.lengthSq() > _this.maxDistance * _this.maxDistance)
+                    if (_eye.lengthSquared > _this.maxDistance * _this.maxDistance)
                     {
 
                         _this.object.position.addVectors(_this.target, _eye.setLength(_this.maxDistance));
 
                     }
 
-                    if (_eye.lengthSq() < _this.minDistance * _this.minDistance)
+                    if (_eye.lengthSquared < _this.minDistance * _this.minDistance)
                     {
 
                         _this.object.position.addVectors(_this.target, _eye.setLength(_this.minDistance));
@@ -361,7 +361,7 @@ namespace feng3d
             this.update = function ()
             {
 
-                _eye.subVectors(_this.object.position, _this.target);
+                _this.object.position.subTo(_this.target, _eye);
 
                 if (!_this.noRotate)
                 {

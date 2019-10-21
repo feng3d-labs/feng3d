@@ -52,11 +52,19 @@ namespace feng3d
         y: number;
 
         /**
-         * 从 (0,0) 到此点的线段长度。
+         * 长度
          */
         get length(): number
         {
-            return Math.sqrt(this.x * this.x + this.y * this.y);
+            return Math.sqrt(this.lengthSquared);
+        }
+
+        /**
+        * 长度的平方
+        */
+        get lengthSquared(): number
+        {
+            return this.x * this.x + this.y * this.y;
         }
 
         /**
@@ -112,9 +120,21 @@ namespace feng3d
         }
 
         /**
-         * 将另一个点的坐标添加到此点的坐标以创建一个新点。
-         * @param v 要添加的点。
-         * @returns 新点。
+         * 加上指定向量得到新向量
+         * @param v 加向量
+         * @return 返回新向量
+         */
+        add(a: Vector2)
+        {
+            this.x += a.x;
+            this.y += a.y;
+            return this;
+        }
+
+        /**
+         * 加上指定向量得到新向量
+         * @param v 加向量
+         * @return 返回新向量
          */
         addTo(v: Vector2, vout = new Vector2())
         {
@@ -154,6 +174,24 @@ namespace feng3d
             this.x *= s;
             this.y *= s;
             return this;
+        }
+
+        /**
+         * 按标量（大小）缩放当前的 Vector3 对象。
+         */
+        scaleNumber(s: number)
+        {
+            this.x *= s;
+            this.y *= s;
+            return this;
+        }
+
+        /**
+         * 按标量（大小）缩放当前的 Vector3 对象。
+         */
+        scaleNumberTo(s: number, vout = new Vector2())
+        {
+            return vout.copy(this).scaleNumber(s);
         }
 
         /**
