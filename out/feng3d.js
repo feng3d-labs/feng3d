@@ -38629,6 +38629,318 @@ var CANNON;
 var CANNON;
 (function (CANNON) {
     /**
+     * 三角网格
+     */
+    var Trimesh = /** @class */ (function (_super) {
+        __extends(Trimesh, _super);
+        /**
+         * @param vertices
+         * @param indices
+         *
+         * @example
+         *     // How to make a mesh with a single triangle
+         *     var vertices = [
+         *         0, 0, 0, // vertex 0
+         *         1, 0, 0, // vertex 1
+         *         0, 1, 0  // vertex 2
+         *     ];
+         *     var indices = [
+         *         0, 1, 2  // triangle 0
+         *     ];
+         *     var trimeshShape = new Trimesh(vertices, indices);
+         */
+        function Trimesh(vertices, indices) {
+            var _this = _super.call(this) || this;
+            _this.type = CANNON.ShapeType.TRIMESH;
+            _this.vertices = vertices;
+            _this.indices = indices;
+            _this.normals = [];
+            _this.aabb = new feng3d.AABB();
+            _this.edges = null;
+            _this.tree = new CANNON.Octree();
+            _this.updateEdges();
+            _this.updateNormals();
+            _this.updateAABB();
+            _this.updateBoundingSphereRadius();
+            _this.updateTree();
+            return _this;
+        }
+        /**
+         * 更新树
+         */
+        Trimesh.prototype.updateTree = function () {
+            var tree = this.tree;
+            tree.reset();
+            tree.aabb.copy(this.aabb);
+            // Insert all triangles
+            var triangleAABB = new feng3d.AABB();
+            var a = new feng3d.Vector3();
+            var b = new feng3d.Vector3();
+            var c = new feng3d.Vector3();
+            var points = [a, b, c];
+            for (var i = 0; i < this.indices.length / 3; i++) {
+                // Get unscaled triangle verts
+                var i3 = i * 3;
+                this.getVertex(this.indices[i3], a);
+                this.getVertex(this.indices[i3 + 1], b);
+                this.getVertex(this.indices[i3 + 2], c);
+                triangleAABB.fromPoints(points);
+                tree.insert(triangleAABB, i);
+            }
+            tree.removeEmptyNodes();
+        };
+        /**
+         * 从trimesh获取本地AABB中的三角形。
+         *
+         * @param aabb
+         * @param result 一个整数数组，引用查询的三角形。
+         */
+        Trimesh.prototype.getTrianglesInAABB = function (aabb, result) {
+            var unscaledAABB = new feng3d.AABB();
+            unscaledAABB.copy(aabb);
+            return this.tree.aabbQuery(unscaledAABB, result);
+        };
+        /**
+         * 计算法线
+         */
+        Trimesh.prototype.updateNormals = function () {
+            var n = new feng3d.Vector3();
+            var va = new feng3d.Vector3();
+            var vb = new feng3d.Vector3();
+            var vc = new feng3d.Vector3();
+            // Generate normals
+            var normals = this.normals;
+            for (var i = 0; i < this.indices.length / 3; i++) {
+                var i3 = i * 3;
+                var a = this.indices[i3], b = this.indices[i3 + 1], c = this.indices[i3 + 2];
+                this.getVertex(a, va);
+                this.getVertex(b, vb);
+                this.getVertex(c, vc);
+                Trimesh.computeNormal(vb, va, vc, n);
+                normals[i3] = n.x;
+                normals[i3 + 1] = n.y;
+                normals[i3 + 2] = n.z;
+            }
+        };
+        /**
+         * 更新边数组
+         */
+        Trimesh.prototype.updateEdges = function () {
+            var edges = {};
+            var add = function (a, b) {
+                var key = a < b ? a + '_' + b : b + '_' + a;
+                edges[key] = true;
+            };
+            for (var i = 0; i < this.indices.length / 3; i++) {
+                var i3 = i * 3;
+                var a = this.indices[i3], b = this.indices[i3 + 1], c = this.indices[i3 + 2];
+                add(a, b);
+                add(b, c);
+                add(c, a);
+            }
+            var keys = Object.keys(edges);
+            this.edges = [];
+            for (var i = 0; i < keys.length; i++) {
+                var indices = keys[i].split('_');
+                this.edges[2 * i] = parseInt(indices[0], 10);
+                this.edges[2 * i + 1] = parseInt(indices[1], 10);
+            }
+        };
+        /**
+         * 获取边的顶点
+         *
+         * @param edgeIndex
+         * @param firstOrSecond 0还是1，取决于你需要哪个顶点。
+         * @param vertexStore 保存结果
+         */
+        Trimesh.prototype.getEdgeVertex = function (edgeIndex, firstOrSecond, vertexStore) {
+            var vertexIndex = this.edges[edgeIndex * 2 + (firstOrSecond ? 1 : 0)];
+            this.getVertex(vertexIndex, vertexStore);
+        };
+        /**
+         * 沿着一条边得到一个向量。
+         *
+         * @param edgeIndex
+         * @param vectorStore
+         */
+        Trimesh.prototype.getEdgeVector = function (edgeIndex, vectorStore) {
+            var va = new feng3d.Vector3();
+            var vb = new feng3d.Vector3();
+            this.getEdgeVertex(edgeIndex, 0, va);
+            this.getEdgeVertex(edgeIndex, 1, vb);
+            vb.subTo(va, vectorStore);
+        };
+        /**
+         * 得到3个顶点的法向量
+         *
+         * @param va
+         * @param vb
+         * @param vc
+         * @param target
+         */
+        Trimesh.computeNormal = function (va, vb, vc, target) {
+            var cb = new feng3d.Vector3();
+            var ab = new feng3d.Vector3();
+            vb.subTo(va, ab);
+            vc.subTo(vb, cb);
+            cb.crossTo(ab, target);
+            if (!target.isZero()) {
+                target.normalize();
+            }
+        };
+        /**
+         * 获取顶点
+         *
+         * @param i
+         * @param out
+         * @return The "out" vector object
+         */
+        Trimesh.prototype.getVertex = function (i, out) {
+            var i3 = i * 3;
+            var vertices = this.vertices;
+            return out.init(vertices[i3], vertices[i3 + 1], vertices[i3 + 2]);
+        };
+        /**
+         * 通过给定的位置和四元数转换，从三元组中得到一个顶点。
+         *
+         * @param i
+         * @param pos
+         * @param quat
+         * @param out
+         * @return The "out" vector object
+         */
+        Trimesh.prototype.getWorldVertex = function (i, transform, out) {
+            this.getVertex(i, out);
+            transform.pointToWorldFrame(out, out);
+            return out;
+        };
+        /**
+         * 从三角形中获取三个顶点
+         *
+         * @param i
+         * @param a
+         * @param b
+         * @param c
+         */
+        Trimesh.prototype.getTriangleVertices = function (i, a, b, c) {
+            var i3 = i * 3;
+            this.getVertex(this.indices[i3], a);
+            this.getVertex(this.indices[i3 + 1], b);
+            this.getVertex(this.indices[i3 + 2], c);
+        };
+        /**
+         * 获取三角形的法线
+         *
+         * @param i
+         * @param target
+         * @return The "target" vector object
+         */
+        Trimesh.prototype.getNormal = function (i, target) {
+            var i3 = i * 3;
+            return target.init(this.normals[i3], this.normals[i3 + 1], this.normals[i3 + 2]);
+        };
+        /**
+         *
+         * @param mass
+         * @param target
+         * @return The "target" vector object
+         */
+        Trimesh.prototype.calculateLocalInertia = function (mass, target) {
+            // Approximate with box inertia
+            // Exact inertia calculation is overkill, but see http://geometrictools.com/Documentation/PolyhedralMassProperties.pdf for the correct way to do it
+            var cli_aabb = new feng3d.AABB();
+            this.computeLocalAABB(cli_aabb);
+            var x = cli_aabb.max.x - cli_aabb.min.x, y = cli_aabb.max.y - cli_aabb.min.y, z = cli_aabb.max.z - cli_aabb.min.z;
+            return target.init(1.0 / 12.0 * mass * (2 * y * 2 * y + 2 * z * 2 * z), 1.0 / 12.0 * mass * (2 * x * 2 * x + 2 * z * 2 * z), 1.0 / 12.0 * mass * (2 * y * 2 * y + 2 * x * 2 * x));
+        };
+        /**
+         * 计算包围盒
+         *
+         * @param aabb
+         */
+        Trimesh.prototype.computeLocalAABB = function (aabb) {
+            var l = aabb.min, u = aabb.max, n = this.vertices.length, v = new feng3d.Vector3();
+            this.getVertex(0, v);
+            l.copy(v);
+            u.copy(v);
+            for (var i = 0; i !== n; i++) {
+                this.getVertex(i, v);
+                if (v.x < l.x) {
+                    l.x = v.x;
+                }
+                else if (v.x > u.x) {
+                    u.x = v.x;
+                }
+                if (v.y < l.y) {
+                    l.y = v.y;
+                }
+                else if (v.y > u.y) {
+                    u.y = v.y;
+                }
+                if (v.z < l.z) {
+                    l.z = v.z;
+                }
+                else if (v.z > u.z) {
+                    u.z = v.z;
+                }
+            }
+        };
+        /**
+         * 更新包围盒
+         */
+        Trimesh.prototype.updateAABB = function () {
+            this.computeLocalAABB(this.aabb);
+        };
+        /**
+         * 更新此形状的局部包围球半径
+         */
+        Trimesh.prototype.updateBoundingSphereRadius = function () {
+            // Assume points are distributed with local (0,0,0) as center
+            var max2 = 0;
+            var vertices = this.vertices;
+            var v = new feng3d.Vector3();
+            for (var i = 0, N = vertices.length / 3; i !== N; i++) {
+                this.getVertex(i, v);
+                var norm2 = v.lengthSquared;
+                if (norm2 > max2) {
+                    max2 = norm2;
+                }
+            }
+            this.boundingSphereRadius = Math.sqrt(max2);
+        };
+        /**
+         * 计算世界包围盒
+         *
+         * @param pos
+         * @param quat
+         * @param min
+         * @param max
+         */
+        Trimesh.prototype.calculateWorldAABB = function (pos, quat, min, max) {
+            // 使用局部AABB进行更快的近似
+            var frame = new CANNON.Transform();
+            var result = new feng3d.AABB();
+            frame.position = pos;
+            frame.quaternion = quat;
+            var mat = frame.toMatrix3D();
+            result.copy(this.aabb).applyMatrix3D(mat);
+            min.copy(result.min);
+            max.copy(result.max);
+        };
+        ;
+        /**
+         * 得到近似体积
+         */
+        Trimesh.prototype.volume = function () {
+            return 4.0 * Math.PI * this.boundingSphereRadius / 3.0;
+        };
+        return Trimesh;
+    }(CANNON.Shape));
+    CANNON.Trimesh = Trimesh;
+})(CANNON || (CANNON = {}));
+var CANNON;
+(function (CANNON) {
+    /**
      * 凸多面体
      */
     var ConvexPolyhedron = /** @class */ (function (_super) {
@@ -39424,58 +39736,18 @@ var CANNON;
          * @param numSegments 圆周分段数
          */
         function Cylinder(radiusTop, radiusBottom, height, numSegments) {
-            // var g = new feng3d.CylinderGeometry();
-            // g.topRadius = radiusTop;
-            // g.bottomRadius = radiusBottom;
-            // g.height = height;
-            // g.segmentsW = numSegments;
             var _this = this;
-            var N = numSegments;
-            var verts = [];
-            var axes = [];
-            var faces = [];
-            var bottomface = [];
-            var topface = [];
-            var cos = Math.cos;
-            var sin = Math.sin;
-            // 第一个底部顶点
-            verts.push(new feng3d.Vector3(radiusBottom * cos(0), -height * 0.5, radiusBottom * sin(0)));
-            bottomface.push(0);
-            // 第一个顶部顶点
-            verts.push(new feng3d.Vector3(radiusTop * cos(0), height * 0.5, radiusTop * sin(0)));
-            topface.push(1);
-            for (var i = 0; i < N; i++) {
-                var theta = 2 * Math.PI / N * (i + 1);
-                var thetaN = 2 * Math.PI / N * (i + 0.5);
-                if (i < N - 1) {
-                    // 底部
-                    verts.push(new feng3d.Vector3(radiusBottom * cos(theta), -height * 0.5, radiusBottom * sin(theta)));
-                    bottomface.push(2 * i + 2);
-                    // 顶部
-                    verts.push(new feng3d.Vector3(radiusTop * cos(theta), height * 0.5, radiusTop * sin(theta)));
-                    topface.push(2 * i + 3);
-                    // 侧面
-                    faces.push([2 * i + 2, 2 * i + 3, 2 * i + 1, 2 * i]);
-                }
-                else {
-                    faces.push([0, 1, 2 * i + 1, 2 * i]); // 连接处
-                }
-                // 如果是偶数段，我们可以切掉一半
-                if (N % 2 === 1 || i < N / 2) {
-                    axes.push(new feng3d.Vector3(cos(thetaN), 0, sin(thetaN)));
-                }
-            }
-            faces.push(topface);
-            axes.push(new feng3d.Vector3(0, 1, 0));
-            // 反转地面
-            var temp = bottomface.reverse();
-            faces.push(temp);
-            _this = _super.call(this, verts, faces, axes) || this;
+            var g = new feng3d.CylinderGeometry();
+            g.topRadius = radiusTop;
+            g.bottomRadius = radiusBottom;
+            g.height = height;
+            g.segmentsW = numSegments;
+            _this = _super.call(this, g.positions, g.indices) || this;
             _this.type = CANNON.ShapeType.CYLINDER;
             return _this;
         }
         return Cylinder;
-    }(CANNON.ConvexPolyhedron));
+    }(CANNON.Trimesh));
     CANNON.Cylinder = Cylinder;
 })(CANNON || (CANNON = {}));
 var CANNON;
@@ -40154,318 +40426,6 @@ var CANNON;
         return Sphere;
     }(CANNON.Shape));
     CANNON.Sphere = Sphere;
-})(CANNON || (CANNON = {}));
-var CANNON;
-(function (CANNON) {
-    /**
-     * 三角网格
-     */
-    var Trimesh = /** @class */ (function (_super) {
-        __extends(Trimesh, _super);
-        /**
-         * @param vertices
-         * @param indices
-         *
-         * @example
-         *     // How to make a mesh with a single triangle
-         *     var vertices = [
-         *         0, 0, 0, // vertex 0
-         *         1, 0, 0, // vertex 1
-         *         0, 1, 0  // vertex 2
-         *     ];
-         *     var indices = [
-         *         0, 1, 2  // triangle 0
-         *     ];
-         *     var trimeshShape = new Trimesh(vertices, indices);
-         */
-        function Trimesh(vertices, indices) {
-            var _this = _super.call(this) || this;
-            _this.type = CANNON.ShapeType.TRIMESH;
-            _this.vertices = vertices;
-            _this.indices = indices;
-            _this.normals = [];
-            _this.aabb = new feng3d.AABB();
-            _this.edges = null;
-            _this.tree = new CANNON.Octree();
-            _this.updateEdges();
-            _this.updateNormals();
-            _this.updateAABB();
-            _this.updateBoundingSphereRadius();
-            _this.updateTree();
-            return _this;
-        }
-        /**
-         * 更新树
-         */
-        Trimesh.prototype.updateTree = function () {
-            var tree = this.tree;
-            tree.reset();
-            tree.aabb.copy(this.aabb);
-            // Insert all triangles
-            var triangleAABB = new feng3d.AABB();
-            var a = new feng3d.Vector3();
-            var b = new feng3d.Vector3();
-            var c = new feng3d.Vector3();
-            var points = [a, b, c];
-            for (var i = 0; i < this.indices.length / 3; i++) {
-                // Get unscaled triangle verts
-                var i3 = i * 3;
-                this.getVertex(this.indices[i3], a);
-                this.getVertex(this.indices[i3 + 1], b);
-                this.getVertex(this.indices[i3 + 2], c);
-                triangleAABB.fromPoints(points);
-                tree.insert(triangleAABB, i);
-            }
-            tree.removeEmptyNodes();
-        };
-        /**
-         * 从trimesh获取本地AABB中的三角形。
-         *
-         * @param aabb
-         * @param result 一个整数数组，引用查询的三角形。
-         */
-        Trimesh.prototype.getTrianglesInAABB = function (aabb, result) {
-            var unscaledAABB = new feng3d.AABB();
-            unscaledAABB.copy(aabb);
-            return this.tree.aabbQuery(unscaledAABB, result);
-        };
-        /**
-         * 计算法线
-         */
-        Trimesh.prototype.updateNormals = function () {
-            var n = new feng3d.Vector3();
-            var va = new feng3d.Vector3();
-            var vb = new feng3d.Vector3();
-            var vc = new feng3d.Vector3();
-            // Generate normals
-            var normals = this.normals;
-            for (var i = 0; i < this.indices.length / 3; i++) {
-                var i3 = i * 3;
-                var a = this.indices[i3], b = this.indices[i3 + 1], c = this.indices[i3 + 2];
-                this.getVertex(a, va);
-                this.getVertex(b, vb);
-                this.getVertex(c, vc);
-                Trimesh.computeNormal(vb, va, vc, n);
-                normals[i3] = n.x;
-                normals[i3 + 1] = n.y;
-                normals[i3 + 2] = n.z;
-            }
-        };
-        /**
-         * 更新边数组
-         */
-        Trimesh.prototype.updateEdges = function () {
-            var edges = {};
-            var add = function (a, b) {
-                var key = a < b ? a + '_' + b : b + '_' + a;
-                edges[key] = true;
-            };
-            for (var i = 0; i < this.indices.length / 3; i++) {
-                var i3 = i * 3;
-                var a = this.indices[i3], b = this.indices[i3 + 1], c = this.indices[i3 + 2];
-                add(a, b);
-                add(b, c);
-                add(c, a);
-            }
-            var keys = Object.keys(edges);
-            this.edges = [];
-            for (var i = 0; i < keys.length; i++) {
-                var indices = keys[i].split('_');
-                this.edges[2 * i] = parseInt(indices[0], 10);
-                this.edges[2 * i + 1] = parseInt(indices[1], 10);
-            }
-        };
-        /**
-         * 获取边的顶点
-         *
-         * @param edgeIndex
-         * @param firstOrSecond 0还是1，取决于你需要哪个顶点。
-         * @param vertexStore 保存结果
-         */
-        Trimesh.prototype.getEdgeVertex = function (edgeIndex, firstOrSecond, vertexStore) {
-            var vertexIndex = this.edges[edgeIndex * 2 + (firstOrSecond ? 1 : 0)];
-            this.getVertex(vertexIndex, vertexStore);
-        };
-        /**
-         * 沿着一条边得到一个向量。
-         *
-         * @param edgeIndex
-         * @param vectorStore
-         */
-        Trimesh.prototype.getEdgeVector = function (edgeIndex, vectorStore) {
-            var va = new feng3d.Vector3();
-            var vb = new feng3d.Vector3();
-            this.getEdgeVertex(edgeIndex, 0, va);
-            this.getEdgeVertex(edgeIndex, 1, vb);
-            vb.subTo(va, vectorStore);
-        };
-        /**
-         * 得到3个顶点的法向量
-         *
-         * @param va
-         * @param vb
-         * @param vc
-         * @param target
-         */
-        Trimesh.computeNormal = function (va, vb, vc, target) {
-            var cb = new feng3d.Vector3();
-            var ab = new feng3d.Vector3();
-            vb.subTo(va, ab);
-            vc.subTo(vb, cb);
-            cb.crossTo(ab, target);
-            if (!target.isZero()) {
-                target.normalize();
-            }
-        };
-        /**
-         * 获取顶点
-         *
-         * @param i
-         * @param out
-         * @return The "out" vector object
-         */
-        Trimesh.prototype.getVertex = function (i, out) {
-            var i3 = i * 3;
-            var vertices = this.vertices;
-            return out.init(vertices[i3], vertices[i3 + 1], vertices[i3 + 2]);
-        };
-        /**
-         * 通过给定的位置和四元数转换，从三元组中得到一个顶点。
-         *
-         * @param i
-         * @param pos
-         * @param quat
-         * @param out
-         * @return The "out" vector object
-         */
-        Trimesh.prototype.getWorldVertex = function (i, transform, out) {
-            this.getVertex(i, out);
-            transform.pointToWorldFrame(out, out);
-            return out;
-        };
-        /**
-         * 从三角形中获取三个顶点
-         *
-         * @param i
-         * @param a
-         * @param b
-         * @param c
-         */
-        Trimesh.prototype.getTriangleVertices = function (i, a, b, c) {
-            var i3 = i * 3;
-            this.getVertex(this.indices[i3], a);
-            this.getVertex(this.indices[i3 + 1], b);
-            this.getVertex(this.indices[i3 + 2], c);
-        };
-        /**
-         * 获取三角形的法线
-         *
-         * @param i
-         * @param target
-         * @return The "target" vector object
-         */
-        Trimesh.prototype.getNormal = function (i, target) {
-            var i3 = i * 3;
-            return target.init(this.normals[i3], this.normals[i3 + 1], this.normals[i3 + 2]);
-        };
-        /**
-         *
-         * @param mass
-         * @param target
-         * @return The "target" vector object
-         */
-        Trimesh.prototype.calculateLocalInertia = function (mass, target) {
-            // Approximate with box inertia
-            // Exact inertia calculation is overkill, but see http://geometrictools.com/Documentation/PolyhedralMassProperties.pdf for the correct way to do it
-            var cli_aabb = new feng3d.AABB();
-            this.computeLocalAABB(cli_aabb);
-            var x = cli_aabb.max.x - cli_aabb.min.x, y = cli_aabb.max.y - cli_aabb.min.y, z = cli_aabb.max.z - cli_aabb.min.z;
-            return target.init(1.0 / 12.0 * mass * (2 * y * 2 * y + 2 * z * 2 * z), 1.0 / 12.0 * mass * (2 * x * 2 * x + 2 * z * 2 * z), 1.0 / 12.0 * mass * (2 * y * 2 * y + 2 * x * 2 * x));
-        };
-        /**
-         * 计算包围盒
-         *
-         * @param aabb
-         */
-        Trimesh.prototype.computeLocalAABB = function (aabb) {
-            var l = aabb.min, u = aabb.max, n = this.vertices.length, v = new feng3d.Vector3();
-            this.getVertex(0, v);
-            l.copy(v);
-            u.copy(v);
-            for (var i = 0; i !== n; i++) {
-                this.getVertex(i, v);
-                if (v.x < l.x) {
-                    l.x = v.x;
-                }
-                else if (v.x > u.x) {
-                    u.x = v.x;
-                }
-                if (v.y < l.y) {
-                    l.y = v.y;
-                }
-                else if (v.y > u.y) {
-                    u.y = v.y;
-                }
-                if (v.z < l.z) {
-                    l.z = v.z;
-                }
-                else if (v.z > u.z) {
-                    u.z = v.z;
-                }
-            }
-        };
-        /**
-         * 更新包围盒
-         */
-        Trimesh.prototype.updateAABB = function () {
-            this.computeLocalAABB(this.aabb);
-        };
-        /**
-         * 更新此形状的局部包围球半径
-         */
-        Trimesh.prototype.updateBoundingSphereRadius = function () {
-            // Assume points are distributed with local (0,0,0) as center
-            var max2 = 0;
-            var vertices = this.vertices;
-            var v = new feng3d.Vector3();
-            for (var i = 0, N = vertices.length / 3; i !== N; i++) {
-                this.getVertex(i, v);
-                var norm2 = v.lengthSquared;
-                if (norm2 > max2) {
-                    max2 = norm2;
-                }
-            }
-            this.boundingSphereRadius = Math.sqrt(max2);
-        };
-        /**
-         * 计算世界包围盒
-         *
-         * @param pos
-         * @param quat
-         * @param min
-         * @param max
-         */
-        Trimesh.prototype.calculateWorldAABB = function (pos, quat, min, max) {
-            // 使用局部AABB进行更快的近似
-            var frame = new CANNON.Transform();
-            var result = new feng3d.AABB();
-            frame.position = pos;
-            frame.quaternion = quat;
-            var mat = frame.toMatrix3D();
-            result.copy(this.aabb).applyMatrix3D(mat);
-            min.copy(result.min);
-            max.copy(result.max);
-        };
-        ;
-        /**
-         * 得到近似体积
-         */
-        Trimesh.prototype.volume = function () {
-            return 4.0 * Math.PI * this.boundingSphereRadius / 3.0;
-        };
-        return Trimesh;
-    }(CANNON.Shape));
-    CANNON.Trimesh = Trimesh;
 })(CANNON || (CANNON = {}));
 var CANNON;
 (function (CANNON) {
@@ -45300,7 +45260,11 @@ var feng3d;
         }
         BoxCollider.prototype.init = function () {
             var halfExtents = new feng3d.Vector3(this.width / 2, this.height / 2, this.depth / 2);
-            this._shape = new CANNON.Box(halfExtents);
+            var g = new feng3d.CubeGeometry();
+            g.width = halfExtents.x * 2;
+            g.height = halfExtents.y * 2;
+            g.depth = halfExtents.z * 2;
+            this._shape = new CANNON.Trimesh(g.positions, g.indices);
         };
         __decorate([
             feng3d.oav(),
@@ -45384,7 +45348,13 @@ var feng3d;
             return _this;
         }
         CylinderCollider.prototype.init = function () {
-            this._shape = new CANNON.Cylinder(this.topRadius, this.bottomRadius, this.height, this.segmentsW);
+            var g = new feng3d.CylinderGeometry();
+            g.topRadius = this.topRadius;
+            g.bottomRadius = this.bottomRadius;
+            g.height = this.height;
+            g.segmentsW = this.segmentsW;
+            g.updateGrometry();
+            this._shape = new CANNON.Trimesh(g.positions, g.indices);
         };
         __decorate([
             feng3d.oav(),

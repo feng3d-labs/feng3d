@@ -38,7 +38,13 @@ namespace feng3d
 
         init()
         {
-            this._shape = new CANNON.Cylinder(this.topRadius, this.bottomRadius, this.height, this.segmentsW);
+            var g = new CylinderGeometry();
+            g.topRadius = this.topRadius;
+            g.bottomRadius = this.bottomRadius;
+            g.height = this.height;
+            g.segmentsW = this.segmentsW;
+            g.updateGrometry();
+            this._shape = new CANNON.Trimesh(g.positions, g.indices);
         }
     }
 }

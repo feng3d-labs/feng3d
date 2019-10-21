@@ -360,6 +360,7 @@
         //
         "src/physics/shapes/ShapeType.ts",
         "src/physics/shapes/Shape.ts",
+        "src/physics/shapes/Trimesh.ts",
         "src/physics/shapes/ConvexPolyhedron.ts",
         "src/physics/shapes/Box.ts",
         "src/physics/shapes/Cylinder.ts",
@@ -367,7 +368,6 @@
         "src/physics/shapes/Particle.ts",
         "src/physics/shapes/Plane.ts",
         "src/physics/shapes/Sphere.ts",
-        "src/physics/shapes/Trimesh.ts",
         "src/physics/utils/Octree.ts",
         "src/physics/collision/OverlapKeeper.ts",
         "src/physics/collision/RaycastResult.ts",

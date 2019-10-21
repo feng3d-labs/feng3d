@@ -17679,6 +17679,163 @@ declare namespace CANNON {
 }
 declare namespace CANNON {
     /**
+     * 三角网格
+     */
+    class Trimesh extends Shape {
+        type: ShapeType;
+        /**
+         * 顶点坐标数据
+         */
+        vertices: number[];
+        /**
+         * 面法线数据
+         */
+        normals: number[];
+        /**
+         * 包围盒
+         */
+        aabb: feng3d.AABB;
+        /**
+         * 边数组
+         */
+        edges: number[];
+        /**
+         * 索引的三角形。使用. updatetree()更新它。
+         */
+        tree: Octree;
+        /**
+         * @param vertices
+         * @param indices
+         *
+         * @example
+         *     // How to make a mesh with a single triangle
+         *     var vertices = [
+         *         0, 0, 0, // vertex 0
+         *         1, 0, 0, // vertex 1
+         *         0, 1, 0  // vertex 2
+         *     ];
+         *     var indices = [
+         *         0, 1, 2  // triangle 0
+         *     ];
+         *     var trimeshShape = new Trimesh(vertices, indices);
+         */
+        constructor(vertices: number[], indices: number[]);
+        /**
+         * 更新树
+         */
+        updateTree(): void;
+        /**
+         * 从trimesh获取本地AABB中的三角形。
+         *
+         * @param aabb
+         * @param result 一个整数数组，引用查询的三角形。
+         */
+        getTrianglesInAABB(aabb: feng3d.AABB, result: number[]): number[];
+        /**
+         * 计算法线
+         */
+        updateNormals(): void;
+        /**
+         * 更新边数组
+         */
+        updateEdges(): void;
+        /**
+         * 获取边的顶点
+         *
+         * @param edgeIndex
+         * @param firstOrSecond 0还是1，取决于你需要哪个顶点。
+         * @param vertexStore 保存结果
+         */
+        getEdgeVertex(edgeIndex: number, firstOrSecond: number, vertexStore: feng3d.Vector3): void;
+        /**
+         * 沿着一条边得到一个向量。
+         *
+         * @param edgeIndex
+         * @param vectorStore
+         */
+        getEdgeVector(edgeIndex: number, vectorStore: feng3d.Vector3): void;
+        /**
+         * 得到3个顶点的法向量
+         *
+         * @param va
+         * @param vb
+         * @param vc
+         * @param target
+         */
+        static computeNormal(va: feng3d.Vector3, vb: feng3d.Vector3, vc: feng3d.Vector3, target: feng3d.Vector3): void;
+        /**
+         * 获取顶点
+         *
+         * @param i
+         * @param out
+         * @return The "out" vector object
+         */
+        getVertex(i: number, out: feng3d.Vector3): feng3d.Vector3;
+        /**
+         * 通过给定的位置和四元数转换，从三元组中得到一个顶点。
+         *
+         * @param i
+         * @param pos
+         * @param quat
+         * @param out
+         * @return The "out" vector object
+         */
+        getWorldVertex(i: number, transform: Transform, out: feng3d.Vector3): feng3d.Vector3;
+        /**
+         * 从三角形中获取三个顶点
+         *
+         * @param i
+         * @param a
+         * @param b
+         * @param c
+         */
+        getTriangleVertices(i: number, a: feng3d.Vector3, b: feng3d.Vector3, c: feng3d.Vector3): void;
+        /**
+         * 获取三角形的法线
+         *
+         * @param i
+         * @param target
+         * @return The "target" vector object
+         */
+        getNormal(i: number, target: feng3d.Vector3): feng3d.Vector3;
+        /**
+         *
+         * @param mass
+         * @param target
+         * @return The "target" vector object
+         */
+        calculateLocalInertia(mass: number, target: feng3d.Vector3): feng3d.Vector3;
+        /**
+         * 计算包围盒
+         *
+         * @param aabb
+         */
+        computeLocalAABB(aabb: feng3d.AABB): void;
+        /**
+         * 更新包围盒
+         */
+        updateAABB(): void;
+        /**
+         * 更新此形状的局部包围球半径
+         */
+        updateBoundingSphereRadius(): void;
+        /**
+         * 计算世界包围盒
+         *
+         * @param pos
+         * @param quat
+         * @param min
+         * @param max
+         */
+        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
+        /**
+         * 得到近似体积
+         */
+        volume(): number;
+    }
+}
+declare namespace CANNON {
+    /**
      * 凸多面体
      */
     class ConvexPolyhedron extends Shape {
@@ -17912,7 +18069,7 @@ declare namespace CANNON {
     /**
      * 圆柱体
      */
-    class Cylinder extends ConvexPolyhedron {
+    class Cylinder extends Trimesh {
         /**
          * @param radiusTop 顶部半径
          * @param radiusBottom 底部半径
@@ -18182,163 +18339,6 @@ declare namespace CANNON {
         volume(): number;
         updateBoundingSphereRadius(): void;
         calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
-    }
-}
-declare namespace CANNON {
-    /**
-     * 三角网格
-     */
-    class Trimesh extends Shape {
-        type: ShapeType;
-        /**
-         * 顶点坐标数据
-         */
-        vertices: number[];
-        /**
-         * 面法线数据
-         */
-        normals: number[];
-        /**
-         * 包围盒
-         */
-        aabb: feng3d.AABB;
-        /**
-         * 边数组
-         */
-        edges: number[];
-        /**
-         * 索引的三角形。使用. updatetree()更新它。
-         */
-        tree: Octree;
-        /**
-         * @param vertices
-         * @param indices
-         *
-         * @example
-         *     // How to make a mesh with a single triangle
-         *     var vertices = [
-         *         0, 0, 0, // vertex 0
-         *         1, 0, 0, // vertex 1
-         *         0, 1, 0  // vertex 2
-         *     ];
-         *     var indices = [
-         *         0, 1, 2  // triangle 0
-         *     ];
-         *     var trimeshShape = new Trimesh(vertices, indices);
-         */
-        constructor(vertices: number[], indices: number[]);
-        /**
-         * 更新树
-         */
-        updateTree(): void;
-        /**
-         * 从trimesh获取本地AABB中的三角形。
-         *
-         * @param aabb
-         * @param result 一个整数数组，引用查询的三角形。
-         */
-        getTrianglesInAABB(aabb: feng3d.AABB, result: number[]): number[];
-        /**
-         * 计算法线
-         */
-        updateNormals(): void;
-        /**
-         * 更新边数组
-         */
-        updateEdges(): void;
-        /**
-         * 获取边的顶点
-         *
-         * @param edgeIndex
-         * @param firstOrSecond 0还是1，取决于你需要哪个顶点。
-         * @param vertexStore 保存结果
-         */
-        getEdgeVertex(edgeIndex: number, firstOrSecond: number, vertexStore: feng3d.Vector3): void;
-        /**
-         * 沿着一条边得到一个向量。
-         *
-         * @param edgeIndex
-         * @param vectorStore
-         */
-        getEdgeVector(edgeIndex: number, vectorStore: feng3d.Vector3): void;
-        /**
-         * 得到3个顶点的法向量
-         *
-         * @param va
-         * @param vb
-         * @param vc
-         * @param target
-         */
-        static computeNormal(va: feng3d.Vector3, vb: feng3d.Vector3, vc: feng3d.Vector3, target: feng3d.Vector3): void;
-        /**
-         * 获取顶点
-         *
-         * @param i
-         * @param out
-         * @return The "out" vector object
-         */
-        getVertex(i: number, out: feng3d.Vector3): feng3d.Vector3;
-        /**
-         * 通过给定的位置和四元数转换，从三元组中得到一个顶点。
-         *
-         * @param i
-         * @param pos
-         * @param quat
-         * @param out
-         * @return The "out" vector object
-         */
-        getWorldVertex(i: number, transform: Transform, out: feng3d.Vector3): feng3d.Vector3;
-        /**
-         * 从三角形中获取三个顶点
-         *
-         * @param i
-         * @param a
-         * @param b
-         * @param c
-         */
-        getTriangleVertices(i: number, a: feng3d.Vector3, b: feng3d.Vector3, c: feng3d.Vector3): void;
-        /**
-         * 获取三角形的法线
-         *
-         * @param i
-         * @param target
-         * @return The "target" vector object
-         */
-        getNormal(i: number, target: feng3d.Vector3): feng3d.Vector3;
-        /**
-         *
-         * @param mass
-         * @param target
-         * @return The "target" vector object
-         */
-        calculateLocalInertia(mass: number, target: feng3d.Vector3): feng3d.Vector3;
-        /**
-         * 计算包围盒
-         *
-         * @param aabb
-         */
-        computeLocalAABB(aabb: feng3d.AABB): void;
-        /**
-         * 更新包围盒
-         */
-        updateAABB(): void;
-        /**
-         * 更新此形状的局部包围球半径
-         */
-        updateBoundingSphereRadius(): void;
-        /**
-         * 计算世界包围盒
-         *
-         * @param pos
-         * @param quat
-         * @param min
-         * @param max
-         */
-        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
-        /**
-         * 得到近似体积
-         */
-        volume(): number;
     }
 }
 declare namespace CANNON {
@@ -19873,8 +19873,8 @@ declare namespace feng3d {
          * 深度
          */
         depth: number;
-        readonly shape: CANNON.Box;
-        protected _shape: CANNON.Box;
+        readonly shape: CANNON.Trimesh;
+        protected _shape: CANNON.Trimesh;
         init(): void;
     }
 }
