@@ -14,29 +14,22 @@ namespace CANNON
          */
         constructor(halfExtents: feng3d.Vector3)
         {
-            var sx = halfExtents.x;
-            var sy = halfExtents.y;
-            var sz = halfExtents.z;
+            var g = new feng3d.CubeGeometry();
+            g.width = halfExtents.x * 2;
+            g.height = halfExtents.y * 2;
+            g.depth = halfExtents.z * 2;
 
-            var vertices = [
-                new feng3d.Vector3(-sx, -sy, -sz),
-                new feng3d.Vector3(sx, -sy, -sz),
-                new feng3d.Vector3(sx, sy, -sz),
-                new feng3d.Vector3(-sx, sy, -sz),
-                new feng3d.Vector3(-sx, -sy, sz),
-                new feng3d.Vector3(sx, -sy, sz),
-                new feng3d.Vector3(sx, sy, sz),
-                new feng3d.Vector3(-sx, sy, sz)
-            ];
+            var vertices: feng3d.Vector3[] = []
+            for (let i = 0, n = g.positions.length; i < n; i += 3)
+            {
+                vertices.push(new feng3d.Vector3(g.positions[i], g.positions[i + 1], g.positions[i + 2]));
+            }
 
-            var indices = [
-                [3, 2, 1, 0], // -z
-                [4, 5, 6, 7], // +z
-                [5, 4, 0, 1], // -y
-                [2, 3, 7, 6], // +y
-                [0, 4, 7, 3], // -x
-                [1, 2, 6, 5], // +x
-            ];
+            var indices: number[][] = [];
+            for (let i = 0, n = g.indices.length; i < n; i += 3)
+            {
+                indices.push([g.indices[i], g.indices[i + 1], g.indices[i + 2]]);
+            }
 
             super(vertices, indices);
             this.type = ShapeType.BOX;

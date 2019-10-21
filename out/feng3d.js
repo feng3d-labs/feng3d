@@ -39335,27 +39335,18 @@ var CANNON;
          */
         function Box(halfExtents) {
             var _this = this;
-            var sx = halfExtents.x;
-            var sy = halfExtents.y;
-            var sz = halfExtents.z;
-            var vertices = [
-                new feng3d.Vector3(-sx, -sy, -sz),
-                new feng3d.Vector3(sx, -sy, -sz),
-                new feng3d.Vector3(sx, sy, -sz),
-                new feng3d.Vector3(-sx, sy, -sz),
-                new feng3d.Vector3(-sx, -sy, sz),
-                new feng3d.Vector3(sx, -sy, sz),
-                new feng3d.Vector3(sx, sy, sz),
-                new feng3d.Vector3(-sx, sy, sz)
-            ];
-            var indices = [
-                [3, 2, 1, 0],
-                [4, 5, 6, 7],
-                [5, 4, 0, 1],
-                [2, 3, 7, 6],
-                [0, 4, 7, 3],
-                [1, 2, 6, 5],
-            ];
+            var g = new feng3d.CubeGeometry();
+            g.width = halfExtents.x * 2;
+            g.height = halfExtents.y * 2;
+            g.depth = halfExtents.z * 2;
+            var vertices = [];
+            for (var i = 0, n = g.positions.length; i < n; i += 3) {
+                vertices.push(new feng3d.Vector3(g.positions[i], g.positions[i + 1], g.positions[i + 2]));
+            }
+            var indices = [];
+            for (var i = 0, n = g.indices.length; i < n; i += 3) {
+                indices.push([g.indices[i], g.indices[i + 1], g.indices[i + 2]]);
+            }
             _this = _super.call(this, vertices, indices) || this;
             _this.type = CANNON.ShapeType.BOX;
             _this.halfExtents = halfExtents;
