@@ -1,148 +1,179 @@
 namespace CANNON
 {
-    /**
-     * 轮子信息
-     */
     export class WheelInfo
     {
+
         /**
          * Max travel distance of the suspension, in meters.
          */
-        maxSuspensionTravel = 1;
+        maxSuspensionTravel;
 
         /**
          * Speed to apply to the wheel rotation when the wheel is sliding.
          */
-        customSlidingRotationalSpeed = -0.1;
+        customSlidingRotationalSpeed: number;
 
         /**
          * If the customSlidingRotationalSpeed should be used.
          */
-        useCustomSlidingRotationalSpeed = false
+        useCustomSlidingRotationalSpeed: boolean;
 
-        sliding = false
+        sliding: boolean;
 
         /**
          * Connection point, defined locally in the chassis body frame.
          */
-        get chassisConnectionPointLocal()
-        {
-            return this._chassisConnectionPointLocal;
-        }
-        set chassisConnectionPointLocal(v)
-        {
-            this._chassisConnectionPointLocal.copy(v);
-        }
-        private _chassisConnectionPointLocal = new feng3d.Vector3()
+        chassisConnectionPointLocal: Vec3;
 
-        get chassisConnectionPointWorld()
-        {
-            return this._chassisConnectionPointWorld;
-        }
-        set chassisConnectionPointWorld(v)
-        {
-            this._chassisConnectionPointWorld.copy(v);
-        }
-        private _chassisConnectionPointWorld = new feng3d.Vector3()
+        chassisConnectionPointWorld: Vec3;
 
-        get directionLocal()
-        {
-            return this._directionLocal;
-        }
-        set directionLocal(v)
-        {
-            this._directionLocal.copy(v);
-        }
-        private _directionLocal = new feng3d.Vector3();
+        directionLocal: Vec3;
 
-        get directionWorld()
-        {
-            return this._directionWorld;
-        }
-        set directionWorld(v)
-        {
-            this._directionWorld.copy(v);
-        }
-        private _directionWorld = new feng3d.Vector3();
+        directionWorld: Vec3;
 
-        get axleLocal()
-        {
-            return this._axleLocal;
-        }
-        set axleLocal(v)
-        {
-            this._axleLocal.copy(v);
-        }
-        private _axleLocal = new feng3d.Vector3();
+        axleLocal: Vec3;
 
-        get axleWorld()
-        {
-            return this._axleWorld;
-        }
-        set axleWorld(v)
-        {
-            this._axleWorld.copy(v);
-        }
-        private _axleWorld = new feng3d.Vector3();
+        axleWorld: Vec3;
 
-        suspensionRestLength = 1;
+        suspensionRestLength: number;
 
-        suspensionMaxLength = 2;
+        suspensionMaxLength: number;
 
-        radius = 1;
+        radius: number;
 
-        suspensionStiffness = 100;
+        suspensionStiffness: number;
 
-        dampingCompression = 10;
+        dampingCompression: number;
 
-        dampingRelaxation = 10;
+        dampingRelaxation: number;
 
-        frictionSlip = 10000;
+        frictionSlip;
 
-        steering = 0;
+        steering: number;
 
         /**
          * Rotation value, in radians.
          */
-        rotation = 0;
+        rotation: number;
 
-        deltaRotation = 0;
+        deltaRotation: number;
 
-        rollInfluence = 0.01;
+        rollInfluence: number;
 
-        maxSuspensionForce = Number.MAX_VALUE;
+        maxSuspensionForce: number;
 
-        engineForce = 0;
+        engineForce: number;
 
-        brake = 0;
+        brake: number;
 
-        isFrontWheel = true;
+        isFrontWheel: number;
 
-        clippedInvContactDotSuspension = 1;
+        clippedInvContactDotSuspension: number;
 
-        suspensionRelativeVelocity = 0;
+        suspensionRelativeVelocity: number;
 
-        suspensionForce = 0;
+        suspensionForce: number;
 
-        skidInfo = 0;
+        skidInfo: number;
 
-        suspensionLength = 0;
+        suspensionLength: number;
 
-        sideImpulse = 0;
+        sideImpulse: number;
 
-        forwardImpulse = 0;
+        forwardImpulse: number;
 
         /**
          * The result from raycasting
          */
-        raycastResult = new RaycastResult();
+        raycastResult: RaycastResult;
 
         /**
          * Wheel world transform
          */
-        worldTransform = new Transform();
+        worldTransform: Transform;
 
-        isInContact = false;
+        isInContact: boolean;
+
+        slipInfo: number;
+
+        /**
+         * 
+         * @param options 
+         */
+        constructor(options: {
+            maxSuspensionTravel?: number, customSlidingRotationalSpeed?: number, useCustomSlidingRotationalSpeed?: boolean,
+            chassisConnectionPointLocal?: Vec3, chassisConnectionPointWorld?: Vec3, directionLocal?: Vec3, directionWorld?: Vec3,
+            axleLocal?: Vec3, axleWorld?: Vec3, suspensionRestLength?: number, suspensionMaxLength?: number, radius?: number,
+            suspensionStiffness?: number, dampingCompression?: number, dampingRelaxation?: number, frictionSlip?: number,
+            rollInfluence?: number, maxSuspensionForce?: number, isFrontWheel?: number,
+        } = {})
+        {
+            options = Utils.defaults(options, {
+                chassisConnectionPointLocal: new Vec3(),
+                chassisConnectionPointWorld: new Vec3(),
+                directionLocal: new Vec3(),
+                directionWorld: new Vec3(),
+                axleLocal: new Vec3(),
+                axleWorld: new Vec3(),
+                suspensionRestLength: 1,
+                suspensionMaxLength: 2,
+                radius: 1,
+                suspensionStiffness: 100,
+                dampingCompression: 10,
+                dampingRelaxation: 10,
+                frictionSlip: 10000,
+                steering: 0,
+                rotation: 0,
+                deltaRotation: 0,
+                rollInfluence: 0.01,
+                maxSuspensionForce: Number.MAX_VALUE,
+                isFrontWheel: true,
+                clippedInvContactDotSuspension: 1,
+                suspensionRelativeVelocity: 0,
+                suspensionForce: 0,
+                skidInfo: 0,
+                suspensionLength: 0,
+                maxSuspensionTravel: 1,
+                useCustomSlidingRotationalSpeed: false,
+                customSlidingRotationalSpeed: -0.1
+            });
+
+            this.maxSuspensionTravel = options.maxSuspensionTravel;
+            this.customSlidingRotationalSpeed = options.customSlidingRotationalSpeed;
+            this.useCustomSlidingRotationalSpeed = options.useCustomSlidingRotationalSpeed;
+            this.sliding = false;
+            this.chassisConnectionPointLocal = options.chassisConnectionPointLocal.clone();
+            this.chassisConnectionPointWorld = options.chassisConnectionPointWorld.clone();
+            this.directionLocal = options.directionLocal.clone();
+            this.directionWorld = options.directionWorld.clone();
+            this.axleLocal = options.axleLocal.clone();
+            this.axleWorld = options.axleWorld.clone();
+            this.suspensionRestLength = options.suspensionRestLength;
+            this.suspensionMaxLength = options.suspensionMaxLength;
+            this.radius = options.radius;
+            this.suspensionStiffness = options.suspensionStiffness;
+            this.dampingCompression = options.dampingCompression;
+            this.dampingRelaxation = options.dampingRelaxation;
+            this.frictionSlip = options.frictionSlip;
+            this.steering = 0;
+            this.rotation = 0;
+            this.deltaRotation = 0;
+            this.rollInfluence = options.rollInfluence;
+            this.maxSuspensionForce = options.maxSuspensionForce;
+            this.engineForce = 0;
+            this.brake = 0;
+            this.isFrontWheel = options.isFrontWheel;
+            this.clippedInvContactDotSuspension = 1;
+            this.suspensionRelativeVelocity = 0;
+            this.suspensionForce = 0;
+            this.skidInfo = 0;
+            this.suspensionLength = 0;
+            this.sideImpulse = 0;
+            this.forwardImpulse = 0;
+            this.raycastResult = new RaycastResult();
+            this.worldTransform = new Transform();
+            this.isInContact = false;
+        }
 
         updateWheel(chassis: Body)
         {
@@ -151,10 +182,8 @@ namespace CANNON
             if (this.isInContact)
             {
                 var project = raycastResult.hitNormalWorld.dot(raycastResult.directionWorld);
-
-                var relpos = raycastResult.hitPointWorld.subTo(chassis.position);
-
-                var chassis_velocity_at_contactPoint = chassis.getVelocityAtWorldPoint(relpos);
+                raycastResult.hitPointWorld.vsub(chassis.position, relpos);
+                chassis.getVelocityAtWorldPoint(relpos, chassis_velocity_at_contactPoint);
                 var projVel = raycastResult.hitNormalWorld.dot(chassis_velocity_at_contactPoint);
                 if (project >= -0.1)
                 {
@@ -170,10 +199,15 @@ namespace CANNON
             } else
             {
                 // Not in contact : position wheel in a nice (rest length) position
+                raycastResult.suspensionLength = this.suspensionRestLength;
                 this.suspensionRelativeVelocity = 0.0;
-                raycastResult.directionWorld.scaleNumberTo(-1, raycastResult.hitNormalWorld);
+                raycastResult.directionWorld.scale(-1, raycastResult.hitNormalWorld);
                 this.clippedInvContactDotSuspension = 1.0;
             }
         }
     }
+
+    var chassis_velocity_at_contactPoint = new Vec3();
+    var relpos = new Vec3();
+    var chassis_velocity_at_contactPoint = new Vec3();
 }

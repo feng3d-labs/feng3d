@@ -3149,45 +3149,6 @@ QUnit.module("HighFunction", function () {
         }
     });
 });
-QUnit.module("Transform", function () {
-    QUnit.test("toMatrix3D,pointToWorldFrame", function (assert) {
-        var trans = new CANNON.Transform();
-        trans.position = feng3d.Vector3.random();
-        trans.quaternion = feng3d.Quaternion.random();
-        var mat = trans.toMatrix3D();
-        var v = feng3d.Vector3.random();
-        var v1 = new feng3d.Vector3();
-        var v2 = new feng3d.Vector3();
-        trans.pointToWorldFrame(v, v1);
-        mat.transformVector(v, v2);
-        assert.ok(v1.equals(v2));
-    });
-    QUnit.test("pointToLocalFrame,pointToWorldFrame", function (assert) {
-        var trans = new CANNON.Transform();
-        trans.position = feng3d.Vector3.random();
-        trans.quaternion = feng3d.Quaternion.random();
-        var v = feng3d.Vector3.random();
-        var v1 = trans.pointToWorldFrame(v);
-        var v2 = trans.pointToLocalFrame(v1);
-        assert.ok(v.equals(v2));
-    });
-    QUnit.test("vectorToWorldFrame,vectorToLocalFrame", function (assert) {
-        var trans = new CANNON.Transform();
-        trans.position = feng3d.Vector3.random();
-        trans.quaternion = feng3d.Quaternion.random();
-        var v = feng3d.Vector3.random();
-        var v1 = trans.vectorToWorldFrame(v);
-        var v2 = trans.vectorToLocalFrame(v1);
-        assert.ok(v.equals(v2));
-        var mat = trans.toMatrix3D();
-        var v3 = mat.deltaTransformVector(v);
-        mat.invert();
-        var v4 = mat.deltaTransformVector(v3);
-        assert.ok(v.equals(v4));
-        assert.ok(v1.equals(v3));
-        assert.ok(v2.equals(v4));
-    });
-});
 QUnit.module("Array", function () {
     QUnit.test("equal", function (assert) {
         assert.ok([1, 2, 3].equal([1, 2, 3]));

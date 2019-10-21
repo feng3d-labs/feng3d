@@ -1,30 +1,28 @@
 namespace CANNON
 {
-    /**
-     * 粒子
-     */
     export class Particle extends Shape
     {
-        type = ShapeType.PARTICLE;
 
-        position: feng3d.Vector3;
-        velocity: feng3d.Vector3;
-        mass: number;
-        force: feng3d.Vector3;
-
+        /**
+         * Particle shape.
+         * 
+         * @author schteppe
+         */
         constructor()
         {
-            super();
+            super({
+                type: Shape.types.PARTICLE
+            });
         }
 
         /**
          * @param mass
          * @param target
          */
-        calculateLocalInertia(mass: number, target: feng3d.Vector3)
+        calculateLocalInertia(mass: number, target: Vec3)
         {
-            target = target || new feng3d.Vector3();
-            target.init(0, 0, 0);
+            target = target || new Vec3();
+            target.set(0, 0, 0);
             return target;
         }
 
@@ -38,8 +36,9 @@ namespace CANNON
             this.boundingSphereRadius = 0;
         }
 
-        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
+        calculateWorldAABB(pos: Vec3, quat: Quaternion, min: Vec3, max: Vec3)
         {
+            // Get each axis max
             min.copy(pos);
             max.copy(pos);
         }

@@ -2,8 +2,8 @@ namespace CANNON
 {
     export class ConeEquation extends Equation
     {
-        axisA: feng3d.Vector3;
-        axisB: feng3d.Vector3;
+        axisA: Vec3;
+        axisB: Vec3;
         /**
          * The cone angle to keep
          */
@@ -18,14 +18,14 @@ namespace CANNON
          * 
          * @author schteppe
          */
-        constructor(bodyA: Body, bodyB: Body, maxForce = 1e6, axisA = new feng3d.Vector3(1, 0, 0), axisB = new feng3d.Vector3(0, 1, 0), angle = 0)
+        constructor(bodyA: Body, bodyB: Body, options: { maxForce?: number, axisA?: Vec3, axisB?: Vec3, angle?: number } = {})
         {
-            super(bodyA, bodyB, maxForce, maxForce);
+            super(bodyA, bodyB, -(typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6), typeof (options.maxForce) !== 'undefined' ? options.maxForce : 1e6);
 
-            this.axisA = axisA.clone();
-            this.axisB = axisB.clone();
+            this.axisA = options.axisA ? options.axisA.clone() : new Vec3(1, 0, 0);
+            this.axisB = options.axisB ? options.axisB.clone() : new Vec3(0, 1, 0);
 
-            this.angle = angle;
+            this.angle = typeof (options.angle) !== 'undefined' ? options.angle : 0;
         }
 
         computeB(h: number)
@@ -36,13 +36,23 @@ namespace CANNON
                 ni = this.axisA,
                 nj = this.axisB,
 
+                nixnj = tmpVec1,
+                njxni = tmpVec2,
+
                 GA = this.jacobianElementA,
                 GB = this.jacobianElementB;
 
             // Caluclate cross products
-            var nixnj = ni.crossTo(nj);
-            var njxni = nj.crossTo(ni);
+            ni.cross(nj, nixnj);
+            nj.cross(ni, njxni);
 
+            // The angle between two vector is:
+            // cos(theta) = a * b / (length(a) * length(b) = { len(a) = len(b) = 1 } = a * b
+
+            // g = a * b
+            // gdot = (b x a) * wi + (a x b) * wj
+            // G = [0 bxa 0 axb]
+            // W = [vi wi vj wj]
             GA.rotational.copy(njxni);
             GB.rotational.copy(nixnj);
 
@@ -56,4 +66,7 @@ namespace CANNON
         }
 
     }
+
+    var tmpVec1 = new Vec3();
+    var tmpVec2 = new Vec3();
 }

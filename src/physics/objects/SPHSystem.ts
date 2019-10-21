@@ -2,7 +2,7 @@ namespace CANNON
 {
     export class SPHSystem
     {
-        particles: Particle[];
+        particles: any[];
         /**
          * Density of the system (kg/m3).
          */
@@ -18,9 +18,9 @@ namespace CANNON
          */
         viscosity: number;
         eps: number;
-        pressures: number[];
-        densities: number[];
-        neighbors: Particle[][];
+        pressures: any[];
+        densities: any[];
+        neighbors: any[];
 
         /**
          * Smoothed-particle hydrodynamics system
@@ -48,7 +48,7 @@ namespace CANNON
          * 
          * @param particle
          */
-        add(particle: Particle)
+        add(particle: Body)
         {
             this.particles.push(particle);
             if (this.neighbors.length < this.particles.length)
@@ -62,7 +62,7 @@ namespace CANNON
          * 
          * @param particle
          */
-        remove(particle: Particle)
+        remove(particle: Body)
         {
             var idx = this.particles.indexOf(particle);
             if (idx !== -1)
@@ -81,18 +81,17 @@ namespace CANNON
          * @param particle
          * @param neighbors
          */
-        getNeighbors(particle: Particle, neighbors: any[])
+        getNeighbors(particle: Body, neighbors: any[])
         {
             var N = this.particles.length,
                 id = particle.id,
-                R2 = this.smoothingRadius * this.smoothingRadius;
-
-            var dist = new feng3d.Vector3();
+                R2 = this.smoothingRadius * this.smoothingRadius,
+                dist = SPHSystem_getNeighbors_dist;
             for (var i = 0; i !== N; i++)
             {
                 var p = this.particles[i];
-                p.position.subTo(particle.position, dist);
-                if (id !== p.id && dist.lengthSquared < R2)
+                p.position.vsub(particle.position, dist);
+                if (id !== p.id && dist.norm2() < R2)
                 {
                     neighbors.push(p);
                 }
@@ -102,11 +101,9 @@ namespace CANNON
         update()
         {
             var N = this.particles.length,
+                dist = SPHSystem_update_dist,
                 cs = this.speedOfSound,
                 eps = this.eps;
-
-
-            var dist = new feng3d.Vector3();
 
             for (var i = 0; i !== N; i++)
             {
@@ -123,9 +120,10 @@ namespace CANNON
                 var sum = 0.0;
                 for (var j = 0; j !== numNeighbors; j++)
                 {
+
                     //printf("Current particle has position %f %f %f\n",objects[id].pos.x(),objects[id].pos.y(),objects[id].pos.z());
-                    p.position.subTo(neighbors[j].position, dist);
-                    var len = dist.length;
+                    p.position.vsub(neighbors[j].position, dist);
+                    var len = dist.norm();
 
                     var weight = this.w(len);
                     sum += neighbors[j].mass * weight;
@@ -139,22 +137,24 @@ namespace CANNON
             // Add forces
 
             // Sum to these accelerations
-            var a_pressure = new feng3d.Vector3();
-            var a_visc = new feng3d.Vector3();
-            var gradW = new feng3d.Vector3();
-            var r_vec = new feng3d.Vector3();
-            var u = new feng3d.Vector3();
+            var a_pressure = SPHSystem_update_a_pressure;
+            var a_visc = SPHSystem_update_a_visc;
+            var gradW = SPHSystem_update_gradW;
+            var r_vec = SPHSystem_update_r_vec;
+            var u = SPHSystem_update_u;
 
             for (var i = 0; i !== N; i++)
             {
+
                 var particle = this.particles[i];
 
-                a_pressure.init(0, 0, 0);
-                a_visc.init(0, 0, 0);
+                a_pressure.set(0, 0, 0);
+                a_visc.set(0, 0, 0);
 
                 // Init vars
-                var Pij: number;
-                var nabla: number;
+                var Pij;
+                var nabla;
+                var Vij;
 
                 // Sum up for all other neighbors
                 var neighbors = this.neighbors[i];
@@ -163,36 +163,37 @@ namespace CANNON
                 //printf("Neighbors: ");
                 for (var j = 0; j !== numNeighbors; j++)
                 {
+
                     var neighbor = neighbors[j];
                     //printf("%d ",nj);
 
                     // Get r once for all..
-                    particle.position.subTo(neighbor.position, r_vec);
-                    var r = r_vec.length;
+                    particle.position.vsub(neighbor.position, r_vec);
+                    var r = r_vec.norm();
 
                     // Pressure contribution
                     Pij = -neighbor.mass * (this.pressures[i] / (this.densities[i] * this.densities[i] + eps) + this.pressures[j] / (this.densities[j] * this.densities[j] + eps));
                     this.gradw(r_vec, gradW);
                     // Add to pressure acceleration
-                    gradW.scaleNumberTo(Pij, gradW);
-                    a_pressure.addTo(gradW, a_pressure);
+                    gradW.mult(Pij, gradW);
+                    a_pressure.vadd(gradW, a_pressure);
 
                     // Viscosity contribution
-                    neighbor.velocity.subTo(particle.velocity, u);
-                    u.scaleNumberTo(1.0 / (0.0001 + this.densities[i] * this.densities[j]) * this.viscosity * neighbor.mass, u);
+                    neighbor.velocity.vsub(particle.velocity, u);
+                    u.mult(1.0 / (0.0001 + this.densities[i] * this.densities[j]) * this.viscosity * neighbor.mass, u);
                     nabla = this.nablaw(r);
-                    u.scaleNumberTo(nabla, u);
+                    u.mult(nabla, u);
                     // Add to viscosity acceleration
-                    a_visc.addTo(u, a_visc);
+                    a_visc.vadd(u, a_visc);
                 }
 
                 // Calculate force
-                a_visc.scaleNumberTo(particle.mass, a_visc);
-                a_pressure.scaleNumberTo(particle.mass, a_pressure);
+                a_visc.mult(particle.mass, a_visc);
+                a_pressure.mult(particle.mass, a_pressure);
 
                 // Add force to particles
-                particle.force.addTo(a_visc, particle.force);
-                particle.force.addTo(a_pressure, particle.force);
+                particle.force.vadd(a_visc, particle.force);
+                particle.force.vadd(a_pressure, particle.force);
             }
         }
 
@@ -205,11 +206,11 @@ namespace CANNON
         }
 
         // calculate gradient of the weight function
-        gradw(rVec: feng3d.Vector3, resultVec: feng3d.Vector3)
+        gradw(rVec: Vec3, resultVec: Vec3)
         {
-            var r = rVec.length,
+            var r = rVec.norm(),
                 h = this.smoothingRadius;
-            rVec.scaleNumberTo(945.0 / (32.0 * Math.PI * Math.pow(h, 9)) * Math.pow((h * h - r * r), 2), resultVec);
+            rVec.mult(945.0 / (32.0 * Math.PI * Math.pow(h, 9)) * Math.pow((h * h - r * r), 2), resultVec);
         }
 
         // Calculate nabla(W)
@@ -221,4 +222,12 @@ namespace CANNON
         }
     }
 
+
+    var SPHSystem_getNeighbors_dist = new Vec3();
+    var SPHSystem_update_dist = new Vec3();
+    var SPHSystem_update_a_pressure = new Vec3();
+    var SPHSystem_update_a_visc = new Vec3();
+    var SPHSystem_update_gradW = new Vec3();
+    var SPHSystem_update_r_vec = new Vec3();
+    var SPHSystem_update_u = new Vec3(); // Relative velocity
 }

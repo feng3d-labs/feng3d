@@ -1,17 +1,15 @@
 namespace CANNON
 {
-    /**
-     * 求解器
-     */
-    export abstract class Solver
+    export class Solver
     {
         /**
-         * 求解的方程数组
+         * All equations to be solved
          */
         equations: Equation[];
 
         /**
-         * 约束方程求解器基类
+         * Constraint equation solver base class.
+         * @author schteppe / https://github.com/schteppe
          */
         constructor()
         {
@@ -19,16 +17,18 @@ namespace CANNON
         }
 
         /**
-         * 求解
-         * 
+         * Should be implemented in subclasses!
          * @param dt
          * @param world
          */
-        abstract solve(dt: number, world: World): number;
+        solve(dt: number, world: World)
+        {
+            // Should return the number of iterations done!
+            return 0;
+        }
 
         /**
-         * 添加方程
-         * 
+         * Add an equation
          * @param eq
          */
         addEquation(eq: Equation)
@@ -40,8 +40,7 @@ namespace CANNON
         }
 
         /**
-         * 移除方程式
-         * 
+         * Remove an equation
          * @param eq
          */
         removeEquation(eq: Equation)
@@ -55,7 +54,7 @@ namespace CANNON
         }
 
         /**
-         * 移除所有方程式
+         * Add all equations
          */
         removeAllEquations()
         {

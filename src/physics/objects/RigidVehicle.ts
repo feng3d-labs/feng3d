@@ -1,21 +1,34 @@
 namespace CANNON
 {
-    /**
-     * 刚性车
-     */
     export class RigidVehicle
     {
-        wheelBodies: Body[];
-        chassisBody: Body;
-        constraints: HingeConstraint[];
-        wheelAxes: feng3d.Vector3[];
-        wheelForces: number[];
+        wheelBodies: any[];
+        coordinateSystem: any;
+        chassisBody: any;
+        constraints: any[];
+        wheelAxes: any[];
+        wheelForces: any[];
 
-        constructor(chassisBody: Body)
+        /**
+         * Simple vehicle helper class with spherical rigid body wheels.
+         * 
+         * @param options 
+         */
+        constructor(options: { coordinateSystem?: any, chassisBody?: Body } = {})
         {
             this.wheelBodies = [];
 
-            this.chassisBody = chassisBody;
+            this.coordinateSystem = typeof (options.coordinateSystem) === 'undefined' ? new Vec3(1, 2, 3) : options.coordinateSystem.clone();
+
+            this.chassisBody = options.chassisBody;
+
+            if (!this.chassisBody)
+            {
+                // No chassis body given. Create it!
+                var chassisShape = new Box(new Vec3(5, 2, 0.5));
+                throw "下一行代码有问题？！"
+                // this.chassisBody = new Body(1, chassisShape);
+            }
 
             this.constraints = [];
             this.wheelAxes = [];
@@ -23,44 +36,64 @@ namespace CANNON
         }
 
         /**
-         * 添加轮子
+         * Add a wheelraycastClosest(
          * 
-         * @param body 
-         * @param position 
-         * @param axis 
+         * @param options 
          */
-        addWheel(body: Body, position = new feng3d.Vector3(), axis = new feng3d.Vector3(0, 1, 0))
+        addWheel(options: { body?: Body, isFrontWheel?: boolean, position?: Vec3, axis?: Vec3 } = {})
         {
-            this.wheelBodies.push(body);
+            var wheelBody = options.body;
+            if (!wheelBody)
+            {
+                throw "下一行代码有问题？！";
+                // wheelBody = new Body(1, new Sphere(1.2));
+            }
+            this.wheelBodies.push(wheelBody);
             this.wheelForces.push(0);
 
-            // 设置底盘的位置
-            var worldPosition = this.chassisBody.pointToWorldFrame(position);
-            body.position.init(worldPosition.x, worldPosition.y, worldPosition.z);
+            // Position constrain wheels
+            var zero = new Vec3();
+            var position = typeof (options.position) !== 'undefined' ? options.position.clone() : new Vec3();
 
+            // Set position locally to the chassis
+            var worldPosition = new Vec3();
+            this.chassisBody.pointToWorldFrame(position, worldPosition);
+            wheelBody.position.set(worldPosition.x, worldPosition.y, worldPosition.z);
+
+            // Constrain wheel
+            var axis = typeof (options.axis) !== 'undefined' ? options.axis.clone() : new Vec3(0, 1, 0);
             this.wheelAxes.push(axis);
 
-            var hingeConstraint = new HingeConstraint(this.chassisBody, body, position, feng3d.Vector3.ZERO, axis, axis);
+            var hingeConstraint = new HingeConstraint(this.chassisBody, wheelBody, {
+                pivotA: position,
+                axisA: axis,
+                pivotB: Vec3.ZERO,
+                axisB: axis,
+                collideConnected: false
+            });
             this.constraints.push(hingeConstraint);
 
             return this.wheelBodies.length - 1;
         }
 
         /**
-         * 设置车轮的转向值
+         * Set the steering value of a wheel.
          * 
          * @param value
          * @param wheelIndex
+         * 
+         * @todo check coordinateSystem
          */
         setSteeringValue(value: number, wheelIndex: number)
         {
+            // Set angle of the hinge axis
             var axis = this.wheelAxes[wheelIndex];
 
             var c = Math.cos(value),
                 s = Math.sin(value),
                 x = axis.x,
                 y = axis.y;
-            this.constraints[wheelIndex].axisA.init(
+            this.constraints[wheelIndex].axisA.set(
                 c * x - s * y,
                 s * x + c * y,
                 0
@@ -77,6 +110,7 @@ namespace CANNON
         {
             var hingeConstraint = this.constraints[wheelIndex];
             hingeConstraint.enableMotor();
+            hingeConstraint.motorTargetVelocity = value;
         }
 
         /**
@@ -113,9 +147,9 @@ namespace CANNON
             var wheelBody = this.wheelBodies[wheelIndex];
             var bodyTorque = wheelBody.torque;
 
-            var torque = axis.scaleNumberTo(value);
+            axis.scale(value, torque);
             wheelBody.vectorToWorldFrame(torque, torque);
-            bodyTorque.addTo(torque, bodyTorque);
+            bodyTorque.vadd(torque, bodyTorque);
         }
 
         /**
@@ -138,7 +172,7 @@ namespace CANNON
                 world.addConstraint(constraints[i]);
             }
 
-            world.on('preStep', this._update, this);
+            world.addEventListener('preStep', this._update.bind(this));
         }
 
         private _update()
@@ -161,7 +195,7 @@ namespace CANNON
 
             for (var i = 0; i < bodies.length; i++)
             {
-                world.removeBody(bodies[i]);
+                world.remove(bodies[i]);
             }
 
             for (var i = 0; i < constraints.length; i++)
@@ -180,9 +214,14 @@ namespace CANNON
             var axis = this.wheelAxes[wheelIndex];
             var wheelBody = this.wheelBodies[wheelIndex];
             var w = wheelBody.angularVelocity;
-
-            var worldAxis = this.chassisBody.vectorToWorldFrame(axis);
+            this.chassisBody.vectorToWorldFrame(axis, worldAxis);
             return w.dot(worldAxis);
         }
+
     }
+
+
+    var torque = new Vec3();
+
+    var worldAxis = new Vec3();
 }

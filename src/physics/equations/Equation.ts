@@ -1,59 +1,70 @@
 namespace CANNON
 {
-    /**
-     * 方程式
-     */
     export class Equation
     {
-        /**
-         * 最小力
-         */
+
+        id: number;
+
         minForce: number;
 
-        /**
-         * 最大力
-         */
         maxForce: number;
 
         bi: Body;
 
         bj: Body;
 
-        a = 0.0;
+        a: number;
 
-        b = 0.0;
+        b: number;
 
         /**
          * SPOOK parameter
          */
-        eps = 0.0;
+        eps: number;
 
-        jacobianElementA = new JacobianElement();
+        jacobianElementA: JacobianElement;
 
-        jacobianElementB = new JacobianElement();
+        jacobianElementB: JacobianElement;
 
-        /**
-         * 是否启用
-         */
-        enabled = true;
+        enabled: boolean;
 
         /**
-         * 
-         * @param bi 
-         * @param bj 
-         * @param minForce 
-         * @param maxForce 
+         * A number, proportional to the force added to the bodies.
+         * @readonly
          */
-        constructor(bi: Body, bj: Body, minForce = -1e6, maxForce = 1e6)
+        multiplier: number;
+
+        /**
+         * Equation base class
+         * @class Equation
+         * @constructor
+         * @author schteppe
+         * @param {Body} bi
+         * @param {Body} bj
+         * @param {Number} minForce Minimum (read: negative max) force to be applied by the constraint.
+         * @param {Number} maxForce Maximum (read: positive max) force to be applied by the constraint.
+         */
+        constructor(bi: Body, bj: Body, minForce: number, maxForce: number)
         {
-            this.minForce = minForce;
-            this.maxForce = maxForce;
+            this.id = Equation.id++;
+
+            this.minForce = typeof (minForce) === "undefined" ? -1e6 : minForce;
+            this.maxForce = typeof (maxForce) === "undefined" ? 1e6 : maxForce;
             this.bi = bi;
             this.bj = bj;
+            this.a = 0.0;
+            this.b = 0.0;
+            this.eps = 0.0;
+            this.jacobianElementA = new JacobianElement();
+            this.jacobianElementB = new JacobianElement();
+            this.enabled = true;
+            this.multiplier = 0;
 
             // Set typical spook params
             this.setSpookParams(1e7, 4, 1 / 60);
         }
+
+        static id = 0;
 
         /**
          * Recalculates a,b,eps.
@@ -143,11 +154,11 @@ namespace CANNON
                 invMassi = bi.invMassSolve,
                 invMassj = bj.invMassSolve;
 
-            var iMfi = fi.scaleNumberTo(invMassi);
-            var iMfj = fj.scaleNumberTo(invMassj);
+            fi.scale(invMassi, iMfi);
+            fj.scale(invMassj, iMfj);
 
-            var invIi_vmult_taui = bi.invInertiaWorldSolve.vmult(ti);
-            var invIj_vmult_tauj = bj.invInertiaWorldSolve.vmult(tj);
+            bi.invInertiaWorldSolve.vmult(ti, invIi_vmult_taui);
+            bj.invInertiaWorldSolve.vmult(tj, invIj_vmult_tauj);
 
             return GA.multiplyVectors(iMfi, invIi_vmult_taui) + GB.multiplyVectors(iMfj, invIj_vmult_tauj);
         }
@@ -167,7 +178,7 @@ namespace CANNON
                 invIj = bj.invInertiaWorldSolve,
                 result = invMassi + invMassj;
 
-            var tmp = invIi.vmult(GA.rotational);
+            invIi.vmult(GA.rotational, tmp);
             result += tmp.dot(GA.rotational);
 
             invIj.vmult(GB.rotational, tmp);
@@ -185,22 +196,19 @@ namespace CANNON
                 GB = this.jacobianElementB,
                 bi = this.bi,
                 bj = this.bj,
-                temp = new feng3d.Vector3();
-
-
+                temp = addToWlambda_temp;
 
             // Add to linear velocity
             // v_lambda += inv(M) * delta_lamba * G
-
-            bi.vlambda.addTo(GA.spatial.scaleNumberTo(bi.invMassSolve * deltalambda), bi.vlambda);
-            bj.vlambda.addTo(GB.spatial.scaleNumberTo(bj.invMassSolve * deltalambda), bj.vlambda);
+            bi.vlambda.addScaledVector(bi.invMassSolve * deltalambda, GA.spatial, bi.vlambda);
+            bj.vlambda.addScaledVector(bj.invMassSolve * deltalambda, GB.spatial, bj.vlambda);
 
             // Add to angular velocity
             bi.invInertiaWorldSolve.vmult(GA.rotational, temp);
-            bi.wlambda.addTo(temp.scaleNumberTo(deltalambda), bi.wlambda);
+            bi.wlambda.addScaledVector(deltalambda, temp, bi.wlambda);
 
             bj.invInertiaWorldSolve.vmult(GB.rotational, temp);
-            bj.wlambda.addTo(temp.scaleNumberTo(deltalambda), bj.wlambda);
+            bj.wlambda.addScaledVector(deltalambda, temp, bj.wlambda);
         }
 
         /**
@@ -212,4 +220,18 @@ namespace CANNON
         }
     }
 
+    var zero = new Vec3();
+    var iMfi = new Vec3();
+    var iMfj = new Vec3();
+    var invIi_vmult_taui = new Vec3();
+    var invIj_vmult_tauj = new Vec3();
+    var tmp = new Vec3();
+
+
+    var addToWlambda_temp = new Vec3();
+    var addToWlambda_Gi = new Vec3();
+    var addToWlambda_Gj = new Vec3();
+    var addToWlambda_ri = new Vec3();
+    var addToWlambda_rj = new Vec3();
+    var addToWlambda_Mdiag = new Vec3();
 }

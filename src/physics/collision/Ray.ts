@@ -2,55 +2,70 @@ namespace CANNON
 {
     export class Ray
     {
-        from = new feng3d.Vector3();
+        from: Vec3;
 
-        to = new feng3d.Vector3();
+        to: Vec3;
 
-        _direction = new feng3d.Vector3();
+        _direction: Vec3;
 
         /**
          * The precision of the ray. Used when checking parallelity etc.
          */
-        precision = 0.0001;
+        precision: number;
 
         /**
          * Set to true if you want the Ray to take .collisionResponse flags into account on bodies and shapes.
          */
-        checkCollisionResponse = true;
+        checkCollisionResponse: boolean;
 
         /**
          * If set to true, the ray skips any hits with normal.dot(rayDirection) < 0.
          */
-        skipBackfaces = false;
+        skipBackfaces: boolean;
 
-        collisionFilterMask = -1;
+        collisionFilterMask: number;
 
-        collisionFilterGroup = -1;
+        collisionFilterGroup: number;
 
         /**
          * The intersection mode. Should be Ray.ANY, Ray.ALL or Ray.CLOSEST.
          */
-        mode = Ray.ANY;
+        mode: number;
 
         /**
          * Current result object.
          */
-        result = new RaycastResult();
+        result: RaycastResult;
 
         /**
          * Will be set to true during intersectWorld() if the ray hit anything.
          */
-        hasHit = false;
+        hasHit: boolean;
+
+        /**
+         * Current, user-provided result callback. Will be used if mode is Ray.ALL.
+         */
+        callback: Function;
 
         /**
          * A line in 3D space that intersects bodies and return points.
          * @param from
          * @param to
          */
-        constructor(from = new feng3d.Vector3(), to = new feng3d.Vector3())
+        constructor(from?: Vec3, to?: Vec3)
         {
-            this.from = from;
-            this.to = to;
+            this.from = from ? from.clone() : new Vec3();
+            this.to = to ? to.clone() : new Vec3();
+            this._direction = new Vec3();
+            this.precision = 0.0001;
+            this.checkCollisionResponse = true;
+            this.skipBackfaces = false;
+            this.collisionFilterMask = -1;
+            this.collisionFilterGroup = -1;
+            this.mode = Ray.ANY;
+            this.result = new RaycastResult();
+            this.hasHit = false;
+            this.callback = function (result) { };
         }
 
         static CLOSEST = 1;
@@ -63,30 +78,32 @@ namespace CANNON
          * @param options
          * @return True if the ray hit anything, otherwise false.
          */
-        intersectWorld(world: World, from = new feng3d.Vector3(), to = new feng3d.Vector3(), result = new RaycastResult(), mode = Ray.ANY, skipBackfaces = false, collisionFilterMask = -1,
-            collisionFilterGroup = -1)
+        intersectWorld(world: World, options: {
+            mode?: number, result?: RaycastResult, skipBackfaces?: boolean, collisionFilterMask?: number,
+            collisionFilterGroup?: number, from?: Vec3, to?: Vec3, callback?: Function
+        })
         {
-            this.mode = mode;
-            this.result = result;
-            this.skipBackfaces = skipBackfaces;
-            this.collisionFilterMask = collisionFilterMask;
-            this.collisionFilterGroup = collisionFilterGroup;
-            if (from)
+            this.mode = options.mode || Ray.ANY;
+            this.result = options.result || new RaycastResult();
+            this.skipBackfaces = !!options.skipBackfaces;
+            this.collisionFilterMask = typeof (options.collisionFilterMask) !== 'undefined' ? options.collisionFilterMask : -1;
+            this.collisionFilterGroup = typeof (options.collisionFilterGroup) !== 'undefined' ? options.collisionFilterGroup : -1;
+            if (options.from)
             {
-                this.from.copy(from);
+                this.from.copy(options.from);
             }
-            if (to)
+            if (options.to)
             {
-                this.to.copy(to);
+                this.to.copy(options.to);
             }
+            this.callback = options.callback || function () { };
             this.hasHit = false;
 
             this.result.reset();
             this._updateDirection();
 
-            var tmpAABB = new feng3d.AABB();
             this.getAABB(tmpAABB);
-            var tmpArray = [];
+            tmpArray.length = 0;
             world.broadphase.aabbQuery(world, tmpAABB, tmpArray);
             this.intersectBodies(tmpArray);
 
@@ -117,8 +134,8 @@ namespace CANNON
                 return;
             }
 
-            var xi = new feng3d.Vector3();
-            var qi = new feng3d.Quaternion();
+            var xi = intersectBody_xi;
+            var qi = intersectBody_qi;
 
             for (var i = 0, N = body.shapes.length; i < N; i++)
             {
@@ -129,9 +146,9 @@ namespace CANNON
                     continue; // Skip
                 }
 
-                body.quaternion.multTo(body.shapeOrientations[i], qi);
-                body.quaternion.rotatePoint(body.shapeOffsets[i], xi);
-                xi.addTo(body.position, xi);
+                body.quaternion.mult(body.shapeOrientations[i], qi);
+                body.quaternion.vmult(body.shapeOffsets[i], xi);
+                xi.vadd(body.position, xi);
 
                 this.intersectShape(
                     shape,
@@ -170,11 +187,11 @@ namespace CANNON
          */
         private _updateDirection()
         {
-            this.to.subTo(this.from, this._direction);
+            this.to.vsub(this.from, this._direction);
             this._direction.normalize();
         };
 
-        private intersectShape(shape: Shape, quat: feng3d.Quaternion, position: feng3d.Vector3, body: Body)
+        private intersectShape(shape: Shape, quat: Quaternion, position: Vec3, body: Body)
         {
             var from = this.from;
 
@@ -192,25 +209,25 @@ namespace CANNON
             }
         }
 
-        private intersectBox(shape: Shape, quat: feng3d.Quaternion, position: feng3d.Vector3, body: Body, reportedShape: Shape)
+        private intersectBox(shape: Shape, quat: Quaternion, position: Vec3, body: Body, reportedShape: Shape)
         {
-            return this.intersectConvex(shape, quat, position, body, reportedShape);
+            return this.intersectConvex(shape.convexPolyhedronRepresentation, quat, position, body, reportedShape);
         }
 
-        private intersectPlane(shape: Shape, quat: feng3d.Quaternion, position: feng3d.Vector3, body: Body, reportedShape: Shape)
+        private intersectPlane(shape: Shape, quat: Quaternion, position: Vec3, body: Body, reportedShape: Shape)
         {
             var from = this.from;
             var to = this.to;
             var direction = this._direction;
 
             // Get plane normal
-            var worldNormal = new feng3d.Vector3(0, 1, 0);
-            quat.rotatePoint(worldNormal, worldNormal);
+            var worldNormal = new Vec3(0, 0, 1);
+            quat.vmult(worldNormal, worldNormal);
 
-            var len = new feng3d.Vector3();
-            from.subTo(position, len);
+            var len = new Vec3();
+            from.vsub(position, len);
             var planeToFrom = len.dot(worldNormal);
-            to.subTo(position, len);
+            to.vsub(position, len);
             var planeToTo = len.dot(worldNormal);
 
             if (planeToFrom * planeToTo > 0)
@@ -219,7 +236,7 @@ namespace CANNON
                 return;
             }
 
-            if (from.distance(to) < planeToFrom)
+            if (from.distanceTo(to) < planeToFrom)
             {
                 return;
             }
@@ -232,14 +249,14 @@ namespace CANNON
                 return;
             }
 
-            var planePointToFrom = new feng3d.Vector3();
-            var dir_scaled_with_t = new feng3d.Vector3();
-            var hitPointWorld = new feng3d.Vector3();
+            var planePointToFrom = new Vec3();
+            var dir_scaled_with_t = new Vec3();
+            var hitPointWorld = new Vec3();
 
-            from.subTo(position, planePointToFrom);
+            from.vsub(position, planePointToFrom);
             var t = -worldNormal.dot(planePointToFrom) / n_dot_dir;
-            direction.scaleNumberTo(t, dir_scaled_with_t);
-            from.addTo(dir_scaled_with_t, hitPointWorld);
+            direction.scale(t, dir_scaled_with_t);
+            from.vadd(dir_scaled_with_t, hitPointWorld);
 
             this.reportIntersection(worldNormal, hitPointWorld, reportedShape, body, -1);
         }
@@ -247,18 +264,84 @@ namespace CANNON
         /**
          * Get the world AABB of the ray.
          */
-        getAABB(result: feng3d.AABB)
+        getAABB(result: AABB)
         {
             var to = this.to;
             var from = this.from;
-            result.min.x = Math.min(to.x, from.x);
-            result.min.y = Math.min(to.y, from.y);
-            result.min.z = Math.min(to.z, from.z);
-            result.max.x = Math.max(to.x, from.x);
-            result.max.y = Math.max(to.y, from.y);
-            result.max.z = Math.max(to.z, from.z);
+            result.lowerBound.x = Math.min(to.x, from.x);
+            result.lowerBound.y = Math.min(to.y, from.y);
+            result.lowerBound.z = Math.min(to.z, from.z);
+            result.upperBound.x = Math.max(to.x, from.x);
+            result.upperBound.y = Math.max(to.y, from.y);
+            result.upperBound.z = Math.max(to.z, from.z);
         }
-        private intersectSphere(shape: any, quat: feng3d.Quaternion, position: feng3d.Vector3, body: Body, reportedShape: Shape)
+
+        private intersectHeightfield(shape: any, quat: Quaternion, position: Vec3, body: Body, reportedShape: Shape)
+        {
+            var data = shape.data,
+                w = shape.elementSize;
+
+            // Convert the ray to local heightfield coordinates
+            var localRay = intersectHeightfield_localRay; //new Ray(this.from, this.to);
+            localRay.from.copy(this.from);
+            localRay.to.copy(this.to);
+            Transform.pointToLocalFrame(position, quat, localRay.from, localRay.from);
+            Transform.pointToLocalFrame(position, quat, localRay.to, localRay.to);
+            localRay._updateDirection();
+
+            // Get the index of the data points to test against
+            var index = intersectHeightfield_index;
+            var iMinX, iMinY, iMaxX, iMaxY;
+
+            // Set to max
+            iMinX = iMinY = 0;
+            iMaxX = iMaxY = shape.data.length - 1;
+
+            var aabb = new AABB();
+            localRay.getAABB(aabb);
+
+            shape.getIndexOfPosition(aabb.lowerBound.x, aabb.lowerBound.y, index, true);
+            iMinX = Math.max(iMinX, index[0]);
+            iMinY = Math.max(iMinY, index[1]);
+            shape.getIndexOfPosition(aabb.upperBound.x, aabb.upperBound.y, index, true);
+            iMaxX = Math.min(iMaxX, index[0] + 1);
+            iMaxY = Math.min(iMaxY, index[1] + 1);
+
+            for (var i = iMinX; i < iMaxX; i++)
+            {
+                for (var j = iMinY; j < iMaxY; j++)
+                {
+
+                    if (this.result._shouldStop)
+                    {
+                        return;
+                    }
+
+                    shape.getAabbAtIndex(i, j, aabb);
+                    if (!aabb.overlapsRay(localRay))
+                    {
+                        continue;
+                    }
+
+                    // Lower triangle
+                    shape.getConvexTrianglePillar(i, j, false);
+                    Transform.pointToWorldFrame(position, quat, shape.pillarOffset, worldPillarOffset);
+                    this.intersectConvex(shape.pillarConvex, quat, worldPillarOffset, body, reportedShape, intersectConvexOptions);
+
+                    if (this.result._shouldStop)
+                    {
+                        return;
+                    }
+
+                    // Upper triangle
+                    shape.getConvexTrianglePillar(i, j, true);
+                    Transform.pointToWorldFrame(position, quat, shape.pillarOffset, worldPillarOffset);
+                    this.intersectConvex(shape.pillarConvex, quat, worldPillarOffset, body, reportedShape, intersectConvexOptions);
+                }
+            }
+        }
+
+        private intersectSphere(shape: any, quat: Quaternion, position: Vec3, body: Body, reportedShape: Shape)
         {
             var from = this.from,
                 to = this.to,
@@ -270,8 +353,8 @@ namespace CANNON
 
             var delta = Math.pow(b, 2) - 4 * a * c;
 
-            var intersectionPoint = new feng3d.Vector3();
-            var normal = new feng3d.Vector3();
+            var intersectionPoint = Ray_intersectSphere_intersectionPoint;
+            var normal = Ray_intersectSphere_normal;
 
             if (delta < 0)
             {
@@ -281,9 +364,9 @@ namespace CANNON
             } else if (delta === 0)
             {
                 // single intersection point
-                from.lerpNumberTo(to, delta, intersectionPoint);
+                from.lerp(to, delta, intersectionPoint);
 
-                intersectionPoint.subTo(position, normal);
+                intersectionPoint.vsub(position, normal);
                 normal.normalize();
 
                 this.reportIntersection(normal, intersectionPoint, reportedShape, body, -1);
@@ -295,8 +378,8 @@ namespace CANNON
 
                 if (d1 >= 0 && d1 <= 1)
                 {
-                    from.lerpNumberTo(to, d1, intersectionPoint);
-                    intersectionPoint.subTo(position, normal);
+                    from.lerp(to, d1, intersectionPoint);
+                    intersectionPoint.vsub(position, normal);
                     normal.normalize();
                     this.reportIntersection(normal, intersectionPoint, reportedShape, body, -1);
                 }
@@ -308,8 +391,8 @@ namespace CANNON
 
                 if (d2 >= 0 && d2 <= 1)
                 {
-                    from.lerpNumberTo(to, d2, intersectionPoint);
-                    intersectionPoint.subTo(position, normal);
+                    from.lerp(to, d2, intersectionPoint);
+                    intersectionPoint.vsub(position, normal);
                     normal.normalize();
                     this.reportIntersection(normal, intersectionPoint, reportedShape, body, -1);
                 }
@@ -318,34 +401,32 @@ namespace CANNON
 
         private intersectConvex(
             shape: Shape,
-            quat: feng3d.Quaternion,
-            position: feng3d.Vector3,
+            quat: Quaternion,
+            position: Vec3,
             body: Body,
             reportedShape: Shape,
             options: { faceList?: any[] } = {}
         )
         {
-            var normal = new feng3d.Vector3();
-            var vector = new feng3d.Vector3();
+            var minDistNormal = intersectConvex_minDistNormal;
+            var normal = intersectConvex_normal;
+            var vector = intersectConvex_vector;
+            var minDistIntersect = intersectConvex_minDistIntersect;
             var faceList = (options && options.faceList) || null;
 
             // Checking faces
             var faces = shape.faces,
-                vertices = <feng3d.Vector3[]>shape.vertices,
+                vertices = <Vec3[]>shape.vertices,
                 normals = shape.faceNormals;
             var direction = this._direction;
 
             var from = this.from;
             var to = this.to;
-            var fromToDistance = from.distance(to);
+            var fromToDistance = from.distanceTo(to);
 
+            var minDist = -1;
             var Nfaces = faceList ? faceList.length : faces.length;
             var result = this.result;
-
-            var a = new feng3d.Vector3();
-            var b = new feng3d.Vector3();
-            var c = new feng3d.Vector3();
-            var intersectPoint = new feng3d.Vector3();
 
             for (var j = 0; !result._shouldStop && j < Nfaces; j++)
             {
@@ -361,14 +442,14 @@ namespace CANNON
 
                 // Get plane point in world coordinates...
                 vector.copy(vertices[face[0]]);
-                q.rotatePoint(vector, vector);
-                vector.addTo(x, vector);
+                q.vmult(vector, vector);
+                vector.vadd(x, vector);
 
                 // ...but make it relative to the ray from. We'll fix this later.
-                vector.subTo(from, vector);
+                vector.vsub(from, vector);
 
                 // Get plane normal
-                q.rotatePoint(faceNormal, normal);
+                q.vmult(faceNormal, normal);
 
                 // If this dot product is negative, we have something interesting
                 var dot = direction.dot(normal);
@@ -391,25 +472,25 @@ namespace CANNON
                 // if (dot < 0) {
 
                 // Intersection point is from + direction * scalar
-                direction.scaleNumberTo(scalar, intersectPoint);
-                intersectPoint.addTo(from, intersectPoint);
+                direction.mult(scalar, intersectPoint);
+                intersectPoint.vadd(from, intersectPoint);
 
                 // a is the point we compare points b and c with.
                 a.copy(vertices[face[0]]);
-                q.rotatePoint(a, a);
-                x.addTo(a, a);
+                q.vmult(a, a);
+                x.vadd(a, a);
 
                 for (var i = 1; !result._shouldStop && i < face.length - 1; i++)
                 {
                     // Transform 3 vertices to world coords
                     b.copy(vertices[face[i]]);
                     c.copy(vertices[face[i + 1]]);
-                    q.rotatePoint(b, b);
-                    q.rotatePoint(c, c);
-                    x.addTo(b, b);
-                    x.addTo(c, c);
+                    q.vmult(b, b);
+                    q.vmult(c, c);
+                    x.vadd(b, b);
+                    x.vadd(c, c);
 
-                    var distance = intersectPoint.distance(from);
+                    var distance = intersectPoint.distanceTo(from);
 
                     if (!(Ray.pointInTriangle(intersectPoint, a, b, c) || Ray.pointInTriangle(intersectPoint, b, a, c)) || distance > fromToDistance)
                     {
@@ -423,42 +504,66 @@ namespace CANNON
         }
 
         /**
+         * @method intersectTrimesh
+         * @private
+         * @param  {Shape} shape
+         * @param  {Quaternion} quat
+         * @param  {Vec3} position
+         * @param  {Body} body
+         * @param {object} [options]
+         */
+        /**
          * 
          * @param mesh 
          * @param quat 
          * @param position 
          * @param body 
          * @param reportedShape 
+         * @param options 
          * 
          * @todo Optimize by transforming the world to local space first.
          * @todo Use Octree lookup
          */
-        private intersectTrimesh(mesh: any, quat: feng3d.Quaternion, position: feng3d.Vector3, body: Body, reportedShape: Shape)
+        private intersectTrimesh(
+            mesh: any,
+            quat: Quaternion,
+            position: Vec3,
+            body: Body,
+            reportedShape: Shape,
+            options
+        )
         {
-            var normal = new feng3d.Vector3();
-            var triangles = [];
-            var treeTransform = new Transform();
-            var vector = new feng3d.Vector3();
-            var localDirection = new feng3d.Vector3();
-            var localFrom = new feng3d.Vector3();
-            var localTo = new feng3d.Vector3();
-            var worldIntersectPoint = new feng3d.Vector3();
-            var worldNormal = new feng3d.Vector3();
+            var normal = intersectTrimesh_normal;
+            var triangles = intersectTrimesh_triangles;
+            var treeTransform = intersectTrimesh_treeTransform;
+            var minDistNormal = intersectConvex_minDistNormal;
+            var vector = intersectConvex_vector;
+            var minDistIntersect = intersectConvex_minDistIntersect;
+            var localAABB = intersectTrimesh_localAABB;
+            var localDirection = intersectTrimesh_localDirection;
+            var localFrom = intersectTrimesh_localFrom;
+            var localTo = intersectTrimesh_localTo;
+            var worldIntersectPoint = intersectTrimesh_worldIntersectPoint;
+            var worldNormal = intersectTrimesh_worldNormal;
+            var faceList = (options && options.faceList) || null;
 
             // Checking faces
-            var indices = mesh.indices;
+            var indices = mesh.indices,
+                vertices = mesh.vertices,
+                normals = mesh.faceNormals;
 
             var from = this.from;
             var to = this.to;
             var direction = this._direction;
 
+            var minDist = -1;
             treeTransform.position.copy(position);
             treeTransform.quaternion.copy(quat);
 
             // Transform ray to local space!
-            treeTransform.vectorToLocalFrame(direction, localDirection);
-            treeTransform.pointToLocalFrame(from, localFrom);
-            treeTransform.pointToLocalFrame(to, localTo);
+            Transform.vectorToLocalFrame(position, quat, direction, localDirection);
+            Transform.pointToLocalFrame(position, quat, from, localFrom);
+            Transform.pointToLocalFrame(position, quat, to, localTo);
 
             localTo.x *= mesh.scale.x;
             localTo.y *= mesh.scale.y;
@@ -467,17 +572,12 @@ namespace CANNON
             localFrom.y *= mesh.scale.y;
             localFrom.z *= mesh.scale.z;
 
-            localTo.subTo(localFrom, localDirection);
+            localTo.vsub(localFrom, localDirection);
             localDirection.normalize();
 
             var fromToDistanceSquared = localFrom.distanceSquared(localTo);
 
             mesh.tree.rayQuery(this, treeTransform, triangles);
-
-            var a = new feng3d.Vector3();
-            var b = new feng3d.Vector3();
-            var c = new feng3d.Vector3();
-            var intersectPoint = new feng3d.Vector3();
 
             for (var i = 0, N = triangles.length; !this.result._shouldStop && i !== N; i++)
             {
@@ -492,7 +592,7 @@ namespace CANNON
                 mesh.getVertex(indices[trianglesIndex * 3], a);
 
                 // ...but make it relative to the ray from. We'll fix this later.
-                a.subTo(localFrom, vector);
+                a.vsub(localFrom, vector);
 
                 // If this dot product is negative, we have something interesting
                 var dot = localDirection.dot(normal);
@@ -512,8 +612,8 @@ namespace CANNON
                 }
 
                 // Intersection point is from + direction * scalar
-                localDirection.scaleNumberTo(scalar, intersectPoint);
-                intersectPoint.addTo(localFrom, intersectPoint);
+                localDirection.scale(scalar, intersectPoint);
+                intersectPoint.vadd(localFrom, intersectPoint);
 
                 // Get triangle vertices
                 mesh.getVertex(indices[trianglesIndex * 3 + 1], b);
@@ -527,18 +627,19 @@ namespace CANNON
                 }
 
                 // transform intersectpoint and normal to world
-                treeTransform.vectorToWorldFrame(normal, worldNormal);
-                treeTransform.pointToWorldFrame(intersectPoint, worldIntersectPoint);
+                Transform.vectorToWorldFrame(quat, normal, worldNormal);
+                Transform.pointToWorldFrame(position, quat, intersectPoint, worldIntersectPoint);
                 this.reportIntersection(worldNormal, worldIntersectPoint, reportedShape, body, trianglesIndex);
             }
             triangles.length = 0;
         }
 
-        private reportIntersection(normal: feng3d.Vector3, hitPointWorld: feng3d.Vector3, shape: Shape, body: Body, hitFaceIndex = - 1)
+
+        private reportIntersection(normal: Vec3, hitPointWorld: Vec3, shape: Shape, body: Body, hitFaceIndex?: number)
         {
             var from = this.from;
             var to = this.to;
-            var distance = from.distance(hitPointWorld);
+            var distance = from.distanceTo(hitPointWorld);
             var result = this.result;
 
             // Skip back faces?
@@ -547,14 +648,23 @@ namespace CANNON
                 return;
             }
 
-            result.hitFaceIndex = hitFaceIndex;
+            result.hitFaceIndex = typeof (hitFaceIndex) !== 'undefined' ? hitFaceIndex : -1;
 
             switch (this.mode)
             {
                 case Ray.ALL:
                     this.hasHit = true;
-                    result.set(normal, hitPointWorld, shape, body, distance);
+                    result.set(
+                        from,
+                        to,
+                        normal,
+                        hitPointWorld,
+                        shape,
+                        body,
+                        distance
+                    );
                     result.hasHit = true;
+                    this.callback(result);
                     break;
 
                 case Ray.CLOSEST:
@@ -564,7 +674,15 @@ namespace CANNON
                     {
                         this.hasHit = true;
                         result.hasHit = true;
-                        result.set(normal, hitPointWorld, shape, body, distance);
+                        result.set(
+                            from,
+                            to,
+                            normal,
+                            hitPointWorld,
+                            shape,
+                            body,
+                            distance
+                        );
                     }
                     break;
 
@@ -573,7 +691,15 @@ namespace CANNON
                     // Report and stop.
                     this.hasHit = true;
                     result.hasHit = true;
-                    result.set(normal, hitPointWorld, shape, body, distance);
+                    result.set(
+                        from,
+                        to,
+                        normal,
+                        hitPointWorld,
+                        shape,
+                        body,
+                        distance
+                    );
                     result._shouldStop = true;
                     break;
             }
@@ -582,15 +708,11 @@ namespace CANNON
         /*
          * As per "Barycentric Technique" as named here http://www.blackpawn.com/texts/pointinpoly/default.html But without the division
          */
-        static pointInTriangle(p: feng3d.Vector3, a: feng3d.Vector3, b: feng3d.Vector3, c: feng3d.Vector3)
+        static pointInTriangle(p: Vec3, a: Vec3, b: Vec3, c: Vec3)
         {
-            var v0 = new feng3d.Vector3();
-            var v1 = new feng3d.Vector3();
-            var v2 = new feng3d.Vector3();
-
-            c.subTo(a, v0);
-            b.subTo(a, v1);
-            p.subTo(a, v2);
+            c.vsub(a, v0);
+            b.vsub(a, v1);
+            p.vsub(a, v2);
 
             var dot00 = v0.dot(v0);
             var dot01 = v0.dot(v1);
@@ -607,26 +729,79 @@ namespace CANNON
 
     }
 
-    Ray.prototype[ShapeType.BOX] = Ray.prototype["intersectBox"];
-    Ray.prototype[ShapeType.PLANE] = Ray.prototype["intersectPlane"];
+    var tmpAABB = new AABB();
+    var tmpArray = [];
 
-    Ray.prototype[ShapeType.HEIGHTFIELD] = Ray.prototype["intersectHeightfield"];
-    Ray.prototype[ShapeType.SPHERE] = Ray.prototype["intersectSphere"];
+    var v1 = new Vec3();
+    var v2 = new Vec3();
 
-    Ray.prototype[ShapeType.TRIMESH] = Ray.prototype["intersectTrimesh"];
-    Ray.prototype[ShapeType.CONVEXPOLYHEDRON] = Ray.prototype["intersectConvex"];
+    var intersectBody_xi = new Vec3();
+    var intersectBody_qi = new Quaternion();
 
-    function distanceFromIntersection(from: feng3d.Vector3, direction: feng3d.Vector3, position: feng3d.Vector3)
+
+    var vector = new Vec3();
+    var normal = new Vec3();
+    var intersectPoint = new Vec3();
+
+    var a = new Vec3();
+    var b = new Vec3();
+    var c = new Vec3();
+    var d = new Vec3();
+
+    var tmpRaycastResult = new RaycastResult();
+
+
+    var v0 = new Vec3();
+    var intersect = new Vec3();
+
+
+    var intersectTrimesh_normal = new Vec3();
+    var intersectTrimesh_localDirection = new Vec3();
+    var intersectTrimesh_localFrom = new Vec3();
+    var intersectTrimesh_localTo = new Vec3();
+    var intersectTrimesh_worldNormal = new Vec3();
+    var intersectTrimesh_worldIntersectPoint = new Vec3();
+    var intersectTrimesh_localAABB = new AABB();
+    var intersectTrimesh_triangles = [];
+    var intersectTrimesh_treeTransform = new Transform();
+
+    var intersectConvexOptions = {
+        faceList: [0]
+    };
+    var worldPillarOffset = new Vec3();
+    var intersectHeightfield_localRay = new Ray();
+    var intersectHeightfield_index = [];
+    var intersectHeightfield_minMax = [];
+
+    var Ray_intersectSphere_intersectionPoint = new Vec3();
+    var Ray_intersectSphere_normal = new Vec3();
+
+    var intersectConvex_normal = new Vec3();
+    var intersectConvex_minDistNormal = new Vec3();
+    var intersectConvex_minDistIntersect = new Vec3();
+    var intersectConvex_vector = new Vec3();
+
+    Ray.prototype[Shape.types.BOX] = Ray.prototype["intersectBox"];
+    Ray.prototype[Shape.types.PLANE] = Ray.prototype["intersectPlane"];
+
+    Ray.prototype[Shape.types.HEIGHTFIELD] = Ray.prototype["intersectHeightfield"];
+    Ray.prototype[Shape.types.SPHERE] = Ray.prototype["intersectSphere"];
+
+    Ray.prototype[Shape.types.TRIMESH] = Ray.prototype["intersectTrimesh"];
+    Ray.prototype[Shape.types.CONVEXPOLYHEDRON] = Ray.prototype["intersectConvex"];
+
+    function distanceFromIntersection(from, direction, position)
     {
+
         // v0 is vector from from to position
-        var v0 = position.subTo(from);
+        position.vsub(from, v0);
         var dot = v0.dot(direction);
 
         // intersect = direction*dot + from
-        var intersect = direction.multiplyNumberTo(dot);
-        intersect.addTo(from, intersect);
+        direction.mult(dot, intersect);
+        intersect.vadd(from, intersect);
 
-        var distance = position.distance(intersect);
+        var distance = position.distanceTo(intersect);
 
         return distance;
     }

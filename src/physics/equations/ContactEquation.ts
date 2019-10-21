@@ -2,25 +2,23 @@ namespace CANNON
 {
     export class ContactEquation extends Equation
     {
-        restitution = 0.0; // "bounciness": u1 = -e*u0
+
+        restitution: number; // "bounciness": u1 = -e*u0
 
         /**
          * World-oriented vector that goes from the center of bi to the contact point.
          */
-        ri = new feng3d.Vector3();
+        ri: Vec3;
 
         /**
          * World-oriented vector that starts in body j position and goes to the contact point.
          */
-        rj = new feng3d.Vector3();
+        rj: Vec3;
 
         /**
          * Contact normal, pointing out of body i.
          */
-        ni = new feng3d.Vector3();
-
-        si: Shape;
-        sj: Shape;
+        ni: Vec3;
 
         /**
          * Contact/non-penetration constraint equation
@@ -30,9 +28,14 @@ namespace CANNON
          * 
          * @author schteppe
          */
-        constructor(bodyA: Body, bodyB: Body, maxForce = 1e6)
+        constructor(bodyA: Body, bodyB: Body, maxForce?: number)
         {
-            super(bodyA, bodyB, 0, maxForce);
+            super(bodyA, bodyB, 0, typeof (maxForce) !== 'undefined' ? maxForce : 1e6);
+
+            this.restitution = 0.0; // "bounciness": u1 = -e*u0
+            this.ri = new Vec3();
+            this.rj = new Vec3();
+            this.ni = new Vec3();
         }
 
         computeB(h: number)
@@ -43,14 +46,20 @@ namespace CANNON
                 bj = this.bj,
                 ri = this.ri,
                 rj = this.rj,
+                rixn = ContactEquation_computeB_temp1,
+                rjxn = ContactEquation_computeB_temp2,
 
                 vi = bi.velocity,
                 wi = bi.angularVelocity,
+                fi = bi.force,
+                taui = bi.torque,
 
                 vj = bj.velocity,
                 wj = bj.angularVelocity,
+                fj = bj.force,
+                tauj = bj.torque,
 
-                penetrationVec = new feng3d.Vector3(),
+                penetrationVec = ContactEquation_computeB_temp3,
 
                 GA = this.jacobianElementA,
                 GB = this.jacobianElementB,
@@ -58,21 +67,21 @@ namespace CANNON
                 n = this.ni;
 
             // Caluclate cross products
-            var rixn = ri.crossTo(n);
-            var rjxn = rj.crossTo(n);
+            ri.cross(n, rixn);
+            rj.cross(n, rjxn);
 
             // g = xj+rj -(xi+ri)
             // G = [ -ni  -rixn  ni  rjxn ]
-            n.negateTo(GA.spatial);
-            rixn.negateTo(GA.rotational);
+            n.negate(GA.spatial);
+            rixn.negate(GA.rotational);
             GB.spatial.copy(n);
             GB.rotational.copy(rjxn);
 
             // Calculate the penetration vector
             penetrationVec.copy(bj.position);
-            penetrationVec.addTo(rj, penetrationVec);
-            penetrationVec.subTo(bi.position, penetrationVec);
-            penetrationVec.subTo(ri, penetrationVec);
+            penetrationVec.vadd(rj, penetrationVec);
+            penetrationVec.vsub(bi.position, penetrationVec);
+            penetrationVec.vsub(ri, penetrationVec);
 
             var g = n.dot(penetrationVec);
 
@@ -91,17 +100,33 @@ namespace CANNON
          */
         getImpactVelocityAlongNormal()
         {
+            var vi = ContactEquation_getImpactVelocityAlongNormal_vi;
+            var vj = ContactEquation_getImpactVelocityAlongNormal_vj;
+            var xi = ContactEquation_getImpactVelocityAlongNormal_xi;
+            var xj = ContactEquation_getImpactVelocityAlongNormal_xj;
+            var relVel = ContactEquation_getImpactVelocityAlongNormal_relVel;
 
-            var xi = this.bi.position.addTo(this.ri);
-            var xj = this.bj.position.addTo(this.rj);
+            this.bi.position.vadd(this.ri, xi);
+            this.bj.position.vadd(this.rj, xj);
 
-            var vi = this.bi.getVelocityAtWorldPoint(xi);
-            var vj = this.bj.getVelocityAtWorldPoint(xj);
+            this.bi.getVelocityAtWorldPoint(xi, vi);
+            this.bj.getVelocityAtWorldPoint(xj, vj);
 
-            var relVel = vi.subTo(vj);
+            vi.vsub(vj, relVel);
 
             return this.ni.dot(relVel);
         }
 
     }
+
+    var ContactEquation_computeB_temp1 = new Vec3(); // Temp vectors
+    var ContactEquation_computeB_temp2 = new Vec3();
+    var ContactEquation_computeB_temp3 = new Vec3();
+
+
+    var ContactEquation_getImpactVelocityAlongNormal_vi = new Vec3();
+    var ContactEquation_getImpactVelocityAlongNormal_vj = new Vec3();
+    var ContactEquation_getImpactVelocityAlongNormal_xi = new Vec3();
+    var ContactEquation_getImpactVelocityAlongNormal_xj = new Vec3();
+    var ContactEquation_getImpactVelocityAlongNormal_relVel = new Vec3();
 }

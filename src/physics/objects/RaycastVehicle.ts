@@ -34,25 +34,23 @@ namespace CANNON
 
         currentVehicleSpeedKmHour: number;
 
-        preStepCallback()
-        {
-            this.updateVehicle(this.world.dt);
-        }
+        preStepCallback: Function;
+        constraints
 
         /**
          * Vehicle helper class that casts rays from the wheel positions towards the ground and applies forces.
          * 
          * @param options 
          */
-        constructor(chassisBody: Body, indexRightAxis = 1, indexForwardAxis = 0, indexUpAxis = 1)
+        constructor(options: { chassisBody?: Body, indexRightAxis?: number, indexForwardAxis?: number, indexUpAxis?: number } = {})
         {
-            this.chassisBody = chassisBody;
+            this.chassisBody = options.chassisBody;
             this.wheelInfos = [];
             this.sliding = false;
             this.world = null;
-            this.indexRightAxis = indexRightAxis;
-            this.indexForwardAxis = indexForwardAxis;
-            this.indexUpAxis = indexUpAxis;
+            this.indexRightAxis = typeof (options.indexRightAxis) !== 'undefined' ? options.indexRightAxis : 1;
+            this.indexForwardAxis = typeof (options.indexForwardAxis) !== 'undefined' ? options.indexForwardAxis : 0;
+            this.indexUpAxis = typeof (options.indexUpAxis) !== 'undefined' ? options.indexUpAxis : 2;
         }
 
         /**
@@ -60,8 +58,9 @@ namespace CANNON
          * 
          * @param options
          */
-        addWheel(info: WheelInfo)
+        addWheel(options = {})
         {
+            var info = new WheelInfo(options);
             var index = this.wheelInfos.length;
             this.wheelInfos.push(info);
 
@@ -109,9 +108,15 @@ namespace CANNON
          */
         addToWorld(world: World)
         {
+            var constraints = this.constraints;
             world.addBody(this.chassisBody);
+            var that = this;
+            this.preStepCallback = function ()
+            {
+                that.updateVehicle(world.dt);
+            };
+            world.addEventListener('preStep', this.preStepCallback);
             this.world = world;
-            world.on('preStep', this.preStepCallback, this);
         }
 
         /**
@@ -119,9 +124,9 @@ namespace CANNON
          * @param axisIndex
          * @param result
          */
-        getVehicleAxisWorld(axisIndex: number, result: feng3d.Vector3)
+        getVehicleAxisWorld(axisIndex: number, result: Vec3)
         {
-            result.init(
+            result.set(
                 axisIndex === 0 ? 1 : 0,
                 axisIndex === 1 ? 1 : 0,
                 axisIndex === 2 ? 1 : 0
@@ -140,9 +145,9 @@ namespace CANNON
                 this.updateWheelTransform(i);
             }
 
-            this.currentVehicleSpeedKmHour = 3.6 * chassisBody.velocity.length;
+            this.currentVehicleSpeedKmHour = 3.6 * chassisBody.velocity.norm();
 
-            var forwardWorld = new feng3d.Vector3();
+            var forwardWorld = new Vec3();
             this.getVehicleAxisWorld(this.indexForwardAxis, forwardWorld);
 
             if (forwardWorld.dot(chassisBody.velocity) < 0)
@@ -158,8 +163,8 @@ namespace CANNON
 
             this.updateSuspension(timeStep);
 
-            var impulse = new feng3d.Vector3();
-            var relpos = new feng3d.Vector3();
+            var impulse = new Vec3();
+            var relpos = new Vec3();
             for (var i = 0; i < numWheels; i++)
             {
                 //apply suspension force
@@ -169,17 +174,17 @@ namespace CANNON
                 {
                     suspensionForce = wheel.maxSuspensionForce;
                 }
-                wheel.raycastResult.hitNormalWorld.scaleNumberTo(suspensionForce * timeStep, impulse);
+                wheel.raycastResult.hitNormalWorld.scale(suspensionForce * timeStep, impulse);
 
-                wheel.raycastResult.hitPointWorld.subTo(chassisBody.position, relpos);
+                wheel.raycastResult.hitPointWorld.vsub(chassisBody.position, relpos);
                 chassisBody.applyImpulse(impulse, relpos);
             }
 
             this.updateFriction(timeStep);
 
-            var hitNormalWorldScaledWithProj = new feng3d.Vector3();
-            var fwd = new feng3d.Vector3();
-            var vel = new feng3d.Vector3();
+            var hitNormalWorldScaledWithProj = new Vec3();
+            var fwd = new Vec3();
+            var vel = new Vec3();
             for (i = 0; i < numWheels; i++)
             {
                 var wheel = wheelInfos[i];
@@ -201,9 +206,9 @@ namespace CANNON
 
                     this.getVehicleAxisWorld(this.indexForwardAxis, fwd);
                     var proj = fwd.dot(wheel.raycastResult.hitNormalWorld);
-                    wheel.raycastResult.hitNormalWorld.scaleNumberTo(proj, hitNormalWorldScaledWithProj);
+                    wheel.raycastResult.hitNormalWorld.scale(proj, hitNormalWorldScaledWithProj);
 
-                    fwd.subTo(hitNormalWorldScaledWithProj, fwd);
+                    fwd.vsub(hitNormalWorldScaledWithProj, fwd);
 
                     var proj2 = fwd.dot(vel);
                     wheel.deltaRotation = m * proj2 * timeStep / wheel.radius;
@@ -279,15 +284,16 @@ namespace CANNON
          */
         removeFromWorld(world: World)
         {
-            world.removeBody(this.chassisBody);
-            world.off('preStep', this.preStepCallback);
+            var constraints = this.constraints;
+            world.remove(this.chassisBody);
+            world.removeEventListener('preStep', this.preStepCallback);
             this.world = null;
         }
 
         castRay(wheel: WheelInfo)
         {
-            var rayvector = new feng3d.Vector3();
-            var target = new feng3d.Vector3();
+            var rayvector = castRay_rayvector;
+            var target = castRay_target;
 
             this.updateWheelTransformWorld(wheel);
             var chassisBody = this.chassisBody;
@@ -296,10 +302,12 @@ namespace CANNON
 
             var raylen = wheel.suspensionRestLength + wheel.radius;
 
-            wheel.directionWorld.scaleNumberTo(raylen, rayvector);
+            wheel.directionWorld.scale(raylen, rayvector);
             var source = wheel.chassisConnectionPointWorld;
-            source.addTo(rayvector, target);
+            source.vadd(rayvector, target);
             var raycastResult = wheel.raycastResult;
+
+            var param = 0;
 
             raycastResult.reset();
             // Turn off ray collision with the chassis temporarily
@@ -307,10 +315,12 @@ namespace CANNON
             chassisBody.collisionResponse = false;
 
             // Cast ray against world
-            this.world.raycast(source, target, raycastResult);
+            this.world.rayTest(source, target, raycastResult);
             chassisBody.collisionResponse = oldState;
 
             var object = raycastResult.body;
+
+            wheel.raycastResult.groundObject = 0;//?
 
             if (object)
             {
@@ -336,7 +346,7 @@ namespace CANNON
 
                 var denominator = wheel.raycastResult.hitNormalWorld.dot(wheel.directionWorld);
 
-                var chassis_velocity_at_contactPoint = new feng3d.Vector3();
+                var chassis_velocity_at_contactPoint = new Vec3();
                 chassisBody.getVelocityAtWorldPoint(wheel.raycastResult.hitPointWorld, chassis_velocity_at_contactPoint);
 
                 var projVel = wheel.raycastResult.hitNormalWorld.dot(chassis_velocity_at_contactPoint);
@@ -358,7 +368,7 @@ namespace CANNON
                 //put wheel info as in rest position
                 wheel.suspensionLength = wheel.suspensionRestLength + 0 * wheel.maxSuspensionTravel;
                 wheel.suspensionRelativeVelocity = 0.0;
-                wheel.directionWorld.scaleNumberTo(-1, wheel.raycastResult.hitNormalWorld);
+                wheel.directionWorld.scale(-1, wheel.raycastResult.hitNormalWorld);
                 wheel.clippedInvContactDotSuspension = 1.0;
             }
 
@@ -382,39 +392,39 @@ namespace CANNON
          */
         updateWheelTransform(wheelIndex: number)
         {
-            var up = new feng3d.Vector3();
-            var right = new feng3d.Vector3();
-            var fwd = new feng3d.Vector3();
+            var up = tmpVec4;
+            var right = tmpVec5;
+            var fwd = tmpVec6;
 
             var wheel = this.wheelInfos[wheelIndex];
             this.updateWheelTransformWorld(wheel);
 
-            wheel.directionLocal.scaleNumberTo(-1, up);
+            wheel.directionLocal.scale(-1, up);
             right.copy(wheel.axleLocal);
-            up.crossTo(right, fwd);
+            up.cross(right, fwd);
             fwd.normalize();
             right.normalize();
 
             // Rotate around steering over the wheelAxle
             var steering = wheel.steering;
-            var steeringOrn = new feng3d.Quaternion();
-            steeringOrn.fromAxisAngle(up, steering);
+            var steeringOrn = new Quaternion();
+            steeringOrn.setFromAxisAngle(up, steering);
 
-            var rotatingOrn = new feng3d.Quaternion();
-            rotatingOrn.fromAxisAngle(right, wheel.rotation);
+            var rotatingOrn = new Quaternion();
+            rotatingOrn.setFromAxisAngle(right, wheel.rotation);
 
             // World rotation of the wheel
             var q = wheel.worldTransform.quaternion;
-            this.chassisBody.quaternion.multTo(steeringOrn, q);
-            q.multTo(rotatingOrn, q);
+            this.chassisBody.quaternion.mult(steeringOrn, q);
+            q.mult(rotatingOrn, q);
 
             q.normalize();
 
             // world position of the wheel
             var p = wheel.worldTransform.position;
             p.copy(wheel.directionWorld);
-            p.scaleNumberTo(wheel.suspensionLength, p);
-            p.addTo(wheel.chassisConnectionPointWorld, p);
+            p.scale(wheel.suspensionLength, p);
+            p.vadd(wheel.chassisConnectionPointWorld, p);
         }
 
         /**
@@ -429,27 +439,36 @@ namespace CANNON
 
         updateFriction(timeStep: number)
         {
-            var surfNormalWS_scaled_proj = new feng3d.Vector3();
+            var surfNormalWS_scaled_proj = updateFriction_surfNormalWS_scaled_proj;
 
             //calculate the impulse, so that the wheels don't move sidewards
             var wheelInfos = this.wheelInfos;
             var numWheels = wheelInfos.length;
             var chassisBody = this.chassisBody;
-            var forwardWS: feng3d.Vector3[] = [];
-            var axle: feng3d.Vector3[] = [];
+            var forwardWS = updateFriction_forwardWS;
+            var axle = updateFriction_axle;
+
+            var numWheelsOnGround = 0;
 
             for (var i = 0; i < numWheels; i++)
             {
                 var wheel = wheelInfos[i];
+
+                var groundObject = wheel.raycastResult.body;
+                if (groundObject)
+                {
+                    numWheelsOnGround++;
+                }
+
                 wheel.sideImpulse = 0;
                 wheel.forwardImpulse = 0;
                 if (!forwardWS[i])
                 {
-                    forwardWS[i] = new feng3d.Vector3();
+                    forwardWS[i] = new Vec3();
                 }
                 if (!axle[i])
                 {
-                    axle[i] = new feng3d.Vector3();
+                    axle[i] = new Vec3();
                 }
             }
 
@@ -469,11 +488,11 @@ namespace CANNON
 
                     var surfNormalWS = wheel.raycastResult.hitNormalWorld;
                     var proj = axlei.dot(surfNormalWS);
-                    surfNormalWS.scaleNumberTo(proj, surfNormalWS_scaled_proj);
-                    axlei.subTo(surfNormalWS_scaled_proj, axlei);
+                    surfNormalWS.scale(proj, surfNormalWS_scaled_proj);
+                    axlei.vsub(surfNormalWS_scaled_proj, axlei);
                     axlei.normalize();
 
-                    surfNormalWS.crossTo(axlei, forwardWS[i]);
+                    surfNormalWS.cross(axlei, forwardWS[i]);
                     forwardWS[i].normalize();
 
                     wheel.sideImpulse = resolveSingleBilateral(
@@ -484,6 +503,7 @@ namespace CANNON
                         axlei
                     );
 
+                    wheel.sideImpulse *= sideFrictionStiffness2;
                 }
             }
 
@@ -498,15 +518,24 @@ namespace CANNON
 
                 var rollingFriction = 0;
 
+                wheel.slipInfo = 1;
                 if (groundObject)
                 {
                     var defaultRollingFrictionImpulse = 0;
                     var maxImpulse = wheel.brake ? wheel.brake : defaultRollingFrictionImpulse;
 
+                    // btWheelContactPoint contactPt(chassisBody,groundObject,wheelInfraycastInfo.hitPointWorld,forwardWS[wheel],maxImpulse);
+                    // rollingFriction = calcRollingFriction(contactPt);
                     rollingFriction = calcRollingFriction(chassisBody, groundObject, wheel.raycastResult.hitPointWorld, forwardWS[i], maxImpulse);
 
                     rollingFriction += wheel.engineForce * timeStep;
+
+                    // rollingFriction = 0;
+                    var factor = maxImpulse / rollingFriction;
+                    wheel.slipInfo *= factor;
                 }
+
+                //switch between active rolling (throttle), braking and non-active rolling friction (nthrottle/break)
 
                 wheel.forwardImpulse = 0;
                 wheel.skidInfo = 1;
@@ -561,13 +590,15 @@ namespace CANNON
             {
                 var wheel = wheelInfos[i];
 
-                var rel_pos = new feng3d.Vector3();
-                wheel.raycastResult.hitPointWorld.subTo(chassisBody.position, rel_pos);
+                var rel_pos = new Vec3();
+                wheel.raycastResult.hitPointWorld.vsub(chassisBody.position, rel_pos);
+                // cannons applyimpulse is using world coord for the position
+                //rel_pos.copy(wheel.raycastResult.hitPointWorld);
 
                 if (wheel.forwardImpulse !== 0)
                 {
-                    var impulse = new feng3d.Vector3();
-                    forwardWS[i].scaleNumberTo(wheel.forwardImpulse, impulse);
+                    var impulse = new Vec3();
+                    forwardWS[i].scale(wheel.forwardImpulse, impulse);
                     chassisBody.applyImpulse(impulse, rel_pos);
                 }
 
@@ -575,8 +606,11 @@ namespace CANNON
                 {
                     var groundObject = wheel.raycastResult.body;
 
-                    var rel_pos2 = wheel.raycastResult.hitPointWorld.subTo(groundObject.position);
-                    var sideImp = axle[i].scaleNumberTo(wheel.sideImpulse);
+                    var rel_pos2 = new Vec3();
+                    wheel.raycastResult.hitPointWorld.vsub(groundObject.position, rel_pos2);
+                    //rel_pos2.copy(wheel.raycastResult.hitPointWorld);
+                    var sideImp = new Vec3();
+                    axle[i].scale(wheel.sideImpulse, sideImp);
 
                     // Scale the relative position in the up direction with rollInfluence.
                     // If rollInfluence is 1, the impulse will be applied on the hitPoint (easy to roll over), if it is zero it will be applied in the same plane as the center of mass (not easy to roll over).
@@ -586,27 +620,59 @@ namespace CANNON
                     chassisBody.applyImpulse(sideImp, rel_pos);
 
                     //apply friction impulse on the ground
-                    sideImp.scaleNumberTo(-1, sideImp);
+                    sideImp.scale(-1, sideImp);
                     groundObject.applyImpulse(sideImp, rel_pos2);
                 }
             }
         }
+
     }
 
-    var directions = [
-        new feng3d.Vector3(1, 0, 0),
-        new feng3d.Vector3(0, 1, 0),
-        new feng3d.Vector3(0, 0, 1)
-    ];
 
-    function calcRollingFriction(body0: Body, body1: Body, frictionPosWorld: feng3d.Vector3, frictionDirectionWorld: feng3d.Vector3, maxImpulse: number)
+    var tmpVec1 = new Vec3();
+    var tmpVec2 = new Vec3();
+    var tmpVec3 = new Vec3();
+    var tmpVec4 = new Vec3();
+    var tmpVec5 = new Vec3();
+    var tmpVec6 = new Vec3();
+    var tmpRay = new Ray();
+
+    var torque = new Vec3();
+
+    var castRay_rayvector = new Vec3();
+    var castRay_target = new Vec3();
+
+    var directions = [
+        new Vec3(1, 0, 0),
+        new Vec3(0, 1, 0),
+        new Vec3(0, 0, 1)
+    ];
+    var updateFriction_surfNormalWS_scaled_proj = new Vec3();
+    var updateFriction_axle = [];
+    var updateFriction_forwardWS = [];
+    var sideFrictionStiffness2 = 1;
+
+
+    var calcRollingFriction_vel1 = new Vec3();
+    var calcRollingFriction_vel2 = new Vec3();
+    var calcRollingFriction_vel = new Vec3();
+
+    function calcRollingFriction(body0: Body, body1: Body, frictionPosWorld: Vec3, frictionDirectionWorld: Vec3, maxImpulse: number)
     {
         var j1 = 0;
         var contactPosWorld = frictionPosWorld;
 
-        var vel1 = body0.getVelocityAtWorldPoint(contactPosWorld);
-        var vel2 = body1.getVelocityAtWorldPoint(contactPosWorld);
-        var vel = vel1.subTo(vel2);
+        // var rel_pos1 = new Vec3();
+        // var rel_pos2 = new Vec3();
+        var vel1 = calcRollingFriction_vel1;
+        var vel2 = calcRollingFriction_vel2;
+        var vel = calcRollingFriction_vel;
+        // contactPosWorld.vsub(body0.position, rel_pos1);
+        // contactPosWorld.vsub(body1.position, rel_pos2);
+
+        body0.getVelocityAtWorldPoint(contactPosWorld, vel1);
+        body1.getVelocityAtWorldPoint(contactPosWorld, vel2);
+        vel1.vsub(vel2, vel);
 
         var vrel = frictionDirectionWorld.dot(vel);
 
@@ -630,30 +696,51 @@ namespace CANNON
         return j1;
     }
 
-    function computeImpulseDenominator(body: Body, pos: feng3d.Vector3, normal: feng3d.Vector3)
+    var computeImpulseDenominator_r0 = new Vec3();
+    var computeImpulseDenominator_c0 = new Vec3();
+    var computeImpulseDenominator_vec = new Vec3();
+    var computeImpulseDenominator_m = new Vec3();
+    function computeImpulseDenominator(body: Body, pos: Vec3, normal: Vec3)
     {
-        var r0 = pos.subTo(body.position);
-        var c0 = r0.crossTo(normal);
-        var m = body.invInertiaWorld.vmult(c0);
-        var vec = m.crossTo(r0);
+        var r0 = computeImpulseDenominator_r0;
+        var c0 = computeImpulseDenominator_c0;
+        var vec = computeImpulseDenominator_vec;
+        var m = computeImpulseDenominator_m;
+
+        pos.vsub(body.position, r0);
+        r0.cross(normal, c0);
+        body.invInertiaWorld.vmult(c0, m);
+        m.cross(r0, vec);
 
         return body.invMass + normal.dot(vec);
     }
 
 
+    var resolveSingleBilateral_vel1 = new Vec3();
+    var resolveSingleBilateral_vel2 = new Vec3();
+    var resolveSingleBilateral_vel = new Vec3();
+
     //bilateral constraint between two dynamic objects
-    function resolveSingleBilateral(body1: Body, pos1: feng3d.Vector3, body2: Body, pos2: feng3d.Vector3, normal: feng3d.Vector3)
+    function resolveSingleBilateral(body1: Body, pos1: Vec3, body2: Body, pos2: Vec3, normal: Vec3)
     {
-        var normalLenSqr = normal.lengthSquared;
+        var normalLenSqr = normal.norm2();
         if (normalLenSqr > 1.1)
         {
             return 0; // no impulse
         }
+        // var rel_pos1 = new Vec3();
+        // var rel_pos2 = new Vec3();
+        // pos1.vsub(body1.position, rel_pos1);
+        // pos2.vsub(body2.position, rel_pos2);
 
-        var vel1 = body1.getVelocityAtWorldPoint(pos1);
-        var vel2 = body2.getVelocityAtWorldPoint(pos2, vel2);
+        var vel1 = resolveSingleBilateral_vel1;
+        var vel2 = resolveSingleBilateral_vel2;
+        var vel = resolveSingleBilateral_vel;
+        body1.getVelocityAtWorldPoint(pos1, vel1);
+        body2.getVelocityAtWorldPoint(pos2, vel2);
 
-        var vel = vel1.subTo(vel2);
+        vel1.vsub(vel2, vel);
+
         var rel_vel = normal.dot(vel);
 
         var contactDamping = 0.2;

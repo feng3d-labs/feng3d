@@ -6,12 +6,12 @@ namespace CANNON
         /**
          * World oriented rotational axis
          */
-        axisA: feng3d.Vector3;
+        axisA: Vec3;
 
         /**
          * World oriented rotational axis
          */
-        axisB: feng3d.Vector3; // World oriented rotational axis
+        axisB: Vec3; // World oriented rotational axis
 
         /**
          * Motor velocity
@@ -24,19 +24,24 @@ namespace CANNON
          * @param bodyA 
          * @param bodyB 
          * @param maxForce 
+         * 
+         * @author schteppe
          */
-        constructor(bodyA: Body, bodyB: Body, maxForce = 1e6)
+        constructor(bodyA: Body, bodyB: Body, maxForce: number)
         {
-            super(bodyA, bodyB, -maxForce, maxForce);
+            super(bodyA, bodyB, -(typeof (maxForce) !== 'undefined' ? maxForce : 1e6), typeof (maxForce) !== 'undefined' ? maxForce : 1e6);
 
-            this.axisA = new feng3d.Vector3();
-            this.axisB = new feng3d.Vector3(); // World oriented rotational axis
+            this.axisA = new Vec3();
+            this.axisB = new Vec3(); // World oriented rotational axis
             this.targetVelocity = 0;
         }
 
         computeB(h: number)
         {
-            var b = this.b,
+            var a = this.a,
+                b = this.b,
+                bi = this.bi,
+                bj = this.bj,
 
                 axisA = this.axisA,
                 axisB = this.axisB,
@@ -44,8 +49,14 @@ namespace CANNON
                 GA = this.jacobianElementA,
                 GB = this.jacobianElementB;
 
+            // g = 0
+            // gdot = axisA * wi - axisB * wj
+            // gdot = G * W = G * [vi wi vj wj]
+            // =>
+            // G = [0 axisA 0 -axisB]
+
             GA.rotational.copy(axisA);
-            axisB.negateTo(GB.rotational);
+            axisB.negate(GB.rotational);
 
             var GW = this.computeGW() - this.targetVelocity,
                 GiMf = this.computeGiMf();

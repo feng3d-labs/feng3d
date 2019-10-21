@@ -1,31 +1,44 @@
 namespace CANNON
 {
-    /**
-     * 约束方程 Gauss-Seidel 求解器
-     */
     export class GSSolver extends Solver
     {
-        /**
-         * 求解器迭代的次数
-         * 
-         * 求解器迭代的次数决定了约束条件的质量。迭代越多，模拟就越正确。然而，更多的迭代需要更多的计算。如果你的世界有很大的重力，你将需要更多的迭代。
-         */
-        iterations = 10;
 
         /**
-         * 容差
-         * 
-         * 当达到容差时，假定系统是收敛的。
+         * The number of solver iterations determines quality of the constraints in the world. The more iterations, the more correct simulation. More iterations need more computations though. If you have a large gravity force in your world, you will need more iterations.
+         * @todo write more about solver and iterations in the wiki
          */
-        tolerance = 1e-7;
+        iterations: number;
+
+        /**
+         * When tolerance is reached, the system is assumed to be converged.
+         */
+        tolerance: number;
+
+        /**
+         * Constraint equation Gauss-Seidel solver.
+         * @todo The spook parameters should be specified for each constraint, not globally.
+         * @author schteppe / https://github.com/schteppe
+         * @see https://www8.cs.umu.se/kurser/5DV058/VT09/lectures/spooknotes.pdf
+         */
+        constructor()
+        {
+            super();
+
+            this.iterations = 10;
+            this.tolerance = 1e-7;
+        }
 
         solve(dt: number, world: World)
         {
-            var iter = 0;
-            var equations = this.equations;
-            var Neq = equations.length;
-            var bodies = world.bodies;
-            var Nbodies = bodies.length;
+            var iter = 0,
+                maxIter = this.iterations,
+                tolSquared = this.tolerance * this.tolerance,
+                equations = this.equations,
+                Neq = equations.length,
+                bodies = world.bodies,
+                Nbodies = bodies.length,
+                h = dt,
+                q, B, invC, deltalambda, deltalambdaTot, GWlambda, lambdaj;
 
             // Update solve mass
             if (Neq !== 0)
@@ -37,10 +50,9 @@ namespace CANNON
             }
 
             // Things that does not change during iteration can be computed once
-            var invCs: number[] = [];
-            var Bs: number[] = [];
-            var lambda: number[] = [];
-
+            var invCs = GSSolver_solve_invCs,
+                Bs = GSSolver_solve_Bs,
+                lambda = GSSolver_solve_lambda;
             invCs.length = Neq;
             Bs.length = Neq;
             lambda.length = Neq;
@@ -48,38 +60,41 @@ namespace CANNON
             {
                 var c = equations[i];
                 lambda[i] = 0.0;
-                Bs[i] = c.computeB(dt, 0, 0);
+                Bs[i] = c.computeB(h, 0, 0);
                 invCs[i] = 1.0 / c.computeC();
             }
 
             if (Neq !== 0)
             {
+
                 // Reset vlambda
                 for (var i = 0; i !== Nbodies; i++)
                 {
                     var b = bodies[i],
                         vlambda = b.vlambda,
                         wlambda = b.wlambda;
-                    vlambda.init(0, 0, 0);
-                    wlambda.init(0, 0, 0);
+                    vlambda.set(0, 0, 0);
+                    wlambda.set(0, 0, 0);
                 }
 
                 // Iterate over equations
-                for (iter = 0; iter !== this.iterations; iter++)
+                for (iter = 0; iter !== maxIter; iter++)
                 {
+
                     // Accumulate the total error for each iteration.
-                    var deltalambdaTot = 0.0;
+                    deltalambdaTot = 0.0;
 
                     for (var j = 0; j !== Neq; j++)
                     {
+
                         var c = equations[j];
 
                         // Compute iteration
-                        var B = Bs[j];
-                        var invC = invCs[j];
-                        var lambdaj = lambda[j];
-                        var GWlambda = c.computeGWlambda();
-                        var deltalambda = invC * (B - GWlambda - c.eps * lambdaj);
+                        B = Bs[j];
+                        invC = invCs[j];
+                        lambdaj = lambda[j];
+                        GWlambda = c.computeGWlambda();
+                        deltalambda = invC * (B - GWlambda - c.eps * lambdaj);
 
                         // Clamp if we are not within the min/max interval
                         if (lambdaj + deltalambda < c.minForce)
@@ -97,7 +112,7 @@ namespace CANNON
                     }
 
                     // If the total error is small enough - stop iterate
-                    if (deltalambdaTot * deltalambdaTot < this.tolerance * this.tolerance)
+                    if (deltalambdaTot * deltalambdaTot < tolSquared)
                     {
                         break;
                     }
@@ -110,17 +125,28 @@ namespace CANNON
                         v = b.velocity,
                         w = b.angularVelocity;
 
-                    b.vlambda.scaleTo(b.linearFactor, b.vlambda);
-                    v.addTo(b.vlambda, v);
+                    b.vlambda.vmul(b.linearFactor, b.vlambda);
+                    v.vadd(b.vlambda, v);
 
-                    b.wlambda.scaleTo(b.angularFactor, b.wlambda);
-                    w.addTo(b.wlambda, w);
+                    b.wlambda.vmul(b.angularFactor, b.wlambda);
+                    w.vadd(b.wlambda, w);
                 }
 
+                // Set the .multiplier property of each equation
+                var l = equations.length;
+                var invDt = 1 / h;
+                while (l--)
+                {
+                    equations[l].multiplier = lambda[l] * invDt;
+                }
             }
 
             return iter;
         }
 
     }
+
+    var GSSolver_solve_lambda = []; // Just temporary number holders that we want to reuse each solve.
+    var GSSolver_solve_invCs = [];
+    var GSSolver_solve_Bs = [];
 }

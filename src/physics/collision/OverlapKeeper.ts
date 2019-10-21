@@ -12,7 +12,7 @@ namespace CANNON
             this.previous = [];
         }
 
-        private getKey(i: number, j: number)
+        getKey(i: number, j: number)
         {
             if (j < i)
             {

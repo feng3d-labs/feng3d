@@ -1,104 +1,112 @@
 namespace CANNON
 {
-    export abstract class Shape
+    export class Shape
     {
         /**
-         * 编号
+         * Identifyer of the Shape.
          */
         id: number;
 
         /**
-         * 形状类型
+         * The type of this shape. Must be set to an int > 0 by subclasses.
          */
-        type: ShapeType = 0;
+        type: number;
 
         /**
-         * 此形状的局部包围球半径
+         * The local bounding sphere radius of this shape.
          */
-        boundingSphereRadius = 0;
+        boundingSphereRadius: number;
 
         /**
          * Whether to produce contact forces when in contact with other bodies. Note that contacts will be generated, but they will be disabled.
-         * 是否响应碰撞
          */
-        collisionResponse = true;
+        collisionResponse: boolean;
 
-        collisionFilterGroup = 1;
+        collisionFilterGroup: number;
 
-        collisionFilterMask = -1;
+        collisionFilterMask: number;
 
-        /**
-         * 材质
-         */
-        material: Material = null;
+        material: Material;
 
-        /**
-         * 物体
-         */
-        body: Body = null;
+        body: Body;
 
-        /**
-         * 面数组
-         */
         faces: number[][];
-        /**
-         * 顶点索引数组
-         */
         indices: number[];
-        /**
-         * 顶点坐标数组
-         */
-        vertices: feng3d.Vector3[] | number[];
-        /**
-         * 面法线数组
-         */
-        faceNormals: feng3d.Vector3[];
+        vertices: Vec3[] | number[];
+        faceNormals: Vec3[];
 
-        /**
-         * 半径
-         */
+        convexPolyhedronRepresentation: Shape;
         radius: number;
 
         /**
+         * Base class for shapes
          * 
+         * @param options 
+         * @author schteppe
          */
-        constructor()
+        constructor(options: { type?: number, collisionFilterGroup?: number, collisionFilterMask?: number, collisionResponse?: boolean, material?: any } = {})
         {
             this.id = Shape.idCounter++;
+            this.type = options.type || 0;
+
+            this.boundingSphereRadius = 0;
+            this.collisionResponse = options.collisionResponse ? options.collisionResponse : true;
+
+            this.collisionFilterGroup = options.collisionFilterGroup !== undefined ? options.collisionFilterGroup : 1;
+
+            this.collisionFilterMask = options.collisionFilterMask !== undefined ? options.collisionFilterMask : -1;
+
+            this.material = options.material ? options.material : null;
+            this.body = null;
         }
 
         /**
-         * 计算包围球半径。结果存储在.boundingSphereRadius属性中
+         * Computes the bounding sphere radius. The result is stored in the property .boundingSphereRadius
          */
-        abstract updateBoundingSphereRadius(): void;
+        updateBoundingSphereRadius()
+        {
+            throw "computeBoundingSphereRadius() not implemented for shape type " + this.type;
+        }
 
         /**
-         * 得到这个形状的体积
+         * Get the volume of this shape
          */
-        abstract volume(): number;
+        volume()
+        {
+            throw "volume() not implemented for shape type " + this.type;
+        }
 
         /**
-         * 计算此形状在局部框架中的惯性。
-         * 
-         * @param mass 质量
+         * Calculates the inertia in the local frame for this shape.
+         * @param mass
          * @param target
          * @see http://en.wikipedia.org/wiki/List_of_moments_of_inertia
          */
-        abstract calculateLocalInertia(mass: number, target: feng3d.Vector3): void;
+        calculateLocalInertia(mass: number, target: Vec3)
+        {
+            throw "calculateLocalInertia() not implemented for shape type " + this.type;
+        }
 
-        /**
-         * 计算世界包围盒
-         * 
-         * @param pos 世界坐标
-         * @param quat 世界旋转
-         * @param min 最小坐标
-         * @param max 最大坐标
-         */
-        abstract calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
+        calculateWorldAABB(pos: Vec3, quat: Quaternion, min: Vec3, max: Vec3)
+        {
+            throw "未实现";
+        }
 
-        /**
-         * 编号计数器
-         */
         static idCounter = 0;
+
+        /**
+         * The available shape types.
+         */
+        static types = {
+            SPHERE: 1,
+            PLANE: 2,
+            BOX: 4,
+            COMPOUND: 8,
+            CONVEXPOLYHEDRON: 16,
+            HEIGHTFIELD: 32,
+            PARTICLE: 64,
+            CYLINDER: 128,
+            TRIMESH: 256
+        };
     }
 }

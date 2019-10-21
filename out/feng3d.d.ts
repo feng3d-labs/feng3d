@@ -17408,29 +17408,452 @@ declare namespace feng3d {
     }
 }
 declare namespace CANNON {
-    class Transform {
-        position: feng3d.Vector3;
-        quaternion: feng3d.Quaternion;
-        constructor(position?: feng3d.Vector3, quaternion?: feng3d.Quaternion);
-        toMatrix3D(): feng3d.Matrix4x4;
+    class Vec3 {
+        x: number;
+        y: number;
+        z: number;
         /**
+         * 3-dimensional vector
+         *
+         * @param x
+         * @param y
+         * @param z
+         *
+         * @author schteppe
+         * @example
+         *     var v = new Vec3(1, 2, 3);
+         *     console.log('x=' + v.x); // x=1
+         */
+        constructor(x?: number, y?: number, z?: number);
+        static ZERO: Vec3;
+        static UNIT_X: Vec3;
+        static UNIT_Y: Vec3;
+        static UNIT_Z: Vec3;
+        /**
+         * Vector cross product
+         *
+         * @param v
+         * @param target Target to save in.
+         */
+        cross(v: Vec3, target?: Vec3): Vec3;
+        /**
+         * Set the vectors' 3 elements
+         * @param x
+         * @param y
+         * @param z
+         */
+        set(x: number, y: number, z: number): this;
+        /**
+         * Set all components of the vector to zero.
+         */
+        setZero(): void;
+        /**
+         * Vector addition
+         * @param v
+         * @param target
+         */
+        vadd(v: Vec3, target?: Vec3): Vec3;
+        /**
+         * Vector subtraction
+         * @param v
+         * @param target Target to save in.
+         */
+        vsub(v: Vec3, target?: Vec3): Vec3;
+        /**
+         * Get the cross product matrix a_cross from a vector, such that a x b = a_cross * b = c
+         * @see http://www8.cs.umu.se/kurser/TDBD24/VT06/lectures/Lecture6.pdf
+         */
+        crossmat(): Mat3;
+        /**
+         * Normalize the vector. Note that this changes the values in the vector.
+         * @returns Returns the norm of the vector
+         */
+        normalize(): number;
+        /**
+         * Get the version of this vector that is of length 1.
+         * @param target target to save in
+         */
+        unit(target?: Vec3): Vec3;
+        /**
+         * Get the length of the vector
+         * @deprecated Use .length() instead
+         */
+        norm(): number;
+        /**
+         * Get the length of the vector
+         */
+        length(): number;
+        /**
+         * Get the squared length of the vector
+         * @deprecated Use .lengthSquared() instead.
+         */
+        norm2(): number;
+        /**
+         * Get the squared length of the vector
+         */
+        lengthSquared(): number;
+        /**
+         * Get distance from this point to another point
+         * @param p
+         */
+        distanceTo(p: Vec3): number;
+        /**
+         * Get squared distance from this point to another point
+         * @param p
+         */
+        distanceSquared(p: Vec3): number;
+        /**
+         * Multiply all the components of the vector with a scalar.
+         * @param scalar
+         * @param  target The vector to save the result in.
+         * @deprecated Use .scale() instead
+         */
+        mult(scalar: number, target?: Vec3): Vec3;
+        /**
+         * Multiply all the components of the vector with a scalar.
+         * @param scalar
+         * @param  target The vector to save the result in.
+         */
+        scale(scalar: number, target?: Vec3): Vec3;
+        /**
+         * Multiply the vector with an other vector, component-wise.
+         * @param  vector
+         * @param  target The vector to save the result in.
+         */
+        vmul(vector: Vec3, target?: Vec3): Vec3;
+        /**
+         * Scale a vector and add it to this vector. Save the result in "target". (target = this + vector * scalar)
+         * @param scalar
+         * @param vector
+         * @param  target The vector to save the result in.
+         */
+        addScaledVector(scalar: number, vector: Vec3, target?: Vec3): Vec3;
+        /**
+         * Calculate dot product
+         * @param {Vec3} v
+         */
+        dot(v: Vec3): number;
+        isZero(): boolean;
+        /**
+         * Make the vector point in the opposite direction.
+         * @param target Optional target to save in
+         */
+        negate(target: Vec3): Vec3;
+        tangents(t1: Vec3, t2: Vec3): void;
+        /**
+         * Converts to a more readable format
+         */
+        toString(): string;
+        /**
+         * Converts to an array
+         */
+        toArray(): number[];
+        /**
+         * Copies value of source to this vector.
+         * @param source
+         */
+        copy(source: Vec3): this;
+        /**
+         * Do a linear interpolation between two vectors
+         *
+         * @param v
+         * @param t A number between 0 and 1. 0 will make this function return u, and 1 will make it return v. Numbers in between will generate a vector in between them.
+         */
+        lerp(v: Vec3, t: number, target: Vec3): void;
+        /**
+         * Check if a vector equals is almost equal to another one.
+         * @param v
+         * @param  precision
+         */
+        almostEquals(v: Vec3, precision?: number): boolean;
+        /**
+         * Check if a vector is almost zero
+         * @param precision
+         */
+        almostZero(precision?: number): boolean;
+        /**
+         * Check if the vector is anti-parallel to another vector.
+         * @param  v
+         * @param  precision Set to zero for exact comparisons
+         */
+        isAntiparallelTo(v: Vec3, precision?: number): boolean;
+        /**
+         * Clone the vector
+         */
+        clone(): Vec3;
+    }
+}
+declare namespace CANNON {
+    class Mat3 {
+        /**
+         * A vector of length 9, containing all matrix elements
+         */
+        elements: [number, number, number, number, number, number, number, number, number];
+        /**
+         * A 3x3 matrix.
+         * @class Mat3
+         * @constructor
+         * @param array elements Array of nine elements. Optional.
+         * @author schteppe / http://github.com/schteppe
+         */
+        constructor(elements?: [number, number, number, number, number, number, number, number, number]);
+        /**
+         * Sets the matrix to identity
+         * @todo Should perhaps be renamed to setIdentity() to be more clear.
+         * @todo Create another function that immediately creates an identity matrix eg. eye()
+         */
+        identity(): void;
+        /**
+         * Set all elements to zero
+         */
+        setZero(): void;
+        /**
+         * Sets the matrix diagonal elements from a Vec3
+         * @param vec3
+         */
+        setTrace(vec3: Vec3): void;
+        /**
+         * Gets the matrix diagonal elements
+         */
+        getTrace(target?: Vec3): void;
+        /**
+         * Matrix-Vector multiplication
+         * @param v The vector to multiply with
+         * @param target Optional, target to save the result in.
+         */
+        vmult(v: Vec3, target?: Vec3): Vec3;
+        /**
+         * Matrix-scalar multiplication
+         * @param s
+         */
+        smult(s: number): void;
+        /**
+         * Matrix multiplication
+         * @param  m Matrix to multiply with from left side.
+         */
+        mmult(m: Mat3, target?: Mat3): Mat3;
+        /**
+         * Scale each column of the matrix
+         * @param v
+         */
+        scale(v: Vec3, target?: Mat3): Mat3;
+        /**
+         * Solve Ax=b
+         * @param b The right hand side
+         * @param target Optional. Target vector to save in.
+         * @todo should reuse arrays
+         */
+        solve(b: Vec3, target?: Vec3): Vec3;
+        /**
+         * Get an element in the matrix by index. Index starts at 0, not 1!!!
+         * @param row
+         * @param column
+         * @param value Optional. If provided, the matrix element will be set to this value.
+         */
+        e(row: number, column: number, value: number): number;
+        /**
+         * Copy another matrix into this matrix object.
+         * @param source
+         */
+        copy(source: Mat3): this;
+        /**
+         * Returns a string representation of the matrix.
+         */
+        toString(): string;
+        /**
+         * reverse the matrix
+         * @param target Optional. Target matrix to save in.
+         */
+        reverse(target?: Mat3): Mat3;
+        /**
+         * Set the matrix from a quaterion
+         * @param q
+         */
+        setRotationFromQuaternion(q: Quaternion): this;
+        /**
+         * Transpose the matrix
+         * @param target Where to store the result.
+         * @return The target Mat3, or a new Mat3 if target was omitted.
+         */
+        transpose(target?: Mat3): Mat3;
+    }
+}
+declare namespace CANNON {
+    class Quaternion {
+        /**
+         * Multiplier of the imaginary basis vector i.
+         */
+        x: number;
+        /**
+         * Multiplier of the imaginary basis vector j.
+         */
+        y: number;
+        /**
+         * Multiplier of the imaginary basis vector k.
+         */
+        z: number;
+        /**
+         * Multiplier of the real part.
+         */
+        w: number;
+        /**
+         * A Quaternion describes a rotation in 3D space. The Quaternion is mathematically defined as Q = x*i + y*j + z*k + w, where (i,j,k) are imaginary basis vectors. (x,y,z) can be seen as a vector related to the axis of rotation, while the real multiplier, w, is related to the amount of rotation.
+         *
+         * @param x Multiplier of the imaginary basis vector i.
+         * @param y Multiplier of the imaginary basis vector j.
+         * @param z Multiplier of the imaginary basis vector k.
+         * @param w Multiplier of the real part.
+         * @see http://en.wikipedia.org/wiki/Quaternion
+         */
+        constructor(x?: number, y?: number, z?: number, w?: number);
+        /**
+         * Set the value of the quaternion.
+         * @param x
+         * @param y
+         * @param z
+         * @param w
+         */
+        set(x: number, y: number, z: number, w: number): this;
+        /**
+         * Convert to a readable format
+         */
+        toString(): string;
+        /**
+         * Convert to an Array
+         */
+        toArray(): number[];
+        /**
+         * Set the quaternion components given an axis and an angle.
+         * @param axis
+         * @param angle in radians
+         */
+        setFromAxisAngle(axis: Vec3, angle: number): this;
+        /**
+         * Converts the quaternion to axis/angle representation.
+         * @param targetAxis A vector object to reuse for storing the axis.
+         * @return An array, first elemnt is the axis and the second is the angle in radians.
+         */
+        toAxisAngle(targetAxis?: Vec3): (number | Vec3)[];
+        /**
+         * Set the quaternion value given two vectors. The resulting rotation will be the needed rotation to rotate u to v.
+         * @param u
+         * @param v
+         */
+        setFromVectors(u: Vec3, v: Vec3): this;
+        /**
+         * Quaternion multiplication
+         * @param q
+         * @param target
+         */
+        mult(q: Quaternion, target?: Quaternion): Quaternion;
+        /**
+         * Get the inverse quaternion rotation.
+         * @param target
+         */
+        inverse(target: Quaternion): Quaternion;
+        /**
+         * Get the quaternion conjugate
+         * @param target
+         */
+        conjugate(target?: Quaternion): Quaternion;
+        /**
+         * Normalize the quaternion. Note that this changes the values of the quaternion.
+         */
+        normalize(): this;
+        /**
+         * Approximation of quaternion normalization. Works best when quat is already almost-normalized.
+         * @see http://jsperf.com/fast-quaternion-normalization
+         * @author unphased, https://github.com/unphased
+         */
+        normalizeFast(): this;
+        /**
+         * Multiply the quaternion by a vector
+         * @param v
+         * @param target Optional
+         */
+        vmult(v: Vec3, target?: Vec3): Vec3;
+        /**
+         * Copies value of source to this quaternion.
+         * @param source
+         */
+        copy(source: Quaternion): this;
+        /**
+         * Convert the quaternion to euler angle representation. Order: YZX, as this page describes: http://www.euclideanspace.com/maths/standards/index.htm
+         * @param target
+         * @param order Three-character string e.g. "YZX", which also is default.
+         */
+        toEuler(target: Vec3, order: string): void;
+        /**
+         * See http://www.mathworks.com/matlabcentral/fileexchange/20696-function-to-convert-between-dcm-euler-angles-quaternions-and-euler-vectors/content/SpinCalc.m
+         * @param x
+         * @param y
+         * @param z
+         * @param order The order to apply angles: 'XYZ' or 'YXZ' or any other combination
+         */
+        setFromEuler(x: number, y: number, z: number, order: string): this;
+        clone(): Quaternion;
+        /**
+         * Performs a spherical linear interpolation between two quat
+         *
+         * @param toQuat second operand
+         * @param t interpolation amount between the self quaternion and toQuat
+         * @param target A quaternion to store the result in. If not provided, a new one will be created.
+         * @returns The "target" object
+         */
+        slerp(toQuat: Quaternion, t: number, target?: Quaternion): Quaternion;
+        /**
+         * Rotate an absolute orientation quaternion given an angular velocity and a time step.
+         * @param angularVelocity
+         * @param dt
+         * @param angularFactor
+         * @param  target
+         * @return The "target" object
+         */
+        integrate(angularVelocity: Vec3, dt: number, angularFactor: Vec3, target: Quaternion): Quaternion;
+    }
+}
+declare namespace CANNON {
+    class Transform {
+        position: Vec3;
+        quaternion: Quaternion;
+        constructor(options?: any);
+        /**
+         * @param position
+         * @param quaternion
          * @param worldPoint
          * @param result
          */
-        pointToLocalFrame(worldPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        static pointToLocalFrame(position: Vec3, quaternion: Quaternion, worldPoint: Vec3, result?: Vec3): Vec3;
         /**
+         * Get a global point in local transform coordinates.
+         * @param worldPoint
+         * @param result
+         * @returnThe "result" vector object
+         */
+        pointToLocal(worldPoint: Vec3, result: Vec3): Vec3;
+        /**
+         * @param position
+         * @param quaternion
          * @param localPoint
          * @param result
          */
-        pointToWorldFrame(localPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
-        vectorToWorldFrame(localVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
-        vectorToLocalFrame(worldVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        static pointToWorldFrame(position: Vec3, quaternion: Quaternion, localPoint: Vec3, result?: Vec3): Vec3;
+        /**
+         * Get a local point in global transform coordinates.
+         * @param point
+         * @param result
+         * @return The "result" vector object
+         */
+        pointToWorld(localPoint: Vec3, result: Vec3): Vec3;
+        vectorToWorldFrame(localVector: Vec3, result?: Vec3): Vec3;
+        static vectorToWorldFrame(quaternion: Quaternion, localVector: Vec3, result: Vec3): Vec3;
+        static vectorToLocalFrame(position: Vec3, quaternion: Quaternion, worldVector: Vec3, result?: Vec3): Vec3;
     }
 }
 declare namespace CANNON {
     class JacobianElement {
-        spatial: feng3d.Vector3;
-        rotational: feng3d.Vector3;
+        spatial: Vec3;
+        rotational: Vec3;
         /**
          * An element containing 6 entries, 3 spatial and 3 rotational degrees of freedom.
          */
@@ -17445,65 +17868,191 @@ declare namespace CANNON {
          * @param spatial
          * @param rotational
          */
-        multiplyVectors(spatial: feng3d.Vector3, rotational: feng3d.Vector3): number;
+        multiplyVectors(spatial: Vec3, rotational: Vec3): number;
     }
 }
 declare namespace CANNON {
     /**
-     * 约束
+     * Base class for objects that dispatches events.
      */
+    class EventTarget {
+        private _listeners;
+        /**
+         * Add an event listener
+         * @param  type
+         * @param  listener
+         * @return The self object, for chainability.
+         */
+        addEventListener(type: string, listener: Function): this;
+        /**
+         * Check if an event listener is added
+         * @param type
+         * @param listener
+         */
+        hasEventListener(type: string, listener: Function): boolean;
+        /**
+         * Check if any event listener of the given type is added
+         * @param type
+         */
+        hasAnyEventListener(type: string): boolean;
+        /**
+         * Remove an event listener
+         * @param type
+         * @param listener
+         * @return The self object, for chainability.
+         */
+        removeEventListener(type: string, listener: Function): this;
+        /**
+         * Emit an event.
+         * @param event
+         * @return The self object, for chainability.
+         */
+        dispatchEvent(event: {
+            type: string;
+            target?: EventTarget;
+        }): this;
+    }
+}
+declare namespace CANNON {
+    /**
+     * For pooling objects that can be reused.
+     */
+    class Pool {
+        /**
+         * The pooled objects
+         */
+        objects: any[];
+        /**
+         * Constructor of the objects
+         */
+        type: Object;
+        constructor();
+        /**
+         * Release an object after use
+         */
+        release(...args: any[]): this;
+        /**
+         * Get an object
+         */
+        get(): any;
+        /**
+         * Construct an object. Should be implmented in each subclass.
+         */
+        constructObject(): void;
+        /**
+         * @param size
+         * @return Self, for chaining
+         */
+        resize(size: number): this;
+    }
+}
+declare namespace CANNON {
+    class Utils {
+        /**
+         * Extend an options object with default values.
+         * @param  options The options object. May be falsy: in this case, a new object is created and returned.
+         * @param  defaults An object containing default values.
+         * @return The modified options object.
+         */
+        static defaults(options: Object, defaults: Object): Object;
+    }
+}
+declare namespace CANNON {
+    class Vec3Pool extends Pool {
+        constructor();
+        /**
+         * Construct a vector
+         */
+        constructObject(): Vec3;
+    }
+}
+declare namespace CANNON {
+    class TupleDictionary {
+        /**
+         * The data storage
+         */
+        data: {
+            keys: any[];
+        };
+        /**
+         * @param i
+         * @param j
+         */
+        get(i: number, j: number): any;
+        set(i: number, j: number, value: any): void;
+        reset(): void;
+    }
+}
+declare namespace CANNON {
     class Constraint {
         /**
-         * 方程组
+         * Equations to be solved in this constraint
          */
-        equations: Equation[];
+        equations: any[];
+        bodyA: Body;
+        id: number;
         /**
-         * 关联的两个物体是否发生碰撞
+         * Set to true if you want the bodies to collide when they are connected.
          */
         collideConnected: boolean;
-        /**
-         * 物体A
-         */
-        bodyA: Body;
-        /**
-         * 物体B
-         */
         bodyB: Body;
         /**
+         * Constraint base class
          *
          * @param bodyA
          * @param bodyB
-         * @param collideConnected
-         * @param wakeUpBodies
+         * @param options
+         *
+         * @author schteppe
          */
-        constructor(bodyA: Body, bodyB: Body, collideConnected?: boolean, wakeUpBodies?: boolean);
+        constructor(bodyA: Body, bodyB: Body, options?: {
+            collideConnected?: boolean;
+            wakeUpBodies?: boolean;
+        });
         /**
-         * 更新所有方程
+         * Update all the equations with data.
          */
         update(): void;
         /**
-         * 启用所有方程
+         * Enables all equations in the constraint.
          */
         enable(): void;
         /**
-         * 禁用所有方程
+         * Disables all equations in the constraint.
          */
         disable(): void;
+        static idCounter: number;
     }
 }
 declare namespace CANNON {
-    /**
-     * 点到点约束
-     */
+    class DistanceConstraint extends Constraint {
+        distance: any;
+        distanceEquation: ContactEquation;
+        /**
+         * Constrains two bodies to be at a constant distance from each others center of mass.
+         *
+         * @param bodyA
+         * @param bodyB
+         * @param distance The distance to keep. If undefined, it will be set to the current distance between bodyA and bodyB
+         * @param maxForce
+         * @param number
+         *
+         * @author schteppe
+         */
+        constructor(bodyA: Body, bodyB: Body, distance?: number, maxForce?: number);
+        update(): void;
+    }
+}
+declare namespace CANNON {
     class PointToPointConstraint extends Constraint {
         /**
-         * 物体A的中心点
+         * Pivot, defined locally in bodyA.
          */
-        pivotA: feng3d.Vector3;
+        pivotA: Vec3;
         /**
-         * 物体B的中心点
+         * Pivot, defined locally in bodyB.
          */
-        pivotB: feng3d.Vector3;
+        pivotB: Vec3;
         equationX: ContactEquation;
         equationY: ContactEquation;
         equationZ: ContactEquation;
@@ -17530,7 +18079,37 @@ declare namespace CANNON {
          *     var constraint = new PointToPointConstraint(bodyA, localPivotA, bodyB, localPivotB);
          *     world.addConstraint(constraint);
          */
-        constructor(bodyA: Body, pivotA: feng3d.Vector3, bodyB: Body, pivotB?: feng3d.Vector3, maxForce?: number);
+        constructor(bodyA: Body, pivotA: Vec3, bodyB: Body, pivotB: Vec3, maxForce?: number);
+        update(): void;
+    }
+}
+declare namespace CANNON {
+    class ConeTwistConstraint extends PointToPointConstraint {
+        axisA: Vec3;
+        axisB: Vec3;
+        angle: number;
+        coneEquation: ConeEquation;
+        twistEquation: RotationalEquation;
+        twistAngle: number;
+        /**
+         * @class ConeTwistConstraint
+         *
+         * @param bodyA
+         * @param bodyB
+         * @param options
+         *
+         * @author schteppe
+         */
+        constructor(bodyA: Body, bodyB: Body, options?: {
+            pivotA?: Vec3;
+            pivotB?: Vec3;
+            maxForce?: number;
+            axisA?: Vec3;
+            axisB?: Vec3;
+            collideConnected?: boolean;
+            angle?: number;
+            twistAngle?: number;
+        });
         update(): void;
     }
 }
@@ -17539,11 +18118,11 @@ declare namespace CANNON {
         /**
          * Rotation axis, defined locally in bodyA.
          */
-        axisA: feng3d.Vector3;
+        axisA: Vec3;
         /**
          * Rotation axis, defined locally in bodyB.
          */
-        axisB: feng3d.Vector3;
+        axisB: Vec3;
         rotationalEquation1: RotationalEquation;
         rotationalEquation2: RotationalEquation;
         motorEquation: RotationalMotorEquation;
@@ -17560,7 +18139,14 @@ declare namespace CANNON {
          *
          * @author schteppe
          */
-        constructor(bodyA: Body, bodyB: Body, pivotA?: feng3d.Vector3, pivotB?: feng3d.Vector3, axisA?: feng3d.Vector3, axisB?: feng3d.Vector3, maxForce?: number);
+        constructor(bodyA: Body, bodyB: Body, options?: {
+            pivotA?: Vec3;
+            pivotB?: Vec3;
+            maxForce?: number;
+            axisA?: Vec3;
+            axisB?: Vec3;
+            collideConnected?: boolean;
+        });
         enableMotor(): void;
         disableMotor(): void;
         setMotorSpeed(speed: number): void;
@@ -17569,138 +18155,642 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    /**
-     * 形状类型
-     */
-    enum ShapeType {
+    class LockConstraint extends PointToPointConstraint {
+        xA: Vec3;
+        xB: any;
+        yA: Vec3;
+        yB: any;
+        zA: Vec3;
+        zB: any;
+        rotationalEquation1: RotationalEquation;
+        rotationalEquation2: RotationalEquation;
+        rotationalEquation3: RotationalEquation;
+        motorEquation: any;
         /**
-         * 球形
+         * Lock constraint. Will remove all degrees of freedom between the bodies.
+         *
+         * @param bodyA
+         * @param bodyB
+         * @param options
+         *
+         * @author schteppe
          */
-        SPHERE = 1,
-        /**
-         * 平面
-         */
-        PLANE = 2,
-        /**
-         * 盒子
-         */
-        BOX = 4,
-        COMPOUND = 8,
-        CONVEXPOLYHEDRON = 16,
-        HEIGHTFIELD = 32,
-        PARTICLE = 64,
-        CYLINDER = 128,
-        TRIMESH = 256
+        constructor(bodyA: Body, bodyB: Body, options?: {
+            maxForce?: number;
+        });
+        update(): void;
     }
 }
 declare namespace CANNON {
-    abstract class Shape {
+    class Shape {
         /**
-         * 编号
+         * Identifyer of the Shape.
          */
         id: number;
         /**
-         * 形状类型
+         * The type of this shape. Must be set to an int > 0 by subclasses.
          */
-        type: ShapeType;
+        type: number;
         /**
-         * 此形状的局部包围球半径
+         * The local bounding sphere radius of this shape.
          */
         boundingSphereRadius: number;
         /**
          * Whether to produce contact forces when in contact with other bodies. Note that contacts will be generated, but they will be disabled.
-         * 是否响应碰撞
          */
         collisionResponse: boolean;
         collisionFilterGroup: number;
         collisionFilterMask: number;
-        /**
-         * 材质
-         */
         material: Material;
-        /**
-         * 物体
-         */
         body: Body;
-        /**
-         * 面数组
-         */
         faces: number[][];
-        /**
-         * 顶点索引数组
-         */
         indices: number[];
-        /**
-         * 顶点坐标数组
-         */
-        vertices: feng3d.Vector3[] | number[];
-        /**
-         * 面法线数组
-         */
-        faceNormals: feng3d.Vector3[];
-        /**
-         * 半径
-         */
+        vertices: Vec3[] | number[];
+        faceNormals: Vec3[];
+        convexPolyhedronRepresentation: Shape;
         radius: number;
         /**
+         * Base class for shapes
          *
+         * @param options
+         * @author schteppe
          */
-        constructor();
+        constructor(options?: {
+            type?: number;
+            collisionFilterGroup?: number;
+            collisionFilterMask?: number;
+            collisionResponse?: boolean;
+            material?: any;
+        });
         /**
-         * 计算包围球半径。结果存储在.boundingSphereRadius属性中
+         * Computes the bounding sphere radius. The result is stored in the property .boundingSphereRadius
          */
-        abstract updateBoundingSphereRadius(): void;
+        updateBoundingSphereRadius(): void;
         /**
-         * 得到这个形状的体积
+         * Get the volume of this shape
          */
-        abstract volume(): number;
+        volume(): void;
         /**
-         * 计算此形状在局部框架中的惯性。
-         *
-         * @param mass 质量
+         * Calculates the inertia in the local frame for this shape.
+         * @param mass
          * @param target
          * @see http://en.wikipedia.org/wiki/List_of_moments_of_inertia
          */
-        abstract calculateLocalInertia(mass: number, target: feng3d.Vector3): void;
-        /**
-         * 计算世界包围盒
-         *
-         * @param pos 世界坐标
-         * @param quat 世界旋转
-         * @param min 最小坐标
-         * @param max 最大坐标
-         */
-        abstract calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
-        /**
-         * 编号计数器
-         */
+        calculateLocalInertia(mass: number, target: Vec3): void;
+        calculateWorldAABB(pos: Vec3, quat: Quaternion, min: Vec3, max: Vec3): void;
         static idCounter: number;
+        /**
+         * The available shape types.
+         */
+        static types: {
+            SPHERE: number;
+            PLANE: number;
+            BOX: number;
+            COMPOUND: number;
+            CONVEXPOLYHEDRON: number;
+            HEIGHTFIELD: number;
+            PARTICLE: number;
+            CYLINDER: number;
+            TRIMESH: number;
+        };
     }
 }
 declare namespace CANNON {
-    /**
-     * 三角网格
-     */
-    class Trimesh extends Shape {
-        type: ShapeType;
+    class ConvexPolyhedron extends Shape {
+        vertices: Vec3[];
+        worldVertices: Vec3[];
+        worldVerticesNeedsUpdate: boolean;
         /**
-         * 顶点坐标数据
+         * Array of integer arrays, indicating which vertices each face consists of
          */
+        faces: ({
+            connectedFaces: number[];
+        } & (number[]))[];
+        faceNormals: Vec3[];
+        worldFaceNormalsNeedsUpdate: boolean;
+        worldFaceNormals: Vec3[];
+        uniqueEdges: Vec3[];
+        /**
+         * If given, these locally defined, normalized axes are the only ones being checked when doing separating axis check.
+         */
+        uniqueAxes: any[];
+        /**
+         * A set of polygons describing a convex shape.
+         * @class ConvexPolyhedron
+         * @constructor
+         * @extends Shape
+         * @description The shape MUST be convex for the code to work properly. No polygons may be coplanar (contained
+         * in the same 3D plane), instead these should be merged into one polygon.
+         *
+         * @param {array} points An array of Vec3's
+         * @param {array} faces Array of integer arrays, describing which vertices that is included in each face.
+         *
+         * @author qiao / https://github.com/qiao (original author, see https://github.com/qiao/three.js/commit/85026f0c769e4000148a67d45a9e9b9c5108836f)
+         * @author schteppe / https://github.com/schteppe
+         * @see http://www.altdevblogaday.com/2011/05/13/contact-generation-between-3d-convex-meshes/
+         * @see http://bullet.googlecode.com/svn/trunk/src/BulletCollision/NarrowPhaseCollision/btPolyhedralContactClipping.cpp
+         *
+         * @todo Move the clipping functions to ContactGenerator?
+         * @todo Automatically merge coplanar polygons in constructor.
+         */
+        constructor(points?: Vec3[], faces?: number[][], uniqueAxes?: any[]);
+        /**
+         * Computes uniqueEdges
+         */
+        computeEdges(): void;
+        /**
+         * Compute the normals of the faces. Will reuse existing Vec3 objects in the .faceNormals array if they exist.
+         */
+        computeNormals(): void;
+        /**
+         * Get face normal given 3 vertices
+         *
+         * @param va
+         * @param vb
+         * @param vc
+         * @param target
+         */
+        static computeNormal(va: Vec3, vb: Vec3, vc: Vec3, target: Vec3): void;
+        /**
+         * Compute the normal of a face from its vertices
+         *
+         * @param i
+         * @param target
+         */
+        getFaceNormal(i: number, target: Vec3): void;
+        /**
+         * @param posA
+         * @param quatA
+         * @param hullB
+         * @param posB
+         * @param quatB
+         * @param separatingNormal
+         * @param minDist Clamp distance
+         * @param maxDist
+         * @param result The an array of contact point objects, see clipFaceAgainstHull
+         * @see http://bullet.googlecode.com/svn/trunk/src/BulletCollision/NarrowPhaseCollision/btPolyhedralContactClipping.cpp
+         */
+        clipAgainstHull(posA: Vec3, quatA: Quaternion, hullB: ConvexPolyhedron, posB: Vec3, quatB: Quaternion, separatingNormal: Vec3, minDist: number, maxDist: number, result: number[]): void;
+        /**
+         * Find the separating axis between this hull and another
+         *
+         * @param hullB
+         * @param posA
+         * @param quatA
+         * @param posB
+         * @param quatB
+         * @param target The target vector to save the axis in
+         * @param faceListA
+         * @param faceListB
+         * @returns Returns false if a separation is found, else true
+         */
+        findSeparatingAxis(hullB: ConvexPolyhedron, posA: Vec3, quatA: Quaternion, posB: Vec3, quatB: Quaternion, target: Vec3, faceListA: number[], faceListB: number[]): boolean;
+        /**
+         * Test separating axis against two hulls. Both hulls are projected onto the axis and the overlap size is returned if there is one.
+         *
+         * @param axis
+         * @param hullB
+         * @param posA
+         * @param quatA
+         * @param posB
+         * @param quatB
+         * @return The overlap depth, or FALSE if no penetration.
+         */
+        testSepAxis(axis: Vec3, hullB: ConvexPolyhedron, posA: Vec3, quatA: Quaternion, posB: Vec3, quatB: Quaternion): number | false;
+        /**
+         *
+         * @param mass
+         * @param target
+         */
+        calculateLocalInertia(mass: number, target: Vec3): void;
+        /**
+         *
+         * @param face_i Index of the face
+         */
+        getPlaneConstantOfFace(face_i: number): number;
+        /**
+         * Clip a face against a hull.
+         *
+         * @param separatingNormal
+         * @param posA
+         * @param quatA
+         * @param worldVertsB1 An array of Vec3 with vertices in the world frame.
+         * @param minDist Distance clamping
+         * @param maxDist
+         * @param result Array to store resulting contact points in. Will be objects with properties: point, depth, normal. These are represented in world coordinates.
+         */
+        clipFaceAgainstHull(separatingNormal: Vec3, posA: Vec3, quatA: Quaternion, worldVertsB1: Vec3[], minDist: number, maxDist: number, result: any[]): void;
+        /**
+         * Clip a face in a hull against the back of a plane.
+         *
+         * @param inVertices
+         * @param outVertices
+         * @param planeNormal
+         * @param planeConstant The constant in the mathematical plane equation
+         */
+        clipFaceAgainstPlane(inVertices: Vec3[], outVertices: Vec3[], planeNormal: Vec3, planeConstant: number): Vec3[];
+        computeWorldVertices(position: Vec3, quat: Quaternion): void;
+        computeLocalAABB(aabbmin: any, aabbmax: any): void;
+        /**
+         * Updates .worldVertices and sets .worldVerticesNeedsUpdate to false.
+         *
+         * @param quat
+         */
+        computeWorldFaceNormals(quat: Quaternion): void;
+        updateBoundingSphereRadius(): void;
+        /**
+         *
+         * @param  pos
+         * @param quat
+         * @param min
+         * @param max
+         */
+        calculateWorldAABB(pos: Vec3, quat: Quaternion, min: Vec3, max: Vec3): void;
+        /**
+         * Get approximate convex volume
+         */
+        volume(): number;
+        /**
+         * Get an average of all the vertices positions
+         *
+         * @param target
+         */
+        getAveragePointLocal(target: Vec3): Vec3;
+        /**
+         * Transform all local points. Will change the .vertices
+         *
+         * @param  offset
+         * @param quat
+         */
+        transformAllPoints(offset: Vec3, quat: Quaternion): void;
+        /**
+         * Checks whether p is inside the polyhedra. Must be in local coords. The point lies outside of the convex hull of the other points if and only if the direction of all the vectors from it to those other points are on less than one half of a sphere around it.
+         *
+         * @param p      A point given in local coordinates
+         */
+        pointIsInside(p: Vec3): false | 1 | -1;
+        /**
+         * Get max and min dot product of a convex hull at position (pos,quat) projected onto an axis. Results are saved in the array maxmin.
+         *
+         * @param hull
+         * @param axis
+         * @param pos
+         * @param quat
+         * @param result result[0] and result[1] will be set to maximum and minimum, respectively.
+         */
+        static project(hull: ConvexPolyhedron, axis: Vec3, pos: Vec3, quat: Quaternion, result: number[]): void;
+    }
+}
+declare namespace CANNON {
+    class Box extends Shape {
+        halfExtents: Vec3;
+        /**
+         * Used by the contact generator to make contacts with other convex polyhedra for example
+         */
+        convexPolyhedronRepresentation: ConvexPolyhedron;
+        /**
+         * A 3d box shape.
+         * @param halfExtents
+         * @author schteppe
+         */
+        constructor(halfExtents: Vec3);
+        /**
+         * Updates the local convex polyhedron representation used for some collisions.
+         */
+        updateConvexPolyhedronRepresentation(): void;
+        calculateLocalInertia(mass: number, target?: Vec3): Vec3;
+        static calculateInertia(halfExtents: Vec3, mass: number, target: Vec3): void;
+        /**
+         * Get the box 6 side normals
+         * @param sixTargetVectors An array of 6 vectors, to store the resulting side normals in.
+         * @param quat             Orientation to apply to the normal vectors. If not provided, the vectors will be in respect to the local frame.
+         */
+        getSideNormals(sixTargetVectors: Vec3[], quat: Quaternion): Vec3[];
+        volume(): number;
+        updateBoundingSphereRadius(): void;
+        forEachWorldCorner(pos: Vec3, quat: Quaternion, callback: Function): void;
+        calculateWorldAABB(pos: Vec3, quat: Quaternion, min: Vec3, max: Vec3): void;
+    }
+}
+declare namespace CANNON {
+    class Cylinder extends ConvexPolyhedron {
+        /**
+         * @param radiusTop
+         * @param radiusBottom
+         * @param height
+         * @param numSegments The number of segments to build the cylinder out of
+         *
+         * @author schteppe / https://github.com/schteppe
+         */
+        constructor(radiusTop: number, radiusBottom: number, height: number, numSegments: number);
+    }
+}
+declare namespace CANNON {
+    class Heightfield extends Shape {
+        /**
+         * An array of numbers, or height values, that are spread out along the x axis.
+         * @property {array} data
+         */
+        data: any[];
+        /**
+         * Max value of the data
+         */
+        maxValue: number;
+        /**
+         * Max value of the data
+         */
+        minValue: number;
+        /**
+          * The width of each element
+          * @todo elementSizeX and Y
+          */
+        elementSize: number;
+        cacheEnabled: boolean;
+        pillarConvex: ConvexPolyhedron;
+        pillarOffset: Vec3;
+        private _cachedPillars;
+        /**
+         * Heightfield shape class. Height data is given as an array. These data points are spread out evenly with a given distance.
+         *
+         * @param data An array of Y values that will be used to construct the terrain.
+         * @param options
+         * @param options.minValue] Minimum value of the data points in the data array. Will be computed automatically if not given.
+         * @param options.maxValue Maximum value.
+         * @param options.elementSize=0.1 World spacing between the data points in X direction.
+         * @todo Should be possible to use along all axes, not just y
+         * @todo should be possible to scale along all axes
+         *
+         * @example
+         *     // Generate some height data (y-values).
+         *     var data = [];
+         *     for(var i = 0; i < 1000; i++){
+         *         var y = 0.5 * Math.cos(0.2 * i);
+         *         data.push(y);
+         *     }
+         *
+         *     // Create the heightfield shape
+         *     var heightfieldShape = new Heightfield(data, {
+         *         elementSize: 1 // Distance between the data points in X and Y directions
+         *     });
+         *     var heightfieldBody = new Body();
+         *     heightfieldBody.addShape(heightfieldShape);
+         *     world.addBody(heightfieldBody);
+         */
+        /**
+         *
+         * @param data
+         * @param options
+         */
+        constructor(data: any[], options?: {
+            maxValue?: number;
+            minValue?: number;
+            elementSize?: number;
+        });
+        /**
+         * Call whenever you change the data array.
+         */
+        update(): void;
+        /**
+         * Update the .minValue property
+         */
+        updateMinValue(): void;
+        /**
+         * Update the .maxValue property
+         */
+        updateMaxValue(): void;
+        /**
+         * Set the height value at an index. Don't forget to update maxValue and minValue after you're done.
+         *
+         * @param xi
+         * @param yi
+         * @param value
+         */
+        setHeightValueAtIndex(xi: number, yi: number, value: number): void;
+        /**
+         * Get max/min in a rectangle in the matrix data
+         *
+         * @param iMinX
+         * @param iMinY
+         * @param iMaxX
+         * @param iMaxY
+         * @param result An array to store the results in.
+         * @return The result array, if it was passed in. Minimum will be at position 0 and max at 1.
+         */
+        getRectMinMax(iMinX: number, iMinY: number, iMaxX: number, iMaxY: number, result: any[]): void;
+        /**
+         * Get the index of a local position on the heightfield. The indexes indicate the rectangles, so if your terrain is made of N x N height data points, you will have rectangle indexes ranging from 0 to N-1.
+         *
+         * @param x
+         * @param y
+         * @param result Two-element array
+         * @param clamp If the position should be clamped to the heightfield edge.
+         */
+        getIndexOfPosition(x: number, y: number, result: any[], clamp: boolean): boolean;
+        getTriangleAt(x: number, y: number, edgeClamp: boolean, a: Vec3, b: Vec3, c: Vec3): boolean;
+        getNormalAt(x: number, y: number, edgeClamp: boolean, result: Vec3): void;
+        /**
+         * Get an AABB of a square in the heightfield
+         *
+         * @param xi
+         * @param yi
+         * @param result
+         */
+        getAabbAtIndex(xi: number, yi: number, result: AABB): void;
+        /**
+         * Get the height in the heightfield at a given position
+         *
+         * @param x
+         * @param y
+         * @param edgeClamp
+         */
+        getHeightAt(x: number, y: number, edgeClamp: boolean): number;
+        getCacheConvexTrianglePillarKey(xi: number, yi: number, getUpperTriangle: boolean): string;
+        getCachedConvexTrianglePillar(xi: number, yi: number, getUpperTriangle: boolean): any;
+        setCachedConvexTrianglePillar(xi: number, yi: number, getUpperTriangle: boolean, convex: ConvexPolyhedron, offset: Vec3): void;
+        clearCachedConvexTrianglePillar(xi: number, yi: number, getUpperTriangle: boolean): void;
+        /**
+         * Get a triangle from the heightfield
+         *
+         * @param xi
+         * @param yi
+         * @param upper
+         * @param a
+         * @param b
+         * @param c
+         */
+        getTriangle(xi: number, yi: number, upper: boolean, a: Vec3, b: Vec3, c: Vec3): void;
+        /**
+         * Get a triangle in the terrain in the form of a triangular convex shape.
+         *
+         * @param i
+         * @param j
+         * @param getUpperTriangle
+         */
+        getConvexTrianglePillar(xi: number, yi: number, getUpperTriangle: boolean): void;
+        calculateLocalInertia(mass: number, target?: Vec3): Vec3;
+        volume(): number;
+        calculateWorldAABB(pos: Vec3, quat: Quaternion, min: Vec3, max: Vec3): void;
+        updateBoundingSphereRadius(): void;
+        /**
+         * Sets the height values from an image. Currently only supported in browser.
+         *
+         * @param image
+         * @param scale
+         */
+        setHeightsFromImage(image: HTMLImageElement, scale: Vec3): void;
+    }
+}
+declare namespace CANNON {
+    class Particle extends Shape {
+        /**
+         * Particle shape.
+         *
+         * @author schteppe
+         */
+        constructor();
+        /**
+         * @param mass
+         * @param target
+         */
+        calculateLocalInertia(mass: number, target: Vec3): Vec3;
+        volume(): number;
+        updateBoundingSphereRadius(): void;
+        calculateWorldAABB(pos: Vec3, quat: Quaternion, min: Vec3, max: Vec3): void;
+    }
+}
+declare namespace CANNON {
+    class Plane extends Shape {
+        worldNormal: Vec3;
+        worldNormalNeedsUpdate: boolean;
+        /**
+         * A plane, facing in the Z direction. The plane has its surface at z=0 and everything below z=0 is assumed to be solid plane. To make the plane face in some other direction than z, you must put it inside a Body and rotate that body. See the demos.
+         *
+         * @author schteppe
+         */
+        constructor();
+        computeWorldNormal(quat: Quaternion): void;
+        calculateLocalInertia(mass: number, target?: Vec3): Vec3;
+        volume(): number;
+        calculateWorldAABB(pos: Vec3, quat: Quaternion, min: Vec3, max: Vec3): void;
+        updateBoundingSphereRadius(): void;
+    }
+}
+declare namespace CANNON {
+    class Sphere extends Shape {
+        radius: number;
+        /**
+         * Spherical shape
+         *
+         * @param radius The radius of the sphere, a non-negative number.
+         * @author schteppe / http://github.com/schteppe
+         */
+        constructor(radius: number);
+        calculateLocalInertia(mass: number, target?: Vec3): Vec3;
+        volume(): number;
+        updateBoundingSphereRadius(): void;
+        calculateWorldAABB(pos: Vec3, quat: Quaternion, min: Vec3, max: Vec3): void;
+    }
+}
+declare namespace CANNON {
+    class AABB {
+        /**
+         * The lower bound of the bounding box.
+         */
+        lowerBound: Vec3;
+        /**
+         * The upper bound of the bounding box.
+         */
+        upperBound: Vec3;
+        /**
+         *
+         * @param options
+         *
+         * Axis aligned bounding box class.
+         */
+        constructor(options?: {
+            lowerBound?: Vec3;
+            upperBound?: Vec3;
+        });
+        /**
+         * Set the AABB bounds from a set of points.
+         * @param points An array of Vec3's.
+         * @param position
+         * @param quaternion
+         * @param skinSize
+         * @return The self object
+         */
+        setFromPoints(points: Vec3[], position?: Vec3, quaternion?: Quaternion, skinSize?: number): this;
+        /**
+         * Copy bounds from an AABB to this AABB
+         * @param aabb Source to copy from
+         * @return The this object, for chainability
+         */
+        copy(aabb: AABB): this;
+        /**
+         * Clone an AABB
+         */
+        clone(): AABB;
+        /**
+         * Extend this AABB so that it covers the given AABB too.
+         * @param aabb
+         */
+        extend(aabb: AABB): void;
+        /**
+         * Returns true if the given AABB overlaps this AABB.
+         * @param aabb
+         */
+        overlaps(aabb: AABB): boolean;
+        /**
+         * Mostly for debugging
+         */
+        volume(): number;
+        /**
+         * Returns true if the given AABB is fully contained in this AABB.
+         * @param aabb
+         */
+        contains(aabb: AABB): boolean;
+        getCorners(a: Vec3, b: Vec3, c: Vec3, d: Vec3, e: Vec3, f: Vec3, g: Vec3, h: Vec3): void;
+        /**
+         * Get the representation of an AABB in another frame.
+         * @param frame
+         * @param target
+         * @return The "target" AABB object.
+         */
+        toLocalFrame(frame: Transform, target: AABB): AABB;
+        /**
+         * Get the representation of an AABB in the global frame.
+         * @param frame
+         * @param target
+         * @return The "target" AABB object.
+         */
+        toWorldFrame(frame: Transform, target: AABB): AABB;
+        /**
+         * Check if the AABB is hit by a ray.
+         */
+        overlapsRay(ray: Ray): boolean;
+    }
+}
+declare namespace CANNON {
+    class Trimesh extends Shape {
         vertices: number[];
         /**
-         * 面法线数据
+         * The normals data.
          */
-        normals: number[];
+        normals: Float32Array;
         /**
-         * 包围盒
+         * The local AABB of the mesh.
          */
-        aabb: feng3d.AABB;
+        aabb: AABB;
         /**
-         * 边数组
+         * References to vertex pairs, making up all unique edges in the trimesh.
          */
-        edges: number[];
+        edges: any[];
         /**
-         * 索引的三角形。使用. updatetree()更新它。
+         * Local scaling of the mesh. Use .setScale() to set it.
+         */
+        scale: Vec3;
+        /**
+         * The indexed triangles. Use .updateTree() to update it.
          */
         tree: Octree;
         /**
@@ -17720,59 +18810,68 @@ declare namespace CANNON {
          *     var trimeshShape = new Trimesh(vertices, indices);
          */
         constructor(vertices: number[], indices: number[]);
-        /**
-         * 更新树
-         */
         updateTree(): void;
         /**
-         * 从trimesh获取本地AABB中的三角形。
+         * Get triangles in a local AABB from the trimesh.
          *
          * @param aabb
-         * @param result 一个整数数组，引用查询的三角形。
+         * @param result An array of integers, referencing the queried triangles.
          */
-        getTrianglesInAABB(aabb: feng3d.AABB, result: number[]): number[];
+        getTrianglesInAABB(aabb: AABB, result: number[]): any[];
         /**
-         * 计算法线
+         * @param scale
+         */
+        setScale(scale: Vec3): void;
+        /**
+         * Compute the normals of the faces. Will save in the .normals array.
          */
         updateNormals(): void;
         /**
-         * 更新边数组
+         * Update the .edges property
          */
         updateEdges(): void;
         /**
-         * 获取边的顶点
+         * Get an edge vertex
          *
          * @param edgeIndex
-         * @param firstOrSecond 0还是1，取决于你需要哪个顶点。
-         * @param vertexStore 保存结果
+         * @param firstOrSecond 0 or 1, depending on which one of the vertices you need.
+         * @param vertexStore Where to store the result
          */
-        getEdgeVertex(edgeIndex: number, firstOrSecond: number, vertexStore: feng3d.Vector3): void;
+        getEdgeVertex(edgeIndex: number, firstOrSecond: number, vertexStore: Vec3): void;
         /**
-         * 沿着一条边得到一个向量。
+         * Get a vector along an edge.
          *
          * @param edgeIndex
          * @param vectorStore
          */
-        getEdgeVector(edgeIndex: number, vectorStore: feng3d.Vector3): void;
+        getEdgeVector(edgeIndex: number, vectorStore: Vec3): void;
         /**
-         * 得到3个顶点的法向量
+         * Get face normal given 3 vertices
          *
          * @param va
          * @param vb
          * @param vc
          * @param target
          */
-        static computeNormal(va: feng3d.Vector3, vb: feng3d.Vector3, vc: feng3d.Vector3, target: feng3d.Vector3): void;
+        static computeNormal(va: Vec3, vb: Vec3, vc: Vec3, target: Vec3): void;
         /**
-         * 获取顶点
+         * Get vertex i.
          *
          * @param i
          * @param out
          * @return The "out" vector object
          */
-        getVertex(i: number, out?: feng3d.Vector3): feng3d.Vector3;
+        getVertex(i: number, out: Vec3): Vec3;
         /**
-         * 通过给定的位置和四元数转换，从三元组中得到一个顶点。
+         * Get raw vertex i
+         *
+         * @param i
+         * @param out
+         * @return The "out" vector object
+         */
+        private _getUnscaledVertex;
+        /**
+         * Get a vertex from the trimesh,transformed by the given position and quaternion.
          *
          * @param i
          * @param pos
@@ -17780,122 +18879,62 @@ declare namespace CANNON {
          * @param out
          * @return The "out" vector object
          */
-        getWorldVertex(i: number, transform: Transform, out: feng3d.Vector3): feng3d.Vector3;
+        getWorldVertex(i: number, pos: Vec3, quat: Quaternion, out: Vec3): Vec3;
         /**
-         * 从三角形中获取三个顶点
+         * Get the three vertices for triangle i.
          *
          * @param i
          * @param a
          * @param b
          * @param c
          */
-        getTriangleVertices(i: number, a: feng3d.Vector3, b: feng3d.Vector3, c: feng3d.Vector3): void;
+        getTriangleVertices(i: number, a: Vec3, b: Vec3, c: Vec3): void;
         /**
-         * 获取三角形的法线
+         * Compute the normal of triangle i.
          *
          * @param i
          * @param target
          * @return The "target" vector object
          */
-        getNormal(i: number, target: feng3d.Vector3): feng3d.Vector3;
+        getNormal(i: number, target: Vec3): Vec3;
         /**
          *
          * @param mass
          * @param target
          * @return The "target" vector object
          */
-        calculateLocalInertia(mass: number, target: feng3d.Vector3): feng3d.Vector3;
+        calculateLocalInertia(mass: number, target: Vec3): Vec3;
         /**
-         * 计算包围盒
+         * Compute the local AABB for the trimesh
          *
          * @param aabb
          */
-        computeLocalAABB(aabb: feng3d.AABB): void;
+        computeLocalAABB(aabb: AABB): void;
         /**
-         * 更新包围盒
+         * Update the .aabb property
          */
         updateAABB(): void;
         /**
-         * 更新此形状的局部包围球半径
+         * Will update the .boundingSphereRadius property
          */
         updateBoundingSphereRadius(): void;
+        calculateWorldAABB(pos: Vec3, quat: Quaternion, min: Vec3, max: Vec3): void;
         /**
-         * 计算世界包围盒
+         * Get approximate volume
+         */
+        volume(): number;
+        /**
+         * Create a Trimesh instance, shaped as a torus.
          *
-         * @param pos
-         * @param quat
-         * @param min
-         * @param max
-         */
-        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
-        /**
-         * 得到近似体积
-         */
-        volume(): number;
-    }
-}
-declare namespace CANNON {
-    /**
-     * 粒子
-     */
-    class Particle extends Shape {
-        type: ShapeType;
-        position: feng3d.Vector3;
-        velocity: feng3d.Vector3;
-        mass: number;
-        force: feng3d.Vector3;
-        constructor();
-        /**
-         * @param mass
-         * @param target
-         */
-        calculateLocalInertia(mass: number, target: feng3d.Vector3): feng3d.Vector3;
-        volume(): number;
-        updateBoundingSphereRadius(): void;
-        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
-    }
-}
-declare namespace CANNON {
-    /**
-     * 平面
-     */
-    class Plane extends Shape {
-        type: ShapeType;
-        worldNormal: feng3d.Vector3;
-        worldNormalNeedsUpdate: boolean;
-        boundingSphereRadius: number;
-        /**
+         * @param radius
+         * @param tube
+         * @param radialSegments
+         * @param tubularSegments
+         * @param arc
          *
+         * @return A torus
          */
-        constructor();
-        computeWorldNormal(quat: feng3d.Quaternion): void;
-        calculateLocalInertia(mass: number, target?: feng3d.Vector3): feng3d.Vector3;
-        volume(): number;
-        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
-        updateBoundingSphereRadius(): void;
-    }
-}
-declare namespace CANNON {
-    /**
-     * 球体
-     */
-    class Sphere extends Shape {
-        type: ShapeType;
-        /**
-         * 半径
-         */
-        radius: number;
-        /**
-         * 球体
-         *
-         * @param radius 半径
-         * @author schteppe / http://github.com/schteppe
-         */
-        constructor(radius?: number);
-        calculateLocalInertia(mass: number, target?: feng3d.Vector3): feng3d.Vector3;
-        volume(): number;
-        updateBoundingSphereRadius(): void;
-        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3): void;
+        static createTorus(radius: number, tube: number, radialSegments: number, tubularSegments: number, arc: number): Trimesh;
     }
 }
 declare namespace CANNON {
@@ -17907,11 +18946,12 @@ declare namespace CANNON {
         /**
          * Boundary of this node
          */
-        aabb: feng3d.AABB;
+        aabb: AABB;
         /**
          * Contained data at the current node level.
+         * @property {Array} data
          */
-        data: number[];
+        data: any[];
         /**
          * Children to this node
          */
@@ -17921,8 +18961,11 @@ declare namespace CANNON {
          *
          * @param options
          */
-        constructor(root?: Octree, aabb?: feng3d.AABB);
-        reset(): void;
+        constructor(options?: {
+            root?: Octree;
+            aabb?: AABB;
+        });
+        reset(aabb?: AABB, options?: any): void;
         /**
          * Insert data into this node
          *
@@ -17930,7 +18973,7 @@ declare namespace CANNON {
          * @param elementData
          * @return True if successful, otherwise false
          */
-        insert(aabb: feng3d.AABB, elementData: number, level?: number): boolean;
+        insert(aabb: AABB, elementData: any, level?: number): boolean;
         /**
          * Create 8 equally sized children nodes and put them in the .children array.
          */
@@ -17942,7 +18985,7 @@ declare namespace CANNON {
          * @param result
          * @return The "result" object
          */
-        aabbQuery(aabb: feng3d.AABB, result: number[]): number[];
+        aabbQuery(aabb: AABB, result: any[]): any[];
         /**
          * Get all data, potentially intersected by a ray.
          *
@@ -17951,21 +18994,98 @@ declare namespace CANNON {
          * @param result
          * @return The "result" object
          */
-        rayQuery(ray: Ray, treeTransform: Transform, result: number[]): number[];
+        rayQuery(ray: Ray, treeTransform: Transform, result: any[]): any[];
         removeEmptyNodes(): void;
     }
-    /**
-     * 八叉树
-     */
     class Octree extends OctreeNode {
         /**
-         * 最大细分深度
+         * Maximum subdivision depth
          */
         maxDepth: number;
         /**
-         *
+         * @class Octree
+         * @param {AABB} aabb The total AABB of the tree
+         * @param {object} [options]
+         * @param {number} [options.maxDepth=8]
+         * @extends OctreeNode
+         */
+        constructor(aabb?: AABB, options?: {
+            root?: any;
+            aabb?: AABB;
+            maxDepth?: number;
+        });
+    }
+}
+declare namespace CANNON {
+    class ArrayCollisionMatrix {
+        matrix: number[];
+        /**
+         * Collision "matrix". It's actually a triangular-shaped array of whether two bodies are touching this step, for reference next step
          */
         constructor();
+        /**
+         * Get an element
+         *
+         * @param i
+         * @param j
+         */
+        get(i0: {
+            index: number;
+        }, j0: {
+            index: number;
+        }): number;
+        /**
+         * Set an element
+         *
+         * @param i0
+         * @param j0
+         * @param value
+         */
+        set(i0: {
+            index: number;
+        }, j0: {
+            index: number;
+        }, value: boolean): void;
+        /**
+         * Sets all elements to zero
+         */
+        reset(): void;
+        /**
+         * Sets the max number of objects
+         */
+        setNumObjects(n: number): void;
+    }
+}
+declare namespace CANNON {
+    class ObjectCollisionMatrix {
+        /**
+         * The matrix storage
+         */
+        matrix: {};
+        /**
+         * Records what objects are colliding with each other
+         */
+        constructor();
+        get(i0: {
+            id: number;
+        }, j0: {
+            id: number;
+        }): boolean;
+        set(i0: {
+            id: number;
+        }, j0: {
+            id: number;
+        }, value: number): void;
+        /**
+         * Empty the matrix
+         */
+        reset(): void;
+        /**
+         * Set max number of objects
+         *
+         * @param n
+         */
+        setNumObjects(n: number): void;
     }
 }
 declare namespace CANNON {
@@ -17973,7 +19093,7 @@ declare namespace CANNON {
         current: any[];
         previous: any[];
         constructor();
-        private getKey;
+        getKey(i: number, j: number): number;
         set(i: number, j: number): void;
         tick(): void;
         unpackAndPush(array: number[], key: number): void;
@@ -17981,12 +19101,11 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    /**
-     * 射线捕获结果
-     */
     class RaycastResult {
-        hitNormalWorld: feng3d.Vector3;
-        hitPointWorld: feng3d.Vector3;
+        rayFromWorld: Vec3;
+        rayToWorld: Vec3;
+        hitNormalWorld: Vec3;
+        hitPointWorld: Vec3;
         hasHit: boolean;
         shape: Shape;
         body: Body;
@@ -17998,11 +19117,13 @@ declare namespace CANNON {
          * Distance to the hit. Will be set to -1 if there was no hit.
          */
         distance: number;
-        directionWorld: feng3d.Vector3;
+        suspensionLength: number;
+        directionWorld: Vec3;
         /**
          * If the ray should stop traversing the bodies.
          */
         _shouldStop: boolean;
+        groundObject: number;
         /**
          * Storage for Ray casting data.
          */
@@ -18012,50 +19133,211 @@ declare namespace CANNON {
          */
         reset(): void;
         abort(): void;
-        set(hitNormalWorld: feng3d.Vector3, hitPointWorld: feng3d.Vector3, shape: Shape, body: Body, distance: number): void;
+        set(rayFromWorld: Vec3, rayToWorld: Vec3, hitNormalWorld: Vec3, hitPointWorld: Vec3, shape: Shape, body: Body, distance: number): void;
     }
 }
 declare namespace CANNON {
     class Broadphase {
         /**
-         * 获取物理世界中所有的碰撞对
-         *
-         * @param world
-         * @param pairs1
-         * @param pairs2
-         */
-        collisionPairs(world: World, pairs1: Body[], pairs2: Body[]): void;
+        * The world to search for collisions in.
+        */
+        world: World;
         /**
-         * 是否需要碰撞检测
+         * If set to true, the broadphase uses bounding boxes for intersection test, else it uses bounding spheres.
+         */
+        useBoundingBoxes: boolean;
+        /**
+         * Set to true if the objects in the world moved.
+         */
+        dirty: boolean;
+        /**
+         * Base class for broadphase implementations
+         *
+         * @author schteppe
+         */
+        constructor();
+        /**
+         * Get the collision pairs from the world
+         *
+         * @param world The world to search in
+         * @param p1 Empty array to be filled with body objects
+         * @param p2 Empty array to be filled with body objects
+         */
+        collisionPairs(world: World, p1: any[], p2: any[]): void;
+        /**
+         * Check if a body pair needs to be intersection tested at all.
          *
          * @param bodyA
          * @param bodyB
          */
         needBroadphaseCollision(bodyA: Body, bodyB: Body): boolean;
         /**
-         * 检查两个物体的边界球是否相交。
-         *
+         * Check if the bounding volumes of two bodies intersect.
+          *
+          * @param bodyA
+          * @param bodyB
+          * @param pairs1
+          * @param pairs2
+          */
+        intersectionTest(bodyA: Body, bodyB: Body, pairs1: any[], pairs2: any[]): void;
+        /**
+         * Check if the bounding spheres of two bodies are intersecting.
+         * @param bodyA
+         * @param bodyB
+         * @param pairs1 bodyA is appended to this array if intersection
+         * @param pairs2 bodyB is appended to this array if intersection
+         */
+        doBoundingSphereBroadphase(bodyA: Body, bodyB: Body, pairs1: Body[], pairs2: Body[]): void;
+        /**
+         * Check if the bounding boxes of two bodies are intersecting.
          * @param bodyA
          * @param bodyB
          * @param pairs1
          * @param pairs2
          */
-        doBoundingSphereBroadphase(bodyA: Body, bodyB: Body, pairs1: Body[], pairs2: Body[]): void;
+        doBoundingBoxBroadphase(bodyA: Body, bodyB: Body, pairs1: Body[], pairs2: Body[]): void;
         /**
-         * 获取包围盒内所有物体
+         * Removes duplicate pairs from the pair arrays.
+         * @param pairs1
+         * @param pairs2
+         */
+        makePairsUnique(pairs1: any[], pairs2: any[]): void;
+        /**
+         * To be implemented by subcasses
+         * @method setWorld
+         * @param {World} world
+         */
+        setWorld(world: World): void;
+        /**
+         * Check if the bounding spheres of two bodies overlap.
+         * @param bodyA
+         * @param bodyB
+         */
+        static boundingSphereCheck(bodyA: Body, bodyB: Body): boolean;
+        /**
+         * Returns all the bodies within the AABB.
          *
          * @param world
          * @param aabb
-         * @param result
+         * @param result An array to store resulting bodies in.
          */
-        aabbQuery(world: World, aabb: feng3d.AABB, result?: Body[]): Body[];
+        aabbQuery(world: World, aabb: AABB, result: any[]): any[];
+    }
+}
+declare namespace CANNON {
+    class GridBroadphase extends Broadphase {
+        nx: number;
+        ny: number;
+        nz: number;
+        aabbMin: Vec3;
+        aabbMax: Vec3;
+        bins: any[];
+        binLengths: any[];
+        /**
+         * Axis aligned uniform grid broadphase.
+         *
+         * @param aabbMin
+         * @param aabbMax
+         * @param nx Number of boxes along x
+         * @param ny Number of boxes along y
+         * @param nz Number of boxes along z
+         *
+         * @todo Needs support for more than just planes and spheres.
+         */
+        constructor(aabbMin: Vec3, aabbMax: Vec3, nx: number, ny: number, nz: number);
+        /**
+         * Get all the collision pairs in the physics world
+         *
+         * @param world
+         * @param pairs1
+         * @param pairs2
+         */
+        collisionPairs(world: World, pairs1: any[], pairs2: any[]): void;
+    }
+}
+declare namespace CANNON {
+    class NaiveBroadphase extends Broadphase {
+        /**
+         * Naive broadphase implementation, used in lack of better ones.
+         * @description The naive broadphase looks at all possible pairs without restriction, therefore it has complexity N^2 (which is bad)
+         */
+        constructor();
+        /**
+         * Get all the collision pairs in the physics world
+         * @param world
+         * @param pairs1
+         * @param pairs2
+         */
+        collisionPairs(world: World, pairs1: any[], pairs2: any[]): void;
+        /**
+         * Returns all the bodies within an AABB.
+         * @param world
+         * @param aabb
+         * @param result An array to store resulting bodies in.
+         */
+        aabbQuery(world: World, aabb: AABB, result: any[]): any[];
+    }
+}
+declare namespace CANNON {
+    class SAPBroadphase extends Broadphase {
+        /**
+         * List of bodies currently in the broadphase.
+         */
+        axisList: any[];
+        /**
+         * Axis to sort the bodies along. Set to 0 for x axis, and 1 for y axis. For best performance, choose an axis that the bodies are spread out more on.
+         */
+        axisIndex: number;
+        private _addBodyHandler;
+        private _removeBodyHandler;
+        /**
+         * Sweep and prune broadphase along one axis.
+         *
+         * @param world
+         */
+        constructor(world: World);
+        /**
+         * Change the world
+         * @param world
+         */
+        setWorld(world: World): void;
+        static insertionSortX(a: any[]): any[];
+        static insertionSortY(a: any[]): any[];
+        static insertionSortZ(a: any[]): any[];
+        /**
+         * Collect all collision pairs
+         * @param world
+         * @param p1
+         * @param p2
+         */
+        collisionPairs(world: World, p1: any[], p2: any[]): void;
+        sortList(): void;
+        /**
+         * Check if the bounds of two bodies overlap, along the given SAP axis.
+         * @param bi
+         * @param bj
+         * @param axisIndex
+         */
+        static checkBounds(bi: Body, bj: Body, axisIndex: number): boolean;
+        /**
+         * Computes the variance of the body positions and estimates the best
+         * axis to use. Will automatically set property .axisIndex.
+         */
+        autoDetectAxis(): void;
+        /**
+         * Returns all the bodies within an AABB.
+         * @param world
+         * @param aabb
+         * @param result An array to store resulting bodies in.
+         */
+        aabbQuery(world: World, aabb: AABB, result: any[]): any[];
     }
 }
 declare namespace CANNON {
     class Ray {
-        from: feng3d.Vector3;
-        to: feng3d.Vector3;
-        _direction: feng3d.Vector3;
+        from: Vec3;
+        to: Vec3;
+        _direction: Vec3;
         /**
          * The precision of the ray. Used when checking parallelity etc.
          */
@@ -18083,11 +19365,15 @@ declare namespace CANNON {
          */
         hasHit: boolean;
         /**
+         * Current, user-provided result callback. Will be used if mode is Ray.ALL.
+         */
+        callback: Function;
+        /**
          * A line in 3D space that intersects bodies and return points.
          * @param from
          * @param to
          */
-        constructor(from?: feng3d.Vector3, to?: feng3d.Vector3);
+        constructor(from?: Vec3, to?: Vec3);
         static CLOSEST: number;
         static ANY: number;
         static ALL: number;
@@ -18097,7 +19383,16 @@ declare namespace CANNON {
          * @param options
          * @return True if the ray hit anything, otherwise false.
          */
-        intersectWorld(world: World, from?: feng3d.Vector3, to?: feng3d.Vector3, result?: RaycastResult, mode?: number, skipBackfaces?: boolean, collisionFilterMask?: number, collisionFilterGroup?: number): boolean;
+        intersectWorld(world: World, options: {
+            mode?: number;
+            result?: RaycastResult;
+            skipBackfaces?: boolean;
+            collisionFilterMask?: number;
+            collisionFilterGroup?: number;
+            from?: Vec3;
+            to?: Vec3;
+            callback?: Function;
+        }): boolean;
         /**
          * Shoot a ray at a body, get back information about the hit.
          * @param body
@@ -18119,9 +19414,19 @@ declare namespace CANNON {
         /**
          * Get the world AABB of the ray.
          */
-        getAABB(result: feng3d.AABB): void;
+        getAABB(result: AABB): void;
+        private intersectHeightfield;
         private intersectSphere;
         private intersectConvex;
+        /**
+         * @method intersectTrimesh
+         * @private
+         * @param  {Shape} shape
+         * @param  {Quaternion} quat
+         * @param  {Vec3} position
+         * @param  {Body} body
+         * @param {object} [options]
+         */
         /**
          *
          * @param mesh
@@ -18129,13 +19434,14 @@ declare namespace CANNON {
          * @param position
          * @param body
          * @param reportedShape
+         * @param options
          *
          * @todo Optimize by transforming the world to local space first.
          * @todo Use Octree lookup
          */
         private intersectTrimesh;
         private reportIntersection;
-        static pointInTriangle(p: feng3d.Vector3, a: feng3d.Vector3, b: feng3d.Vector3, c: feng3d.Vector3): boolean;
+        static pointInTriangle(p: Vec3, a: Vec3, b: Vec3, c: Vec3): boolean;
     }
 }
 declare namespace CANNON {
@@ -18159,12 +19465,19 @@ declare namespace CANNON {
          * @param options
          * @author schteppe
          */
-        constructor(name?: string, friction?: number, restitution?: number);
+        constructor(options?: {
+            friction?: number;
+            restitution?: number;
+        } | string);
         static idCounter: number;
     }
 }
 declare namespace CANNON {
     class ContactMaterial {
+        /**
+         * Identifier of this material
+         */
+        id: number;
         /**
          * Participating materials
          * @todo  Should be .materialA and .materialB instead
@@ -18201,33 +19514,35 @@ declare namespace CANNON {
          * @param m2
          * @param options
          */
-        constructor(m1: Material, m2: Material, friction?: number, restitution?: number);
+        constructor(m1: Material, m2: Material, options?: {
+            friction?: number;
+            restitution?: number;
+            contactEquationStiffness?: number;
+            contactEquationRelaxation?: number;
+            frictionEquationStiffness?: number;
+            frictionEquationRelaxation?: number;
+        });
+        static idCounter: number;
     }
 }
 declare namespace CANNON {
-    interface BodyEventMap {
-        wakeup: any;
-        sleepy: any;
-        sleep: any;
-        collide: {
-            body: Body;
-            contact: ContactEquation;
-        };
-    }
-    interface Body {
-        once<K extends keyof BodyEventMap>(type: K, listener: (event: feng3d.Event<BodyEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof BodyEventMap>(type: K, data?: BodyEventMap[K], bubbles?: boolean): feng3d.Event<BodyEventMap[K]>;
-        has<K extends keyof BodyEventMap>(type: K): boolean;
-        on<K extends keyof BodyEventMap>(type: K, listener: (event: feng3d.Event<BodyEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof BodyEventMap>(type?: K, listener?: (event: feng3d.Event<BodyEventMap[K]>) => any, thisObject?: any): void;
-    }
-    class Body extends feng3d.EventDispatcher {
+    class Body extends EventTarget {
         id: number;
         /**
          * Reference to the world the body is living in
          */
         world: World;
-        vlambda: feng3d.Vector3;
+        /**
+         * Callback function that is used BEFORE stepping the system. Use it to apply forces, for example. Inside the function, "this" will refer to this Body object.
+         * @deprecated Use World events instead
+         */
+        preStep: Function;
+        /**
+         * Callback function that is used AFTER stepping the system. Inside the function, "this" will refer to this Body object.
+         * @deprecated Use World events instead
+         */
+        postStep: Function;
+        vlambda: Vec3;
         collisionFilterGroup: number;
         collisionFilterMask: number;
         /**
@@ -18237,29 +19552,26 @@ declare namespace CANNON {
         /**
          * World space position of the body.
          */
-        position: feng3d.Vector3;
-        private _position;
-        previousPosition: feng3d.Vector3;
+        position: Vec3;
+        previousPosition: Vec3;
         /**
          * Interpolated position of the body.
          */
-        interpolatedPosition: feng3d.Vector3;
+        interpolatedPosition: Vec3;
         /**
          * Initial position of the body
          */
-        initPosition: feng3d.Vector3;
+        initPosition: Vec3;
         /**
          * World space velocity of the body.
          */
-        velocity: feng3d.Vector3;
-        private _velocity;
-        initVelocity: feng3d.Vector3;
+        velocity: Vec3;
+        initVelocity: Vec3;
         /**
          * Linear force on the body in world space.
          */
-        force: feng3d.Vector3;
+        force: Vec3;
         mass: number;
-        private _mass;
         invMass: number;
         material: Material;
         linearDamping: number;
@@ -18284,43 +19596,41 @@ declare namespace CANNON {
          */
         sleepTimeLimit: number;
         timeLastSleepy: number;
-        _wakeUpAfterNarrowphase: boolean;
+        private _wakeUpAfterNarrowphase;
         /**
          * World space rotational force on the body, around center of mass.
          */
-        torque: feng3d.Vector3;
+        torque: Vec3;
         /**
          * World space orientation of the body.
          */
-        quaternion: feng3d.Quaternion;
-        private _quaternion;
-        initQuaternion: feng3d.Quaternion;
-        previousQuaternion: feng3d.Quaternion;
+        quaternion: Quaternion;
+        initQuaternion: Quaternion;
+        previousQuaternion: Quaternion;
         /**
          * Interpolated orientation of the body.
          */
-        interpolatedQuaternion: feng3d.Quaternion;
+        interpolatedQuaternion: Quaternion;
         /**
          * Angular velocity of the body, in world space. Think of the angular velocity as a vector, which the body rotates around. The length of this vector determines how fast (in radians per second) the body rotates.
          */
-        angularVelocity: feng3d.Vector3;
-        private _angularVelocity;
-        initAngularVelocity: feng3d.Vector3;
+        angularVelocity: Vec3;
+        initAngularVelocity: Vec3;
         shapes: Shape[];
         /**
          * Position of each Shape in the body, given in local Body space.
          */
-        shapeOffsets: feng3d.Vector3[];
+        shapeOffsets: Vec3[];
         /**
          * Orientation of each Shape, given in local Body space.
          */
-        shapeOrientations: feng3d.Quaternion[];
-        inertia: feng3d.Vector3;
-        invInertia: feng3d.Vector3;
-        invInertiaWorld: feng3d.Matrix3x3;
+        shapeOrientations: Quaternion[];
+        inertia: Vec3;
+        invInertia: Vec3;
+        invInertiaWorld: Mat3;
         invMassSolve: number;
-        invInertiaSolve: feng3d.Vector3;
-        invInertiaWorldSolve: feng3d.Matrix3x3;
+        invInertiaSolve: Vec3;
+        invInertiaWorldSolve: Mat3;
         /**
          * Set to true if you don't want the body to rotate. Make sure to run .updateMassProperties() after changing this.
          */
@@ -18329,17 +19639,15 @@ declare namespace CANNON {
         /**
          * Use this property to limit the motion along any world axis. (1,1,1) will allow motion along all axes while (0,0,0) allows none.
          */
-        linearFactor: feng3d.Vector3;
-        private _linearFactor;
+        linearFactor: Vec3;
         /**
          * Use this property to limit the rotational motion along any world axis. (1,1,1) will allow rotation along all axes while (0,0,0) allows none.
          */
-        angularFactor: feng3d.Vector3;
-        private _angularFactor;
+        angularFactor: Vec3;
         /**
          * World space bounding box of the body and its shapes.
          */
-        aabb: feng3d.AABB;
+        aabb: AABB;
         /**
          * Indicates if the AABB needs to be updated before use.
          */
@@ -18348,7 +19656,8 @@ declare namespace CANNON {
          * Total bounding radius of the Body including its shapes, relative to body.position.
          */
         boundingRadius: number;
-        wlambda: feng3d.Vector3;
+        wlambda: Vec3;
+        shape: Shape;
         index: number;
         /**
          * Base class for all body types.
@@ -18364,7 +19673,27 @@ declare namespace CANNON {
          *     body.addShape(shape);
          *     world.addBody(body);
          */
-        constructor(mass?: number);
+        constructor(options?: {
+            collisionFilterGroup?: number;
+            collisionFilterMask?: number;
+            position?: Vec3;
+            velocity?: Vec3;
+            material?: Material;
+            mass?: number;
+            linearDamping?: number;
+            type?: number;
+            allowSleep?: boolean;
+            sleepSpeedLimit?: number;
+            sleepTimeLimit?: number;
+            quaternion?: Quaternion;
+            angularVelocity?: Vec3;
+            fixedRotation?: boolean;
+            angularDamping?: number;
+            linearFactor?: Vec3;
+            angularFactor?: Vec3;
+            shape?: Shape;
+        }, a?: any);
+        static COLLIDE_EVENT_NAME: string;
         /**
          * A dynamic body is fully simulated. Can be moved manually by the user, but normally they move according to forces. A dynamic body can collide with all body types. A dynamic body always has finite, non-zero mass.
          */
@@ -18382,6 +19711,12 @@ declare namespace CANNON {
         static SLEEPING: number;
         static idCounter: number;
         /**
+         * Dispatched after a sleeping body has woken up.
+         */
+        static wakeupEvent: {
+            type: string;
+        };
+        /**
          * Wake the body up.
          */
         wakeUp(): void;
@@ -18389,6 +19724,19 @@ declare namespace CANNON {
          * Force body sleep
          */
         sleep(): void;
+        /**
+         * Dispatched after a body has gone in to the sleepy state.
+         */
+        static sleepyEvent: {
+            type: string;
+        };
+        /**
+         * Dispatched after a body has fallen asleep.
+         * @event sleep
+         */
+        static sleepEvent: {
+            type: string;
+        };
         /**
          * Called every timestep to update internal sleep timer and change sleep state if needed.
          */
@@ -18403,36 +19751,37 @@ declare namespace CANNON {
          * @param worldPoint
          * @param result
          */
-        pointToLocalFrame(worldPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        pointToLocalFrame(worldPoint: Vec3, result: Vec3): Vec3;
         /**
          * Convert a world vector to local body frame.
          *
          * @param worldPoint
          * @param result
          */
-        vectorToLocalFrame(worldVector: any, result?: feng3d.Vector3): feng3d.Vector3;
+        vectorToLocalFrame(worldVector: any, result?: Vec3): Vec3;
         /**
          * Convert a local body point to world frame.
          *
          * @param localPoint
          * @param result
          */
-        pointToWorldFrame(localPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        pointToWorldFrame(localPoint: Vec3, result: Vec3): Vec3;
         /**
          * Convert a local body point to world frame.
          *
          * @param localVector
          * @param result
          */
-        vectorToWorldFrame(localVector: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        vectorToWorldFrame(localVector: Vec3, result: Vec3): Vec3;
         /**
          * Add a shape to the body with a local offset and orientation.
+         *
          * @param shape
-         * @param offset
+         * @param _offset
          * @param_orientation
          * @return The body object, for chainability.
          */
-        addShape(shape: Shape, offset?: feng3d.Vector3, orientation?: feng3d.Quaternion): this;
+        addShape(shape: Shape, _offset?: Vec3, _orientation?: Quaternion): this;
         /**
          * Update the bounding radius of the body. Should be done if any of the shapes are changed.
          */
@@ -18446,45 +19795,47 @@ declare namespace CANNON {
         /**
          * Update .inertiaWorld and .invInertiaWorld
          */
-        updateInertiaWorld(force?: boolean): void;
+        updateInertiaWorld(force?: any): void;
         /**
          * Apply force to a world point. This could for example be a point on the Body surface. Applying force this way will add to Body.force and Body.torque.
          *
          * @param force The amount of force to add.
          * @param relativePoint A point relative to the center of mass to apply the force on.
          */
-        applyForce(force: feng3d.Vector3, relativePoint: feng3d.Vector3): void;
+        applyForce(force: Vec3, relativePoint: Vec3): void;
         /**
          * Apply force to a local point in the body.
          *
          * @param force The force vector to apply, defined locally in the body frame.
          * @param localPoint A local point in the body to apply the force on.
          */
-        applyLocalForce(localForce: feng3d.Vector3, localPoint: feng3d.Vector3): void;
+        applyLocalForce(localForce: Vec3, localPoint: Vec3): void;
         /**
          * Apply impulse to a world point. This could for example be a point on the Body surface. An impulse is a force added to a body during a short period of time (impulse = force * time). Impulses will be added to Body.velocity and Body.angularVelocity.
          *
          * @param impulse The amount of impulse to add.
          * @param relativePoint A point relative to the center of mass to apply the force on.
          */
-        applyImpulse(impulse: feng3d.Vector3, relativePoint: feng3d.Vector3): void;
+        applyImpulse(impulse: Vec3, relativePoint: Vec3): void;
         /**
          * Apply locally-defined impulse to a local point in the body.
          *
          * @param force The force vector to apply, defined locally in the body frame.
          * @param localPoint A local point in the body to apply the force on.
          */
-        applyLocalImpulse(localImpulse: feng3d.Vector3, localPoint: feng3d.Vector3): void;
+        applyLocalImpulse(localImpulse: Vec3, localPoint: Vec3): void;
         /**
          * Should be called whenever you change the body shape or mass.
          */
         updateMassProperties(): void;
         /**
          * Get world velocity of a point in the body.
-         * @param worldPoint
-         * @param result
+         * @method getVelocityAtWorldPoint
+         * @param  {Vec3} worldPoint
+         * @param  {Vec3} result
+         * @return {Vec3} The result vector.
          */
-        getVelocityAtWorldPoint(worldPoint: feng3d.Vector3, result?: feng3d.Vector3): feng3d.Vector3;
+        getVelocityAtWorldPoint(worldPoint: any, result: any): any;
         /**
          * Move the body forward in time.
          * @param dt Time step
@@ -18519,11 +19870,11 @@ declare namespace CANNON {
         /**
          * Anchor for bodyA in local bodyA coordinates.
          */
-        localAnchorA: feng3d.Vector3;
+        localAnchorA: Vec3;
         /**
          * Anchor for bodyB in local bodyB coordinates.
          */
-        localAnchorB: feng3d.Vector3;
+        localAnchorB: Vec3;
         /**
          * A spring, connecting two bodies.
          *
@@ -18531,27 +19882,35 @@ declare namespace CANNON {
          * @param bodyB
          * @param options
          */
-        constructor(bodyA: Body, bodyB: Body);
+        constructor(bodyA: Body, bodyB: Body, options?: {
+            restLength?: number;
+            stiffness?: number;
+            damping?: number;
+            localAnchorA?: Vec3;
+            localAnchorB?: Vec3;
+            worldAnchorA?: Vec3;
+            worldAnchorB?: Vec3;
+        });
         /**
          * Set the anchor point on body A, using world coordinates.
          * @param worldAnchorA
          */
-        setWorldAnchorA(worldAnchorA: feng3d.Vector3): void;
+        setWorldAnchorA(worldAnchorA: Vec3): void;
         /**
          * Set the anchor point on body B, using world coordinates.
          * @param worldAnchorB
          */
-        setWorldAnchorB(worldAnchorB: feng3d.Vector3): void;
+        setWorldAnchorB(worldAnchorB: Vec3): void;
         /**
          * Get the anchor point on body A, in world coordinates.
          * @param result The vector to store the result in.
          */
-        getWorldAnchorA(result: feng3d.Vector3): void;
+        getWorldAnchorA(result: Vec3): void;
         /**
          * Get the anchor point on body B, in world coordinates.
          * @param result The vector to store the result in.
          */
-        getWorldAnchorB(result: feng3d.Vector3): void;
+        getWorldAnchorB(result: Vec3): void;
         /**
          * Apply the spring force to the connected bodies.
          */
@@ -18559,14 +19918,11 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    /**
-     * 轮子信息
-     */
     class WheelInfo {
         /**
          * Max travel distance of the suspension, in meters.
          */
-        maxSuspensionTravel: number;
+        maxSuspensionTravel: any;
         /**
          * Speed to apply to the wheel rotation when the wheel is sliding.
          */
@@ -18579,25 +19935,19 @@ declare namespace CANNON {
         /**
          * Connection point, defined locally in the chassis body frame.
          */
-        chassisConnectionPointLocal: feng3d.Vector3;
-        private _chassisConnectionPointLocal;
-        chassisConnectionPointWorld: feng3d.Vector3;
-        private _chassisConnectionPointWorld;
-        directionLocal: feng3d.Vector3;
-        private _directionLocal;
-        directionWorld: feng3d.Vector3;
-        private _directionWorld;
-        axleLocal: feng3d.Vector3;
-        private _axleLocal;
-        axleWorld: feng3d.Vector3;
-        private _axleWorld;
+        chassisConnectionPointLocal: Vec3;
+        chassisConnectionPointWorld: Vec3;
+        directionLocal: Vec3;
+        directionWorld: Vec3;
+        axleLocal: Vec3;
+        axleWorld: Vec3;
         suspensionRestLength: number;
         suspensionMaxLength: number;
         radius: number;
         suspensionStiffness: number;
         dampingCompression: number;
         dampingRelaxation: number;
-        frictionSlip: number;
+        frictionSlip: any;
         steering: number;
         /**
          * Rotation value, in radians.
@@ -18608,7 +19958,7 @@ declare namespace CANNON {
         maxSuspensionForce: number;
         engineForce: number;
         brake: number;
-        isFrontWheel: boolean;
+        isFrontWheel: number;
         clippedInvContactDotSuspension: number;
         suspensionRelativeVelocity: number;
         suspensionForce: number;
@@ -18625,6 +19975,32 @@ declare namespace CANNON {
          */
         worldTransform: Transform;
         isInContact: boolean;
+        slipInfo: number;
+        /**
+         *
+         * @param options
+         */
+        constructor(options?: {
+            maxSuspensionTravel?: number;
+            customSlidingRotationalSpeed?: number;
+            useCustomSlidingRotationalSpeed?: boolean;
+            chassisConnectionPointLocal?: Vec3;
+            chassisConnectionPointWorld?: Vec3;
+            directionLocal?: Vec3;
+            directionWorld?: Vec3;
+            axleLocal?: Vec3;
+            axleWorld?: Vec3;
+            suspensionRestLength?: number;
+            suspensionMaxLength?: number;
+            radius?: number;
+            suspensionStiffness?: number;
+            dampingCompression?: number;
+            dampingRelaxation?: number;
+            frictionSlip?: number;
+            rollInfluence?: number;
+            maxSuspensionForce?: number;
+            isFrontWheel?: number;
+        });
         updateWheel(chassis: Body): void;
     }
 }
@@ -18653,19 +20029,25 @@ declare namespace CANNON {
          */
         indexUpAxis: number;
         currentVehicleSpeedKmHour: number;
-        preStepCallback(): void;
+        preStepCallback: Function;
+        constraints: any;
         /**
          * Vehicle helper class that casts rays from the wheel positions towards the ground and applies forces.
          *
          * @param options
          */
-        constructor(chassisBody: Body, indexRightAxis?: number, indexForwardAxis?: number, indexUpAxis?: number);
+        constructor(options?: {
+            chassisBody?: Body;
+            indexRightAxis?: number;
+            indexForwardAxis?: number;
+            indexUpAxis?: number;
+        });
         /**
          * Add a wheel. For information about the options, see WheelInfo.
          *
          * @param options
          */
-        addWheel(info: WheelInfo): number;
+        addWheel(options?: {}): number;
         /**
          * Set the steering value of a wheel.
          *
@@ -18698,7 +20080,7 @@ declare namespace CANNON {
          * @param axisIndex
          * @param result
          */
-        getVehicleAxisWorld(axisIndex: number, result: feng3d.Vector3): void;
+        getVehicleAxisWorld(axisIndex: number, result: Vec3): void;
         updateVehicle(timeStep: number): void;
         updateSuspension(deltaTime: number): void;
         /**
@@ -18726,29 +20108,40 @@ declare namespace CANNON {
     }
 }
 declare namespace CANNON {
-    /**
-     * 刚性车
-     */
     class RigidVehicle {
-        wheelBodies: Body[];
-        chassisBody: Body;
-        constraints: HingeConstraint[];
-        wheelAxes: feng3d.Vector3[];
-        wheelForces: number[];
-        constructor(chassisBody: Body);
+        wheelBodies: any[];
+        coordinateSystem: any;
+        chassisBody: any;
+        constraints: any[];
+        wheelAxes: any[];
+        wheelForces: any[];
         /**
-         * 添加轮子
+         * Simple vehicle helper class with spherical rigid body wheels.
          *
-         * @param body
-         * @param position
-         * @param axis
+         * @param options
          */
-        addWheel(body: Body, position?: feng3d.Vector3, axis?: feng3d.Vector3): number;
+        constructor(options?: {
+            coordinateSystem?: any;
+            chassisBody?: Body;
+        });
         /**
-         * 设置车轮的转向值
+         * Add a wheelraycastClosest(
+         *
+         * @param options
+         */
+        addWheel(options?: {
+            body?: Body;
+            isFrontWheel?: boolean;
+            position?: Vec3;
+            axis?: Vec3;
+        }): number;
+        /**
+         * Set the steering value of a wheel.
          *
          * @param value
          * @param wheelIndex
+         *
+         * @todo check coordinateSystem
          */
         setSteeringValue(value: number, wheelIndex: number): void;
         /**
@@ -18795,12 +20188,12 @@ declare namespace CANNON {
          *
          * @param wheelIndex
          */
-        getWheelSpeed(wheelIndex: number): number;
+        getWheelSpeed(wheelIndex: number): any;
     }
 }
 declare namespace CANNON {
     class SPHSystem {
-        particles: Particle[];
+        particles: any[];
         /**
          * Density of the system (kg/m3).
          */
@@ -18816,9 +20209,9 @@ declare namespace CANNON {
          */
         viscosity: number;
         eps: number;
-        pressures: number[];
-        densities: number[];
-        neighbors: Particle[][];
+        pressures: any[];
+        densities: any[];
+        neighbors: any[];
         /**
          * Smoothed-particle hydrodynamics system
          */
@@ -18828,38 +20221,30 @@ declare namespace CANNON {
          *
          * @param particle
          */
-        add(particle: Particle): void;
+        add(particle: Body): void;
         /**
          * Remove a particle from the system.
          *
          * @param particle
          */
-        remove(particle: Particle): void;
+        remove(particle: Body): void;
         /**
          * Get neighbors within smoothing volume, save in the array neighbors
          *
          * @param particle
          * @param neighbors
          */
-        getNeighbors(particle: Particle, neighbors: any[]): void;
+        getNeighbors(particle: Body, neighbors: any[]): void;
         update(): void;
         w(r: number): number;
-        gradw(rVec: feng3d.Vector3, resultVec: feng3d.Vector3): void;
+        gradw(rVec: Vec3, resultVec: Vec3): void;
         nablaw(r: number): number;
     }
 }
 declare namespace CANNON {
-    /**
-     * 方程式
-     */
     class Equation {
-        /**
-         * 最小力
-         */
+        id: number;
         minForce: number;
-        /**
-         * 最大力
-         */
         maxForce: number;
         bi: Body;
         bj: Body;
@@ -18871,18 +20256,24 @@ declare namespace CANNON {
         eps: number;
         jacobianElementA: JacobianElement;
         jacobianElementB: JacobianElement;
-        /**
-         * 是否启用
-         */
         enabled: boolean;
         /**
-         *
-         * @param bi
-         * @param bj
-         * @param minForce
-         * @param maxForce
+         * A number, proportional to the force added to the bodies.
+         * @readonly
          */
-        constructor(bi: Body, bj: Body, minForce?: number, maxForce?: number);
+        multiplier: number;
+        /**
+         * Equation base class
+         * @class Equation
+         * @constructor
+         * @author schteppe
+         * @param {Body} bi
+         * @param {Body} bj
+         * @param {Number} minForce Minimum (read: negative max) force to be applied by the constraint.
+         * @param {Number} maxForce Maximum (read: positive max) force to be applied by the constraint.
+         */
+        constructor(bi: Body, bj: Body, minForce: number, maxForce: number);
+        static id: number;
         /**
          * Recalculates a,b,eps.
          */
@@ -18923,8 +20314,8 @@ declare namespace CANNON {
 }
 declare namespace CANNON {
     class ConeEquation extends Equation {
-        axisA: feng3d.Vector3;
-        axisB: feng3d.Vector3;
+        axisA: Vec3;
+        axisB: Vec3;
         /**
          * The cone angle to keep
          */
@@ -18938,7 +20329,12 @@ declare namespace CANNON {
          *
          * @author schteppe
          */
-        constructor(bodyA: Body, bodyB: Body, maxForce?: number, axisA?: feng3d.Vector3, axisB?: feng3d.Vector3, angle?: number);
+        constructor(bodyA: Body, bodyB: Body, options?: {
+            maxForce?: number;
+            axisA?: Vec3;
+            axisB?: Vec3;
+            angle?: number;
+        });
         computeB(h: number): number;
     }
 }
@@ -18948,17 +20344,15 @@ declare namespace CANNON {
         /**
          * World-oriented vector that goes from the center of bi to the contact point.
          */
-        ri: feng3d.Vector3;
+        ri: Vec3;
         /**
          * World-oriented vector that starts in body j position and goes to the contact point.
          */
-        rj: feng3d.Vector3;
+        rj: Vec3;
         /**
          * Contact normal, pointing out of body i.
          */
-        ni: feng3d.Vector3;
-        si: Shape;
-        sj: Shape;
+        ni: Vec3;
         /**
          * Contact/non-penetration constraint equation
          *
@@ -18977,14 +20371,18 @@ declare namespace CANNON {
 }
 declare namespace CANNON {
     class FrictionEquation extends Equation {
-        ri: feng3d.Vector3;
-        rj: feng3d.Vector3;
-        t: feng3d.Vector3;
+        ri: Vec3;
+        rj: Vec3;
+        t: Vec3;
         /**
-         *
-         * @param bodyA
-         * @param bodyB
-         * @param slipForce
+         * Constrains the slipping in a contact along a tangent
+         * @class FrictionEquation
+         * @constructor
+         * @author schteppe
+         * @param {Body} bodyA
+         * @param {Body} bodyB
+         * @param {Number} slipForce should be +-F_friction = +-mu * F_normal = +-mu * m * g
+         * @extends Equation
          */
         constructor(bodyA: Body, bodyB: Body, slipForce: number);
         computeB(h: number): number;
@@ -18992,8 +20390,8 @@ declare namespace CANNON {
 }
 declare namespace CANNON {
     class RotationalEquation extends Equation {
-        axisA: feng3d.Vector3;
-        axisB: feng3d.Vector3;
+        axisA: Vec3;
+        axisB: Vec3;
         maxAngle: number;
         /**
          * Rotational constraint. Works to keep the local vectors orthogonal to each other in world space.
@@ -19004,7 +20402,11 @@ declare namespace CANNON {
          *
          * @author schteppe
          */
-        constructor(bodyA: Body, bodyB: Body, axisA?: feng3d.Vector3, axisB?: feng3d.Vector3, maxForce?: number);
+        constructor(bodyA: Body, bodyB: Body, options?: {
+            axisA?: Vec3;
+            axisB?: Vec3;
+            maxForce?: number;
+        });
         computeB(h: number): number;
     }
 }
@@ -19013,11 +20415,11 @@ declare namespace CANNON {
         /**
          * World oriented rotational axis
          */
-        axisA: feng3d.Vector3;
+        axisA: Vec3;
         /**
          * World oriented rotational axis
          */
-        axisB: feng3d.Vector3;
+        axisB: Vec3;
         /**
          * Motor velocity
          */
@@ -19028,110 +20430,97 @@ declare namespace CANNON {
          * @param bodyA
          * @param bodyB
          * @param maxForce
+         *
+         * @author schteppe
          */
-        constructor(bodyA: Body, bodyB: Body, maxForce?: number);
+        constructor(bodyA: Body, bodyB: Body, maxForce: number);
         computeB(h: number): number;
     }
 }
 declare namespace CANNON {
-    /**
-     * 求解器
-     */
-    abstract class Solver {
+    class Solver {
         /**
-         * 求解的方程数组
+         * All equations to be solved
          */
         equations: Equation[];
         /**
-         * 约束方程求解器基类
+         * Constraint equation solver base class.
+         * @author schteppe / https://github.com/schteppe
          */
         constructor();
         /**
-         * 求解
-         *
+         * Should be implemented in subclasses!
          * @param dt
          * @param world
          */
-        abstract solve(dt: number, world: World): number;
+        solve(dt: number, world: World): number;
         /**
-         * 添加方程
-         *
+         * Add an equation
          * @param eq
          */
         addEquation(eq: Equation): void;
         /**
-         * 移除方程式
-         *
+         * Remove an equation
          * @param eq
          */
         removeEquation(eq: Equation): void;
         /**
-         * 移除所有方程式
+         * Add all equations
          */
         removeAllEquations(): void;
     }
 }
 declare namespace CANNON {
-    /**
-     * 约束方程 Gauss-Seidel 求解器
-     */
     class GSSolver extends Solver {
         /**
-         * 求解器迭代的次数
-         *
-         * 求解器迭代的次数决定了约束条件的质量。迭代越多，模拟就越正确。然而，更多的迭代需要更多的计算。如果你的世界有很大的重力，你将需要更多的迭代。
+         * The number of solver iterations determines quality of the constraints in the world. The more iterations, the more correct simulation. More iterations need more computations though. If you have a large gravity force in your world, you will need more iterations.
+         * @todo write more about solver and iterations in the wiki
          */
         iterations: number;
         /**
-         * 容差
-         *
-         * 当达到容差时，假定系统是收敛的。
+         * When tolerance is reached, the system is assumed to be converged.
          */
         tolerance: number;
+        /**
+         * Constraint equation Gauss-Seidel solver.
+         * @todo The spook parameters should be specified for each constraint, not globally.
+         * @author schteppe / https://github.com/schteppe
+         * @see https://www8.cs.umu.se/kurser/5DV058/VT09/lectures/spooknotes.pdf
+         */
+        constructor();
         solve(dt: number, world: World): number;
     }
 }
 declare namespace CANNON {
-    interface WorldEventMap {
+    class SplitSolver extends Solver {
+        iterations: number;
+        tolerance: number;
+        subsolver: any;
+        nodes: any[];
+        nodePool: any[];
         /**
-         * 添加物体
+         * Splits the equations into islands and solves them independently. Can improve performance.
+         *
+         * @param subsolver
          */
-        addBody: Body;
+        constructor(subsolver: Solver);
+        createNode(): {
+            body: any;
+            children: any[];
+            eqs: any[];
+            visited: boolean;
+        };
         /**
-         * 移除物体
+         * Solve the subsystems
+         * @method solve
+         * @param  {Number} dt
+         * @param  {World} world
          */
-        removeBody: Body;
-        preStep: any;
-        postStep: any;
-        beginContact: {
-            bodyA: Body;
-            bodyB: Body;
-        };
-        endContact: {
-            bodyA: Body;
-            bodyB: Body;
-        };
-        beginShapeContact: {
-            shapeA: Shape;
-            shapeB: Shape;
-            bodyA: Body;
-            bodyB: Body;
-        };
-        endShapeContact: {
-            shapeA: Shape;
-            shapeB: Shape;
-            bodyA: Body;
-            bodyB: Body;
-        };
+        solve(dt: number, world: World): number;
     }
-    interface World {
-        once<K extends keyof WorldEventMap>(type: K, listener: (event: feng3d.Event<WorldEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof WorldEventMap>(type: K, data?: WorldEventMap[K], bubbles?: boolean): feng3d.Event<WorldEventMap[K]>;
-        has<K extends keyof WorldEventMap>(type: K): boolean;
-        on<K extends keyof WorldEventMap>(type: K, listener: (event: feng3d.Event<WorldEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof WorldEventMap>(type?: K, listener?: (event: feng3d.Event<WorldEventMap[K]>) => any, thisObject?: any): void;
-    }
-    class World extends feng3d.EventDispatcher {
+}
+declare namespace CANNON {
+    class World extends EventTarget {
         /**
          * Currently / last used timestep. Is set to -1 if not available. This value is updated before each internal step, which means that it is "fresh" inside event callbacks.
          */
@@ -19143,8 +20532,8 @@ declare namespace CANNON {
         /**
          * All the current contacts (instances of ContactEquation) in the world.
          */
-        contacts: ContactEquation[];
-        frictionEquations: FrictionEquation[];
+        contacts: any[];
+        frictionEquations: any[];
         /**
          * How often to normalize quaternions. Set to 0 for every step, 1 for every second etc.. A larger value increases performance. If bodies tend to explode, set to a smaller value (zero to be sure nothing can go wrong).
          */
@@ -19163,40 +20552,34 @@ declare namespace CANNON {
         stepnumber: number;
         default_dt: number;
         nextId: number;
-        gravity: feng3d.Vector3;
+        gravity: Vec3;
         /**
          * The broadphase algorithm to use. Default is NaiveBroadphase
          */
         broadphase: Broadphase;
-        bodies: Body[];
+        bodies: any[];
         /**
          * The solver algorithm to use. Default is GSSolver
          */
         solver: Solver;
-        constraints: Constraint[];
+        constraints: any[];
         narrowphase: Narrowphase;
-        collisionMatrix: {
-            [key: string]: boolean;
-        };
+        collisionMatrix: ArrayCollisionMatrix;
         /**
          * CollisionMatrix from the previous step.
          */
-        collisionMatrixPrevious: {
-            [key: string]: boolean;
-        };
+        collisionMatrixPrevious: ArrayCollisionMatrix;
         bodyOverlapKeeper: OverlapKeeper;
         shapeOverlapKeeper: OverlapKeeper;
         /**
          * All added materials
          */
         materials: Material[];
-        contactmaterials: ContactMaterial[];
+        contactmaterials: any[];
         /**
          * Used to look up a ContactMaterial given two instances of Material.
          */
-        contactMaterialTable: {
-            [key: string]: any;
-        };
+        contactMaterialTable: TupleDictionary;
         defaultMaterial: Material;
         /**
          * This contact material is used if no suitable contactmaterial is found for a contact.
@@ -19218,18 +20601,24 @@ declare namespace CANNON {
         /**
          * Dispatched after a body has been added to the world.
          */
+        addBodyEvent: {
+            type: string;
+            body: any;
+        };
         /**
          * Dispatched after a body has been removed from the world.
          */
-        idToBodyMap: {
-            [key: string]: Body;
+        removeBodyEvent: {
+            type: string;
+            body: any;
         };
+        idToBodyMap: {};
         /**
          * The physics world
          * @param options
          */
         constructor(options?: {
-            gravity?: feng3d.Vector3;
+            gravity?: Vec3;
             allowSleep?: boolean;
             broadphase?: Broadphase;
             solver?: Solver;
@@ -19244,12 +20633,30 @@ declare namespace CANNON {
          */
         getContactMaterial(m1: Material, m2: Material): any;
         /**
+         * Get number of objects in the world.
+         * @deprecated
+         */
+        numObjects(): number;
+        /**
          * Store old collision state info
          */
         collisionMatrixTick(): void;
         /**
-         *
+         * Add a rigid body to the simulation.
          * @param body
+         *
+         * @todo If the simulation has not yet started, why recrete and copy arrays for each body? Accumulate in dynamic arrays in this case.
+         * @todo Adding an array of bodies should be possible. This would save some loops too
+         * @deprecated Use .addBody instead
+         */
+        add(body: Body): void;
+        /**
+         * Add a rigid body to the simulation.
+         * @method add
+         * @param {Body} body
+         * @todo If the simulation has not yet started, why recrete and copy arrays for each body? Accumulate in dynamic arrays in this case.
+         * @todo Adding an array of bodies should be possible. This would save some loops too
+         * @deprecated Use .addBody instead
          */
         addBody(body: Body): void;
         /**
@@ -19263,6 +20670,53 @@ declare namespace CANNON {
          */
         removeConstraint(c: Constraint): void;
         /**
+         * Raycast test
+         * @param from
+         * @param to
+         * @param result
+         * @deprecated Use .raycastAll, .raycastClosest or .raycastAny instead.
+         */
+        rayTest(from: Vec3, to: Vec3, result: RaycastResult): void;
+        /**
+         * Ray cast against all bodies. The provided callback will be executed for each hit with a RaycastResult as single argument.
+         * @param from
+         * @param to
+         * @param options
+         * @param callback
+         * @return True if any body was hit.
+         */
+        raycastAll(from: Vec3, to: Vec3, options: {
+            collisionFilterMask?: number;
+            collisionFilterGroup?: number;
+            skipBackfaces?: boolean;
+            checkCollisionResponse?: boolean;
+            mode?: number;
+            from?: Vec3;
+            to?: Vec3;
+            callback?: Function;
+        }, callback: Function): boolean;
+        /**
+         * Ray cast, and stop at the first result. Note that the order is random - but the method is fast.
+         *
+         * @param from
+         * @param to
+         * @param options
+         * @param result
+         *
+         * @return True if any body was hit.
+         */
+        raycastAny(from: Vec3, to: Vec3, options: {
+            collisionFilterMask?: number;
+            collisionFilterGroup?: number;
+            skipBackfaces?: boolean;
+            checkCollisionResponse?: boolean;
+            mode?: number;
+            from?: Vec3;
+            to?: Vec3;
+            callback?: Function;
+            result?: RaycastResult;
+        }, result: RaycastResult): boolean;
+        /**
          * Ray cast, and return information of the closest hit.
          *
          * @param from
@@ -19272,14 +20726,30 @@ declare namespace CANNON {
          *
          * @return True if any body was hit.
          */
-        raycast(from: feng3d.Vector3, to: feng3d.Vector3, result: RaycastResult, mode?: number, skipBackfaces?: boolean): boolean;
+        raycastClosest(from: Vec3, to: Vec3, options: {
+            collisionFilterMask?: number;
+            collisionFilterGroup?: number;
+            skipBackfaces?: boolean;
+            checkCollisionResponse?: boolean;
+            mode?: number;
+            from?: Vec3;
+            to?: Vec3;
+            callback?: Function;
+            result?: RaycastResult;
+        }, result: RaycastResult): boolean;
+        /**
+         * Remove a rigid body from the simulation.
+         * @param body
+         * @deprecated Use .removeBody instead
+         */
+        remove(body: Body): void;
         /**
          * Remove a rigid body from the simulation.
          * @param body
          */
         removeBody(body: Body): void;
-        getBodyById(id: number): Body;
-        getShapeById(id: number): Shape;
+        getBodyById(id: number): any;
+        getShapeById(id: number): any;
         /**
          * Adds a material to the World.
          * @param m
@@ -19292,23 +20762,23 @@ declare namespace CANNON {
          */
         addContactMaterial(cmat: ContactMaterial): void;
         /**
-         * 让物理世界在时间上向前迈进。
+         * Step the physics world forward in time.
          *
-         * 有两种模式。简单的模式是固定的时间步长没有插值。在本例中，您只使用第一个参数。第二种情况使用插值。因为您还提供了函数上次使用以来的时间，以及要采取的最大固定时间步骤。
+         * There are two modes. The simple mode is fixed timestepping without interpolation. In this case you only use the first argument. The second case uses interpolation. In that you also provide the time since the function was last used, as well as the maximum fixed timesteps to take.
          *
-         * @param dt 使用固定时间步长。单位为s。
-         * @param timeSinceLastCalled 函数上次调用后经过的时间。单位为s。
-         * @param maxSubSteps 每个函数调用要执行的最大固定步骤数。
+         * @param dt                       The fixed time step size to use.
+         * @param timeSinceLastCalled    The time elapsed since the function was last called.
+         * @param maxSubSteps         Maximum number of fixed steps to take per function call.
          *
          * @example
-         *     // 固定的时间步进没有插值
+         *     // fixed timestepping without interpolation
          *     world.step(1/60);
+         *
+         * @see http://bulletphysics.org/mediawiki-1.5.8/index.php/Stepping_The_World
          */
         step(dt: number, timeSinceLastCalled: number, maxSubSteps: number): void;
         internalStep(dt: number): void;
-        additions: number[];
-        removals: number[];
-        emitContactEvents(): void;
+        emitContactEvents: () => void;
         /**
          * Sets all body forces in the world to zero.
          * @method clearForces
@@ -19321,16 +20791,24 @@ declare namespace CANNON {
         /**
          * Internal storage of pooled contact points.
          */
-        contactPointPool: ContactEquation[];
-        frictionEquationPool: FrictionEquation[];
-        result: ContactEquation[];
-        frictionResult: FrictionEquation[];
+        contactPointPool: any[];
+        frictionEquationPool: any[];
+        result: any[];
+        frictionResult: any[];
+        /**
+         * Pooled vectors.
+         */
+        v3pool: Vec3Pool;
         world: World;
         currentContactMaterial: any;
         enableFrictionReduction: boolean;
         /**
-         *
-         * @param world
+         * Helper class for the World. Generates ContactEquations.
+         * @class Narrowphase
+         * @constructor
+         * @todo Sphere-ConvexPolyhedron contacts
+         * @todo Contact reduction
+         * @todo  should move methods to prototype
          */
         constructor(world: World);
         /**
@@ -19343,8 +20821,8 @@ declare namespace CANNON {
          * @param overrideShapeA
          * @param overrideShapeB
          */
-        createContactEquation(bi: Body, bj: Body, si: Shape, sj: Shape, overrideShapeA: Shape, overrideShapeB: Shape): ContactEquation;
-        createFrictionEquationsFromContact(contactEquation: ContactEquation, outArray: FrictionEquation[]): boolean;
+        createContactEquation(bi: Body, bj: Body, si: Shape, sj: Shape, overrideShapeA: Shape, overrideShapeB: Shape): any;
+        createFrictionEquationsFromContact(contactEquation: any, outArray: FrictionEquation[]): boolean;
         createFrictionFromAverage(numContacts: number): void;
         /**
          * Generate all contacts between a list of body pairs
@@ -19355,24 +20833,48 @@ declare namespace CANNON {
          * @param {array} result Array to store generated contacts
          * @param {array} oldcontacts Optional. Array of reusable contact objects
          */
-        getContacts(p1: Body[], p2: Body[], world: World, result: ContactEquation[], oldcontacts: ContactEquation[], frictionResult: FrictionEquation[], frictionPool: FrictionEquation[]): void;
-        sphereSphere(si: Sphere, sj: Sphere, xi: feng3d.Vector3, xj: feng3d.Vector3, qi: feng3d.Quaternion, qj: feng3d.Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        getContacts(p1: Body[], p2: Body[], world: World, result: any[], oldcontacts: any[], frictionResult: any[], frictionPool: any[]): void;
+        boxBox(si: any, sj: any, xi: any, xj: any, qi: any, qj: any, bi: any, bj: any, rsi: any, rsj: any, justTest: any): boolean;
+        boxConvex(si: any, sj: any, xi: any, xj: any, qi: any, qj: any, bi: any, bj: any, rsi: any, rsj: any, justTest: any): boolean;
+        boxParticle(si: any, sj: any, xi: any, xj: any, qi: any, qj: any, bi: any, bj: any, rsi: any, rsj: any, justTest: any): boolean;
+        sphereSphere(si: Shape, sj: Shape, xi: Vec3, xj: Vec3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         /**
          * @method planeTrimesh
          * @param  {Shape}      si
          * @param  {Shape}      sj
-         * @param  {Vector3}       xi
-         * @param  {Vector3}       xj
+         * @param  {Vec3}       xi
+         * @param  {Vec3}       xj
          * @param  {Quaternion} qi
          * @param  {Quaternion} qj
          * @param  {Body}       bi
          * @param  {Body}       bj
          */
-        planeTrimesh(planeShape: Plane, trimeshShape: Trimesh, planeTransform: Transform, trimeshTransform: Transform, planeBody: Body, trimeshBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        sphereTrimesh(sphereShape: Sphere, trimeshShape: Trimesh, sphereTransform: Transform, trimeshTransform: Transform, sphereBody: Body, trimeshBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        spherePlane(si: Sphere, sj: Plane, transformi: Transform, transformj: Transform, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        planeParticle(sj: Plane, si: Particle, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-        sphereParticle(sj: Shape, si: Shape, xj: feng3d.Vector3, xi: feng3d.Vector3, qj: feng3d.Quaternion, qi: feng3d.Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        planeTrimesh(planeShape: Shape, trimeshShape: any, planePos: Vec3, trimeshPos: Vec3, planeQuat: Quaternion, trimeshQuat: Quaternion, planeBody: Body, trimeshBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereTrimesh(sphereShape: Shape, trimeshShape: any, spherePos: Vec3, trimeshPos: Vec3, sphereQuat: Quaternion, trimeshQuat: Quaternion, sphereBody: Body, trimeshBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        spherePlane(si: Shape, sj: Shape, xi: Vec3, xj: Vec3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereBox(si: Shape, sj: any, xi: Vec3, xj: Vec3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereConvex(si: Shape, sj: Shape, xi: Vec3, xj: Vec3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        planeBox(si: Shape, sj: Shape, xi: Vec3, xj: Vec3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        planeConvex(planeShape: Shape, convexShape: any, planePosition: Vec3, convexPosition: Vec3, planeQuat: Quaternion, convexQuat: Quaternion, planeBody: Body, convexBody: Body, si: Shape, sj: Shape, justTest: boolean): boolean;
+        convexConvex(si: any, sj: Shape, xi: Vec3, xj: Vec3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean, faceListA?: any[], faceListB?: any[]): boolean;
+        /**
+         * @method convexTrimesh
+         * @param  {Array}      result
+         * @param  {Shape}      si
+         * @param  {Shape}      sj
+         * @param  {Vec3}       xi
+         * @param  {Vec3}       xj
+         * @param  {Quaternion} qi
+         * @param  {Quaternion} qj
+         * @param  {Body}       bi
+         * @param  {Body}       bj
+         */
+        planeParticle(sj: Shape, si: Shape, xj: Vec3, xi: Vec3, qj: Quaternion, qi: Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereParticle(sj: Shape, si: Shape, xj: Vec3, xi: Vec3, qj: Quaternion, qi: Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        convexParticle(sj: any, si: Shape, xj: Vec3, xi: Vec3, qj: Quaternion, qi: Quaternion, bj: Body, bi: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        boxHeightfield(si: Shape, sj: Shape, xi: Vec3, xj: Vec3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        convexHeightfield(convexShape: Shape, hfShape: any, convexPos: Vec3, hfPos: Vec3, convexQuat: Quaternion, hfQuat: Quaternion, convexBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+        sphereHeightfield(sphereShape: Shape, hfShape: any, spherePos: Vec3, hfPos: Vec3, sphereQuat: Quaternion, hfQuat: Quaternion, sphereBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
     }
 }
 declare namespace feng3d {

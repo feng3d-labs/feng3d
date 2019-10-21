@@ -1,18 +1,15 @@
 namespace CANNON
 {
-    /**
-     * 点到点约束
-     */
     export class PointToPointConstraint extends Constraint
     {
         /**
-         * 物体A的中心点
+         * Pivot, defined locally in bodyA.
          */
-        pivotA: feng3d.Vector3;
+        pivotA: Vec3;
         /**
-         * 物体B的中心点
+         * Pivot, defined locally in bodyB.
          */
-        pivotB: feng3d.Vector3;
+        pivotB: Vec3;
         equationX: ContactEquation;
         equationY: ContactEquation;
         equationZ: ContactEquation;
@@ -40,13 +37,15 @@ namespace CANNON
          *     var constraint = new PointToPointConstraint(bodyA, localPivotA, bodyB, localPivotB);
          *     world.addConstraint(constraint);
          */
-        constructor(bodyA: Body, pivotA = new feng3d.Vector3(), bodyB: Body, pivotB = new feng3d.Vector3(), maxForce = 1e6)
+        constructor(bodyA: Body, pivotA: Vec3, bodyB: Body, pivotB: Vec3, maxForce?: number)
         {
             super(bodyA, bodyB);
 
-            this.pivotA = pivotA.clone();
+            maxForce = typeof (maxForce) !== 'undefined' ? maxForce : 1e6;
 
-            this.pivotB = pivotB.clone();
+            this.pivotA = pivotA ? pivotA.clone() : new Vec3();
+
+            this.pivotB = pivotB ? pivotB.clone() : new Vec3();
 
             var x = this.equationX = new ContactEquation(bodyA, bodyB);
 
@@ -61,9 +60,9 @@ namespace CANNON
             x.minForce = y.minForce = z.minForce = -maxForce;
             x.maxForce = y.maxForce = z.maxForce = maxForce;
 
-            x.ni.init(1, 0, 0);
-            y.ni.init(0, 1, 0);
-            z.ni.init(0, 0, 1);
+            x.ni.set(1, 0, 0);
+            y.ni.set(0, 1, 0);
+            z.ni.set(0, 0, 1);
         }
 
         update()
@@ -75,8 +74,8 @@ namespace CANNON
             var z = this.equationZ;
 
             // Rotate the pivots to world space
-            bodyA.quaternion.rotatePoint(this.pivotA, x.ri);
-            bodyB.quaternion.rotatePoint(this.pivotB, x.rj);
+            bodyA.quaternion.vmult(this.pivotA, x.ri);
+            bodyB.quaternion.vmult(this.pivotB, x.rj);
 
             y.ri.copy(x.ri);
             y.rj.copy(x.rj);

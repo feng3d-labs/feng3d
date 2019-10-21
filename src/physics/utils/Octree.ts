@@ -5,36 +5,37 @@ namespace CANNON
         /**
          * The root node
          */
-        root: OctreeNode = null;
+        root: OctreeNode;
 
         /**
          * Boundary of this node
          */
-        aabb = new feng3d.AABB();
+        aabb: AABB;
         /**
          * Contained data at the current node level.
+         * @property {Array} data
          */
-        data: number[];
+        data: any[];
 
         /**
          * Children to this node
          */
-        children: OctreeNode[] = [];
+        children: OctreeNode[];
         maxDepth: number;
 
         /**
          * 
          * @param options 
          */
-        constructor(root: Octree = null, aabb = new feng3d.AABB())
+        constructor(options: { root?: Octree, aabb?: AABB } = {})
         {
-            this.root = root;
-            this.aabb = aabb.clone();
+            this.root = options.root || null;
+            this.aabb = options.aabb ? options.aabb.clone() : new AABB();
             this.data = [];
             this.children = [];
         }
 
-        reset()
+        reset(aabb?: AABB, options?: any)
         {
             this.children.length = this.data.length = 0;
         }
@@ -46,7 +47,7 @@ namespace CANNON
          * @param elementData
          * @return True if successful, otherwise false
          */
-        insert(aabb: feng3d.AABB, elementData: number, level = 0)
+        insert(aabb: AABB, elementData: any, level = 0)
         {
             var nodeData = this.data;
 
@@ -96,25 +97,24 @@ namespace CANNON
         subdivide()
         {
             var aabb = this.aabb;
-            var l = aabb.min;
-            var u = aabb.max;
+            var l = aabb.lowerBound;
+            var u = aabb.upperBound;
 
             var children = this.children;
 
             children.push(
-                new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(0, 0, 0))),
-                new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(1, 0, 0))),
-                new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(1, 1, 0))),
-                new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(1, 1, 1))),
-                new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(0, 1, 1))),
-                new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(0, 0, 1))),
-                new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(1, 0, 1))),
-                new OctreeNode(null, new feng3d.AABB(new feng3d.Vector3(0, 1, 0)))
+                new OctreeNode({ aabb: new AABB({ lowerBound: new Vec3(0, 0, 0) }) }),
+                new OctreeNode({ aabb: new AABB({ lowerBound: new Vec3(1, 0, 0) }) }),
+                new OctreeNode({ aabb: new AABB({ lowerBound: new Vec3(1, 1, 0) }) }),
+                new OctreeNode({ aabb: new AABB({ lowerBound: new Vec3(1, 1, 1) }) }),
+                new OctreeNode({ aabb: new AABB({ lowerBound: new Vec3(0, 1, 1) }) }),
+                new OctreeNode({ aabb: new AABB({ lowerBound: new Vec3(0, 0, 1) }) }),
+                new OctreeNode({ aabb: new AABB({ lowerBound: new Vec3(1, 0, 1) }) }),
+                new OctreeNode({ aabb: new AABB({ lowerBound: new Vec3(0, 1, 0) }) })
             );
 
-            var halfDiagonal = new feng3d.Vector3();
-            u.subTo(l, halfDiagonal);
-            halfDiagonal.scaleNumberTo(0.5, halfDiagonal);
+            u.vsub(l, halfDiagonal);
+            halfDiagonal.scale(0.5, halfDiagonal);
 
             var root = this.root || this;
 
@@ -126,15 +126,15 @@ namespace CANNON
                 child.root = root;
 
                 // Compute bounds
-                var lowerBound = child.aabb.min;
+                var lowerBound = child.aabb.lowerBound;
                 lowerBound.x *= halfDiagonal.x;
                 lowerBound.y *= halfDiagonal.y;
                 lowerBound.z *= halfDiagonal.z;
 
-                lowerBound.addTo(l, lowerBound);
+                lowerBound.vadd(l, lowerBound);
 
                 // Upper bound is always lower bound + halfDiagonal
-                lowerBound.addTo(halfDiagonal, child.aabb.max);
+                lowerBound.vadd(halfDiagonal, child.aabb.upperBound);
             }
         }
 
@@ -145,13 +145,32 @@ namespace CANNON
          * @param result
          * @return The "result" object
          */
-        aabbQuery(aabb: feng3d.AABB, result: number[])
+        aabbQuery(aabb: AABB, result: any[])
         {
+            var nodeData = this.data;
+
+            // abort if the range does not intersect this node
+            // if (!this.aabb.overlaps(aabb)){
+            //     return result;
+            // }
+
+            // Add objects at this level
+            // Array.prototype.push.apply(result, nodeData);
+
+            // Add child data
+            // @todo unwrap recursion into a queue / loop, that's faster in JS
+            var children = this.children;
+
+
+            // for (var i = 0, N = this.children.length; i !== N; i++) {
+            //     children[i].aabbQuery(aabb, result);
+            // }
+
             var queue = [this];
             while (queue.length)
             {
                 var node = queue.pop();
-                if (node.aabb.intersects(aabb))
+                if (node.aabb.overlaps(aabb))
                 {
                     Array.prototype.push.apply(result, node.data);
                 }
@@ -169,16 +188,15 @@ namespace CANNON
          * @param result
          * @return The "result" object
          */
-        rayQuery(ray: Ray, treeTransform: Transform, result: number[])
+        rayQuery(ray: Ray, treeTransform: Transform, result: any[])
         {
-            var tmpAABB = new feng3d.AABB();
+
+            // Use aabb query for now.
+            // @todo implement real ray query which needs less lookups
             ray.getAABB(tmpAABB);
-
-            var mat = treeTransform.toMatrix3D();
-            mat.invert();
-            tmpAABB.applyMatrix3D(mat);
-
+            tmpAABB.toLocalFrame(treeTransform, tmpAABB);
             this.aabbQuery(tmpAABB, result);
+
             return result;
         }
 
@@ -200,22 +218,31 @@ namespace CANNON
         }
     }
 
-    /**
-     * 八叉树
-     */
     export class Octree extends OctreeNode
     {
         /**
-         * 最大细分深度
+         * Maximum subdivision depth
          */
-        maxDepth = 8;
+        maxDepth: number;
 
         /**
-         * 
+         * @class Octree
+         * @param {AABB} aabb The total AABB of the tree
+         * @param {object} [options]
+         * @param {number} [options.maxDepth=8]
+         * @extends OctreeNode
          */
-        constructor()
+        constructor(aabb?: AABB, options: { root?: any, aabb?: AABB, maxDepth?: number } = {})
         {
-            super();
+            super(options);
+            options.root = null;
+            options.aabb = aabb;
+
+            this.maxDepth = typeof (options.maxDepth) !== 'undefined' ? options.maxDepth : 8;
         }
     }
+
+    var halfDiagonal = new Vec3();
+
+    var tmpAABB = new AABB();
 }

@@ -1,35 +1,32 @@
 namespace CANNON
 {
-    /**
-     * 球体
-     */
     export class Sphere extends Shape
     {
-        type = ShapeType.SPHERE;
-
-        /**
-         * 半径
-         */
         radius: number;
 
         /**
-         * 球体
+         * Spherical shape
          * 
-         * @param radius 半径
+         * @param radius The radius of the sphere, a non-negative number.
          * @author schteppe / http://github.com/schteppe
          */
-        constructor(radius = 1)
+        constructor(radius: number)
         {
-            super();
+            super({
+                type: Shape.types.SPHERE
+            });
 
-            this.radius = radius;
+            this.radius = radius !== undefined ? radius : 1.0;
 
-            console.assert(radius >= 0, `球面半径不能是负的。`);
+            if (this.radius < 0)
+            {
+                throw new Error('The sphere radius cannot be negative.');
+            }
 
             this.updateBoundingSphereRadius();
         }
 
-        calculateLocalInertia(mass: number, target = new feng3d.Vector3())
+        calculateLocalInertia(mass: number, target = new Vec3())
         {
             var I = 2.0 * mass * this.radius * this.radius / 5.0;
             target.x = I;
@@ -48,10 +45,17 @@ namespace CANNON
             this.boundingSphereRadius = this.radius;
         }
 
-        calculateWorldAABB(pos: feng3d.Vector3, quat: feng3d.Quaternion, min: feng3d.Vector3, max: feng3d.Vector3)
+        calculateWorldAABB(pos: Vec3, quat: Quaternion, min: Vec3, max: Vec3)
         {
-            pos.subNumberTo(this.radius, min);
-            pos.addNumberTo(this.radius, max);
+            var r = this.radius;
+            var axes = ['x', 'y', 'z'];
+            for (var i = 0; i < axes.length; i++)
+            {
+                var ax = axes[i];
+                min[ax] = pos[ax] - r;
+                max[ax] = pos[ax] + r;
+            }
         }
+
     }
 }

@@ -6,17 +6,17 @@ namespace CANNON
         /**
          * Rest length of the spring.
          */
-        restLength = 1;
+        restLength: number;
 
         /**
          * Stiffness of the spring.
          */
-        stiffness = 100;
+        stiffness: number;
 
         /**
          * Damping of the spring.
          */
-        damping = 1;
+        damping: number;
 
         /**
          * First connected body.
@@ -31,12 +31,12 @@ namespace CANNON
         /**
          * Anchor for bodyA in local bodyA coordinates.
          */
-        localAnchorA = new feng3d.Vector3();
+        localAnchorA: Vec3;
 
         /**
          * Anchor for bodyB in local bodyB coordinates.
          */
-        localAnchorB = new feng3d.Vector3();
+        localAnchorB: Vec3;
 
         /**
          * A spring, connecting two bodies.
@@ -45,17 +45,44 @@ namespace CANNON
          * @param bodyB 
          * @param options 
          */
-        constructor(bodyA: Body, bodyB: Body)
+        constructor(bodyA: Body, bodyB: Body, options: { restLength?: number, stiffness?: number, damping?: number, localAnchorA?: Vec3, localAnchorB?: Vec3, worldAnchorA?: Vec3, worldAnchorB?: Vec3 } = {})
         {
+            this.restLength = typeof (options.restLength) === "number" ? options.restLength : 1;
+
+            this.stiffness = options.stiffness || 100;
+
+            this.damping = options.damping || 1;
+
             this.bodyA = bodyA;
+
             this.bodyB = bodyB;
+
+            this.localAnchorA = new Vec3();
+            this.localAnchorB = new Vec3();
+
+            if (options.localAnchorA)
+            {
+                this.localAnchorA.copy(options.localAnchorA);
+            }
+            if (options.localAnchorB)
+            {
+                this.localAnchorB.copy(options.localAnchorB);
+            }
+            if (options.worldAnchorA)
+            {
+                this.setWorldAnchorA(options.worldAnchorA);
+            }
+            if (options.worldAnchorB)
+            {
+                this.setWorldAnchorB(options.worldAnchorB);
+            }
         }
 
         /**
          * Set the anchor point on body A, using world coordinates.
          * @param worldAnchorA
          */
-        setWorldAnchorA(worldAnchorA: feng3d.Vector3)
+        setWorldAnchorA(worldAnchorA: Vec3)
         {
             this.bodyA.pointToLocalFrame(worldAnchorA, this.localAnchorA);
         }
@@ -64,7 +91,7 @@ namespace CANNON
          * Set the anchor point on body B, using world coordinates.
          * @param worldAnchorB
          */
-        setWorldAnchorB(worldAnchorB: feng3d.Vector3)
+        setWorldAnchorB(worldAnchorB: Vec3)
         {
             this.bodyB.pointToLocalFrame(worldAnchorB, this.localAnchorB);
         }
@@ -73,7 +100,7 @@ namespace CANNON
          * Get the anchor point on body A, in world coordinates.
          * @param result The vector to store the result in.
          */
-        getWorldAnchorA(result: feng3d.Vector3)
+        getWorldAnchorA(result: Vec3)
         {
             this.bodyA.pointToWorldFrame(this.localAnchorA, result);
         }
@@ -82,7 +109,7 @@ namespace CANNON
          * Get the anchor point on body B, in world coordinates.
          * @param result The vector to store the result in.
          */
-        getWorldAnchorB(result: feng3d.Vector3)
+        getWorldAnchorB(result: Vec3)
         {
             this.bodyB.pointToWorldFrame(this.localAnchorB, result);
         }
@@ -96,52 +123,70 @@ namespace CANNON
                 d = this.damping,
                 l = this.restLength,
                 bodyA = this.bodyA,
-                bodyB = this.bodyB;
+                bodyB = this.bodyB,
+                r = applyForce_r,
+                r_unit = applyForce_r_unit,
+                u = applyForce_u,
+                f = applyForce_f,
+                tmp = applyForce_tmp;
 
-            var worldAnchorA = new feng3d.Vector3(),
-                worldAnchorB = new feng3d.Vector3(),
-                ri = new feng3d.Vector3(),
-                rj = new feng3d.Vector3(),
-                ri_x_f = new feng3d.Vector3(),
-                rj_x_f = new feng3d.Vector3();
+            var worldAnchorA = applyForce_worldAnchorA,
+                worldAnchorB = applyForce_worldAnchorB,
+                ri = applyForce_ri,
+                rj = applyForce_rj,
+                ri_x_f = applyForce_ri_x_f,
+                rj_x_f = applyForce_rj_x_f;
 
             // Get world anchors
             this.getWorldAnchorA(worldAnchorA);
             this.getWorldAnchorB(worldAnchorB);
 
             // Get offset points
-            worldAnchorA.subTo(bodyA.position, ri);
-            worldAnchorB.subTo(bodyB.position, rj);
+            worldAnchorA.vsub(bodyA.position, ri);
+            worldAnchorB.vsub(bodyB.position, rj);
 
             // Compute distance vector between world anchor points
-            var r = worldAnchorB.subTo(worldAnchorA, r);
-            var rlen = r.length;
-            var r_unit = r.clone();
+            worldAnchorB.vsub(worldAnchorA, r);
+            var rlen = r.norm();
+            r_unit.copy(r);
             r_unit.normalize();
 
             // Compute relative velocity of the anchor points, u
-            var u = bodyB.velocity.subTo(bodyA.velocity);
+            bodyB.velocity.vsub(bodyA.velocity, u);
             // Add rotational velocity
 
-            var tmp = bodyB.angularVelocity.crossTo(rj);
-            u.addTo(tmp, u);
-            bodyA.angularVelocity.crossTo(ri, tmp);
-            u.subTo(tmp, u);
+            bodyB.angularVelocity.cross(rj, tmp);
+            u.vadd(tmp, u);
+            bodyA.angularVelocity.cross(ri, tmp);
+            u.vsub(tmp, u);
 
             // F = - k * ( x - L ) - D * ( u )
-            var f = r_unit.scaleNumberTo(-k * (rlen - l) - d * u.dot(r_unit));
+            r_unit.mult(-k * (rlen - l) - d * u.dot(r_unit), f);
 
             // Add forces to bodies
-            bodyA.force.subTo(f, bodyA.force);
-            bodyB.force.addTo(f, bodyB.force);
+            bodyA.force.vsub(f, bodyA.force);
+            bodyB.force.vadd(f, bodyB.force);
 
             // Angular force
-            ri.crossTo(f, ri_x_f);
-            rj.crossTo(f, rj_x_f);
-            bodyA.torque.subTo(ri_x_f, bodyA.torque);
-            bodyB.torque.addTo(rj_x_f, bodyB.torque);
+            ri.cross(f, ri_x_f);
+            rj.cross(f, rj_x_f);
+            bodyA.torque.vsub(ri_x_f, bodyA.torque);
+            bodyB.torque.vadd(rj_x_f, bodyB.torque);
         }
 
     }
+
+    var applyForce_r = new Vec3();
+    var applyForce_r_unit = new Vec3();
+    var applyForce_u = new Vec3();
+    var applyForce_f = new Vec3();
+    var applyForce_worldAnchorA = new Vec3();
+    var applyForce_worldAnchorB = new Vec3();
+    var applyForce_ri = new Vec3();
+    var applyForce_rj = new Vec3();
+    var applyForce_ri_x_f = new Vec3();
+    var applyForce_rj_x_f = new Vec3();
+    var applyForce_tmp = new Vec3();
+
 }
 

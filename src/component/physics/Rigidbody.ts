@@ -17,9 +17,9 @@ namespace feng3d
 
         init()
         {
-            this.body = new CANNON.Body(this.mass);
+            this.body = new CANNON.Body({ mass: this.mass });
 
-            this.body.position = this.transform.position;
+            this.body.position = new CANNON.Vec3(this.transform.x, this.transform.y, this.transform.z);
 
             var colliders = this.gameObject.getComponents(Collider);
             colliders.forEach(element =>
@@ -37,7 +37,7 @@ namespace feng3d
             var scene3D = this.getComponentsInParents(Scene3D)[0];
             if (scene3D)
             {
-                this.transform.position = this.body.position;
+                this.transform.position = new Vector3(this.body.position.x, this.body.position.y, this.body.position.z);
             }
         }
     }

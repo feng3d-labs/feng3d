@@ -1,29 +1,6 @@
 namespace CANNON
 {
-
-    export interface BodyEventMap
-    {
-
-        wakeup: any;
-
-        sleepy: any;
-
-        sleep: any;
-
-        collide: { body: Body, contact: ContactEquation }
-
-    }
-
-    export interface Body
-    {
-        once<K extends keyof BodyEventMap>(type: K, listener: (event: feng3d.Event<BodyEventMap[K]>) => void, thisObject?: any, priority?: number): void;
-        dispatch<K extends keyof BodyEventMap>(type: K, data?: BodyEventMap[K], bubbles?: boolean): feng3d.Event<BodyEventMap[K]>;
-        has<K extends keyof BodyEventMap>(type: K): boolean;
-        on<K extends keyof BodyEventMap>(type: K, listener: (event: feng3d.Event<BodyEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
-        off<K extends keyof BodyEventMap>(type?: K, listener?: (event: feng3d.Event<BodyEventMap[K]>) => any, thisObject?: any): void;
-    }
-
-    export class Body extends feng3d.EventDispatcher
+    export class Body extends EventTarget
     {
 
         id: number;
@@ -31,238 +8,184 @@ namespace CANNON
         /**
          * Reference to the world the body is living in
          */
-        world: World = null;
+        world: World;
 
-        vlambda = new feng3d.Vector3();
+        /**
+         * Callback function that is used BEFORE stepping the system. Use it to apply forces, for example. Inside the function, "this" will refer to this Body object.
+         * @deprecated Use World events instead
+         */
+        preStep: Function;
 
-        collisionFilterGroup = 1;
+        /**
+         * Callback function that is used AFTER stepping the system. Inside the function, "this" will refer to this Body object.
+         * @deprecated Use World events instead
+         */
+        postStep: Function;
 
-        collisionFilterMask = -1;
+        vlambda: Vec3;
+
+        collisionFilterGroup: number;
+
+        collisionFilterMask: number;
 
         /**
          * Whether to produce contact forces when in contact with other bodies. Note that contacts will be generated, but they will be disabled.
          */
-        collisionResponse = true;
+        collisionResponse: boolean;
 
         /**
          * World space position of the body.
          */
-        get position()
-        {
-            return this._position;
-        }
-        set position(v)
-        {
-            this._position.copy(v);
+        position: Vec3;
 
-            this.previousPosition.copy(v);
-            this.interpolatedPosition.copy(v);
-            this.initPosition.copy(v);
-        }
-        private _position = new feng3d.Vector3();
-
-        previousPosition = new feng3d.Vector3();
+        previousPosition: Vec3;
 
         /**
          * Interpolated position of the body.
          */
-        interpolatedPosition = new feng3d.Vector3();
+        interpolatedPosition: Vec3;
 
         /**
          * Initial position of the body
          */
-        initPosition = new feng3d.Vector3();
+        initPosition: Vec3;
 
         /**
          * World space velocity of the body.
          */
-        get velocity()
-        {
-            return this._velocity;
-        }
-        set velocity(v)
-        {
-            this._velocity.copy(v);
-        }
+        velocity: Vec3;
 
-        private _velocity = new feng3d.Vector3();
-
-        initVelocity = new feng3d.Vector3();
+        initVelocity: Vec3;
 
         /**
          * Linear force on the body in world space.
          */
-        force = new feng3d.Vector3();
+        force: Vec3;
 
-        get mass()
-        {
-            return this._mass;
-        }
-        set mass(v)
-        {
-            this._mass = v;
-            this.invMass = v > 0 ? 1.0 / v : 0;
-            this.type = (v <= 0.0 ? Body.STATIC : Body.DYNAMIC);
-        }
-        private _mass = 0;
+        mass: number;
 
-        invMass = 0;
+        invMass: number;
 
-        material: Material = null;
+        material: Material;
 
-        linearDamping = 0.01;
+        linearDamping: number;
 
         /**
          * One of: Body.DYNAMIC, Body.STATIC and Body.KINEMATIC.
          */
-        type = Body.STATIC;
+        type: number;
 
         /**
          * If true, the body will automatically fall to sleep.
          */
-        allowSleep = true;
+        allowSleep: boolean;
 
         /**
          * Current sleep state.
          */
-        sleepState = 0;
+        sleepState: number;
 
         /**
          * If the speed (the norm of the velocity) is smaller than this value, the body is considered sleepy.
          */
-        sleepSpeedLimit = 0.1;
+        sleepSpeedLimit: number;
 
         /**
          * If the body has been sleepy for this sleepTimeLimit seconds, it is considered sleeping.
          */
-        sleepTimeLimit = 1;
+        sleepTimeLimit: number;
 
-        timeLastSleepy = 0;
+        timeLastSleepy: number;
 
-        _wakeUpAfterNarrowphase = false;
+        private _wakeUpAfterNarrowphase: boolean;
 
         /**
          * World space rotational force on the body, around center of mass.
          */
-        torque = new feng3d.Vector3();
+        torque: Vec3;
 
         /**
          * World space orientation of the body.
          */
-        get quaternion()
-        {
-            return this._quaternion;
-        }
-        set quaternion(v)
-        {
-            this._quaternion.copy(v);
+        quaternion: Quaternion;
 
-            this.initQuaternion.copy(v);
-            this.previousQuaternion.copy(v);
-            this.interpolatedQuaternion.copy(v);
-        }
+        initQuaternion: Quaternion;
 
-        private _quaternion = new feng3d.Quaternion();
-
-        initQuaternion = new feng3d.Quaternion();
-
-        previousQuaternion = new feng3d.Quaternion();
+        previousQuaternion: Quaternion;
 
         /**
          * Interpolated orientation of the body.
          */
-        interpolatedQuaternion = new feng3d.Quaternion();
+        interpolatedQuaternion: Quaternion;
 
 
         /**
          * Angular velocity of the body, in world space. Think of the angular velocity as a vector, which the body rotates around. The length of this vector determines how fast (in radians per second) the body rotates.
          */
-        get angularVelocity()
-        {
-            return this._angularVelocity;
-        }
-        set angularVelocity(v)
-        {
-            this._angularVelocity.copy(v);
-        }
+        angularVelocity: Vec3;
 
-        private _angularVelocity = new feng3d.Vector3();
 
-        initAngularVelocity = new feng3d.Vector3();
+        initAngularVelocity: Vec3;
 
-        shapes: Shape[] = [];
+        shapes: Shape[];
 
         /**
          * Position of each Shape in the body, given in local Body space.
          */
-        shapeOffsets: feng3d.Vector3[] = [];
+        shapeOffsets: Vec3[];
 
         /**
          * Orientation of each Shape, given in local Body space.
          */
-        shapeOrientations: feng3d.Quaternion[] = [];
+        shapeOrientations: Quaternion[];
 
-        inertia = new feng3d.Vector3();
+        inertia: Vec3;
 
-        invInertia = new feng3d.Vector3();
+        invInertia: Vec3;
 
-        invInertiaWorld = new feng3d.Matrix3x3();
+        invInertiaWorld: Mat3;
 
-        invMassSolve = 0;
+        invMassSolve: number;
 
-        invInertiaSolve = new feng3d.Vector3();
+        invInertiaSolve: Vec3;
 
-        invInertiaWorldSolve = new feng3d.Matrix3x3();
+        invInertiaWorldSolve: Mat3;
 
         /**
          * Set to true if you don't want the body to rotate. Make sure to run .updateMassProperties() after changing this.
          */
-        fixedRotation = false;
+        fixedRotation: boolean;
 
-        angularDamping = 0.01;
+        angularDamping: number;
 
         /**
          * Use this property to limit the motion along any world axis. (1,1,1) will allow motion along all axes while (0,0,0) allows none.
          */
-        get linearFactor()
-        {
-            return this._linearFactor;
-        }
-        set linearFactor(v)
-        {
-            this._linearFactor.copy(v);
-        }
-        private _linearFactor = new feng3d.Vector3(1, 1, 1);
+        linearFactor: Vec3;
 
         /**
          * Use this property to limit the rotational motion along any world axis. (1,1,1) will allow rotation along all axes while (0,0,0) allows none.
          */
-        get angularFactor()
-        {
-            return this._angularFactor;
-        }
-        set angularFactor(v)
-        {
-            this._angularFactor.copy(v);
-        }
-        private _angularFactor = new feng3d.Vector3(1, 1, 1);
+        angularFactor: Vec3;
 
         /**
          * World space bounding box of the body and its shapes.
          */
-        aabb = new feng3d.AABB();
+        aabb: AABB;
 
         /**
          * Indicates if the AABB needs to be updated before use.
          */
-        aabbNeedsUpdate = true;
+        aabbNeedsUpdate: boolean;
 
         /**
          * Total bounding radius of the Body including its shapes, relative to body.position.
          */
-        boundingRadius = 0;
+        boundingRadius: number;
 
-        wlambda = new feng3d.Vector3();
+        wlambda: Vec3;
+
+        shape: Shape;
 
         index: number;
 
@@ -280,16 +203,120 @@ namespace CANNON
          *     body.addShape(shape);
          *     world.addBody(body);
          */
-        constructor(mass = 0)
+        constructor(options: {
+            collisionFilterGroup?: number, collisionFilterMask?: number, position?: Vec3, velocity?: Vec3,
+            material?: Material, mass?: number, linearDamping?: number, type?: number, allowSleep?: boolean,
+            sleepSpeedLimit?: number, sleepTimeLimit?: number, quaternion?: Quaternion, angularVelocity?: Vec3,
+            fixedRotation?: boolean, angularDamping?: number, linearFactor?: Vec3, angularFactor?: Vec3, shape?: Shape,
+        } = {}, a = undefined)
         {
             super();
 
             this.id = Body.idCounter++;
+            this.world = null;
+            this.preStep = null;
+            this.postStep = null;
+            this.vlambda = new Vec3();
+            this.collisionFilterGroup = typeof (options.collisionFilterGroup) === 'number' ? options.collisionFilterGroup : 1;
+            this.collisionFilterMask = typeof (options.collisionFilterMask) === 'number' ? options.collisionFilterMask : -1;
+            this.collisionResponse = true;
+            this.position = new Vec3();
+            this.previousPosition = new Vec3();
+            this.interpolatedPosition = new Vec3();
+            this.initPosition = new Vec3();
 
+            if (options.position)
+            {
+                this.position.copy(options.position);
+                this.previousPosition.copy(options.position);
+                this.interpolatedPosition.copy(options.position);
+                this.initPosition.copy(options.position);
+            }
+            this.velocity = new Vec3();
+
+            if (options.velocity)
+            {
+                this.velocity.copy(options.velocity);
+            }
+
+            this.initVelocity = new Vec3();
+            this.force = new Vec3();
+
+            var mass = typeof (options.mass) === 'number' ? options.mass : 0;
             this.mass = mass;
+            this.invMass = mass > 0 ? 1.0 / mass : 0;
+            this.material = options.material || null;
+            this.linearDamping = typeof (options.linearDamping) === 'number' ? options.linearDamping : 0.01;
+            this.type = (mass <= 0.0 ? Body.STATIC : Body.DYNAMIC);
+            if (typeof (options.type) === typeof (Body.STATIC))
+            {
+                this.type = options.type;
+            }
+            this.allowSleep = typeof (options.allowSleep) !== 'undefined' ? options.allowSleep : true;
+            this.sleepState = 0;
+            this.sleepSpeedLimit = typeof (options.sleepSpeedLimit) !== 'undefined' ? options.sleepSpeedLimit : 0.1;
+            this.sleepTimeLimit = typeof (options.sleepTimeLimit) !== 'undefined' ? options.sleepTimeLimit : 1;
+
+            this.timeLastSleepy = 0;
+
+            this._wakeUpAfterNarrowphase = false;
+            this.torque = new Vec3();
+            this.quaternion = new Quaternion();
+            this.initQuaternion = new Quaternion();
+            this.previousQuaternion = new Quaternion();
+            this.interpolatedQuaternion = new Quaternion();
+
+            if (options.quaternion)
+            {
+                this.quaternion.copy(options.quaternion);
+                this.initQuaternion.copy(options.quaternion);
+                this.previousQuaternion.copy(options.quaternion);
+                this.interpolatedQuaternion.copy(options.quaternion);
+            }
+            this.angularVelocity = new Vec3();
+
+            if (options.angularVelocity)
+            {
+                this.angularVelocity.copy(options.angularVelocity);
+            }
+            this.initAngularVelocity = new Vec3();
+            this.shapes = [];
+            this.shapeOffsets = [];
+            this.shapeOrientations = [];
+            this.inertia = new Vec3();
+            this.invInertia = new Vec3();
+            this.invInertiaWorld = new Mat3();
+
+            this.invMassSolve = 0;
+            this.invInertiaSolve = new Vec3();
+            this.invInertiaWorldSolve = new Mat3();
+            this.fixedRotation = typeof (options.fixedRotation) !== "undefined" ? options.fixedRotation : false;
+            this.angularDamping = typeof (options.angularDamping) !== 'undefined' ? options.angularDamping : 0.01;
+            this.linearFactor = new Vec3(1, 1, 1);
+            if (options.linearFactor)
+            {
+                this.linearFactor.copy(options.linearFactor);
+            }
+            this.angularFactor = new Vec3(1, 1, 1);
+            if (options.angularFactor)
+            {
+                this.angularFactor.copy(options.angularFactor);
+            }
+            this.aabb = new AABB();
+            this.aabbNeedsUpdate = true;
+            this.boundingRadius = 0;
+
+            this.wlambda = new Vec3();
+
+            if (options.shape)
+            {
+                this.addShape(options.shape);
+            }
 
             this.updateMassProperties();
         }
+
+        static COLLIDE_EVENT_NAME = "collide";
 
         /**
          * A dynamic body is fully simulated. Can be moved manually by the user, but normally they move according to forces. A dynamic body can collide with all body types. A dynamic body always has finite, non-zero mass.
@@ -315,6 +342,13 @@ namespace CANNON
         static idCounter = 0;
 
         /**
+         * Dispatched after a sleeping body has woken up.
+         */
+        static wakeupEvent = {
+            type: "wakeup"
+        }
+
+        /**
          * Wake the body up.
          */
         wakeUp()
@@ -324,7 +358,7 @@ namespace CANNON
             this._wakeUpAfterNarrowphase = false;
             if (s === Body.SLEEPING)
             {
-                this.dispatch("wakeup");
+                this.dispatchEvent(Body.wakeupEvent);
             }
         }
 
@@ -334,10 +368,25 @@ namespace CANNON
         sleep()
         {
             this.sleepState = Body.SLEEPING;
-            this.velocity.init(0, 0, 0);
-            this.angularVelocity.init(0, 0, 0);
+            this.velocity.set(0, 0, 0);
+            this.angularVelocity.set(0, 0, 0);
             this._wakeUpAfterNarrowphase = false;
         }
+
+        /**
+         * Dispatched after a body has gone in to the sleepy state.
+         */
+        static sleepyEvent = {
+            type: "sleepy"
+        };
+
+        /**
+         * Dispatched after a body has fallen asleep.
+         * @event sleep
+         */
+        static sleepEvent = {
+            type: "sleep"
+        };
 
         /**
          * Called every timestep to update internal sleep timer and change sleep state if needed.
@@ -347,20 +396,20 @@ namespace CANNON
             if (this.allowSleep)
             {
                 var sleepState = this.sleepState;
-                var speedSquared = this.velocity.lengthSquared + this.angularVelocity.lengthSquared;
+                var speedSquared = this.velocity.norm2() + this.angularVelocity.norm2();
                 var speedLimitSquared = Math.pow(this.sleepSpeedLimit, 2);
                 if (sleepState === Body.AWAKE && speedSquared < speedLimitSquared)
                 {
                     this.sleepState = Body.SLEEPY; // Sleepy
                     this.timeLastSleepy = time;
-                    this.dispatch("sleepy");
+                    this.dispatchEvent(Body.sleepyEvent);
                 } else if (sleepState === Body.SLEEPY && speedSquared > speedLimitSquared)
                 {
                     this.wakeUp(); // Wake up
                 } else if (sleepState === Body.SLEEPY && (time - this.timeLastSleepy) > this.sleepTimeLimit)
                 {
                     this.sleep(); // Sleeping
-                    this.dispatch("sleep");
+                    this.dispatchEvent(Body.sleepEvent);
                 }
             }
         }
@@ -389,10 +438,11 @@ namespace CANNON
          * @param worldPoint
          * @param result
          */
-        pointToLocalFrame(worldPoint: feng3d.Vector3, result = new feng3d.Vector3())
+        pointToLocalFrame(worldPoint: Vec3, result: Vec3)
         {
-            worldPoint.subTo(this.position, result);
-            this.quaternion.inverseTo().rotatePoint(result, result);
+            var result = result || new Vec3();
+            worldPoint.vsub(this.position, result);
+            this.quaternion.conjugate().vmult(result, result);
             return result;
         }
 
@@ -402,9 +452,9 @@ namespace CANNON
          * @param worldPoint
          * @param result
          */
-        vectorToLocalFrame(worldVector, result = new feng3d.Vector3())
+        vectorToLocalFrame(worldVector, result = new Vec3())
         {
-            this.quaternion.inverseTo().rotatePoint(worldVector, result);
+            this.quaternion.conjugate().vmult(worldVector, result);
             return result;
         }
 
@@ -414,10 +464,11 @@ namespace CANNON
          * @param localPoint
          * @param result
          */
-        pointToWorldFrame(localPoint: feng3d.Vector3, result = new feng3d.Vector3())
+        pointToWorldFrame(localPoint: Vec3, result: Vec3)
         {
-            this.quaternion.rotatePoint(localPoint, result);
-            result.addTo(this.position, result);
+            var result = result || new Vec3();
+            this.quaternion.vmult(localPoint, result);
+            result.vadd(this.position, result);
             return result;
         }
 
@@ -427,24 +478,38 @@ namespace CANNON
          * @param localVector
          * @param result
          */
-        vectorToWorldFrame(localVector: feng3d.Vector3, result = new feng3d.Vector3())
+        vectorToWorldFrame(localVector: Vec3, result: Vec3)
         {
-            this.quaternion.rotatePoint(localVector, result);
+            var result = result || new Vec3();
+            this.quaternion.vmult(localVector, result);
             return result;
         }
 
         /**
          * Add a shape to the body with a local offset and orientation.
+         * 
          * @param shape
-         * @param offset
+         * @param _offset
          * @param_orientation
          * @return The body object, for chainability.
          */
-        addShape(shape: Shape, offset = new feng3d.Vector3(), orientation = new feng3d.Quaternion())
+        addShape(shape: Shape, _offset?: Vec3, _orientation?: Quaternion)
         {
+            var offset = new Vec3();
+            var orientation = new Quaternion();
+
+            if (_offset)
+            {
+                offset.copy(_offset);
+            }
+            if (_orientation)
+            {
+                orientation.copy(_orientation);
+            }
+
             this.shapes.push(shape);
-            this.shapeOffsets.push(offset.clone());
-            this.shapeOrientations.push(orientation.clone());
+            this.shapeOffsets.push(offset);
+            this.shapeOrientations.push(orientation);
             this.updateMassProperties();
             this.updateBoundingRadius();
 
@@ -469,7 +534,7 @@ namespace CANNON
             {
                 var shape = shapes[i];
                 shape.updateBoundingSphereRadius();
-                var offset = shapeOffsets[i].length,
+                var offset = shapeOffsets[i].norm(),
                     r = shape.boundingSphereRadius;
                 if (offset + r > radius)
                 {
@@ -479,6 +544,7 @@ namespace CANNON
 
             this.boundingRadius = radius;
         }
+
 
         /**
          * Updates the .aabb
@@ -491,33 +557,32 @@ namespace CANNON
                 shapeOffsets = this.shapeOffsets,
                 shapeOrientations = this.shapeOrientations,
                 N = shapes.length,
+                offset = tmpVec,
+                orientation = tmpQuat,
                 bodyQuat = this.quaternion,
-                aabb = this.aabb;
-
-            var shapeAABB = new feng3d.AABB();
-            var offset = new feng3d.Vector3();
-            var orientation = new feng3d.Quaternion();
+                aabb = this.aabb,
+                shapeAABB = computeAABB_shapeAABB;
 
             for (var i = 0; i !== N; i++)
             {
                 var shape = shapes[i];
 
                 // Get shape world position
-                bodyQuat.rotatePoint(shapeOffsets[i], offset);
-                offset.addTo(this.position, offset);
+                bodyQuat.vmult(shapeOffsets[i], offset);
+                offset.vadd(this.position, offset);
 
                 // Get shape world quaternion
-                shapeOrientations[i].multTo(bodyQuat, orientation);
+                shapeOrientations[i].mult(bodyQuat, orientation);
 
                 // Get shape AABB
-                shape.calculateWorldAABB(offset, orientation, shapeAABB.min, shapeAABB.max);
+                shape.calculateWorldAABB(offset, orientation, shapeAABB.lowerBound, shapeAABB.upperBound);
 
                 if (i === 0)
                 {
                     aabb.copy(shapeAABB);
                 } else
                 {
-                    aabb.union(shapeAABB);
+                    aabb.extend(shapeAABB);
                 }
             }
 
@@ -527,7 +592,7 @@ namespace CANNON
         /**
          * Update .inertiaWorld and .invInertiaWorld
          */
-        updateInertiaWorld(force?: boolean)
+        updateInertiaWorld(force?)
         {
             var I = this.invInertia;
             if (I.x === I.y && I.y === I.z && !force)
@@ -539,11 +604,11 @@ namespace CANNON
                 // inertia diagonal entries are equal.
             } else
             {
-                var m1 = new feng3d.Matrix3x3();
-                var m2 = new feng3d.Matrix3x3();
-
+                var m1 = uiw_m1,
+                    m2 = uiw_m2,
+                    m3 = uiw_m3;
                 m1.setRotationFromQuaternion(this.quaternion);
-                m1.transposeTo(m2);
+                m1.transpose(m2);
                 m1.scale(I, m1);
                 m1.mmult(m2, this.invInertiaWorld);
             }
@@ -555,7 +620,7 @@ namespace CANNON
          * @param force The amount of force to add.
          * @param relativePoint A point relative to the center of mass to apply the force on.
          */
-        applyForce(force: feng3d.Vector3, relativePoint: feng3d.Vector3)
+        applyForce(force: Vec3, relativePoint: Vec3)
         {
             if (this.type !== Body.DYNAMIC)
             { // Needed?
@@ -563,13 +628,14 @@ namespace CANNON
             }
 
             // Compute produced rotational force
-            var rotForce = relativePoint.crossTo(force);
+            var rotForce = Body_applyForce_rotForce;
+            relativePoint.cross(force, rotForce);
 
             // Add linear force
-            this.force.addTo(force, this.force);
+            this.force.vadd(force, this.force);
 
             // Add rotational force
-            this.torque.addTo(rotForce, this.torque);
+            this.torque.vadd(rotForce, this.torque);
         }
 
         /**
@@ -578,16 +644,19 @@ namespace CANNON
          * @param force The force vector to apply, defined locally in the body frame.
          * @param localPoint A local point in the body to apply the force on.
          */
-        applyLocalForce(localForce: feng3d.Vector3, localPoint: feng3d.Vector3)
+        applyLocalForce(localForce: Vec3, localPoint: Vec3)
         {
             if (this.type !== Body.DYNAMIC)
             {
                 return;
             }
 
+            var worldForce = Body_applyLocalForce_worldForce;
+            var relativePointWorld = Body_applyLocalForce_relativePointWorld;
+
             // Transform the force vector to world space
-            var worldForce = this.vectorToWorldFrame(localForce);
-            var relativePointWorld = this.vectorToWorldFrame(localPoint);
+            this.vectorToWorldFrame(localForce, worldForce);
+            this.vectorToWorldFrame(localPoint, relativePointWorld);
 
             this.applyForce(worldForce, relativePointWorld);
         }
@@ -598,7 +667,7 @@ namespace CANNON
          * @param impulse The amount of impulse to add.
          * @param relativePoint A point relative to the center of mass to apply the force on.
          */
-        applyImpulse(impulse: feng3d.Vector3, relativePoint: feng3d.Vector3)
+        applyImpulse(impulse: Vec3, relativePoint: Vec3)
         {
             if (this.type !== Body.DYNAMIC)
             {
@@ -609,15 +678,16 @@ namespace CANNON
             var r = relativePoint;
 
             // Compute produced central impulse velocity
-            var velo = new feng3d.Vector3();
+            var velo = Body_applyImpulse_velo;
             velo.copy(impulse);
-            velo.scaleNumberTo(this.invMass, velo);
+            velo.mult(this.invMass, velo);
 
             // Add linear impulse
-            this.velocity.addTo(velo, this.velocity);
+            this.velocity.vadd(velo, this.velocity);
 
             // Compute produced rotational impulse velocity
-            var rotVelo = r.crossTo(impulse);
+            var rotVelo = Body_applyImpulse_rotVelo;
+            r.cross(impulse, rotVelo);
 
             /*
             rotVelo.x *= this.invInertia.x;
@@ -627,7 +697,7 @@ namespace CANNON
             this.invInertiaWorld.vmult(rotVelo, rotVelo);
 
             // Add rotational Impulse
-            this.angularVelocity.addTo(rotVelo, this.angularVelocity);
+            this.angularVelocity.vadd(rotVelo, this.angularVelocity);
         }
 
         /**
@@ -636,16 +706,19 @@ namespace CANNON
          * @param force The force vector to apply, defined locally in the body frame.
          * @param localPoint A local point in the body to apply the force on.
          */
-        applyLocalImpulse(localImpulse: feng3d.Vector3, localPoint: feng3d.Vector3)
+        applyLocalImpulse(localImpulse: Vec3, localPoint: Vec3)
         {
             if (this.type !== Body.DYNAMIC)
             {
                 return;
             }
 
+            var worldImpulse = Body_applyLocalImpulse_worldImpulse;
+            var relativePointWorld = Body_applyLocalImpulse_relativePoint;
+
             // Transform the force vector to world space
-            var worldImpulse = this.vectorToWorldFrame(localImpulse);
-            var relativePointWorld = this.vectorToWorldFrame(localPoint);
+            this.vectorToWorldFrame(localImpulse, worldImpulse);
+            this.vectorToWorldFrame(localPoint, relativePointWorld);
 
             this.applyImpulse(worldImpulse, relativePointWorld);
         }
@@ -655,7 +728,7 @@ namespace CANNON
          */
         updateMassProperties()
         {
-            var halfExtents = new feng3d.Vector3();
+            var halfExtents = Body_updateMassProperties_halfExtents;
 
             this.invMass = this.mass > 0 ? 1.0 / this.mass : 0;
             var I = this.inertia;
@@ -663,18 +736,14 @@ namespace CANNON
 
             // Approximate with AABB box
             this.computeAABB();
-            halfExtents.init(
-                (this.aabb.max.x - this.aabb.min.x) / 2,
-                (this.aabb.max.y - this.aabb.min.y) / 2,
-                (this.aabb.max.z - this.aabb.min.z) / 2
+            halfExtents.set(
+                (this.aabb.upperBound.x - this.aabb.lowerBound.x) / 2,
+                (this.aabb.upperBound.y - this.aabb.lowerBound.y) / 2,
+                (this.aabb.upperBound.z - this.aabb.lowerBound.z) / 2
             );
+            Box.calculateInertia(halfExtents, this.mass, I);
 
-            var mass = this.mass;
-            I.x = 1.0 / 12.0 * mass * (2 * halfExtents.y * 2 * halfExtents.y + 2 * halfExtents.z * 2 * halfExtents.z);
-            I.y = 1.0 / 12.0 * mass * (2 * halfExtents.x * 2 * halfExtents.x + 2 * halfExtents.z * 2 * halfExtents.z);
-            I.z = 1.0 / 12.0 * mass * (2 * halfExtents.y * 2 * halfExtents.y + 2 * halfExtents.x * 2 * halfExtents.x);
-
-            this.invInertia.init(
+            this.invInertia.set(
                 I.x > 0 && !fixed ? 1.0 / I.x : 0,
                 I.y > 0 && !fixed ? 1.0 / I.y : 0,
                 I.z > 0 && !fixed ? 1.0 / I.z : 0
@@ -684,15 +753,17 @@ namespace CANNON
 
         /**
          * Get world velocity of a point in the body.
-         * @param worldPoint 
-         * @param result 
+         * @method getVelocityAtWorldPoint
+         * @param  {Vec3} worldPoint
+         * @param  {Vec3} result
+         * @return {Vec3} The result vector.
          */
-        getVelocityAtWorldPoint(worldPoint: feng3d.Vector3, result = new feng3d.Vector3())
+        getVelocityAtWorldPoint(worldPoint, result)
         {
-            var r = new feng3d.Vector3();
-            worldPoint.subTo(this.position, r);
-            this.angularVelocity.crossTo(r, result);
-            this.velocity.addTo(result, result);
+            var r = new Vec3();
+            worldPoint.vsub(this.position, r);
+            this.angularVelocity.cross(r, result);
+            this.velocity.vadd(result, result);
             return result;
         }
 
@@ -742,7 +813,7 @@ namespace CANNON
             pos.y += velo.y * dt;
             pos.z += velo.z * dt;
 
-            quat.integrateTo(this.angularVelocity, dt, this.angularFactor, quat);
+            quat.integrate(this.angularVelocity, dt, this.angularFactor, quat);
 
             if (quatNormalize)
             {
@@ -762,5 +833,31 @@ namespace CANNON
         }
     }
 
+    var tmpVec = new Vec3();
+    var tmpQuat = new Quaternion();
 
+    var torque = new Vec3();
+    var invI_tau_dt = new Vec3();
+    var w = new Quaternion();
+    var wq = new Quaternion();
+
+
+    var Body_updateMassProperties_halfExtents = new Vec3();
+
+
+    var Body_applyForce_r = new Vec3();
+    var Body_applyForce_rotForce = new Vec3();
+    var Body_applyLocalForce_worldForce = new Vec3();
+    var Body_applyLocalForce_relativePointWorld = new Vec3();
+    var Body_applyImpulse_r = new Vec3();
+    var Body_applyImpulse_velo = new Vec3();
+    var Body_applyImpulse_rotVelo = new Vec3();
+    var Body_applyLocalImpulse_worldImpulse = new Vec3();
+    var Body_applyLocalImpulse_relativePoint = new Vec3();
+
+    var uiw_m1 = new Mat3();
+    var uiw_m2 = new Mat3();
+    var uiw_m3 = new Mat3();
+
+    var computeAABB_shapeAABB = new AABB();
 }

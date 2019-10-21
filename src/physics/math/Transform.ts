@@ -2,48 +2,93 @@ namespace CANNON
 {
     export class Transform
     {
-        position: feng3d.Vector3;
-        quaternion: feng3d.Quaternion;
 
-        constructor(position = new feng3d.Vector3(), quaternion = new feng3d.Quaternion())
-        {
-            this.position = position;
-            this.quaternion = quaternion;
-        }
+        position: Vec3;
+        quaternion: Quaternion;
 
-        toMatrix3D()
+        constructor(options: any = {})
         {
-            var matrix3D = this.quaternion.toMatrix3D();
-            matrix3D.appendTranslation(this.position.x, this.position.y, this.position.z);
-            return matrix3D;
+            this.position = new Vec3();
+            if (options.position)
+            {
+                this.position.copy(options.position);
+            }
+            this.quaternion = new Quaternion();
+            if (options.quaternion)
+            {
+                this.quaternion.copy(options.quaternion);
+            }
         }
 
         /**
+         * @param position
+         * @param quaternion
          * @param worldPoint
          * @param result
          */
-        pointToLocalFrame(worldPoint: feng3d.Vector3, result = new feng3d.Vector3())
+        static pointToLocalFrame(position: Vec3, quaternion: Quaternion, worldPoint: Vec3, result = new Vec3())
         {
-            return this.toMatrix3D().invert().transformVector(worldPoint, result);
+            worldPoint.vsub(position, result);
+            quaternion.conjugate(tmpQuat);
+            tmpQuat.vmult(result, result);
+            return result;
         }
 
         /**
+         * Get a global point in local transform coordinates.
+         * @param worldPoint
+         * @param result
+         * @returnThe "result" vector object
+         */
+        pointToLocal(worldPoint: Vec3, result: Vec3)
+        {
+            return Transform.pointToLocalFrame(this.position, this.quaternion, worldPoint, result);
+        }
+
+        /**
+         * @param position
+         * @param quaternion
          * @param localPoint
          * @param result
          */
-        pointToWorldFrame(localPoint: feng3d.Vector3, result = new feng3d.Vector3())
+        static pointToWorldFrame(position: Vec3, quaternion: Quaternion, localPoint: Vec3, result = new Vec3())
         {
-            return this.toMatrix3D().transformVector(localPoint, result);
+            quaternion.vmult(localPoint, result);
+            result.vadd(position, result);
+            return result;
         }
 
-        vectorToWorldFrame(localVector: feng3d.Vector3, result = new feng3d.Vector3())
+        /**
+         * Get a local point in global transform coordinates.
+         * @param point
+         * @param result
+         * @return The "result" vector object
+         */
+        pointToWorld(localPoint: Vec3, result: Vec3)
         {
-            return this.toMatrix3D().deltaTransformVector(localVector, result);
+            return Transform.pointToWorldFrame(this.position, this.quaternion, localPoint, result);
         }
 
-        vectorToLocalFrame(worldVector: feng3d.Vector3, result = new feng3d.Vector3())
+        vectorToWorldFrame(localVector: Vec3, result = new Vec3())
         {
-            return this.toMatrix3D().invert().deltaTransformVector(worldVector, result);
+            this.quaternion.vmult(localVector, result);
+            return result;
+        }
+
+        static vectorToWorldFrame(quaternion: Quaternion, localVector: Vec3, result: Vec3)
+        {
+            quaternion.vmult(localVector, result);
+            return result;
+        }
+
+        static vectorToLocalFrame(position: Vec3, quaternion: Quaternion, worldVector: Vec3, result = new Vec3())
+        {
+            quaternion.w *= -1;
+            quaternion.vmult(worldVector, result);
+            quaternion.w *= -1;
+            return result;
         }
     }
+
+    var tmpQuat = new Quaternion();
 }

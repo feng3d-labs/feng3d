@@ -79,7 +79,7 @@ namespace feng3d
             this._gameObject["updateChildrenScene"]();
 
             this.world = new CANNON.World();
-            this.world.gravity = this.gravity;
+            this.world.gravity = new CANNON.Vec3(this.gravity.x, this.gravity.y, this.gravity.z);
 
             var bodys = this.getComponentsInChildren(Rigidbody).map(c => c.body);
             bodys.forEach(v =>
