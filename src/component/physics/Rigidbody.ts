@@ -13,6 +13,13 @@ namespace feng3d
         @serialize
         mass = 0;
 
+        /**
+         * 速度
+         */
+        @oav()
+        @serialize
+        velocity = new feng3d.Vector3();
+
         init()
         {
 

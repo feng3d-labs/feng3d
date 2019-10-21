@@ -17424,6 +17424,10 @@ declare namespace feng3d {
         __class__: "feng3d.Rigidbody";
         runEnvironment: RunEnvironment;
         mass: number;
+        /**
+         * 速度
+         */
+        velocity: Vector3;
         init(): void;
         /**
          * 每帧执行

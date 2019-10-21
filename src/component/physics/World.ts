@@ -22,8 +22,6 @@ namespace feng3d
         init()
         {
             super.init();
-
-            var bodys = this.getComponentsInChildren(Rigidbody);
         }
 
         /**
@@ -31,9 +29,27 @@ namespace feng3d
          */
         update(interval?: number)
         {
-            // 只在
-            // if (this.runEnvironment == RunEnvironment.feng3d)
-            //     this.world.step(1.0 / 60.0, interval / 1000, 3);
+            // 时间
+            var t = interval / 1000;
+            var bodys = this.getComponentsInChildren(Rigidbody);
+            bodys.forEach(body =>
+            {
+                // 位移
+                var p = body.transform.position;
+                // 速度
+                var v = body.velocity;
+                // 加速度
+                var a = this.gravity;
+                // 计算位移
+                // p = p + v * t + 0.5 * a * t * t;
+                p.add(v.scaleNumberTo(t)).add(a.scaleNumberTo(0.5 * t * t));
+                // 计算速度
+                // v = a * t;
+                v.add(a.scaleNumberTo(t));
+                // 更新位移与速度
+                body.transform.position = p;
+                body.velocity = v;
+            });
         }
     }
 }

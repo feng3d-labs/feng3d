@@ -38275,15 +38275,32 @@ var feng3d;
          */
         World.prototype.init = function () {
             _super.prototype.init.call(this);
-            var bodys = this.getComponentsInChildren(feng3d.Rigidbody);
         };
         /**
          * 每帧执行
          */
         World.prototype.update = function (interval) {
-            // 只在
-            // if (this.runEnvironment == RunEnvironment.feng3d)
-            //     this.world.step(1.0 / 60.0, interval / 1000, 3);
+            var _this = this;
+            // 时间
+            var t = interval / 1000;
+            var bodys = this.getComponentsInChildren(feng3d.Rigidbody);
+            bodys.forEach(function (body) {
+                // 位移
+                var p = body.transform.position;
+                // 速度
+                var v = body.velocity;
+                // 加速度
+                var a = _this.gravity;
+                // 计算位移
+                // p = p + v * t + 0.5 * a * t * t;
+                p.add(v.scaleNumberTo(t)).add(a.scaleNumberTo(0.5 * t * t));
+                // 计算速度
+                // v = a * t;
+                v.add(a.scaleNumberTo(t));
+                // 更新位移与速度
+                body.transform.position = p;
+                body.velocity = v;
+            });
         };
         __decorate([
             feng3d.oav(),
@@ -38305,6 +38322,10 @@ var feng3d;
             _this.__class__ = "feng3d.Rigidbody";
             _this.runEnvironment = feng3d.RunEnvironment.feng3d;
             _this.mass = 0;
+            /**
+             * 速度
+             */
+            _this.velocity = new feng3d.Vector3();
             return _this;
         }
         Rigidbody.prototype.init = function () {
@@ -38318,6 +38339,10 @@ var feng3d;
             feng3d.oav(),
             feng3d.serialize
         ], Rigidbody.prototype, "mass", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], Rigidbody.prototype, "velocity", void 0);
         return Rigidbody;
     }(feng3d.Behaviour));
     feng3d.Rigidbody = Rigidbody;
