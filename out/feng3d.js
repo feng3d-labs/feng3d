@@ -43444,6 +43444,9 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
 console.log("feng3d-0.1.3");
+console.log("feng3d-0.1.3");
+console.log("feng3d-0.1.3");
+console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {
     if (typeof exports === 'object' && typeof module === 'object')
