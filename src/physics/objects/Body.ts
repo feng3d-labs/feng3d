@@ -668,7 +668,11 @@ namespace CANNON
                 (this.aabb.max.y - this.aabb.min.y) / 2,
                 (this.aabb.max.z - this.aabb.min.z) / 2
             );
-            Box.calculateInertia(halfExtents, this.mass, I);
+
+            var mass = this.mass;
+            I.x = 1.0 / 12.0 * mass * (2 * halfExtents.y * 2 * halfExtents.y + 2 * halfExtents.z * 2 * halfExtents.z);
+            I.y = 1.0 / 12.0 * mass * (2 * halfExtents.x * 2 * halfExtents.x + 2 * halfExtents.z * 2 * halfExtents.z);
+            I.z = 1.0 / 12.0 * mass * (2 * halfExtents.y * 2 * halfExtents.y + 2 * halfExtents.x * 2 * halfExtents.x);
 
             this.invInertia.init(
                 I.x > 0 && !fixed ? 1.0 / I.x : 0,

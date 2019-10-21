@@ -33,8 +33,8 @@ namespace feng3d
         @serialize
         segmentsW = 16;
 
-        readonly shape: CANNON.Cylinder;
-        protected _shape: CANNON.Cylinder;
+        readonly shape: CANNON.Trimesh;
+        protected _shape: CANNON.Trimesh;
 
         init()
         {
