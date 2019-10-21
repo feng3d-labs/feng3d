@@ -33,18 +33,8 @@ namespace feng3d
         @serialize
         segmentsW = 16;
 
-        readonly shape: CANNON.Trimesh;
-        protected _shape: CANNON.Trimesh;
-
         init()
         {
-            var g = new CylinderGeometry();
-            g.topRadius = this.topRadius;
-            g.bottomRadius = this.bottomRadius;
-            g.height = this.height;
-            g.segmentsW = this.segmentsW;
-            g.updateGrometry();
-            this._shape = new CANNON.Trimesh(g.positions, g.indices);
         }
     }
 }

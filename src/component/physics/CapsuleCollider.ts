@@ -90,8 +90,6 @@ namespace feng3d
         }
         private _yUp = true;
 
-        readonly shape: CANNON.Trimesh;
-        protected _shape: CANNON.Trimesh;
 
         init()
         {
@@ -106,8 +104,7 @@ namespace feng3d
             g.segmentsW = this._segmentsW;
             g.segmentsH = this._segmentsH;
             g.yUp = this._yUp;
-            g.updateGrometry();
-            this._shape = new CANNON.Trimesh(g.positions, g.indices);
+
         }
     }
 }

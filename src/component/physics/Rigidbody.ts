@@ -7,8 +7,6 @@ namespace feng3d
     {
         __class__: "feng3d.Rigidbody" = "feng3d.Rigidbody";
 
-        body: CANNON.Body;
-
         runEnvironment = RunEnvironment.feng3d;
 
         @oav()
@@ -17,15 +15,6 @@ namespace feng3d
 
         init()
         {
-            this.body = new CANNON.Body(this.mass);
-
-            this.body.position = this.transform.position;
-
-            var colliders = this.gameObject.getComponents(Collider);
-            colliders.forEach(element =>
-            {
-                this.body.addShape(element.shape);
-            });
 
         }
 
@@ -34,11 +23,6 @@ namespace feng3d
          */
         update(interval?: number)
         {
-            var scene3D = this.getComponentsInParents(Scene3D)[0];
-            if (scene3D)
-            {
-                this.transform.position = this.body.position;
-            }
         }
     }
 }
