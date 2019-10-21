@@ -40481,12 +40481,24 @@ var CANNON;
         function OctreeNode(root, aabb) {
             if (root === void 0) { root = null; }
             if (aabb === void 0) { aabb = new feng3d.AABB(); }
+            /**
+             * The root node
+             */
+            this.root = null;
+            /**
+             * Boundary of this node
+             */
+            this.aabb = new feng3d.AABB();
+            /**
+             * Children to this node
+             */
+            this.children = [];
             this.root = root;
             this.aabb = aabb.clone();
             this.data = [];
             this.children = [];
         }
-        OctreeNode.prototype.reset = function (aabb, options) {
+        OctreeNode.prototype.reset = function () {
             this.children.length = this.data.length = 0;
         };
         /**
@@ -40610,14 +40622,13 @@ var CANNON;
         __extends(Octree, _super);
         /**
          *
-         * @param aabb
-         * @param maxDepth
          */
-        function Octree(aabb, maxDepth) {
-            if (aabb === void 0) { aabb = null; }
-            if (maxDepth === void 0) { maxDepth = 8; }
-            var _this = _super.call(this, null, aabb) || this;
-            _this.maxDepth = maxDepth;
+        function Octree() {
+            var _this = _super.call(this) || this;
+            /**
+             * 最大细分深度
+             */
+            _this.maxDepth = 8;
             return _this;
         }
         return Octree;

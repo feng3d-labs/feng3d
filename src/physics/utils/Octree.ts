@@ -5,12 +5,12 @@ namespace CANNON
         /**
          * The root node
          */
-        root: OctreeNode;
+        root: OctreeNode = null;
 
         /**
          * Boundary of this node
          */
-        aabb: feng3d.AABB;
+        aabb = new feng3d.AABB();
         /**
          * Contained data at the current node level.
          */
@@ -19,7 +19,7 @@ namespace CANNON
         /**
          * Children to this node
          */
-        children: OctreeNode[];
+        children: OctreeNode[] = [];
         maxDepth: number;
 
         /**
@@ -34,7 +34,7 @@ namespace CANNON
             this.children = [];
         }
 
-        reset(aabb?: feng3d.AABB, options?: any)
+        reset()
         {
             this.children.length = this.data.length = 0;
         }
@@ -208,17 +208,14 @@ namespace CANNON
         /**
          * 最大细分深度
          */
-        maxDepth: number;
+        maxDepth = 8;
 
         /**
          * 
-         * @param aabb 
-         * @param maxDepth 
          */
-        constructor(aabb: feng3d.AABB = null, maxDepth = 8)
+        constructor()
         {
-            super(null, aabb);
-            this.maxDepth = maxDepth;
+            super();
         }
     }
 }

@@ -18367,7 +18367,7 @@ declare namespace CANNON {
          * @param options
          */
         constructor(root?: Octree, aabb?: feng3d.AABB);
-        reset(aabb?: feng3d.AABB, options?: any): void;
+        reset(): void;
         /**
          * Insert data into this node
          *
@@ -18409,10 +18409,8 @@ declare namespace CANNON {
         maxDepth: number;
         /**
          *
-         * @param aabb
-         * @param maxDepth
          */
-        constructor(aabb?: feng3d.AABB, maxDepth?: number);
+        constructor();
     }
 }
 declare namespace CANNON {
