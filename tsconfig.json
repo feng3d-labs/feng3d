@@ -408,6 +408,9 @@
         "src/physics/world/World.ts",
         "src/physics/world/Narrowphase.ts",
         //
+        "src/physics/Demo.ts",
+        "src/physics/TrackballControls.ts",
+        //
         "src/component/physics/Rigidbody.ts",
         "src/component/physics/Collider.ts",
         "src/component/physics/BoxCollider.ts",

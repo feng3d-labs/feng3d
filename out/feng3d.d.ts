@@ -1,6 +1,3 @@
-declare module 'feng3d' {
-    export = feng3d;
-}
 declare namespace feng3d {
     /**
      * 观察装饰器，观察被装饰属性的变化
@@ -20875,6 +20872,15 @@ declare namespace CANNON {
         boxHeightfield(si: Shape, sj: Shape, xi: Vec3, xj: Vec3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         convexHeightfield(convexShape: Shape, hfShape: any, convexPos: Vec3, hfPos: Vec3, convexQuat: Quaternion, hfQuat: Quaternion, convexBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         sphereHeightfield(sphereShape: Shape, hfShape: any, spherePos: Vec3, hfPos: Vec3, sphereQuat: Quaternion, hfQuat: Quaternion, sphereBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
+    }
+}
+declare namespace feng3d {
+    /**
+     * @author Eberhard Graether / http://egraether.com/
+     * @author Mark Lundin  / http://mark-lundin.com
+     */
+    class TrackballControls extends EventDispatcher {
+        constructor(object: any, domElement: any);
     }
 }
 declare namespace feng3d {

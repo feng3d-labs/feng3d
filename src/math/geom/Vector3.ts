@@ -85,6 +85,16 @@ namespace feng3d
             return Math.sqrt(this.lengthSquared);
         }
 
+        set length(v)
+        {
+            this.normalize().scaleNumber(length);
+        }
+
+        setLength(length: number)
+        {
+            return this.normalize().scaleNumber(length);
+        }
+
         /**
         * 当前 Vector3 对象长度的平方，它是使用 x、y 和 z 属性计算出来的。w 属性将被忽略。尽可能使用 lengthSquared() 方法，而不要使用 Vector3.length() 方法的 Math.sqrt() 方法调用，后者速度较慢。
         */
