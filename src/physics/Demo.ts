@@ -8,6 +8,16 @@ namespace CANNON
         restartCurrentScene: () => void;
         changeScene: (n: any) => void;
         start: () => void;
+
+        settings
+        bodies: any[];
+        visuals: any[];
+        world: World;
+        currentMaterial: any;
+        scene: any;
+        particleGeo: any;
+        particleMaterial: any;
+
         /**
          * Demo framework class. If you want to learn how to connect Cannon.js with Three.js, please look at the examples/ instead.
          * @class Demo
@@ -179,7 +189,7 @@ namespace CANNON
                 if (gui)
                 {
                     // First level
-                    var c = Object.keys(gui.__controllers);
+                    var c = gui.__controllers;
                     Object.keys(c).forEach(i =>
                     {
                         c[i].updateDisplay();
