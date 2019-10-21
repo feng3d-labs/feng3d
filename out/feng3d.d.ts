@@ -20540,6 +20540,7 @@ declare namespace CANNON {
 }
 declare namespace CANNON {
     class World extends EventTarget {
+        static worldNormal: Vec3;
         /**
          * Currently / last used timestep. Is set to -1 if not available. This value is updated before each internal step, which means that it is "fresh" inside event callbacks.
          */
@@ -20938,8 +20939,8 @@ declare namespace feng3d {
          * 深度
          */
         depth: number;
-        readonly shape: CANNON.Trimesh;
-        protected _shape: CANNON.Trimesh;
+        readonly shape: CANNON.Box;
+        protected _shape: CANNON.Box;
         init(): void;
     }
 }

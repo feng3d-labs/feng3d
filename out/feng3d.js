@@ -41796,7 +41796,7 @@ var CANNON;
         }
         Plane.prototype.computeWorldNormal = function (quat) {
             var n = this.worldNormal;
-            n.set(0, 0, 1);
+            n.copy(CANNON.World.worldNormal);
             quat.vmult(n, n);
             this.worldNormalNeedsUpdate = false;
         };
@@ -41809,7 +41809,7 @@ var CANNON;
         };
         Plane.prototype.calculateWorldAABB = function (pos, quat, min, max) {
             // The plane AABB is infinite, except if the normal is pointing along any axis
-            tempNormal.set(0, 0, 1); // Default plane normal is z
+            tempNormal.copy(CANNON.World.worldNormal); // Default plane normal is z
             quat.vmult(tempNormal, tempNormal);
             var maxVal = Number.MAX_VALUE;
             min.set(-maxVal, -maxVal, -maxVal);
@@ -43754,7 +43754,7 @@ var CANNON;
             var to = this.to;
             var direction = this._direction;
             // Get plane normal
-            var worldNormal = new CANNON.Vec3(0, 0, 1);
+            var worldNormal = new CANNON.Vec3().copy(CANNON.World.worldNormal);
             quat.vmult(worldNormal, worldNormal);
             var len = new CANNON.Vec3();
             from.vsub(position, len);
@@ -47148,6 +47148,7 @@ var CANNON;
                 b.torque.set(0, 0, 0);
             }
         };
+        World.worldNormal = new CANNON.Vec3(0, 0, 1);
         return World;
     }(CANNON.EventTarget));
     CANNON.World = World;
@@ -47458,7 +47459,7 @@ var CANNON;
             // Make contacts!
             var v = new CANNON.Vec3();
             var normal = planeTrimesh_normal;
-            normal.set(0, 0, 1);
+            normal.copy(CANNON.World.worldNormal);
             planeQuat.vmult(normal, normal); // Turn normal according to plane
             for (var i = 0; i < trimeshShape.vertices.length / 3; i++) {
                 // Get world vertex from trimesh
@@ -47618,7 +47619,7 @@ var CANNON;
             // We will have one contact in this case
             var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
             // Contact normal
-            r.ni.set(0, 0, 1);
+            r.ni.copy(CANNON.World.worldNormal);
             qj.vmult(r.ni, r.ni);
             r.ni.negate(r.ni); // body i is the sphere, flip normal
             r.ni.normalize(); // Needed?
@@ -48017,7 +48018,7 @@ var CANNON;
         Narrowphase.prototype.planeConvex = function (planeShape, convexShape, planePosition, convexPosition, planeQuat, convexQuat, planeBody, convexBody, si, sj, justTest) {
             // Simply return the points behind the plane.
             var worldVertex = planeConvex_v, worldNormal = planeConvex_normal;
-            worldNormal.set(0, 0, 1);
+            worldNormal.copy(CANNON.World.worldNormal);
             planeQuat.vmult(worldNormal, worldNormal); // Turn normal according to plane orientation
             var numContacts = 0;
             var relpos = planeConvex_relpos;
@@ -48165,7 +48166,7 @@ var CANNON;
         // };
         Narrowphase.prototype.planeParticle = function (sj, si, xj, xi, qj, qi, bj, bi, rsi, rsj, justTest) {
             var normal = particlePlane_normal;
-            normal.set(0, 0, 1);
+            normal.copy(CANNON.World.worldNormal);
             bj.quaternion.vmult(normal, normal); // Turn normal according to plane orientation
             var relpos = particlePlane_relpos;
             xi.vsub(bj.position, relpos);
@@ -48192,7 +48193,7 @@ var CANNON;
         Narrowphase.prototype.sphereParticle = function (sj, si, xj, xi, qj, qi, bj, bi, rsi, rsj, justTest) {
             // The normal is the unit vector from sphere center to particle center
             var normal = particleSphere_normal;
-            normal.set(0, 0, 1);
+            normal.copy(CANNON.World.worldNormal);
             xi.vsub(xj, normal);
             var lengthSquared = normal.norm2();
             if (lengthSquared <= sj.radius * sj.radius) {
@@ -49828,12 +49829,8 @@ var feng3d;
             return _this;
         }
         BoxCollider.prototype.init = function () {
-            var halfExtents = new feng3d.Vector3(this.width / 2, this.height / 2, this.depth / 2);
-            var g = new feng3d.CubeGeometry();
-            g.width = halfExtents.x * 2;
-            g.height = halfExtents.y * 2;
-            g.depth = halfExtents.z * 2;
-            this._shape = new CANNON.Trimesh(g.positions, g.indices);
+            var halfExtents = new CANNON.Vec3(this.width / 2, this.height / 2, this.depth / 2);
+            this._shape = new CANNON.Box(halfExtents);
         };
         __decorate([
             feng3d.oav(),
