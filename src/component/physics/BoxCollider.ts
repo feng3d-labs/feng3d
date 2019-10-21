@@ -26,20 +26,13 @@ namespace feng3d
         @serialize
         depth = 1;
 
-        readonly shape: CANNON.Trimesh;
-        protected _shape: CANNON.Trimesh;
+        readonly shape: CANNON.Box;
+        protected _shape: CANNON.Box;
 
         init()
         {
-            var halfExtents = new Vector3(this.width / 2, this.height / 2, this.depth / 2);
-
-            var g = new feng3d.CubeGeometry();
-            g.width = halfExtents.x * 2;
-            g.height = halfExtents.y * 2;
-            g.depth = halfExtents.z * 2;
-
-            this._shape = new CANNON.Trimesh(g.positions, g.indices);
-
+            var halfExtents = new CANNON.Vec3(this.width / 2, this.height / 2, this.depth / 2);
+            this._shape = new CANNON.Box(halfExtents);
         }
     }
 }
