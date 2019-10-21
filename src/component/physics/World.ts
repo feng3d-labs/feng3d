@@ -12,7 +12,7 @@ namespace feng3d
         /**
          * 重力加速度
          */
-        @oav()
+        @oav({ tooltip: "重力加速度" })
         @serialize
         gravity = new Vector3(0, -9.82, 0);
 
@@ -35,11 +35,13 @@ namespace feng3d
             bodys.forEach(body =>
             {
                 // 位移
-                var p = body.transform.position;
+                var p = body.position;
                 // 速度
                 var v = body.velocity;
                 // 加速度
-                var a = this.gravity;
+                var a = new feng3d.Vector3();
+                if (body.useGravity)
+                    a.add(this.gravity);
                 // 计算位移
                 // p = p + v * t + 0.5 * a * t * t;
                 p.add(v.scaleNumberTo(t)).add(a.scaleNumberTo(0.5 * t * t));
@@ -47,7 +49,7 @@ namespace feng3d
                 // v = a * t;
                 v.add(a.scaleNumberTo(t));
                 // 更新位移与速度
-                body.transform.position = p;
+                body.position = p;
                 body.velocity = v;
             });
         }

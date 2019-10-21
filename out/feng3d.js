@@ -38286,11 +38286,13 @@ var feng3d;
             var bodys = this.getComponentsInChildren(feng3d.Rigidbody);
             bodys.forEach(function (body) {
                 // 位移
-                var p = body.transform.position;
+                var p = body.position;
                 // 速度
                 var v = body.velocity;
                 // 加速度
-                var a = _this.gravity;
+                var a = new feng3d.Vector3();
+                if (body.useGravity)
+                    a.add(_this.gravity);
                 // 计算位移
                 // p = p + v * t + 0.5 * a * t * t;
                 p.add(v.scaleNumberTo(t)).add(a.scaleNumberTo(0.5 * t * t));
@@ -38298,12 +38300,12 @@ var feng3d;
                 // v = a * t;
                 v.add(a.scaleNumberTo(t));
                 // 更新位移与速度
-                body.transform.position = p;
+                body.position = p;
                 body.velocity = v;
             });
         };
         __decorate([
-            feng3d.oav(),
+            feng3d.oav({ tooltip: "重力加速度" }),
             feng3d.serialize
         ], World.prototype, "gravity", void 0);
         return World;
@@ -38326,23 +38328,37 @@ var feng3d;
              * 速度
              */
             _this.velocity = new feng3d.Vector3();
+            /**
+             * 是否受重力影响
+             */
+            _this.useGravity = true;
             return _this;
         }
-        Rigidbody.prototype.init = function () {
-        };
-        /**
-         * 每帧执行
-         */
-        Rigidbody.prototype.update = function (interval) {
-        };
+        Object.defineProperty(Rigidbody.prototype, "position", {
+            /**
+             * 位移
+             */
+            get: function () {
+                return this.transform.position;
+            },
+            set: function (v) {
+                this.transform.position = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
         __decorate([
-            feng3d.oav(),
+            feng3d.oav({ tooltip: "质量" }),
             feng3d.serialize
         ], Rigidbody.prototype, "mass", void 0);
         __decorate([
-            feng3d.oav(),
+            feng3d.oav({ tooltip: "速度" }),
             feng3d.serialize
         ], Rigidbody.prototype, "velocity", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "是否受重力影响" }),
+            feng3d.serialize
+        ], Rigidbody.prototype, "useGravity", void 0);
         return Rigidbody;
     }(feng3d.Behaviour));
     feng3d.Rigidbody = Rigidbody;

@@ -17425,14 +17425,17 @@ declare namespace feng3d {
         runEnvironment: RunEnvironment;
         mass: number;
         /**
+         * 位移
+         */
+        position: Vector3;
+        /**
          * 速度
          */
         velocity: Vector3;
-        init(): void;
         /**
-         * 每帧执行
+         * 是否受重力影响
          */
-        update(interval?: number): void;
+        useGravity: boolean;
     }
 }
 declare namespace feng3d {

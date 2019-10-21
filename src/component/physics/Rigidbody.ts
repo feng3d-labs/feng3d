@@ -9,27 +9,36 @@ namespace feng3d
 
         runEnvironment = RunEnvironment.feng3d;
 
-        @oav()
+        @oav({ tooltip: "质量" })
         @serialize
         mass = 0;
 
         /**
-         * 速度
+         * 位移
          */
-        @oav()
-        @serialize
-        velocity = new feng3d.Vector3();
-
-        init()
+        get position()
         {
+            return this.transform.position;
+        }
 
+        set position(v)
+        {
+            this.transform.position = v;
         }
 
         /**
-         * 每帧执行
+         * 速度
          */
-        update(interval?: number)
-        {
-        }
+        @oav({ tooltip: "速度" })
+        @serialize
+        velocity = new feng3d.Vector3();
+
+        /**
+         * 是否受重力影响
+         */
+        @oav({ tooltip: "是否受重力影响" })
+        @serialize
+        useGravity = true;
+
     }
 }
