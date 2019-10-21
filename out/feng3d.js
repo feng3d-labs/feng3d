@@ -38716,7 +38716,8 @@ var CANNON;
                 this.getVertex(a, va);
                 this.getVertex(b, vb);
                 this.getVertex(c, vc);
-                Trimesh.computeNormal(vb, va, vc, n);
+                var tri = new feng3d.Triangle3D(vb, va, vc);
+                tri.getNormal(n);
                 normals[i3] = n.x;
                 normals[i3 + 1] = n.y;
                 normals[i3 + 2] = n.z;
@@ -38796,6 +38797,7 @@ var CANNON;
          * @return The "out" vector object
          */
         Trimesh.prototype.getVertex = function (i, out) {
+            if (out === void 0) { out = new feng3d.Vector3(); }
             var i3 = i * 3;
             var vertices = this.vertices;
             return out.init(vertices[i3], vertices[i3 + 1], vertices[i3 + 2]);

@@ -80,7 +80,7 @@ namespace CANNON
             return c;
         };
 
-        createFrictionEquationsFromContact(contactEquation: any, outArray: FrictionEquation[])
+        createFrictionEquationsFromContact(contactEquation: ContactEquation, outArray: FrictionEquation[])
         {
             var bodyA = contactEquation.bi;
             var bodyB = contactEquation.bj;

@@ -17770,7 +17770,7 @@ declare namespace CANNON {
          * @param out
          * @return The "out" vector object
          */
-        getVertex(i: number, out: feng3d.Vector3): feng3d.Vector3;
+        getVertex(i: number, out?: feng3d.Vector3): feng3d.Vector3;
         /**
          * 通过给定的位置和四元数转换，从三元组中得到一个顶点。
          *
@@ -19344,7 +19344,7 @@ declare namespace CANNON {
          * @param overrideShapeB
          */
         createContactEquation(bi: Body, bj: Body, si: Shape, sj: Shape, overrideShapeA: Shape, overrideShapeB: Shape): ContactEquation;
-        createFrictionEquationsFromContact(contactEquation: any, outArray: FrictionEquation[]): boolean;
+        createFrictionEquationsFromContact(contactEquation: ContactEquation, outArray: FrictionEquation[]): boolean;
         createFrictionFromAverage(numContacts: number): void;
         /**
          * Generate all contacts between a list of body pairs

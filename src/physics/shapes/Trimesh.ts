@@ -137,7 +137,8 @@ namespace CANNON
                 this.getVertex(b, vb);
                 this.getVertex(c, vc);
 
-                Trimesh.computeNormal(vb, va, vc, n);
+                var tri = new feng3d.Triangle3D(vb, va, vc);
+                tri.getNormal(n);
 
                 normals[i3] = n.x;
                 normals[i3 + 1] = n.y;
@@ -232,15 +233,11 @@ namespace CANNON
          * @param out
          * @return The "out" vector object
          */
-        getVertex(i: number, out: feng3d.Vector3)
+        getVertex(i: number, out = new feng3d.Vector3())
         {
             var i3 = i * 3;
             var vertices = this.vertices;
-            return out.init(
-                vertices[i3],
-                vertices[i3 + 1],
-                vertices[i3 + 2]
-            );
+            return out.init(vertices[i3], vertices[i3 + 1], vertices[i3 + 2]);
         }
 
         /**
