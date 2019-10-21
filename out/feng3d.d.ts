@@ -1,3 +1,6 @@
+declare module 'feng3d' {
+    export = feng3d;
+}
 declare namespace feng3d {
     /**
      * 观察装饰器，观察被装饰属性的变化
@@ -3774,9 +3777,13 @@ declare namespace feng3d {
          */
         y: number;
         /**
-         * 从 (0,0) 到此点的线段长度。
+         * 长度
          */
         readonly length: number;
+        /**
+        * 长度的平方
+        */
+        readonly lengthSquared: number;
         /**
          * 将 Point 的成员设置为指定值
          * @param x 该对象的x属性值
@@ -3806,9 +3813,15 @@ declare namespace feng3d {
          */
         copy(sourcePoint: Vector2): this;
         /**
-         * 将另一个点的坐标添加到此点的坐标以创建一个新点。
-         * @param v 要添加的点。
-         * @returns 新点。
+         * 加上指定向量得到新向量
+         * @param v 加向量
+         * @return 返回新向量
+         */
+        add(a: Vector2): this;
+        /**
+         * 加上指定向量得到新向量
+         * @param v 加向量
+         * @return 返回新向量
          */
         addTo(v: Vector2, vout?: Vector2): Vector2;
         /**
@@ -3824,6 +3837,14 @@ declare namespace feng3d {
          * 按标量（大小）缩放当前的 Vector3 对象。
          */
         scale(s: number): Vector2;
+        /**
+         * 按标量（大小）缩放当前的 Vector3 对象。
+         */
+        scaleNumber(s: number): this;
+        /**
+         * 按标量（大小）缩放当前的 Vector3 对象。
+         */
+        scaleNumberTo(s: number, vout?: Vector2): Vector2;
         /**
          * 按指定量偏移 Point 对象。dx 的值将添加到 x 的原始值中以创建新的 x 值。dy 的值将添加到 y 的原始值中以创建新的 y 值。
          * @param dx 水平坐标 x 的偏移量。
@@ -3971,7 +3992,8 @@ declare namespace feng3d {
         /**
         * 当前 Vector3 对象的长度（大小），即从原点 (0,0,0) 到该对象的 x、y 和 z 坐标的距离。w 属性将被忽略。单位矢量具有的长度或大小为一。
         */
-        readonly length: number;
+        length: number;
+        setLength(length: number): this;
         /**
         * 当前 Vector3 对象长度的平方，它是使用 x、y 和 z 属性计算出来的。w 属性将被忽略。尽可能使用 lengthSquared() 方法，而不要使用 Vector3.length() 方法的 Math.sqrt() 方法调用，后者速度较慢。
         */
@@ -20872,15 +20894,6 @@ declare namespace CANNON {
         boxHeightfield(si: Shape, sj: Shape, xi: Vec3, xj: Vec3, qi: Quaternion, qj: Quaternion, bi: Body, bj: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         convexHeightfield(convexShape: Shape, hfShape: any, convexPos: Vec3, hfPos: Vec3, convexQuat: Quaternion, hfQuat: Quaternion, convexBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
         sphereHeightfield(sphereShape: Shape, hfShape: any, spherePos: Vec3, hfPos: Vec3, sphereQuat: Quaternion, hfQuat: Quaternion, sphereBody: Body, hfBody: Body, rsi: Shape, rsj: Shape, justTest: boolean): boolean;
-    }
-}
-declare namespace feng3d {
-    /**
-     * @author Eberhard Graether / http://egraether.com/
-     * @author Mark Lundin  / http://mark-lundin.com
-     */
-    class TrackballControls extends EventDispatcher {
-        constructor(object: any, domElement: any);
     }
 }
 declare namespace feng3d {
