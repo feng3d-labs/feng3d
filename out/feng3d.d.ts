@@ -13491,6 +13491,13 @@ declare namespace feng3d {
             index: number;
         };
         /**
+         * 获取顶点列表
+         *
+         * @param result
+         */
+        getVertices(result?: feng3d.Vector3[]): Vector3[];
+        getFaces(result?: number[][]): number[][];
+        /**
          * 克隆一个几何体
          */
         clone(): CustomGeometry;

@@ -435,6 +435,33 @@ namespace feng3d
         }
 
         /**
+         * 获取顶点列表
+         * 
+         * @param result 
+         */
+        getVertices(result: feng3d.Vector3[] = [])
+        {
+            var positions = this.positions;
+            var result: feng3d.Vector3[] = []
+            for (let i = 0, n = positions.length; i < n; i += 3)
+            {
+                result.push(new feng3d.Vector3(positions[i], positions[i + 1], positions[i + 2]));
+            }
+
+            return result;
+        }
+
+        getFaces(result: number[][] = [])
+        {
+            var indices = this.indices;
+            for (let i = 0, n = indices.length; i < n; i += 3)
+            {
+                result.push([indices[i], indices[i + 1], indices[i + 2]]);
+            }
+            return result;
+        }
+
+        /**
          * 克隆一个几何体
          */
         clone()

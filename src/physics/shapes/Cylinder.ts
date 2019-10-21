@@ -15,6 +15,14 @@ namespace CANNON
          */
         constructor(radiusTop: number, radiusBottom: number, height: number, numSegments: number)
         {
+            // var g = new feng3d.CylinderGeometry();
+            // g.topRadius = radiusTop;
+            // g.bottomRadius = radiusBottom;
+            // g.height = height;
+            // g.segmentsW = numSegments;
+
+
+
             var N = numSegments;
             var verts: feng3d.Vector3[] = [];
             var axes: feng3d.Vector3[] = [];

@@ -19,17 +19,8 @@ namespace CANNON
             g.height = halfExtents.y * 2;
             g.depth = halfExtents.z * 2;
 
-            var vertices: feng3d.Vector3[] = []
-            for (let i = 0, n = g.positions.length; i < n; i += 3)
-            {
-                vertices.push(new feng3d.Vector3(g.positions[i], g.positions[i + 1], g.positions[i + 2]));
-            }
-
-            var indices: number[][] = [];
-            for (let i = 0, n = g.indices.length; i < n; i += 3)
-            {
-                indices.push([g.indices[i], g.indices[i + 1], g.indices[i + 2]]);
-            }
+            var vertices = g.getVertices();
+            var indices: number[][] = g.getFaces();
 
             super(vertices, indices);
             this.type = ShapeType.BOX;

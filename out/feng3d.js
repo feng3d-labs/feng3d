@@ -26065,6 +26065,28 @@ var feng3d;
             return result;
         };
         /**
+         * 获取顶点列表
+         *
+         * @param result
+         */
+        Geometry.prototype.getVertices = function (result) {
+            if (result === void 0) { result = []; }
+            var positions = this.positions;
+            var result = [];
+            for (var i = 0, n = positions.length; i < n; i += 3) {
+                result.push(new feng3d.Vector3(positions[i], positions[i + 1], positions[i + 2]));
+            }
+            return result;
+        };
+        Geometry.prototype.getFaces = function (result) {
+            if (result === void 0) { result = []; }
+            var indices = this.indices;
+            for (var i = 0, n = indices.length; i < n; i += 3) {
+                result.push([indices[i], indices[i + 1], indices[i + 2]]);
+            }
+            return result;
+        };
+        /**
          * 克隆一个几何体
          */
         Geometry.prototype.clone = function () {
@@ -39339,14 +39361,8 @@ var CANNON;
             g.width = halfExtents.x * 2;
             g.height = halfExtents.y * 2;
             g.depth = halfExtents.z * 2;
-            var vertices = [];
-            for (var i = 0, n = g.positions.length; i < n; i += 3) {
-                vertices.push(new feng3d.Vector3(g.positions[i], g.positions[i + 1], g.positions[i + 2]));
-            }
-            var indices = [];
-            for (var i = 0, n = g.indices.length; i < n; i += 3) {
-                indices.push([g.indices[i], g.indices[i + 1], g.indices[i + 2]]);
-            }
+            var vertices = g.getVertices();
+            var indices = g.getFaces();
             _this = _super.call(this, vertices, indices) || this;
             _this.type = CANNON.ShapeType.BOX;
             _this.halfExtents = halfExtents;
@@ -39408,6 +39424,11 @@ var CANNON;
          * @param numSegments 圆周分段数
          */
         function Cylinder(radiusTop, radiusBottom, height, numSegments) {
+            // var g = new feng3d.CylinderGeometry();
+            // g.topRadius = radiusTop;
+            // g.bottomRadius = radiusBottom;
+            // g.height = height;
+            // g.segmentsW = numSegments;
             var _this = this;
             var N = numSegments;
             var verts = [];
