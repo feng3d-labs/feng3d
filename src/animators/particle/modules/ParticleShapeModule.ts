@@ -21,7 +21,7 @@ namespace feng3d
             this._type = v;
             this._onTypeChanged();
         }
-        private _type = ParticleSystemShapeType.Cone;
+        private _type: ParticleSystemShapeType;
 
         /**
          * 发射形状
@@ -29,6 +29,12 @@ namespace feng3d
         @serialize
         @oav({ component: "OAVObjectView" })
         shape: ParticleSystemShape;
+
+        constructor()
+        {
+            super();
+            this.type = ParticleSystemShapeType.Cone;
+        }
 
         /**
          * 初始化粒子状态

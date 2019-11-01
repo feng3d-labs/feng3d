@@ -33653,8 +33653,8 @@ var feng3d;
     var ParticleShapeModule = /** @class */ (function (_super) {
         __extends(ParticleShapeModule, _super);
         function ParticleShapeModule() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this._type = feng3d.ParticleSystemShapeType.Cone;
+            var _this = _super.call(this) || this;
+            _this.type = feng3d.ParticleSystemShapeType.Cone;
             return _this;
         }
         Object.defineProperty(ParticleShapeModule.prototype, "type", {

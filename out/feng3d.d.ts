@@ -14825,6 +14825,7 @@ declare namespace feng3d {
          * 发射形状
          */
         shape: ParticleSystemShape;
+        constructor();
         /**
          * 初始化粒子状态
          * @param particle 粒子
