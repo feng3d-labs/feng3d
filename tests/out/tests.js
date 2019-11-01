@@ -3275,7 +3275,7 @@ QUnit.module("Object", function () {
         var iframe = document.createElement('iframe');
         iframe.name = "test Object.isObject IFrame";
         document.body.appendChild(iframe);
-        var xObject = window.frames[window.frames.length - 1].Object;
+        var xObject = window.frames[window.frames.length - 1]["Object"];
         var obj = new xObject();
         assert.ok(Object.isObject(obj));
         assert.ok(Object != obj.constructor);
@@ -4844,6 +4844,7 @@ QUnit.module("watcher", function () {
     });
 });
 //# sourceMappingURL=tests.js.map
+console.log("feng3d-tests-0.0.3");
 console.log("feng3d-tests-0.0.3");
 (function universalModuleDefinition(root, factory)
 {

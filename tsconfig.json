@@ -158,8 +158,6 @@
         "src/render/gl/enums/TextureWrap.ts",
         "src/render/gl/enums/AttributeDataType.ts",
         "src/render/gl/enums/DepthFunc.ts",
-        "src/render/gl/webglExt.ts",
-        "src/render/gl/webgl2.ts",
         "src/render/gl/GL.ts",
         "src/render/gl/GLExtension.ts",
         "src/render/gl/WebGLCapabilities.ts",

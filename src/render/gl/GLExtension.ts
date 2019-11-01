@@ -5,30 +5,30 @@ namespace feng3d
      */
     export class GLExtension
     {
-        aNGLEInstancedArrays: ANGLEInstancedArrays;
-        eXTBlendMinMax: EXTBlendMinMax;
-        eXTColorBufferHalfFloat: EXTColorBufferHalfFloat;
-        eXTFragDepth: EXTFragDepth;
-        eXTsRGB: EXTsRGB;
-        eXTShaderTextureLOD: EXTShaderTextureLOD;
-        eXTTextureFilterAnisotropic: EXTTextureFilterAnisotropic;
-        oESElementIndexUint: OESElementIndexUint;
-        oESStandardDerivatives: OESStandardDerivatives;
-        oESTextureFloat: OESTextureFloat;
-        oESTextureFloatLinear: OESTextureFloatLinear;
-        oESTextureHalfFloat: OESTextureHalfFloat;
-        oESTextureHalfFloatLinear: OESTextureHalfFloatLinear;
-        oESVertexArrayObject: OESVertexArrayObject;
-        webGLColorBufferFloat: WebGLColorBufferFloat;
-        webGLCompressedTextureATC: WebGLCompressedTextureATC;
-        webGLCompressedTextureETC1: WebGLCompressedTextureETC1;
-        webGLCompressedTexturePVRTC: WebGLCompressedTexturePVRTC;
-        webGLCompressedTextureS3TC: WebGLCompressedTextureS3TC;
-        webGLDebugRendererInfo: WebGLDebugRendererInfo;
-        webGLDebugShaders: WebGLDebugShaders;
-        webGLDepthTexture: WebGLDepthTexture;
-        webGLDrawBuffers: WebGLDrawBuffers;
-        webGLLoseContext: WebGLLoseContext;
+        aNGLEInstancedArrays: ANGLE_instanced_arrays;
+        eXTBlendMinMax: EXT_blend_minmax;
+        eXTColorBufferHalfFloat: any;
+        eXTFragDepth: EXT_frag_depth;
+        eXTsRGB: EXT_sRGB;
+        eXTShaderTextureLOD: EXT_shader_texture_lod;
+        eXTTextureFilterAnisotropic: EXT_texture_filter_anisotropic;
+        oESElementIndexUint: OES_element_index_uint;
+        oESStandardDerivatives: OES_standard_derivatives;
+        oESTextureFloat: OES_texture_float;
+        oESTextureFloatLinear: OES_texture_float_linear;
+        oESTextureHalfFloat: OES_texture_half_float;
+        oESTextureHalfFloatLinear: OES_texture_half_float_linear;
+        oESVertexArrayObject: OES_vertex_array_object;
+        webGLColorBufferFloat: WEBGL_color_buffer_float;
+        webGLCompressedTextureATC: any;
+        webGLCompressedTextureETC1: any;
+        webGLCompressedTexturePVRTC: any;
+        webGLCompressedTextureS3TC: WEBGL_compressed_texture_s3tc;
+        webGLDebugRendererInfo: WEBGL_debug_renderer_info;
+        webGLDebugShaders: WEBGL_debug_shaders;
+        webGLDepthTexture: WEBGL_depth_texture;
+        webGLDrawBuffers: WEBGL_draw_buffers;
+        webGLLoseContext: any;
 
         constructor(gl: GL)
         {

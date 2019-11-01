@@ -1,9 +1,6 @@
 declare module 'feng3d' {
     export = feng3d;
 }
-declare module 'feng3d' {
-    export = feng3d;
-}
 declare namespace feng3d {
     /**
      * 观察装饰器，观察被装饰属性的变化
@@ -336,7 +333,7 @@ declare namespace feng3d {
     /**
      * 默认序列化工具
      */
-    var serialization: Serialization;
+    export var serialization: Serialization;
     /**
      * 序列化装饰器
      *
@@ -345,7 +342,7 @@ declare namespace feng3d {
      * @param {*} target                序列化原型
      * @param {string} propertyKey      序列化属性
      */
-    function serialize(target: any, propertyKey: string): void;
+    export function serialize(target: any, propertyKey: string): void;
     /**
      * 序列化属性函数项
      */
@@ -383,7 +380,7 @@ declare namespace feng3d {
     /**
      * 序列化
      */
-    class Serialization {
+    export class Serialization {
         /**
          * 序列化函数列表
          */
@@ -452,11 +449,12 @@ declare namespace feng3d {
          */
         clone<T>(target: T): T;
     }
-    var CLASS_KEY: string;
-    interface SerializationTempInfo {
+    export var CLASS_KEY: string;
+    export interface SerializationTempInfo {
         loadingNum?: number;
         onLoaded?: () => void;
     }
+    export {};
 }
 declare namespace feng3d {
     /**
@@ -1462,7 +1460,7 @@ declare namespace feng3d {
      * @see http://nodejs.cn/api/path.html
      * @see https://github.com/nodejs/node/blob/master/lib/path.js
      */
-    var path: Path;
+    export var path: Path;
     /**
      * 路径
      */
@@ -1591,6 +1589,7 @@ declare namespace feng3d {
          */
         name?: string;
     }
+    export {};
 }
 declare namespace feng3d {
     /**
@@ -1672,7 +1671,7 @@ declare namespace feng3d {
          * @param a 比较值a
          * @param b 比较值b
          */
-        static defaultCompareFunction(a: string | number, b: string | number): 0 | 1 | -1;
+        static defaultCompareFunction(a: string | number, b: string | number): 1 | 0 | -1;
         private compare;
         /**
          * 构建比较器
@@ -2436,14 +2435,14 @@ declare namespace feng3d {
          * @param a 元素a
          * @param b 元素b
          */
-        comparePriority(a: T, b: T): 0 | 1 | -1;
+        comparePriority(a: T, b: T): 1 | 0 | -1;
         /**
          * 比较两个元素大小
          *
          * @param a 元素a
          * @param b 元素b
          */
-        compareValue(a: T, b: T): 0 | 1 | -1;
+        compareValue(a: T, b: T): 1 | 0 | -1;
     }
 }
 declare namespace feng3d {
@@ -2663,7 +2662,7 @@ declare namespace feng3d {
          *
          * @param vertex 顶点
          */
-        getNeighbors(vertex: GraphVertex<T>): GraphVertex<T>[];
+        getNeighbors(vertex: GraphVertex<T>): any;
         /**
          * 获取所有顶点
          */
@@ -2781,7 +2780,7 @@ declare namespace feng3d {
         /**
          * 获取相邻顶点
          */
-        getNeighbors(): GraphVertex<T>[];
+        getNeighbors(): any;
         /**
          * 获取边列表
          */
@@ -6618,7 +6617,7 @@ declare namespace feng3d {
          * @return 点相对于几何体位置；0:在几何体表面上，1：在几何体外，-1：在几何体内
          * 方案：当指定点不在几何体上时，在几何体上找到距离指定点最近点，最近点到给定点形成的向量与最近点所在面（当最近点在多个面上时取点乘摸最大的面）法线点乘大于0时给定点在几何体内，否则在几何体外。
          */
-        classifyPoint(p: Vector3): 0 | 1 | -1;
+        classifyPoint(p: Vector3): 1 | 0 | -1;
         /**
          * 是否包含指定点
          * @param p 点
@@ -6629,7 +6628,7 @@ declare namespace feng3d {
          * @param segment 线段
          * @return 线段相对于几何体位置；0:在几何体表面上，1：在几何体外，-1：在几何体内，2：横跨几何体
          */
-        classifySegment(segment: Segment3D): 0 | 1 | -1 | 2;
+        classifySegment(segment: Segment3D): 1 | 0 | -1 | 2;
         /**
          * 给指定三角形分类
          * @param triangle 三角形
@@ -7288,15 +7287,15 @@ declare namespace feng3d {
     /**
      * 事件
      */
-    var event: FEvent;
+    export var event: FEvent;
     /**
      * 只针对Object的事件
      */
-    var objectevent: ObjectEventDispatcher<Object, ObjectEventType>;
+    export var objectevent: ObjectEventDispatcher<Object, ObjectEventType>;
     /**
      * Object 事件类型
      */
-    interface ObjectEventType {
+    export interface ObjectEventType {
         /**
          * 属性值变化
          */
@@ -7309,7 +7308,7 @@ declare namespace feng3d {
     /**
      * 用于适配不同对象对于的事件
      */
-    interface ObjectEventDispatcher<O, T> {
+    export interface ObjectEventDispatcher<O, T> {
         once<K extends keyof T>(target: O, type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof T>(target: O, type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
         has<K extends keyof T>(target: O, type: K): boolean;
@@ -7319,7 +7318,7 @@ declare namespace feng3d {
     /**
      * 事件
      */
-    class FEvent {
+    export class FEvent {
         private feventMap;
         private getBubbleTargets;
         /**
@@ -7396,7 +7395,7 @@ declare namespace feng3d {
     /**
      * 事件
      */
-    interface Event<T> {
+    export interface Event<T> {
         /**
          * 事件的类型。类型区分大小写。
          */
@@ -7455,6 +7454,7 @@ declare namespace feng3d {
          */
         once: boolean;
     }
+    export {};
 }
 declare namespace feng3d {
     /**
@@ -7655,11 +7655,11 @@ declare namespace feng3d {
     /**
      * 任务，用于处理任务之间依赖
      */
-    var task: Task;
+    export var task: Task;
     /**
      * 任务函数
      */
-    interface TaskFunction {
+    export interface TaskFunction {
         /**
          * 函数自身名称
          */
@@ -7708,6 +7708,7 @@ declare namespace feng3d {
          */
         seriesResults<P, R>(ps: P[], fn: (p: P, callback: (r: R) => void) => void, done: (rs: R[]) => void): void;
     }
+    export {};
 }
 declare namespace feng3d {
     /**
@@ -7833,7 +7834,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    var loadjs: {
+    export var loadjs: {
         load: typeof load;
         ready: typeof ready;
     };
@@ -7878,6 +7879,7 @@ declare namespace feng3d {
         success?: () => void;
         error?: (pathsNotFound?: string[]) => void;
     }): void;
+    export {};
 }
 declare namespace feng3d {
     /**
@@ -9709,1177 +9711,6 @@ declare namespace feng3d {
         ALWAYS = "ALWAYS"
     }
 }
-interface HTMLCanvasElement {
-    getContext(contextId: "webgl"): WebGLRenderingContext;
-}
-interface WebGLRenderingContext {
-    getExtension(name: "ANGLE_instanced_arrays"): ANGLEInstancedArrays;
-    getExtension(name: "EXT_blend_minmax"): EXTBlendMinMax;
-    getExtension(name: "EXT_color_buffer_half_float"): EXTColorBufferHalfFloat;
-    getExtension(name: "EXT_frag_depth"): EXTFragDepth;
-    getExtension(name: "EXT_sRGB"): EXTsRGB;
-    getExtension(name: "EXT_shader_texture_lod"): EXTShaderTextureLOD;
-    getExtension(name: "EXT_texture_filter_anisotropic"): EXTTextureFilterAnisotropic;
-    getExtension(name: "OES_element_index_uint"): OESElementIndexUint;
-    getExtension(name: "OES_standard_derivatives"): OESStandardDerivatives;
-    getExtension(name: "OES_texture_float"): OESTextureFloat;
-    getExtension(name: "OES_texture_float_linear"): OESTextureFloatLinear;
-    getExtension(name: "OES_texture_half_float"): OESTextureHalfFloat;
-    getExtension(name: "OES_texture_half_float_linear"): OESTextureHalfFloatLinear;
-    getExtension(name: "OES_vertex_array_object"): OESVertexArrayObject;
-    getExtension(name: "WEBGL_color_buffer_float"): WebGLColorBufferFloat;
-    getExtension(name: "WEBGL_compressed_texture_atc"): WebGLCompressedTextureATC;
-    getExtension(name: "WEBGL_compressed_texture_etc1"): WebGLCompressedTextureETC1;
-    getExtension(name: "WEBGL_compressed_texture_pvrtc"): WebGLCompressedTexturePVRTC;
-    getExtension(name: "WEBGL_compressed_texture_s3tc"): WebGLCompressedTextureS3TC;
-    getExtension(name: "WEBGL_debug_renderer_info"): WebGLDebugRendererInfo;
-    getExtension(name: "WEBGL_debug_shaders"): WebGLDebugShaders;
-    getExtension(name: "WEBGL_depth_texture"): WebGLDepthTexture;
-    getExtension(name: "WEBGL_draw_buffers"): WebGLDrawBuffers;
-    getExtension(name: "WEBGL_lose_context"): WebGLLoseContext;
-    getExtension(name: "WEBKIT_EXT_texture_filter_anisotropic"): EXTTextureFilterAnisotropic;
-    getExtension(name: "WEBKIT_WEBGL_compressed_texture_atc"): WebGLCompressedTextureATC;
-    getExtension(name: "WEBKIT_WEBGL_compressed_texture_pvrtc"): WebGLCompressedTexturePVRTC;
-    getExtension(name: "WEBKIT_WEBGL_compressed_texture_s3tc"): WebGLCompressedTextureS3TC;
-    getExtension(name: "WEBKIT_WEBGL_depth_texture"): WebGLDepthTexture;
-    getExtension(name: "WEBKIT_WEBGL_lose_context"): WebGLLoseContext;
-    getExtension(name: "MOZ_WEBGL_compressed_texture_s3tc"): WebGLCompressedTextureS3TC;
-    getExtension(name: "MOZ_WEBGL_depth_texture"): WebGLDepthTexture;
-    getExtension(name: "MOZ_WEBGL_lose_context"): WebGLLoseContext;
-}
-interface ANGLEInstancedArrays {
-    VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE: number;
-    drawArraysInstancedANGLE(mode: number, first: number, count: number, primcount: number): void;
-    drawElementsInstancedANGLE(mode: number, count: number, type: number, offset: number, primcount: number): void;
-    vertexAttribDivisorANGLE(index: number, divisor: number): void;
-}
-interface EXTBlendMinMax {
-    MIN_EXT: number;
-    MAX_EXT: number;
-}
-interface EXTColorBufferHalfFloat {
-    RGBA16F_EXT: number;
-    RGB16F_EXT: number;
-    FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE_EXT: number;
-    UNSIGNED_NORMALIZED_EXT: number;
-}
-interface EXTFragDepth {
-}
-interface EXTsRGB {
-    SRGB_EXT: number;
-    SRGB_ALPHA_EXT: number;
-    SRGB8_ALPHA8_EXT: number;
-    FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT: number;
-}
-interface EXTShaderTextureLOD {
-}
-/**
- * 纹理各向异性过滤扩展
- */
-interface EXTTextureFilterAnisotropic {
-    TEXTURE_MAX_ANISOTROPY_EXT: number;
-    MAX_TEXTURE_MAX_ANISOTROPY_EXT: number;
-}
-interface OESElementIndexUint {
-}
-interface OESStandardDerivatives {
-    FRAGMENT_SHADER_DERIVATIVE_HINT_OES: number;
-}
-interface OESTextureFloat {
-}
-interface OESTextureFloatLinear {
-}
-interface OESTextureHalfFloat {
-    HALF_FLOAT_OES: number;
-}
-interface OESTextureHalfFloatLinear {
-}
-interface WebGLVertexArrayObjectOES extends WebGLObject {
-}
-interface OESVertexArrayObject {
-    VERTEX_ARRAY_BINDING_OES: number;
-    createVertexArrayOES(): WebGLVertexArrayObjectOES | null;
-    deleteVertexArrayOES(arrayObject: WebGLVertexArrayObjectOES | null): void;
-    isVertexArrayOES(arrayObject: WebGLVertexArrayObjectOES | null): boolean;
-    bindVertexArrayOES(arrayObject: WebGLVertexArrayObjectOES | null): void;
-}
-interface WebGLColorBufferFloat {
-    RGBA32F_EXT: number;
-    FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE_EXT: number;
-    UNSIGNED_NORMALIZED_EXT: number;
-}
-interface WebGLCompressedTextureATC {
-    COMPRESSED_RGB_ATC_WEBGL: number;
-    COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL: number;
-    COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL: number;
-}
-interface WebGLCompressedTextureETC1 {
-    COMPRESSED_RGB_ETC1_WEBGL: number;
-}
-interface WebGLCompressedTexturePVRTC {
-    COMPRESSED_RGB_PVRTC_4BPPV1_IMG: number;
-    COMPRESSED_RGB_PVRTC_2BPPV1_IMG: number;
-    COMPRESSED_RGBA_PVRTC_4BPPV1_IMG: number;
-    COMPRESSED_RGBA_PVRTC_2BPPV1_IMG: number;
-}
-interface WebGLCompressedTextureS3TC {
-    COMPRESSED_RGB_S3TC_DXT1_EXT: number;
-    COMPRESSED_RGBA_S3TC_DXT1_EXT: number;
-    COMPRESSED_RGBA_S3TC_DXT3_EXT: number;
-    COMPRESSED_RGBA_S3TC_DXT5_EXT: number;
-}
-interface WebGLDebugRendererInfo {
-    UNMASKED_VENDOR_WEBGL: number;
-    UNMASKED_RENDERER_WEBGL: number;
-}
-interface WebGLDebugShaders {
-    getTranslatedShaderSource(shader: WebGLShader): string;
-}
-interface WebGLDepthTexture {
-    UNSIGNED_INT_24_8_WEBGL: number;
-}
-interface WebGLDrawBuffers {
-    COLOR_ATTACHMENT0_WEBGL: number;
-    COLOR_ATTACHMENT1_WEBGL: number;
-    COLOR_ATTACHMENT2_WEBGL: number;
-    COLOR_ATTACHMENT3_WEBGL: number;
-    COLOR_ATTACHMENT4_WEBGL: number;
-    COLOR_ATTACHMENT5_WEBGL: number;
-    COLOR_ATTACHMENT6_WEBGL: number;
-    COLOR_ATTACHMENT7_WEBGL: number;
-    COLOR_ATTACHMENT8_WEBGL: number;
-    COLOR_ATTACHMENT9_WEBGL: number;
-    COLOR_ATTACHMENT10_WEBGL: number;
-    COLOR_ATTACHMENT11_WEBGL: number;
-    COLOR_ATTACHMENT12_WEBGL: number;
-    COLOR_ATTACHMENT13_WEBGL: number;
-    COLOR_ATTACHMENT14_WEBGL: number;
-    COLOR_ATTACHMENT15_WEBGL: number;
-    DRAW_BUFFER0_WEBGL: number;
-    DRAW_BUFFER1_WEBGL: number;
-    DRAW_BUFFER2_WEBGL: number;
-    DRAW_BUFFER3_WEBGL: number;
-    DRAW_BUFFER4_WEBGL: number;
-    DRAW_BUFFER5_WEBGL: number;
-    DRAW_BUFFER6_WEBGL: number;
-    DRAW_BUFFER7_WEBGL: number;
-    DRAW_BUFFER8_WEBGL: number;
-    DRAW_BUFFER9_WEBGL: number;
-    DRAW_BUFFER10_WEBGL: number;
-    DRAW_BUFFER11_WEBGL: number;
-    DRAW_BUFFER12_WEBGL: number;
-    DRAW_BUFFER13_WEBGL: number;
-    DRAW_BUFFER14_WEBGL: number;
-    DRAW_BUFFER15_WEBGL: number;
-    MAX_COLOR_ATTACHMENTS_WEBGL: number;
-    MAX_DRAW_BUFFERS_WEBGL: number;
-    drawBuffersWEBGL(buffers: number[]): void;
-}
-interface WebGLLoseContext {
-    loseContext(): void;
-    restoreContext(): void;
-}
-interface HTMLCanvasElement extends HTMLElement {
-    getContext(contextId: "webgl2" | "experimental-webgl2", contextAttributes?: WebGLContextAttributes): WebGL2RenderingContext | null;
-}
-interface ImageBitmap {
-    readonly width: number;
-    readonly height: number;
-    close(): void;
-}
-interface WebGL2RenderingContext extends WebGLRenderingContext {
-    readonly READ_BUFFER: number;
-    readonly UNPACK_ROW_LENGTH: number;
-    readonly UNPACK_SKIP_ROWS: number;
-    readonly UNPACK_SKIP_PIXELS: number;
-    readonly PACK_ROW_LENGTH: number;
-    readonly PACK_SKIP_ROWS: number;
-    readonly PACK_SKIP_PIXELS: number;
-    readonly COLOR: number;
-    readonly DEPTH: number;
-    readonly STENCIL: number;
-    readonly RED: number;
-    readonly RGB8: number;
-    readonly RGBA8: number;
-    readonly RGB10_A2: number;
-    readonly TEXTURE_BINDING_3D: number;
-    readonly UNPACK_SKIP_IMAGES: number;
-    readonly UNPACK_IMAGE_HEIGHT: number;
-    readonly TEXTURE_3D: number;
-    readonly TEXTURE_WRAP_R: number;
-    readonly MAX_3D_TEXTURE_SIZE: number;
-    readonly UNSIGNED_INT_2_10_10_10_REV: number;
-    readonly MAX_ELEMENTS_VERTICES: number;
-    readonly MAX_ELEMENTS_INDICES: number;
-    readonly TEXTURE_MIN_LOD: number;
-    readonly TEXTURE_MAX_LOD: number;
-    readonly TEXTURE_BASE_LEVEL: number;
-    readonly TEXTURE_MAX_LEVEL: number;
-    readonly MIN: number;
-    readonly MAX: number;
-    readonly DEPTH_COMPONENT24: number;
-    readonly MAX_TEXTURE_LOD_BIAS: number;
-    readonly TEXTURE_COMPARE_MODE: number;
-    readonly TEXTURE_COMPARE_FUNC: number;
-    readonly CURRENT_QUERY: number;
-    readonly QUERY_RESULT: number;
-    readonly QUERY_RESULT_AVAILABLE: number;
-    readonly STREAM_READ: number;
-    readonly STREAM_COPY: number;
-    readonly STATIC_READ: number;
-    readonly STATIC_COPY: number;
-    readonly DYNAMIC_READ: number;
-    readonly DYNAMIC_COPY: number;
-    readonly MAX_DRAW_BUFFERS: number;
-    readonly DRAW_BUFFER0: number;
-    readonly DRAW_BUFFER1: number;
-    readonly DRAW_BUFFER2: number;
-    readonly DRAW_BUFFER3: number;
-    readonly DRAW_BUFFER4: number;
-    readonly DRAW_BUFFER5: number;
-    readonly DRAW_BUFFER6: number;
-    readonly DRAW_BUFFER7: number;
-    readonly DRAW_BUFFER8: number;
-    readonly DRAW_BUFFER9: number;
-    readonly DRAW_BUFFER10: number;
-    readonly DRAW_BUFFER11: number;
-    readonly DRAW_BUFFER12: number;
-    readonly DRAW_BUFFER13: number;
-    readonly DRAW_BUFFER14: number;
-    readonly DRAW_BUFFER15: number;
-    readonly MAX_FRAGMENT_UNIFORM_COMPONENTS: number;
-    readonly MAX_VERTEX_UNIFORM_COMPONENTS: number;
-    readonly SAMPLER_3D: number;
-    readonly SAMPLER_2D_SHADOW: number;
-    readonly FRAGMENT_SHADER_DERIVATIVE_HINT: number;
-    readonly PIXEL_PACK_BUFFER: number;
-    readonly PIXEL_UNPACK_BUFFER: number;
-    readonly PIXEL_PACK_BUFFER_BINDING: number;
-    readonly PIXEL_UNPACK_BUFFER_BINDING: number;
-    readonly FLOAT_MAT2x3: number;
-    readonly FLOAT_MAT2x4: number;
-    readonly FLOAT_MAT3x2: number;
-    readonly FLOAT_MAT3x4: number;
-    readonly FLOAT_MAT4x2: number;
-    readonly FLOAT_MAT4x3: number;
-    readonly SRGB: number;
-    readonly SRGB8: number;
-    readonly SRGB8_ALPHA8: number;
-    readonly COMPARE_REF_TO_TEXTURE: number;
-    readonly RGBA32F: number;
-    readonly RGB32F: number;
-    readonly RGBA16F: number;
-    readonly RGB16F: number;
-    readonly VERTEX_ATTRIB_ARRAY_INTEGER: number;
-    readonly MAX_ARRAY_TEXTURE_LAYERS: number;
-    readonly MIN_PROGRAM_TEXEL_OFFSET: number;
-    readonly MAX_PROGRAM_TEXEL_OFFSET: number;
-    readonly MAX_VARYING_COMPONENTS: number;
-    readonly TEXTURE_2D_ARRAY: number;
-    readonly TEXTURE_BINDING_2D_ARRAY: number;
-    readonly R11F_G11F_B10F: number;
-    readonly UNSIGNED_INT_10F_11F_11F_REV: number;
-    readonly RGB9_E5: number;
-    readonly UNSIGNED_INT_5_9_9_9_REV: number;
-    readonly TRANSFORM_FEEDBACK_BUFFER_MODE: number;
-    readonly MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS: number;
-    readonly TRANSFORM_FEEDBACK_VARYINGS: number;
-    readonly TRANSFORM_FEEDBACK_BUFFER_START: number;
-    readonly TRANSFORM_FEEDBACK_BUFFER_SIZE: number;
-    readonly TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN: number;
-    readonly RASTERIZER_DISCARD: number;
-    readonly MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS: number;
-    readonly MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS: number;
-    readonly INTERLEAVED_ATTRIBS: number;
-    readonly SEPARATE_ATTRIBS: number;
-    readonly TRANSFORM_FEEDBACK_BUFFER: number;
-    readonly TRANSFORM_FEEDBACK_BUFFER_BINDING: number;
-    readonly RGBA32UI: number;
-    readonly RGB32UI: number;
-    readonly RGBA16UI: number;
-    readonly RGB16UI: number;
-    readonly RGBA8UI: number;
-    readonly RGB8UI: number;
-    readonly RGBA32I: number;
-    readonly RGB32I: number;
-    readonly RGBA16I: number;
-    readonly RGB16I: number;
-    readonly RGBA8I: number;
-    readonly RGB8I: number;
-    readonly RED_INTEGER: number;
-    readonly RGB_INTEGER: number;
-    readonly RGBA_INTEGER: number;
-    readonly SAMPLER_2D_ARRAY: number;
-    readonly SAMPLER_2D_ARRAY_SHADOW: number;
-    readonly SAMPLER_CUBE_SHADOW: number;
-    readonly UNSIGNED_INT_VEC2: number;
-    readonly UNSIGNED_INT_VEC3: number;
-    readonly UNSIGNED_INT_VEC4: number;
-    readonly INT_SAMPLER_2D: number;
-    readonly INT_SAMPLER_3D: number;
-    readonly INT_SAMPLER_CUBE: number;
-    readonly INT_SAMPLER_2D_ARRAY: number;
-    readonly UNSIGNED_INT_SAMPLER_2D: number;
-    readonly UNSIGNED_INT_SAMPLER_3D: number;
-    readonly UNSIGNED_INT_SAMPLER_CUBE: number;
-    readonly UNSIGNED_INT_SAMPLER_2D_ARRAY: number;
-    readonly DEPTH_COMPONENT32F: number;
-    readonly DEPTH32F_STENCIL8: number;
-    readonly FLOAT_32_UNSIGNED_INT_24_8_REV: number;
-    readonly FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING: number;
-    readonly FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE: number;
-    readonly FRAMEBUFFER_ATTACHMENT_RED_SIZE: number;
-    readonly FRAMEBUFFER_ATTACHMENT_GREEN_SIZE: number;
-    readonly FRAMEBUFFER_ATTACHMENT_BLUE_SIZE: number;
-    readonly FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE: number;
-    readonly FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE: number;
-    readonly FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE: number;
-    readonly FRAMEBUFFER_DEFAULT: number;
-    readonly UNSIGNED_INT_24_8: number;
-    readonly DEPTH24_STENCIL8: number;
-    readonly UNSIGNED_NORMALIZED: number;
-    readonly DRAW_FRAMEBUFFER_BINDING: number;
-    readonly READ_FRAMEBUFFER: number;
-    readonly DRAW_FRAMEBUFFER: number;
-    readonly READ_FRAMEBUFFER_BINDING: number;
-    readonly RENDERBUFFER_SAMPLES: number;
-    readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER: number;
-    readonly MAX_COLOR_ATTACHMENTS: number;
-    readonly COLOR_ATTACHMENT1: number;
-    readonly COLOR_ATTACHMENT2: number;
-    readonly COLOR_ATTACHMENT3: number;
-    readonly COLOR_ATTACHMENT4: number;
-    readonly COLOR_ATTACHMENT5: number;
-    readonly COLOR_ATTACHMENT6: number;
-    readonly COLOR_ATTACHMENT7: number;
-    readonly COLOR_ATTACHMENT8: number;
-    readonly COLOR_ATTACHMENT9: number;
-    readonly COLOR_ATTACHMENT10: number;
-    readonly COLOR_ATTACHMENT11: number;
-    readonly COLOR_ATTACHMENT12: number;
-    readonly COLOR_ATTACHMENT13: number;
-    readonly COLOR_ATTACHMENT14: number;
-    readonly COLOR_ATTACHMENT15: number;
-    readonly FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: number;
-    readonly MAX_SAMPLES: number;
-    readonly HALF_FLOAT: number;
-    readonly RG: number;
-    readonly RG_INTEGER: number;
-    readonly R8: number;
-    readonly RG8: number;
-    readonly R16F: number;
-    readonly R32F: number;
-    readonly RG16F: number;
-    readonly RG32F: number;
-    readonly R8I: number;
-    readonly R8UI: number;
-    readonly R16I: number;
-    readonly R16UI: number;
-    readonly R32I: number;
-    readonly R32UI: number;
-    readonly RG8I: number;
-    readonly RG8UI: number;
-    readonly RG16I: number;
-    readonly RG16UI: number;
-    readonly RG32I: number;
-    readonly RG32UI: number;
-    readonly VERTEX_ARRAY_BINDING: number;
-    readonly R8_SNORM: number;
-    readonly RG8_SNORM: number;
-    readonly RGB8_SNORM: number;
-    readonly RGBA8_SNORM: number;
-    readonly SIGNED_NORMALIZED: number;
-    readonly COPY_READ_BUFFER: number;
-    readonly COPY_WRITE_BUFFER: number;
-    readonly COPY_READ_BUFFER_BINDING: number;
-    readonly COPY_WRITE_BUFFER_BINDING: number;
-    readonly UNIFORM_BUFFER: number;
-    readonly UNIFORM_BUFFER_BINDING: number;
-    readonly UNIFORM_BUFFER_START: number;
-    readonly UNIFORM_BUFFER_SIZE: number;
-    readonly MAX_VERTEX_UNIFORM_BLOCKS: number;
-    readonly MAX_FRAGMENT_UNIFORM_BLOCKS: number;
-    readonly MAX_COMBINED_UNIFORM_BLOCKS: number;
-    readonly MAX_UNIFORM_BUFFER_BINDINGS: number;
-    readonly MAX_UNIFORM_BLOCK_SIZE: number;
-    readonly MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS: number;
-    readonly MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS: number;
-    readonly UNIFORM_BUFFER_OFFSET_ALIGNMENT: number;
-    readonly ACTIVE_UNIFORM_BLOCKS: number;
-    readonly UNIFORM_TYPE: number;
-    readonly UNIFORM_SIZE: number;
-    readonly UNIFORM_BLOCK_INDEX: number;
-    readonly UNIFORM_OFFSET: number;
-    readonly UNIFORM_ARRAY_STRIDE: number;
-    readonly UNIFORM_MATRIX_STRIDE: number;
-    readonly UNIFORM_IS_ROW_MAJOR: number;
-    readonly UNIFORM_BLOCK_BINDING: number;
-    readonly UNIFORM_BLOCK_DATA_SIZE: number;
-    readonly UNIFORM_BLOCK_ACTIVE_UNIFORMS: number;
-    readonly UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES: number;
-    readonly UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER: number;
-    readonly UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER: number;
-    readonly INVALID_INDEX: number;
-    readonly MAX_VERTEX_OUTPUT_COMPONENTS: number;
-    readonly MAX_FRAGMENT_INPUT_COMPONENTS: number;
-    readonly MAX_SERVER_WAIT_TIMEOUT: number;
-    readonly OBJECT_TYPE: number;
-    readonly SYNC_CONDITION: number;
-    readonly SYNC_STATUS: number;
-    readonly SYNC_FLAGS: number;
-    readonly SYNC_FENCE: number;
-    readonly SYNC_GPU_COMMANDS_COMPLETE: number;
-    readonly UNSIGNALED: number;
-    readonly SIGNALED: number;
-    readonly ALREADY_SIGNALED: number;
-    readonly TIMEOUT_EXPIRED: number;
-    readonly CONDITION_SATISFIED: number;
-    readonly WAIT_FAILED: number;
-    readonly SYNC_FLUSH_COMMANDS_BIT: number;
-    readonly VERTEX_ATTRIB_ARRAY_DIVISOR: number;
-    readonly ANY_SAMPLES_PASSED: number;
-    readonly ANY_SAMPLES_PASSED_CONSERVATIVE: number;
-    readonly SAMPLER_BINDING: number;
-    readonly RGB10_A2UI: number;
-    readonly INT_2_10_10_10_REV: number;
-    readonly TRANSFORM_FEEDBACK: number;
-    readonly TRANSFORM_FEEDBACK_PAUSED: number;
-    readonly TRANSFORM_FEEDBACK_ACTIVE: number;
-    readonly TRANSFORM_FEEDBACK_BINDING: number;
-    readonly TEXTURE_IMMUTABLE_FORMAT: number;
-    readonly MAX_ELEMENT_INDEX: number;
-    readonly TEXTURE_IMMUTABLE_LEVELS: number;
-    readonly TIMEOUT_IGNORED: number;
-    readonly MAX_CLIENT_WAIT_TIMEOUT_WEBGL: number;
-    bufferData(target: number, sizeOrData: number | Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView | ArrayBuffer | null, usage: number): void;
-    bufferSubData(target: number, dstByteOffset: number, srcData: Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView | ArrayBuffer | null): void;
-    bufferData(target: number, data: ArrayBufferView, usage: number): void;
-    bufferSubData(target: number, dstByteOffset: number, srcData: ArrayBufferView): void;
-    bufferData(target: number, srcData: Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView | ArrayBuffer | null, usage: number, srcOffset: number, length?: number): void;
-    bufferSubData(target: number, dstByteOffset: number, srcData: ArrayBufferView, srcOffset: number, length?: number): void;
-    copyBufferSubData(readTarget: number, writeTarget: number, readOffset: number, writeOffset: number, size: number): void;
-    getBufferSubData(target: number, srcByteOffset: number, dstBuffer: ArrayBufferView, dstOffset?: number, length?: number): void;
-    blitFramebuffer(srcX0: number, srcY0: number, srcX1: number, srcY1: number, dstX0: number, dstY0: number, dstX1: number, dstY1: number, mask: number, filter: number): void;
-    framebufferTextureLayer(target: number, attachment: number, texture: WebGLTexture | null, level: number, layer: number): void;
-    invalidateFramebuffer(target: number, attachments: number[]): void;
-    invalidateSubFramebuffer(target: number, attachments: number[], x: number, y: number, width: number, height: number): void;
-    readBuffer(src: number): void;
-    getInternalformatParameter(target: number, internalformat: number, pname: number): any;
-    renderbufferStorageMultisample(target: number, samples: number, internalformat: number, width: number, height: number): void;
-    texStorage2D(target: number, levels: number, internalformat: number, width: number, height: number): void;
-    texStorage3D(target: number, levels: number, internalformat: number, width: number, height: number, depth: number): void;
-    texImage2D(target: number, level: number, internalformat: number, width: number, height: number, border: number, format: number, type: number, pixels?: ArrayBufferView | null): void;
-    texImage2D(target: number, level: number, internalformat: number, format: number, type: number, source: ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): void;
-    texImage2D(target: number, level: number, internalformat: number, format: number, type: number, source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): void;
-    texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, type: number, pixels?: ArrayBufferView | null): void;
-    texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, source: ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): void;
-    texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): void;
-    texImage2D(target: number, level: number, internalformat: number, width: number, height: number, border: number, format: number, type: number, pboOffset: number): void;
-    texImage2D(target: number, level: number, internalformat: number, width: number, height: number, border: number, format: number, type: number, source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): void;
-    texImage2D(target: number, level: number, internalformat: number, width: number, height: number, border: number, format: number, type: number, srcData: ArrayBufferView, srcOffset: number): void;
-    texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pboOffset: number): void;
-    texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): void;
-    texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, srcData: ArrayBufferView | null): void;
-    texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, srcData: ArrayBufferView, srcOffset: number): void;
-    texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, type: number, pboOffset: number): void;
-    texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, type: number, source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): void;
-    texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, type: number, srcData: ArrayBufferView, srcOffset: number): void;
-    texSubImage3D(target: number, level: number, xoffset: number, yoffset: number, zoffset: number, width: number, height: number, depth: number, format: number, type: number, pboOffset: number): void;
-    texSubImage3D(target: number, level: number, xoffset: number, yoffset: number, zoffset: number, width: number, height: number, depth: number, format: number, type: number, source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement): void;
-    texSubImage3D(target: number, level: number, xoffset: number, yoffset: number, zoffset: number, width: number, height: number, depth: number, format: number, type: number, srcData: ArrayBufferView | null, srcOffset?: number): void;
-    copyTexSubImage3D(target: number, level: number, xoffset: number, yoffset: number, zoffset: number, x: number, y: number, width: number, height: number): void;
-    compressedTexImage2D(target: number, level: number, internalformat: number, width: number, height: number, border: number, imageSize: number, offset: number): void;
-    compressedTexImage2D(target: number, level: number, internalformat: number, width: number, height: number, border: number, srcData: Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView | null, srcOffset?: number, srcLengthOverride?: number): void;
-    compressedTexImage2D(target: number, level: number, internalformat: number, width: number, height: number, border: number, srcData: ArrayBufferView, srcOffset?: number, srcLengthOverride?: number): void;
-    compressedTexImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, imageSize: number, offset: number): void;
-    compressedTexImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, srcData: ArrayBufferView, srcOffset?: number, srcLengthOverride?: number): void;
-    compressedTexSubImage2D(target: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, imageSize: number, offset: number): void;
-    compressedTexSubImage2D(target: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, srcData: Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView | null, srcOffset?: number, srcLengthOverride?: number): void;
-    compressedTexSubImage2D(target: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, srcData: ArrayBufferView | null, srcOffset?: number, srcLengthOverride?: number): void;
-    compressedTexSubImage3D(target: number, level: number, xoffset: number, yoffset: number, zoffset: number, width: number, height: number, depth: number, format: number, imageSize: number, offset: number): void;
-    compressedTexSubImage3D(target: number, level: number, xoffset: number, yoffset: number, zoffset: number, width: number, height: number, depth: number, format: number, srcData: ArrayBufferView, srcOffset?: number, srcLengthOverride?: number): void;
-    getFragDataLocation(program: WebGLProgram, name: string): number;
-    uniform1ui(location: WebGLUniformLocation | null, v0: number): void;
-    uniform2ui(location: WebGLUniformLocation | null, v0: number, v1: number): void;
-    uniform3ui(location: WebGLUniformLocation | null, v0: number, v1: number, v2: number): void;
-    uniform4ui(location: WebGLUniformLocation | null, v0: number, v1: number, v2: number, v3: number): void;
-    uniform1fv(location: WebGLUniformLocation | null, data: Float32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniform2fv(location: WebGLUniformLocation | null, data: Float32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniform3fv(location: WebGLUniformLocation | null, data: Float32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniform4fv(location: WebGLUniformLocation | null, data: Float32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniform1iv(location: WebGLUniformLocation | null, data: Int32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniform2iv(location: WebGLUniformLocation | null, data: Int32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniform3iv(location: WebGLUniformLocation | null, data: Int32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniform4iv(location: WebGLUniformLocation | null, data: Int32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniform1uiv(location: WebGLUniformLocation | null, data: Uint32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniform2uiv(location: WebGLUniformLocation | null, data: Uint32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniform3uiv(location: WebGLUniformLocation | null, data: Uint32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniform4uiv(location: WebGLUniformLocation | null, data: Uint32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniformMatrix2fv(location: WebGLUniformLocation | null, transpose: boolean, data: Float32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniformMatrix3x2fv(location: WebGLUniformLocation | null, transpose: boolean, data: Float32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniformMatrix4x2fv(location: WebGLUniformLocation | null, transpose: boolean, data: Float32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniformMatrix2x3fv(location: WebGLUniformLocation | null, transpose: boolean, data: Float32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniformMatrix3fv(location: WebGLUniformLocation | null, transpose: boolean, data: Float32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniformMatrix4x3fv(location: WebGLUniformLocation | null, transpose: boolean, data: Float32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniformMatrix2x4fv(location: WebGLUniformLocation | null, transpose: boolean, data: Float32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniformMatrix3x4fv(location: WebGLUniformLocation | null, transpose: boolean, data: Float32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    uniformMatrix4fv(location: WebGLUniformLocation | null, transpose: boolean, data: Float32Array | ArrayLike<number>, srcOffset?: number, srcLength?: number): void;
-    vertexAttribI4i(index: number, x: number, y: number, z: number, w: number): void;
-    vertexAttribI4iv(index: number, values: Int32Array | ArrayLike<number>): void;
-    vertexAttribI4ui(index: number, x: number, y: number, z: number, w: number): void;
-    vertexAttribI4uiv(index: number, values: Uint32Array | ArrayLike<number>): void;
-    vertexAttribIPointer(index: number, size: number, type: number, stride: number, offset: number): void;
-    vertexAttribDivisor(index: number, divisor: number): void;
-    drawArraysInstanced(mode: number, first: number, count: number, instanceCount: number): void;
-    drawElementsInstanced(mode: number, count: number, type: number, offset: number, instanceCount: number): void;
-    drawRangeElements(mode: number, start: number, end: number, count: number, type: number, offset: number): void;
-    readPixels(x: number, y: number, width: number, height: number, format: number, type: number, dstData: Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView | null): void;
-    readPixels(x: number, y: number, width: number, height: number, format: number, type: number, dstData: ArrayBufferView | null): void;
-    readPixels(x: number, y: number, width: number, height: number, format: number, type: number, offset: number): void;
-    readPixels(x: number, y: number, width: number, height: number, format: number, type: number, dstData: ArrayBufferView, dstOffset: number): void;
-    drawBuffers(buffers: number[]): void;
-    clearBufferfv(buffer: number, drawbuffer: number, values: Float32Array | ArrayLike<number>, srcOffset?: number): void;
-    clearBufferiv(buffer: number, drawbuffer: number, values: Int32Array | ArrayLike<number>, srcOffset?: number): void;
-    clearBufferuiv(buffer: number, drawbuffer: number, values: Uint32Array | ArrayLike<number>, srcOffset?: number): void;
-    clearBufferfi(buffer: number, drawbuffer: number, depth: number, stencil: number): void;
-    createQuery(): WebGLQuery | null;
-    deleteQuery(query: WebGLQuery | null): void;
-    isQuery(query: WebGLQuery | null): boolean;
-    beginQuery(target: number, query: WebGLQuery): void;
-    endQuery(target: number): void;
-    getQuery(target: number, pname: number): WebGLQuery | null;
-    getQueryParameter(query: WebGLQuery, pname: number): any;
-    createSampler(): WebGLSampler | null;
-    deleteSampler(sampler: WebGLSampler | null): void;
-    isSampler(sampler: WebGLSampler | null): boolean;
-    bindSampler(unit: number, sampler: WebGLSampler | null): void;
-    samplerParameteri(sampler: WebGLSampler, pname: number, param: number): void;
-    samplerParameterf(sampler: WebGLSampler, pname: number, param: number): void;
-    getSamplerParameter(sampler: WebGLSampler, pname: number): any;
-    fenceSync(condition: number, flags: number): WebGLSync | null;
-    isSync(sync: WebGLSync | null): boolean;
-    deleteSync(sync: WebGLSync | null): void;
-    clientWaitSync(sync: WebGLSync, flags: number, timeout: number): number;
-    waitSync(sync: WebGLSync, flags: number, timeout: number): void;
-    getSyncParameter(sync: WebGLSync, pname: number): any;
-    createTransformFeedback(): WebGLTransformFeedback | null;
-    deleteTransformFeedback(tf: WebGLTransformFeedback | null): void;
-    isTransformFeedback(tf: WebGLTransformFeedback | null): boolean;
-    bindTransformFeedback(target: number, tf: WebGLTransformFeedback | null): void;
-    beginTransformFeedback(primitiveMode: number): void;
-    endTransformFeedback(): void;
-    transformFeedbackVaryings(program: WebGLProgram, varyings: string[], bufferMode: number): void;
-    getTransformFeedbackVarying(program: WebGLProgram, index: number): WebGLActiveInfo | null;
-    pauseTransformFeedback(): void;
-    resumeTransformFeedback(): void;
-    bindBufferBase(target: number, index: number, buffer: WebGLBuffer | null): void;
-    bindBufferRange(target: number, index: number, buffer: WebGLBuffer | null, offset: number, size: number): void;
-    getIndexedParameter(target: number, index: number): any;
-    getUniformIndices(program: WebGLProgram, uniformNames: string[]): number[] | null;
-    getActiveUniforms(program: WebGLProgram, uniformIndices: number[], pname: number): any;
-    getUniformBlockIndex(program: WebGLProgram, uniformBlockName: string): number;
-    getActiveUniformBlockParameter(program: WebGLProgram, uniformBlockIndex: number, pname: number): any;
-    getActiveUniformBlockName(program: WebGLProgram, uniformBlockIndex: number): string | null;
-    uniformBlockBinding(program: WebGLProgram, uniformBlockIndex: number, uniformBlockBinding: number): void;
-    createVertexArray(): WebGLVertexArrayObject | null;
-    deleteVertexArray(vertexArray: WebGLVertexArrayObject | null): void;
-    isVertexArray(vertexArray: WebGLVertexArrayObject | null): boolean;
-    bindVertexArray(array: WebGLVertexArrayObject | null): void;
-}
-declare var WebGL2RenderingContext: {
-    prototype: WebGL2RenderingContext;
-    new (): WebGL2RenderingContext;
-    readonly ACTIVE_ATTRIBUTES: number;
-    readonly ACTIVE_TEXTURE: number;
-    readonly ACTIVE_UNIFORMS: number;
-    readonly ALIASED_LINE_WIDTH_RANGE: number;
-    readonly ALIASED_POINT_SIZE_RANGE: number;
-    readonly ALPHA: number;
-    readonly ALPHA_BITS: number;
-    readonly ALWAYS: number;
-    readonly ARRAY_BUFFER: number;
-    readonly ARRAY_BUFFER_BINDING: number;
-    readonly ATTACHED_SHADERS: number;
-    readonly BACK: number;
-    readonly BLEND: number;
-    readonly BLEND_COLOR: number;
-    readonly BLEND_DST_ALPHA: number;
-    readonly BLEND_DST_RGB: number;
-    readonly BLEND_EQUATION: number;
-    readonly BLEND_EQUATION_ALPHA: number;
-    readonly BLEND_EQUATION_RGB: number;
-    readonly BLEND_SRC_ALPHA: number;
-    readonly BLEND_SRC_RGB: number;
-    readonly BLUE_BITS: number;
-    readonly BOOL: number;
-    readonly BOOL_VEC2: number;
-    readonly BOOL_VEC3: number;
-    readonly BOOL_VEC4: number;
-    readonly BROWSER_DEFAULT_WEBGL: number;
-    readonly BUFFER_SIZE: number;
-    readonly BUFFER_USAGE: number;
-    readonly BYTE: number;
-    readonly CCW: number;
-    readonly CLAMP_TO_EDGE: number;
-    readonly COLOR_ATTACHMENT0: number;
-    readonly COLOR_BUFFER_BIT: number;
-    readonly COLOR_CLEAR_VALUE: number;
-    readonly COLOR_WRITEMASK: number;
-    readonly COMPILE_STATUS: number;
-    readonly COMPRESSED_TEXTURE_FORMATS: number;
-    readonly CONSTANT_ALPHA: number;
-    readonly CONSTANT_COLOR: number;
-    readonly CONTEXT_LOST_WEBGL: number;
-    readonly CULL_FACE: number;
-    readonly CULL_FACE_MODE: number;
-    readonly CURRENT_PROGRAM: number;
-    readonly CURRENT_VERTEX_ATTRIB: number;
-    readonly CW: number;
-    readonly DECR: number;
-    readonly DECR_WRAP: number;
-    readonly DELETE_STATUS: number;
-    readonly DEPTH_ATTACHMENT: number;
-    readonly DEPTH_BITS: number;
-    readonly DEPTH_BUFFER_BIT: number;
-    readonly DEPTH_CLEAR_VALUE: number;
-    readonly DEPTH_COMPONENT: number;
-    readonly DEPTH_COMPONENT16: number;
-    readonly DEPTH_FUNC: number;
-    readonly DEPTH_RANGE: number;
-    readonly DEPTH_STENCIL: number;
-    readonly DEPTH_STENCIL_ATTACHMENT: number;
-    readonly DEPTH_TEST: number;
-    readonly DEPTH_WRITEMASK: number;
-    readonly DITHER: number;
-    readonly DONT_CARE: number;
-    readonly DST_ALPHA: number;
-    readonly DST_COLOR: number;
-    readonly DYNAMIC_DRAW: number;
-    readonly ELEMENT_ARRAY_BUFFER: number;
-    readonly ELEMENT_ARRAY_BUFFER_BINDING: number;
-    readonly EQUAL: number;
-    readonly FASTEST: number;
-    readonly FLOAT: number;
-    readonly FLOAT_MAT2: number;
-    readonly FLOAT_MAT3: number;
-    readonly FLOAT_MAT4: number;
-    readonly FLOAT_VEC2: number;
-    readonly FLOAT_VEC3: number;
-    readonly FLOAT_VEC4: number;
-    readonly FRAGMENT_SHADER: number;
-    readonly FRAMEBUFFER: number;
-    readonly FRAMEBUFFER_ATTACHMENT_OBJECT_NAME: number;
-    readonly FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE: number;
-    readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE: number;
-    readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL: number;
-    readonly FRAMEBUFFER_BINDING: number;
-    readonly FRAMEBUFFER_COMPLETE: number;
-    readonly FRAMEBUFFER_INCOMPLETE_ATTACHMENT: number;
-    readonly FRAMEBUFFER_INCOMPLETE_DIMENSIONS: number;
-    readonly FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: number;
-    readonly FRAMEBUFFER_UNSUPPORTED: number;
-    readonly FRONT: number;
-    readonly FRONT_AND_BACK: number;
-    readonly FRONT_FACE: number;
-    readonly FUNC_ADD: number;
-    readonly FUNC_REVERSE_SUBTRACT: number;
-    readonly FUNC_SUBTRACT: number;
-    readonly GENERATE_MIPMAP_HINT: number;
-    readonly GEQUAL: number;
-    readonly GREATER: number;
-    readonly GREEN_BITS: number;
-    readonly HIGH_FLOAT: number;
-    readonly HIGH_INT: number;
-    readonly IMPLEMENTATION_COLOR_READ_FORMAT: number;
-    readonly IMPLEMENTATION_COLOR_READ_TYPE: number;
-    readonly INCR: number;
-    readonly INCR_WRAP: number;
-    readonly INT: number;
-    readonly INT_VEC2: number;
-    readonly INT_VEC3: number;
-    readonly INT_VEC4: number;
-    readonly INVALID_ENUM: number;
-    readonly INVALID_FRAMEBUFFER_OPERATION: number;
-    readonly INVALID_OPERATION: number;
-    readonly INVALID_VALUE: number;
-    readonly INVERT: number;
-    readonly KEEP: number;
-    readonly LEQUAL: number;
-    readonly LESS: number;
-    readonly LINEAR: number;
-    readonly LINEAR_MIPMAP_LINEAR: number;
-    readonly LINEAR_MIPMAP_NEAREST: number;
-    readonly LINES: number;
-    readonly LINE_LOOP: number;
-    readonly LINE_STRIP: number;
-    readonly LINE_WIDTH: number;
-    readonly LINK_STATUS: number;
-    readonly LOW_FLOAT: number;
-    readonly LOW_INT: number;
-    readonly LUMINANCE: number;
-    readonly LUMINANCE_ALPHA: number;
-    readonly MAX_COMBINED_TEXTURE_IMAGE_UNITS: number;
-    readonly MAX_CUBE_MAP_TEXTURE_SIZE: number;
-    readonly MAX_FRAGMENT_UNIFORM_VECTORS: number;
-    readonly MAX_RENDERBUFFER_SIZE: number;
-    readonly MAX_TEXTURE_IMAGE_UNITS: number;
-    readonly MAX_TEXTURE_SIZE: number;
-    readonly MAX_VARYING_VECTORS: number;
-    readonly MAX_VERTEX_ATTRIBS: number;
-    readonly MAX_VERTEX_TEXTURE_IMAGE_UNITS: number;
-    readonly MAX_VERTEX_UNIFORM_VECTORS: number;
-    readonly MAX_VIEWPORT_DIMS: number;
-    readonly MEDIUM_FLOAT: number;
-    readonly MEDIUM_INT: number;
-    readonly MIRRORED_REPEAT: number;
-    readonly NEAREST: number;
-    readonly NEAREST_MIPMAP_LINEAR: number;
-    readonly NEAREST_MIPMAP_NEAREST: number;
-    readonly NEVER: number;
-    readonly NICEST: number;
-    readonly NONE: number;
-    readonly NOTEQUAL: number;
-    readonly NO_ERROR: number;
-    readonly ONE: number;
-    readonly ONE_MINUS_CONSTANT_ALPHA: number;
-    readonly ONE_MINUS_CONSTANT_COLOR: number;
-    readonly ONE_MINUS_DST_ALPHA: number;
-    readonly ONE_MINUS_DST_COLOR: number;
-    readonly ONE_MINUS_SRC_ALPHA: number;
-    readonly ONE_MINUS_SRC_COLOR: number;
-    readonly OUT_OF_MEMORY: number;
-    readonly PACK_ALIGNMENT: number;
-    readonly POINTS: number;
-    readonly POLYGON_OFFSET_FACTOR: number;
-    readonly POLYGON_OFFSET_FILL: number;
-    readonly POLYGON_OFFSET_UNITS: number;
-    readonly RED_BITS: number;
-    readonly RENDERBUFFER: number;
-    readonly RENDERBUFFER_ALPHA_SIZE: number;
-    readonly RENDERBUFFER_BINDING: number;
-    readonly RENDERBUFFER_BLUE_SIZE: number;
-    readonly RENDERBUFFER_DEPTH_SIZE: number;
-    readonly RENDERBUFFER_GREEN_SIZE: number;
-    readonly RENDERBUFFER_HEIGHT: number;
-    readonly RENDERBUFFER_INTERNAL_FORMAT: number;
-    readonly RENDERBUFFER_RED_SIZE: number;
-    readonly RENDERBUFFER_STENCIL_SIZE: number;
-    readonly RENDERBUFFER_WIDTH: number;
-    readonly RENDERER: number;
-    readonly REPEAT: number;
-    readonly REPLACE: number;
-    readonly RGB: number;
-    readonly RGB565: number;
-    readonly RGB5_A1: number;
-    readonly RGBA: number;
-    readonly RGBA4: number;
-    readonly SAMPLER_2D: number;
-    readonly SAMPLER_CUBE: number;
-    readonly SAMPLES: number;
-    readonly SAMPLE_ALPHA_TO_COVERAGE: number;
-    readonly SAMPLE_BUFFERS: number;
-    readonly SAMPLE_COVERAGE: number;
-    readonly SAMPLE_COVERAGE_INVERT: number;
-    readonly SAMPLE_COVERAGE_VALUE: number;
-    readonly SCISSOR_BOX: number;
-    readonly SCISSOR_TEST: number;
-    readonly SHADER_TYPE: number;
-    readonly SHADING_LANGUAGE_VERSION: number;
-    readonly SHORT: number;
-    readonly SRC_ALPHA: number;
-    readonly SRC_ALPHA_SATURATE: number;
-    readonly SRC_COLOR: number;
-    readonly STATIC_DRAW: number;
-    readonly STENCIL_ATTACHMENT: number;
-    readonly STENCIL_BACK_FAIL: number;
-    readonly STENCIL_BACK_FUNC: number;
-    readonly STENCIL_BACK_PASS_DEPTH_FAIL: number;
-    readonly STENCIL_BACK_PASS_DEPTH_PASS: number;
-    readonly STENCIL_BACK_REF: number;
-    readonly STENCIL_BACK_VALUE_MASK: number;
-    readonly STENCIL_BACK_WRITEMASK: number;
-    readonly STENCIL_BITS: number;
-    readonly STENCIL_BUFFER_BIT: number;
-    readonly STENCIL_CLEAR_VALUE: number;
-    readonly STENCIL_FAIL: number;
-    readonly STENCIL_FUNC: number;
-    readonly STENCIL_INDEX: number;
-    readonly STENCIL_INDEX8: number;
-    readonly STENCIL_PASS_DEPTH_FAIL: number;
-    readonly STENCIL_PASS_DEPTH_PASS: number;
-    readonly STENCIL_REF: number;
-    readonly STENCIL_TEST: number;
-    readonly STENCIL_VALUE_MASK: number;
-    readonly STENCIL_WRITEMASK: number;
-    readonly STREAM_DRAW: number;
-    readonly SUBPIXEL_BITS: number;
-    readonly TEXTURE: number;
-    readonly TEXTURE0: number;
-    readonly TEXTURE1: number;
-    readonly TEXTURE10: number;
-    readonly TEXTURE11: number;
-    readonly TEXTURE12: number;
-    readonly TEXTURE13: number;
-    readonly TEXTURE14: number;
-    readonly TEXTURE15: number;
-    readonly TEXTURE16: number;
-    readonly TEXTURE17: number;
-    readonly TEXTURE18: number;
-    readonly TEXTURE19: number;
-    readonly TEXTURE2: number;
-    readonly TEXTURE20: number;
-    readonly TEXTURE21: number;
-    readonly TEXTURE22: number;
-    readonly TEXTURE23: number;
-    readonly TEXTURE24: number;
-    readonly TEXTURE25: number;
-    readonly TEXTURE26: number;
-    readonly TEXTURE27: number;
-    readonly TEXTURE28: number;
-    readonly TEXTURE29: number;
-    readonly TEXTURE3: number;
-    readonly TEXTURE30: number;
-    readonly TEXTURE31: number;
-    readonly TEXTURE4: number;
-    readonly TEXTURE5: number;
-    readonly TEXTURE6: number;
-    readonly TEXTURE7: number;
-    readonly TEXTURE8: number;
-    readonly TEXTURE9: number;
-    readonly TEXTURE_2D: number;
-    readonly TEXTURE_BINDING_2D: number;
-    readonly TEXTURE_BINDING_CUBE_MAP: number;
-    readonly TEXTURE_CUBE_MAP: number;
-    readonly TEXTURE_CUBE_MAP_NEGATIVE_X: number;
-    readonly TEXTURE_CUBE_MAP_NEGATIVE_Y: number;
-    readonly TEXTURE_CUBE_MAP_NEGATIVE_Z: number;
-    readonly TEXTURE_CUBE_MAP_POSITIVE_X: number;
-    readonly TEXTURE_CUBE_MAP_POSITIVE_Y: number;
-    readonly TEXTURE_CUBE_MAP_POSITIVE_Z: number;
-    readonly TEXTURE_MAG_FILTER: number;
-    readonly TEXTURE_MIN_FILTER: number;
-    readonly TEXTURE_WRAP_S: number;
-    readonly TEXTURE_WRAP_T: number;
-    readonly TRIANGLES: number;
-    readonly TRIANGLE_FAN: number;
-    readonly TRIANGLE_STRIP: number;
-    readonly UNPACK_ALIGNMENT: number;
-    readonly UNPACK_COLORSPACE_CONVERSION_WEBGL: number;
-    readonly UNPACK_FLIP_Y_WEBGL: number;
-    readonly UNPACK_PREMULTIPLY_ALPHA_WEBGL: number;
-    readonly UNSIGNED_BYTE: number;
-    readonly UNSIGNED_INT: number;
-    readonly UNSIGNED_SHORT: number;
-    readonly UNSIGNED_SHORT_4_4_4_4: number;
-    readonly UNSIGNED_SHORT_5_5_5_1: number;
-    readonly UNSIGNED_SHORT_5_6_5: number;
-    readonly VALIDATE_STATUS: number;
-    readonly VENDOR: number;
-    readonly VERSION: number;
-    readonly VERTEX_ATTRIB_ARRAY_BUFFER_BINDING: number;
-    readonly VERTEX_ATTRIB_ARRAY_ENABLED: number;
-    readonly VERTEX_ATTRIB_ARRAY_NORMALIZED: number;
-    readonly VERTEX_ATTRIB_ARRAY_POINTER: number;
-    readonly VERTEX_ATTRIB_ARRAY_SIZE: number;
-    readonly VERTEX_ATTRIB_ARRAY_STRIDE: number;
-    readonly VERTEX_ATTRIB_ARRAY_TYPE: number;
-    readonly VERTEX_SHADER: number;
-    readonly VIEWPORT: number;
-    readonly ZERO: number;
-    readonly READ_BUFFER: number;
-    readonly UNPACK_ROW_LENGTH: number;
-    readonly UNPACK_SKIP_ROWS: number;
-    readonly UNPACK_SKIP_PIXELS: number;
-    readonly PACK_ROW_LENGTH: number;
-    readonly PACK_SKIP_ROWS: number;
-    readonly PACK_SKIP_PIXELS: number;
-    readonly COLOR: number;
-    readonly DEPTH: number;
-    readonly STENCIL: number;
-    readonly RED: number;
-    readonly RGB8: number;
-    readonly RGBA8: number;
-    readonly RGB10_A2: number;
-    readonly TEXTURE_BINDING_3D: number;
-    readonly UNPACK_SKIP_IMAGES: number;
-    readonly UNPACK_IMAGE_HEIGHT: number;
-    readonly TEXTURE_3D: number;
-    readonly TEXTURE_WRAP_R: number;
-    readonly MAX_3D_TEXTURE_SIZE: number;
-    readonly UNSIGNED_INT_2_10_10_10_REV: number;
-    readonly MAX_ELEMENTS_VERTICES: number;
-    readonly MAX_ELEMENTS_INDICES: number;
-    readonly TEXTURE_MIN_LOD: number;
-    readonly TEXTURE_MAX_LOD: number;
-    readonly TEXTURE_BASE_LEVEL: number;
-    readonly TEXTURE_MAX_LEVEL: number;
-    readonly MIN: number;
-    readonly MAX: number;
-    readonly DEPTH_COMPONENT24: number;
-    readonly MAX_TEXTURE_LOD_BIAS: number;
-    readonly TEXTURE_COMPARE_MODE: number;
-    readonly TEXTURE_COMPARE_FUNC: number;
-    readonly CURRENT_QUERY: number;
-    readonly QUERY_RESULT: number;
-    readonly QUERY_RESULT_AVAILABLE: number;
-    readonly STREAM_READ: number;
-    readonly STREAM_COPY: number;
-    readonly STATIC_READ: number;
-    readonly STATIC_COPY: number;
-    readonly DYNAMIC_READ: number;
-    readonly DYNAMIC_COPY: number;
-    readonly MAX_DRAW_BUFFERS: number;
-    readonly DRAW_BUFFER0: number;
-    readonly DRAW_BUFFER1: number;
-    readonly DRAW_BUFFER2: number;
-    readonly DRAW_BUFFER3: number;
-    readonly DRAW_BUFFER4: number;
-    readonly DRAW_BUFFER5: number;
-    readonly DRAW_BUFFER6: number;
-    readonly DRAW_BUFFER7: number;
-    readonly DRAW_BUFFER8: number;
-    readonly DRAW_BUFFER9: number;
-    readonly DRAW_BUFFER10: number;
-    readonly DRAW_BUFFER11: number;
-    readonly DRAW_BUFFER12: number;
-    readonly DRAW_BUFFER13: number;
-    readonly DRAW_BUFFER14: number;
-    readonly DRAW_BUFFER15: number;
-    readonly MAX_FRAGMENT_UNIFORM_COMPONENTS: number;
-    readonly MAX_VERTEX_UNIFORM_COMPONENTS: number;
-    readonly SAMPLER_3D: number;
-    readonly SAMPLER_2D_SHADOW: number;
-    readonly FRAGMENT_SHADER_DERIVATIVE_HINT: number;
-    readonly PIXEL_PACK_BUFFER: number;
-    readonly PIXEL_UNPACK_BUFFER: number;
-    readonly PIXEL_PACK_BUFFER_BINDING: number;
-    readonly PIXEL_UNPACK_BUFFER_BINDING: number;
-    readonly FLOAT_MAT2x3: number;
-    readonly FLOAT_MAT2x4: number;
-    readonly FLOAT_MAT3x2: number;
-    readonly FLOAT_MAT3x4: number;
-    readonly FLOAT_MAT4x2: number;
-    readonly FLOAT_MAT4x3: number;
-    readonly SRGB: number;
-    readonly SRGB8: number;
-    readonly SRGB8_ALPHA8: number;
-    readonly COMPARE_REF_TO_TEXTURE: number;
-    readonly RGBA32F: number;
-    readonly RGB32F: number;
-    readonly RGBA16F: number;
-    readonly RGB16F: number;
-    readonly VERTEX_ATTRIB_ARRAY_INTEGER: number;
-    readonly MAX_ARRAY_TEXTURE_LAYERS: number;
-    readonly MIN_PROGRAM_TEXEL_OFFSET: number;
-    readonly MAX_PROGRAM_TEXEL_OFFSET: number;
-    readonly MAX_VARYING_COMPONENTS: number;
-    readonly TEXTURE_2D_ARRAY: number;
-    readonly TEXTURE_BINDING_2D_ARRAY: number;
-    readonly R11F_G11F_B10F: number;
-    readonly UNSIGNED_INT_10F_11F_11F_REV: number;
-    readonly RGB9_E5: number;
-    readonly UNSIGNED_INT_5_9_9_9_REV: number;
-    readonly TRANSFORM_FEEDBACK_BUFFER_MODE: number;
-    readonly MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS: number;
-    readonly TRANSFORM_FEEDBACK_VARYINGS: number;
-    readonly TRANSFORM_FEEDBACK_BUFFER_START: number;
-    readonly TRANSFORM_FEEDBACK_BUFFER_SIZE: number;
-    readonly TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN: number;
-    readonly RASTERIZER_DISCARD: number;
-    readonly MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS: number;
-    readonly MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS: number;
-    readonly INTERLEAVED_ATTRIBS: number;
-    readonly SEPARATE_ATTRIBS: number;
-    readonly TRANSFORM_FEEDBACK_BUFFER: number;
-    readonly TRANSFORM_FEEDBACK_BUFFER_BINDING: number;
-    readonly RGBA32UI: number;
-    readonly RGB32UI: number;
-    readonly RGBA16UI: number;
-    readonly RGB16UI: number;
-    readonly RGBA8UI: number;
-    readonly RGB8UI: number;
-    readonly RGBA32I: number;
-    readonly RGB32I: number;
-    readonly RGBA16I: number;
-    readonly RGB16I: number;
-    readonly RGBA8I: number;
-    readonly RGB8I: number;
-    readonly RED_INTEGER: number;
-    readonly RGB_INTEGER: number;
-    readonly RGBA_INTEGER: number;
-    readonly SAMPLER_2D_ARRAY: number;
-    readonly SAMPLER_2D_ARRAY_SHADOW: number;
-    readonly SAMPLER_CUBE_SHADOW: number;
-    readonly UNSIGNED_INT_VEC2: number;
-    readonly UNSIGNED_INT_VEC3: number;
-    readonly UNSIGNED_INT_VEC4: number;
-    readonly INT_SAMPLER_2D: number;
-    readonly INT_SAMPLER_3D: number;
-    readonly INT_SAMPLER_CUBE: number;
-    readonly INT_SAMPLER_2D_ARRAY: number;
-    readonly UNSIGNED_INT_SAMPLER_2D: number;
-    readonly UNSIGNED_INT_SAMPLER_3D: number;
-    readonly UNSIGNED_INT_SAMPLER_CUBE: number;
-    readonly UNSIGNED_INT_SAMPLER_2D_ARRAY: number;
-    readonly DEPTH_COMPONENT32F: number;
-    readonly DEPTH32F_STENCIL8: number;
-    readonly FLOAT_32_UNSIGNED_INT_24_8_REV: number;
-    readonly FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING: number;
-    readonly FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE: number;
-    readonly FRAMEBUFFER_ATTACHMENT_RED_SIZE: number;
-    readonly FRAMEBUFFER_ATTACHMENT_GREEN_SIZE: number;
-    readonly FRAMEBUFFER_ATTACHMENT_BLUE_SIZE: number;
-    readonly FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE: number;
-    readonly FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE: number;
-    readonly FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE: number;
-    readonly FRAMEBUFFER_DEFAULT: number;
-    readonly UNSIGNED_INT_24_8: number;
-    readonly DEPTH24_STENCIL8: number;
-    readonly UNSIGNED_NORMALIZED: number;
-    readonly DRAW_FRAMEBUFFER_BINDING: number;
-    readonly READ_FRAMEBUFFER: number;
-    readonly DRAW_FRAMEBUFFER: number;
-    readonly READ_FRAMEBUFFER_BINDING: number;
-    readonly RENDERBUFFER_SAMPLES: number;
-    readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER: number;
-    readonly MAX_COLOR_ATTACHMENTS: number;
-    readonly COLOR_ATTACHMENT1: number;
-    readonly COLOR_ATTACHMENT2: number;
-    readonly COLOR_ATTACHMENT3: number;
-    readonly COLOR_ATTACHMENT4: number;
-    readonly COLOR_ATTACHMENT5: number;
-    readonly COLOR_ATTACHMENT6: number;
-    readonly COLOR_ATTACHMENT7: number;
-    readonly COLOR_ATTACHMENT8: number;
-    readonly COLOR_ATTACHMENT9: number;
-    readonly COLOR_ATTACHMENT10: number;
-    readonly COLOR_ATTACHMENT11: number;
-    readonly COLOR_ATTACHMENT12: number;
-    readonly COLOR_ATTACHMENT13: number;
-    readonly COLOR_ATTACHMENT14: number;
-    readonly COLOR_ATTACHMENT15: number;
-    readonly FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: number;
-    readonly MAX_SAMPLES: number;
-    readonly HALF_FLOAT: number;
-    readonly RG: number;
-    readonly RG_INTEGER: number;
-    readonly R8: number;
-    readonly RG8: number;
-    readonly R16F: number;
-    readonly R32F: number;
-    readonly RG16F: number;
-    readonly RG32F: number;
-    readonly R8I: number;
-    readonly R8UI: number;
-    readonly R16I: number;
-    readonly R16UI: number;
-    readonly R32I: number;
-    readonly R32UI: number;
-    readonly RG8I: number;
-    readonly RG8UI: number;
-    readonly RG16I: number;
-    readonly RG16UI: number;
-    readonly RG32I: number;
-    readonly RG32UI: number;
-    readonly VERTEX_ARRAY_BINDING: number;
-    readonly R8_SNORM: number;
-    readonly RG8_SNORM: number;
-    readonly RGB8_SNORM: number;
-    readonly RGBA8_SNORM: number;
-    readonly SIGNED_NORMALIZED: number;
-    readonly COPY_READ_BUFFER: number;
-    readonly COPY_WRITE_BUFFER: number;
-    readonly COPY_READ_BUFFER_BINDING: number;
-    readonly COPY_WRITE_BUFFER_BINDING: number;
-    readonly UNIFORM_BUFFER: number;
-    readonly UNIFORM_BUFFER_BINDING: number;
-    readonly UNIFORM_BUFFER_START: number;
-    readonly UNIFORM_BUFFER_SIZE: number;
-    readonly MAX_VERTEX_UNIFORM_BLOCKS: number;
-    readonly MAX_FRAGMENT_UNIFORM_BLOCKS: number;
-    readonly MAX_COMBINED_UNIFORM_BLOCKS: number;
-    readonly MAX_UNIFORM_BUFFER_BINDINGS: number;
-    readonly MAX_UNIFORM_BLOCK_SIZE: number;
-    readonly MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS: number;
-    readonly MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS: number;
-    readonly UNIFORM_BUFFER_OFFSET_ALIGNMENT: number;
-    readonly ACTIVE_UNIFORM_BLOCKS: number;
-    readonly UNIFORM_TYPE: number;
-    readonly UNIFORM_SIZE: number;
-    readonly UNIFORM_BLOCK_INDEX: number;
-    readonly UNIFORM_OFFSET: number;
-    readonly UNIFORM_ARRAY_STRIDE: number;
-    readonly UNIFORM_MATRIX_STRIDE: number;
-    readonly UNIFORM_IS_ROW_MAJOR: number;
-    readonly UNIFORM_BLOCK_BINDING: number;
-    readonly UNIFORM_BLOCK_DATA_SIZE: number;
-    readonly UNIFORM_BLOCK_ACTIVE_UNIFORMS: number;
-    readonly UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES: number;
-    readonly UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER: number;
-    readonly UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER: number;
-    readonly INVALID_INDEX: number;
-    readonly MAX_VERTEX_OUTPUT_COMPONENTS: number;
-    readonly MAX_FRAGMENT_INPUT_COMPONENTS: number;
-    readonly MAX_SERVER_WAIT_TIMEOUT: number;
-    readonly OBJECT_TYPE: number;
-    readonly SYNC_CONDITION: number;
-    readonly SYNC_STATUS: number;
-    readonly SYNC_FLAGS: number;
-    readonly SYNC_FENCE: number;
-    readonly SYNC_GPU_COMMANDS_COMPLETE: number;
-    readonly UNSIGNALED: number;
-    readonly SIGNALED: number;
-    readonly ALREADY_SIGNALED: number;
-    readonly TIMEOUT_EXPIRED: number;
-    readonly CONDITION_SATISFIED: number;
-    readonly WAIT_FAILED: number;
-    readonly SYNC_FLUSH_COMMANDS_BIT: number;
-    readonly VERTEX_ATTRIB_ARRAY_DIVISOR: number;
-    readonly ANY_SAMPLES_PASSED: number;
-    readonly ANY_SAMPLES_PASSED_CONSERVATIVE: number;
-    readonly SAMPLER_BINDING: number;
-    readonly RGB10_A2UI: number;
-    readonly INT_2_10_10_10_REV: number;
-    readonly TRANSFORM_FEEDBACK: number;
-    readonly TRANSFORM_FEEDBACK_PAUSED: number;
-    readonly TRANSFORM_FEEDBACK_ACTIVE: number;
-    readonly TRANSFORM_FEEDBACK_BINDING: number;
-    readonly TEXTURE_IMMUTABLE_FORMAT: number;
-    readonly MAX_ELEMENT_INDEX: number;
-    readonly TEXTURE_IMMUTABLE_LEVELS: number;
-    readonly TIMEOUT_IGNORED: number;
-    readonly MAX_CLIENT_WAIT_TIMEOUT_WEBGL: number;
-};
-interface WebGLQuery extends WebGLObject {
-}
-declare var WebGLQuery: {
-    prototype: WebGLQuery;
-    new (): WebGLQuery;
-};
-interface WebGLSampler extends WebGLObject {
-}
-declare var WebGLSampler: {
-    prototype: WebGLSampler;
-    new (): WebGLSampler;
-};
-interface WebGLSync extends WebGLObject {
-}
-declare var WebGLSync: {
-    prototype: WebGLSync;
-    new (): WebGLSync;
-};
-interface WebGLTransformFeedback extends WebGLObject {
-}
-declare var WebGLTransformFeedback: {
-    prototype: WebGLTransformFeedback;
-    new (): WebGLTransformFeedback;
-};
-interface WebGLVertexArrayObject extends WebGLObject {
-}
-declare var WebGLVertexArrayObject: {
-    prototype: WebGLVertexArrayObject;
-    new (): WebGLVertexArrayObject;
-};
 declare namespace feng3d {
     interface GL extends WebGLRenderingContext {
         /**
@@ -10925,30 +9756,30 @@ declare namespace feng3d {
      * GL扩展
      */
     class GLExtension {
-        aNGLEInstancedArrays: ANGLEInstancedArrays;
-        eXTBlendMinMax: EXTBlendMinMax;
-        eXTColorBufferHalfFloat: EXTColorBufferHalfFloat;
-        eXTFragDepth: EXTFragDepth;
-        eXTsRGB: EXTsRGB;
-        eXTShaderTextureLOD: EXTShaderTextureLOD;
-        eXTTextureFilterAnisotropic: EXTTextureFilterAnisotropic;
-        oESElementIndexUint: OESElementIndexUint;
-        oESStandardDerivatives: OESStandardDerivatives;
-        oESTextureFloat: OESTextureFloat;
-        oESTextureFloatLinear: OESTextureFloatLinear;
-        oESTextureHalfFloat: OESTextureHalfFloat;
-        oESTextureHalfFloatLinear: OESTextureHalfFloatLinear;
-        oESVertexArrayObject: OESVertexArrayObject;
-        webGLColorBufferFloat: WebGLColorBufferFloat;
-        webGLCompressedTextureATC: WebGLCompressedTextureATC;
-        webGLCompressedTextureETC1: WebGLCompressedTextureETC1;
-        webGLCompressedTexturePVRTC: WebGLCompressedTexturePVRTC;
-        webGLCompressedTextureS3TC: WebGLCompressedTextureS3TC;
-        webGLDebugRendererInfo: WebGLDebugRendererInfo;
-        webGLDebugShaders: WebGLDebugShaders;
-        webGLDepthTexture: WebGLDepthTexture;
-        webGLDrawBuffers: WebGLDrawBuffers;
-        webGLLoseContext: WebGLLoseContext;
+        aNGLEInstancedArrays: ANGLE_instanced_arrays;
+        eXTBlendMinMax: EXT_blend_minmax;
+        eXTColorBufferHalfFloat: any;
+        eXTFragDepth: EXT_frag_depth;
+        eXTsRGB: EXT_sRGB;
+        eXTShaderTextureLOD: EXT_shader_texture_lod;
+        eXTTextureFilterAnisotropic: EXT_texture_filter_anisotropic;
+        oESElementIndexUint: OES_element_index_uint;
+        oESStandardDerivatives: OES_standard_derivatives;
+        oESTextureFloat: OES_texture_float;
+        oESTextureFloatLinear: OES_texture_float_linear;
+        oESTextureHalfFloat: OES_texture_half_float;
+        oESTextureHalfFloatLinear: OES_texture_half_float_linear;
+        oESVertexArrayObject: OES_vertex_array_object;
+        webGLColorBufferFloat: WEBGL_color_buffer_float;
+        webGLCompressedTextureATC: any;
+        webGLCompressedTextureETC1: any;
+        webGLCompressedTexturePVRTC: any;
+        webGLCompressedTextureS3TC: WEBGL_compressed_texture_s3tc;
+        webGLDebugRendererInfo: WEBGL_debug_renderer_info;
+        webGLDebugShaders: WEBGL_debug_shaders;
+        webGLDepthTexture: WEBGL_depth_texture;
+        webGLDrawBuffers: WEBGL_draw_buffers;
+        webGLLoseContext: any;
         constructor(gl: GL);
         private initExtensions;
         /**
@@ -11703,7 +10534,7 @@ declare namespace feng3d {
          * 使纹理失效
          */
         invalidate(): void;
-        readonly activePixels: HTMLCanvasElement | ImageData | HTMLImageElement | HTMLVideoElement | ImageBitmap | (HTMLCanvasElement | ImageData | HTMLImageElement | HTMLVideoElement | ImageBitmap)[];
+        readonly activePixels: HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | ImageBitmap | ImageData | (HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | ImageBitmap | ImageData)[];
         /**
          *
          */
@@ -14659,13 +13490,13 @@ declare namespace feng3d {
         /**
          * shader名称
          */
-        shaderName: "color" | "standard" | "texture" | "point" | "segment" | "water" | "terrain" | "particle";
+        shaderName: "standard" | "color" | "texture" | "point" | "segment" | "water" | "terrain" | "particle";
         private _shaderName;
         name: string;
         /**
          * Uniform数据
          */
-        uniforms: ColorUniforms | StandardUniforms | TextureUniforms | PointUniforms | SegmentUniforms | WaterUniforms | TerrainUniforms | ParticleUniforms;
+        uniforms: StandardUniforms | ColorUniforms | TextureUniforms | PointUniforms | SegmentUniforms | WaterUniforms | TerrainUniforms | ParticleUniforms;
         private _uniforms;
         /**
          * 渲染参数
@@ -16198,7 +15029,7 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     class AnimationClip extends AssetData {
-        readonly assetType: AssetType;
+        readonly assetType = AssetType.anim;
         name: string;
         /**
          * 动画时长，单位ms
@@ -16395,7 +15226,7 @@ declare namespace feng3d {
      * 音效资源
      */
     class AudioAsset extends ArrayBufferAsset {
-        readonly assetType: AssetType;
+        readonly assetType = AssetType.audio;
     }
 }
 declare namespace feng3d {

@@ -70,7 +70,7 @@ QUnit.module("Object", () =>
         var iframe = document.createElement('iframe');
         iframe.name = "test Object.isObject IFrame";
         document.body.appendChild(iframe);
-        var xObject = window.frames[window.frames.length - 1].Object;
+        var xObject = window.frames[window.frames.length - 1]["Object"];
         var obj = new xObject();
         assert.ok(Object.isObject(obj));
         assert.ok(Object != obj.constructor);
