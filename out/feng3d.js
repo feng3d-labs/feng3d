@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -8747,16 +8747,6 @@ var feng3d;
             * Vector3 对象中的第一个元素，例如，三维空间中某个点的 x 坐标。默认值为 0
             */
             this.x = 0;
-            // get x()
-            // {
-            //     return this._x;
-            // }
-            // set x(v)
-            // {
-            //     console.assert(!isNaN(v))
-            //     this._x = v;
-            // }
-            // private _x = 0;
             /**
              * Vector3 对象中的第二个元素，例如，三维空间中某个点的 y 坐标。默认值为 0
              */
@@ -20304,10 +20294,6 @@ var feng3d;
         DepthFunc["ALWAYS"] = "ALWAYS";
     })(DepthFunc = feng3d.DepthFunc || (feng3d.DepthFunc = {}));
 })(feng3d || (feng3d = {}));
-// Type definitions for WebGL Extensions
-// Project: http://webgl.org/
-// Definitions by: Arthur Langereis <https://github.com/zenmumbler/>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped/webgl-ext
 var feng3d;
 (function (feng3d) {
     var GL = /** @class */ (function () {
@@ -32167,7 +32153,6 @@ var feng3d;
         ], WaterUniforms.prototype, "s_normalSampler", void 0);
         __decorate([
             feng3d.oav()
-            // s_mirrorSampler = new RenderTargetTexture2D();
         ], WaterUniforms.prototype, "s_mirrorSampler", void 0);
         return WaterUniforms;
     }());

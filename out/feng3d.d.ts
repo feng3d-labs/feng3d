@@ -1,6 +1,9 @@
 declare module 'feng3d' {
     export = feng3d;
 }
+declare module 'feng3d' {
+    export = feng3d;
+}
 declare namespace feng3d {
     /**
      * 观察装饰器，观察被装饰属性的变化
