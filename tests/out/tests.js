@@ -4872,3 +4872,25 @@ console.log("feng3d-tests-0.0.3");
 {
     return feng3d;
 });
+
+console.log("feng3d-tests-0.0.3");
+console.log("feng3d-tests-0.0.3");
+console.log("feng3d-tests-0.0.3");
+console.log("feng3d-tests-0.0.3");
+(function universalModuleDefinition(root, factory)
+{
+    if (typeof exports === 'object' && typeof module === 'object')
+        module.exports = factory();
+    else if (typeof define === 'function' && define.amd)
+        define([], factory);
+    else if (typeof exports === 'object')
+        exports["tests"] = factory();
+    else
+        root["tests"] = factory();
+    
+    var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
+    globalObject["tests"] = factory();
+})(this, function ()
+{
+    return feng3d;
+});

@@ -32871,14 +32871,14 @@ var feng3d;
             var _this = this;
             _super.prototype.init.call(this);
             this._modules = [
-                this.main = this.main || new feng3d.ParticleMainModule(),
-                this.emission = this.emission || new feng3d.ParticleEmissionModule(),
-                this.shape = this.shape || new feng3d.ParticleShapeModule(),
-                this.velocityOverLifetime = this.velocityOverLifetime || new feng3d.ParticleVelocityOverLifetimeModule(),
-                this.accelerationOverLifetime = this.accelerationOverLifetime || new feng3d.ParticleAccelerationOverLifetimeModule(),
-                this.colorOverLifetime = this.colorOverLifetime || new feng3d.ParticleColorOverLifetimeModule(),
-                this.scaleOverLifetime = this.scaleOverLifetime || new feng3d.ParticleScaleOverLifetimeModule(),
-                this.palstanceOverLifetime = this.palstanceOverLifetime || new feng3d.ParticlePalstanceOverLifetimeModule(),
+                this.main = this.main || feng3d.serialization.setValue(new feng3d.ParticleMainModule(), { enabled: true }),
+                this.emission = this.emission || feng3d.serialization.setValue(new feng3d.ParticleEmissionModule(), { enabled: true }),
+                this.shape = this.shape || feng3d.serialization.setValue(new feng3d.ParticleShapeModule(), { enabled: true }),
+                this.velocityOverLifetime = this.velocityOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleVelocityOverLifetimeModule(), { enabled: false }),
+                this.accelerationOverLifetime = this.accelerationOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleAccelerationOverLifetimeModule(), { enabled: false }),
+                this.colorOverLifetime = this.colorOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleColorOverLifetimeModule(), { enabled: false }),
+                this.scaleOverLifetime = this.scaleOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleScaleOverLifetimeModule(), { enabled: false }),
+                this.palstanceOverLifetime = this.palstanceOverLifetime || feng3d.serialization.setValue(new feng3d.ParticlePalstanceOverLifetimeModule(), { enabled: false }),
             ];
             this._modules.forEach(function (v) { return v.particleSystem = _this; });
         };
