@@ -193,18 +193,24 @@ namespace feng3d
             for (let i = 0, n = this._activeParticles.length; i < n; i++)
             {
                 var particle = this._activeParticles[i];
-
-                if (this.geometry == Geometry.billboard && cameraMatrix)
-                {
-                    var matrix = new Matrix4x4().recompose([particle.position, particle.rotation.scaleNumberTo(Math.DEG2RAD), particle.scale]);
-                    matrix.lookAt(localCameraPos, localCameraUp);
-
-                    particle.rotation = matrix.decompose()[1].scaleNumber(Math.RAD2DEG);
-                }
-
                 positions.push(particle.position.x, particle.position.y, particle.position.z);
                 scales.push(particle.scale.x, particle.scale.y, particle.scale.z);
-                rotations.push(particle.rotation.x, particle.rotation.y, particle.rotation.z);
+
+                // 计算旋转
+                var rotation = particle.rotation;
+                if (this.geometry == Geometry.billboard && cameraMatrix)
+                {
+                    // 计算公告牌矩阵
+                    var billboardMatrix = new Matrix4x4().recompose([particle.position, Vector3.ZERO, particle.scale]);
+                    // var billboardMatrix = new Matrix4x4();
+                    billboardMatrix.lookAt(localCameraPos, localCameraUp);
+                    // 应用公告牌矩阵
+                    var matrix = Matrix4x4.fromRotation(particle.rotation.x, particle.rotation.y, particle.rotation.z);
+                    matrix.append(billboardMatrix);
+                    //
+                    rotation = matrix.decompose()[1].scaleNumber(Math.RAD2DEG);
+                }
+                rotations.push(rotation.x, rotation.y, rotation.z);
                 colors.push(particle.color.r, particle.color.g, particle.color.b, particle.color.a);
             }
 

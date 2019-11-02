@@ -32947,14 +32947,22 @@ var feng3d;
             var colors = [];
             for (var i = 0, n = this._activeParticles.length; i < n; i++) {
                 var particle = this._activeParticles[i];
-                if (this.geometry == feng3d.Geometry.billboard && cameraMatrix) {
-                    var matrix = new feng3d.Matrix4x4().recompose([particle.position, particle.rotation.scaleNumberTo(Math.DEG2RAD), particle.scale]);
-                    matrix.lookAt(localCameraPos, localCameraUp);
-                    particle.rotation = matrix.decompose()[1].scaleNumber(Math.RAD2DEG);
-                }
                 positions.push(particle.position.x, particle.position.y, particle.position.z);
                 scales.push(particle.scale.x, particle.scale.y, particle.scale.z);
-                rotations.push(particle.rotation.x, particle.rotation.y, particle.rotation.z);
+                // 计算旋转
+                var rotation = particle.rotation;
+                if (this.geometry == feng3d.Geometry.billboard && cameraMatrix) {
+                    // 计算公告牌矩阵
+                    var billboardMatrix = new feng3d.Matrix4x4().recompose([particle.position, feng3d.Vector3.ZERO, particle.scale]);
+                    // var billboardMatrix = new Matrix4x4();
+                    billboardMatrix.lookAt(localCameraPos, localCameraUp);
+                    // 应用公告牌矩阵
+                    var matrix = feng3d.Matrix4x4.fromRotation(particle.rotation.x, particle.rotation.y, particle.rotation.z);
+                    matrix.append(billboardMatrix);
+                    //
+                    rotation = matrix.decompose()[1].scaleNumber(Math.RAD2DEG);
+                }
+                rotations.push(rotation.x, rotation.y, rotation.z);
                 colors.push(particle.color.r, particle.color.g, particle.color.b, particle.color.a);
             }
             //
@@ -33466,22 +33474,16 @@ var feng3d;
              * 粒子的起始速度，应用于起始方向。
              */
             _this.startSpeed = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 5, constant1: 5 });
-            // @oav({ tooltip: "允许为每个轴分别指定粒度大小的标志。" })
-            _this.startSize3D = false;
-            // @oav({ tooltip: "粒子发射时的初始大小。" })
-            _this.startSize = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 1, constant1: 1 });
+            _this.useStartSize3D = false;
             /**
              * 粒子的起始缩放。
              */
-            _this.startSizeValue = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
-            // @oav({ tooltip: "一个启动粒子3D旋转的标记。" })
-            _this.startRotation3D = false;
-            // @oav({ tooltip: "粒子发射时的初始旋转。" })
-            _this.startRotation = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 1, constant1: 180 });
+            _this.startSize3D = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
+            _this.useStartRotation3D = false;
             /**
              * 粒子的起始旋转角度。
              */
-            _this.startRotationValue = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { curveMultiplier: 180 }, yCurve: { curveMultiplier: 180 }, zCurve: { curveMultiplier: 180 } });
+            _this.startRotation3D = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { curveMultiplier: 180 }, yCurve: { curveMultiplier: 180 }, zCurve: { curveMultiplier: 180 } });
             /**
              * 粒子的起始颜色。
              */
@@ -33512,84 +33514,22 @@ var feng3d;
             _this.maxParticles = 1000;
             return _this;
         }
-        Object.defineProperty(ParticleMainModule.prototype, "startSizeMultiplier", {
-            /**
-             * Start size multiplier.
-             */
+        Object.defineProperty(ParticleMainModule.prototype, "startSize", {
             get: function () {
-                return this.startSize.curveMultiplier;
+                return this.startSize3D.xCurve;
             },
             set: function (v) {
-                this.startSize.curveMultiplier = v;
+                this.startSize3D.xCurve = v;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ParticleMainModule.prototype, "startSizeX", {
-            /**
-             * The initial size of particles along the X axis when emitted.
-             */
+        Object.defineProperty(ParticleMainModule.prototype, "startRotation", {
             get: function () {
-                return this.startSizeValue.xCurve;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ParticleMainModule.prototype, "startSizeXMultiplier", {
-            /**
-             * Start size multiplier along the X axis.
-             */
-            get: function () {
-                return this.startSizeValue.xCurve.curveMultiplier;
+                return this.startRotation3D.zCurve;
             },
             set: function (v) {
-                this.startSizeValue.xCurve.curveMultiplier = v;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ParticleMainModule.prototype, "startSizeY", {
-            /**
-             * The initial size of particles along the Y axis when emitted.
-             */
-            get: function () {
-                return this.startSizeValue.yCurve;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ParticleMainModule.prototype, "startSizeYMultiplier", {
-            /**
-             * Start size multiplier along the Y axis.
-             */
-            get: function () {
-                return this.startSizeValue.yCurve.curveMultiplier;
-            },
-            set: function (v) {
-                this.startSizeValue.yCurve.curveMultiplier = v;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ParticleMainModule.prototype, "startSizeZ", {
-            /**
-             * The initial size of particles along the Z axis when emitted.
-             */
-            get: function () {
-                return this.startSizeValue.zCurve;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ParticleMainModule.prototype, "startSizeZMultiplier", {
-            /**
-             * Start size multiplier along the Z axis.
-             */
-            get: function () {
-                return this.startSizeValue.zCurve.curveMultiplier;
-            },
-            set: function (v) {
-                this.startSizeValue.zCurve.curveMultiplier = v;
+                this.startRotation3D.zCurve = v;
             },
             enumerable: true,
             configurable: true
@@ -33613,9 +33553,21 @@ var feng3d;
             //
             particle.position.init(0, 0, 0);
             particle.velocity.init(0, 0, this.startSpeed.getValue(rateAtDuration));
-            particle.startScale.copy(this.startSizeValue.getValue(rateAtDuration));
+            if (this.useStartSize3D) {
+                particle.startScale.copy(this.startSize3D.getValue(rateAtDuration));
+            }
+            else {
+                var startSize = this.startSize.getValue(rateAtDuration);
+                particle.startScale.init(startSize, startSize, startSize);
+            }
             //
-            particle.rotation.copy(this.startRotationValue.getValue(rateAtDuration));
+            if (this.useStartRotation3D) {
+                particle.rotation.copy(this.startRotation3D.getValue(rateAtDuration));
+            }
+            else {
+                var startRotation = this.startRotation.getValue(rateAtDuration);
+                particle.rotation.init(startRotation, startRotation, startRotation);
+            }
             //
             particle.startColor.copy(this.startColor.getValue(rateAtDuration));
         };
@@ -33641,59 +33593,57 @@ var feng3d;
             feng3d.oav({ exclude: true })
         ], ParticleMainModule.prototype, "enabled", void 0);
         __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "粒子系统发射粒子的时间长度。如果系统是循环的，这表示一个循环的长度。" })
-            ,
-            feng3d.oav({ tooltip: "The duration of the particle system in seconds." })
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "粒子系统发射粒子的时间长度。如果系统是循环的，这表示一个循环的长度。" })
         ], ParticleMainModule.prototype, "duration", void 0);
         __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "如果为真，发射周期将在持续时间后重复。" })
-            ,
-            feng3d.oav({ tooltip: "Is the particle system looping?" })
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "如果为真，发射周期将在持续时间后重复。" })
         ], ParticleMainModule.prototype, "loop", void 0);
         __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "这个粒子系统在发射粒子之前会等待几秒。" })
-            ,
-            feng3d.oav({ tooltip: "Start delay in seconds." })
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "这个粒子系统在发射粒子之前会等待几秒。" })
         ], ParticleMainModule.prototype, "startDelay", void 0);
         __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "起始寿命为秒，粒子寿命为0时死亡。" })
-            ,
-            feng3d.oav({ tooltip: "The total lifetime in seconds that each new particle will have." })
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "起始寿命为秒，粒子寿命为0时死亡。" })
         ], ParticleMainModule.prototype, "startLifetime", void 0);
         __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "粒子的起始速度，应用于起始方向。" })
-            ,
-            feng3d.oav({ tooltip: "The initial speed of particles when emitted." })
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "粒子的起始速度，应用于起始方向。" })
         ], ParticleMainModule.prototype, "startSpeed", void 0);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav({ tooltip: "A flag to enable specifying particle size individually for each axis." })
-        ], ParticleMainModule.prototype, "startSize3D", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ tooltip: "The initial size of particles when emitted." })
-        ], ParticleMainModule.prototype, "startSize", void 0);
+            feng3d.serialize
+            // @oav({ tooltip: "A flag to enable specifying particle size individually for each axis." })
+            ,
+            feng3d.oav({ tooltip: "允许为每个轴分别指定粒度大小的标志。" })
+        ], ParticleMainModule.prototype, "useStartSize3D", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ tooltip: "粒子的起始缩放。" })
-        ], ParticleMainModule.prototype, "startSizeValue", void 0);
+        ], ParticleMainModule.prototype, "startSize3D", void 0);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav({ tooltip: "A flag to enable 3D particle rotation." })
-        ], ParticleMainModule.prototype, "startRotation3D", void 0);
+            feng3d.serialize
+            // @oav({ tooltip: "The initial size of particles when emitted." })
+            ,
+            feng3d.oav({ tooltip: "粒子发射时的初始大小。" })
+        ], ParticleMainModule.prototype, "startSize", null);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav({ tooltip: "The initial rotation of particles when emitted." })
-        ], ParticleMainModule.prototype, "startRotation", void 0);
+            feng3d.serialize
+            // @oav({ tooltip: "A flag to enable 3D particle rotation." })
+            ,
+            feng3d.oav({ tooltip: "一个启用粒子3D旋转的标记。" })
+        ], ParticleMainModule.prototype, "useStartRotation3D", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ tooltip: "粒子的起始旋转角度。" })
-        ], ParticleMainModule.prototype, "startRotationValue", void 0);
+        ], ParticleMainModule.prototype, "startRotation3D", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "The initial rotation of particles when emitted." })
+            ,
+            feng3d.oav({ tooltip: "粒子发射时的初始旋转。" })
+        ], ParticleMainModule.prototype, "startRotation", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ tooltip: "粒子的起始颜色。" })
@@ -43556,9 +43506,6 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-console.log("feng3d-0.1.3");
-console.log("feng3d-0.1.3");
-console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

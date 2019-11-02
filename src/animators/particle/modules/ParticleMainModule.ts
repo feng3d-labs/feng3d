@@ -12,150 +12,84 @@ namespace feng3d
          * 粒子系统发射粒子的时间长度。如果系统是循环的，这表示一个循环的长度。
          */
         @serialize
-        // @oav({ tooltip: "粒子系统发射粒子的时间长度。如果系统是循环的，这表示一个循环的长度。" })
-        @oav({ tooltip: "The duration of the particle system in seconds." })
+        @oav({ tooltip: "粒子系统发射粒子的时间长度。如果系统是循环的，这表示一个循环的长度。" })
         duration = 5;
 
         /**
          * 如果为真，发射周期将在持续时间后重复。
          */
         @serialize
-        // @oav({ tooltip: "如果为真，发射周期将在持续时间后重复。" })
-        @oav({ tooltip: "Is the particle system looping?" })
+        @oav({ tooltip: "如果为真，发射周期将在持续时间后重复。" })
         loop = true;
 
         /**
          * 这个粒子系统在发射粒子之前会等待几秒。
          */
         @serialize
-        // @oav({ tooltip: "这个粒子系统在发射粒子之前会等待几秒。" })
-        @oav({ tooltip: "Start delay in seconds." })
+        @oav({ tooltip: "这个粒子系统在发射粒子之前会等待几秒。" })
         startDelay = 0;
 
         /**
          * 起始寿命为秒，粒子寿命为0时死亡。
          */
         @serialize
-        // @oav({ tooltip: "起始寿命为秒，粒子寿命为0时死亡。" })
-        @oav({ tooltip: "The total lifetime in seconds that each new particle will have." })
+        @oav({ tooltip: "起始寿命为秒，粒子寿命为0时死亡。" })
         startLifetime = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 5, constant1: 5 });
 
         /**
          * 粒子的起始速度，应用于起始方向。
          */
         @serialize
-        // @oav({ tooltip: "粒子的起始速度，应用于起始方向。" })
-        @oav({ tooltip: "The initial speed of particles when emitted." })
+        @oav({ tooltip: "粒子的起始速度，应用于起始方向。" })
         startSpeed = serialization.setValue(new MinMaxCurve(), { constant: 5, constant1: 5 });
 
         @serialize
-        @oav({ tooltip: "A flag to enable specifying particle size individually for each axis." })
-        // @oav({ tooltip: "允许为每个轴分别指定粒度大小的标志。" })
-        startSize3D = false;
-
-        @serialize
-        @oav({ tooltip: "The initial size of particles when emitted." })
-        // @oav({ tooltip: "粒子发射时的初始大小。" })
-        startSize = serialization.setValue(new MinMaxCurve(), { constant: 1, constant1: 1 });
-
-        /**
-         * Start size multiplier.
-         */
-        get startSizeMultiplier()
-        {
-            return this.startSize.curveMultiplier;
-        }
-        set startSizeMultiplier(v)
-        {
-            this.startSize.curveMultiplier = v;
-        }
+        // @oav({ tooltip: "A flag to enable specifying particle size individually for each axis." })
+        @oav({ tooltip: "允许为每个轴分别指定粒度大小的标志。" })
+        useStartSize3D = false;
 
         /**
          * 粒子的起始缩放。
          */
         @serialize
         @oav({ tooltip: "粒子的起始缩放。" })
-        startSizeValue = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
+        startSize3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
 
-        /**
-         * The initial size of particles along the X axis when emitted.
-         */
-        get startSizeX()
+        @serialize
+        // @oav({ tooltip: "The initial size of particles when emitted." })
+        @oav({ tooltip: "粒子发射时的初始大小。" })
+        get startSize()
         {
-            return this.startSizeValue.xCurve;
+            return this.startSize3D.xCurve;
         }
-
-        /**
-         * Start size multiplier along the X axis.
-         */
-        get startSizeXMultiplier()
+        set startSize(v)
         {
-            return this.startSizeValue.xCurve.curveMultiplier;
-        }
-
-        set startSizeXMultiplier(v)
-        {
-            this.startSizeValue.xCurve.curveMultiplier = v;
-        }
-
-        /**
-         * The initial size of particles along the Y axis when emitted.
-         */
-        get startSizeY()
-        {
-            return this.startSizeValue.yCurve;
-        }
-
-        /**
-         * Start size multiplier along the Y axis.
-         */
-        get startSizeYMultiplier()
-        {
-            return this.startSizeValue.yCurve.curveMultiplier;
-        }
-
-        set startSizeYMultiplier(v)
-        {
-            this.startSizeValue.yCurve.curveMultiplier = v;
-        }
-
-        /**
-         * The initial size of particles along the Z axis when emitted.
-         */
-        get startSizeZ()
-        {
-            return this.startSizeValue.zCurve;
-        }
-
-        /**
-         * Start size multiplier along the Z axis.
-         */
-        get startSizeZMultiplier()
-        {
-            return this.startSizeValue.zCurve.curveMultiplier;
-        }
-
-        set startSizeZMultiplier(v)
-        {
-            this.startSizeValue.zCurve.curveMultiplier = v;
+            this.startSize3D.xCurve = v;
         }
 
         @serialize
-        @oav({ tooltip: "A flag to enable 3D particle rotation." })
-        // @oav({ tooltip: "一个启动粒子3D旋转的标记。" })
-        startRotation3D = false;
-
-        @serialize
-        @oav({ tooltip: "The initial rotation of particles when emitted." })
-        // @oav({ tooltip: "粒子发射时的初始旋转。" })
-        startRotation = serialization.setValue(new MinMaxCurve(), { constant: 1, constant1: 180 });
+        // @oav({ tooltip: "A flag to enable 3D particle rotation." })
+        @oav({ tooltip: "一个启用粒子3D旋转的标记。" })
+        useStartRotation3D = false;
 
         /**
          * 粒子的起始旋转角度。
          */
         @serialize
         @oav({ tooltip: "粒子的起始旋转角度。" })
-        startRotationValue = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { curveMultiplier: 180 }, yCurve: { curveMultiplier: 180 }, zCurve: { curveMultiplier: 180 } });
+        startRotation3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { curveMultiplier: 180 }, yCurve: { curveMultiplier: 180 }, zCurve: { curveMultiplier: 180 } });
+
+        @serialize
+        // @oav({ tooltip: "The initial rotation of particles when emitted." })
+        @oav({ tooltip: "粒子发射时的初始旋转。" })
+        get startRotation()
+        {
+            return this.startRotation3D.zCurve;
+        }
+        set startRotation(v)
+        {
+            this.startRotation3D.zCurve = v;
+        }
 
         /**
          * 粒子的起始颜色。
@@ -232,9 +166,24 @@ namespace feng3d
 
             particle.position.init(0, 0, 0);
             particle.velocity.init(0, 0, this.startSpeed.getValue(rateAtDuration));
-            particle.startScale.copy(this.startSizeValue.getValue(rateAtDuration));
+            if (this.useStartSize3D)
+            {
+                particle.startScale.copy(this.startSize3D.getValue(rateAtDuration));
+            } else
+            {
+                var startSize = this.startSize.getValue(rateAtDuration);
+                particle.startScale.init(startSize, startSize, startSize);
+            }
+
             //
-            particle.rotation.copy(this.startRotationValue.getValue(rateAtDuration));
+            if (this.useStartRotation3D)
+            {
+                particle.rotation.copy(this.startRotation3D.getValue(rateAtDuration));
+            } else
+            {
+                var startRotation = this.startRotation.getValue(rateAtDuration);
+                particle.rotation.init(startRotation, startRotation, startRotation);
+            }
             //
             particle.startColor.copy(this.startColor.getValue(rateAtDuration));
         }
