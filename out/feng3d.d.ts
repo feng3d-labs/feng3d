@@ -14568,7 +14568,8 @@ declare namespace feng3d {
      */
     enum ParticleSystemSimulationSpace {
         Local = 0,
-        World = 1
+        World = 1,
+        Custom = 2
     }
 }
 declare namespace feng3d {
@@ -14758,9 +14759,11 @@ declare namespace feng3d {
         /**
          * 使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。
          */
+        simulationSpace: ParticleSystemSimulationSpace;
         /**
          * 使粒子位置模拟相对于自定义转换组件。
          */
+        customSimulationSpace: Transform;
         /**
          * 缩放粒子系统的播放速度。
          */
@@ -14768,6 +14771,7 @@ declare namespace feng3d {
         /**
          * 我们应该使用来自整个层次的组合尺度，仅仅是这个粒子结点，还是仅仅对形状模块应用尺度
          */
+        scalingMode: ParticleSystemScalingMode;
         /**
          * 如果启用，系统将自动开始运行。
          */

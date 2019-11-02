@@ -248,10 +248,10 @@ namespace feng3d
                     // f = - 8 / 3 * f * f * f + 4 * f * f - f / 3;
 
                     var pos = (i + j * size) * 4;
-                    imageData.data[pos] = 255;
-                    imageData.data[pos + 1] = 255;
-                    imageData.data[pos + 2] = 255;
-                    imageData.data[pos + 3] = f * 255;
+                    imageData.data[pos] = f * 255;
+                    imageData.data[pos + 1] = f * 255;
+                    imageData.data[pos + 2] = f * 255;
+                    imageData.data[pos + 3] = 255;
                 }
             }
             this.imageData = imageData;

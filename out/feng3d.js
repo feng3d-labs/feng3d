@@ -2730,10 +2730,10 @@ var feng3d;
                     // f = f * f * f;
                     // f = - 8 / 3 * f * f * f + 4 * f * f - f / 3;
                     var pos = (i + j * size) * 4;
-                    imageData.data[pos] = 255;
-                    imageData.data[pos + 1] = 255;
-                    imageData.data[pos + 2] = 255;
-                    imageData.data[pos + 3] = f * 255;
+                    imageData.data[pos] = f * 255;
+                    imageData.data[pos + 1] = f * 255;
+                    imageData.data[pos + 2] = f * 255;
+                    imageData.data[pos + 3] = 255;
                 }
             }
             this.imageData = imageData;
@@ -32787,7 +32787,7 @@ var feng3d;
     feng3d.shaderConfig.shaders["particle"].cls = ParticleUniforms;
     feng3d.AssetData.addAssetData("Particle-Material", feng3d.Material.particle = feng3d.serialization.setValue(new feng3d.Material(), {
         name: "Particle-Material", assetId: "Particle-Material", shaderName: "particle",
-        renderParams: { enableBlend: true, depthMask: false },
+        renderParams: { enableBlend: true, depthMask: false, sfactor: feng3d.BlendFactor.ONE, dfactor: feng3d.BlendFactor.ONE_MINUS_SRC_COLOR },
         hideFlags: feng3d.HideFlags.NotEditable,
     }));
 })(feng3d || (feng3d = {}));
@@ -33140,7 +33140,7 @@ var feng3d;
     (function (ParticleSystemSimulationSpace) {
         ParticleSystemSimulationSpace[ParticleSystemSimulationSpace["Local"] = 0] = "Local";
         ParticleSystemSimulationSpace[ParticleSystemSimulationSpace["World"] = 1] = "World";
-        // Custom
+        ParticleSystemSimulationSpace[ParticleSystemSimulationSpace["Custom"] = 2] = "Custom";
     })(ParticleSystemSimulationSpace = feng3d.ParticleSystemSimulationSpace || (feng3d.ParticleSystemSimulationSpace = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -33485,15 +33485,7 @@ var feng3d;
             /**
              * 使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。
              */
-            // @serialize
-            // @oav({ tooltip: "模拟空间，使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
-            // simulationSpace = ParticleSystemSimulationSpace.Local;
-            /**
-             * 使粒子位置模拟相对于自定义转换组件。
-             */
-            // @serialize
-            // @oav({ tooltip: "使粒子位置模拟相对于自定义转换组件。" })
-            // customSimulationSpace: Transform;
+            _this.simulationSpace = feng3d.ParticleSystemSimulationSpace.Local;
             /**
              * 缩放粒子系统的播放速度。
              */
@@ -33501,9 +33493,7 @@ var feng3d;
             /**
              * 我们应该使用来自整个层次的组合尺度，仅仅是这个粒子结点，还是仅仅对形状模块应用尺度
              */
-            // @serialize
-            // @oav({ tooltip: "我们应该使用来自整个层次的组合尺度，仅仅是这个粒子结点，还是仅仅对形状模块应用尺度?" })
-            // scalingMode = ParticleSystemScalingMode.Local;
+            _this.scalingMode = feng3d.ParticleSystemScalingMode.Local;
             /**
              * 如果启用，系统将自动开始运行。
              */
@@ -33598,8 +33588,20 @@ var feng3d;
         ], ParticleMainModule.prototype, "gravityModifier", void 0);
         __decorate([
             feng3d.serialize,
+            feng3d.oav({ tooltip: "模拟空间，使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace } })
+        ], ParticleMainModule.prototype, "simulationSpace", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "使粒子位置模拟相对于自定义转换组件。" })
+        ], ParticleMainModule.prototype, "customSimulationSpace", void 0);
+        __decorate([
+            feng3d.serialize,
             feng3d.oav({ tooltip: "缩放粒子系统的播放速度。" })
         ], ParticleMainModule.prototype, "simulationSpeed", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "我们应该使用来自整个层次的组合尺度，仅仅是这个粒子结点，还是仅仅对形状模块应用尺度?" })
+        ], ParticleMainModule.prototype, "scalingMode", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ tooltip: "如果启用，系统将自动开始运行。" })
@@ -43438,7 +43440,6 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {
