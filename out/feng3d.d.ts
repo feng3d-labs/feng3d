@@ -14740,14 +14740,46 @@ declare namespace feng3d {
          * 粒子的起始速度，应用于起始方向。
          */
         startSpeed: MinMaxCurve;
+        startSize3D: boolean;
+        startSize: MinMaxCurve;
+        /**
+         * Start size multiplier.
+         */
+        startSizeMultiplier: number;
         /**
          * 粒子的起始缩放。
          */
-        startScale: MinMaxCurveVector3;
+        startSizeValue: MinMaxCurveVector3;
+        /**
+         * The initial size of particles along the X axis when emitted.
+         */
+        readonly startSizeX: MinMaxCurve;
+        /**
+         * Start size multiplier along the X axis.
+         */
+        startSizeXMultiplier: number;
+        /**
+         * The initial size of particles along the Y axis when emitted.
+         */
+        readonly startSizeY: MinMaxCurve;
+        /**
+         * Start size multiplier along the Y axis.
+         */
+        startSizeYMultiplier: number;
+        /**
+         * The initial size of particles along the Z axis when emitted.
+         */
+        readonly startSizeZ: MinMaxCurve;
+        /**
+         * Start size multiplier along the Z axis.
+         */
+        startSizeZMultiplier: number;
+        startRotation3D: boolean;
+        startRotation: MinMaxCurve;
         /**
          * 粒子的起始旋转角度。
          */
-        startRotation: MinMaxCurveVector3;
+        startRotationValue: MinMaxCurveVector3;
         /**
          * 粒子的起始颜色。
          */
