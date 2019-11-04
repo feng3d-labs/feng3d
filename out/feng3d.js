@@ -32773,6 +32773,87 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var ParticleEmissionBurst = /** @class */ (function () {
+        function ParticleEmissionBurst() {
+            /**
+             * 每次爆炸发生的时间。
+             */
+            this.time = 0;
+            /**
+             * 要发射的粒子数。
+             */
+            this.count = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 30, constant1: 30 });
+            /**
+             * 爆发次数。(0意味着无限)。
+             *
+             * @todo
+             */
+            this.cycleCount = 1;
+            /**
+             * 多久重复一次，以秒为单位。
+             *
+             * @todo
+             */
+            this.repeatInterval = 0.01;
+            /**
+             * 喷发被触发的几率。
+             */
+            this.probability = 1.0;
+            this._isProbability = true;
+        }
+        Object.defineProperty(ParticleEmissionBurst.prototype, "isProbability", {
+            /**
+             * 是否喷发
+             */
+            get: function () {
+                return this._isProbability;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 通过触发的几率计算是否喷发。
+         */
+        ParticleEmissionBurst.prototype.calculateProbability = function () {
+            this._isProbability = this.probability >= Math.random();
+            return this._isProbability;
+        };
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "The time that each burst occurs." })
+            ,
+            feng3d.oav({ tooltip: "每次爆炸发生的时间。" })
+        ], ParticleEmissionBurst.prototype, "time", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Number of particles to be emitted." })
+            ,
+            feng3d.oav({ tooltip: "要发射的粒子数。" })
+        ], ParticleEmissionBurst.prototype, "count", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "How many times to play the burst. (0 means infinitely)." })
+            ,
+            feng3d.oav({ tooltip: "爆发次数。(0意味着无限)。" })
+        ], ParticleEmissionBurst.prototype, "cycleCount", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "How often to repeat the burst, in seconds." })
+            ,
+            feng3d.oav({ tooltip: "多久重复一次，以秒为单位。" })
+        ], ParticleEmissionBurst.prototype, "repeatInterval", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "The chance that the burst will trigger." })
+            ,
+            feng3d.oav({ tooltip: "喷发被触发的几率。取值在0与1之间，默认1。" })
+        ], ParticleEmissionBurst.prototype, "probability", void 0);
+        return ParticleEmissionBurst;
+    }());
+    feng3d.ParticleEmissionBurst = ParticleEmissionBurst;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     var ParticleUniforms = /** @class */ (function (_super) {
         __extends(ParticleUniforms, _super);
         function ParticleUniforms() {
@@ -32888,6 +32969,13 @@ var feng3d;
             this.time = this.time + this.main.simulationSpeed * interval / 1000;
             this._realEmitTime = this.time - this.main.startDelay;
             this._updateActiveParticlesState();
+            // 完成一个循环
+            if (this.main.loop && Math.floor(this._preRealEmitTime / this.main.duration) < Math.floor(this._realEmitTime / this.main.duration)) {
+                // 重新计算喷发概率
+                this.emission.bursts.forEach(function (element) {
+                    element.calculateProbability();
+                });
+            }
             this._emit();
             this._preEmitTime = this.time;
             this._preRealEmitTime = this.time - this.main.startDelay;
@@ -32914,8 +33002,13 @@ var feng3d;
             this._isPlaying = true;
             this.time = 0;
             this._preEmitTime = 0;
+            this._preRealEmitTime = 0;
             this._particlePool = this._particlePool.concat(this._activeParticles);
             this._activeParticles.length = 0;
+            // 重新计算喷发概率
+            this.emission.bursts.forEach(function (element) {
+                element.calculateProbability();
+            });
         };
         /**
          * 暂停
@@ -32927,7 +33020,14 @@ var feng3d;
          * 继续
          */
         ParticleSystem.prototype.continue = function () {
-            this._isPlaying = true;
+            if (this.time == 0) {
+                this.play();
+            }
+            else {
+                this._isPlaying = true;
+                this._preEmitTime = this.time;
+                this._preRealEmitTime = Math.max(0, this.time - this.main.startDelay);
+            }
         };
         ParticleSystem.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
             _super.prototype.beforeRender.call(this, gl, renderAtomic, scene3d, camera);
@@ -32990,19 +33090,22 @@ var feng3d;
             // 判断是否开始发射
             if (this.time <= this.main.startDelay)
                 return;
+            var loop = this.main.loop;
+            var startDelay = this.main.startDelay;
             var duration = this.main.duration;
-            var preRealEmitTime = this._preEmitTime - this.main.startDelay;
+            var rateAtDuration = this.main.rateAtDuration;
+            var preRealEmitTime = this._preEmitTime - startDelay;
             // 判断是否结束发射
-            if (!this.main.loop && preRealEmitTime >= duration)
+            if (!loop && preRealEmitTime >= duration)
                 return;
             // 计算最后发射时间
-            var realEmitTime = this.time - this.main.startDelay;
-            if (!this.main.loop)
-                realEmitTime = Math.min(realEmitTime, duration + this.main.startDelay);
+            var realEmitTime = this.time - startDelay;
+            if (!loop)
+                realEmitTime = Math.min(realEmitTime, duration + startDelay);
             // 
             var emits = [];
             // 单粒子发射周期
-            var step = 1 / this.emission.rate.getValue(this.main.rateAtDuration);
+            var step = 1 / this.emission.rateOverTime.getValue(rateAtDuration);
             var bursts = this.emission.bursts;
             // 遍历所有发射周期
             var cycleEndIndex = Math.ceil(realEmitTime / duration);
@@ -33023,15 +33126,15 @@ var feng3d;
                 var inCycleEnd = endTime - cycleStartTime;
                 for (var i_1 = 0; i_1 < bursts.length; i_1++) {
                     var burst = bursts[i_1];
-                    if (inCycleStart <= burst.time && burst.time <= inCycleEnd && burst.time <= realEmitTime) {
-                        emits.push({ time: cycleStartTime + burst.time, num: burst.num });
+                    if (burst.isProbability && inCycleStart <= burst.time && burst.time <= inCycleEnd && burst.time <= realEmitTime) {
+                        emits.push({ time: cycleStartTime + burst.time, num: burst.count.getValue(rateAtDuration) });
                     }
                 }
             }
             emits.sort(function (a, b) { return a.time - b.time; });
             ;
             emits.forEach(function (v) {
-                _this._emitParticles(v.time, v.num);
+                _this._emitParticles(v.time, v.num, rateAtDuration);
             });
         };
         /**
@@ -33039,11 +33142,11 @@ var feng3d;
          * @param birthTime 发射时间
          * @param num 发射数量
          */
-        ParticleSystem.prototype._emitParticles = function (birthTime, num) {
+        ParticleSystem.prototype._emitParticles = function (birthTime, num, rateAtDuration) {
             for (var i = 0; i < num; i++) {
                 if (this._activeParticles.length >= this.main.maxParticles)
                     return;
-                var lifetime = this.main.startLifetime.getValue(((birthTime - this.main.startDelay) % this.main.duration) / this.main.duration);
+                var lifetime = this.main.startLifetime.getValue(rateAtDuration);
                 if (lifetime + birthTime + this.main.startDelay > this.time) {
                     var particle = this._particlePool.pop() || new feng3d.Particle();
                     particle.birthTime = birthTime;
@@ -33718,23 +33821,42 @@ var feng3d;
         function ParticleEmissionModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             /**
-             * 发射率，每秒发射粒子数量
+             * 随着时间的推移，新粒子产生的速度。
              */
-            _this.rate = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constant: 10, constant1: 10 });
-            // rate = 10;
+            _this.rateOverTime = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constant: 10, constant1: 10 });
+            /**
+             * 产生新粒子的速度，通过距离。
+             */
+            // @oav({ tooltip: "The rate at which new particles are spawned, over distance." })
+            _this.rateOverDistance = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constant: 0, constant1: 1 });
             /**
              * 爆发，在time时刻额外喷射particles粒子
              */
             _this.bursts = [];
             return _this;
         }
+        Object.defineProperty(ParticleEmissionModule.prototype, "burstCount", {
+            /**
+             * 当前的爆发次数。
+             */
+            get: function () {
+                return this.bursts.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "The rate at which new particles are spawned, over time." })
+            ,
+            feng3d.oav({ tooltip: "随着时间的推移，新粒子产生的速度。" })
+        ], ParticleEmissionModule.prototype, "rateOverTime", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "产生新粒子的速度，通过距离。" })
+        ], ParticleEmissionModule.prototype, "rateOverDistance", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ tooltip: "每秒发射粒子数量" })
-        ], ParticleEmissionModule.prototype, "rate", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ component: "OAVArray", tooltip: "在指定时间进行额外发射指定数量的粒子", componentParam: { defaultItem: function () { return { time: 0, num: 30 }; } } })
+            feng3d.oav({ component: "OAVArray", tooltip: "在指定时间进行额外发射指定数量的粒子", componentParam: { defaultItem: function () { return new feng3d.ParticleEmissionBurst(); } } })
         ], ParticleEmissionModule.prototype, "bursts", void 0);
         return ParticleEmissionModule;
     }(feng3d.ParticleModule));

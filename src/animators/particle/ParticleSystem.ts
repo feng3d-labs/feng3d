@@ -113,6 +113,16 @@ namespace feng3d
 
             this._updateActiveParticlesState();
 
+            // 完成一个循环
+            if (this.main.loop && Math.floor(this._preRealEmitTime / this.main.duration) < Math.floor(this._realEmitTime / this.main.duration))
+            {
+                // 重新计算喷发概率
+                this.emission.bursts.forEach(element =>
+                {
+                    element.calculateProbability();
+                });
+            }
+
             this._emit();
 
             this._preEmitTime = this.time;
@@ -147,9 +157,16 @@ namespace feng3d
             this._isPlaying = true;
             this.time = 0;
             this._preEmitTime = 0;
+            this._preRealEmitTime = 0;
 
             this._particlePool = this._particlePool.concat(this._activeParticles);
             this._activeParticles.length = 0;
+
+            // 重新计算喷发概率
+            this.emission.bursts.forEach(element =>
+            {
+                element.calculateProbability();
+            });
         }
 
         /**
@@ -165,7 +182,15 @@ namespace feng3d
          */
         continue()
         {
-            this._isPlaying = true;
+            if (this.time == 0)
+            {
+                this.play();
+            } else
+            {
+                this._isPlaying = true;
+                this._preEmitTime = this.time;
+                this._preRealEmitTime = Math.max(0, this.time - this.main.startDelay);
+            }
         }
 
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
@@ -279,20 +304,23 @@ namespace feng3d
             // 判断是否开始发射
             if (this.time <= this.main.startDelay) return;
 
+            var loop = this.main.loop;
+            var startDelay = this.main.startDelay;
             var duration = this.main.duration;
-            var preRealEmitTime = this._preEmitTime - this.main.startDelay;
+            var rateAtDuration = this.main.rateAtDuration;
+            var preRealEmitTime = this._preEmitTime - startDelay;
 
             // 判断是否结束发射
-            if (!this.main.loop && preRealEmitTime >= duration) return;
+            if (!loop && preRealEmitTime >= duration) return;
 
             // 计算最后发射时间
-            var realEmitTime = this.time - this.main.startDelay;
-            if (!this.main.loop) realEmitTime = Math.min(realEmitTime, duration + this.main.startDelay);
+            var realEmitTime = this.time - startDelay;
+            if (!loop) realEmitTime = Math.min(realEmitTime, duration + startDelay);
 
             // 
             var emits: { time: number, num: number }[] = [];
             // 单粒子发射周期
-            var step = 1 / this.emission.rate.getValue(this.main.rateAtDuration);
+            var step = 1 / this.emission.rateOverTime.getValue(rateAtDuration);
             var bursts = this.emission.bursts;
 
             // 遍历所有发射周期
@@ -320,9 +348,9 @@ namespace feng3d
                 for (let i = 0; i < bursts.length; i++)
                 {
                     const burst = bursts[i];
-                    if (inCycleStart <= burst.time && burst.time <= inCycleEnd && burst.time <= realEmitTime)
+                    if (burst.isProbability && inCycleStart <= burst.time && burst.time <= inCycleEnd && burst.time <= realEmitTime)
                     {
-                        emits.push({ time: cycleStartTime + burst.time, num: burst.num });
+                        emits.push({ time: cycleStartTime + burst.time, num: burst.count.getValue(rateAtDuration) });
                     }
                 }
             }
@@ -331,7 +359,7 @@ namespace feng3d
 
             emits.forEach(v =>
             {
-                this._emitParticles(v.time, v.num);
+                this._emitParticles(v.time, v.num, rateAtDuration);
             });
         }
 
@@ -340,12 +368,12 @@ namespace feng3d
          * @param birthTime 发射时间
          * @param num 发射数量
          */
-        private _emitParticles(birthTime: number, num: number)
+        private _emitParticles(birthTime: number, num: number, rateAtDuration: number)
         {
             for (let i = 0; i < num; i++)
             {
                 if (this._activeParticles.length >= this.main.maxParticles) return;
-                var lifetime = this.main.startLifetime.getValue(((birthTime - this.main.startDelay) % this.main.duration) / this.main.duration);
+                var lifetime = this.main.startLifetime.getValue(rateAtDuration);
                 if (lifetime + birthTime + this.main.startDelay > this.time)
                 {
                     var particle = this._particlePool.pop() || new Particle();

@@ -278,6 +278,7 @@
         "src/terrain/Terrain.ts",
         //粒子动画
         "src/animators/particle/Particle.ts",
+        "src/animators/particle/ParticleEmissionBurst.ts",
         "src/animators/particle/ParticleMaterial.ts",
         "src/animators/particle/ParticleSystem.ts",
         //

@@ -14441,6 +14441,43 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    class ParticleEmissionBurst {
+        /**
+         * 每次爆炸发生的时间。
+         */
+        time: number;
+        /**
+         * 要发射的粒子数。
+         */
+        count: MinMaxCurve;
+        /**
+         * 爆发次数。(0意味着无限)。
+         *
+         * @todo
+         */
+        cycleCount: number;
+        /**
+         * 多久重复一次，以秒为单位。
+         *
+         * @todo
+         */
+        repeatInterval: number;
+        /**
+         * 喷发被触发的几率。
+         */
+        probability: number;
+        /**
+         * 是否喷发
+         */
+        readonly isProbability: boolean;
+        private _isProbability;
+        /**
+         * 通过触发的几率计算是否喷发。
+         */
+        calculateProbability(): boolean;
+    }
+}
+declare namespace feng3d {
     interface UniformsMap {
         particle: ParticleUniforms;
     }
@@ -14806,16 +14843,21 @@ declare namespace feng3d {
      */
     class ParticleEmissionModule extends ParticleModule {
         /**
-         * 发射率，每秒发射粒子数量
+         * 随着时间的推移，新粒子产生的速度。
          */
-        rate: MinMaxCurve;
+        rateOverTime: MinMaxCurve;
+        /**
+         * 产生新粒子的速度，通过距离。
+         */
+        rateOverDistance: MinMaxCurve;
         /**
          * 爆发，在time时刻额外喷射particles粒子
          */
-        bursts: {
-            time: number;
-            num: number;
-        }[];
+        bursts: ParticleEmissionBurst[];
+        /**
+         * 当前的爆发次数。
+         */
+        readonly burstCount: number;
     }
 }
 declare namespace feng3d {
