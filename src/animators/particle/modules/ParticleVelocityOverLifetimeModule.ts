@@ -9,10 +9,12 @@ namespace feng3d
     export class ParticleVelocityOverLifetimeModule extends ParticleModule
     {
         @serialize
-        @oav()
+        // @oav({ tooltip: "Curve to control particle speed based on lifetime." })
+        @oav({ tooltip: "基于寿命的粒子速度控制曲线。" })
         velocity = new MinMaxCurveVector3();
 
-        @oav({ tooltip: "模拟空间", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
+        // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
+        @oav({ tooltip: "指定速度是在局部空间(与变换一起旋转)还是在世界空间。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
         space = ParticleSystemSimulationSpace.Local;
 
         /**

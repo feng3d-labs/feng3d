@@ -14721,67 +14721,67 @@ declare namespace feng3d {
     class ParticleMainModule extends ParticleModule {
         enabled: boolean;
         /**
-         * 粒子系统发射粒子的时间长度。如果系统是循环的，这表示一个循环的长度。
+         * 粒子系统的持续时间(秒)。
          */
         duration: number;
         /**
-         * 如果为真，发射周期将在持续时间后重复。
+         * 粒子系统在循环吗?
          */
         loop: boolean;
         /**
-         * 这个粒子系统在发射粒子之前会等待几秒。
+         * 启动延迟(以秒为单位)。
          */
         startDelay: number;
         /**
-         * 起始寿命为秒，粒子寿命为0时死亡。
+         * 每个新粒子的总寿命(以秒计)。
          */
         startLifetime: MinMaxCurve;
         /**
-         * 粒子的起始速度，应用于起始方向。
+         * 粒子发射时的初始速度。
          */
         startSpeed: MinMaxCurve;
         useStartSize3D: boolean;
         /**
-         * 粒子的起始缩放。
+         * 发射时粒子的初始大小。
          */
         startSize3D: MinMaxCurveVector3;
         startSize: MinMaxCurve;
         useStartRotation3D: boolean;
         /**
-         * 粒子的起始旋转角度。
+         * 粒子发射时的初始旋转。
          */
         startRotation3D: MinMaxCurveVector3;
         startRotation: MinMaxCurve;
         /**
-         * 粒子的起始颜色。
+         * 粒子发射时的初始颜色。
          */
         startColor: MinMaxGradient;
         /**
-         * 按物理管理器中定义的重力进行缩放。
+         * 应用于重力加速度的缩放。
          */
         gravityModifier: MinMaxCurve;
         /**
-         * 使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。
+         * 模拟空间，使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。
          */
         simulationSpace: ParticleSystemSimulationSpace;
         /**
-         * 使粒子位置模拟相对于自定义转换组件。
+         * 模拟相对于自定义转换组件的粒子。
          */
         customSimulationSpace: Transform;
         /**
-         * 缩放粒子系统的播放速度。
+         * 重写粒子系统的默认播放速度。
          */
         simulationSpeed: number;
         /**
-         * 我们应该使用来自整个层次的组合尺度，仅仅是这个粒子结点，还是仅仅对形状模块应用尺度
+         * 控制粒子系统的变换组件如何应用于粒子系统。
          */
         scalingMode: ParticleSystemScalingMode;
         /**
-         * 如果启用，系统将自动开始运行。
+         * 如果设置为真，粒子系统将自动开始播放启动。
          */
         playOnAwake: boolean;
         /**
-         * 系统中粒子的数量将被这个数限制。如果达到这个目标，排放将暂时发射。
+         * 发射粒子的最大数量。
          */
         maxParticles: number;
         /**

@@ -9,38 +9,43 @@ namespace feng3d
         enabled = true;
 
         /**
-         * 粒子系统发射粒子的时间长度。如果系统是循环的，这表示一个循环的长度。
+         * 粒子系统的持续时间(秒)。
          */
         @serialize
-        @oav({ tooltip: "粒子系统发射粒子的时间长度。如果系统是循环的，这表示一个循环的长度。" })
+        // @oav({ tooltip: "The duration of the particle system in seconds." })
+        @oav({ tooltip: "粒子系统的持续时间(秒)。" })
         duration = 5;
 
         /**
-         * 如果为真，发射周期将在持续时间后重复。
+         * 粒子系统在循环吗?
          */
         @serialize
-        @oav({ tooltip: "如果为真，发射周期将在持续时间后重复。" })
+        // @oav({ tooltip: "Is the particle system looping?" })
+        @oav({ tooltip: "粒子系统在循环吗?" })
         loop = true;
 
         /**
-         * 这个粒子系统在发射粒子之前会等待几秒。
+         * 启动延迟(以秒为单位)。
          */
         @serialize
-        @oav({ tooltip: "这个粒子系统在发射粒子之前会等待几秒。" })
+        // @oav({ tooltip: "Start delay in seconds." })
+        @oav({ tooltip: "启动延迟(以秒为单位)。" })
         startDelay = 0;
 
         /**
-         * 起始寿命为秒，粒子寿命为0时死亡。
+         * 每个新粒子的总寿命(以秒计)。
          */
         @serialize
-        @oav({ tooltip: "起始寿命为秒，粒子寿命为0时死亡。" })
+        // @oav({ tooltip: "The total lifetime in seconds that each new particle will have." })
+        @oav({ tooltip: "每个新粒子的总寿命(以秒计)。" })
         startLifetime = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 5, constant1: 5 });
 
         /**
-         * 粒子的起始速度，应用于起始方向。
+         * 粒子发射时的初始速度。
          */
         @serialize
-        @oav({ tooltip: "粒子的起始速度，应用于起始方向。" })
+        // @oav({ tooltip: "The initial speed of particles when emitted." })
+        @oav({ tooltip: "粒子发射时的初始速度。" })
         startSpeed = serialization.setValue(new MinMaxCurve(), { constant: 5, constant1: 5 });
 
         @serialize
@@ -49,10 +54,11 @@ namespace feng3d
         useStartSize3D = false;
 
         /**
-         * 粒子的起始缩放。
+         * 发射时粒子的初始大小。
          */
         @serialize
-        @oav({ tooltip: "粒子的起始缩放。" })
+        // @oav({ tooltip: "The initial size of particles when emitted." })
+        @oav({ tooltip: "发射时粒子的初始大小。" })
         startSize3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
 
         @serialize
@@ -73,10 +79,11 @@ namespace feng3d
         useStartRotation3D = false;
 
         /**
-         * 粒子的起始旋转角度。
+         * 粒子发射时的初始旋转。
          */
         @serialize
-        @oav({ tooltip: "粒子的起始旋转角度。" })
+        // @oav({ tooltip: "The initial rotation of particles when emitted." })
+        @oav({ tooltip: "粒子发射时的初始旋转。" })
         startRotation3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { curveMultiplier: 180 }, yCurve: { curveMultiplier: 180 }, zCurve: { curveMultiplier: 180 } });
 
         @serialize
@@ -92,59 +99,67 @@ namespace feng3d
         }
 
         /**
-         * 粒子的起始颜色。
+         * 粒子发射时的初始颜色。
          */
         @serialize
-        @oav({ tooltip: "粒子的起始颜色。" })
+        @oav({ tooltip: "The initial color of particles when emitted." })
+        @oav({ tooltip: "粒子发射时的初始颜色。" })
         startColor = new MinMaxGradient();
 
         /**
-         * 按物理管理器中定义的重力进行缩放。
+         * 应用于重力加速度的缩放。
          */
         @serialize
-        @oav({ tooltip: "按物理管理器中定义的重力进行缩放。" })
+        // @oav({ tooltip: "Scale applied to the gravity." })
+        @oav({ tooltip: "应用于重力加速度的缩放。" })
         gravityModifier = new MinMaxCurve();
 
         /**
-         * 使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。
+         * 模拟空间，使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。
          */
         @serialize
+        // @oav({ tooltip: "This selects the space in which to simulate particles. It can be either world or local space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
         @oav({ tooltip: "模拟空间，使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
         simulationSpace = ParticleSystemSimulationSpace.Local;
 
         /**
-         * 使粒子位置模拟相对于自定义转换组件。
+         * 模拟相对于自定义转换组件的粒子。
          */
         @serialize
-        @oav({ tooltip: "使粒子位置模拟相对于自定义转换组件。" })
+        // @oav({ tooltip: "Simulate particles relative to a custom transform component." })
+        @oav({ tooltip: "模拟相对于自定义转换组件的粒子。" })
         customSimulationSpace: Transform;
 
         /**
-         * 缩放粒子系统的播放速度。
+         * 重写粒子系统的默认播放速度。
          */
         @serialize
-        @oav({ tooltip: "缩放粒子系统的播放速度。" })
+        // @oav({ tooltip: "Override the default playback speed of the Particle System." })
+        @oav({ tooltip: "重写粒子系统的默认播放速度。" })
         simulationSpeed = 1;
 
         /**
-         * 我们应该使用来自整个层次的组合尺度，仅仅是这个粒子结点，还是仅仅对形状模块应用尺度
+         * 控制粒子系统的变换组件如何应用于粒子系统。
          */
         @serialize
-        @oav({ tooltip: "我们应该使用来自整个层次的组合尺度，仅仅是这个粒子结点，还是仅仅对形状模块应用尺度?" })
+        // @oav({ tooltip: "Control how the particle system's Transform Component is applied to the particle system." })
+        @oav({ tooltip: "控制粒子系统的变换组件如何应用于粒子系统。" })
         scalingMode = ParticleSystemScalingMode.Local;
 
         /**
-         * 如果启用，系统将自动开始运行。
+         * 如果设置为真，粒子系统将自动开始播放启动。
          */
         @serialize
-        @oav({ tooltip: "如果启用，系统将自动开始运行。" })
+        // @oav({ tooltip: "If set to true, the particle system will automatically start playing on startup." })
+        @oav({ tooltip: "如果设置为真，粒子系统将自动开始播放启动。" })
         playOnAwake = true;
 
         /**
-         * 系统中粒子的数量将被这个数限制。如果达到这个目标，排放将暂时发射。
+         * 发射粒子的最大数量。
          */
         @serialize
-        @oav({ tooltip: "系统中粒子的数量将被这个数限制。如果达到这个目标，将暂时发射。" })
+        @oav({ tooltip: "The maximum number of particles to emit." })
+        @oav({ tooltip: "发射粒子的最大数量。" })
         maxParticles = 1000;
 
         /**
