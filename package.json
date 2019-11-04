@@ -30,7 +30,7 @@
   "homepage": "https://gitee.com/feng3d/feng3d#readme",
   "dependencies": {},
   "devDependencies": {
-    "@feng3d/build": "0.0.5",
+    "@feng3d/build": "0.0.6",
     "@feng3d/shaderpack": "0.0.4",
     "http-server": "^0.11.1"
   }
