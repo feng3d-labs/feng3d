@@ -33416,6 +33416,103 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 从球体的体积中发射。
+     */
+    var ParticleSystemShapeSphere = /** @class */ (function (_super) {
+        __extends(ParticleSystemShapeSphere, _super);
+        function ParticleSystemShapeSphere() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.radius = 1;
+            return _this;
+        }
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        ParticleSystemShapeSphere.prototype.initParticleState = function (particle) {
+            var speed = particle.velocity.length;
+            // 计算位置
+            var dir = feng3d.Vector3.random().scaleNumber(2).subNumber(1).normalize();
+            var p = dir.scaleNumberTo(Math.random() * this.radius);
+            particle.position.copy(p);
+            // 计算速度
+            particle.velocity.copy(dir).scaleNumber(speed);
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "球体半径" })
+        ], ParticleSystemShapeSphere.prototype, "radius", void 0);
+        return ParticleSystemShapeSphere;
+    }(feng3d.ParticleSystemShape));
+    feng3d.ParticleSystemShapeSphere = ParticleSystemShapeSphere;
+    /**
+     * 从半球体的体积中发出。
+     */
+    var ParticleSystemShapeHemisphere = /** @class */ (function (_super) {
+        __extends(ParticleSystemShapeHemisphere, _super);
+        function ParticleSystemShapeHemisphere() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.radius = 1;
+            return _this;
+        }
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        ParticleSystemShapeHemisphere.prototype.initParticleState = function (particle) {
+            var speed = particle.velocity.length;
+            // 计算位置
+            var dir = feng3d.Vector3.random().scaleNumber(2).subNumber(1).normalize();
+            dir.z = Math.abs(dir.z);
+            var p = dir.scaleNumberTo(Math.random() * this.radius);
+            particle.position.copy(p);
+            // 计算速度
+            particle.velocity.copy(dir).scaleNumber(speed);
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "球体半径" })
+        ], ParticleSystemShapeHemisphere.prototype, "radius", void 0);
+        return ParticleSystemShapeHemisphere;
+    }(feng3d.ParticleSystemShape));
+    feng3d.ParticleSystemShapeHemisphere = ParticleSystemShapeHemisphere;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 从球体表面发射。
+     */
+    var ParticleSystemShapeSphereShell = /** @class */ (function (_super) {
+        __extends(ParticleSystemShapeSphereShell, _super);
+        function ParticleSystemShapeSphereShell() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.radius = 1;
+            return _this;
+        }
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        ParticleSystemShapeSphereShell.prototype.initParticleState = function (particle) {
+            var speed = particle.velocity.length;
+            // 计算位置
+            var dir = feng3d.Vector3.random().scaleNumber(2).subNumber(1).normalize();
+            var p = dir.scaleNumberTo(this.radius);
+            particle.position.copy(p);
+            // 计算速度
+            particle.velocity.copy(dir).scaleNumber(speed);
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "球体半径" })
+        ], ParticleSystemShapeSphereShell.prototype, "radius", void 0);
+        return ParticleSystemShapeSphereShell;
+    }(feng3d.ParticleSystemShape));
+    feng3d.ParticleSystemShapeSphereShell = ParticleSystemShapeSphereShell;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 粒子系统 发射圆锥体
      */
     var ParticleSystemShapeCone = /** @class */ (function (_super) {
@@ -33464,39 +33561,6 @@ var feng3d;
         return ParticleSystemShapeCone;
     }(feng3d.ParticleSystemShape));
     feng3d.ParticleSystemShapeCone = ParticleSystemShapeCone;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 粒子系统 发射球体
-     */
-    var ParticleSystemShapeSphere = /** @class */ (function (_super) {
-        __extends(ParticleSystemShapeSphere, _super);
-        function ParticleSystemShapeSphere() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.radius = 1;
-            return _this;
-        }
-        /**
-         * 初始化粒子状态
-         * @param particle 粒子
-         */
-        ParticleSystemShapeSphere.prototype.initParticleState = function (particle) {
-            var speed = particle.velocity.length;
-            // 计算位置
-            var dir = feng3d.Vector3.random().scaleNumber(2).subNumber(1).normalize();
-            var p = dir.scaleNumberTo(Math.random() * this.radius);
-            particle.position.copy(p);
-            // 计算速度
-            particle.velocity.copy(dir).scaleNumber(speed);
-        };
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ tooltip: "球体半径" })
-        ], ParticleSystemShapeSphere.prototype, "radius", void 0);
-        return ParticleSystemShapeSphere;
-    }(feng3d.ParticleSystemShape));
-    feng3d.ParticleSystemShapeSphere = ParticleSystemShapeSphere;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -34040,11 +34104,17 @@ var feng3d;
         ParticleShapeModule.prototype._onTypeChanged = function () {
             var preValue = this.shape;
             switch (this.shapeType) {
-                case feng3d.ParticleSystemShapeType.Cone:
-                    this.shape = new feng3d.ParticleSystemShapeCone();
-                    break;
                 case feng3d.ParticleSystemShapeType.Sphere:
                     this.shape = new feng3d.ParticleSystemShapeSphere();
+                    break;
+                case feng3d.ParticleSystemShapeType.SphereShell:
+                    this.shape = new feng3d.ParticleSystemShapeSphereShell();
+                    break;
+                case feng3d.ParticleSystemShapeType.Hemisphere:
+                    this.shape = new feng3d.ParticleSystemShapeHemisphere();
+                    break;
+                case feng3d.ParticleSystemShapeType.Cone:
+                    this.shape = new feng3d.ParticleSystemShapeCone();
                     break;
                 case feng3d.ParticleSystemShapeType.Box:
                     this.shape = new feng3d.ParticleSystemShapeBox();
@@ -43818,6 +43888,8 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+console.log("feng3d-0.1.3");
+console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

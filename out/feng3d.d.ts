@@ -14747,13 +14747,21 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 粒子系统 发射圆锥体
+     * 从球体的体积中发射。
      */
-    class ParticleSystemShapeCone extends ParticleSystemShape {
-        angle: number;
+    class ParticleSystemShapeSphere extends ParticleSystemShape {
         radius: number;
-        height: number;
-        arc: number;
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
+    }
+    /**
+     * 从半球体的体积中发出。
+     */
+    class ParticleSystemShapeHemisphere extends ParticleSystemShape {
+        radius: number;
         /**
          * 初始化粒子状态
          * @param particle 粒子
@@ -14763,10 +14771,26 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 粒子系统 发射球体
+     * 从球体表面发射。
      */
-    class ParticleSystemShapeSphere extends ParticleSystemShape {
+    class ParticleSystemShapeSphereShell extends ParticleSystemShape {
         radius: number;
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 粒子系统 发射圆锥体
+     */
+    class ParticleSystemShapeCone extends ParticleSystemShape {
+        angle: number;
+        radius: number;
+        height: number;
+        arc: number;
         /**
          * 初始化粒子状态
          * @param particle 粒子

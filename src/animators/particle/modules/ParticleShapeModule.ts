@@ -104,11 +104,17 @@ namespace feng3d
             var preValue = this.shape;
             switch (this.shapeType)
             {
-                case ParticleSystemShapeType.Cone:
-                    this.shape = new ParticleSystemShapeCone();
-                    break;
                 case ParticleSystemShapeType.Sphere:
                     this.shape = new ParticleSystemShapeSphere();
+                    break;
+                case ParticleSystemShapeType.SphereShell:
+                    this.shape = new ParticleSystemShapeSphereShell();
+                    break;
+                case ParticleSystemShapeType.Hemisphere:
+                    this.shape = new ParticleSystemShapeHemisphere();
+                    break;
+                case ParticleSystemShapeType.Cone:
+                    this.shape = new ParticleSystemShapeCone();
                     break;
                 case ParticleSystemShapeType.Box:
                     this.shape = new ParticleSystemShapeBox();
