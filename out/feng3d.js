@@ -33271,25 +33271,89 @@ var feng3d;
     var ParticleSystemShapeType;
     (function (ParticleSystemShapeType) {
         /**
-         * 粒子系统 发射圆锥体
+         * 从球体的体积中发射。
+         * Emit from the volume of a sphere.
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["Cone"] = 0] = "Cone";
+        ParticleSystemShapeType[ParticleSystemShapeType["Sphere"] = 0] = "Sphere";
         /**
-         * 粒子系统 发射球体
+         * 从球体表面发射。
+         * Emit from the surface of a sphere.
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["Sphere"] = 1] = "Sphere";
+        ParticleSystemShapeType[ParticleSystemShapeType["SphereShell"] = 1] = "SphereShell";
         /**
-         * 粒子系统 发射盒子
+         * 从半球体的体积中发出。
+         * Emit from the volume of a half-sphere.
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["Box"] = 2] = "Box";
+        ParticleSystemShapeType[ParticleSystemShapeType["Hemisphere"] = 2] = "Hemisphere";
         /**
-         * 粒子系统 发射圆盘
+         * 从圆锥体的基面发射。
+         * Emit from the base surface of a cone.
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["Circle"] = 3] = "Circle";
+        ParticleSystemShapeType[ParticleSystemShapeType["Cone"] = 3] = "Cone";
+        /**
+         * 从圆锥体的基面发射。
+         * Emit from the base surface of a cone.
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["ConeShell"] = 4] = "ConeShell";
+        /**
+         * 从一个圆锥体的体积发出。
+         * Emit from the volume of a cone.
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["ConeVolume"] = 5] = "ConeVolume";
+        /**
+         * 从一个圆锥体的表面发射。
+         * Emit from the surface of a cone.
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["ConeVolumeShell"] = 6] = "ConeVolumeShell";
+        /**
+         * 从一个盒子的体积中发出。
+         * Emit from the volume of a box.
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["Box"] = 7] = "Box";
+        /**
+         * 从盒子的边缘发出。
+         * Emit from the edges of a box.
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["BoxShell"] = 8] = "BoxShell";
+        /**
+         * 从盒子表面发射。
+         * Emit from the surface of a box.
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["BoxEdge"] = 9] = "BoxEdge";
+        /**
+         * 从一个网格中发出。
+         * Emit from a mesh.
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["Mesh"] = 10] = "Mesh";
+        /**
+         * 从一个圆发出。
+         * Emit from a circle.
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["Circle"] = 11] = "Circle";
+        /**
+         * 从圆的边缘发出。
+         * Emit from the edge of a circle.
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["CircleEdge"] = 12] = "CircleEdge";
+        /**
+         * 从边缘发出。
+         * Emit from an edge.
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["SingleSidedEdge"] = 13] = "SingleSidedEdge";
+        /**
+         * 从一个网格渲染器发射。
+         * Emit from a mesh renderer.
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["MeshRenderer"] = 14] = "MeshRenderer";
+        /**
+         * 从蒙皮网格渲染器发出。
+         * Emit from a skinned mesh renderer.
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["SkinnedMeshRenderer"] = 15] = "SkinnedMeshRenderer";
         /**
          * 粒子系统 发射边
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["Edge"] = 4] = "Edge";
+        ParticleSystemShapeType[ParticleSystemShapeType["Edge"] = 16] = "Edge";
     })(ParticleSystemShapeType = feng3d.ParticleSystemShapeType || (feng3d.ParticleSystemShapeType = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -33872,20 +33936,21 @@ var feng3d;
         __extends(ParticleShapeModule, _super);
         function ParticleShapeModule() {
             var _this = _super.call(this) || this;
-            _this.type = feng3d.ParticleSystemShapeType.Cone;
+            _this.shapeType = feng3d.ParticleSystemShapeType.Cone;
             return _this;
         }
-        Object.defineProperty(ParticleShapeModule.prototype, "type", {
+        Object.defineProperty(ParticleShapeModule.prototype, "shapeType", {
             /**
-             * 发射形状类型
+             * Type of shape to emit particles from.
+             * 发射粒子的形状类型。
              */
             get: function () {
-                return this._type;
+                return this._shapeType;
             },
             set: function (v) {
-                if (this._type == v)
+                if (this._shapeType == v)
                     return;
-                this._type = v;
+                this._shapeType = v;
                 this._onTypeChanged();
             },
             enumerable: true,
@@ -33900,7 +33965,7 @@ var feng3d;
         };
         ParticleShapeModule.prototype._onTypeChanged = function () {
             var preValue = this.shape;
-            switch (this.type) {
+            switch (this.shapeType) {
                 case feng3d.ParticleSystemShapeType.Cone:
                     this.shape = new feng3d.ParticleSystemShapeCone();
                     break;
@@ -33921,9 +33986,11 @@ var feng3d;
             this.dispatch("refreshView");
         };
         __decorate([
-            feng3d.serialize,
-            feng3d.oav({ tooltip: "发射形状类型", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemShapeType } })
-        ], ParticleShapeModule.prototype, "type", null);
+            feng3d.serialize
+            // @oav({ tooltip: "Type of shape to emit particles from.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeType } })
+            ,
+            feng3d.oav({ tooltip: "发射粒子的形状类型。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemShapeType } })
+        ], ParticleShapeModule.prototype, "shapeType", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ component: "OAVObjectView" })

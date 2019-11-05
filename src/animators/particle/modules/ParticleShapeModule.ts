@@ -7,21 +7,23 @@ namespace feng3d
     export class ParticleShapeModule extends ParticleModule
     {
         /**
-         * 发射形状类型
+         * Type of shape to emit particles from.
+         * 发射粒子的形状类型。
          */
         @serialize
-        @oav({ tooltip: "发射形状类型", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeType } })
-        get type()
+        // @oav({ tooltip: "Type of shape to emit particles from.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeType } })
+        @oav({ tooltip: "发射粒子的形状类型。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeType } })
+        get shapeType()
         {
-            return this._type;
+            return this._shapeType;
         }
-        set type(v)
+        set shapeType(v)
         {
-            if (this._type == v) return;
-            this._type = v;
+            if (this._shapeType == v) return;
+            this._shapeType = v;
             this._onTypeChanged();
         }
-        private _type: ParticleSystemShapeType;
+        private _shapeType: ParticleSystemShapeType;
 
         /**
          * 发射形状
@@ -30,10 +32,15 @@ namespace feng3d
         @oav({ component: "OAVObjectView" })
         shape: ParticleSystemShape;
 
+        /**
+         * Align particles based on their initial direction of travel.
+         */
+        alignToDirection
+
         constructor()
         {
             super();
-            this.type = ParticleSystemShapeType.Cone;
+            this.shapeType = ParticleSystemShapeType.Cone;
         }
 
         /**
@@ -48,7 +55,7 @@ namespace feng3d
         private _onTypeChanged()
         {
             var preValue = this.shape;
-            switch (this.type)
+            switch (this.shapeType)
             {
                 case ParticleSystemShapeType.Cone:
                     this.shape = new ParticleSystemShapeCone();

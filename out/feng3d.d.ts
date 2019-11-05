@@ -14622,25 +14622,89 @@ declare namespace feng3d {
 declare namespace feng3d {
     enum ParticleSystemShapeType {
         /**
-         * 粒子系统 发射圆锥体
+         * 从球体的体积中发射。
+         * Emit from the volume of a sphere.
          */
-        Cone = 0,
+        Sphere = 0,
         /**
-         * 粒子系统 发射球体
+         * 从球体表面发射。
+         * Emit from the surface of a sphere.
          */
-        Sphere = 1,
+        SphereShell = 1,
         /**
-         * 粒子系统 发射盒子
+         * 从半球体的体积中发出。
+         * Emit from the volume of a half-sphere.
          */
-        Box = 2,
+        Hemisphere = 2,
         /**
-         * 粒子系统 发射圆盘
+         * 从圆锥体的基面发射。
+         * Emit from the base surface of a cone.
          */
-        Circle = 3,
+        Cone = 3,
+        /**
+         * 从圆锥体的基面发射。
+         * Emit from the base surface of a cone.
+         */
+        ConeShell = 4,
+        /**
+         * 从一个圆锥体的体积发出。
+         * Emit from the volume of a cone.
+         */
+        ConeVolume = 5,
+        /**
+         * 从一个圆锥体的表面发射。
+         * Emit from the surface of a cone.
+         */
+        ConeVolumeShell = 6,
+        /**
+         * 从一个盒子的体积中发出。
+         * Emit from the volume of a box.
+         */
+        Box = 7,
+        /**
+         * 从盒子的边缘发出。
+         * Emit from the edges of a box.
+         */
+        BoxShell = 8,
+        /**
+         * 从盒子表面发射。
+         * Emit from the surface of a box.
+         */
+        BoxEdge = 9,
+        /**
+         * 从一个网格中发出。
+         * Emit from a mesh.
+         */
+        Mesh = 10,
+        /**
+         * 从一个圆发出。
+         * Emit from a circle.
+         */
+        Circle = 11,
+        /**
+         * 从圆的边缘发出。
+         * Emit from the edge of a circle.
+         */
+        CircleEdge = 12,
+        /**
+         * 从边缘发出。
+         * Emit from an edge.
+         */
+        SingleSidedEdge = 13,
+        /**
+         * 从一个网格渲染器发射。
+         * Emit from a mesh renderer.
+         */
+        MeshRenderer = 14,
+        /**
+         * 从蒙皮网格渲染器发出。
+         * Emit from a skinned mesh renderer.
+         */
+        SkinnedMeshRenderer = 15,
         /**
          * 粒子系统 发射边
          */
-        Edge = 4
+        Edge = 16
     }
 }
 declare namespace feng3d {
@@ -14867,14 +14931,19 @@ declare namespace feng3d {
      */
     class ParticleShapeModule extends ParticleModule {
         /**
-         * 发射形状类型
+         * Type of shape to emit particles from.
+         * 发射粒子的形状类型。
          */
-        type: ParticleSystemShapeType;
-        private _type;
+        shapeType: ParticleSystemShapeType;
+        private _shapeType;
         /**
          * 发射形状
          */
         shape: ParticleSystemShape;
+        /**
+         * Align particles based on their initial direction of travel.
+         */
+        alignToDirection: any;
         constructor();
         /**
          * 初始化粒子状态
