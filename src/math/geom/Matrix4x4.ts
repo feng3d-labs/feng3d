@@ -54,6 +54,22 @@ namespace feng3d
         }
 
         /**
+         * 旋转角度
+         */
+        get rotation()
+        {
+            var rotation = this.decompose()[1].scaleNumber(Math.RAD2DEG);
+            return rotation;
+        }
+
+        set rotation(v)
+        {
+            var comps = this.decompose();
+            comps[1].copy(v).scaleNumber(Math.DEG2RAD);
+            this.recompose(comps);
+        }
+
+        /**
          * 一个用于确定矩阵是否可逆的数字。
          */
         get determinant()

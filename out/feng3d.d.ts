@@ -5196,6 +5196,10 @@ declare namespace feng3d {
          */
         position: Vector3;
         /**
+         * 旋转角度
+         */
+        rotation: Vector3;
+        /**
          * 一个用于确定矩阵是否可逆的数字。
          */
         readonly determinant: number;

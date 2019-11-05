@@ -11207,6 +11207,22 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Matrix4x4.prototype, "rotation", {
+            /**
+             * 旋转角度
+             */
+            get: function () {
+                var rotation = this.decompose()[1].scaleNumber(Math.RAD2DEG);
+                return rotation;
+            },
+            set: function (v) {
+                var comps = this.decompose();
+                comps[1].copy(v).scaleNumber(Math.DEG2RAD);
+                this.recompose(comps);
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Matrix4x4.prototype, "determinant", {
             /**
              * 一个用于确定矩阵是否可逆的数字。
@@ -33060,7 +33076,7 @@ var feng3d;
                     var matrix = feng3d.Matrix4x4.fromRotation(particle.rotation.x, particle.rotation.y, particle.rotation.z);
                     matrix.append(billboardMatrix);
                     //
-                    rotation = matrix.decompose()[1].scaleNumber(Math.RAD2DEG);
+                    rotation = matrix.rotation;
                 }
                 rotations.push(rotation.x, rotation.y, rotation.z);
                 colors.push(particle.color.r, particle.color.g, particle.color.b, particle.color.a);
@@ -34001,6 +34017,14 @@ var feng3d;
          */
         ParticleShapeModule.prototype.initParticleState = function (particle) {
             this.shape.initParticleState(particle);
+            if (this.alignToDirection) {
+                var dir = particle.velocity;
+                var mat = new feng3d.Matrix4x4();
+                mat.lookAt(dir, feng3d.Vector3.Y_AXIS);
+                var mat0 = feng3d.Matrix4x4.fromRotation(particle.rotation.x, particle.rotation.y, particle.rotation.z);
+                mat0.append(mat);
+                particle.rotation = mat0.rotation;
+            }
         };
         ParticleShapeModule.prototype._onTypeChanged = function () {
             var preValue = this.shape;
@@ -43783,10 +43807,6 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-console.log("feng3d-0.1.3");
-console.log("feng3d-0.1.3");
-console.log("feng3d-0.1.3");
-console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

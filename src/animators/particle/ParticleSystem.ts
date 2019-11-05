@@ -233,7 +233,7 @@ namespace feng3d
                     var matrix = Matrix4x4.fromRotation(particle.rotation.x, particle.rotation.y, particle.rotation.z);
                     matrix.append(billboardMatrix);
                     //
-                    rotation = matrix.decompose()[1].scaleNumber(Math.RAD2DEG);
+                    rotation = matrix.rotation;
                 }
                 rotations.push(rotation.x, rotation.y, rotation.z);
                 colors.push(particle.color.r, particle.color.g, particle.color.b, particle.color.a);

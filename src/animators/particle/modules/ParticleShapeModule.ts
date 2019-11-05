@@ -72,6 +72,17 @@ namespace feng3d
         initParticleState(particle: Particle)
         {
             this.shape.initParticleState(particle);
+            if (this.alignToDirection)
+            {
+                var dir = particle.velocity;
+                var mat = new Matrix4x4();
+                mat.lookAt(dir, Vector3.Y_AXIS);
+
+                var mat0 = Matrix4x4.fromRotation(particle.rotation.x, particle.rotation.y, particle.rotation.z);
+                mat0.append(mat);
+
+                particle.rotation = mat0.rotation;
+            }
         }
 
         private _onTypeChanged()
