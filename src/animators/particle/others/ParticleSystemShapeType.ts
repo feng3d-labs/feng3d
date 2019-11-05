@@ -1,5 +1,8 @@
 namespace feng3d
 {
+    /**
+     * 发射形状
+     */
     export enum ParticleSystemShapeType
     {
         /**
@@ -58,6 +61,16 @@ namespace feng3d
          */
         Mesh,
         /**
+         * 从一个网格渲染器发射。
+         * Emit from a mesh renderer.
+         */
+        MeshRenderer,
+        /**
+         * 从蒙皮网格渲染器发出。
+         * Emit from a skinned mesh renderer.
+         */
+        SkinnedMeshRenderer,
+        /**
          * 从一个圆发出。
          * Emit from a circle.
          */
@@ -72,19 +85,5 @@ namespace feng3d
          * Emit from an edge.
          */
         SingleSidedEdge,
-        /**
-         * 从一个网格渲染器发射。
-         * Emit from a mesh renderer.
-         */
-        MeshRenderer,
-        /**
-         * 从蒙皮网格渲染器发出。
-         * Emit from a skinned mesh renderer.
-         */
-        SkinnedMeshRenderer,
-        /**
-         * 粒子系统 发射边
-         */
-        Edge,
     }
 }

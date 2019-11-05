@@ -34,8 +34,30 @@ namespace feng3d
 
         /**
          * Align particles based on their initial direction of travel.
+         * 根据粒子的初始运动方向排列粒子。
          */
-        alignToDirection
+        @serialize
+        // @oav({ tooltip: "Align particles based on their initial direction of travel." })
+        @oav({ tooltip: "根据粒子的初始运动方向排列粒子。" })
+        alignToDirection = false;
+
+        /**
+         * Randomizes the starting direction of particles.
+         * 随机化粒子的起始方向。
+         */
+        @serialize
+        // @oav({ tooltip: "Randomizes the starting direction of particles." })
+        @oav({ tooltip: "随机化粒子的起始方向。" })
+        randomDirectionAmount = 0;
+
+        /**
+         * Spherizes the starting direction of particles.
+         * 使粒子的起始方向球面化。
+         */
+        @serialize
+        // @oav({ tooltip: "Spherizes the starting direction of particles." })
+        @oav({ tooltip: "Spherizes the starting direction of particles." })
+        sphericalDirectionAmount = 0;
 
         constructor()
         {
@@ -69,7 +91,7 @@ namespace feng3d
                 case ParticleSystemShapeType.Circle:
                     this.shape = new ParticleSystemShapeCircle();
                     break;
-                case ParticleSystemShapeType.Edge:
+                case ParticleSystemShapeType.SingleSidedEdge:
                     this.shape = new ParticleSystemShapeEdge();
                     break;
             }

@@ -285,6 +285,7 @@
         "src/animators/particle/others/ParticleSystemSimulationSpace.ts",
         "src/animators/particle/others/ParticleSystemScalingMode.ts",
         "src/animators/particle/others/ParticleSystemShapeType.ts",
+        "src/animators/particle/others/ParticleSystemMeshShapeType.ts",
         "src/animators/particle/others/ParticleSystemShape.ts",
         "src/animators/particle/others/ParticleSystemShapeCone.ts",
         "src/animators/particle/others/ParticleSystemShapeSphere.ts",

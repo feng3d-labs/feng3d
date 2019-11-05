@@ -14620,6 +14620,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * 发射形状
+     */
     enum ParticleSystemShapeType {
         /**
          * 从球体的体积中发射。
@@ -14677,34 +14680,53 @@ declare namespace feng3d {
          */
         Mesh = 10,
         /**
-         * 从一个圆发出。
-         * Emit from a circle.
-         */
-        Circle = 11,
-        /**
-         * 从圆的边缘发出。
-         * Emit from the edge of a circle.
-         */
-        CircleEdge = 12,
-        /**
-         * 从边缘发出。
-         * Emit from an edge.
-         */
-        SingleSidedEdge = 13,
-        /**
          * 从一个网格渲染器发射。
          * Emit from a mesh renderer.
          */
-        MeshRenderer = 14,
+        MeshRenderer = 11,
         /**
          * 从蒙皮网格渲染器发出。
          * Emit from a skinned mesh renderer.
          */
-        SkinnedMeshRenderer = 15,
+        SkinnedMeshRenderer = 12,
         /**
-         * 粒子系统 发射边
+         * 从一个圆发出。
+         * Emit from a circle.
          */
-        Edge = 16
+        Circle = 13,
+        /**
+         * 从圆的边缘发出。
+         * Emit from the edge of a circle.
+         */
+        CircleEdge = 14,
+        /**
+         * 从边缘发出。
+         * Emit from an edge.
+         */
+        SingleSidedEdge = 15
+    }
+}
+declare namespace feng3d {
+    /**
+     * The mesh emission type.
+     * 网格发射类型。
+     */
+    enum ParticleSystemMeshShapeType {
+        /**
+         * Emit from the vertices of the mesh.
+         * 从网格的顶点发出。
+         */
+        Vertex = 0,
+        /**
+         * Emit from the edges of the mesh.
+         * 从网格的边缘发出。
+         */
+        Edge = 1,
+        /**
+         * Emit from the surface of the mesh.
+         * 从网格表面发出。
+         */
+        Triangle = 2
     }
 }
 declare namespace feng3d {
@@ -14942,8 +14964,19 @@ declare namespace feng3d {
         shape: ParticleSystemShape;
         /**
          * Align particles based on their initial direction of travel.
+         * 根据粒子的初始运动方向排列粒子。
          */
-        alignToDirection: any;
+        alignToDirection: boolean;
+        /**
+         * Randomizes the starting direction of particles.
+         * 随机化粒子的起始方向。
+         */
+        randomDirectionAmount: number;
+        /**
+         * Spherizes the starting direction of particles.
+         * 使粒子的起始方向球面化。
+         */
+        sphericalDirectionAmount: number;
         constructor();
         /**
          * 初始化粒子状态

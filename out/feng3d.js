@@ -33268,6 +33268,9 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * 发射形状
+     */
     var ParticleSystemShapeType;
     (function (ParticleSystemShapeType) {
         /**
@@ -33326,35 +33329,56 @@ var feng3d;
          */
         ParticleSystemShapeType[ParticleSystemShapeType["Mesh"] = 10] = "Mesh";
         /**
-         * 从一个圆发出。
-         * Emit from a circle.
-         */
-        ParticleSystemShapeType[ParticleSystemShapeType["Circle"] = 11] = "Circle";
-        /**
-         * 从圆的边缘发出。
-         * Emit from the edge of a circle.
-         */
-        ParticleSystemShapeType[ParticleSystemShapeType["CircleEdge"] = 12] = "CircleEdge";
-        /**
-         * 从边缘发出。
-         * Emit from an edge.
-         */
-        ParticleSystemShapeType[ParticleSystemShapeType["SingleSidedEdge"] = 13] = "SingleSidedEdge";
-        /**
          * 从一个网格渲染器发射。
          * Emit from a mesh renderer.
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["MeshRenderer"] = 14] = "MeshRenderer";
+        ParticleSystemShapeType[ParticleSystemShapeType["MeshRenderer"] = 11] = "MeshRenderer";
         /**
          * 从蒙皮网格渲染器发出。
          * Emit from a skinned mesh renderer.
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["SkinnedMeshRenderer"] = 15] = "SkinnedMeshRenderer";
+        ParticleSystemShapeType[ParticleSystemShapeType["SkinnedMeshRenderer"] = 12] = "SkinnedMeshRenderer";
         /**
-         * 粒子系统 发射边
+         * 从一个圆发出。
+         * Emit from a circle.
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["Edge"] = 16] = "Edge";
+        ParticleSystemShapeType[ParticleSystemShapeType["Circle"] = 13] = "Circle";
+        /**
+         * 从圆的边缘发出。
+         * Emit from the edge of a circle.
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["CircleEdge"] = 14] = "CircleEdge";
+        /**
+         * 从边缘发出。
+         * Emit from an edge.
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["SingleSidedEdge"] = 15] = "SingleSidedEdge";
     })(ParticleSystemShapeType = feng3d.ParticleSystemShapeType || (feng3d.ParticleSystemShapeType = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * The mesh emission type.
+     * 网格发射类型。
+     */
+    var ParticleSystemMeshShapeType;
+    (function (ParticleSystemMeshShapeType) {
+        /**
+         * Emit from the vertices of the mesh.
+         * 从网格的顶点发出。
+         */
+        ParticleSystemMeshShapeType[ParticleSystemMeshShapeType["Vertex"] = 0] = "Vertex";
+        /**
+         * Emit from the edges of the mesh.
+         * 从网格的边缘发出。
+         */
+        ParticleSystemMeshShapeType[ParticleSystemMeshShapeType["Edge"] = 1] = "Edge";
+        /**
+         * Emit from the surface of the mesh.
+         * 从网格表面发出。
+         */
+        ParticleSystemMeshShapeType[ParticleSystemMeshShapeType["Triangle"] = 2] = "Triangle";
+    })(ParticleSystemMeshShapeType = feng3d.ParticleSystemMeshShapeType || (feng3d.ParticleSystemMeshShapeType = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -33936,6 +33960,21 @@ var feng3d;
         __extends(ParticleShapeModule, _super);
         function ParticleShapeModule() {
             var _this = _super.call(this) || this;
+            /**
+             * Align particles based on their initial direction of travel.
+             * 根据粒子的初始运动方向排列粒子。
+             */
+            _this.alignToDirection = false;
+            /**
+             * Randomizes the starting direction of particles.
+             * 随机化粒子的起始方向。
+             */
+            _this.randomDirectionAmount = 0;
+            /**
+             * Spherizes the starting direction of particles.
+             * 使粒子的起始方向球面化。
+             */
+            _this.sphericalDirectionAmount = 0;
             _this.shapeType = feng3d.ParticleSystemShapeType.Cone;
             return _this;
         }
@@ -33978,7 +34017,7 @@ var feng3d;
                 case feng3d.ParticleSystemShapeType.Circle:
                     this.shape = new feng3d.ParticleSystemShapeCircle();
                     break;
-                case feng3d.ParticleSystemShapeType.Edge:
+                case feng3d.ParticleSystemShapeType.SingleSidedEdge:
                     this.shape = new feng3d.ParticleSystemShapeEdge();
                     break;
             }
@@ -33995,6 +34034,24 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ component: "OAVObjectView" })
         ], ParticleShapeModule.prototype, "shape", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Align particles based on their initial direction of travel." })
+            ,
+            feng3d.oav({ tooltip: "根据粒子的初始运动方向排列粒子。" })
+        ], ParticleShapeModule.prototype, "alignToDirection", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Randomizes the starting direction of particles." })
+            ,
+            feng3d.oav({ tooltip: "随机化粒子的起始方向。" })
+        ], ParticleShapeModule.prototype, "randomDirectionAmount", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Spherizes the starting direction of particles." })
+            ,
+            feng3d.oav({ tooltip: "Spherizes the starting direction of particles." })
+        ], ParticleShapeModule.prototype, "sphericalDirectionAmount", void 0);
         return ParticleShapeModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleShapeModule = ParticleShapeModule;
@@ -43726,6 +43783,10 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+console.log("feng3d-0.1.3");
+console.log("feng3d-0.1.3");
+console.log("feng3d-0.1.3");
+console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {
