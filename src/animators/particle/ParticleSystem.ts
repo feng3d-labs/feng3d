@@ -210,6 +210,9 @@ namespace feng3d
             var cameraMatrix = lazy.getvalue(renderAtomic.uniforms.u_cameraMatrix)
             var localCameraPos = this.gameObject.transform.worldToLocalMatrix.transformVector(cameraMatrix.position);
             var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
+            // 计算公告牌矩阵
+            var billboardMatrix = new Matrix4x4();
+            billboardMatrix.lookAt(localCameraPos, localCameraUp);
 
             var positions: number[] = [];
             var scales: number[] = [];
@@ -223,12 +226,8 @@ namespace feng3d
 
                 // 计算旋转
                 var rotation = particle.rotation;
-                if (this.geometry == Geometry.billboard && cameraMatrix)
+                if (!this.shape.alignToDirection && this.geometry == Geometry.billboard && cameraMatrix)
                 {
-                    // 计算公告牌矩阵
-                    var billboardMatrix = new Matrix4x4().recompose([particle.position, Vector3.ZERO, particle.scale]);
-                    // var billboardMatrix = new Matrix4x4();
-                    billboardMatrix.lookAt(localCameraPos, localCameraUp);
                     // 应用公告牌矩阵
                     var matrix = Matrix4x4.fromRotation(particle.rotation.x, particle.rotation.y, particle.rotation.z);
                     matrix.append(billboardMatrix);

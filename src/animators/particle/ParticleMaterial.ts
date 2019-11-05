@@ -14,7 +14,7 @@ namespace feng3d
 
     AssetData.addAssetData("Particle-Material", Material.particle = serialization.setValue(new Material(), {
         name: "Particle-Material", assetId: "Particle-Material", shaderName: "particle",
-        renderParams: { enableBlend: true, depthMask: false, sfactor: BlendFactor.ONE, dfactor: BlendFactor.ONE_MINUS_SRC_COLOR },
+        renderParams: { enableBlend: true, depthMask: false, sfactor: BlendFactor.ONE, dfactor: BlendFactor.ONE_MINUS_SRC_COLOR, cullFace: CullFace.NONE },
         hideFlags: HideFlags.NotEditable,
     }));
 }

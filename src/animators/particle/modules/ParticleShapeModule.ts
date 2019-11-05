@@ -35,6 +35,9 @@ namespace feng3d
         /**
          * Align particles based on their initial direction of travel.
          * 根据粒子的初始运动方向排列粒子。
+         * 
+         * Using align to Direction in the Shape module forces the system to be rendered using Local Billboard Alignment.
+         * 在形状模块中使用align to Direction迫使系统使用本地看板对齐方式呈现。
          */
         @serialize
         // @oav({ tooltip: "Align particles based on their initial direction of travel." })

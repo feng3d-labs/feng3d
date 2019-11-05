@@ -32884,7 +32884,7 @@ var feng3d;
     feng3d.shaderConfig.shaders["particle"].cls = ParticleUniforms;
     feng3d.AssetData.addAssetData("Particle-Material", feng3d.Material.particle = feng3d.serialization.setValue(new feng3d.Material(), {
         name: "Particle-Material", assetId: "Particle-Material", shaderName: "particle",
-        renderParams: { enableBlend: true, depthMask: false, sfactor: feng3d.BlendFactor.ONE, dfactor: feng3d.BlendFactor.ONE_MINUS_SRC_COLOR },
+        renderParams: { enableBlend: true, depthMask: false, sfactor: feng3d.BlendFactor.ONE, dfactor: feng3d.BlendFactor.ONE_MINUS_SRC_COLOR, cullFace: feng3d.CullFace.NONE },
         hideFlags: feng3d.HideFlags.NotEditable,
     }));
 })(feng3d || (feng3d = {}));
@@ -33057,6 +33057,9 @@ var feng3d;
             var cameraMatrix = feng3d.lazy.getvalue(renderAtomic.uniforms.u_cameraMatrix);
             var localCameraPos = this.gameObject.transform.worldToLocalMatrix.transformVector(cameraMatrix.position);
             var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
+            // 计算公告牌矩阵
+            var billboardMatrix = new feng3d.Matrix4x4();
+            billboardMatrix.lookAt(localCameraPos, localCameraUp);
             var positions = [];
             var scales = [];
             var rotations = [];
@@ -33067,11 +33070,7 @@ var feng3d;
                 scales.push(particle.scale.x, particle.scale.y, particle.scale.z);
                 // 计算旋转
                 var rotation = particle.rotation;
-                if (this.geometry == feng3d.Geometry.billboard && cameraMatrix) {
-                    // 计算公告牌矩阵
-                    var billboardMatrix = new feng3d.Matrix4x4().recompose([particle.position, feng3d.Vector3.ZERO, particle.scale]);
-                    // var billboardMatrix = new Matrix4x4();
-                    billboardMatrix.lookAt(localCameraPos, localCameraUp);
+                if (!this.shape.alignToDirection && this.geometry == feng3d.Geometry.billboard && cameraMatrix) {
                     // 应用公告牌矩阵
                     var matrix = feng3d.Matrix4x4.fromRotation(particle.rotation.x, particle.rotation.y, particle.rotation.z);
                     matrix.append(billboardMatrix);
@@ -33979,6 +33978,9 @@ var feng3d;
             /**
              * Align particles based on their initial direction of travel.
              * 根据粒子的初始运动方向排列粒子。
+             *
+             * Using align to Direction in the Shape module forces the system to be rendered using Local Billboard Alignment.
+             * 在形状模块中使用align to Direction迫使系统使用本地看板对齐方式呈现。
              */
             _this.alignToDirection = false;
             /**
