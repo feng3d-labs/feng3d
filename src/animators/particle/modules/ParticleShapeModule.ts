@@ -86,6 +86,17 @@ namespace feng3d
 
                 particle.rotation = mat0.rotation;
             }
+            var length = particle.velocity.length;
+            if (this.randomDirectionAmount > 0)
+            {
+                var velocity = Vector3.random().scaleNumber(2).subNumber(1).normalize(length);
+                particle.velocity.lerpNumber(velocity, this.randomDirectionAmount).normalize(length);
+            }
+            if (this.sphericalDirectionAmount > 0)
+            {
+                var velocity = particle.position.clone().normalize(length);
+                particle.velocity.lerpNumber(velocity, this.sphericalDirectionAmount).normalize(length);
+            }
         }
 
         private _onTypeChanged()
