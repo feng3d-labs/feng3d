@@ -14423,13 +14423,13 @@ declare namespace feng3d {
          */
         rotation: Vector3;
         /**
-         * 缩放
+         * 尺寸
          */
-        scale: Vector3;
+        size: Vector3;
         /**
-         * 起始缩放
+         * 起始尺寸
          */
-        startScale: Vector3;
+        startSize: Vector3;
         /**
          * 颜色
          */
@@ -14522,9 +14522,9 @@ declare namespace feng3d {
         emission: ParticleEmissionModule;
         shape: ParticleShapeModule;
         velocityOverLifetime: ParticleVelocityOverLifetimeModule;
-        accelerationOverLifetime: ParticleForceOverLifetimeModule;
+        forceOverLifetime: ParticleForceOverLifetimeModule;
         colorOverLifetime: ParticleColorOverLifetimeModule;
-        scaleOverLifetime: ParticleScaleOverLifetimeModule;
+        sizeOverLifetime: ParticleSizeOverLifetimeModule;
         palstanceOverLifetime: ParticlePalstanceOverLifetimeModule;
         geometry: PlaneGeometry;
         material: Material;
@@ -15147,10 +15147,14 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 粒子系统 缩放随时间变化模块
+     * 粒子系统 颜色随时间变化模块
      */
-    class ParticleScaleOverLifetimeModule extends ParticleModule {
-        scale: MinMaxCurveVector3;
+    class ParticleColorOverLifetimeModule extends ParticleModule {
+        /**
+         * The gradient controlling the particle colors.
+         * 控制粒子颜色的梯度。
+         */
+        color: MinMaxGradient;
         /**
          * 更新粒子状态
          * @param particle 粒子
@@ -15160,14 +15164,19 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 粒子系统 颜色随时间变化模块
+     * 粒子系统 缩放随时间变化模块
      */
-    class ParticleColorOverLifetimeModule extends ParticleModule {
+    class ParticleSizeOverLifetimeModule extends ParticleModule {
         /**
-         * The gradient controlling the particle colors.
-         * 控制粒子颜色的梯度。
+         * Set the size over lifetime on each axis separately.
+         * 在每个轴上分别设置生命周期内的大小。
          */
-        color: MinMaxGradient;
+        separateAxes: boolean;
+        /**
+         * Curve to control particle size based on lifetime.
+         * 基于寿命的粒度控制曲线。
+         */
+        size: MinMaxCurveVector3;
         /**
          * 更新粒子状态
          * @param particle 粒子

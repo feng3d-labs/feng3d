@@ -32,14 +32,14 @@ namespace feng3d
 		rotation = new Vector3();
 
 		/**
-		 * 缩放
+		 * 尺寸
 		 */
-		scale = new Vector3(1, 1, 1);
+		size = new Vector3(1, 1, 1);
 
 		/**
-		 * 起始缩放
+		 * 起始尺寸
 		 */
-		startScale = new Vector3(1, 1, 1);
+		startSize = new Vector3(1, 1, 1);
 
 		/**
 		 * 颜色

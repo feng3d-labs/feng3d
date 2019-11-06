@@ -48,16 +48,16 @@ namespace feng3d
         velocityOverLifetime: ParticleVelocityOverLifetimeModule;
 
         @serialize
-        @oav({ block: "accelerationOverLifetime", component: "OAVObjectView" })
-        accelerationOverLifetime: ParticleForceOverLifetimeModule;
+        @oav({ block: "forceOverLifetime", component: "OAVObjectView" })
+        forceOverLifetime: ParticleForceOverLifetimeModule;
 
         @serialize
         @oav({ block: "colorOverLifetime", component: "OAVObjectView" })
         colorOverLifetime: ParticleColorOverLifetimeModule;
 
         @serialize
-        @oav({ block: "scaleOverLifetime", component: "OAVObjectView" })
-        scaleOverLifetime: ParticleScaleOverLifetimeModule;
+        @oav({ block: "sizeOverLifetime", component: "OAVObjectView" })
+        sizeOverLifetime: ParticleSizeOverLifetimeModule;
 
         @serialize
         @oav({ block: "palstanceOverLifetime", component: "OAVObjectView" })
@@ -96,9 +96,9 @@ namespace feng3d
                 this.emission = this.emission || serialization.setValue(new ParticleEmissionModule(), { enabled: true }),
                 this.shape = this.shape || serialization.setValue(new ParticleShapeModule(), { enabled: true }),
                 this.velocityOverLifetime = this.velocityOverLifetime || serialization.setValue(new ParticleVelocityOverLifetimeModule(), { enabled: false }),
-                this.accelerationOverLifetime = this.accelerationOverLifetime || serialization.setValue(new ParticleForceOverLifetimeModule(), { enabled: false }),
+                this.forceOverLifetime = this.forceOverLifetime || serialization.setValue(new ParticleForceOverLifetimeModule(), { enabled: false }),
                 this.colorOverLifetime = this.colorOverLifetime || serialization.setValue(new ParticleColorOverLifetimeModule(), { enabled: false }),
-                this.scaleOverLifetime = this.scaleOverLifetime || serialization.setValue(new ParticleScaleOverLifetimeModule(), { enabled: false }),
+                this.sizeOverLifetime = this.sizeOverLifetime || serialization.setValue(new ParticleSizeOverLifetimeModule(), { enabled: false }),
                 this.palstanceOverLifetime = this.palstanceOverLifetime || serialization.setValue(new ParticlePalstanceOverLifetimeModule(), { enabled: false }),
             ];
             this._modules.forEach(v => v.particleSystem = this);
@@ -222,7 +222,7 @@ namespace feng3d
             {
                 var particle = this._activeParticles[i];
                 positions.push(particle.position.x, particle.position.y, particle.position.z);
-                scales.push(particle.scale.x, particle.scale.y, particle.scale.z);
+                scales.push(particle.size.x, particle.size.y, particle.size.z);
 
                 // 计算旋转
                 var rotation = particle.rotation;

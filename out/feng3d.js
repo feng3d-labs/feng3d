@@ -32755,13 +32755,13 @@ var feng3d;
              */
             this.rotation = new feng3d.Vector3();
             /**
-             * 缩放
+             * 尺寸
              */
-            this.scale = new feng3d.Vector3(1, 1, 1);
+            this.size = new feng3d.Vector3(1, 1, 1);
             /**
-             * 起始缩放
+             * 起始尺寸
              */
-            this.startScale = new feng3d.Vector3(1, 1, 1);
+            this.startSize = new feng3d.Vector3(1, 1, 1);
             /**
              * 颜色
              */
@@ -32972,9 +32972,9 @@ var feng3d;
                 this.emission = this.emission || feng3d.serialization.setValue(new feng3d.ParticleEmissionModule(), { enabled: true }),
                 this.shape = this.shape || feng3d.serialization.setValue(new feng3d.ParticleShapeModule(), { enabled: true }),
                 this.velocityOverLifetime = this.velocityOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleVelocityOverLifetimeModule(), { enabled: false }),
-                this.accelerationOverLifetime = this.accelerationOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleForceOverLifetimeModule(), { enabled: false }),
+                this.forceOverLifetime = this.forceOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleForceOverLifetimeModule(), { enabled: false }),
                 this.colorOverLifetime = this.colorOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleColorOverLifetimeModule(), { enabled: false }),
-                this.scaleOverLifetime = this.scaleOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleScaleOverLifetimeModule(), { enabled: false }),
+                this.sizeOverLifetime = this.sizeOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleSizeOverLifetimeModule(), { enabled: false }),
                 this.palstanceOverLifetime = this.palstanceOverLifetime || feng3d.serialization.setValue(new feng3d.ParticlePalstanceOverLifetimeModule(), { enabled: false }),
             ];
             this._modules.forEach(function (v) { return v.particleSystem = _this; });
@@ -33067,7 +33067,7 @@ var feng3d;
             for (var i = 0, n = this._activeParticles.length; i < n; i++) {
                 var particle = this._activeParticles[i];
                 positions.push(particle.position.x, particle.position.y, particle.position.z);
-                scales.push(particle.scale.x, particle.scale.y, particle.scale.z);
+                scales.push(particle.size.x, particle.size.y, particle.size.z);
                 // 计算旋转
                 var rotation = particle.rotation;
                 if (!this.shape.alignToDirection && this.geometry == feng3d.Geometry.billboard && cameraMatrix) {
@@ -33224,16 +33224,16 @@ var feng3d;
         ], ParticleSystem.prototype, "velocityOverLifetime", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ block: "accelerationOverLifetime", component: "OAVObjectView" })
-        ], ParticleSystem.prototype, "accelerationOverLifetime", void 0);
+            feng3d.oav({ block: "forceOverLifetime", component: "OAVObjectView" })
+        ], ParticleSystem.prototype, "forceOverLifetime", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "colorOverLifetime", component: "OAVObjectView" })
         ], ParticleSystem.prototype, "colorOverLifetime", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ block: "scaleOverLifetime", component: "OAVObjectView" })
-        ], ParticleSystem.prototype, "scaleOverLifetime", void 0);
+            feng3d.oav({ block: "sizeOverLifetime", component: "OAVObjectView" })
+        ], ParticleSystem.prototype, "sizeOverLifetime", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "palstanceOverLifetime", component: "OAVObjectView" })
@@ -34090,11 +34090,11 @@ var feng3d;
             particle.position.init(0, 0, 0);
             particle.velocity.init(0, 0, this.startSpeed.getValue(rateAtDuration));
             if (this.useStartSize3D) {
-                particle.startScale.copy(this.startSize3D.getValue(rateAtDuration));
+                particle.startSize.copy(this.startSize3D.getValue(rateAtDuration));
             }
             else {
                 var startSize = this.startSize.getValue(rateAtDuration);
-                particle.startScale.init(startSize, startSize, startSize);
+                particle.startSize.init(startSize, startSize, startSize);
             }
             //
             if (this.useStartRotation3D) {
@@ -34121,7 +34121,7 @@ var feng3d;
             particle.velocity.y += localAcceleration.y * (time - preTime);
             particle.velocity.z += localAcceleration.z * (time - preTime);
             //
-            particle.scale.copy(particle.startScale);
+            particle.size.copy(particle.startSize);
             //
             particle.color.copy(particle.startColor);
         };
@@ -34531,33 +34531,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 粒子系统 缩放随时间变化模块
-     */
-    var ParticleScaleOverLifetimeModule = /** @class */ (function (_super) {
-        __extends(ParticleScaleOverLifetimeModule, _super);
-        function ParticleScaleOverLifetimeModule() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.scale = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { constant: 1, constant1: 1, curveMultiplier: 1 }, yCurve: { constant: 1, constant1: 1, curveMultiplier: 1 }, zCurve: { constant: 1, constant1: 1, curveMultiplier: 1 } });
-            return _this;
-        }
-        /**
-         * 更新粒子状态
-         * @param particle 粒子
-         */
-        ParticleScaleOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
-            particle.scale.multiply(this.scale.getValue(rateAtLifeTime));
-        };
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav()
-        ], ParticleScaleOverLifetimeModule.prototype, "scale", void 0);
-        return ParticleScaleOverLifetimeModule;
-    }(feng3d.ParticleModule));
-    feng3d.ParticleScaleOverLifetimeModule = ParticleScaleOverLifetimeModule;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 粒子系统 颜色随时间变化模块
      */
     var ParticleColorOverLifetimeModule = /** @class */ (function (_super) {
@@ -34587,6 +34560,54 @@ var feng3d;
         return ParticleColorOverLifetimeModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleColorOverLifetimeModule = ParticleColorOverLifetimeModule;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 粒子系统 缩放随时间变化模块
+     */
+    var ParticleSizeOverLifetimeModule = /** @class */ (function (_super) {
+        __extends(ParticleSizeOverLifetimeModule, _super);
+        function ParticleSizeOverLifetimeModule() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * Set the size over lifetime on each axis separately.
+             * 在每个轴上分别设置生命周期内的大小。
+             */
+            _this.separateAxes = false;
+            /**
+             * Curve to control particle size based on lifetime.
+             * 基于寿命的粒度控制曲线。
+             */
+            _this.size = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { constant: 1, constant1: 1, curveMultiplier: 1 }, yCurve: { constant: 1, constant1: 1, curveMultiplier: 1 }, zCurve: { constant: 1, constant1: 1, curveMultiplier: 1 } });
+            return _this;
+        }
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticleSizeOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
+            var size = this.size.getValue(rateAtLifeTime);
+            if (!this.separateAxes) {
+                size.y = size.z = size.x;
+            }
+            particle.size.multiply(size);
+        };
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Set the size over lifetime on each axis separately." })
+            ,
+            feng3d.oav({ tooltip: "在每个轴上分别设置生命周期内的大小。" })
+        ], ParticleSizeOverLifetimeModule.prototype, "separateAxes", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Curve to control particle size based on lifetime." })
+            ,
+            feng3d.oav({ tooltip: "基于寿命的粒度控制曲线。" })
+        ], ParticleSizeOverLifetimeModule.prototype, "size", void 0);
+        return ParticleSizeOverLifetimeModule;
+    }(feng3d.ParticleModule));
+    feng3d.ParticleSizeOverLifetimeModule = ParticleSizeOverLifetimeModule;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -44173,6 +44194,7 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {
