@@ -33670,6 +33670,21 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var ParticleSystemShapeBoxEmitFrom;
+    (function (ParticleSystemShapeBoxEmitFrom) {
+        /**
+         * 从盒子内部发射。
+         */
+        ParticleSystemShapeBoxEmitFrom[ParticleSystemShapeBoxEmitFrom["Volume"] = 0] = "Volume";
+        /**
+         * 从盒子外壳发射。
+         */
+        ParticleSystemShapeBoxEmitFrom[ParticleSystemShapeBoxEmitFrom["Shell"] = 1] = "Shell";
+        /**
+         * 从盒子边缘发射。
+         */
+        ParticleSystemShapeBoxEmitFrom[ParticleSystemShapeBoxEmitFrom["Edge"] = 2] = "Edge";
+    })(ParticleSystemShapeBoxEmitFrom = feng3d.ParticleSystemShapeBoxEmitFrom || (feng3d.ParticleSystemShapeBoxEmitFrom = {}));
     /**
      * 粒子系统 发射盒子
      */
@@ -33680,6 +33695,10 @@ var feng3d;
             _this.boxX = 1;
             _this.boxY = 1;
             _this.boxZ = 1;
+            /**
+             * 粒子系统盒子发射类型。
+             */
+            _this.emitFrom = ParticleSystemShapeBoxEmitFrom.Volume;
             return _this;
         }
         /**
@@ -33689,10 +33708,37 @@ var feng3d;
         ParticleSystemShapeBox.prototype.initParticleState = function (particle) {
             var speed = particle.velocity.length;
             // 计算位置
-            var dir = new feng3d.Vector3(0, 0, 1);
             var p = new feng3d.Vector3(this.boxX, this.boxY, this.boxZ).multiply(feng3d.Vector3.random().scaleNumber(2).subNumber(1));
+            if (this.emitFrom == ParticleSystemShapeBoxEmitFrom.Shell) {
+                var max = Math.max(Math.abs(p.x), Math.abs(p.y), Math.abs(p.z));
+                if (Math.abs(p.x) == max) {
+                    p.x = p.x < 0 ? -1 : 1;
+                }
+                else if (Math.abs(p.y) == max) {
+                    p.y = p.y < 0 ? -1 : 1;
+                }
+                else if (Math.abs(p.z) == max) {
+                    p.z = p.z < 0 ? -1 : 1;
+                }
+            }
+            else if (this.emitFrom == ParticleSystemShapeBoxEmitFrom.Edge) {
+                var min = Math.min(Math.abs(p.x), Math.abs(p.y), Math.abs(p.z));
+                if (Math.abs(p.x) == min) {
+                    p.y = p.y < 0 ? -1 : 1;
+                    p.z = p.z < 0 ? -1 : 1;
+                }
+                else if (Math.abs(p.y) == min) {
+                    p.x = p.x < 0 ? -1 : 1;
+                    p.z = p.z < 0 ? -1 : 1;
+                }
+                else if (Math.abs(p.z) == min) {
+                    p.x = p.x < 0 ? -1 : 1;
+                    p.y = p.y < 0 ? -1 : 1;
+                }
+            }
             particle.position.copy(p);
             // 计算速度
+            var dir = new feng3d.Vector3(0, 0, 1);
             particle.velocity.copy(dir).scaleNumber(speed);
         };
         __decorate([
@@ -33707,6 +33753,10 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ tooltip: "盒子Z方向宽度。" })
         ], ParticleSystemShapeBox.prototype, "boxZ", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "粒子系统盒子发射类型。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeBoxEmitFrom } })
+        ], ParticleSystemShapeBox.prototype, "emitFrom", void 0);
         return ParticleSystemShapeBox;
     }(feng3d.ParticleSystemShape));
     feng3d.ParticleSystemShapeBox = ParticleSystemShapeBox;
@@ -43992,6 +44042,7 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

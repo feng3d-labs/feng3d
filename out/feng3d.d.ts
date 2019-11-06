@@ -14852,6 +14852,20 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    enum ParticleSystemShapeBoxEmitFrom {
+        /**
+         * 从盒子内部发射。
+         */
+        Volume = 0,
+        /**
+         * 从盒子外壳发射。
+         */
+        Shell = 1,
+        /**
+         * 从盒子边缘发射。
+         */
+        Edge = 2
+    }
     /**
      * 粒子系统 发射盒子
      */
@@ -14859,6 +14873,10 @@ declare namespace feng3d {
         boxX: number;
         boxY: number;
         boxZ: number;
+        /**
+         * 粒子系统盒子发射类型。
+         */
+        emitFrom: ParticleSystemShapeBoxEmitFrom;
         /**
          * 初始化粒子状态
          * @param particle 粒子
