@@ -14653,30 +14653,15 @@ declare namespace feng3d {
          */
         Box = 3,
         /**
-         * 从一个网格中发出。
-         * Emit from a mesh.
-         */
-        Mesh = 4,
-        /**
-         * 从一个网格渲染器发射。
-         * Emit from a mesh renderer.
-         */
-        MeshRenderer = 5,
-        /**
-         * 从蒙皮网格渲染器发出。
-         * Emit from a skinned mesh renderer.
-         */
-        SkinnedMeshRenderer = 6,
-        /**
          * 从一个圆发出。
          * Emit from a circle.
          */
-        Circle = 7,
+        Circle = 4,
         /**
          * 从边缘发出。
          * Emit from an edge.
          */
-        Edge = 8
+        Edge = 5
     }
 }
 declare namespace feng3d {

@@ -25,21 +25,21 @@ namespace feng3d
          * Emit from the volume of a box.
          */
         Box,
-        /**
-         * 从一个网格中发出。
-         * Emit from a mesh.
-         */
-        Mesh,
-        /**
-         * 从一个网格渲染器发射。
-         * Emit from a mesh renderer.
-         */
-        MeshRenderer,
-        /**
-         * 从蒙皮网格渲染器发出。
-         * Emit from a skinned mesh renderer.
-         */
-        SkinnedMeshRenderer,
+        // /**
+        //  * 从一个网格中发出。
+        //  * Emit from a mesh.
+        //  */
+        // Mesh,
+        // /**
+        //  * 从一个网格渲染器发射。
+        //  * Emit from a mesh renderer.
+        //  */
+        // MeshRenderer,
+        // /**
+        //  * 从蒙皮网格渲染器发出。
+        //  * Emit from a skinned mesh renderer.
+        //  */
+        // SkinnedMeshRenderer,
         /**
          * 从一个圆发出。
          * Emit from a circle.

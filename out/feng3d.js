@@ -33308,31 +33308,31 @@ var feng3d;
          * Emit from the volume of a box.
          */
         ParticleSystemShapeType[ParticleSystemShapeType["Box"] = 3] = "Box";
-        /**
-         * 从一个网格中发出。
-         * Emit from a mesh.
-         */
-        ParticleSystemShapeType[ParticleSystemShapeType["Mesh"] = 4] = "Mesh";
-        /**
-         * 从一个网格渲染器发射。
-         * Emit from a mesh renderer.
-         */
-        ParticleSystemShapeType[ParticleSystemShapeType["MeshRenderer"] = 5] = "MeshRenderer";
-        /**
-         * 从蒙皮网格渲染器发出。
-         * Emit from a skinned mesh renderer.
-         */
-        ParticleSystemShapeType[ParticleSystemShapeType["SkinnedMeshRenderer"] = 6] = "SkinnedMeshRenderer";
+        // /**
+        //  * 从一个网格中发出。
+        //  * Emit from a mesh.
+        //  */
+        // Mesh,
+        // /**
+        //  * 从一个网格渲染器发射。
+        //  * Emit from a mesh renderer.
+        //  */
+        // MeshRenderer,
+        // /**
+        //  * 从蒙皮网格渲染器发出。
+        //  * Emit from a skinned mesh renderer.
+        //  */
+        // SkinnedMeshRenderer,
         /**
          * 从一个圆发出。
          * Emit from a circle.
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["Circle"] = 7] = "Circle";
+        ParticleSystemShapeType[ParticleSystemShapeType["Circle"] = 4] = "Circle";
         /**
          * 从边缘发出。
          * Emit from an edge.
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["Edge"] = 8] = "Edge";
+        ParticleSystemShapeType[ParticleSystemShapeType["Edge"] = 5] = "Edge";
     })(ParticleSystemShapeType = feng3d.ParticleSystemShapeType || (feng3d.ParticleSystemShapeType = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -44143,7 +44143,6 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
