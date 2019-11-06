@@ -10,6 +10,13 @@ namespace feng3d
         radius = 1;
 
         /**
+         * 是否从球面发射
+         */
+        @serialize
+        @oav({ tooltip: "是否从球面发射" })
+        emitFromShell = false;
+
+        /**
          * 初始化粒子状态
          * @param particle 粒子
          */
@@ -20,7 +27,11 @@ namespace feng3d
             // 计算位置
             var dir = Vector3.random().scaleNumber(2).subNumber(1).normalize();
 
-            var p = dir.scaleNumberTo(Math.random() * this.radius);
+            var p = dir.scaleNumberTo(this.radius);
+            if (!this.emitFromShell)
+            {
+                p.scaleNumber(Math.random());
+            }
 
             particle.position.copy(p);
 
@@ -39,6 +50,13 @@ namespace feng3d
         radius = 1;
 
         /**
+         * 是否从球面发射
+         */
+        @serialize
+        @oav({ tooltip: "是否从球面发射" })
+        emitFromShell = false;
+
+        /**
          * 初始化粒子状态
          * @param particle 粒子
          */
@@ -50,8 +68,11 @@ namespace feng3d
             var dir = Vector3.random().scaleNumber(2).subNumber(1).normalize();
             dir.z = Math.abs(dir.z);
 
-            var p = dir.scaleNumberTo(Math.random() * this.radius);
-
+            var p = dir.scaleNumberTo(this.radius);
+            if (!this.emitFromShell)
+            {
+                p.scaleNumber(Math.random());
+            }
             particle.position.copy(p);
 
             // 计算速度

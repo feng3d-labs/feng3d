@@ -107,9 +107,6 @@ namespace feng3d
                 case ParticleSystemShapeType.Sphere:
                     this.shape = new ParticleSystemShapeSphere();
                     break;
-                case ParticleSystemShapeType.SphereShell:
-                    this.shape = new ParticleSystemShapeSphereShell();
-                    break;
                 case ParticleSystemShapeType.Hemisphere:
                     this.shape = new ParticleSystemShapeHemisphere();
                     break;

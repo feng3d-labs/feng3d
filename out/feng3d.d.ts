@@ -14630,84 +14630,64 @@ declare namespace feng3d {
     enum ParticleSystemShapeType {
         /**
          * 从球体的体积中发射。
-         * Emit from the volume of a sphere.
+         * Emit from a sphere.
          */
         Sphere = 0,
         /**
-         * 从球体表面发射。
-         * Emit from the surface of a sphere.
+         * 从半球体的体积发射。
+         * Emit from a half-sphere.
          */
-        SphereShell = 1,
+        Hemisphere = 1,
         /**
-         * 从半球体的体积中发出。
-         * Emit from the volume of a half-sphere.
+         * 从圆锥体发射。
+         * Emit from a cone.
          */
-        Hemisphere = 2,
-        /**
-         * 从圆锥体的基面发射。
-         * Emit from the base surface of a cone.
-         */
-        Cone = 3,
-        /**
-         * 从圆锥体的基面发射。
-         * Emit from the base surface of a cone.
-         */
-        ConeShell = 4,
-        /**
-         * 从一个圆锥体的体积发出。
-         * Emit from the volume of a cone.
-         */
-        ConeVolume = 5,
-        /**
-         * 从一个圆锥体的表面发射。
-         * Emit from the surface of a cone.
-         */
-        ConeVolumeShell = 6,
+        Cone = 2,
         /**
          * 从一个盒子的体积中发出。
          * Emit from the volume of a box.
          */
-        Box = 7,
+        Box = 3,
         /**
          * 从盒子的边缘发出。
          * Emit from the edges of a box.
          */
-        BoxShell = 8,
+        BoxShell = 4,
         /**
          * 从盒子表面发射。
          * Emit from the surface of a box.
          */
-        BoxEdge = 9,
+        BoxEdge = 5,
         /**
          * 从一个网格中发出。
          * Emit from a mesh.
          */
-        Mesh = 10,
+        Mesh = 6,
         /**
          * 从一个网格渲染器发射。
          * Emit from a mesh renderer.
          */
-        MeshRenderer = 11,
+        MeshRenderer = 7,
         /**
          * 从蒙皮网格渲染器发出。
          * Emit from a skinned mesh renderer.
          */
-        SkinnedMeshRenderer = 12,
+        SkinnedMeshRenderer = 8,
         /**
          * 从一个圆发出。
          * Emit from a circle.
          */
-        Circle = 13,
+        Circle = 9,
         /**
          * 从圆的边缘发出。
          * Emit from the edge of a circle.
          */
-        CircleEdge = 14,
+        CircleEdge = 10,
         /**
          * 从边缘发出。
          * Emit from an edge.
          */
-        SingleSidedEdge = 15
+        SingleSidedEdge = 11
     }
 }
 declare namespace feng3d {
@@ -14752,6 +14732,10 @@ declare namespace feng3d {
     class ParticleSystemShapeSphere extends ParticleSystemShape {
         radius: number;
         /**
+         * 是否从球面发射
+         */
+        emitFromShell: boolean;
+        /**
          * 初始化粒子状态
          * @param particle 粒子
          */
@@ -14763,18 +14747,9 @@ declare namespace feng3d {
     class ParticleSystemShapeHemisphere extends ParticleSystemShape {
         radius: number;
         /**
-         * 初始化粒子状态
-         * @param particle 粒子
+         * 是否从球面发射
          */
-        initParticleState(particle: Particle): void;
-    }
-}
-declare namespace feng3d {
-    /**
-     * 从球体表面发射。
-     */
-    class ParticleSystemShapeSphereShell extends ParticleSystemShape {
-        radius: number;
+        emitFromShell: boolean;
         /**
          * 初始化粒子状态
          * @param particle 粒子
@@ -14784,13 +14759,50 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 粒子系统 发射圆锥体
+     * 粒子系统圆锥体发射类型，用于定义基于圆锥体的发射类型。
+     */
+    enum ParticleSystemShapeConeEmitFrom {
+        /**
+         * 从圆锥体底面发射。
+         */
+        Base = 0,
+        /**
+         * 从圆锥体底面边缘沿着曲面发射。
+         */
+        BaseShell = 1,
+        /**
+         * 从圆锥体内部发射。
+         */
+        Volume = 2,
+        /**
+         * 从圆锥体曲面沿着曲面发射。
+         */
+        VolumeShell = 3
+    }
+    /**
+     * 粒子系统发射圆锥体，用于定义基于圆锥体的粒子发射时的初始状态。
      */
     class ParticleSystemShapeCone extends ParticleSystemShape {
+        /**
+         * 圆锥体开口角度。
+         */
         angle: number;
+        /**
+         * 圆锥体底部半径。
+         */
         radius: number;
+        /**
+         * 圆锥体高度。
+         */
         height: number;
+        /**
+         * 在弧线周围产生了新的粒子。
+         */
         arc: number;
+        /**
+         * 粒子系统圆锥体发射类型。
+         */
+        emitFrom: ParticleSystemShapeConeEmitFrom;
         /**
          * 初始化粒子状态
          * @param particle 粒子

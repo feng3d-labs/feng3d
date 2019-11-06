@@ -7,39 +7,19 @@ namespace feng3d
     {
         /**
          * 从球体的体积中发射。
-         * Emit from the volume of a sphere.
+         * Emit from a sphere.
          */
         Sphere,
         /**
-         * 从球体表面发射。
-         * Emit from the surface of a sphere.
-         */
-        SphereShell,
-        /**
-         * 从半球体的体积中发出。
-         * Emit from the volume of a half-sphere.
+         * 从半球体的体积发射。
+         * Emit from a half-sphere.
          */
         Hemisphere,
         /**
-         * 从圆锥体的基面发射。
-         * Emit from the base surface of a cone.
+         * 从圆锥体发射。
+         * Emit from a cone.
          */
         Cone,
-        /**
-         * 从圆锥体的基面发射。
-         * Emit from the base surface of a cone.
-         */
-        ConeShell,
-        /**
-         * 从一个圆锥体的体积发出。
-         * Emit from the volume of a cone.
-         */
-        ConeVolume,
-        /**
-         * 从一个圆锥体的表面发射。
-         * Emit from the surface of a cone.
-         */
-        ConeVolumeShell,
         /**
          * 从一个盒子的体积中发出。
          * Emit from the volume of a box.
