@@ -33585,15 +33585,36 @@ var feng3d;
             var angle = this.angle;
             var arc = this.arc;
             angle = Math.clamp(angle, 0, 87);
-            // 在圆心的放心
-            var radiusAngle = Math.random() * Math.degToRad(arc);
+            // 在圆心的方向
+            var radiusAngle = 0;
+            if (this.arcMode == ParticleSystemShapeMultiModeValue.Random) {
+                radiusAngle = Math.random() * arc;
+            }
+            else if (this.arcMode == ParticleSystemShapeMultiModeValue.Loop) {
+                var totalAngle = particle.birthTime * this.arcSpeed.getValue(particle.birthRateAtDuration) * arc;
+                radiusAngle = totalAngle % arc;
+            }
+            else if (this.arcMode == ParticleSystemShapeMultiModeValue.PingPong) {
+                var totalAngle = particle.birthTime * this.arcSpeed.getValue(particle.birthRateAtDuration) * arc;
+                radiusAngle = totalAngle % arc;
+                if (Math.floor(totalAngle / arc) % 2 == 1) {
+                    radiusAngle = arc - radiusAngle;
+                }
+            }
+            else if (this.arcMode == ParticleSystemShapeMultiModeValue.BurstSpread) {
+                // radiusAngle = Math.floor(Math.floor(1 / this.arcSpread) * Math.random()) * this.arcSpread * arc;
+            }
+            if (this.arcSpread > 0) {
+                radiusAngle = Math.floor(radiusAngle / arc / this.arcSpread) * arc * this.arcSpread;
+            }
+            radiusAngle = Math.degToRad(radiusAngle);
             // 在圆的位置
             var radiusRate = 1;
             if (this.emitFrom == ParticleSystemShapeConeEmitFrom.Base || this.emitFrom == ParticleSystemShapeConeEmitFrom.Volume) {
                 radiusRate = Math.random();
             }
             // 在圆的位置
-            var basePos = new feng3d.Vector3(Math.sin(radiusAngle), Math.cos(radiusAngle), 0);
+            var basePos = new feng3d.Vector3(Math.cos(radiusAngle), Math.sin(radiusAngle), 0);
             // 底面位置
             var bottomPos = basePos.scaleNumberTo(radius).scaleNumber(radiusRate);
             // 顶面位置
