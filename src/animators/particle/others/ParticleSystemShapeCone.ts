@@ -21,11 +21,11 @@ namespace feng3d
          * 使发射点围绕形状运动，在顺时针和逆时针方向之间交替。
          */
         PingPong,
-        /**
-         * Distribute new particles around the shape evenly.
-         * 在形状周围均匀分布新粒子。
-         */
-        BurstSpread,
+        // /**
+        //  * Distribute new particles around the shape evenly.
+        //  * 在形状周围均匀分布新粒子。
+        //  */
+        // BurstSpread,
     }
 
     /**
@@ -135,20 +135,20 @@ namespace feng3d
                 radiusAngle = Math.random() * arc;
             } else if (this.arcMode == ParticleSystemShapeMultiModeValue.Loop)
             {
-                var totalAngle = particle.birthTime * this.arcSpeed.getValue(particle.birthRateAtDuration) * arc;
+                var totalAngle = particle.birthTime * this.arcSpeed.getValue(particle.birthRateAtDuration) * 360;
                 radiusAngle = totalAngle % arc;
             } else if (this.arcMode == ParticleSystemShapeMultiModeValue.PingPong)
             {
-                var totalAngle = particle.birthTime * this.arcSpeed.getValue(particle.birthRateAtDuration) * arc;
+                var totalAngle = particle.birthTime * this.arcSpeed.getValue(particle.birthRateAtDuration) * 360;
                 radiusAngle = totalAngle % arc;
                 if (Math.floor(totalAngle / arc) % 2 == 1)
                 {
                     radiusAngle = arc - radiusAngle;
                 }
-            } else if (this.arcMode == ParticleSystemShapeMultiModeValue.BurstSpread)
-            {
-                // radiusAngle = Math.floor(Math.floor(1 / this.arcSpread) * Math.random()) * this.arcSpread * arc;
             }
+            // else if (this.arcMode == ParticleSystemShapeMultiModeValue.BurstSpread)
+            // {
+            // }
             if (this.arcSpread > 0)
             {
                 radiusAngle = Math.floor(radiusAngle / arc / this.arcSpread) * arc * this.arcSpread;

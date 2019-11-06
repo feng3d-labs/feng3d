@@ -14781,12 +14781,7 @@ declare namespace feng3d {
          * Animate the emission point around the shape, alternating between clockwise and counter-clockwise directions.
          * 使发射点围绕形状运动，在顺时针和逆时针方向之间交替。
          */
-        PingPong = 2,
-        /**
-         * Distribute new particles around the shape evenly.
-         * 在形状周围均匀分布新粒子。
-         */
-        BurstSpread = 3
+        PingPong = 2
     }
     /**
      * 粒子系统圆锥体发射类型，用于定义基于圆锥体的发射类型。
