@@ -33332,7 +33332,7 @@ var feng3d;
          * 从边缘发出。
          * Emit from an edge.
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["SingleSidedEdge"] = 8] = "SingleSidedEdge";
+        ParticleSystemShapeType[ParticleSystemShapeType["Edge"] = 8] = "Edge";
     })(ParticleSystemShapeType = feng3d.ParticleSystemShapeType || (feng3d.ParticleSystemShapeType = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -33784,7 +33784,6 @@ var feng3d;
          */
         ParticleSystemShapeCircle.prototype.initParticleState = function (particle) {
             var speed = particle.velocity.length;
-            var speed = particle.velocity.length;
             var radius = this.radius;
             var arc = this.arc;
             // 在圆心的方向
@@ -33858,7 +33857,25 @@ var feng3d;
         __extends(ParticleSystemShapeEdge, _super);
         function ParticleSystemShapeEdge() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.length = 1;
+            /**
+             * 边长的一半。
+             */
+            _this.radius = 1;
+            /**
+             * The mode used for generating particles around the arc.
+             * 在弧线周围产生粒子的模式。
+             */
+            _this.arcMode = feng3d.ParticleSystemShapeMultiModeValue.Random;
+            /**
+             * Control the gap between emission points around the arc.
+             * 控制弧线周围发射点之间的间隙。
+             */
+            _this.arcSpread = 0;
+            /**
+             * When using one of the animated modes, how quickly to move the emission position around the arc.
+             * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
+             */
+            _this.arcSpeed = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 1, constant1: 1 });
             return _this;
         }
         /**
@@ -33867,9 +33884,33 @@ var feng3d;
          */
         ParticleSystemShapeEdge.prototype.initParticleState = function (particle) {
             var speed = particle.velocity.length;
+            var arc = 360 * this.radius;
+            // 在圆心的方向
+            var radiusAngle = 0;
+            if (this.arcMode == feng3d.ParticleSystemShapeMultiModeValue.Random) {
+                radiusAngle = Math.random() * arc;
+            }
+            else if (this.arcMode == feng3d.ParticleSystemShapeMultiModeValue.Loop) {
+                var totalAngle = particle.birthTime * this.arcSpeed.getValue(particle.birthRateAtDuration) * 360;
+                radiusAngle = totalAngle % arc;
+            }
+            else if (this.arcMode == feng3d.ParticleSystemShapeMultiModeValue.PingPong) {
+                var totalAngle = particle.birthTime * this.arcSpeed.getValue(particle.birthRateAtDuration) * 360;
+                radiusAngle = totalAngle % arc;
+                if (Math.floor(totalAngle / arc) % 2 == 1) {
+                    radiusAngle = arc - radiusAngle;
+                }
+            }
+            // else if (this.arcMode == ParticleSystemShapeMultiModeValue.BurstSpread)
+            // {
+            // }
+            if (this.arcSpread > 0) {
+                radiusAngle = Math.floor(radiusAngle / arc / this.arcSpread) * arc * this.arcSpread;
+            }
+            radiusAngle = radiusAngle / arc;
             // 计算位置
-            var dir = new feng3d.Vector3(0, 0, 1);
-            var p = new feng3d.Vector3(this.length * (Math.random() * 2 - 1), 0, 0);
+            var dir = new feng3d.Vector3(0, 1, 0);
+            var p = new feng3d.Vector3(this.radius * (radiusAngle * 2 - 1), 0, 0);
             //
             particle.position.copy(p);
             // 计算速度
@@ -33877,8 +33918,20 @@ var feng3d;
         };
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ tooltip: "边长" })
-        ], ParticleSystemShapeEdge.prototype, "length", void 0);
+            feng3d.oav({ tooltip: "边长的一半。" })
+        ], ParticleSystemShapeEdge.prototype, "radius", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "在弧线周围产生粒子的模式。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemShapeMultiModeValue } })
+        ], ParticleSystemShapeEdge.prototype, "arcMode", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "控制弧线周围发射点之间的间隙。" })
+        ], ParticleSystemShapeEdge.prototype, "arcSpread", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "当使用一个动画模式时，如何快速移动发射位置周围的弧。" })
+        ], ParticleSystemShapeEdge.prototype, "arcSpeed", void 0);
         return ParticleSystemShapeEdge;
     }(feng3d.ParticleSystemShape));
     feng3d.ParticleSystemShapeEdge = ParticleSystemShapeEdge;
@@ -34324,7 +34377,7 @@ var feng3d;
                 case feng3d.ParticleSystemShapeType.Circle:
                     this.shape = new feng3d.ParticleSystemShapeCircle();
                     break;
-                case feng3d.ParticleSystemShapeType.SingleSidedEdge:
+                case feng3d.ParticleSystemShapeType.Edge:
                     this.shape = new feng3d.ParticleSystemShapeEdge();
                     break;
             }
@@ -44090,6 +44143,8 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+console.log("feng3d-0.1.3");
+console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

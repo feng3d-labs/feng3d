@@ -49,6 +49,6 @@ namespace feng3d
          * 从边缘发出。
          * Emit from an edge.
          */
-        SingleSidedEdge,
+        Edge,
     }
 }

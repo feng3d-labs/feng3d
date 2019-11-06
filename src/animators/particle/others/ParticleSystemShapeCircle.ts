@@ -51,8 +51,6 @@ namespace feng3d
         initParticleState(particle: Particle)
         {
             var speed = particle.velocity.length;
-
-            var speed = particle.velocity.length;
             var radius = this.radius;
             var arc = this.arc;
             // 在圆心的方向

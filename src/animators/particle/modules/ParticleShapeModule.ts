@@ -119,7 +119,7 @@ namespace feng3d
                 case ParticleSystemShapeType.Circle:
                     this.shape = new ParticleSystemShapeCircle();
                     break;
-                case ParticleSystemShapeType.SingleSidedEdge:
+                case ParticleSystemShapeType.Edge:
                     this.shape = new ParticleSystemShapeEdge();
                     break;
             }

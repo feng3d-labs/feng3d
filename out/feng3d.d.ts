@@ -14676,7 +14676,7 @@ declare namespace feng3d {
          * 从边缘发出。
          * Emit from an edge.
          */
-        SingleSidedEdge = 8
+        Edge = 8
     }
 }
 declare namespace feng3d {
@@ -14907,7 +14907,25 @@ declare namespace feng3d {
      * 粒子系统 发射边
      */
     class ParticleSystemShapeEdge extends ParticleSystemShape {
-        length: number;
+        /**
+         * 边长的一半。
+         */
+        radius: number;
+        /**
+         * The mode used for generating particles around the arc.
+         * 在弧线周围产生粒子的模式。
+         */
+        arcMode: ParticleSystemShapeMultiModeValue;
+        /**
+         * Control the gap between emission points around the arc.
+         * 控制弧线周围发射点之间的间隙。
+         */
+        arcSpread: number;
+        /**
+         * When using one of the animated modes, how quickly to move the emission position around the arc.
+         * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
+         */
+        arcSpeed: MinMaxCurve;
         /**
          * 初始化粒子状态
          * @param particle 粒子
