@@ -52,6 +52,11 @@ namespace feng3d
 		startColor = new Color4();
 
 		/**
+		 * 出生时在周期的位置（临时数据）
+		 */
+		birthRateAtDuration: number;
+
+		/**
 		 * 更新状态
 		 */
 		updateState(preTime: number, time: number)

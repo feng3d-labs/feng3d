@@ -14439,6 +14439,10 @@ declare namespace feng3d {
          */
         startColor: Color4;
         /**
+         * 出生时在周期的位置（临时数据）
+         */
+        birthRateAtDuration: number;
+        /**
          * 更新状态
          */
         updateState(preTime: number, time: number): void;
@@ -14759,6 +14763,32 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * The mode used to generate new points in a shape (Shuriken).
+     * 用于在形状中生成新点的模式
+     */
+    enum ParticleSystemShapeMultiModeValue {
+        /**
+         * Generate points randomly. (Default)
+         * 生成随机点。(默认)
+         */
+        Random = 0,
+        /**
+         * Animate the emission point around the shape.
+         * 使发射点围绕形状运动。
+         */
+        Loop = 1,
+        /**
+         * Animate the emission point around the shape, alternating between clockwise and counter-clockwise directions.
+         * 使发射点围绕形状运动，在顺时针和逆时针方向之间交替。
+         */
+        PingPong = 2,
+        /**
+         * Distribute new particles around the shape evenly.
+         * 在形状周围均匀分布新粒子。
+         */
+        BurstSpread = 3
+    }
+    /**
      * 粒子系统圆锥体发射类型，用于定义基于圆锥体的发射类型。
      */
     enum ParticleSystemShapeConeEmitFrom {
@@ -14784,7 +14814,8 @@ declare namespace feng3d {
      */
     class ParticleSystemShapeCone extends ParticleSystemShape {
         /**
-         * 圆锥体开口角度。
+         * Angle of the cone.
+         * 圆锥的角度。
          */
         angle: number;
         /**
@@ -14796,9 +14827,24 @@ declare namespace feng3d {
          */
         height: number;
         /**
-         * 在弧线周围产生了新的粒子。
+         * Circle arc angle.
          */
         arc: number;
+        /**
+         * The mode used for generating particles around the arc.
+         * 在弧线周围产生粒子的模式。
+         */
+        arcMode: ParticleSystemShapeMultiModeValue;
+        /**
+         * Control the gap between emission points around the arc.
+         * 控制弧线周围发射点之间的间隙。
+         */
+        arcSpread: number;
+        /**
+         * When using one of the animated modes, how quickly to move the emission position around the arc.
+         * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
+         */
+        arcSpeed: MinMaxCurve;
         /**
          * 粒子系统圆锥体发射类型。
          */

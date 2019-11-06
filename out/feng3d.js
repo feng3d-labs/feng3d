@@ -33482,6 +33482,33 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * The mode used to generate new points in a shape (Shuriken).
+     * 用于在形状中生成新点的模式
+     */
+    var ParticleSystemShapeMultiModeValue;
+    (function (ParticleSystemShapeMultiModeValue) {
+        /**
+         * Generate points randomly. (Default)
+         * 生成随机点。(默认)
+         */
+        ParticleSystemShapeMultiModeValue[ParticleSystemShapeMultiModeValue["Random"] = 0] = "Random";
+        /**
+         * Animate the emission point around the shape.
+         * 使发射点围绕形状运动。
+         */
+        ParticleSystemShapeMultiModeValue[ParticleSystemShapeMultiModeValue["Loop"] = 1] = "Loop";
+        /**
+         * Animate the emission point around the shape, alternating between clockwise and counter-clockwise directions.
+         * 使发射点围绕形状运动，在顺时针和逆时针方向之间交替。
+         */
+        ParticleSystemShapeMultiModeValue[ParticleSystemShapeMultiModeValue["PingPong"] = 2] = "PingPong";
+        /**
+         * Distribute new particles around the shape evenly.
+         * 在形状周围均匀分布新粒子。
+         */
+        ParticleSystemShapeMultiModeValue[ParticleSystemShapeMultiModeValue["BurstSpread"] = 3] = "BurstSpread";
+    })(ParticleSystemShapeMultiModeValue = feng3d.ParticleSystemShapeMultiModeValue || (feng3d.ParticleSystemShapeMultiModeValue = {}));
+    /**
      * 粒子系统圆锥体发射类型，用于定义基于圆锥体的发射类型。
      */
     var ParticleSystemShapeConeEmitFrom;
@@ -33511,7 +33538,8 @@ var feng3d;
         function ParticleSystemShapeCone() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             /**
-             * 圆锥体开口角度。
+             * Angle of the cone.
+             * 圆锥的角度。
              */
             _this.angle = 25;
             /**
@@ -33523,9 +33551,24 @@ var feng3d;
              */
             _this.height = 5;
             /**
-             * 在弧线周围产生了新的粒子。
+             * Circle arc angle.
              */
             _this.arc = 360;
+            /**
+             * The mode used for generating particles around the arc.
+             * 在弧线周围产生粒子的模式。
+             */
+            _this.arcMode = ParticleSystemShapeMultiModeValue.Random;
+            /**
+             * Control the gap between emission points around the arc.
+             * 控制弧线周围发射点之间的间隙。
+             */
+            _this.arcSpread = 0;
+            /**
+             * When using one of the animated modes, how quickly to move the emission position around the arc.
+             * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
+             */
+            _this.arcSpeed = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 1, constant1: 1 });
             /**
              * 粒子系统圆锥体发射类型。
              */
@@ -33540,9 +33583,10 @@ var feng3d;
             var speed = particle.velocity.length;
             var radius = this.radius;
             var angle = this.angle;
+            var arc = this.arc;
             angle = Math.clamp(angle, 0, 87);
             // 在圆心的放心
-            var radiusAngle = Math.random() * Math.degToRad(this.arc);
+            var radiusAngle = Math.random() * Math.degToRad(arc);
             // 在圆的位置
             var radiusRate = 1;
             if (this.emitFrom == ParticleSystemShapeConeEmitFrom.Base || this.emitFrom == ParticleSystemShapeConeEmitFrom.Volume) {
@@ -33566,8 +33610,10 @@ var feng3d;
             particle.position.copy(position);
         };
         __decorate([
-            feng3d.serialize,
-            feng3d.oav({ tooltip: "圆锥体开口角度。" })
+            feng3d.serialize
+            // @oav({ tooltip: "Angle of the cone." })
+            ,
+            feng3d.oav({ tooltip: "圆锥的角度。" })
         ], ParticleSystemShapeCone.prototype, "angle", void 0);
         __decorate([
             feng3d.serialize,
@@ -33579,8 +33625,20 @@ var feng3d;
         ], ParticleSystemShapeCone.prototype, "height", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ tooltip: "在弧线周围产生了新的粒子。" })
+            feng3d.oav({ tooltip: "圆弧角。" })
         ], ParticleSystemShapeCone.prototype, "arc", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "在弧线周围产生粒子的模式。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeMultiModeValue } })
+        ], ParticleSystemShapeCone.prototype, "arcMode", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "控制弧线周围发射点之间的间隙。" })
+        ], ParticleSystemShapeCone.prototype, "arcSpread", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "当使用一个动画模式时，如何快速移动发射位置周围的弧。" })
+        ], ParticleSystemShapeCone.prototype, "arcSpeed", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ tooltip: "粒子系统圆锥体发射类型。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeConeEmitFrom } })
@@ -33848,6 +33906,7 @@ var feng3d;
         ParticleMainModule.prototype.initParticleState = function (particle) {
             var rateAtDuration = ((particle.birthTime - this.startDelay) % this.duration) / this.duration;
             //
+            particle.birthRateAtDuration = rateAtDuration;
             particle.position.init(0, 0, 0);
             particle.velocity.init(0, 0, this.startSpeed.getValue(rateAtDuration));
             if (this.useStartSize3D) {

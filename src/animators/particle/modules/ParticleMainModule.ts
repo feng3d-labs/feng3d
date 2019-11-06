@@ -178,6 +178,7 @@ namespace feng3d
         {
             var rateAtDuration = ((particle.birthTime - this.startDelay) % this.duration) / this.duration;
             //
+            particle.birthRateAtDuration = rateAtDuration;
 
             particle.position.init(0, 0, 0);
             particle.velocity.init(0, 0, this.startSpeed.getValue(rateAtDuration));
