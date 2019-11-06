@@ -298,7 +298,7 @@
         "src/animators/particle/modules/ParticleEmissionModule.ts",
         "src/animators/particle/modules/ParticleShapeModule.ts",
         "src/animators/particle/modules/ParticleVelocityOverLifetimeModule.ts",
-        "src/animators/particle/modules/ParticleAccelerationOverLifetimeModule.ts",
+        "src/animators/particle/modules/ParticleForceOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticleScaleOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticleColorOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticlePalstanceOverLifetimeModule.ts",

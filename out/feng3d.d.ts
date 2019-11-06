@@ -14522,7 +14522,7 @@ declare namespace feng3d {
         emission: ParticleEmissionModule;
         shape: ParticleShapeModule;
         velocityOverLifetime: ParticleVelocityOverLifetimeModule;
-        accelerationOverLifetime: ParticleAccelerationOverLifetimeModule;
+        accelerationOverLifetime: ParticleForceOverLifetimeModule;
         colorOverLifetime: ParticleColorOverLifetimeModule;
         scaleOverLifetime: ParticleScaleOverLifetimeModule;
         palstanceOverLifetime: ParticlePalstanceOverLifetimeModule;
@@ -15118,7 +15118,7 @@ declare namespace feng3d {
      *
      * 控制每个粒子在其生命周期内的加速度。
      */
-    class ParticleAccelerationOverLifetimeModule extends ParticleModule {
+    class ParticleForceOverLifetimeModule extends ParticleModule {
         acceleration: MinMaxCurveVector3;
         space: ParticleSystemSimulationSpace;
         private _preAcceleration;

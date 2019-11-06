@@ -49,7 +49,7 @@ namespace feng3d
 
         @serialize
         @oav({ block: "accelerationOverLifetime", component: "OAVObjectView" })
-        accelerationOverLifetime: ParticleAccelerationOverLifetimeModule;
+        accelerationOverLifetime: ParticleForceOverLifetimeModule;
 
         @serialize
         @oav({ block: "colorOverLifetime", component: "OAVObjectView" })
@@ -96,7 +96,7 @@ namespace feng3d
                 this.emission = this.emission || serialization.setValue(new ParticleEmissionModule(), { enabled: true }),
                 this.shape = this.shape || serialization.setValue(new ParticleShapeModule(), { enabled: true }),
                 this.velocityOverLifetime = this.velocityOverLifetime || serialization.setValue(new ParticleVelocityOverLifetimeModule(), { enabled: false }),
-                this.accelerationOverLifetime = this.accelerationOverLifetime || serialization.setValue(new ParticleAccelerationOverLifetimeModule(), { enabled: false }),
+                this.accelerationOverLifetime = this.accelerationOverLifetime || serialization.setValue(new ParticleForceOverLifetimeModule(), { enabled: false }),
                 this.colorOverLifetime = this.colorOverLifetime || serialization.setValue(new ParticleColorOverLifetimeModule(), { enabled: false }),
                 this.scaleOverLifetime = this.scaleOverLifetime || serialization.setValue(new ParticleScaleOverLifetimeModule(), { enabled: false }),
                 this.palstanceOverLifetime = this.palstanceOverLifetime || serialization.setValue(new ParticlePalstanceOverLifetimeModule(), { enabled: false }),

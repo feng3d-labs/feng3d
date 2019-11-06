@@ -32972,7 +32972,7 @@ var feng3d;
                 this.emission = this.emission || feng3d.serialization.setValue(new feng3d.ParticleEmissionModule(), { enabled: true }),
                 this.shape = this.shape || feng3d.serialization.setValue(new feng3d.ParticleShapeModule(), { enabled: true }),
                 this.velocityOverLifetime = this.velocityOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleVelocityOverLifetimeModule(), { enabled: false }),
-                this.accelerationOverLifetime = this.accelerationOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleAccelerationOverLifetimeModule(), { enabled: false }),
+                this.accelerationOverLifetime = this.accelerationOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleForceOverLifetimeModule(), { enabled: false }),
                 this.colorOverLifetime = this.colorOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleColorOverLifetimeModule(), { enabled: false }),
                 this.scaleOverLifetime = this.scaleOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleScaleOverLifetimeModule(), { enabled: false }),
                 this.palstanceOverLifetime = this.palstanceOverLifetime || feng3d.serialization.setValue(new feng3d.ParticlePalstanceOverLifetimeModule(), { enabled: false }),
@@ -34467,9 +34467,9 @@ var feng3d;
      *
      * 控制每个粒子在其生命周期内的加速度。
      */
-    var ParticleAccelerationOverLifetimeModule = /** @class */ (function (_super) {
-        __extends(ParticleAccelerationOverLifetimeModule, _super);
-        function ParticleAccelerationOverLifetimeModule() {
+    var ParticleForceOverLifetimeModule = /** @class */ (function (_super) {
+        __extends(ParticleForceOverLifetimeModule, _super);
+        function ParticleForceOverLifetimeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.acceleration = new feng3d.MinMaxCurveVector3();
             _this.space = feng3d.ParticleSystemSimulationSpace.Local;
@@ -34481,7 +34481,7 @@ var feng3d;
          * 更新粒子状态
          * @param particle 粒子
          */
-        ParticleAccelerationOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
+        ParticleForceOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
             //
             this._currentAcceleration.copy(this.acceleration.getValue(rateAtLifeTime));
             if (this.space == feng3d.ParticleSystemSimulationSpace.World) {
@@ -34496,13 +34496,13 @@ var feng3d;
         __decorate([
             feng3d.serialize,
             feng3d.oav()
-        ], ParticleAccelerationOverLifetimeModule.prototype, "acceleration", void 0);
+        ], ParticleForceOverLifetimeModule.prototype, "acceleration", void 0);
         __decorate([
             feng3d.oav({ tooltip: "模拟空间", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace } })
-        ], ParticleAccelerationOverLifetimeModule.prototype, "space", void 0);
-        return ParticleAccelerationOverLifetimeModule;
+        ], ParticleForceOverLifetimeModule.prototype, "space", void 0);
+        return ParticleForceOverLifetimeModule;
     }(feng3d.ParticleModule));
-    feng3d.ParticleAccelerationOverLifetimeModule = ParticleAccelerationOverLifetimeModule;
+    feng3d.ParticleForceOverLifetimeModule = ParticleForceOverLifetimeModule;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
