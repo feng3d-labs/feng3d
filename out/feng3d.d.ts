@@ -14653,45 +14653,30 @@ declare namespace feng3d {
          */
         Box = 3,
         /**
-         * 从盒子的边缘发出。
-         * Emit from the edges of a box.
-         */
-        BoxShell = 4,
-        /**
-         * 从盒子表面发射。
-         * Emit from the surface of a box.
-         */
-        BoxEdge = 5,
-        /**
          * 从一个网格中发出。
          * Emit from a mesh.
          */
-        Mesh = 6,
+        Mesh = 4,
         /**
          * 从一个网格渲染器发射。
          * Emit from a mesh renderer.
          */
-        MeshRenderer = 7,
+        MeshRenderer = 5,
         /**
          * 从蒙皮网格渲染器发出。
          * Emit from a skinned mesh renderer.
          */
-        SkinnedMeshRenderer = 8,
+        SkinnedMeshRenderer = 6,
         /**
          * 从一个圆发出。
          * Emit from a circle.
          */
-        Circle = 9,
-        /**
-         * 从圆的边缘发出。
-         * Emit from the edge of a circle.
-         */
-        CircleEdge = 10,
+        Circle = 7,
         /**
          * 从边缘发出。
          * Emit from an edge.
          */
-        SingleSidedEdge = 11
+        SingleSidedEdge = 8
     }
 }
 declare namespace feng3d {
@@ -14891,6 +14876,25 @@ declare namespace feng3d {
     class ParticleSystemShapeCircle extends ParticleSystemShape {
         radius: number;
         arc: number;
+        /**
+         * The mode used for generating particles around the arc.
+         * 在弧线周围产生粒子的模式。
+         */
+        arcMode: ParticleSystemShapeMultiModeValue;
+        /**
+         * Control the gap between emission points around the arc.
+         * 控制弧线周围发射点之间的间隙。
+         */
+        arcSpread: number;
+        /**
+         * When using one of the animated modes, how quickly to move the emission position around the arc.
+         * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
+         */
+        arcSpeed: MinMaxCurve;
+        /**
+         * 是否从圆形边缘发射。
+         */
+        emitFromEdge: boolean;
         /**
          * 初始化粒子状态
          * @param particle 粒子

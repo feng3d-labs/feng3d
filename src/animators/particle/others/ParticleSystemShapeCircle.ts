@@ -14,6 +14,37 @@ namespace feng3d
         arc = 360;
 
         /**
+         * The mode used for generating particles around the arc.
+         * 在弧线周围产生粒子的模式。
+         */
+        @serialize
+        @oav({ tooltip: "在弧线周围产生粒子的模式。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeMultiModeValue } })
+        arcMode = ParticleSystemShapeMultiModeValue.Random;
+
+        /**
+         * Control the gap between emission points around the arc.
+         * 控制弧线周围发射点之间的间隙。
+         */
+        @serialize
+        @oav({ tooltip: "控制弧线周围发射点之间的间隙。" })
+        arcSpread = 0;
+
+        /**
+         * When using one of the animated modes, how quickly to move the emission position around the arc.
+         * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
+         */
+        @serialize
+        @oav({ tooltip: "当使用一个动画模式时，如何快速移动发射位置周围的弧。" })
+        arcSpeed = serialization.setValue(new MinMaxCurve(), { constant: 1, constant1: 1 });
+
+        /**
+         * 是否从圆形边缘发射。
+         */
+        @serialize
+        @oav({ tooltip: "是否从圆形边缘发射。" })
+        emitFromEdge = false;
+
+        /**
          * 初始化粒子状态
          * @param particle 粒子
          */
@@ -21,11 +52,42 @@ namespace feng3d
         {
             var speed = particle.velocity.length;
 
+            var speed = particle.velocity.length;
+            var radius = this.radius;
+            var arc = this.arc;
+            // 在圆心的方向
+            var radiusAngle = 0;
+            if (this.arcMode == ParticleSystemShapeMultiModeValue.Random)
+            {
+                radiusAngle = Math.random() * arc;
+            } else if (this.arcMode == ParticleSystemShapeMultiModeValue.Loop)
+            {
+                var totalAngle = particle.birthTime * this.arcSpeed.getValue(particle.birthRateAtDuration) * 360;
+                radiusAngle = totalAngle % arc;
+            } else if (this.arcMode == ParticleSystemShapeMultiModeValue.PingPong)
+            {
+                var totalAngle = particle.birthTime * this.arcSpeed.getValue(particle.birthRateAtDuration) * 360;
+                radiusAngle = totalAngle % arc;
+                if (Math.floor(totalAngle / arc) % 2 == 1)
+                {
+                    radiusAngle = arc - radiusAngle;
+                }
+            }
+            // else if (this.arcMode == ParticleSystemShapeMultiModeValue.BurstSpread)
+            // {
+            // }
+            if (this.arcSpread > 0)
+            {
+                radiusAngle = Math.floor(radiusAngle / arc / this.arcSpread) * arc * this.arcSpread;
+            }
+            radiusAngle = Math.degToRad(radiusAngle);
             // 计算位置
-            var angle = Math.random() * Math.degToRad(this.arc);
-            var dir = new Vector3(Math.sin(angle), Math.cos(angle), 0);
-            var p = dir.scaleNumberTo(this.radius * Math.random());
-
+            var dir = new Vector3(Math.cos(radiusAngle), Math.sin(radiusAngle), 0);
+            var p = dir.scaleNumberTo(radius);
+            if (!this.emitFromEdge)
+            {
+                p.scaleNumber(Math.random());
+            }
             //
             particle.position.copy(p);
 

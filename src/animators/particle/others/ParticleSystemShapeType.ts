@@ -26,16 +26,6 @@ namespace feng3d
          */
         Box,
         /**
-         * 从盒子的边缘发出。
-         * Emit from the edges of a box.
-         */
-        BoxShell,
-        /**
-         * 从盒子表面发射。
-         * Emit from the surface of a box.
-         */
-        BoxEdge,
-        /**
          * 从一个网格中发出。
          * Emit from a mesh.
          */
@@ -55,11 +45,6 @@ namespace feng3d
          * Emit from a circle.
          */
         Circle,
-        /**
-         * 从圆的边缘发出。
-         * Emit from the edge of a circle.
-         */
-        CircleEdge,
         /**
          * 从边缘发出。
          * Emit from an edge.
