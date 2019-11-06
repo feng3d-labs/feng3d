@@ -33268,6 +33268,14 @@ var feng3d;
         ParticleSystemSimulationSpace[ParticleSystemSimulationSpace["World"] = 1] = "World";
         ParticleSystemSimulationSpace[ParticleSystemSimulationSpace["Custom"] = 2] = "Custom";
     })(ParticleSystemSimulationSpace = feng3d.ParticleSystemSimulationSpace || (feng3d.ParticleSystemSimulationSpace = {}));
+    /**
+     * 粒子模拟空间
+     */
+    var ParticleSystemSimulationSpace1;
+    (function (ParticleSystemSimulationSpace1) {
+        ParticleSystemSimulationSpace1[ParticleSystemSimulationSpace1["Local"] = 0] = "Local";
+        ParticleSystemSimulationSpace1[ParticleSystemSimulationSpace1["World"] = 1] = "World";
+    })(ParticleSystemSimulationSpace1 = feng3d.ParticleSystemSimulationSpace1 || (feng3d.ParticleSystemSimulationSpace1 = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -34429,8 +34437,8 @@ var feng3d;
         function ParticleVelocityOverLifetimeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.velocity = new feng3d.MinMaxCurveVector3();
-            // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
-            _this.space = feng3d.ParticleSystemSimulationSpace.Local;
+            // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
+            _this.space = feng3d.ParticleSystemSimulationSpace1.Local;
             return _this;
         }
         /**
@@ -34439,7 +34447,7 @@ var feng3d;
          */
         ParticleVelocityOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
             var velocity = this.velocity.getValue(rateAtLifeTime);
-            if (this.space == feng3d.ParticleSystemSimulationSpace.World) {
+            if (this.space == feng3d.ParticleSystemSimulationSpace1.World) {
                 this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(velocity, velocity);
             }
             //
@@ -34454,7 +34462,7 @@ var feng3d;
             feng3d.oav({ tooltip: "基于寿命的粒子速度控制曲线。" })
         ], ParticleVelocityOverLifetimeModule.prototype, "velocity", void 0);
         __decorate([
-            feng3d.oav({ tooltip: "指定速度是在局部空间(与变换一起旋转)还是在世界空间。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace } })
+            feng3d.oav({ tooltip: "指定速度是在局部空间(与变换一起旋转)还是在世界空间。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace1 } })
         ], ParticleVelocityOverLifetimeModule.prototype, "space", void 0);
         return ParticleVelocityOverLifetimeModule;
     }(feng3d.ParticleModule));
@@ -34463,18 +34471,34 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 粒子系统 加速度随时间变化模块
+     * 粒子系统 作用在粒子上的力随时间变化模块
      *
-     * 控制每个粒子在其生命周期内的加速度。
+     * 控制每个粒子在其生命周期内的力。
+     * Script interface for the Force Over Lifetime module.
      */
     var ParticleForceOverLifetimeModule = /** @class */ (function (_super) {
         __extends(ParticleForceOverLifetimeModule, _super);
         function ParticleForceOverLifetimeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.acceleration = new feng3d.MinMaxCurveVector3();
-            _this.space = feng3d.ParticleSystemSimulationSpace.Local;
-            _this._preAcceleration = new feng3d.Vector3();
-            _this._currentAcceleration = new feng3d.Vector3();
+            /**
+             * 作用在粒子上的力
+             */
+            _this.force = new feng3d.MinMaxCurveVector3();
+            /**
+             * Are the forces being applied in local or world space?
+             * 这些力是作用于局部空间还是世界空间
+             */
+            // @oav({ tooltip: "Are the forces being applied in local or world space?", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
+            _this.space = feng3d.ParticleSystemSimulationSpace1.Local;
+            // /**
+            //  * When randomly selecting values between two curves or constants, this flag will cause a new random force to be chosen on each frame.
+            //  * 当在两条曲线或常数之间随机选择值时，此标志将导致在每一帧上选择一个新的随机力。
+            //  */
+            // // @oav({ tooltip: "When randomly selecting values between two curves or constants, this flag will cause a new random force to be chosen on each frame." })
+            // @oav({ tooltip: "当在两条曲线或常数之间随机选择值时，此标志将导致在每一帧上选择一个新的随机力。" })
+            // randomized = false;
+            _this._preForce = new feng3d.Vector3();
+            _this._currentForce = new feng3d.Vector3();
             return _this;
         }
         /**
@@ -34483,22 +34507,22 @@ var feng3d;
          */
         ParticleForceOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
             //
-            this._currentAcceleration.copy(this.acceleration.getValue(rateAtLifeTime));
-            if (this.space == feng3d.ParticleSystemSimulationSpace.World) {
-                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(this._currentAcceleration, this._currentAcceleration);
+            this._currentForce.copy(this.force.getValue(rateAtLifeTime));
+            if (this.space == feng3d.ParticleSystemSimulationSpace1.World) {
+                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(this._currentForce, this._currentForce);
             }
             //
-            particle.velocity.x += (this._currentAcceleration.x + this._preAcceleration.x) * 0.5 * (time - preTime);
-            particle.velocity.y += (this._currentAcceleration.y + this._preAcceleration.y) * 0.5 * (time - preTime);
-            particle.velocity.z += (this._currentAcceleration.z + this._preAcceleration.z) * 0.5 * (time - preTime);
-            this._preAcceleration = this._currentAcceleration.clone();
+            particle.velocity.x += (this._currentForce.x + this._preForce.x) * 0.5 * (time - preTime);
+            particle.velocity.y += (this._currentForce.y + this._preForce.y) * 0.5 * (time - preTime);
+            particle.velocity.z += (this._currentForce.z + this._preForce.z) * 0.5 * (time - preTime);
+            this._preForce = this._currentForce.clone();
         };
         __decorate([
             feng3d.serialize,
             feng3d.oav()
-        ], ParticleForceOverLifetimeModule.prototype, "acceleration", void 0);
+        ], ParticleForceOverLifetimeModule.prototype, "force", void 0);
         __decorate([
-            feng3d.oav({ tooltip: "模拟空间", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace } })
+            feng3d.oav({ tooltip: "这些力是作用于局部空间还是世界空间?", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace1 } })
         ], ParticleForceOverLifetimeModule.prototype, "space", void 0);
         return ParticleForceOverLifetimeModule;
     }(feng3d.ParticleModule));
@@ -44143,7 +44167,6 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

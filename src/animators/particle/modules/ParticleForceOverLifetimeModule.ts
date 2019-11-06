@@ -15,8 +15,13 @@ namespace feng3d
         @oav()
         force = new MinMaxCurveVector3();
 
-        @oav({ tooltip: "模拟空间", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
-        space = ParticleSystemSimulationSpace.Local;
+        /**
+         * Are the forces being applied in local or world space?
+         * 这些力是作用于局部空间还是世界空间
+         */
+        // @oav({ tooltip: "Are the forces being applied in local or world space?", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
+        @oav({ tooltip: "这些力是作用于局部空间还是世界空间?", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
+        space = ParticleSystemSimulationSpace1.Local;
 
         // /**
         //  * When randomly selecting values between two curves or constants, this flag will cause a new random force to be chosen on each frame.
@@ -38,7 +43,7 @@ namespace feng3d
             //
             this._currentForce.copy(this.force.getValue(rateAtLifeTime));
 
-            if (this.space == ParticleSystemSimulationSpace.World)
+            if (this.space == ParticleSystemSimulationSpace1.World)
             {
                 this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(this._currentForce, this._currentForce);
             }

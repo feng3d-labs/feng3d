@@ -14616,6 +14616,13 @@ declare namespace feng3d {
         World = 1,
         Custom = 2
     }
+    /**
+     * 粒子模拟空间
+     */
+    enum ParticleSystemSimulationSpace1 {
+        Local = 0,
+        World = 1
+    }
 }
 declare namespace feng3d {
     /**
@@ -15104,7 +15111,7 @@ declare namespace feng3d {
      */
     class ParticleVelocityOverLifetimeModule extends ParticleModule {
         velocity: MinMaxCurveVector3;
-        space: ParticleSystemSimulationSpace;
+        space: ParticleSystemSimulationSpace1;
         /**
          * 更新粒子状态
          * @param particle 粒子
@@ -15114,15 +15121,23 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 粒子系统 加速度随时间变化模块
+     * 粒子系统 作用在粒子上的力随时间变化模块
      *
-     * 控制每个粒子在其生命周期内的加速度。
+     * 控制每个粒子在其生命周期内的力。
+     * Script interface for the Force Over Lifetime module.
      */
     class ParticleForceOverLifetimeModule extends ParticleModule {
-        acceleration: MinMaxCurveVector3;
-        space: ParticleSystemSimulationSpace;
-        private _preAcceleration;
-        private _currentAcceleration;
+        /**
+         * 作用在粒子上的力
+         */
+        force: MinMaxCurveVector3;
+        /**
+         * Are the forces being applied in local or world space?
+         * 这些力是作用于局部空间还是世界空间
+         */
+        space: ParticleSystemSimulationSpace1;
+        private _preForce;
+        private _currentForce;
         /**
          * 更新粒子状态
          * @param particle 粒子
