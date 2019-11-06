@@ -5,8 +5,13 @@ namespace feng3d
      */
     export class ParticleColorOverLifetimeModule extends ParticleModule
     {
+        /**
+         * The gradient controlling the particle colors.
+         * 控制粒子颜色的梯度。
+         */
         @serialize
-        @oav()
+        // @oav({ tooltip: "The gradient controlling the particle colors." })
+        @oav({ tooltip: "控制粒子颜色的梯度。" })
         color = new MinMaxGradient();
 
         /**

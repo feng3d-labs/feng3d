@@ -34564,6 +34564,10 @@ var feng3d;
         __extends(ParticleColorOverLifetimeModule, _super);
         function ParticleColorOverLifetimeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * The gradient controlling the particle colors.
+             * 控制粒子颜色的梯度。
+             */
             _this.color = new feng3d.MinMaxGradient();
             return _this;
         }
@@ -34575,8 +34579,10 @@ var feng3d;
             particle.color.multiply(this.color.getValue(rateAtLifeTime));
         };
         __decorate([
-            feng3d.serialize,
-            feng3d.oav()
+            feng3d.serialize
+            // @oav({ tooltip: "The gradient controlling the particle colors." })
+            ,
+            feng3d.oav({ tooltip: "控制粒子颜色的梯度。" })
         ], ParticleColorOverLifetimeModule.prototype, "color", void 0);
         return ParticleColorOverLifetimeModule;
     }(feng3d.ParticleModule));

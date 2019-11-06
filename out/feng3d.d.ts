@@ -15163,6 +15163,10 @@ declare namespace feng3d {
      * 粒子系统 颜色随时间变化模块
      */
     class ParticleColorOverLifetimeModule extends ParticleModule {
+        /**
+         * The gradient controlling the particle colors.
+         * 控制粒子颜色的梯度。
+         */
         color: MinMaxGradient;
         /**
          * 更新粒子状态
