@@ -14525,7 +14525,7 @@ declare namespace feng3d {
         forceOverLifetime: ParticleForceOverLifetimeModule;
         colorOverLifetime: ParticleColorOverLifetimeModule;
         sizeOverLifetime: ParticleSizeOverLifetimeModule;
-        palstanceOverLifetime: ParticlePalstanceOverLifetimeModule;
+        palstanceOverLifetime: ParticleRotationOverLifetimeModule;
         geometry: PlaneGeometry;
         material: Material;
         castShadows: boolean;
@@ -15186,10 +15186,18 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 粒子系统 角速度随时间变化模块
+     * 粒子系统 旋转角度随时间变化模块
      */
-    class ParticlePalstanceOverLifetimeModule extends ParticleModule {
-        palstance: MinMaxCurveVector3;
+    class ParticleRotationOverLifetimeModule extends ParticleModule {
+        /**
+         * Set the rotation over lifetime on each axis separately.
+         * 在每个轴上分别设置基于生命周期的旋转。
+         */
+        separateAxes: boolean;
+        /**
+         * 角速度，基于生命周期的旋转。
+         */
+        angularVelocity: MinMaxCurveVector3;
         /**
          * 更新粒子状态
          * @param particle 粒子

@@ -32975,7 +32975,7 @@ var feng3d;
                 this.forceOverLifetime = this.forceOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleForceOverLifetimeModule(), { enabled: false }),
                 this.colorOverLifetime = this.colorOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleColorOverLifetimeModule(), { enabled: false }),
                 this.sizeOverLifetime = this.sizeOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleSizeOverLifetimeModule(), { enabled: false }),
-                this.palstanceOverLifetime = this.palstanceOverLifetime || feng3d.serialization.setValue(new feng3d.ParticlePalstanceOverLifetimeModule(), { enabled: false }),
+                this.palstanceOverLifetime = this.palstanceOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleRotationOverLifetimeModule(), { enabled: false }),
             ];
             this._modules.forEach(function (v) { return v.particleSystem = _this; });
         };
@@ -34612,32 +34612,49 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 粒子系统 角速度随时间变化模块
+     * 粒子系统 旋转角度随时间变化模块
      */
-    var ParticlePalstanceOverLifetimeModule = /** @class */ (function (_super) {
-        __extends(ParticlePalstanceOverLifetimeModule, _super);
-        function ParticlePalstanceOverLifetimeModule() {
+    var ParticleRotationOverLifetimeModule = /** @class */ (function (_super) {
+        __extends(ParticleRotationOverLifetimeModule, _super);
+        function ParticleRotationOverLifetimeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.palstance = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { constant: 45, constant1: 45, curveMultiplier: 45 }, yCurve: { constant: 45, constant1: 45, curveMultiplier: 45 }, zCurve: { constant: 45, constant1: 45, curveMultiplier: 45 } });
+            /**
+             * Set the rotation over lifetime on each axis separately.
+             * 在每个轴上分别设置基于生命周期的旋转。
+             */
+            _this.separateAxes = false;
+            /**
+             * 角速度，基于生命周期的旋转。
+             */
+            _this.angularVelocity = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { constant: 45, constant1: 45, curveMultiplier: 45 }, yCurve: { constant: 45, constant1: 45, curveMultiplier: 45 }, zCurve: { constant: 45, constant1: 45, curveMultiplier: 45 } });
             return _this;
         }
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
-        ParticlePalstanceOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
-            var v = this.palstance.getValue(rateAtLifeTime);
+        ParticleRotationOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
+            var v = this.angularVelocity.getValue(rateAtLifeTime);
+            if (!this.separateAxes) {
+                v.x = v.y = 0;
+            }
             particle.rotation.x += v.x * (time - preTime);
             particle.rotation.y += v.y * (time - preTime);
             particle.rotation.z += v.z * (time - preTime);
         };
         __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Set the rotation over lifetime on each axis separately." })
+            ,
+            feng3d.oav({ tooltip: "在每个轴上分别设置基于生命周期的旋转。" })
+        ], ParticleRotationOverLifetimeModule.prototype, "separateAxes", void 0);
+        __decorate([
             feng3d.serialize,
-            feng3d.oav({ tooltip: "角速度" })
-        ], ParticlePalstanceOverLifetimeModule.prototype, "palstance", void 0);
-        return ParticlePalstanceOverLifetimeModule;
+            feng3d.oav({ tooltip: "角速度，基于生命周期的旋转。" })
+        ], ParticleRotationOverLifetimeModule.prototype, "angularVelocity", void 0);
+        return ParticleRotationOverLifetimeModule;
     }(feng3d.ParticleModule));
-    feng3d.ParticlePalstanceOverLifetimeModule = ParticlePalstanceOverLifetimeModule;
+    feng3d.ParticleRotationOverLifetimeModule = ParticleRotationOverLifetimeModule;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -44194,7 +44211,6 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

@@ -301,7 +301,7 @@
         "src/animators/particle/modules/ParticleForceOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticleColorOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticleSizeOverLifetimeModule.ts",
-        "src/animators/particle/modules/ParticlePalstanceOverLifetimeModule.ts",
+        "src/animators/particle/modules/ParticleRotationOverLifetimeModule.ts",
         //骨骼动画
         "src/animators/skeleton/Skeleton.ts",
         "src/animators/skeleton/SkeletonComponent.ts",
