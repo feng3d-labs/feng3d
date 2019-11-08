@@ -7,7 +7,8 @@
   "scripts": {
     "http-server": "http-server",
     "build": "node build.js",
-    "prebuild": "rimraf \"{debug}\""
+    "prebuild": "rimraf \"{debug}\"",
+    "typedoc": "typedoc"
   },
   "files": [
     "out",
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@feng3d/build": "0.0.6",
     "@feng3d/shaderpack": "0.0.4",
-    "http-server": "^0.11.1"
+    "http-server": "^0.11.1",
+    "typescript": "^3.6.3"
   }
 }

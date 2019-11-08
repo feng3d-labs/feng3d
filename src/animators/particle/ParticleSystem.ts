@@ -60,8 +60,15 @@ namespace feng3d
         sizeOverLifetime: ParticleSizeOverLifetimeModule;
 
         @serialize
-        @oav({ block: "palstanceOverLifetime", component: "OAVObjectView" })
-        palstanceOverLifetime: ParticleRotationOverLifetimeModule;
+        @oav({ block: "rotationOverLifetime", component: "OAVObjectView" })
+        rotationOverLifetime: ParticleRotationOverLifetimeModule;
+
+        /**
+         * 粒子系统纹理表动画模块。
+         */
+        @serialize
+        @oav({ block: "textureSheetAnimation", component: "OAVObjectView" })
+        textureSheetAnimation: ParticleTextureSheetAnimationModule;
 
         @oav({ block: "Renderer" })
         geometry = Geometry.billboard;
@@ -99,7 +106,7 @@ namespace feng3d
                 this.forceOverLifetime = this.forceOverLifetime || serialization.setValue(new ParticleForceOverLifetimeModule(), { enabled: false }),
                 this.colorOverLifetime = this.colorOverLifetime || serialization.setValue(new ParticleColorOverLifetimeModule(), { enabled: false }),
                 this.sizeOverLifetime = this.sizeOverLifetime || serialization.setValue(new ParticleSizeOverLifetimeModule(), { enabled: false }),
-                this.palstanceOverLifetime = this.palstanceOverLifetime || serialization.setValue(new ParticleRotationOverLifetimeModule(), { enabled: false }),
+                this.rotationOverLifetime = this.rotationOverLifetime || serialization.setValue(new ParticleRotationOverLifetimeModule(), { enabled: false }),
             ];
             this._modules.forEach(v => v.particleSystem = this);
         }

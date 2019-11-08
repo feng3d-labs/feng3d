@@ -14525,7 +14525,11 @@ declare namespace feng3d {
         forceOverLifetime: ParticleForceOverLifetimeModule;
         colorOverLifetime: ParticleColorOverLifetimeModule;
         sizeOverLifetime: ParticleSizeOverLifetimeModule;
-        palstanceOverLifetime: ParticleRotationOverLifetimeModule;
+        rotationOverLifetime: ParticleRotationOverLifetimeModule;
+        /**
+         * 粒子系统纹理表动画模块。
+         */
+        textureSheetAnimation: ParticleTextureSheetAnimationModule;
         geometry: PlaneGeometry;
         material: Material;
         castShadows: boolean;
@@ -15203,6 +15207,13 @@ declare namespace feng3d {
          * @param particle 粒子
          */
         updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 粒子系统纹理表动画模块。
+     */
+    class ParticleTextureSheetAnimationModule extends ParticleModule {
     }
 }
 declare namespace feng3d {

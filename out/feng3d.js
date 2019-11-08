@@ -32975,7 +32975,7 @@ var feng3d;
                 this.forceOverLifetime = this.forceOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleForceOverLifetimeModule(), { enabled: false }),
                 this.colorOverLifetime = this.colorOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleColorOverLifetimeModule(), { enabled: false }),
                 this.sizeOverLifetime = this.sizeOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleSizeOverLifetimeModule(), { enabled: false }),
-                this.palstanceOverLifetime = this.palstanceOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleRotationOverLifetimeModule(), { enabled: false }),
+                this.rotationOverLifetime = this.rotationOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleRotationOverLifetimeModule(), { enabled: false }),
             ];
             this._modules.forEach(function (v) { return v.particleSystem = _this; });
         };
@@ -33236,8 +33236,12 @@ var feng3d;
         ], ParticleSystem.prototype, "sizeOverLifetime", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ block: "palstanceOverLifetime", component: "OAVObjectView" })
-        ], ParticleSystem.prototype, "palstanceOverLifetime", void 0);
+            feng3d.oav({ block: "rotationOverLifetime", component: "OAVObjectView" })
+        ], ParticleSystem.prototype, "rotationOverLifetime", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "textureSheetAnimation", component: "OAVObjectView" })
+        ], ParticleSystem.prototype, "textureSheetAnimation", void 0);
         __decorate([
             feng3d.oav({ block: "Renderer" })
         ], ParticleSystem.prototype, "geometry", void 0);
@@ -34655,6 +34659,20 @@ var feng3d;
         return ParticleRotationOverLifetimeModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleRotationOverLifetimeModule = ParticleRotationOverLifetimeModule;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 粒子系统纹理表动画模块。
+     */
+    var ParticleTextureSheetAnimationModule = /** @class */ (function (_super) {
+        __extends(ParticleTextureSheetAnimationModule, _super);
+        function ParticleTextureSheetAnimationModule() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return ParticleTextureSheetAnimationModule;
+    }(feng3d.ParticleModule));
+    feng3d.ParticleTextureSheetAnimationModule = ParticleTextureSheetAnimationModule;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
