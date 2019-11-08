@@ -8571,12 +8571,56 @@ var feng3d;
             return this;
         };
         /**
+         * 倒数向量。
+         * (x,y) -> (1/x,1/y)
+         */
+        Vector2.prototype.reciprocal = function () {
+            this.x = 1 / this.x;
+            this.y = 1 / this.y;
+            return this;
+        };
+        /**
+         * 倒数向量。
+         * (x,y) -> (1/x,1/y)
+         */
+        Vector2.prototype.reciprocalTo = function (out) {
+            if (out === void 0) { out = new Vector2(); }
+            out.copy(this).reciprocal();
+            return out;
+        };
+        /**
          * 按标量（大小）缩放当前的 Vector3 对象。
          */
-        Vector2.prototype.scale = function (s) {
+        Vector2.prototype.scaleNumber = function (s) {
             this.x *= s;
             this.y *= s;
             return this;
+        };
+        /**
+         * 按标量（大小）缩放当前的 Vector2 对象。
+         */
+        Vector2.prototype.scaleNumberTo = function (s, vout) {
+            if (vout === void 0) { vout = new Vector2(); }
+            return vout.copy(this).scaleNumber(s);
+        };
+        /**
+         * 缩放
+         * @param s 缩放量
+         */
+        Vector2.prototype.scale = function (s) {
+            this.x *= s.x;
+            this.y *= s.y;
+            return this;
+        };
+        /**
+         * 缩放
+         * @param s 缩放量
+         */
+        Vector2.prototype.scaleTo = function (s, vout) {
+            if (vout === void 0) { vout = new Vector2(); }
+            if (s == vout)
+                s = s.clone();
+            return vout.copy(this).scale(s);
         };
         /**
          * 按指定量偏移 Point 对象。dx 的值将添加到 x 的原始值中以创建新的 x 值。dy 的值将添加到 y 的原始值中以创建新的 y 值。
@@ -34875,6 +34919,39 @@ var feng3d;
             _this.uvChannelMask = UVChannelFlags.Everything;
             return _this;
         }
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticleTextureSheetAnimationModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
+            // var size = this.size.getValue(rateAtLifeTime);
+            // if (!this.separateAxes)
+            // {
+            //     size.y = size.z = size.x;
+            // }
+            // particle.size.multiply(size);
+            var segmentsX = this.tiles.x;
+            var segmentsY = this.tiles.y;
+            var step = this.tiles.clone().reciprocal();
+            var total = segmentsX * segmentsY;
+            var uvPos = new feng3d.Vector2();
+            var frameOverTime = this.frameOverTime.getValue(rateAtLifeTime);
+            var frameIndex = this.startFrame;
+            var rowIndex = this.rowIndex;
+            var cycleCount = this.cycleCount;
+            if (this.animation == ParticleSystemAnimationType.WholeSheet) {
+                frameIndex += Math.floor(frameOverTime * total * cycleCount);
+                uvPos.init(frameIndex % segmentsX, Math.floor(frameIndex / segmentsX) % segmentsY).scale(step);
+            }
+            else if (this.animation == ParticleSystemAnimationType.SingleRow) {
+                frameIndex += Math.floor(frameOverTime * segmentsX * cycleCount);
+                if (this.useRandomRow) {
+                    rowIndex = Math.floor(segmentsY * Math.random());
+                }
+                uvPos.init(frameIndex % segmentsX, rowIndex).scale(step);
+            }
+            particle;
+        };
         __decorate([
             feng3d.serialize
             // @oav({ tooltip: "Defines the tiling of the texture." })
@@ -44488,6 +44565,7 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)

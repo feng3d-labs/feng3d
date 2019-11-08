@@ -147,13 +147,62 @@ namespace feng3d
         }
 
         /**
+         * 倒数向量。
+         * (x,y) -> (1/x,1/y)
+         */
+        reciprocal()
+        {
+            this.x = 1 / this.x;
+            this.y = 1 / this.y;
+            return this;
+        }
+
+        /**
+         * 倒数向量。
+         * (x,y) -> (1/x,1/y)
+         */
+        reciprocalTo(out = new Vector2())
+        {
+            out.copy(this).reciprocal();
+            return out;
+        }
+
+        /**
          * 按标量（大小）缩放当前的 Vector3 对象。
          */
-        scale(s: number): Vector2
+        scaleNumber(s: number): Vector2
         {
             this.x *= s;
             this.y *= s;
             return this;
+        }
+        /**
+         * 按标量（大小）缩放当前的 Vector2 对象。
+         */
+        scaleNumberTo(s: number, vout = new Vector2())
+        {
+            return vout.copy(this).scaleNumber(s);
+        }
+
+        /**
+         * 缩放
+         * @param s 缩放量
+         */
+        scale(s: Vector2)
+        {
+            this.x *= s.x;
+            this.y *= s.y;
+            return this;
+        }
+
+        /**
+         * 缩放
+         * @param s 缩放量
+         */
+        scaleTo(s: Vector2, vout = new Vector2())
+        {
+            if (s == vout) s = s.clone();
+            return vout.copy(this).scale(s);
         }
 
         /**

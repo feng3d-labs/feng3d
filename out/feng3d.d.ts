@@ -3834,9 +3834,33 @@ declare namespace feng3d {
          */
         negate(): this;
         /**
+         * 倒数向量。
+         * (x,y) -> (1/x,1/y)
+         */
+        reciprocal(): this;
+        /**
+         * 倒数向量。
+         * (x,y) -> (1/x,1/y)
+         */
+        reciprocalTo(out?: Vector2): Vector2;
+        /**
          * 按标量（大小）缩放当前的 Vector3 对象。
          */
-        scale(s: number): Vector2;
+        scaleNumber(s: number): Vector2;
+        /**
+         * 按标量（大小）缩放当前的 Vector2 对象。
+         */
+        scaleNumberTo(s: number, vout?: Vector2): Vector2;
+        /**
+         * 缩放
+         * @param s 缩放量
+         */
+        scale(s: Vector2): this;
+        /**
+         * 缩放
+         * @param s 缩放量
+         */
+        scaleTo(s: Vector2, vout?: Vector2): Vector2;
         /**
          * 按指定量偏移 Point 对象。dx 的值将添加到 x 的原始值中以创建新的 x 值。dy 的值将添加到 y 的原始值中以创建新的 y 值。
          * @param dx 水平坐标 x 的偏移量。
@@ -15326,6 +15350,11 @@ declare namespace feng3d {
          * 选择哪个UV通道将接收纹理动画。
          */
         uvChannelMask: UVChannelFlags;
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number): void;
     }
 }
 declare namespace feng3d {

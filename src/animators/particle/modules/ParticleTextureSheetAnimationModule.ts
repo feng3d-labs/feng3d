@@ -140,7 +140,46 @@ namespace feng3d
         @oav({ tooltip: "选择哪个UV通道将接收纹理动画。", component: "OAVEnum", componentParam: { enumClass: UVChannelFlags } })
         uvChannelMask = UVChannelFlags.Everything;
 
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
+        {
+            // var size = this.size.getValue(rateAtLifeTime);
+            // if (!this.separateAxes)
+            // {
+            //     size.y = size.z = size.x;
+            // }
+            // particle.size.multiply(size);
 
+            var segmentsX = this.tiles.x;
+            var segmentsY = this.tiles.y;
+            var step = this.tiles.clone().reciprocal();
+            var total = segmentsX * segmentsY;
+            var uvPos = new Vector2();
+            var frameOverTime = this.frameOverTime.getValue(rateAtLifeTime);
+            var frameIndex = this.startFrame;
+            var rowIndex = this.rowIndex;
+            var cycleCount = this.cycleCount;
+
+            if (this.animation == ParticleSystemAnimationType.WholeSheet)
+            {
+                frameIndex += Math.floor(frameOverTime * total * cycleCount);
+                uvPos.init(frameIndex % segmentsX, Math.floor(frameIndex / segmentsX) % segmentsY).scale(step);
+
+            } else if (this.animation == ParticleSystemAnimationType.SingleRow)
+            {
+                frameIndex += Math.floor(frameOverTime * segmentsX * cycleCount);
+                if (this.useRandomRow)
+                {
+                    rowIndex = Math.floor(segmentsY * Math.random());
+                }
+                uvPos.init(frameIndex % segmentsX, rowIndex).scale(step);
+            }
+
+            particle
+        }
 
     }
 }
