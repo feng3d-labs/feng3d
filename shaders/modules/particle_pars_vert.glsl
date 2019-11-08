@@ -5,6 +5,7 @@
     attribute vec3 a_particle_rotation;
     attribute vec4 a_particle_color;
     attribute vec4 a_particle_tilingOffset;
+    attribute vec2 a_particle_flipUV;
 
     varying vec4 v_particle_color;
 
@@ -45,6 +46,8 @@
         // 颜色
         v_particle_color = a_particle_color;
 
+        if(a_particle_flipUV.x > 0.5) v_uv.x = 1.0 - v_uv.x;
+        if(a_particle_flipUV.y > 0.5) v_uv.y = 1.0 - v_uv.y;
         v_uv = v_uv * a_particle_tilingOffset.xy + a_particle_tilingOffset.zw;
         
         return position;

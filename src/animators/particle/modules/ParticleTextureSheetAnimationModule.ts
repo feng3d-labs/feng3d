@@ -74,7 +74,7 @@ namespace feng3d
          */
         @serialize
         // @oav({ tooltip: "Specifies the animation type." })
-        @oav({ tooltip: "指定动画类型。" })
+        @oav({ tooltip: "指定动画类型。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemAnimationType } })
         animation = ParticleSystemAnimationType.WholeSheet;
 
         /**
@@ -102,7 +102,12 @@ namespace feng3d
         @serialize
         // @oav({ tooltip: "Explicitly select which row of the texture sheet is used, when useRandomRow is set to false." })
         @oav({ tooltip: "当useRandomRow设置为false时，显式选择使用纹理表的哪一行。" })
-        rowIndex = 0;
+        get rowIndex() { return this._rowIndex; }
+        set rowIndex(v)
+        {
+            this._rowIndex = Math.clamp(v, 0, this.tiles.y - 1);
+        }
+        private _rowIndex = 0;
 
         /**
          * Define a random starting frame for the texture sheet animation.
@@ -123,26 +128,19 @@ namespace feng3d
         cycleCount = 1;
 
         /**
-         * Flip the U coordinate on particles, causing them to appear mirrored horizontally.
-         * 在粒子上翻转U坐标，使它们呈现水平镜像。
+         * Flip the UV coordinate on particles, causing them to appear mirrored.
+         * 在粒子上翻转UV坐标，使它们呈现镜像翻转。
          */
         @serialize
-        // @oav({ tooltip: "Flip the U coordinate on particles, causing them to appear mirrored horizontally." })
-        @oav({ tooltip: "在粒子上翻转U坐标，使它们呈现水平镜像。" })
-        flipU = false;
-
-        /**
-         * Flip the V coordinate on particles, causing them to appear mirrored horizontally.
-         * 在粒子上翻转V坐标，使它们呈现水平镜像。
-         */
-        @serialize
-        // @oav({ tooltip: "Flip the V coordinate on particles, causing them to appear mirrored horizontally." })
-        @oav({ tooltip: "在粒子上翻转V坐标，使它们呈现水平镜像。" })
-        flipV = false
+        // @oav({ tooltip: "Flip the UV coordinate on particles, causing them to appear mirrored." })
+        @oav({ tooltip: "在粒子上翻转UV坐标，使它们呈现镜像翻转。" })
+        flipUV = new Vector2();
 
         /**
          * Choose which UV channels will receive texture animation.
          * 选择哪个UV通道将接收纹理动画。
+         * 
+         * todo 目前引擎中只有一套UV
          */
         @serialize
         // @oav({ tooltip: "Choose which UV channels will receive texture animation.", component: "OAVEnum", componentParam: { enumClass: UVChannelFlags } })
@@ -181,8 +179,7 @@ namespace feng3d
             }
 
             particle.tilingOffset.init(step.x, step.y, uvPos.x, uvPos.y);
-            particle.flipU = this.flipU;
-            particle.flipV = this.flipV;
+            particle.flipUV = this.flipUV;
         }
 
     }

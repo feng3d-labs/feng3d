@@ -355,7 +355,7 @@ var feng3d;
             "normal_vert": "vec3 normal = a_normal;",
             "particle_frag": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    finalColor = particleAnimation(finalColor);\r\n#endif",
             "particle_pars_frag": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    varying vec4 v_particle_color;\r\n\r\n    vec4 particleAnimation(vec4 color) {\r\n\r\n        color.xyz = color.xyz * v_particle_color.xyz;\r\n        color.xyz = color.xyz * v_particle_color.www;\r\n        return color;\r\n    }\r\n#endif",
-            "particle_pars_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    //\r\n    attribute vec3 a_particle_position;\r\n    attribute vec3 a_particle_scale;\r\n    attribute vec3 a_particle_rotation;\r\n    attribute vec4 a_particle_color;\r\n    attribute vec4 a_particle_tilingOffset;\r\n\r\n    varying vec4 v_particle_color;\r\n\r\n    mat3 makeParticleRotationMatrix(vec3 rotation)\r\n    {\r\n        float DEG2RAD = 3.1415926 / 180.0;\r\n        \r\n        float rx = rotation.x * DEG2RAD;\r\n        float ry = rotation.y * DEG2RAD;\r\n        float rz = rotation.z * DEG2RAD;\r\n\r\n        float sx = sin(rx);\r\n        float cx = cos(rx);\r\n        float sy = sin(ry);\r\n        float cy = cos(ry);\r\n        float sz = sin(rz);\r\n        float cz = cos(rz);\r\n\r\n        mat3 tmp;\r\n        tmp[ 0 ] = vec3(cy * cz, cy * sz, -sy);\r\n        tmp[ 1 ] = vec3(sx * sy * cz - cx * sz, sx * sy * sz + cx * cz, sx * cy);\r\n        tmp[ 2 ] = vec3(cx * sy * cz + sx * sz, cx * sy * sz - sx * cz, cx * cy);\r\n        return tmp;\r\n    }\r\n\r\n    vec4 particleAnimation(vec4 position) \r\n    {\r\n        // 计算缩放\r\n        position.xyz = position.xyz * a_particle_scale;\r\n\r\n        // 计算旋转\r\n        mat3 rMat = makeParticleRotationMatrix(a_particle_rotation);\r\n        position.xyz = rMat * position.xyz;\r\n\r\n        // 位移\r\n        position.xyz = position.xyz + a_particle_position;\r\n\r\n        // 颜色\r\n        v_particle_color = a_particle_color;\r\n\r\n        v_uv = v_uv * a_particle_tilingOffset.xy + a_particle_tilingOffset.zw;\r\n        \r\n        return position;\r\n    }\r\n#endif",
+            "particle_pars_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    //\r\n    attribute vec3 a_particle_position;\r\n    attribute vec3 a_particle_scale;\r\n    attribute vec3 a_particle_rotation;\r\n    attribute vec4 a_particle_color;\r\n    attribute vec4 a_particle_tilingOffset;\r\n    attribute vec2 a_particle_flipUV;\r\n\r\n    varying vec4 v_particle_color;\r\n\r\n    mat3 makeParticleRotationMatrix(vec3 rotation)\r\n    {\r\n        float DEG2RAD = 3.1415926 / 180.0;\r\n        \r\n        float rx = rotation.x * DEG2RAD;\r\n        float ry = rotation.y * DEG2RAD;\r\n        float rz = rotation.z * DEG2RAD;\r\n\r\n        float sx = sin(rx);\r\n        float cx = cos(rx);\r\n        float sy = sin(ry);\r\n        float cy = cos(ry);\r\n        float sz = sin(rz);\r\n        float cz = cos(rz);\r\n\r\n        mat3 tmp;\r\n        tmp[ 0 ] = vec3(cy * cz, cy * sz, -sy);\r\n        tmp[ 1 ] = vec3(sx * sy * cz - cx * sz, sx * sy * sz + cx * cz, sx * cy);\r\n        tmp[ 2 ] = vec3(cx * sy * cz + sx * sz, cx * sy * sz - sx * cz, cx * cy);\r\n        return tmp;\r\n    }\r\n\r\n    vec4 particleAnimation(vec4 position) \r\n    {\r\n        // 计算缩放\r\n        position.xyz = position.xyz * a_particle_scale;\r\n\r\n        // 计算旋转\r\n        mat3 rMat = makeParticleRotationMatrix(a_particle_rotation);\r\n        position.xyz = rMat * position.xyz;\r\n\r\n        // 位移\r\n        position.xyz = position.xyz + a_particle_position;\r\n\r\n        // 颜色\r\n        v_particle_color = a_particle_color;\r\n\r\n        if(a_particle_flipUV.x > 0.5) v_uv.x = 1.0 - v_uv.x;\r\n        if(a_particle_flipUV.y > 0.5) v_uv.y = 1.0 - v_uv.y;\r\n        v_uv = v_uv * a_particle_tilingOffset.xy + a_particle_tilingOffset.zw;\r\n        \r\n        return position;\r\n    }\r\n#endif",
             "particle_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    position = particleAnimation(position);\r\n#endif",
             "pointsize_pars_vert": "#ifdef IS_POINTS_MODE\r\n    uniform float u_PointSize;\r\n#endif",
             "pointsize_vert": "#ifdef IS_POINTS_MODE\r\n    gl_PointSize = u_PointSize;\r\n#endif",
@@ -32834,13 +32834,9 @@ var feng3d;
              */
             this.tilingOffset = new feng3d.Vector4(1, 1, 0, 0);
             /**
-             * 在粒子上翻转U坐标，使它们呈现水平镜像。
+             * 在粒子上翻转UV坐标，使它们呈现水平镜像。
              */
-            this.flipU = false;
-            /**
-             * 在粒子上翻转V坐标，使它们呈现水平镜像。
-             */
-            this.flipV = false;
+            this.flipUV = new feng3d.Vector2();
         }
         /**
          * 更新状态
@@ -33008,6 +33004,7 @@ var feng3d;
                 a_particle_rotation: new feng3d.Attribute("a_particle_rotation", [], 3, 1),
                 a_particle_color: new feng3d.Attribute("a_particle_color", [], 4, 1),
                 a_particle_tilingOffset: new feng3d.Attribute("a_particle_tilingOffset", [], 4, 1),
+                a_particle_flipUV: new feng3d.Attribute("a_particle_flipUV", [], 2, 1),
             };
             _this._modules = [];
             _this.main = new feng3d.ParticleMainModule();
@@ -33228,6 +33225,7 @@ var feng3d;
             var rotations = [];
             var colors = [];
             var tilingOffsets = [];
+            var flipUVs = [];
             for (var i = 0, n = this._activeParticles.length; i < n; i++) {
                 var particle = this._activeParticles[i];
                 positions.push(particle.position.x, particle.position.y, particle.position.z);
@@ -33244,6 +33242,7 @@ var feng3d;
                 rotations.push(rotation.x, rotation.y, rotation.z);
                 colors.push(particle.color.r, particle.color.g, particle.color.b, particle.color.a);
                 tilingOffsets.push(particle.tilingOffset.x, particle.tilingOffset.y, particle.tilingOffset.z, particle.tilingOffset.w);
+                flipUVs.push(particle.flipUV.x, particle.flipUV.y);
             }
             //
             this._attributes.a_particle_position.data = positions;
@@ -33251,6 +33250,7 @@ var feng3d;
             this._attributes.a_particle_rotation.data = rotations;
             this._attributes.a_particle_color.data = colors;
             this._attributes.a_particle_tilingOffset.data = tilingOffsets;
+            this._attributes.a_particle_flipUV.data = flipUVs;
             //
             renderAtomic.uniforms.u_particleTime = this.time - this.main.startDelay;
             for (var key in this._attributes) {
@@ -34908,11 +34908,7 @@ var feng3d;
              * 对每个发射的粒子使用纹理表的随机行。
              */
             _this.useRandomRow = true;
-            /**
-             * Explicitly select which row of the texture sheet is used, when useRandomRow is set to false.
-             * 当useRandomRow设置为false时，显式选择使用纹理表的哪一行。
-             */
-            _this.rowIndex = 0;
+            _this._rowIndex = 0;
             /**
              * Define a random starting frame for the texture sheet animation.
              * 为纹理表动画定义一个随机的起始帧。
@@ -34924,22 +34920,31 @@ var feng3d;
              */
             _this.cycleCount = 1;
             /**
-             * Flip the U coordinate on particles, causing them to appear mirrored horizontally.
-             * 在粒子上翻转U坐标，使它们呈现水平镜像。
+             * Flip the UV coordinate on particles, causing them to appear mirrored.
+             * 在粒子上翻转UV坐标，使它们呈现镜像翻转。
              */
-            _this.flipU = false;
-            /**
-             * Flip the V coordinate on particles, causing them to appear mirrored horizontally.
-             * 在粒子上翻转V坐标，使它们呈现水平镜像。
-             */
-            _this.flipV = false;
+            _this.flipUV = new feng3d.Vector2();
             /**
              * Choose which UV channels will receive texture animation.
              * 选择哪个UV通道将接收纹理动画。
+             *
+             * todo 目前引擎中只有一套UV
              */
             _this.uvChannelMask = UVChannelFlags.Everything;
             return _this;
         }
+        Object.defineProperty(ParticleTextureSheetAnimationModule.prototype, "rowIndex", {
+            /**
+             * Explicitly select which row of the texture sheet is used, when useRandomRow is set to false.
+             * 当useRandomRow设置为false时，显式选择使用纹理表的哪一行。
+             */
+            get: function () { return this._rowIndex; },
+            set: function (v) {
+                this._rowIndex = Math.clamp(v, 0, this.tiles.y - 1);
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 更新粒子状态
          * @param particle 粒子
@@ -34966,8 +34971,7 @@ var feng3d;
                 uvPos.init(frameIndex % segmentsX, rowIndex).scale(step);
             }
             particle.tilingOffset.init(step.x, step.y, uvPos.x, uvPos.y);
-            particle.flipU = this.flipU;
-            particle.flipV = this.flipV;
+            particle.flipUV = this.flipUV;
         };
         __decorate([
             feng3d.serialize
@@ -34979,7 +34983,7 @@ var feng3d;
             feng3d.serialize
             // @oav({ tooltip: "Specifies the animation type." })
             ,
-            feng3d.oav({ tooltip: "指定动画类型。" })
+            feng3d.oav({ tooltip: "指定动画类型。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemAnimationType } })
         ], ParticleTextureSheetAnimationModule.prototype, "animation", void 0);
         __decorate([
             feng3d.serialize
@@ -34998,7 +35002,7 @@ var feng3d;
             // @oav({ tooltip: "Explicitly select which row of the texture sheet is used, when useRandomRow is set to false." })
             ,
             feng3d.oav({ tooltip: "当useRandomRow设置为false时，显式选择使用纹理表的哪一行。" })
-        ], ParticleTextureSheetAnimationModule.prototype, "rowIndex", void 0);
+        ], ParticleTextureSheetAnimationModule.prototype, "rowIndex", null);
         __decorate([
             feng3d.serialize
             // @oav({ tooltip: "Define a random starting frame for the texture sheet animation." })
@@ -35013,16 +35017,10 @@ var feng3d;
         ], ParticleTextureSheetAnimationModule.prototype, "cycleCount", void 0);
         __decorate([
             feng3d.serialize
-            // @oav({ tooltip: "Flip the U coordinate on particles, causing them to appear mirrored horizontally." })
+            // @oav({ tooltip: "Flip the UV coordinate on particles, causing them to appear mirrored." })
             ,
-            feng3d.oav({ tooltip: "在粒子上翻转U坐标，使它们呈现水平镜像。" })
-        ], ParticleTextureSheetAnimationModule.prototype, "flipU", void 0);
-        __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "Flip the V coordinate on particles, causing them to appear mirrored horizontally." })
-            ,
-            feng3d.oav({ tooltip: "在粒子上翻转V坐标，使它们呈现水平镜像。" })
-        ], ParticleTextureSheetAnimationModule.prototype, "flipV", void 0);
+            feng3d.oav({ tooltip: "在粒子上翻转UV坐标，使它们呈现镜像翻转。" })
+        ], ParticleTextureSheetAnimationModule.prototype, "flipUV", void 0);
         __decorate([
             feng3d.serialize
             // @oav({ tooltip: "Choose which UV channels will receive texture animation.", component: "OAVEnum", componentParam: { enumClass: UVChannelFlags } })
@@ -44588,8 +44586,6 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-console.log("feng3d-0.1.3");
-console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

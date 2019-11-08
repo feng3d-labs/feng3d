@@ -291,6 +291,7 @@ namespace feng3d
             var rotations: number[] = [];
             var colors: number[] = [];
             var tilingOffsets: number[] = [];
+            var flipUVs: number[] = [];
             for (let i = 0, n = this._activeParticles.length; i < n; i++)
             {
                 var particle = this._activeParticles[i];
@@ -310,6 +311,7 @@ namespace feng3d
                 rotations.push(rotation.x, rotation.y, rotation.z);
                 colors.push(particle.color.r, particle.color.g, particle.color.b, particle.color.a);
                 tilingOffsets.push(particle.tilingOffset.x, particle.tilingOffset.y, particle.tilingOffset.z, particle.tilingOffset.w);
+                flipUVs.push(particle.flipUV.x, particle.flipUV.y);
             }
 
             //
@@ -318,6 +320,7 @@ namespace feng3d
             this._attributes.a_particle_rotation.data = rotations;
             this._attributes.a_particle_color.data = colors;
             this._attributes.a_particle_tilingOffset.data = tilingOffsets;
+            this._attributes.a_particle_flipUV.data = flipUVs;
 
             //
             renderAtomic.uniforms.u_particleTime = this.time - this.main.startDelay;
@@ -361,6 +364,7 @@ namespace feng3d
             a_particle_rotation: new Attribute("a_particle_rotation", [], 3, 1),
             a_particle_color: new Attribute("a_particle_color", [], 4, 1),
             a_particle_tilingOffset: new Attribute("a_particle_tilingOffset", [], 4, 1),
+            a_particle_flipUV: new Attribute("a_particle_flipUV", [], 2, 1),
         };
 
         private readonly _modules: ParticleModule[] = [];

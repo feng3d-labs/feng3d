@@ -57,14 +57,9 @@ namespace feng3d
 		tilingOffset = new Vector4(1, 1, 0, 0);
 
 		/**
-		 * 在粒子上翻转U坐标，使它们呈现水平镜像。
+		 * 在粒子上翻转UV坐标，使它们呈现水平镜像。
 		 */
-		flipU = false;
-
-		/**
-		 * 在粒子上翻转V坐标，使它们呈现水平镜像。
-		 */
-		flipV = false;
+		flipUV = new Vector2();
 
 		/**
 		 * 出生时在周期的位置（临时数据）

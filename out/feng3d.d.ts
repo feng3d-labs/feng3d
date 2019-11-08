@@ -14475,13 +14475,9 @@ declare namespace feng3d {
          */
         tilingOffset: Vector4;
         /**
-         * 在粒子上翻转U坐标，使它们呈现水平镜像。
+         * 在粒子上翻转UV坐标，使它们呈现水平镜像。
          */
-        flipU: boolean;
-        /**
-         * 在粒子上翻转V坐标，使它们呈现水平镜像。
-         */
-        flipV: boolean;
+        flipUV: Vector2;
         /**
          * 出生时在周期的位置（临时数据）
          */
@@ -15342,6 +15338,7 @@ declare namespace feng3d {
          * 当useRandomRow设置为false时，显式选择使用纹理表的哪一行。
          */
         rowIndex: number;
+        private _rowIndex;
         /**
          * Define a random starting frame for the texture sheet animation.
          * 为纹理表动画定义一个随机的起始帧。
@@ -15353,18 +15350,15 @@ declare namespace feng3d {
          */
         cycleCount: number;
         /**
-         * Flip the U coordinate on particles, causing them to appear mirrored horizontally.
-         * 在粒子上翻转U坐标，使它们呈现水平镜像。
+         * Flip the UV coordinate on particles, causing them to appear mirrored.
+         * 在粒子上翻转UV坐标，使它们呈现镜像翻转。
          */
-        flipU: boolean;
-        /**
-         * Flip the V coordinate on particles, causing them to appear mirrored horizontally.
-         * 在粒子上翻转V坐标，使它们呈现水平镜像。
-         */
-        flipV: boolean;
+        flipUV: Vector2;
         /**
          * Choose which UV channels will receive texture animation.
          * 选择哪个UV通道将接收纹理动画。
+         *
+         * todo 目前引擎中只有一套UV
          */
         uvChannelMask: UVChannelFlags;
         /**
