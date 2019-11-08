@@ -10781,6 +10781,10 @@ declare namespace feng3d {
          * 是否抗锯齿
          */
         cartoon_Anti_aliasing: Boolean;
+        /**
+         * 是否启用粒子系统纹理表动画模块
+         */
+        ENABLED_PARTICLE_SYSTEM_textureSheetAnimation: Boolean;
     }
 }
 declare namespace feng3d {

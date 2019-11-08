@@ -279,6 +279,8 @@ namespace feng3d
             //
             renderAtomic.shaderMacro.HAS_PARTICLE_ANIMATOR = true;
 
+            renderAtomic.shaderMacro.ENABLED_PARTICLE_SYSTEM_textureSheetAnimation = this.textureSheetAnimation.enabled;
+
             var cameraMatrix = camera.transform.localToWorldMatrix.clone();
             var localCameraPos = this.gameObject.transform.worldToLocalMatrix.transformVector(cameraMatrix.position);
             var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
