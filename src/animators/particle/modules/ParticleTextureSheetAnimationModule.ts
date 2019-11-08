@@ -123,13 +123,22 @@ namespace feng3d
         cycleCount = 1;
 
         /**
-         * Flip the UV coordinate on particles, causing them to appear mirrored horizontally.
-         * 在粒子上翻转UV坐标，使它们呈现水平镜像。
+         * Flip the U coordinate on particles, causing them to appear mirrored horizontally.
+         * 在粒子上翻转U坐标，使它们呈现水平镜像。
          */
         @serialize
-        // @oav({ tooltip: "Flip the UV coordinate on particles, causing them to appear mirrored horizontally." })
-        @oav({ tooltip: "在粒子上翻转UV坐标，使它们呈现水平镜像。" })
-        flipUV = new Vector2(0, 0);
+        // @oav({ tooltip: "Flip the U coordinate on particles, causing them to appear mirrored horizontally." })
+        @oav({ tooltip: "在粒子上翻转U坐标，使它们呈现水平镜像。" })
+        flipU = false;
+
+        /**
+         * Flip the V coordinate on particles, causing them to appear mirrored horizontally.
+         * 在粒子上翻转V坐标，使它们呈现水平镜像。
+         */
+        @serialize
+        // @oav({ tooltip: "Flip the V coordinate on particles, causing them to appear mirrored horizontally." })
+        @oav({ tooltip: "在粒子上翻转V坐标，使它们呈现水平镜像。" })
+        flipV = false
 
         /**
          * Choose which UV channels will receive texture animation.
@@ -146,13 +155,6 @@ namespace feng3d
          */
         updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
-            // var size = this.size.getValue(rateAtLifeTime);
-            // if (!this.separateAxes)
-            // {
-            //     size.y = size.z = size.x;
-            // }
-            // particle.size.multiply(size);
-
             var segmentsX = this.tiles.x;
             var segmentsY = this.tiles.y;
             var step = this.tiles.clone().reciprocal();
@@ -178,7 +180,9 @@ namespace feng3d
                 uvPos.init(frameIndex % segmentsX, rowIndex).scale(step);
             }
 
-            particle
+            particle.tilingOffset.init(step.x, step.y, uvPos.x, uvPos.y);
+            particle.flipU = this.flipU;
+            particle.flipV = this.flipV;
         }
 
     }

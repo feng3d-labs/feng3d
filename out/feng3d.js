@@ -32829,6 +32829,18 @@ var feng3d;
              * 起始颜色
              */
             this.startColor = new feng3d.Color4();
+            /**
+             * 纹理UV缩放和偏移。
+             */
+            this.tilingOffset = new feng3d.Vector4(1, 1, 0, 0);
+            /**
+             * 在粒子上翻转U坐标，使它们呈现水平镜像。
+             */
+            this.flipU = false;
+            /**
+             * 在粒子上翻转V坐标，使它们呈现水平镜像。
+             */
+            this.flipV = false;
         }
         /**
          * 更新状态
@@ -34908,10 +34920,15 @@ var feng3d;
              */
             _this.cycleCount = 1;
             /**
-             * Flip the UV coordinate on particles, causing them to appear mirrored horizontally.
-             * 在粒子上翻转UV坐标，使它们呈现水平镜像。
+             * Flip the U coordinate on particles, causing them to appear mirrored horizontally.
+             * 在粒子上翻转U坐标，使它们呈现水平镜像。
              */
-            _this.flipUV = new feng3d.Vector2(0, 0);
+            _this.flipU = false;
+            /**
+             * Flip the V coordinate on particles, causing them to appear mirrored horizontally.
+             * 在粒子上翻转V坐标，使它们呈现水平镜像。
+             */
+            _this.flipV = false;
             /**
              * Choose which UV channels will receive texture animation.
              * 选择哪个UV通道将接收纹理动画。
@@ -34924,12 +34941,6 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleTextureSheetAnimationModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
-            // var size = this.size.getValue(rateAtLifeTime);
-            // if (!this.separateAxes)
-            // {
-            //     size.y = size.z = size.x;
-            // }
-            // particle.size.multiply(size);
             var segmentsX = this.tiles.x;
             var segmentsY = this.tiles.y;
             var step = this.tiles.clone().reciprocal();
@@ -34950,7 +34961,9 @@ var feng3d;
                 }
                 uvPos.init(frameIndex % segmentsX, rowIndex).scale(step);
             }
-            particle;
+            particle.tilingOffset.init(step.x, step.y, uvPos.x, uvPos.y);
+            particle.flipU = this.flipU;
+            particle.flipV = this.flipV;
         };
         __decorate([
             feng3d.serialize
@@ -34996,10 +35009,16 @@ var feng3d;
         ], ParticleTextureSheetAnimationModule.prototype, "cycleCount", void 0);
         __decorate([
             feng3d.serialize
-            // @oav({ tooltip: "Flip the UV coordinate on particles, causing them to appear mirrored horizontally." })
+            // @oav({ tooltip: "Flip the U coordinate on particles, causing them to appear mirrored horizontally." })
             ,
-            feng3d.oav({ tooltip: "在粒子上翻转UV坐标，使它们呈现水平镜像。" })
-        ], ParticleTextureSheetAnimationModule.prototype, "flipUV", void 0);
+            feng3d.oav({ tooltip: "在粒子上翻转U坐标，使它们呈现水平镜像。" })
+        ], ParticleTextureSheetAnimationModule.prototype, "flipU", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Flip the V coordinate on particles, causing them to appear mirrored horizontally." })
+            ,
+            feng3d.oav({ tooltip: "在粒子上翻转V坐标，使它们呈现水平镜像。" })
+        ], ParticleTextureSheetAnimationModule.prototype, "flipV", void 0);
         __decorate([
             feng3d.serialize
             // @oav({ tooltip: "Choose which UV channels will receive texture animation.", component: "OAVEnum", componentParam: { enumClass: UVChannelFlags } })

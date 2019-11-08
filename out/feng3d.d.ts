@@ -14471,6 +14471,18 @@ declare namespace feng3d {
          */
         startColor: Color4;
         /**
+         * 纹理UV缩放和偏移。
+         */
+        tilingOffset: Vector4;
+        /**
+         * 在粒子上翻转U坐标，使它们呈现水平镜像。
+         */
+        flipU: boolean;
+        /**
+         * 在粒子上翻转V坐标，使它们呈现水平镜像。
+         */
+        flipV: boolean;
+        /**
          * 出生时在周期的位置（临时数据）
          */
         birthRateAtDuration: number;
@@ -15341,10 +15353,15 @@ declare namespace feng3d {
          */
         cycleCount: number;
         /**
-         * Flip the UV coordinate on particles, causing them to appear mirrored horizontally.
-         * 在粒子上翻转UV坐标，使它们呈现水平镜像。
+         * Flip the U coordinate on particles, causing them to appear mirrored horizontally.
+         * 在粒子上翻转U坐标，使它们呈现水平镜像。
          */
-        flipUV: Vector2;
+        flipU: boolean;
+        /**
+         * Flip the V coordinate on particles, causing them to appear mirrored horizontally.
+         * 在粒子上翻转V坐标，使它们呈现水平镜像。
+         */
+        flipV: boolean;
         /**
          * Choose which UV channels will receive texture animation.
          * 选择哪个UV通道将接收纹理动画。
