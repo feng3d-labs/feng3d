@@ -14529,16 +14529,24 @@ declare namespace feng3d {
         main: ParticleMainModule;
         private _main;
         emission: ParticleEmissionModule;
+        private _emission;
         shape: ParticleShapeModule;
+        private _shape;
         velocityOverLifetime: ParticleVelocityOverLifetimeModule;
+        private _velocityOverLifetime;
         forceOverLifetime: ParticleForceOverLifetimeModule;
+        private _forceOverLifetime;
         colorOverLifetime: ParticleColorOverLifetimeModule;
+        private _colorOverLifetime;
         sizeOverLifetime: ParticleSizeOverLifetimeModule;
+        private _sizeOverLifetime;
         rotationOverLifetime: ParticleRotationOverLifetimeModule;
+        private _rotationOverLifetime;
         /**
          * 粒子系统纹理表动画模块。
          */
         textureSheetAnimation: ParticleTextureSheetAnimationModule;
+        private _textureSheetAnimation;
         geometry: PlaneGeometry;
         material: Material;
         castShadows: boolean;
@@ -14593,7 +14601,7 @@ declare namespace feng3d {
          * 属性数据列表
          */
         private _attributes;
-        private _modules;
+        private readonly _modules;
         /**
          * 发射粒子
          * @param time 当前粒子时间

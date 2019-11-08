@@ -36,52 +36,102 @@ namespace feng3d
         get main() { return this._main; }
         set main(v)
         {
-            var index = this._modules.indexOf(this._main);
-            if (index != -1) this._modules.splice(index, 1);
+            this._modules.replace(this._main, v);
+            v.particleSystem = this;
             this._main = v;
-            if (index != -1)
-                this._modules.splice(index, 0, this._main);
-            else
-                this._modules.push(this._main);
-
-                this._modules
         }
         private _main: ParticleMainModule;
 
         @serialize
         @oav({ block: "emission", component: "OAVObjectView" })
-        emission: ParticleEmissionModule;
+        get emission() { return this._emission; }
+        set emission(v)
+        {
+            this._modules.replace(this._emission, v);
+            v.particleSystem = this;
+            this._emission = v;
+        }
+        private _emission: ParticleEmissionModule;
 
         @serialize
         @oav({ block: "shape", component: "OAVObjectView" })
-        shape: ParticleShapeModule;
+        get shape() { return this._shape; }
+        set shape(v)
+        {
+            this._modules.replace(this._shape, v);
+            v.particleSystem = this;
+            this._shape = v;
+        }
+        private _shape: ParticleShapeModule;
 
         @serialize
         @oav({ block: "velocityOverLifetime", component: "OAVObjectView" })
-        velocityOverLifetime: ParticleVelocityOverLifetimeModule;
+        get velocityOverLifetime() { return this._velocityOverLifetime; }
+        set velocityOverLifetime(v)
+        {
+            this._modules.replace(this._velocityOverLifetime, v);
+            v.particleSystem = this;
+            this._velocityOverLifetime = v;
+        }
+        private _velocityOverLifetime: ParticleVelocityOverLifetimeModule;
 
         @serialize
         @oav({ block: "forceOverLifetime", component: "OAVObjectView" })
-        forceOverLifetime: ParticleForceOverLifetimeModule;
+        get forceOverLifetime() { return this._forceOverLifetime; }
+        set forceOverLifetime(v)
+        {
+            this._modules.replace(this._forceOverLifetime, v);
+            v.particleSystem = this;
+            this._forceOverLifetime = v;
+        }
+        private _forceOverLifetime: ParticleForceOverLifetimeModule;
 
         @serialize
         @oav({ block: "colorOverLifetime", component: "OAVObjectView" })
-        colorOverLifetime: ParticleColorOverLifetimeModule;
+        get colorOverLifetime() { return this._colorOverLifetime; }
+        set colorOverLifetime(v)
+        {
+            this._modules.replace(this._colorOverLifetime, v);
+            v.particleSystem = this;
+            this._colorOverLifetime = v;
+        }
+        private _colorOverLifetime: ParticleColorOverLifetimeModule;
 
         @serialize
         @oav({ block: "sizeOverLifetime", component: "OAVObjectView" })
-        sizeOverLifetime: ParticleSizeOverLifetimeModule;
+        get sizeOverLifetime() { return this._sizeOverLifetime; }
+        set sizeOverLifetime(v)
+        {
+            this._modules.replace(this._sizeOverLifetime, v);
+            v.particleSystem = this;
+            this._sizeOverLifetime = v;
+        }
+        private _sizeOverLifetime: ParticleSizeOverLifetimeModule;
 
         @serialize
         @oav({ block: "rotationOverLifetime", component: "OAVObjectView" })
-        rotationOverLifetime: ParticleRotationOverLifetimeModule;
+        get rotationOverLifetime() { return this._rotationOverLifetime; }
+        set rotationOverLifetime(v)
+        {
+            this._modules.replace(this._rotationOverLifetime, v);
+            v.particleSystem = this;
+            this._rotationOverLifetime = v;
+        }
+        private _rotationOverLifetime: ParticleRotationOverLifetimeModule;
 
         /**
          * 粒子系统纹理表动画模块。
          */
         @serialize
-        @oav({ block: "textureSheetAnimation", component: "OAVObjectView" })
-        textureSheetAnimation: ParticleTextureSheetAnimationModule;
+        @oav({ tooltip: "粒子系统纹理表动画模块。", block: "textureSheetAnimation", component: "OAVObjectView" })
+        get textureSheetAnimation() { return this._textureSheetAnimation; }
+        set textureSheetAnimation(v)
+        {
+            this._modules.replace(this._textureSheetAnimation, v);
+            v.particleSystem = this;
+            this._textureSheetAnimation = v;
+        }
+        private _textureSheetAnimation: ParticleTextureSheetAnimationModule;
 
         @oav({ block: "Renderer" })
         geometry = Geometry.billboard;
@@ -130,17 +180,6 @@ namespace feng3d
         {
             super.init();
 
-            this._modules = [
-                this.main,
-                this.emission,
-                this.shape,
-                this.velocityOverLifetime,
-                this.forceOverLifetime,
-                this.colorOverLifetime,
-                this.sizeOverLifetime,
-                this.rotationOverLifetime,
-                this.textureSheetAnimation,
-            ];
             this._modules.forEach(v => v.particleSystem = this);
         }
 
@@ -327,7 +366,7 @@ namespace feng3d
             a_particle_color: new Attribute("a_particle_color", [], 4, 1),
         };
 
-        private _modules: ParticleModule[];
+        private readonly _modules: ParticleModule[] = [];
 
         /**
          * 发射粒子

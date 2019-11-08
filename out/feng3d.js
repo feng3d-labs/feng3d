@@ -32952,6 +32952,7 @@ var feng3d;
                 a_particle_rotation: new feng3d.Attribute("a_particle_rotation", [], 3, 1),
                 a_particle_color: new feng3d.Attribute("a_particle_color", [], 4, 1),
             };
+            _this._modules = [];
             _this.main = new feng3d.ParticleMainModule();
             _this.emission = new feng3d.ParticleEmissionModule();
             _this.shape = new feng3d.ParticleShapeModule();
@@ -32979,15 +32980,92 @@ var feng3d;
         Object.defineProperty(ParticleSystem.prototype, "main", {
             get: function () { return this._main; },
             set: function (v) {
-                var index = this._modules.indexOf(this._main);
-                if (index != -1)
-                    this._modules.splice(index, 1);
+                this._modules.replace(this._main, v);
+                v.particleSystem = this;
                 this._main = v;
-                if (index != -1)
-                    this._modules.splice(index, 0, this._main);
-                else
-                    this._modules.push(this._main);
-                this._modules;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "emission", {
+            get: function () { return this._emission; },
+            set: function (v) {
+                this._modules.replace(this._emission, v);
+                v.particleSystem = this;
+                this._emission = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "shape", {
+            get: function () { return this._shape; },
+            set: function (v) {
+                this._modules.replace(this._shape, v);
+                v.particleSystem = this;
+                this._shape = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "velocityOverLifetime", {
+            get: function () { return this._velocityOverLifetime; },
+            set: function (v) {
+                this._modules.replace(this._velocityOverLifetime, v);
+                v.particleSystem = this;
+                this._velocityOverLifetime = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "forceOverLifetime", {
+            get: function () { return this._forceOverLifetime; },
+            set: function (v) {
+                this._modules.replace(this._forceOverLifetime, v);
+                v.particleSystem = this;
+                this._forceOverLifetime = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "colorOverLifetime", {
+            get: function () { return this._colorOverLifetime; },
+            set: function (v) {
+                this._modules.replace(this._colorOverLifetime, v);
+                v.particleSystem = this;
+                this._colorOverLifetime = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "sizeOverLifetime", {
+            get: function () { return this._sizeOverLifetime; },
+            set: function (v) {
+                this._modules.replace(this._sizeOverLifetime, v);
+                v.particleSystem = this;
+                this._sizeOverLifetime = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "rotationOverLifetime", {
+            get: function () { return this._rotationOverLifetime; },
+            set: function (v) {
+                this._modules.replace(this._rotationOverLifetime, v);
+                v.particleSystem = this;
+                this._rotationOverLifetime = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "textureSheetAnimation", {
+            /**
+             * 粒子系统纹理表动画模块。
+             */
+            get: function () { return this._textureSheetAnimation; },
+            set: function (v) {
+                this._modules.replace(this._textureSheetAnimation, v);
+                v.particleSystem = this;
+                this._textureSheetAnimation = v;
             },
             enumerable: true,
             configurable: true
@@ -33010,17 +33088,6 @@ var feng3d;
         ParticleSystem.prototype.init = function () {
             var _this = this;
             _super.prototype.init.call(this);
-            this._modules = [
-                this.main,
-                this.emission,
-                this.shape,
-                this.velocityOverLifetime,
-                this.forceOverLifetime,
-                this.colorOverLifetime,
-                this.sizeOverLifetime,
-                this.rotationOverLifetime,
-                this.textureSheetAnimation,
-            ];
             this._modules.forEach(function (v) { return v.particleSystem = _this; });
         };
         ParticleSystem.prototype.update = function (interval) {
@@ -33257,35 +33324,35 @@ var feng3d;
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "emission", component: "OAVObjectView" })
-        ], ParticleSystem.prototype, "emission", void 0);
+        ], ParticleSystem.prototype, "emission", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "shape", component: "OAVObjectView" })
-        ], ParticleSystem.prototype, "shape", void 0);
+        ], ParticleSystem.prototype, "shape", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "velocityOverLifetime", component: "OAVObjectView" })
-        ], ParticleSystem.prototype, "velocityOverLifetime", void 0);
+        ], ParticleSystem.prototype, "velocityOverLifetime", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "forceOverLifetime", component: "OAVObjectView" })
-        ], ParticleSystem.prototype, "forceOverLifetime", void 0);
+        ], ParticleSystem.prototype, "forceOverLifetime", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "colorOverLifetime", component: "OAVObjectView" })
-        ], ParticleSystem.prototype, "colorOverLifetime", void 0);
+        ], ParticleSystem.prototype, "colorOverLifetime", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "sizeOverLifetime", component: "OAVObjectView" })
-        ], ParticleSystem.prototype, "sizeOverLifetime", void 0);
+        ], ParticleSystem.prototype, "sizeOverLifetime", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "rotationOverLifetime", component: "OAVObjectView" })
-        ], ParticleSystem.prototype, "rotationOverLifetime", void 0);
+        ], ParticleSystem.prototype, "rotationOverLifetime", null);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ block: "textureSheetAnimation", component: "OAVObjectView" })
-        ], ParticleSystem.prototype, "textureSheetAnimation", void 0);
+            feng3d.oav({ tooltip: "粒子系统纹理表动画模块。", block: "textureSheetAnimation", component: "OAVObjectView" })
+        ], ParticleSystem.prototype, "textureSheetAnimation", null);
         __decorate([
             feng3d.oav({ block: "Renderer" })
         ], ParticleSystem.prototype, "geometry", void 0);
@@ -34243,8 +34310,9 @@ var feng3d;
             feng3d.oav({ tooltip: "粒子发射时的初始旋转。" })
         ], ParticleMainModule.prototype, "startRotation", null);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav({ tooltip: "The initial color of particles when emitted." }),
+            feng3d.serialize
+            // @oav({ tooltip: "The initial color of particles when emitted." })
+            ,
             feng3d.oav({ tooltip: "粒子发射时的初始颜色。" })
         ], ParticleMainModule.prototype, "startColor", void 0);
         __decorate([
@@ -44425,8 +44493,6 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-console.log("feng3d-0.1.3");
-console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

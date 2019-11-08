@@ -102,7 +102,7 @@ namespace feng3d
          * 粒子发射时的初始颜色。
          */
         @serialize
-        @oav({ tooltip: "The initial color of particles when emitted." })
+        // @oav({ tooltip: "The initial color of particles when emitted." })
         @oav({ tooltip: "粒子发射时的初始颜色。" })
         startColor = new MinMaxGradient();
 
