@@ -4,6 +4,8 @@ precision mediump float;
 attribute vec3 a_position;
 attribute vec3 a_normal;
 
+#include<uv_pars_vert>
+
 uniform mat4 u_modelMatrix;
 uniform mat4 u_ITModelMatrix;
 uniform vec3 u_cameraPos;
@@ -19,6 +21,8 @@ uniform float u_outlineSize;
 void main() 
 {
     vec4 position = vec4(a_position, 1.0);
+
+    #include<uv_vert>
 
     #include<skeleton_vert>
     #include<particle_vert>

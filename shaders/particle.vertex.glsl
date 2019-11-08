@@ -18,6 +18,8 @@ uniform float u_PointSize;
 void main() 
 {
     vec4 position = vec4(a_position, 1.0);
+    //输出uv
+    v_uv = a_uv;
     
     #include<particle_vert>
 
@@ -27,8 +29,7 @@ void main()
     vec4 worldPosition = u_modelMatrix * position;
     //计算投影坐标
     gl_Position = u_viewProjection * worldPosition;
-    //输出uv
-    v_uv = a_uv;
+
 
     gl_PointSize = u_PointSize;
 }

@@ -22,6 +22,7 @@ void main()
     #include<position_vert>
     #include<normal_vert>
     #include<tangent_vert>
+    #include<uv_vert>
     // 动画
     #include<skeleton_vert>
     #include<particle_vert>
@@ -29,7 +30,6 @@ void main()
     #include<worldposition_vert>
     #include<project_vert>
     // 
-    #include<uv_vert>
     #include<normalmap_vert>
     //
     #include<lights_vert>
