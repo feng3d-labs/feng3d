@@ -15484,29 +15484,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 动画关键帧
-     */
-    var AnimationCurveKeyframe = /** @class */ (function () {
-        function AnimationCurveKeyframe(v) {
-            feng3d.serialization.setValue(this, v);
-            return this;
-        }
-        __decorate([
-            feng3d.serialize
-        ], AnimationCurveKeyframe.prototype, "time", void 0);
-        __decorate([
-            feng3d.serialize
-        ], AnimationCurveKeyframe.prototype, "value", void 0);
-        __decorate([
-            feng3d.serialize
-        ], AnimationCurveKeyframe.prototype, "tangent", void 0);
-        return AnimationCurveKeyframe;
-    }());
-    feng3d.AnimationCurveKeyframe = AnimationCurveKeyframe;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 动画曲线Wrap模式，处理超出范围情况
      */
     var AnimationCurveWrapMode;
@@ -15664,9 +15641,9 @@ var feng3d;
                 }
             }
             if (keys.length == 0)
-                return new feng3d.AnimationCurveKeyframe({ time: t, value: 0, tangent: 0 });
+                return { time: t, value: 0, tangent: 0 };
             feng3d.debuger && console.assert(isfind);
-            return new feng3d.AnimationCurveKeyframe({ time: t, value: value, tangent: tangent });
+            return { time: t, value: value, tangent: tangent };
         };
         /**
          * 获取值

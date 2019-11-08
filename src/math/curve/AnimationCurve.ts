@@ -92,7 +92,7 @@ namespace feng3d
          * 获取曲线上点信息
          * @param t 时间轴的位置 [0,1]
          */
-        getPoint(t: number)
+        getPoint(t: number): AnimationCurveKeyframe
         {
             switch (this.wrapMode)
             {
@@ -157,10 +157,10 @@ namespace feng3d
                 }
             }
 
-            if (keys.length == 0) return new AnimationCurveKeyframe({ time: t, value: 0, tangent: 0 });
+            if (keys.length == 0) return { time: t, value: 0, tangent: 0 };
 
             debuger && console.assert(isfind);
-            return new AnimationCurveKeyframe({ time: t, value: value, tangent: tangent });
+            return { time: t, value: value, tangent: tangent };
         }
 
         /**

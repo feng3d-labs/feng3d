@@ -324,11 +324,13 @@ namespace feng3d
 
         QUnit.test("serialization.setValue", (assert) =>
         {
-            // todo
+            var curve = feng3d.serialization.setValue(new feng3d.AnimationCurve(), { keys: [{ time: 0, value: 0, tangent: 1 }, { time: 1, value: 1, tangent: 1 }] });
+            var curve1 = feng3d.serialization.setValue(curve, curve1);
 
-            serialization.setValue
+            var str = JSON.stringify(feng3d.serialization.serialize(curve));
+            var str1 = JSON.stringify(feng3d.serialization.serialize(curve1));
 
-            assert.ok(true);
+            assert.ok(str == str1);
         });
     });
 }

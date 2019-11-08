@@ -4629,9 +4629,11 @@ var feng3d;
             assert.deepEqual(diff2, {});
         });
         QUnit.test("serialization.setValue", function (assert) {
-            // todo
-            feng3d.serialization.setValue;
-            assert.ok(true);
+            var curve = feng3d.serialization.setValue(new feng3d.AnimationCurve(), { keys: [{ time: 0, value: 0, tangent: 1 }, { time: 1, value: 1, tangent: 1 }] });
+            var curve1 = feng3d.serialization.setValue(curve, curve1);
+            var str = JSON.stringify(feng3d.serialization.serialize(curve));
+            var str1 = JSON.stringify(feng3d.serialization.serialize(curve1));
+            assert.ok(str == str1);
         });
     });
 })(feng3d || (feng3d = {}));
@@ -4851,6 +4853,7 @@ QUnit.module("watcher", function () {
     });
 });
 //# sourceMappingURL=tests.js.map
+console.log("feng3d-tests-0.0.3");
 console.log("feng3d-tests-0.0.3");
 (function universalModuleDefinition(root, factory)
 {
