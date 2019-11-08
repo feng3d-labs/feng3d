@@ -33,7 +33,20 @@ namespace feng3d
 
         @serialize
         @oav({ block: "main", component: "OAVObjectView" })
-        main: ParticleMainModule;
+        get main() { return this._main; }
+        set main(v)
+        {
+            var index = this._modules.indexOf(this._main);
+            if (index != -1) this._modules.splice(index, 1);
+            this._main = v;
+            if (index != -1)
+                this._modules.splice(index, 0, this._main);
+            else
+                this._modules.push(this._main);
+
+                this._modules
+        }
+        private _main: ParticleMainModule;
 
         @serialize
         @oav({ block: "emission", component: "OAVObjectView" })
@@ -94,19 +107,39 @@ namespace feng3d
 
         get single() { return true; }
 
+        constructor()
+        {
+            super();
+
+            this.main = new ParticleMainModule();
+            this.emission = new ParticleEmissionModule();
+            this.shape = new ParticleShapeModule();
+            this.velocityOverLifetime = new ParticleVelocityOverLifetimeModule();
+            this.forceOverLifetime = new ParticleForceOverLifetimeModule();
+            this.colorOverLifetime = new ParticleColorOverLifetimeModule();
+            this.sizeOverLifetime = new ParticleSizeOverLifetimeModule();
+            this.rotationOverLifetime = new ParticleRotationOverLifetimeModule();
+            this.textureSheetAnimation = new ParticleTextureSheetAnimationModule();
+
+            this.main.enabled = true;
+            this.emission.enabled = true;
+            this.shape.enabled = true;
+        }
+
         init()
         {
             super.init();
 
             this._modules = [
-                this.main = this.main || serialization.setValue(new ParticleMainModule(), { enabled: true }),
-                this.emission = this.emission || serialization.setValue(new ParticleEmissionModule(), { enabled: true }),
-                this.shape = this.shape || serialization.setValue(new ParticleShapeModule(), { enabled: true }),
-                this.velocityOverLifetime = this.velocityOverLifetime || serialization.setValue(new ParticleVelocityOverLifetimeModule(), { enabled: false }),
-                this.forceOverLifetime = this.forceOverLifetime || serialization.setValue(new ParticleForceOverLifetimeModule(), { enabled: false }),
-                this.colorOverLifetime = this.colorOverLifetime || serialization.setValue(new ParticleColorOverLifetimeModule(), { enabled: false }),
-                this.sizeOverLifetime = this.sizeOverLifetime || serialization.setValue(new ParticleSizeOverLifetimeModule(), { enabled: false }),
-                this.rotationOverLifetime = this.rotationOverLifetime || serialization.setValue(new ParticleRotationOverLifetimeModule(), { enabled: false }),
+                this.main,
+                this.emission,
+                this.shape,
+                this.velocityOverLifetime,
+                this.forceOverLifetime,
+                this.colorOverLifetime,
+                this.sizeOverLifetime,
+                this.rotationOverLifetime,
+                this.textureSheetAnimation,
             ];
             this._modules.forEach(v => v.particleSystem = this);
         }

@@ -29,6 +29,15 @@ interface Array<T>
      * @param arr 用于比较的数组
      */
     equal(arr: ArrayLike<T>): boolean;
+
+    /**
+     * 使用b元素替换数组中第一个a元素。
+     * 
+     * @param a 被替换的元素
+     * @param b 用于替换的元素
+     * @param isAdd 当数组中没有找到a元素时，是否需要把b元素添加到数组尾部。默认值为true。
+     */
+    replace(a: T, b: T, isAdd?: boolean): this;
 }
 
 Array.prototype.equal = function (arr: ArrayLike<any>)
@@ -87,3 +96,21 @@ Array.prototype.delete = function (item): number
     if (index != -1) arr.splice(index, 1);
     return index;
 }
+
+Array.prototype.replace = function (a, b, isAdd = true)
+{
+    var arr: any[] = this;
+    var isreplace = false;
+    for (let i = 0; i < arr.length; i++)
+    {
+        if (arr[i] == a)
+        {
+            arr[i] = b;
+            isreplace = true;
+            break;
+        }
+    }
+    if (!isreplace && isAdd) arr.push(b);
+    return this;
+}
+

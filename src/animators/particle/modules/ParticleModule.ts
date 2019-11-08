@@ -10,7 +10,7 @@ namespace feng3d
          */
         @oav({ tooltip: "是否开启" })
         @serialize
-        enabled = true;
+        enabled = false;
 
         /**
          * 粒子系统

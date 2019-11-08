@@ -230,6 +230,14 @@ interface Array<T> {
      * @param arr 用于比较的数组
      */
     equal(arr: ArrayLike<T>): boolean;
+    /**
+     * 使用b元素替换数组中第一个a元素。
+     *
+     * @param a 被替换的元素
+     * @param b 用于替换的元素
+     * @param isAdd 当数组中没有找到a元素时，是否需要把b元素添加到数组尾部。默认值为true。
+     */
+    replace(a: T, b: T, isAdd?: boolean): this;
 }
 declare namespace feng3d {
     /**
@@ -14519,6 +14527,7 @@ declare namespace feng3d {
          */
         time: number;
         main: ParticleMainModule;
+        private _main;
         emission: ParticleEmissionModule;
         shape: ParticleShapeModule;
         velocityOverLifetime: ParticleVelocityOverLifetimeModule;
@@ -14539,6 +14548,7 @@ declare namespace feng3d {
          */
         readonly numActiveParticles: number;
         readonly single: boolean;
+        constructor();
         init(): void;
         update(interval: number): void;
         /**
@@ -15211,9 +15221,104 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * The animation type.
+     * 动画类型。
+     */
+    enum ParticleSystemAnimationType {
+        /**
+         * Animate over the whole texture sheet from left to right, top to bottom.
+         * 从左到右，从上到下动画整个纹理表。
+         */
+        WholeSheet = 0,
+        /**
+         * Animate a single row in the sheet from left to right.
+         * 从左到右移动工作表中的一行。
+         */
+        SingleRow = 1
+    }
+    /**
+     * A flag representing each UV channel.
+     * 一个代表每个紫外线频道的旗子。
+     */
+    enum UVChannelFlags {
+        /**
+         * 无通道。
+         */
+        Nothing = 0,
+        /**
+         * First UV channel.
+         * 第一UV通道。
+         */
+        UV0 = 1,
+        /**
+         * Second UV channel.
+         * 第二UV通道。
+         */
+        UV1 = 2,
+        /**
+         * Third UV channel.
+         * 第三UV通道。
+         */
+        UV2 = 4,
+        /**
+         * Fourth UV channel.
+         * 第四UV通道。
+         */
+        UV3 = 8,
+        /**
+         * All channel.
+         * 所有通道。
+         */
+        Everything = 15
+    }
+    /**
      * 粒子系统纹理表动画模块。
      */
     class ParticleTextureSheetAnimationModule extends ParticleModule {
+        /**
+         * Defines the tiling of the texture.
+         * 定义纹理的平铺。
+         */
+        tiles: Vector2;
+        /**
+         * Specifies the animation type.
+         */
+        animation: ParticleSystemAnimationType;
+        /**
+         * Curve to control which frame of the texture sheet animation to play.
+         * 曲线控制哪个帧的纹理表动画播放。
+         */
+        frameOverTime: MinMaxCurve;
+        /**
+         * Use a random row of the texture sheet for each particle emitted.
+         * 对每个发射的粒子使用纹理表的随机行。
+         */
+        useRandomRow: boolean;
+        /**
+         * Explicitly select which row of the texture sheet is used, when useRandomRow is set to false.
+         * 当useRandomRow设置为false时，显式选择使用纹理表的哪一行。
+         */
+        rowIndex: number;
+        /**
+         * Define a random starting frame for the texture sheet animation.
+         * 为纹理表动画定义一个随机的起始帧。
+         */
+        startFrame: number;
+        /**
+         * Specifies how many times the animation will loop during the lifetime of the particle.
+         * 指定在粒子的生命周期内动画将循环多少次。
+         */
+        cycleCount: number;
+        /**
+         * Flip the UV coordinate on particles, causing them to appear mirrored horizontally.
+         * 在粒子上翻转UV坐标，使它们呈现水平镜像。
+         */
+        flipUV: Vector2;
+        /**
+         * Choose which UV channels will receive texture animation.
+         * 选择哪个UV通道将接收纹理动画。
+         */
+        uvChannelMask: UVChannelFlags;
     }
 }
 declare namespace feng3d {

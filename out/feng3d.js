@@ -616,6 +616,21 @@ Array.prototype.delete = function (item) {
         arr.splice(index, 1);
     return index;
 };
+Array.prototype.replace = function (a, b, isAdd) {
+    if (isAdd === void 0) { isAdd = true; }
+    var arr = this;
+    var isreplace = false;
+    for (var i = 0; i < arr.length; i++) {
+        if (arr[i] == a) {
+            arr[i] = b;
+            isreplace = true;
+            break;
+        }
+    }
+    if (!isreplace && isAdd)
+        arr.push(b);
+    return this;
+};
 var feng3d;
 (function (feng3d) {
     /**
@@ -32896,7 +32911,7 @@ var feng3d;
     var ParticleSystem = /** @class */ (function (_super) {
         __extends(ParticleSystem, _super);
         function ParticleSystem() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.call(this) || this;
             _this.__class__ = "feng3d.ParticleSystem";
             _this._isPlaying = false;
             /**
@@ -32937,6 +32952,18 @@ var feng3d;
                 a_particle_rotation: new feng3d.Attribute("a_particle_rotation", [], 3, 1),
                 a_particle_color: new feng3d.Attribute("a_particle_color", [], 4, 1),
             };
+            _this.main = new feng3d.ParticleMainModule();
+            _this.emission = new feng3d.ParticleEmissionModule();
+            _this.shape = new feng3d.ParticleShapeModule();
+            _this.velocityOverLifetime = new feng3d.ParticleVelocityOverLifetimeModule();
+            _this.forceOverLifetime = new feng3d.ParticleForceOverLifetimeModule();
+            _this.colorOverLifetime = new feng3d.ParticleColorOverLifetimeModule();
+            _this.sizeOverLifetime = new feng3d.ParticleSizeOverLifetimeModule();
+            _this.rotationOverLifetime = new feng3d.ParticleRotationOverLifetimeModule();
+            _this.textureSheetAnimation = new feng3d.ParticleTextureSheetAnimationModule();
+            _this.main.enabled = true;
+            _this.emission.enabled = true;
+            _this.shape.enabled = true;
             return _this;
         }
         Object.defineProperty(ParticleSystem.prototype, "isPlaying", {
@@ -32945,6 +32972,22 @@ var feng3d;
              */
             get: function () {
                 return this._isPlaying;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "main", {
+            get: function () { return this._main; },
+            set: function (v) {
+                var index = this._modules.indexOf(this._main);
+                if (index != -1)
+                    this._modules.splice(index, 1);
+                this._main = v;
+                if (index != -1)
+                    this._modules.splice(index, 0, this._main);
+                else
+                    this._modules.push(this._main);
+                this._modules;
             },
             enumerable: true,
             configurable: true
@@ -32968,14 +33011,15 @@ var feng3d;
             var _this = this;
             _super.prototype.init.call(this);
             this._modules = [
-                this.main = this.main || feng3d.serialization.setValue(new feng3d.ParticleMainModule(), { enabled: true }),
-                this.emission = this.emission || feng3d.serialization.setValue(new feng3d.ParticleEmissionModule(), { enabled: true }),
-                this.shape = this.shape || feng3d.serialization.setValue(new feng3d.ParticleShapeModule(), { enabled: true }),
-                this.velocityOverLifetime = this.velocityOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleVelocityOverLifetimeModule(), { enabled: false }),
-                this.forceOverLifetime = this.forceOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleForceOverLifetimeModule(), { enabled: false }),
-                this.colorOverLifetime = this.colorOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleColorOverLifetimeModule(), { enabled: false }),
-                this.sizeOverLifetime = this.sizeOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleSizeOverLifetimeModule(), { enabled: false }),
-                this.rotationOverLifetime = this.rotationOverLifetime || feng3d.serialization.setValue(new feng3d.ParticleRotationOverLifetimeModule(), { enabled: false }),
+                this.main,
+                this.emission,
+                this.shape,
+                this.velocityOverLifetime,
+                this.forceOverLifetime,
+                this.colorOverLifetime,
+                this.sizeOverLifetime,
+                this.rotationOverLifetime,
+                this.textureSheetAnimation,
             ];
             this._modules.forEach(function (v) { return v.particleSystem = _this; });
         };
@@ -33209,7 +33253,7 @@ var feng3d;
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "main", component: "OAVObjectView" })
-        ], ParticleSystem.prototype, "main", void 0);
+        ], ParticleSystem.prototype, "main", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "emission", component: "OAVObjectView" })
@@ -33960,7 +34004,7 @@ var feng3d;
             /**
              * 是否开启
              */
-            _this.enabled = true;
+            _this.enabled = false;
             return _this;
         }
         /**
@@ -34663,13 +34707,165 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * The animation type.
+     * 动画类型。
+     */
+    var ParticleSystemAnimationType;
+    (function (ParticleSystemAnimationType) {
+        /**
+         * Animate over the whole texture sheet from left to right, top to bottom.
+         * 从左到右，从上到下动画整个纹理表。
+         */
+        ParticleSystemAnimationType[ParticleSystemAnimationType["WholeSheet"] = 0] = "WholeSheet";
+        /**
+         * Animate a single row in the sheet from left to right.
+         * 从左到右移动工作表中的一行。
+         */
+        ParticleSystemAnimationType[ParticleSystemAnimationType["SingleRow"] = 1] = "SingleRow";
+    })(ParticleSystemAnimationType = feng3d.ParticleSystemAnimationType || (feng3d.ParticleSystemAnimationType = {}));
+    /**
+     * A flag representing each UV channel.
+     * 一个代表每个紫外线频道的旗子。
+     */
+    var UVChannelFlags;
+    (function (UVChannelFlags) {
+        /**
+         * 无通道。
+         */
+        UVChannelFlags[UVChannelFlags["Nothing"] = 0] = "Nothing";
+        /**
+         * First UV channel.
+         * 第一UV通道。
+         */
+        UVChannelFlags[UVChannelFlags["UV0"] = 1] = "UV0";
+        /**
+         * Second UV channel.
+         * 第二UV通道。
+         */
+        UVChannelFlags[UVChannelFlags["UV1"] = 2] = "UV1";
+        /**
+         * Third UV channel.
+         * 第三UV通道。
+         */
+        UVChannelFlags[UVChannelFlags["UV2"] = 4] = "UV2";
+        /**
+         * Fourth UV channel.
+         * 第四UV通道。
+         */
+        UVChannelFlags[UVChannelFlags["UV3"] = 8] = "UV3";
+        /**
+         * All channel.
+         * 所有通道。
+         */
+        UVChannelFlags[UVChannelFlags["Everything"] = 15] = "Everything";
+    })(UVChannelFlags = feng3d.UVChannelFlags || (feng3d.UVChannelFlags = {}));
+    /**
      * 粒子系统纹理表动画模块。
      */
     var ParticleTextureSheetAnimationModule = /** @class */ (function (_super) {
         __extends(ParticleTextureSheetAnimationModule, _super);
         function ParticleTextureSheetAnimationModule() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * Defines the tiling of the texture.
+             * 定义纹理的平铺。
+             */
+            _this.tiles = new feng3d.Vector2(1, 1);
+            /**
+             * Specifies the animation type.
+             */
+            _this.animation = ParticleSystemAnimationType.WholeSheet;
+            /**
+             * Curve to control which frame of the texture sheet animation to play.
+             * 曲线控制哪个帧的纹理表动画播放。
+             */
+            _this.frameOverTime = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { mode: feng3d.MinMaxCurveMode.Curve, curve: { keys: [{ time: 0, value: 0, tangent: 1 }, { time: 1, value: 1, tangent: 1 }] } });
+            /**
+             * Use a random row of the texture sheet for each particle emitted.
+             * 对每个发射的粒子使用纹理表的随机行。
+             */
+            _this.useRandomRow = true;
+            /**
+             * Explicitly select which row of the texture sheet is used, when useRandomRow is set to false.
+             * 当useRandomRow设置为false时，显式选择使用纹理表的哪一行。
+             */
+            _this.rowIndex = 0;
+            /**
+             * Define a random starting frame for the texture sheet animation.
+             * 为纹理表动画定义一个随机的起始帧。
+             */
+            _this.startFrame = 0;
+            /**
+             * Specifies how many times the animation will loop during the lifetime of the particle.
+             * 指定在粒子的生命周期内动画将循环多少次。
+             */
+            _this.cycleCount = 1;
+            /**
+             * Flip the UV coordinate on particles, causing them to appear mirrored horizontally.
+             * 在粒子上翻转UV坐标，使它们呈现水平镜像。
+             */
+            _this.flipUV = new feng3d.Vector2(0, 0);
+            /**
+             * Choose which UV channels will receive texture animation.
+             * 选择哪个UV通道将接收纹理动画。
+             */
+            _this.uvChannelMask = UVChannelFlags.Everything;
+            return _this;
         }
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Defines the tiling of the texture." })
+            ,
+            feng3d.oav({ tooltip: "定义纹理的平铺。" })
+        ], ParticleTextureSheetAnimationModule.prototype, "tiles", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Specifies the animation type." })
+            ,
+            feng3d.oav({ tooltip: "指定动画类型。" })
+        ], ParticleTextureSheetAnimationModule.prototype, "animation", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Curve to control which frame of the texture sheet animation to play." })
+            ,
+            feng3d.oav({ tooltip: "曲线控制哪个帧的纹理表动画播放。" })
+        ], ParticleTextureSheetAnimationModule.prototype, "frameOverTime", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Use a random row of the texture sheet for each particle emitted." })
+            ,
+            feng3d.oav({ tooltip: "对每个发射的粒子使用纹理表的随机行。" })
+        ], ParticleTextureSheetAnimationModule.prototype, "useRandomRow", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Explicitly select which row of the texture sheet is used, when useRandomRow is set to false." })
+            ,
+            feng3d.oav({ tooltip: "当useRandomRow设置为false时，显式选择使用纹理表的哪一行。" })
+        ], ParticleTextureSheetAnimationModule.prototype, "rowIndex", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Define a random starting frame for the texture sheet animation." })
+            ,
+            feng3d.oav({ tooltip: "为纹理表动画定义一个随机的起始帧。" })
+        ], ParticleTextureSheetAnimationModule.prototype, "startFrame", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Specifies how many times the animation will loop during the lifetime of the particle." })
+            ,
+            feng3d.oav({ tooltip: "指定在粒子的生命周期内动画将循环多少次。" })
+        ], ParticleTextureSheetAnimationModule.prototype, "cycleCount", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Flip the UV coordinate on particles, causing them to appear mirrored horizontally." })
+            ,
+            feng3d.oav({ tooltip: "在粒子上翻转UV坐标，使它们呈现水平镜像。" })
+        ], ParticleTextureSheetAnimationModule.prototype, "flipUV", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Choose which UV channels will receive texture animation.", component: "OAVEnum", componentParam: { enumClass: UVChannelFlags } })
+            ,
+            feng3d.oav({ tooltip: "选择哪个UV通道将接收纹理动画。", component: "OAVEnum", componentParam: { enumClass: UVChannelFlags } })
+        ], ParticleTextureSheetAnimationModule.prototype, "uvChannelMask", void 0);
         return ParticleTextureSheetAnimationModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleTextureSheetAnimationModule = ParticleTextureSheetAnimationModule;
@@ -44229,6 +44425,8 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+console.log("feng3d-0.1.3");
+console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

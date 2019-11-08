@@ -42,4 +42,14 @@ QUnit.module("Array", () =>
         arr2.delete(arr2[Math.floor(10 * Math.random())]);
         assert.ok(arr2.length == 9);
     });
+
+    QUnit.test("replace", (assert) =>
+    {
+        var arr1 = Array(10).fill(0).map((v, i) => i);
+        arr1.replace(5, 50);
+        assert.ok(arr1[5] == 50);
+
+        arr1.replace(555, 999);
+        assert.ok(arr1[arr1.length - 1] == 999);
+    });
 });
