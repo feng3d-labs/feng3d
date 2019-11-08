@@ -19,14 +19,13 @@ namespace feng3d
          * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
          */
         @serialize
-        keys: AnimationCurveKeyframe[] = [{ time: 0, value: 1, tangent: 0 }, { time: 1, value: 1, tangent: 0 }];
+        keys: AnimationCurveKeyframe[] = [new AnimationCurveKeyframe({ time: 0, value: 1, tangent: 0 }), new AnimationCurveKeyframe({ time: 1, value: 1, tangent: 0 })];
 
         /**
          * Wrap模式
          */
         @serialize
         wrapMode = AnimationCurveWrapMode.Clamp;
-
 
         /**
          * 关键点数量
@@ -92,7 +91,7 @@ namespace feng3d
          * 获取曲线上点信息
          * @param t 时间轴的位置 [0,1]
          */
-        getPoint(t: number): AnimationCurveKeyframe
+        getPoint(t: number)
         {
             switch (this.wrapMode)
             {
@@ -157,10 +156,10 @@ namespace feng3d
                 }
             }
 
-            if (keys.length == 0) return { time: t, value: 0, tangent: 0 };
+            if (keys.length == 0) return new AnimationCurveKeyframe({ time: t, value: 0, tangent: 0 });
 
             debuger && console.assert(isfind);
-            return { time: t, value: value, tangent: tangent };
+            return new AnimationCurveKeyframe({ time: t, value: value, tangent: tangent });
         }
 
         /**

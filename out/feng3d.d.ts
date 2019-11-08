@@ -7109,7 +7109,7 @@ declare namespace feng3d {
     /**
      * 动画关键帧
      */
-    interface AnimationCurveKeyframe {
+    class AnimationCurveKeyframe {
         /**
          * 时间轴的位置 [0,1]
          */
@@ -7122,6 +7122,7 @@ declare namespace feng3d {
          * 斜率
          */
         tangent: number;
+        constructor(v: gPartial<AnimationCurveKeyframe>);
     }
 }
 declare namespace feng3d {

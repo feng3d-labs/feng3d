@@ -15484,6 +15484,29 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 动画关键帧
+     */
+    var AnimationCurveKeyframe = /** @class */ (function () {
+        function AnimationCurveKeyframe(v) {
+            feng3d.serialization.setValue(this, v);
+            return this;
+        }
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurveKeyframe.prototype, "time", void 0);
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurveKeyframe.prototype, "value", void 0);
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurveKeyframe.prototype, "tangent", void 0);
+        return AnimationCurveKeyframe;
+    }());
+    feng3d.AnimationCurveKeyframe = AnimationCurveKeyframe;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 动画曲线Wrap模式，处理超出范围情况
      */
     var AnimationCurveWrapMode;
@@ -15520,7 +15543,7 @@ var feng3d;
              *
              * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
              */
-            this.keys = [{ time: 0, value: 1, tangent: 0 }, { time: 1, value: 1, tangent: 0 }];
+            this.keys = [new feng3d.AnimationCurveKeyframe({ time: 0, value: 1, tangent: 0 }), new feng3d.AnimationCurveKeyframe({ time: 1, value: 1, tangent: 0 })];
             /**
              * Wrap模式
              */
@@ -15641,9 +15664,9 @@ var feng3d;
                 }
             }
             if (keys.length == 0)
-                return { time: t, value: 0, tangent: 0 };
+                return new feng3d.AnimationCurveKeyframe({ time: t, value: 0, tangent: 0 });
             feng3d.debuger && console.assert(isfind);
-            return { time: t, value: value, tangent: tangent };
+            return new feng3d.AnimationCurveKeyframe({ time: t, value: value, tangent: tangent });
         };
         /**
          * 获取值
@@ -44563,6 +44586,7 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {
