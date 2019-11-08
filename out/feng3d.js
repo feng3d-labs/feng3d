@@ -33085,11 +33085,6 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        ParticleSystem.prototype.init = function () {
-            var _this = this;
-            _super.prototype.init.call(this);
-            this._modules.forEach(function (v) { return v.particleSystem = _this; });
-        };
         ParticleSystem.prototype.update = function (interval) {
             if (!this.isPlaying)
                 return;
@@ -44493,6 +44488,7 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

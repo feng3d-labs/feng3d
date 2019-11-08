@@ -14557,7 +14557,6 @@ declare namespace feng3d {
         readonly numActiveParticles: number;
         readonly single: boolean;
         constructor();
-        init(): void;
         update(interval: number): void;
         /**
          * 停止

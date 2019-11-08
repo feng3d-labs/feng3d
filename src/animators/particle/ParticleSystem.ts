@@ -176,13 +176,6 @@ namespace feng3d
             this.shape.enabled = true;
         }
 
-        init()
-        {
-            super.init();
-
-            this._modules.forEach(v => v.particleSystem = this);
-        }
-
         update(interval: number)
         {
             if (!this.isPlaying) return;
