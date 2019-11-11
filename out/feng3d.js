@@ -32825,10 +32825,6 @@ var feng3d;
              */
             this.size = new feng3d.Vector3(1, 1, 1);
             /**
-             * 起始尺寸
-             */
-            this.startSize = new feng3d.Vector3(1, 1, 1);
-            /**
              * 颜色
              */
             this.color = new feng3d.Color4();
@@ -34289,11 +34285,11 @@ var feng3d;
             particle.velocity.init(0, 0, this.startSpeed.getValue(rateAtDuration));
             particle.acceleration.init(0, 0, 0);
             if (this.useStartSize3D) {
-                particle.startSize.copy(this.startSize3D.getValue(rateAtDuration));
+                particle.size.copy(this.startSize3D.getValue(rateAtDuration));
             }
             else {
                 var startSize = this.startSize.getValue(rateAtDuration);
-                particle.startSize.init(startSize, startSize, startSize);
+                particle.size.init(startSize, startSize, startSize);
             }
             //
             if (this.useStartRotation3D) {
@@ -34319,8 +34315,6 @@ var feng3d;
             //
             particle.acceleration.sub(preGravity).add(gravity);
             preGravity.copy(gravity);
-            //
-            particle.size.copy(particle.startSize);
             //
             particle.color.copy(particle.startColor);
         };
@@ -34668,7 +34662,13 @@ var feng3d;
             }
             //
             particle.velocity.sub(preVelocity).add(velocity);
-            preVelocity.copy(velocity);
+            if (this.enabled) {
+                particle.velocity.sub(preVelocity).add(velocity);
+                preVelocity.copy(velocity);
+            }
+            else {
+                preVelocity.init(0, 0, 0);
+            }
         };
         __decorate([
             feng3d.serialize
@@ -34902,18 +34902,21 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleSizeOverLifetimeModule.prototype.initParticleState = function (particle) {
-            particle[rateSizeOverLifetime] = Math.random();
+            particle[_SizeOverLifetime_rate] = Math.random();
+            particle[_SizeOverLifetime_size] = new feng3d.Vector3();
         };
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
         ParticleSizeOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
-            var size = this.size.getValue(rateAtLifeTime, particle[rateSizeOverLifetime]);
+            var preSize = particle[_SizeOverLifetime_size];
+            var size = this.size.getValue(rateAtLifeTime, particle[_SizeOverLifetime_rate]);
             if (!this.separateAxes) {
                 size.y = size.z = size.x;
             }
-            particle.size.multiply(size);
+            particle.size.divide(preSize).multiply(size);
+            preSize.copy(size);
         };
         __decorate([
             feng3d.serialize
@@ -34930,7 +34933,8 @@ var feng3d;
         return ParticleSizeOverLifetimeModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleSizeOverLifetimeModule = ParticleSizeOverLifetimeModule;
-    var rateSizeOverLifetime = "_rateSizeOverLifetime";
+    var _SizeOverLifetime_rate = "_SizeOverLifetime_rate";
+    var _SizeOverLifetime_size = "_SizeOverLifetime_size";
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -44754,6 +44758,7 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

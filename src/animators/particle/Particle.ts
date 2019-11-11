@@ -42,11 +42,6 @@ namespace feng3d
 		size = new Vector3(1, 1, 1);
 
 		/**
-		 * 起始尺寸
-		 */
-		startSize = new Vector3(1, 1, 1);
-
-		/**
 		 * 颜色
 		 */
 		color = new Color4();

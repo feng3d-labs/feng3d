@@ -14467,10 +14467,6 @@ declare namespace feng3d {
          */
         size: Vector3;
         /**
-         * 起始尺寸
-         */
-        startSize: Vector3;
-        /**
          * 颜色
          */
         color: Color4;

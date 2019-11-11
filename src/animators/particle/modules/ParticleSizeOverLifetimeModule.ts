@@ -30,7 +30,8 @@ namespace feng3d
          */
         initParticleState(particle: Particle)
         {
-            particle[rateSizeOverLifetime] = Math.random();
+            particle[_SizeOverLifetime_rate] = Math.random();
+            particle[_SizeOverLifetime_size] = new Vector3();
         }
 
         /**
@@ -39,14 +40,17 @@ namespace feng3d
          */
         updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
-            var size = this.size.getValue(rateAtLifeTime, particle[rateSizeOverLifetime]);
+            var preSize: Vector3 = particle[_SizeOverLifetime_size];
+            var size = this.size.getValue(rateAtLifeTime, particle[_SizeOverLifetime_rate]);
             if (!this.separateAxes)
             {
                 size.y = size.z = size.x;
             }
-            particle.size.multiply(size);
+            particle.size.divide(preSize).multiply(size);
+            preSize.copy(size);
         }
     }
 
-    var rateSizeOverLifetime = "_rateSizeOverLifetime";
+    var _SizeOverLifetime_rate = "_SizeOverLifetime_rate";
+    var _SizeOverLifetime_size = "_SizeOverLifetime_size";
 }

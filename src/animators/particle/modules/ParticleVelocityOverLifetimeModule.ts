@@ -51,7 +51,14 @@ namespace feng3d
 
             //
             particle.velocity.sub(preVelocity).add(velocity);
-            preVelocity.copy(velocity);
+            if (this.enabled)
+            {
+                particle.velocity.sub(preVelocity).add(velocity);
+                preVelocity.copy(velocity);
+            } else
+            {
+                preVelocity.init(0, 0, 0);
+            }
         }
     }
 
