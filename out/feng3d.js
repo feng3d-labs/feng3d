@@ -33071,6 +33071,16 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ParticleSystem.prototype, "limitVelocityOverLifetime", {
+            get: function () { return this._limitVelocityOverLifetime; },
+            set: function (v) {
+                this._modules.replace(this._limitVelocityOverLifetime, v);
+                v.particleSystem = this;
+                this._limitVelocityOverLifetime = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ParticleSystem.prototype, "forceOverLifetime", {
             get: function () { return this._forceOverLifetime; },
             set: function (v) {
@@ -33389,6 +33399,12 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ block: "velocityOverLifetime", component: "OAVObjectView" })
         ], ParticleSystem.prototype, "velocityOverLifetime", null);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "limit velocity over lifetime module.", block: "limitVelocityOverLifetime", component: "OAVObjectView" })
+            ,
+            feng3d.oav({ tooltip: "基于时间轴限制速度模块。", block: "limitVelocityOverLifetime", component: "OAVObjectView" })
+        ], ParticleSystem.prototype, "limitVelocityOverLifetime", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "forceOverLifetime", component: "OAVObjectView" })
@@ -34639,6 +34655,27 @@ var feng3d;
         return ParticleVelocityOverLifetimeModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleVelocityOverLifetimeModule = ParticleVelocityOverLifetimeModule;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Limit Velocity Over Lifetime module.
+     * 基于时间轴限制速度模块。
+     */
+    var ParticleLimitVelocityOverLifetimeModule = /** @class */ (function (_super) {
+        __extends(ParticleLimitVelocityOverLifetimeModule, _super);
+        function ParticleLimitVelocityOverLifetimeModule() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticleLimitVelocityOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
+        };
+        return ParticleLimitVelocityOverLifetimeModule;
+    }(feng3d.ParticleModule));
+    feng3d.ParticleLimitVelocityOverLifetimeModule = ParticleLimitVelocityOverLifetimeModule;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -44587,6 +44624,9 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+console.log("feng3d-0.1.3");
+console.log("feng3d-0.1.3");
+console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

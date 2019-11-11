@@ -76,6 +76,18 @@ namespace feng3d
         private _velocityOverLifetime: ParticleVelocityOverLifetimeModule;
 
         @serialize
+        // @oav({ tooltip: "limit velocity over lifetime module.", block: "limitVelocityOverLifetime", component: "OAVObjectView" })
+        @oav({ tooltip: "基于时间轴限制速度模块。", block: "limitVelocityOverLifetime", component: "OAVObjectView" })
+        get limitVelocityOverLifetime() { return this._limitVelocityOverLifetime; }
+        set limitVelocityOverLifetime(v)
+        {
+            this._modules.replace(this._limitVelocityOverLifetime, v);
+            v.particleSystem = this;
+            this._limitVelocityOverLifetime = v;
+        }
+        private _limitVelocityOverLifetime: ParticleLimitVelocityOverLifetimeModule;
+
+        @serialize
         @oav({ block: "forceOverLifetime", component: "OAVObjectView" })
         get forceOverLifetime() { return this._forceOverLifetime; }
         set forceOverLifetime(v)

@@ -14570,6 +14570,8 @@ declare namespace feng3d {
         private _shape;
         velocityOverLifetime: ParticleVelocityOverLifetimeModule;
         private _velocityOverLifetime;
+        limitVelocityOverLifetime: ParticleLimitVelocityOverLifetimeModule;
+        private _limitVelocityOverLifetime;
         forceOverLifetime: ParticleForceOverLifetimeModule;
         private _forceOverLifetime;
         colorOverLifetime: ParticleColorOverLifetimeModule;
@@ -15169,6 +15171,19 @@ declare namespace feng3d {
     class ParticleVelocityOverLifetimeModule extends ParticleModule {
         velocity: MinMaxCurveVector3;
         space: ParticleSystemSimulationSpace1;
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * Limit Velocity Over Lifetime module.
+     * 基于时间轴限制速度模块。
+     */
+    class ParticleLimitVelocityOverLifetimeModule extends ParticleModule {
         /**
          * 更新粒子状态
          * @param particle 粒子
