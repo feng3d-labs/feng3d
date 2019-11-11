@@ -15,12 +15,23 @@ namespace feng3d
         color = new MinMaxGradient();
 
         /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle)
+        {
+            particle[rateColorOverLifetime] = Math.random();
+        }
+
+        /**
          * 更新粒子状态
          * @param particle 粒子
          */
         updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
-            particle.color.multiply(this.color.getValue(rateAtLifeTime));
+            particle.color.multiply(this.color.getValue(rateAtLifeTime, particle[rateColorOverLifetime]));
         }
     }
+
+    var rateColorOverLifetime = "_rateColorOverLifetime";
 }

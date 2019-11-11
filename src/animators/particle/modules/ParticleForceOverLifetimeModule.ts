@@ -35,13 +35,22 @@ namespace feng3d
         private _currentForce = new Vector3();
 
         /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle)
+        {
+            particle[rateForceOverLifetime] = Math.random();
+        }
+
+        /**
          * 更新粒子状态
          * @param particle 粒子
          */
         updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
             //
-            this._currentForce.copy(this.force.getValue(rateAtLifeTime));
+            this._currentForce.copy(this.force.getValue(rateAtLifeTime, particle[rateForceOverLifetime]));
 
             if (this.space == ParticleSystemSimulationSpace1.World)
             {
@@ -56,4 +65,5 @@ namespace feng3d
             this._preForce = this._currentForce.clone();
         }
     }
+    var rateForceOverLifetime = "_rateForceOverLifetime";
 }

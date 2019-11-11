@@ -25,12 +25,21 @@ namespace feng3d
         size = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { constant: 1, constant1: 1, curveMultiplier: 1 }, yCurve: { constant: 1, constant1: 1, curveMultiplier: 1 }, zCurve: { constant: 1, constant1: 1, curveMultiplier: 1 } });
 
         /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle)
+        {
+            particle[rateSizeOverLifetime] = Math.random();
+        }
+
+        /**
          * 更新粒子状态
          * @param particle 粒子
          */
         updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
-            var size = this.size.getValue(rateAtLifeTime);
+            var size = this.size.getValue(rateAtLifeTime, particle[rateSizeOverLifetime]);
             if (!this.separateAxes)
             {
                 size.y = size.z = size.x;
@@ -38,4 +47,6 @@ namespace feng3d
             particle.size.multiply(size);
         }
     }
+
+    var rateSizeOverLifetime = "_rateSizeOverLifetime";
 }

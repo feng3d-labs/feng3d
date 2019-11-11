@@ -51,7 +51,7 @@ namespace feng3d
          * 获取值
          * @param time 时间
          */
-        getValue(time: number)
+        getValue(time: number, randomBetween: number = Math.random())
         {
             switch (this.mode)
             {
@@ -60,9 +60,9 @@ namespace feng3d
                 case MinMaxCurveMode.Curve:
                     return this.curve.getValue(time) * this.curveMultiplier;
                 case MinMaxCurveMode.RandomBetweenTwoConstants:
-                    return Math.lerp(this.constant, this.constant1, Math.random());
+                    return Math.lerp(this.constant, this.constant1, randomBetween);
                 case MinMaxCurveMode.RandomBetweenTwoCurves:
-                    return Math.lerp(this.curve.getValue(time), this.curve1.getValue(time), Math.random()) * this.curveMultiplier;
+                    return Math.lerp(this.curve.getValue(time), this.curve1.getValue(time), randomBetween) * this.curveMultiplier;
             }
 
             return this.constant;

@@ -18,12 +18,21 @@ namespace feng3d
         space = ParticleSystemSimulationSpace1.Local;
 
         /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle)
+        {
+            particle[rateVelocityOverLifetime] = Math.random();
+        }
+
+        /**
          * 更新粒子状态
          * @param particle 粒子
          */
         updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
-            var velocity = this.velocity.getValue(rateAtLifeTime);
+            var velocity = this.velocity.getValue(rateAtLifeTime, particle[rateVelocityOverLifetime]);
 
             if (this.space == ParticleSystemSimulationSpace1.World)
             {
@@ -36,4 +45,6 @@ namespace feng3d
             particle.position.z += velocity.z * (time - preTime);
         }
     }
+
+    var rateVelocityOverLifetime = "_rateVelocityOverLifetime";
 }

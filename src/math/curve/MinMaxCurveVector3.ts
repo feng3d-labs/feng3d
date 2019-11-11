@@ -24,9 +24,9 @@ namespace feng3d
          * 获取值
          * @param time 时间
          */
-        getValue(time: number)
+        getValue(time: number, randomBetween: number = Math.random())
         {
-            return new Vector3(this.xCurve.getValue(time), this.yCurve.getValue(time), this.zCurve.getValue(time));
+            return new Vector3(this.xCurve.getValue(time, randomBetween), this.yCurve.getValue(time, randomBetween), this.zCurve.getValue(time, randomBetween));
         }
     }
 }

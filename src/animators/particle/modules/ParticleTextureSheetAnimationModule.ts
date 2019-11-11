@@ -148,6 +148,15 @@ namespace feng3d
         uvChannelMask = UVChannelFlags.Everything;
 
         /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle)
+        {
+            particle[rateTextureSheetAnimation] = Math.random();
+        }
+
+        /**
          * 更新粒子状态
          * @param particle 粒子
          */
@@ -158,7 +167,7 @@ namespace feng3d
             var step = this.tiles.clone().reciprocal();
             var total = segmentsX * segmentsY;
             var uvPos = new Vector2();
-            var frameOverTime = this.frameOverTime.getValue(rateAtLifeTime);
+            var frameOverTime = this.frameOverTime.getValue(rateAtLifeTime, particle[rateTextureSheetAnimation]);
             var frameIndex = this.startFrame;
             var rowIndex = this.rowIndex;
             var cycleCount = this.cycleCount;
@@ -183,4 +192,6 @@ namespace feng3d
         }
 
     }
+
+    var rateTextureSheetAnimation = "_rateTextureSheetAnimation";
 }

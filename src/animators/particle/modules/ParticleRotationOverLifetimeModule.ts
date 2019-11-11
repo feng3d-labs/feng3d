@@ -22,12 +22,21 @@ namespace feng3d
         angularVelocity = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { constant: 45, constant1: 45, curveMultiplier: 45 }, yCurve: { constant: 45, constant1: 45, curveMultiplier: 45 }, zCurve: { constant: 45, constant1: 45, curveMultiplier: 45 } });
 
         /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle)
+        {
+            particle[rateRotationOverLifetime] = Math.random();
+        }
+
+        /**
          * 更新粒子状态
          * @param particle 粒子
          */
         updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
-            var v = this.angularVelocity.getValue(rateAtLifeTime);
+            var v = this.angularVelocity.getValue(rateAtLifeTime, particle[rateRotationOverLifetime]);
             if (!this.separateAxes)
             {
                 v.x = v.y = 0;
@@ -37,4 +46,5 @@ namespace feng3d
             particle.rotation.z += v.z * (time - preTime);
         }
     }
+    var rateRotationOverLifetime = "_rateRotationOverLifetime";
 }

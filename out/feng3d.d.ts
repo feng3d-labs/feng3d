@@ -6842,7 +6842,7 @@ declare namespace feng3d {
          * 获取值
          * @param time 时间
          */
-        getValue(time: number): Color4;
+        getValue(time: number, randomBetween?: number): Color4;
     }
 }
 declare namespace feng3d {
@@ -7295,7 +7295,7 @@ declare namespace feng3d {
          * 获取值
          * @param time 时间
          */
-        getValue(time: number): number;
+        getValue(time: number, randomBetween?: number): number;
     }
 }
 declare namespace feng3d {
@@ -7316,7 +7316,7 @@ declare namespace feng3d {
          * 获取值
          * @param time 时间
          */
-        getValue(time: number): Vector3;
+        getValue(time: number, randomBetween?: number): Vector3;
     }
 }
 declare namespace feng3d {
@@ -15172,6 +15172,11 @@ declare namespace feng3d {
         velocity: MinMaxCurveVector3;
         space: ParticleSystemSimulationSpace1;
         /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
+        /**
          * 更新粒子状态
          * @param particle 粒子
          */
@@ -15211,6 +15216,11 @@ declare namespace feng3d {
         private _preForce;
         private _currentForce;
         /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
+        /**
          * 更新粒子状态
          * @param particle 粒子
          */
@@ -15227,6 +15237,11 @@ declare namespace feng3d {
          * 控制粒子颜色的梯度。
          */
         color: MinMaxGradient;
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
         /**
          * 更新粒子状态
          * @param particle 粒子
@@ -15250,6 +15265,11 @@ declare namespace feng3d {
          */
         size: MinMaxCurveVector3;
         /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
+        /**
          * 更新粒子状态
          * @param particle 粒子
          */
@@ -15270,6 +15290,11 @@ declare namespace feng3d {
          * 角速度，基于生命周期的旋转。
          */
         angularVelocity: MinMaxCurveVector3;
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
         /**
          * 更新粒子状态
          * @param particle 粒子
@@ -15380,6 +15405,11 @@ declare namespace feng3d {
          * todo 目前引擎中只有一套UV
          */
         uvChannelMask: UVChannelFlags;
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
         /**
          * 更新粒子状态
          * @param particle 粒子
