@@ -38,7 +38,7 @@ namespace feng3d
         @serialize
         // @oav({ tooltip: "The total lifetime in seconds that each new particle will have." })
         @oav({ tooltip: "每个新粒子的总寿命(以秒计)。" })
-        startLifetime = serialization.setValue(new MinMaxCurve(), { constant: 5, constant1: 5 });
+        startLifetime = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 5, constant1: 5 });
 
         /**
          * 粒子发射时的初始速度。
@@ -59,7 +59,7 @@ namespace feng3d
         @serialize
         // @oav({ tooltip: "The initial size of particles when emitted." })
         @oav({ tooltip: "发射时粒子的初始大小。" })
-        startSize3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { constant: 1, constant1: 1 }, yCurve: { constant: 1, constant1: 1 }, zCurve: { constant: 1, constant1: 1 } });
+        startSize3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
 
         @serialize
         // @oav({ tooltip: "The initial size of particles when emitted." })

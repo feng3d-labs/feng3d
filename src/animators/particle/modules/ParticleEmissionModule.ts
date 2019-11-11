@@ -11,7 +11,7 @@ namespace feng3d
         @serialize
         // @oav({ tooltip: "The rate at which new particles are spawned, over time." })
         @oav({ tooltip: "随着时间的推移，新粒子产生的速度。" })
-        rateOverTime = serialization.setValue(new MinMaxCurve(), { constant: 10, constant1: 10 });
+        rateOverTime = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 10, constant1: 10 });
 
         // /**
         //  * 产生新粒子的速度，通过距离。

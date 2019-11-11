@@ -15794,6 +15794,10 @@ var feng3d;
              * 曲线缩放比
              */
             this.curveMultiplier = 1;
+            /**
+             * 是否在编辑器中只显示Y轴 0-1 区域，例如 lifetime 为非负，需要设置为true
+             */
+            this.between0And1 = false;
         }
         /**
          * 获取值
@@ -15831,6 +15835,9 @@ var feng3d;
         __decorate([
             feng3d.serialize
         ], MinMaxCurve.prototype, "curveMultiplier", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurve.prototype, "between0And1", void 0);
         return MinMaxCurve;
     }());
     feng3d.MinMaxCurve = MinMaxCurve;
@@ -34187,7 +34194,7 @@ var feng3d;
             /**
              * 每个新粒子的总寿命(以秒计)。
              */
-            _this.startLifetime = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 5, constant1: 5 });
+            _this.startLifetime = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constant: 5, constant1: 5 });
             /**
              * 粒子发射时的初始速度。
              */
@@ -34196,7 +34203,7 @@ var feng3d;
             /**
              * 发射时粒子的初始大小。
              */
-            _this.startSize3D = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { constant: 1, constant1: 1 }, yCurve: { constant: 1, constant1: 1 }, zCurve: { constant: 1, constant1: 1 } });
+            _this.startSize3D = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
             _this.useStartRotation3D = false;
             /**
              * 粒子发射时的初始旋转。
@@ -34440,7 +34447,7 @@ var feng3d;
             /**
              * 随着时间的推移，新粒子产生的速度。
              */
-            _this.rateOverTime = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 10, constant1: 10 });
+            _this.rateOverTime = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constant: 10, constant1: 10 });
             // /**
             //  * 产生新粒子的速度，通过距离。
             //  */
