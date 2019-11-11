@@ -27,6 +27,11 @@ namespace feng3d
 		velocity = new Vector3();
 
 		/**
+		 * 加速度
+		 */
+		acceleration = new Vector3();
+
+		/**
 		 * 旋转角度
 		 */
 		rotation = new Vector3();
@@ -75,6 +80,9 @@ namespace feng3d
 			time = Math.max(this.birthTime, time);
 
 			var pTime = time - preTime;
+
+			// 计算速度
+			this.velocity.add(this.acceleration.scaleNumberTo(pTime));
 
 			// 计算位置
 			this.position.x += this.velocity.x * pTime;

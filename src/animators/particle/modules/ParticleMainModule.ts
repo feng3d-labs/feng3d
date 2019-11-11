@@ -176,12 +176,15 @@ namespace feng3d
          */
         initParticleState(particle: Particle)
         {
+            particle[_Main_preGravity] = new Vector3();
+
             var rateAtDuration = ((particle.birthTime - this.startDelay) % this.duration) / this.duration;
             //
             particle.birthRateAtDuration = rateAtDuration;
 
             particle.position.init(0, 0, 0);
             particle.velocity.init(0, 0, this.startSpeed.getValue(rateAtDuration));
+            particle.acceleration.init(0, 0, 0);
             if (this.useStartSize3D)
             {
                 particle.startSize.copy(this.startSize3D.getValue(rateAtDuration));
@@ -210,21 +213,23 @@ namespace feng3d
          */
         updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
+            var preGravity: Vector3 = particle[_Main_preGravity];
             // 计算重力加速度影响速度
-            var globalAcceleration = new Vector3(0, -this.gravityModifier.getValue(this.rateAtDuration) * 9.8, 0);
-
+            var gravity = new Vector3(0, -this.gravityModifier.getValue(this.rateAtDuration) * 9.8, 0);
             // 本地加速度
-            var localAcceleration = this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(globalAcceleration);
-
+            this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(gravity, gravity);
             //
-            particle.velocity.x += localAcceleration.x * (time - preTime);
-            particle.velocity.y += localAcceleration.y * (time - preTime);
-            particle.velocity.z += localAcceleration.z * (time - preTime);
+            particle.acceleration.sub(preGravity).add(gravity);
+            preGravity.copy(gravity);
+
 
             //
             particle.size.copy(particle.startSize);
             //
             particle.color.copy(particle.startColor);
+
         }
     }
+
+    var _Main_preGravity = "_Main_preGravity";
 }

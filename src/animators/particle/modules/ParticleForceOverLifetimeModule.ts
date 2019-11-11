@@ -31,16 +31,13 @@ namespace feng3d
         // @oav({ tooltip: "当在两条曲线或常数之间随机选择值时，此标志将导致在每一帧上选择一个新的随机力。" })
         // randomized = false;
 
-        private _preForce = new Vector3();
-        private _currentForce = new Vector3();
-
         /**
          * 初始化粒子状态
          * @param particle 粒子
          */
         initParticleState(particle: Particle)
         {
-            particle[rateForceOverLifetime] = Math.random();
+            particle[_ForceOverLifetime_rate] = Math.random();
         }
 
         /**
@@ -49,21 +46,19 @@ namespace feng3d
          */
         updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
-            //
-            this._currentForce.copy(this.force.getValue(rateAtLifeTime, particle[rateForceOverLifetime]));
+            var preForce: Vector3 = particle[_ForceOverLifetime_preForce];
+            var force = this.force.getValue(rateAtLifeTime, particle[_ForceOverLifetime_rate]);
 
             if (this.space == ParticleSystemSimulationSpace1.World)
             {
-                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(this._currentForce, this._currentForce);
+                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(force, force);
             }
 
-            //
-            particle.velocity.x += (this._currentForce.x + this._preForce.x) * 0.5 * (time - preTime);
-            particle.velocity.y += (this._currentForce.y + this._preForce.y) * 0.5 * (time - preTime);
-            particle.velocity.z += (this._currentForce.z + this._preForce.z) * 0.5 * (time - preTime);
+            particle.acceleration.sub(preForce).add(force);
 
-            this._preForce = this._currentForce.clone();
+            preForce.copy(force);
         }
     }
-    var rateForceOverLifetime = "_rateForceOverLifetime";
+    var _ForceOverLifetime_rate = "_ForceOverLifetime_rate";
+    var _ForceOverLifetime_preForce = "_ForceOverLifetime_preVelocity";
 }

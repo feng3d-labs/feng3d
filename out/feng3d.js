@@ -32813,6 +32813,10 @@ var feng3d;
              */
             this.velocity = new feng3d.Vector3();
             /**
+             * 加速度
+             */
+            this.acceleration = new feng3d.Vector3();
+            /**
              * 旋转角度
              */
             this.rotation = new feng3d.Vector3();
@@ -32848,6 +32852,8 @@ var feng3d;
             preTime = Math.max(preTime, this.birthTime);
             time = Math.max(this.birthTime, time);
             var pTime = time - preTime;
+            // 计算速度
+            this.velocity.add(this.acceleration.scaleNumberTo(pTime));
             // 计算位置
             this.position.x += this.velocity.x * pTime;
             this.position.y += this.velocity.y * pTime;
@@ -34275,11 +34281,13 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleMainModule.prototype.initParticleState = function (particle) {
+            particle[_Main_preGravity] = new feng3d.Vector3();
             var rateAtDuration = ((particle.birthTime - this.startDelay) % this.duration) / this.duration;
             //
             particle.birthRateAtDuration = rateAtDuration;
             particle.position.init(0, 0, 0);
             particle.velocity.init(0, 0, this.startSpeed.getValue(rateAtDuration));
+            particle.acceleration.init(0, 0, 0);
             if (this.useStartSize3D) {
                 particle.startSize.copy(this.startSize3D.getValue(rateAtDuration));
             }
@@ -34303,14 +34311,14 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleMainModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
+            var preGravity = particle[_Main_preGravity];
             // 计算重力加速度影响速度
-            var globalAcceleration = new feng3d.Vector3(0, -this.gravityModifier.getValue(this.rateAtDuration) * 9.8, 0);
+            var gravity = new feng3d.Vector3(0, -this.gravityModifier.getValue(this.rateAtDuration) * 9.8, 0);
             // 本地加速度
-            var localAcceleration = this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(globalAcceleration);
+            this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(gravity, gravity);
             //
-            particle.velocity.x += localAcceleration.x * (time - preTime);
-            particle.velocity.y += localAcceleration.y * (time - preTime);
-            particle.velocity.z += localAcceleration.z * (time - preTime);
+            particle.acceleration.sub(preGravity).add(gravity);
+            preGravity.copy(gravity);
             //
             particle.size.copy(particle.startSize);
             //
@@ -34435,6 +34443,7 @@ var feng3d;
         return ParticleMainModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleMainModule = ParticleMainModule;
+    var _Main_preGravity = "_Main_preGravity";
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -34784,39 +34793,34 @@ var feng3d;
              */
             // @oav({ tooltip: "Are the forces being applied in local or world space?", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
             _this.space = feng3d.ParticleSystemSimulationSpace1.Local;
-            // /**
-            //  * When randomly selecting values between two curves or constants, this flag will cause a new random force to be chosen on each frame.
-            //  * 当在两条曲线或常数之间随机选择值时，此标志将导致在每一帧上选择一个新的随机力。
-            //  */
-            // // @oav({ tooltip: "When randomly selecting values between two curves or constants, this flag will cause a new random force to be chosen on each frame." })
-            // @oav({ tooltip: "当在两条曲线或常数之间随机选择值时，此标志将导致在每一帧上选择一个新的随机力。" })
-            // randomized = false;
-            _this._preForce = new feng3d.Vector3();
-            _this._currentForce = new feng3d.Vector3();
             return _this;
         }
+        // /**
+        //  * When randomly selecting values between two curves or constants, this flag will cause a new random force to be chosen on each frame.
+        //  * 当在两条曲线或常数之间随机选择值时，此标志将导致在每一帧上选择一个新的随机力。
+        //  */
+        // // @oav({ tooltip: "When randomly selecting values between two curves or constants, this flag will cause a new random force to be chosen on each frame." })
+        // @oav({ tooltip: "当在两条曲线或常数之间随机选择值时，此标志将导致在每一帧上选择一个新的随机力。" })
+        // randomized = false;
         /**
          * 初始化粒子状态
          * @param particle 粒子
          */
         ParticleForceOverLifetimeModule.prototype.initParticleState = function (particle) {
-            particle[rateForceOverLifetime] = Math.random();
+            particle[_ForceOverLifetime_rate] = Math.random();
         };
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
         ParticleForceOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
-            //
-            this._currentForce.copy(this.force.getValue(rateAtLifeTime, particle[rateForceOverLifetime]));
+            var preForce = particle[_ForceOverLifetime_preForce];
+            var force = this.force.getValue(rateAtLifeTime, particle[_ForceOverLifetime_rate]);
             if (this.space == feng3d.ParticleSystemSimulationSpace1.World) {
-                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(this._currentForce, this._currentForce);
+                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(force, force);
             }
-            //
-            particle.velocity.x += (this._currentForce.x + this._preForce.x) * 0.5 * (time - preTime);
-            particle.velocity.y += (this._currentForce.y + this._preForce.y) * 0.5 * (time - preTime);
-            particle.velocity.z += (this._currentForce.z + this._preForce.z) * 0.5 * (time - preTime);
-            this._preForce = this._currentForce.clone();
+            particle.acceleration.sub(preForce).add(force);
+            preForce.copy(force);
         };
         __decorate([
             feng3d.serialize,
@@ -34828,7 +34832,8 @@ var feng3d;
         return ParticleForceOverLifetimeModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleForceOverLifetimeModule = ParticleForceOverLifetimeModule;
-    var rateForceOverLifetime = "_rateForceOverLifetime";
+    var _ForceOverLifetime_rate = "_ForceOverLifetime_rate";
+    var _ForceOverLifetime_preForce = "_ForceOverLifetime_preVelocity";
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -44749,7 +44754,6 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

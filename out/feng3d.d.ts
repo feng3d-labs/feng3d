@@ -14455,6 +14455,10 @@ declare namespace feng3d {
          */
         velocity: Vector3;
         /**
+         * 加速度
+         */
+        acceleration: Vector3;
+        /**
          * 旋转角度
          */
         rotation: Vector3;
@@ -15237,8 +15241,6 @@ declare namespace feng3d {
          * 这些力是作用于局部空间还是世界空间
          */
         space: ParticleSystemSimulationSpace1;
-        private _preForce;
-        private _currentForce;
         /**
          * 初始化粒子状态
          * @param particle 粒子
