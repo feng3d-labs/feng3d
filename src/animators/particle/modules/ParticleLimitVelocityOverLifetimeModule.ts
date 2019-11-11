@@ -6,13 +6,36 @@ namespace feng3d
      */
     export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
     {
-
         /**
-         * 作用在粒子上的力
+         * Set the size over lifetime on each axis separately.
+         * 在每个轴上分别设置生命周期内的大小。
          */
         @serialize
-        @oav()
-        limit = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { constant: 1, constant1: 1 }, yCurve: { constant: 1, constant1: 1 }, zCurve: { constant: 1, constant1: 1 } });
+        // @oav({ tooltip: "Set the size over lifetime on each axis separately." })
+        @oav({ tooltip: "在每个轴上分别设置生命周期内的大小。" })
+        separateAxes = false;
+
+        /**
+         * Maximum velocity.
+         * 最高速度。
+         */
+        @serialize
+        // @oav({ tooltip: "Maximum velocity." })
+        @oav({ tooltip: "最高速度。" })
+        limit = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
+
+        /**
+         * Specifies if the velocities are in local space (rotated with the transform) or world space.
+         * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
+         */
+        // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
+        @oav({ tooltip: "指定速度是在局部空间(与变换一起旋转)还是在世界空间。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
+        space = ParticleSystemSimulationSpace1.Local;
+
+        // /**
+        //  * Controls how much the velocity that exceeds the velocity limit should be dampened.
+        //  */
+        // dampen = 1;
 
         /**
          * 初始化粒子状态
@@ -29,7 +52,22 @@ namespace feng3d
          */
         updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
-
+            var velocity = this.limit.getValue(rateAtLifeTime, particle[rateLimitVelocityOverLifetime]);
+            if (!this.separateAxes)
+            {
+                velocity.z = velocity.y = velocity.x;
+            }
+            var pVelocity = particle.velocity.clone();
+            if (this.space == ParticleSystemSimulationSpace1.World)
+            {
+                this.particleSystem.transform.localToWorldMatrix.deltaTransformVector(pVelocity, pVelocity)
+                pVelocity.clamp(velocity.negateTo(), velocity);
+                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(pVelocity, pVelocity);
+            } else
+            {
+                pVelocity.clamp(velocity.negateTo(), velocity);
+            }
+            particle.velocity.copy(pVelocity);
         }
     }
 

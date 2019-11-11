@@ -15165,7 +15165,15 @@ declare namespace feng3d {
      * 控制每个粒子在其生命周期内的速度。
      */
     class ParticleVelocityOverLifetimeModule extends ParticleModule {
+        /**
+         * Curve to control particle speed based on lifetime.
+         * 基于寿命的粒子速度控制曲线。
+         */
         velocity: MinMaxCurveVector3;
+        /**
+         * Specifies if the velocities are in local space (rotated with the transform) or world space.
+         * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
+         */
         space: ParticleSystemSimulationSpace1;
         /**
          * 初始化粒子状态
@@ -15186,9 +15194,20 @@ declare namespace feng3d {
      */
     class ParticleLimitVelocityOverLifetimeModule extends ParticleModule {
         /**
-         * 作用在粒子上的力
+         * Set the size over lifetime on each axis separately.
+         * 在每个轴上分别设置生命周期内的大小。
+         */
+        separateAxes: boolean;
+        /**
+         * Maximum velocity.
+         * 最高速度。
          */
         limit: MinMaxCurveVector3;
+        /**
+         * Specifies if the velocities are in local space (rotated with the transform) or world space.
+         * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
+         */
+        space: ParticleSystemSimulationSpace1;
         /**
          * 初始化粒子状态
          * @param particle 粒子

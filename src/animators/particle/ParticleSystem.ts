@@ -182,6 +182,7 @@ namespace feng3d
             this.sizeOverLifetime = new ParticleSizeOverLifetimeModule();
             this.rotationOverLifetime = new ParticleRotationOverLifetimeModule();
             this.textureSheetAnimation = new ParticleTextureSheetAnimationModule();
+            this.limitVelocityOverLifetime = new ParticleLimitVelocityOverLifetimeModule();
 
             this.main.enabled = true;
             this.emission.enabled = true;

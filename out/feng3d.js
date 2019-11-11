@@ -33019,6 +33019,7 @@ var feng3d;
             _this.sizeOverLifetime = new feng3d.ParticleSizeOverLifetimeModule();
             _this.rotationOverLifetime = new feng3d.ParticleRotationOverLifetimeModule();
             _this.textureSheetAnimation = new feng3d.ParticleTextureSheetAnimationModule();
+            _this.limitVelocityOverLifetime = new feng3d.ParticleLimitVelocityOverLifetimeModule();
             _this.main.enabled = true;
             _this.emission.enabled = true;
             _this.shape.enabled = true;
@@ -34625,7 +34626,15 @@ var feng3d;
         __extends(ParticleVelocityOverLifetimeModule, _super);
         function ParticleVelocityOverLifetimeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * Curve to control particle speed based on lifetime.
+             * 基于寿命的粒子速度控制曲线。
+             */
             _this.velocity = new feng3d.MinMaxCurveVector3();
+            /**
+             * Specifies if the velocities are in local space (rotated with the transform) or world space.
+             * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
+             */
             // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
             _this.space = feng3d.ParticleSystemSimulationSpace1.Local;
             return _this;
@@ -34676,11 +34685,27 @@ var feng3d;
         function ParticleLimitVelocityOverLifetimeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             /**
-             * 作用在粒子上的力
+             * Set the size over lifetime on each axis separately.
+             * 在每个轴上分别设置生命周期内的大小。
              */
-            _this.limit = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { constant: 1, constant1: 1 }, yCurve: { constant: 1, constant1: 1 }, zCurve: { constant: 1, constant1: 1 } });
+            _this.separateAxes = false;
+            /**
+             * Maximum velocity.
+             * 最高速度。
+             */
+            _this.limit = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
+            /**
+             * Specifies if the velocities are in local space (rotated with the transform) or world space.
+             * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
+             */
+            // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
+            _this.space = feng3d.ParticleSystemSimulationSpace1.Local;
             return _this;
         }
+        // /**
+        //  * Controls how much the velocity that exceeds the velocity limit should be dampened.
+        //  */
+        // dampen = 1;
         /**
          * 初始化粒子状态
          * @param particle 粒子
@@ -34693,11 +34718,36 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleLimitVelocityOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
+            var velocity = this.limit.getValue(rateAtLifeTime, particle[rateLimitVelocityOverLifetime]);
+            if (!this.separateAxes) {
+                velocity.z = velocity.y = velocity.x;
+            }
+            var pVelocity = particle.velocity.clone();
+            if (this.space == feng3d.ParticleSystemSimulationSpace1.World) {
+                this.particleSystem.transform.localToWorldMatrix.deltaTransformVector(pVelocity, pVelocity);
+                pVelocity.clamp(velocity.negateTo(), velocity);
+                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(pVelocity, pVelocity);
+            }
+            else {
+                pVelocity.clamp(velocity.negateTo(), velocity);
+            }
+            particle.velocity.copy(pVelocity);
         };
         __decorate([
-            feng3d.serialize,
-            feng3d.oav()
+            feng3d.serialize
+            // @oav({ tooltip: "Set the size over lifetime on each axis separately." })
+            ,
+            feng3d.oav({ tooltip: "在每个轴上分别设置生命周期内的大小。" })
+        ], ParticleLimitVelocityOverLifetimeModule.prototype, "separateAxes", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Maximum velocity." })
+            ,
+            feng3d.oav({ tooltip: "最高速度。" })
         ], ParticleLimitVelocityOverLifetimeModule.prototype, "limit", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "指定速度是在局部空间(与变换一起旋转)还是在世界空间。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace1 } })
+        ], ParticleLimitVelocityOverLifetimeModule.prototype, "space", void 0);
         return ParticleLimitVelocityOverLifetimeModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleLimitVelocityOverLifetimeModule = ParticleLimitVelocityOverLifetimeModule;
