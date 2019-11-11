@@ -53,19 +53,27 @@ namespace feng3d
         updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
             var velocity = this.limit.getValue(rateAtLifeTime, particle[rateLimitVelocityOverLifetime]);
-            if (!this.separateAxes)
-            {
-                velocity.z = velocity.y = velocity.x;
-            }
             var pVelocity = particle.velocity.clone();
             if (this.space == ParticleSystemSimulationSpace1.World)
             {
                 this.particleSystem.transform.localToWorldMatrix.deltaTransformVector(pVelocity, pVelocity)
-                pVelocity.clamp(velocity.negateTo(), velocity);
+                if (this.separateAxes)
+                {
+                    pVelocity.clamp(velocity.negateTo(), velocity);
+                } else
+                {
+                    pVelocity.normalize(velocity.x);
+                }
                 this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(pVelocity, pVelocity);
             } else
             {
-                pVelocity.clamp(velocity.negateTo(), velocity);
+                if (this.separateAxes)
+                {
+                    pVelocity.clamp(velocity.negateTo(), velocity);
+                } else
+                {
+                    pVelocity.normalize(velocity.x);
+                }
             }
             particle.velocity.copy(pVelocity);
         }

@@ -34644,21 +34644,22 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleVelocityOverLifetimeModule.prototype.initParticleState = function (particle) {
-            particle[rateVelocityOverLifetime] = Math.random();
+            particle[_VelocityOverLifetime_rate] = Math.random();
+            particle[_VelocityOverLifetime_preVelocity] = new feng3d.Vector3();
         };
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
         ParticleVelocityOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
-            var velocity = this.velocity.getValue(rateAtLifeTime, particle[rateVelocityOverLifetime]);
+            var preVelocity = particle[_VelocityOverLifetime_preVelocity];
+            var velocity = this.velocity.getValue(rateAtLifeTime, particle[_VelocityOverLifetime_rate]);
             if (this.space == feng3d.ParticleSystemSimulationSpace1.World) {
                 this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(velocity, velocity);
             }
             //
-            particle.position.x += velocity.x * (time - preTime);
-            particle.position.y += velocity.y * (time - preTime);
-            particle.position.z += velocity.z * (time - preTime);
+            particle.velocity.sub(preVelocity).add(velocity);
+            preVelocity.copy(velocity);
         };
         __decorate([
             feng3d.serialize
@@ -34672,7 +34673,8 @@ var feng3d;
         return ParticleVelocityOverLifetimeModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleVelocityOverLifetimeModule = ParticleVelocityOverLifetimeModule;
-    var rateVelocityOverLifetime = "_rateVelocityOverLifetime";
+    var _VelocityOverLifetime_rate = "_VelocityOverLifetime_rate";
+    var _VelocityOverLifetime_preVelocity = "_VelocityOverLifetime_preVelocity";
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -34719,17 +34721,24 @@ var feng3d;
          */
         ParticleLimitVelocityOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
             var velocity = this.limit.getValue(rateAtLifeTime, particle[rateLimitVelocityOverLifetime]);
-            if (!this.separateAxes) {
-                velocity.z = velocity.y = velocity.x;
-            }
             var pVelocity = particle.velocity.clone();
             if (this.space == feng3d.ParticleSystemSimulationSpace1.World) {
                 this.particleSystem.transform.localToWorldMatrix.deltaTransformVector(pVelocity, pVelocity);
-                pVelocity.clamp(velocity.negateTo(), velocity);
+                if (this.separateAxes) {
+                    pVelocity.clamp(velocity.negateTo(), velocity);
+                }
+                else {
+                    pVelocity.normalize(velocity.x);
+                }
                 this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(pVelocity, pVelocity);
             }
             else {
-                pVelocity.clamp(velocity.negateTo(), velocity);
+                if (this.separateAxes) {
+                    pVelocity.clamp(velocity.negateTo(), velocity);
+                }
+                else {
+                    pVelocity.normalize(velocity.x);
+                }
             }
             particle.velocity.copy(pVelocity);
         };
@@ -44740,6 +44749,7 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {
