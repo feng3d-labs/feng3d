@@ -7288,10 +7288,6 @@ declare namespace feng3d {
          */
         curveMultiplier: number;
         /**
-         * 是否只取 0-1 ，例如 lifetime 为非负，需要设置为true
-         */
-        between0And1: boolean;
-        /**
          * 获取值
          * @param time 时间
          */
@@ -15105,10 +15101,6 @@ declare namespace feng3d {
          */
         rateOverTime: MinMaxCurve;
         /**
-         * 产生新粒子的速度，通过距离。
-         */
-        rateOverDistance: MinMaxCurve;
-        /**
          * 爆发，在time时刻额外喷射particles粒子
          */
         bursts: ParticleEmissionBurst[];
@@ -15189,6 +15181,15 @@ declare namespace feng3d {
      * 基于时间轴限制速度模块。
      */
     class ParticleLimitVelocityOverLifetimeModule extends ParticleModule {
+        /**
+         * 作用在粒子上的力
+         */
+        limit: MinMaxCurveVector3;
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
         /**
          * 更新粒子状态
          * @param particle 粒子

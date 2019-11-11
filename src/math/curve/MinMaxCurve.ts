@@ -42,12 +42,6 @@ namespace feng3d
         curveMultiplier = 1;
 
         /**
-         * 是否只取 0-1 ，例如 lifetime 为非负，需要设置为true
-         */
-        @serialize
-        between0And1 = false;
-
-        /**
          * 获取值
          * @param time 时间
          */
