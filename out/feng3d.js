@@ -39305,7 +39305,7 @@ var feng3d;
             return feng3d.serialization.setValue(new feng3d.GameObject(), { name: name });
         };
         GameObjectFactory.prototype.createCube = function (name) {
-            if (name === void 0) { name = "cube"; }
+            if (name === void 0) { name = "Cube"; }
             var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.cube },]
@@ -39315,7 +39315,7 @@ var feng3d;
             return g;
         };
         GameObjectFactory.prototype.createPlane = function (name) {
-            if (name === void 0) { name = "plane"; }
+            if (name === void 0) { name = "Plane"; }
             var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.plane },]
@@ -39325,7 +39325,7 @@ var feng3d;
             return g;
         };
         GameObjectFactory.prototype.createCylinder = function (name) {
-            if (name === void 0) { name = "cylinder"; }
+            if (name === void 0) { name = "Cylinder"; }
             var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.cylinder },]
@@ -39349,7 +39349,7 @@ var feng3d;
             });
         };
         GameObjectFactory.prototype.createSphere = function (name) {
-            if (name === void 0) { name = "sphere"; }
+            if (name === void 0) { name = "Sphere"; }
             var sphere = feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.sphere },]
@@ -39359,7 +39359,7 @@ var feng3d;
             return sphere;
         };
         GameObjectFactory.prototype.createCapsule = function (name) {
-            if (name === void 0) { name = "capsule"; }
+            if (name === void 0) { name = "Capsule"; }
             var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.capsule },]
@@ -39383,35 +39383,35 @@ var feng3d;
             });
         };
         GameObjectFactory.prototype.createPointLight = function (name) {
-            if (name === void 0) { name = "PointLight"; }
+            if (name === void 0) { name = "Point light"; }
             return feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.PointLight" },]
             });
         };
         GameObjectFactory.prototype.createDirectionalLight = function (name) {
-            if (name === void 0) { name = "DirectionalLight"; }
+            if (name === void 0) { name = "Directional light"; }
             return feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.DirectionalLight" },]
             });
         };
         GameObjectFactory.prototype.createSpotLight = function (name) {
-            if (name === void 0) { name = "SpotLight"; }
+            if (name === void 0) { name = "Spotlight"; }
             return feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.SpotLight" },]
             });
         };
         GameObjectFactory.prototype.createParticle = function (name) {
-            if (name === void 0) { name = "Particle"; }
+            if (name === void 0) { name = "Particle System"; }
             return feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.Transform", rx: -90 }, { __class__: "feng3d.ParticleSystem" },],
             });
         };
         GameObjectFactory.prototype.createWater = function (name) {
-            if (name === void 0) { name = "water"; }
+            if (name === void 0) { name = "Water"; }
             return feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.Water" },],
@@ -44785,7 +44785,6 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

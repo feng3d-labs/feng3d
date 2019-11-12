@@ -9,7 +9,7 @@ namespace feng3d
             return serialization.setValue(new GameObject(), { name: name });
         }
 
-        createCube(name = "cube")
+        createCube(name = "Cube")
         {
             var g = serialization.setValue(new GameObject(), {
                 name: name,
@@ -20,7 +20,7 @@ namespace feng3d
             return g;
         }
 
-        createPlane(name = "plane")
+        createPlane(name = "Plane")
         {
             var g = serialization.setValue(new GameObject(), {
                 name: name,
@@ -32,7 +32,7 @@ namespace feng3d
             return g;
         }
 
-        createCylinder(name = "cylinder")
+        createCylinder(name = "Cylinder")
         {
             var g = serialization.setValue(new GameObject(), {
                 name: name,
@@ -60,7 +60,7 @@ namespace feng3d
             });
         }
 
-        createSphere(name = "sphere")
+        createSphere(name = "Sphere")
         {
             var sphere = serialization.setValue(new GameObject(), {
                 name: name,
@@ -73,7 +73,7 @@ namespace feng3d
             return sphere;
         }
 
-        createCapsule(name = "capsule")
+        createCapsule(name = "Capsule")
         {
             var g = serialization.setValue(new GameObject(), {
                 name: name,
@@ -100,7 +100,7 @@ namespace feng3d
             });
         }
 
-        createPointLight(name = "PointLight")
+        createPointLight(name = "Point light")
         {
             return serialization.setValue(new GameObject(), {
                 name: name,
@@ -108,7 +108,7 @@ namespace feng3d
             });
         }
 
-        createDirectionalLight(name = "DirectionalLight")
+        createDirectionalLight(name = "Directional light")
         {
             return serialization.setValue(new GameObject(), {
                 name: name,
@@ -116,7 +116,7 @@ namespace feng3d
             });
         }
 
-        createSpotLight(name = "SpotLight")
+        createSpotLight(name = "Spotlight")
         {
             return serialization.setValue(new GameObject(), {
                 name: name,
@@ -124,7 +124,7 @@ namespace feng3d
             });
         }
 
-        createParticle(name = "Particle")
+        createParticle(name = "Particle System")
         {
             return serialization.setValue(new GameObject(), {
                 name: name,
@@ -132,7 +132,7 @@ namespace feng3d
             });
         }
 
-        createWater(name = "water")
+        createWater(name = "Water")
         {
             return serialization.setValue(new GameObject(), {
                 name: name,
