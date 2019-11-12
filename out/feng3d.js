@@ -34723,12 +34723,13 @@ var feng3d;
              */
             // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
             _this.space = feng3d.ParticleSystemSimulationSpace1.Local;
+            /**
+             * Controls how much the velocity that exceeds the velocity limit should be dampened.
+             * 控制多少速度，超过速度限制应该被抑制。
+             */
+            _this.dampen = 1;
             return _this;
         }
-        // /**
-        //  * Controls how much the velocity that exceeds the velocity limit should be dampened.
-        //  */
-        // dampen = 1;
         /**
          * 初始化粒子状态
          * @param particle 粒子
@@ -34763,7 +34764,7 @@ var feng3d;
                     pVelocity.normalize(velocity.x);
                 }
             }
-            particle.velocity.copy(pVelocity);
+            particle.velocity.lerpNumber(pVelocity, this.dampen);
         };
         __decorate([
             feng3d.serialize
@@ -34778,8 +34779,15 @@ var feng3d;
             feng3d.oav({ tooltip: "最高速度。" })
         ], ParticleLimitVelocityOverLifetimeModule.prototype, "limit", void 0);
         __decorate([
+            feng3d.serialize,
             feng3d.oav({ tooltip: "指定速度是在局部空间(与变换一起旋转)还是在世界空间。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace1 } })
         ], ParticleLimitVelocityOverLifetimeModule.prototype, "space", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Controls how much the velocity that exceeds the velocity limit should be dampened.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
+            ,
+            feng3d.oav({ tooltip: "控制多少速度，超过速度限制应该被抑制。" })
+        ], ParticleLimitVelocityOverLifetimeModule.prototype, "dampen", void 0);
         return ParticleLimitVelocityOverLifetimeModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleLimitVelocityOverLifetimeModule = ParticleLimitVelocityOverLifetimeModule;
@@ -44785,6 +44793,7 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

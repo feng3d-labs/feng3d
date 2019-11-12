@@ -15217,6 +15217,11 @@ declare namespace feng3d {
          */
         space: ParticleSystemSimulationSpace1;
         /**
+         * Controls how much the velocity that exceeds the velocity limit should be dampened.
+         * 控制多少速度，超过速度限制应该被抑制。
+         */
+        dampen: number;
+        /**
          * 初始化粒子状态
          * @param particle 粒子
          */
