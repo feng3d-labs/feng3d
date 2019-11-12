@@ -14491,9 +14491,13 @@ declare namespace feng3d {
          */
         flipUV: Vector2;
         /**
-         * 出生时在周期的位置（临时数据）
+         * 出生时在周期的位置（在发射时被更新）
          */
         birthRateAtDuration: number;
+        /**
+         * 此时粒子在生命周期的位置（在更新状态前被更新）
+         */
+        rateAtLifeTime: number;
         /**
          * 更新状态
          */
@@ -15041,7 +15045,7 @@ declare namespace feng3d {
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number): void;
+        updateParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {
@@ -15133,7 +15137,7 @@ declare namespace feng3d {
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number): void;
+        updateParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {
@@ -15225,7 +15229,7 @@ declare namespace feng3d {
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number): void;
+        updateParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {
@@ -15297,7 +15301,7 @@ declare namespace feng3d {
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number): void;
+        updateParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {
@@ -15326,7 +15330,7 @@ declare namespace feng3d {
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number): void;
+        updateParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {
@@ -15348,7 +15352,7 @@ declare namespace feng3d {
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number): void;
+        updateParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {
@@ -15375,7 +15379,7 @@ declare namespace feng3d {
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number): void;
+        updateParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {
@@ -15401,7 +15405,7 @@ declare namespace feng3d {
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number): void;
+        updateParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {
@@ -15516,7 +15520,7 @@ declare namespace feng3d {
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number): void;
+        updateParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {

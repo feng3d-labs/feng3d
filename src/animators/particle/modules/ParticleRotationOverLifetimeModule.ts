@@ -35,14 +35,14 @@ namespace feng3d
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
+        updateParticleState(particle: Particle)
         {
             var preAngularVelocity: Vector3 = particle[_RotationOverLifetime_preAngularVelocity];
             particle.angularVelocity.sub(preAngularVelocity);
             preAngularVelocity.init(0, 0, 0);
             if (!this.enabled) return;
 
-            var v = this.angularVelocity.getValue(rateAtLifeTime, particle[_RotationOverLifetime_rate]);
+            var v = this.angularVelocity.getValue(particle.rateAtLifeTime, particle[_RotationOverLifetime_rate]);
             if (!this.separateAxes)
             {
                 v.x = v.y = 0;

@@ -160,7 +160,7 @@ namespace feng3d
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
+        updateParticleState(particle: Particle)
         {
             if (!this.enabled) return;
 
@@ -169,7 +169,7 @@ namespace feng3d
             var step = this.tiles.clone().reciprocal();
             var total = segmentsX * segmentsY;
             var uvPos = new Vector2();
-            var frameOverTime = this.frameOverTime.getValue(rateAtLifeTime, particle[rateTextureSheetAnimation]);
+            var frameOverTime = this.frameOverTime.getValue(particle.rateAtLifeTime, particle[rateTextureSheetAnimation]);
             var frameIndex = this.startFrame;
             var rowIndex = this.rowIndex;
             var cycleCount = this.cycleCount;

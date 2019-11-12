@@ -221,7 +221,7 @@ namespace feng3d
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
+        updateParticleState(particle: Particle)
         {
             var preGravity: Vector3 = particle[_Main_preGravity];
             // 计算重力加速度影响速度

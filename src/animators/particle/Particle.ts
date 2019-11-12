@@ -72,9 +72,14 @@ namespace feng3d
 		flipUV = new Vector2();
 
 		/**
-		 * 出生时在周期的位置（临时数据）
+		 * 出生时在周期的位置（在发射时被更新）
 		 */
 		birthRateAtDuration: number;
+
+		/**
+		 * 此时粒子在生命周期的位置（在更新状态前被更新）
+		 */
+		rateAtLifeTime: number;
 
 		/**
 		 * 更新状态

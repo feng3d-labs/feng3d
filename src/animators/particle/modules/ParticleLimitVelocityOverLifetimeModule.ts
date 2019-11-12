@@ -156,12 +156,12 @@ namespace feng3d
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
+        updateParticleState(particle: Particle)
         {
             if (!this.enabled) return;
 
-            var limit3D = this.limit3D.getValue(rateAtLifeTime, particle[_LimitVelocityOverLifetime_rate]);
-            var limit = this.limit.getValue(rateAtLifeTime, particle[_LimitVelocityOverLifetime_rate]);
+            var limit3D = this.limit3D.getValue(particle.rateAtLifeTime, particle[_LimitVelocityOverLifetime_rate]);
+            var limit = this.limit.getValue(particle.rateAtLifeTime, particle[_LimitVelocityOverLifetime_rate]);
             var pVelocity = particle.velocity.clone();
             if (this.space == ParticleSystemSimulationSpace1.World)
             {

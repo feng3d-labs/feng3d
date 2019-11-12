@@ -37,11 +37,11 @@ namespace feng3d
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
+        updateParticleState(particle: Particle)
         {
             if (!this.enabled) return;
 
-            var size = this.size.getValue(rateAtLifeTime, particle[_SizeOverLifetime_rate]);
+            var size = this.size.getValue(particle.rateAtLifeTime, particle[_SizeOverLifetime_rate]);
             if (!this.separateAxes)
             {
                 size.y = size.z = size.x;

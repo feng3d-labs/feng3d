@@ -45,14 +45,14 @@ namespace feng3d
          * 更新粒子状态
          * @param particle 粒子
          */
-        updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
+        updateParticleState(particle: Particle)
         {
             var preForce: Vector3 = particle[_ForceOverLifetime_preForce];
             particle.acceleration.sub(preForce);
             preForce.init(0, 0, 0);
             if (!this.enabled) return;
 
-            var force = this.force.getValue(rateAtLifeTime, particle[_ForceOverLifetime_rate]);
+            var force = this.force.getValue(particle.rateAtLifeTime, particle[_ForceOverLifetime_rate]);
             if (this.space == ParticleSystemSimulationSpace1.World)
             {
                 this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(force, force);

@@ -546,9 +546,9 @@ namespace feng3d
         {
             var preTime = this._preRealEmitTime < particle.birthTime ? particle.birthTime : this._preRealEmitTime;
 
-            var rateAtLifeTime = (this.time - this.startDelay - particle.birthTime) / particle.lifetime;
+            particle.rateAtLifeTime = (this.time - this.startDelay - particle.birthTime) / particle.lifetime;
             //
-            this._modules.forEach(v => { v.updateParticleState(particle, preTime, this._realEmitTime, rateAtLifeTime) });
+            this._modules.forEach(v => { v.updateParticleState(particle) });
             particle.updateState(preTime, this._realEmitTime);
         }
     }
