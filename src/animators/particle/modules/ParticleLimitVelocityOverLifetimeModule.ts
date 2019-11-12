@@ -43,7 +43,7 @@ namespace feng3d
          */
         initParticleState(particle: Particle)
         {
-            particle[rateLimitVelocityOverLifetime] = Math.random();
+            particle[_LimitVelocityOverLifetime_rate] = Math.random();
         }
 
         /**
@@ -52,7 +52,9 @@ namespace feng3d
          */
         updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
-            var velocity = this.limit.getValue(rateAtLifeTime, particle[rateLimitVelocityOverLifetime]);
+            if (!this.enabled) return;
+
+            var velocity = this.limit.getValue(rateAtLifeTime, particle[_LimitVelocityOverLifetime_rate]);
             var pVelocity = particle.velocity.clone();
             if (this.space == ParticleSystemSimulationSpace1.World)
             {
@@ -79,5 +81,5 @@ namespace feng3d
         }
     }
 
-    var rateLimitVelocityOverLifetime = "_rateLimitVelocityOverLifetime";
+    var _LimitVelocityOverLifetime_rate = "_LimitVelocityOverLifetime_rate";
 }

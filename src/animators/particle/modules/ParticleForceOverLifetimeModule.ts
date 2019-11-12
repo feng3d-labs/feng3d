@@ -38,6 +38,7 @@ namespace feng3d
         initParticleState(particle: Particle)
         {
             particle[_ForceOverLifetime_rate] = Math.random();
+            particle[_ForceOverLifetime_preForce] = new Vector3();
         }
 
         /**
@@ -47,15 +48,16 @@ namespace feng3d
         updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
             var preForce: Vector3 = particle[_ForceOverLifetime_preForce];
-            var force = this.force.getValue(rateAtLifeTime, particle[_ForceOverLifetime_rate]);
+            particle.acceleration.sub(preForce);
+            preForce.init(0, 0, 0);
+            if (!this.enabled) return;
 
+            var force = this.force.getValue(rateAtLifeTime, particle[_ForceOverLifetime_rate]);
             if (this.space == ParticleSystemSimulationSpace1.World)
             {
                 this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(force, force);
             }
-
-            particle.acceleration.sub(preForce).add(force);
-
+            particle.acceleration.add(force);
             preForce.copy(force);
         }
     }

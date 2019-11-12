@@ -27,7 +27,8 @@ namespace feng3d
          */
         initParticleState(particle: Particle)
         {
-            particle[rateRotationOverLifetime] = Math.random();
+            particle[_RotationOverLifetime_rate] = Math.random();
+            particle[_RotationOverLifetime_preAngularVelocity] = new Vector3();
         }
 
         /**
@@ -36,15 +37,20 @@ namespace feng3d
          */
         updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
-            var v = this.angularVelocity.getValue(rateAtLifeTime, particle[rateRotationOverLifetime]);
+            var preAngularVelocity: Vector3 = particle[_RotationOverLifetime_preAngularVelocity];
+            particle.angularVelocity.sub(preAngularVelocity);
+            preAngularVelocity.init(0, 0, 0);
+            if (!this.enabled) return;
+
+            var v = this.angularVelocity.getValue(rateAtLifeTime, particle[_RotationOverLifetime_rate]);
             if (!this.separateAxes)
             {
                 v.x = v.y = 0;
             }
-            particle.rotation.x += v.x * (time - preTime);
-            particle.rotation.y += v.y * (time - preTime);
-            particle.rotation.z += v.z * (time - preTime);
+            particle.angularVelocity.add(v);
+            preAngularVelocity.copy(v);
         }
     }
-    var rateRotationOverLifetime = "_rateRotationOverLifetime";
+    var _RotationOverLifetime_rate = "_RotationOverLifetime_rate";
+    var _RotationOverLifetime_preAngularVelocity = "_RotationOverLifetime_preAngularVelocity";
 }

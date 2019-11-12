@@ -505,7 +505,7 @@ namespace feng3d
          */
         private _initParticleState(particle: Particle)
         {
-            this._modules.forEach(v => { v.enabled && v.initParticleState(particle) });
+            this._modules.forEach(v => { v.initParticleState(particle) });
         }
 
         /**
@@ -518,7 +518,7 @@ namespace feng3d
 
             var rateAtLifeTime = (this.time - this.main.startDelay - particle.birthTime) / particle.lifetime;
             //
-            this._modules.forEach(v => { v.enabled && v.updateParticleState(particle, preTime, this._realEmitTime, rateAtLifeTime) });
+            this._modules.forEach(v => { v.updateParticleState(particle, preTime, this._realEmitTime, rateAtLifeTime) });
             particle.updateState(preTime, this._realEmitTime);
         }
     }

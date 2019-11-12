@@ -42,23 +42,19 @@ namespace feng3d
         updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
             var preVelocity: Vector3 = particle[_VelocityOverLifetime_preVelocity];
-            var velocity = this.velocity.getValue(rateAtLifeTime, particle[_VelocityOverLifetime_rate]);
+            particle.velocity.sub(preVelocity);
+            preVelocity.init(0, 0, 0);
+            if (!this.enabled) return;
 
+            var velocity = this.velocity.getValue(rateAtLifeTime, particle[_VelocityOverLifetime_rate]);
             if (this.space == ParticleSystemSimulationSpace1.World)
             {
                 this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(velocity, velocity);
             }
 
             //
-            particle.velocity.sub(preVelocity).add(velocity);
-            if (this.enabled)
-            {
-                particle.velocity.sub(preVelocity).add(velocity);
-                preVelocity.copy(velocity);
-            } else
-            {
-                preVelocity.init(0, 0, 0);
-            }
+            particle.velocity.add(velocity);
+            preVelocity.copy(velocity);
         }
     }
 

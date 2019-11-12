@@ -20,7 +20,7 @@ namespace feng3d
          */
         initParticleState(particle: Particle)
         {
-            particle[rateColorOverLifetime] = Math.random();
+            particle[_ColorOverLifetime_rate] = Math.random();
         }
 
         /**
@@ -29,9 +29,12 @@ namespace feng3d
          */
         updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
-            particle.color.multiply(this.color.getValue(rateAtLifeTime, particle[rateColorOverLifetime]));
+            if (!this.enabled) return;
+
+            particle.color.multiply(this.color.getValue(rateAtLifeTime, particle[_ColorOverLifetime_rate]));
         }
     }
 
-    var rateColorOverLifetime = "_rateColorOverLifetime";
+    var _ColorOverLifetime_rate = "_ColorOverLifetime_rate";
+
 }

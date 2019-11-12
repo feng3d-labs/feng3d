@@ -203,6 +203,7 @@ namespace feng3d
                 var startRotation = this.startRotation.getValue(rateAtDuration);
                 particle.rotation.init(0, 0, startRotation);
             }
+            particle.angularVelocity.init(0, 0, 0);
             //
             particle.startColor.copy(this.startColor.getValue(rateAtDuration));
         }

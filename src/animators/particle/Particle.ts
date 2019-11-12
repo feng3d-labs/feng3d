@@ -37,6 +37,11 @@ namespace feng3d
 		rotation = new Vector3();
 
 		/**
+		 * 角速度
+		 */
+		angularVelocity = new Vector3();
+
+		/**
 		 * 尺寸
 		 */
 		size = new Vector3(1, 1, 1);
@@ -83,6 +88,9 @@ namespace feng3d
 			this.position.x += this.velocity.x * pTime;
 			this.position.y += this.velocity.y * pTime;
 			this.position.z += this.velocity.z * pTime;
+
+			// 计算角度
+			this.rotation.add(this.angularVelocity.scaleNumberTo(pTime));
 		}
 	}
 }
