@@ -181,14 +181,6 @@ namespace feng3d
         maxParticles = 1000;
 
         /**
-         * 此时在周期中的位置
-         */
-        get rateAtDuration()
-        {
-            return ((this.particleSystem.time - this.particleSystem.startDelay) % this.duration) / this.duration;
-        }
-
-        /**
          * 初始化粒子状态
          * @param particle 粒子
          */
@@ -196,34 +188,33 @@ namespace feng3d
         {
             particle[_Main_preGravity] = new Vector3();
 
-            var rateAtDuration = ((particle.birthTime - this.particleSystem.startDelay) % this.duration) / this.duration;
             //
-            particle.birthRateAtDuration = rateAtDuration;
+            var birthRateAtDuration = particle.birthRateAtDuration;
 
             particle.position.init(0, 0, 0);
-            particle.velocity.init(0, 0, this.startSpeed.getValue(rateAtDuration));
+            particle.velocity.init(0, 0, this.startSpeed.getValue(birthRateAtDuration));
             particle.acceleration.init(0, 0, 0);
             if (this.useStartSize3D)
             {
-                particle.startSize.copy(this.startSize3D.getValue(rateAtDuration));
+                particle.startSize.copy(this.startSize3D.getValue(birthRateAtDuration));
             } else
             {
-                var startSize = this.startSize.getValue(rateAtDuration);
+                var startSize = this.startSize.getValue(birthRateAtDuration);
                 particle.startSize.init(startSize, startSize, startSize);
             }
 
             //
             if (this.useStartRotation3D)
             {
-                particle.rotation.copy(this.startRotation3D.getValue(rateAtDuration));
+                particle.rotation.copy(this.startRotation3D.getValue(birthRateAtDuration));
             } else
             {
-                var startRotation = this.startRotation.getValue(rateAtDuration);
+                var startRotation = this.startRotation.getValue(birthRateAtDuration);
                 particle.rotation.init(0, 0, startRotation);
             }
             particle.angularVelocity.init(0, 0, 0);
             //
-            particle.startColor.copy(this.startColor.getValue(rateAtDuration));
+            particle.startColor.copy(this.startColor.getValue(birthRateAtDuration));
         }
 
         /**
@@ -234,7 +225,7 @@ namespace feng3d
         {
             var preGravity: Vector3 = particle[_Main_preGravity];
             // 计算重力加速度影响速度
-            var gravity = new Vector3(0, -this.gravityModifier.getValue(this.rateAtDuration) * 9.8, 0);
+            var gravity = new Vector3(0, -this.gravityModifier.getValue(this.particleSystem.rateAtDuration) * 9.8, 0);
             // 本地加速度
             this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(gravity, gravity);
             //

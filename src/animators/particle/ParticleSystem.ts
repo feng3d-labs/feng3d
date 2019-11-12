@@ -404,6 +404,14 @@ namespace feng3d
         private readonly _modules: ParticleModule[] = [];
 
         /**
+         * 此时在周期中的位置
+         */
+        get rateAtDuration()
+        {
+            return ((this.time - this.startDelay) % this.main.duration) / this.main.duration;
+        }
+
+        /**
          * 发射粒子
          * @param time 当前粒子时间
          */
@@ -420,7 +428,7 @@ namespace feng3d
             var loop = this.main.loop;
             var startDelay = this.startDelay;
             var duration = this.main.duration;
-            var rateAtDuration = this.main.rateAtDuration;
+            var rateAtDuration = this.rateAtDuration;
             var preRealEmitTime = this._preEmitTime - startDelay;
 
             // 判断是否结束发射
@@ -492,6 +500,9 @@ namespace feng3d
                     var particle = this._particlePool.pop() || new Particle();
                     particle.birthTime = birthTime;
                     particle.lifetime = lifetime;
+                    //
+                    particle.birthRateAtDuration = ((particle.birthTime - this.startDelay) % this.main.duration) / this.main.duration;
+
                     this._activeParticles.push(particle);
                     this._initParticleState(particle);
                     this._updateParticleState(particle);

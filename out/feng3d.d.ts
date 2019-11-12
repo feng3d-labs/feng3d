@@ -14658,6 +14658,10 @@ declare namespace feng3d {
         private _attributes;
         private readonly _modules;
         /**
+         * 此时在周期中的位置
+         */
+        readonly rateAtDuration: number;
+        /**
          * 发射粒子
          * @param time 当前粒子时间
          */
@@ -15120,10 +15124,6 @@ declare namespace feng3d {
          * 发射粒子的最大数量。
          */
         maxParticles: number;
-        /**
-         * 此时在周期中的位置
-         */
-        readonly rateAtDuration: number;
         /**
          * 初始化粒子状态
          * @param particle 粒子
