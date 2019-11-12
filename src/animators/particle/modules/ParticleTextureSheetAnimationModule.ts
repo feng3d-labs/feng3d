@@ -162,6 +162,8 @@ namespace feng3d
          */
         updateParticleState(particle: Particle, preTime: number, time: number, rateAtLifeTime: number)
         {
+            if (!this.enabled) return;
+
             var segmentsX = this.tiles.x;
             var segmentsY = this.tiles.y;
             var step = this.tiles.clone().reciprocal();

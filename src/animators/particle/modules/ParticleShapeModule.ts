@@ -74,6 +74,7 @@ namespace feng3d
          */
         initParticleState(particle: Particle)
         {
+            if (!this.enabled) return;
             this.shape.initParticleState(particle);
             if (this.alignToDirection)
             {

@@ -34553,6 +34553,8 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleShapeModule.prototype.initParticleState = function (particle) {
+            if (!this.enabled)
+                return;
             this.shape.initParticleState(particle);
             if (this.alignToDirection) {
                 var dir = particle.velocity;
@@ -34928,6 +34930,8 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleSizeOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
+            if (!this.enabled)
+                return;
             var size = this.size.getValue(rateAtLifeTime, particle[_SizeOverLifetime_rate]);
             if (!this.separateAxes) {
                 size.y = size.z = size.x;
@@ -35142,6 +35146,8 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleTextureSheetAnimationModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
+            if (!this.enabled)
+                return;
             var segmentsX = this.tiles.x;
             var segmentsY = this.tiles.y;
             var step = this.tiles.clone().reciprocal();
