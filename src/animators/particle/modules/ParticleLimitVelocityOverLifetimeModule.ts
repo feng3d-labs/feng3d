@@ -16,13 +16,22 @@ namespace feng3d
         separateAxes = false;
 
         /**
+         * Maximum velocity curve, when not using one curve per axis.
+         * 最大速度曲线，当不使用每轴一个曲线时。
+         */
+        @serialize
+        // @oav({ tooltip: "Maximum velocity curve, when not using one curve per axis." })
+        @oav({ tooltip: "最大速度曲线，当不使用每轴一个曲线时。" })
+        limit = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 1, constant1: 1 });
+
+        /**
          * Maximum velocity.
          * 最高速度。
          */
         @serialize
         // @oav({ tooltip: "Maximum velocity." })
         @oav({ tooltip: "最高速度。" })
-        limit = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
+        limit3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
 
         /**
          * Specifies if the velocities are in local space (rotated with the transform) or world space.
@@ -43,6 +52,98 @@ namespace feng3d
         dampen = 1;
 
         /**
+         * Change the limit multiplier.
+         * 改变限制乘法因子。
+         */
+        get limitMultiplier()
+        {
+            return this.limit.curveMultiplier;
+        }
+
+        set limitMultiplier(v)
+        {
+            this.limit.curveMultiplier = v;
+        }
+
+        /**
+         * Maximum velocity curve for the X axis.
+         */
+        get limitX()
+        {
+            return this.limit3D.xCurve;
+        }
+
+        set limitX(v)
+        {
+            this.limit3D.xCurve = v;
+        }
+
+        /**
+         * Change the limit multiplier on the X axis.
+         */
+        get limitXMultiplier()
+        {
+            return this.limit3D.xCurve.curveMultiplier;
+        }
+
+        set limitXMultiplier(v)
+        {
+            this.limit3D.xCurve.curveMultiplier = v;
+        }
+
+        /**
+         * Maximum velocity curve for the Y axis.
+         */
+        get limitY()
+        {
+            return this.limit3D.yCurve;
+        }
+
+        set limitY(v)
+        {
+            this.limit3D.yCurve = v;
+        }
+
+        /**
+         * Change the limit multiplier on the Y axis.
+         */
+        get limitYMultiplier()
+        {
+            return this.limit3D.yCurve.curveMultiplier;
+        }
+
+        set limitYMultiplier(v)
+        {
+            this.limit3D.yCurve.curveMultiplier = v;
+        }
+
+        /**
+         * Maximum velocity curve for the Z axis.
+         */
+        get limitZ()
+        {
+            return this.limit3D.zCurve;
+        }
+
+        set limitZ(v)
+        {
+            this.limit3D.zCurve = v;
+        }
+
+        /**
+         * Change the limit multiplier on the Z axis.
+         */
+        get limitZMultiplier()
+        {
+            return this.limit3D.zCurve.curveMultiplier;
+        }
+
+        set limitZMultiplier(v)
+        {
+            this.limit3D.zCurve.curveMultiplier = v;
+        }
+
+        /**
          * 初始化粒子状态
          * @param particle 粒子
          */
@@ -59,27 +160,28 @@ namespace feng3d
         {
             if (!this.enabled) return;
 
-            var velocity = this.limit.getValue(rateAtLifeTime, particle[_LimitVelocityOverLifetime_rate]);
+            var limit3D = this.limit3D.getValue(rateAtLifeTime, particle[_LimitVelocityOverLifetime_rate]);
+            var limit = this.limit.getValue(rateAtLifeTime, particle[_LimitVelocityOverLifetime_rate]);
             var pVelocity = particle.velocity.clone();
             if (this.space == ParticleSystemSimulationSpace1.World)
             {
                 this.particleSystem.transform.localToWorldMatrix.deltaTransformVector(pVelocity, pVelocity)
                 if (this.separateAxes)
                 {
-                    pVelocity.clamp(velocity.negateTo(), velocity);
+                    pVelocity.clamp(limit3D.negateTo(), limit3D);
                 } else
                 {
-                    pVelocity.normalize(velocity.x);
+                    pVelocity.normalize(limit);
                 }
                 this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(pVelocity, pVelocity);
             } else
             {
                 if (this.separateAxes)
                 {
-                    pVelocity.clamp(velocity.negateTo(), velocity);
+                    pVelocity.clamp(limit3D.negateTo(), limit3D);
                 } else
                 {
-                    pVelocity.normalize(velocity.x);
+                    pVelocity.normalize(limit);
                 }
             }
             particle.velocity.lerpNumber(pVelocity, this.dampen);

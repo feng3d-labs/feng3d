@@ -34713,10 +34713,15 @@ var feng3d;
              */
             _this.separateAxes = false;
             /**
+             * Maximum velocity curve, when not using one curve per axis.
+             * 最大速度曲线，当不使用每轴一个曲线时。
+             */
+            _this.limit = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constant: 1, constant1: 1 });
+            /**
              * Maximum velocity.
              * 最高速度。
              */
-            _this.limit = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
+            _this.limit3D = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
             /**
              * Specifies if the velocities are in local space (rotated with the transform) or world space.
              * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
@@ -34730,6 +34735,98 @@ var feng3d;
             _this.dampen = 1;
             return _this;
         }
+        Object.defineProperty(ParticleLimitVelocityOverLifetimeModule.prototype, "limitMultiplier", {
+            /**
+             * Change the limit multiplier.
+             * 改变限制乘法因子。
+             */
+            get: function () {
+                return this.limit.curveMultiplier;
+            },
+            set: function (v) {
+                this.limit.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleLimitVelocityOverLifetimeModule.prototype, "limitX", {
+            /**
+             * Maximum velocity curve for the X axis.
+             */
+            get: function () {
+                return this.limit3D.xCurve;
+            },
+            set: function (v) {
+                this.limit3D.xCurve = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleLimitVelocityOverLifetimeModule.prototype, "limitXMultiplier", {
+            /**
+             * Change the limit multiplier on the X axis.
+             */
+            get: function () {
+                return this.limit3D.xCurve.curveMultiplier;
+            },
+            set: function (v) {
+                this.limit3D.xCurve.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleLimitVelocityOverLifetimeModule.prototype, "limitY", {
+            /**
+             * Maximum velocity curve for the Y axis.
+             */
+            get: function () {
+                return this.limit3D.yCurve;
+            },
+            set: function (v) {
+                this.limit3D.yCurve = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleLimitVelocityOverLifetimeModule.prototype, "limitYMultiplier", {
+            /**
+             * Change the limit multiplier on the Y axis.
+             */
+            get: function () {
+                return this.limit3D.yCurve.curveMultiplier;
+            },
+            set: function (v) {
+                this.limit3D.yCurve.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleLimitVelocityOverLifetimeModule.prototype, "limitZ", {
+            /**
+             * Maximum velocity curve for the Z axis.
+             */
+            get: function () {
+                return this.limit3D.zCurve;
+            },
+            set: function (v) {
+                this.limit3D.zCurve = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleLimitVelocityOverLifetimeModule.prototype, "limitZMultiplier", {
+            /**
+             * Change the limit multiplier on the Z axis.
+             */
+            get: function () {
+                return this.limit3D.zCurve.curveMultiplier;
+            },
+            set: function (v) {
+                this.limit3D.zCurve.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 初始化粒子状态
          * @param particle 粒子
@@ -34744,24 +34841,25 @@ var feng3d;
         ParticleLimitVelocityOverLifetimeModule.prototype.updateParticleState = function (particle, preTime, time, rateAtLifeTime) {
             if (!this.enabled)
                 return;
-            var velocity = this.limit.getValue(rateAtLifeTime, particle[_LimitVelocityOverLifetime_rate]);
+            var limit3D = this.limit3D.getValue(rateAtLifeTime, particle[_LimitVelocityOverLifetime_rate]);
+            var limit = this.limit.getValue(rateAtLifeTime, particle[_LimitVelocityOverLifetime_rate]);
             var pVelocity = particle.velocity.clone();
             if (this.space == feng3d.ParticleSystemSimulationSpace1.World) {
                 this.particleSystem.transform.localToWorldMatrix.deltaTransformVector(pVelocity, pVelocity);
                 if (this.separateAxes) {
-                    pVelocity.clamp(velocity.negateTo(), velocity);
+                    pVelocity.clamp(limit3D.negateTo(), limit3D);
                 }
                 else {
-                    pVelocity.normalize(velocity.x);
+                    pVelocity.normalize(limit);
                 }
                 this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(pVelocity, pVelocity);
             }
             else {
                 if (this.separateAxes) {
-                    pVelocity.clamp(velocity.negateTo(), velocity);
+                    pVelocity.clamp(limit3D.negateTo(), limit3D);
                 }
                 else {
-                    pVelocity.normalize(velocity.x);
+                    pVelocity.normalize(limit);
                 }
             }
             particle.velocity.lerpNumber(pVelocity, this.dampen);
@@ -34774,10 +34872,16 @@ var feng3d;
         ], ParticleLimitVelocityOverLifetimeModule.prototype, "separateAxes", void 0);
         __decorate([
             feng3d.serialize
+            // @oav({ tooltip: "Maximum velocity curve, when not using one curve per axis." })
+            ,
+            feng3d.oav({ tooltip: "最大速度曲线，当不使用每轴一个曲线时。" })
+        ], ParticleLimitVelocityOverLifetimeModule.prototype, "limit", void 0);
+        __decorate([
+            feng3d.serialize
             // @oav({ tooltip: "Maximum velocity." })
             ,
             feng3d.oav({ tooltip: "最高速度。" })
-        ], ParticleLimitVelocityOverLifetimeModule.prototype, "limit", void 0);
+        ], ParticleLimitVelocityOverLifetimeModule.prototype, "limit3D", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ tooltip: "指定速度是在局部空间(与变换一起旋转)还是在世界空间。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace1 } })
@@ -44793,6 +44897,7 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)

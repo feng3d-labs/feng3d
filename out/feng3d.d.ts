@@ -15207,10 +15207,15 @@ declare namespace feng3d {
          */
         separateAxes: boolean;
         /**
+         * Maximum velocity curve, when not using one curve per axis.
+         * 最大速度曲线，当不使用每轴一个曲线时。
+         */
+        limit: MinMaxCurve;
+        /**
          * Maximum velocity.
          * 最高速度。
          */
-        limit: MinMaxCurveVector3;
+        limit3D: MinMaxCurveVector3;
         /**
          * Specifies if the velocities are in local space (rotated with the transform) or world space.
          * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
@@ -15221,6 +15226,35 @@ declare namespace feng3d {
          * 控制多少速度，超过速度限制应该被抑制。
          */
         dampen: number;
+        /**
+         * Change the limit multiplier.
+         * 改变限制乘法因子。
+         */
+        limitMultiplier: number;
+        /**
+         * Maximum velocity curve for the X axis.
+         */
+        limitX: MinMaxCurve;
+        /**
+         * Change the limit multiplier on the X axis.
+         */
+        limitXMultiplier: number;
+        /**
+         * Maximum velocity curve for the Y axis.
+         */
+        limitY: MinMaxCurve;
+        /**
+         * Change the limit multiplier on the Y axis.
+         */
+        limitYMultiplier: number;
+        /**
+         * Maximum velocity curve for the Z axis.
+         */
+        limitZ: MinMaxCurve;
+        /**
+         * Change the limit multiplier on the Z axis.
+         */
+        limitZMultiplier: number;
         /**
          * 初始化粒子状态
          * @param particle 粒子
