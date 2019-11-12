@@ -14602,6 +14602,11 @@ declare namespace feng3d {
          */
         readonly numActiveParticles: number;
         readonly single: boolean;
+        /**
+         * Start delay in seconds.
+         * 启动延迟(以秒为单位)。在调用.play()时初始化值。
+         */
+        startDelay: number;
         constructor();
         update(interval: number): void;
         /**
@@ -14612,6 +14617,11 @@ declare namespace feng3d {
          * 播放
          */
         play(): void;
+        private _startDelay_rate;
+        /**
+         * @private
+         */
+        updateStartDelay(): void;
         /**
          * 暂停
          */
@@ -15052,7 +15062,7 @@ declare namespace feng3d {
         /**
          * 启动延迟(以秒为单位)。
          */
-        startDelay: number;
+        startDelay: MinMaxCurve;
         /**
          * 每个新粒子的总寿命(以秒计)。
          */

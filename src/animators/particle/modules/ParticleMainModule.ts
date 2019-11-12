@@ -39,7 +39,7 @@ namespace feng3d
         @serialize
         // @oav({ tooltip: "Start delay in seconds." })
         @oav({ tooltip: "启动延迟(以秒为单位)。" })
-        startDelay = 0;
+        startDelay = new MinMaxCurve();
 
         /**
          * 每个新粒子的总寿命(以秒计)。
@@ -185,7 +185,7 @@ namespace feng3d
          */
         get rateAtDuration()
         {
-            return ((this.particleSystem.time - this.startDelay) % this.duration) / this.duration;
+            return ((this.particleSystem.time - this.particleSystem.startDelay) % this.duration) / this.duration;
         }
 
         /**
@@ -196,7 +196,7 @@ namespace feng3d
         {
             particle[_Main_preGravity] = new Vector3();
 
-            var rateAtDuration = ((particle.birthTime - this.startDelay) % this.duration) / this.duration;
+            var rateAtDuration = ((particle.birthTime - this.particleSystem.startDelay) % this.duration) / this.duration;
             //
             particle.birthRateAtDuration = rateAtDuration;
 
