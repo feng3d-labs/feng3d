@@ -14463,9 +14463,17 @@ declare namespace feng3d {
          */
         rotation: Vector3;
         /**
+         * 角速度
+         */
+        angularVelocity: Vector3;
+        /**
          * 尺寸
          */
         size: Vector3;
+        /**
+         * 起始尺寸
+         */
+        startSize: Vector3;
         /**
          * 颜色
          */
