@@ -33483,12 +33483,25 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 粒子缩放模式
+     * Control how particle systems apply transform scale.
+     * 控制粒子系统如何应用变换尺度。
      */
     var ParticleSystemScalingMode;
     (function (ParticleSystemScalingMode) {
+        /**
+         * Scale the particle system using the entire transform hierarchy.
+         * 使用整个转换层次来缩放粒子系统。
+         */
         ParticleSystemScalingMode[ParticleSystemScalingMode["Hierarchy"] = 0] = "Hierarchy";
+        /**
+         * Scale the particle system using only its own transform scale. (Ignores parent scale).
+         * 尺度粒子系统只使用自己的变换尺度。(忽略了父母规模)。
+         */
         ParticleSystemScalingMode[ParticleSystemScalingMode["Local"] = 1] = "Local";
+        /**
+         * Only apply transform scale to the shape component, which controls where particles are spawned, but does not affect their size or movement.
+         * 只对形状组件应用变换比例，它控制生成粒子的位置，但不影响粒子的大小或移动。
+         */
         ParticleSystemScalingMode[ParticleSystemScalingMode["Shape"] = 2] = "Shape";
     })(ParticleSystemScalingMode = feng3d.ParticleSystemScalingMode || (feng3d.ParticleSystemScalingMode = {}));
 })(feng3d || (feng3d = {}));
@@ -34201,6 +34214,11 @@ var feng3d;
              */
             _this.loop = true;
             /**
+             * When looping is enabled, this controls whether this particle system will look like it has already simulated for one loop when first becoming visible.
+             * 当循环被激活时，它控制这个粒子系统在第一次出现时是否看起来像已经模拟了一个循环。
+             */
+            _this.prewarm = false;
+            /**
              * 启动延迟(以秒为单位)。
              */
             _this.startDelay = 0;
@@ -34222,6 +34240,11 @@ var feng3d;
              * 粒子发射时的初始旋转。
              */
             _this.startRotation3D = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { curveMultiplier: 180 }, yCurve: { curveMultiplier: 180 }, zCurve: { curveMultiplier: 180 } });
+            /**
+             * Cause some particles to spin in the opposite direction. Set between 0 and 1, where higher values will cause a higher proportion of particles to spin in the opposite direction.
+             * 导致一些粒子向相反的方向旋转。设置在0和1之间，数值越大，粒子朝相反方向旋转的比例越大。
+             */
+            _this.randomizeRotationDirection = 0;
             /**
              * 粒子发射时的初始颜色。
              */
@@ -34347,6 +34370,12 @@ var feng3d;
         ], ParticleMainModule.prototype, "loop", void 0);
         __decorate([
             feng3d.serialize
+            // @oav({ tooltip: "When looping is enabled, this controls whether this particle system will look like it has already simulated for one loop when first becoming visible." })
+            ,
+            feng3d.oav({ tooltip: "当循环被激活时，它控制这个粒子系统在第一次出现时是否看起来像已经模拟了一个循环。" })
+        ], ParticleMainModule.prototype, "prewarm", void 0);
+        __decorate([
+            feng3d.serialize
             // @oav({ tooltip: "Start delay in seconds." })
             ,
             feng3d.oav({ tooltip: "启动延迟(以秒为单位)。" })
@@ -34401,6 +34430,12 @@ var feng3d;
         ], ParticleMainModule.prototype, "startRotation", null);
         __decorate([
             feng3d.serialize
+            // @oav({ tooltip: "Cause some particles to spin in the opposite direction. Set between 0 and 1, where higher values will cause a higher proportion of particles to spin in the opposite direction." })
+            ,
+            feng3d.oav({ tooltip: "导致一些粒子向相反的方向旋转。设置在0和1之间，数值越大，粒子朝相反方向旋转的比例越大。" })
+        ], ParticleMainModule.prototype, "randomizeRotationDirection", void 0);
+        __decorate([
+            feng3d.serialize
             // @oav({ tooltip: "The initial color of particles when emitted." })
             ,
             feng3d.oav({ tooltip: "粒子发射时的初始颜色。" })
@@ -34431,9 +34466,9 @@ var feng3d;
         ], ParticleMainModule.prototype, "simulationSpeed", void 0);
         __decorate([
             feng3d.serialize
-            // @oav({ tooltip: "Control how the particle system's Transform Component is applied to the particle system." })
+            // @oav({ tooltip: "Control how the particle system's Transform Component is applied to the particle system.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemScalingMode } })
             ,
-            feng3d.oav({ tooltip: "控制粒子系统的变换组件如何应用于粒子系统。" })
+            feng3d.oav({ tooltip: "控制粒子系统的变换组件如何应用于粒子系统。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemScalingMode } })
         ], ParticleMainModule.prototype, "scalingMode", void 0);
         __decorate([
             feng3d.serialize
@@ -34442,8 +34477,9 @@ var feng3d;
             feng3d.oav({ tooltip: "如果设置为真，粒子系统将自动开始播放启动。" })
         ], ParticleMainModule.prototype, "playOnAwake", void 0);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav({ tooltip: "The maximum number of particles to emit." }),
+            feng3d.serialize
+            // @oav({ tooltip: "The maximum number of particles to emit." })
+            ,
             feng3d.oav({ tooltip: "发射粒子的最大数量。" })
         ], ParticleMainModule.prototype, "maxParticles", void 0);
         return ParticleMainModule;
@@ -34850,7 +34886,8 @@ var feng3d;
                     pVelocity.clamp(limit3D.negateTo(), limit3D);
                 }
                 else {
-                    pVelocity.normalize(limit);
+                    if (pVelocity.lengthSquared > limit * limit)
+                        pVelocity.normalize(limit);
                 }
                 this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(pVelocity, pVelocity);
             }
@@ -34859,7 +34896,8 @@ var feng3d;
                     pVelocity.clamp(limit3D.negateTo(), limit3D);
                 }
                 else {
-                    pVelocity.normalize(limit);
+                    if (pVelocity.lengthSquared > limit * limit)
+                        pVelocity.normalize(limit);
                 }
             }
             particle.velocity.lerpNumber(pVelocity, this.dampen);
@@ -44897,8 +44935,6 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-console.log("feng3d-0.1.3");
-console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

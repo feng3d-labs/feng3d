@@ -171,7 +171,8 @@ namespace feng3d
                     pVelocity.clamp(limit3D.negateTo(), limit3D);
                 } else
                 {
-                    pVelocity.normalize(limit);
+                    if (pVelocity.lengthSquared > limit * limit)
+                        pVelocity.normalize(limit);
                 }
                 this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(pVelocity, pVelocity);
             } else
@@ -181,7 +182,8 @@ namespace feng3d
                     pVelocity.clamp(limit3D.negateTo(), limit3D);
                 } else
                 {
-                    pVelocity.normalize(limit);
+                    if (pVelocity.lengthSquared > limit * limit)
+                        pVelocity.normalize(limit);
                 }
             }
             particle.velocity.lerpNumber(pVelocity, this.dampen);

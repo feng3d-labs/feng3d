@@ -14693,11 +14693,24 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 粒子缩放模式
+     * Control how particle systems apply transform scale.
+     * 控制粒子系统如何应用变换尺度。
      */
     enum ParticleSystemScalingMode {
+        /**
+         * Scale the particle system using the entire transform hierarchy.
+         * 使用整个转换层次来缩放粒子系统。
+         */
         Hierarchy = 0,
+        /**
+         * Scale the particle system using only its own transform scale. (Ignores parent scale).
+         * 尺度粒子系统只使用自己的变换尺度。(忽略了父母规模)。
+         */
         Local = 1,
+        /**
+         * Only apply transform scale to the shape component, which controls where particles are spawned, but does not affect their size or movement.
+         * 只对形状组件应用变换比例，它控制生成粒子的位置，但不影响粒子的大小或移动。
+         */
         Shape = 2
     }
 }
@@ -15032,6 +15045,11 @@ declare namespace feng3d {
          */
         loop: boolean;
         /**
+         * When looping is enabled, this controls whether this particle system will look like it has already simulated for one loop when first becoming visible.
+         * 当循环被激活时，它控制这个粒子系统在第一次出现时是否看起来像已经模拟了一个循环。
+         */
+        prewarm: boolean;
+        /**
          * 启动延迟(以秒为单位)。
          */
         startDelay: number;
@@ -15055,6 +15073,11 @@ declare namespace feng3d {
          */
         startRotation3D: MinMaxCurveVector3;
         startRotation: MinMaxCurve;
+        /**
+         * Cause some particles to spin in the opposite direction. Set between 0 and 1, where higher values will cause a higher proportion of particles to spin in the opposite direction.
+         * 导致一些粒子向相反的方向旋转。设置在0和1之间，数值越大，粒子朝相反方向旋转的比例越大。
+         */
+        randomizeRotationDirection: number;
         /**
          * 粒子发射时的初始颜色。
          */

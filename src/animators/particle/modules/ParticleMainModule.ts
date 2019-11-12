@@ -25,6 +25,15 @@ namespace feng3d
         loop = true;
 
         /**
+         * When looping is enabled, this controls whether this particle system will look like it has already simulated for one loop when first becoming visible.
+         * 当循环被激活时，它控制这个粒子系统在第一次出现时是否看起来像已经模拟了一个循环。
+         */
+        @serialize
+        // @oav({ tooltip: "When looping is enabled, this controls whether this particle system will look like it has already simulated for one loop when first becoming visible." })
+        @oav({ tooltip: "当循环被激活时，它控制这个粒子系统在第一次出现时是否看起来像已经模拟了一个循环。" })
+        prewarm = false;
+
+        /**
          * 启动延迟(以秒为单位)。
          */
         @serialize
@@ -99,6 +108,15 @@ namespace feng3d
         }
 
         /**
+         * Cause some particles to spin in the opposite direction. Set between 0 and 1, where higher values will cause a higher proportion of particles to spin in the opposite direction.
+         * 导致一些粒子向相反的方向旋转。设置在0和1之间，数值越大，粒子朝相反方向旋转的比例越大。
+         */
+        @serialize
+        // @oav({ tooltip: "Cause some particles to spin in the opposite direction. Set between 0 and 1, where higher values will cause a higher proportion of particles to spin in the opposite direction." })
+        @oav({ tooltip: "导致一些粒子向相反的方向旋转。设置在0和1之间，数值越大，粒子朝相反方向旋转的比例越大。" })
+        randomizeRotationDirection = 0;
+
+        /**
          * 粒子发射时的初始颜色。
          */
         @serialize
@@ -142,8 +160,8 @@ namespace feng3d
          * 控制粒子系统的变换组件如何应用于粒子系统。
          */
         @serialize
-        // @oav({ tooltip: "Control how the particle system's Transform Component is applied to the particle system." })
-        @oav({ tooltip: "控制粒子系统的变换组件如何应用于粒子系统。" })
+        // @oav({ tooltip: "Control how the particle system's Transform Component is applied to the particle system.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemScalingMode } })
+        @oav({ tooltip: "控制粒子系统的变换组件如何应用于粒子系统。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemScalingMode } })
         scalingMode = ParticleSystemScalingMode.Local;
 
         /**
@@ -158,7 +176,7 @@ namespace feng3d
          * 发射粒子的最大数量。
          */
         @serialize
-        @oav({ tooltip: "The maximum number of particles to emit." })
+        // @oav({ tooltip: "The maximum number of particles to emit." })
         @oav({ tooltip: "发射粒子的最大数量。" })
         maxParticles = 1000;
 
