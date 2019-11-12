@@ -187,11 +187,11 @@ namespace feng3d
             particle.acceleration.init(0, 0, 0);
             if (this.useStartSize3D)
             {
-                particle.size.copy(this.startSize3D.getValue(rateAtDuration));
+                particle.startSize.copy(this.startSize3D.getValue(rateAtDuration));
             } else
             {
                 var startSize = this.startSize.getValue(rateAtDuration);
-                particle.size.init(startSize, startSize, startSize);
+                particle.startSize.init(startSize, startSize, startSize);
             }
 
             //
@@ -224,8 +224,8 @@ namespace feng3d
             preGravity.copy(gravity);
 
             //
+            particle.size.copy(particle.startSize);
             particle.color.copy(particle.startColor);
-
         }
     }
 
