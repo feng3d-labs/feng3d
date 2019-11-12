@@ -22,7 +22,7 @@ namespace feng3d
         @serialize
         // @oav({ tooltip: "Curve to control particle size based on lifetime." })
         @oav({ tooltip: "基于寿命的粒度控制曲线。" })
-        size = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { constant: 1, constant1: 1, curveMultiplier: 1 }, yCurve: { constant: 1, constant1: 1, curveMultiplier: 1 }, zCurve: { constant: 1, constant1: 1, curveMultiplier: 1 } });
+        size = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1, curveMultiplier: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1, curveMultiplier: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1, curveMultiplier: 1 } });
 
         /**
          * 初始化粒子状态
