@@ -291,6 +291,7 @@
         "src/animators/particle/enums/ParticleSystemShapeType.ts",
         "src/animators/particle/enums/ParticleSystemShapeType1.ts",
         "src/animators/particle/enums/ParticleSystemMeshShapeType.ts",
+        "src/animators/particle/enums/ParticleSystemInheritVelocityMode.ts",
         //
         "src/animators/particle/shapes/ParticleSystemShape.ts",
         "src/animators/particle/shapes/ParticleSystemShapeSphere.ts",
@@ -305,6 +306,7 @@
         "src/animators/particle/modules/ParticleShapeModule.ts",
         "src/animators/particle/modules/ParticleVelocityOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticleLimitVelocityOverLifetimeModule.ts",
+        "src/animators/particle/modules/ParticleInheritVelocityModule.ts",
         "src/animators/particle/modules/ParticleForceOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticleColorOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticleSizeOverLifetimeModule.ts",
