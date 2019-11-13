@@ -2,12 +2,14 @@ namespace feng3d
 {
     /**
      * Limit Velocity Over Lifetime module.
+     * 
      * 基于时间轴限制速度模块。
      */
     export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
     {
         /**
          * Set the size over lifetime on each axis separately.
+         * 
          * 在每个轴上分别设置生命周期内的大小。
          */
         @serialize
@@ -17,6 +19,7 @@ namespace feng3d
 
         /**
          * Maximum velocity curve, when not using one curve per axis.
+         * 
          * 最大速度曲线，当不使用每轴一个曲线时。
          */
         @serialize
@@ -26,6 +29,7 @@ namespace feng3d
 
         /**
          * Maximum velocity.
+         * 
          * 最高速度。
          */
         @serialize
@@ -35,6 +39,7 @@ namespace feng3d
 
         /**
          * Specifies if the velocities are in local space (rotated with the transform) or world space.
+         * 
          * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
          */
         // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
@@ -44,6 +49,7 @@ namespace feng3d
 
         /**
          * Controls how much the velocity that exceeds the velocity limit should be dampened.
+         * 
          * 控制多少速度，超过速度限制应该被抑制。
          */
         @serialize
@@ -53,6 +59,7 @@ namespace feng3d
 
         /**
          * Change the limit multiplier.
+         * 
          * 改变限制乘法因子。
          */
         get limitMultiplier()
@@ -67,6 +74,8 @@ namespace feng3d
 
         /**
          * Maximum velocity curve for the X axis.
+         * 
+         * X轴的最大速度曲线。
          */
         get limitX()
         {
@@ -80,6 +89,8 @@ namespace feng3d
 
         /**
          * Change the limit multiplier on the X axis.
+         * 
+         * 改变X轴上的极限乘法器。
          */
         get limitXMultiplier()
         {
@@ -93,6 +104,8 @@ namespace feng3d
 
         /**
          * Maximum velocity curve for the Y axis.
+         * 
+         * Y轴的最大速度曲线。
          */
         get limitY()
         {
@@ -106,6 +119,8 @@ namespace feng3d
 
         /**
          * Change the limit multiplier on the Y axis.
+         * 
+         * 改变Y轴上的极限乘法器。
          */
         get limitYMultiplier()
         {
@@ -119,6 +134,8 @@ namespace feng3d
 
         /**
          * Maximum velocity curve for the Z axis.
+         * 
+         * Z轴的最大速度曲线。
          */
         get limitZ()
         {
@@ -132,6 +149,8 @@ namespace feng3d
 
         /**
          * Change the limit multiplier on the Z axis.
+         * 
+         * 更改Z轴上的极限乘法器。
          */
         get limitZMultiplier()
         {
@@ -145,6 +164,7 @@ namespace feng3d
 
         /**
          * 初始化粒子状态
+         * 
          * @param particle 粒子
          */
         initParticleState(particle: Particle)
@@ -154,6 +174,7 @@ namespace feng3d
 
         /**
          * 更新粒子状态
+         * 
          * @param particle 粒子
          */
         updateParticleState(particle: Particle)
