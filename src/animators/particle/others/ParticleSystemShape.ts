@@ -5,6 +5,13 @@ namespace feng3d
      */
     export class ParticleSystemShapeBase
     {
+        protected _module: ParticleShapeModule;
+
+        constructor(module: ParticleShapeModule)
+        {
+            this._module = module;
+        }
+
         /**
          * 初始化粒子状态
          * @param particle 粒子

@@ -5,9 +5,20 @@ namespace feng3d
      */
     export class ParticleSystemShapeSphere extends ParticleSystemShapeBase
     {
+        /**
+         * 球体半径
+         */
         @serialize
         @oav({ tooltip: "球体半径" })
-        radius = 1;
+        get radius()
+        {
+            return this._module.radius;
+        }
+
+        set radius(v)
+        {
+            this._module.radius = v;
+        }
 
         /**
          * 是否从球面发射

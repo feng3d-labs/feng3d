@@ -21,17 +21,50 @@ namespace feng3d
      */
     export class ParticleSystemShapeBox extends ParticleSystemShapeBase
     {
+        /**
+         * 盒子X方向缩放。
+         */
         @serialize
-        @oav({ tooltip: "盒子X方向宽度。" })
-        boxX = 1;
+        @oav({ tooltip: "盒子X方向缩放。" })
+        get boxX()
+        {
+            return this._module.box.x;
+        }
 
-        @serialize
-        @oav({ tooltip: "盒子Y方向宽度。" })
-        boxY = 1;
+        set boxX(v)
+        {
+            this._module.box.x = v;
+        }
 
+        /**
+         * 盒子Y方向缩放。
+         */
         @serialize
-        @oav({ tooltip: "盒子Z方向宽度。" })
-        boxZ = 1;
+        @oav({ tooltip: "盒子Y方向缩放。" })
+        get boxY()
+        {
+            return this._module.box.y;
+        }
+
+        set boxY(v)
+        {
+            this._module.box.y = v;
+        }
+
+        /**
+         * 盒子Z方向缩放。
+         */
+        @serialize
+        @oav({ tooltip: "盒子Z方向缩放。" })
+        get boxZ()
+        {
+            return this._module.box.z;
+        }
+
+        set boxZ(v)
+        {
+            this._module.box.z = v;
+        }
 
         /**
          * 粒子系统盒子发射类型。

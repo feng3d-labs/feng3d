@@ -11,23 +11,50 @@ namespace feng3d
 
         @serialize
         @oav({ tooltip: "弧度" })
-        arc = 360;
+        get arc()
+        {
+            return this._module.arc;
+        }
+
+        set arc(v)
+        {
+            this._module.arc = v;
+        }
 
         /**
          * The mode used for generating particles around the arc.
+         * 
          * 在弧线周围产生粒子的模式。
          */
         @serialize
+        // @oav({ tooltip: "The mode used for generating particles around the arc.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeMultiModeValue } })
         @oav({ tooltip: "在弧线周围产生粒子的模式。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeMultiModeValue } })
-        arcMode = ParticleSystemShapeMultiModeValue.Random;
+        get arcMode()
+        {
+            return this._module.arcMode;
+        }
+
+        set arcMode(v)
+        {
+            this._module.arcMode = v;
+        }
 
         /**
          * Control the gap between emission points around the arc.
+         * 
          * 控制弧线周围发射点之间的间隙。
          */
         @serialize
         @oav({ tooltip: "控制弧线周围发射点之间的间隙。" })
-        arcSpread = 0;
+        get arcSpread()
+        {
+            return this._module.arcSpread;
+        }
+
+        set arcSpread(v)
+        {
+            this._module.arcSpread = v;
+        }
 
         /**
          * When using one of the animated modes, how quickly to move the emission position around the arc.
@@ -35,7 +62,15 @@ namespace feng3d
          */
         @serialize
         @oav({ tooltip: "当使用一个动画模式时，如何快速移动发射位置周围的弧。" })
-        arcSpeed = serialization.setValue(new MinMaxCurve(), { constant: 1, constant1: 1 });
+        get arcSpeed()
+        {
+            return this._module.arcSpeed;
+        }
+
+        set arcSpeed(v)
+        {
+            this._module.arcSpeed = v;
+        }
 
         /**
          * 是否从圆形边缘发射。

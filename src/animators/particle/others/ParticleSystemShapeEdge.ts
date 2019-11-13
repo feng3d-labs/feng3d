@@ -18,7 +18,15 @@ namespace feng3d
          */
         @serialize
         @oav({ tooltip: "在弧线周围产生粒子的模式。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeMultiModeValue } })
-        arcMode = ParticleSystemShapeMultiModeValue.Random;
+        get arcMode()
+        {
+            return this._module.arcMode;
+        }
+
+        set arcMode(v)
+        {
+            this._module.arcMode = v;
+        }
 
         /**
          * Control the gap between emission points around the arc.

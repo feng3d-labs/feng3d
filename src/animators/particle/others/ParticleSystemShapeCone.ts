@@ -65,7 +65,15 @@ namespace feng3d
         @serialize
         // @oav({ tooltip: "Angle of the cone." })
         @oav({ tooltip: "圆锥的角度。" })
-        angle = 25;
+        get angle()
+        {
+            return this._module.angle;
+        }
+
+        set angle(v)
+        {
+            this._module.angle = v;
+        }
 
         /**
          * 圆锥体底部半径。
@@ -75,11 +83,24 @@ namespace feng3d
         radius = 1;
 
         /**
-         * 圆锥体高度。
+         * Length of the cone.
+         * 
+         * 圆锥的长度（高度）。
          */
         @serialize
-        @oav({ tooltip: "圆锥体高度。" })
-        height = 5;
+        // @oav({ tooltip: "Length of the cone." })
+        @oav({ tooltip: "圆锥的长度（高度）。" })
+        get length()
+        {
+            return this._module.length;
+        }
+
+        set length(v)
+        {
+            this._module.length = v;
+        }
+
+
 
         /**
          * Circle arc angle.
@@ -94,7 +115,15 @@ namespace feng3d
          */
         @serialize
         @oav({ tooltip: "在弧线周围产生粒子的模式。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeMultiModeValue } })
-        arcMode = ParticleSystemShapeMultiModeValue.Random;
+        get arcMode()
+        {
+            return this._module.arcMode;
+        }
+
+        set arcMode(v)
+        {
+            this._module.arcMode = v;
+        }
 
         /**
          * Control the gap between emission points around the arc.
@@ -167,8 +196,8 @@ namespace feng3d
             // 底面位置
             var bottomPos = basePos.scaleNumberTo(radius).scaleNumber(radiusRate);
             // 顶面位置
-            var topPos = basePos.scaleNumberTo(radius + this.height * Math.tan(Math.degToRad(angle))).scaleNumber(radiusRate);
-            topPos.z = this.height;
+            var topPos = basePos.scaleNumberTo(radius + this.length * Math.tan(Math.degToRad(angle))).scaleNumber(radiusRate);
+            topPos.z = this.length;
             // 计算速度
             particle.velocity.copy(topPos.subTo(bottomPos).normalize(speed));
             // 计算位置

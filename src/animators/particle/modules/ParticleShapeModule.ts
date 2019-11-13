@@ -78,12 +78,140 @@ namespace feng3d
         @oav({ tooltip: "Spherizes the starting direction of particles." })
         sphericalDirectionAmount = 0;
 
-        private _shapeSphere = new ParticleSystemShapeSphere();
-        private _shapeHemisphere = new ParticleSystemShapeHemisphere();
-        private _shapeCone = new ParticleSystemShapeCone();
-        private _shapeBox = new ParticleSystemShapeBox();
-        private _shapeCircle = new ParticleSystemShapeCircle();
-        private _shapeEdge = new ParticleSystemShapeEdge();
+        /**
+         * Angle of the cone.
+         * 
+         * 圆锥的角度。
+         */
+        angle = 25;
+
+        /**
+         * Circle arc angle.
+         * 
+         * 圆弧角。
+         */
+        arc = 360;
+
+        /**
+         * The mode used for generating particles around the arc.
+         * 
+         * 在弧线周围产生粒子的模式。
+         */
+        arcMode = ParticleSystemShapeMultiModeValue.Random;
+
+        /**
+         * When using one of the animated modes, how quickly to move the emission position around the arc.
+         * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
+         */
+        arcSpeed = serialization.setValue(new MinMaxCurve(), { constant: 1, constant1: 1 });
+
+        /**
+         * A multiplier of the arc speed of the emission shape.
+         * 
+         * 发射形状的电弧速度的乘数。
+         */
+        get arcSpeedMultiplier()
+        {
+            return this.arcSpeed.curveMultiplier;
+        }
+
+        set arcSpeedMultiplier(v)
+        {
+            this.arcSpeed.curveMultiplier = v;
+        }
+
+        /**
+         * Control the gap between emission points around the arc.
+         * 
+         * 控制弧线周围发射点之间的间隙。
+         */
+        arcSpread = 0;
+
+        /**
+         * Scale of the box.
+         * 
+         * 盒子的缩放。
+         */
+        box = new Vector3(1, 1, 1);
+
+        /**
+         * Length of the cone.
+         * 
+         * 圆锥的长度（高度）。
+         */
+        length = 5;
+
+        /**
+         * Mesh to emit particles from.
+         * 
+         * 发射粒子的网格。
+         * 
+         * @todo
+         */
+        mesh: Geometry;
+
+        /**
+         * Emit particles from a single material of a mesh.
+         * 
+         * 从一个网格的单一材料发射粒子。
+         * 
+         * @todo
+         */
+        meshMaterialIndex: number;
+
+        /**
+         * MeshRenderer to emit particles from.
+         * 
+         * 从 MeshRenderer 发射粒子。
+         * 
+         * @todo
+         */
+        // meshRenderer: MeshRenderer
+        meshRenderer: any;
+
+        /**
+         * Apply a scaling factor to the mesh used for generating source positions.
+         * 
+         * 对用于生成源位置的网格应用缩放因子。
+         * 
+         * @todo
+         */
+        meshScale = 1;
+
+        /**
+         * Where on the mesh to emit particles from.
+         * 
+         * 从网格的什么地方发射粒子。
+         * 
+         * @todo
+         */
+        meshShapeType = ParticleSystemMeshShapeType.Vertex;
+
+        /**
+         * Move particles away from the surface of the source mesh.
+         * 
+         * 将粒子从源网格的表面移开。
+         */
+        normalOffset = 0;
+
+        /**
+         * Radius of the shape.
+         * 
+         * 形状的半径。
+         */
+        radius = 1;
+
+        /**
+         * The mode used for generating particles along the radius.
+         */
+        radiusMode = ParticleSystemShapeMultiModeValue.Random;
+
+        private _shapeSphere = new ParticleSystemShapeSphere(this);
+        private _shapeHemisphere = new ParticleSystemShapeHemisphere(this);
+        private _shapeCone = new ParticleSystemShapeCone(this);
+        private _shapeBox = new ParticleSystemShapeBox(this);
+        private _shapeCircle = new ParticleSystemShapeCircle(this);
+        private _shapeEdge = new ParticleSystemShapeEdge(this);
 
         constructor()
         {
