@@ -74,5 +74,34 @@ namespace feng3d
         {
             return this.bursts.length;
         }
+
+        /**
+         * Get the burst array.
+         * 获取突发数组。
+         * 
+         * @param bursts Array of bursts to be filled in.要填充的突发数组。
+         * @returns The number of bursts in the array.数组中的突发次数。
+         */
+        GetBursts(bursts: ParticleEmissionBurst[])
+        {
+            bursts.length = this.bursts.length;
+            for (let i = 0, n = bursts.length; i < n; i++)
+            {
+                bursts[i] = this.bursts[i];
+            }
+            return bursts.length;
+        }
+
+        /**
+         * Set the burst array.
+         * 设置突发数组。
+         * 
+         * @param bursts Array of bursts.破裂的数组。
+         * @param size Optional array size, if burst count is less than array size.可选的数组大小，如果突发计数小于数组大小。
+         */
+        SetBursts(bursts: ParticleEmissionBurst[], size: number)
+        {
+            
+        }
     }
 }
