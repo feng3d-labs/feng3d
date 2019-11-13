@@ -212,8 +212,11 @@ namespace feng3d
                     case gl.INT:
                         gl.uniform1i(location, data);
                         break;
+                    case gl.FLOAT_MAT3:
+                        gl.uniformMatrix3fv(location, false, (<Matrix3x3>data).elements);
+                        break;
                     case gl.FLOAT_MAT4:
-                        gl.uniformMatrix4fv(location, false, data.rawData);
+                        gl.uniformMatrix4fv(location, false, (<Matrix4x4>data).rawData);
                         break;
                     case gl.FLOAT:
                         gl.uniform1f(location, data);

@@ -222,6 +222,11 @@ namespace feng3d
         u_particleTime: number;
 
         /**
+         * 粒子公告牌矩阵
+         */
+        u_particle_billboardMatrix: Matrix3x3;
+
+        /**
          * 点大小
          */
         u_PointSize: number;

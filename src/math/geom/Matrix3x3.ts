@@ -463,5 +463,25 @@ namespace feng3d
         {
             return target.copy(this).transpose();
         }
+
+        formMatrix4x4(matrix4x4: Matrix4x4)
+        {
+            var arr4 = matrix4x4.rawData;
+            var arr3 = this.elements;
+
+            arr3[0] = arr4[0];
+            arr3[1] = arr4[1];
+            arr3[2] = arr4[2];
+
+            arr3[3] = arr4[4];
+            arr3[4] = arr4[5];
+            arr3[5] = arr4[6];
+
+            arr3[6] = arr4[8];
+            arr3[7] = arr4[9];
+            arr3[8] = arr4[10];
+
+            return this;
+        }
     }
 }

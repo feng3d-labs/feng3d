@@ -10,6 +10,8 @@
         attribute vec2 a_particle_flipUV;
     #endif
 
+    uniform mat3 u_particle_billboardMatrix;
+
     varying vec4 v_particle_color;
 
     mat3 makeParticleRotationMatrix(vec3 rotation)
@@ -42,6 +44,7 @@
         // 计算旋转
         mat3 rMat = makeParticleRotationMatrix(a_particle_rotation);
         position.xyz = rMat * position.xyz;
+        position.xyz = u_particle_billboardMatrix * position.xyz;
 
         // 位移
         position.xyz = position.xyz + a_particle_position;

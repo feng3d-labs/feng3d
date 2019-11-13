@@ -312,8 +312,13 @@ namespace feng3d
             var localCameraPos = this.gameObject.transform.worldToLocalMatrix.transformVector(cameraMatrix.position);
             var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
             // 计算公告牌矩阵
-            var billboardMatrix = new Matrix4x4();
-            billboardMatrix.lookAt(localCameraPos, localCameraUp);
+            var billboardMatrix = new Matrix3x3();
+            if (!this.shape.alignToDirection && this.geometry == Geometry.billboard)
+            {
+                var matrix4x4 = new Matrix4x4();
+                matrix4x4.lookAt(localCameraPos, localCameraUp);
+                billboardMatrix.formMatrix4x4(matrix4x4);
+            }
 
             var positions: number[] = [];
             var scales: number[] = [];
@@ -327,17 +332,7 @@ namespace feng3d
                 positions.push(particle.position.x, particle.position.y, particle.position.z);
                 scales.push(particle.size.x, particle.size.y, particle.size.z);
 
-                // 计算旋转
-                var rotation = particle.rotation;
-                if (!this.shape.alignToDirection && this.geometry == Geometry.billboard && cameraMatrix)
-                {
-                    // 应用公告牌矩阵
-                    var matrix = Matrix4x4.fromRotation(particle.rotation.x, particle.rotation.y, particle.rotation.z);
-                    matrix.append(billboardMatrix);
-                    //
-                    rotation = matrix.rotation;
-                }
-                rotations.push(rotation.x, rotation.y, rotation.z);
+                rotations.push(particle.rotation.x, particle.rotation.y, particle.rotation.z);
                 colors.push(particle.color.r, particle.color.g, particle.color.b, particle.color.a);
                 tilingOffsets.push(particle.tilingOffset.x, particle.tilingOffset.y, particle.tilingOffset.z, particle.tilingOffset.w);
                 flipUVs.push(particle.flipUV.x, particle.flipUV.y);
@@ -353,6 +348,7 @@ namespace feng3d
 
             //
             renderAtomic.uniforms.u_particleTime = this._realTime;
+            renderAtomic.uniforms.u_particle_billboardMatrix = billboardMatrix;
 
             for (const key in this._attributes)
             {

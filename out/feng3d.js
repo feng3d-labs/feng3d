@@ -355,7 +355,7 @@ var feng3d;
             "normal_vert": "vec3 normal = a_normal;",
             "particle_frag": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    finalColor = particleAnimation(finalColor);\r\n#endif",
             "particle_pars_frag": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    varying vec4 v_particle_color;\r\n\r\n    vec4 particleAnimation(vec4 color) {\r\n\r\n        color.xyz = color.xyz * v_particle_color.xyz;\r\n        color.xyz = color.xyz * v_particle_color.www;\r\n        return color;\r\n    }\r\n#endif",
-            "particle_pars_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    //\r\n    attribute vec3 a_particle_position;\r\n    attribute vec3 a_particle_scale;\r\n    attribute vec3 a_particle_rotation;\r\n    attribute vec4 a_particle_color;\r\n\r\n    #ifdef ENABLED_PARTICLE_SYSTEM_textureSheetAnimation\r\n        attribute vec4 a_particle_tilingOffset;\r\n        attribute vec2 a_particle_flipUV;\r\n    #endif\r\n\r\n    varying vec4 v_particle_color;\r\n\r\n    mat3 makeParticleRotationMatrix(vec3 rotation)\r\n    {\r\n        float DEG2RAD = 3.1415926 / 180.0;\r\n        \r\n        float rx = rotation.x * DEG2RAD;\r\n        float ry = rotation.y * DEG2RAD;\r\n        float rz = rotation.z * DEG2RAD;\r\n\r\n        float sx = sin(rx);\r\n        float cx = cos(rx);\r\n        float sy = sin(ry);\r\n        float cy = cos(ry);\r\n        float sz = sin(rz);\r\n        float cz = cos(rz);\r\n\r\n        mat3 tmp;\r\n        tmp[ 0 ] = vec3(cy * cz, cy * sz, -sy);\r\n        tmp[ 1 ] = vec3(sx * sy * cz - cx * sz, sx * sy * sz + cx * cz, sx * cy);\r\n        tmp[ 2 ] = vec3(cx * sy * cz + sx * sz, cx * sy * sz - sx * cz, cx * cy);\r\n        return tmp;\r\n    }\r\n\r\n    vec4 particleAnimation(vec4 position) \r\n    {\r\n        // 计算缩放\r\n        position.xyz = position.xyz * a_particle_scale;\r\n\r\n        // 计算旋转\r\n        mat3 rMat = makeParticleRotationMatrix(a_particle_rotation);\r\n        position.xyz = rMat * position.xyz;\r\n\r\n        // 位移\r\n        position.xyz = position.xyz + a_particle_position;\r\n\r\n        // 颜色\r\n        v_particle_color = a_particle_color;\r\n\r\n        #ifdef ENABLED_PARTICLE_SYSTEM_textureSheetAnimation\r\n            if(a_particle_flipUV.x > 0.5) v_uv.x = 1.0 - v_uv.x;\r\n            if(a_particle_flipUV.y > 0.5) v_uv.y = 1.0 - v_uv.y;\r\n            v_uv = v_uv * a_particle_tilingOffset.xy + a_particle_tilingOffset.zw;\r\n        #endif\r\n        \r\n        return position;\r\n    }\r\n#endif",
+            "particle_pars_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    //\r\n    attribute vec3 a_particle_position;\r\n    attribute vec3 a_particle_scale;\r\n    attribute vec3 a_particle_rotation;\r\n    attribute vec4 a_particle_color;\r\n\r\n    #ifdef ENABLED_PARTICLE_SYSTEM_textureSheetAnimation\r\n        attribute vec4 a_particle_tilingOffset;\r\n        attribute vec2 a_particle_flipUV;\r\n    #endif\r\n\r\n    uniform mat3 u_particle_billboardMatrix;\r\n\r\n    varying vec4 v_particle_color;\r\n\r\n    mat3 makeParticleRotationMatrix(vec3 rotation)\r\n    {\r\n        float DEG2RAD = 3.1415926 / 180.0;\r\n        \r\n        float rx = rotation.x * DEG2RAD;\r\n        float ry = rotation.y * DEG2RAD;\r\n        float rz = rotation.z * DEG2RAD;\r\n\r\n        float sx = sin(rx);\r\n        float cx = cos(rx);\r\n        float sy = sin(ry);\r\n        float cy = cos(ry);\r\n        float sz = sin(rz);\r\n        float cz = cos(rz);\r\n\r\n        mat3 tmp;\r\n        tmp[ 0 ] = vec3(cy * cz, cy * sz, -sy);\r\n        tmp[ 1 ] = vec3(sx * sy * cz - cx * sz, sx * sy * sz + cx * cz, sx * cy);\r\n        tmp[ 2 ] = vec3(cx * sy * cz + sx * sz, cx * sy * sz - sx * cz, cx * cy);\r\n        return tmp;\r\n    }\r\n\r\n    vec4 particleAnimation(vec4 position) \r\n    {\r\n        // 计算缩放\r\n        position.xyz = position.xyz * a_particle_scale;\r\n\r\n        // 计算旋转\r\n        mat3 rMat = makeParticleRotationMatrix(a_particle_rotation);\r\n        position.xyz = rMat * position.xyz;\r\n        position.xyz = u_particle_billboardMatrix * position.xyz;\r\n\r\n        // 位移\r\n        position.xyz = position.xyz + a_particle_position;\r\n\r\n        // 颜色\r\n        v_particle_color = a_particle_color;\r\n\r\n        #ifdef ENABLED_PARTICLE_SYSTEM_textureSheetAnimation\r\n            if(a_particle_flipUV.x > 0.5) v_uv.x = 1.0 - v_uv.x;\r\n            if(a_particle_flipUV.y > 0.5) v_uv.y = 1.0 - v_uv.y;\r\n            v_uv = v_uv * a_particle_tilingOffset.xy + a_particle_tilingOffset.zw;\r\n        #endif\r\n        \r\n        return position;\r\n    }\r\n#endif",
             "particle_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    position = particleAnimation(position);\r\n#endif",
             "pointsize_pars_vert": "#ifdef IS_POINTS_MODE\r\n    uniform float u_PointSize;\r\n#endif",
             "pointsize_vert": "#ifdef IS_POINTS_MODE\r\n    gl_PointSize = u_PointSize;\r\n#endif",
@@ -11211,6 +11211,20 @@ var feng3d;
         Matrix3x3.prototype.transposeTo = function (target) {
             if (target === void 0) { target = new feng3d.Matrix3x3(); }
             return target.copy(this).transpose();
+        };
+        Matrix3x3.prototype.formMatrix4x4 = function (matrix4x4) {
+            var arr4 = matrix4x4.rawData;
+            var arr3 = this.elements;
+            arr3[0] = arr4[0];
+            arr3[1] = arr4[1];
+            arr3[2] = arr4[2];
+            arr3[3] = arr4[4];
+            arr3[4] = arr4[5];
+            arr3[5] = arr4[6];
+            arr3[6] = arr4[8];
+            arr3[7] = arr4[9];
+            arr3[8] = arr4[10];
+            return this;
         };
         return Matrix3x3;
     }());
@@ -22140,6 +22154,9 @@ var feng3d;
                     case gl.INT:
                         gl.uniform1i(location, data);
                         break;
+                    case gl.FLOAT_MAT3:
+                        gl.uniformMatrix3fv(location, false, data.elements);
+                        break;
                     case gl.FLOAT_MAT4:
                         gl.uniformMatrix4fv(location, false, data.rawData);
                         break;
@@ -32871,120 +32888,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var ParticleEmissionBurst = /** @class */ (function () {
-        function ParticleEmissionBurst() {
-            /**
-             * The time that each burst occurs.
-             * 每次爆炸发生的时间。
-             */
-            this.time = 0;
-            /**
-             * 要发射的粒子数。
-             */
-            this.count = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 30, constant1: 30 });
-            /**
-             * How many times to play the burst. (0 means infinitely).
-             * 爆发次数。(0意味着无限)。
-             *
-             * @todo
-             */
-            this.cycleCount = 1;
-            /**
-             * How often to repeat the burst, in seconds.
-             *
-             * 多久重复一次，以秒为单位。
-             *
-             * @todo
-             */
-            this.repeatInterval = 0.01;
-            /**
-             * 喷发被触发的几率。
-             */
-            this.probability = 1.0;
-            this._isProbability = true;
-        }
-        Object.defineProperty(ParticleEmissionBurst.prototype, "minCount", {
-            /**
-             * Minimum number of bursts to be emitted.
-             * 要发射的最小爆发数量。
-             */
-            get: function () {
-                return this.count.constant;
-            },
-            set: function (v) {
-                this.count.constant = v;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ParticleEmissionBurst.prototype, "maxCount", {
-            /**
-             * Maximum number of bursts to be emitted.
-             *
-             * 要发射的最大爆发数量。
-             */
-            get: function () {
-                return this.count.constant1;
-            },
-            set: function (v) {
-                this.count.constant1 = v;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ParticleEmissionBurst.prototype, "isProbability", {
-            /**
-             * 是否喷发
-             */
-            get: function () {
-                return this._isProbability;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 通过触发的几率计算是否喷发。
-         */
-        ParticleEmissionBurst.prototype.calculateProbability = function () {
-            this._isProbability = this.probability >= Math.random();
-            return this._isProbability;
-        };
-        __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "The time that each burst occurs." })
-            ,
-            feng3d.oav({ tooltip: "每次爆炸发生的时间。" })
-        ], ParticleEmissionBurst.prototype, "time", void 0);
-        __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "Number of particles to be emitted." })
-            ,
-            feng3d.oav({ tooltip: "要发射的粒子数。" })
-        ], ParticleEmissionBurst.prototype, "count", void 0);
-        __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "How many times to play the burst. (0 means infinitely)." })
-            ,
-            feng3d.oav({ tooltip: "爆发次数。(0意味着无限)。" })
-        ], ParticleEmissionBurst.prototype, "cycleCount", void 0);
-        __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "How often to repeat the burst, in seconds." })
-            ,
-            feng3d.oav({ tooltip: "多久重复一次，以秒为单位。" })
-        ], ParticleEmissionBurst.prototype, "repeatInterval", void 0);
-        __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "The chance that the burst will trigger." })
-            ,
-            feng3d.oav({ tooltip: "喷发被触发的几率。取值在0与1之间，默认1。" })
-        ], ParticleEmissionBurst.prototype, "probability", void 0);
-        return ParticleEmissionBurst;
-    }());
-    feng3d.ParticleEmissionBurst = ParticleEmissionBurst;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     var ParticleUniforms = /** @class */ (function (_super) {
         __extends(ParticleUniforms, _super);
         function ParticleUniforms() {
@@ -33284,8 +33187,12 @@ var feng3d;
             var localCameraPos = this.gameObject.transform.worldToLocalMatrix.transformVector(cameraMatrix.position);
             var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
             // 计算公告牌矩阵
-            var billboardMatrix = new feng3d.Matrix4x4();
-            billboardMatrix.lookAt(localCameraPos, localCameraUp);
+            var billboardMatrix = new feng3d.Matrix3x3();
+            if (!this.shape.alignToDirection && this.geometry == feng3d.Geometry.billboard) {
+                var matrix4x4 = new feng3d.Matrix4x4();
+                matrix4x4.lookAt(localCameraPos, localCameraUp);
+                billboardMatrix.formMatrix4x4(matrix4x4);
+            }
             var positions = [];
             var scales = [];
             var rotations = [];
@@ -33296,16 +33203,7 @@ var feng3d;
                 var particle = this._activeParticles[i];
                 positions.push(particle.position.x, particle.position.y, particle.position.z);
                 scales.push(particle.size.x, particle.size.y, particle.size.z);
-                // 计算旋转
-                var rotation = particle.rotation;
-                if (!this.shape.alignToDirection && this.geometry == feng3d.Geometry.billboard && cameraMatrix) {
-                    // 应用公告牌矩阵
-                    var matrix = feng3d.Matrix4x4.fromRotation(particle.rotation.x, particle.rotation.y, particle.rotation.z);
-                    matrix.append(billboardMatrix);
-                    //
-                    rotation = matrix.rotation;
-                }
-                rotations.push(rotation.x, rotation.y, rotation.z);
+                rotations.push(particle.rotation.x, particle.rotation.y, particle.rotation.z);
                 colors.push(particle.color.r, particle.color.g, particle.color.b, particle.color.a);
                 tilingOffsets.push(particle.tilingOffset.x, particle.tilingOffset.y, particle.tilingOffset.z, particle.tilingOffset.w);
                 flipUVs.push(particle.flipUV.x, particle.flipUV.y);
@@ -33319,6 +33217,7 @@ var feng3d;
             this._attributes.a_particle_flipUV.data = flipUVs;
             //
             renderAtomic.uniforms.u_particleTime = this._realTime;
+            renderAtomic.uniforms.u_particle_billboardMatrix = billboardMatrix;
             for (var key in this._attributes) {
                 renderAtomic.attributes[key] = this._attributes[key];
             }
@@ -33514,19 +33413,136 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var ParticleEmissionBurst = /** @class */ (function () {
+        function ParticleEmissionBurst() {
+            /**
+             * The time that each burst occurs.
+             * 每次爆炸发生的时间。
+             */
+            this.time = 0;
+            /**
+             * 要发射的粒子数。
+             */
+            this.count = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 30, constant1: 30 });
+            /**
+             * How many times to play the burst. (0 means infinitely).
+             * 爆发次数。(0意味着无限)。
+             *
+             * @todo
+             */
+            this.cycleCount = 1;
+            /**
+             * How often to repeat the burst, in seconds.
+             *
+             * 多久重复一次，以秒为单位。
+             *
+             * @todo
+             */
+            this.repeatInterval = 0.01;
+            /**
+             * 喷发被触发的几率。
+             */
+            this.probability = 1.0;
+            this._isProbability = true;
+        }
+        Object.defineProperty(ParticleEmissionBurst.prototype, "minCount", {
+            /**
+             * Minimum number of bursts to be emitted.
+             * 要发射的最小爆发数量。
+             */
+            get: function () {
+                return this.count.constant;
+            },
+            set: function (v) {
+                this.count.constant = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleEmissionBurst.prototype, "maxCount", {
+            /**
+             * Maximum number of bursts to be emitted.
+             *
+             * 要发射的最大爆发数量。
+             */
+            get: function () {
+                return this.count.constant1;
+            },
+            set: function (v) {
+                this.count.constant1 = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleEmissionBurst.prototype, "isProbability", {
+            /**
+             * 是否喷发
+             */
+            get: function () {
+                return this._isProbability;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 通过触发的几率计算是否喷发。
+         */
+        ParticleEmissionBurst.prototype.calculateProbability = function () {
+            this._isProbability = this.probability >= Math.random();
+            return this._isProbability;
+        };
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "The time that each burst occurs." })
+            ,
+            feng3d.oav({ tooltip: "每次爆炸发生的时间。" })
+        ], ParticleEmissionBurst.prototype, "time", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Number of particles to be emitted." })
+            ,
+            feng3d.oav({ tooltip: "要发射的粒子数。" })
+        ], ParticleEmissionBurst.prototype, "count", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "How many times to play the burst. (0 means infinitely)." })
+            ,
+            feng3d.oav({ tooltip: "爆发次数。(0意味着无限)。" })
+        ], ParticleEmissionBurst.prototype, "cycleCount", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "How often to repeat the burst, in seconds." })
+            ,
+            feng3d.oav({ tooltip: "多久重复一次，以秒为单位。" })
+        ], ParticleEmissionBurst.prototype, "repeatInterval", void 0);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "The chance that the burst will trigger." })
+            ,
+            feng3d.oav({ tooltip: "喷发被触发的几率。取值在0与1之间，默认1。" })
+        ], ParticleEmissionBurst.prototype, "probability", void 0);
+        return ParticleEmissionBurst;
+    }());
+    feng3d.ParticleEmissionBurst = ParticleEmissionBurst;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * The animation type.
+     *
      * 动画类型。
      */
     var ParticleSystemAnimationType;
     (function (ParticleSystemAnimationType) {
         /**
          * Animate over the whole texture sheet from left to right, top to bottom.
+         *
          * 从左到右，从上到下动画整个纹理表。
          */
         ParticleSystemAnimationType[ParticleSystemAnimationType["WholeSheet"] = 0] = "WholeSheet";
         /**
          * Animate a single row in the sheet from left to right.
+         *
          * 从左到右移动工作表中的一行。
          */
         ParticleSystemAnimationType[ParticleSystemAnimationType["SingleRow"] = 1] = "SingleRow";
@@ -33839,6 +33855,29 @@ var feng3d;
          */
         ParticleSystemMeshShapeType[ParticleSystemMeshShapeType["Triangle"] = 2] = "Triangle";
     })(ParticleSystemMeshShapeType = feng3d.ParticleSystemMeshShapeType || (feng3d.ParticleSystemMeshShapeType = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * How to apply emitter velocity to particles.
+     *
+     * 如何将发射体速度应用于粒子。
+     */
+    var ParticleSystemInheritVelocityMode;
+    (function (ParticleSystemInheritVelocityMode) {
+        /**
+         * Each particle inherits the emitter's velocity on the frame when it was initially emitted.
+         *
+         * 每个粒子在最初发射时都继承了发射体在帧上的速度。
+         */
+        ParticleSystemInheritVelocityMode[ParticleSystemInheritVelocityMode["Initial"] = 0] = "Initial";
+        /**
+         * Each particle's velocity is set to the emitter's current velocity value, every frame.
+         *
+         * 每一帧，每个粒子的速度都设定为发射器的当前速度值。
+         */
+        ParticleSystemInheritVelocityMode[ParticleSystemInheritVelocityMode["Current"] = 1] = "Current";
+    })(ParticleSystemInheritVelocityMode = feng3d.ParticleSystemInheritVelocityMode || (feng3d.ParticleSystemInheritVelocityMode = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -36146,6 +36185,65 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * The Inherit Velocity Module controls how the velocity of the emitter is transferred to the particles as they are emitted.
+     *
+     * 遗传速度模块控制发射体的速度在粒子发射时如何传递到粒子上。
+     */
+    var InheritVelocityModule = /** @class */ (function (_super) {
+        __extends(InheritVelocityModule, _super);
+        function InheritVelocityModule() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * How to apply emitter velocity to particles.
+             *
+             * 如何将发射体速度应用于粒子。
+             */
+            _this.mode = feng3d.ParticleSystemInheritVelocityMode.Initial;
+            /**
+             * Curve to define how much emitter velocity is applied during the lifetime of a particle.
+             *
+             * 曲线，用来定义在粒子的生命周期内应用了多少发射速度。
+             */
+            _this.multiplier = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 1, constant1: 1 });
+            return _this;
+        }
+        Object.defineProperty(InheritVelocityModule.prototype, "curve", {
+            /**
+             * Curve to define how much emitter velocity is applied during the lifetime of a particle.
+             *
+             * 曲线，用来定义在粒子的生命周期内应用了多少发射速度。
+             */
+            get: function () {
+                return this.multiplier;
+            },
+            set: function (v) {
+                this.multiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(InheritVelocityModule.prototype, "curveMultiplier", {
+            /**
+             * Change the curve multiplier.
+             *
+             * 改变曲线的乘数。
+             */
+            get: function () {
+                return this.multiplier.curveMultiplier;
+            },
+            set: function (v) {
+                this.multiplier.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return InheritVelocityModule;
+    }(feng3d.ParticleModule));
+    feng3d.InheritVelocityModule = InheritVelocityModule;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 粒子系统 作用在粒子上的力随时间变化模块
      *
      * 控制每个粒子在其生命周期内的力。
@@ -36694,41 +36792,50 @@ var feng3d;
             var _this = _super !== null && _super.apply(this, arguments) || this;
             /**
              * Defines the tiling of the texture.
+             *
              * 定义纹理的平铺。
              */
             _this.tiles = new feng3d.Vector2(1, 1);
             /**
              * Specifies the animation type.
+             *
+             * 指定动画类型。
              */
             _this.animation = feng3d.ParticleSystemAnimationType.WholeSheet;
             /**
              * Curve to control which frame of the texture sheet animation to play.
+             *
              * 曲线控制哪个帧的纹理表动画播放。
              */
             _this.frameOverTime = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { mode: feng3d.MinMaxCurveMode.Curve, curve: { keys: [{ time: 0, value: 0, tangent: 1 }, { time: 1, value: 1, tangent: 1 }] } });
             /**
              * Use a random row of the texture sheet for each particle emitted.
+             *
              * 对每个发射的粒子使用纹理表的随机行。
              */
             _this.useRandomRow = true;
             _this._rowIndex = 0;
             /**
              * Define a random starting frame for the texture sheet animation.
+             *
              * 为纹理表动画定义一个随机的起始帧。
              */
-            _this.startFrame = 0;
+            _this.startFrame = new feng3d.MinMaxCurve();
             /**
              * Specifies how many times the animation will loop during the lifetime of the particle.
+             *
              * 指定在粒子的生命周期内动画将循环多少次。
              */
             _this.cycleCount = 1;
             /**
              * Flip the UV coordinate on particles, causing them to appear mirrored.
+             *
              * 在粒子上翻转UV坐标，使它们呈现镜像翻转。
              */
             _this.flipUV = new feng3d.Vector2();
             /**
              * Choose which UV channels will receive texture animation.
+             *
              * 选择哪个UV通道将接收纹理动画。
              *
              * todo 目前引擎中只有一套UV
@@ -36739,6 +36846,7 @@ var feng3d;
         Object.defineProperty(ParticleTextureSheetAnimationModule.prototype, "rowIndex", {
             /**
              * Explicitly select which row of the texture sheet is used, when useRandomRow is set to false.
+             *
              * 当useRandomRow设置为false时，显式选择使用纹理表的哪一行。
              */
             get: function () { return this._rowIndex; },
@@ -36748,12 +36856,103 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(ParticleTextureSheetAnimationModule.prototype, "flipU", {
+            /**
+             * Flip the U coordinate on particles, causing them to appear mirrored horizontally.
+             *
+             * 在粒子上翻转U坐标，使它们呈现水平镜像。
+             */
+            get: function () {
+                return this.flipUV.x;
+            },
+            set: function (v) {
+                this.flipUV.x = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleTextureSheetAnimationModule.prototype, "flipV", {
+            /**
+             * Flip the V coordinate on particles, causing them to appear mirrored vertically.
+             *
+             * 在粒子上翻转V坐标，使它们垂直镜像。
+             */
+            get: function () {
+                return this.flipUV.y;
+            },
+            set: function (v) {
+                this.flipUV.y = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleTextureSheetAnimationModule.prototype, "frameOverTimeMultiplier", {
+            /**
+             * Frame over time mutiplier.
+             *
+             * 帧随时间变化的乘数。
+             */
+            get: function () {
+                return this.frameOverTime.curveMultiplier;
+            },
+            set: function (v) {
+                this.frameOverTime.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleTextureSheetAnimationModule.prototype, "numTilesX", {
+            /**
+             * Defines the tiling of the texture in the X axis.
+             *
+             * 定义纹理在X轴上的平铺。
+             */
+            get: function () {
+                return this.tiles.x;
+            },
+            set: function (v) {
+                this.tiles.x = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleTextureSheetAnimationModule.prototype, "numTilesY", {
+            /**
+             * Defines the tiling of the texture in the Y axis.
+             *
+             * 定义纹理在Y轴上的平铺。
+             */
+            get: function () {
+                return this.tiles.y;
+            },
+            set: function (v) {
+                this.tiles.y = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleTextureSheetAnimationModule.prototype, "startFrameMultiplier", {
+            /**
+             * Starting frame multiplier.
+             *
+             * 起始帧乘数。
+             */
+            get: function () {
+                return this.startFrame.curveMultiplier;
+            },
+            set: function (v) {
+                this.startFrame.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 初始化粒子状态
          * @param particle 粒子
          */
         ParticleTextureSheetAnimationModule.prototype.initParticleState = function (particle) {
-            particle[rateTextureSheetAnimation] = Math.random();
+            particle[_TextureSheetAnimation_frameOverTime] = Math.random();
+            particle[_TextureSheetAnimation_startFrame] = Math.random();
         };
         /**
          * 更新粒子状态
@@ -36767,8 +36966,8 @@ var feng3d;
             var step = this.tiles.clone().reciprocal();
             var total = segmentsX * segmentsY;
             var uvPos = new feng3d.Vector2();
-            var frameOverTime = this.frameOverTime.getValue(particle.rateAtLifeTime, particle[rateTextureSheetAnimation]);
-            var frameIndex = this.startFrame;
+            var frameOverTime = this.frameOverTime.getValue(particle.rateAtLifeTime, particle[_TextureSheetAnimation_frameOverTime]);
+            var frameIndex = this.startFrame.getValue(particle.rateAtLifeTime, particle[_TextureSheetAnimation_startFrame]);
             var rowIndex = this.rowIndex;
             var cycleCount = this.cycleCount;
             if (this.animation == feng3d.ParticleSystemAnimationType.WholeSheet) {
@@ -36842,7 +37041,8 @@ var feng3d;
         return ParticleTextureSheetAnimationModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleTextureSheetAnimationModule = ParticleTextureSheetAnimationModule;
-    var rateTextureSheetAnimation = "_rateTextureSheetAnimation";
+    var _TextureSheetAnimation_frameOverTime = "_TextureSheetAnimation_rateAtLifeTime";
+    var _TextureSheetAnimation_startFrame = "_TextureSheetAnimation_startFrame";
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

@@ -5204,6 +5204,7 @@ declare namespace feng3d {
          * 转置矩阵
          */
         transposeTo(target?: Matrix3x3): Matrix3x3;
+        formMatrix4x4(matrix4x4: Matrix4x4): this;
     }
 }
 declare namespace feng3d {
@@ -10067,6 +10068,10 @@ declare namespace feng3d {
          */
         u_particleTime: number;
         /**
+         * 粒子公告牌矩阵
+         */
+        u_particle_billboardMatrix: Matrix3x3;
+        /**
          * 点大小
          */
         u_PointSize: number;
@@ -14683,60 +14688,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    class ParticleEmissionBurst {
-        /**
-         * The time that each burst occurs.
-         * 每次爆炸发生的时间。
-         */
-        time: number;
-        /**
-         * 要发射的粒子数。
-         */
-        count: MinMaxCurve;
-        /**
-         * Minimum number of bursts to be emitted.
-         * 要发射的最小爆发数量。
-         */
-        get minCount(): number;
-        set minCount(v: number);
-        /**
-         * Maximum number of bursts to be emitted.
-         *
-         * 要发射的最大爆发数量。
-         */
-        get maxCount(): number;
-        set maxCount(v: number);
-        /**
-         * How many times to play the burst. (0 means infinitely).
-         * 爆发次数。(0意味着无限)。
-         *
-         * @todo
-         */
-        cycleCount: number;
-        /**
-         * How often to repeat the burst, in seconds.
-         *
-         * 多久重复一次，以秒为单位。
-         *
-         * @todo
-         */
-        repeatInterval: number;
-        /**
-         * 喷发被触发的几率。
-         */
-        probability: number;
-        /**
-         * 是否喷发
-         */
-        get isProbability(): boolean;
-        private _isProbability;
-        /**
-         * 通过触发的几率计算是否喷发。
-         */
-        calculateProbability(): boolean;
-    }
-}
-declare namespace feng3d {
     interface UniformsMap {
         particle: ParticleUniforms;
     }
@@ -14894,18 +14845,75 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    class ParticleEmissionBurst {
+        /**
+         * The time that each burst occurs.
+         * 每次爆炸发生的时间。
+         */
+        time: number;
+        /**
+         * 要发射的粒子数。
+         */
+        count: MinMaxCurve;
+        /**
+         * Minimum number of bursts to be emitted.
+         * 要发射的最小爆发数量。
+         */
+        get minCount(): number;
+        set minCount(v: number);
+        /**
+         * Maximum number of bursts to be emitted.
+         *
+         * 要发射的最大爆发数量。
+         */
+        get maxCount(): number;
+        set maxCount(v: number);
+        /**
+         * How many times to play the burst. (0 means infinitely).
+         * 爆发次数。(0意味着无限)。
+         *
+         * @todo
+         */
+        cycleCount: number;
+        /**
+         * How often to repeat the burst, in seconds.
+         *
+         * 多久重复一次，以秒为单位。
+         *
+         * @todo
+         */
+        repeatInterval: number;
+        /**
+         * 喷发被触发的几率。
+         */
+        probability: number;
+        /**
+         * 是否喷发
+         */
+        get isProbability(): boolean;
+        private _isProbability;
+        /**
+         * 通过触发的几率计算是否喷发。
+         */
+        calculateProbability(): boolean;
+    }
+}
+declare namespace feng3d {
     /**
      * The animation type.
+     *
      * 动画类型。
      */
     enum ParticleSystemAnimationType {
         /**
          * Animate over the whole texture sheet from left to right, top to bottom.
+         *
          * 从左到右，从上到下动画整个纹理表。
          */
         WholeSheet = 0,
         /**
          * Animate a single row in the sheet from left to right.
+         *
          * 从左到右移动工作表中的一行。
          */
         SingleRow = 1
@@ -15203,6 +15211,27 @@ declare namespace feng3d {
          * 从网格表面发出。
          */
         Triangle = 2
+    }
+}
+declare namespace feng3d {
+    /**
+     * How to apply emitter velocity to particles.
+     *
+     * 如何将发射体速度应用于粒子。
+     */
+    enum ParticleSystemInheritVelocityMode {
+        /**
+         * Each particle inherits the emitter's velocity on the frame when it was initially emitted.
+         *
+         * 每个粒子在最初发射时都继承了发射体在帧上的速度。
+         */
+        Initial = 0,
+        /**
+         * Each particle's velocity is set to the emitter's current velocity value, every frame.
+         *
+         * 每一帧，每个粒子的速度都设定为发射器的当前速度值。
+         */
+        Current = 1
     }
 }
 declare namespace feng3d {
@@ -16229,6 +16258,41 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * The Inherit Velocity Module controls how the velocity of the emitter is transferred to the particles as they are emitted.
+     *
+     * 遗传速度模块控制发射体的速度在粒子发射时如何传递到粒子上。
+     */
+    class InheritVelocityModule extends ParticleModule {
+        /**
+         * How to apply emitter velocity to particles.
+         *
+         * 如何将发射体速度应用于粒子。
+         */
+        mode: ParticleSystemInheritVelocityMode;
+        /**
+         * Curve to define how much emitter velocity is applied during the lifetime of a particle.
+         *
+         * 曲线，用来定义在粒子的生命周期内应用了多少发射速度。
+         */
+        multiplier: MinMaxCurve;
+        /**
+         * Curve to define how much emitter velocity is applied during the lifetime of a particle.
+         *
+         * 曲线，用来定义在粒子的生命周期内应用了多少发射速度。
+         */
+        get curve(): MinMaxCurve;
+        set curve(v: MinMaxCurve);
+        /**
+         * Change the curve multiplier.
+         *
+         * 改变曲线的乘数。
+         */
+        get curveMultiplier(): number;
+        set curveMultiplier(v: number);
+    }
+}
+declare namespace feng3d {
+    /**
      * 粒子系统 作用在粒子上的力随时间变化模块
      *
      * 控制每个粒子在其生命周期内的力。
@@ -16488,25 +16552,31 @@ declare namespace feng3d {
     class ParticleTextureSheetAnimationModule extends ParticleModule {
         /**
          * Defines the tiling of the texture.
+         *
          * 定义纹理的平铺。
          */
         tiles: Vector2;
         /**
          * Specifies the animation type.
+         *
+         * 指定动画类型。
          */
         animation: ParticleSystemAnimationType;
         /**
          * Curve to control which frame of the texture sheet animation to play.
+         *
          * 曲线控制哪个帧的纹理表动画播放。
          */
         frameOverTime: MinMaxCurve;
         /**
          * Use a random row of the texture sheet for each particle emitted.
+         *
          * 对每个发射的粒子使用纹理表的随机行。
          */
         useRandomRow: boolean;
         /**
          * Explicitly select which row of the texture sheet is used, when useRandomRow is set to false.
+         *
          * 当useRandomRow设置为false时，显式选择使用纹理表的哪一行。
          */
         get rowIndex(): number;
@@ -16514,26 +16584,72 @@ declare namespace feng3d {
         private _rowIndex;
         /**
          * Define a random starting frame for the texture sheet animation.
+         *
          * 为纹理表动画定义一个随机的起始帧。
          */
-        startFrame: number;
+        startFrame: MinMaxCurve;
         /**
          * Specifies how many times the animation will loop during the lifetime of the particle.
+         *
          * 指定在粒子的生命周期内动画将循环多少次。
          */
         cycleCount: number;
         /**
          * Flip the UV coordinate on particles, causing them to appear mirrored.
+         *
          * 在粒子上翻转UV坐标，使它们呈现镜像翻转。
          */
         flipUV: Vector2;
         /**
          * Choose which UV channels will receive texture animation.
+         *
          * 选择哪个UV通道将接收纹理动画。
          *
          * todo 目前引擎中只有一套UV
          */
         uvChannelMask: UVChannelFlags;
+        /**
+         * Flip the U coordinate on particles, causing them to appear mirrored horizontally.
+         *
+         * 在粒子上翻转U坐标，使它们呈现水平镜像。
+         */
+        get flipU(): number;
+        set flipU(v: number);
+        /**
+         * Flip the V coordinate on particles, causing them to appear mirrored vertically.
+         *
+         * 在粒子上翻转V坐标，使它们垂直镜像。
+         */
+        get flipV(): number;
+        set flipV(v: number);
+        /**
+         * Frame over time mutiplier.
+         *
+         * 帧随时间变化的乘数。
+         */
+        get frameOverTimeMultiplier(): number;
+        set frameOverTimeMultiplier(v: number);
+        /**
+         * Defines the tiling of the texture in the X axis.
+         *
+         * 定义纹理在X轴上的平铺。
+         */
+        get numTilesX(): number;
+        set numTilesX(v: number);
+        /**
+         * Defines the tiling of the texture in the Y axis.
+         *
+         * 定义纹理在Y轴上的平铺。
+         */
+        get numTilesY(): number;
+        set numTilesY(v: number);
+        /**
+         * Starting frame multiplier.
+         *
+         * 起始帧乘数。
+         */
+        get startFrameMultiplier(): number;
+        set startFrameMultiplier(v: number);
         /**
          * 初始化粒子状态
          * @param particle 粒子
