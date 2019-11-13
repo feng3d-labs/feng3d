@@ -212,6 +212,9 @@ namespace feng3d
                     this._shape = ParticleSystemShape.Edge;
                     this.activeShape = this._shapeEdge;
                     break;
+                default:
+                    console.warn(`错误 ParticleShapeModule.shapeType 值 ${this.shapeType}`);
+                    break;
             }
             serialization.setValue(this.activeShape, preValue);
             this.dispatch("refreshView");
@@ -226,6 +229,7 @@ namespace feng3d
                     break;
                 case ParticleSystemShape.Hemisphere:
                     this.shapeType = this._shapeHemisphere.emitFromShell ? ParticleSystemShapeType.HemisphereShell : ParticleSystemShapeType.Hemisphere;
+                    break;
                 case ParticleSystemShape.Cone:
                     switch (this._shapeCone.emitFrom)
                     {
@@ -245,6 +249,7 @@ namespace feng3d
                             console.warn(`错误ParticleSystemShapeCone.emitFrom值 ${this._shapeCone.emitFrom}`);
                             break;
                     }
+                    break;
                 case ParticleSystemShape.Box:
                     switch (this._shapeBox.emitFrom)
                     {
@@ -261,6 +266,7 @@ namespace feng3d
                             console.warn(`错误ParticleSystemShapeCone.emitFrom值 ${this._shapeCone.emitFrom}`);
                             break;
                     }
+                    break;
                 case ParticleSystemShape.Mesh:
                     this.shapeType = ParticleSystemShapeType.Mesh;
                     break;
@@ -272,8 +278,12 @@ namespace feng3d
                     break;
                 case ParticleSystemShape.Circle:
                     this.shapeType = this._shapeCircle.emitFromEdge ? ParticleSystemShapeType.CircleEdge : ParticleSystemShapeType.Circle;
+                    break;
                 case ParticleSystemShape.Edge:
                     this.shapeType = ParticleSystemShapeType.SingleSidedEdge;
+                    break;
+                default:
+                    console.warn(`错误 ParticleShapeModule.shape 值 ${this.shape}`);
                     break;
             }
         }

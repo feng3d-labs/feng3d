@@ -32874,6 +32874,7 @@ var feng3d;
     var ParticleEmissionBurst = /** @class */ (function () {
         function ParticleEmissionBurst() {
             /**
+             * The time that each burst occurs.
              * 每次爆炸发生的时间。
              */
             this.time = 0;
@@ -32882,12 +32883,15 @@ var feng3d;
              */
             this.count = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 30, constant1: 30 });
             /**
+             * How many times to play the burst. (0 means infinitely).
              * 爆发次数。(0意味着无限)。
              *
              * @todo
              */
             this.cycleCount = 1;
             /**
+             * How often to repeat the burst, in seconds.
+             *
              * 多久重复一次，以秒为单位。
              *
              * @todo
@@ -32899,6 +32903,35 @@ var feng3d;
             this.probability = 1.0;
             this._isProbability = true;
         }
+        Object.defineProperty(ParticleEmissionBurst.prototype, "minCount", {
+            /**
+             * Minimum number of bursts to be emitted.
+             * 要发射的最小爆发数量。
+             */
+            get: function () {
+                return this.count.constant;
+            },
+            set: function (v) {
+                this.count.constant = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleEmissionBurst.prototype, "maxCount", {
+            /**
+             * Maximum number of bursts to be emitted.
+             *
+             * 要发射的最大爆发数量。
+             */
+            get: function () {
+                return this.count.constant1;
+            },
+            set: function (v) {
+                this.count.constant1 = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ParticleEmissionBurst.prototype, "isProbability", {
             /**
              * 是否喷发
@@ -33532,50 +33565,113 @@ var feng3d;
     var ParticleSystemShapeType;
     (function (ParticleSystemShapeType) {
         /**
-         * 从球体的体积中发射。
          * Emit from a sphere.
+         *
+         * 从球体的体积中发射。
          */
         ParticleSystemShapeType[ParticleSystemShapeType["Sphere"] = 0] = "Sphere";
         /**
-         * 从半球体的体积发射。
+         * Emit from the surface of a sphere.
+         *
+         * 从球体表面发射。
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["SphereShell"] = 1] = "SphereShell";
+        /**
          * Emit from a half-sphere.
+         *
+         * 从半球体的体积发射。
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["Hemisphere"] = 1] = "Hemisphere";
+        ParticleSystemShapeType[ParticleSystemShapeType["Hemisphere"] = 2] = "Hemisphere";
         /**
-         * 从圆锥体发射。
+         * Emit from the surface of a half-sphere.
+         *
+         * 从半球体的表面发射。
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["HemisphereShell"] = 3] = "HemisphereShell";
+        /**
          * Emit from a cone.
+         *
+         * 从圆锥体发射。
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["Cone"] = 2] = "Cone";
+        ParticleSystemShapeType[ParticleSystemShapeType["Cone"] = 4] = "Cone";
         /**
-         * 从一个盒子的体积中发出。
+         * Emit from the base surface of a cone.
+         *
+         * 从圆锥体的基面发射。
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["ConeShell"] = 5] = "ConeShell";
+        /**
+         * Emit from the volume of a cone.
+         *
+         * 从一个圆锥体的体积发出。
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["ConeVolume"] = 6] = "ConeVolume";
+        /**
+         * Emit from the surface of a cone.
+         *
+         * 从一个圆锥体的表面发射。
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["ConeVolumeShell"] = 7] = "ConeVolumeShell";
+        /**
          * Emit from the volume of a box.
+         *
+         * 从一个盒子的体积中发出。
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["Box"] = 3] = "Box";
-        // /**
-        //  * 从一个网格中发出。
-        //  * Emit from a mesh.
-        //  */
-        // Mesh,
-        // /**
-        //  * 从一个网格渲染器发射。
-        //  * Emit from a mesh renderer.
-        //  */
-        // MeshRenderer,
-        // /**
-        //  * 从蒙皮网格渲染器发出。
-        //  * Emit from a skinned mesh renderer.
-        //  */
-        // SkinnedMeshRenderer,
+        ParticleSystemShapeType[ParticleSystemShapeType["Box"] = 8] = "Box";
         /**
-         * 从一个圆发出。
+         * Emit from the surface of a box.
+         *
+         * 从盒子表面发射。
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["BoxShell"] = 9] = "BoxShell";
+        /**
+         * Emit from the edges of a box.
+         *
+         * 从盒子的边缘发出。
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["BoxEdge"] = 10] = "BoxEdge";
+        /**
+         * Emit from a mesh.
+         *
+         * 从一个网格中发出。
+         *
+         * @todo
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["Mesh"] = 11] = "Mesh";
+        /**
+         * Emit from a mesh renderer.
+         *
+         * 从一个网格渲染器发射。
+         *
+         * @todo
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["MeshRenderer"] = 12] = "MeshRenderer";
+        /**
+         * Emit from a skinned mesh renderer.
+         *
+         * 从蒙皮网格渲染器发出。
+         *
+         * @todo
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["SkinnedMeshRenderer"] = 13] = "SkinnedMeshRenderer";
+        /**
          * Emit from a circle.
+         *
+         * 从一个圆发出。
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["Circle"] = 4] = "Circle";
+        ParticleSystemShapeType[ParticleSystemShapeType["Circle"] = 14] = "Circle";
         /**
-         * 从边缘发出。
-         * Emit from an edge.
+         * Emit from the edge of a circle.
+         *
+         * 从圆的边缘发出。
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["Edge"] = 5] = "Edge";
+        ParticleSystemShapeType[ParticleSystemShapeType["CircleEdge"] = 15] = "CircleEdge";
+        /**
+         * Emit from an edge.
+         *
+         * 从边缘发出。
+         */
+        ParticleSystemShapeType[ParticleSystemShapeType["SingleSidedEdge"] = 16] = "SingleSidedEdge";
     })(ParticleSystemShapeType = feng3d.ParticleSystemShapeType || (feng3d.ParticleSystemShapeType = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -33608,18 +33704,86 @@ var feng3d;
     /**
      * 粒子系统 发射形状
      */
-    var ParticleSystemShape = /** @class */ (function () {
-        function ParticleSystemShape() {
+    var ParticleSystemShapeBase = /** @class */ (function () {
+        function ParticleSystemShapeBase() {
         }
         /**
          * 初始化粒子状态
          * @param particle 粒子
          */
-        ParticleSystemShape.prototype.initParticleState = function (particle) {
+        ParticleSystemShapeBase.prototype.initParticleState = function (particle) {
         };
-        return ParticleSystemShape;
+        return ParticleSystemShapeBase;
     }());
-    feng3d.ParticleSystemShape = ParticleSystemShape;
+    feng3d.ParticleSystemShapeBase = ParticleSystemShapeBase;
+    /**
+     * The emission shape (Shuriken).
+     *
+     * 发射的形状
+     */
+    var ParticleSystemShape;
+    (function (ParticleSystemShape) {
+        /**
+         * Emit from a sphere.
+         *
+         * 从球体的体积中发射。
+         */
+        ParticleSystemShape[ParticleSystemShape["Sphere"] = 0] = "Sphere";
+        /**
+         * Emit from a half-sphere.
+         *
+         * 从半球体的体积发射。
+         */
+        ParticleSystemShape[ParticleSystemShape["Hemisphere"] = 1] = "Hemisphere";
+        /**
+         * Emit from a cone.
+         *
+         * 从圆锥体发射。
+         */
+        ParticleSystemShape[ParticleSystemShape["Cone"] = 2] = "Cone";
+        /**
+         * Emit from the volume of a box.
+         *
+         * 从一个盒子的体积中发出。
+         */
+        ParticleSystemShape[ParticleSystemShape["Box"] = 3] = "Box";
+        /**
+         * Emit from a mesh.
+         *
+         * 从一个网格中发出。
+         *
+         * @todo
+         */
+        ParticleSystemShape[ParticleSystemShape["Mesh"] = 4] = "Mesh";
+        /**
+         * Emit from a mesh renderer.
+         *
+         * 从一个网格渲染器发射。
+         *
+         * @todo
+         */
+        ParticleSystemShape[ParticleSystemShape["MeshRenderer"] = 5] = "MeshRenderer";
+        /**
+         * Emit from a skinned mesh renderer.
+         *
+         * 从蒙皮网格渲染器发出。
+         *
+         * @todo
+         */
+        ParticleSystemShape[ParticleSystemShape["SkinnedMeshRenderer"] = 6] = "SkinnedMeshRenderer";
+        /**
+         * Emit from a circle.
+         *
+         * 从一个圆发出。
+         */
+        ParticleSystemShape[ParticleSystemShape["Circle"] = 7] = "Circle";
+        /**
+         * Emit from an edge.
+         *
+         * 从边缘发出。
+         */
+        ParticleSystemShape[ParticleSystemShape["Edge"] = 8] = "Edge";
+    })(ParticleSystemShape = feng3d.ParticleSystemShape || (feng3d.ParticleSystemShape = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -33662,7 +33826,7 @@ var feng3d;
             feng3d.oav({ tooltip: "是否从球面发射" })
         ], ParticleSystemShapeSphere.prototype, "emitFromShell", void 0);
         return ParticleSystemShapeSphere;
-    }(feng3d.ParticleSystemShape));
+    }(feng3d.ParticleSystemShapeBase));
     feng3d.ParticleSystemShapeSphere = ParticleSystemShapeSphere;
     /**
      * 从半球体的体积中发出。
@@ -33704,7 +33868,7 @@ var feng3d;
             feng3d.oav({ tooltip: "是否从球面发射" })
         ], ParticleSystemShapeHemisphere.prototype, "emitFromShell", void 0);
         return ParticleSystemShapeHemisphere;
-    }(feng3d.ParticleSystemShape));
+    }(feng3d.ParticleSystemShapeBase));
     feng3d.ParticleSystemShapeHemisphere = ParticleSystemShapeHemisphere;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -33730,11 +33894,13 @@ var feng3d;
          * 使发射点围绕形状运动，在顺时针和逆时针方向之间交替。
          */
         ParticleSystemShapeMultiModeValue[ParticleSystemShapeMultiModeValue["PingPong"] = 2] = "PingPong";
-        // /**
-        //  * Distribute new particles around the shape evenly.
-        //  * 在形状周围均匀分布新粒子。
-        //  */
-        // BurstSpread,
+        /**
+         * Distribute new particles around the shape evenly.
+         * 在形状周围均匀分布新粒子。
+         *
+         * @todo
+         */
+        ParticleSystemShapeMultiModeValue[ParticleSystemShapeMultiModeValue["BurstSpread"] = 3] = "BurstSpread";
     })(ParticleSystemShapeMultiModeValue = feng3d.ParticleSystemShapeMultiModeValue || (feng3d.ParticleSystemShapeMultiModeValue = {}));
     /**
      * 粒子系统圆锥体发射类型，用于定义基于圆锥体的发射类型。
@@ -33893,7 +34059,7 @@ var feng3d;
             feng3d.oav({ tooltip: "粒子系统圆锥体发射类型。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeConeEmitFrom } })
         ], ParticleSystemShapeCone.prototype, "emitFrom", void 0);
         return ParticleSystemShapeCone;
-    }(feng3d.ParticleSystemShape));
+    }(feng3d.ParticleSystemShapeBase));
     feng3d.ParticleSystemShapeCone = ParticleSystemShapeCone;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -33986,7 +34152,7 @@ var feng3d;
             feng3d.oav({ tooltip: "粒子系统盒子发射类型。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeBoxEmitFrom } })
         ], ParticleSystemShapeBox.prototype, "emitFrom", void 0);
         return ParticleSystemShapeBox;
-    }(feng3d.ParticleSystemShape));
+    }(feng3d.ParticleSystemShapeBase));
     feng3d.ParticleSystemShapeBox = ParticleSystemShapeBox;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -34088,7 +34254,7 @@ var feng3d;
             feng3d.oav({ tooltip: "是否从圆形边缘发射。" })
         ], ParticleSystemShapeCircle.prototype, "emitFromEdge", void 0);
         return ParticleSystemShapeCircle;
-    }(feng3d.ParticleSystemShape));
+    }(feng3d.ParticleSystemShapeBase));
     feng3d.ParticleSystemShapeCircle = ParticleSystemShapeCircle;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -34176,7 +34342,7 @@ var feng3d;
             feng3d.oav({ tooltip: "当使用一个动画模式时，如何快速移动发射位置周围的弧。" })
         ], ParticleSystemShapeEdge.prototype, "arcSpeed", void 0);
         return ParticleSystemShapeEdge;
-    }(feng3d.ParticleSystemShape));
+    }(feng3d.ParticleSystemShapeBase));
     feng3d.ParticleSystemShapeEdge = ParticleSystemShapeEdge;
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -34248,16 +34414,29 @@ var feng3d;
              */
             _this.startLifetime = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constant: 5, constant1: 5 });
             /**
+             * The initial speed of particles when emitted.
+             *
              * 粒子发射时的初始速度。
              */
             _this.startSpeed = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 5, constant1: 5 });
+            /**
+             * A flag to enable specifying particle size individually for each axis.
+             *
+             * 允许为每个轴分别指定粒度大小的标志。
+             */
             _this.useStartSize3D = false;
             /**
+             * The initial size of particles when emitted.
              * 发射时粒子的初始大小。
              */
             _this.startSize3D = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
+            /**
+             * A flag to enable 3D particle rotation.
+             * 一个启用粒子3D旋转的标记。
+             */
             _this.useStartRotation3D = false;
             /**
+             * The initial rotation of particles when emitted.
              * 粒子发射时的初始旋转。
              */
             _this.startRotation3D = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { curveMultiplier: 180 }, yCurve: { curveMultiplier: 180 }, zCurve: { curveMultiplier: 180 } });
@@ -34300,33 +34479,273 @@ var feng3d;
         Object.defineProperty(ParticleMainModule.prototype, "startDelayMultiplier", {
             /**
              * Start delay multiplier in seconds.
-             * 启动延时倍增器(以秒为单位)。
+             * 启动延迟乘数(以秒为单位)。
              */
             get: function () {
                 return this.startDelay.curveMultiplier;
             },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleMainModule.prototype, "startLifetimeMultiplier", {
+            /**
+             * Start lifetime multiplier.
+             * This method is more efficient than accessing the whole curve, if you only want to change the overall lifetime multiplier.
+             *
+             * 起始寿命乘数。
+             * 如果您只想更改总体寿命乘数，则此方法比访问整个曲线更有效。
+             */
+            get: function () {
+                return this.startLifetime.curveMultiplier;
+            },
             set: function (v) {
-                this.startDelay.curveMultiplier = v;
+                this.startLifetime.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleMainModule.prototype, "startSpeedMultiplier", {
+            /**
+             * A multiplier of the initial speed of particles when emitted.
+             * This method is more efficient than accessing the whole curve, if you only want to change the overall speed multiplier.
+             *
+             * 粒子发射时的初始速度的乘子。
+             * 这种方法比访问整个曲线更有效，如果你只想改变整体速度乘数。
+             */
+            get: function () {
+                return this.startSpeed.curveMultiplier;
+            },
+            set: function (v) {
+                this.startSpeed.curveMultiplier = v;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(ParticleMainModule.prototype, "startSize", {
+            /**
+             * The initial size of particles when emitted.
+             *
+             * 粒子发射时的初始大小。
+             */
             get: function () {
                 return this.startSize3D.xCurve;
             },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleMainModule.prototype, "startSizeMultiplier", {
+            /**
+             * Start size multiplier.
+             * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
+             *
+             * 开始尺寸乘数。
+             * 如果您只想更改整体尺寸倍增器，则此方法比访问整个曲线更有效。
+             */
+            get: function () {
+                return this.startSize.curveMultiplier;
+            },
             set: function (v) {
-                this.startSize3D.xCurve = v;
+                this.startSize.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleMainModule.prototype, "startSizeX", {
+            /**
+             * The initial size of particles along the X axis when emitted.
+             *
+             * 发射时沿X轴的粒子的初始大小。
+             */
+            get: function () {
+                return this.startSize3D.xCurve;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleMainModule.prototype, "startSizeXMultiplier", {
+            /**
+             * Start rotation multiplier along the X axis.
+             * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
+             *
+             * 启动旋转乘法器沿X轴。
+             * 如果您只想更改整体大小倍增器，则此方法比访问整个曲线更有效。
+             */
+            get: function () {
+                return this.startSizeX.curveMultiplier;
+            },
+            set: function (v) {
+                this.startSizeX.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleMainModule.prototype, "startSizeY", {
+            /**
+             * The initial size of particles along the Y axis when emitted.
+             *
+             * 发射时沿Y轴的粒子的初始大小。
+             */
+            get: function () {
+                return this.startSize3D.yCurve;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleMainModule.prototype, "startSizeYMultiplier", {
+            /**
+             * Start rotation multiplier along the Y axis.
+             * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
+             *
+             * 启动旋转乘法器沿Y轴。
+             * 如果您只想更改整体大小倍增器，则此方法比访问整个曲线更有效。
+             */
+            get: function () {
+                return this.startSizeY.curveMultiplier;
+            },
+            set: function (v) {
+                this.startSizeY.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleMainModule.prototype, "startSizeZ", {
+            /**
+             * The initial size of particles along the Z axis when emitted.
+             *
+             * 发射时沿Z轴的粒子的初始大小。
+             */
+            get: function () {
+                return this.startSize3D.zCurve;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleMainModule.prototype, "startSizeZMultiplier", {
+            /**
+             * Start rotation multiplier along the Z axis.
+             * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
+             *
+             * 启动旋转乘法器沿Z轴。
+             * 如果您只想更改整体大小倍增器，则此方法比访问整个曲线更有效。
+             */
+            get: function () {
+                return this.startSizeZ.curveMultiplier;
+            },
+            set: function (v) {
+                this.startSizeZ.curveMultiplier = v;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(ParticleMainModule.prototype, "startRotation", {
+            /**
+             * The initial rotation of particles when emitted.
+             * 粒子发射时的初始旋转。
+             */
+            // @oav({ tooltip: "The initial rotation of particles when emitted." })
             get: function () {
                 return this.startRotation3D.zCurve;
             },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleMainModule.prototype, "startRotationMultiplier", {
+            /**
+             * Start rotation multiplier.
+             * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
+             *
+             * 开始旋转乘数。
+             * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
+             */
+            get: function () {
+                return this.startRotation.curveMultiplier;
+            },
             set: function (v) {
-                this.startRotation3D.zCurve = v;
+                this.startRotation.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleMainModule.prototype, "startRotationX", {
+            /**
+             * The initial rotation of particles around the X axis when emitted.
+             * 发射时粒子围绕X轴的初始旋转。
+             */
+            get: function () {
+                return this.startRotation3D.xCurve;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleMainModule.prototype, "startRotationXMultiplier", {
+            /**
+             * Start rotation multiplier around the X axis.
+             * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
+             *
+             * 开始绕X轴旋转乘法器。
+             * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
+             */
+            get: function () {
+                return this.startRotationX.curveMultiplier;
+            },
+            set: function (v) {
+                this.startRotationX.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleMainModule.prototype, "startRotationY", {
+            /**
+             * The initial rotation of particles around the Y axis when emitted.
+             * 发射时粒子围绕Y轴的初始旋转。
+             */
+            get: function () {
+                return this.startRotation3D.yCurve;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleMainModule.prototype, "startRotationYMultiplier", {
+            /**
+             * Start rotation multiplier around the Y axis.
+             * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
+             *
+             * 开始绕Y轴旋转乘法器。
+             * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
+             */
+            get: function () {
+                return this.startRotationY.curveMultiplier;
+            },
+            set: function (v) {
+                this.startRotationY.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleMainModule.prototype, "startRotationZ", {
+            /**
+             * The initial rotation of particles around the Z axis when emitted.
+             * 发射时粒子围绕Z轴的初始旋转。
+             */
+            get: function () {
+                return this.startRotation3D.zCurve;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleMainModule.prototype, "startRotationZMultiplier", {
+            /**
+             * Start rotation multiplier around the Z axis.
+             * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
+             *
+             * 开始绕Z轴旋转乘法器。
+             * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
+             */
+            get: function () {
+                return this.startRotationZ.curveMultiplier;
+            },
+            set: function (v) {
+                this.startRotationZ.curveMultiplier = v;
             },
             enumerable: true,
             configurable: true
@@ -34427,14 +34846,14 @@ var feng3d;
             feng3d.serialize
             // @oav({ tooltip: "The initial size of particles when emitted." })
             ,
-            feng3d.oav({ tooltip: "发射时粒子的初始大小。" })
-        ], ParticleMainModule.prototype, "startSize3D", void 0);
+            feng3d.oav({ tooltip: "粒子发射时的初始大小。" })
+        ], ParticleMainModule.prototype, "startSize", null);
         __decorate([
             feng3d.serialize
             // @oav({ tooltip: "The initial size of particles when emitted." })
             ,
-            feng3d.oav({ tooltip: "粒子发射时的初始大小。" })
-        ], ParticleMainModule.prototype, "startSize", null);
+            feng3d.oav({ tooltip: "发射时粒子的初始大小。" })
+        ], ParticleMainModule.prototype, "startSize3D", void 0);
         __decorate([
             feng3d.serialize
             // @oav({ tooltip: "A flag to enable 3D particle rotation." })
@@ -34442,17 +34861,14 @@ var feng3d;
             feng3d.oav({ tooltip: "一个启用粒子3D旋转的标记。" })
         ], ParticleMainModule.prototype, "useStartRotation3D", void 0);
         __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "The initial rotation of particles when emitted." })
-            ,
             feng3d.oav({ tooltip: "粒子发射时的初始旋转。" })
-        ], ParticleMainModule.prototype, "startRotation3D", void 0);
+        ], ParticleMainModule.prototype, "startRotation", null);
         __decorate([
             feng3d.serialize
             // @oav({ tooltip: "The initial rotation of particles when emitted." })
             ,
             feng3d.oav({ tooltip: "粒子发射时的初始旋转。" })
-        ], ParticleMainModule.prototype, "startRotation", null);
+        ], ParticleMainModule.prototype, "startRotation3D", void 0);
         __decorate([
             feng3d.serialize
             // @oav({ tooltip: "Cause some particles to spin in the opposite direction. Set between 0 and 1, where higher values will cause a higher proportion of particles to spin in the opposite direction." })
@@ -34515,7 +34931,7 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 粒子发射器
+     * 粒子系统发射模块。
      */
     var ParticleEmissionModule = /** @class */ (function (_super) {
         __extends(ParticleEmissionModule, _super);
@@ -34525,20 +34941,62 @@ var feng3d;
              * 随着时间的推移，新粒子产生的速度。
              */
             _this.rateOverTime = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constant: 10, constant1: 10 });
-            // /**
-            //  * 产生新粒子的速度，通过距离。
-            //  */
-            // // @oav({ tooltip: "The rate at which new particles are spawned, over distance." })
-            // @oav({ tooltip: "产生新粒子的速度，通过距离。" })
-            // rateOverDistance = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 0, constant1: 1 });
             /**
-             * 爆发，在time时刻额外喷射particles粒子
+             * The rate at which new particles are spawned, over distance.
+             * New particles will only be emitted when the emitter moves.
+             *
+             * 产生新粒子的速度，通过距离。
+             * 新粒子只有在发射器移动时才会被发射出来。
+             *
+             * @todo
+             */
+            // @oav({ tooltip: "The rate at which new particles are spawned, over distance." })
+            _this.rateOverDistance = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constant: 0, constant1: 1 });
+            /**
+             * 爆发数组
              */
             _this.bursts = [];
             return _this;
         }
+        Object.defineProperty(ParticleEmissionModule.prototype, "rateOverTimeMultiplier", {
+            /**
+             * Change the rate over time multiplier.
+             * This is more efficient than accessing the whole curve, if you only want to change the overall rate multiplier.
+             *
+             * 改变率随时间的乘数。
+             * 如果您只想更改整体的速率乘数，那么这比访问整个曲线更有效。
+             * 只在
+             */
+            get: function () {
+                return this.rateOverTime.curveMultiplier;
+            },
+            set: function (v) {
+                this.rateOverTime.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleEmissionModule.prototype, "rateOverDistanceMultiplier", {
+            /**
+             * Change the rate over distance multiplier.
+             * This is more efficient than accessing the whole curve, if you only want to change the overall rate multiplier.
+             *
+             * 改变速率随距离变化的乘数。
+             * 如果您只想更改整体的速率乘数，那么这比访问整个曲线更有效。
+             */
+            get: function () {
+                return this.rateOverDistance.curveMultiplier;
+            },
+            set: function (v) {
+                this.rateOverDistance.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ParticleEmissionModule.prototype, "burstCount", {
             /**
+             * The current number of bursts.
+             *
              * 当前的爆发次数。
              */
             get: function () {
@@ -34547,12 +35005,43 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Get the burst array.
+         * 获取爆发数组。
+         *
+         * @param bursts Array of bursts to be filled in.要填充的爆发数组。
+         * @returns The number of bursts in the array.数组中的爆发次数。
+         */
+        ParticleEmissionModule.prototype.getBursts = function (bursts) {
+            bursts.length = this.bursts.length;
+            for (var i = 0, n = bursts.length; i < n; i++) {
+                bursts[i] = this.bursts[i];
+            }
+            return bursts.length;
+        };
+        /**
+         * Set the burst array.
+         * 设置爆发数组。
+         *
+         * @param bursts Array of bursts.爆发的数组。
+         * @param size Optional array size, if burst count is less than array size.可选的数组大小，如果爆发计数小于数组大小。
+         */
+        ParticleEmissionModule.prototype.setBursts = function (bursts, size) {
+            if (size === void 0) { size = Number.MAX_SAFE_INTEGER; }
+            var size = Math.min(bursts.length, size);
+            for (var i = 0; i < size; i++) {
+                this.bursts[i] = bursts[i];
+            }
+        };
         __decorate([
             feng3d.serialize
             // @oav({ tooltip: "The rate at which new particles are spawned, over time." })
             ,
             feng3d.oav({ tooltip: "随着时间的推移，新粒子产生的速度。" })
         ], ParticleEmissionModule.prototype, "rateOverTime", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "产生新粒子的速度，通过距离。" })
+        ], ParticleEmissionModule.prototype, "rateOverDistance", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ component: "OAVArray", tooltip: "在指定时间进行额外发射指定数量的粒子", componentParam: { defaultItem: function () { return new feng3d.ParticleEmissionBurst(); } } })
@@ -34589,6 +35078,12 @@ var feng3d;
              * 使粒子的起始方向球面化。
              */
             _this.sphericalDirectionAmount = 0;
+            _this._shapeSphere = new feng3d.ParticleSystemShapeSphere();
+            _this._shapeHemisphere = new feng3d.ParticleSystemShapeHemisphere();
+            _this._shapeCone = new feng3d.ParticleSystemShapeCone();
+            _this._shapeBox = new feng3d.ParticleSystemShapeBox();
+            _this._shapeCircle = new feng3d.ParticleSystemShapeCircle();
+            _this._shapeEdge = new feng3d.ParticleSystemShapeEdge();
             _this.shapeType = feng3d.ParticleSystemShapeType.Cone;
             return _this;
         }
@@ -34604,7 +35099,25 @@ var feng3d;
                 if (this._shapeType == v)
                     return;
                 this._shapeType = v;
-                this._onTypeChanged();
+                this._onShapeTypeChanged();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleShapeModule.prototype, "shape", {
+            /**
+             * Type of shape to emit particles from.
+             * 发射粒子的形状类型。
+             */
+            // @oav({ tooltip: "Type of shape to emit particles from.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShape } })
+            get: function () {
+                return this._shape;
+            },
+            set: function (v) {
+                if (this._shape == v)
+                    return;
+                this._shape = v;
+                this._onShapeChanged();
             },
             enumerable: true,
             configurable: true
@@ -34616,7 +35129,7 @@ var feng3d;
         ParticleShapeModule.prototype.initParticleState = function (particle) {
             if (!this.enabled)
                 return;
-            this.shape.initParticleState(particle);
+            this.activeShape.initParticleState(particle);
             if (this.alignToDirection) {
                 var dir = particle.velocity;
                 var mat = new feng3d.Matrix4x4();
@@ -34635,41 +35148,173 @@ var feng3d;
                 particle.velocity.lerpNumber(velocity, this.sphericalDirectionAmount).normalize(length);
             }
         };
-        ParticleShapeModule.prototype._onTypeChanged = function () {
-            var preValue = this.shape;
+        ParticleShapeModule.prototype._onShapeTypeChanged = function () {
+            var preValue = this.activeShape;
             switch (this.shapeType) {
                 case feng3d.ParticleSystemShapeType.Sphere:
-                    this.shape = new feng3d.ParticleSystemShapeSphere();
+                    this._shape = feng3d.ParticleSystemShape.Sphere;
+                    this._shapeSphere.emitFromShell = false;
+                    this.activeShape = this._shapeSphere;
+                    break;
+                case feng3d.ParticleSystemShapeType.SphereShell:
+                    this._shape = feng3d.ParticleSystemShape.Sphere;
+                    this._shapeSphere.emitFromShell = true;
+                    this.activeShape = this._shapeSphere;
                     break;
                 case feng3d.ParticleSystemShapeType.Hemisphere:
-                    this.shape = new feng3d.ParticleSystemShapeHemisphere();
+                    this._shape = feng3d.ParticleSystemShape.Hemisphere;
+                    this._shapeHemisphere.emitFromShell = false;
+                    this.activeShape = this._shapeHemisphere;
+                    break;
+                case feng3d.ParticleSystemShapeType.HemisphereShell:
+                    this._shape = feng3d.ParticleSystemShape.Hemisphere;
+                    this._shapeHemisphere.emitFromShell = true;
+                    this.activeShape = this._shapeHemisphere;
                     break;
                 case feng3d.ParticleSystemShapeType.Cone:
-                    this.shape = new feng3d.ParticleSystemShapeCone();
+                    this._shape = feng3d.ParticleSystemShape.Cone;
+                    this._shapeCone.emitFrom = feng3d.ParticleSystemShapeConeEmitFrom.Base;
+                    this.activeShape = this._shapeCone;
+                    break;
+                case feng3d.ParticleSystemShapeType.ConeShell:
+                    this._shape = feng3d.ParticleSystemShape.Cone;
+                    this._shapeCone.emitFrom = feng3d.ParticleSystemShapeConeEmitFrom.BaseShell;
+                    this.activeShape = this._shapeCone;
+                    break;
+                case feng3d.ParticleSystemShapeType.ConeVolume:
+                    this._shape = feng3d.ParticleSystemShape.Cone;
+                    this._shapeCone.emitFrom = feng3d.ParticleSystemShapeConeEmitFrom.Volume;
+                    this.activeShape = this._shapeCone;
+                    break;
+                case feng3d.ParticleSystemShapeType.ConeVolumeShell:
+                    this._shape = feng3d.ParticleSystemShape.Cone;
+                    this._shapeCone.emitFrom = feng3d.ParticleSystemShapeConeEmitFrom.VolumeShell;
+                    this.activeShape = this._shapeCone;
                     break;
                 case feng3d.ParticleSystemShapeType.Box:
-                    this.shape = new feng3d.ParticleSystemShapeBox();
+                    this._shape = feng3d.ParticleSystemShape.Box;
+                    this._shapeBox.emitFrom = feng3d.ParticleSystemShapeBoxEmitFrom.Volume;
+                    this.activeShape = this._shapeBox;
+                    break;
+                case feng3d.ParticleSystemShapeType.BoxShell:
+                    this._shape = feng3d.ParticleSystemShape.Box;
+                    this._shapeBox.emitFrom = feng3d.ParticleSystemShapeBoxEmitFrom.Shell;
+                    this.activeShape = this._shapeBox;
+                    break;
+                case feng3d.ParticleSystemShapeType.BoxEdge:
+                    this._shape = feng3d.ParticleSystemShape.Box;
+                    this._shapeBox.emitFrom = feng3d.ParticleSystemShapeBoxEmitFrom.Edge;
+                    this.activeShape = this._shapeBox;
+                    break;
+                case feng3d.ParticleSystemShapeType.Mesh:
+                    this._shape = feng3d.ParticleSystemShape.Mesh;
+                    console.warn("\u672A\u5B9E\u73B0 ParticleSystemShapeType.Mesh");
+                    this.activeShape = null;
+                    break;
+                case feng3d.ParticleSystemShapeType.MeshRenderer:
+                    this._shape = feng3d.ParticleSystemShape.MeshRenderer;
+                    console.warn("\u672A\u5B9E\u73B0 ParticleSystemShapeType.Mesh");
+                    this.activeShape = null;
+                    break;
+                case feng3d.ParticleSystemShapeType.SkinnedMeshRenderer:
+                    this._shape = feng3d.ParticleSystemShape.SkinnedMeshRenderer;
+                    console.warn("\u672A\u5B9E\u73B0 ParticleSystemShapeType.Mesh");
+                    this.activeShape = null;
                     break;
                 case feng3d.ParticleSystemShapeType.Circle:
-                    this.shape = new feng3d.ParticleSystemShapeCircle();
+                    this._shape = feng3d.ParticleSystemShape.Circle;
+                    this._shapeCircle.emitFromEdge = false;
+                    this.activeShape = this._shapeCircle;
                     break;
-                case feng3d.ParticleSystemShapeType.Edge:
-                    this.shape = new feng3d.ParticleSystemShapeEdge();
+                case feng3d.ParticleSystemShapeType.CircleEdge:
+                    this._shape = feng3d.ParticleSystemShape.Circle;
+                    this._shapeCircle.emitFromEdge = true;
+                    this.activeShape = this._shapeCircle;
+                    break;
+                case feng3d.ParticleSystemShapeType.SingleSidedEdge:
+                    this._shape = feng3d.ParticleSystemShape.Edge;
+                    this.activeShape = this._shapeEdge;
+                    break;
+                default:
+                    console.warn("\u9519\u8BEF ParticleShapeModule.shapeType \u503C " + this.shapeType);
                     break;
             }
-            feng3d.serialization.setValue(this.shape, preValue);
+            feng3d.serialization.setValue(this.activeShape, preValue);
             this.dispatch("refreshView");
+        };
+        ParticleShapeModule.prototype._onShapeChanged = function () {
+            switch (this.shape) {
+                case feng3d.ParticleSystemShape.Sphere:
+                    this.shapeType = this._shapeSphere.emitFromShell ? feng3d.ParticleSystemShapeType.SphereShell : feng3d.ParticleSystemShapeType.Sphere;
+                    break;
+                case feng3d.ParticleSystemShape.Hemisphere:
+                    this.shapeType = this._shapeHemisphere.emitFromShell ? feng3d.ParticleSystemShapeType.HemisphereShell : feng3d.ParticleSystemShapeType.Hemisphere;
+                    break;
+                case feng3d.ParticleSystemShape.Cone:
+                    switch (this._shapeCone.emitFrom) {
+                        case feng3d.ParticleSystemShapeConeEmitFrom.Base:
+                            this.shapeType = feng3d.ParticleSystemShapeType.Cone;
+                            break;
+                        case feng3d.ParticleSystemShapeConeEmitFrom.BaseShell:
+                            this.shapeType = feng3d.ParticleSystemShapeType.ConeShell;
+                            break;
+                        case feng3d.ParticleSystemShapeConeEmitFrom.Volume:
+                            this.shapeType = feng3d.ParticleSystemShapeType.ConeVolume;
+                            break;
+                        case feng3d.ParticleSystemShapeConeEmitFrom.VolumeShell:
+                            this.shapeType = feng3d.ParticleSystemShapeType.ConeVolumeShell;
+                            break;
+                        default:
+                            console.warn("\u9519\u8BEFParticleSystemShapeCone.emitFrom\u503C " + this._shapeCone.emitFrom);
+                            break;
+                    }
+                    break;
+                case feng3d.ParticleSystemShape.Box:
+                    switch (this._shapeBox.emitFrom) {
+                        case feng3d.ParticleSystemShapeBoxEmitFrom.Volume:
+                            this.shapeType = feng3d.ParticleSystemShapeType.Box;
+                            break;
+                        case feng3d.ParticleSystemShapeBoxEmitFrom.Shell:
+                            this.shapeType = feng3d.ParticleSystemShapeType.BoxShell;
+                            break;
+                        case feng3d.ParticleSystemShapeBoxEmitFrom.Edge:
+                            this.shapeType = feng3d.ParticleSystemShapeType.BoxEdge;
+                            break;
+                        default:
+                            console.warn("\u9519\u8BEFParticleSystemShapeCone.emitFrom\u503C " + this._shapeCone.emitFrom);
+                            break;
+                    }
+                    break;
+                case feng3d.ParticleSystemShape.Mesh:
+                    this.shapeType = feng3d.ParticleSystemShapeType.Mesh;
+                    break;
+                case feng3d.ParticleSystemShape.MeshRenderer:
+                    this.shapeType = feng3d.ParticleSystemShapeType.MeshRenderer;
+                    break;
+                case feng3d.ParticleSystemShape.SkinnedMeshRenderer:
+                    this.shapeType = feng3d.ParticleSystemShapeType.SkinnedMeshRenderer;
+                    break;
+                case feng3d.ParticleSystemShape.Circle:
+                    this.shapeType = this._shapeCircle.emitFromEdge ? feng3d.ParticleSystemShapeType.CircleEdge : feng3d.ParticleSystemShapeType.Circle;
+                    break;
+                case feng3d.ParticleSystemShape.Edge:
+                    this.shapeType = feng3d.ParticleSystemShapeType.SingleSidedEdge;
+                    break;
+                default:
+                    console.warn("\u9519\u8BEF ParticleShapeModule.shape \u503C " + this.shape);
+                    break;
+            }
         };
         __decorate([
             feng3d.serialize
-            // @oav({ tooltip: "Type of shape to emit particles from.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeType } })
-            ,
-            feng3d.oav({ tooltip: "发射粒子的形状类型。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemShapeType } })
         ], ParticleShapeModule.prototype, "shapeType", null);
+        __decorate([
+            feng3d.oav({ tooltip: "发射粒子的形状类型。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemShape } })
+        ], ParticleShapeModule.prototype, "shape", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ component: "OAVObjectView" })
-        ], ParticleShapeModule.prototype, "shape", void 0);
+        ], ParticleShapeModule.prototype, "activeShape", void 0);
         __decorate([
             feng3d.serialize
             // @oav({ tooltip: "Align particles based on their initial direction of travel." })

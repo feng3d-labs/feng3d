@@ -14507,6 +14507,7 @@ declare namespace feng3d {
 declare namespace feng3d {
     class ParticleEmissionBurst {
         /**
+         * The time that each burst occurs.
          * 每次爆炸发生的时间。
          */
         time: number;
@@ -14515,12 +14516,26 @@ declare namespace feng3d {
          */
         count: MinMaxCurve;
         /**
+         * Minimum number of bursts to be emitted.
+         * 要发射的最小爆发数量。
+         */
+        minCount: number;
+        /**
+         * Maximum number of bursts to be emitted.
+         *
+         * 要发射的最大爆发数量。
+         */
+        maxCount: number;
+        /**
+         * How many times to play the burst. (0 means infinitely).
          * 爆发次数。(0意味着无限)。
          *
          * @todo
          */
         cycleCount: number;
         /**
+         * How often to repeat the burst, in seconds.
+         *
          * 多久重复一次，以秒为单位。
          *
          * @todo
@@ -14734,35 +14749,113 @@ declare namespace feng3d {
      */
     enum ParticleSystemShapeType {
         /**
-         * 从球体的体积中发射。
          * Emit from a sphere.
+         *
+         * 从球体的体积中发射。
          */
         Sphere = 0,
         /**
-         * 从半球体的体积发射。
+         * Emit from the surface of a sphere.
+         *
+         * 从球体表面发射。
+         */
+        SphereShell = 1,
+        /**
          * Emit from a half-sphere.
+         *
+         * 从半球体的体积发射。
          */
-        Hemisphere = 1,
+        Hemisphere = 2,
         /**
-         * 从圆锥体发射。
+         * Emit from the surface of a half-sphere.
+         *
+         * 从半球体的表面发射。
+         */
+        HemisphereShell = 3,
+        /**
          * Emit from a cone.
+         *
+         * 从圆锥体发射。
          */
-        Cone = 2,
+        Cone = 4,
         /**
-         * 从一个盒子的体积中发出。
+         * Emit from the base surface of a cone.
+         *
+         * 从圆锥体的基面发射。
+         */
+        ConeShell = 5,
+        /**
+         * Emit from the volume of a cone.
+         *
+         * 从一个圆锥体的体积发出。
+         */
+        ConeVolume = 6,
+        /**
+         * Emit from the surface of a cone.
+         *
+         * 从一个圆锥体的表面发射。
+         */
+        ConeVolumeShell = 7,
+        /**
          * Emit from the volume of a box.
+         *
+         * 从一个盒子的体积中发出。
          */
-        Box = 3,
+        Box = 8,
         /**
-         * 从一个圆发出。
+         * Emit from the surface of a box.
+         *
+         * 从盒子表面发射。
+         */
+        BoxShell = 9,
+        /**
+         * Emit from the edges of a box.
+         *
+         * 从盒子的边缘发出。
+         */
+        BoxEdge = 10,
+        /**
+         * Emit from a mesh.
+         *
+         * 从一个网格中发出。
+         *
+         * @todo
+         */
+        Mesh = 11,
+        /**
+         * Emit from a mesh renderer.
+         *
+         * 从一个网格渲染器发射。
+         *
+         * @todo
+         */
+        MeshRenderer = 12,
+        /**
+         * Emit from a skinned mesh renderer.
+         *
+         * 从蒙皮网格渲染器发出。
+         *
+         * @todo
+         */
+        SkinnedMeshRenderer = 13,
+        /**
          * Emit from a circle.
+         *
+         * 从一个圆发出。
          */
-        Circle = 4,
+        Circle = 14,
         /**
-         * 从边缘发出。
-         * Emit from an edge.
+         * Emit from the edge of a circle.
+         *
+         * 从圆的边缘发出。
          */
-        Edge = 5
+        CircleEdge = 15,
+        /**
+         * Emit from an edge.
+         *
+         * 从边缘发出。
+         */
+        SingleSidedEdge = 16
     }
 }
 declare namespace feng3d {
@@ -14792,19 +14885,86 @@ declare namespace feng3d {
     /**
      * 粒子系统 发射形状
      */
-    class ParticleSystemShape {
+    class ParticleSystemShapeBase {
         /**
          * 初始化粒子状态
          * @param particle 粒子
          */
         initParticleState(particle: Particle): void;
     }
+    /**
+     * The emission shape (Shuriken).
+     *
+     * 发射的形状
+     */
+    enum ParticleSystemShape {
+        /**
+         * Emit from a sphere.
+         *
+         * 从球体的体积中发射。
+         */
+        Sphere = 0,
+        /**
+         * Emit from a half-sphere.
+         *
+         * 从半球体的体积发射。
+         */
+        Hemisphere = 1,
+        /**
+         * Emit from a cone.
+         *
+         * 从圆锥体发射。
+         */
+        Cone = 2,
+        /**
+         * Emit from the volume of a box.
+         *
+         * 从一个盒子的体积中发出。
+         */
+        Box = 3,
+        /**
+         * Emit from a mesh.
+         *
+         * 从一个网格中发出。
+         *
+         * @todo
+         */
+        Mesh = 4,
+        /**
+         * Emit from a mesh renderer.
+         *
+         * 从一个网格渲染器发射。
+         *
+         * @todo
+         */
+        MeshRenderer = 5,
+        /**
+         * Emit from a skinned mesh renderer.
+         *
+         * 从蒙皮网格渲染器发出。
+         *
+         * @todo
+         */
+        SkinnedMeshRenderer = 6,
+        /**
+         * Emit from a circle.
+         *
+         * 从一个圆发出。
+         */
+        Circle = 7,
+        /**
+         * Emit from an edge.
+         *
+         * 从边缘发出。
+         */
+        Edge = 8
+    }
 }
 declare namespace feng3d {
     /**
      * 从球体的体积中发射。
      */
-    class ParticleSystemShapeSphere extends ParticleSystemShape {
+    class ParticleSystemShapeSphere extends ParticleSystemShapeBase {
         radius: number;
         /**
          * 是否从球面发射
@@ -14819,7 +14979,7 @@ declare namespace feng3d {
     /**
      * 从半球体的体积中发出。
      */
-    class ParticleSystemShapeHemisphere extends ParticleSystemShape {
+    class ParticleSystemShapeHemisphere extends ParticleSystemShapeBase {
         radius: number;
         /**
          * 是否从球面发射
@@ -14852,7 +15012,14 @@ declare namespace feng3d {
          * Animate the emission point around the shape, alternating between clockwise and counter-clockwise directions.
          * 使发射点围绕形状运动，在顺时针和逆时针方向之间交替。
          */
-        PingPong = 2
+        PingPong = 2,
+        /**
+         * Distribute new particles around the shape evenly.
+         * 在形状周围均匀分布新粒子。
+         *
+         * @todo
+         */
+        BurstSpread = 3
     }
     /**
      * 粒子系统圆锥体发射类型，用于定义基于圆锥体的发射类型。
@@ -14878,7 +15045,7 @@ declare namespace feng3d {
     /**
      * 粒子系统发射圆锥体，用于定义基于圆锥体的粒子发射时的初始状态。
      */
-    class ParticleSystemShapeCone extends ParticleSystemShape {
+    class ParticleSystemShapeCone extends ParticleSystemShapeBase {
         /**
          * Angle of the cone.
          * 圆锥的角度。
@@ -14940,7 +15107,7 @@ declare namespace feng3d {
     /**
      * 粒子系统 发射盒子
      */
-    class ParticleSystemShapeBox extends ParticleSystemShape {
+    class ParticleSystemShapeBox extends ParticleSystemShapeBase {
         boxX: number;
         boxY: number;
         boxZ: number;
@@ -14959,7 +15126,7 @@ declare namespace feng3d {
     /**
      * 粒子系统 发射圆盘
      */
-    class ParticleSystemShapeCircle extends ParticleSystemShape {
+    class ParticleSystemShapeCircle extends ParticleSystemShapeBase {
         radius: number;
         arc: number;
         /**
@@ -14992,7 +15159,7 @@ declare namespace feng3d {
     /**
      * 粒子系统 发射边
      */
-    class ParticleSystemShapeEdge extends ParticleSystemShape {
+    class ParticleSystemShapeEdge extends ParticleSystemShapeBase {
         /**
          * 边长的一半。
          */
@@ -15070,30 +15237,165 @@ declare namespace feng3d {
         startDelay: MinMaxCurve;
         /**
          * Start delay multiplier in seconds.
-         * 启动延时倍增器(以秒为单位)。
+         * 启动延迟乘数(以秒为单位)。
          */
-        startDelayMultiplier: number;
+        readonly startDelayMultiplier: number;
         /**
          * The total lifetime in seconds that each new particle will have.
          * 每个新粒子的总寿命(以秒计)。
          */
         startLifetime: MinMaxCurve;
         /**
+         * Start lifetime multiplier.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall lifetime multiplier.
+         *
+         * 起始寿命乘数。
+         * 如果您只想更改总体寿命乘数，则此方法比访问整个曲线更有效。
+         */
+        startLifetimeMultiplier: number;
+        /**
+         * The initial speed of particles when emitted.
+         *
          * 粒子发射时的初始速度。
          */
         startSpeed: MinMaxCurve;
+        /**
+         * A multiplier of the initial speed of particles when emitted.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall speed multiplier.
+         *
+         * 粒子发射时的初始速度的乘子。
+         * 这种方法比访问整个曲线更有效，如果你只想改变整体速度乘数。
+         */
+        startSpeedMultiplier: number;
+        /**
+         * A flag to enable specifying particle size individually for each axis.
+         *
+         * 允许为每个轴分别指定粒度大小的标志。
+         */
         useStartSize3D: boolean;
         /**
+         * The initial size of particles when emitted.
+         *
+         * 粒子发射时的初始大小。
+         */
+        readonly startSize: MinMaxCurve;
+        /**
+         * Start size multiplier.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
+         *
+         * 开始尺寸乘数。
+         * 如果您只想更改整体尺寸倍增器，则此方法比访问整个曲线更有效。
+         */
+        startSizeMultiplier: number;
+        /**
+         * The initial size of particles when emitted.
          * 发射时粒子的初始大小。
          */
         startSize3D: MinMaxCurveVector3;
-        startSize: MinMaxCurve;
+        /**
+         * The initial size of particles along the X axis when emitted.
+         *
+         * 发射时沿X轴的粒子的初始大小。
+         */
+        readonly startSizeX: MinMaxCurve;
+        /**
+         * Start rotation multiplier along the X axis.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
+         *
+         * 启动旋转乘法器沿X轴。
+         * 如果您只想更改整体大小倍增器，则此方法比访问整个曲线更有效。
+         */
+        startSizeXMultiplier: number;
+        /**
+         * The initial size of particles along the Y axis when emitted.
+         *
+         * 发射时沿Y轴的粒子的初始大小。
+         */
+        readonly startSizeY: MinMaxCurve;
+        /**
+         * Start rotation multiplier along the Y axis.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
+         *
+         * 启动旋转乘法器沿Y轴。
+         * 如果您只想更改整体大小倍增器，则此方法比访问整个曲线更有效。
+         */
+        startSizeYMultiplier: number;
+        /**
+         * The initial size of particles along the Z axis when emitted.
+         *
+         * 发射时沿Z轴的粒子的初始大小。
+         */
+        readonly startSizeZ: MinMaxCurve;
+        /**
+         * Start rotation multiplier along the Z axis.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
+         *
+         * 启动旋转乘法器沿Z轴。
+         * 如果您只想更改整体大小倍增器，则此方法比访问整个曲线更有效。
+         */
+        startSizeZMultiplier: number;
+        /**
+         * A flag to enable 3D particle rotation.
+         * 一个启用粒子3D旋转的标记。
+         */
         useStartRotation3D: boolean;
         /**
+         * The initial rotation of particles when emitted.
+         * 粒子发射时的初始旋转。
+         */
+        readonly startRotation: MinMaxCurve;
+        /**
+         * Start rotation multiplier.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
+         *
+         * 开始旋转乘数。
+         * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
+         */
+        startRotationMultiplier: number;
+        /**
+         * The initial rotation of particles when emitted.
          * 粒子发射时的初始旋转。
          */
         startRotation3D: MinMaxCurveVector3;
-        startRotation: MinMaxCurve;
+        /**
+         * The initial rotation of particles around the X axis when emitted.
+         * 发射时粒子围绕X轴的初始旋转。
+         */
+        readonly startRotationX: MinMaxCurve;
+        /**
+         * Start rotation multiplier around the X axis.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
+         *
+         * 开始绕X轴旋转乘法器。
+         * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
+         */
+        startRotationXMultiplier: number;
+        /**
+         * The initial rotation of particles around the Y axis when emitted.
+         * 发射时粒子围绕Y轴的初始旋转。
+         */
+        readonly startRotationY: MinMaxCurve;
+        /**
+         * Start rotation multiplier around the Y axis.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
+         *
+         * 开始绕Y轴旋转乘法器。
+         * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
+         */
+        startRotationYMultiplier: number;
+        /**
+         * The initial rotation of particles around the Z axis when emitted.
+         * 发射时粒子围绕Z轴的初始旋转。
+         */
+        readonly startRotationZ: MinMaxCurve;
+        /**
+         * Start rotation multiplier around the Z axis.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
+         *
+         * 开始绕Z轴旋转乘法器。
+         * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
+         */
+        startRotationZMultiplier: number;
         /**
          * Cause some particles to spin in the opposite direction. Set between 0 and 1, where higher values will cause a higher proportion of particles to spin in the opposite direction.
          * 导致一些粒子向相反的方向旋转。设置在0和1之间，数值越大，粒子朝相反方向旋转的比例越大。
@@ -15146,7 +15448,7 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 粒子发射器
+     * 粒子系统发射模块。
      */
     class ParticleEmissionModule extends ParticleModule {
         /**
@@ -15154,13 +15456,58 @@ declare namespace feng3d {
          */
         rateOverTime: MinMaxCurve;
         /**
-         * 爆发，在time时刻额外喷射particles粒子
+         * Change the rate over time multiplier.
+         * This is more efficient than accessing the whole curve, if you only want to change the overall rate multiplier.
+         *
+         * 改变率随时间的乘数。
+         * 如果您只想更改整体的速率乘数，那么这比访问整个曲线更有效。
+         * 只在
+         */
+        rateOverTimeMultiplier: number;
+        /**
+         * The rate at which new particles are spawned, over distance.
+         * New particles will only be emitted when the emitter moves.
+         *
+         * 产生新粒子的速度，通过距离。
+         * 新粒子只有在发射器移动时才会被发射出来。
+         *
+         * @todo
+         */
+        rateOverDistance: MinMaxCurve;
+        /**
+         * Change the rate over distance multiplier.
+         * This is more efficient than accessing the whole curve, if you only want to change the overall rate multiplier.
+         *
+         * 改变速率随距离变化的乘数。
+         * 如果您只想更改整体的速率乘数，那么这比访问整个曲线更有效。
+         */
+        rateOverDistanceMultiplier: number;
+        /**
+         * 爆发数组
          */
         bursts: ParticleEmissionBurst[];
         /**
+         * The current number of bursts.
+         *
          * 当前的爆发次数。
          */
         readonly burstCount: number;
+        /**
+         * Get the burst array.
+         * 获取爆发数组。
+         *
+         * @param bursts Array of bursts to be filled in.要填充的爆发数组。
+         * @returns The number of bursts in the array.数组中的爆发次数。
+         */
+        getBursts(bursts: ParticleEmissionBurst[]): number;
+        /**
+         * Set the burst array.
+         * 设置爆发数组。
+         *
+         * @param bursts Array of bursts.爆发的数组。
+         * @param size Optional array size, if burst count is less than array size.可选的数组大小，如果爆发计数小于数组大小。
+         */
+        setBursts(bursts: ParticleEmissionBurst[], size?: number): void;
     }
 }
 declare namespace feng3d {
@@ -15176,9 +15523,15 @@ declare namespace feng3d {
         shapeType: ParticleSystemShapeType;
         private _shapeType;
         /**
-         * 发射形状
+         * Type of shape to emit particles from.
+         * 发射粒子的形状类型。
          */
         shape: ParticleSystemShape;
+        private _shape;
+        /**
+         * 当前使用的发射形状
+         */
+        activeShape: ParticleSystemShapeBase;
         /**
          * Align particles based on their initial direction of travel.
          * 根据粒子的初始运动方向排列粒子。
@@ -15197,13 +15550,20 @@ declare namespace feng3d {
          * 使粒子的起始方向球面化。
          */
         sphericalDirectionAmount: number;
+        private _shapeSphere;
+        private _shapeHemisphere;
+        private _shapeCone;
+        private _shapeBox;
+        private _shapeCircle;
+        private _shapeEdge;
         constructor();
         /**
          * 初始化粒子状态
          * @param particle 粒子
          */
         initParticleState(particle: Particle): void;
-        private _onTypeChanged;
+        private _onShapeTypeChanged;
+        private _onShapeChanged;
     }
 }
 declare namespace feng3d {
