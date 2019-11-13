@@ -32997,10 +32997,6 @@ var feng3d;
             _this._startDelay_rate = Math.random();
             _this._awaked = false;
             /**
-             * 上次发射时间
-             */
-            _this._preEmitTime = 0;
-            /**
              * 当前真实发射时间
              */
             _this._realEmitTime = 0;
@@ -33185,10 +33181,9 @@ var feng3d;
                 });
             }
             this._emit();
-            this._preEmitTime = this.time;
             this._preRealEmitTime = this._realEmitTime;
             // 判断非循环的效果是否播放结束
-            if (!this.main.loop && this._activeParticles.length == 0 && this.time - this.startDelay > this.main.duration) {
+            if (!this.main.loop && this._activeParticles.length == 0 && this._realEmitTime > this.main.duration) {
                 this.stop();
                 this.dispatch("particleCompleted", this);
             }
@@ -33199,7 +33194,6 @@ var feng3d;
         ParticleSystem.prototype.stop = function () {
             this._isPlaying = false;
             this.time = 0;
-            this._preEmitTime = 0;
             this._particlePool = this._particlePool.concat(this._activeParticles);
             this._activeParticles.length = 0;
         };
@@ -33211,7 +33205,6 @@ var feng3d;
             this.time = 0;
             this._startDelay_rate = Math.random();
             this.updateStartDelay();
-            this._preEmitTime = 0;
             this._preRealEmitTime = 0;
             this._particlePool = this._particlePool.concat(this._activeParticles);
             this._activeParticles.length = 0;
@@ -33241,8 +33234,7 @@ var feng3d;
             }
             else {
                 this._isPlaying = true;
-                this._preEmitTime = this.time;
-                this._preRealEmitTime = Math.max(0, this.time - this.startDelay);
+                this._preRealEmitTime = Math.max(0, this._realEmitTime);
             }
         };
         ParticleSystem.prototype.beforeRender = function (gl, renderAtomic, scene3d, camera) {
@@ -33293,7 +33285,7 @@ var feng3d;
             this._attributes.a_particle_tilingOffset.data = tilingOffsets;
             this._attributes.a_particle_flipUV.data = flipUVs;
             //
-            renderAtomic.uniforms.u_particleTime = this.time - this.startDelay;
+            renderAtomic.uniforms.u_particleTime = this._realEmitTime;
             for (var key in this._attributes) {
                 renderAtomic.attributes[key] = this._attributes[key];
             }
@@ -33303,7 +33295,7 @@ var feng3d;
              * 此时在周期中的位置
              */
             get: function () {
-                return ((this.time - this.startDelay) % this.main.duration) / this.main.duration;
+                return (this._realEmitTime % this.main.duration) / this.main.duration;
             },
             enumerable: true,
             configurable: true
@@ -33320,13 +33312,13 @@ var feng3d;
             if (this._activeParticles.length >= this.main.maxParticles)
                 return;
             // 判断是否开始发射
-            if (this.time - this.startDelay <= 0)
+            if (this._realEmitTime <= 0)
                 return;
             var loop = this.main.loop;
             var startDelay = this.startDelay;
             var duration = this.main.duration;
             var rateAtDuration = this.rateAtDuration;
-            var preRealEmitTime = this._preEmitTime - startDelay;
+            var preRealEmitTime = this._preRealEmitTime;
             // 判断是否结束发射
             if (!loop && preRealEmitTime >= duration)
                 return;
@@ -33380,7 +33372,7 @@ var feng3d;
                     return;
                 var lifetime = this.main.startLifetime.getValue(rateAtDuration);
                 var birthRateAtDuration = (birthTime - this.startDelay) / this.main.duration;
-                var rateAtLifeTime = (this.time - this.startDelay - birthTime) / lifetime;
+                var rateAtLifeTime = (this._realEmitTime - birthTime) / lifetime;
                 if (rateAtLifeTime < 1) {
                     var particle = this._particlePool.pop() || new feng3d.Particle();
                     particle.birthTime = birthTime;
@@ -33400,7 +33392,8 @@ var feng3d;
         ParticleSystem.prototype._updateActiveParticlesState = function () {
             for (var i = this._activeParticles.length - 1; i >= 0; i--) {
                 var particle = this._activeParticles[i];
-                if (this.time - this.startDelay - particle.birthTime > particle.lifetime) {
+                particle.rateAtLifeTime = (this._realEmitTime - particle.birthTime) / particle.lifetime;
+                if (particle.rateAtLifeTime > 1) {
                     this._activeParticles.splice(i, 1);
                     this._particlePool.push(particle);
                 }
@@ -33421,8 +33414,7 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleSystem.prototype._updateParticleState = function (particle) {
-            var preTime = this._preRealEmitTime < particle.birthTime ? particle.birthTime : this._preRealEmitTime;
-            particle.rateAtLifeTime = (this.time - this.startDelay - particle.birthTime) / particle.lifetime;
+            var preTime = Math.max(this._preRealEmitTime, particle.birthTime);
             //
             this._modules.forEach(function (v) { v.updateParticleState(particle); });
             particle.updateState(preTime, this._realEmitTime);

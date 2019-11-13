@@ -14637,10 +14637,6 @@ declare namespace feng3d {
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
         private _awaked;
         /**
-         * 上次发射时间
-         */
-        private _preEmitTime;
-        /**
          * 当前真实发射时间
          */
         private _realEmitTime;

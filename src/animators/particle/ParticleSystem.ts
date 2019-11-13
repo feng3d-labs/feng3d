@@ -216,11 +216,10 @@ namespace feng3d
 
             this._emit();
 
-            this._preEmitTime = this.time;
             this._preRealEmitTime = this._realEmitTime;
 
             // 判断非循环的效果是否播放结束
-            if (!this.main.loop && this._activeParticles.length == 0 && this.time - this.startDelay > this.main.duration)
+            if (!this.main.loop && this._activeParticles.length == 0 && this._realEmitTime > this.main.duration)
             {
                 this.stop();
                 this.dispatch("particleCompleted", this);
@@ -234,7 +233,6 @@ namespace feng3d
         {
             this._isPlaying = false;
             this.time = 0;
-            this._preEmitTime = 0;
 
             this._particlePool = this._particlePool.concat(this._activeParticles);
             this._activeParticles.length = 0;
@@ -249,7 +247,6 @@ namespace feng3d
             this.time = 0;
             this._startDelay_rate = Math.random();
             this.updateStartDelay();
-            this._preEmitTime = 0;
             this._preRealEmitTime = 0;
 
             this._particlePool = this._particlePool.concat(this._activeParticles);
@@ -291,8 +288,7 @@ namespace feng3d
             } else
             {
                 this._isPlaying = true;
-                this._preEmitTime = this.time;
-                this._preRealEmitTime = Math.max(0, this.time - this.startDelay);
+                this._preRealEmitTime = Math.max(0, this._realEmitTime);
             }
         }
 
@@ -356,7 +352,7 @@ namespace feng3d
             this._attributes.a_particle_flipUV.data = flipUVs;
 
             //
-            renderAtomic.uniforms.u_particleTime = this.time - this.startDelay;
+            renderAtomic.uniforms.u_particleTime = this._realEmitTime;
 
             for (const key in this._attributes)
             {
@@ -366,10 +362,6 @@ namespace feng3d
 
         private _awaked = false;
 
-        /**
-         * 上次发射时间
-         */
-        private _preEmitTime = 0;
         /**
          * 当前真实发射时间
          */
@@ -407,7 +399,7 @@ namespace feng3d
          */
         get rateAtDuration()
         {
-            return ((this.time - this.startDelay) % this.main.duration) / this.main.duration;
+            return (this._realEmitTime % this.main.duration) / this.main.duration;
         }
 
         /**
@@ -422,13 +414,13 @@ namespace feng3d
             if (this._activeParticles.length >= this.main.maxParticles) return;
 
             // 判断是否开始发射
-            if (this.time - this.startDelay <= 0) return;
+            if (this._realEmitTime <= 0) return;
 
             var loop = this.main.loop;
             var startDelay = this.startDelay;
             var duration = this.main.duration;
             var rateAtDuration = this.rateAtDuration;
-            var preRealEmitTime = this._preEmitTime - startDelay;
+            var preRealEmitTime = this._preRealEmitTime;
 
             // 判断是否结束发射
             if (!loop && preRealEmitTime >= duration) return;
@@ -495,7 +487,7 @@ namespace feng3d
                 if (this._activeParticles.length >= this.main.maxParticles) return;
                 var lifetime = this.main.startLifetime.getValue(rateAtDuration);
                 var birthRateAtDuration = (birthTime - this.startDelay) / this.main.duration;
-                var rateAtLifeTime = (this.time - this.startDelay - birthTime) / lifetime;
+                var rateAtLifeTime = (this._realEmitTime - birthTime) / lifetime;
 
                 if (rateAtLifeTime < 1)
                 {
@@ -521,7 +513,8 @@ namespace feng3d
             for (let i = this._activeParticles.length - 1; i >= 0; i--)
             {
                 var particle = this._activeParticles[i];
-                if (this.time - this.startDelay - particle.birthTime > particle.lifetime)
+                particle.rateAtLifeTime = (this._realEmitTime - particle.birthTime) / particle.lifetime;
+                if (particle.rateAtLifeTime > 1)
                 {
                     this._activeParticles.splice(i, 1);
                     this._particlePool.push(particle);
@@ -547,9 +540,7 @@ namespace feng3d
          */
         private _updateParticleState(particle: Particle)
         {
-            var preTime = this._preRealEmitTime < particle.birthTime ? particle.birthTime : this._preRealEmitTime;
-
-            particle.rateAtLifeTime = (this.time - this.startDelay - particle.birthTime) / particle.lifetime;
+            var preTime = Math.max(this._preRealEmitTime, particle.birthTime);
             //
             this._modules.forEach(v => { v.updateParticleState(particle) });
             particle.updateState(preTime, this._realEmitTime);
