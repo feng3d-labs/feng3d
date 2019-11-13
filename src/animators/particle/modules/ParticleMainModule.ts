@@ -51,11 +51,6 @@ namespace feng3d
             return this.startDelay.curveMultiplier;
         }
 
-        set startDelayMultiplier(v)
-        {
-            this.startDelay.curveMultiplier = v;
-        }
-
         /**
          * The total lifetime in seconds that each new particle will have.
          * 每个新粒子的总寿命(以秒计)。
@@ -110,17 +105,36 @@ namespace feng3d
         {
             return this.startSize3D.xCurve;
         }
-        set startSize(v)
-        {
-            this.startSize3D.xCurve = v;
-        }
 
         @serialize
         // @oav({ tooltip: "A flag to enable 3D particle rotation." })
         @oav({ tooltip: "一个启用粒子3D旋转的标记。" })
         useStartRotation3D = false;
 
+        @serialize
+        // @oav({ tooltip: "The initial rotation of particles when emitted." })
+        @oav({ tooltip: "粒子发射时的初始旋转。" })
+        startRotation = serialization.setValue(new MinMaxCurve(), { curveMultiplier: 180 });
+
         /**
+         * Start rotation multiplier.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
+         * 
+         * 开始旋转乘数。
+         * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
+         */
+        get startRotationMultiplier()
+        {
+            return this.startRotation.curveMultiplier;
+        }
+
+        set startRotationMultiplier(v)
+        {
+            this.startRotation.curveMultiplier = v;
+        }
+
+        /**
+         * The initial rotation of particles when emitted.
          * 粒子发射时的初始旋转。
          */
         @serialize
@@ -128,16 +142,82 @@ namespace feng3d
         @oav({ tooltip: "粒子发射时的初始旋转。" })
         startRotation3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { curveMultiplier: 180 }, yCurve: { curveMultiplier: 180 }, zCurve: { curveMultiplier: 180 } });
 
-        @serialize
-        // @oav({ tooltip: "The initial rotation of particles when emitted." })
-        @oav({ tooltip: "粒子发射时的初始旋转。" })
-        get startRotation()
+        /**
+         * The initial rotation of particles around the X axis when emitted.
+         * 发射时粒子围绕X轴的初始旋转。
+         */
+        get startRotationX()
+        {
+            return this.startRotation3D.xCurve;
+        }
+
+        /**
+         * Start rotation multiplier around the X axis.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
+         * 
+         * 开始绕X轴旋转乘法器。
+         * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
+         */
+        get startRotationXMultiplier()
+        {
+            return this.startRotationX.curveMultiplier;
+        }
+
+        set startRotationXMultiplier(v)
+        {
+            this.startRotationX.curveMultiplier = v;
+        }
+
+        /**
+         * The initial rotation of particles around the Y axis when emitted.
+         * 发射时粒子围绕Y轴的初始旋转。
+         */
+        get startRotationY()
+        {
+            return this.startRotation3D.yCurve;
+        }
+
+        /**
+         * Start rotation multiplier around the Y axis.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
+         * 
+         * 开始绕Y轴旋转乘法器。
+         * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
+         */
+        get startRotationYMultiplier()
+        {
+            return this.startRotationY.curveMultiplier;
+        }
+
+        set startRotationYMultiplier(v)
+        {
+            this.startRotationY.curveMultiplier = v;
+        }
+
+        /**
+         * The initial rotation of particles around the Z axis when emitted.
+         * 发射时粒子围绕Z轴的初始旋转。
+         */
+        get startRotationZ()
         {
             return this.startRotation3D.zCurve;
         }
-        set startRotation(v)
+
+        /**
+         * Start rotation multiplier around the Z axis.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
+         * 
+         * 开始绕Z轴旋转乘法器。
+         * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
+         */
+        get startRotationZMultiplier()
         {
-            this.startRotation3D.zCurve = v;
+            return this.startRotationZ.curveMultiplier;
+        }
+
+        set startRotationZMultiplier(v)
+        {
+            this.startRotationZ.curveMultiplier = v;
         }
 
         /**
