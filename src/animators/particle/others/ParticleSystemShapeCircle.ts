@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 粒子系统 发射圆盘
      */
-    export class ParticleSystemShapeCircle extends ParticleSystemShape
+    export class ParticleSystemShapeCircle extends ParticleSystemShapeBase
     {
         @serialize
         @oav({ tooltip: "半径" })

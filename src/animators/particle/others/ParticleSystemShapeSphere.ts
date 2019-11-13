@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 从球体的体积中发射。
      */
-    export class ParticleSystemShapeSphere extends ParticleSystemShape
+    export class ParticleSystemShapeSphere extends ParticleSystemShapeBase
     {
         @serialize
         @oav({ tooltip: "球体半径" })
@@ -43,7 +43,7 @@ namespace feng3d
     /**
      * 从半球体的体积中发出。
      */
-    export class ParticleSystemShapeHemisphere extends ParticleSystemShape
+    export class ParticleSystemShapeHemisphere extends ParticleSystemShapeBase
     {
         @serialize
         @oav({ tooltip: "球体半径" })

@@ -21,11 +21,13 @@ namespace feng3d
          * 使发射点围绕形状运动，在顺时针和逆时针方向之间交替。
          */
         PingPong,
-        // /**
-        //  * Distribute new particles around the shape evenly.
-        //  * 在形状周围均匀分布新粒子。
-        //  */
-        // BurstSpread,
+        /**
+         * Distribute new particles around the shape evenly.
+         * 在形状周围均匀分布新粒子。
+         * 
+         * @todo
+         */
+        BurstSpread,
     }
 
     /**
@@ -54,7 +56,7 @@ namespace feng3d
     /**
      * 粒子系统发射圆锥体，用于定义基于圆锥体的粒子发射时的初始状态。
      */
-    export class ParticleSystemShapeCone extends ParticleSystemShape
+    export class ParticleSystemShapeCone extends ParticleSystemShapeBase
     {
         /**
          * Angle of the cone.

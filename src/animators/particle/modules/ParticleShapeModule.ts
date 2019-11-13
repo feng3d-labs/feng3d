@@ -30,7 +30,7 @@ namespace feng3d
          */
         @serialize
         @oav({ component: "OAVObjectView" })
-        shape: ParticleSystemShape;
+        shape: ParticleSystemShapeBase;
 
         /**
          * Align particles based on their initial direction of travel.
@@ -61,6 +61,13 @@ namespace feng3d
         // @oav({ tooltip: "Spherizes the starting direction of particles." })
         @oav({ tooltip: "Spherizes the starting direction of particles." })
         sphericalDirectionAmount = 0;
+
+        private shapeSphere = new ParticleSystemShapeSphere();
+        private shapeHemisphere = new ParticleSystemShapeHemisphere();
+        private shapeCone = new ParticleSystemShapeCone();
+        private shapeBox = new ParticleSystemShapeBox();
+        private shapeCircle = new ParticleSystemShapeCircle();
+        private shapeEdge = new ParticleSystemShapeEdge();
 
         constructor()
         {
@@ -106,22 +113,65 @@ namespace feng3d
             switch (this.shapeType)
             {
                 case ParticleSystemShapeType.Sphere:
-                    this.shape = new ParticleSystemShapeSphere();
+                    this.shapeSphere.emitFromShell = false;
+                    this.shape = this.shapeSphere;
+                    break;
+                case ParticleSystemShapeType.SphereShell:
+                    this.shapeSphere.emitFromShell = true;
+                    this.shape = this.shapeSphere;
                     break;
                 case ParticleSystemShapeType.Hemisphere:
-                    this.shape = new ParticleSystemShapeHemisphere();
+                    this.shapeHemisphere.emitFromShell = false;
+                    this.shape = this.shapeHemisphere;
+                    break;
+                case ParticleSystemShapeType.HemisphereShell:
+                    this.shapeHemisphere.emitFromShell = true;
+                    this.shape = this.shapeHemisphere;
                     break;
                 case ParticleSystemShapeType.Cone:
-                    this.shape = new ParticleSystemShapeCone();
+                    this.shapeCone.emitFrom = ParticleSystemShapeConeEmitFrom.Base;
+                    this.shape = this.shapeCone;
+                    break;
+                case ParticleSystemShapeType.ConeShell:
+                    this.shapeCone.emitFrom = ParticleSystemShapeConeEmitFrom.BaseShell;
+                    this.shape = this.shapeCone;
+                    break;
+                case ParticleSystemShapeType.ConeVolume:
+                    this.shapeCone.emitFrom = ParticleSystemShapeConeEmitFrom.Volume;
+                    this.shape = this.shapeCone;
+                    break;
+                case ParticleSystemShapeType.ConeVolumeShell:
+                    this.shapeCone.emitFrom = ParticleSystemShapeConeEmitFrom.VolumeShell;
+                    this.shape = this.shapeCone;
                     break;
                 case ParticleSystemShapeType.Box:
-                    this.shape = new ParticleSystemShapeBox();
+                    this.shapeBox.emitFrom = ParticleSystemShapeBoxEmitFrom.Volume;
+                    this.shape = this.shapeBox;
+                    break;
+                case ParticleSystemShapeType.BoxShell:
+                    this.shapeBox.emitFrom = ParticleSystemShapeBoxEmitFrom.Shell;
+                    this.shape = this.shapeBox;
+                    break;
+                case ParticleSystemShapeType.BoxEdge:
+                    this.shapeBox.emitFrom = ParticleSystemShapeBoxEmitFrom.Edge;
+                    this.shape = this.shapeBox;
+                    break;
+                case ParticleSystemShapeType.Mesh:
+                case ParticleSystemShapeType.MeshRenderer:
+                case ParticleSystemShapeType.SkinnedMeshRenderer:
+                    console.warn(`未实现 ParticleSystemShapeType.Mesh`);
+                    this.shape = null;
                     break;
                 case ParticleSystemShapeType.Circle:
-                    this.shape = new ParticleSystemShapeCircle();
+                    this.shapeCircle.emitFromEdge = false;
+                    this.shape = this.shapeCircle;
                     break;
-                case ParticleSystemShapeType.Edge:
-                    this.shape = new ParticleSystemShapeEdge();
+                case ParticleSystemShapeType.CircleEdge:
+                    this.shapeCircle.emitFromEdge = true;
+                    this.shape = this.shapeCircle;
+                    break;
+                case ParticleSystemShapeType.SingleSidedEdge:
+                    this.shape = this.shapeEdge;
                     break;
             }
             serialization.setValue(this.shape, preValue);

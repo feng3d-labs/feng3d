@@ -19,7 +19,7 @@ namespace feng3d
     /**
      * 粒子系统 发射盒子
      */
-    export class ParticleSystemShapeBox extends ParticleSystemShape
+    export class ParticleSystemShapeBox extends ParticleSystemShapeBase
     {
         @serialize
         @oav({ tooltip: "盒子X方向宽度。" })
