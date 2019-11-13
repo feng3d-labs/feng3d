@@ -80,7 +80,15 @@ namespace feng3d
          */
         @serialize
         @oav({ tooltip: "圆锥体底部半径。" })
-        radius = 1;
+        get radius()
+        {
+            return this._module.radius;
+        }
+
+        set radius(v)
+        {
+            this._module.radius = v;
+        }
 
         /**
          * Length of the cone.
@@ -100,14 +108,20 @@ namespace feng3d
             this._module.length = v;
         }
 
-
-
         /**
          * Circle arc angle.
          */
         @serialize
         @oav({ tooltip: "圆弧角。" })
-        arc = 360;
+        get arc()
+        {
+            return this._module.arc;
+        }
+
+        set arc(v)
+        {
+            this._module.arc = v;
+        }
 
         /**
          * The mode used for generating particles around the arc.
@@ -131,7 +145,15 @@ namespace feng3d
          */
         @serialize
         @oav({ tooltip: "控制弧线周围发射点之间的间隙。" })
-        arcSpread = 0;
+        get arcSpread()
+        {
+            return this._module.arcSpread;
+        }
+
+        set arcSpread(v)
+        {
+            this._module.arcSpread = v;
+        }
 
         /**
          * When using one of the animated modes, how quickly to move the emission position around the arc.
@@ -139,7 +161,15 @@ namespace feng3d
          */
         @serialize
         @oav({ tooltip: "当使用一个动画模式时，如何快速移动发射位置周围的弧。" })
-        arcSpeed = serialization.setValue(new MinMaxCurve(), { constant: 1, constant1: 1 });
+        get arcSpeed()
+        {
+            return this._module.arcSpeed;
+        }
+
+        set arcSpeed(v)
+        {
+            this._module.arcSpeed = v;
+        }
 
         /**
          * 粒子系统圆锥体发射类型。

@@ -101,6 +101,7 @@ namespace feng3d
 
         /**
          * When using one of the animated modes, how quickly to move the emission position around the arc.
+         * 
          * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
          */
         arcSpeed = serialization.setValue(new MinMaxCurve(), { constant: 1, constant1: 1 });

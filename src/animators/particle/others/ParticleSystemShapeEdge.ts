@@ -10,7 +10,15 @@ namespace feng3d
          */
         @serialize
         @oav({ tooltip: "边长的一半。" })
-        radius = 1;
+        get radius()
+        {
+            return this._module.radius;
+        }
+
+        set radius(v)
+        {
+            this._module.radius = v;
+        }
 
         /**
          * The mode used for generating particles around the radius.

@@ -7,7 +7,15 @@ namespace feng3d
     {
         @serialize
         @oav({ tooltip: "半径" })
-        radius = 1;
+        get radius()
+        {
+            return this._module.radius;
+        }
+
+        set radius(v)
+        {
+            this._module.radius = v;
+        }
 
         @serialize
         @oav({ tooltip: "弧度" })
