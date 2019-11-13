@@ -2361,11 +2361,12 @@ declare namespace feng3d {
         /**
          * 队列长度
          */
-        readonly length: number;
+        get length(): number;
         /**
          * 比较函数
          */
-        compare: (a: T, b: T) => number;
+        get compare(): (a: T, b: T) => number;
+        set compare(v: (a: T, b: T) => number);
         private _compare;
         /**
          * 构建优先数组
@@ -2868,23 +2869,23 @@ declare namespace feng3d {
         /**
          * 左结点高度
          */
-        readonly leftHeight: any;
+        get leftHeight(): any;
         /**
          * 右结点高度
          */
-        readonly rightHeight: any;
+        get rightHeight(): any;
         /**
          * 高度
          */
-        readonly height: number;
+        get height(): number;
         /**
          * 平衡系数
          */
-        readonly balanceFactor: number;
+        get balanceFactor(): number;
         /**
          * 获取叔伯结点
          */
-        readonly uncle: BinaryTreeNode<T>;
+        get uncle(): BinaryTreeNode<T>;
         /**
          * 设置结点值
          *
@@ -3789,7 +3790,7 @@ declare namespace feng3d {
         /**
          * 从 (0,0) 到此点的线段长度。
          */
-        readonly length: number;
+        get length(): number;
         /**
          * 将 Point 的成员设置为指定值
          * @param x 该对象的x属性值
@@ -4008,11 +4009,11 @@ declare namespace feng3d {
         /**
         * 当前 Vector3 对象的长度（大小），即从原点 (0,0,0) 到该对象的 x、y 和 z 坐标的距离。w 属性将被忽略。单位矢量具有的长度或大小为一。
         */
-        readonly length: number;
+        get length(): number;
         /**
         * 当前 Vector3 对象长度的平方，它是使用 x、y 和 z 属性计算出来的。w 属性将被忽略。尽可能使用 lengthSquared() 方法，而不要使用 Vector3.length() 方法的 Math.sqrt() 方法调用，后者速度较慢。
         */
-        readonly lengthSquared: number;
+        get lengthSquared(): number;
         /**
          * 创建 Vector3 对象的实例。如果未指定构造函数的参数，则将使用元素 (0,0,0,0) 创建 Vector3 对象。
          * @param x 第一个元素，例如 x 坐标。
@@ -4600,33 +4601,39 @@ declare namespace feng3d {
         /**
          * x 和 width 属性的和。
          */
-        right: number;
+        get right(): number;
+        set right(value: number);
         /**
          * y 和 height 属性的和。
          */
-        bottom: number;
+        get bottom(): number;
+        set bottom(value: number);
         /**
          * 矩形左上角的 x 坐标。更改 Rectangle 对象的 left 属性对 y 和 height 属性没有影响。但是，它会影响 width 属性，而更改 x 值不会影响 width 属性。
          * left 属性的值等于 x 属性的值。
          */
-        left: number;
+        get left(): number;
+        set left(value: number);
         /**
          * 矩形左上角的 y 坐标。更改 Rectangle 对象的 top 属性对 x 和 width 属性没有影响。但是，它会影响 height 属性，而更改 y 值不会影响 height 属性。<br/>
          * top 属性的值等于 y 属性的值。
          */
-        top: number;
+        get top(): number;
+        set top(value: number);
         /**
          * 由该点的 x 和 y 坐标确定的 Rectangle 对象左上角的位置。
          */
-        topLeft: Vector2;
+        get topLeft(): Vector2;
+        set topLeft(value: Vector2);
         /**
          * 由 right 和 bottom 属性的值确定的 Rectangle 对象的右下角的位置。
          */
-        bottomRight: Vector2;
+        get bottomRight(): Vector2;
+        set bottomRight(value: Vector2);
         /**
          * 中心点
          */
-        readonly center: Vector2;
+        get center(): Vector2;
         /**
          * 将源 Rectangle 对象中的所有矩形数据复制到调用方 Rectangle 对象中。
          * @param sourceRect 要从中复制数据的 Rectangle 对象。
@@ -4740,7 +4747,7 @@ declare namespace feng3d {
          * The size of the Rectangle object, expressed as a Point object with the
          * values of the <code>width</code> and <code>height</code> properties.
          */
-        readonly size: Vector2;
+        get size(): Vector2;
     }
 }
 declare namespace feng3d {
@@ -4805,30 +4812,36 @@ declare namespace feng3d {
          * The value that affects the positioning of pixels along the <i>x</i> axis
          * when scaling or rotating an image.
          */
-        a: number;
+        get a(): number;
+        set a(value: number);
         /**
          * The value that affects the positioning of pixels along the <i>y</i> axis
          * when rotating or skewing an image.
          */
-        b: number;
+        get b(): number;
+        set b(value: number);
         /**
          * The value that affects the positioning of pixels along the <i>x</i> axis
          * when rotating or skewing an image.
          */
-        c: number;
+        get c(): number;
+        set c(value: number);
         /**
          * The value that affects the positioning of pixels along the <i>y</i> axis
          * when scaling or rotating an image.
          */
-        d: number;
+        get d(): number;
+        set d(value: number);
         /**
          * The distance by which to translate each point along the <i>x</i> axis.
          */
-        tx: number;
+        get tx(): number;
+        set tx(value: number);
         /**
          * The distance by which to translate each point along the <i>y</i> axis.
          */
-        ty: number;
+        get ty(): number;
+        set ty(value: number);
         /**
          * Creates a new Matrix object with the specified parameters. In matrix
          * notation, the properties are organized like this:
@@ -5226,39 +5239,41 @@ declare namespace feng3d {
         /**
          * 一个保存显示对象在转换参照帧中的 3D 坐标 (x,y,z) 位置的 Vector3 对象。
          */
-        position: Vector3;
+        get position(): Vector3;
+        set position(value: Vector3);
         /**
          * 旋转角度
          */
-        rotation: Vector3;
+        get rotation(): Vector3;
+        set rotation(v: Vector3);
         /**
          * 一个用于确定矩阵是否可逆的数字。
          */
-        readonly determinant: number;
+        get determinant(): number;
         /**
          * 前方（+Z轴方向）
          */
-        readonly forward: Vector3;
+        get forward(): Vector3;
         /**
          * 上方（+y轴方向）
          */
-        readonly up: Vector3;
+        get up(): Vector3;
         /**
          * 右方（+x轴方向）
          */
-        readonly right: Vector3;
+        get right(): Vector3;
         /**
          * 后方（-z轴方向）
          */
-        readonly back: Vector3;
+        get back(): Vector3;
         /**
          * 下方（-y轴方向）
          */
-        readonly down: Vector3;
+        get down(): Vector3;
         /**
          * 左方（-x轴方向）
          */
-        readonly left: Vector3;
+        get left(): Vector3;
         /**
          * 创建 Matrix4x4 对象。
          * @param   datas    一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
@@ -5559,7 +5574,7 @@ declare namespace feng3d {
         /**
          * 返回四元数对象的大小
          */
-        readonly magnitude: number;
+        get magnitude(): number;
         /**
          * 设置四元数的值。
          *
@@ -7168,7 +7183,7 @@ declare namespace feng3d {
         /**
          * 关键点数量
          */
-        readonly numKeys: number;
+        get numKeys(): number;
         /**
          * 添加关键点
          *
@@ -7625,7 +7640,8 @@ declare namespace feng3d {
         keyCode: number;
         deltaY: number;
         private listentypes;
-        target: EventTarget;
+        get target(): EventTarget;
+        set target(v: EventTarget);
         private _target;
         constructor(target?: EventTarget);
         /**
@@ -7801,12 +7817,14 @@ declare namespace feng3d {
         /**
          * 资源名称
          */
-        name: string;
+        get name(): string;
+        set name(v: string);
         private _name;
         /**
          * 资源编号
          */
-        assetId: string;
+        get assetId(): string;
+        set assetId(v: string);
         private _assetId;
         /**
          * 资源类型，由具体对象类型决定
@@ -8100,12 +8118,13 @@ declare namespace feng3d {
         /**
          * 基础文件系统
          */
-        fs: IReadFS;
+        get fs(): IReadFS;
+        set fs(v: IReadFS);
         private _fs;
         /**
          * 文件系统类型
          */
-        readonly type: FSType;
+        get type(): FSType;
         constructor(fs?: IReadFS);
         /**
          * 读取文件为ArrayBuffer
@@ -8431,7 +8450,7 @@ declare namespace feng3d {
      * 索引数据文件系统
      */
     class IndexedDBFS implements IReadWriteFS {
-        readonly type: FSType;
+        get type(): FSType;
         /**
          * 数据库名称
          */
@@ -8717,7 +8736,7 @@ declare namespace feng3d {
         /**
          * 文件后缀
          */
-        readonly extenson: string;
+        get extenson(): string;
         /**
          * 父资源
          */
@@ -8727,7 +8746,7 @@ declare namespace feng3d {
          *
          * 不包含后缀
          */
-        readonly fileName: string;
+        get fileName(): string;
         /**
          * 资源路径
          */
@@ -8808,7 +8827,7 @@ declare namespace feng3d {
         /**
          * 元标签路径
          */
-        protected readonly metaPath: string;
+        protected get metaPath(): string;
         /**
          * 读取元标签
          *
@@ -8834,7 +8853,7 @@ declare namespace feng3d {
         /**
          * 预览图路径
          */
-        private readonly previewPath;
+        private get previewPath();
     }
 }
 declare namespace feng3d {
@@ -8849,12 +8868,12 @@ declare namespace feng3d {
         /**
          * 文件系统
          */
-        readonly fs: ReadFS;
+        get fs(): ReadFS;
         private _fs;
         /**
          * 根文件夹
          */
-        readonly root: FolderAsset;
+        get root(): FolderAsset;
         private _root;
         /**
          * 资源编号映射
@@ -10323,13 +10342,14 @@ declare namespace feng3d {
         /**
          * 索引数据
          */
-        indices: number[];
+        get indices(): number[];
+        set indices(v: number[]);
         private _indices;
         private invalidate;
         /**
          * 渲染数量
          */
-        readonly count: number;
+        get count(): number;
         /**
          * 数据类型，gl.UNSIGNED_BYTE、gl.UNSIGNED_SHORT
          */
@@ -10410,7 +10430,8 @@ declare namespace feng3d {
         /**
          * 属性数据
          */
-        data: number[];
+        get data(): number[];
+        set data(v: number[]);
         private _data;
         /**
          * 数据尺寸
@@ -10489,27 +10510,32 @@ declare namespace feng3d {
         /**
          * 格式
          */
-        format: TextureFormat;
+        get format(): TextureFormat;
+        set format(v: TextureFormat);
         private _format;
         /**
          * 数据类型
          */
-        type: TextureDataType;
+        get type(): TextureDataType;
+        set type(v: TextureDataType);
         private _type;
         /**
          * 是否生成mipmap
          */
-        generateMipmap: boolean;
+        get generateMipmap(): boolean;
+        set generateMipmap(v: boolean);
         private _generateMipmap;
         /**
          * 对图像进行Y轴反转。默认值为false
          */
-        flipY: boolean;
+        get flipY(): boolean;
+        set flipY(v: boolean);
         private _flipY;
         /**
          * 将图像RGB颜色值得每一个分量乘以A。默认为false
          */
-        premulAlpha: boolean;
+        get premulAlpha(): boolean;
+        set premulAlpha(v: boolean);
         private _premulAlpha;
         minFilter: TextureMinFilter;
         magFilter: TextureMagFilter;
@@ -10541,9 +10567,11 @@ declare namespace feng3d {
          * 是否为渲染目标纹理
          */
         protected _isRenderTarget: boolean;
-        protected OFFSCREEN_WIDTH: number;
+        protected get OFFSCREEN_WIDTH(): number;
+        protected set OFFSCREEN_WIDTH(v: number);
         protected _OFFSCREEN_WIDTH: number;
-        protected OFFSCREEN_HEIGHT: number;
+        protected get OFFSCREEN_HEIGHT(): number;
+        protected set OFFSCREEN_HEIGHT(v: number);
         protected _OFFSCREEN_HEIGHT: number;
         /**
          * 纹理缓冲
@@ -10570,11 +10598,11 @@ declare namespace feng3d {
          * 使纹理失效
          */
         invalidate(): void;
-        readonly activePixels: HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | ImageBitmap | ImageData | (HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | ImageBitmap | ImageData)[];
+        get activePixels(): HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | ImageBitmap | ImageData | (HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | ImageBitmap | ImageData)[];
         /**
          *
          */
-        readonly dataURL: string;
+        get dataURL(): string;
         private _dataURL;
         private updateActivePixels;
         /**
@@ -10613,15 +10641,20 @@ declare namespace feng3d {
 
      */
     class FrameBufferObject {
-        OFFSCREEN_WIDTH: number;
+        get OFFSCREEN_WIDTH(): number;
+        set OFFSCREEN_WIDTH(v: number);
         private _OFFSCREEN_WIDTH;
-        OFFSCREEN_HEIGHT: number;
+        get OFFSCREEN_HEIGHT(): number;
+        set OFFSCREEN_HEIGHT(v: number);
         private _OFFSCREEN_HEIGHT;
-        frameBuffer: FrameBuffer;
+        get frameBuffer(): FrameBuffer;
+        set frameBuffer(v: FrameBuffer);
         private _frameBuffer;
-        texture: RenderTargetTexture2D;
+        get texture(): RenderTargetTexture2D;
+        set texture(v: RenderTargetTexture2D);
         private _texture;
-        depthBuffer: RenderBuffer;
+        get depthBuffer(): RenderBuffer;
+        set depthBuffer(v: RenderBuffer);
         private _depthBuffer;
         constructor(width?: number, height?: number);
         active(gl: GL): {
@@ -10645,9 +10678,11 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     class RenderBuffer {
-        OFFSCREEN_WIDTH: number;
+        get OFFSCREEN_WIDTH(): number;
+        set OFFSCREEN_WIDTH(v: number);
         private _OFFSCREEN_WIDTH;
-        OFFSCREEN_HEIGHT: number;
+        get OFFSCREEN_HEIGHT(): number;
+        set OFFSCREEN_HEIGHT(v: number);
         private _OFFSCREEN_HEIGHT;
         protected _depthBufferMap: Map<GL, WebGLRenderbuffer>;
         /**
@@ -10822,7 +10857,8 @@ declare namespace feng3d {
 
      */
     class ShaderLib {
-        shaderConfig: ShaderConfig;
+        get shaderConfig(): ShaderConfig;
+        set shaderConfig(v: ShaderConfig);
         private _shaderConfig;
         private _shaderCache;
         constructor();
@@ -10994,7 +11030,7 @@ declare namespace feng3d {
         /**
          * 此组件附加到的游戏对象。组件总是附加到游戏对象上。
          */
-        readonly gameObject: GameObject;
+        get gameObject(): GameObject;
         /**
          * 标签
          */
@@ -11002,15 +11038,15 @@ declare namespace feng3d {
         /**
          * The Transform attached to this GameObject (null if there is none attached).
          */
-        readonly transform: Transform;
+        get transform(): Transform;
         /**
          * 是否唯一，同类型3D对象组件只允许一个
          */
-        readonly single: boolean;
+        get single(): boolean;
         /**
          * 是否已销毁
          */
-        readonly disposed: boolean;
+        get disposed(): boolean;
         private _disposed;
         /**
          * 创建一个组件容器
@@ -11101,7 +11137,7 @@ declare namespace feng3d {
          * Has the Behaviour had enabled called.
          * 是否所在GameObject显示且该行为已启动。
          */
-        readonly isVisibleAndEnabled: boolean;
+        get isVisibleAndEnabled(): boolean;
         /**
          * 每帧执行
          */
@@ -11246,28 +11282,29 @@ declare namespace feng3d {
      */
     class Transform extends Component {
         __class__: "feng3d.Transform";
-        readonly single: boolean;
+        get single(): boolean;
         private renderAtomic;
         /**
          * 创建一个实体，该类为虚类
          */
         constructor();
-        readonly scenePosition: Vector3;
-        readonly parent: Transform;
+        get scenePosition(): Vector3;
+        get parent(): Transform;
         /**
          * 将一个点从局部空间变换到世界空间的矩阵。
          */
-        localToWorldMatrix: Matrix4x4;
+        get localToWorldMatrix(): Matrix4x4;
+        set localToWorldMatrix(value: Matrix4x4);
         /**
          * 本地转世界逆转置矩阵
          */
-        readonly ITlocalToWorldMatrix: Matrix4x4;
+        get ITlocalToWorldMatrix(): Matrix4x4;
         /**
          * 将一个点从世界空间转换为局部空间的矩阵。
          */
-        readonly worldToLocalMatrix: Matrix4x4;
-        readonly localToWorldRotationMatrix: Matrix4x4;
-        readonly worldToLocalRotationMatrix: Matrix4x4;
+        get worldToLocalMatrix(): Matrix4x4;
+        get localToWorldRotationMatrix(): Matrix4x4;
+        get worldToLocalRotationMatrix(): Matrix4x4;
         /**
          * 将方向从局部空间转换到世界空间。
          */
@@ -11296,39 +11333,53 @@ declare namespace feng3d {
         dispose(): void;
         protected updateLocalToWorldMatrix(): Matrix4x4;
         protected invalidateSceneTransform(): void;
-        x: number;
-        y: number;
-        z: number;
-        rx: number;
-        ry: number;
-        rz: number;
-        sx: number;
-        sy: number;
-        sz: number;
+        get x(): number;
+        set x(val: number);
+        get y(): number;
+        set y(val: number);
+        get z(): number;
+        set z(val: number);
+        get rx(): number;
+        set rx(val: number);
+        get ry(): number;
+        set ry(val: number);
+        get rz(): number;
+        set rz(val: number);
+        get sx(): number;
+        set sx(val: number);
+        get sy(): number;
+        set sy(val: number);
+        get sz(): number;
+        set sz(val: number);
         /**
          * @private
          */
-        matrix3d: Matrix4x4;
+        get matrix3d(): Matrix4x4;
+        set matrix3d(val: Matrix4x4);
         /**
          * 旋转矩阵
          */
-        readonly rotationMatrix: Matrix4x4;
+        get rotationMatrix(): Matrix4x4;
         /**
          * 返回保存位置数据的Vector3D对象
          */
-        position: Vector3;
-        rotation: Vector3;
+        get position(): Vector3;
+        set position({ x, y, z }: Vector3);
+        get rotation(): Vector3;
+        set rotation({ x, y, z }: Vector3);
         /**
          * 四元素旋转
          */
-        orientation: Quaternion;
-        scale: Vector3;
-        readonly forwardVector: Vector3;
-        readonly rightVector: Vector3;
-        readonly upVector: Vector3;
-        readonly backVector: Vector3;
-        readonly leftVector: Vector3;
-        readonly downVector: Vector3;
+        get orientation(): Quaternion;
+        set orientation(value: Quaternion);
+        get scale(): Vector3;
+        set scale({ x, y, z }: Vector3);
+        get forwardVector(): Vector3;
+        get rightVector(): Vector3;
+        get upVector(): Vector3;
+        get backVector(): Vector3;
+        get leftVector(): Vector3;
+        get downVector(): Vector3;
         moveForward(distance: number): void;
         moveBackward(distance: number): void;
         moveLeft(distance: number): void;
@@ -11461,24 +11512,26 @@ declare namespace feng3d {
         /**
          * 变换
          */
-        readonly transform: Transform;
+        get transform(): Transform;
         private _transform;
-        readonly parent: GameObject;
+        get parent(): GameObject;
         /**
          * 子对象
          */
-        children: GameObject[];
-        readonly numChildren: number;
+        get children(): GameObject[];
+        set children(value: GameObject[]);
+        get numChildren(): number;
         /**
          * 子组件个数
          */
-        readonly numComponents: number;
+        get numComponents(): number;
         /**
          * 全局是否可见
          */
-        readonly globalVisible: any;
-        readonly scene: Scene3D;
-        components: Components[];
+        get globalVisible(): any;
+        get scene(): Scene3D;
+        get components(): Components[];
+        set components(value: Components[]);
         /**
          * 构建3D对象
          */
@@ -11633,7 +11686,7 @@ declare namespace feng3d {
         /**
          * 世界包围盒
          */
-        readonly worldBounds: AABB;
+        get worldBounds(): AABB;
         /**
          * 监听对象的所有事件并且传播到所有组件中
          */
@@ -11646,7 +11699,7 @@ declare namespace feng3d {
         /**
          * 是否加载完成
          */
-        readonly isSelfLoaded: boolean;
+        get isSelfLoaded(): boolean;
         /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调
@@ -11655,7 +11708,7 @@ declare namespace feng3d {
         /**
          * 是否加载完成
          */
-        readonly isLoaded: boolean;
+        get isLoaded(): boolean;
         /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调
@@ -11715,7 +11768,8 @@ declare namespace feng3d {
         /**
          * 摄像机
          */
-        camera: Camera;
+        get camera(): Camera;
+        set camera(v: Camera);
         private _camera;
         /**
          * 3d场景
@@ -11724,13 +11778,13 @@ declare namespace feng3d {
         /**
          * 根结点
          */
-        readonly root: GameObject;
-        readonly gl: GL;
+        get root(): GameObject;
+        get gl(): GL;
         /**
          * 鼠标在3D视图中的位置
          */
-        readonly mousePos: Vector2;
-        readonly viewRect: Rectangle;
+        get mousePos(): Vector2;
+        get viewRect(): Rectangle;
         /**
          * 鼠标事件管理
          */
@@ -11804,12 +11858,14 @@ declare namespace feng3d {
         /**
          * 保持缩放尺寸
          */
-        holdSize: number;
+        get holdSize(): number;
+        set holdSize(v: number);
         private _holdSize;
         /**
          * 相机
          */
-        camera: Camera;
+        get camera(): Camera;
+        set camera(v: Camera);
         private _camera;
         init(): void;
         dispose(): void;
@@ -11828,7 +11884,8 @@ declare namespace feng3d {
         /**
          * 相机
          */
-        camera: Camera;
+        get camera(): Camera;
+        set camera(v: Camera);
         private _camera;
         init(): void;
         private invalidHoldSizeMatrix;
@@ -11869,7 +11926,8 @@ declare namespace feng3d {
          */
         diffuseSegmentValue: Vector4;
         specularSegment: number;
-        cartoon_Anti_aliasing: boolean;
+        get cartoon_Anti_aliasing(): boolean;
+        set cartoon_Anti_aliasing(value: boolean);
         _cartoon_Anti_aliasing: boolean;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
     }
@@ -11912,27 +11970,29 @@ declare namespace feng3d {
     }
     class Model extends Behaviour {
         __class__: string;
-        readonly single: boolean;
+        get single(): boolean;
         /**
          * 几何体
          */
-        geometry: CustomGeometry | PointGeometry | SegmentGeometry | PlaneGeometry | CubeGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | TerrainGeometry;
+        get geometry(): CustomGeometry | PointGeometry | SegmentGeometry | PlaneGeometry | CubeGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | TerrainGeometry;
+        set geometry(v: CustomGeometry | PointGeometry | SegmentGeometry | PlaneGeometry | CubeGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | TerrainGeometry);
         private _geometry;
         /**
          * 材质
          */
-        material: Material;
+        get material(): Material;
+        set material(v: Material);
         private _material;
         castShadows: boolean;
         receiveShadows: boolean;
         /**
          * 自身局部包围盒
          */
-        readonly selfLocalBounds: AABB;
+        get selfLocalBounds(): AABB;
         /**
          * 自身世界包围盒
          */
-        readonly selfWorldBounds: AABB;
+        get selfWorldBounds(): AABB;
         constructor();
         init(): void;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
@@ -11945,7 +12005,7 @@ declare namespace feng3d {
         /**
          * 是否加载完成
          */
-        readonly isLoaded: boolean;
+        get isLoaded(): boolean;
         /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调
@@ -11990,12 +12050,13 @@ declare namespace feng3d {
      */
     class ScriptComponent extends Behaviour {
         runEnvironment: RunEnvironment;
-        scriptName: string;
+        get scriptName(): string;
+        set scriptName(v: string);
         private _scriptName;
         /**
          * 脚本对象
          */
-        readonly scriptInstance: Script;
+        get scriptInstance(): Script;
         private _scriptInstance;
         private _invalid;
         private scriptInit;
@@ -12020,11 +12081,11 @@ declare namespace feng3d {
         /**
          * The game object this component is attached to. A component is always attached to a game object.
          */
-        readonly gameObject: GameObject;
+        get gameObject(): GameObject;
         /**
          * The Transform attached to this GameObject (null if there is none attached).
          */
-        readonly transform: Transform;
+        get transform(): Transform;
         /**
          * 宿主组件
          */
@@ -12106,27 +12167,27 @@ declare namespace feng3d {
         /**
          * 所有 Model
          */
-        readonly models: Model[];
+        get models(): Model[];
         /**
          * 所有 可见且开启的 Model
          */
-        readonly visibleAndEnabledModels: Model[];
+        get visibleAndEnabledModels(): Model[];
         /**
          * 所有 SkyBox
          */
-        readonly skyBoxs: SkyBox[];
-        readonly activeSkyBoxs: SkyBox[];
-        readonly directionalLights: DirectionalLight[];
-        readonly activeDirectionalLights: DirectionalLight[];
-        readonly pointLights: PointLight[];
-        readonly activePointLights: PointLight[];
-        readonly spotLights: SpotLight[];
-        readonly activeSpotLights: SpotLight[];
-        readonly animations: Animation[];
-        readonly activeAnimations: Animation[];
-        readonly behaviours: Behaviour[];
-        readonly activeBehaviours: Behaviour[];
-        readonly mouseCheckObjects: GameObject[];
+        get skyBoxs(): SkyBox[];
+        get activeSkyBoxs(): SkyBox[];
+        get directionalLights(): DirectionalLight[];
+        get activeDirectionalLights(): DirectionalLight[];
+        get pointLights(): PointLight[];
+        get activePointLights(): PointLight[];
+        get spotLights(): SpotLight[];
+        get activeSpotLights(): SpotLight[];
+        get animations(): Animation[];
+        get activeAnimations(): Animation[];
+        get behaviours(): Behaviour[];
+        get activeBehaviours(): Behaviour[];
+        get mouseCheckObjects(): GameObject[];
         /**
          * 获取拾取缓存
          * @param camera
@@ -12182,15 +12243,15 @@ declare namespace feng3d {
          * @param gameObject
          * @param camera
          */
-        readonly activeModels: Model[];
+        get activeModels(): Model[];
         /**
          * 半透明渲染对象
          */
-        readonly blenditems: Model[];
+        get blenditems(): Model[];
         /**
          * 半透明渲染对象
          */
-        readonly unblenditems: Model[];
+        get unblenditems(): Model[];
         clear(): void;
     }
 }
@@ -12265,30 +12326,35 @@ declare namespace feng3d {
         /**
          * 几何体信息
          */
-        readonly geometryInfo: string;
+        get geometryInfo(): string;
         /**
          * 索引数据
          */
+        get indices(): number[];
         /**
-        * 更新顶点索引数据
-        */
-        indices: number[];
+         * 更新顶点索引数据
+         */
+        set indices(value: number[]);
         /**
          * 坐标数据
          */
-        positions: number[];
+        get positions(): number[];
+        set positions(value: number[]);
         /**
          * uv数据
          */
-        uvs: number[];
+        get uvs(): number[];
+        set uvs(value: number[]);
         /**
          * 法线数据
          */
-        normals: number[];
+        get normals(): number[];
+        set normals(value: number[]);
         /**
          * 切线数据
          */
-        tangents: number[];
+        get tangents(): number[];
+        set tangents(value: number[]);
         /**
          * 创建一个几何体
          */
@@ -12322,11 +12388,11 @@ declare namespace feng3d {
         /**
          * 顶点数量
          */
-        readonly numVertex: number;
+        get numVertex(): number;
         /**
          * 三角形数量
          */
-        readonly numTriangles: number;
+        get numTriangles(): number;
         /**
          * 添加几何体
          * @param geometry          被添加的几何体
@@ -12350,7 +12416,7 @@ declare namespace feng3d {
          * 包围盒失效
          */
         invalidateBounds(): void;
-        readonly bounding: AABB;
+        get bounding(): AABB;
         /**
          * 射线投影几何体
          * @param ray                           射线
@@ -12413,16 +12479,23 @@ declare namespace feng3d {
         /**
          * 顶点索引缓冲
          */
-        indicesBase: number[];
+        get indicesBase(): number[];
+        set indicesBase(value: number[]);
         /**
          * 属性数据列表
          */
-        attributes: {
+        get attributes(): {
             [name: string]: {
                 data: number[];
                 size: number;
             };
         };
+        set attributes(value: {
+            [name: string]: {
+                data: number[];
+                size: number;
+            };
+        });
     }
 }
 declare namespace feng3d {
@@ -12532,7 +12605,8 @@ declare namespace feng3d {
          * 点数据列表
          * 修改数组内数据时需要手动调用 invalidateGeometry();
          */
-        points: PointInfo[];
+        get points(): PointInfo[];
+        set points(v: PointInfo[]);
         private _points;
         /**
          * 构建几何体
@@ -12562,7 +12636,8 @@ declare namespace feng3d {
          * 线段列表
          * 修改数组内数据时需要手动调用 invalidateGeometry();
          */
-        segments: Segment[];
+        get segments(): Segment[];
+        set segments(v: Segment[]);
         private _segments;
         constructor();
         /**
@@ -12624,17 +12699,20 @@ declare namespace feng3d {
         /**
          * 最近距离
          */
-        near: number;
+        get near(): number;
+        set near(v: number);
         protected _near: number;
         /**
          * 最远距离
          */
-        far: number;
+        get far(): number;
+        set far(v: number);
         protected _far: number;
         /**
          * 视窗缩放比例(width/height)，在渲染器中设置
          */
-        aspect: number;
+        get aspect(): number;
+        set aspect(v: number);
         protected _aspect: number;
         /**
          * 创建一个摄像机镜头
@@ -12643,17 +12721,17 @@ declare namespace feng3d {
         /**
          * 投影矩阵
          */
-        readonly matrix: Matrix4x4;
+        get matrix(): Matrix4x4;
         /**
          * 逆矩阵
          */
-        readonly inverseMatrix: Matrix4x4;
+        get inverseMatrix(): Matrix4x4;
         /**
          * 可视包围盒
          *
          * 一个包含可视空间的最小包围盒
          */
-        readonly viewBox: AABB;
+        get viewBox(): AABB;
         /**
          * 摄像机空间坐标投影到GPU空间坐标
          * @param point3d 摄像机空间坐标
@@ -12721,7 +12799,8 @@ declare namespace feng3d {
         /**
          * 尺寸
          */
-        size: number;
+        get size(): number;
+        set size(v: number);
         private _size;
         /**
          * 构建正射投影镜头
@@ -12742,7 +12821,8 @@ declare namespace feng3d {
         /**
          * 垂直视角，视锥体顶面和底面间的夹角；单位为角度，取值范围 [1,179]
          */
-        fov: number;
+        get fov(): number;
+        set fov(v: number);
         private _fov;
         /**
          * 创建一个透视摄像机镜头
@@ -12753,7 +12833,8 @@ declare namespace feng3d {
         /**
          * 焦距
          */
-        focalLength: number;
+        get focalLength(): number;
+        set focalLength(value: number);
         /**
          * 投影
          *
@@ -12806,21 +12887,23 @@ declare namespace feng3d {
      */
     class Camera extends Component {
         __class__: "feng3d.Camera";
-        readonly single: boolean;
-        projection: Projection;
+        get single(): boolean;
+        get projection(): Projection;
+        set projection(v: Projection);
         private _projection;
         /**
          * 镜头
          */
-        lens: LensBase;
+        get lens(): LensBase;
+        set lens(v: LensBase);
         /**
          * 场景投影矩阵，世界空间转投影空间
          */
-        readonly viewProjection: Matrix4x4;
+        get viewProjection(): Matrix4x4;
         /**
          * 可视包围盒
          */
-        readonly viewBox: AABB;
+        get viewBox(): AABB;
         /**
          * 创建一个摄像机
          */
@@ -12891,27 +12974,32 @@ declare namespace feng3d {
         /**
          * 宽度
          */
-        width: number;
+        get width(): number;
+        set width(v: number);
         private _width;
         /**
          * 高度
          */
-        height: number;
+        get height(): number;
+        set height(v: number);
         private _height;
         /**
          * 横向分割数
          */
-        segmentsW: number;
+        get segmentsW(): number;
+        set segmentsW(v: number);
         private _segmentsW;
         /**
          * 纵向分割数
          */
-        segmentsH: number;
+        get segmentsH(): number;
+        set segmentsH(v: number);
         private _segmentsH;
         /**
          * 是否朝上
          */
-        yUp: boolean;
+        get yUp(): boolean;
+        set yUp(v: boolean);
         private _yUp;
         name: string;
         /**
@@ -12969,37 +13057,44 @@ declare namespace feng3d {
         /**
          * 宽度
          */
-        width: number;
+        get width(): number;
+        set width(v: number);
         private _width;
         /**
          * 高度
          */
-        height: number;
+        get height(): number;
+        set height(v: number);
         private _height;
         /**
          * 深度
          */
-        depth: number;
+        get depth(): number;
+        set depth(v: number);
         private _depth;
         /**
          * 宽度方向分割数
          */
-        segmentsW: number;
+        get segmentsW(): number;
+        set segmentsW(v: number);
         private _segmentsW;
         /**
          * 高度方向分割数
          */
-        segmentsH: number;
+        get segmentsH(): number;
+        set segmentsH(v: number);
         private _segmentsH;
         /**
          * 深度方向分割数
          */
-        segmentsD: number;
+        get segmentsD(): number;
+        set segmentsD(v: number);
         private _segmentsD;
         /**
          * 是否为6块贴图，默认true。
          */
-        tile6: boolean;
+        get tile6(): boolean;
+        set tile6(v: boolean);
         private _tile6;
         protected buildGeometry(): void;
         /**
@@ -13056,22 +13151,26 @@ declare namespace feng3d {
         /**
          * 球体半径
          */
-        radius: number;
+        get radius(): number;
+        set radius(v: number);
         private _radius;
         /**
          * 横向分割数
          */
-        segmentsW: number;
+        get segmentsW(): number;
+        set segmentsW(v: number);
         private _segmentsW;
         /**
          * 纵向分割数
          */
-        segmentsH: number;
+        get segmentsH(): number;
+        set segmentsH(v: number);
         private _segmentsH;
         /**
          * 是否朝上
          */
-        yUp: boolean;
+        get yUp(): boolean;
+        set yUp(v: boolean);
         private _yUp;
         name: string;
         /**
@@ -13109,27 +13208,32 @@ declare namespace feng3d {
         /**
          * 胶囊体半径
          */
-        radius: number;
+        get radius(): number;
+        set radius(v: number);
         private _radius;
         /**
          * 胶囊体高度
          */
-        height: number;
+        get height(): number;
+        set height(v: number);
         private _height;
         /**
          * 横向分割数
          */
-        segmentsW: number;
+        get segmentsW(): number;
+        set segmentsW(v: number);
         private _segmentsW;
         /**
          * 纵向分割数
          */
-        segmentsH: number;
+        get segmentsH(): number;
+        set segmentsH(v: number);
         private _segmentsH;
         /**
          * 正面朝向 true:Y+ false:Z+
          */
-        yUp: boolean;
+        get yUp(): boolean;
+        set yUp(v: boolean);
         private _yUp;
         name: string;
         /**
@@ -13169,47 +13273,56 @@ declare namespace feng3d {
         /**
          * 顶部半径
          */
-        topRadius: number;
+        get topRadius(): number;
+        set topRadius(v: number);
         private _topRadius;
         /**
          * 底部半径
          */
-        bottomRadius: number;
+        get bottomRadius(): number;
+        set bottomRadius(v: number);
         private _bottomRadius;
         /**
          * 高度
          */
-        height: number;
+        get height(): number;
+        set height(v: number);
         private _height;
         /**
          * 横向分割数
          */
-        segmentsW: number;
+        get segmentsW(): number;
+        set segmentsW(v: number);
         private _segmentsW;
         /**
          * 纵向分割数
          */
-        segmentsH: number;
+        get segmentsH(): number;
+        set segmentsH(v: number);
         private _segmentsH;
         /**
          * 顶部是否封口
          */
-        topClosed: boolean;
+        get topClosed(): boolean;
+        set topClosed(v: boolean);
         private _topClosed;
         /**
          * 底部是否封口
          */
-        bottomClosed: boolean;
+        get bottomClosed(): boolean;
+        set bottomClosed(v: boolean);
         private _bottomClosed;
         /**
          * 侧面是否封口
          */
-        surfaceClosed: boolean;
+        get surfaceClosed(): boolean;
+        set surfaceClosed(v: boolean);
         private _surfaceClosed;
         /**
          * 是否朝上
          */
-        yUp: boolean;
+        get yUp(): boolean;
+        set yUp(v: boolean);
         private _yUp;
         name: string;
         /**
@@ -13265,27 +13378,32 @@ declare namespace feng3d {
         /**
          * 半径
          */
-        radius: number;
+        get radius(): number;
+        set radius(v: number);
         private _radius;
         /**
          * 管道半径
          */
-        tubeRadius: number;
+        get tubeRadius(): number;
+        set tubeRadius(v: number);
         private _tubeRadius;
         /**
          * 半径方向分割数
          */
-        segmentsR: number;
+        get segmentsR(): number;
+        set segmentsR(v: number);
         private _segmentsR;
         /**
          * 管道方向分割数
          */
-        segmentsT: number;
+        get segmentsT(): number;
+        set segmentsT(v: number);
         private _segmentsT;
         /**
          * 是否朝上
          */
-        yUp: boolean;
+        get yUp(): boolean;
+        set yUp(v: boolean);
         private _yUp;
         name: string;
         protected _vertexPositionData: number[];
@@ -13365,15 +13483,18 @@ declare namespace feng3d {
         /**
          * 是否已加载
          */
-        readonly isLoaded: boolean;
+        get isLoaded(): boolean;
         private _loadings;
-        readonly image: HTMLImageElement;
+        get image(): HTMLImageElement;
         /**
          * 用于表示初始化纹理的数据来源
          */
-        source: {
+        get source(): {
             url: string;
         };
+        set source(v: {
+            url: string;
+        });
         constructor();
         private onItemLoadCompleted;
         /**
@@ -13405,28 +13526,32 @@ declare namespace feng3d {
      * 2D纹理
      */
     class ImageTexture2D extends Texture2D {
-        image: HTMLImageElement;
+        get image(): HTMLImageElement;
+        set image(v: HTMLImageElement);
         private _image;
         private imageChanged;
     }
 }
 declare namespace feng3d {
     class ImageDataTexture2D extends Texture2D {
-        imageData: ImageData;
+        get imageData(): ImageData;
+        set imageData(v: ImageData);
         private _imageData;
         private imageDataChanged;
     }
 }
 declare namespace feng3d {
     class CanvasTexture2D extends Texture2D {
-        canvas: HTMLCanvasElement;
+        get canvas(): HTMLCanvasElement;
+        set canvas(v: HTMLCanvasElement);
         private _canvas;
         private canvasChanged;
     }
 }
 declare namespace feng3d {
     class VideoTexture2D extends Texture2D {
-        video: HTMLVideoElement;
+        get video(): HTMLVideoElement;
+        set video(v: HTMLVideoElement);
         private _video;
         private videoChanged;
     }
@@ -13436,9 +13561,11 @@ declare namespace feng3d {
      * 渲染目标纹理
      */
     class RenderTargetTexture2D extends Texture2D {
-        OFFSCREEN_WIDTH: number;
+        get OFFSCREEN_WIDTH(): number;
+        set OFFSCREEN_WIDTH(v: number);
         protected _OFFSCREEN_WIDTH: number;
-        OFFSCREEN_HEIGHT: number;
+        get OFFSCREEN_HEIGHT(): number;
+        set OFFSCREEN_HEIGHT(v: number);
         protected _OFFSCREEN_HEIGHT: number;
         format: TextureFormat;
         minFilter: TextureMinFilter;
@@ -13472,13 +13599,20 @@ declare namespace feng3d {
         /**
          * 原始数据
          */
-        rawData: {
+        get rawData(): {
             type: "texture";
             textures: Texture2D[];
         } | {
             type: "path";
             paths: string[];
         };
+        set rawData(v: {
+            type: "texture";
+            textures: Texture2D[];
+        } | {
+            type: "path";
+            paths: string[];
+        });
         private _rawData;
         noPixels: ImageDatas[];
         protected _pixels: any[];
@@ -13486,7 +13620,7 @@ declare namespace feng3d {
         /**
          * 是否加载完成
          */
-        readonly isLoaded: boolean;
+        get isLoaded(): boolean;
         private _loading;
         setTexture2D(pos: TextureCubeImageName, texture: Texture2D): void;
         setTexture2DPath(pos: TextureCubeImageName, path: string): void;
@@ -13530,25 +13664,28 @@ declare namespace feng3d {
         /**
          * shader名称
          */
-        shaderName: "standard" | "color" | "texture" | "point" | "segment" | "water" | "terrain" | "particle";
+        get shaderName(): "standard" | "color" | "texture" | "point" | "segment" | "water" | "terrain" | "particle";
+        set shaderName(v: "standard" | "color" | "texture" | "point" | "segment" | "water" | "terrain" | "particle");
         private _shaderName;
         name: string;
         /**
          * Uniform数据
          */
-        uniforms: StandardUniforms | ColorUniforms | TextureUniforms | PointUniforms | SegmentUniforms | WaterUniforms | TerrainUniforms | ParticleUniforms;
+        get uniforms(): PointUniforms | ColorUniforms | SegmentUniforms | TextureUniforms | StandardUniforms | WaterUniforms | TerrainUniforms | ParticleUniforms;
+        set uniforms(v: PointUniforms | ColorUniforms | SegmentUniforms | TextureUniforms | StandardUniforms | WaterUniforms | TerrainUniforms | ParticleUniforms);
         private _uniforms;
         /**
          * 渲染参数
          */
-        renderParams: RenderParams;
+        get renderParams(): RenderParams;
+        set renderParams(v: RenderParams);
         private _renderParams;
         constructor();
         beforeRender(renderAtomic: RenderAtomic): void;
         /**
          * 是否加载完成
          */
-        readonly isLoaded: boolean;
+        get isLoaded(): boolean;
         /**
          * 已加载完成或者加载完成时立即调用
          * @param callback 完成回调
@@ -13787,11 +13924,11 @@ declare namespace feng3d {
         /**
          * 光源位置
          */
-        readonly position: Vector3;
+        get position(): Vector3;
         /**
          * 光照方向
          */
-        readonly direction: Vector3;
+        get direction(): Vector3;
         /**
          * 阴影偏差，用来解决判断是否为阴影时精度问题
          */
@@ -13803,11 +13940,11 @@ declare namespace feng3d {
         /**
          * 阴影近平面距离
          */
-        readonly shadowCameraNear: number;
+        get shadowCameraNear(): number;
         /**
          * 阴影近平面距离
          */
-        readonly shadowCameraFar: number;
+        get shadowCameraFar(): number;
         /**
          * 投影摄像机
          */
@@ -13815,8 +13952,8 @@ declare namespace feng3d {
         /**
          * 阴影图尺寸
          */
-        readonly shadowMapSize: Vector2;
-        readonly shadowMap: RenderTargetTexture2D;
+        get shadowMapSize(): Vector2;
+        get shadowMap(): RenderTargetTexture2D;
         /**
          * 帧缓冲对象，用于处理光照阴影贴图渲染
          */
@@ -13841,7 +13978,7 @@ declare namespace feng3d {
         /**
          * 光源位置
          */
-        readonly position: Vector3;
+        get position(): Vector3;
         constructor();
         /**
          * 通过视窗摄像机进行更新
@@ -13863,12 +14000,13 @@ declare namespace feng3d {
         /**
          * 光照范围
          */
-        range: number;
+        get range(): number;
+        set range(v: number);
         private _range;
         /**
          * 阴影图尺寸
          */
-        readonly shadowMapSize: Vector2;
+        get shadowMapSize(): Vector2;
         constructor();
         private invalidRange;
     }
@@ -13885,12 +14023,14 @@ declare namespace feng3d {
         /**
          * 光照范围
          */
-        range: number;
+        get range(): number;
+        set range(v: number);
         private _range;
         /**
          *
          */
-        angle: number;
+        get angle(): number;
+        set angle(v: number);
         private _angle;
         /**
          * 半影.
@@ -13899,8 +14039,8 @@ declare namespace feng3d {
         /**
          * 椎体cos值
          */
-        readonly coneCos: number;
-        readonly penumbraCos: number;
+        get coneCos(): number;
+        get penumbraCos(): number;
         private perspectiveLens;
         constructor();
         private invalidRange;
@@ -13928,7 +14068,8 @@ declare namespace feng3d {
          * 手动应用更新到目标3D对象
          */
         update(interpolate?: boolean): void;
-        targetObject: GameObject;
+        get targetObject(): GameObject;
+        set targetObject(val: GameObject);
     }
 }
 declare namespace feng3d {
@@ -13939,9 +14080,12 @@ declare namespace feng3d {
         protected _upAxis: Vector3;
         protected _pos: Vector3;
         constructor(target?: GameObject, lookAtObject?: GameObject);
-        upAxis: Vector3;
-        lookAtPosition: Vector3;
-        lookAtObject: GameObject;
+        get upAxis(): Vector3;
+        set upAxis(upAxis: Vector3);
+        get lookAtPosition(): Vector3;
+        set lookAtPosition(val: Vector3);
+        get lookAtObject(): GameObject;
+        set lookAtObject(value: GameObject);
         update(interpolate?: boolean): void;
     }
 }
@@ -13959,16 +14103,26 @@ declare namespace feng3d {
         private _steps;
         private _yFactor;
         private _wrapPanAngle;
-        steps: number;
-        panAngle: number;
-        tiltAngle: number;
-        distance: number;
-        minPanAngle: number;
-        maxPanAngle: number;
-        minTiltAngle: number;
-        maxTiltAngle: number;
-        yFactor: number;
-        wrapPanAngle: boolean;
+        get steps(): number;
+        set steps(val: number);
+        get panAngle(): number;
+        set panAngle(val: number);
+        get tiltAngle(): number;
+        set tiltAngle(val: number);
+        get distance(): number;
+        set distance(val: number);
+        get minPanAngle(): number;
+        set minPanAngle(val: number);
+        get maxPanAngle(): number;
+        set maxPanAngle(val: number);
+        get minTiltAngle(): number;
+        set minTiltAngle(val: number);
+        get maxTiltAngle(): number;
+        set maxTiltAngle(val: number);
+        get yFactor(): number;
+        set yFactor(val: number);
+        get wrapPanAngle(): boolean;
+        set wrapPanAngle(val: boolean);
         constructor(targetObject?: GameObject, lookAtObject?: GameObject, panAngle?: number, tiltAngle?: number, distance?: number, minTiltAngle?: number, maxTiltAngle?: number, minPanAngle?: number, maxPanAngle?: number, steps?: number, yFactor?: number, wrapPanAngle?: boolean);
         update(interpolate?: boolean): void;
     }
@@ -14004,7 +14158,8 @@ declare namespace feng3d {
         private preMousePoint;
         private ischange;
         private _auto;
-        auto: boolean;
+        get auto(): boolean;
+        set auto(value: boolean);
         init(): void;
         onMousedown(): void;
         onMouseup(): void;
@@ -14121,12 +14276,14 @@ declare namespace feng3d {
      */
     class AudioListener extends Behaviour {
         gain: GainNode;
-        enabled: boolean;
+        get enabled(): boolean;
+        set enabled(v: boolean);
         private _enabled;
         /**
          * 音量
          */
-        volume: number;
+        get volume(): number;
+        set volume(v: number);
         private _volume;
         constructor();
         init(): void;
@@ -14168,33 +14325,41 @@ declare namespace feng3d {
         private source;
         private buffer;
         private gain;
-        enabled: boolean;
+        get enabled(): boolean;
+        set enabled(v: boolean);
         private _enabled;
         /**
          * 声音文件路径
          */
-        url: string;
+        get url(): string;
+        set url(v: string);
         private _url;
         /**
          * 是否循环播放
          */
-        loop: boolean;
+        get loop(): boolean;
+        set loop(v: boolean);
         private _loop;
         /**
          * 音量
          */
-        volume: number;
+        get volume(): number;
+        set volume(v: number);
         private _volume;
         /**
          * 是否启用位置影响声音
          */
-        enablePosition: boolean;
+        get enablePosition(): boolean;
+        set enablePosition(v: boolean);
         private _enablePosition;
-        coneInnerAngle: number;
+        get coneInnerAngle(): number;
+        set coneInnerAngle(v: number);
         private _coneInnerAngle;
-        coneOuterAngle: number;
+        get coneOuterAngle(): number;
+        set coneOuterAngle(v: number);
         private _coneOuterAngle;
-        coneOuterGain: number;
+        get coneOuterGain(): number;
+        set coneOuterGain(v: number);
         private _coneOuterGain;
         /**
          * 该接口的distanceModel属性PannerNode是一个枚举值，用于确定在音频源离开收听者时用于减少音频源音量的算法。
@@ -14209,24 +14374,29 @@ declare namespace feng3d {
          *
          * inverse是的默认值distanceModel。
          */
-        distanceModel: DistanceModelType;
+        get distanceModel(): DistanceModelType;
+        set distanceModel(v: DistanceModelType);
         private _distanceModel;
         /**
          * 表示音频源和收听者之间的最大距离，之后音量不会再降低。该值仅由linear距离模型使用。默认值是10000。
          */
-        maxDistance: number;
+        get maxDistance(): number;
+        set maxDistance(v: number);
         private _maxDistance;
-        panningModel: PanningModelType;
+        get panningModel(): PanningModelType;
+        set panningModel(v: PanningModelType);
         private _panningModel;
         /**
          * 表示随着音频源远离收听者而减小音量的参考距离。此值由所有距离模型使用。默认值是1。
          */
-        refDistance: number;
+        get refDistance(): number;
+        set refDistance(v: number);
         private _refDistance;
         /**
          * 描述了音源离开收听者音量降低的速度。此值由所有距离模型使用。默认值是1。
          */
-        rolloffFactor: number;
+        get rolloffFactor(): number;
+        set rolloffFactor(v: number);
         private _rolloffFactor;
         constructor();
         init(): void;
@@ -14295,42 +14465,50 @@ declare namespace feng3d {
         /**
          * 高度图路径
          */
-        heightMap: Texture2D;
+        get heightMap(): Texture2D;
+        set heightMap(v: Texture2D);
         private _heightMap;
         /**
          * 地形宽度
          */
-        width: number;
+        get width(): number;
+        set width(v: number);
         private _width;
         /**
          * 地形高度
          */
-        height: number;
+        get height(): number;
+        set height(v: number);
         private _height;
         /**
          * 地形深度
          */
-        depth: number;
+        get depth(): number;
+        set depth(v: number);
         private _depth;
         /**
          * 横向网格段数
          */
-        segmentsW: number;
+        get segmentsW(): number;
+        set segmentsW(v: number);
         private _segmentsW;
         /**
          * 纵向网格段数
          */
-        segmentsH: number;
+        get segmentsH(): number;
+        set segmentsH(v: number);
         private _segmentsH;
         /**
          * 最大地形高度
          */
-        maxElevation: number;
+        get maxElevation(): number;
+        set maxElevation(v: number);
         private _maxElevation;
         /**
          * 最小地形高度
          */
-        minElevation: number;
+        get minElevation(): number;
+        set minElevation(v: number);
         private _minElevation;
         private _heightImageData;
         /**
@@ -14397,11 +14575,11 @@ declare namespace feng3d {
         /**
          * Width of the terrain in samples(Read Only).
          */
-        readonly heightmapWidth: number;
+        get heightmapWidth(): number;
         /**
          * Height of the terrain in samples(Read Only).
          */
-        readonly heightmapHeight: number;
+        get heightmapHeight(): number;
         /**
          * Resolution of the heightmap.
          */
@@ -14409,7 +14587,7 @@ declare namespace feng3d {
         /**
          * The size of each heightmap sample.
          */
-        readonly heightmapScale: Vector3;
+        get heightmapScale(): Vector3;
         /**
          * The total size in world units of the terrain.
          */
@@ -14519,13 +14697,15 @@ declare namespace feng3d {
          * Minimum number of bursts to be emitted.
          * 要发射的最小爆发数量。
          */
-        minCount: number;
+        get minCount(): number;
+        set minCount(v: number);
         /**
          * Maximum number of bursts to be emitted.
          *
          * 要发射的最大爆发数量。
          */
-        maxCount: number;
+        get maxCount(): number;
+        set maxCount(v: number);
         /**
          * How many times to play the burst. (0 means infinitely).
          * 爆发次数。(0意味着无限)。
@@ -14548,7 +14728,7 @@ declare namespace feng3d {
         /**
          * 是否喷发
          */
-        readonly isProbability: boolean;
+        get isProbability(): boolean;
         private _isProbability;
         /**
          * 通过触发的几率计算是否喷发。
@@ -14583,34 +14763,44 @@ declare namespace feng3d {
         /**
          * 是否正在播放
          */
-        readonly isPlaying: boolean;
+        get isPlaying(): boolean;
         private _isPlaying;
         /**
          * 粒子时间
          */
         time: number;
-        main: ParticleMainModule;
+        get main(): ParticleMainModule;
+        set main(v: ParticleMainModule);
         private _main;
-        emission: ParticleEmissionModule;
+        get emission(): ParticleEmissionModule;
+        set emission(v: ParticleEmissionModule);
         private _emission;
-        shape: ParticleShapeModule;
+        get shape(): ParticleShapeModule;
+        set shape(v: ParticleShapeModule);
         private _shape;
-        velocityOverLifetime: ParticleVelocityOverLifetimeModule;
+        get velocityOverLifetime(): ParticleVelocityOverLifetimeModule;
+        set velocityOverLifetime(v: ParticleVelocityOverLifetimeModule);
         private _velocityOverLifetime;
-        limitVelocityOverLifetime: ParticleLimitVelocityOverLifetimeModule;
+        get limitVelocityOverLifetime(): ParticleLimitVelocityOverLifetimeModule;
+        set limitVelocityOverLifetime(v: ParticleLimitVelocityOverLifetimeModule);
         private _limitVelocityOverLifetime;
-        forceOverLifetime: ParticleForceOverLifetimeModule;
+        get forceOverLifetime(): ParticleForceOverLifetimeModule;
+        set forceOverLifetime(v: ParticleForceOverLifetimeModule);
         private _forceOverLifetime;
-        colorOverLifetime: ParticleColorOverLifetimeModule;
+        get colorOverLifetime(): ParticleColorOverLifetimeModule;
+        set colorOverLifetime(v: ParticleColorOverLifetimeModule);
         private _colorOverLifetime;
-        sizeOverLifetime: ParticleSizeOverLifetimeModule;
+        get sizeOverLifetime(): ParticleSizeOverLifetimeModule;
+        set sizeOverLifetime(v: ParticleSizeOverLifetimeModule);
         private _sizeOverLifetime;
-        rotationOverLifetime: ParticleRotationOverLifetimeModule;
+        get rotationOverLifetime(): ParticleRotationOverLifetimeModule;
+        set rotationOverLifetime(v: ParticleRotationOverLifetimeModule);
         private _rotationOverLifetime;
         /**
          * 粒子系统纹理表动画模块。
          */
-        textureSheetAnimation: ParticleTextureSheetAnimationModule;
+        get textureSheetAnimation(): ParticleTextureSheetAnimationModule;
+        set textureSheetAnimation(v: ParticleTextureSheetAnimationModule);
         private _textureSheetAnimation;
         geometry: PlaneGeometry;
         material: Material;
@@ -14619,8 +14809,8 @@ declare namespace feng3d {
         /**
          * 活跃粒子数量
          */
-        readonly numActiveParticles: number;
-        readonly single: boolean;
+        get numActiveParticles(): number;
+        get single(): boolean;
         /**
          * Start delay in seconds.
          * 启动延迟(以秒为单位)。在调用.play()时初始化值。
@@ -14675,7 +14865,7 @@ declare namespace feng3d {
         /**
          * 此时在周期中的位置
          */
-        readonly rateAtDuration: number;
+        get rateAtDuration(): number;
         /**
          * 发射粒子
          * @param time 当前粒子时间
@@ -14705,6 +14895,61 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * The animation type.
+     * 动画类型。
+     */
+    enum ParticleSystemAnimationType {
+        /**
+         * Animate over the whole texture sheet from left to right, top to bottom.
+         * 从左到右，从上到下动画整个纹理表。
+         */
+        WholeSheet = 0,
+        /**
+         * Animate a single row in the sheet from left to right.
+         * 从左到右移动工作表中的一行。
+         */
+        SingleRow = 1
+    }
+}
+declare namespace feng3d {
+    /**
+     * A flag representing each UV channel.
+     * 一个代表每个紫外线频道的旗子。
+     */
+    enum UVChannelFlags {
+        /**
+         * 无通道。
+         */
+        Nothing = 0,
+        /**
+         * First UV channel.
+         * 第一UV通道。
+         */
+        UV0 = 1,
+        /**
+         * Second UV channel.
+         * 第二UV通道。
+         */
+        UV1 = 2,
+        /**
+         * Third UV channel.
+         * 第三UV通道。
+         */
+        UV2 = 4,
+        /**
+         * Fourth UV channel.
+         * 第四UV通道。
+         */
+        UV3 = 8,
+        /**
+         * All channel.
+         * 所有通道。
+         */
+        Everything = 15
+    }
+}
+declare namespace feng3d {
+    /**
      * 粒子模拟空间
      */
     enum ParticleSystemSimulationSpace {
@@ -14712,6 +14957,8 @@ declare namespace feng3d {
         World = 1,
         Custom = 2
     }
+}
+declare namespace feng3d {
     /**
      * 粒子模拟空间
      */
@@ -14723,21 +14970,25 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * Control how particle systems apply transform scale.
+     *
      * 控制粒子系统如何应用变换尺度。
      */
     enum ParticleSystemScalingMode {
         /**
          * Scale the particle system using the entire transform hierarchy.
+         *
          * 使用整个转换层次来缩放粒子系统。
          */
         Hierarchy = 0,
         /**
          * Scale the particle system using only its own transform scale. (Ignores parent scale).
+         *
          * 尺度粒子系统只使用自己的变换尺度。(忽略了父母规模)。
          */
         Local = 1,
         /**
          * Only apply transform scale to the shape component, which controls where particles are spawned, but does not affect their size or movement.
+         *
          * 只对形状组件应用变换比例，它控制生成粒子的位置，但不影响粒子的大小或移动。
          */
         Shape = 2
@@ -14860,44 +15111,11 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * The mesh emission type.
-     * 网格发射类型。
-     */
-    enum ParticleSystemMeshShapeType {
-        /**
-         * Emit from the vertices of the mesh.
-         * 从网格的顶点发出。
-         */
-        Vertex = 0,
-        /**
-         * Emit from the edges of the mesh.
-         * 从网格的边缘发出。
-         */
-        Edge = 1,
-        /**
-         * Emit from the surface of the mesh.
-         * 从网格表面发出。
-         */
-        Triangle = 2
-    }
-}
-declare namespace feng3d {
-    /**
-     * 粒子系统 发射形状
-     */
-    class ParticleSystemShapeBase {
-        /**
-         * 初始化粒子状态
-         * @param particle 粒子
-         */
-        initParticleState(particle: Particle): void;
-    }
-    /**
      * The emission shape (Shuriken).
      *
      * 发射的形状
      */
-    enum ParticleSystemShape {
+    enum ParticleSystemShapeType1 {
         /**
          * Emit from a sphere.
          *
@@ -14962,10 +15180,55 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * The mesh emission type.
+     *
+     * 网格发射类型。
+     */
+    enum ParticleSystemMeshShapeType {
+        /**
+         * Emit from the vertices of the mesh.
+         *
+         * 从网格的顶点发出。
+         */
+        Vertex = 0,
+        /**
+         * Emit from the edges of the mesh.
+         *
+         * 从网格的边缘发出。
+         */
+        Edge = 1,
+        /**
+         * Emit from the surface of the mesh.
+         *
+         * 从网格表面发出。
+         */
+        Triangle = 2
+    }
+}
+declare namespace feng3d {
+    /**
+     * 粒子系统 发射形状
+     */
+    class ParticleSystemShape {
+        protected _module: ParticleShapeModule;
+        constructor(module: ParticleShapeModule);
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
+    }
+}
+declare namespace feng3d {
+    /**
      * 从球体的体积中发射。
      */
-    class ParticleSystemShapeSphere extends ParticleSystemShapeBase {
-        radius: number;
+    class ParticleSystemShapeSphere extends ParticleSystemShape {
+        /**
+         * 球体半径
+         */
+        get radius(): number;
+        set radius(v: number);
         /**
          * 是否从球面发射
          */
@@ -14979,7 +15242,7 @@ declare namespace feng3d {
     /**
      * 从半球体的体积中发出。
      */
-    class ParticleSystemShapeHemisphere extends ParticleSystemShapeBase {
+    class ParticleSystemShapeHemisphere extends ParticleSystemShape {
         radius: number;
         /**
          * 是否从球面发射
@@ -15045,39 +15308,48 @@ declare namespace feng3d {
     /**
      * 粒子系统发射圆锥体，用于定义基于圆锥体的粒子发射时的初始状态。
      */
-    class ParticleSystemShapeCone extends ParticleSystemShapeBase {
+    class ParticleSystemShapeCone extends ParticleSystemShape {
         /**
          * Angle of the cone.
          * 圆锥的角度。
          */
-        angle: number;
+        get angle(): number;
+        set angle(v: number);
         /**
          * 圆锥体底部半径。
          */
-        radius: number;
+        get radius(): number;
+        set radius(v: number);
         /**
-         * 圆锥体高度。
+         * Length of the cone.
+         *
+         * 圆锥的长度（高度）。
          */
-        height: number;
+        get length(): number;
+        set length(v: number);
         /**
          * Circle arc angle.
          */
-        arc: number;
+        get arc(): number;
+        set arc(v: number);
         /**
          * The mode used for generating particles around the arc.
          * 在弧线周围产生粒子的模式。
          */
-        arcMode: ParticleSystemShapeMultiModeValue;
+        get arcMode(): ParticleSystemShapeMultiModeValue;
+        set arcMode(v: ParticleSystemShapeMultiModeValue);
         /**
          * Control the gap between emission points around the arc.
          * 控制弧线周围发射点之间的间隙。
          */
-        arcSpread: number;
+        get arcSpread(): number;
+        set arcSpread(v: number);
         /**
          * When using one of the animated modes, how quickly to move the emission position around the arc.
          * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
          */
-        arcSpeed: MinMaxCurve;
+        get arcSpeed(): MinMaxCurve;
+        set arcSpeed(v: MinMaxCurve);
         /**
          * 粒子系统圆锥体发射类型。
          */
@@ -15107,10 +15379,22 @@ declare namespace feng3d {
     /**
      * 粒子系统 发射盒子
      */
-    class ParticleSystemShapeBox extends ParticleSystemShapeBase {
-        boxX: number;
-        boxY: number;
-        boxZ: number;
+    class ParticleSystemShapeBox extends ParticleSystemShape {
+        /**
+         * 盒子X方向缩放。
+         */
+        get boxX(): number;
+        set boxX(v: number);
+        /**
+         * 盒子Y方向缩放。
+         */
+        get boxY(): number;
+        set boxY(v: number);
+        /**
+         * 盒子Z方向缩放。
+         */
+        get boxZ(): number;
+        set boxZ(v: number);
         /**
          * 粒子系统盒子发射类型。
          */
@@ -15126,24 +15410,31 @@ declare namespace feng3d {
     /**
      * 粒子系统 发射圆盘
      */
-    class ParticleSystemShapeCircle extends ParticleSystemShapeBase {
-        radius: number;
-        arc: number;
+    class ParticleSystemShapeCircle extends ParticleSystemShape {
+        get radius(): number;
+        set radius(v: number);
+        get arc(): number;
+        set arc(v: number);
         /**
          * The mode used for generating particles around the arc.
+         *
          * 在弧线周围产生粒子的模式。
          */
-        arcMode: ParticleSystemShapeMultiModeValue;
+        get arcMode(): ParticleSystemShapeMultiModeValue;
+        set arcMode(v: ParticleSystemShapeMultiModeValue);
         /**
          * Control the gap between emission points around the arc.
+         *
          * 控制弧线周围发射点之间的间隙。
          */
-        arcSpread: number;
+        get arcSpread(): number;
+        set arcSpread(v: number);
         /**
          * When using one of the animated modes, how quickly to move the emission position around the arc.
          * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
          */
-        arcSpeed: MinMaxCurve;
+        get arcSpeed(): MinMaxCurve;
+        set arcSpeed(v: MinMaxCurve);
         /**
          * 是否从圆形边缘发射。
          */
@@ -15159,26 +15450,33 @@ declare namespace feng3d {
     /**
      * 粒子系统 发射边
      */
-    class ParticleSystemShapeEdge extends ParticleSystemShapeBase {
+    class ParticleSystemShapeEdge extends ParticleSystemShape {
         /**
          * 边长的一半。
          */
-        radius: number;
+        get radius(): number;
+        set radius(v: number);
         /**
-         * The mode used for generating particles around the arc.
+         * The mode used for generating particles around the radius.
+         *
          * 在弧线周围产生粒子的模式。
          */
-        arcMode: ParticleSystemShapeMultiModeValue;
+        get radiusMode(): ParticleSystemShapeMultiModeValue;
+        set radiusMode(v: ParticleSystemShapeMultiModeValue);
         /**
-         * Control the gap between emission points around the arc.
+         * Control the gap between emission points around the radius.
+         *
          * 控制弧线周围发射点之间的间隙。
          */
-        arcSpread: number;
+        get radiusSpread(): number;
+        set radiusSpread(v: number);
         /**
-         * When using one of the animated modes, how quickly to move the emission position around the arc.
+         * When using one of the animated modes, how quickly to move the emission position around the radius.
+         *
          * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
          */
-        arcSpeed: MinMaxCurve;
+        get radiusSpeed(): MinMaxCurve;
+        set radiusSpeed(v: MinMaxCurve);
         /**
          * 初始化粒子状态
          * @param particle 粒子
@@ -15227,21 +15525,25 @@ declare namespace feng3d {
         loop: boolean;
         /**
          * When looping is enabled, this controls whether this particle system will look like it has already simulated for one loop when first becoming visible.
+         *
          * 当循环被激活时，它控制这个粒子系统在第一次出现时是否看起来像已经模拟了一个循环。
          */
         prewarm: boolean;
         /**
          * Start delay in seconds.
+         *
          * 启动延迟(以秒为单位)。
          */
         startDelay: MinMaxCurve;
         /**
          * Start delay multiplier in seconds.
+         *
          * 启动延迟乘数(以秒为单位)。
          */
-        readonly startDelayMultiplier: number;
+        get startDelayMultiplier(): number;
         /**
          * The total lifetime in seconds that each new particle will have.
+         *
          * 每个新粒子的总寿命(以秒计)。
          */
         startLifetime: MinMaxCurve;
@@ -15252,7 +15554,8 @@ declare namespace feng3d {
          * 起始寿命乘数。
          * 如果您只想更改总体寿命乘数，则此方法比访问整个曲线更有效。
          */
-        startLifetimeMultiplier: number;
+        get startLifetimeMultiplier(): number;
+        set startLifetimeMultiplier(v: number);
         /**
          * The initial speed of particles when emitted.
          *
@@ -15266,7 +15569,8 @@ declare namespace feng3d {
          * 粒子发射时的初始速度的乘子。
          * 这种方法比访问整个曲线更有效，如果你只想改变整体速度乘数。
          */
-        startSpeedMultiplier: number;
+        get startSpeedMultiplier(): number;
+        set startSpeedMultiplier(v: number);
         /**
          * A flag to enable specifying particle size individually for each axis.
          *
@@ -15278,7 +15582,7 @@ declare namespace feng3d {
          *
          * 粒子发射时的初始大小。
          */
-        readonly startSize: MinMaxCurve;
+        get startSize(): MinMaxCurve;
         /**
          * Start size multiplier.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
@@ -15286,9 +15590,11 @@ declare namespace feng3d {
          * 开始尺寸乘数。
          * 如果您只想更改整体尺寸倍增器，则此方法比访问整个曲线更有效。
          */
-        startSizeMultiplier: number;
+        get startSizeMultiplier(): number;
+        set startSizeMultiplier(v: number);
         /**
          * The initial size of particles when emitted.
+         *
          * 发射时粒子的初始大小。
          */
         startSize3D: MinMaxCurveVector3;
@@ -15297,7 +15603,7 @@ declare namespace feng3d {
          *
          * 发射时沿X轴的粒子的初始大小。
          */
-        readonly startSizeX: MinMaxCurve;
+        get startSizeX(): MinMaxCurve;
         /**
          * Start rotation multiplier along the X axis.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
@@ -15305,13 +15611,14 @@ declare namespace feng3d {
          * 启动旋转乘法器沿X轴。
          * 如果您只想更改整体大小倍增器，则此方法比访问整个曲线更有效。
          */
-        startSizeXMultiplier: number;
+        get startSizeXMultiplier(): number;
+        set startSizeXMultiplier(v: number);
         /**
          * The initial size of particles along the Y axis when emitted.
          *
          * 发射时沿Y轴的粒子的初始大小。
          */
-        readonly startSizeY: MinMaxCurve;
+        get startSizeY(): MinMaxCurve;
         /**
          * Start rotation multiplier along the Y axis.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
@@ -15319,13 +15626,14 @@ declare namespace feng3d {
          * 启动旋转乘法器沿Y轴。
          * 如果您只想更改整体大小倍增器，则此方法比访问整个曲线更有效。
          */
-        startSizeYMultiplier: number;
+        get startSizeYMultiplier(): number;
+        set startSizeYMultiplier(v: number);
         /**
          * The initial size of particles along the Z axis when emitted.
          *
          * 发射时沿Z轴的粒子的初始大小。
          */
-        readonly startSizeZ: MinMaxCurve;
+        get startSizeZ(): MinMaxCurve;
         /**
          * Start rotation multiplier along the Z axis.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
@@ -15333,7 +15641,8 @@ declare namespace feng3d {
          * 启动旋转乘法器沿Z轴。
          * 如果您只想更改整体大小倍增器，则此方法比访问整个曲线更有效。
          */
-        startSizeZMultiplier: number;
+        get startSizeZMultiplier(): number;
+        set startSizeZMultiplier(v: number);
         /**
          * A flag to enable 3D particle rotation.
          * 一个启用粒子3D旋转的标记。
@@ -15343,7 +15652,7 @@ declare namespace feng3d {
          * The initial rotation of particles when emitted.
          * 粒子发射时的初始旋转。
          */
-        readonly startRotation: MinMaxCurve;
+        get startRotation(): MinMaxCurve;
         /**
          * Start rotation multiplier.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
@@ -15351,17 +15660,20 @@ declare namespace feng3d {
          * 开始旋转乘数。
          * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
          */
-        startRotationMultiplier: number;
+        get startRotationMultiplier(): number;
+        set startRotationMultiplier(v: number);
         /**
          * The initial rotation of particles when emitted.
+         *
          * 粒子发射时的初始旋转。
          */
         startRotation3D: MinMaxCurveVector3;
         /**
          * The initial rotation of particles around the X axis when emitted.
+         *
          * 发射时粒子围绕X轴的初始旋转。
          */
-        readonly startRotationX: MinMaxCurve;
+        get startRotationX(): MinMaxCurve;
         /**
          * Start rotation multiplier around the X axis.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
@@ -15369,12 +15681,14 @@ declare namespace feng3d {
          * 开始绕X轴旋转乘法器。
          * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
          */
-        startRotationXMultiplier: number;
+        get startRotationXMultiplier(): number;
+        set startRotationXMultiplier(v: number);
         /**
          * The initial rotation of particles around the Y axis when emitted.
+         *
          * 发射时粒子围绕Y轴的初始旋转。
          */
-        readonly startRotationY: MinMaxCurve;
+        get startRotationY(): MinMaxCurve;
         /**
          * Start rotation multiplier around the Y axis.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
@@ -15382,12 +15696,14 @@ declare namespace feng3d {
          * 开始绕Y轴旋转乘法器。
          * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
          */
-        startRotationYMultiplier: number;
+        get startRotationYMultiplier(): number;
+        set startRotationYMultiplier(v: number);
         /**
          * The initial rotation of particles around the Z axis when emitted.
+         *
          * 发射时粒子围绕Z轴的初始旋转。
          */
-        readonly startRotationZ: MinMaxCurve;
+        get startRotationZ(): MinMaxCurve;
         /**
          * Start rotation multiplier around the Z axis.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
@@ -15395,42 +15711,59 @@ declare namespace feng3d {
          * 开始绕Z轴旋转乘法器。
          * 这种方法比访问整个曲线更有效，如果你只想改变整体旋转乘数。
          */
-        startRotationZMultiplier: number;
+        get startRotationZMultiplier(): number;
+        set startRotationZMultiplier(v: number);
         /**
          * Cause some particles to spin in the opposite direction. Set between 0 and 1, where higher values will cause a higher proportion of particles to spin in the opposite direction.
+         *
          * 导致一些粒子向相反的方向旋转。设置在0和1之间，数值越大，粒子朝相反方向旋转的比例越大。
          */
         randomizeRotationDirection: number;
         /**
          * The initial color of particles when emitted.
+         *
          * 粒子发射时的初始颜色。
          */
         startColor: MinMaxGradient;
         /**
+         * Scale applied to the gravity.
+         *
          * 应用于重力加速度的缩放。
          */
         gravityModifier: MinMaxCurve;
         /**
+         * This selects the space in which to simulate particles. It can be either world or local space.
+         *
          * 模拟空间，使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。
          */
         simulationSpace: ParticleSystemSimulationSpace;
         /**
+         * Simulate particles relative to a custom transform component.
+         *
          * 模拟相对于自定义转换组件的粒子。
          */
         customSimulationSpace: Transform;
         /**
+         * Override the default playback speed of the Particle System.
+         *
          * 重写粒子系统的默认播放速度。
          */
         simulationSpeed: number;
         /**
+         * Control how the particle system's Transform Component is applied to the particle system.
+         *
          * 控制粒子系统的变换组件如何应用于粒子系统。
          */
         scalingMode: ParticleSystemScalingMode;
         /**
+         * If set to true, the particle system will automatically start playing on startup.
+         *
          * 如果设置为真，粒子系统将自动开始播放启动。
          */
         playOnAwake: boolean;
         /**
+         * The maximum number of particles to emit.
+         *
          * 发射粒子的最大数量。
          */
         maxParticles: number;
@@ -15463,7 +15796,8 @@ declare namespace feng3d {
          * 如果您只想更改整体的速率乘数，那么这比访问整个曲线更有效。
          * 只在
          */
-        rateOverTimeMultiplier: number;
+        get rateOverTimeMultiplier(): number;
+        set rateOverTimeMultiplier(v: number);
         /**
          * The rate at which new particles are spawned, over distance.
          * New particles will only be emitted when the emitter moves.
@@ -15481,7 +15815,8 @@ declare namespace feng3d {
          * 改变速率随距离变化的乘数。
          * 如果您只想更改整体的速率乘数，那么这比访问整个曲线更有效。
          */
-        rateOverDistanceMultiplier: number;
+        get rateOverDistanceMultiplier(): number;
+        set rateOverDistanceMultiplier(v: number);
         /**
          * 爆发数组
          */
@@ -15491,7 +15826,7 @@ declare namespace feng3d {
          *
          * 当前的爆发次数。
          */
-        readonly burstCount: number;
+        get burstCount(): number;
         /**
          * Get the burst array.
          * 获取爆发数组。
@@ -15520,18 +15855,20 @@ declare namespace feng3d {
          * Type of shape to emit particles from.
          * 发射粒子的形状类型。
          */
-        shapeType: ParticleSystemShapeType;
+        get shapeType(): ParticleSystemShapeType;
+        set shapeType(v: ParticleSystemShapeType);
         private _shapeType;
         /**
          * Type of shape to emit particles from.
          * 发射粒子的形状类型。
          */
-        shape: ParticleSystemShape;
+        get shape(): ParticleSystemShapeType1;
+        set shape(v: ParticleSystemShapeType1);
         private _shape;
         /**
          * 当前使用的发射形状
          */
-        activeShape: ParticleSystemShapeBase;
+        activeShape: ParticleSystemShape;
         /**
          * Align particles based on their initial direction of travel.
          * 根据粒子的初始运动方向排列粒子。
@@ -15550,6 +15887,156 @@ declare namespace feng3d {
          * 使粒子的起始方向球面化。
          */
         sphericalDirectionAmount: number;
+        /**
+         * Angle of the cone.
+         *
+         * 圆锥的角度。
+         */
+        angle: number;
+        /**
+         * Circle arc angle.
+         *
+         * 圆弧角。
+         */
+        arc: number;
+        /**
+         * The mode used for generating particles around the arc.
+         *
+         * 在弧线周围产生粒子的模式。
+         */
+        arcMode: ParticleSystemShapeMultiModeValue;
+        /**
+         * When using one of the animated modes, how quickly to move the emission position around the arc.
+         *
+         * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
+         */
+        arcSpeed: MinMaxCurve;
+        /**
+         * A multiplier of the arc speed of the emission shape.
+         *
+         * 发射形状的电弧速度的乘数。
+         */
+        get arcSpeedMultiplier(): number;
+        set arcSpeedMultiplier(v: number);
+        /**
+         * Control the gap between emission points around the arc.
+         *
+         * 控制弧线周围发射点之间的间隙。
+         */
+        arcSpread: number;
+        /**
+         * Scale of the box.
+         *
+         * 盒子的缩放。
+         */
+        box: Vector3;
+        /**
+         * Length of the cone.
+         *
+         * 圆锥的长度（高度）。
+         */
+        length: number;
+        /**
+         * Mesh to emit particles from.
+         *
+         * 发射粒子的网格。
+         *
+         * @todo
+         */
+        mesh: Geometry;
+        /**
+         * Emit from a single material, or the whole mesh.
+         *
+         * 从一个单一的材料，或整个网格发射。
+         *
+         * @todo
+         */
+        useMeshMaterialIndex: boolean;
+        /**
+         * Emit particles from a single material of a mesh.
+         *
+         * 从一个网格的单一材料发射粒子。
+         *
+         * @todo
+         */
+        meshMaterialIndex: number;
+        /**
+         * MeshRenderer to emit particles from.
+         *
+         * 从 MeshRenderer 发射粒子。
+         *
+         * @todo
+         */
+        meshRenderer: any;
+        /**
+         * SkinnedMeshRenderer to emit particles from.
+         *
+         * 从 SkinnedMeshRenderer 发射粒子。
+         *
+         * @todo
+         */
+        skinnedMeshRenderer: any;
+        /**
+         * Apply a scaling factor to the mesh used for generating source positions.
+         *
+         * 对用于生成源位置的网格应用缩放因子。
+         *
+         * @todo
+         */
+        meshScale: number;
+        /**
+         * Where on the mesh to emit particles from.
+         *
+         * 从网格的什么地方发射粒子。
+         *
+         * @todo
+         */
+        meshShapeType: ParticleSystemMeshShapeType;
+        /**
+         * Modulate the particle colors with the vertex colors, or the material color if no vertex colors exist.
+         *
+         * 用顶点颜色调节粒子颜色，如果没有顶点颜色，则调节材质颜色。
+         *
+         * @todo
+         */
+        useMeshColors: boolean;
+        /**
+         * Move particles away from the surface of the source mesh.
+         *
+         * 将粒子从源网格的表面移开。
+         */
+        normalOffset: number;
+        /**
+         * Radius of the shape.
+         *
+         * 形状的半径。
+         */
+        radius: number;
+        /**
+         * The mode used for generating particles around the radius.
+         *
+         * 在弧线周围产生粒子的模式。
+         */
+        radiusMode: ParticleSystemShapeMultiModeValue;
+        /**
+         * When using one of the animated modes, how quickly to move the emission position along the radius.
+         *
+         * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
+         */
+        radiusSpeed: MinMaxCurve;
+        /**
+         * A multiplier of the radius speed of the emission shape.
+         *
+         * 发射形状的半径速度的乘法器。
+         */
+        get radiusSpeedMultiplier(): number;
+        set radiusSpeedMultiplier(v: number);
+        /**
+         * Control the gap between emission points around the radius.
+         *
+         * 控制弧线周围发射点之间的间隙。
+         */
+        radiusSpread: number;
         private _shapeSphere;
         private _shapeHemisphere;
         private _shapeCone;
@@ -15576,14 +16063,58 @@ declare namespace feng3d {
     class ParticleVelocityOverLifetimeModule extends ParticleModule {
         /**
          * Curve to control particle speed based on lifetime.
+         *
          * 基于寿命的粒子速度控制曲线。
          */
         velocity: MinMaxCurveVector3;
         /**
          * Specifies if the velocities are in local space (rotated with the transform) or world space.
+         *
          * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
          */
         space: ParticleSystemSimulationSpace1;
+        /**
+         * Curve to control particle speed based on lifetime, on the X axis.
+         *
+         * 曲线控制粒子速度基于寿命，在X轴上。
+         */
+        get x(): MinMaxCurve;
+        set x(v: MinMaxCurve);
+        /**
+         * X axis speed multiplier.
+         *
+         * X轴速度倍增器。
+         */
+        get xMultiplier(): number;
+        set xMultiplier(v: number);
+        /**
+         * Curve to control particle speed based on lifetime, on the Y axis.
+         *
+         * 曲线控制粒子速度基于寿命，在Y轴上。
+         */
+        get y(): MinMaxCurve;
+        set y(v: MinMaxCurve);
+        /**
+         * Y axis speed multiplier.
+         *
+         * Y轴速度倍增器。
+         */
+        get yMultiplier(): number;
+        set yMultiplier(v: number);
+        /**
+         * Curve to control particle speed based on lifetime, on the Z axis.
+         *
+         * 曲线控制粒子速度基于寿命，在Z轴上。
+         */
+        get z(): MinMaxCurve;
+        set z(v: MinMaxCurve);
+        /**
+         * Z axis speed multiplier.
+         *
+         * Z轴速度倍增器。
+         */
+        get zMultiplier(): number;
+        set zMultiplier(v: number);
         /**
          * 初始化粒子状态
          * @param particle 粒子
@@ -15599,70 +16130,98 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * Limit Velocity Over Lifetime module.
+     *
      * 基于时间轴限制速度模块。
      */
     class ParticleLimitVelocityOverLifetimeModule extends ParticleModule {
         /**
          * Set the size over lifetime on each axis separately.
+         *
          * 在每个轴上分别设置生命周期内的大小。
          */
         separateAxes: boolean;
         /**
          * Maximum velocity curve, when not using one curve per axis.
+         *
          * 最大速度曲线，当不使用每轴一个曲线时。
          */
         limit: MinMaxCurve;
         /**
          * Maximum velocity.
+         *
          * 最高速度。
          */
         limit3D: MinMaxCurveVector3;
         /**
          * Specifies if the velocities are in local space (rotated with the transform) or world space.
+         *
          * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
          */
         space: ParticleSystemSimulationSpace1;
         /**
          * Controls how much the velocity that exceeds the velocity limit should be dampened.
+         *
          * 控制多少速度，超过速度限制应该被抑制。
          */
         dampen: number;
         /**
          * Change the limit multiplier.
+         *
          * 改变限制乘法因子。
          */
-        limitMultiplier: number;
+        get limitMultiplier(): number;
+        set limitMultiplier(v: number);
         /**
          * Maximum velocity curve for the X axis.
+         *
+         * X轴的最大速度曲线。
          */
-        limitX: MinMaxCurve;
+        get limitX(): MinMaxCurve;
+        set limitX(v: MinMaxCurve);
         /**
          * Change the limit multiplier on the X axis.
+         *
+         * 改变X轴上的极限乘法器。
          */
-        limitXMultiplier: number;
+        get limitXMultiplier(): number;
+        set limitXMultiplier(v: number);
         /**
          * Maximum velocity curve for the Y axis.
+         *
+         * Y轴的最大速度曲线。
          */
-        limitY: MinMaxCurve;
+        get limitY(): MinMaxCurve;
+        set limitY(v: MinMaxCurve);
         /**
          * Change the limit multiplier on the Y axis.
+         *
+         * 改变Y轴上的极限乘法器。
          */
-        limitYMultiplier: number;
+        get limitYMultiplier(): number;
+        set limitYMultiplier(v: number);
         /**
          * Maximum velocity curve for the Z axis.
+         *
+         * Z轴的最大速度曲线。
          */
-        limitZ: MinMaxCurve;
+        get limitZ(): MinMaxCurve;
+        set limitZ(v: MinMaxCurve);
         /**
          * Change the limit multiplier on the Z axis.
+         *
+         * 更改Z轴上的极限乘法器。
          */
-        limitZMultiplier: number;
+        get limitZMultiplier(): number;
+        set limitZMultiplier(v: number);
         /**
          * 初始化粒子状态
+         *
          * @param particle 粒子
          */
         initParticleState(particle: Particle): void;
         /**
          * 更新粒子状态
+         *
          * @param particle 粒子
          */
         updateParticleState(particle: Particle): void;
@@ -15682,9 +16241,60 @@ declare namespace feng3d {
         force: MinMaxCurveVector3;
         /**
          * Are the forces being applied in local or world space?
+         *
          * 这些力是作用于局部空间还是世界空间
          */
         space: ParticleSystemSimulationSpace1;
+        /**
+         * When randomly selecting values between two curves or constants, this flag will cause a new random force to be chosen on each frame.
+         *
+         * 当在两条曲线或常数之间随机选择值时，此标志将导致在每一帧上选择一个新的随机力。
+         *
+         * @todo
+         */
+        randomized: boolean;
+        /**
+         * The curve defining particle forces in the X axis.
+         *
+         * 在X轴上定义粒子力的曲线。
+         */
+        get x(): MinMaxCurve;
+        set x(v: MinMaxCurve);
+        /**
+         * Change the X axis mulutiplier.
+         *
+         * 改变X轴的乘数。
+         */
+        get xMultiplier(): number;
+        set xMultiplier(v: number);
+        /**
+         * The curve defining particle forces in the Y axis.
+         *
+         * 在Y轴上定义粒子力的曲线。
+         */
+        get y(): MinMaxCurve;
+        set y(v: MinMaxCurve);
+        /**
+         * Change the Y axis mulutiplier.
+         *
+         * 改变Y轴的乘数。
+         */
+        get yMultiplier(): number;
+        set yMultiplier(v: number);
+        /**
+         * The curve defining particle forces in the Z axis.
+         *
+         * 在Z轴上定义粒子力的曲线。
+         */
+        get z(): MinMaxCurve;
+        set z(v: MinMaxCurve);
+        /**
+         * Change the Z axis mulutiplier.
+         *
+         * 改变Z轴的乘数。
+         */
+        get zMultiplier(): number;
+        set zMultiplier(v: number);
         /**
          * 初始化粒子状态
          * @param particle 粒子
@@ -15726,14 +16336,71 @@ declare namespace feng3d {
     class ParticleSizeOverLifetimeModule extends ParticleModule {
         /**
          * Set the size over lifetime on each axis separately.
+         *
          * 在每个轴上分别设置生命周期内的大小。
          */
         separateAxes: boolean;
         /**
          * Curve to control particle size based on lifetime.
+         *
          * 基于寿命的粒度控制曲线。
          */
-        size: MinMaxCurveVector3;
+        get size(): MinMaxCurve;
+        /**
+         * Size multiplier.
+         *
+         * 尺寸的乘数。
+         */
+        get sizeMultiplier(): number;
+        set sizeMultiplier(v: number);
+        /**
+         * Curve to control particle size based on lifetime.
+         *
+         * 基于寿命的粒度控制曲线。
+         */
+        size3D: MinMaxCurveVector3;
+        /**
+         * Size over lifetime curve for the X axis.
+         *
+         * X轴的尺寸随生命周期变化曲线。
+         */
+        get x(): MinMaxCurve;
+        set x(v: MinMaxCurve);
+        /**
+         * X axis size multiplier.
+         *
+         * X轴尺寸的乘数。
+         */
+        get xMultiplier(): number;
+        set xMultiplier(v: number);
+        /**
+         * Size over lifetime curve for the Y axis.
+         *
+         * Y轴的尺寸随生命周期变化曲线。
+         */
+        get y(): MinMaxCurve;
+        set y(v: MinMaxCurve);
+        /**
+         * Y axis size multiplier.
+         *
+         * Y轴尺寸的乘数。
+         */
+        get yMultiplier(): number;
+        set yMultiplier(v: number);
+        /**
+         * Size over lifetime curve for the Z axis.
+         *
+         * Z轴的尺寸随生命周期变化曲线。
+         */
+        get z(): MinMaxCurve;
+        set z(v: MinMaxCurve);
+        /**
+         * Z axis size multiplier.
+         *
+         * Z轴尺寸的乘数。
+         */
+        get zMultiplier(): number;
+        set zMultiplier(v: number);
         /**
          * 初始化粒子状态
          * @param particle 粒子
@@ -15761,6 +16428,48 @@ declare namespace feng3d {
          */
         angularVelocity: MinMaxCurveVector3;
         /**
+         * Rotation over lifetime curve for the X axis.
+         *
+         * X轴的旋转寿命曲线。
+         */
+        get x(): MinMaxCurve;
+        set x(v: MinMaxCurve);
+        /**
+         * Rotation multiplier around the X axis.
+         *
+         * 绕X轴旋转乘法器
+         */
+        get xMultiplier(): number;
+        set xMultiplier(v: number);
+        /**
+         * Rotation over lifetime curve for the Y axis.
+         *
+         * Y轴的旋转寿命曲线。
+         */
+        get y(): MinMaxCurve;
+        set y(v: MinMaxCurve);
+        /**
+         * Rotation multiplier around the Y axis.
+         *
+         * 绕Y轴旋转乘法器
+         */
+        get yMultiplier(): number;
+        set yMultiplier(v: number);
+        /**
+         * Rotation over lifetime curve for the Z axis.
+         *
+         * Z轴的旋转寿命曲线。
+         */
+        get z(): MinMaxCurve;
+        set z(v: MinMaxCurve);
+        /**
+         * Rotation multiplier around the Z axis.
+         *
+         * 绕Z轴旋转乘法器
+         */
+        get zMultiplier(): number;
+        set zMultiplier(v: number);
+        /**
          * 初始化粒子状态
          * @param particle 粒子
          */
@@ -15773,57 +16482,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * The animation type.
-     * 动画类型。
-     */
-    enum ParticleSystemAnimationType {
-        /**
-         * Animate over the whole texture sheet from left to right, top to bottom.
-         * 从左到右，从上到下动画整个纹理表。
-         */
-        WholeSheet = 0,
-        /**
-         * Animate a single row in the sheet from left to right.
-         * 从左到右移动工作表中的一行。
-         */
-        SingleRow = 1
-    }
-    /**
-     * A flag representing each UV channel.
-     * 一个代表每个紫外线频道的旗子。
-     */
-    enum UVChannelFlags {
-        /**
-         * 无通道。
-         */
-        Nothing = 0,
-        /**
-         * First UV channel.
-         * 第一UV通道。
-         */
-        UV0 = 1,
-        /**
-         * Second UV channel.
-         * 第二UV通道。
-         */
-        UV1 = 2,
-        /**
-         * Third UV channel.
-         * 第三UV通道。
-         */
-        UV2 = 4,
-        /**
-         * Fourth UV channel.
-         * 第四UV通道。
-         */
-        UV3 = 8,
-        /**
-         * All channel.
-         * 所有通道。
-         */
-        Everything = 15
-    }
     /**
      * 粒子系统纹理表动画模块。
      */
@@ -15851,7 +16509,8 @@ declare namespace feng3d {
          * Explicitly select which row of the texture sheet is used, when useRandomRow is set to false.
          * 当useRandomRow设置为false时，显式选择使用纹理表的哪一行。
          */
-        rowIndex: number;
+        get rowIndex(): number;
+        set rowIndex(v: number);
         private _rowIndex;
         /**
          * Define a random starting frame for the texture sheet animation.
@@ -15900,7 +16559,7 @@ declare namespace feng3d {
         /** 骨骼全局矩阵 */
         matrix3D: Matrix4x4;
         children: number[];
-        readonly invertMatrix3D: Matrix4x4;
+        get invertMatrix3D(): Matrix4x4;
         private _invertMatrix3D;
     }
 }
@@ -15916,7 +16575,7 @@ declare namespace feng3d {
          * 当前骨骼姿势的全局矩阵
          * @see #globalPose
          */
-        readonly globalMatrices: Matrix4x4[];
+        get globalMatrices(): Matrix4x4[];
         private isInitJoints;
         private jointGameobjects;
         private jointGameObjectMap;
@@ -15940,7 +16599,7 @@ declare namespace feng3d {
     }
     class SkinnedModel extends Model {
         __class__: "feng3d.SkinnedModel";
-        readonly single: boolean;
+        get single(): boolean;
         skinSkeleton: SkinSkeleton;
         initMatrix3d: Matrix4x4;
         /**
@@ -15957,9 +16616,9 @@ declare namespace feng3d {
          */
         private cacheSkeletonComponent;
         private cacheU_skeletonGlobalMatriices;
-        private readonly u_modelMatrix;
-        private readonly u_ITModelMatrix;
-        private readonly u_skeletonGlobalMatriices;
+        private get u_modelMatrix();
+        private get u_ITModelMatrix();
+        private get u_skeletonGlobalMatriices();
     }
     class SkinSkeleton {
         /**
@@ -16024,13 +16683,15 @@ declare namespace feng3d {
         Animation: Animation;
     }
     class Animation extends Behaviour {
-        animation: AnimationClip;
+        get animation(): AnimationClip;
+        set animation(v: AnimationClip);
         private _animation;
         animations: AnimationClip[];
         /**
          * 动画事件，单位为ms
          */
-        time: number;
+        get time(): number;
+        set time(v: number);
         private _time;
         isplaying: boolean;
         /**
@@ -16040,8 +16701,8 @@ declare namespace feng3d {
         /**
          * 动作名称
          */
-        readonly clipName: string;
-        readonly frame: number;
+        get clipName(): string;
+        get frame(): number;
         update(interval: number): void;
         dispose(): void;
         private num;
@@ -16129,7 +16790,8 @@ declare namespace feng3d {
         /**
          * 资源对象
          */
-        data: AssetData;
+        get data(): AssetData;
+        set data(v: AssetData);
         private _data;
         saveFile(callback?: (err: Error) => void): void;
         /**
@@ -16148,7 +16810,8 @@ declare namespace feng3d {
     class ScriptAsset extends StringAsset {
         static extenson: string;
         assetType: AssetType;
-        textContent: string;
+        get textContent(): string;
+        set textContent(v: string);
         private _textContent;
         /**
          * 脚本父类名称
@@ -16222,7 +16885,8 @@ declare namespace feng3d {
         /**
          * 图片
          */
-        image: HTMLImageElement;
+        get image(): HTMLImageElement;
+        set image(v: HTMLImageElement);
         meta: TextureAssetMeta;
         assetType: AssetType;
         initAsset(): void;
@@ -17052,9 +17716,11 @@ declare namespace feng3d {
      * 鼠标事件管理
      */
     class Mouse3DManager {
-        mouseInput: MouseInput;
+        get mouseInput(): MouseInput;
+        set mouseInput(v: MouseInput);
         private _mouseInput;
-        selectedGameObject: GameObject;
+        get selectedGameObject(): GameObject;
+        set selectedGameObject(v: GameObject);
         /**
          * 视窗，鼠标在该矩形内时为有效事件
          */
@@ -18051,7 +18717,8 @@ declare namespace CANNON {
         /**
          * World space position of the body.
          */
-        position: feng3d.Vector3;
+        get position(): feng3d.Vector3;
+        set position(v: feng3d.Vector3);
         private _position;
         previousPosition: feng3d.Vector3;
         /**
@@ -18065,14 +18732,16 @@ declare namespace CANNON {
         /**
          * World space velocity of the body.
          */
-        velocity: feng3d.Vector3;
+        get velocity(): feng3d.Vector3;
+        set velocity(v: feng3d.Vector3);
         private _velocity;
         initVelocity: feng3d.Vector3;
         /**
          * Linear force on the body in world space.
          */
         force: feng3d.Vector3;
-        mass: number;
+        get mass(): number;
+        set mass(v: number);
         private _mass;
         invMass: number;
         material: Material;
@@ -18106,7 +18775,8 @@ declare namespace CANNON {
         /**
          * World space orientation of the body.
          */
-        quaternion: feng3d.Quaternion;
+        get quaternion(): feng3d.Quaternion;
+        set quaternion(v: feng3d.Quaternion);
         private _quaternion;
         initQuaternion: feng3d.Quaternion;
         previousQuaternion: feng3d.Quaternion;
@@ -18117,7 +18787,8 @@ declare namespace CANNON {
         /**
          * Angular velocity of the body, in world space. Think of the angular velocity as a vector, which the body rotates around. The length of this vector determines how fast (in radians per second) the body rotates.
          */
-        angularVelocity: feng3d.Vector3;
+        get angularVelocity(): feng3d.Vector3;
+        set angularVelocity(v: feng3d.Vector3);
         private _angularVelocity;
         initAngularVelocity: feng3d.Vector3;
         shapes: Shape[];
@@ -18143,12 +18814,14 @@ declare namespace CANNON {
         /**
          * Use this property to limit the motion along any world axis. (1,1,1) will allow motion along all axes while (0,0,0) allows none.
          */
-        linearFactor: feng3d.Vector3;
+        get linearFactor(): feng3d.Vector3;
+        set linearFactor(v: feng3d.Vector3);
         private _linearFactor;
         /**
          * Use this property to limit the rotational motion along any world axis. (1,1,1) will allow rotation along all axes while (0,0,0) allows none.
          */
-        angularFactor: feng3d.Vector3;
+        get angularFactor(): feng3d.Vector3;
+        set angularFactor(v: feng3d.Vector3);
         private _angularFactor;
         /**
          * World space bounding box of the body and its shapes.
@@ -18393,17 +19066,23 @@ declare namespace CANNON {
         /**
          * Connection point, defined locally in the chassis body frame.
          */
-        chassisConnectionPointLocal: feng3d.Vector3;
+        get chassisConnectionPointLocal(): feng3d.Vector3;
+        set chassisConnectionPointLocal(v: feng3d.Vector3);
         private _chassisConnectionPointLocal;
-        chassisConnectionPointWorld: feng3d.Vector3;
+        get chassisConnectionPointWorld(): feng3d.Vector3;
+        set chassisConnectionPointWorld(v: feng3d.Vector3);
         private _chassisConnectionPointWorld;
-        directionLocal: feng3d.Vector3;
+        get directionLocal(): feng3d.Vector3;
+        set directionLocal(v: feng3d.Vector3);
         private _directionLocal;
-        directionWorld: feng3d.Vector3;
+        get directionWorld(): feng3d.Vector3;
+        set directionWorld(v: feng3d.Vector3);
         private _directionWorld;
-        axleLocal: feng3d.Vector3;
+        get axleLocal(): feng3d.Vector3;
+        set axleLocal(v: feng3d.Vector3);
         private _axleLocal;
-        axleWorld: feng3d.Vector3;
+        get axleWorld(): feng3d.Vector3;
+        set axleWorld(v: feng3d.Vector3);
         private _axleWorld;
         suspensionRestLength: number;
         suspensionMaxLength: number;
@@ -19210,7 +19889,7 @@ declare namespace feng3d {
      * 碰撞体
      */
     class Collider extends Component {
-        readonly shape: CANNON.Shape;
+        get shape(): CANNON.Shape;
         protected _shape: CANNON.Shape;
     }
 }
@@ -19244,7 +19923,8 @@ declare namespace feng3d {
         /**
          * 半径
          */
-        radius: number;
+        get radius(): number;
+        set radius(v: number);
         private _radius;
         readonly shape: CANNON.Sphere;
         protected _shape: CANNON.Sphere;
@@ -19285,27 +19965,32 @@ declare namespace feng3d {
         /**
          * 胶囊体半径
          */
-        radius: number;
+        get radius(): number;
+        set radius(v: number);
         private _radius;
         /**
          * 胶囊体高度
          */
-        height: number;
+        get height(): number;
+        set height(v: number);
         private _height;
         /**
          * 横向分割数
          */
-        segmentsW: number;
+        get segmentsW(): number;
+        set segmentsW(v: number);
         private _segmentsW;
         /**
          * 纵向分割数
          */
-        segmentsH: number;
+        get segmentsH(): number;
+        set segmentsH(v: number);
         private _segmentsH;
         /**
          * 正面朝向 true:Y+ false:Z+
          */
-        yUp: boolean;
+        get yUp(): boolean;
+        set yUp(v: boolean);
         private _yUp;
         readonly shape: CANNON.Trimesh;
         protected _shape: CANNON.Trimesh;
