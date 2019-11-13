@@ -78,6 +78,8 @@ namespace feng3d
         }
 
         /**
+         * The initial speed of particles when emitted.
+         * 
          * 粒子发射时的初始速度。
          */
         @serialize
@@ -85,19 +87,38 @@ namespace feng3d
         @oav({ tooltip: "粒子发射时的初始速度。" })
         startSpeed = serialization.setValue(new MinMaxCurve(), { constant: 5, constant1: 5 });
 
+        /**
+         * A multiplier of the initial speed of particles when emitted.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall speed multiplier.
+         * 
+         * 粒子发射时的初始速度的乘子。
+         * 这种方法比访问整个曲线更有效，如果你只想改变整体速度乘数。
+         */
+        get startSpeedMultiplier()
+        {
+            return this.startSpeed.curveMultiplier;
+        }
+
+        set startSpeedMultiplier(v)
+        {
+            this.startSpeed.curveMultiplier = v;
+        }
+
+        /**
+         * A flag to enable specifying particle size individually for each axis.
+         * 
+         * 允许为每个轴分别指定粒度大小的标志。
+         */
         @serialize
         // @oav({ tooltip: "A flag to enable specifying particle size individually for each axis." })
         @oav({ tooltip: "允许为每个轴分别指定粒度大小的标志。" })
         useStartSize3D = false;
 
         /**
-         * 发射时粒子的初始大小。
+         * The initial size of particles when emitted.
+         * 
+         * 粒子发射时的初始大小。
          */
-        @serialize
-        // @oav({ tooltip: "The initial size of particles when emitted." })
-        @oav({ tooltip: "发射时粒子的初始大小。" })
-        startSize3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
-
         @serialize
         // @oav({ tooltip: "The initial size of particles when emitted." })
         @oav({ tooltip: "粒子发射时的初始大小。" })
@@ -106,15 +127,132 @@ namespace feng3d
             return this.startSize3D.xCurve;
         }
 
+        /**
+         * Start size multiplier.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
+         * 
+         * 开始尺寸乘数。
+         * 如果您只想更改整体尺寸倍增器，则此方法比访问整个曲线更有效。
+         */
+        get startSizeMultiplier()
+        {
+            return this.startSize.curveMultiplier;
+        }
+
+        set startSizeMultiplier(v)
+        {
+            this.startSize.curveMultiplier = v;
+        }
+
+        /**
+         * The initial size of particles when emitted.
+         * 发射时粒子的初始大小。
+         */
+        @serialize
+        // @oav({ tooltip: "The initial size of particles when emitted." })
+        @oav({ tooltip: "发射时粒子的初始大小。" })
+        startSize3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constant1: 1 }, yCurve: { between0And1: true, constant: 1, constant1: 1 }, zCurve: { between0And1: true, constant: 1, constant1: 1 } });
+
+        /**
+         * The initial size of particles along the X axis when emitted.
+         * 
+         * 发射时沿X轴的粒子的初始大小。
+         */
+        get startSizeX()
+        {
+            return this.startSize3D.xCurve;
+        }
+
+        /**
+         * Start rotation multiplier along the X axis.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
+         * 
+         * 启动旋转乘法器沿X轴。
+         * 如果您只想更改整体大小倍增器，则此方法比访问整个曲线更有效。
+         */
+        get startSizeXMultiplier()
+        {
+            return this.startSizeX.curveMultiplier;
+        }
+
+        set startSizeXMultiplier(v)
+        {
+            this.startSizeX.curveMultiplier = v;
+        }
+
+        /**
+         * The initial size of particles along the Y axis when emitted.
+         * 
+         * 发射时沿Y轴的粒子的初始大小。
+         */
+        get startSizeY()
+        {
+            return this.startSize3D.yCurve;
+        }
+
+        /**
+         * Start rotation multiplier along the Y axis.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
+         * 
+         * 启动旋转乘法器沿Y轴。
+         * 如果您只想更改整体大小倍增器，则此方法比访问整个曲线更有效。
+         */
+        get startSizeYMultiplier()
+        {
+            return this.startSizeY.curveMultiplier;
+        }
+
+        set startSizeYMultiplier(v)
+        {
+            this.startSizeY.curveMultiplier = v;
+        }
+
+        /**
+         * The initial size of particles along the Z axis when emitted.
+         * 
+         * 发射时沿Z轴的粒子的初始大小。
+         */
+        get startSizeZ()
+        {
+            return this.startSize3D.zCurve;
+        }
+
+        /**
+         * Start rotation multiplier along the Z axis.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
+         * 
+         * 启动旋转乘法器沿Z轴。
+         * 如果您只想更改整体大小倍增器，则此方法比访问整个曲线更有效。
+         */
+        get startSizeZMultiplier()
+        {
+            return this.startSizeZ.curveMultiplier;
+        }
+
+        set startSizeZMultiplier(v)
+        {
+            this.startSizeZ.curveMultiplier = v;
+        }
+
+        /**
+         * A flag to enable 3D particle rotation.
+         * 一个启用粒子3D旋转的标记。
+         */
         @serialize
         // @oav({ tooltip: "A flag to enable 3D particle rotation." })
         @oav({ tooltip: "一个启用粒子3D旋转的标记。" })
         useStartRotation3D = false;
 
-        @serialize
+        /**
+         * The initial rotation of particles when emitted.
+         * 粒子发射时的初始旋转。
+         */
         // @oav({ tooltip: "The initial rotation of particles when emitted." })
         @oav({ tooltip: "粒子发射时的初始旋转。" })
-        startRotation = serialization.setValue(new MinMaxCurve(), { curveMultiplier: 180 });
+        get startRotation()
+        {
+            return this.startRotation3D.zCurve;
+        }
 
         /**
          * Start rotation multiplier.
