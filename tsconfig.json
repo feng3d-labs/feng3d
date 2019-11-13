@@ -276,11 +276,12 @@
         "src/terrain/TerrainMergeMethod.ts",
         "src/terrain/TerrainData.ts",
         "src/terrain/Terrain.ts",
-        //粒子动画
+        //粒子系统
         "src/animators/particle/Particle.ts",
-        "src/animators/particle/ParticleEmissionBurst.ts",
         "src/animators/particle/ParticleMaterial.ts",
         "src/animators/particle/ParticleSystem.ts",
+        //
+        "src/animators/particle/others/ParticleEmissionBurst.ts",
         //
         "src/animators/particle/enums/ParticleSystemAnimationType.ts",
         "src/animators/particle/enums/UVChannelFlags.ts",
