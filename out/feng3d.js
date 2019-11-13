@@ -34238,10 +34238,12 @@ var feng3d;
              */
             _this.prewarm = false;
             /**
+             * Start delay in seconds.
              * 启动延迟(以秒为单位)。
              */
             _this.startDelay = new feng3d.MinMaxCurve();
             /**
+             * The total lifetime in seconds that each new particle will have.
              * 每个新粒子的总寿命(以秒计)。
              */
             _this.startLifetime = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constant: 5, constant1: 5 });
@@ -34265,6 +34267,7 @@ var feng3d;
              */
             _this.randomizeRotationDirection = 0;
             /**
+             * The initial color of particles when emitted.
              * 粒子发射时的初始颜色。
              */
             _this.startColor = new feng3d.MinMaxGradient();
@@ -34294,6 +34297,20 @@ var feng3d;
             _this.maxParticles = 1000;
             return _this;
         }
+        Object.defineProperty(ParticleMainModule.prototype, "startDelayMultiplier", {
+            /**
+             * Start delay multiplier in seconds.
+             * 启动延时倍增器(以秒为单位)。
+             */
+            get: function () {
+                return this.startDelay.curveMultiplier;
+            },
+            set: function (v) {
+                this.startDelay.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(ParticleMainModule.prototype, "startSize", {
             get: function () {
                 return this.startSize3D.xCurve;

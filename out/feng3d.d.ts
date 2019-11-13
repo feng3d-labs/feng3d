@@ -15064,10 +15064,17 @@ declare namespace feng3d {
          */
         prewarm: boolean;
         /**
+         * Start delay in seconds.
          * 启动延迟(以秒为单位)。
          */
         startDelay: MinMaxCurve;
         /**
+         * Start delay multiplier in seconds.
+         * 启动延时倍增器(以秒为单位)。
+         */
+        startDelayMultiplier: number;
+        /**
+         * The total lifetime in seconds that each new particle will have.
          * 每个新粒子的总寿命(以秒计)。
          */
         startLifetime: MinMaxCurve;
@@ -15093,6 +15100,7 @@ declare namespace feng3d {
          */
         randomizeRotationDirection: number;
         /**
+         * The initial color of particles when emitted.
          * 粒子发射时的初始颜色。
          */
         startColor: MinMaxGradient;

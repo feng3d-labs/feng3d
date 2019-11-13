@@ -34,6 +34,7 @@ namespace feng3d
         prewarm = false;
 
         /**
+         * Start delay in seconds.
          * 启动延迟(以秒为单位)。
          */
         @serialize
@@ -42,12 +43,44 @@ namespace feng3d
         startDelay = new MinMaxCurve();
 
         /**
+         * Start delay multiplier in seconds.
+         * 启动延迟乘数(以秒为单位)。
+         */
+        get startDelayMultiplier()
+        {
+            return this.startDelay.curveMultiplier;
+        }
+
+        set startDelayMultiplier(v)
+        {
+            this.startDelay.curveMultiplier = v;
+        }
+
+        /**
+         * The total lifetime in seconds that each new particle will have.
          * 每个新粒子的总寿命(以秒计)。
          */
         @serialize
         // @oav({ tooltip: "The total lifetime in seconds that each new particle will have." })
         @oav({ tooltip: "每个新粒子的总寿命(以秒计)。" })
         startLifetime = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 5, constant1: 5 });
+
+        /**
+         * Start lifetime multiplier.
+         * This method is more efficient than accessing the whole curve, if you only want to change the overall lifetime multiplier.
+         * 
+         * 起始寿命乘数。
+         * 如果您只想更改总体寿命乘数，则此方法比访问整个曲线更有效。
+         */
+        get startLifetimeMultiplier()
+        {
+            return this.startLifetime.curveMultiplier;
+        }
+
+        set startLifetimeMultiplier(v)
+        {
+            this.startLifetime.curveMultiplier = v;
+        }
 
         /**
          * 粒子发射时的初始速度。
@@ -117,6 +150,7 @@ namespace feng3d
         randomizeRotationDirection = 0;
 
         /**
+         * The initial color of particles when emitted.
          * 粒子发射时的初始颜色。
          */
         @serialize
