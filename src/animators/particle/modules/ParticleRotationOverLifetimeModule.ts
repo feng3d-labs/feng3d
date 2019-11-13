@@ -22,6 +22,96 @@ namespace feng3d
         angularVelocity = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { constant: 45, constant1: 45, curveMultiplier: 45 }, yCurve: { constant: 45, constant1: 45, curveMultiplier: 45 }, zCurve: { constant: 45, constant1: 45, curveMultiplier: 45 } });
 
         /**
+         * Rotation over lifetime curve for the X axis.
+         * 
+         * X轴的旋转寿命曲线。
+         */
+        get x()
+        {
+            return this.angularVelocity.xCurve;
+        }
+
+        set x(v)
+        {
+            this.angularVelocity.xCurve = v;
+        }
+
+        /**
+         * Rotation multiplier around the X axis.
+         * 
+         * 绕X轴旋转乘法器
+         */
+        get xMultiplier()
+        {
+            return this.x.curveMultiplier;
+        }
+
+        set xMultiplier(v)
+        {
+            this.x.curveMultiplier = v;
+        }
+
+        /**
+         * Rotation over lifetime curve for the Y axis.
+         * 
+         * Y轴的旋转寿命曲线。
+         */
+        get y()
+        {
+            return this.angularVelocity.yCurve;
+        }
+
+        set y(v)
+        {
+            this.angularVelocity.yCurve = v;
+        }
+
+        /**
+         * Rotation multiplier around the Y axis.
+         * 
+         * 绕Y轴旋转乘法器
+         */
+        get yMultiplier()
+        {
+            return this.y.curveMultiplier;
+        }
+
+        set yMultiplier(v)
+        {
+            this.y.curveMultiplier = v;
+        }
+
+        /**
+         * Rotation over lifetime curve for the Z axis.
+         * 
+         * Z轴的旋转寿命曲线。
+         */
+        get z()
+        {
+            return this.angularVelocity.zCurve;
+        }
+
+        set z(v)
+        {
+            this.angularVelocity.zCurve = v;
+        }
+
+        /**
+         * Rotation multiplier around the Z axis.
+         * 
+         * 绕Z轴旋转乘法器
+         */
+        get zMultiplier()
+        {
+            return this.z.curveMultiplier;
+        }
+
+        set zMultiplier(v)
+        {
+            this.z.curveMultiplier = v;
+        }
+
+        /**
          * 初始化粒子状态
          * @param particle 粒子
          */
