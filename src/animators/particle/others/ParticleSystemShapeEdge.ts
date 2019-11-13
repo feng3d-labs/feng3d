@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 粒子系统 发射边
      */
-    export class ParticleSystemShapeEdge extends ParticleSystemShapeBase
+    export class ParticleSystemShapeEdge extends ParticleSystemShape
     {
         /**
          * 边长的一半。

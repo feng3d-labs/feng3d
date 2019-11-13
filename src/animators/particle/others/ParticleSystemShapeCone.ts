@@ -56,7 +56,7 @@ namespace feng3d
     /**
      * 粒子系统发射圆锥体，用于定义基于圆锥体的粒子发射时的初始状态。
      */
-    export class ParticleSystemShapeCone extends ParticleSystemShapeBase
+    export class ParticleSystemShapeCone extends ParticleSystemShape
     {
         /**
          * Angle of the cone.

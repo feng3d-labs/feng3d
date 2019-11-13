@@ -26,6 +26,7 @@ namespace feng3d
 
         /**
          * When looping is enabled, this controls whether this particle system will look like it has already simulated for one loop when first becoming visible.
+         * 
          * 当循环被激活时，它控制这个粒子系统在第一次出现时是否看起来像已经模拟了一个循环。
          */
         @serialize
@@ -35,6 +36,7 @@ namespace feng3d
 
         /**
          * Start delay in seconds.
+         * 
          * 启动延迟(以秒为单位)。
          */
         @serialize
@@ -44,6 +46,7 @@ namespace feng3d
 
         /**
          * Start delay multiplier in seconds.
+         * 
          * 启动延迟乘数(以秒为单位)。
          */
         get startDelayMultiplier()
@@ -53,6 +56,7 @@ namespace feng3d
 
         /**
          * The total lifetime in seconds that each new particle will have.
+         * 
          * 每个新粒子的总寿命(以秒计)。
          */
         @serialize
@@ -146,6 +150,7 @@ namespace feng3d
 
         /**
          * The initial size of particles when emitted.
+         * 
          * 发射时粒子的初始大小。
          */
         @serialize
@@ -273,6 +278,7 @@ namespace feng3d
 
         /**
          * The initial rotation of particles when emitted.
+         * 
          * 粒子发射时的初始旋转。
          */
         @serialize
@@ -282,6 +288,7 @@ namespace feng3d
 
         /**
          * The initial rotation of particles around the X axis when emitted.
+         * 
          * 发射时粒子围绕X轴的初始旋转。
          */
         get startRotationX()
@@ -308,6 +315,7 @@ namespace feng3d
 
         /**
          * The initial rotation of particles around the Y axis when emitted.
+         * 
          * 发射时粒子围绕Y轴的初始旋转。
          */
         get startRotationY()
@@ -334,6 +342,7 @@ namespace feng3d
 
         /**
          * The initial rotation of particles around the Z axis when emitted.
+         * 
          * 发射时粒子围绕Z轴的初始旋转。
          */
         get startRotationZ()
@@ -360,6 +369,7 @@ namespace feng3d
 
         /**
          * Cause some particles to spin in the opposite direction. Set between 0 and 1, where higher values will cause a higher proportion of particles to spin in the opposite direction.
+         * 
          * 导致一些粒子向相反的方向旋转。设置在0和1之间，数值越大，粒子朝相反方向旋转的比例越大。
          */
         @serialize
@@ -369,6 +379,7 @@ namespace feng3d
 
         /**
          * The initial color of particles when emitted.
+         * 
          * 粒子发射时的初始颜色。
          */
         @serialize
@@ -377,6 +388,8 @@ namespace feng3d
         startColor = new MinMaxGradient();
 
         /**
+         * Scale applied to the gravity.
+         * 
          * 应用于重力加速度的缩放。
          */
         @serialize
@@ -385,6 +398,8 @@ namespace feng3d
         gravityModifier = new MinMaxCurve();
 
         /**
+         * This selects the space in which to simulate particles. It can be either world or local space.
+         * 
          * 模拟空间，使粒子位置模拟在世界，本地或自定义空间。在本地空间中，它们相对于自己的转换而存在，在自定义空间中，它们相对于自定义转换。
          */
         @serialize
@@ -393,6 +408,8 @@ namespace feng3d
         simulationSpace = ParticleSystemSimulationSpace.Local;
 
         /**
+         * Simulate particles relative to a custom transform component.
+         * 
          * 模拟相对于自定义转换组件的粒子。
          */
         @serialize
@@ -401,6 +418,8 @@ namespace feng3d
         customSimulationSpace: Transform;
 
         /**
+         * Override the default playback speed of the Particle System.
+         * 
          * 重写粒子系统的默认播放速度。
          */
         @serialize
@@ -409,6 +428,8 @@ namespace feng3d
         simulationSpeed = 1;
 
         /**
+         * Control how the particle system's Transform Component is applied to the particle system.
+         * 
          * 控制粒子系统的变换组件如何应用于粒子系统。
          */
         @serialize
@@ -417,6 +438,8 @@ namespace feng3d
         scalingMode = ParticleSystemScalingMode.Local;
 
         /**
+         * If set to true, the particle system will automatically start playing on startup.
+         * 
          * 如果设置为真，粒子系统将自动开始播放启动。
          */
         @serialize
@@ -425,6 +448,8 @@ namespace feng3d
         playOnAwake = true;
 
         /**
+         * The maximum number of particles to emit.
+         * 
          * 发射粒子的最大数量。
          */
         @serialize

@@ -2,6 +2,7 @@ namespace feng3d
 {
     /**
      * The mesh emission type.
+     * 
      * 网格发射类型。
      */
     export enum ParticleSystemMeshShapeType
