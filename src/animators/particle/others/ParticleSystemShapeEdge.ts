@@ -13,36 +13,55 @@ namespace feng3d
         radius = 1;
 
         /**
-         * The mode used for generating particles around the arc.
+         * The mode used for generating particles around the radius.
+         * 
          * 在弧线周围产生粒子的模式。
          */
         @serialize
         @oav({ tooltip: "在弧线周围产生粒子的模式。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeMultiModeValue } })
-        get arcMode()
+        get radiusMode()
         {
-            return this._module.arcMode;
+            return this._module.radiusMode;
         }
 
-        set arcMode(v)
+        set radiusMode(v)
         {
-            this._module.arcMode = v;
+            this._module.radiusMode = v;
         }
 
         /**
-         * Control the gap between emission points around the arc.
+         * Control the gap between emission points around the radius.
+         * 
          * 控制弧线周围发射点之间的间隙。
          */
         @serialize
         @oav({ tooltip: "控制弧线周围发射点之间的间隙。" })
-        arcSpread = 0;
+        get radiusSpread()
+        {
+            return this._module.radiusSpread;
+        }
+
+        set radiusSpread(v)
+        {
+            this._module.radiusSpread = v;
+        }
 
         /**
-         * When using one of the animated modes, how quickly to move the emission position around the arc.
+         * When using one of the animated modes, how quickly to move the emission position around the radius.
+         * 
          * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
          */
         @serialize
         @oav({ tooltip: "当使用一个动画模式时，如何快速移动发射位置周围的弧。" })
-        arcSpeed = serialization.setValue(new MinMaxCurve(), { constant: 1, constant1: 1 });
+        get radiusSpeed()
+        {
+            return this._module.radiusSpeed;
+        }
+
+        set radiusSpeed(v)
+        {
+            this._module.radiusSpeed = v;
+        }
 
         /**
          * 初始化粒子状态
@@ -54,16 +73,16 @@ namespace feng3d
             var arc = 360 * this.radius;
             // 在圆心的方向
             var radiusAngle = 0;
-            if (this.arcMode == ParticleSystemShapeMultiModeValue.Random)
+            if (this.radiusMode == ParticleSystemShapeMultiModeValue.Random)
             {
                 radiusAngle = Math.random() * arc;
-            } else if (this.arcMode == ParticleSystemShapeMultiModeValue.Loop)
+            } else if (this.radiusMode == ParticleSystemShapeMultiModeValue.Loop)
             {
-                var totalAngle = particle.birthTime * this.arcSpeed.getValue(particle.birthRateAtDuration) * 360;
+                var totalAngle = particle.birthTime * this.radiusSpeed.getValue(particle.birthRateAtDuration) * 360;
                 radiusAngle = totalAngle % arc;
-            } else if (this.arcMode == ParticleSystemShapeMultiModeValue.PingPong)
+            } else if (this.radiusMode == ParticleSystemShapeMultiModeValue.PingPong)
             {
-                var totalAngle = particle.birthTime * this.arcSpeed.getValue(particle.birthRateAtDuration) * 360;
+                var totalAngle = particle.birthTime * this.radiusSpeed.getValue(particle.birthRateAtDuration) * 360;
                 radiusAngle = totalAngle % arc;
                 if (Math.floor(totalAngle / arc) % 2 == 1)
                 {
@@ -73,9 +92,9 @@ namespace feng3d
             // else if (this.arcMode == ParticleSystemShapeMultiModeValue.BurstSpread)
             // {
             // }
-            if (this.arcSpread > 0)
+            if (this.radiusSpread > 0)
             {
-                radiusAngle = Math.floor(radiusAngle / arc / this.arcSpread) * arc * this.arcSpread;
+                radiusAngle = Math.floor(radiusAngle / arc / this.radiusSpread) * arc * this.radiusSpread;
             }
             radiusAngle = radiusAngle / arc;
 

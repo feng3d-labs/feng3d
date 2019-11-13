@@ -151,6 +151,15 @@ namespace feng3d
         mesh: Geometry;
 
         /**
+         * Emit from a single material, or the whole mesh.
+         * 
+         * 从一个单一的材料，或整个网格发射。
+         * 
+         * @todo
+         */
+        useMeshMaterialIndex: boolean;
+
+        /**
          * Emit particles from a single material of a mesh.
          * 
          * 从一个网格的单一材料发射粒子。
@@ -168,6 +177,15 @@ namespace feng3d
          */
         // meshRenderer: MeshRenderer
         meshRenderer: any;
+
+        /**
+         * SkinnedMeshRenderer to emit particles from.
+         * 
+         * 从 SkinnedMeshRenderer 发射粒子。
+         * 
+         * @todo
+         */
+        skinnedMeshRenderer: any;
 
         /**
          * Apply a scaling factor to the mesh used for generating source positions.
@@ -188,6 +206,15 @@ namespace feng3d
         meshShapeType = ParticleSystemMeshShapeType.Vertex;
 
         /**
+         * Modulate the particle colors with the vertex colors, or the material color if no vertex colors exist.
+         * 
+         * 用顶点颜色调节粒子颜色，如果没有顶点颜色，则调节材质颜色。
+         * 
+         * @todo
+         */
+        useMeshColors = true;
+
+        /**
          * Move particles away from the surface of the source mesh.
          * 
          * 将粒子从源网格的表面移开。
@@ -202,9 +229,40 @@ namespace feng3d
         radius = 1;
 
         /**
-         * The mode used for generating particles along the radius.
+         * The mode used for generating particles around the radius.
+         * 
+         * 在弧线周围产生粒子的模式。
          */
         radiusMode = ParticleSystemShapeMultiModeValue.Random;
+
+        /**
+         * When using one of the animated modes, how quickly to move the emission position along the radius.
+         * 
+         * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
+         */
+        radiusSpeed = serialization.setValue(new MinMaxCurve(), { constant: 1, constant1: 1 });
+
+        /**
+         * A multiplier of the radius speed of the emission shape.
+         * 
+         * 发射形状的半径速度的乘法器。
+         */
+        get radiusSpeedMultiplier()
+        {
+            return this.radiusSpeed.curveMultiplier;
+        }
+
+        set radiusSpeedMultiplier(v)
+        {
+            this.radiusSpeed.curveMultiplier = v;
+        }
+
+        /**
+         * Control the gap between emission points around the radius.
+         * 
+         * 控制弧线周围发射点之间的间隙。
+         */
+        radiusSpread = 0;
 
         private _shapeSphere = new ParticleSystemShapeSphere(this);
         private _shapeHemisphere = new ParticleSystemShapeHemisphere(this);
