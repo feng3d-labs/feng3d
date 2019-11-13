@@ -200,12 +200,12 @@ namespace feng3d
             if (!this.isPlaying) return;
 
             this.time = this.time + this.main.simulationSpeed * interval / 1000;
-            this._realEmitTime = this.time - this.startDelay;
+            this._realTime = this.time - this.startDelay;
 
             this._updateActiveParticlesState();
 
             // 完成一个循环
-            if (this.main.loop && Math.floor(this._preRealEmitTime / this.main.duration) < Math.floor(this._realEmitTime / this.main.duration))
+            if (this.main.loop && Math.floor(this._preRealTime / this.main.duration) < Math.floor(this._realTime / this.main.duration))
             {
                 // 重新计算喷发概率
                 this.emission.bursts.forEach(element =>
@@ -216,10 +216,10 @@ namespace feng3d
 
             this._emit();
 
-            this._preRealEmitTime = this._realEmitTime;
+            this._preRealTime = this._realTime;
 
             // 判断非循环的效果是否播放结束
-            if (!this.main.loop && this._activeParticles.length == 0 && this._realEmitTime > this.main.duration)
+            if (!this.main.loop && this._activeParticles.length == 0 && this._realTime > this.main.duration)
             {
                 this.stop();
                 this.dispatch("particleCompleted", this);
@@ -247,7 +247,7 @@ namespace feng3d
             this.time = 0;
             this._startDelay_rate = Math.random();
             this.updateStartDelay();
-            this._preRealEmitTime = 0;
+            this._preRealTime = 0;
 
             this._particlePool = this._particlePool.concat(this._activeParticles);
             this._activeParticles.length = 0;
@@ -288,7 +288,7 @@ namespace feng3d
             } else
             {
                 this._isPlaying = true;
-                this._preRealEmitTime = Math.max(0, this._realEmitTime);
+                this._preRealTime = Math.max(0, this._realTime);
             }
         }
 
@@ -352,7 +352,7 @@ namespace feng3d
             this._attributes.a_particle_flipUV.data = flipUVs;
 
             //
-            renderAtomic.uniforms.u_particleTime = this._realEmitTime;
+            renderAtomic.uniforms.u_particleTime = this._realTime;
 
             for (const key in this._attributes)
             {
@@ -363,13 +363,13 @@ namespace feng3d
         private _awaked = false;
 
         /**
-         * 当前真实发射时间
+         * 当前真实时间（time - startDelay）
          */
-        private _realEmitTime = 0;
+        private _realTime = 0;
         /**
-         * 上次真实发射时间
+         * 上次真实时间
          */
-        private _preRealEmitTime = 0;
+        private _preRealTime = 0;
 
         /**
          * 粒子池，用于存放未发射或者死亡粒子
@@ -399,7 +399,7 @@ namespace feng3d
          */
         get rateAtDuration()
         {
-            return (this._realEmitTime % this.main.duration) / this.main.duration;
+            return (this._realTime % this.main.duration) / this.main.duration;
         }
 
         /**
@@ -414,20 +414,19 @@ namespace feng3d
             if (this._activeParticles.length >= this.main.maxParticles) return;
 
             // 判断是否开始发射
-            if (this._realEmitTime <= 0) return;
+            if (this._realTime <= 0) return;
 
             var loop = this.main.loop;
-            var startDelay = this.startDelay;
             var duration = this.main.duration;
             var rateAtDuration = this.rateAtDuration;
-            var preRealEmitTime = this._preRealEmitTime;
+            var preRealTime = this._preRealTime;
 
             // 判断是否结束发射
-            if (!loop && preRealEmitTime >= duration) return;
+            if (!loop && preRealTime >= duration) return;
 
             // 计算最后发射时间
-            var realEmitTime = this.time - startDelay;
-            if (!loop) realEmitTime = Math.min(realEmitTime, duration + startDelay);
+            var realEmitTime = this._realTime;
+            if (!loop) realEmitTime = Math.min(realEmitTime, duration);
 
             // 
             var emits: { time: number, num: number }[] = [];
@@ -437,14 +436,14 @@ namespace feng3d
 
             // 遍历所有发射周期
             var cycleEndIndex = Math.ceil(realEmitTime / duration);
-            var cycleStartIndex = Math.floor(preRealEmitTime / duration);
+            var cycleStartIndex = Math.floor(preRealTime / duration);
             for (let k = cycleStartIndex; k < cycleEndIndex; k++)
             {
                 var cycleStartTime = k * duration;
                 var cycleEndTime = (k + 1) * duration;
 
                 // 单个周期内的起始与结束时间
-                var startTime = Math.max(preRealEmitTime, cycleStartTime);
+                var startTime = Math.max(preRealTime, cycleStartTime);
                 var endTime = Math.min(realEmitTime, cycleEndTime);
 
                 // 处理稳定发射
@@ -487,7 +486,7 @@ namespace feng3d
                 if (this._activeParticles.length >= this.main.maxParticles) return;
                 var lifetime = this.main.startLifetime.getValue(rateAtDuration);
                 var birthRateAtDuration = (birthTime - this.startDelay) / this.main.duration;
-                var rateAtLifeTime = (this._realEmitTime - birthTime) / lifetime;
+                var rateAtLifeTime = (this._realTime - birthTime) / lifetime;
 
                 if (rateAtLifeTime < 1)
                 {
@@ -513,7 +512,7 @@ namespace feng3d
             for (let i = this._activeParticles.length - 1; i >= 0; i--)
             {
                 var particle = this._activeParticles[i];
-                particle.rateAtLifeTime = (this._realEmitTime - particle.birthTime) / particle.lifetime;
+                particle.rateAtLifeTime = (this._realTime - particle.birthTime) / particle.lifetime;
                 if (particle.rateAtLifeTime > 1)
                 {
                     this._activeParticles.splice(i, 1);
@@ -540,10 +539,10 @@ namespace feng3d
          */
         private _updateParticleState(particle: Particle)
         {
-            var preTime = Math.max(this._preRealEmitTime, particle.birthTime);
+            var preTime = Math.max(this._preRealTime, particle.birthTime);
             //
             this._modules.forEach(v => { v.updateParticleState(particle) });
-            particle.updateState(preTime, this._realEmitTime);
+            particle.updateState(preTime, this._realTime);
         }
     }
 

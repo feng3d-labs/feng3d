@@ -14637,13 +14637,13 @@ declare namespace feng3d {
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
         private _awaked;
         /**
-         * 当前真实发射时间
+         * 当前真实时间（time - startDelay）
          */
-        private _realEmitTime;
+        private _realTime;
         /**
-         * 上次真实发射时间
+         * 上次真实时间
          */
-        private _preRealEmitTime;
+        private _preRealTime;
         /**
          * 粒子池，用于存放未发射或者死亡粒子
          */
