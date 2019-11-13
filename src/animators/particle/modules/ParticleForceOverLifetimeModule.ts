@@ -12,7 +12,7 @@ namespace feng3d
          * 作用在粒子上的力
          */
         @serialize
-        @oav()
+        @oav({ tooltip: "作用在粒子上的力" })
         force = new MinMaxCurveVector3();
 
         /**
@@ -34,6 +34,96 @@ namespace feng3d
         // @oav({ tooltip: "When randomly selecting values between two curves or constants, this flag will cause a new random force to be chosen on each frame." })
         @oav({ tooltip: "当在两条曲线或常数之间随机选择值时，此标志将导致在每一帧上选择一个新的随机力。" })
         randomized = false;
+
+        /**
+         * The curve defining particle forces in the X axis.
+         * 
+         * 在X轴上定义粒子力的曲线。
+         */
+        get x()
+        {
+            return this.force.xCurve;
+        }
+
+        set x(v)
+        {
+            this.force.xCurve = v;
+        }
+
+        /**
+         * Change the X axis mulutiplier.
+         * 
+         * 改变X轴的乘数。
+         */
+        get xMultiplier()
+        {
+            return this.x.curveMultiplier;
+        }
+
+        set xMultiplier(v)
+        {
+            this.x.curveMultiplier = v;
+        }
+
+        /**
+         * The curve defining particle forces in the Y axis.
+         * 
+         * 在Y轴上定义粒子力的曲线。
+         */
+        get y()
+        {
+            return this.force.yCurve;
+        }
+
+        set y(v)
+        {
+            this.force.yCurve = v;
+        }
+
+        /**
+         * Change the Y axis mulutiplier.
+         * 
+         * 改变Y轴的乘数。
+         */
+        get yMultiplier()
+        {
+            return this.y.curveMultiplier;
+        }
+
+        set yMultiplier(v)
+        {
+            this.y.curveMultiplier = v;
+        }
+
+        /**
+         * The curve defining particle forces in the Z axis.
+         * 
+         * 在Z轴上定义粒子力的曲线。
+         */
+        get z()
+        {
+            return this.force.zCurve;
+        }
+
+        set z(v)
+        {
+            this.force.zCurve = v;
+        }
+
+        /**
+         * Change the Z axis mulutiplier.
+         * 
+         * 改变Z轴的乘数。
+         */
+        get zMultiplier()
+        {
+            return this.z.curveMultiplier;
+        }
+
+        set zMultiplier(v)
+        {
+            this.z.curveMultiplier = v;
+        }
 
         /**
          * 初始化粒子状态
