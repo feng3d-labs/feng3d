@@ -8,6 +8,7 @@ namespace feng3d
     {
         /**
          * Defines the tiling of the texture.
+         * 
          * 定义纹理的平铺。
          */
         @serialize
@@ -17,6 +18,8 @@ namespace feng3d
 
         /**
          * Specifies the animation type.
+         * 
+         * 指定动画类型。
          */
         @serialize
         // @oav({ tooltip: "Specifies the animation type." })
@@ -25,6 +28,7 @@ namespace feng3d
 
         /**
          * Curve to control which frame of the texture sheet animation to play.
+         * 
          * 曲线控制哪个帧的纹理表动画播放。
          */
         @serialize
@@ -34,6 +38,7 @@ namespace feng3d
 
         /**
          * Use a random row of the texture sheet for each particle emitted.
+         * 
          * 对每个发射的粒子使用纹理表的随机行。
          */
         @serialize
@@ -43,6 +48,7 @@ namespace feng3d
 
         /**
          * Explicitly select which row of the texture sheet is used, when useRandomRow is set to false.
+         * 
          * 当useRandomRow设置为false时，显式选择使用纹理表的哪一行。
          */
         @serialize
@@ -57,15 +63,17 @@ namespace feng3d
 
         /**
          * Define a random starting frame for the texture sheet animation.
+         * 
          * 为纹理表动画定义一个随机的起始帧。
          */
         @serialize
         // @oav({ tooltip: "Define a random starting frame for the texture sheet animation." })
         @oav({ tooltip: "为纹理表动画定义一个随机的起始帧。" })
-        startFrame = 0;
+        startFrame = new MinMaxCurve();
 
         /**
          * Specifies how many times the animation will loop during the lifetime of the particle.
+         * 
          * 指定在粒子的生命周期内动画将循环多少次。
          */
         @serialize
@@ -75,6 +83,7 @@ namespace feng3d
 
         /**
          * Flip the UV coordinate on particles, causing them to appear mirrored.
+         * 
          * 在粒子上翻转UV坐标，使它们呈现镜像翻转。
          */
         @serialize
@@ -84,6 +93,7 @@ namespace feng3d
 
         /**
          * Choose which UV channels will receive texture animation.
+         * 
          * 选择哪个UV通道将接收纹理动画。
          * 
          * todo 目前引擎中只有一套UV
@@ -94,12 +104,103 @@ namespace feng3d
         uvChannelMask = UVChannelFlags.Everything;
 
         /**
+         * Flip the U coordinate on particles, causing them to appear mirrored horizontally.
+         * 
+         * 在粒子上翻转U坐标，使它们呈现水平镜像。
+         */
+        get flipU()
+        {
+            return this.flipUV.x;
+        }
+
+        set flipU(v)
+        {
+            this.flipUV.x = v;
+        }
+
+        /**
+         * Flip the V coordinate on particles, causing them to appear mirrored vertically.
+         * 
+         * 在粒子上翻转V坐标，使它们垂直镜像。
+         */
+        get flipV()
+        {
+            return this.flipUV.y;
+        }
+
+        set flipV(v)
+        {
+            this.flipUV.y = v;
+        }
+
+        /**
+         * Frame over time mutiplier.
+         * 
+         * 帧随时间变化的乘数。
+         */
+        get frameOverTimeMultiplier()
+        {
+            return this.frameOverTime.curveMultiplier;
+        }
+
+        set frameOverTimeMultiplier(v)
+        {
+            this.frameOverTime.curveMultiplier = v;
+        }
+
+        /**
+         * Defines the tiling of the texture in the X axis.
+         * 
+         * 定义纹理在X轴上的平铺。
+         */
+        get numTilesX()
+        {
+            return this.tiles.x;
+        }
+
+        set numTilesX(v)
+        {
+            this.tiles.x = v;
+        }
+
+        /**
+         * Defines the tiling of the texture in the Y axis.
+         * 
+         * 定义纹理在Y轴上的平铺。
+         */
+        get numTilesY()
+        {
+            return this.tiles.y;
+        }
+
+        set numTilesY(v)
+        {
+            this.tiles.y = v;
+        }
+
+        /**
+         * Starting frame multiplier.
+         * 
+         * 起始帧乘数。
+         */
+        get startFrameMultiplier()
+        {
+            return this.startFrame.curveMultiplier;
+        }
+
+        set startFrameMultiplier(v)
+        {
+            this.startFrame.curveMultiplier = v;
+        }
+
+        /**
          * 初始化粒子状态
          * @param particle 粒子
          */
         initParticleState(particle: Particle)
         {
-            particle[rateTextureSheetAnimation] = Math.random();
+            particle[_TextureSheetAnimation_frameOverTime] = Math.random();
+            particle[_TextureSheetAnimation_startFrame] = Math.random();
         }
 
         /**
@@ -115,8 +216,8 @@ namespace feng3d
             var step = this.tiles.clone().reciprocal();
             var total = segmentsX * segmentsY;
             var uvPos = new Vector2();
-            var frameOverTime = this.frameOverTime.getValue(particle.rateAtLifeTime, particle[rateTextureSheetAnimation]);
-            var frameIndex = this.startFrame;
+            var frameOverTime = this.frameOverTime.getValue(particle.rateAtLifeTime, particle[_TextureSheetAnimation_frameOverTime]);
+            var frameIndex = this.startFrame.getValue(particle.rateAtLifeTime, particle[_TextureSheetAnimation_startFrame]);
             var rowIndex = this.rowIndex;
             var cycleCount = this.cycleCount;
 
@@ -141,5 +242,6 @@ namespace feng3d
 
     }
 
-    var rateTextureSheetAnimation = "_rateTextureSheetAnimation";
+    var _TextureSheetAnimation_frameOverTime = "_TextureSheetAnimation_rateAtLifeTime";
+    var _TextureSheetAnimation_startFrame = "_TextureSheetAnimation_startFrame";
 }
