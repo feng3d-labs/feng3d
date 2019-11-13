@@ -33331,8 +33331,8 @@ var feng3d;
             var step = 1 / this.emission.rateOverTime.getValue(rateAtDuration);
             var bursts = this.emission.bursts;
             // 遍历所有发射周期
-            var cycleEndIndex = Math.ceil(realEmitTime / duration);
             var cycleStartIndex = Math.floor(preRealTime / duration);
+            var cycleEndIndex = Math.ceil(realEmitTime / duration);
             for (var k = cycleStartIndex; k < cycleEndIndex; k++) {
                 var cycleStartTime = k * duration;
                 var cycleEndTime = (k + 1) * duration;
@@ -33349,7 +33349,7 @@ var feng3d;
                 var inCycleEnd = endTime - cycleStartTime;
                 for (var i_1 = 0; i_1 < bursts.length; i_1++) {
                     var burst = bursts[i_1];
-                    if (burst.isProbability && inCycleStart <= burst.time && burst.time <= inCycleEnd && burst.time <= realEmitTime) {
+                    if (burst.isProbability && inCycleStart <= burst.time && burst.time < inCycleEnd) {
                         emits.push({ time: cycleStartTime + burst.time, num: burst.count.getValue(rateAtDuration) });
                     }
                 }
@@ -44943,7 +44943,6 @@ var feng3d;
     feng3d.PlaneCollider = PlaneCollider;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-console.log("feng3d-0.1.3");
 console.log("feng3d-0.1.3");
 (function universalModuleDefinition(root, factory)
 {

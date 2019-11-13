@@ -435,8 +435,8 @@ namespace feng3d
             var bursts = this.emission.bursts;
 
             // 遍历所有发射周期
-            var cycleEndIndex = Math.ceil(realEmitTime / duration);
             var cycleStartIndex = Math.floor(preRealTime / duration);
+            var cycleEndIndex = Math.ceil(realEmitTime / duration);
             for (let k = cycleStartIndex; k < cycleEndIndex; k++)
             {
                 var cycleStartTime = k * duration;
@@ -459,7 +459,7 @@ namespace feng3d
                 for (let i = 0; i < bursts.length; i++)
                 {
                     const burst = bursts[i];
-                    if (burst.isProbability && inCycleStart <= burst.time && burst.time <= inCycleEnd && burst.time <= realEmitTime)
+                    if (burst.isProbability && inCycleStart <= burst.time && burst.time < inCycleEnd)
                     {
                         emits.push({ time: cycleStartTime + burst.time, num: burst.count.getValue(rateAtDuration) });
                     }
