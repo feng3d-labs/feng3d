@@ -3,13 +3,14 @@ namespace feng3d
     export class ParticleEmissionBurst
     {
         /**
+         * The time that each burst occurs.
          * 每次爆炸发生的时间。
          */
         @serialize
         // @oav({ tooltip: "The time that each burst occurs." })
         @oav({ tooltip: "每次爆炸发生的时间。" })
         time = 0;
-        
+
         /**
          * 要发射的粒子数。
          */
@@ -19,6 +20,36 @@ namespace feng3d
         count = serialization.setValue(new MinMaxCurve(), { constant: 30, constant1: 30 });
 
         /**
+         * Minimum number of bursts to be emitted.
+         * 要发射的最小爆发数量。
+         */
+        get minCount()
+        {
+            return this.count.constant;
+        }
+
+        set minCount(v)
+        {
+            this.count.constant = v;
+        }
+
+        /**
+         * Maximum number of bursts to be emitted.
+         * 
+         * 要发射的最大爆发数量。
+         */
+        get maxCount()
+        {
+            return this.count.constant1;
+        }
+
+        set maxCount(v)
+        {
+            this.count.constant1 = v;
+        }
+
+        /**
+         * How many times to play the burst. (0 means infinitely).
          * 爆发次数。(0意味着无限)。
          * 
          * @todo
@@ -29,6 +60,8 @@ namespace feng3d
         cycleCount = 1;
 
         /**
+         * How often to repeat the burst, in seconds.
+         * 
          * 多久重复一次，以秒为单位。
          * 
          * @todo
@@ -37,7 +70,7 @@ namespace feng3d
         // @oav({ tooltip: "How often to repeat the burst, in seconds." })
         @oav({ tooltip: "多久重复一次，以秒为单位。" })
         repeatInterval = 0.01;
-        
+
         /**
          * 喷发被触发的几率。
          */
