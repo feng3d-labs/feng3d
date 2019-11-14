@@ -62,7 +62,6 @@ namespace feng3d
          * Angle of the cone.
          * 圆锥的角度。
          */
-        @serialize
         // @oav({ tooltip: "Angle of the cone." })
         @oav({ tooltip: "圆锥的角度。" })
         get angle()
@@ -78,7 +77,6 @@ namespace feng3d
         /**
          * 圆锥体底部半径。
          */
-        @serialize
         @oav({ tooltip: "圆锥体底部半径。" })
         get radius()
         {
@@ -95,7 +93,6 @@ namespace feng3d
          * 
          * 圆锥的长度（高度）。
          */
-        @serialize
         // @oav({ tooltip: "Length of the cone." })
         @oav({ tooltip: "圆锥的长度（高度）。" })
         get length()
@@ -111,7 +108,6 @@ namespace feng3d
         /**
          * Circle arc angle.
          */
-        @serialize
         @oav({ tooltip: "圆弧角。" })
         get arc()
         {
@@ -127,7 +123,6 @@ namespace feng3d
          * The mode used for generating particles around the arc.
          * 在弧线周围产生粒子的模式。
          */
-        @serialize
         @oav({ tooltip: "在弧线周围产生粒子的模式。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeMultiModeValue } })
         get arcMode()
         {
@@ -143,7 +138,6 @@ namespace feng3d
          * Control the gap between emission points around the arc.
          * 控制弧线周围发射点之间的间隙。
          */
-        @serialize
         @oav({ tooltip: "控制弧线周围发射点之间的间隙。" })
         get arcSpread()
         {
@@ -159,7 +153,6 @@ namespace feng3d
          * When using one of the animated modes, how quickly to move the emission position around the arc.
          * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
          */
-        @serialize
         @oav({ tooltip: "当使用一个动画模式时，如何快速移动发射位置周围的弧。" })
         get arcSpeed()
         {
@@ -174,7 +167,6 @@ namespace feng3d
         /**
          * 粒子系统圆锥体发射类型。
          */
-        @serialize
         @oav({ tooltip: "粒子系统圆锥体发射类型。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeConeEmitFrom } })
         emitFrom = ParticleSystemShapeConeEmitFrom.Base;
 

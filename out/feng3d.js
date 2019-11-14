@@ -294,6 +294,10 @@ var feng3d;
                 "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform float u_alphaThreshold;\r\n//漫反射\r\nuniform vec4 u_diffuse;\r\nuniform sampler2D s_diffuse;\r\n\r\n#include<particle_pars_frag>\r\n\r\nvoid main()\r\n{\r\n    vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);\r\n\r\n    //获取漫反射基本颜色\r\n    vec4 diffuseColor = u_diffuse * texture2D(s_diffuse, v_uv);\r\n\r\n    if(diffuseColor.w < u_alphaThreshold)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    finalColor = diffuseColor;\r\n\r\n    #include<particle_frag>\r\n\r\n    gl_FragColor = finalColor;\r\n}",
                 "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform float u_PointSize;\r\n\r\n#include<particle_pars_vert>\r\n\r\nvoid main() \r\n{\r\n    vec4 position = vec4(a_position, 1.0);\r\n    //输出uv\r\n    v_uv = a_uv;\r\n    \r\n    #include<particle_vert>\r\n\r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n\r\n\r\n    gl_PointSize = u_PointSize;\r\n}"
             },
+            "particle_additive": {
+                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform vec4 u_tintColor;\r\nuniform vec4 u_s_particle_transform;\r\nuniform sampler2D s_particle;\r\n\r\n#include<particle_pars_frag>\r\n\r\nvoid main()\r\n{\r\n    vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);\r\n\r\n    vec2 uv = v_uv;\r\n    uv = uv * u_s_particle_transform.xy + u_s_particle_transform.zw;\r\n\r\n    finalColor = 2.0 *  u_tintColor * texture2D(s_particle, v_uv);\r\n\r\n    #include<particle_frag>\r\n\r\n    gl_FragColor = finalColor;\r\n}",
+                "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform float u_PointSize;\r\n\r\n#include<particle_pars_vert>\r\n\r\nvoid main() \r\n{\r\n    vec4 position = vec4(a_position, 1.0);\r\n    //输出uv\r\n    v_uv = a_uv;\r\n    \r\n    #include<particle_vert>\r\n\r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n\r\n\r\n    gl_PointSize = u_PointSize;\r\n}"
+            },
             "point": {
                 "fragment": "precision mediump float;\r\n\r\nvarying vec4 v_color;\r\nuniform vec4 u_color;\r\n\r\nvoid main() \r\n{\r\n    gl_FragColor = v_color * u_color;\r\n}\r\n",
                 "vertex": "attribute vec3 a_position;\r\nattribute vec4 a_color;\r\n\r\nuniform float u_PointSize;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec4 v_color;\r\n\r\nvoid main() \r\n{\r\n    vec4 worldPosition = u_modelMatrix * vec4(a_position, 1.0);\r\n    gl_Position = u_viewProjection * worldPosition;\r\n    gl_PointSize = u_PointSize;\r\n\r\n    v_color = a_color;\r\n}"
@@ -32888,16 +32892,44 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var ParticleUniforms = /** @class */ (function (_super) {
-        __extends(ParticleUniforms, _super);
+    var ParticleUniforms = /** @class */ (function () {
         function ParticleUniforms() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.ParticleUniforms";
-            _this.s_diffuse = feng3d.Texture2D.defaultParticle;
-            return _this;
+            this.__class__ = "feng3d.ParticleUniforms";
+            /**
+             * 点绘制时点的尺寸
+             */
+            this.u_PointSize = 1;
+            /**
+             * 漫反射纹理
+             */
+            this.s_diffuse = feng3d.Texture2D.defaultParticle;
+            /**
+             * 基本颜色
+             */
+            this.u_diffuse = new feng3d.Color4(1, 1, 1, 1);
+            /**
+             * 透明阈值，透明度小于该值的像素被片段着色器丢弃
+             */
+            this.u_alphaThreshold = 0;
         }
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], ParticleUniforms.prototype, "u_PointSize", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "diffuse" })
+        ], ParticleUniforms.prototype, "s_diffuse", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "diffuse" })
+        ], ParticleUniforms.prototype, "u_diffuse", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "diffuse" })
+        ], ParticleUniforms.prototype, "u_alphaThreshold", void 0);
         return ParticleUniforms;
-    }(feng3d.StandardUniforms));
+    }());
     feng3d.ParticleUniforms = ParticleUniforms;
     feng3d.shaderConfig.shaders["particle"].cls = ParticleUniforms;
     feng3d.AssetData.addAssetData("Particle-Material", feng3d.Material.particle = feng3d.serialization.setValue(new feng3d.Material(), {
@@ -32905,6 +32937,46 @@ var feng3d;
         renderParams: { enableBlend: true, depthMask: false, sfactor: feng3d.BlendFactor.ONE, dfactor: feng3d.BlendFactor.ONE_MINUS_SRC_COLOR, cullFace: feng3d.CullFace.NONE },
         hideFlags: feng3d.HideFlags.NotEditable,
     }));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * UnityShader "Particles/Additive"
+     */
+    var ParticleAdditiveUniforms = /** @class */ (function () {
+        function ParticleAdditiveUniforms() {
+            this.__class__ = "feng3d.ParticleAdditiveUniforms";
+            this.u_tintColor = new feng3d.Color4(0.5, 0.5, 0.5, 0.5);
+            /**
+             * 粒子贴图
+             */
+            this.s_particle = feng3d.Texture2D.default;
+            /**
+             * 粒子贴图使用的UV变换
+             */
+            this.u_s_particle_transform = new feng3d.Vector4(1, 1, 0, 0);
+            this.u_softParticlesFactor = 1.0;
+        }
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], ParticleAdditiveUniforms.prototype, "u_tintColor", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "粒子贴图" })
+        ], ParticleAdditiveUniforms.prototype, "s_particle", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "粒子贴图使用的UV变换" })
+        ], ParticleAdditiveUniforms.prototype, "u_s_particle_transform", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], ParticleAdditiveUniforms.prototype, "u_softParticlesFactor", void 0);
+        return ParticleAdditiveUniforms;
+    }());
+    feng3d.ParticleAdditiveUniforms = ParticleAdditiveUniforms;
+    feng3d.shaderConfig.shaders["particle_additive"].cls = ParticleAdditiveUniforms;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -33943,11 +34015,9 @@ var feng3d;
             particle.velocity.copy(dir).scaleNumber(speed);
         };
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "球体半径" })
         ], ParticleSystemShapeSphere.prototype, "radius", null);
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "是否从球面发射" })
         ], ParticleSystemShapeSphere.prototype, "emitFromShell", void 0);
         return ParticleSystemShapeSphere;
@@ -33985,11 +34055,9 @@ var feng3d;
             particle.velocity.copy(dir).scaleNumber(speed);
         };
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "球体半径" })
         ], ParticleSystemShapeHemisphere.prototype, "radius", void 0);
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "是否从球面发射" })
         ], ParticleSystemShapeHemisphere.prototype, "emitFromShell", void 0);
         return ParticleSystemShapeHemisphere;
@@ -34067,6 +34135,7 @@ var feng3d;
              * Angle of the cone.
              * 圆锥的角度。
              */
+            // @oav({ tooltip: "Angle of the cone." })
             get: function () {
                 return this._module.angle;
             },
@@ -34095,6 +34164,7 @@ var feng3d;
              *
              * 圆锥的长度（高度）。
              */
+            // @oav({ tooltip: "Length of the cone." })
             get: function () {
                 return this._module.length;
             },
@@ -34215,39 +34285,27 @@ var feng3d;
             particle.position.copy(position);
         };
         __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "Angle of the cone." })
-            ,
             feng3d.oav({ tooltip: "圆锥的角度。" })
         ], ParticleSystemShapeCone.prototype, "angle", null);
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "圆锥体底部半径。" })
         ], ParticleSystemShapeCone.prototype, "radius", null);
         __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "Length of the cone." })
-            ,
             feng3d.oav({ tooltip: "圆锥的长度（高度）。" })
         ], ParticleSystemShapeCone.prototype, "length", null);
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "圆弧角。" })
         ], ParticleSystemShapeCone.prototype, "arc", null);
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "在弧线周围产生粒子的模式。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeMultiModeValue } })
         ], ParticleSystemShapeCone.prototype, "arcMode", null);
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "控制弧线周围发射点之间的间隙。" })
         ], ParticleSystemShapeCone.prototype, "arcSpread", null);
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "当使用一个动画模式时，如何快速移动发射位置周围的弧。" })
         ], ParticleSystemShapeCone.prototype, "arcSpeed", null);
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "粒子系统圆锥体发射类型。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeConeEmitFrom } })
         ], ParticleSystemShapeCone.prototype, "emitFrom", void 0);
         return ParticleSystemShapeCone;
@@ -34364,19 +34422,15 @@ var feng3d;
             particle.velocity.copy(dir).scaleNumber(speed);
         };
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "盒子X方向缩放。" })
         ], ParticleSystemShapeBox.prototype, "boxX", null);
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "盒子Y方向缩放。" })
         ], ParticleSystemShapeBox.prototype, "boxY", null);
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "盒子Z方向缩放。" })
         ], ParticleSystemShapeBox.prototype, "boxZ", null);
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "粒子系统盒子发射类型。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeBoxEmitFrom } })
         ], ParticleSystemShapeBox.prototype, "emitFrom", void 0);
         return ParticleSystemShapeBox;
@@ -34424,6 +34478,7 @@ var feng3d;
              *
              * 在弧线周围产生粒子的模式。
              */
+            // @oav({ tooltip: "The mode used for generating particles around the arc.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeMultiModeValue } })
             get: function () {
                 return this._module.arcMode;
             },
@@ -34505,29 +34560,21 @@ var feng3d;
             particle.velocity.copy(dir).scaleNumber(speed);
         };
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "半径" })
         ], ParticleSystemShapeCircle.prototype, "radius", null);
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "弧度" })
         ], ParticleSystemShapeCircle.prototype, "arc", null);
         __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "The mode used for generating particles around the arc.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeMultiModeValue } })
-            ,
             feng3d.oav({ tooltip: "在弧线周围产生粒子的模式。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemShapeMultiModeValue } })
         ], ParticleSystemShapeCircle.prototype, "arcMode", null);
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "控制弧线周围发射点之间的间隙。" })
         ], ParticleSystemShapeCircle.prototype, "arcSpread", null);
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "当使用一个动画模式时，如何快速移动发射位置周围的弧。" })
         ], ParticleSystemShapeCircle.prototype, "arcSpeed", null);
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "是否从圆形边缘发射。" })
         ], ParticleSystemShapeCircle.prototype, "emitFromEdge", void 0);
         return ParticleSystemShapeCircle;
@@ -34641,19 +34688,15 @@ var feng3d;
             particle.velocity.copy(dir).scaleNumber(speed);
         };
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "边长的一半。" })
         ], ParticleSystemShapeEdge.prototype, "radius", null);
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "在弧线周围产生粒子的模式。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemShapeMultiModeValue } })
         ], ParticleSystemShapeEdge.prototype, "radiusMode", null);
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "控制弧线周围发射点之间的间隙。" })
         ], ParticleSystemShapeEdge.prototype, "radiusSpread", null);
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ tooltip: "当使用一个动画模式时，如何快速移动发射位置周围的弧。" })
         ], ParticleSystemShapeEdge.prototype, "radiusSpeed", null);
         return ParticleSystemShapeEdge;
@@ -34867,6 +34910,9 @@ var feng3d;
             get: function () {
                 return this.startSize3D.xCurve;
             },
+            set: function (v) {
+                this.startSize3D.xCurve = v;
+            },
             enumerable: true,
             configurable: true
         });
@@ -34982,6 +35028,9 @@ var feng3d;
             // @oav({ tooltip: "The initial rotation of particles when emitted." })
             get: function () {
                 return this.startRotation3D.zCurve;
+            },
+            set: function (v) {
+                this.startRotation3D.zCurve = v;
             },
             enumerable: true,
             configurable: true
@@ -35778,7 +35827,6 @@ var feng3d;
             feng3d.oav({ tooltip: "发射粒子的形状类型。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemShapeType1 } })
         ], ParticleShapeModule.prototype, "shape", null);
         __decorate([
-            feng3d.serialize,
             feng3d.oav({ component: "OAVObjectView" })
         ], ParticleShapeModule.prototype, "activeShape", void 0);
         __decorate([
@@ -35799,6 +35847,39 @@ var feng3d;
             ,
             feng3d.oav({ tooltip: "Spherizes the starting direction of particles." })
         ], ParticleShapeModule.prototype, "sphericalDirectionAmount", void 0);
+        __decorate([
+            feng3d.serialize
+        ], ParticleShapeModule.prototype, "angle", void 0);
+        __decorate([
+            feng3d.serialize
+        ], ParticleShapeModule.prototype, "arc", void 0);
+        __decorate([
+            feng3d.serialize
+        ], ParticleShapeModule.prototype, "arcMode", void 0);
+        __decorate([
+            feng3d.serialize
+        ], ParticleShapeModule.prototype, "arcSpeed", void 0);
+        __decorate([
+            feng3d.serialize
+        ], ParticleShapeModule.prototype, "arcSpread", void 0);
+        __decorate([
+            feng3d.serialize
+        ], ParticleShapeModule.prototype, "box", void 0);
+        __decorate([
+            feng3d.serialize
+        ], ParticleShapeModule.prototype, "length", void 0);
+        __decorate([
+            feng3d.serialize
+        ], ParticleShapeModule.prototype, "radius", void 0);
+        __decorate([
+            feng3d.serialize
+        ], ParticleShapeModule.prototype, "radiusMode", void 0);
+        __decorate([
+            feng3d.serialize
+        ], ParticleShapeModule.prototype, "radiusSpeed", void 0);
+        __decorate([
+            feng3d.serialize
+        ], ParticleShapeModule.prototype, "radiusSpread", void 0);
         return ParticleShapeModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleShapeModule = ParticleShapeModule;
@@ -36483,6 +36564,9 @@ var feng3d;
             // @oav({ tooltip: "Curve to control particle size based on lifetime." })
             get: function () {
                 return this.size3D.xCurve;
+            },
+            set: function (v) {
+                this.size3D.xCurve = v;
             },
             enumerable: true,
             configurable: true

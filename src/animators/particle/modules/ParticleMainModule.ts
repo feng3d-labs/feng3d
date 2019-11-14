@@ -264,6 +264,11 @@ namespace feng3d
             return this.startRotation3D.zCurve;
         }
 
+        set startRotation(v)
+        {
+            this.startRotation3D.zCurve = v;
+        }
+
         /**
          * Start rotation multiplier.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.

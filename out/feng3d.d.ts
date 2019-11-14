@@ -14513,9 +14513,42 @@ declare namespace feng3d {
     interface UniformsMap {
         particle: ParticleUniforms;
     }
-    class ParticleUniforms extends StandardUniforms {
+    class ParticleUniforms {
         __class__: "feng3d.ParticleUniforms";
+        /**
+         * 点绘制时点的尺寸
+         */
+        u_PointSize: number;
+        /**
+         * 漫反射纹理
+         */
         s_diffuse: Texture2D;
+        /**
+         * 基本颜色
+         */
+        u_diffuse: Color4;
+        /**
+         * 透明阈值，透明度小于该值的像素被片段着色器丢弃
+         */
+        u_alphaThreshold: number;
+    }
+}
+declare namespace feng3d {
+    /**
+     * UnityShader "Particles/Additive"
+     */
+    class ParticleAdditiveUniforms {
+        __class__: "feng3d.ParticleAdditiveUniforms";
+        u_tintColor: Color4;
+        /**
+         * 粒子贴图
+         */
+        s_particle: Texture2D;
+        /**
+         * 粒子贴图使用的UV变换
+         */
+        u_s_particle_transform: Vector4;
+        u_softParticlesFactor: number;
     }
 }
 declare namespace feng3d {
@@ -15399,7 +15432,7 @@ declare namespace feng3d {
          *
          * 粒子发射时的初始大小。
          */
-        readonly startSize: MinMaxCurve;
+        startSize: MinMaxCurve;
         /**
          * Start size multiplier.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
@@ -15465,7 +15498,7 @@ declare namespace feng3d {
          * The initial rotation of particles when emitted.
          * 粒子发射时的初始旋转。
          */
-        readonly startRotation: MinMaxCurve;
+        startRotation: MinMaxCurve;
         /**
          * Start rotation multiplier.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
@@ -16166,7 +16199,7 @@ declare namespace feng3d {
          *
          * 基于寿命的粒度控制曲线。
          */
-        readonly size: MinMaxCurve;
+        size: MinMaxCurve;
         /**
          * Size multiplier.
          *
