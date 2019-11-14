@@ -14539,6 +14539,10 @@ declare namespace feng3d {
      */
     class ParticleAdditiveUniforms {
         __class__: "feng3d.ParticleAdditiveUniforms";
+        /**
+         * 点绘制时点的尺寸
+         */
+        u_PointSize: number;
         u_tintColor: Color4;
         /**
          * 粒子贴图

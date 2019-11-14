@@ -7,6 +7,13 @@ namespace feng3d
     {
         __class__: "feng3d.ParticleAdditiveUniforms" = "feng3d.ParticleAdditiveUniforms";
 
+        /**
+         * 点绘制时点的尺寸
+         */
+        @serialize
+        @oav()
+        u_PointSize = 1;
+
         @serialize
         @oav()
         u_tintColor = new Color4(0.5, 0.5, 0.5, 0.5);

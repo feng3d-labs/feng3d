@@ -15,7 +15,7 @@ void main()
     vec2 uv = v_uv;
     uv = uv * u_s_particle_transform.xy + u_s_particle_transform.zw;
 
-    finalColor = 2.0 *  u_tintColor * texture2D(s_particle, v_uv);
+    finalColor = 2.0 *  u_tintColor * texture2D(s_particle, uv);
 
     #include<particle_frag>
 

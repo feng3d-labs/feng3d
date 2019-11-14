@@ -295,7 +295,7 @@ var feng3d;
                 "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform float u_PointSize;\r\n\r\n#include<particle_pars_vert>\r\n\r\nvoid main() \r\n{\r\n    vec4 position = vec4(a_position, 1.0);\r\n    //输出uv\r\n    v_uv = a_uv;\r\n    \r\n    #include<particle_vert>\r\n\r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n\r\n\r\n    gl_PointSize = u_PointSize;\r\n}"
             },
             "particle_additive": {
-                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform vec4 u_tintColor;\r\nuniform vec4 u_s_particle_transform;\r\nuniform sampler2D s_particle;\r\n\r\n#include<particle_pars_frag>\r\n\r\nvoid main()\r\n{\r\n    vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);\r\n\r\n    vec2 uv = v_uv;\r\n    uv = uv * u_s_particle_transform.xy + u_s_particle_transform.zw;\r\n\r\n    finalColor = 2.0 *  u_tintColor * texture2D(s_particle, v_uv);\r\n\r\n    #include<particle_frag>\r\n\r\n    gl_FragColor = finalColor;\r\n}",
+                "fragment": "precision mediump float;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform vec4 u_tintColor;\r\nuniform vec4 u_s_particle_transform;\r\nuniform sampler2D s_particle;\r\n\r\n#include<particle_pars_frag>\r\n\r\nvoid main()\r\n{\r\n    vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);\r\n\r\n    vec2 uv = v_uv;\r\n    uv = uv * u_s_particle_transform.xy + u_s_particle_transform.zw;\r\n\r\n    finalColor = 2.0 *  u_tintColor * texture2D(s_particle, uv);\r\n\r\n    #include<particle_frag>\r\n\r\n    gl_FragColor = finalColor;\r\n}",
                 "vertex": "precision mediump float;  \r\n\r\n//坐标属性\r\nattribute vec3 a_position;\r\nattribute vec2 a_uv;\r\nattribute vec3 a_normal;\r\n\r\nuniform mat4 u_modelMatrix;\r\nuniform mat4 u_ITModelMatrix;\r\nuniform mat4 u_viewProjection;\r\n\r\nvarying vec2 v_uv;\r\n\r\nuniform float u_PointSize;\r\n\r\n#include<particle_pars_vert>\r\n\r\nvoid main() \r\n{\r\n    vec4 position = vec4(a_position, 1.0);\r\n    //输出uv\r\n    v_uv = a_uv;\r\n    \r\n    #include<particle_vert>\r\n\r\n    vec3 normal = a_normal;\r\n\r\n    //获取全局坐标\r\n    vec4 worldPosition = u_modelMatrix * position;\r\n    //计算投影坐标\r\n    gl_Position = u_viewProjection * worldPosition;\r\n\r\n\r\n    gl_PointSize = u_PointSize;\r\n}"
             },
             "point": {
@@ -32946,6 +32946,10 @@ var feng3d;
     var ParticleAdditiveUniforms = /** @class */ (function () {
         function ParticleAdditiveUniforms() {
             this.__class__ = "feng3d.ParticleAdditiveUniforms";
+            /**
+             * 点绘制时点的尺寸
+             */
+            this.u_PointSize = 1;
             this.u_tintColor = new feng3d.Color4(0.5, 0.5, 0.5, 0.5);
             /**
              * 粒子贴图
@@ -32957,6 +32961,10 @@ var feng3d;
             this.u_s_particle_transform = new feng3d.Vector4(1, 1, 0, 0);
             this.u_softParticlesFactor = 1.0;
         }
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], ParticleAdditiveUniforms.prototype, "u_PointSize", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav()
