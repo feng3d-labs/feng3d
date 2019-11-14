@@ -28,6 +28,11 @@ namespace feng3d
             return this.size3D.xCurve;
         }
 
+        set size(v)
+        {
+            this.size3D.xCurve = v;
+        }
+
         /**
          * Size multiplier.
          * 

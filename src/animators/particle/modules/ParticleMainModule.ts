@@ -131,6 +131,11 @@ namespace feng3d
             return this.startSize3D.xCurve;
         }
 
+        set startSize(v)
+        {
+            this.startSize3D.xCurve = v;
+        }
+
         /**
          * Start size multiplier.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
