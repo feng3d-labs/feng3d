@@ -11,6 +11,22 @@ namespace feng3d
     {
         __class__: "feng3d.Material" = "feng3d.Material";
 
+        static create<K extends keyof UniformsMap>(shaderName: K, uniforms?: gPartial<UniformsMap[K]>, renderParams?: gPartial<RenderParams>)
+        {
+            var material = new Material();
+            material.init(shaderName, uniforms, renderParams);
+            return material;
+        }
+
+        init<K extends keyof UniformsMap>(shaderName: K, uniforms?: gPartial<UniformsMap[K]>, renderParams?: gPartial<RenderParams>)
+        {
+            this.shaderName = shaderName;
+            //
+            uniforms && serialization.setValue(this.uniforms, <any>uniforms);
+            renderParams && serialization.setValue(this.renderParams, renderParams);
+            return this;
+        }
+
         //
         private renderAtomic = new RenderAtomic();
 
@@ -142,13 +158,16 @@ namespace feng3d
                 if (this.uniforms == null || this.uniforms.constructor != cls)
                 {
                     var newuniforms = new cls();
-                    // Object.assign(newuniforms, this.uniforms);
                     this.uniforms = newuniforms;
                 }
             } else
             {
                 this.uniforms = <any>{};
             }
+
+            var renderParams = shaderConfig.shaders[this.shaderName].renderParams;
+            renderParams && serialization.setValue(this.renderParams, renderParams);
+
             this.renderAtomic.shader = new Shader(this.shaderName);
         }
 

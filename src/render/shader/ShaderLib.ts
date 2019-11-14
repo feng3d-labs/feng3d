@@ -22,6 +22,7 @@ namespace feng3d
                  */
                 fragment: string,
                 cls?: new (...arg: any[]) => any,
+                renderParams?: gPartial<RenderParams>,
             }
         },
         /**

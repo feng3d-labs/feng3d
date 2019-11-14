@@ -50,7 +50,7 @@ namespace feng3d
          * @param assetId 资源编号
          * @param data 资源数据
          */
-        static addAssetData(assetId: string, data: AssetData)
+        static addAssetData<T extends AssetData>(assetId: string, data: T)
         {
             if (!data) return;
             if (data.assetId != assetId)
@@ -58,6 +58,7 @@ namespace feng3d
 
             this.assetMap.set(data, assetId);
             this.idAssetMap.set(assetId, data);
+            return data;
         }
 
         /**

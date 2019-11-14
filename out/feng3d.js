@@ -16663,6 +16663,7 @@ var feng3d;
                 console.warn("\u540C\u4E00\u4E2A\u6750\u8D28\u88AB\u4FDD\u5B58\u5728\u591A\u4E2A\u8D44\u6E90\u4E2D\uFF01");
             this.assetMap.set(data, assetId);
             this.idAssetMap.set(assetId, data);
+            return data;
         };
         /**
          * 删除资源数据
@@ -30128,6 +30129,18 @@ var feng3d;
             _this.renderParams = new feng3d.RenderParams();
             return _this;
         }
+        Material.create = function (shaderName, uniforms, renderParams) {
+            var material = new Material();
+            material.init(shaderName, uniforms, renderParams);
+            return material;
+        };
+        Material.prototype.init = function (shaderName, uniforms, renderParams) {
+            this.shaderName = shaderName;
+            //
+            uniforms && feng3d.serialization.setValue(this.uniforms, uniforms);
+            renderParams && feng3d.serialization.setValue(this.renderParams, renderParams);
+            return this;
+        };
         Object.defineProperty(Material.prototype, "shaderName", {
             /**
              * shader名称
@@ -30228,13 +30241,14 @@ var feng3d;
             if (cls) {
                 if (this.uniforms == null || this.uniforms.constructor != cls) {
                     var newuniforms = new cls();
-                    // Object.assign(newuniforms, this.uniforms);
                     this.uniforms = newuniforms;
                 }
             }
             else {
                 this.uniforms = {};
             }
+            var renderParams = feng3d.shaderConfig.shaders[this.shaderName].renderParams;
+            renderParams && feng3d.serialization.setValue(this.renderParams, renderParams);
             this.renderAtomic.shader = new feng3d.Shader(this.shaderName);
         };
         Material.prototype.onUniformsChanged = function () {
@@ -32932,10 +32946,9 @@ var feng3d;
     }());
     feng3d.ParticleUniforms = ParticleUniforms;
     feng3d.shaderConfig.shaders["particle"].cls = ParticleUniforms;
-    feng3d.AssetData.addAssetData("Particle-Material", feng3d.Material.particle = feng3d.serialization.setValue(new feng3d.Material(), {
-        name: "Particle-Material", assetId: "Particle-Material", shaderName: "particle",
-        renderParams: { enableBlend: true, depthMask: false, sfactor: feng3d.BlendFactor.ONE, dfactor: feng3d.BlendFactor.ONE_MINUS_SRC_COLOR, cullFace: feng3d.CullFace.NONE },
-        hideFlags: feng3d.HideFlags.NotEditable,
+    feng3d.shaderConfig.shaders["particle"].renderParams = { enableBlend: true, depthMask: false, sfactor: feng3d.BlendFactor.ONE, dfactor: feng3d.BlendFactor.ONE_MINUS_SRC_COLOR, cullFace: feng3d.CullFace.NONE };
+    feng3d.Material.particle = feng3d.AssetData.addAssetData("Particle-Material", feng3d.serialization.setValue(feng3d.Material.create("particle"), {
+        name: "Particle-Material", assetId: "Particle-Material", hideFlags: feng3d.HideFlags.NotEditable,
     }));
 })(feng3d || (feng3d = {}));
 var feng3d;
