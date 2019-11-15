@@ -77,14 +77,14 @@ namespace feng3d
         /**
          * 绘制在画布上的区域
          */
-        @oav({ tooltip: "绘制在画布上的区域" })
+        // @oav({ tooltip: "绘制在画布上的区域" })
         @serialize
         viewRect = new Rectangle(0, 0, 100, 100);
 
         /**
          * 是否使用 viewRect
          */
-        @oav({ tooltip: "是否使用 viewRect" })
+        // @oav({ tooltip: "是否使用 viewRect" })
         @serialize
         useViewRect = false;
 
