@@ -32967,7 +32967,7 @@ var feng3d;
             /**
              * 粒子贴图
              */
-            this.s_particle = feng3d.Texture2D.default;
+            this.s_particle = feng3d.Texture2D.defaultParticle;
             /**
              * 粒子贴图使用的UV变换
              */
@@ -32998,6 +32998,7 @@ var feng3d;
     }());
     feng3d.ParticleAdditiveUniforms = ParticleAdditiveUniforms;
     feng3d.shaderConfig.shaders["particle_additive"].cls = ParticleAdditiveUniforms;
+    feng3d.shaderConfig.shaders["particle_additive"].renderParams = { enableBlend: true, sfactor: feng3d.BlendFactor.SRC_ALPHA, dfactor: feng3d.BlendFactor.ONE, depthMask: false };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

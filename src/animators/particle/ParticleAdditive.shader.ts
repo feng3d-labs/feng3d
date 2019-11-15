@@ -23,8 +23,8 @@ namespace feng3d
          */
         @serialize
         @oav({ tooltip: "粒子贴图" })
-        s_particle = Texture2D.default;
-        
+        s_particle = Texture2D.defaultParticle;
+
         /**
          * 粒子贴图使用的UV变换
          */
@@ -38,4 +38,5 @@ namespace feng3d
     }
 
     shaderConfig.shaders["particle_additive"].cls = ParticleAdditiveUniforms;
+    shaderConfig.shaders["particle_additive"].renderParams = { enableBlend: true, sfactor: BlendFactor.SRC_ALPHA, dfactor: BlendFactor.ONE, depthMask: false };
 }

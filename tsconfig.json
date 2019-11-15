@@ -278,8 +278,8 @@
         "src/terrain/Terrain.ts",
         //粒子系统
         "src/animators/particle/Particle.ts",
-        "src/animators/particle/ParticleMaterial.ts",
-        "src/animators/particle/ParticleAdditiveMaterial.ts",
+        "src/animators/particle/Particle.shader.ts",
+        "src/animators/particle/ParticleAdditive.shader.ts",
         "src/animators/particle/ParticleSystem.ts",
         //
         "src/animators/particle/others/ParticleEmissionBurst.ts",
