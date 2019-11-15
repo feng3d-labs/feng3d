@@ -10953,7 +10953,7 @@ var feng3d;
          * @param  m 要从左边乘的矩阵。
          */
         Matrix3x3.prototype.mmult = function (m, target) {
-            if (target === void 0) { target = new feng3d.Matrix3x3(); }
+            if (target === void 0) { target = new Matrix3x3(); }
             for (var i = 0; i < 3; i++) {
                 for (var j = 0; j < 3; j++) {
                     var sum = 0.0;
@@ -10971,7 +10971,7 @@ var feng3d;
          * @param v
          */
         Matrix3x3.prototype.scale = function (v, target) {
-            if (target === void 0) { target = new feng3d.Matrix3x3(); }
+            if (target === void 0) { target = new Matrix3x3(); }
             var e = this.elements, t = target.elements;
             for (var i = 0; i !== 3; i++) {
                 t[3 * i + 0] = v.x * e[3 * i + 0];
@@ -11180,7 +11180,7 @@ var feng3d;
          * 逆矩阵
          */
         Matrix3x3.prototype.reverseTo = function (target) {
-            if (target === void 0) { target = new feng3d.Matrix3x3(); }
+            if (target === void 0) { target = new Matrix3x3(); }
             return target.copy(this).reverse();
         };
         /**
@@ -11217,7 +11217,7 @@ var feng3d;
          * 转置矩阵
          */
         Matrix3x3.prototype.transposeTo = function (target) {
-            if (target === void 0) { target = new feng3d.Matrix3x3(); }
+            if (target === void 0) { target = new Matrix3x3(); }
             return target.copy(this).transpose();
         };
         Matrix3x3.prototype.formMatrix4x4 = function (matrix4x4) {

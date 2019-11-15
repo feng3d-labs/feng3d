@@ -5143,7 +5143,7 @@ declare namespace feng3d {
          * 矩阵乘法
          * @param  m 要从左边乘的矩阵。
          */
-        mmult(m: feng3d.Matrix3x3, target?: Matrix3x3): Matrix3x3;
+        mmult(m: Matrix3x3, target?: Matrix3x3): Matrix3x3;
         /**
          * 缩放矩阵的每一列
          *
@@ -5177,7 +5177,7 @@ declare namespace feng3d {
          *
          * @param source
          */
-        copy(source: feng3d.Matrix3x3): this;
+        copy(source: Matrix3x3): this;
         /**
          * 返回矩阵的字符串表示形式
          */
@@ -5195,7 +5195,7 @@ declare namespace feng3d {
          *
          * @param q
          */
-        setRotationFromQuaternion(q: feng3d.Quaternion): this;
+        setRotationFromQuaternion(q: Quaternion): this;
         /**
          * 转置矩阵
          */

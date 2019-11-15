@@ -116,7 +116,7 @@ namespace feng3d
          * 矩阵乘法
          * @param  m 要从左边乘的矩阵。
          */
-        mmult(m: feng3d.Matrix3x3, target = new feng3d.Matrix3x3())
+        mmult(m: Matrix3x3, target = new Matrix3x3())
         {
             for (var i = 0; i < 3; i++)
             {
@@ -138,7 +138,7 @@ namespace feng3d
          * 
          * @param v
          */
-        scale(v: Vector3, target = new feng3d.Matrix3x3())
+        scale(v: Vector3, target = new Matrix3x3())
         {
             var e = this.elements,
                 t = target.elements;
@@ -259,7 +259,7 @@ namespace feng3d
          * 
          * @param source
          */
-        copy(source: feng3d.Matrix3x3)
+        copy(source: Matrix3x3)
         {
             for (var i = 0; i < source.elements.length; i++)
             {
@@ -403,7 +403,7 @@ namespace feng3d
         /**
          * 逆矩阵
          */
-        reverseTo(target = new feng3d.Matrix3x3())
+        reverseTo(target = new Matrix3x3())
         {
             return target.copy(this).reverse();
         }
@@ -413,7 +413,7 @@ namespace feng3d
          * 
          * @param q
          */
-        setRotationFromQuaternion(q: feng3d.Quaternion)
+        setRotationFromQuaternion(q: Quaternion)
         {
             var x = q.x, y = q.y, z = q.z, w = q.w,
                 x2 = x + x, y2 = y + y, z2 = z + z,
@@ -459,7 +459,7 @@ namespace feng3d
         /**
          * 转置矩阵
          */
-        transposeTo(target = new feng3d.Matrix3x3())
+        transposeTo(target = new Matrix3x3())
         {
             return target.copy(this).transpose();
         }
