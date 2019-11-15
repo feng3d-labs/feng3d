@@ -14718,12 +14718,8 @@ declare namespace feng3d {
     /**
      * UnityShader "Particles/Additive"
      */
-    class ParticleAdditiveUniforms {
-        __class__: "feng3d.ParticleAdditiveUniforms";
-        /**
-         * 点绘制时点的尺寸
-         */
-        u_PointSize: number;
+    class ParticlesAdditiveUniforms {
+        __class__: "feng3d.ParticlesAdditiveUniforms";
         u_tintColor: Color4;
         /**
          * 粒子贴图
@@ -14733,6 +14729,29 @@ declare namespace feng3d {
          * 粒子贴图使用的UV变换
          */
         u_s_particle_transform: Vector4;
+        /**
+         * @todo
+         */
+        u_softParticlesFactor: number;
+    }
+}
+declare namespace feng3d {
+    /**
+     * UnityShader "Particles/Alpha Blended Premultiply"
+     */
+    class ParticlesAlphaBlendedPremultiplyUniforms {
+        __class__: "feng3d.ParticlesAlphaBlendedPremultiplyUniforms";
+        /**
+         * 粒子贴图
+         */
+        s_particle: Texture2D;
+        /**
+         * 粒子贴图使用的UV变换
+         */
+        u_s_particle_transform: Vector4;
+        /**
+         * @todo
+         */
         u_softParticlesFactor: number;
     }
 }

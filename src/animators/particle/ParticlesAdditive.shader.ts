@@ -3,16 +3,9 @@ namespace feng3d
     /**
      * UnityShader "Particles/Additive"
      */
-    export class ParticleAdditiveUniforms
+    export class ParticlesAdditiveUniforms
     {
-        __class__: "feng3d.ParticleAdditiveUniforms" = "feng3d.ParticleAdditiveUniforms";
-
-        /**
-         * 点绘制时点的尺寸
-         */
-        @serialize
-        @oav()
-        u_PointSize = 1;
+        __class__: "feng3d.ParticlesAdditiveUniforms" = "feng3d.ParticlesAdditiveUniforms";
 
         @serialize
         @oav()
@@ -32,11 +25,14 @@ namespace feng3d
         @oav({ tooltip: "粒子贴图使用的UV变换" })
         u_s_particle_transform = new Vector4(1, 1, 0, 0);
 
+        /**
+         * @todo
+         */
         @serialize
         @oav()
         u_softParticlesFactor = 1.0;
     }
 
-    shaderConfig.shaders["particle_additive"].cls = ParticleAdditiveUniforms;
-    shaderConfig.shaders["particle_additive"].renderParams = { enableBlend: true, sfactor: BlendFactor.SRC_ALPHA, dfactor: BlendFactor.ONE, depthMask: false };
+    shaderConfig.shaders["Particles_Additive"].cls = ParticlesAdditiveUniforms;
+    shaderConfig.shaders["Particles_Additive"].renderParams = { enableBlend: true, sfactor: BlendFactor.SRC_ALPHA, dfactor: BlendFactor.ONE, depthMask: false };
 }

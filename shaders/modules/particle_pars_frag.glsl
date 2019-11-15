@@ -3,8 +3,7 @@
 
     vec4 particleAnimation(vec4 color) {
 
-        color.xyz = color.xyz * v_particle_color.xyz;
-        color.xyz = color.xyz * v_particle_color.www;
+        color = color * v_particle_color;
         return color;
     }
 #endif
