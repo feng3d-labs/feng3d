@@ -7,6 +7,17 @@ namespace feng3d
         [P in keyof T]?: gPartial<T[P]>;
     };
 
+    /**
+     * 任意函数
+     */
+    export type AnyFunction = (...args: any) => any;
+
+    /**
+     * 
+     */
+    export type ExcludeType<K, KT, T> = K extends keyof T ? (T[K] extends KT ? never : K) : never;
+    export type OmitType<T, KT> = Pick<T, ExcludeType<keyof T, KT, T>>;
+
     export type Lazy<T> = T | (() => T);
 
     export type LazyObject<T> = { [P in keyof T]: Lazy<T[P]>; };

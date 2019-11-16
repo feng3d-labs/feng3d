@@ -15,8 +15,6 @@ namespace feng3d
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.cube },]
             });
-            g.addComponent(BoxCollider);
-            g.addComponent(Rigidbody);
             return g;
         }
 

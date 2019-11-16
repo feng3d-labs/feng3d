@@ -35,13 +35,6 @@ namespace feng3d
         ambientColor = new Color4();
 
         /**
-         * 重力加速度
-         */
-        @oav()
-        @serialize
-        gravity = new Vector3(0, -9.82, 0);
-
-        /**
          * 指定所运行环境
          * 
          * 控制运行符合指定环境场景中所有 Behaviour.update 方法
@@ -60,14 +53,6 @@ namespace feng3d
          */
         camera: Camera;
 
-        /**
-         * 物理世界
-         */
-        world: CANNON.World;
-
-        /**
-         * 构造3D场景
-         */
         init()
         {
             super.init();
@@ -77,55 +62,6 @@ namespace feng3d
             //
             this._gameObject["_scene"] = this;
             this._gameObject["updateChildrenScene"]();
-
-            this.world = new CANNON.World();
-            this.world.gravity = this.gravity;
-
-            var bodys = this.getComponentsInChildren(Rigidbody).map(c => c.body);
-            bodys.forEach(v =>
-            {
-                this.world.addBody(v);
-            });
-
-            //
-            this.on("addChild", this.onAddChild, this);
-            this.on("removeChild", this.onRemoveChild, this);
-            this.on("addComponent", this.onAddComponent, this);
-            this.on("removeComponent", this.onRemovedComponent, this);
-        }
-
-        private onAddComponent(e: Event<Component>)
-        {
-            if (e.data instanceof Rigidbody)
-            {
-                this.world.addBody(e.data.body);
-            }
-        }
-
-        private onRemovedComponent(e: Event<Component>)
-        {
-            if (e.data instanceof Rigidbody)
-            {
-                this.world.removeBody(e.data.body);
-            }
-        }
-
-        private onAddChild(e: Event<GameObject>)
-        {
-            var bodyComponent = e.data.getComponent(Rigidbody);
-            if (bodyComponent)
-            {
-                this.world.addBody(bodyComponent.body);
-            }
-        }
-
-        private onRemoveChild(e: Event<GameObject>)
-        {
-            var bodyComponent = e.data.getComponent(Rigidbody);
-            if (bodyComponent)
-            {
-                this.world.removeBody(bodyComponent.body);
-            }
         }
 
         update(interval?: number)
@@ -156,10 +92,6 @@ namespace feng3d
                 if (element.isVisibleAndEnabled && Boolean(this.runEnvironment & element.runEnvironment))
                     element.update(interval);
             });
-
-            // 只在
-            if (this.runEnvironment == RunEnvironment.feng3d)
-                this.world.step(1.0 / 60.0, interval / 1000, 3);
         }
 
         /**
