@@ -362,14 +362,6 @@
         //
         "src/utils/GameObjectFactory.ts",
         //
-        "src/core/Mouse3DManager.ts",
-        //
-        "src/component/physics/Rigidbody.ts",
-        "src/component/physics/Collider.ts",
-        "src/component/physics/BoxCollider.ts",
-        "src/component/physics/SphereCollider.ts",
-        "src/component/physics/CylinderCollider.ts",
-        "src/component/physics/CapsuleCollider.ts",
-        "src/component/physics/PlaneCollider.ts"
+        "src/core/Mouse3DManager.ts"
     ]
 }
