@@ -6,7 +6,6 @@
   "types": "out/feng3d.d.ts",
   "scripts": {
     "build": "node build.js",
-    "prebuild": "rimraf \"{debug}\"",
     "typedoc": "typedoc"
   },
   "files": [
