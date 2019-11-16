@@ -6,7 +6,7 @@
   "types": "out/feng3d.d.ts",
   "scripts": {
     "build": "node build.js",
-    "typedoc": "typedoc"
+    "typedoc": "typedoc --mode file --tsconfig tsconfig.json --out api"
   },
   "files": [
     "out",
