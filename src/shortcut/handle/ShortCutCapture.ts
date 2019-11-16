@@ -293,85 +293,86 @@ namespace feng3d
 			this._states = <any>null;
 		}
 	}
-}
-
-/**
- * 按键
- */
-class Key
-{
-	/**
-	 * 是否取反
-	 */
-	not: boolean;
 
 	/**
-	 * 状态名称
+	 * 按键
 	 */
-	key: string;
-
-	constructor(key: string)
+	class Key
 	{
-		key = key.trim();
-		if (key.charAt(0) == "!")
+		/**
+		 * 是否取反
+		 */
+		not: boolean;
+
+		/**
+		 * 状态名称
+		 */
+		key: string;
+
+		constructor(key: string)
 		{
-			this.not = true;
-			key = key.substr(1).trim();
+			key = key.trim();
+			if (key.charAt(0) == "!")
+			{
+				this.not = true;
+				key = key.substr(1).trim();
+			}
+			this.key = key;
 		}
-		this.key = key;
 	}
-}
-
-/**
- * 状态
- */
-class State
-{
-	/**
-	 * 是否取反
-	 */
-	not: boolean;
 
 	/**
-	 * 状态名称
+	 * 状态
 	 */
-	state: string;
-
-	constructor(state: string)
+	class State
 	{
-		state = state.trim();
-		if (state.charAt(0) == "!")
+		/**
+		 * 是否取反
+		 */
+		not: boolean;
+
+		/**
+		 * 状态名称
+		 */
+		state: string;
+
+		constructor(state: string)
 		{
-			this.not = true;
-			state = state.substr(1).trim();
+			state = state.trim();
+			if (state.charAt(0) == "!")
+			{
+				this.not = true;
+				state = state.substr(1).trim();
+			}
+			this.state = state;
 		}
-		this.state = state;
 	}
-}
-
-/**
- * 状态命令
- */
-class StateCommand
-{
-	/**
-	 * 是否取反
-	 */
-	not: boolean;
 
 	/**
-	 * 状态名称
+	 * 状态命令
 	 */
-	state: string;
-
-	constructor(state: string)
+	class StateCommand
 	{
-		state = state.trim();
-		if (state.charAt(0) == "!")
+		/**
+		 * 是否取反
+		 */
+		not: boolean;
+
+		/**
+		 * 状态名称
+		 */
+		state: string;
+
+		constructor(state: string)
 		{
-			this.not = true;
-			state = state.substr(1).trim();
+			state = state.trim();
+			if (state.charAt(0) == "!")
+			{
+				this.not = true;
+				state = state.substr(1).trim();
+			}
+			this.state = state;
 		}
-		this.state = state;
 	}
+
 }
