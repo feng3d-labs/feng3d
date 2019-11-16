@@ -190,8 +190,8 @@
         "src/component/Graphics.ts",
         "src/component/Behaviour.ts",
         // 天空盒
-        "src/skybox/Skybox.ts",
-        "src/skybox/SkyboxRenderer.ts",
+        "src/skybox/SkyBox.ts",
+        "src/skybox/SkyBoxRenderer.ts",
         //
         "src/core/HideFlags.ts",
         "src/core/RunEnvironment.ts",

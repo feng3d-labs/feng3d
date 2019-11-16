@@ -22964,10 +22964,10 @@ var feng3d;
     /**
      * 天空盒渲染器
      */
-    var SkyboxRenderer = /** @class */ (function () {
-        function SkyboxRenderer() {
+    var SkyBoxRenderer = /** @class */ (function () {
+        function SkyBoxRenderer() {
         }
-        SkyboxRenderer.prototype.init = function () {
+        SkyBoxRenderer.prototype.init = function () {
             if (!this.renderAtomic) {
                 var renderAtomic = this.renderAtomic = new feng3d.RenderAtomic();
                 //八个顶点，32个number
@@ -23006,7 +23006,7 @@ var feng3d;
          * @param scene3d 场景
          * @param camera 摄像机
          */
-        SkyboxRenderer.prototype.draw = function (gl, scene3d, camera) {
+        SkyBoxRenderer.prototype.draw = function (gl, scene3d, camera) {
             var skybox = scene3d.activeSkyBoxs[0];
             this.drawSkyBox(gl, skybox, scene3d, camera);
         };
@@ -23016,7 +23016,7 @@ var feng3d;
          * @param skybox 天空盒
          * @param camera 摄像机
          */
-        SkyboxRenderer.prototype.drawSkyBox = function (gl, skybox, scene3d, camera) {
+        SkyBoxRenderer.prototype.drawSkyBox = function (gl, skybox, scene3d, camera) {
             if (!skybox)
                 return;
             this.init();
@@ -23030,10 +23030,10 @@ var feng3d;
             this.renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
             gl.renderer.draw(this.renderAtomic);
         };
-        return SkyboxRenderer;
+        return SkyBoxRenderer;
     }());
-    feng3d.SkyboxRenderer = SkyboxRenderer;
-    feng3d.skyboxRenderer = new SkyboxRenderer();
+    feng3d.SkyBoxRenderer = SkyBoxRenderer;
+    feng3d.skyboxRenderer = new SkyBoxRenderer();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

@@ -3,12 +3,12 @@ namespace feng3d
     /**
      * 天空盒渲染器
      */
-    export var skyboxRenderer: SkyboxRenderer;
+    export var skyboxRenderer: SkyBoxRenderer;
 
     /**
      * 天空盒渲染器
      */
-    export class SkyboxRenderer
+    export class SkyBoxRenderer
     {
         private renderAtomic: RenderAtomic;
 
@@ -87,5 +87,5 @@ namespace feng3d
         }
     }
 
-    skyboxRenderer = new SkyboxRenderer();
+    skyboxRenderer = new SkyBoxRenderer();
 }

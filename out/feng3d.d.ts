@@ -11168,11 +11168,11 @@ declare namespace feng3d {
     /**
      * 天空盒渲染器
      */
-    var skyboxRenderer: SkyboxRenderer;
+    var skyboxRenderer: SkyBoxRenderer;
     /**
      * 天空盒渲染器
      */
-    class SkyboxRenderer {
+    class SkyBoxRenderer {
         private renderAtomic;
         init(): void;
         /**
