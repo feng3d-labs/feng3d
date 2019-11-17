@@ -12,31 +12,29 @@ namespace feng3d
      */
     export class FunctionWrap
     {
-        // /**
-        //  * 扩展（继承函数）
-        //  * 
-        //  * 一般用于调试
-        //  * 使用场景示例：
-        //  * 1. 在函数执行前后记录时间来计算函数执行时间。
-        //  * 1. 在console.error调用前使用 debugger 进行断点调试。
-        //  * 
-        //  * @param object 函数所属对象或者原型
-        //  * @param funcName 函数名称
-        //  * @param wrapFunc 在函数执行前执行的函数
-        //  * @param before 运行在原函数之前
-        //  */
-        // polyfill<T, K extends (keyof T) & string, V extends T[K]>(object: T, funcName: K, wrapFunc: ReturnType<V>)
-        // {
-        //     var oldFun = object[funcName];
-        //     object[funcName] = <any>(function (...args: any[])
-        //     {
-        //         var r = (<any>oldFun).apply(this, args);
-
-        //         return r;
-        //     })
-        //     this.polyfill(FunctionWrap.prototype,"polyfill")
-        //     return 1;
-        // }
+        /**
+         * 扩展继承函数
+         * 
+         * 可用于扩展原型中原有API中的实现
+         * 
+         * 
+         * 
+         * @param object 被扩展函数所属对象或者原型
+         * @param funcName 被扩展函数名称
+         * @param extendFunc 在函数执行后执行的扩展函数
+         */
+        extendFunction<T, K extends feng3d.ExtractFunctionKeys<T>, V extends T[K]>(object: T, funcName: K, extendFunc: (this: T, r: ReturnType<V>, ...ps: Parameters<V>) => ReturnType<V>)
+        {
+            var oldFun = object[funcName];
+            object[funcName] = <any>(function (...args: Parameters<V>)
+            {
+                var r = (<any>oldFun).apply(this, args);
+                var args1 = args.concat();
+                args1.unshift(r);
+                r = extendFunc.apply(this, args1);
+                return r;
+            })
+        }
 
         /**
          * 包装函数

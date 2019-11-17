@@ -3327,6 +3327,31 @@ QUnit.module("Object", function () {
     });
 });
 QUnit.module("FunctionWrap", function () {
+    QUnit.test("extendFunction", function (assert) {
+        var A = /** @class */ (function () {
+            function A() {
+                this.a = "a";
+            }
+            A.prototype.f = function (p, p1) {
+                if (p === void 0) { p = "p"; }
+                if (p1 === void 0) { p1 = ""; }
+                return p + p1;
+            };
+            return A;
+        }());
+        var a = new A();
+        a.oldf = a.f;
+        a.extendF = function (p, p1) {
+            if (p === void 0) { p = "p"; }
+            if (p1 === void 0) { p1 = ""; }
+            return ["polyfill", this.a, this.oldf()].join("-");
+        };
+        feng3d.functionwrap.extendFunction(a, "f", function (r) {
+            return ["polyfill", this.a, r].join("-");
+        });
+        // 验证 被扩展的a.f方法是否等价于 a.extendF
+        console.log(a.f(), a.f() == a.extendF()); //polyfill-a-p true
+    });
     QUnit.test("wrap & unwrap ", function (assert) {
         var o = {
             v: 1, f: function (a) {

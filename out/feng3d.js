@@ -648,33 +648,34 @@ var feng3d;
      */
     var FunctionWrap = /** @class */ (function () {
         function FunctionWrap() {
-            // /**
-            //  * 扩展（继承函数）
-            //  * 
-            //  * 一般用于调试
-            //  * 使用场景示例：
-            //  * 1. 在函数执行前后记录时间来计算函数执行时间。
-            //  * 1. 在console.error调用前使用 debugger 进行断点调试。
-            //  * 
-            //  * @param object 函数所属对象或者原型
-            //  * @param funcName 函数名称
-            //  * @param wrapFunc 在函数执行前执行的函数
-            //  * @param before 运行在原函数之前
-            //  */
-            // polyfill<T, K extends (keyof T) & string, V extends T[K]>(object: T, funcName: K, wrapFunc: ReturnType<V>)
-            // {
-            //     var oldFun = object[funcName];
-            //     object[funcName] = <any>(function (...args: any[])
-            //     {
-            //         var r = (<any>oldFun).apply(this, args);
             this._wrapFResult = {};
             this._state = {};
         }
-        //         return r;
-        //     })
-        //     this.polyfill(FunctionWrap.prototype,"polyfill")
-        //     return 1;
-        // }
+        /**
+         * 扩展继承函数
+         *
+         * 可用于扩展原型中原有API中的实现
+         *
+         *
+         *
+         * @param object 被扩展函数所属对象或者原型
+         * @param funcName 被扩展函数名称
+         * @param extendFunc 在函数执行后执行的扩展函数
+         */
+        FunctionWrap.prototype.extendFunction = function (object, funcName, extendFunc) {
+            var oldFun = object[funcName];
+            object[funcName] = (function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                var r = oldFun.apply(this, args);
+                var args1 = args.concat();
+                args1.unshift(r);
+                r = extendFunc.apply(this, args1);
+                return r;
+            });
+        };
         /**
          * 包装函数
          *
@@ -41259,8 +41260,8 @@ var feng3d;
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.plane },]
             });
-            g.addComponent(PlaneCollider);
-            g.addComponent(Rigidbody);
+            // g.addComponent(PlaneCollider);
+            // g.addComponent(Rigidbody);
             return g;
         };
         GameObjectFactory.prototype.createCylinder = function (name) {
@@ -41269,8 +41270,8 @@ var feng3d;
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.cylinder },]
             });
-            g.addComponent(CylinderCollider);
-            g.addComponent(Rigidbody);
+            // g.addComponent(CylinderCollider);
+            // g.addComponent(Rigidbody);
             return g;
         };
         GameObjectFactory.prototype.createCone = function (name) {
@@ -41293,8 +41294,8 @@ var feng3d;
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.sphere },]
             });
-            sphere.addComponent(SphereCollider);
-            sphere.addComponent(Rigidbody);
+            // sphere.addComponent(SphereCollider);
+            // sphere.addComponent(Rigidbody);
             return sphere;
         };
         GameObjectFactory.prototype.createCapsule = function (name) {
@@ -41303,8 +41304,8 @@ var feng3d;
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.capsule },]
             });
-            g.addComponent(CapsuleCollider);
-            g.addComponent(Rigidbody);
+            // g.addComponent(CapsuleCollider);
+            // g.addComponent(Rigidbody);
             return g;
         };
         GameObjectFactory.prototype.createTerrain = function (name) {
@@ -41580,3 +41581,21 @@ var feng3d;
     feng3d.WindowMouseInput = WindowMouseInput;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
+console.log("feng3d-0.1.3");
+(function universalModuleDefinition(root, factory)
+{
+    if (typeof exports === 'object' && typeof module === 'object')
+        module.exports = factory();
+    else if (typeof define === 'function' && define.amd)
+        define([], factory);
+    else if (typeof exports === 'object')
+        exports["feng3d"] = factory();
+    else
+        root["feng3d"] = factory();
+    
+    var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
+    globalObject["feng3d"] = factory();
+})(this, function ()
+{
+    return feng3d;
+});

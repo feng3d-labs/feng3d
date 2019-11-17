@@ -1,3 +1,6 @@
+declare module 'feng3d' {
+    export = feng3d;
+}
 declare namespace feng3d {
     /**
      * 观察装饰器，观察被装饰属性的变化
@@ -324,6 +327,18 @@ declare namespace feng3d {
      * 包装函数，以及对应的拆包
      */
     class FunctionWrap {
+        /**
+         * 扩展继承函数
+         *
+         * 可用于扩展原型中原有API中的实现
+         *
+         *
+         *
+         * @param object 被扩展函数所属对象或者原型
+         * @param funcName 被扩展函数名称
+         * @param extendFunc 在函数执行后执行的扩展函数
+         */
+        extendFunction<T, K extends feng3d.ExtractFunctionKeys<T>, V extends T[K]>(object: T, funcName: K, extendFunc: (this: T, r: ReturnType<V>, ...ps: Parameters<V>) => ReturnType<V>): void;
         /**
          * 包装函数
          *

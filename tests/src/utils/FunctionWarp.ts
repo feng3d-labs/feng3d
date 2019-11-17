@@ -5,6 +5,36 @@ interface FF
 
 QUnit.module("FunctionWrap", () =>
 {
+    QUnit.test("extendFunction", (assert) =>
+    {
+        class A
+        {
+            a = "a";
+
+            f(p: string = "p", p1: string = "")
+            {
+                return p + p1;
+            }
+
+            extendF: (p?: string, p1?: string) => string;
+            oldf: (p?: string, p1?: string) => string;
+        }
+
+        var a = new A();
+        a.oldf = a.f;
+        a.extendF = function (p: string = "p", p1: string = "")
+        {
+            return ["polyfill", this.a, this.oldf()].join("-")
+        }
+        feng3d.functionwrap.extendFunction(a, "f", function (r)
+        {
+            return ["polyfill", this.a, r].join("-");
+        });
+        // 验证 被扩展的a.f方法是否等价于 a.extendF
+        console.log(a.f(), a.f() == a.extendF()); //polyfill-a-p true
+
+    });
+
     QUnit.test("wrap & unwrap ", (assert) =>
     {
         var o = {
