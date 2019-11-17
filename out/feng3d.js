@@ -656,7 +656,34 @@ var feng3d;
          *
          * 可用于扩展原型中原有API中的实现
          *
-         *
+         * ```
+        class A
+        {
+            a = "a";
+
+            f(p: string = "p", p1: string = "")
+            {
+                return p + p1;
+            }
+
+            extendF: (p?: string, p1?: string) => string;
+            oldf: (p?: string, p1?: string) => string;
+        }
+
+        var a = new A();
+        a.oldf = a.f;
+        a.extendF = function (p: string = "p", p1: string = "")
+        {
+            return ["polyfill", this.a, this.oldf()].join("-")
+        }
+        feng3d.functionwrap.extendFunction(a, "f", function (r)
+        {
+            return ["polyfill", this.a, r].join("-");
+        });
+        // 验证 被扩展的a.f方法是否等价于 a.extendF
+        assert.ok(a.f() == a.extendF()); //true
+        
+         * ```
          *
          * @param object 被扩展函数所属对象或者原型
          * @param funcName 被扩展函数名称
@@ -686,12 +713,11 @@ var feng3d;
          *
          * @param object 函数所属对象或者原型
          * @param funcName 函数名称
-         * @param wrapFunc 在函数执行前执行的函数
-         * @param before 运行在原函数之前
+         * @param beforeFunc 在函数执行前执行的函数
+         * @param afterFunc 在函数执行后执行的函数
          */
-        FunctionWrap.prototype.wrap = function (object, funcName, wrapFunc, before) {
-            if (before === void 0) { before = true; }
-            if (wrapFunc == undefined)
+        FunctionWrap.prototype.wrap = function (object, funcName, beforeFunc, afterFunc) {
+            if (!beforeFunc && !afterFunc)
                 return;
             if (!Object.getOwnPropertyDescriptor(object, feng3d.__functionwrap__)) {
                 Object.defineProperty(object, feng3d.__functionwrap__, { value: {}, configurable: true, enumerable: false, writable: false });
@@ -702,20 +728,24 @@ var feng3d;
                 var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(object, funcName);
                 var original = object[funcName];
                 functionwraps[funcName] = info = { space: object, funcName: funcName, oldPropertyDescriptor: oldPropertyDescriptor, original: original, funcs: [original] };
+                //
+                object[funcName] = function () {
+                    var _this = this;
+                    var args = arguments;
+                    info.funcs.forEach(function (f) {
+                        f.apply(_this, args);
+                    });
+                };
             }
             var funcs = info.funcs;
-            funcs.delete(wrapFunc);
-            if (before)
-                funcs.unshift(wrapFunc);
-            else
-                funcs.push(wrapFunc);
-            object[funcName] = function () {
-                var _this = this;
-                var args = arguments;
-                info.funcs.forEach(function (f) {
-                    f.apply(_this, args);
-                });
-            };
+            if (beforeFunc) {
+                funcs.delete(beforeFunc);
+                funcs.unshift(beforeFunc);
+            }
+            if (afterFunc) {
+                funcs.delete(afterFunc);
+                funcs.push(afterFunc);
+            }
         };
         /**
          * 取消包装函数
@@ -41581,21 +41611,3 @@ var feng3d;
     feng3d.WindowMouseInput = WindowMouseInput;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map
-console.log("feng3d-0.1.3");
-(function universalModuleDefinition(root, factory)
-{
-    if (typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory();
-    else if (typeof define === 'function' && define.amd)
-        define([], factory);
-    else if (typeof exports === 'object')
-        exports["feng3d"] = factory();
-    else
-        root["feng3d"] = factory();
-    
-    var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
-    globalObject["feng3d"] = factory();
-})(this, function ()
-{
-    return feng3d;
-});

@@ -1,6 +1,3 @@
-declare module 'feng3d' {
-    export = feng3d;
-}
 declare namespace feng3d {
     /**
      * 观察装饰器，观察被装饰属性的变化
@@ -332,7 +329,34 @@ declare namespace feng3d {
          *
          * 可用于扩展原型中原有API中的实现
          *
-         *
+         * ```
+        class A
+        {
+            a = "a";
+
+            f(p: string = "p", p1: string = "")
+            {
+                return p + p1;
+            }
+
+            extendF: (p?: string, p1?: string) => string;
+            oldf: (p?: string, p1?: string) => string;
+        }
+
+        var a = new A();
+        a.oldf = a.f;
+        a.extendF = function (p: string = "p", p1: string = "")
+        {
+            return ["polyfill", this.a, this.oldf()].join("-")
+        }
+        feng3d.functionwrap.extendFunction(a, "f", function (r)
+        {
+            return ["polyfill", this.a, r].join("-");
+        });
+        // 验证 被扩展的a.f方法是否等价于 a.extendF
+        assert.ok(a.f() == a.extendF()); //true
+        
+         * ```
          *
          * @param object 被扩展函数所属对象或者原型
          * @param funcName 被扩展函数名称
@@ -349,10 +373,10 @@ declare namespace feng3d {
          *
          * @param object 函数所属对象或者原型
          * @param funcName 函数名称
-         * @param wrapFunc 在函数执行前执行的函数
-         * @param before 运行在原函数之前
+         * @param beforeFunc 在函数执行前执行的函数
+         * @param afterFunc 在函数执行后执行的函数
          */
-        wrap<T, K extends (keyof T) & string, V extends T[K] & Function>(object: T, funcName: K, wrapFunc: V, before?: boolean): void;
+        wrap<T, K extends ExtractFunctionKeys<T>, F extends T[K]>(object: T, funcName: K, beforeFunc?: F, afterFunc?: F): void;
         /**
          * 取消包装函数
          *
@@ -363,7 +387,7 @@ declare namespace feng3d {
          * @param wrapFunc 在函数执行前执行的函数
          * @param before 运行在原函数之前
          */
-        unwrap<T, K extends (keyof T) & string, V extends T[K] & Function>(object: T, funcName: K, wrapFunc?: V): void;
+        unwrap<T, K extends ExtractFunctionKeys<T>, V extends T[K]>(object: T, funcName: K, wrapFunc?: V): void;
         /**
          * 包装一个异步函数，使其避免重复执行
          *

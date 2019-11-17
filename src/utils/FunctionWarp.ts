@@ -1,9 +1,8 @@
 namespace feng3d
 {
-    interface Wraps
-    {
-        [property: string]: { space: Object, funcName: string, oldPropertyDescriptor: PropertyDescriptor, original: Function, funcs: Function[] };
-    }
+    type Wraps<T, K extends keyof T> = {
+        [P in K]: { space: T, funcName: K, oldPropertyDescriptor: PropertyDescriptor, original: Function, funcs: Function[] };
+    };
 
     /**
      * 函数经
@@ -17,7 +16,34 @@ namespace feng3d
          * 
          * 可用于扩展原型中原有API中的实现
          * 
-         * 
+         * ```
+        class A
+        {
+            a = "a";
+
+            f(p: string = "p", p1: string = "")
+            {
+                return p + p1;
+            }
+
+            extendF: (p?: string, p1?: string) => string;
+            oldf: (p?: string, p1?: string) => string;
+        }
+
+        var a = new A();
+        a.oldf = a.f;
+        a.extendF = function (p: string = "p", p1: string = "")
+        {
+            return ["polyfill", this.a, this.oldf()].join("-")
+        }
+        feng3d.functionwrap.extendFunction(a, "f", function (r)
+        {
+            return ["polyfill", this.a, r].join("-");
+        });
+        // 验证 被扩展的a.f方法是否等价于 a.extendF
+        assert.ok(a.f() == a.extendF()); //true
+        
+         * ```
          * 
          * @param object 被扩展函数所属对象或者原型
          * @param funcName 被扩展函数名称
@@ -46,40 +72,45 @@ namespace feng3d
          * 
          * @param object 函数所属对象或者原型
          * @param funcName 函数名称
-         * @param wrapFunc 在函数执行前执行的函数
-         * @param before 运行在原函数之前
+         * @param beforeFunc 在函数执行前执行的函数
+         * @param afterFunc 在函数执行后执行的函数
          */
-        wrap<T, K extends (keyof T) & string, V extends T[K] & Function>(object: T, funcName: K, wrapFunc: V, before = true)
+        wrap<T, K extends ExtractFunctionKeys<T>, F extends T[K]>(object: T, funcName: K, beforeFunc?: F, afterFunc?: F)
         {
-            if (wrapFunc == undefined) return;
+            if (!beforeFunc && !afterFunc) return;
 
             if (!Object.getOwnPropertyDescriptor(object, __functionwrap__))
             {
                 Object.defineProperty(object, __functionwrap__, { value: {}, configurable: true, enumerable: false, writable: false });
             }
 
-            var functionwraps: Wraps = object[__functionwrap__];
+            var functionwraps: Wraps<T, K> = object[__functionwrap__];
             var info = functionwraps[funcName];
             if (!info)
             {
                 var oldPropertyDescriptor = Object.getOwnPropertyDescriptor(object, funcName);
-                var original: Function = <any>object[funcName];
+                var original = <any>object[funcName];
                 functionwraps[funcName] = info = { space: object, funcName: funcName, oldPropertyDescriptor: oldPropertyDescriptor, original: original, funcs: [original] };
+                //
+                object[funcName] = <any>function ()
+                {
+                    var args = arguments;
+                    info.funcs.forEach(f =>
+                    {
+                        f.apply(this, args);
+                    });
+                }
             }
             var funcs = info.funcs;
-
-            funcs.delete(wrapFunc);
-
-            if (before) funcs.unshift(wrapFunc);
-            else funcs.push(wrapFunc);
-
-            object[funcName] = <any>function ()
+            if (beforeFunc)
             {
-                var args = arguments;
-                info.funcs.forEach(f =>
-                {
-                    f.apply(this, args);
-                });
+                funcs.delete(beforeFunc);
+                funcs.unshift(beforeFunc);
+            }
+            if (afterFunc)
+            {
+                funcs.delete(afterFunc);
+                funcs.push(afterFunc);
             }
         }
 
@@ -93,9 +124,9 @@ namespace feng3d
          * @param wrapFunc 在函数执行前执行的函数
          * @param before 运行在原函数之前
          */
-        unwrap<T, K extends (keyof T) & string, V extends T[K] & Function>(object: T, funcName: K, wrapFunc?: V)
+        unwrap<T, K extends ExtractFunctionKeys<T>, V extends T[K]>(object: T, funcName: K, wrapFunc?: V)
         {
-            var functionwraps: Wraps = object[__functionwrap__];
+            var functionwraps: Wraps<T, K> = object[__functionwrap__];
             var info = functionwraps[funcName];
             if (!info) return;
             if (wrapFunc == undefined)
