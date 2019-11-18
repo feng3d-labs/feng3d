@@ -41290,8 +41290,6 @@ var feng3d;
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.plane },]
             });
-            // g.addComponent(PlaneCollider);
-            // g.addComponent(Rigidbody);
             return g;
         };
         GameObjectFactory.prototype.createCylinder = function (name) {
@@ -41300,8 +41298,6 @@ var feng3d;
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.cylinder },]
             });
-            // g.addComponent(CylinderCollider);
-            // g.addComponent(Rigidbody);
             return g;
         };
         GameObjectFactory.prototype.createCone = function (name) {
@@ -41324,8 +41320,6 @@ var feng3d;
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.sphere },]
             });
-            // sphere.addComponent(SphereCollider);
-            // sphere.addComponent(Rigidbody);
             return sphere;
         };
         GameObjectFactory.prototype.createCapsule = function (name) {
@@ -41334,8 +41328,6 @@ var feng3d;
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.capsule },]
             });
-            // g.addComponent(CapsuleCollider);
-            // g.addComponent(Rigidbody);
             return g;
         };
         GameObjectFactory.prototype.createTerrain = function (name) {

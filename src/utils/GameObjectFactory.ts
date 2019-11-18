@@ -24,9 +24,6 @@ namespace feng3d
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.plane },]
             });
-            // g.addComponent(PlaneCollider);
-            // g.addComponent(Rigidbody);
-
             return g;
         }
 
@@ -36,9 +33,6 @@ namespace feng3d
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.cylinder },]
             });
-            // g.addComponent(CylinderCollider);
-            // g.addComponent(Rigidbody);
-
             return g;
         }
 
@@ -64,10 +58,6 @@ namespace feng3d
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.sphere },]
             });
-
-            // sphere.addComponent(SphereCollider);
-            // sphere.addComponent(Rigidbody);
-
             return sphere;
         }
 
@@ -77,8 +67,6 @@ namespace feng3d
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.capsule },]
             });
-            // g.addComponent(CapsuleCollider);
-            // g.addComponent(Rigidbody);
             return g;
         }
 
