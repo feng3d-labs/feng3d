@@ -29,12 +29,5 @@
   "bugs": {
     "url": "https://gitee.com/feng3d/feng3d/issues"
   },
-  "homepage": "https://gitee.com/feng3d/feng3d#readme",
-  "dependencies": {},
-  "devDependencies": {
-    "@feng3d/build": "0.0.8",
-    "@feng3d/shaderpack": "0.0.4",
-    "typedoc": "^0.15.2",
-    "typescript": "^3.6.3"
-  }
+  "homepage": "https://gitee.com/feng3d/feng3d#readme"
 }
