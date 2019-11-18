@@ -78,14 +78,9 @@ declare namespace feng3d {
     /**
      * 让T中以及所有键值中的所有键都是可选的
      */
-    export type gPartial<T> = {
+    type gPartial<T> = {
         [P in keyof T]?: gPartial<T[P]>;
     };
-    /**
-     * 任意函数
-     */
-    export type AnyFunction = (...args: any) => any;
-    type ExcludeTypeTemp<T, KT, K> = K extends keyof T ? (T[K] extends KT ? never : K) : never;
     /**
      * 获取T类型中除值为KT类型以外的所有键
      *
@@ -96,12 +91,14 @@ declare namespace feng3d {
      *      f(){}
      * }
      *
-     * var a: ExcludeTypeKeys<A, number>; //var a:"f"
-     * var a1: ExcludeTypeKeys<A, AnyFunction>; //var a:"a"
+     * var a: NonTypePropertyNames<A, number>; //var a:"f"
+     * var a1: NonTypePropertyNames<A, Function>; //var a:"a"
      *
      * ```
      */
-    export type ExcludeTypeKeys<T, KT> = ExcludeTypeTemp<T, KT, keyof T>;
+    type NonTypePropertyNames<T, KT> = {
+        [K in keyof T]: T[K] extends KT ? never : K;
+    }[keyof T];
     /**
      * 剔除T类型中值为KT类型的键
      * ```
@@ -111,12 +108,11 @@ declare namespace feng3d {
      *         f(){}
      *     }
      *
-     *     var a: ExcludeType<A, number>; //var a: Pick<A, "f">
-     *     var a1: ExcludeType<A, AnyFunction>; //var a1: Pick<A, "a">
+     *     var a: NonTypePropertys<A, number>; //var a: Pick<A, "f">
+     *     var a1: NonTypePropertys<A, Function>; //var a1: Pick<A, "a">
      * ```
      */
-    export type ExcludeType<T, KT> = Pick<T, ExcludeTypeKeys<T, KT>>;
-    type ExtractTypeTemp<T, KT, K> = K extends keyof T ? (T[K] extends KT ? K : never) : never;
+    type NonTypePropertys<T, KT> = Pick<T, NonTypePropertyNames<T, KT>>;
     /**
      * 选取T类型中值为KT类型的所有键
      *
@@ -127,11 +123,13 @@ declare namespace feng3d {
      *         f(){}
      *     }
      *
-     *     var a: ExtractTypeKeys<A, number>; //var a: "a"
-     *     var a1: ExtractTypeKeys<A, AnyFunction>; //var a1: "f"
+     *     var a: TypePropertyNames<A, number>; //var a: "a"
+     *     var a1: TypePropertyNames<A, Function>; //var a1: "f"
      * ```
      */
-    export type ExtractTypeKeys<T, KT> = ExtractTypeTemp<T, KT, keyof T>;
+    type TypePropertyNames<T, KT> = {
+        [K in keyof T]: T[K] extends KT ? K : never;
+    }[keyof T];
     /**
      * 选取T类型中值为函数的所有键
      *
@@ -142,10 +140,10 @@ declare namespace feng3d {
      *         f(){}
      *     }
      *
-     *     var a: ExtractFunctionKeys<A>; //var a: "f"
+     *     var a: FunctionPropertyNames<A>; //var a: "f"
      * ```
      */
-    export type ExtractFunctionKeys<T> = ExtractTypeTemp<T, AnyFunction, keyof T>;
+    type FunctionPropertyNames<T> = TypePropertyNames<T, Function>;
     /**
      * 选取T类型中值为KT类型的键
      *
@@ -156,22 +154,22 @@ declare namespace feng3d {
      *         f() { }
      *     }
      *
-     *     var a: ExtractType<A, number>; //var a: Pick<A, "a">
-     *     var a1: ExtractType<A, AnyFunction>; //var a1: Pick<A, "f">
+     *     var a: TypePropertys<A, number>; //var a: Pick<A, "a">
+     *     var a1: TypePropertys<A, Function>; //var a1: Pick<A, "f">
      * ```
      */
-    export type ExtractType<T, KT> = Pick<T, ExtractTypeKeys<T, KT>>;
-    export type Lazy<T> = T | (() => T);
-    export type LazyObject<T> = {
+    type TypePropertys<T, KT> = Pick<T, TypePropertyNames<T, KT>>;
+    type Lazy<T> = T | (() => T);
+    type LazyObject<T> = {
         [P in keyof T]: Lazy<T[P]>;
     };
-    export var lazy: {
+    var lazy: {
         getvalue: <T>(lazyItem: Lazy<T>) => T;
     };
     /**
      * 可销毁对象
      */
-    export interface IDisposable {
+    interface IDisposable {
         /**
          * 是否已销毁
          */
@@ -181,7 +179,6 @@ declare namespace feng3d {
          */
         dispose(): void;
     }
-    export {};
 }
 /**
  * Object.assignDeep 中 转换结果的函数定义
@@ -362,7 +359,7 @@ declare namespace feng3d {
          * @param funcName 被扩展函数名称
          * @param extendFunc 在函数执行后执行的扩展函数
          */
-        extendFunction<T, K extends feng3d.ExtractFunctionKeys<T>, V extends T[K]>(object: T, funcName: K, extendFunc: (this: T, r: ReturnType<V>, ...ps: Parameters<V>) => ReturnType<V>): void;
+        extendFunction<T, K extends feng3d.FunctionPropertyNames<T>, V extends T[K]>(object: T, funcName: K, extendFunc: (this: T, r: ReturnType<V>, ...ps: Parameters<V>) => ReturnType<V>): void;
         /**
          * 包装函数
          *
@@ -376,7 +373,7 @@ declare namespace feng3d {
          * @param beforeFunc 在函数执行前执行的函数
          * @param afterFunc 在函数执行后执行的函数
          */
-        wrap<T, K extends ExtractFunctionKeys<T>, F extends T[K]>(object: T, funcName: K, beforeFunc?: F, afterFunc?: F): void;
+        wrap<T, K extends FunctionPropertyNames<T>, F extends T[K]>(object: T, funcName: K, beforeFunc?: F, afterFunc?: F): void;
         /**
          * 取消包装函数
          *
@@ -387,7 +384,7 @@ declare namespace feng3d {
          * @param wrapFunc 在函数执行前执行的函数
          * @param before 运行在原函数之前
          */
-        unwrap<T, K extends ExtractFunctionKeys<T>, V extends T[K]>(object: T, funcName: K, wrapFunc?: V): void;
+        unwrap<T, K extends FunctionPropertyNames<T>, V extends T[K]>(object: T, funcName: K, wrapFunc?: V): void;
         /**
          * 包装一个异步函数，使其避免重复执行
          *

@@ -5,8 +5,10 @@
   "main": "out/feng3d.js",
   "types": "out/feng3d.d.ts",
   "scripts": {
-    "build": "node build.js",
-    "build1": "tsc",
+    "build": "tsc && npm run shaderpack",
+    "build:w": "tsc -w",
+    "shaderpack": "node shaderpack.js",
+    "shaderpack:w": "node shaderpack.js -w",
     "typedoc": "typedoc --mode file --tsconfig tsconfig.json --out api"
   },
   "files": [
