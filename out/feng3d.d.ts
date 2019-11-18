@@ -13736,8 +13736,8 @@ declare namespace feng3d {
         /**
          * Uniform数据
          */
-        get uniforms(): PointUniforms | ColorUniforms | SegmentUniforms | TextureUniforms | StandardUniforms | WaterUniforms | TerrainUniforms | ParticleUniforms;
-        set uniforms(v: PointUniforms | ColorUniforms | SegmentUniforms | TextureUniforms | StandardUniforms | WaterUniforms | TerrainUniforms | ParticleUniforms);
+        get uniforms(): StandardUniforms | ColorUniforms | TextureUniforms | PointUniforms | SegmentUniforms | WaterUniforms | TerrainUniforms | ParticleUniforms;
+        set uniforms(v: StandardUniforms | ColorUniforms | TextureUniforms | PointUniforms | SegmentUniforms | WaterUniforms | TerrainUniforms | ParticleUniforms);
         private _uniforms;
         /**
          * 渲染参数
