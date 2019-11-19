@@ -14778,15 +14778,15 @@ declare namespace feng3d {
      */
     class ParticlesAdditiveUniforms {
         __class__: "feng3d.ParticlesAdditiveUniforms";
-        u_tintColor: Color4;
+        _TintColor: Color4;
         /**
          * 粒子贴图
          */
-        s_particle: Texture2D;
+        _MainTex: Texture2D;
         /**
          * 粒子贴图使用的UV变换
          */
-        u_s_particle_transform: Vector4;
+        _MainTex_ST: Vector4;
         /**
          * @todo
          */
@@ -14802,11 +14802,11 @@ declare namespace feng3d {
         /**
          * 粒子贴图
          */
-        s_particle: Texture2D;
+        _MainTex: Texture2D;
         /**
          * 粒子贴图使用的UV变换
          */
-        u_s_particle_transform: Vector4;
+        _MainTex_ST: Vector4;
         /**
          * @todo
          */
