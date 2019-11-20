@@ -234,6 +234,7 @@
         "src/primitives/CylinderGeometry.ts",
         "src/primitives/ConeGeometry.ts",
         "src/primitives/TorusGeometry.ts",
+        "src/primitives/ParametricGeometry.ts",
         // 纹理
         "src/textures/Texture2D.ts",
         "src/textures/ImageTexture2D.ts",

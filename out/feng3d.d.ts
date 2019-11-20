@@ -13503,6 +13503,19 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    class ParametricGeometry extends Geometry {
+        /**
+         * @author zz85 / https://github.com/zz85
+         * Parametric Surfaces Geometry
+         * based on the brilliant article by @prideout http://prideout.net/blog/?p=44
+         *
+         * new ParametricGeometry( parametricFunction, uSegments, ySegements );
+         *
+         */
+        constructor(func: (u: number, v: number) => Vector3, slices?: number, stacks?: number);
+    }
+}
+declare namespace feng3d {
     enum ImageDatas {
         black = "black",
         white = "white",

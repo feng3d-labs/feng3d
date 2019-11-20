@@ -29686,6 +29686,56 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var ParametricGeometry = /** @class */ (function (_super) {
+        __extends(ParametricGeometry, _super);
+        /**
+         * @author zz85 / https://github.com/zz85
+         * Parametric Surfaces Geometry
+         * based on the brilliant article by @prideout http://prideout.net/blog/?p=44
+         *
+         * new ParametricGeometry( parametricFunction, uSegments, ySegements );
+         *
+         */
+        function ParametricGeometry(func, slices, stacks) {
+            if (slices === void 0) { slices = 8; }
+            if (stacks === void 0) { stacks = 8; }
+            var _this = _super.call(this) || this;
+            var positions = [];
+            var indices = [];
+            var uvs = [];
+            var sliceCount = slices + 1;
+            for (var i = 0; i <= stacks; i++) {
+                var v = i / stacks;
+                for (var j = 0; j <= slices; j++) {
+                    var u = j / slices;
+                    //
+                    uvs.push(u, v);
+                    //
+                    var p = func(u, v);
+                    positions.push(p.x, p.y, p.z);
+                    //
+                    if (i < stacks && j < slices) {
+                        var a = i * sliceCount + j;
+                        var b = i * sliceCount + j + 1;
+                        var c = (i + 1) * sliceCount + j + 1;
+                        var d = (i + 1) * sliceCount + j;
+                        indices.push(a, b, d);
+                        indices.push(b, c, d);
+                    }
+                }
+            }
+            _this.indices = indices;
+            _this.positions = positions;
+            _this.uvs = uvs;
+            _this.normals = feng3d.geometryUtils.createVertexNormals(_this.indices, _this.positions, true);
+            return _this;
+        }
+        return ParametricGeometry;
+    }(feng3d.Geometry));
+    feng3d.ParametricGeometry = ParametricGeometry;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     var ImageDatas;
     (function (ImageDatas) {
         ImageDatas["black"] = "black";
