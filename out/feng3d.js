@@ -29677,9 +29677,16 @@ var feng3d;
             _this.indices = indices;
             _this.positions = positions;
             _this.uvs = uvs;
-            _this.normals = feng3d.geometryUtils.createVertexNormals(_this.indices, _this.positions, true);
+            _this.invalidateGeometry();
             return _this;
         }
+        /**
+         * 构建几何体
+         */
+        ParametricGeometry.prototype.buildGeometry = function () {
+            this.normals = feng3d.geometryUtils.createVertexNormals(this.indices, this.positions, true);
+            this.tangents = feng3d.geometryUtils.createVertexTangents(this.indices, this.positions, this.uvs, true);
+        };
         return ParametricGeometry;
     }(feng3d.Geometry));
     feng3d.ParametricGeometry = ParametricGeometry;

@@ -48,7 +48,16 @@ namespace feng3d
             this.positions = positions;
             this.uvs = uvs;
 
+            this.invalidateGeometry();
+        }
+
+        /**
+         * 构建几何体
+         */
+        protected buildGeometry()
+        {
             this.normals = geometryUtils.createVertexNormals(this.indices, this.positions, true);
+            this.tangents = geometryUtils.createVertexTangents(this.indices, this.positions, this.uvs, true)
         }
     }
 }

@@ -13507,6 +13507,10 @@ declare namespace feng3d {
          *
          */
         constructor(func: (u: number, v: number) => Vector3, slices?: number, stacks?: number);
+        /**
+         * 构建几何体
+         */
+        protected buildGeometry(): void;
     }
 }
 declare namespace feng3d {
