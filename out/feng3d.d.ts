@@ -10552,7 +10552,7 @@ declare namespace feng3d {
         /**
          * 是否失效
          */
-        invalid: boolean;
+        private _invalid;
         /**
          * 顶点数据缓冲
          */
@@ -12513,25 +12513,19 @@ declare namespace feng3d {
         /**
          * 顶点索引缓冲
          */
-        protected _indices: number[];
-        /**
-         * 自动生成的顶点索引
-         */
-        protected _autoIndices: number[];
+        private _indexBuffer;
         /**
          * 属性数据列表
          */
         protected _attributes: {
-            [name: string]: {
-                data: number[];
-                size: number;
-            };
+            a_position: Attribute;
+            a_uv: Attribute;
+            a_normal: Attribute;
+            a_tangent: Attribute;
         };
         private _geometryInvalid;
         private _useFaceWeights;
         private _bounding;
-        private _autoAttributeDatas;
-        private _invalids;
     }
 }
 declare namespace feng3d {
@@ -12549,16 +12543,16 @@ declare namespace feng3d {
          * 属性数据列表
          */
         get attributes(): {
-            [name: string]: {
-                data: number[];
-                size: number;
-            };
+            a_position: Attribute;
+            a_uv: Attribute;
+            a_normal: Attribute;
+            a_tangent: Attribute;
         };
         set attributes(value: {
-            [name: string]: {
-                data: number[];
-                size: number;
-            };
+            a_position: Attribute;
+            a_uv: Attribute;
+            a_normal: Attribute;
+            a_tangent: Attribute;
         });
     }
 }

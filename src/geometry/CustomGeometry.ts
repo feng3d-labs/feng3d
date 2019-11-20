@@ -12,7 +12,7 @@ namespace feng3d
         @serialize
         get indicesBase()
         {
-            return this._indices;
+            return this.indices;
         }
         set indicesBase(value)
         {
@@ -29,7 +29,7 @@ namespace feng3d
         }
         set attributes(value)
         {
-            this._attributes = {};
+            this._attributes = <any>{};
             for (var key in value)
             {
                 this.setVAData(<any>key, value[key].data, value[key].size);

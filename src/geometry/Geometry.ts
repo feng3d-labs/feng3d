@@ -111,12 +111,7 @@ namespace feng3d
         get indices()
         {
             this.updateGrometry();
-            if (!this._indices && this._invalids.index)
-            {
-                this._invalids.index = false;
-                this._autoIndices = geometryUtils.createIndices(this.positions);
-            }
-            return this._indices || this._autoIndices;
+            return this._indexBuffer.indices;
         }
 
 		/**
@@ -124,12 +119,7 @@ namespace feng3d
 		 */
         set indices(value: number[])
         {
-            this._indices = value;
-
-            if (!this._attributes.a_normal)
-                this._invalids.a_normal = true;
-            if (!this._attributes.a_tangent)
-                this._invalids.a_tangent = true;
+            this._indexBuffer.indices = value;
         }
 
         /**
@@ -137,21 +127,12 @@ namespace feng3d
          */
         get positions()
         {
-            return this.getVAData1("a_position")
+            return this._attributes.a_position.data;
         }
 
         set positions(value)
         {
-            if (!this._indices)
-                this._invalids.index = true;
-            this.setVAData("a_position", value, 3);
-
-            if (!this._attributes.a_uv)
-                this._invalids.a_uv = true;
-            if (!this._attributes.a_normal)
-                this._invalids.a_normal = true;
-            if (!this._attributes.a_tangent)
-                this._invalids.a_tangent = true;
+            this._attributes.a_position.data = value;
         }
 
         /**
@@ -159,14 +140,12 @@ namespace feng3d
          */
         get uvs()
         {
-            return this.getVAData1("a_uv")
+            return this._attributes.a_uv.data;
         }
 
         set uvs(value)
         {
-            this.setVAData("a_uv", value, 2);
-            if (!this._attributes.a_tangent)
-                this._invalids.a_tangent = true;
+            this._attributes.a_uv.data = value;
         }
 
         /**
@@ -174,12 +153,12 @@ namespace feng3d
          */
         get normals()
         {
-            return this.getVAData1("a_normal");
+            return this._attributes.a_normal.data;
         }
 
         set normals(value)
         {
-            this.setVAData("a_normal", value, 3);
+            this._attributes.a_normal.data = value;
         }
 
         /**
@@ -187,12 +166,12 @@ namespace feng3d
          */
         get tangents()
         {
-            return this.getVAData1("a_tangent");
+            return this._attributes.a_tangent.data;
         }
 
         set tangents(value)
         {
-            this.setVAData("a_tangent", value, 3);
+            this._attributes.a_tangent.data = value;
         }
 
         /**
@@ -240,13 +219,14 @@ namespace feng3d
 		 */
         setVAData<K extends keyof Attributes>(vaId: K, data: number[], size: number)
         {
+            var key = <string>vaId;
             if (data)
             {
-                this._attributes[vaId] = this._attributes[vaId] || { data: data, size: size };
-                this._attributes[vaId].data = data;
+                this._attributes[key] = this._attributes[key] || new Attribute(vaId, data, size);
+                this._attributes[key].data = data;
             } else
             {
-                delete this._attributes[vaId];
+                delete this._attributes[key];
             }
         }
 
@@ -259,38 +239,8 @@ namespace feng3d
         {
             this.updateGrometry();
 
-            if (vaId == "a_uv")
-            {
-                if (!this._attributes.a_uv && this._invalids.a_uv)
-                {
-                    this._invalids.a_uv = false;
-                    var uvs = geometryUtils.createUVs(this.positions);
-                    this._autoAttributeDatas[vaId] = { data: uvs, size: 2 };
-                }
-            }
-
-            if (vaId == "a_normal")
-            {
-                if (!this._attributes.a_normal && this._invalids.a_normal)
-                {
-                    this._invalids.a_normal = false;
-                    var normals = geometryUtils.createVertexNormals(this.indices, this.positions, this._useFaceWeights);
-                    this._autoAttributeDatas[vaId] = { data: normals, size: 3 };
-                }
-            }
-
-            if (vaId == "a_tangent")
-            {
-                if (!this._attributes.a_tangent && this._invalids.a_tangent)
-                {
-                    this._invalids.a_tangent = false;
-                    var tangents = geometryUtils.createVertexTangents(this.indices, this.positions, this.uvs, this._useFaceWeights);
-                    this._autoAttributeDatas[vaId] = { data: tangents, size: 3 };
-                }
-            }
-
-            var attributeRenderData = this._attributes[vaId] || this._autoAttributeDatas[vaId];
-            return attributeRenderData && attributeRenderData.data;
+            var attribute: Attribute = this._attributes[vaId];
+            return attribute && attribute.data;
         }
 
         /**
@@ -298,14 +248,7 @@ namespace feng3d
          */
         get numVertex()
         {
-            var numVertex = 0;
-            for (var attributeName in this._attributes)
-            {
-                var attributeRenderData = this._attributes[attributeName];
-                numVertex = attributeRenderData.data.length / attributeRenderData.size;
-                break;
-            }
-            return numVertex;
+            return this.positions.length / 3;
         }
 
         /**
@@ -334,7 +277,7 @@ namespace feng3d
             }
 
             //如果自身为空几何体
-            if (!this._indices)
+            if (!this.indices)
             {
                 this.cloneFrom(geometry);
                 return;
@@ -346,8 +289,8 @@ namespace feng3d
             //当前顶点数量
             var oldNumVertex = this.numVertex;
             //合并索引
-            var indices = this._indices;
-            var targetIndices = geometry._indices;
+            var indices = this.indices;
+            var targetIndices = geometry.indices;
             var totalIndices = indices.concat();
             for (var i = 0; i < targetIndices.length; i++)
             {
@@ -478,7 +421,7 @@ namespace feng3d
         {
             geometry.updateGrometry();
             this.indices = geometry.indices.concat();
-            this._attributes = {};
+            this._attributes = <any>{};
             for (var key in geometry._attributes)
             {
                 var attributeRenderData = geometry._attributes[key];
@@ -488,46 +431,18 @@ namespace feng3d
 
         beforeRender(renderAtomic: RenderAtomic)
         {
-            renderAtomic.indexBuffer = renderAtomic.indexBuffer || new Index();
-            renderAtomic.indexBuffer.indices = this.indices;
+            this.updateGrometry();
 
-            var attributes = renderAtomic.attributes;
+            renderAtomic.indexBuffer = this._indexBuffer;
 
-            this.uvs;
-            this.normals;
-            this.tangents;
-
-            for (const vaId in this._autoAttributeDatas)
+            for (const key in this._attributes)
             {
-                if (this._autoAttributeDatas.hasOwnProperty(vaId))
+                if (this._attributes.hasOwnProperty(key))
                 {
-                    const element = this._autoAttributeDatas[vaId];
-                    //
-                    var attributeRenderData = attributes[vaId] = attributes[vaId] || new Attribute(vaId, element.data);
-                    if (attributeRenderData.data != element.data)
-                        attributeRenderData.data = element.data;
-                    attributeRenderData.size = element.size;
-                    attributeRenderData.divisor = 0;
-                    //
-                    renderAtomic.shaderMacro["HSA_" + vaId] = true;
+                    renderAtomic.attributes[key] = this._attributes[key];
                 }
             }
 
-            for (const vaId in this._attributes)
-            {
-                if (this._attributes.hasOwnProperty(vaId))
-                {
-                    const element = this._attributes[vaId];
-                    //
-                    var attributeRenderData = attributes[vaId] = attributes[vaId] || new Attribute(vaId, element.data);
-                    if (attributeRenderData.data != element.data)
-                        attributeRenderData.data = element.data;
-                    attributeRenderData.size = element.size;
-                    attributeRenderData.divisor = 0;
-                    //
-                    renderAtomic.shaderMacro["HSA_" + vaId] = true;
-                }
-            }
             renderAtomic.shaderMacro.SCALEU = this.scaleU;
             renderAtomic.shaderMacro.SCALEV = this.scaleV;
         }
@@ -535,23 +450,21 @@ namespace feng3d
         /**
          * 顶点索引缓冲
          */
-        protected _indices: number[];
-        /**
-         * 自动生成的顶点索引
-         */
-        protected _autoIndices: number[];
+        private _indexBuffer = new Index();
+
         /**
          * 属性数据列表
          */
-        protected _attributes: { [name: string]: { data: number[], size: number } } = {};
+        protected _attributes = {
+            a_position: new Attribute("a_position", [], 3),
+            a_uv: new Attribute("a_uv", [], 2),
+            a_normal: new Attribute("a_normal", [], 3),
+            a_tangent: new Attribute("a_tangent", [], 3),
+        };
 
         private _geometryInvalid = true;
         private _useFaceWeights = false;
 
         private _bounding: AABB;
-
-        private _autoAttributeDatas: { [name: string]: { data: number[], size: number } } = {};
-
-        private _invalids = { index: true, a_uv: true, a_normal: true, a_tangent: true };
     }
 }

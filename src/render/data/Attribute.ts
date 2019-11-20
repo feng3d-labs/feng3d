@@ -55,11 +55,13 @@ namespace feng3d
 	 */
     export class Attribute
     {
+        @serialize
         name: string;
 
         /**
          * 属性数据
          */
+        @serialize
         get data()
         {
             return this._data;
@@ -76,6 +78,7 @@ namespace feng3d
          * 
          * A GLint specifying the number of components per vertex attribute. Must be 1, 2, 3, or 4.
          */
+        @serialize
         size = 3;
 
         /**
@@ -112,12 +115,13 @@ namespace feng3d
          * A GLuint specifying the number of instances that will pass between updates of the generic attribute.
          * @see https://developer.mozilla.org/en-US/docs/Web/API/ANGLE_instanced_arrays/vertexAttribDivisorANGLE
          */
+        @serialize
         divisor = 0;
 
         /**
          * 是否失效
          */
-        invalid = true;
+        private _invalid = true;
 
         /**
          * 顶点数据缓冲
@@ -139,10 +143,10 @@ namespace feng3d
          */
         active(gl: GL, location: number)
         {
-            if (this.invalid)
+            if (this._invalid)
             {
                 this.clear();
-                this.invalid = false;
+                this._invalid = false;
             }
 
             var type = gl[this.type];
@@ -167,7 +171,7 @@ namespace feng3d
 
         private invalidate()
         {
-            this.invalid = true;
+            this._invalid = true;
         }
 
         /**

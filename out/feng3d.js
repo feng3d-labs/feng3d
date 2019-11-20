@@ -21156,7 +21156,7 @@ var feng3d;
             /**
              * 是否失效
              */
-            this.invalid = true;
+            this._invalid = true;
             /**
              * 顶点数据缓冲
              */
@@ -21186,9 +21186,9 @@ var feng3d;
          * @param location A GLuint specifying the index of the vertex attribute that is to be modified.
          */
         Attribute.prototype.active = function (gl, location) {
-            if (this.invalid) {
+            if (this._invalid) {
                 this.clear();
-                this.invalid = false;
+                this._invalid = false;
             }
             var type = gl[this.type];
             gl.enableVertexAttribArray(location);
@@ -21207,7 +21207,7 @@ var feng3d;
             }
         };
         Attribute.prototype.invalidate = function () {
-            this.invalid = true;
+            this._invalid = true;
         };
         /**
          * 获取缓冲
@@ -21236,6 +21236,18 @@ var feng3d;
             });
             this._indexBufferMap.clear();
         };
+        __decorate([
+            feng3d.serialize
+        ], Attribute.prototype, "name", void 0);
+        __decorate([
+            feng3d.serialize
+        ], Attribute.prototype, "data", null);
+        __decorate([
+            feng3d.serialize
+        ], Attribute.prototype, "size", void 0);
+        __decorate([
+            feng3d.serialize
+        ], Attribute.prototype, "divisor", void 0);
         return Attribute;
     }());
     feng3d.Attribute = Attribute;
@@ -25891,13 +25903,20 @@ var feng3d;
              */
             _this.scaleV = 1;
             /**
+             * 顶点索引缓冲
+             */
+            _this._indexBuffer = new feng3d.Index();
+            /**
              * 属性数据列表
              */
-            _this._attributes = {};
+            _this._attributes = {
+                a_position: new feng3d.Attribute("a_position", [], 3),
+                a_uv: new feng3d.Attribute("a_uv", [], 2),
+                a_normal: new feng3d.Attribute("a_normal", [], 3),
+                a_tangent: new feng3d.Attribute("a_tangent", [], 3),
+            };
             _this._geometryInvalid = true;
             _this._useFaceWeights = false;
-            _this._autoAttributeDatas = {};
-            _this._invalids = { index: true, a_uv: true, a_normal: true, a_tangent: true };
             return _this;
         }
         Object.defineProperty(Geometry.prototype, "geometryInfo", {
@@ -25922,21 +25941,13 @@ var feng3d;
              */
             get: function () {
                 this.updateGrometry();
-                if (!this._indices && this._invalids.index) {
-                    this._invalids.index = false;
-                    this._autoIndices = feng3d.geometryUtils.createIndices(this.positions);
-                }
-                return this._indices || this._autoIndices;
+                return this._indexBuffer.indices;
             },
             /**
              * 更新顶点索引数据
              */
             set: function (value) {
-                this._indices = value;
-                if (!this._attributes.a_normal)
-                    this._invalids.a_normal = true;
-                if (!this._attributes.a_tangent)
-                    this._invalids.a_tangent = true;
+                this._indexBuffer.indices = value;
             },
             enumerable: true,
             configurable: true
@@ -25946,18 +25957,10 @@ var feng3d;
              * 坐标数据
              */
             get: function () {
-                return this.getVAData1("a_position");
+                return this._attributes.a_position.data;
             },
             set: function (value) {
-                if (!this._indices)
-                    this._invalids.index = true;
-                this.setVAData("a_position", value, 3);
-                if (!this._attributes.a_uv)
-                    this._invalids.a_uv = true;
-                if (!this._attributes.a_normal)
-                    this._invalids.a_normal = true;
-                if (!this._attributes.a_tangent)
-                    this._invalids.a_tangent = true;
+                this._attributes.a_position.data = value;
             },
             enumerable: true,
             configurable: true
@@ -25967,12 +25970,10 @@ var feng3d;
              * uv数据
              */
             get: function () {
-                return this.getVAData1("a_uv");
+                return this._attributes.a_uv.data;
             },
             set: function (value) {
-                this.setVAData("a_uv", value, 2);
-                if (!this._attributes.a_tangent)
-                    this._invalids.a_tangent = true;
+                this._attributes.a_uv.data = value;
             },
             enumerable: true,
             configurable: true
@@ -25982,10 +25983,10 @@ var feng3d;
              * 法线数据
              */
             get: function () {
-                return this.getVAData1("a_normal");
+                return this._attributes.a_normal.data;
             },
             set: function (value) {
-                this.setVAData("a_normal", value, 3);
+                this._attributes.a_normal.data = value;
             },
             enumerable: true,
             configurable: true
@@ -25995,10 +25996,10 @@ var feng3d;
              * 切线数据
              */
             get: function () {
-                return this.getVAData1("a_tangent");
+                return this._attributes.a_tangent.data;
             },
             set: function (value) {
-                this.setVAData("a_tangent", value, 3);
+                this._attributes.a_tangent.data = value;
             },
             enumerable: true,
             configurable: true
@@ -26032,12 +26033,13 @@ var feng3d;
          * @param autogenerate          是否自动生成数据
          */
         Geometry.prototype.setVAData = function (vaId, data, size) {
+            var key = vaId;
             if (data) {
-                this._attributes[vaId] = this._attributes[vaId] || { data: data, size: size };
-                this._attributes[vaId].data = data;
+                this._attributes[key] = this._attributes[key] || new feng3d.Attribute(vaId, data, size);
+                this._attributes[key].data = data;
             }
             else {
-                delete this._attributes[vaId];
+                delete this._attributes[key];
             }
         };
         /**
@@ -26047,42 +26049,15 @@ var feng3d;
          */
         Geometry.prototype.getVAData1 = function (vaId) {
             this.updateGrometry();
-            if (vaId == "a_uv") {
-                if (!this._attributes.a_uv && this._invalids.a_uv) {
-                    this._invalids.a_uv = false;
-                    var uvs = feng3d.geometryUtils.createUVs(this.positions);
-                    this._autoAttributeDatas[vaId] = { data: uvs, size: 2 };
-                }
-            }
-            if (vaId == "a_normal") {
-                if (!this._attributes.a_normal && this._invalids.a_normal) {
-                    this._invalids.a_normal = false;
-                    var normals = feng3d.geometryUtils.createVertexNormals(this.indices, this.positions, this._useFaceWeights);
-                    this._autoAttributeDatas[vaId] = { data: normals, size: 3 };
-                }
-            }
-            if (vaId == "a_tangent") {
-                if (!this._attributes.a_tangent && this._invalids.a_tangent) {
-                    this._invalids.a_tangent = false;
-                    var tangents = feng3d.geometryUtils.createVertexTangents(this.indices, this.positions, this.uvs, this._useFaceWeights);
-                    this._autoAttributeDatas[vaId] = { data: tangents, size: 3 };
-                }
-            }
-            var attributeRenderData = this._attributes[vaId] || this._autoAttributeDatas[vaId];
-            return attributeRenderData && attributeRenderData.data;
+            var attribute = this._attributes[vaId];
+            return attribute && attribute.data;
         };
         Object.defineProperty(Geometry.prototype, "numVertex", {
             /**
              * 顶点数量
              */
             get: function () {
-                var numVertex = 0;
-                for (var attributeName in this._attributes) {
-                    var attributeRenderData = this._attributes[attributeName];
-                    numVertex = attributeRenderData.data.length / attributeRenderData.size;
-                    break;
-                }
-                return numVertex;
+                return this.positions.length / 3;
             },
             enumerable: true,
             configurable: true
@@ -26112,7 +26087,7 @@ var feng3d;
                 geometry.applyTransformation(transform);
             }
             //如果自身为空几何体
-            if (!this._indices) {
+            if (!this.indices) {
                 this.cloneFrom(geometry);
                 return;
             }
@@ -26122,8 +26097,8 @@ var feng3d;
             //当前顶点数量
             var oldNumVertex = this.numVertex;
             //合并索引
-            var indices = this._indices;
-            var targetIndices = geometry._indices;
+            var indices = this.indices;
+            var targetIndices = geometry.indices;
             var totalIndices = indices.concat();
             for (var i = 0; i < targetIndices.length; i++) {
                 totalIndices[indices.length + i] = targetIndices[i] + oldNumVertex;
@@ -26230,36 +26205,11 @@ var feng3d;
             }
         };
         Geometry.prototype.beforeRender = function (renderAtomic) {
-            renderAtomic.indexBuffer = renderAtomic.indexBuffer || new feng3d.Index();
-            renderAtomic.indexBuffer.indices = this.indices;
-            var attributes = renderAtomic.attributes;
-            this.uvs;
-            this.normals;
-            this.tangents;
-            for (var vaId in this._autoAttributeDatas) {
-                if (this._autoAttributeDatas.hasOwnProperty(vaId)) {
-                    var element = this._autoAttributeDatas[vaId];
-                    //
-                    var attributeRenderData = attributes[vaId] = attributes[vaId] || new feng3d.Attribute(vaId, element.data);
-                    if (attributeRenderData.data != element.data)
-                        attributeRenderData.data = element.data;
-                    attributeRenderData.size = element.size;
-                    attributeRenderData.divisor = 0;
-                    //
-                    renderAtomic.shaderMacro["HSA_" + vaId] = true;
-                }
-            }
-            for (var vaId in this._attributes) {
-                if (this._attributes.hasOwnProperty(vaId)) {
-                    var element = this._attributes[vaId];
-                    //
-                    var attributeRenderData = attributes[vaId] = attributes[vaId] || new feng3d.Attribute(vaId, element.data);
-                    if (attributeRenderData.data != element.data)
-                        attributeRenderData.data = element.data;
-                    attributeRenderData.size = element.size;
-                    attributeRenderData.divisor = 0;
-                    //
-                    renderAtomic.shaderMacro["HSA_" + vaId] = true;
+            this.updateGrometry();
+            renderAtomic.indexBuffer = this._indexBuffer;
+            for (var key in this._attributes) {
+                if (this._attributes.hasOwnProperty(key)) {
+                    renderAtomic.attributes[key] = this._attributes[key];
                 }
             }
             renderAtomic.shaderMacro.SCALEU = this.scaleU;
@@ -26300,7 +26250,7 @@ var feng3d;
              * 顶点索引缓冲
              */
             get: function () {
-                return this._indices;
+                return this.indices;
             },
             set: function (value) {
                 this.indices = value;
