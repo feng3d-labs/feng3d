@@ -12,31 +12,57 @@ namespace feng3d
         mode = MinMaxCurveMode.Constant;
 
         /**
-         * 常量值
+         * Set the constant value.
+         * 
+         * 设置常数值。
          */
         @serialize
         constant = 0;
 
         /**
-         * 常量值，用于 MinMaxCurveMode.RandomBetweenTwoConstants
+         * Set a constant for the lower bound.
+         * 
+         * 为下界设置一个常数。
          */
-        @serialize
-        constant1 = 0;
+        get constantMin() { return this.constant; }
+        set constantMin(v) { this.constant = v; }
 
         /**
-         * 曲线，用于 MinMaxCurveMode.RandomBetweenTwoCurves
+         * Set a constant for the upper bound.
+         * 
+         * 为上界设置一个常数。
          */
         @serialize
+        constantMax = 0;
+
+        /**
+         * Set the curve.
+         * 
+         * 设置曲线。
+         */
         curve = new AnimationCurve();
 
         /**
-         * 曲线1
+         * Set a curve for the lower bound.
+         * 
+         * 为下界设置一条曲线。
          */
         @serialize
-        curve1 = serialization.setValue(new AnimationCurve(), { keys: [{ time: 0, value: 0, tangent: 0 }, { time: 1, value: 1, tangent: 0 }] });
+        get curveMin() { return this.curve; }
+        set curveMin(v) { this.curve = v; }
 
         /**
-         * 曲线缩放比
+         * Set a curve for the upper bound.
+         * 
+         * 为上界设置一条曲线。
+         */
+        @serialize
+        curveMax = serialization.setValue(new AnimationCurve(), { keys: [{ time: 0, value: 0, tangent: 0 }, { time: 1, value: 1, tangent: 0 }] });
+
+        /**
+         * Set a multiplier to be applied to the curves.
+         * 
+         * 设置一个乘数应用于曲线。
          */
         @serialize
         curveMultiplier = 1;
@@ -58,11 +84,11 @@ namespace feng3d
                 case MinMaxCurveMode.Constant:
                     return this.constant;
                 case MinMaxCurveMode.Curve:
-                    return this.curve.getValue(time) * this.curveMultiplier;
+                    return this.curveMin.getValue(time) * this.curveMultiplier;
                 case MinMaxCurveMode.RandomBetweenTwoConstants:
-                    return Math.lerp(this.constant, this.constant1, randomBetween);
+                    return Math.lerp(this.constantMin, this.constantMax, randomBetween);
                 case MinMaxCurveMode.RandomBetweenTwoCurves:
-                    return Math.lerp(this.curve.getValue(time), this.curve1.getValue(time), randomBetween) * this.curveMultiplier;
+                    return Math.lerp(this.curveMin.getValue(time), this.curveMax.getValue(time), randomBetween) * this.curveMultiplier;
             }
 
             return this.constant;

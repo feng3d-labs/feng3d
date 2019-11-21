@@ -17,7 +17,7 @@ namespace feng3d
         @serialize
         // @oav({ tooltip: "Number of particles to be emitted." })
         @oav({ tooltip: "要发射的粒子数。" })
-        count = serialization.setValue(new MinMaxCurve(), { constant: 30, constant1: 30 });
+        count = serialization.setValue(new MinMaxCurve(), { constantMin: 30, constantMax: 30 });
 
         /**
          * Minimum number of bursts to be emitted.
@@ -25,12 +25,12 @@ namespace feng3d
          */
         get minCount()
         {
-            return this.count.constant;
+            return this.count.constantMin;
         }
 
         set minCount(v)
         {
-            this.count.constant = v;
+            this.count.constantMin = v;
         }
 
         /**
@@ -40,12 +40,12 @@ namespace feng3d
          */
         get maxCount()
         {
-            return this.count.constant1;
+            return this.count.constantMax;
         }
 
         set maxCount(v)
         {
-            this.count.constant1 = v;
+            this.count.constantMax = v;
         }
 
         /**

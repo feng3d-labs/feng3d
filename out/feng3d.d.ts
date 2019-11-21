@@ -7402,23 +7402,47 @@ declare namespace feng3d {
          */
         mode: MinMaxCurveMode;
         /**
-         * 常量值
+         * Set the constant value.
+         *
+         * 设置常数值。
          */
         constant: number;
         /**
-         * 常量值，用于 MinMaxCurveMode.RandomBetweenTwoConstants
+         * Set a constant for the lower bound.
+         *
+         * 为下界设置一个常数。
          */
-        constant1: number;
+        get constantMin(): number;
+        set constantMin(v: number);
         /**
-         * 曲线，用于 MinMaxCurveMode.RandomBetweenTwoCurves
+         * Set a constant for the upper bound.
+         *
+         * 为上界设置一个常数。
+         */
+        constantMax: number;
+        /**
+         * Set the curve.
+         *
+         * 设置曲线。
          */
         curve: AnimationCurve;
         /**
-         * 曲线1
+         * Set a curve for the lower bound.
+         *
+         * 为下界设置一条曲线。
          */
-        curve1: AnimationCurve;
+        get curveMin(): AnimationCurve;
+        set curveMin(v: AnimationCurve);
         /**
-         * 曲线缩放比
+         * Set a curve for the upper bound.
+         *
+         * 为上界设置一条曲线。
+         */
+        curveMax: AnimationCurve;
+        /**
+         * Set a multiplier to be applied to the curves.
+         *
+         * 设置一个乘数应用于曲线。
          */
         curveMultiplier: number;
         /**
