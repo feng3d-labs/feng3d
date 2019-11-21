@@ -12603,7 +12603,7 @@ declare namespace feng3d {
          * @param positions 顶点数据
          * @param useFaceWeights 是否使用面权重计算法线
          */
-        createVertexNormals(indices: number[] | Uint16Array, positions: number[], useFaceWeights?: boolean): number[];
+        createVertexNormals(indices: number[], positions: number[], useFaceWeights?: boolean): number[];
         /**
          * 计算顶点切线数据
          * @param indices 顶点索引
@@ -12611,7 +12611,7 @@ declare namespace feng3d {
          * @param uvs uv数据
          * @param useFaceWeights 是否使用面权重计算切线数据
          */
-        createVertexTangents(indices: number[] | Uint16Array, positions: number[], uvs: number[], useFaceWeights?: boolean): number[];
+        createVertexTangents(indices: number[], positions: number[], uvs: number[], useFaceWeights?: boolean): number[];
         /**
          * 计算面切线数据
          * @param indices 顶点索引数据
@@ -12619,7 +12619,7 @@ declare namespace feng3d {
          * @param uvs uv数据
          * @param useFaceWeights 是否计算面权重
          */
-        createFaceTangents(indices: number[] | Uint16Array, positions: number[], uvs: number[], useFaceWeights?: boolean): {
+        createFaceTangents(indices: number[], positions: number[], uvs: number[], useFaceWeights?: boolean): {
             faceTangents: number[];
             faceWeights: number[];
         };
@@ -12629,7 +12629,7 @@ declare namespace feng3d {
          * @param positions 顶点数据
          * @param useFaceWeights 是否计算面权重
          */
-        createFaceNormals(indices: number[] | Uint16Array, positions: number[], useFaceWeights?: boolean): {
+        createFaceNormals(indices: number[], positions: number[], useFaceWeights?: boolean): {
             faceNormals: number[];
             faceWeights: number[];
         };
@@ -13534,7 +13534,7 @@ declare namespace feng3d {
          * new ParametricGeometry( parametricFunction, uSegments, ySegements );
          *
          */
-        constructor(func: (u: number, v: number) => Vector3, slices?: number, stacks?: number);
+        constructor(func: (u: number, v: number) => Vector3, slices?: number, stacks?: number, doubleside?: boolean);
         /**
          * 构建几何体
          */
