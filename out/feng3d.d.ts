@@ -12081,8 +12081,8 @@ declare namespace feng3d {
         /**
          * 几何体
          */
-        get geometry(): CustomGeometry | PointGeometry | SegmentGeometry | PlaneGeometry | CubeGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | TerrainGeometry;
-        set geometry(v: CustomGeometry | PointGeometry | SegmentGeometry | PlaneGeometry | CubeGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | TerrainGeometry);
+        get geometry(): CustomGeometry | PointGeometry | SegmentGeometry | PlaneGeometry | CubeGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | ParametricGeometry | TerrainGeometry;
+        set geometry(v: CustomGeometry | PointGeometry | SegmentGeometry | PlaneGeometry | CubeGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | ParametricGeometry | TerrainGeometry);
         private _geometry;
         /**
          * 材质
@@ -13525,6 +13525,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface GeometryMap {
+        ParametricGeometry: ParametricGeometry;
+    }
     class ParametricGeometry extends Geometry {
         /**
          * @author zz85 / https://github.com/zz85
