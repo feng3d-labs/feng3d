@@ -504,6 +504,10 @@ declare namespace feng3d {
      */
     export class Serialization {
         /**
+         * 是否忽略默认值
+         */
+        omitDefault: boolean;
+        /**
          * 序列化函数列表
          */
         serializeHandlers: {

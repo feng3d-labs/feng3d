@@ -969,6 +969,10 @@ var feng3d;
     var Serialization = /** @class */ (function () {
         function Serialization() {
             /**
+             * 是否忽略默认值
+             */
+            this.omitDefault = true;
+            /**
              * 序列化函数列表
              */
             this.serializeHandlers = [];
@@ -1188,6 +1192,18 @@ var feng3d;
         handler: function (target, source, property, handlers, serialization) {
             var tpv = target[property];
             var spv = source[property];
+            if (!serialization.omitDefault) {
+                var object_2 = {};
+                var className = feng3d.classUtils.getQualifiedClassName(spv);
+                var keys = getSerializableMembers(spv);
+                keys.forEach(function (key) {
+                    propertyHandler(object_2, spv, key, handlers, serialization);
+                });
+                object_2[feng3d.CLASS_KEY] = className;
+                target[property] = object_2;
+                return true;
+            }
+            // 执行默认忽略默认值
             if (tpv == null || tpv.constructor != spv.constructor) {
                 var className = feng3d.classUtils.getQualifiedClassName(spv);
                 // 获取或创建对象默认实例，把默认实例保存在构造函数上省去使用map保存。

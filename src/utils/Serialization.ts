@@ -113,6 +113,11 @@ namespace feng3d
     export class Serialization
     {
         /**
+         * 是否忽略默认值
+         */
+        omitDefault = true;
+
+        /**
          * 序列化函数列表
          */
         serializeHandlers: { priority: number, handler: PropertyHandler }[] = [];
@@ -375,6 +380,21 @@ namespace feng3d
                 var tpv = target[property];
                 var spv = source[property];
 
+                if (!serialization.omitDefault)
+                {
+                    let object = <any>{};
+                    var className = classUtils.getQualifiedClassName(spv);
+                    var keys = getSerializableMembers(spv);
+                    keys.forEach(key =>
+                    {
+                        propertyHandler(object, spv, key, handlers, serialization);
+                    });
+                    object[CLASS_KEY] = className;
+                    target[property] = object;
+                    return true;
+                }
+
+                // 执行默认忽略默认值
                 if (tpv == null || tpv.constructor != spv.constructor)
                 {
                     var className = classUtils.getQualifiedClassName(spv);
@@ -395,6 +415,8 @@ namespace feng3d
                     if (diff)
                         target[property] = diff;
                 }
+
+
                 return true;
             }
         },
