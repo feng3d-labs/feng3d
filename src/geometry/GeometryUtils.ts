@@ -43,7 +43,7 @@ namespace feng3d
          * @param positions 顶点数据
          * @param useFaceWeights 是否使用面权重计算法线
          */
-        createVertexNormals(indices: number[] | Uint16Array, positions: number[], useFaceWeights = false)
+        createVertexNormals(indices: number[], positions: number[], useFaceWeights = false)
         {
             var faceNormalsResult = this.createFaceNormals(indices, positions, useFaceWeights);
             var faceWeights = faceNormalsResult.faceWeights;
@@ -108,7 +108,7 @@ namespace feng3d
          * @param uvs uv数据
          * @param useFaceWeights 是否使用面权重计算切线数据
          */
-        createVertexTangents(indices: number[] | Uint16Array, positions: number[], uvs: number[], useFaceWeights = false)
+        createVertexTangents(indices: number[], positions: number[], uvs: number[], useFaceWeights = false)
         {
             var faceTangentsResult = this.createFaceTangents(indices, positions, uvs, useFaceWeights);
             var faceWeights = faceTangentsResult.faceWeights;
@@ -174,7 +174,7 @@ namespace feng3d
          * @param uvs uv数据
          * @param useFaceWeights 是否计算面权重
          */
-        createFaceTangents(indices: number[] | Uint16Array, positions: number[], uvs: number[], useFaceWeights = false)
+        createFaceTangents(indices: number[], positions: number[], uvs: number[], useFaceWeights = false)
         {
             var i = 0, k = 0;
             var index1 = 0, index2 = 0, index3 = 0;
@@ -241,7 +241,7 @@ namespace feng3d
          * @param positions 顶点数据
          * @param useFaceWeights 是否计算面权重
          */
-        createFaceNormals(indices: number[] | Uint16Array, positions: number[], useFaceWeights = false)
+        createFaceNormals(indices: number[], positions: number[], useFaceWeights = false)
         {
             var i = 0, j = 0, k = 0;
             var index = 0;
