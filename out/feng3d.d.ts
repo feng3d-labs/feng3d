@@ -6987,8 +6987,7 @@ declare namespace feng3d {
          *
          * 为下界设置一个常量颜色。
          */
-        get colorMin(): Color4;
-        set colorMin(v: Color4);
+        colorMin: Color4;
         /**
          * Set a constant color for the upper bound.
          *
@@ -7006,8 +7005,7 @@ declare namespace feng3d {
          *
          * 为下界设置一个渐变。
          */
-        get gradientMin(): Gradient;
-        set gradientMin(v: Gradient);
+        gradientMin: Gradient;
         /**
          * Set a gradient for the upper bound.
          *
@@ -7437,21 +7435,29 @@ declare namespace feng3d {
      */
     enum MinMaxCurveMode {
         /**
-         * 常量
+         * Use a single constant for the MinMaxCurve.
+         *
+         * 使用单个常数。
          */
         Constant = 0,
         /**
-         * 曲线
+         * Use a single curve for the MinMaxCurve.
+         *
+         * 使用一条曲线
          */
         Curve = 1,
         /**
-         * 两个常量间取随机值
+         * Use a random value between 2 constants for the MinMaxCurve.
+         *
+         * 在两个常量之间使用一个随机值
          */
-        RandomBetweenTwoConstants = 2,
+        TwoConstants = 3,
         /**
-         * 两个曲线中取随机值
+         * Use a random value between 2 curves for the MinMaxCurve.
+         *
+         * 在两条曲线之间使用一个随机值。
          */
-        RandomBetweenTwoCurves = 3
+        TwoCurves = 2
     }
 }
 declare namespace feng3d {
@@ -7475,8 +7481,7 @@ declare namespace feng3d {
          *
          * 为下界设置一个常数。
          */
-        get constantMin(): number;
-        set constantMin(v: number);
+        constantMin: number;
         /**
          * Set a constant for the upper bound.
          *
@@ -7494,8 +7499,7 @@ declare namespace feng3d {
          *
          * 为下界设置一条曲线。
          */
-        get curveMin(): AnimationCurve;
-        set curveMin(v: AnimationCurve);
+        curveMin: AnimationCurve;
         /**
          * Set a curve for the upper bound.
          *
@@ -16042,6 +16046,7 @@ declare namespace feng3d {
      * 粒子系统发射模块。
      */
     class ParticleEmissionModule extends ParticleModule {
+        __class__: "feng3d.ParticleEmissionModule";
         /**
          * 随着时间的推移，新粒子产生的速度。
          */

@@ -28,8 +28,8 @@ namespace feng3d
          * 
          * 为下界设置一个常量颜色。
          */
-        get colorMin() { return this.color; }
-        set colorMin(v) { this.color = v; }
+        @serialize
+        colorMin = new Color4();
 
         /**
          * Set a constant color for the upper bound.
@@ -52,8 +52,8 @@ namespace feng3d
          * 
          * 为下界设置一个渐变。
          */
-        get gradientMin() { return this.gradient; }
-        set gradientMin(v) { this.gradient = v; }
+        @serialize
+        gradientMin = new Gradient();
 
         /**
          * Set a gradient for the upper bound.

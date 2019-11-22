@@ -15018,6 +15018,12 @@ var feng3d;
              */
             this.color = new feng3d.Color4();
             /**
+             * Set a constant color for the lower bound.
+             *
+             * 为下界设置一个常量颜色。
+             */
+            this.colorMin = new feng3d.Color4();
+            /**
              * Set a constant color for the upper bound.
              *
              * 为上界设置一个常量颜色。
@@ -15030,34 +15036,18 @@ var feng3d;
              */
             this.gradient = new feng3d.Gradient();
             /**
+             * Set a gradient for the lower bound.
+             *
+             * 为下界设置一个渐变。
+             */
+            this.gradientMin = new feng3d.Gradient();
+            /**
              * Set a gradient for the upper bound.
              *
              * 为上界设置一个渐变。
              */
             this.gradientMax = new feng3d.Gradient();
         }
-        Object.defineProperty(MinMaxGradient.prototype, "colorMin", {
-            /**
-             * Set a constant color for the lower bound.
-             *
-             * 为下界设置一个常量颜色。
-             */
-            get: function () { return this.color; },
-            set: function (v) { this.color = v; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(MinMaxGradient.prototype, "gradientMin", {
-            /**
-             * Set a gradient for the lower bound.
-             *
-             * 为下界设置一个渐变。
-             */
-            get: function () { return this.gradient; },
-            set: function (v) { this.gradient = v; },
-            enumerable: true,
-            configurable: true
-        });
         /**
          * 获取值
          * @param time 时间
@@ -15090,10 +15080,16 @@ var feng3d;
         ], MinMaxGradient.prototype, "color", void 0);
         __decorate([
             feng3d.serialize
+        ], MinMaxGradient.prototype, "colorMin", void 0);
+        __decorate([
+            feng3d.serialize
         ], MinMaxGradient.prototype, "colorMax", void 0);
         __decorate([
             feng3d.serialize
         ], MinMaxGradient.prototype, "gradient", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxGradient.prototype, "gradientMin", void 0);
         __decorate([
             feng3d.serialize
         ], MinMaxGradient.prototype, "gradientMax", void 0);
@@ -15885,21 +15881,29 @@ var feng3d;
     var MinMaxCurveMode;
     (function (MinMaxCurveMode) {
         /**
-         * 常量
+         * Use a single constant for the MinMaxCurve.
+         *
+         * 使用单个常数。
          */
         MinMaxCurveMode[MinMaxCurveMode["Constant"] = 0] = "Constant";
         /**
-         * 曲线
+         * Use a single curve for the MinMaxCurve.
+         *
+         * 使用一条曲线
          */
         MinMaxCurveMode[MinMaxCurveMode["Curve"] = 1] = "Curve";
         /**
-         * 两个常量间取随机值
+         * Use a random value between 2 constants for the MinMaxCurve.
+         *
+         * 在两个常量之间使用一个随机值
          */
-        MinMaxCurveMode[MinMaxCurveMode["RandomBetweenTwoConstants"] = 2] = "RandomBetweenTwoConstants";
+        MinMaxCurveMode[MinMaxCurveMode["TwoConstants"] = 3] = "TwoConstants";
         /**
-         * 两个曲线中取随机值
+         * Use a random value between 2 curves for the MinMaxCurve.
+         *
+         * 在两条曲线之间使用一个随机值。
          */
-        MinMaxCurveMode[MinMaxCurveMode["RandomBetweenTwoCurves"] = 3] = "RandomBetweenTwoCurves";
+        MinMaxCurveMode[MinMaxCurveMode["TwoCurves"] = 2] = "TwoCurves";
     })(MinMaxCurveMode = feng3d.MinMaxCurveMode || (feng3d.MinMaxCurveMode = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -15921,6 +15925,12 @@ var feng3d;
              */
             this.constant = 0;
             /**
+             * Set a constant for the lower bound.
+             *
+             * 为下界设置一个常数。
+             */
+            this.constantMin = 0;
+            /**
              * Set a constant for the upper bound.
              *
              * 为上界设置一个常数。
@@ -15933,11 +15943,17 @@ var feng3d;
              */
             this.curve = new feng3d.AnimationCurve();
             /**
+             * Set a curve for the lower bound.
+             *
+             * 为下界设置一条曲线。
+             */
+            this.curveMin = new feng3d.AnimationCurve();
+            /**
              * Set a curve for the upper bound.
              *
              * 为上界设置一条曲线。
              */
-            this.curveMax = feng3d.serialization.setValue(new feng3d.AnimationCurve(), { keys: [{ time: 0, value: 0, inTangent: 0, outTangent: 0 }, { time: 1, value: 1, inTangent: 0, outTangent: 0 }] });
+            this.curveMax = new feng3d.AnimationCurve();
             /**
              * Set a multiplier to be applied to the curves.
              *
@@ -15949,28 +15965,6 @@ var feng3d;
              */
             this.between0And1 = false;
         }
-        Object.defineProperty(MinMaxCurve.prototype, "constantMin", {
-            /**
-             * Set a constant for the lower bound.
-             *
-             * 为下界设置一个常数。
-             */
-            get: function () { return this.constant; },
-            set: function (v) { this.constant = v; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(MinMaxCurve.prototype, "curveMin", {
-            /**
-             * Set a curve for the lower bound.
-             *
-             * 为下界设置一条曲线。
-             */
-            get: function () { return this.curve; },
-            set: function (v) { this.curve = v; },
-            enumerable: true,
-            configurable: true
-        });
         /**
          * 获取值
          * @param time 时间
@@ -15982,9 +15976,9 @@ var feng3d;
                     return this.constant;
                 case feng3d.MinMaxCurveMode.Curve:
                     return this.curveMin.getValue(time) * this.curveMultiplier;
-                case feng3d.MinMaxCurveMode.RandomBetweenTwoConstants:
+                case feng3d.MinMaxCurveMode.TwoConstants:
                     return Math.lerp(this.constantMin, this.constantMax, randomBetween);
-                case feng3d.MinMaxCurveMode.RandomBetweenTwoCurves:
+                case feng3d.MinMaxCurveMode.TwoCurves:
                     return Math.lerp(this.curveMin.getValue(time), this.curveMax.getValue(time), randomBetween) * this.curveMultiplier;
             }
             return this.constant;
@@ -15997,10 +15991,16 @@ var feng3d;
         ], MinMaxCurve.prototype, "constant", void 0);
         __decorate([
             feng3d.serialize
+        ], MinMaxCurve.prototype, "constantMin", void 0);
+        __decorate([
+            feng3d.serialize
         ], MinMaxCurve.prototype, "constantMax", void 0);
         __decorate([
             feng3d.serialize
         ], MinMaxCurve.prototype, "curve", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxCurve.prototype, "curveMin", void 0);
         __decorate([
             feng3d.serialize
         ], MinMaxCurve.prototype, "curveMax", void 0);
@@ -35532,6 +35532,7 @@ var feng3d;
         __extends(ParticleEmissionModule, _super);
         function ParticleEmissionModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.ParticleEmissionModule";
             /**
              * 随着时间的推移，新粒子产生的速度。
              */

@@ -6,20 +6,28 @@ namespace feng3d
     export enum MinMaxCurveMode
     {
         /**
-         * 常量
+         * Use a single constant for the MinMaxCurve.
+         * 
+         * 使用单个常数。
          */
-        Constant,
+        Constant = 0,
         /**
-         * 曲线
+         * Use a single curve for the MinMaxCurve.
+         * 
+         * 使用一条曲线
          */
-        Curve,
+        Curve = 1,
         /**
-         * 两个常量间取随机值
+         * Use a random value between 2 constants for the MinMaxCurve.
+         * 
+         * 在两个常量之间使用一个随机值
          */
-        RandomBetweenTwoConstants,
+        TwoConstants = 3,
         /**
-         * 两个曲线中取随机值
+         * Use a random value between 2 curves for the MinMaxCurve.
+         * 
+         * 在两条曲线之间使用一个随机值。
          */
-        RandomBetweenTwoCurves,
+        TwoCurves = 2,
     }
 }

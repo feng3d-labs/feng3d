@@ -26,8 +26,8 @@ namespace feng3d
          * 
          * 为下界设置一个常数。
          */
-        get constantMin() { return this.constant; }
-        set constantMin(v) { this.constant = v; }
+        @serialize
+        constantMin = 0;
 
         /**
          * Set a constant for the upper bound.
@@ -50,8 +50,8 @@ namespace feng3d
          * 
          * 为下界设置一条曲线。
          */
-        get curveMin() { return this.curve; }
-        set curveMin(v) { this.curve = v; }
+        @serialize
+        curveMin = new AnimationCurve();
 
         /**
          * Set a curve for the upper bound.
@@ -59,7 +59,7 @@ namespace feng3d
          * 为上界设置一条曲线。
          */
         @serialize
-        curveMax = serialization.setValue(new AnimationCurve(), { keys: [{ time: 0, value: 0, inTangent: 0, outTangent: 0 }, { time: 1, value: 1, inTangent: 0, outTangent: 0 }] });
+        curveMax = new AnimationCurve();
 
         /**
          * Set a multiplier to be applied to the curves.
@@ -87,9 +87,9 @@ namespace feng3d
                     return this.constant;
                 case MinMaxCurveMode.Curve:
                     return this.curveMin.getValue(time) * this.curveMultiplier;
-                case MinMaxCurveMode.RandomBetweenTwoConstants:
+                case MinMaxCurveMode.TwoConstants:
                     return Math.lerp(this.constantMin, this.constantMax, randomBetween);
-                case MinMaxCurveMode.RandomBetweenTwoCurves:
+                case MinMaxCurveMode.TwoCurves:
                     return Math.lerp(this.curveMin.getValue(time), this.curveMax.getValue(time), randomBetween) * this.curveMultiplier;
             }
 
