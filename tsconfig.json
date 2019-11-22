@@ -287,6 +287,8 @@
         //
         "src/animators/particle/others/ParticleEmissionBurst.ts",
         //
+        "src/animators/particle/enums/ParticleSystemShapeMultiModeValue.ts",
+        "src/animators/particle/enums/ParticleSystemShapeConeEmitFrom.ts",
         "src/animators/particle/enums/ParticleSystemAnimationType.ts",
         "src/animators/particle/enums/UVChannelFlags.ts",
         "src/animators/particle/enums/ParticleSystemSimulationSpace.ts",

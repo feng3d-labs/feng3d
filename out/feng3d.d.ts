@@ -15130,6 +15130,64 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * The mode used to generate new points in a shape (Shuriken).
+     *
+     * 用于在形状中生成新点的模式
+     */
+    enum ParticleSystemShapeMultiModeValue {
+        /**
+         * Generate points randomly. (Default)
+         *
+         * 生成随机点。(默认)
+         */
+        Random = 0,
+        /**
+         * Animate the emission point around the shape.
+         *
+         * 使发射点围绕形状运动。
+         */
+        Loop = 1,
+        /**
+         * Animate the emission point around the shape, alternating between clockwise and counter-clockwise directions.
+         *
+         * 使发射点围绕形状运动，在顺时针和逆时针方向之间交替。
+         */
+        PingPong = 2,
+        /**
+         * Distribute new particles around the shape evenly.
+         *
+         * 在形状周围均匀分布新粒子。
+         *
+         * @todo
+         */
+        BurstSpread = 3
+    }
+}
+declare namespace feng3d {
+    /**
+     * 粒子系统圆锥体发射类型，用于定义基于圆锥体的发射类型。
+     */
+    enum ParticleSystemShapeConeEmitFrom {
+        /**
+         * 从圆锥体底面发射。
+         */
+        Base = 0,
+        /**
+         * 从圆锥体底面边缘沿着曲面发射。
+         */
+        BaseShell = 1,
+        /**
+         * 从圆锥体内部发射。
+         */
+        Volume = 2,
+        /**
+         * 从圆锥体曲面沿着曲面发射。
+         */
+        VolumeShell = 3
+    }
+}
+declare namespace feng3d {
+    /**
      * The animation type.
      *
      * 动画类型。
@@ -15515,55 +15573,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * The mode used to generate new points in a shape (Shuriken).
-     * 用于在形状中生成新点的模式
-     */
-    enum ParticleSystemShapeMultiModeValue {
-        /**
-         * Generate points randomly. (Default)
-         * 生成随机点。(默认)
-         */
-        Random = 0,
-        /**
-         * Animate the emission point around the shape.
-         * 使发射点围绕形状运动。
-         */
-        Loop = 1,
-        /**
-         * Animate the emission point around the shape, alternating between clockwise and counter-clockwise directions.
-         * 使发射点围绕形状运动，在顺时针和逆时针方向之间交替。
-         */
-        PingPong = 2,
-        /**
-         * Distribute new particles around the shape evenly.
-         * 在形状周围均匀分布新粒子。
-         *
-         * @todo
-         */
-        BurstSpread = 3
-    }
-    /**
-     * 粒子系统圆锥体发射类型，用于定义基于圆锥体的发射类型。
-     */
-    enum ParticleSystemShapeConeEmitFrom {
-        /**
-         * 从圆锥体底面发射。
-         */
-        Base = 0,
-        /**
-         * 从圆锥体底面边缘沿着曲面发射。
-         */
-        BaseShell = 1,
-        /**
-         * 从圆锥体内部发射。
-         */
-        Volume = 2,
-        /**
-         * 从圆锥体曲面沿着曲面发射。
-         */
-        VolumeShell = 3
-    }
     /**
      * 粒子系统发射圆锥体，用于定义基于圆锥体的粒子发射时的初始状态。
      */
