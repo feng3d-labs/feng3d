@@ -14993,6 +14993,7 @@ var feng3d;
      */
     var MinMaxGradient = /** @class */ (function () {
         function MinMaxGradient() {
+            this.__class__ = "feng3d.MinMaxGradient";
             /**
              * 模式
              */
@@ -15606,17 +15607,17 @@ var feng3d;
     var AnimationCurveWrapMode;
     (function (AnimationCurveWrapMode) {
         /**
+         * 夹紧; 0>-<1
+         */
+        AnimationCurveWrapMode[AnimationCurveWrapMode["Clamp"] = 1] = "Clamp";
+        /**
          * 循环; 0->1,0->1
          */
-        AnimationCurveWrapMode[AnimationCurveWrapMode["Loop"] = 0] = "Loop";
+        AnimationCurveWrapMode[AnimationCurveWrapMode["Loop"] = 2] = "Loop";
         /**
          * 来回循环; 0->1,1->0
          */
-        AnimationCurveWrapMode[AnimationCurveWrapMode["PingPong"] = 1] = "PingPong";
-        /**
-         * 夹紧; 0>-<1
-         */
-        AnimationCurveWrapMode[AnimationCurveWrapMode["Clamp"] = 2] = "Clamp";
+        AnimationCurveWrapMode[AnimationCurveWrapMode["PingPong"] = 4] = "PingPong";
     })(AnimationCurveWrapMode = feng3d.AnimationCurveWrapMode || (feng3d.AnimationCurveWrapMode = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -15628,18 +15629,39 @@ var feng3d;
      */
     var AnimationCurve = /** @class */ (function () {
         function AnimationCurve() {
+            this.__class__ = "feng3d.AnimationCurve";
             /**
              * 最大tan值，超出该值后将会变成分段
              */
             this.maxtan = 1000;
             /**
-             * 关键帧
+             * The behaviour of the animation before the first keyframe.
+             *
+             * 在第一个关键帧之前的动画行为。
+             *
+             * @todo
+             */
+            this.preWrapMode = feng3d.AnimationCurveWrapMode.Clamp;
+            /**
+             * The behaviour of the animation after the last keyframe.
+             *
+             * 动画在最后一个关键帧之后的行为。
+             *
+             * @todo
+             */
+            this.postWrapMode = feng3d.AnimationCurveWrapMode.Clamp;
+            /**
+             * All keys defined in the animation curve.
+             *
+             * 动画曲线上所有关键字定义。
              *
              * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
              */
             this.keys = [new feng3d.AnimationCurveKeyframe({ time: 0, value: 1, tangent: 0 }), new feng3d.AnimationCurveKeyframe({ time: 1, value: 1, tangent: 0 })];
             /**
              * Wrap模式
+             *
+             * @deprecated
              */
             this.wrapMode = feng3d.AnimationCurveWrapMode.Clamp;
         }
@@ -15823,6 +15845,12 @@ var feng3d;
         };
         __decorate([
             feng3d.serialize
+        ], AnimationCurve.prototype, "preWrapMode", void 0);
+        __decorate([
+            feng3d.serialize
+        ], AnimationCurve.prototype, "postWrapMode", void 0);
+        __decorate([
+            feng3d.serialize
         ], AnimationCurve.prototype, "keys", void 0);
         __decorate([
             feng3d.serialize
@@ -15863,6 +15891,7 @@ var feng3d;
      */
     var MinMaxCurve = /** @class */ (function () {
         function MinMaxCurve() {
+            this.__class__ = "feng3d.MinMaxCurve";
             /**
              * 模式
              */

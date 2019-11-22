@@ -5,6 +5,8 @@ namespace feng3d
      */
     export class MinMaxGradient
     {
+        __class__: "feng3d.MinMaxGradient" = "feng3d.MinMaxGradient";
+
         /**
          * 模式
          */

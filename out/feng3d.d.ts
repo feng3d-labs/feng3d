@@ -6958,6 +6958,7 @@ declare namespace feng3d {
      * 最大最小颜色渐变
      */
     class MinMaxGradient {
+        __class__: "feng3d.MinMaxGradient";
         /**
          * 模式
          */
@@ -7265,17 +7266,17 @@ declare namespace feng3d {
      */
     enum AnimationCurveWrapMode {
         /**
+         * 夹紧; 0>-<1
+         */
+        Clamp = 1,
+        /**
          * 循环; 0->1,0->1
          */
-        Loop = 0,
+        Loop = 2,
         /**
          * 来回循环; 0->1,1->0
          */
-        PingPong = 1,
-        /**
-         * 夹紧; 0>-<1
-         */
-        Clamp = 2
+        PingPong = 4
     }
 }
 declare namespace feng3d {
@@ -7285,18 +7286,39 @@ declare namespace feng3d {
      * 基于时间轴的连续三阶Bézier曲线
      */
     class AnimationCurve {
+        __class__: "feng3d.AnimationCurve";
         /**
          * 最大tan值，超出该值后将会变成分段
          */
         maxtan: number;
         /**
-         * 关键帧
+         * The behaviour of the animation before the first keyframe.
+         *
+         * 在第一个关键帧之前的动画行为。
+         *
+         * @todo
+         */
+        preWrapMode: AnimationCurveWrapMode;
+        /**
+         * The behaviour of the animation after the last keyframe.
+         *
+         * 动画在最后一个关键帧之后的行为。
+         *
+         * @todo
+         */
+        postWrapMode: AnimationCurveWrapMode;
+        /**
+         * All keys defined in the animation curve.
+         *
+         * 动画曲线上所有关键字定义。
          *
          * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
          */
         keys: AnimationCurveKeyframe[];
         /**
          * Wrap模式
+         *
+         * @deprecated
          */
         wrapMode: AnimationCurveWrapMode;
         /**
@@ -7397,6 +7419,7 @@ declare namespace feng3d {
      * 最大最小曲线
      */
     class MinMaxCurve {
+        __class__: "feng3d.MinMaxCurve";
         /**
          * 模式
          */

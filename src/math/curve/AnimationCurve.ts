@@ -8,13 +8,37 @@ namespace feng3d
      */
     export class AnimationCurve
     {
+        __class__: "feng3d.AnimationCurve" = "feng3d.AnimationCurve";
+
         /**
          * 最大tan值，超出该值后将会变成分段
          */
         maxtan = 1000;
 
         /**
-         * 关键帧
+         * The behaviour of the animation before the first keyframe.
+         * 
+         * 在第一个关键帧之前的动画行为。
+         * 
+         * @todo
+         */
+        @serialize
+        preWrapMode = AnimationCurveWrapMode.Clamp;
+
+        /**
+         * The behaviour of the animation after the last keyframe.
+         * 
+         * 动画在最后一个关键帧之后的行为。
+         * 
+         * @todo
+         */
+        @serialize
+        postWrapMode = AnimationCurveWrapMode.Clamp;
+
+        /**
+         * All keys defined in the animation curve.
+         * 
+         * 动画曲线上所有关键字定义。
          * 
          * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
          */
@@ -23,6 +47,8 @@ namespace feng3d
 
         /**
          * Wrap模式
+         * 
+         * @deprecated
          */
         @serialize
         wrapMode = AnimationCurveWrapMode.Clamp;
