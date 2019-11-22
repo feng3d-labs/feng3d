@@ -15078,6 +15078,12 @@ var feng3d;
         ], MinMaxGradient.prototype, "color", void 0);
         __decorate([
             feng3d.serialize
+        ], MinMaxGradient.prototype, "colorMin", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxGradient.prototype, "colorMax", void 0);
+        __decorate([
+            feng3d.serialize
         ], MinMaxGradient.prototype, "gradient", void 0);
         __decorate([
             feng3d.serialize

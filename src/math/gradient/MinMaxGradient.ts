@@ -26,6 +26,7 @@ namespace feng3d
          * 
          * 为下界设置一个常量颜色。
          */
+        @serialize
         colorMin = new Color4();
 
         /**
@@ -33,6 +34,7 @@ namespace feng3d
          * 
          * 为上界设置一个常量颜色。
          */
+        @serialize
         colorMax = new Color4();
 
         /**
