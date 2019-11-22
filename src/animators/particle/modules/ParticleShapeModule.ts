@@ -6,6 +6,7 @@ namespace feng3d
      */
     export class ParticleShapeModule extends ParticleModule
     {
+        __class__: "feng3d.ParticleShapeModule" = "feng3d.ParticleShapeModule";
         /**
          * Type of shape to emit particles from.
          * 发射粒子的形状类型。

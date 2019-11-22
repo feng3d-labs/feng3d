@@ -15330,37 +15330,37 @@ declare namespace feng3d {
          *
          * 从圆锥体的基面发射。
          */
-        ConeShell = 5,
+        ConeShell = 7,
         /**
          * Emit from the volume of a cone.
          *
          * 从一个圆锥体的体积发出。
          */
-        ConeVolume = 6,
+        ConeVolume = 8,
         /**
          * Emit from the surface of a cone.
          *
          * 从一个圆锥体的表面发射。
          */
-        ConeVolumeShell = 7,
+        ConeVolumeShell = 9,
         /**
          * Emit from the volume of a box.
          *
          * 从一个盒子的体积中发出。
          */
-        Box = 8,
+        Box = 5,
         /**
          * Emit from the surface of a box.
          *
          * 从盒子表面发射。
          */
-        BoxShell = 9,
+        BoxShell = 15,
         /**
          * Emit from the edges of a box.
          *
          * 从盒子的边缘发出。
          */
-        BoxEdge = 10,
+        BoxEdge = 16,
         /**
          * Emit from a mesh.
          *
@@ -15368,7 +15368,7 @@ declare namespace feng3d {
          *
          * @todo
          */
-        Mesh = 11,
+        Mesh = 6,
         /**
          * Emit from a mesh renderer.
          *
@@ -15376,7 +15376,7 @@ declare namespace feng3d {
          *
          * @todo
          */
-        MeshRenderer = 12,
+        MeshRenderer = 13,
         /**
          * Emit from a skinned mesh renderer.
          *
@@ -15384,25 +15384,25 @@ declare namespace feng3d {
          *
          * @todo
          */
-        SkinnedMeshRenderer = 13,
+        SkinnedMeshRenderer = 14,
         /**
          * Emit from a circle.
          *
          * 从一个圆发出。
          */
-        Circle = 14,
+        Circle = 10,
         /**
          * Emit from the edge of a circle.
          *
          * 从圆的边缘发出。
          */
-        CircleEdge = 15,
+        CircleEdge = 11,
         /**
          * Emit from an edge.
          *
          * 从边缘发出。
          */
-        SingleSidedEdge = 16
+        SingleSidedEdge = 12
     }
 }
 declare namespace feng3d {
@@ -16127,6 +16127,7 @@ declare namespace feng3d {
      * 发射体体积的形状，它控制粒子发射的位置和初始方向。
      */
     class ParticleShapeModule extends ParticleModule {
+        __class__: "feng3d.ParticleShapeModule";
         /**
          * Type of shape to emit particles from.
          * 发射粒子的形状类型。

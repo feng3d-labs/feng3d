@@ -34021,37 +34021,37 @@ var feng3d;
          *
          * 从圆锥体的基面发射。
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["ConeShell"] = 5] = "ConeShell";
+        ParticleSystemShapeType[ParticleSystemShapeType["ConeShell"] = 7] = "ConeShell";
         /**
          * Emit from the volume of a cone.
          *
          * 从一个圆锥体的体积发出。
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["ConeVolume"] = 6] = "ConeVolume";
+        ParticleSystemShapeType[ParticleSystemShapeType["ConeVolume"] = 8] = "ConeVolume";
         /**
          * Emit from the surface of a cone.
          *
          * 从一个圆锥体的表面发射。
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["ConeVolumeShell"] = 7] = "ConeVolumeShell";
+        ParticleSystemShapeType[ParticleSystemShapeType["ConeVolumeShell"] = 9] = "ConeVolumeShell";
         /**
          * Emit from the volume of a box.
          *
          * 从一个盒子的体积中发出。
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["Box"] = 8] = "Box";
+        ParticleSystemShapeType[ParticleSystemShapeType["Box"] = 5] = "Box";
         /**
          * Emit from the surface of a box.
          *
          * 从盒子表面发射。
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["BoxShell"] = 9] = "BoxShell";
+        ParticleSystemShapeType[ParticleSystemShapeType["BoxShell"] = 15] = "BoxShell";
         /**
          * Emit from the edges of a box.
          *
          * 从盒子的边缘发出。
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["BoxEdge"] = 10] = "BoxEdge";
+        ParticleSystemShapeType[ParticleSystemShapeType["BoxEdge"] = 16] = "BoxEdge";
         /**
          * Emit from a mesh.
          *
@@ -34059,7 +34059,7 @@ var feng3d;
          *
          * @todo
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["Mesh"] = 11] = "Mesh";
+        ParticleSystemShapeType[ParticleSystemShapeType["Mesh"] = 6] = "Mesh";
         /**
          * Emit from a mesh renderer.
          *
@@ -34067,7 +34067,7 @@ var feng3d;
          *
          * @todo
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["MeshRenderer"] = 12] = "MeshRenderer";
+        ParticleSystemShapeType[ParticleSystemShapeType["MeshRenderer"] = 13] = "MeshRenderer";
         /**
          * Emit from a skinned mesh renderer.
          *
@@ -34075,25 +34075,25 @@ var feng3d;
          *
          * @todo
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["SkinnedMeshRenderer"] = 13] = "SkinnedMeshRenderer";
+        ParticleSystemShapeType[ParticleSystemShapeType["SkinnedMeshRenderer"] = 14] = "SkinnedMeshRenderer";
         /**
          * Emit from a circle.
          *
          * 从一个圆发出。
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["Circle"] = 14] = "Circle";
+        ParticleSystemShapeType[ParticleSystemShapeType["Circle"] = 10] = "Circle";
         /**
          * Emit from the edge of a circle.
          *
          * 从圆的边缘发出。
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["CircleEdge"] = 15] = "CircleEdge";
+        ParticleSystemShapeType[ParticleSystemShapeType["CircleEdge"] = 11] = "CircleEdge";
         /**
          * Emit from an edge.
          *
          * 从边缘发出。
          */
-        ParticleSystemShapeType[ParticleSystemShapeType["SingleSidedEdge"] = 16] = "SingleSidedEdge";
+        ParticleSystemShapeType[ParticleSystemShapeType["SingleSidedEdge"] = 12] = "SingleSidedEdge";
     })(ParticleSystemShapeType = feng3d.ParticleSystemShapeType || (feng3d.ParticleSystemShapeType = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -35668,6 +35668,7 @@ var feng3d;
         __extends(ParticleShapeModule, _super);
         function ParticleShapeModule() {
             var _this = _super.call(this) || this;
+            _this.__class__ = "feng3d.ParticleShapeModule";
             /**
              * Align particles based on their initial direction of travel.
              * 根据粒子的初始运动方向排列粒子。
