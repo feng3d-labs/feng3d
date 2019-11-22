@@ -29693,9 +29693,10 @@ var feng3d;
          * new ParametricGeometry( parametricFunction, uSegments, ySegements );
          *
          */
-        function ParametricGeometry(func, slices, stacks) {
+        function ParametricGeometry(func, slices, stacks, doubleside) {
             if (slices === void 0) { slices = 8; }
             if (stacks === void 0) { stacks = 8; }
+            if (doubleside === void 0) { doubleside = false; }
             var _this = _super.call(this) || this;
             var positions = [];
             var indices = [];
@@ -29721,6 +29722,15 @@ var feng3d;
                     }
                 }
             }
+            // 反面
+            if (doubleside) {
+                positions = positions.concat(positions);
+                uvs = uvs.concat(uvs);
+                var start = (stacks + 1) * (slices + 1);
+                for (var i_1 = 0, n = indices.length; i_1 < n; i_1 += 3) {
+                    indices.push(start + indices[i_1], start + indices[i_1 + 2], start + indices[i_1 + 1]);
+                }
+            }
             _this.indices = indices;
             _this.positions = positions;
             _this.uvs = uvs;
@@ -29731,6 +29741,11 @@ var feng3d;
          * 构建几何体
          */
         ParametricGeometry.prototype.buildGeometry = function () {
+            var positions = this.positions;
+            for (var i = 0, half = positions.length / 2; i < half; i++) {
+                positions[i + half] = positions[i];
+            }
+            this.positions = positions;
             this.normals = feng3d.geometryUtils.createVertexNormals(this.indices, this.positions, true);
             this.tangents = feng3d.geometryUtils.createVertexTangents(this.indices, this.positions, this.uvs, true);
         };
@@ -33493,8 +33508,8 @@ var feng3d;
                 // 处理喷发
                 var inCycleStart = startTime - cycleStartTime;
                 var inCycleEnd = endTime - cycleStartTime;
-                for (var i_1 = 0; i_1 < bursts.length; i_1++) {
-                    var burst = bursts[i_1];
+                for (var i_2 = 0; i_2 < bursts.length; i_2++) {
+                    var burst = bursts[i_2];
                     if (burst.isProbability && inCycleStart <= burst.time && burst.time < inCycleEnd) {
                         emits.push({ time: cycleStartTime + burst.time, num: burst.count.getValue(rateAtDuration) });
                     }

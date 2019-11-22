@@ -1,5 +1,7 @@
 namespace feng3d
 {
+    export interface GeometryMap { ParametricGeometry: ParametricGeometry }
+    
     export class ParametricGeometry extends Geometry
     {
         /**
@@ -10,7 +12,7 @@ namespace feng3d
          * new ParametricGeometry( parametricFunction, uSegments, ySegements );
          *
          */
-        constructor(func: (u: number, v: number) => Vector3, slices = 8, stacks = 8)
+        constructor(func: (u: number, v: number) => Vector3, slices = 8, stacks = 8, doubleside = false)
         {
             super();
 
@@ -44,6 +46,17 @@ namespace feng3d
                     }
                 }
             }
+            // 反面
+            if (doubleside)
+            {
+                positions = positions.concat(positions);
+                uvs = uvs.concat(uvs);
+                var start = (stacks + 1) * (slices + 1);
+                for (let i = 0, n = indices.length; i < n; i += 3)
+                {
+                    indices.push(start + indices[i], start + indices[i + 2], start + indices[i + 1]);
+                }
+            }
             this.indices = indices;
             this.positions = positions;
             this.uvs = uvs;
@@ -56,6 +69,12 @@ namespace feng3d
          */
         protected buildGeometry()
         {
+            var positions = this.positions;
+            for (let i = 0, half = positions.length / 2; i < half; i++)
+            {
+                positions[i + half] = positions[i];
+            }
+            this.positions = positions;
             this.normals = geometryUtils.createVertexNormals(this.indices, this.positions, true);
             this.tangents = geometryUtils.createVertexTangents(this.indices, this.positions, this.uvs, true)
         }
