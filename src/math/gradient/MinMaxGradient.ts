@@ -16,6 +16,8 @@ namespace feng3d
         mode = MinMaxGradientMode.Color;
 
         /**
+         * Set a constant color.
+         * 
          * 常量颜色值
          */
         @serialize
@@ -26,8 +28,8 @@ namespace feng3d
          * 
          * 为下界设置一个常量颜色。
          */
-        @serialize
-        colorMin = new Color4();
+        get colorMin() { return this.color; }
+        set colorMin(v) { this.color = v; }
 
         /**
          * Set a constant color for the upper bound.
@@ -50,8 +52,8 @@ namespace feng3d
          * 
          * 为下界设置一个渐变。
          */
-        @serialize
-        gradientMin = new Gradient();
+        get gradientMin() { return this.gradient; }
+        set gradientMin(v) { this.gradient = v; }
 
         /**
          * Set a gradient for the upper bound.

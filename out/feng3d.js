@@ -15012,15 +15012,11 @@ var feng3d;
              */
             this.mode = feng3d.MinMaxGradientMode.Color;
             /**
+             * Set a constant color.
+             *
              * 常量颜色值
              */
             this.color = new feng3d.Color4();
-            /**
-             * Set a constant color for the lower bound.
-             *
-             * 为下界设置一个常量颜色。
-             */
-            this.colorMin = new feng3d.Color4();
             /**
              * Set a constant color for the upper bound.
              *
@@ -15034,18 +15030,34 @@ var feng3d;
              */
             this.gradient = new feng3d.Gradient();
             /**
-             * Set a gradient for the lower bound.
-             *
-             * 为下界设置一个渐变。
-             */
-            this.gradientMin = new feng3d.Gradient();
-            /**
              * Set a gradient for the upper bound.
              *
              * 为上界设置一个渐变。
              */
             this.gradientMax = new feng3d.Gradient();
         }
+        Object.defineProperty(MinMaxGradient.prototype, "colorMin", {
+            /**
+             * Set a constant color for the lower bound.
+             *
+             * 为下界设置一个常量颜色。
+             */
+            get: function () { return this.color; },
+            set: function (v) { this.color = v; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(MinMaxGradient.prototype, "gradientMin", {
+            /**
+             * Set a gradient for the lower bound.
+             *
+             * 为下界设置一个渐变。
+             */
+            get: function () { return this.gradient; },
+            set: function (v) { this.gradient = v; },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 获取值
          * @param time 时间
@@ -15078,16 +15090,10 @@ var feng3d;
         ], MinMaxGradient.prototype, "color", void 0);
         __decorate([
             feng3d.serialize
-        ], MinMaxGradient.prototype, "colorMin", void 0);
-        __decorate([
-            feng3d.serialize
         ], MinMaxGradient.prototype, "colorMax", void 0);
         __decorate([
             feng3d.serialize
         ], MinMaxGradient.prototype, "gradient", void 0);
-        __decorate([
-            feng3d.serialize
-        ], MinMaxGradient.prototype, "gradientMin", void 0);
         __decorate([
             feng3d.serialize
         ], MinMaxGradient.prototype, "gradientMax", void 0);
@@ -15994,7 +16000,7 @@ var feng3d;
         ], MinMaxCurve.prototype, "constantMax", void 0);
         __decorate([
             feng3d.serialize
-        ], MinMaxCurve.prototype, "curveMin", null);
+        ], MinMaxCurve.prototype, "curve", void 0);
         __decorate([
             feng3d.serialize
         ], MinMaxCurve.prototype, "curveMax", void 0);

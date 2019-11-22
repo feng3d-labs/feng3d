@@ -6977,6 +6977,8 @@ declare namespace feng3d {
          */
         mode: MinMaxGradientMode;
         /**
+         * Set a constant color.
+         *
          * 常量颜色值
          */
         color: Color4;
@@ -6985,7 +6987,8 @@ declare namespace feng3d {
          *
          * 为下界设置一个常量颜色。
          */
-        colorMin: Color4;
+        get colorMin(): Color4;
+        set colorMin(v: Color4);
         /**
          * Set a constant color for the upper bound.
          *
@@ -7003,7 +7006,8 @@ declare namespace feng3d {
          *
          * 为下界设置一个渐变。
          */
-        gradientMin: Gradient;
+        get gradientMin(): Gradient;
+        set gradientMin(v: Gradient);
         /**
          * Set a gradient for the upper bound.
          *

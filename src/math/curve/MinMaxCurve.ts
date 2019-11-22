@@ -42,6 +42,7 @@ namespace feng3d
          * 
          * 设置曲线。
          */
+        @serialize
         curve = new AnimationCurve();
 
         /**
@@ -49,7 +50,6 @@ namespace feng3d
          * 
          * 为下界设置一条曲线。
          */
-        @serialize
         get curveMin() { return this.curve; }
         set curveMin(v) { this.curve = v; }
 
