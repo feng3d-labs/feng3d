@@ -14848,6 +14848,7 @@ var feng3d;
      */
     var Gradient = /** @class */ (function () {
         function Gradient() {
+            this.__class__ = "feng3d.Gradient";
             /**
              * 渐变模式
              */
@@ -15579,29 +15580,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 动画关键帧
-     */
-    var AnimationCurveKeyframe = /** @class */ (function () {
-        function AnimationCurveKeyframe(v) {
-            feng3d.serialization.setValue(this, v);
-            return this;
-        }
-        __decorate([
-            feng3d.serialize
-        ], AnimationCurveKeyframe.prototype, "time", void 0);
-        __decorate([
-            feng3d.serialize
-        ], AnimationCurveKeyframe.prototype, "value", void 0);
-        __decorate([
-            feng3d.serialize
-        ], AnimationCurveKeyframe.prototype, "tangent", void 0);
-        return AnimationCurveKeyframe;
-    }());
-    feng3d.AnimationCurveKeyframe = AnimationCurveKeyframe;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 动画曲线Wrap模式，处理超出范围情况
      */
     var AnimationCurveWrapMode;
@@ -15638,16 +15616,12 @@ var feng3d;
              * The behaviour of the animation before the first keyframe.
              *
              * 在第一个关键帧之前的动画行为。
-             *
-             * @todo
              */
             this.preWrapMode = feng3d.AnimationCurveWrapMode.Clamp;
             /**
              * The behaviour of the animation after the last keyframe.
              *
              * 动画在最后一个关键帧之后的行为。
-             *
-             * @todo
              */
             this.postWrapMode = feng3d.AnimationCurveWrapMode.Clamp;
             /**
@@ -15657,7 +15631,7 @@ var feng3d;
              *
              * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
              */
-            this.keys = [new feng3d.AnimationCurveKeyframe({ time: 0, value: 1, tangent: 0 }), new feng3d.AnimationCurveKeyframe({ time: 1, value: 1, tangent: 0 })];
+            this.keys = [{ time: 0, value: 1, inTangent: 0, outTangent: 0 }, { time: 1, value: 1, inTangent: 0, outTangent: 0 }];
         }
         Object.defineProperty(AnimationCurve.prototype, "numKeys", {
             /**
@@ -15745,10 +15719,10 @@ var feng3d;
                 if (i > 0 && prekey.time <= t && t <= key.time) {
                     var xstart = prekey.time;
                     var ystart = prekey.value;
-                    var tanstart = prekey.tangent;
+                    var tanstart = prekey.outTangent;
                     var xend = key.time;
                     var yend = key.value;
-                    var tanend = key.tangent;
+                    var tanend = key.inTangent;
                     if (maxtan > Math.abs(tanstart) && maxtan > Math.abs(tanend)) {
                         var ct = (t - prekey.time) / (key.time - prekey.time);
                         var sys = [ystart, ystart + tanstart * (xend - xstart) / 3, yend - tanend * (xend - xstart) / 3, yend];
@@ -15779,9 +15753,9 @@ var feng3d;
                 }
             }
             if (keys.length == 0)
-                return new feng3d.AnimationCurveKeyframe({ time: t, value: 0, tangent: 0 });
+                return { time: t, value: 0, inTangent: 0, outTangent: 0 };
             feng3d.debuger && console.assert(isfind);
-            return new feng3d.AnimationCurveKeyframe({ time: t, value: value, tangent: tangent });
+            return { time: t, value: value, inTangent: tangent, outTangent: tangent };
         };
         /**
          * 获取值
@@ -15915,7 +15889,7 @@ var feng3d;
              *
              * 为上界设置一条曲线。
              */
-            this.curveMax = feng3d.serialization.setValue(new feng3d.AnimationCurve(), { keys: [{ time: 0, value: 0, tangent: 0 }, { time: 1, value: 1, tangent: 0 }] });
+            this.curveMax = feng3d.serialization.setValue(new feng3d.AnimationCurve(), { keys: [{ time: 0, value: 0, inTangent: 0, outTangent: 0 }, { time: 1, value: 1, inTangent: 0, outTangent: 0 }] });
             /**
              * Set a multiplier to be applied to the curves.
              *
@@ -37061,7 +37035,7 @@ var feng3d;
              *
              * 曲线控制哪个帧的纹理表动画播放。
              */
-            _this.frameOverTime = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { mode: feng3d.MinMaxCurveMode.Curve, curveMin: { keys: [{ time: 0, value: 0, tangent: 1 }, { time: 1, value: 1, tangent: 1 }] } });
+            _this.frameOverTime = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { mode: feng3d.MinMaxCurveMode.Curve, curveMin: { keys: [{ time: 0, value: 0, inTangent: 1, outTangent: 1 }, { time: 1, value: 1, inTangent: 1, outTangent: 1 }] } });
             /**
              * Use a random row of the texture sheet for each particle emitted.
              *

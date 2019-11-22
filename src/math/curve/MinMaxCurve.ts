@@ -59,7 +59,7 @@ namespace feng3d
          * 为上界设置一条曲线。
          */
         @serialize
-        curveMax = serialization.setValue(new AnimationCurve(), { keys: [{ time: 0, value: 0, tangent: 0 }, { time: 1, value: 1, tangent: 0 }] });
+        curveMax = serialization.setValue(new AnimationCurve(), { keys: [{ time: 0, value: 0, inTangent: 0, outTangent: 0 }, { time: 1, value: 1, inTangent: 0, outTangent: 0 }] });
 
         /**
          * Set a multiplier to be applied to the curves.

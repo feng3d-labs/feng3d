@@ -3,30 +3,32 @@ namespace feng3d
     /**
      * 动画关键帧
      */
-    export class AnimationCurveKeyframe
+    export interface AnimationCurveKeyframe
     {
         /**
-         * 时间轴的位置 [0,1]
+         * The time of the keyframe.
+         * 
+         * 关键帧的时间。
          */
-        @serialize
         time: number
 
         /**
-         * 值 [0,1]
+         * 曲线在关键帧处的值。
          */
-        @serialize
         value: number
 
         /**
-         * 斜率
+         * Describes the tangent when approaching this point from the previous point in the curve.
+         * 
+         * 描述从曲线上的前一点接近该点时的切线。
          */
-        @serialize
-        tangent: number
+        inTangent: number;
 
-        constructor(v: gPartial<AnimationCurveKeyframe>)
-        {
-            serialization.setValue(this, <any>v);
-            return this;
-        }
+        /**
+         * Describes the tangent when leaving this point towards the next point in the curve.
+         * 
+         * 描述从这个点到曲线上下一个点的切线。
+         */
+        outTangent: number;
     }
 }

@@ -5,6 +5,8 @@ namespace feng3d
      */
     export class Gradient
     {
+        __class__: "feng3d.Gradient" = "feng3d.Gradient";
+
         /**
          * 渐变模式
          */

@@ -34,7 +34,7 @@ namespace feng3d
         @serialize
         // @oav({ tooltip: "Curve to control which frame of the texture sheet animation to play." })
         @oav({ tooltip: "曲线控制哪个帧的纹理表动画播放。" })
-        frameOverTime = serialization.setValue(new MinMaxCurve(), { mode: MinMaxCurveMode.Curve, curveMin: { keys: [{ time: 0, value: 0, tangent: 1 }, { time: 1, value: 1, tangent: 1 }] } });
+        frameOverTime = serialization.setValue(new MinMaxCurve(), { mode: MinMaxCurveMode.Curve, curveMin: { keys: [{ time: 0, value: 0, inTangent: 1, outTangent: 1 }, { time: 1, value: 1, inTangent: 1, outTangent: 1 }] } });
 
         /**
          * Use a random row of the texture sheet for each particle emitted.

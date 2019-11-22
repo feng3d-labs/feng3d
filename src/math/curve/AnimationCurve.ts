@@ -19,8 +19,6 @@ namespace feng3d
          * The behaviour of the animation before the first keyframe.
          * 
          * 在第一个关键帧之前的动画行为。
-         * 
-         * @todo
          */
         @serialize
         preWrapMode = AnimationCurveWrapMode.Clamp;
@@ -29,8 +27,6 @@ namespace feng3d
          * The behaviour of the animation after the last keyframe.
          * 
          * 动画在最后一个关键帧之后的行为。
-         * 
-         * @todo
          */
         @serialize
         postWrapMode = AnimationCurveWrapMode.Clamp;
@@ -43,7 +39,7 @@ namespace feng3d
          * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
          */
         @serialize
-        keys: AnimationCurveKeyframe[] = [new AnimationCurveKeyframe({ time: 0, value: 1, tangent: 0 }), new AnimationCurveKeyframe({ time: 1, value: 1, tangent: 0 })];
+        keys: AnimationCurveKeyframe[] = [{ time: 0, value: 1, inTangent: 0, outTangent: 0 }, { time: 1, value: 1, inTangent: 0, outTangent: 0 }];
 
         /**
          * 关键点数量
@@ -109,7 +105,7 @@ namespace feng3d
          * 获取曲线上点信息
          * @param t 时间轴的位置 [0,1]
          */
-        getPoint(t: number)
+        getPoint(t: number): AnimationCurveKeyframe
         {
             var wrapMode = AnimationCurveWrapMode.Clamp;
 
@@ -144,10 +140,10 @@ namespace feng3d
                 {
                     var xstart = prekey.time;
                     var ystart = prekey.value;
-                    var tanstart = prekey.tangent;
+                    var tanstart = prekey.outTangent;
                     var xend = key.time;
                     var yend = key.value;
-                    var tanend = key.tangent;
+                    var tanend = key.inTangent;
                     if (maxtan > Math.abs(tanstart) && maxtan > Math.abs(tanend))
                     {
                         var ct = (t - prekey.time) / (key.time - prekey.time);
@@ -181,10 +177,10 @@ namespace feng3d
                 }
             }
 
-            if (keys.length == 0) return new AnimationCurveKeyframe({ time: t, value: 0, tangent: 0 });
+            if (keys.length == 0) return { time: t, value: 0, inTangent: 0, outTangent: 0 };
 
             debuger && console.assert(isfind);
-            return new AnimationCurveKeyframe({ time: t, value: value, tangent: tangent });
+            return { time: t, value: value, inTangent: tangent, outTangent: tangent };
         }
 
         /**

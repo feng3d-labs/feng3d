@@ -6887,6 +6887,7 @@ declare namespace feng3d {
      * 颜色渐变
      */
     class Gradient {
+        __class__: "feng3d.Gradient";
         /**
          * 渐变模式
          */
@@ -7244,20 +7245,29 @@ declare namespace feng3d {
     /**
      * 动画关键帧
      */
-    class AnimationCurveKeyframe {
+    interface AnimationCurveKeyframe {
         /**
-         * 时间轴的位置 [0,1]
+         * The time of the keyframe.
+         *
+         * 关键帧的时间。
          */
         time: number;
         /**
-         * 值 [0,1]
+         * 曲线在关键帧处的值。
          */
         value: number;
         /**
-         * 斜率
+         * Describes the tangent when approaching this point from the previous point in the curve.
+         *
+         * 描述从曲线上的前一点接近该点时的切线。
          */
-        tangent: number;
-        constructor(v: gPartial<AnimationCurveKeyframe>);
+        inTangent: number;
+        /**
+         * Describes the tangent when leaving this point towards the next point in the curve.
+         *
+         * 描述从这个点到曲线上下一个点的切线。
+         */
+        outTangent: number;
     }
 }
 declare namespace feng3d {
@@ -7295,16 +7305,12 @@ declare namespace feng3d {
          * The behaviour of the animation before the first keyframe.
          *
          * 在第一个关键帧之前的动画行为。
-         *
-         * @todo
          */
         preWrapMode: AnimationCurveWrapMode;
         /**
          * The behaviour of the animation after the last keyframe.
          *
          * 动画在最后一个关键帧之后的行为。
-         *
-         * @todo
          */
         postWrapMode: AnimationCurveWrapMode;
         /**
