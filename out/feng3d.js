@@ -15975,7 +15975,7 @@ var feng3d;
                 case feng3d.MinMaxCurveMode.Constant:
                     return this.constant;
                 case feng3d.MinMaxCurveMode.Curve:
-                    return this.curveMin.getValue(time) * this.curveMultiplier;
+                    return this.curve.getValue(time) * this.curveMultiplier;
                 case feng3d.MinMaxCurveMode.TwoConstants:
                     return Math.lerp(this.constantMin, this.constantMax, randomBetween);
                 case feng3d.MinMaxCurveMode.TwoCurves:
@@ -33138,6 +33138,9 @@ var feng3d;
     feng3d.ParticlesAdditiveUniforms = ParticlesAdditiveUniforms;
     feng3d.shaderConfig.shaders["Particles_Additive"].cls = ParticlesAdditiveUniforms;
     feng3d.shaderConfig.shaders["Particles_Additive"].renderParams = { enableBlend: true, sfactor: feng3d.BlendFactor.SRC_ALPHA, dfactor: feng3d.BlendFactor.ONE, depthMask: false };
+    feng3d.Material.particle = feng3d.AssetData.addAssetData("Particle-Material", feng3d.serialization.setValue(feng3d.Material.create("Particles_Additive"), {
+        name: "Particle-Material", assetId: "Particle-Material", hideFlags: feng3d.HideFlags.NotEditable,
+    }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -33587,7 +33590,7 @@ var feng3d;
                     particle.lifetime = lifetime;
                     particle.rateAtLifeTime = rateAtLifeTime;
                     //
-                    particle.birthRateAtDuration = birthRateAtDuration;
+                    particle.birthRateAtDuration = birthRateAtDuration - Math.floor(birthRateAtDuration);
                     this._activeParticles.push(particle);
                     this._initParticleState(particle);
                     this._updateParticleState(particle);

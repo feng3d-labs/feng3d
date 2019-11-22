@@ -491,7 +491,7 @@ namespace feng3d
                     particle.lifetime = lifetime;
                     particle.rateAtLifeTime = rateAtLifeTime;
                     //
-                    particle.birthRateAtDuration = birthRateAtDuration;
+                    particle.birthRateAtDuration = birthRateAtDuration - Math.floor(birthRateAtDuration);
 
                     this._activeParticles.push(particle);
                     this._initParticleState(particle);

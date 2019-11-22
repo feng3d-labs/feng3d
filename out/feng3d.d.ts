@@ -13839,15 +13839,15 @@ declare namespace feng3d {
         /**
          * shader名称
          */
-        get shaderName(): "standard" | "color" | "texture" | "point" | "segment" | "water" | "terrain" | "particle";
-        set shaderName(v: "standard" | "color" | "texture" | "point" | "segment" | "water" | "terrain" | "particle");
+        get shaderName(): "standard" | "color" | "texture" | "point" | "segment" | "water" | "terrain" | "particle" | "Particles_Additive";
+        set shaderName(v: "standard" | "color" | "texture" | "point" | "segment" | "water" | "terrain" | "particle" | "Particles_Additive");
         private _shaderName;
         name: string;
         /**
          * Uniform数据
          */
-        get uniforms(): StandardUniforms | ColorUniforms | TextureUniforms | PointUniforms | SegmentUniforms | WaterUniforms | TerrainUniforms | ParticleUniforms;
-        set uniforms(v: StandardUniforms | ColorUniforms | TextureUniforms | PointUniforms | SegmentUniforms | WaterUniforms | TerrainUniforms | ParticleUniforms);
+        get uniforms(): StandardUniforms | ColorUniforms | TextureUniforms | PointUniforms | SegmentUniforms | WaterUniforms | TerrainUniforms | ParticleUniforms | ParticlesAdditiveUniforms;
+        set uniforms(v: StandardUniforms | ColorUniforms | TextureUniforms | PointUniforms | SegmentUniforms | WaterUniforms | TerrainUniforms | ParticleUniforms | ParticlesAdditiveUniforms);
         private _uniforms;
         /**
          * 渲染参数
@@ -14882,6 +14882,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface UniformsMap {
+        Particles_Additive: ParticlesAdditiveUniforms;
+    }
     /**
      * UnityShader "Particles/Additive"
      */
