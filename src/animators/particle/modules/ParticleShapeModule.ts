@@ -107,7 +107,7 @@ namespace feng3d
          * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
          */
         @serialize
-        arcSpeed = serialization.setValue(new MinMaxCurve(), { constantMin: 1, constantMax: 1 });
+        arcSpeed = serialization.setValue(new MinMaxCurve(), { constant: 1, constantMin: 1, constantMax: 1 });
 
         /**
          * A multiplier of the arc speed of the emission shape.
@@ -250,7 +250,7 @@ namespace feng3d
          * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
          */
         @serialize
-        radiusSpeed = serialization.setValue(new MinMaxCurve(), { constantMin: 1, constantMax: 1 });
+        radiusSpeed = serialization.setValue(new MinMaxCurve(), { constant: 1, constantMin: 1, constantMax: 1 });
 
         /**
          * A multiplier of the radius speed of the emission shape.

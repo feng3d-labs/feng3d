@@ -19,7 +19,7 @@ namespace feng3d
          */
         @serialize
         @oav({ tooltip: "角速度，基于生命周期的旋转。" })
-        angularVelocity = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { constantMin: 45, constantMax: 45, curveMultiplier: 45 }, yCurve: { constantMin: 45, constantMax: 45, curveMultiplier: 45 }, zCurve: { constantMin: 45, constantMax: 45, curveMultiplier: 45 } });
+        angularVelocity = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 }, yCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 }, zCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 } });
 
         /**
          * Rotation over lifetime curve for the X axis.

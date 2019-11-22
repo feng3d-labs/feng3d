@@ -15075,6 +15075,7 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     class ParticleEmissionBurst {
+        __class__: "feng3d.ParticleEmissionBurst";
         /**
          * The time that each burst occurs.
          * 每次爆炸发生的时间。

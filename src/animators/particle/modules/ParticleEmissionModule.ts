@@ -13,7 +13,7 @@ namespace feng3d
         @serialize
         // @oav({ tooltip: "The rate at which new particles are spawned, over time." })
         @oav({ tooltip: "随着时间的推移，新粒子产生的速度。" })
-        rateOverTime = serialization.setValue(new MinMaxCurve(), { between0And1: true, constantMin: 10, constantMax: 10 });
+        rateOverTime = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 10, constantMin: 10, constantMax: 10, curveMultiplier: 10 });
 
         /**
          * Change the rate over time multiplier.
@@ -44,7 +44,7 @@ namespace feng3d
          */
         // @oav({ tooltip: "The rate at which new particles are spawned, over distance." })
         @oav({ tooltip: "产生新粒子的速度，通过距离。" })
-        rateOverDistance = serialization.setValue(new MinMaxCurve(), { between0And1: true, constantMin: 0, constantMax: 1 });
+        rateOverDistance = serialization.setValue(new MinMaxCurve(), { between0And1: true, constant: 0, constantMin: 0, constantMax: 1 });
 
         /**
          * Change the rate over distance multiplier.

@@ -2,6 +2,8 @@ namespace feng3d
 {
     export class ParticleEmissionBurst
     {
+        __class__: "feng3d.ParticleEmissionBurst" = "feng3d.ParticleEmissionBurst";
+
         /**
          * The time that each burst occurs.
          * 每次爆炸发生的时间。
@@ -17,7 +19,7 @@ namespace feng3d
         @serialize
         // @oav({ tooltip: "Number of particles to be emitted." })
         @oav({ tooltip: "要发射的粒子数。" })
-        count = serialization.setValue(new MinMaxCurve(), { constantMin: 30, constantMax: 30 });
+        count = serialization.setValue(new MinMaxCurve(), { constant: 30, constantMin: 30, constantMax: 30 });
 
         /**
          * Minimum number of bursts to be emitted.

@@ -33138,9 +33138,6 @@ var feng3d;
     feng3d.ParticlesAdditiveUniforms = ParticlesAdditiveUniforms;
     feng3d.shaderConfig.shaders["Particles_Additive"].cls = ParticlesAdditiveUniforms;
     feng3d.shaderConfig.shaders["Particles_Additive"].renderParams = { enableBlend: true, sfactor: feng3d.BlendFactor.SRC_ALPHA, dfactor: feng3d.BlendFactor.ONE, depthMask: false };
-    feng3d.Material.particle = feng3d.AssetData.addAssetData("Particle-Material", feng3d.serialization.setValue(feng3d.Material.create("Particles_Additive"), {
-        name: "Particle-Material", assetId: "Particle-Material", hideFlags: feng3d.HideFlags.NotEditable,
-    }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -33695,6 +33692,7 @@ var feng3d;
 (function (feng3d) {
     var ParticleEmissionBurst = /** @class */ (function () {
         function ParticleEmissionBurst() {
+            this.__class__ = "feng3d.ParticleEmissionBurst";
             /**
              * The time that each burst occurs.
              * 每次爆炸发生的时间。
@@ -33703,7 +33701,7 @@ var feng3d;
             /**
              * 要发射的粒子数。
              */
-            this.count = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constantMin: 30, constantMax: 30 });
+            this.count = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 30, constantMin: 30, constantMax: 30 });
             /**
              * How many times to play the burst. (0 means infinitely).
              * 爆发次数。(0意味着无限)。
@@ -34982,13 +34980,13 @@ var feng3d;
              *
              * 每个新粒子的总寿命(以秒计)。
              */
-            _this.startLifetime = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constantMin: 5, constantMax: 5 });
+            _this.startLifetime = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constant: 5, constantMin: 5, constantMax: 5 });
             /**
              * The initial speed of particles when emitted.
              *
              * 粒子发射时的初始速度。
              */
-            _this.startSpeed = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constantMin: 5, constantMax: 5 });
+            _this.startSpeed = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 5, constantMin: 5, constantMax: 5 });
             /**
              * A flag to enable specifying particle size individually for each axis.
              *
@@ -35000,7 +34998,7 @@ var feng3d;
              *
              * 发射时粒子的初始大小。
              */
-            _this.startSize3D = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { between0And1: true, constantMin: 1, constantMax: 1 }, yCurve: { between0And1: true, constantMin: 1, constantMax: 1 }, zCurve: { between0And1: true, constantMin: 1, constantMax: 1 } });
+            _this.startSize3D = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 } });
             /**
              * A flag to enable 3D particle rotation.
              * 一个启用粒子3D旋转的标记。
@@ -35539,7 +35537,7 @@ var feng3d;
             /**
              * 随着时间的推移，新粒子产生的速度。
              */
-            _this.rateOverTime = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constantMin: 10, constantMax: 10 });
+            _this.rateOverTime = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constant: 10, constantMin: 10, constantMax: 10 });
             /**
              * The rate at which new particles are spawned, over distance.
              * New particles will only be emitted when the emitter moves.
@@ -35550,7 +35548,7 @@ var feng3d;
              * @todo
              */
             // @oav({ tooltip: "The rate at which new particles are spawned, over distance." })
-            _this.rateOverDistance = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constantMin: 0, constantMax: 1 });
+            _this.rateOverDistance = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constant: 0, constantMin: 0, constantMax: 1 });
             /**
              * 爆发数组
              */
@@ -35700,7 +35698,7 @@ var feng3d;
              *
              * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
              */
-            _this.arcSpeed = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constantMin: 1, constantMax: 1 });
+            _this.arcSpeed = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 1, constantMin: 1, constantMax: 1 });
             /**
              * Control the gap between emission points around the arc.
              *
@@ -35766,7 +35764,7 @@ var feng3d;
              *
              * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
              */
-            _this.radiusSpeed = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constantMin: 1, constantMax: 1 });
+            _this.radiusSpeed = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 1, constantMin: 1, constantMax: 1 });
             /**
              * Control the gap between emission points around the radius.
              *
@@ -36274,13 +36272,13 @@ var feng3d;
              *
              * 最大速度曲线，当不使用每轴一个曲线时。
              */
-            _this.limit = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constantMin: 1, constantMax: 1 });
+            _this.limit = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 });
             /**
              * Maximum velocity.
              *
              * 最高速度。
              */
-            _this.limit3D = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { between0And1: true, constantMin: 1, constantMax: 1 }, yCurve: { between0And1: true, constantMin: 1, constantMax: 1 }, zCurve: { between0And1: true, constantMin: 1, constantMax: 1 } });
+            _this.limit3D = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1 } });
             /**
              * Specifies if the velocities are in local space (rotated with the transform) or world space.
              *
@@ -36497,7 +36495,7 @@ var feng3d;
              *
              * 曲线，用来定义在粒子的生命周期内应用了多少发射速度。
              */
-            _this.multiplier = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constantMin: 1, constantMax: 1 });
+            _this.multiplier = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 1, constantMin: 1, constantMax: 1 });
             return _this;
         }
         Object.defineProperty(InheritVelocityModule.prototype, "curve", {
@@ -36762,7 +36760,7 @@ var feng3d;
              *
              * 基于寿命的粒度控制曲线。
              */
-            _this.size3D = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { between0And1: true, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, yCurve: { between0And1: true, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, zCurve: { between0And1: true, constantMin: 1, constantMax: 1, curveMultiplier: 1 } });
+            _this.size3D = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 } });
             return _this;
         }
         Object.defineProperty(ParticleSizeOverLifetimeModule.prototype, "size", {
@@ -36943,7 +36941,7 @@ var feng3d;
             /**
              * 角速度，基于生命周期的旋转。
              */
-            _this.angularVelocity = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { constantMin: 45, constantMax: 45, curveMultiplier: 45 }, yCurve: { constantMin: 45, constantMax: 45, curveMultiplier: 45 }, zCurve: { constantMin: 45, constantMax: 45, curveMultiplier: 45 } });
+            _this.angularVelocity = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 }, yCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 }, zCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 } });
             return _this;
         }
         Object.defineProperty(ParticleRotationOverLifetimeModule.prototype, "x", {
