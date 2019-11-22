@@ -7,6 +7,8 @@ namespace feng3d
      */
     export class ParticleLimitVelocityOverLifetimeModule extends ParticleModule
     {
+        __class__: "feng3d.ParticleLimitVelocityOverLifetimeModule" = "feng3d.ParticleLimitVelocityOverLifetimeModule";
+
         /**
          * Set the size over lifetime on each axis separately.
          * 

@@ -8,6 +8,8 @@ namespace feng3d
      */
     export class ParticleVelocityOverLifetimeModule extends ParticleModule
     {
+        __class__: "feng3d.ParticleVelocityOverLifetimeModule" = "feng3d.ParticleVelocityOverLifetimeModule";
+        
         /**
          * Curve to control particle speed based on lifetime.
          * 

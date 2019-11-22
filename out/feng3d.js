@@ -33934,8 +33934,23 @@ var feng3d;
      */
     var ParticleSystemSimulationSpace;
     (function (ParticleSystemSimulationSpace) {
+        /**
+         * Simulate particles in local space.
+         *
+         * 模拟局部空间中的粒子。
+         */
         ParticleSystemSimulationSpace[ParticleSystemSimulationSpace["Local"] = 0] = "Local";
+        /**
+         * Simulate particles in world space.
+         *
+         * 模拟世界空间中的粒子。
+         */
         ParticleSystemSimulationSpace[ParticleSystemSimulationSpace["World"] = 1] = "World";
+        /**
+         * Simulate particles relative to a custom transform component, defined by ParticleMainModule.customSimulationSpace.
+         *
+         * 模拟粒子相对于自定义变换组件，该组件由ParticleMainModule.customSimulationSpace定义。
+         */
         ParticleSystemSimulationSpace[ParticleSystemSimulationSpace["Custom"] = 2] = "Custom";
     })(ParticleSystemSimulationSpace = feng3d.ParticleSystemSimulationSpace || (feng3d.ParticleSystemSimulationSpace = {}));
 })(feng3d || (feng3d = {}));
@@ -36116,6 +36131,7 @@ var feng3d;
         __extends(ParticleVelocityOverLifetimeModule, _super);
         function ParticleVelocityOverLifetimeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.ParticleVelocityOverLifetimeModule";
             /**
              * Curve to control particle speed based on lifetime.
              *
@@ -36273,6 +36289,7 @@ var feng3d;
         __extends(ParticleLimitVelocityOverLifetimeModule, _super);
         function ParticleLimitVelocityOverLifetimeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.ParticleLimitVelocityOverLifetimeModule";
             /**
              * Set the size over lifetime on each axis separately.
              *

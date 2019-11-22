@@ -15249,8 +15249,23 @@ declare namespace feng3d {
      * 粒子模拟空间
      */
     enum ParticleSystemSimulationSpace {
+        /**
+         * Simulate particles in local space.
+         *
+         * 模拟局部空间中的粒子。
+         */
         Local = 0,
+        /**
+         * Simulate particles in world space.
+         *
+         * 模拟世界空间中的粒子。
+         */
         World = 1,
+        /**
+         * Simulate particles relative to a custom transform component, defined by ParticleMainModule.customSimulationSpace.
+         *
+         * 模拟粒子相对于自定义变换组件，该组件由ParticleMainModule.customSimulationSpace定义。
+         */
         Custom = 2
     }
 }
@@ -16338,6 +16353,7 @@ declare namespace feng3d {
      * 控制每个粒子在其生命周期内的速度。
      */
     class ParticleVelocityOverLifetimeModule extends ParticleModule {
+        __class__: "feng3d.ParticleVelocityOverLifetimeModule";
         /**
          * Curve to control particle speed based on lifetime.
          *
@@ -16411,6 +16427,7 @@ declare namespace feng3d {
      * 基于时间轴限制速度模块。
      */
     class ParticleLimitVelocityOverLifetimeModule extends ParticleModule {
+        __class__: "feng3d.ParticleLimitVelocityOverLifetimeModule";
         /**
          * Set the size over lifetime on each axis separately.
          *
