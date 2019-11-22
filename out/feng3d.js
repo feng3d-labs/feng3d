@@ -14966,23 +14966,33 @@ var feng3d;
     var MinMaxGradientMode;
     (function (MinMaxGradientMode) {
         /**
-         * 颜色常量
+         * Use a single color for the MinMaxGradient.
+         *
+         * 使用单一颜色的。
          */
         MinMaxGradientMode[MinMaxGradientMode["Color"] = 0] = "Color";
         /**
-         * 颜色渐变
+         * Use a single color gradient for the MinMaxGradient.
+         *
+         * 使用单一颜色渐变。
          */
         MinMaxGradientMode[MinMaxGradientMode["Gradient"] = 1] = "Gradient";
         /**
-         * 从最大最小常量颜色中随机
+         * Use a random value between 2 colors for the MinMaxGradient.
+         *
+         * 在两种颜色之间使用一个随机值。
          */
-        MinMaxGradientMode[MinMaxGradientMode["RandomBetweenTwoColors"] = 2] = "RandomBetweenTwoColors";
+        MinMaxGradientMode[MinMaxGradientMode["TwoColors"] = 2] = "TwoColors";
         /**
-         * 从最大最小颜色渐变值中随机
+         * Use a random value between 2 color gradients for the MinMaxGradient.
+         *
+         * 在两个颜色梯度之间使用一个随机值。
          */
-        MinMaxGradientMode[MinMaxGradientMode["RandomBetweenTwoGradients"] = 3] = "RandomBetweenTwoGradients";
+        MinMaxGradientMode[MinMaxGradientMode["TwoGradients"] = 3] = "TwoGradients";
         /**
-         * 从颜色渐变中进行随机
+         * Define a list of colors in the MinMaxGradient, to be chosen from at random.
+         *
+         * 在一个颜色列表中随机选择。
          */
         MinMaxGradientMode[MinMaxGradientMode["RandomColor"] = 4] = "RandomColor";
     })(MinMaxGradientMode = feng3d.MinMaxGradientMode || (feng3d.MinMaxGradientMode = {}));
@@ -14996,7 +15006,9 @@ var feng3d;
         function MinMaxGradient() {
             this.__class__ = "feng3d.MinMaxGradient";
             /**
-             * 模式
+             * Set the mode that the min-max gradient will use to evaluate colors.
+             *
+             * 设置最小-最大梯度将用于评估颜色的模式。
              */
             this.mode = feng3d.MinMaxGradientMode.Color;
             /**
@@ -15004,11 +15016,35 @@ var feng3d;
              */
             this.color = new feng3d.Color4();
             /**
-             * 常量颜色值，作用于 MinMaxGradientMode.RandomBetweenTwoColors
+             * Set a constant color for the lower bound.
+             *
+             * 为下界设置一个常量颜色。
              */
-            this.color1 = new feng3d.Color4();
+            this.colorMin = new feng3d.Color4();
+            /**
+             * Set a constant color for the upper bound.
+             *
+             * 为上界设置一个常量颜色。
+             */
+            this.colorMax = new feng3d.Color4();
+            /**
+             * Set the gradient.
+             *
+             * 设置渐变。
+             */
             this.gradient = new feng3d.Gradient();
-            this.gradient1 = new feng3d.Gradient();
+            /**
+             * Set a gradient for the lower bound.
+             *
+             * 为下界设置一个渐变。
+             */
+            this.gradientMin = new feng3d.Gradient();
+            /**
+             * Set a gradient for the upper bound.
+             *
+             * 为上界设置一个渐变。
+             */
+            this.gradientMax = new feng3d.Gradient();
         }
         /**
          * 获取值
@@ -15021,11 +15057,11 @@ var feng3d;
                     return this.color;
                 case feng3d.MinMaxGradientMode.Gradient:
                     return this.gradient.getValue(time);
-                case feng3d.MinMaxGradientMode.RandomBetweenTwoColors:
-                    return this.color.mixTo(this.color1, randomBetween);
-                case feng3d.MinMaxGradientMode.RandomBetweenTwoGradients:
-                    var min = this.gradient.getValue(time);
-                    var max = this.gradient1.getValue(time);
+                case feng3d.MinMaxGradientMode.TwoColors:
+                    return this.colorMin.mixTo(this.colorMax, randomBetween);
+                case feng3d.MinMaxGradientMode.TwoGradients:
+                    var min = this.gradientMin.getValue(time);
+                    var max = this.gradientMax.getValue(time);
                     var v = min.mixTo(max, randomBetween);
                     return v;
                 case feng3d.MinMaxGradientMode.RandomColor:
@@ -15042,13 +15078,13 @@ var feng3d;
         ], MinMaxGradient.prototype, "color", void 0);
         __decorate([
             feng3d.serialize
-        ], MinMaxGradient.prototype, "color1", void 0);
-        __decorate([
-            feng3d.serialize
         ], MinMaxGradient.prototype, "gradient", void 0);
         __decorate([
             feng3d.serialize
-        ], MinMaxGradient.prototype, "gradient1", void 0);
+        ], MinMaxGradient.prototype, "gradientMin", void 0);
+        __decorate([
+            feng3d.serialize
+        ], MinMaxGradient.prototype, "gradientMax", void 0);
         return MinMaxGradient;
     }());
     feng3d.MinMaxGradient = MinMaxGradient;
@@ -34904,6 +34940,7 @@ var feng3d;
         __extends(ParticleMainModule, _super);
         function ParticleMainModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__class__ = "feng3d.ParticleMainModule";
             _this.enabled = true;
             /**
              * 粒子系统的持续时间(秒)。

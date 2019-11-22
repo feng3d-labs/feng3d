@@ -6933,23 +6933,33 @@ declare namespace feng3d {
      */
     enum MinMaxGradientMode {
         /**
-         * 颜色常量
+         * Use a single color for the MinMaxGradient.
+         *
+         * 使用单一颜色的。
          */
         Color = 0,
         /**
-         * 颜色渐变
+         * Use a single color gradient for the MinMaxGradient.
+         *
+         * 使用单一颜色渐变。
          */
         Gradient = 1,
         /**
-         * 从最大最小常量颜色中随机
+         * Use a random value between 2 colors for the MinMaxGradient.
+         *
+         * 在两种颜色之间使用一个随机值。
          */
-        RandomBetweenTwoColors = 2,
+        TwoColors = 2,
         /**
-         * 从最大最小颜色渐变值中随机
+         * Use a random value between 2 color gradients for the MinMaxGradient.
+         *
+         * 在两个颜色梯度之间使用一个随机值。
          */
-        RandomBetweenTwoGradients = 3,
+        TwoGradients = 3,
         /**
-         * 从颜色渐变中进行随机
+         * Define a list of colors in the MinMaxGradient, to be chosen from at random.
+         *
+         * 在一个颜色列表中随机选择。
          */
         RandomColor = 4
     }
@@ -6961,7 +6971,9 @@ declare namespace feng3d {
     class MinMaxGradient {
         __class__: "feng3d.MinMaxGradient";
         /**
-         * 模式
+         * Set the mode that the min-max gradient will use to evaluate colors.
+         *
+         * 设置最小-最大梯度将用于评估颜色的模式。
          */
         mode: MinMaxGradientMode;
         /**
@@ -6969,11 +6981,35 @@ declare namespace feng3d {
          */
         color: Color4;
         /**
-         * 常量颜色值，作用于 MinMaxGradientMode.RandomBetweenTwoColors
+         * Set a constant color for the lower bound.
+         *
+         * 为下界设置一个常量颜色。
          */
-        color1: Color4;
+        colorMin: Color4;
+        /**
+         * Set a constant color for the upper bound.
+         *
+         * 为上界设置一个常量颜色。
+         */
+        colorMax: Color4;
+        /**
+         * Set the gradient.
+         *
+         * 设置渐变。
+         */
         gradient: Gradient;
-        gradient1: Gradient;
+        /**
+         * Set a gradient for the lower bound.
+         *
+         * 为下界设置一个渐变。
+         */
+        gradientMin: Gradient;
+        /**
+         * Set a gradient for the upper bound.
+         *
+         * 为上界设置一个渐变。
+         */
+        gradientMax: Gradient;
         /**
          * 获取值
          * @param time 时间
@@ -15725,6 +15761,7 @@ declare namespace feng3d {
      * 粒子主模块
      */
     class ParticleMainModule extends ParticleModule {
+        __class__: "feng3d.ParticleMainModule";
         enabled: boolean;
         /**
          * 粒子系统的持续时间(秒)。

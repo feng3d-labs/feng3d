@@ -6,24 +6,38 @@ namespace feng3d
     export enum MinMaxGradientMode
     {
         /**
-         * 颜色常量
+         * Use a single color for the MinMaxGradient.
+         * 
+         * 使用单一颜色的。
          */
-        Color,
+        Color = 0,
+
         /**
-         * 颜色渐变
+         * Use a single color gradient for the MinMaxGradient.
+         * 
+         * 使用单一颜色渐变。
          */
-        Gradient,
+        Gradient = 1,
+
         /**
-         * 从最大最小常量颜色中随机
+         * Use a random value between 2 colors for the MinMaxGradient.
+         * 
+         * 在两种颜色之间使用一个随机值。
          */
-        RandomBetweenTwoColors,
+        TwoColors = 2,
+
         /**
-         * 从最大最小颜色渐变值中随机
+         * Use a random value between 2 color gradients for the MinMaxGradient.
+         * 
+         * 在两个颜色梯度之间使用一个随机值。
          */
-        RandomBetweenTwoGradients,
+        TwoGradients = 3,
+
         /**
-         * 从颜色渐变中进行随机
+         * Define a list of colors in the MinMaxGradient, to be chosen from at random.
+         * 
+         * 在一个颜色列表中随机选择。
          */
-        RandomColor
+        RandomColor = 4
     }
 }
