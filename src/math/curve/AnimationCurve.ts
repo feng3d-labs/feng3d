@@ -46,14 +46,6 @@ namespace feng3d
         keys: AnimationCurveKeyframe[] = [new AnimationCurveKeyframe({ time: 0, value: 1, tangent: 0 }), new AnimationCurveKeyframe({ time: 1, value: 1, tangent: 0 })];
 
         /**
-         * Wrap模式
-         * 
-         * @deprecated
-         */
-        @serialize
-        wrapMode = AnimationCurveWrapMode.Clamp;
-
-        /**
          * 关键点数量
          */
         get numKeys()
@@ -119,7 +111,14 @@ namespace feng3d
          */
         getPoint(t: number)
         {
-            switch (this.wrapMode)
+            var wrapMode = AnimationCurveWrapMode.Clamp;
+
+            if (t < 0)
+                wrapMode = this.preWrapMode;
+            else if (t > 1)
+                wrapMode = this.postWrapMode;
+
+            switch (wrapMode)
             {
                 case AnimationCurveWrapMode.Clamp:
                     t = Math.clamp(t, 0, 1);

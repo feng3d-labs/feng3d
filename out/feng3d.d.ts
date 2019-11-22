@@ -7316,12 +7316,6 @@ declare namespace feng3d {
          */
         keys: AnimationCurveKeyframe[];
         /**
-         * Wrap模式
-         *
-         * @deprecated
-         */
-        wrapMode: AnimationCurveWrapMode;
-        /**
          * 关键点数量
          */
         get numKeys(): number;

@@ -15658,12 +15658,6 @@ var feng3d;
              * 注： 该值已对时间排序，否则赋值前请使用 sort((a, b) => a.time - b.time) 进行排序
              */
             this.keys = [new feng3d.AnimationCurveKeyframe({ time: 0, value: 1, tangent: 0 }), new feng3d.AnimationCurveKeyframe({ time: 1, value: 1, tangent: 0 })];
-            /**
-             * Wrap模式
-             *
-             * @deprecated
-             */
-            this.wrapMode = feng3d.AnimationCurveWrapMode.Clamp;
         }
         Object.defineProperty(AnimationCurve.prototype, "numKeys", {
             /**
@@ -15722,7 +15716,12 @@ var feng3d;
          * @param t 时间轴的位置 [0,1]
          */
         AnimationCurve.prototype.getPoint = function (t) {
-            switch (this.wrapMode) {
+            var wrapMode = feng3d.AnimationCurveWrapMode.Clamp;
+            if (t < 0)
+                wrapMode = this.preWrapMode;
+            else if (t > 1)
+                wrapMode = this.postWrapMode;
+            switch (wrapMode) {
                 case feng3d.AnimationCurveWrapMode.Clamp:
                     t = Math.clamp(t, 0, 1);
                     break;
@@ -15852,9 +15851,6 @@ var feng3d;
         __decorate([
             feng3d.serialize
         ], AnimationCurve.prototype, "keys", void 0);
-        __decorate([
-            feng3d.serialize
-        ], AnimationCurve.prototype, "wrapMode", void 0);
         return AnimationCurve;
     }());
     feng3d.AnimationCurve = AnimationCurve;
