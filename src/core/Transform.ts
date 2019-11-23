@@ -415,7 +415,7 @@ namespace feng3d
                 raw[0] = this._smallestNumber;
                 val.copyRawDataFrom(raw);
             }
-            val.decompose(Orientation3D.EULER_ANGLES, elements);
+            val.decompose(elements);
             this.position = elements[0];
             this.rotation = elements[1].scaleNumber(Math.RAD2DEG);
             this.scale = elements[2];

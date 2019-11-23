@@ -4732,26 +4732,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * Orientation3D 类是用于表示 Matrix4x4 对象的方向样式的常量值枚举。方向的三个类型分别为欧拉角、轴角和四元数。Matrix4x4 对象的 decompose 和 recompose 方法采用其中的某一个枚举类型来标识矩阵的旋转组件。
-
-     */
-    enum Orientation3D {
-        /**
-        * 轴角方向结合使用轴和角度来确定方向。
-        */
-        AXIS_ANGLE = "axisAngle",
-        /**
-        * 欧拉角（decompose() 和 recompose() 方法的默认方向）通过三个不同的对应于每个轴的旋转角来定义方向。
-        */
-        EULER_ANGLES = "eulerAngles",
-        /**
-        * 四元数方向使用复数。
-        */
-        QUATERNION = "quaternion"
-    }
-}
-declare namespace feng3d {
-    /**
      * 矩形
      *
      * Rectangle 对象是按其位置（由它左上角的点 (x, y) 确定）以及宽度和高度定义的区域。<br/>
@@ -5426,6 +5406,11 @@ declare namespace feng3d {
          */
         static RAW_DATA_CONTAINER: number[];
         /**
+         * 设置转换矩阵的平移、旋转和缩放设置。
+         * @param   components      一个由三个 Vector3 对象组成的矢量，这些对象将替代 Matrix4x4 对象的平移、旋转和缩放元素。
+         */
+        static recompose(components: Vector3[]): Matrix4x4;
+        /**
          * 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
         rawData: number[];
@@ -5615,7 +5600,7 @@ declare namespace feng3d {
          * 将转换矩阵的平移、旋转和缩放设置作为由三个 Vector3 对象组成的矢量返回。
          * @return      一个由三个 Vector3 对象组成的矢量，其中，每个对象分别容纳平移、旋转和缩放设置。
          */
-        decompose(orientationStyle?: Orientation3D, result?: Vector3[]): Vector3[];
+        decompose(result?: Vector3[]): Vector3[];
         /**
          * 使用不含平移元素的转换矩阵将 Vector3 对象从一个空间坐标转换到另一个空间坐标。
          * @param   v   一个容纳要转换的坐标的 Vector3 对象。
@@ -5676,7 +5661,7 @@ declare namespace feng3d {
          * 设置转换矩阵的平移、旋转和缩放设置。
          * @param   components      一个由三个 Vector3 对象组成的矢量，这些对象将替代 Matrix4x4 对象的平移、旋转和缩放元素。
          */
-        recompose(components: Vector3[], rotationOrder?: RotationOrder): this;
+        recompose(components: Vector3[]): this;
         /**
          * 使用转换矩阵将 Vector3 对象从一个空间坐标转换到另一个空间坐标。
          * @param   vin   一个容纳要转换的坐标的 Vector3 对象。

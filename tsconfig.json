@@ -79,7 +79,6 @@
         "src/math/geom/Vector2.ts",
         "src/math/geom/Vector3.ts",
         "src/math/geom/Vector4.ts",
-        "src/math/geom/Orientation3D.ts",
         "src/math/geom/Rectangle.ts",
         "src/math/geom/Matrix.ts",
         "src/math/geom/Matrix3x3.ts",

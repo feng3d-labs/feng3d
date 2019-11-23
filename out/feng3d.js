@@ -10057,28 +10057,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * Orientation3D 类是用于表示 Matrix4x4 对象的方向样式的常量值枚举。方向的三个类型分别为欧拉角、轴角和四元数。Matrix4x4 对象的 decompose 和 recompose 方法采用其中的某一个枚举类型来标识矩阵的旋转组件。
-
-     */
-    var Orientation3D;
-    (function (Orientation3D) {
-        /**
-        * 轴角方向结合使用轴和角度来确定方向。
-        */
-        Orientation3D["AXIS_ANGLE"] = "axisAngle";
-        /**
-        * 欧拉角（decompose() 和 recompose() 方法的默认方向）通过三个不同的对应于每个轴的旋转角来定义方向。
-        */
-        Orientation3D["EULER_ANGLES"] = "eulerAngles";
-        /**
-        * 四元数方向使用复数。
-        */
-        Orientation3D["QUATERNION"] = "quaternion";
-    })(Orientation3D = feng3d.Orientation3D || (feng3d.Orientation3D = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 矩形
      *
      * Rectangle 对象是按其位置（由它左上角的点 (x, y) 确定）以及宽度和高度定义的区域。<br/>
@@ -11427,6 +11405,13 @@ var feng3d;
                 0, 0, 0, 1 //
             ];
         }
+        /**
+         * 设置转换矩阵的平移、旋转和缩放设置。
+         * @param   components      一个由三个 Vector3 对象组成的矢量，这些对象将替代 Matrix4x4 对象的平移、旋转和缩放元素。
+         */
+        Matrix4x4.recompose = function (components) {
+            return new Matrix4x4().recompose(components);
+        };
         Object.defineProperty(Matrix4x4.prototype, "position", {
             /**
              * 一个保存显示对象在转换参照帧中的 3D 坐标 (x,y,z) 位置的 Vector3 对象。
@@ -12008,8 +11993,7 @@ var feng3d;
          * 将转换矩阵的平移、旋转和缩放设置作为由三个 Vector3 对象组成的矢量返回。
          * @return      一个由三个 Vector3 对象组成的矢量，其中，每个对象分别容纳平移、旋转和缩放设置。
          */
-        Matrix4x4.prototype.decompose = function (orientationStyle, result) {
-            if (orientationStyle === void 0) { orientationStyle = feng3d.Orientation3D.EULER_ANGLES; }
+        Matrix4x4.prototype.decompose = function (result) {
             var raw = this.rawData;
             var a = raw[0];
             var e = raw[1];
@@ -12026,7 +12010,6 @@ var feng3d;
             var tx = Math.sqrt(a * a + e * e + i * i);
             var ty = Math.sqrt(b * b + f * f + j * j);
             var tz = Math.sqrt(c * c + g * g + k * k);
-            var tw = 0;
             var scaleX = tx;
             var scaleY = ty;
             var scaleZ = tz;
@@ -12042,47 +12025,11 @@ var feng3d;
             c = c / scaleZ;
             g = g / scaleZ;
             k = k / scaleZ;
-            if (orientationStyle == feng3d.Orientation3D.EULER_ANGLES) {
-                tx = Math.atan2(j, k);
-                ty = Math.atan2(-i, Math.sqrt(a * a + e * e));
-                var s1 = Math.sin(tx);
-                var c1 = Math.cos(tx);
-                tz = Math.atan2(s1 * c - c1 * b, c1 * f - s1 * g);
-            }
-            else if (orientationStyle == feng3d.Orientation3D.AXIS_ANGLE) {
-                tw = Math.acos((a + f + k - 1) / 2);
-                var len = Math.sqrt((j - g) * (j - g) + (c - i) * (c - i) + (e - b) * (e - b));
-                tx = (j - g) / len;
-                ty = (c - i) / len;
-                tz = (e - b) / len;
-            }
-            else { //Orientation3D.QUATERNION
-                var tr = a + f + k;
-                if (tr > 0) {
-                    tw = Math.sqrt(1 + tr) / 2;
-                    tx = (j - g) / (4 * tw);
-                    ty = (c - i) / (4 * tw);
-                    tz = (e - b) / (4 * tw);
-                }
-                else if ((a > f) && (a > k)) {
-                    tx = Math.sqrt(1 + a - f - k) / 2;
-                    tw = (j - g) / (4 * tx);
-                    ty = (e + b) / (4 * tx);
-                    tz = (c + i) / (4 * tx);
-                }
-                else if (f > k) {
-                    ty = Math.sqrt(1 + f - a - k) / 2;
-                    tx = (e + b) / (4 * ty);
-                    tw = (c - i) / (4 * ty);
-                    tz = (j + g) / (4 * ty);
-                }
-                else {
-                    tz = Math.sqrt(1 + k - a - f) / 2;
-                    tx = (c + i) / (4 * tz);
-                    ty = (j + g) / (4 * tz);
-                    tw = (e - b) / (4 * tz);
-                }
-            }
+            tx = Math.atan2(j, k);
+            ty = Math.atan2(-i, Math.sqrt(a * a + e * e));
+            var s1 = Math.sin(tx);
+            var c1 = Math.cos(tx);
+            tz = Math.atan2(s1 * c - c1 * b, c1 * f - s1 * g);
             result = result || [new feng3d.Vector3(), new feng3d.Vector3(), new feng3d.Vector3()];
             result[0].x = x;
             result[0].y = y;
@@ -12256,8 +12203,7 @@ var feng3d;
          * 设置转换矩阵的平移、旋转和缩放设置。
          * @param   components      一个由三个 Vector3 对象组成的矢量，这些对象将替代 Matrix4x4 对象的平移、旋转和缩放元素。
          */
-        Matrix4x4.prototype.recompose = function (components, rotationOrder) {
-            if (rotationOrder === void 0) { rotationOrder = feng3d.rotationOrder; }
+        Matrix4x4.prototype.recompose = function (components) {
             var rx = components[1].x;
             var ry = components[1].y;
             var rz = components[1].z;
@@ -23931,7 +23877,7 @@ var feng3d;
                     raw[0] = this._smallestNumber;
                     val.copyRawDataFrom(raw);
                 }
-                val.decompose(feng3d.Orientation3D.EULER_ANGLES, elements);
+                val.decompose(elements);
                 this.position = elements[0];
                 this.rotation = elements[1].scaleNumber(Math.RAD2DEG);
                 this.scale = elements[2];
