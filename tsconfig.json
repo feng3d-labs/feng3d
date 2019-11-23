@@ -69,6 +69,9 @@
         // 函数方程
         "src/math/EquationSolving.ts",
         "src/math/HighFunction.ts",
+        //
+        "src/math/CoordinateSystem.ts",
+        "src/math/RotationOrder.ts",
         // 颜色
         "src/math/Color3.ts",
         "src/math/Color4.ts",
@@ -220,7 +223,6 @@
         "src/geometry/PointGeometry.ts",
         "src/geometry/SegmentGeometry.ts",
         // 摄像机
-        "src/cameras/lenses/CoordinateSystem.ts",
         "src/cameras/lenses/LensBase.ts",
         "src/cameras/lenses/OrthographicLens.ts",
         "src/cameras/lenses/PerspectiveLens.ts",
@@ -366,6 +368,7 @@
         //
         "src/utils/GameObjectFactory.ts",
         //
-        "src/core/Mouse3DManager.ts"
+        "src/core/Mouse3DManager.ts",
+        "src/Feng3d.ts",
     ]
 }
