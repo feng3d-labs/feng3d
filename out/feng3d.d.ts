@@ -5597,7 +5597,7 @@ declare namespace feng3d {
          */
         copyToMatrix3D(dest: Matrix4x4): this;
         /**
-         * 将转换矩阵的平移、旋转和缩放设置作为由三个 Vector3 对象组成的矢量返回。
+         * 将转换矩阵的平移、旋转和缩放设置作为由三个 Vector3 对象组成的矢量返回。缩放使用欧拉角表示且旋转顺序为XYZ。
          * @return      一个由三个 Vector3 对象组成的矢量，其中，每个对象分别容纳平移、旋转和缩放设置。
          */
         decompose(result?: Vector3[]): Vector3[];
