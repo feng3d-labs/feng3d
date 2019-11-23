@@ -84,7 +84,6 @@
         "src/math/geom/Matrix3x3.ts",
         "src/math/geom/Matrix4x4.ts",
         "src/math/geom/Quaternion.ts",
-        "src/math/geom/Euler.ts",
         "src/math/geom/Line3D.ts",
         "src/math/geom/Segment3D.ts",
         "src/math/geom/Ray3D.ts",

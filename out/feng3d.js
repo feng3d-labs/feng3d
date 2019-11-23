@@ -11406,11 +11406,16 @@ var feng3d;
             ];
         }
         /**
-         * 设置转换矩阵的平移、旋转和缩放设置。
-         * @param   components      一个由三个 Vector3 对象组成的矢量，这些对象将替代 Matrix4x4 对象的平移、旋转和缩放元素。
+         * 通过位移旋转缩放重组矩阵
+         *
+         * @param position 位移
+         * @param rotation 旋转，按照指定旋转顺序旋转。
+         * @param scale 缩放。
+         * @param order 旋转顺序。
          */
-        Matrix4x4.recompose = function (components) {
-            return new Matrix4x4().recompose(components);
+        Matrix4x4.recompose = function (position, rotation, scale, order) {
+            if (order === void 0) { order = feng3d.rotationOrder; }
+            return new Matrix4x4().recompose(position, rotation, scale, order);
         };
         Object.defineProperty(Matrix4x4.prototype, "position", {
             /**
@@ -11432,13 +11437,13 @@ var feng3d;
              * 旋转角度
              */
             get: function () {
-                var rotation = this.decompose()[1].scaleNumber(Math.RAD2DEG);
+                var rotation = this.decompose()[1];
                 return rotation;
             },
             set: function (v) {
                 var comps = this.decompose();
-                comps[1].copy(v).scaleNumber(Math.DEG2RAD);
-                this.recompose(comps);
+                comps[1].copy(v);
+                this.recompose(comps[0], comps[1], comps[2]);
             },
             enumerable: true,
             configurable: true
@@ -12034,9 +12039,9 @@ var feng3d;
             result[0].x = x;
             result[0].y = y;
             result[0].z = z;
-            result[1].x = tx;
-            result[1].y = ty;
-            result[1].z = tz;
+            result[1].x = tx * Math.RAD2DEG;
+            result[1].y = ty * Math.RAD2DEG;
+            result[1].z = tz * Math.RAD2DEG;
             result[2].x = scaleX;
             result[2].y = scaleY;
             result[2].z = scaleZ;
@@ -12158,6 +12163,19 @@ var feng3d;
             this.prepend(scaleMat);
             return this;
         };
+        Matrix4x4.prototype.prependScale1 = function (xScale, yScale, zScale) {
+            var rawData = this.rawData;
+            rawData[0] *= xScale;
+            rawData[1] *= xScale;
+            rawData[2] *= xScale;
+            rawData[4] *= yScale;
+            rawData[5] *= yScale;
+            rawData[6] *= yScale;
+            rawData[8] *= zScale;
+            rawData[9] *= zScale;
+            rawData[10] *= zScale;
+            return this;
+        };
         /**
          * 在 Matrix4x4 对象上前置一个增量平移，沿 x、y 和 z 轴重新定位。在将 Matrix4x4 对象应用于显示对象时，矩阵会在 Matrix4x4 对象中先执行平移更改，然后再执行其他转换。
          * @param   x   沿 x 轴的增量平移。
@@ -12200,21 +12218,18 @@ var feng3d;
             return this;
         };
         /**
-         * 设置转换矩阵的平移、旋转和缩放设置。缩放使用欧拉角表示且旋转顺序为XYZ。
-         * @param   components      一个由三个 Vector3 对象组成的矢量，这些对象将替代 Matrix4x4 对象的平移、旋转和缩放元素。
+         * 通过位移旋转缩放重组矩阵
+         *
+         * @param position 位移
+         * @param rotation 旋转角度，按照指定旋转顺序旋转。
+         * @param scale 缩放。
+         * @param order 旋转顺序。
          */
-        Matrix4x4.prototype.recompose = function (components) {
-            var rx = components[1].x;
-            var ry = components[1].y;
-            var rz = components[1].z;
-            var sx = Math.sin(rx), cx = Math.cos(rx), sy = Math.sin(ry), cy = Math.cos(ry), sz = Math.sin(rz), cz = Math.cos(rz);
-            var xS = components[2].x, yS = components[2].y, zS = components[2].z;
-            this.rawData = [
-                cy * cz * xS, cy * sz * xS, -sy * xS, 0,
-                (sx * sy * cz - cx * sz) * yS, (sx * sy * sz + cx * cz) * yS, sx * cy * yS, 0,
-                (cx * sy * cz + sx * sz) * zS, (cx * sy * sz - sx * cz) * zS, cx * cy * zS, 0,
-                components[0].x, components[0].y, components[0].z, 1,
-            ];
+        Matrix4x4.prototype.recompose = function (position, rotation, scale, order) {
+            if (order === void 0) { order = feng3d.rotationOrder; }
+            this.fromRotation(rotation.x, rotation.y, rotation.z, order);
+            this.prependScale(scale.x, scale.y, scale.z);
+            this.appendTranslation(position.x, position.y, position.z);
             return this;
         };
         /**
@@ -12264,7 +12279,6 @@ var feng3d;
             var rotationMatrix3d = Matrix4x4.fromRotation(vin.x, vin.y, vin.z);
             rotationMatrix3d.append(this);
             var newrotation = rotationMatrix3d.decompose()[1];
-            newrotation.scaleNumber(180 / Math.PI);
             var v = Math.round((newrotation.x - vin.x) / 180);
             if (v % 2 != 0) {
                 newrotation.x += 180;
@@ -12914,6 +12928,7 @@ var feng3d;
          */
         Quaternion.prototype.fromMatrix = function (matrix) {
             var v = matrix.decompose()[1];
+            v.scaleNumber(Math.RAD2DEG);
             this.fromEulerAngles(v.x, v.y, v.z);
             return this;
         };
@@ -23879,7 +23894,7 @@ var feng3d;
                 }
                 val.decompose(elements);
                 this.position = elements[0];
-                this.rotation = elements[1].scaleNumber(Math.RAD2DEG);
+                this.rotation = elements[1];
                 this.scale = elements[2];
             },
             enumerable: true,
@@ -24101,7 +24116,6 @@ var feng3d;
             var rotationMatrix3d = feng3d.Matrix4x4.fromRotation(this.rx, this.ry, this.rz);
             rotationMatrix3d.appendRotation(axis, angle, pivotPoint);
             var newrotation = rotationMatrix3d.decompose()[1];
-            newrotation.scaleNumber(180 / Math.PI);
             var v = Math.round((newrotation.x - this.rx) / 180);
             if (v % 2 != 0) {
                 newrotation.x += 180;
@@ -24189,9 +24203,9 @@ var feng3d;
         //------------------------------------------
         Transform.prototype.updateMatrix3D = function () {
             tempComponents[0].init(this._x, this._y, this._z);
-            tempComponents[1].init(this._rx * Math.DEG2RAD, this._ry * Math.DEG2RAD, this._rz * Math.DEG2RAD);
+            tempComponents[1].init(this._rx, this._ry, this._rz);
             tempComponents[2].init(this._sx, this._sy, this._sz);
-            this._matrix3d = new feng3d.Matrix4x4().recompose(tempComponents);
+            this._matrix3d = new feng3d.Matrix4x4().recompose(tempComponents[0], tempComponents[1], tempComponents[2]);
         };
         //------------------------------------------
         // Private Methods
@@ -25302,7 +25316,7 @@ var feng3d;
                 var depthScale = this.getDepthScale(this.camera);
                 var vec = _localToWorldMatrix.decompose();
                 vec[2].scaleNumber(depthScale * this.holdSize);
-                _localToWorldMatrix.recompose(vec);
+                _localToWorldMatrix.recompose(vec[0], vec[1], vec[2]);
                 feng3d.debuger && console.assert(!isNaN(_localToWorldMatrix.rawData[0]));
             }
         };
@@ -39754,11 +39768,7 @@ var feng3d;
                 skeletonJoint.parentIndex = joint.Parent;
                 var position = war3Model.pivotPoints[joint.ObjectId];
                 ;
-                var matrix3D = new feng3d.Matrix4x4().recompose([
-                    position,
-                    new feng3d.Vector3(),
-                    new feng3d.Vector3(1, 1, 1)
-                ]);
+                var matrix3D = new feng3d.Matrix4x4().recompose(position, new feng3d.Vector3(), new feng3d.Vector3(1, 1, 1));
                 if (skeletonJoint.parentIndex != -1) {
                     var parentskeletonJoint = createSkeletonJoint(skeletonJoint.parentIndex);
                     joint.pivotPoint = matrix3D.position.subTo(parentskeletonJoint.matrix3D.position);

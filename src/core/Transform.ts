@@ -417,7 +417,7 @@ namespace feng3d
             }
             val.decompose(elements);
             this.position = elements[0];
-            this.rotation = elements[1].scaleNumber(Math.RAD2DEG);
+            this.rotation = elements[1];
             this.scale = elements[2];
         }
 
@@ -649,7 +649,6 @@ namespace feng3d
             var rotationMatrix3d = Matrix4x4.fromRotation(this.rx, this.ry, this.rz);
             rotationMatrix3d.appendRotation(axis, angle, pivotPoint);
             var newrotation = rotationMatrix3d.decompose()[1];
-            newrotation.scaleNumber(180 / Math.PI);
             var v = Math.round((newrotation.x - this.rx) / 180);
             if (v % 2 != 0)
             {
@@ -750,10 +749,10 @@ namespace feng3d
         protected updateMatrix3D()
         {
             tempComponents[0].init(this._x, this._y, this._z);
-            tempComponents[1].init(this._rx * Math.DEG2RAD, this._ry * Math.DEG2RAD, this._rz * Math.DEG2RAD);
+            tempComponents[1].init(this._rx, this._ry, this._rz);
             tempComponents[2].init(this._sx, this._sy, this._sz);
 
-            this._matrix3d = new Matrix4x4().recompose(tempComponents);
+            this._matrix3d = new Matrix4x4().recompose(tempComponents[0], tempComponents[1], tempComponents[2]);
         }
 
         //------------------------------------------

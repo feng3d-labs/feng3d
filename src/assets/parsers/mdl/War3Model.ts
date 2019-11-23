@@ -146,11 +146,11 @@ namespace feng3d.war3
 
 			var position = war3Model.pivotPoints[joint.ObjectId];;
 
-			var matrix3D = new Matrix4x4().recompose([
+			var matrix3D = new Matrix4x4().recompose(
 				position,
 				new Vector3(),
 				new Vector3(1, 1, 1)
-			]);
+			);
 			if (skeletonJoint.parentIndex != -1)
 			{
 				var parentskeletonJoint = createSkeletonJoint(skeletonJoint.parentIndex);

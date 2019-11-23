@@ -5406,10 +5406,14 @@ declare namespace feng3d {
          */
         static RAW_DATA_CONTAINER: number[];
         /**
-         * 设置转换矩阵的平移、旋转和缩放设置。
-         * @param   components      一个由三个 Vector3 对象组成的矢量，这些对象将替代 Matrix4x4 对象的平移、旋转和缩放元素。
+         * 通过位移旋转缩放重组矩阵
+         *
+         * @param position 位移
+         * @param rotation 旋转，按照指定旋转顺序旋转。
+         * @param scale 缩放。
+         * @param order 旋转顺序。
          */
-        static recompose(components: Vector3[]): Matrix4x4;
+        static recompose(position: Vector3, rotation: Vector3, scale: Vector3, order?: RotationOrder): Matrix4x4;
         /**
          * 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
@@ -5635,6 +5639,7 @@ declare namespace feng3d {
          * @param   zScale      用于沿 z 轴缩放对象的乘数。
          */
         prependScale(xScale: number, yScale: number, zScale: number): this;
+        prependScale1(xScale: number, yScale: number, zScale: number): this;
         /**
          * 在 Matrix4x4 对象上前置一个增量平移，沿 x、y 和 z 轴重新定位。在将 Matrix4x4 对象应用于显示对象时，矩阵会在 Matrix4x4 对象中先执行平移更改，然后再执行其他转换。
          * @param   x   沿 x 轴的增量平移。
@@ -5658,10 +5663,14 @@ declare namespace feng3d {
          */
         moveForward(distance: number): this;
         /**
-         * 设置转换矩阵的平移、旋转和缩放设置。缩放使用欧拉角表示且旋转顺序为XYZ。
-         * @param   components      一个由三个 Vector3 对象组成的矢量，这些对象将替代 Matrix4x4 对象的平移、旋转和缩放元素。
+         * 通过位移旋转缩放重组矩阵
+         *
+         * @param position 位移
+         * @param rotation 旋转角度，按照指定旋转顺序旋转。
+         * @param scale 缩放。
+         * @param order 旋转顺序。
          */
-        recompose(components: Vector3[]): this;
+        recompose(position: Vector3, rotation: Vector3, scale: Vector3, order?: RotationOrder): this;
         /**
          * 使用转换矩阵将 Vector3 对象从一个空间坐标转换到另一个空间坐标。
          * @param   vin   一个容纳要转换的坐标的 Vector3 对象。

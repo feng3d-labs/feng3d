@@ -72,7 +72,7 @@ namespace feng3d
                 var depthScale = this.getDepthScale(this.camera);
                 var vec = _localToWorldMatrix.decompose();
                 vec[2].scaleNumber(depthScale * this.holdSize);
-                _localToWorldMatrix.recompose(vec);
+                _localToWorldMatrix.recompose(vec[0], vec[1], vec[2]);
 
                 debuger && console.assert(!isNaN(_localToWorldMatrix.rawData[0]));
             }

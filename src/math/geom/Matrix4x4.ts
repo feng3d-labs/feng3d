@@ -36,12 +36,16 @@ namespace feng3d
         ];
 
         /**
-         * 设置转换矩阵的平移、旋转和缩放设置。
-         * @param   components      一个由三个 Vector3 对象组成的矢量，这些对象将替代 Matrix4x4 对象的平移、旋转和缩放元素。
+         * 通过位移旋转缩放重组矩阵
+         * 
+         * @param position 位移
+         * @param rotation 旋转，按照指定旋转顺序旋转。
+         * @param scale 缩放。
+         * @param order 旋转顺序。
          */
-        static recompose(components: Vector3[])
+        static recompose(position: Vector3, rotation: Vector3, scale: Vector3, order = feng3d.rotationOrder)
         {
-            return new Matrix4x4().recompose(components);
+            return new Matrix4x4().recompose(position, rotation, scale, order);
         }
 
         /**
@@ -70,15 +74,15 @@ namespace feng3d
          */
         get rotation()
         {
-            var rotation = this.decompose()[1].scaleNumber(Math.RAD2DEG);
+            var rotation = this.decompose()[1];
             return rotation;
         }
 
         set rotation(v)
         {
             var comps = this.decompose();
-            comps[1].copy(v).scaleNumber(Math.DEG2RAD);
-            this.recompose(comps);
+            comps[1].copy(v);
+            this.recompose(comps[0], comps[1], comps[2]);
         }
 
         /**
@@ -788,9 +792,9 @@ namespace feng3d
             result[0].x = x;
             result[0].y = y;
             result[0].z = z;
-            result[1].x = tx;
-            result[1].y = ty;
-            result[1].z = tz;
+            result[1].x = tx * Math.RAD2DEG;
+            result[1].y = ty * Math.RAD2DEG;
+            result[1].z = tz * Math.RAD2DEG;
             result[2].x = scaleX;
             result[2].y = scaleY;
             result[2].z = scaleZ;
@@ -905,6 +909,22 @@ namespace feng3d
             return this;
         }
 
+        prependScale1(xScale: number, yScale: number, zScale: number)
+        {
+            var rawData = this.rawData;
+            rawData[0] *= xScale;
+            rawData[1] *= xScale;
+            rawData[2] *= xScale;
+            rawData[4] *= yScale;
+            rawData[5] *= yScale;
+            rawData[6] *= yScale;
+            rawData[8] *= zScale;
+            rawData[9] *= zScale;
+            rawData[10] *= zScale;
+
+            return this;
+        }
+
         /**
          * 在 Matrix4x4 对象上前置一个增量平移，沿 x、y 和 z 轴重新定位。在将 Matrix4x4 对象应用于显示对象时，矩阵会在 Matrix4x4 对象中先执行平移更改，然后再执行其他转换。
          * @param   x   沿 x 轴的增量平移。
@@ -955,26 +975,18 @@ namespace feng3d
         }
 
         /**
-         * 设置转换矩阵的平移、旋转和缩放设置。缩放使用欧拉角表示且旋转顺序为XYZ。
-         * @param   components      一个由三个 Vector3 对象组成的矢量，这些对象将替代 Matrix4x4 对象的平移、旋转和缩放元素。
+         * 通过位移旋转缩放重组矩阵
+         * 
+         * @param position 位移
+         * @param rotation 旋转角度，按照指定旋转顺序旋转。
+         * @param scale 缩放。
+         * @param order 旋转顺序。
          */
-        recompose(components: Vector3[])
+        recompose(position: Vector3, rotation: Vector3, scale: Vector3, order = feng3d.rotationOrder)
         {
-            var rx = components[1].x;
-            var ry = components[1].y;
-            var rz = components[1].z;
-
-            var sx = Math.sin(rx), cx = Math.cos(rx), sy = Math.sin(ry), cy = Math.cos(ry), sz = Math.sin(rz), cz = Math.cos(rz);
-            var xS = components[2].x, yS = components[2].y, zS = components[2].z;
-
-            this.rawData = [
-                cy * cz * xS, cy * sz * xS, -sy * xS, 0,
-                (sx * sy * cz - cx * sz) * yS, (sx * sy * sz + cx * cz) * yS, sx * cy * yS, 0,
-                (cx * sy * cz + sx * sz) * zS, (cx * sy * sz - sx * cz) * zS, cx * cy * zS, 0,
-                components[0].x, components[0].y, components[0].z, 1,
-            ];
-
-
+            this.fromRotation(rotation.x, rotation.y, rotation.z, order);
+            this.prependScale(scale.x, scale.y, scale.z);
+            this.appendTranslation(position.x, position.y, position.z);
             return this;
         }
 
@@ -1033,7 +1045,6 @@ namespace feng3d
             var rotationMatrix3d = Matrix4x4.fromRotation(vin.x, vin.y, vin.z);
             rotationMatrix3d.append(this);
             var newrotation = rotationMatrix3d.decompose()[1];
-            newrotation.scaleNumber(180 / Math.PI);
             var v = Math.round((newrotation.x - vin.x) / 180);
             if (v % 2 != 0)
             {
