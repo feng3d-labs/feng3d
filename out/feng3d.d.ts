@@ -5658,7 +5658,7 @@ declare namespace feng3d {
          */
         moveForward(distance: number): this;
         /**
-         * 设置转换矩阵的平移、旋转和缩放设置。
+         * 设置转换矩阵的平移、旋转和缩放设置。缩放使用欧拉角表示且旋转顺序为XYZ。
          * @param   components      一个由三个 Vector3 对象组成的矢量，这些对象将替代 Matrix4x4 对象的平移、旋转和缩放元素。
          */
         recompose(components: Vector3[]): this;
