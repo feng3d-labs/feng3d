@@ -130,10 +130,9 @@ namespace feng3d
 
                 var matrix3d = this.transform.localToWorldMatrix;
                 matrix3d.appendRotation(matrix3d.right, offsetPoint.y, matrix3d.position);
-                var up = Vector3.Y_AXIS;
+                var up = Vector3.Y_AXIS.clone();
                 if (matrix3d.up.dot(up) < 0)
                 {
-                    up = up.clone();
                     up.scaleNumber(-1);
                 }
                 matrix3d.appendRotation(up, offsetPoint.x, matrix3d.position);

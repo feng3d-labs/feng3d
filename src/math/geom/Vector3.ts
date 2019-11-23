@@ -11,22 +11,27 @@ namespace feng3d
         /**
         * 定义为 Vector3 对象的 x 轴，坐标为 (1,0,0)。
         */
-        static X_AXIS = new Vector3(1, 0, 0);
+        static X_AXIS = Object.freeze(new Vector3(1, 0, 0));
 
         /**
         * 定义为 Vector3 对象的 y 轴，坐标为 (0,1,0)
         */
-        static Y_AXIS = new Vector3(0, 1, 0);
+        static Y_AXIS = Object.freeze(new Vector3(0, 1, 0));
 
         /**
         * 定义为 Vector3 对象的 z 轴，坐标为 (0,0,1)
         */
-        static Z_AXIS = new Vector3(0, 0, 1);
+        static Z_AXIS = Object.freeze(new Vector3(0, 0, 1));
 
         /**
-         * 原点
+         * 原点 Vector3(0,0,0)
          */
-        static ZERO = new Vector3();
+        static ZERO = Object.freeze(new Vector3());
+
+        /**
+         * Vector3(1, 1, 1)
+         */
+        static ONE = Object.freeze(new Vector3(1, 1, 1));
 
         /**
          * 从数组中初始化向量
@@ -41,11 +46,16 @@ namespace feng3d
 
         /**
          * 随机三维向量
+         * 
          * @param size 尺寸
+         * @param double 如果值为false，随机范围在[0,size],否则[-size,size]。默认为false。
          */
-        static random(size = 1)
+        static random(size = 1, double = false)
         {
-            return new Vector3(Math.random() * size, Math.random() * size, Math.random() * size);
+            var v = new Vector3(Math.random(), Math.random(), Math.random());
+            if (double) v.scaleNumber(2).subNumber(1);
+            v.scaleNumber(size);
+            return v;
         }
 
         /**

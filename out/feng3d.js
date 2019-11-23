@@ -8141,6 +8141,76 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 坐标系统类型
+     */
+    var CoordinateSystem;
+    (function (CoordinateSystem) {
+        /**
+         * 默认坐标系统，左手坐标系统
+         */
+        CoordinateSystem[CoordinateSystem["LEFT_HANDED"] = 0] = "LEFT_HANDED";
+        /**
+         * 右手坐标系统
+         */
+        CoordinateSystem[CoordinateSystem["RIGHT_HANDED"] = 1] = "RIGHT_HANDED";
+    })(CoordinateSystem = feng3d.CoordinateSystem || (feng3d.CoordinateSystem = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 用于表示欧拉角的旋转顺序
+     */
+    /**
+     * 用于表示欧拉角的旋转顺序
+     */
+    /**
+     * 用于表示欧拉角的旋转顺序
+     */
+    /**
+     * 用于表示欧拉角的旋转顺序
+     */
+    /**
+     * 用于表示欧拉角的旋转顺序
+     */
+    /**
+     * 用于表示欧拉角的旋转顺序
+     */
+    /**
+     * 用于表示欧拉角的旋转顺序
+     */
+    /**
+     * 用于表示欧拉角的旋转顺序
+     */
+    var RotationOrder;
+    (function (RotationOrder) {
+        /**
+         * 依次按XYZ轴旋转。
+         *
+         * feng3d默认旋转顺序。
+         *
+         * playcanvas默认旋转顺序。
+         */
+        RotationOrder[RotationOrder["XYZ"] = 0] = "XYZ";
+        /**
+         * 依次按ZXY轴旋转。
+         *
+         * unity默认旋转顺序。
+         */
+        RotationOrder[RotationOrder["ZXY"] = 1] = "ZXY";
+        /**
+         * 依次按ZYX轴旋转。
+         *
+         * three.js默认旋转顺序。
+         */
+        RotationOrder[RotationOrder["ZYX"] = 2] = "ZYX";
+        RotationOrder[RotationOrder["YXZ"] = 3] = "YXZ";
+        RotationOrder[RotationOrder["YZX"] = 4] = "YZX";
+        RotationOrder[RotationOrder["XZY"] = 5] = "XZY";
+    })(RotationOrder = feng3d.RotationOrder || (feng3d.RotationOrder = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 颜色
      */
     var Color3 = /** @class */ (function () {
@@ -8909,11 +8979,18 @@ var feng3d;
         };
         /**
          * 随机三维向量
+         *
          * @param size 尺寸
+         * @param double 如果值为false，随机范围在[0,size],否则[-size,size]。默认为false。
          */
-        Vector3.random = function (size) {
+        Vector3.random = function (size, double) {
             if (size === void 0) { size = 1; }
-            return new Vector3(Math.random() * size, Math.random() * size, Math.random() * size);
+            if (double === void 0) { double = false; }
+            var v = new Vector3(Math.random(), Math.random(), Math.random());
+            if (double)
+                v.scaleNumber(2).subNumber(1);
+            v.scaleNumber(size);
+            return v;
         };
         /**
          * 从Vector2初始化
@@ -9608,19 +9685,23 @@ var feng3d;
         /**
         * 定义为 Vector3 对象的 x 轴，坐标为 (1,0,0)。
         */
-        Vector3.X_AXIS = new Vector3(1, 0, 0);
+        Vector3.X_AXIS = Object.freeze(new Vector3(1, 0, 0));
         /**
         * 定义为 Vector3 对象的 y 轴，坐标为 (0,1,0)
         */
-        Vector3.Y_AXIS = new Vector3(0, 1, 0);
+        Vector3.Y_AXIS = Object.freeze(new Vector3(0, 1, 0));
         /**
         * 定义为 Vector3 对象的 z 轴，坐标为 (0,0,1)
         */
-        Vector3.Z_AXIS = new Vector3(0, 0, 1);
+        Vector3.Z_AXIS = Object.freeze(new Vector3(0, 0, 1));
         /**
-         * 原点
+         * 原点 Vector3(0,0,0)
          */
-        Vector3.ZERO = new Vector3();
+        Vector3.ZERO = Object.freeze(new Vector3());
+        /**
+         * Vector3(1, 1, 1)
+         */
+        Vector3.ONE = Object.freeze(new Vector3(1, 1, 1));
         __decorate([
             feng3d.serialize,
             feng3d.oav()
@@ -11330,6 +11411,8 @@ var feng3d;
      *  |     12        13        14       15   |   平移
      *  ---                                   ---
      * ```
+     *
+     * @see https://github.com/mrdoob/three.js/blob/dev/src/math/Matrix4.js
      */
     var Matrix4x4 = /** @class */ (function () {
         /**
@@ -11489,6 +11572,126 @@ var feng3d;
                 cx * sy * cz + sx * sz, cx * sy * sz - sx * cz, cx * cy, 0,
                 0, 0, 0, 1,
             ]);
+        };
+        /**
+         * 从四元素初始化矩阵。
+         *
+         * @param q 四元素
+         */
+        Matrix4x4.fromQuaternion = function (q) {
+            return new Matrix4x4().fromQuaternion(q);
+        };
+        /**
+         * 从欧拉角旋转角度初始化矩阵。
+         *
+         * @param   rx      用于沿 x 轴旋转对象的角度。
+         * @param   ry      用于沿 y 轴旋转对象的角度。
+         * @param   rz      用于沿 z 轴旋转对象的角度。
+         * @param   order   绕轴旋转的顺序。
+         */
+        Matrix4x4.prototype.fromRotation = function (rx, ry, rz, order) {
+            if (order === void 0) { order = feng3d.rotationOrder; }
+            var te = this.rawData;
+            rx = Math.degToRad(rx);
+            ry = Math.degToRad(ry);
+            rz = Math.degToRad(rz);
+            var a = Math.cos(rx), b = Math.sin(rx);
+            var c = Math.cos(ry), d = Math.sin(ry);
+            var e = Math.cos(rz), f = Math.sin(rz);
+            if (order === feng3d.RotationOrder.XYZ) {
+                var ae = a * e, af = a * f, be = b * e, bf = b * f;
+                te[0] = c * e;
+                te[4] = -c * f;
+                te[8] = d;
+                te[1] = af + be * d;
+                te[5] = ae - bf * d;
+                te[9] = -b * c;
+                te[2] = bf - ae * d;
+                te[6] = be + af * d;
+                te[10] = a * c;
+            }
+            else if (order === feng3d.RotationOrder.YXZ) {
+                var ce = c * e, cf = c * f, de = d * e, df = d * f;
+                te[0] = ce + df * b;
+                te[4] = de * b - cf;
+                te[8] = a * d;
+                te[1] = a * f;
+                te[5] = a * e;
+                te[9] = -b;
+                te[2] = cf * b - de;
+                te[6] = df + ce * b;
+                te[10] = a * c;
+            }
+            else if (order === feng3d.RotationOrder.ZXY) {
+                var ce = c * e, cf = c * f, de = d * e, df = d * f;
+                te[0] = ce - df * b;
+                te[4] = -a * f;
+                te[8] = de + cf * b;
+                te[1] = cf + de * b;
+                te[5] = a * e;
+                te[9] = df - ce * b;
+                te[2] = -a * d;
+                te[6] = b;
+                te[10] = a * c;
+            }
+            else if (order === feng3d.RotationOrder.ZYX) {
+                var ae = a * e, af = a * f, be = b * e, bf = b * f;
+                te[0] = c * e;
+                te[4] = be * d - af;
+                te[8] = ae * d + bf;
+                te[1] = c * f;
+                te[5] = bf * d + ae;
+                te[9] = af * d - be;
+                te[2] = -d;
+                te[6] = b * c;
+                te[10] = a * c;
+            }
+            else if (order === feng3d.RotationOrder.YZX) {
+                var ac = a * c, ad = a * d, bc = b * c, bd = b * d;
+                te[0] = c * e;
+                te[4] = bd - ac * f;
+                te[8] = bc * f + ad;
+                te[1] = f;
+                te[5] = a * e;
+                te[9] = -b * e;
+                te[2] = -d * e;
+                te[6] = ad * f + bc;
+                te[10] = ac - bd * f;
+            }
+            else if (order === feng3d.RotationOrder.XZY) {
+                var ac = a * c, ad = a * d, bc = b * c, bd = b * d;
+                te[0] = c * e;
+                te[4] = -f;
+                te[8] = d * e;
+                te[1] = ac * f + bd;
+                te[5] = a * e;
+                te[9] = ad * f - bc;
+                te[2] = bc * f - ad;
+                te[6] = b * e;
+                te[10] = bd * f + ac;
+            }
+            else {
+                console.error("\u521D\u59CB\u5316\u77E9\u9635\u65F6\u9519\u8BEF\u65CB\u8F6C\u987A\u5E8F " + order);
+            }
+            // bottom row
+            te[3] = 0;
+            te[7] = 0;
+            te[11] = 0;
+            // last column
+            te[12] = 0;
+            te[13] = 0;
+            te[14] = 0;
+            te[15] = 1;
+            return this;
+        };
+        /**
+         * 从四元素初始化矩阵。
+         *
+         * @param q 四元素
+         */
+        Matrix4x4.prototype.fromQuaternion = function (q) {
+            q.toMatrix3D(this);
+            return this;
         };
         /**
          * 创建缩放矩阵
@@ -11972,7 +12175,8 @@ var feng3d;
          * 设置转换矩阵的平移、旋转和缩放设置。
          * @param   components      一个由三个 Vector3 对象组成的矢量，这些对象将替代 Matrix4x4 对象的平移、旋转和缩放元素。
          */
-        Matrix4x4.prototype.recompose = function (components) {
+        Matrix4x4.prototype.recompose = function (components, rotationOrder) {
+            if (rotationOrder === void 0) { rotationOrder = feng3d.rotationOrder; }
             var rx = components[1].x;
             var ry = components[1].y;
             var rz = components[1].z;
@@ -12674,7 +12878,6 @@ var feng3d;
             rawData[7] = 0.0;
             rawData[11] = 0;
             rawData[15] = 1;
-            target.copyRawDataFrom(rawData);
             return target;
         };
         /**
@@ -27054,27 +27257,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 坐标系统类型
-
-     */
-    var CoordinateSystem = /** @class */ (function () {
-        function CoordinateSystem() {
-        }
-        /**
-         * 默认坐标系统，左手坐标系统
-         */
-        CoordinateSystem.LEFT_HANDED = 0;
-        /**
-         * 右手坐标系统
-         */
-        CoordinateSystem.RIGHT_HANDED = 1;
-        return CoordinateSystem;
-    }());
-    feng3d.CoordinateSystem = CoordinateSystem;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 摄像机镜头
      *
      * 镜头主要作用是投影以及逆投影。
@@ -31589,9 +31771,8 @@ var feng3d;
                 // this.targetObject.transform.rotate(Vector3.Y_AXIS, offsetPoint.x, this.targetObject.transform.position);
                 var matrix3d = this.transform.localToWorldMatrix;
                 matrix3d.appendRotation(matrix3d.right, offsetPoint.y, matrix3d.position);
-                var up = feng3d.Vector3.Y_AXIS;
+                var up = feng3d.Vector3.Y_AXIS.clone();
                 if (matrix3d.up.dot(up) < 0) {
-                    up = up.clone();
                     up.scaleNumber(-1);
                 }
                 matrix3d.appendRotation(up, offsetPoint.x, matrix3d.position);
@@ -41766,5 +41947,28 @@ var feng3d;
         return WindowMouseInput;
     }(MouseInput));
     feng3d.WindowMouseInput = WindowMouseInput;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 版本号
+     */
+    feng3d.version = "0.1.3";
+    /**
+     * 引擎中使用的坐标系统，默认左手坐标系统。
+     *
+     * three.js 右手坐标系统。
+     * playcanvas 右手坐标系统。
+     * unity    左手坐标系统。
+     */
+    feng3d.coordinateSystem = feng3d.CoordinateSystem.LEFT_HANDED;
+    /**
+     * 引擎中使用的旋转顺序。默认 XYZ。
+     *
+     * unity ZXY
+     * playcanvas XYZ
+     * three.js ZYX
+     */
+    feng3d.rotationOrder = feng3d.RotationOrder.XYZ;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map

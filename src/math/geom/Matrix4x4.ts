@@ -20,6 +20,8 @@ namespace feng3d
      *  |     12        13        14       15   |   平移
      *  ---                                   ---
      * ```
+     * 
+     * @see https://github.com/mrdoob/three.js/blob/dev/src/math/Matrix4.js
      */
     export class Matrix4x4
     {
@@ -190,6 +192,162 @@ namespace feng3d
                 cx * sy * cz + sx * sz, cx * sy * sz - sx * cz, cx * cy, 0,
                 0, 0, 0, 1,
             ]);
+        }
+
+        /**
+         * 从四元素初始化矩阵。
+         * 
+         * @param q 四元素
+         */
+        static fromQuaternion(q: Quaternion)
+        {
+            return new Matrix4x4().fromQuaternion(q);
+        }
+
+        /**
+         * 从欧拉角旋转角度初始化矩阵。
+         * 
+         * @param   rx      用于沿 x 轴旋转对象的角度。
+         * @param   ry      用于沿 y 轴旋转对象的角度。
+         * @param   rz      用于沿 z 轴旋转对象的角度。  
+         * @param   order   绕轴旋转的顺序。
+         */
+        fromRotation(rx: number, ry: number, rz: number, order = feng3d.rotationOrder)
+        {
+            var te = this.rawData;
+
+            rx = Math.degToRad(rx);
+            ry = Math.degToRad(ry);
+            rz = Math.degToRad(rz);
+
+            var a = Math.cos(rx), b = Math.sin(rx);
+            var c = Math.cos(ry), d = Math.sin(ry);
+            var e = Math.cos(rz), f = Math.sin(rz);
+
+            if (order === RotationOrder.XYZ)
+            {
+                var ae = a * e, af = a * f, be = b * e, bf = b * f;
+
+                te[0] = c * e;
+                te[4] = - c * f;
+                te[8] = d;
+
+                te[1] = af + be * d;
+                te[5] = ae - bf * d;
+                te[9] = - b * c;
+
+                te[2] = bf - ae * d;
+                te[6] = be + af * d;
+                te[10] = a * c;
+
+            } else if (order === RotationOrder.YXZ)
+            {
+                var ce = c * e, cf = c * f, de = d * e, df = d * f;
+
+                te[0] = ce + df * b;
+                te[4] = de * b - cf;
+                te[8] = a * d;
+
+                te[1] = a * f;
+                te[5] = a * e;
+                te[9] = - b;
+
+                te[2] = cf * b - de;
+                te[6] = df + ce * b;
+                te[10] = a * c;
+
+            } else if (order === RotationOrder.ZXY)
+            {
+                var ce = c * e, cf = c * f, de = d * e, df = d * f;
+
+                te[0] = ce - df * b;
+                te[4] = - a * f;
+                te[8] = de + cf * b;
+
+                te[1] = cf + de * b;
+                te[5] = a * e;
+                te[9] = df - ce * b;
+
+                te[2] = - a * d;
+                te[6] = b;
+                te[10] = a * c;
+
+            } else if (order === RotationOrder.ZYX)
+            {
+                var ae = a * e, af = a * f, be = b * e, bf = b * f;
+
+                te[0] = c * e;
+                te[4] = be * d - af;
+                te[8] = ae * d + bf;
+
+                te[1] = c * f;
+                te[5] = bf * d + ae;
+                te[9] = af * d - be;
+
+                te[2] = - d;
+                te[6] = b * c;
+                te[10] = a * c;
+
+            } else if (order === RotationOrder.YZX)
+            {
+                var ac = a * c, ad = a * d, bc = b * c, bd = b * d;
+
+                te[0] = c * e;
+                te[4] = bd - ac * f;
+                te[8] = bc * f + ad;
+
+                te[1] = f;
+                te[5] = a * e;
+                te[9] = - b * e;
+
+                te[2] = - d * e;
+                te[6] = ad * f + bc;
+                te[10] = ac - bd * f;
+
+            } else if (order === RotationOrder.XZY)
+            {
+                var ac = a * c, ad = a * d, bc = b * c, bd = b * d;
+
+                te[0] = c * e;
+                te[4] = - f;
+                te[8] = d * e;
+
+                te[1] = ac * f + bd;
+                te[5] = a * e;
+                te[9] = ad * f - bc;
+
+                te[2] = bc * f - ad;
+                te[6] = b * e;
+                te[10] = bd * f + ac;
+
+            } else
+            {
+                console.error(`初始化矩阵时错误旋转顺序 ${order}`);
+            }
+
+            // bottom row
+            te[3] = 0;
+            te[7] = 0;
+            te[11] = 0;
+
+            // last column
+            te[12] = 0;
+            te[13] = 0;
+            te[14] = 0;
+            te[15] = 1;
+
+            return this;
+        }
+
+        /**
+         * 从四元素初始化矩阵。
+         * 
+         * @param q 四元素
+         */
+        fromQuaternion(q: Quaternion)
+        {
+            q.toMatrix3D(this);
+            return this;
         }
 
         /**
@@ -737,7 +895,7 @@ namespace feng3d
          * 设置转换矩阵的平移、旋转和缩放设置。
          * @param   components      一个由三个 Vector3 对象组成的矢量，这些对象将替代 Matrix4x4 对象的平移、旋转和缩放元素。
          */
-        recompose(components: Vector3[])
+        recompose(components: Vector3[], rotationOrder = feng3d.rotationOrder)
         {
             var rx = components[1].x;
             var ry = components[1].y;
@@ -752,6 +910,8 @@ namespace feng3d
                 (cx * sy * cz + sx * sz) * zS, (cx * sy * sz - sx * cz) * zS, cx * cy * zS, 0,
                 components[0].x, components[0].y, components[0].z, 1,
             ];
+
+
             return this;
         }
 

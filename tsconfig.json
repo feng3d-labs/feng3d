@@ -70,8 +70,8 @@
         "src/math/EquationSolving.ts",
         "src/math/HighFunction.ts",
         //
-        "src/math/CoordinateSystem.ts",
-        "src/math/RotationOrder.ts",
+        "src/math/enums/CoordinateSystem.ts",
+        "src/math/enums/RotationOrder.ts",
         // 颜色
         "src/math/Color3.ts",
         "src/math/Color4.ts",

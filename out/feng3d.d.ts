@@ -3556,6 +3556,72 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 坐标系统类型
+     */
+    enum CoordinateSystem {
+        /**
+         * 默认坐标系统，左手坐标系统
+         */
+        LEFT_HANDED = 0,
+        /**
+         * 右手坐标系统
+         */
+        RIGHT_HANDED = 1
+    }
+}
+declare namespace feng3d {
+    /**
+     * 用于表示欧拉角的旋转顺序
+     */
+    /**
+     * 用于表示欧拉角的旋转顺序
+     */
+    /**
+     * 用于表示欧拉角的旋转顺序
+     */
+    /**
+     * 用于表示欧拉角的旋转顺序
+     */
+    /**
+     * 用于表示欧拉角的旋转顺序
+     */
+    /**
+     * 用于表示欧拉角的旋转顺序
+     */
+    /**
+     * 用于表示欧拉角的旋转顺序
+     */
+    /**
+     * 用于表示欧拉角的旋转顺序
+     */
+    enum RotationOrder {
+        /**
+         * 依次按XYZ轴旋转。
+         *
+         * feng3d默认旋转顺序。
+         *
+         * playcanvas默认旋转顺序。
+         */
+        XYZ = 0,
+        /**
+         * 依次按ZXY轴旋转。
+         *
+         * unity默认旋转顺序。
+         */
+        ZXY = 1,
+        /**
+         * 依次按ZYX轴旋转。
+         *
+         * three.js默认旋转顺序。
+         */
+        ZYX = 2,
+        YXZ = 3,
+        YZX = 4,
+        XZY = 5
+    }
+}
+declare namespace feng3d {
+    /**
      * 颜色
      */
     class Color3 {
@@ -4083,19 +4149,23 @@ declare namespace feng3d {
         /**
         * 定义为 Vector3 对象的 x 轴，坐标为 (1,0,0)。
         */
-        static X_AXIS: Vector3;
+        static X_AXIS: Readonly<Vector3>;
         /**
         * 定义为 Vector3 对象的 y 轴，坐标为 (0,1,0)
         */
-        static Y_AXIS: Vector3;
+        static Y_AXIS: Readonly<Vector3>;
         /**
         * 定义为 Vector3 对象的 z 轴，坐标为 (0,0,1)
         */
-        static Z_AXIS: Vector3;
+        static Z_AXIS: Readonly<Vector3>;
         /**
-         * 原点
+         * 原点 Vector3(0,0,0)
          */
-        static ZERO: Vector3;
+        static ZERO: Readonly<Vector3>;
+        /**
+         * Vector3(1, 1, 1)
+         */
+        static ONE: Readonly<Vector3>;
         /**
          * 从数组中初始化向量
          * @param array 数组
@@ -4105,9 +4175,11 @@ declare namespace feng3d {
         static fromArray(array: ArrayLike<number>, offset?: number): Vector3;
         /**
          * 随机三维向量
+         *
          * @param size 尺寸
+         * @param double 如果值为false，随机范围在[0,size],否则[-size,size]。默认为false。
          */
-        static random(size?: number): Vector3;
+        static random(size?: number, double?: boolean): Vector3;
         /**
          * 从Vector2初始化
          */
@@ -5345,6 +5417,8 @@ declare namespace feng3d {
      *  |     12        13        14       15   |   平移
      *  ---                                   ---
      * ```
+     *
+     * @see https://github.com/mrdoob/three.js/blob/dev/src/math/Matrix4.js
      */
     class Matrix4x4 {
         /**
@@ -5411,6 +5485,27 @@ declare namespace feng3d {
          * @param   rz      用于沿 z 轴旋转对象的角度。
          */
         static fromRotation(rx: number, ry: number, rz: number): Matrix4x4;
+        /**
+         * 从四元素初始化矩阵。
+         *
+         * @param q 四元素
+         */
+        static fromQuaternion(q: Quaternion): Matrix4x4;
+        /**
+         * 从欧拉角旋转角度初始化矩阵。
+         *
+         * @param   rx      用于沿 x 轴旋转对象的角度。
+         * @param   ry      用于沿 y 轴旋转对象的角度。
+         * @param   rz      用于沿 z 轴旋转对象的角度。
+         * @param   order   绕轴旋转的顺序。
+         */
+        fromRotation(rx: number, ry: number, rz: number, order?: RotationOrder): this;
+        /**
+         * 从四元素初始化矩阵。
+         *
+         * @param q 四元素
+         */
+        fromQuaternion(q: Quaternion): this;
         /**
          * 创建缩放矩阵
          * @param   xScale      用于沿 x 轴缩放对象的乘数。
@@ -5573,7 +5668,7 @@ declare namespace feng3d {
          * 设置转换矩阵的平移、旋转和缩放设置。
          * @param   components      一个由三个 Vector3 对象组成的矢量，这些对象将替代 Matrix4x4 对象的平移、旋转和缩放元素。
          */
-        recompose(components: Vector3[]): this;
+        recompose(components: Vector3[], rotationOrder?: RotationOrder): this;
         /**
          * 使用转换矩阵将 Vector3 对象从一个空间坐标转换到另一个空间坐标。
          * @param   vin   一个容纳要转换的坐标的 Vector3 对象。
@@ -12823,22 +12918,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 坐标系统类型
-
-     */
-    class CoordinateSystem {
-        /**
-         * 默认坐标系统，左手坐标系统
-         */
-        static LEFT_HANDED: number;
-        /**
-         * 右手坐标系统
-         */
-        static RIGHT_HANDED: number;
-    }
-}
-declare namespace feng3d {
-    /**
      * 摄像机镜头
      *
      * 镜头主要作用是投影以及逆投影。
@@ -18268,5 +18347,27 @@ declare namespace feng3d {
             clientY: number;
         };
     }
+}
+declare namespace feng3d {
+    /**
+     * 版本号
+     */
+    var version: string;
+    /**
+     * 引擎中使用的坐标系统，默认左手坐标系统。
+     *
+     * three.js 右手坐标系统。
+     * playcanvas 右手坐标系统。
+     * unity    左手坐标系统。
+     */
+    var coordinateSystem: CoordinateSystem;
+    /**
+     * 引擎中使用的旋转顺序。默认 XYZ。
+     *
+     * unity ZXY
+     * playcanvas XYZ
+     * three.js ZYX
+     */
+    var rotationOrder: RotationOrder;
 }
 //# sourceMappingURL=feng3d.d.ts.map
