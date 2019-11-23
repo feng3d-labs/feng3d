@@ -5473,18 +5473,26 @@ declare namespace feng3d {
          */
         constructor(datas?: number[]);
         /**
+         * 获取矩阵旋转。
+         *
+         * @param order 欧拉角的旋转顺序
+         */
+        getRotation(rotation?: Vector3, order?: RotationOrder): Vector3;
+        /**
          * 创建旋转矩阵
          * @param   axis            旋转轴
          * @param   degrees         角度
          */
         static fromAxisRotate(axis: Vector3, degrees: number): Matrix4x4;
         /**
-         * 创建旋转矩阵
+         * 从欧拉角旋转角度初始化矩阵。
+         *
          * @param   rx      用于沿 x 轴旋转对象的角度。
          * @param   ry      用于沿 y 轴旋转对象的角度。
          * @param   rz      用于沿 z 轴旋转对象的角度。
+         * @param   order   绕轴旋转的顺序。
          */
-        static fromRotation(rx: number, ry: number, rz: number): Matrix4x4;
+        static fromRotation(rx: number, ry: number, rz: number, order?: RotationOrder): Matrix4x4;
         /**
          * 从四元素初始化矩阵。
          *

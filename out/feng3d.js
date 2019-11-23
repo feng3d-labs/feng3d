@@ -11536,6 +11536,93 @@ var feng3d;
             configurable: true
         });
         /**
+         * 获取矩阵旋转。
+         *
+         * @param order 欧拉角的旋转顺序
+         */
+        Matrix4x4.prototype.getRotation = function (rotation, order) {
+            if (rotation === void 0) { rotation = new feng3d.Vector3(); }
+            if (order === void 0) { order = feng3d.rotationOrder; }
+            var te = this.rawData;
+            var m11 = te[0], m12 = te[4], m13 = te[8];
+            var m21 = te[1], m22 = te[5], m23 = te[9];
+            var m31 = te[2], m32 = te[6], m33 = te[10];
+            var rx = 0;
+            var ry = 0;
+            var rz = 0;
+            if (order === feng3d.RotationOrder.XYZ) {
+                ry = Math.asin(Math.clamp(m13, -1, 1));
+                if (Math.abs(m13) < 0.9999999) {
+                    rx = Math.atan2(-m23, m33);
+                    rz = Math.atan2(-m12, m11);
+                }
+                else {
+                    rx = Math.atan2(m32, m22);
+                    rz = 0;
+                }
+            }
+            else if (order === feng3d.RotationOrder.YXZ) {
+                rx = Math.asin(-Math.clamp(m23, -1, 1));
+                if (Math.abs(m23) < 0.9999999) {
+                    ry = Math.atan2(m13, m33);
+                    rz = Math.atan2(m21, m22);
+                }
+                else {
+                    ry = Math.atan2(-m31, m11);
+                    rz = 0;
+                }
+            }
+            else if (order === feng3d.RotationOrder.ZXY) {
+                rx = Math.asin(Math.clamp(m32, -1, 1));
+                if (Math.abs(m32) < 0.9999999) {
+                    ry = Math.atan2(-m31, m33);
+                    rz = Math.atan2(-m12, m22);
+                }
+                else {
+                    ry = 0;
+                    rz = Math.atan2(m21, m11);
+                }
+            }
+            else if (order === feng3d.RotationOrder.ZYX) {
+                ry = Math.asin(-Math.clamp(m31, -1, 1));
+                if (Math.abs(m31) < 0.9999999) {
+                    rx = Math.atan2(m32, m33);
+                    rz = Math.atan2(m21, m11);
+                }
+                else {
+                    rx = 0;
+                    rz = Math.atan2(-m12, m22);
+                }
+            }
+            else if (order === feng3d.RotationOrder.YZX) {
+                rz = Math.asin(Math.clamp(m21, -1, 1));
+                if (Math.abs(m21) < 0.9999999) {
+                    rx = Math.atan2(-m23, m22);
+                    ry = Math.atan2(-m31, m11);
+                }
+                else {
+                    rx = 0;
+                    ry = Math.atan2(m13, m33);
+                }
+            }
+            else if (order === feng3d.RotationOrder.XZY) {
+                rz = Math.asin(-Math.clamp(m12, -1, 1));
+                if (Math.abs(m12) < 0.9999999) {
+                    rx = Math.atan2(m32, m22);
+                    ry = Math.atan2(m13, m11);
+                }
+                else {
+                    rx = Math.atan2(-m23, m33);
+                    ry = 0;
+                }
+            }
+            else {
+                console.error("\u83B7\u53D6\u77E9\u9635\u65CB\u8F6C\u65F6\u9519\u8BEF\u65CB\u8F6C\u987A\u5E8F\u53C2\u6570 " + order);
+            }
+            rotation.init(rx, ry, rz);
+            return rotation;
+        };
+        /**
          * 创建旋转矩阵
          * @param   axis            旋转轴
          * @param   degrees         角度
@@ -11556,22 +11643,16 @@ var feng3d;
             return rotationMat;
         };
         /**
-         * 创建旋转矩阵
+         * 从欧拉角旋转角度初始化矩阵。
+         *
          * @param   rx      用于沿 x 轴旋转对象的角度。
          * @param   ry      用于沿 y 轴旋转对象的角度。
          * @param   rz      用于沿 z 轴旋转对象的角度。
+         * @param   order   绕轴旋转的顺序。
          */
-        Matrix4x4.fromRotation = function (rx, ry, rz) {
-            rx = Math.degToRad(rx);
-            ry = Math.degToRad(ry);
-            rz = Math.degToRad(rz);
-            var sx = Math.sin(rx), cx = Math.cos(rx), sy = Math.sin(ry), cy = Math.cos(ry), sz = Math.sin(rz), cz = Math.cos(rz);
-            return new Matrix4x4([
-                cy * cz, cy * sz, -sy, 0,
-                sx * sy * cz - cx * sz, sx * sy * sz + cx * cz, sx * cy, 0,
-                cx * sy * cz + sx * sz, cx * sy * sz - sx * cz, cx * cy, 0,
-                0, 0, 0, 1,
-            ]);
+        Matrix4x4.fromRotation = function (rx, ry, rz, order) {
+            if (order === void 0) { order = feng3d.rotationOrder; }
+            return new Matrix4x4().fromRotation(rx, ry, rz, order);
         };
         /**
          * 从四元素初始化矩阵。
@@ -11598,7 +11679,7 @@ var feng3d;
             var a = Math.cos(rx), b = Math.sin(rx);
             var c = Math.cos(ry), d = Math.sin(ry);
             var e = Math.cos(rz), f = Math.sin(rz);
-            if (order === feng3d.RotationOrder.XYZ) {
+            if (order === feng3d.RotationOrder.ZYX) {
                 var ae = a * e, af = a * f, be = b * e, bf = b * f;
                 te[0] = c * e;
                 te[4] = -c * f;
@@ -11610,7 +11691,7 @@ var feng3d;
                 te[6] = be + af * d;
                 te[10] = a * c;
             }
-            else if (order === feng3d.RotationOrder.YXZ) {
+            else if (order === feng3d.RotationOrder.ZXY) {
                 var ce = c * e, cf = c * f, de = d * e, df = d * f;
                 te[0] = ce + df * b;
                 te[4] = de * b - cf;
@@ -11622,7 +11703,7 @@ var feng3d;
                 te[6] = df + ce * b;
                 te[10] = a * c;
             }
-            else if (order === feng3d.RotationOrder.ZXY) {
+            else if (order === feng3d.RotationOrder.YXZ) {
                 var ce = c * e, cf = c * f, de = d * e, df = d * f;
                 te[0] = ce - df * b;
                 te[4] = -a * f;
@@ -11634,7 +11715,7 @@ var feng3d;
                 te[6] = b;
                 te[10] = a * c;
             }
-            else if (order === feng3d.RotationOrder.ZYX) {
+            else if (order === feng3d.RotationOrder.XYZ) {
                 var ae = a * e, af = a * f, be = b * e, bf = b * f;
                 te[0] = c * e;
                 te[4] = be * d - af;
@@ -11646,7 +11727,7 @@ var feng3d;
                 te[6] = b * c;
                 te[10] = a * c;
             }
-            else if (order === feng3d.RotationOrder.YZX) {
+            else if (order === feng3d.RotationOrder.XZY) {
                 var ac = a * c, ad = a * d, bc = b * c, bd = b * d;
                 te[0] = c * e;
                 te[4] = bd - ac * f;
@@ -11658,7 +11739,7 @@ var feng3d;
                 te[6] = ad * f + bc;
                 te[10] = ac - bd * f;
             }
-            else if (order === feng3d.RotationOrder.XZY) {
+            else if (order === feng3d.RotationOrder.YZX) {
                 var ac = a * c, ad = a * d, bc = b * c, bd = b * d;
                 te[0] = c * e;
                 te[4] = -f;
