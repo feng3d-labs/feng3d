@@ -791,11 +791,11 @@ namespace feng3d
          */
         decompose(position = new Vector3(), rotation = new Vector3(), scale = new Vector3(), order = feng3d.rotationOrder)
         {
-            this.getRotation(rotation, order);
-            this.getPosition(position);
-            this.getScale(scale);
+            // this.getRotation(rotation, order);
+            // this.getPosition(position);
+            // this.getScale(scale);
 
-            console.assert(order == RotationOrder.XYZ, `只支持 XYZ 顺序选择！`);
+            console.assert(order == RotationOrder.ZYX, `只支持 XYZ 顺序选择！`);
 
             var raw = this.rawData;
 

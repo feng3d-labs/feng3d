@@ -12028,14 +12028,14 @@ var feng3d;
          * @param order 旋转顺序。
          */
         Matrix4x4.prototype.decompose = function (position, rotation, scale, order) {
+            // this.getRotation(rotation, order);
+            // this.getPosition(position);
+            // this.getScale(scale);
             if (position === void 0) { position = new feng3d.Vector3(); }
             if (rotation === void 0) { rotation = new feng3d.Vector3(); }
             if (scale === void 0) { scale = new feng3d.Vector3(); }
             if (order === void 0) { order = feng3d.rotationOrder; }
-            this.getRotation(rotation, order);
-            this.getPosition(position);
-            this.getScale(scale);
-            console.assert(order == feng3d.RotationOrder.XYZ, "\u53EA\u652F\u6301 XYZ \u987A\u5E8F\u9009\u62E9\uFF01");
+            console.assert(order == feng3d.RotationOrder.ZYX, "\u53EA\u652F\u6301 XYZ \u987A\u5E8F\u9009\u62E9\uFF01");
             var raw = this.rawData;
             var a = raw[0];
             var e = raw[1];
