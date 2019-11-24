@@ -3572,31 +3572,12 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * 用于表示欧拉角的旋转顺序
-     */
-    /**
-     * 用于表示欧拉角的旋转顺序
-     */
-    /**
-     * 用于表示欧拉角的旋转顺序
-     */
-    /**
-     * 用于表示欧拉角的旋转顺序
-     */
-    /**
-     * 用于表示欧拉角的旋转顺序
-     */
-    /**
-     * 用于表示欧拉角的旋转顺序
-     */
-    /**
-     * 用于表示欧拉角的旋转顺序
-     */
-    /**
-     * 用于表示欧拉角的旋转顺序
+     *
+     * 如果顺序为XYZ，则依次按 ZYZ 轴旋转。为什么循序与定义相反？因为three.js中都这么定义，他们为什么这么定义就不清楚了。
      */
     enum RotationOrder {
         /**
-         * 依次按XYZ轴旋转。
+         * 依次按 ZYZ 轴旋转。
          *
          * feng3d默认旋转顺序。
          *
@@ -3604,13 +3585,13 @@ declare namespace feng3d {
          */
         XYZ = 0,
         /**
-         * 依次按ZXY轴旋转。
+         * 依次按 YXZ轴旋转。
          *
          * unity默认旋转顺序。
          */
         ZXY = 1,
         /**
-         * 依次按ZYX轴旋转。
+         * 依次按 XYZ 轴旋转。
          *
          * three.js默认旋转顺序。
          */
@@ -5424,12 +5405,25 @@ declare namespace feng3d {
         get position(): Vector3;
         set position(value: Vector3);
         /**
+         * 获取位移
+         *
+         * @param value 用于存储位移信息的向量
+         */
+        getPosition(value?: Vector3): Vector3;
+        /**
+         * 设置位移
+         *
+         * @param value 位移
+         */
+        setPosition(value: Vector3): this;
+        getScale(scale?: Vector3): Vector3;
+        /**
          * 旋转角度
          */
         get rotation(): Vector3;
         set rotation(v: Vector3);
         /**
-         * 一个用于确定矩阵是否可逆的数字。
+         * 一个用于确定矩阵是否可逆的数字。如果值为0则不可逆。
          */
         get determinant(): number;
         /**
@@ -5462,12 +5456,6 @@ declare namespace feng3d {
          */
         constructor(datas?: number[]);
         /**
-         * 获取矩阵旋转。
-         *
-         * @param order 欧拉角的旋转顺序
-         */
-        getRotation(rotation?: Vector3, order?: RotationOrder): Vector3;
-        /**
          * 创建旋转矩阵
          * @param   axis            旋转轴
          * @param   degrees         角度
@@ -5497,6 +5485,13 @@ declare namespace feng3d {
          * @param   order   绕轴旋转的顺序。
          */
         fromRotation(rx: number, ry: number, rz: number, order?: RotationOrder): this;
+        /**
+         * 获取欧拉旋转角度。
+         *
+         * @param rotation
+         * @param order   绕轴旋转的顺序。
+         */
+        getRotation(rotation?: Vector3, order?: RotationOrder): Vector3;
         /**
          * 从四元素初始化矩阵。
          *
@@ -5601,10 +5596,23 @@ declare namespace feng3d {
          */
         copyToMatrix3D(dest: Matrix4x4): this;
         /**
-         * 将转换矩阵的平移、旋转和缩放设置作为由三个 Vector3 对象组成的矢量返回。缩放使用欧拉角表示且旋转顺序为XYZ。
-         * @return      一个由三个 Vector3 对象组成的矢量，其中，每个对象分别容纳平移、旋转和缩放设置。
+         * 通过位移旋转缩放重组矩阵
+         *
+         * @param position 位移
+         * @param rotation 旋转角度，按照指定旋转顺序旋转。
+         * @param scale 缩放。
+         * @param order 旋转顺序。
          */
-        decompose(result?: Vector3[]): Vector3[];
+        recompose(position: Vector3, rotation: Vector3, scale: Vector3, order?: RotationOrder): this;
+        /**
+         * 把矩阵分解为位移旋转缩放。
+         *
+         * @param position 位移
+         * @param rotation 旋转角度，按照指定旋转顺序旋转。
+         * @param scale 缩放。
+         * @param order 旋转顺序。
+         */
+        decompose(position?: Vector3, rotation?: Vector3, scale?: Vector3, order?: RotationOrder): Vector3[];
         /**
          * 使用不含平移元素的转换矩阵将 Vector3 对象从一个空间坐标转换到另一个空间坐标。
          * @param   v   一个容纳要转换的坐标的 Vector3 对象。
@@ -5662,15 +5670,6 @@ declare namespace feng3d {
          * @param distance  移动距离
          */
         moveForward(distance: number): this;
-        /**
-         * 通过位移旋转缩放重组矩阵
-         *
-         * @param position 位移
-         * @param rotation 旋转角度，按照指定旋转顺序旋转。
-         * @param scale 缩放。
-         * @param order 旋转顺序。
-         */
-        recompose(position: Vector3, rotation: Vector3, scale: Vector3, order?: RotationOrder): this;
         /**
          * 使用转换矩阵将 Vector3 对象从一个空间坐标转换到另一个空间坐标。
          * @param   vin   一个容纳要转换的坐标的 Vector3 对象。
@@ -5950,8 +5949,6 @@ declare namespace feng3d {
          */
         copy(q: Quaternion): this;
     }
-}
-declare namespace feng3d {
 }
 declare namespace feng3d {
     /**

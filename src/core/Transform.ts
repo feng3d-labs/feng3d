@@ -415,7 +415,7 @@ namespace feng3d
                 raw[0] = this._smallestNumber;
                 val.copyRawDataFrom(raw);
             }
-            val.decompose(elements);
+            val.decompose(elements[0], elements[1], elements[2]);
             this.position = elements[0];
             this.rotation = elements[1];
             this.scale = elements[2];
