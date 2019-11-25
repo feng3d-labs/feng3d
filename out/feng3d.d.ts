@@ -12250,8 +12250,8 @@ declare namespace feng3d {
         /**
          * 几何体
          */
-        get geometry(): CustomGeometry | PointGeometry | SegmentGeometry | PlaneGeometry | CubeGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | ParametricGeometry | TerrainGeometry;
-        set geometry(v: CustomGeometry | PointGeometry | SegmentGeometry | PlaneGeometry | CubeGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | ParametricGeometry | TerrainGeometry);
+        get geometry(): CustomGeometry | PointGeometry | SegmentGeometry | QuadGeometry | PlaneGeometry | CubeGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | ParametricGeometry | TerrainGeometry;
+        set geometry(v: CustomGeometry | PointGeometry | SegmentGeometry | QuadGeometry | PlaneGeometry | CubeGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | ParametricGeometry | TerrainGeometry);
         private _geometry;
         /**
          * 材质
@@ -12580,7 +12580,7 @@ declare namespace feng3d {
         /**
          * 公告牌
          */
-        static billboard: PlaneGeometry;
+        static billboard: QuadGeometry;
         private preview;
         name: string;
         /**
@@ -13206,6 +13206,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    interface GeometryMap {
+        QuadGeometry: QuadGeometry;
+    }
     /**
      * 四边形面皮几何体
      */
@@ -15081,7 +15084,7 @@ declare namespace feng3d {
         get textureSheetAnimation(): ParticleTextureSheetAnimationModule;
         set textureSheetAnimation(v: ParticleTextureSheetAnimationModule);
         private _textureSheetAnimation;
-        geometry: PlaneGeometry;
+        geometry: QuadGeometry;
         material: Material;
         castShadows: boolean;
         receiveShadows: boolean;

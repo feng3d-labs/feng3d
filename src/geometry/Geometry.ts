@@ -80,7 +80,7 @@ namespace feng3d
         /**
          * 公告牌
          */
-        static billboard: PlaneGeometry;
+        static billboard: QuadGeometry;
 
         @oav({ component: "OAVFeng3dPreView" })
         private preview = "";
