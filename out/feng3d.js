@@ -33309,7 +33309,7 @@ var feng3d;
     }());
     feng3d.ParticleUniforms = ParticleUniforms;
     feng3d.shaderConfig.shaders["particle"].cls = ParticleUniforms;
-    feng3d.shaderConfig.shaders["particle"].renderParams = { enableBlend: true, depthMask: false, sfactor: feng3d.BlendFactor.ONE, dfactor: feng3d.BlendFactor.ONE_MINUS_SRC_COLOR, cullFace: feng3d.CullFace.NONE };
+    feng3d.shaderConfig.shaders["particle"].renderParams = { enableBlend: true, depthMask: false, sfactor: feng3d.BlendFactor.ONE, dfactor: feng3d.BlendFactor.ONE_MINUS_SRC_COLOR };
     feng3d.Material.particle = feng3d.AssetData.addAssetData("Particle-Material", feng3d.serialization.setValue(feng3d.Material.create("particle"), {
         name: "Particle-Material", assetId: "Particle-Material", hideFlags: feng3d.HideFlags.NotEditable,
     }));
@@ -33698,11 +33698,10 @@ var feng3d;
             var billboardMatrix = new feng3d.Matrix3x3();
             if (!this.shape.alignToDirection && this.geometry == feng3d.Geometry.billboard) {
                 var cameraMatrix = camera.transform.localToWorldMatrix.clone();
-                var localCameraPos = this.gameObject.transform.worldToLocalMatrix.transformVector(cameraMatrix.getPosition());
+                var localCameraForward = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.forward);
                 var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
                 var matrix4x4 = new feng3d.Matrix4x4();
-                localCameraPos.negate();
-                matrix4x4.lookAt(localCameraPos, localCameraUp);
+                matrix4x4.lookAt(localCameraForward, localCameraUp);
                 billboardMatrix.formMatrix4x4(matrix4x4);
                 //
                 for (var i = 0, n = rotations.length; i < n; i += 3) {

@@ -331,12 +331,11 @@ namespace feng3d
             if (!this.shape.alignToDirection && this.geometry == Geometry.billboard)
             {
                 var cameraMatrix = camera.transform.localToWorldMatrix.clone();
-                var localCameraPos = this.gameObject.transform.worldToLocalMatrix.transformVector(cameraMatrix.getPosition());
+                var localCameraForward = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.forward);
                 var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
 
                 var matrix4x4 = new Matrix4x4();
-                localCameraPos.negate();
-                matrix4x4.lookAt(localCameraPos, localCameraUp);
+                matrix4x4.lookAt(localCameraForward, localCameraUp);
                 billboardMatrix.formMatrix4x4(matrix4x4);
 
                 //
