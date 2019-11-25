@@ -154,7 +154,7 @@ namespace feng3d.war3
 			if (skeletonJoint.parentIndex != -1)
 			{
 				var parentskeletonJoint = createSkeletonJoint(skeletonJoint.parentIndex);
-				joint.pivotPoint = matrix3D.position.subTo(parentskeletonJoint.matrix3D.position);
+				joint.pivotPoint = matrix3D.getPosition().subTo(parentskeletonJoint.matrix3D.getPosition());
 			} else
 			{
 				joint.pivotPoint = position;

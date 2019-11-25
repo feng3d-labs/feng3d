@@ -129,13 +129,13 @@ namespace feng3d
                 // this.targetObject.transform.rotate(Vector3.Y_AXIS, offsetPoint.x, this.targetObject.transform.position);
 
                 var matrix3d = this.transform.localToWorldMatrix;
-                matrix3d.appendRotation(matrix3d.right, offsetPoint.y, matrix3d.position);
+                matrix3d.appendRotation(matrix3d.right, offsetPoint.y, matrix3d.getPosition());
                 var up = Vector3.Y_AXIS.clone();
                 if (matrix3d.up.dot(up) < 0)
                 {
                     up.scaleNumber(-1);
                 }
-                matrix3d.appendRotation(up, offsetPoint.x, matrix3d.position);
+                matrix3d.appendRotation(up, offsetPoint.x, matrix3d.getPosition());
                 this.transform.localToWorldMatrix = matrix3d;
                 //
                 this.preMousePoint = this.mousePoint;

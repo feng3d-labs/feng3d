@@ -309,7 +309,7 @@ namespace feng3d
             renderAtomic.shaderMacro.ENABLED_PARTICLE_SYSTEM_textureSheetAnimation = this.textureSheetAnimation.enabled;
 
             var cameraMatrix = camera.transform.localToWorldMatrix.clone();
-            var localCameraPos = this.gameObject.transform.worldToLocalMatrix.transformVector(cameraMatrix.position);
+            var localCameraPos = this.gameObject.transform.worldToLocalMatrix.transformVector(cameraMatrix.getPosition());
             var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
             // 计算公告牌矩阵
             var billboardMatrix = new Matrix3x3();

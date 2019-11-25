@@ -11379,12 +11379,12 @@ var feng3d;
          * @param   datas    一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
         function Matrix4x4(datas) {
-            this.rawData = datas || [
-                1, 0, 0, 0,
-                0, 1, 0, 0,
-                0, 0, 1, 0,
-                0, 0, 0, 1 //
-            ];
+            if (datas)
+                this.rawData = datas;
+            else {
+                this.rawData = [];
+                this.identity();
+            }
         }
         /**
          * 通过位移旋转缩放重组矩阵
@@ -11398,21 +11398,6 @@ var feng3d;
             if (order === void 0) { order = feng3d.rotationOrder; }
             return new Matrix4x4().recompose(position, rotation, scale, order);
         };
-        Object.defineProperty(Matrix4x4.prototype, "position", {
-            /**
-             * 一个保存显示对象在转换参照帧中的 3D 坐标 (x,y,z) 位置的 Vector3 对象。
-             */
-            get: function () {
-                return new feng3d.Vector3(this.rawData[12], this.rawData[13], this.rawData[14]);
-            },
-            set: function (value) {
-                this.rawData[12] = value.x;
-                this.rawData[13] = value.y;
-                this.rawData[14] = value.z;
-            },
-            enumerable: true,
-            configurable: true
-        });
         /**
          * 获取位移
          *
@@ -11439,7 +11424,9 @@ var feng3d;
         Matrix4x4.prototype.getScale = function (scale) {
             if (scale === void 0) { scale = new feng3d.Vector3; }
             var v = new feng3d.Vector3();
-            v.init(this.rawData[0], this.rawData[1], this.rawData[2]);
+            scale.x = v.init(this.rawData[0], this.rawData[1], this.rawData[2]).length;
+            scale.y = v.init(this.rawData[4], this.rawData[5], this.rawData[6]).length;
+            scale.z = v.init(this.rawData[8], this.rawData[9], this.rawData[10]).length;
             return scale;
         };
         Object.defineProperty(Matrix4x4.prototype, "rotation", {
@@ -11585,97 +11572,7 @@ var feng3d;
          */
         Matrix4x4.prototype.fromRotation = function (rx, ry, rz, order) {
             if (order === void 0) { order = feng3d.rotationOrder; }
-            var te = this.rawData;
-            rx = Math.degToRad(rx);
-            ry = Math.degToRad(ry);
-            rz = Math.degToRad(rz);
-            var a = Math.cos(rx), b = Math.sin(rx);
-            var c = Math.cos(ry), d = Math.sin(ry);
-            var e = Math.cos(rz), f = Math.sin(rz);
-            if (order === feng3d.RotationOrder.XYZ) {
-                var ae = a * e, af = a * f, be = b * e, bf = b * f;
-                te[0] = c * e;
-                te[4] = -c * f;
-                te[8] = d;
-                te[1] = af + be * d;
-                te[5] = ae - bf * d;
-                te[9] = -b * c;
-                te[2] = bf - ae * d;
-                te[6] = be + af * d;
-                te[10] = a * c;
-            }
-            else if (order === feng3d.RotationOrder.YXZ) {
-                var ce = c * e, cf = c * f, de = d * e, df = d * f;
-                te[0] = ce + df * b;
-                te[4] = de * b - cf;
-                te[8] = a * d;
-                te[1] = a * f;
-                te[5] = a * e;
-                te[9] = -b;
-                te[2] = cf * b - de;
-                te[6] = df + ce * b;
-                te[10] = a * c;
-            }
-            else if (order === feng3d.RotationOrder.ZXY) {
-                var ce = c * e, cf = c * f, de = d * e, df = d * f;
-                te[0] = ce - df * b;
-                te[4] = -a * f;
-                te[8] = de + cf * b;
-                te[1] = cf + de * b;
-                te[5] = a * e;
-                te[9] = df - ce * b;
-                te[2] = -a * d;
-                te[6] = b;
-                te[10] = a * c;
-            }
-            else if (order === feng3d.RotationOrder.ZYX) {
-                var ae = a * e, af = a * f, be = b * e, bf = b * f;
-                te[0] = c * e;
-                te[4] = be * d - af;
-                te[8] = ae * d + bf;
-                te[1] = c * f;
-                te[5] = bf * d + ae;
-                te[9] = af * d - be;
-                te[2] = -d;
-                te[6] = b * c;
-                te[10] = a * c;
-            }
-            else if (order === feng3d.RotationOrder.YZX) {
-                var ac = a * c, ad = a * d, bc = b * c, bd = b * d;
-                te[0] = c * e;
-                te[4] = bd - ac * f;
-                te[8] = bc * f + ad;
-                te[1] = f;
-                te[5] = a * e;
-                te[9] = -b * e;
-                te[2] = -d * e;
-                te[6] = ad * f + bc;
-                te[10] = ac - bd * f;
-            }
-            else if (order === feng3d.RotationOrder.XZY) {
-                var ac = a * c, ad = a * d, bc = b * c, bd = b * d;
-                te[0] = c * e;
-                te[4] = -f;
-                te[8] = d * e;
-                te[1] = ac * f + bd;
-                te[5] = a * e;
-                te[9] = ad * f - bc;
-                te[2] = bc * f - ad;
-                te[6] = b * e;
-                te[10] = bd * f + ac;
-            }
-            else {
-                console.error("\u521D\u59CB\u5316\u77E9\u9635\u65F6\u9519\u8BEF\u65CB\u8F6C\u987A\u5E8F " + order);
-            }
-            // bottom row
-            te[3] = 0;
-            te[7] = 0;
-            te[11] = 0;
-            // last column
-            te[12] = 0;
-            te[13] = 0;
-            te[14] = 0;
-            te[15] = 1;
+            this.recompose(new feng3d.Vector3(), new feng3d.Vector3(rx, ry, rz), new feng3d.Vector3(1, 1, 1), order);
             return this;
         };
         /**
@@ -11687,82 +11584,7 @@ var feng3d;
         Matrix4x4.prototype.getRotation = function (rotation, order) {
             if (rotation === void 0) { rotation = new feng3d.Vector3(); }
             if (order === void 0) { order = feng3d.rotationOrder; }
-            var clamp = Math.clamp;
-            // assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
-            var te = this.rawData;
-            var m11 = te[0], m12 = te[4], m13 = te[8];
-            var m21 = te[1], m22 = te[5], m23 = te[9];
-            var m31 = te[2], m32 = te[6], m33 = te[10];
-            if (order === feng3d.RotationOrder.XYZ) {
-                rotation.y = Math.asin(clamp(m13, -1, 1));
-                if (Math.abs(m13) < 0.9999999) {
-                    rotation.x = Math.atan2(-m23, m33);
-                    rotation.z = Math.atan2(-m12, m11);
-                }
-                else {
-                    rotation.x = Math.atan2(m32, m22);
-                    rotation.z = 0;
-                }
-            }
-            else if (order === feng3d.RotationOrder.YXZ) {
-                rotation.x = Math.asin(-clamp(m23, -1, 1));
-                if (Math.abs(m23) < 0.9999999) {
-                    rotation.y = Math.atan2(m13, m33);
-                    rotation.z = Math.atan2(m21, m22);
-                }
-                else {
-                    rotation.y = Math.atan2(-m31, m11);
-                    rotation.z = 0;
-                }
-            }
-            else if (order === feng3d.RotationOrder.ZXY) {
-                rotation.x = Math.asin(clamp(m32, -1, 1));
-                if (Math.abs(m32) < 0.9999999) {
-                    rotation.y = Math.atan2(-m31, m33);
-                    rotation.z = Math.atan2(-m12, m22);
-                }
-                else {
-                    rotation.y = 0;
-                    rotation.z = Math.atan2(m21, m11);
-                }
-            }
-            else if (order === feng3d.RotationOrder.ZYX) {
-                rotation.y = Math.asin(-clamp(m31, -1, 1));
-                if (Math.abs(m31) < 0.9999999) {
-                    rotation.x = Math.atan2(m32, m33);
-                    rotation.z = Math.atan2(m21, m11);
-                }
-                else {
-                    rotation.x = 0;
-                    rotation.z = Math.atan2(-m12, m22);
-                }
-            }
-            else if (order === feng3d.RotationOrder.YZX) {
-                rotation.z = Math.asin(clamp(m21, -1, 1));
-                if (Math.abs(m21) < 0.9999999) {
-                    rotation.x = Math.atan2(-m23, m22);
-                    rotation.y = Math.atan2(-m31, m11);
-                }
-                else {
-                    rotation.x = 0;
-                    rotation.y = Math.atan2(m13, m33);
-                }
-            }
-            else if (order === feng3d.RotationOrder.XZY) {
-                rotation.z = Math.asin(-clamp(m12, -1, 1));
-                if (Math.abs(m12) < 0.9999999) {
-                    rotation.x = Math.atan2(m32, m22);
-                    rotation.y = Math.atan2(m13, m11);
-                }
-                else {
-                    rotation.x = Math.atan2(-m23, m33);
-                    rotation.y = 0;
-                }
-            }
-            else {
-                console.error("\u521D\u59CB\u5316\u77E9\u9635\u65F6\u9519\u8BEF\u65CB\u8F6C\u987A\u5E8F " + order);
-            }
-            rotation.scaleNumber(Math.RAD2DEG);
+            this.decompose(new feng3d.Vector3(), rotation, new feng3d.Vector3(), order);
             return rotation;
         };
         /**
@@ -12014,9 +11836,112 @@ var feng3d;
          */
         Matrix4x4.prototype.recompose = function (position, rotation, scale, order) {
             if (order === void 0) { order = feng3d.rotationOrder; }
-            this.fromRotation(rotation.x, rotation.y, rotation.z, order);
-            this.prependScale(scale.x, scale.y, scale.z);
-            this.appendTranslation(position.x, position.y, position.z);
+            this.identity();
+            var te = this.rawData;
+            //
+            rotation = rotation.scaleNumberTo(Math.DEG2RAD);
+            var px = position.x;
+            var py = position.y;
+            var pz = position.z;
+            var rx = rotation.x;
+            var ry = rotation.y;
+            var rz = rotation.z;
+            var sx = scale.x;
+            var sy = scale.y;
+            var sz = scale.z;
+            //
+            te[12] = px;
+            te[13] = py;
+            te[14] = pz;
+            //
+            var a = Math.cos(rx), b = Math.sin(rx);
+            var c = Math.cos(ry), d = Math.sin(ry);
+            var e = Math.cos(rz), f = Math.sin(rz);
+            if (order === feng3d.RotationOrder.XYZ) {
+                var ae = a * e, af = a * f, be = b * e, bf = b * f;
+                te[0] = c * e;
+                te[4] = -c * f;
+                te[8] = d;
+                te[1] = af + be * d;
+                te[5] = ae - bf * d;
+                te[9] = -b * c;
+                te[2] = bf - ae * d;
+                te[6] = be + af * d;
+                te[10] = a * c;
+            }
+            else if (order === feng3d.RotationOrder.YXZ) {
+                var ce = c * e, cf = c * f, de = d * e, df = d * f;
+                te[0] = ce + df * b;
+                te[4] = de * b - cf;
+                te[8] = a * d;
+                te[1] = a * f;
+                te[5] = a * e;
+                te[9] = -b;
+                te[2] = cf * b - de;
+                te[6] = df + ce * b;
+                te[10] = a * c;
+            }
+            else if (order === feng3d.RotationOrder.ZXY) {
+                var ce = c * e, cf = c * f, de = d * e, df = d * f;
+                te[0] = ce - df * b;
+                te[4] = -a * f;
+                te[8] = de + cf * b;
+                te[1] = cf + de * b;
+                te[5] = a * e;
+                te[9] = df - ce * b;
+                te[2] = -a * d;
+                te[6] = b;
+                te[10] = a * c;
+            }
+            else if (order === feng3d.RotationOrder.ZYX) {
+                var ae = a * e, af = a * f, be = b * e, bf = b * f;
+                te[0] = c * e;
+                te[4] = be * d - af;
+                te[8] = ae * d + bf;
+                te[1] = c * f;
+                te[5] = bf * d + ae;
+                te[9] = af * d - be;
+                te[2] = -d;
+                te[6] = b * c;
+                te[10] = a * c;
+            }
+            else if (order === feng3d.RotationOrder.YZX) {
+                var ac = a * c, ad = a * d, bc = b * c, bd = b * d;
+                te[0] = c * e;
+                te[4] = bd - ac * f;
+                te[8] = bc * f + ad;
+                te[1] = f;
+                te[5] = a * e;
+                te[9] = -b * e;
+                te[2] = -d * e;
+                te[6] = ad * f + bc;
+                te[10] = ac - bd * f;
+            }
+            else if (order === feng3d.RotationOrder.XZY) {
+                var ac = a * c, ad = a * d, bc = b * c, bd = b * d;
+                te[0] = c * e;
+                te[4] = -f;
+                te[8] = d * e;
+                te[1] = ac * f + bd;
+                te[5] = a * e;
+                te[9] = ad * f - bc;
+                te[2] = bc * f - ad;
+                te[6] = b * e;
+                te[10] = bd * f + ac;
+            }
+            else {
+                console.error("\u521D\u59CB\u5316\u77E9\u9635\u65F6\u9519\u8BEF\u65CB\u8F6C\u987A\u5E8F " + order);
+            }
+            //
+            te[0] *= sx;
+            te[1] *= sx;
+            te[2] *= sx;
+            te[4] *= sy;
+            te[5] *= sy;
+            te[6] *= sy;
+            te[8] *= sz;
+            te[9] *= sz;
+            te[10] *= sz;
             return this;
         };
         /**
@@ -12028,61 +11953,105 @@ var feng3d;
          * @param order 旋转顺序。
          */
         Matrix4x4.prototype.decompose = function (position, rotation, scale, order) {
-            // this.getRotation(rotation, order);
-            // this.getPosition(position);
-            // this.getScale(scale);
             if (position === void 0) { position = new feng3d.Vector3(); }
             if (rotation === void 0) { rotation = new feng3d.Vector3(); }
             if (scale === void 0) { scale = new feng3d.Vector3(); }
             if (order === void 0) { order = feng3d.rotationOrder; }
-            console.assert(order == feng3d.RotationOrder.ZYX, "\u53EA\u652F\u6301 XYZ \u987A\u5E8F\u9009\u62E9\uFF01");
-            var raw = this.rawData;
-            var a = raw[0];
-            var e = raw[1];
-            var i = raw[2];
-            var b = raw[4];
-            var f = raw[5];
-            var j = raw[6];
-            var c = raw[8];
-            var g = raw[9];
-            var k = raw[10];
-            var x = raw[12];
-            var y = raw[13];
-            var z = raw[14];
-            var tx = Math.sqrt(a * a + e * e + i * i);
-            var ty = Math.sqrt(b * b + f * f + j * j);
-            var tz = Math.sqrt(c * c + g * g + k * k);
-            var scaleX = tx;
-            var scaleY = ty;
-            var scaleZ = tz;
-            if (a * (f * k - j * g) - e * (b * k - j * c) + i * (b * g - f * c) < 0) {
-                scaleZ = -scaleZ;
+            var clamp = Math.clamp;
+            //
+            var rawData = this.rawData;
+            var m11 = rawData[0], m12 = rawData[4], m13 = rawData[8];
+            var m21 = rawData[1], m22 = rawData[5], m23 = rawData[9];
+            var m31 = rawData[2], m32 = rawData[6], m33 = rawData[10];
+            //
+            position.x = rawData[12];
+            position.y = rawData[13];
+            position.z = rawData[14];
+            //
+            scale.x = Math.sqrt(m11 * m11 + m21 * m21 + m31 * m31);
+            m11 /= scale.x;
+            m21 /= scale.x;
+            m31 /= scale.x;
+            scale.y = Math.sqrt(m12 * m12 + m22 * m22 + m32 * m32);
+            m12 /= scale.y;
+            m22 /= scale.y;
+            m32 /= scale.y;
+            scale.z = Math.sqrt(m13 * m13 + m23 * m23 + m33 * m33);
+            m13 /= scale.z;
+            m23 /= scale.z;
+            m33 /= scale.z;
+            //
+            if (order === feng3d.RotationOrder.XYZ) {
+                rotation.y = Math.asin(clamp(m13, -1, 1));
+                if (Math.abs(m13) < 0.9999999) {
+                    rotation.x = Math.atan2(-m23, m33);
+                    rotation.z = Math.atan2(-m12, m11);
+                }
+                else {
+                    rotation.x = Math.atan2(m32, m22);
+                    rotation.z = 0;
+                }
             }
-            a = a / scaleX;
-            e = e / scaleX;
-            i = i / scaleX;
-            b = b / scaleY;
-            f = f / scaleY;
-            j = j / scaleY;
-            c = c / scaleZ;
-            g = g / scaleZ;
-            k = k / scaleZ;
-            tx = Math.atan2(j, k);
-            ty = Math.atan2(-i, Math.sqrt(a * a + e * e));
-            var s1 = Math.sin(tx);
-            var c1 = Math.cos(tx);
-            tz = Math.atan2(s1 * c - c1 * b, c1 * f - s1 * g);
-            var result = [position, rotation, scale];
-            result[0].x = x;
-            result[0].y = y;
-            result[0].z = z;
-            result[1].x = tx * Math.RAD2DEG;
-            result[1].y = ty * Math.RAD2DEG;
-            result[1].z = tz * Math.RAD2DEG;
-            result[2].x = scaleX;
-            result[2].y = scaleY;
-            result[2].z = scaleZ;
-            return result;
+            else if (order === feng3d.RotationOrder.YXZ) {
+                rotation.x = Math.asin(-clamp(m23, -1, 1));
+                if (Math.abs(m23) < 0.9999999) {
+                    rotation.y = Math.atan2(m13, m33);
+                    rotation.z = Math.atan2(m21, m22);
+                }
+                else {
+                    rotation.y = Math.atan2(-m31, m11);
+                    rotation.z = 0;
+                }
+            }
+            else if (order === feng3d.RotationOrder.ZXY) {
+                rotation.x = Math.asin(clamp(m32, -1, 1));
+                if (Math.abs(m32) < 0.9999999) {
+                    rotation.y = Math.atan2(-m31, m33);
+                    rotation.z = Math.atan2(-m12, m22);
+                }
+                else {
+                    rotation.y = 0;
+                    rotation.z = Math.atan2(m21, m11);
+                }
+            }
+            else if (order === feng3d.RotationOrder.ZYX) {
+                rotation.y = Math.asin(-clamp(m31, -1, 1));
+                if (Math.abs(m31) < 0.9999999) {
+                    rotation.x = Math.atan2(m32, m33);
+                    rotation.z = Math.atan2(m21, m11);
+                }
+                else {
+                    rotation.x = 0;
+                    rotation.z = Math.atan2(-m12, m22);
+                }
+            }
+            else if (order === feng3d.RotationOrder.YZX) {
+                rotation.z = Math.asin(clamp(m21, -1, 1));
+                if (Math.abs(m21) < 0.9999999) {
+                    rotation.x = Math.atan2(-m23, m22);
+                    rotation.y = Math.atan2(-m31, m11);
+                }
+                else {
+                    rotation.x = 0;
+                    rotation.y = Math.atan2(m13, m33);
+                }
+            }
+            else if (order === feng3d.RotationOrder.XZY) {
+                rotation.z = Math.asin(-clamp(m12, -1, 1));
+                if (Math.abs(m12) < 0.9999999) {
+                    rotation.x = Math.atan2(m32, m22);
+                    rotation.y = Math.atan2(m13, m11);
+                }
+                else {
+                    rotation.x = Math.atan2(-m23, m33);
+                    rotation.y = 0;
+                }
+            }
+            else {
+                console.error("\u521D\u59CB\u5316\u77E9\u9635\u65F6\u9519\u8BEF\u65CB\u8F6C\u987A\u5E8F " + order);
+            }
+            rotation.scaleNumber(Math.RAD2DEG);
+            return [position, rotation, scale];
         };
         /**
          * 使用不含平移元素的转换矩阵将 Vector3 对象从一个空间坐标转换到另一个空间坐标。
@@ -12231,7 +12200,7 @@ var feng3d;
         Matrix4x4.prototype.moveRight = function (distance) {
             var direction = this.right;
             direction.scaleNumber(distance);
-            this.position = this.position.addTo(direction);
+            this.setPosition(this.getPosition().addTo(direction));
             return this;
         };
         /**
@@ -12241,7 +12210,7 @@ var feng3d;
         Matrix4x4.prototype.moveUp = function (distance) {
             var direction = this.up;
             direction.scaleNumber(distance);
-            this.position = this.position.addTo(direction);
+            this.setPosition(this.getPosition().addTo(direction));
             return this;
         };
         /**
@@ -12251,7 +12220,7 @@ var feng3d;
         Matrix4x4.prototype.moveForward = function (distance) {
             var direction = this.forward;
             direction.scaleNumber(distance);
-            this.position = this.position.addTo(direction);
+            this.setPosition(this.getPosition().addTo(direction));
             return this;
         };
         /**
@@ -12328,12 +12297,10 @@ var feng3d;
         Matrix4x4.prototype.transpose = function () {
             var swap;
             for (var i = 0; i < 4; i++) {
-                for (var j = 0; j < 4; j++) {
-                    if (i > j) {
-                        swap = this.rawData[i * 4 + j];
-                        this.rawData[i * 4 + j] = this.rawData[j * 4 + i];
-                        this.rawData[j * 4 + i] = swap;
-                    }
+                for (var j = 0; j < i; j++) {
+                    swap = this.rawData[i * 4 + j];
+                    this.rawData[i * 4 + j] = this.rawData[j * 4 + i];
+                    this.rawData[j * 4 + i] = swap;
                 }
             }
             return this;
@@ -12365,9 +12332,10 @@ var feng3d;
             var yAxis = new feng3d.Vector3();
             var zAxis = new feng3d.Vector3();
             upAxis = upAxis || feng3d.Vector3.Y_AXIS;
-            zAxis.x = target.x - this.position.x;
-            zAxis.y = target.y - this.position.y;
-            zAxis.z = target.z - this.position.z;
+            var p = this.getPosition();
+            zAxis.x = target.x - p.x;
+            zAxis.y = target.y - p.y;
+            zAxis.z = target.z - p.z;
             zAxis.normalize();
             xAxis.x = upAxis.y * zAxis.z - upAxis.z * zAxis.y;
             xAxis.y = upAxis.z * zAxis.x - upAxis.x * zAxis.z;
@@ -23585,7 +23553,7 @@ var feng3d;
         });
         Object.defineProperty(Transform.prototype, "scenePosition", {
             get: function () {
-                return this.localToWorldMatrix.position;
+                return this.localToWorldMatrix.getPosition();
             },
             enumerable: true,
             configurable: true
@@ -24101,9 +24069,10 @@ var feng3d;
             var len = distance / Math.sqrt(x * x + y * y + z * z);
             var matrix3d = this.matrix3d.clone();
             matrix3d.prependTranslation(x * len, y * len, z * len);
-            this._x = matrix3d.position.x;
-            this._y = matrix3d.position.y;
-            this._z = matrix3d.position.z;
+            var p = matrix3d.getPosition();
+            this._x = p.x;
+            this._y = p.y;
+            this._z = p.z;
             this.invalidatePosition();
             this.invalidateSceneTransform();
         };
@@ -24133,7 +24102,7 @@ var feng3d;
             //转换位移
             var positionMatrix3d = feng3d.Matrix4x4.fromPosition(this.position.x, this.position.y, this.position.z);
             positionMatrix3d.appendRotation(axis, angle, pivotPoint);
-            this.position = positionMatrix3d.position;
+            this.position = positionMatrix3d.getPosition();
             //转换旋转
             var rotationMatrix3d = feng3d.Matrix4x4.fromRotation(this.rx, this.ry, this.rz);
             rotationMatrix3d.appendRotation(axis, angle, pivotPoint);
@@ -25344,7 +25313,7 @@ var feng3d;
         };
         HoldSizeComponent.prototype.getDepthScale = function (camera) {
             var cameraTranform = camera.transform.localToWorldMatrix;
-            var distance = this.transform.scenePosition.subTo(cameraTranform.position);
+            var distance = this.transform.scenePosition.subTo(cameraTranform.getPosition());
             if (distance.length == 0)
                 distance.x = 1;
             var depth = distance.dot(cameraTranform.forward);
@@ -31833,12 +31802,12 @@ var feng3d;
                 // this.targetObject.transform.rotate(Vector3.X_AXIS, offsetPoint.y, this.targetObject.transform.position);
                 // this.targetObject.transform.rotate(Vector3.Y_AXIS, offsetPoint.x, this.targetObject.transform.position);
                 var matrix3d = this.transform.localToWorldMatrix;
-                matrix3d.appendRotation(matrix3d.right, offsetPoint.y, matrix3d.position);
+                matrix3d.appendRotation(matrix3d.right, offsetPoint.y, matrix3d.getPosition());
                 var up = feng3d.Vector3.Y_AXIS.clone();
                 if (matrix3d.up.dot(up) < 0) {
                     up.scaleNumber(-1);
                 }
-                matrix3d.appendRotation(up, offsetPoint.x, matrix3d.position);
+                matrix3d.appendRotation(up, offsetPoint.x, matrix3d.getPosition());
                 this.transform.localToWorldMatrix = matrix3d;
                 //
                 this.preMousePoint = this.mousePoint;
@@ -32061,7 +32030,7 @@ var feng3d;
         };
         AudioListener.prototype.onScenetransformChanged = function () {
             var localToWorldMatrix = this.transform.localToWorldMatrix;
-            var position = localToWorldMatrix.position;
+            var position = localToWorldMatrix.getPosition();
             var forward = localToWorldMatrix.forward;
             var up = localToWorldMatrix.up;
             //
@@ -32375,7 +32344,7 @@ var feng3d;
         };
         AudioSource.prototype.onScenetransformChanged = function () {
             var localToWorldMatrix = this.transform.localToWorldMatrix;
-            var scenePosition = localToWorldMatrix.position;
+            var scenePosition = localToWorldMatrix.getPosition();
             //
             var panner = this.panner;
             // feng3d使用左手坐标系，panner使用右手坐标系，参考https://developer.mozilla.org/en-US/docs/Web/API/PannerNode
@@ -33705,7 +33674,7 @@ var feng3d;
             renderAtomic.shaderMacro.HAS_PARTICLE_ANIMATOR = true;
             renderAtomic.shaderMacro.ENABLED_PARTICLE_SYSTEM_textureSheetAnimation = this.textureSheetAnimation.enabled;
             var cameraMatrix = camera.transform.localToWorldMatrix.clone();
-            var localCameraPos = this.gameObject.transform.worldToLocalMatrix.transformVector(cameraMatrix.position);
+            var localCameraPos = this.gameObject.transform.worldToLocalMatrix.transformVector(cameraMatrix.getPosition());
             var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
             // 计算公告牌矩阵
             var billboardMatrix = new feng3d.Matrix3x3();
@@ -39793,7 +39762,7 @@ var feng3d;
                 var matrix3D = new feng3d.Matrix4x4().recompose(position, new feng3d.Vector3(), new feng3d.Vector3(1, 1, 1));
                 if (skeletonJoint.parentIndex != -1) {
                     var parentskeletonJoint = createSkeletonJoint(skeletonJoint.parentIndex);
-                    joint.pivotPoint = matrix3D.position.subTo(parentskeletonJoint.matrix3D.position);
+                    joint.pivotPoint = matrix3D.getPosition().subTo(parentskeletonJoint.matrix3D.getPosition());
                 }
                 else {
                     joint.pivotPoint = position;

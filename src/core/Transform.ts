@@ -50,7 +50,7 @@ namespace feng3d
 
         get scenePosition()
         {
-            return this.localToWorldMatrix.position;
+            return this.localToWorldMatrix.getPosition();
         }
 
         get parent()
@@ -602,9 +602,10 @@ namespace feng3d
             var len = distance / Math.sqrt(x * x + y * y + z * z);
             var matrix3d = this.matrix3d.clone();
             matrix3d.prependTranslation(x * len, y * len, z * len);
-            this._x = matrix3d.position.x;
-            this._y = matrix3d.position.y;
-            this._z = matrix3d.position.z;
+            var p = matrix3d.getPosition();
+            this._x = p.x;
+            this._y = p.y;
+            this._z = p.z;
             this.invalidatePosition();
             this.invalidateSceneTransform();
         }
@@ -644,7 +645,7 @@ namespace feng3d
             //转换位移
             var positionMatrix3d = Matrix4x4.fromPosition(this.position.x, this.position.y, this.position.z);
             positionMatrix3d.appendRotation(axis, angle, pivotPoint);
-            this.position = positionMatrix3d.position;
+            this.position = positionMatrix3d.getPosition();
             //转换旋转
             var rotationMatrix3d = Matrix4x4.fromRotation(this.rx, this.ry, this.rz);
             rotationMatrix3d.appendRotation(axis, angle, pivotPoint);

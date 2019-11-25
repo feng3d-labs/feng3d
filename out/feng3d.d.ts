@@ -5400,11 +5400,6 @@ declare namespace feng3d {
          */
         rawData: number[];
         /**
-         * 一个保存显示对象在转换参照帧中的 3D 坐标 (x,y,z) 位置的 Vector3 对象。
-         */
-        get position(): Vector3;
-        set position(value: Vector3);
-        /**
          * 获取位移
          *
          * @param value 用于存储位移信息的向量
