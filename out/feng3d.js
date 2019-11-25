@@ -25204,7 +25204,7 @@ var feng3d;
         };
         Engine.createNewScene = function () {
             var scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Untitled" }).addComponent(feng3d.Scene3D);
-            scene.background.setTo(0.408, 0.38, 0.357);
+            scene.background.setTo(0.2784, 0.2784, 0.2784);
             scene.ambientColor.setTo(0.4, 0.4, 0.4);
             var camera = feng3d.gameObjectFactory.createCamera("Main Camera");
             camera.addComponent(feng3d.AudioListener);
@@ -27899,6 +27899,29 @@ var feng3d;
     feng3d.Camera = Camera;
     // 投影后可视区域
     var visibleBox = new feng3d.AABB(new feng3d.Vector3(-1, -1, -1), new feng3d.Vector3(1, 1, 1));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 四边形面皮几何体
+     */
+    var QuadGeometry = /** @class */ (function (_super) {
+        __extends(QuadGeometry, _super);
+        function QuadGeometry() {
+            var _this = _super.call(this) || this;
+            _this.__class__ = "feng3d.QuadGeometry";
+            var size = 0.5;
+            _this.positions = [-size, size, 0, size, size, 0, size, -size, 0, -size, -size, 0];
+            _this.uvs = [0, 0, 1, 0, 1, 1, 0, 1];
+            _this.indices = [0, 1, 2, 0, 2, 3];
+            _this.normals = feng3d.geometryUtils.createVertexNormals(_this.indices, _this.positions, true);
+            _this.tangents = feng3d.geometryUtils.createVertexTangents(_this.indices, _this.positions, _this.uvs, true);
+            return _this;
+        }
+        return QuadGeometry;
+    }(feng3d.Geometry));
+    feng3d.QuadGeometry = QuadGeometry;
+    feng3d.AssetData.addAssetData("Quad", feng3d.Geometry.quad = feng3d.serialization.setValue(new QuadGeometry(), { name: "Quad", assetId: "Quad", hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -41646,6 +41669,14 @@ var feng3d;
             var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.plane },]
+            });
+            return g;
+        };
+        GameObjectFactory.prototype.createQuad = function (name) {
+            if (name === void 0) { name = "Quad"; }
+            var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
+                name: name,
+                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.quad },]
             });
             return g;
         };

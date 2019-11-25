@@ -227,6 +227,7 @@
         "src/cameras/Projection.ts",
         "src/cameras/Camera.ts",
         // 几何体
+        "src/primitives/QuadGeometry.ts",
         "src/primitives/PlaneGeometry.ts",
         "src/primitives/CubeGeometry.ts",
         "src/primitives/SphereGeometry.ts",

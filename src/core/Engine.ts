@@ -294,7 +294,7 @@ namespace feng3d
         static createNewScene()
         {
             var scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Untitled" }).addComponent(feng3d.Scene3D)
-            scene.background.setTo(0.408, 0.38, 0.357);
+            scene.background.setTo(0.2784, 0.2784, 0.2784);
             scene.ambientColor.setTo(0.4, 0.4, 0.4);
 
             var camera = feng3d.gameObjectFactory.createCamera("Main Camera");

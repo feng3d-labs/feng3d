@@ -12558,6 +12558,10 @@ declare namespace feng3d {
          */
         static plane: PlaneGeometry;
         /**
+         * 平面几何体
+         */
+        static quad: QuadGeometry;
+        /**
          * 球体几何体
          */
         static sphere: SphereGeometry;
@@ -13199,6 +13203,15 @@ declare namespace feng3d {
          */
         private onLensChanged;
         private onProjectionChanged;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 四边形面皮几何体
+     */
+    class QuadGeometry extends Geometry {
+        __class__: "feng3d.QuadGeometry";
+        constructor();
     }
 }
 declare namespace feng3d {
@@ -18165,6 +18178,7 @@ declare namespace feng3d {
         createGameObject(name?: string): GameObject;
         createCube(name?: string): GameObject;
         createPlane(name?: string): GameObject;
+        createQuad(name?: string): GameObject;
         createCylinder(name?: string): GameObject;
         createCone(name?: string): GameObject;
         createTorus(name?: string): GameObject;

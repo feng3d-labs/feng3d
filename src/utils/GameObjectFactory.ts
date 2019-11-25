@@ -27,6 +27,15 @@ namespace feng3d
             return g;
         }
 
+        createQuad(name = "Quad")
+        {
+            var g = serialization.setValue(new GameObject(), {
+                name: name,
+                components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.quad },]
+            });
+            return g;
+        }
+
         createCylinder(name = "Cylinder")
         {
             var g = serialization.setValue(new GameObject(), {

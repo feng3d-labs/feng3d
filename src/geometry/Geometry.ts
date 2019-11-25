@@ -53,6 +53,11 @@ namespace feng3d
         static plane: PlaneGeometry;
 
         /**
+         * 平面几何体
+         */
+        static quad: QuadGeometry;
+
+        /**
          * 球体几何体
          */
         static sphere: SphereGeometry;
