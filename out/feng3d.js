@@ -363,7 +363,7 @@ var feng3d;
             "normal_vert": "vec3 normal = a_normal;",
             "particle_frag": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    finalColor = particleAnimation(finalColor);\r\n#endif",
             "particle_pars_frag": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    varying vec4 v_particle_color;\r\n\r\n    vec4 particleAnimation(vec4 color) {\r\n\r\n        color.xyz = color.xyz * v_particle_color.xyz;\r\n        color.xyz = color.xyz * v_particle_color.www;\r\n        return color;\r\n    }\r\n#endif",
-            "particle_pars_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    //\r\n    attribute vec3 a_particle_position;\r\n    attribute vec3 a_particle_scale;\r\n    attribute vec3 a_particle_rotation;\r\n    attribute vec4 a_particle_color;\r\n\r\n    #ifdef ENABLED_PARTICLE_SYSTEM_textureSheetAnimation\r\n        attribute vec4 a_particle_tilingOffset;\r\n        attribute vec2 a_particle_flipUV;\r\n    #endif\r\n\r\n    uniform mat3 u_particle_billboardMatrix;\r\n\r\n    varying vec4 v_particle_color;\r\n\r\n    mat3 makeParticleRotationMatrix(vec3 rotation)\r\n    {\r\n        float DEG2RAD = 3.1415926 / 180.0;\r\n        \r\n        float rx = rotation.x * DEG2RAD;\r\n        float ry = rotation.y * DEG2RAD;\r\n        float rz = rotation.z * DEG2RAD;\r\n\r\n        float sx = sin(rx);\r\n        float cx = cos(rx);\r\n        float sy = sin(ry);\r\n        float cy = cos(ry);\r\n        float sz = sin(rz);\r\n        float cz = cos(rz);\r\n\r\n        mat3 tmp;\r\n        tmp[ 0 ] = vec3(cy * cz, cy * sz, -sy);\r\n        tmp[ 1 ] = vec3(sx * sy * cz - cx * sz, sx * sy * sz + cx * cz, sx * cy);\r\n        tmp[ 2 ] = vec3(cx * sy * cz + sx * sz, cx * sy * sz - sx * cz, cx * cy);\r\n        return tmp;\r\n    }\r\n\r\n    vec4 particleAnimation(vec4 position) \r\n    {\r\n        // 计算缩放\r\n        position.xyz = position.xyz * a_particle_scale;\r\n\r\n        // 计算旋转\r\n        mat3 rMat = makeParticleRotationMatrix(a_particle_rotation);\r\n        position.xyz = rMat * position.xyz;\r\n        position.xyz = u_particle_billboardMatrix * position.xyz;\r\n\r\n        // 位移\r\n        position.xyz = position.xyz + a_particle_position;\r\n\r\n        // 颜色\r\n        v_particle_color = a_particle_color;\r\n\r\n        #ifdef ENABLED_PARTICLE_SYSTEM_textureSheetAnimation\r\n            if(a_particle_flipUV.x > 0.5) v_uv.x = 1.0 - v_uv.x;\r\n            if(a_particle_flipUV.y > 0.5) v_uv.y = 1.0 - v_uv.y;\r\n            v_uv = v_uv * a_particle_tilingOffset.xy + a_particle_tilingOffset.zw;\r\n        #endif\r\n        \r\n        return position;\r\n    }\r\n#endif",
+            "particle_pars_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    //\r\n    attribute vec3 a_particle_position;\r\n    attribute vec3 a_particle_scale;\r\n    attribute vec3 a_particle_rotation;\r\n    attribute vec4 a_particle_color;\r\n\r\n    #ifdef ENABLED_PARTICLE_SYSTEM_textureSheetAnimation\r\n        attribute vec4 a_particle_tilingOffset;\r\n        attribute vec2 a_particle_flipUV;\r\n    #endif\r\n\r\n    uniform mat3 u_particle_billboardMatrix;\r\n\r\n    varying vec4 v_particle_color;\r\n\r\n    mat3 makeParticleRotationMatrix(vec3 rotation)\r\n    {\r\n        float DEG2RAD = 3.1415926 / 180.0;\r\n        \r\n        float rx = rotation.x * DEG2RAD;\r\n        float ry = rotation.y * DEG2RAD;\r\n        float rz = rotation.z * DEG2RAD;\r\n\r\n        float sinX = sin(rx);\r\n        float cosX = cos(rx);\r\n        float sinY = sin(ry);\r\n        float cosY = cos(ry);\r\n        float sinZ = sin(rz);\r\n        float cosZ = cos(rz);\r\n\r\n        mat3 tmp;\r\n        // XYZ\r\n        // float ae = cosX * cosZ;\r\n        // float af = cosX * sinZ;\r\n        // float be = sinX * cosZ;\r\n        // float bf = sinX * sinZ;\r\n\r\n        // tmp[0] = vec3(cosY * cosZ, - cosY * sinZ, sinY);\r\n        // tmp[1] = vec3(af + be * sinY, ae - bf * sinY, - sinX * cosY);\r\n        // tmp[2] = vec3(bf - ae * sinY, be + af * sinY, cosX * cosY);\r\n\r\n        // YXZ\r\n        float ce = cosY * cosZ;\r\n        float cf = cosY * sinZ;\r\n        float de = sinY * cosZ;\r\n        float df = sinY * sinZ;\r\n\r\n        tmp[0] = vec3(ce + df * sinX, cosX * sinZ, cf * sinX - de);\r\n        tmp[1] = vec3(de * sinX - cf, cosX * cosZ, df + ce * sinX);\r\n        tmp[2] = vec3(cosX * sinY, - sinX, cosX * cosY);\r\n        \r\n        return tmp;\r\n    }\r\n\r\n    vec4 particleAnimation(vec4 position) \r\n    {\r\n        // 计算缩放\r\n        position.xyz = position.xyz * a_particle_scale;\r\n\r\n        // 计算旋转\r\n        mat3 rMat = makeParticleRotationMatrix(a_particle_rotation);\r\n        position.xyz = rMat * position.xyz;\r\n        position.xyz = u_particle_billboardMatrix * position.xyz;\r\n\r\n        // 位移\r\n        position.xyz = position.xyz + a_particle_position;\r\n\r\n        // 颜色\r\n        v_particle_color = a_particle_color;\r\n\r\n        #ifdef ENABLED_PARTICLE_SYSTEM_textureSheetAnimation\r\n            if(a_particle_flipUV.x > 0.5) v_uv.x = 1.0 - v_uv.x;\r\n            if(a_particle_flipUV.y > 0.5) v_uv.y = 1.0 - v_uv.y;\r\n            v_uv = v_uv * a_particle_tilingOffset.xy + a_particle_tilingOffset.zw;\r\n        #endif\r\n        \r\n        return position;\r\n    }\r\n#endif",
             "particle_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    position = particleAnimation(position);\r\n#endif",
             "pointsize_pars_vert": "#ifdef IS_POINTS_MODE\r\n    uniform float u_PointSize;\r\n#endif",
             "pointsize_vert": "#ifdef IS_POINTS_MODE\r\n    gl_PointSize = u_PointSize;\r\n#endif",
@@ -11882,80 +11882,80 @@ var feng3d;
             te[13] = py;
             te[14] = pz;
             //
-            var a = Math.cos(rx), b = Math.sin(rx);
-            var c = Math.cos(ry), d = Math.sin(ry);
-            var e = Math.cos(rz), f = Math.sin(rz);
+            var cosX = Math.cos(rx), sinX = Math.sin(rx);
+            var cosY = Math.cos(ry), sinY = Math.sin(ry);
+            var cosZ = Math.cos(rz), sinZ = Math.sin(rz);
             if (order === feng3d.RotationOrder.XYZ) {
-                var ae = a * e, af = a * f, be = b * e, bf = b * f;
-                te[0] = c * e;
-                te[4] = -c * f;
-                te[8] = d;
-                te[1] = af + be * d;
-                te[5] = ae - bf * d;
-                te[9] = -b * c;
-                te[2] = bf - ae * d;
-                te[6] = be + af * d;
-                te[10] = a * c;
+                var ae = cosX * cosZ, af = cosX * sinZ, be = sinX * cosZ, bf = sinX * sinZ;
+                te[0] = cosY * cosZ;
+                te[4] = -cosY * sinZ;
+                te[8] = sinY;
+                te[1] = af + be * sinY;
+                te[5] = ae - bf * sinY;
+                te[9] = -sinX * cosY;
+                te[2] = bf - ae * sinY;
+                te[6] = be + af * sinY;
+                te[10] = cosX * cosY;
             }
             else if (order === feng3d.RotationOrder.YXZ) {
-                var ce = c * e, cf = c * f, de = d * e, df = d * f;
-                te[0] = ce + df * b;
-                te[4] = de * b - cf;
-                te[8] = a * d;
-                te[1] = a * f;
-                te[5] = a * e;
-                te[9] = -b;
-                te[2] = cf * b - de;
-                te[6] = df + ce * b;
-                te[10] = a * c;
+                var ce = cosY * cosZ, cf = cosY * sinZ, de = sinY * cosZ, df = sinY * sinZ;
+                te[0] = ce + df * sinX;
+                te[4] = de * sinX - cf;
+                te[8] = cosX * sinY;
+                te[1] = cosX * sinZ;
+                te[5] = cosX * cosZ;
+                te[9] = -sinX;
+                te[2] = cf * sinX - de;
+                te[6] = df + ce * sinX;
+                te[10] = cosX * cosY;
             }
             else if (order === feng3d.RotationOrder.ZXY) {
-                var ce = c * e, cf = c * f, de = d * e, df = d * f;
-                te[0] = ce - df * b;
-                te[4] = -a * f;
-                te[8] = de + cf * b;
-                te[1] = cf + de * b;
-                te[5] = a * e;
-                te[9] = df - ce * b;
-                te[2] = -a * d;
-                te[6] = b;
-                te[10] = a * c;
+                var ce = cosY * cosZ, cf = cosY * sinZ, de = sinY * cosZ, df = sinY * sinZ;
+                te[0] = ce - df * sinX;
+                te[4] = -cosX * sinZ;
+                te[8] = de + cf * sinX;
+                te[1] = cf + de * sinX;
+                te[5] = cosX * cosZ;
+                te[9] = df - ce * sinX;
+                te[2] = -cosX * sinY;
+                te[6] = sinX;
+                te[10] = cosX * cosY;
             }
             else if (order === feng3d.RotationOrder.ZYX) {
-                var ae = a * e, af = a * f, be = b * e, bf = b * f;
-                te[0] = c * e;
-                te[4] = be * d - af;
-                te[8] = ae * d + bf;
-                te[1] = c * f;
-                te[5] = bf * d + ae;
-                te[9] = af * d - be;
-                te[2] = -d;
-                te[6] = b * c;
-                te[10] = a * c;
+                var ae = cosX * cosZ, af = cosX * sinZ, be = sinX * cosZ, bf = sinX * sinZ;
+                te[0] = cosY * cosZ;
+                te[4] = be * sinY - af;
+                te[8] = ae * sinY + bf;
+                te[1] = cosY * sinZ;
+                te[5] = bf * sinY + ae;
+                te[9] = af * sinY - be;
+                te[2] = -sinY;
+                te[6] = sinX * cosY;
+                te[10] = cosX * cosY;
             }
             else if (order === feng3d.RotationOrder.YZX) {
-                var ac = a * c, ad = a * d, bc = b * c, bd = b * d;
-                te[0] = c * e;
-                te[4] = bd - ac * f;
-                te[8] = bc * f + ad;
-                te[1] = f;
-                te[5] = a * e;
-                te[9] = -b * e;
-                te[2] = -d * e;
-                te[6] = ad * f + bc;
-                te[10] = ac - bd * f;
+                var ac = cosX * cosY, ad = cosX * sinY, bc = sinX * cosY, bd = sinX * sinY;
+                te[0] = cosY * cosZ;
+                te[4] = bd - ac * sinZ;
+                te[8] = bc * sinZ + ad;
+                te[1] = sinZ;
+                te[5] = cosX * cosZ;
+                te[9] = -sinX * cosZ;
+                te[2] = -sinY * cosZ;
+                te[6] = ad * sinZ + bc;
+                te[10] = ac - bd * sinZ;
             }
             else if (order === feng3d.RotationOrder.XZY) {
-                var ac = a * c, ad = a * d, bc = b * c, bd = b * d;
-                te[0] = c * e;
-                te[4] = -f;
-                te[8] = d * e;
-                te[1] = ac * f + bd;
-                te[5] = a * e;
-                te[9] = ad * f - bc;
-                te[2] = bc * f - ad;
-                te[6] = b * e;
-                te[10] = bd * f + ac;
+                var ac = cosX * cosY, ad = cosX * sinY, bc = sinX * cosY, bd = sinX * sinY;
+                te[0] = cosY * cosZ;
+                te[4] = -sinZ;
+                te[8] = sinY * cosZ;
+                te[1] = ac * sinZ + bd;
+                te[5] = cosX * cosZ;
+                te[9] = ad * sinZ - bc;
+                te[2] = bc * sinZ - ad;
+                te[6] = sinX * cosZ;
+                te[10] = bd * sinZ + ac;
             }
             else {
                 console.error("\u521D\u59CB\u5316\u77E9\u9635\u65F6\u9519\u8BEF\u65CB\u8F6C\u987A\u5E8F " + order);
@@ -33679,16 +33679,6 @@ var feng3d;
             //
             renderAtomic.shaderMacro.HAS_PARTICLE_ANIMATOR = true;
             renderAtomic.shaderMacro.ENABLED_PARTICLE_SYSTEM_textureSheetAnimation = this.textureSheetAnimation.enabled;
-            var cameraMatrix = camera.transform.localToWorldMatrix.clone();
-            var localCameraPos = this.gameObject.transform.worldToLocalMatrix.transformVector(cameraMatrix.getPosition());
-            var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
-            // 计算公告牌矩阵
-            var billboardMatrix = new feng3d.Matrix3x3();
-            if (!this.shape.alignToDirection && this.geometry == feng3d.Geometry.billboard) {
-                var matrix4x4 = new feng3d.Matrix4x4();
-                matrix4x4.lookAt(localCameraPos, localCameraUp);
-                billboardMatrix.formMatrix4x4(matrix4x4);
-            }
             var positions = [];
             var scales = [];
             var rotations = [];
@@ -33703,6 +33693,21 @@ var feng3d;
                 colors.push(particle.color.r, particle.color.g, particle.color.b, particle.color.a);
                 tilingOffsets.push(particle.tilingOffset.x, particle.tilingOffset.y, particle.tilingOffset.z, particle.tilingOffset.w);
                 flipUVs.push(particle.flipUV.x, particle.flipUV.y);
+            }
+            // 计算公告牌矩阵
+            var billboardMatrix = new feng3d.Matrix3x3();
+            if (!this.shape.alignToDirection && this.geometry == feng3d.Geometry.billboard) {
+                var cameraMatrix = camera.transform.localToWorldMatrix.clone();
+                var localCameraPos = this.gameObject.transform.worldToLocalMatrix.transformVector(cameraMatrix.getPosition());
+                var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
+                var matrix4x4 = new feng3d.Matrix4x4();
+                localCameraPos.negate();
+                matrix4x4.lookAt(localCameraPos, localCameraUp);
+                billboardMatrix.formMatrix4x4(matrix4x4);
+                //
+                for (var i = 0, n = rotations.length; i < n; i += 3) {
+                    rotations[i + 2] = -rotations[i + 2];
+                }
             }
             //
             this._attributes.a_particle_position.data = positions;

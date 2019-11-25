@@ -308,25 +308,13 @@ namespace feng3d
 
             renderAtomic.shaderMacro.ENABLED_PARTICLE_SYSTEM_textureSheetAnimation = this.textureSheetAnimation.enabled;
 
-            var cameraMatrix = camera.transform.localToWorldMatrix.clone();
-            var localCameraPos = this.gameObject.transform.worldToLocalMatrix.transformVector(cameraMatrix.getPosition());
-            var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
-            // 计算公告牌矩阵
-            var billboardMatrix = new Matrix3x3();
-            if (!this.shape.alignToDirection && this.geometry == Geometry.billboard)
-            {
-                var matrix4x4 = new Matrix4x4();
-                matrix4x4.lookAt(localCameraPos, localCameraUp);
-                billboardMatrix.formMatrix4x4(matrix4x4);
-            }
-
             var positions: number[] = [];
             var scales: number[] = [];
             var rotations: number[] = [];
             var colors: number[] = [];
             var tilingOffsets: number[] = [];
             var flipUVs: number[] = [];
-            for (let i = 0, n = this._activeParticles.length; i < n; i++)
+            for (var i = 0, n = this._activeParticles.length; i < n; i++)
             {
                 var particle = this._activeParticles[i];
                 positions.push(particle.position.x, particle.position.y, particle.position.z);
@@ -336,6 +324,26 @@ namespace feng3d
                 colors.push(particle.color.r, particle.color.g, particle.color.b, particle.color.a);
                 tilingOffsets.push(particle.tilingOffset.x, particle.tilingOffset.y, particle.tilingOffset.z, particle.tilingOffset.w);
                 flipUVs.push(particle.flipUV.x, particle.flipUV.y);
+            }
+
+            // 计算公告牌矩阵
+            var billboardMatrix = new Matrix3x3();
+            if (!this.shape.alignToDirection && this.geometry == Geometry.billboard)
+            {
+                var cameraMatrix = camera.transform.localToWorldMatrix.clone();
+                var localCameraPos = this.gameObject.transform.worldToLocalMatrix.transformVector(cameraMatrix.getPosition());
+                var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
+
+                var matrix4x4 = new Matrix4x4();
+                localCameraPos.negate();
+                matrix4x4.lookAt(localCameraPos, localCameraUp);
+                billboardMatrix.formMatrix4x4(matrix4x4);
+
+                //
+                for (var i = 0, n = rotations.length; i < n; i += 3)
+                {
+                    rotations[i + 2] = -rotations[i + 2];
+                }
             }
 
             //

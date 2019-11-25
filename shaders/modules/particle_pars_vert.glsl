@@ -22,17 +22,34 @@
         float ry = rotation.y * DEG2RAD;
         float rz = rotation.z * DEG2RAD;
 
-        float sx = sin(rx);
-        float cx = cos(rx);
-        float sy = sin(ry);
-        float cy = cos(ry);
-        float sz = sin(rz);
-        float cz = cos(rz);
+        float sinX = sin(rx);
+        float cosX = cos(rx);
+        float sinY = sin(ry);
+        float cosY = cos(ry);
+        float sinZ = sin(rz);
+        float cosZ = cos(rz);
 
         mat3 tmp;
-        tmp[ 0 ] = vec3(cy * cz, cy * sz, -sy);
-        tmp[ 1 ] = vec3(sx * sy * cz - cx * sz, sx * sy * sz + cx * cz, sx * cy);
-        tmp[ 2 ] = vec3(cx * sy * cz + sx * sz, cx * sy * sz - sx * cz, cx * cy);
+        // XYZ
+        // float ae = cosX * cosZ;
+        // float af = cosX * sinZ;
+        // float be = sinX * cosZ;
+        // float bf = sinX * sinZ;
+
+        // tmp[0] = vec3(cosY * cosZ, - cosY * sinZ, sinY);
+        // tmp[1] = vec3(af + be * sinY, ae - bf * sinY, - sinX * cosY);
+        // tmp[2] = vec3(bf - ae * sinY, be + af * sinY, cosX * cosY);
+
+        // YXZ
+        float ce = cosY * cosZ;
+        float cf = cosY * sinZ;
+        float de = sinY * cosZ;
+        float df = sinY * sinZ;
+
+        tmp[0] = vec3(ce + df * sinX, cosX * sinZ, cf * sinX - de);
+        tmp[1] = vec3(de * sinX - cf, cosX * cosZ, df + ce * sinX);
+        tmp[2] = vec3(cosX * sinY, - sinX, cosX * cosY);
+        
         return tmp;
     }
 

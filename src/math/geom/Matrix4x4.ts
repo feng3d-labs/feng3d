@@ -605,105 +605,105 @@ namespace feng3d
             te[13] = py;
             te[14] = pz;
             //
-            var a = Math.cos(rx), b = Math.sin(rx);
-            var c = Math.cos(ry), d = Math.sin(ry);
-            var e = Math.cos(rz), f = Math.sin(rz);
+            var cosX = Math.cos(rx), sinX = Math.sin(rx);
+            var cosY = Math.cos(ry), sinY = Math.sin(ry);
+            var cosZ = Math.cos(rz), sinZ = Math.sin(rz);
 
             if (order === RotationOrder.XYZ)
             {
-                var ae = a * e, af = a * f, be = b * e, bf = b * f;
+                var ae = cosX * cosZ, af = cosX * sinZ, be = sinX * cosZ, bf = sinX * sinZ;
 
-                te[0] = c * e;
-                te[4] = - c * f;
-                te[8] = d;
+                te[0] = cosY * cosZ;
+                te[4] = - cosY * sinZ;
+                te[8] = sinY;
 
-                te[1] = af + be * d;
-                te[5] = ae - bf * d;
-                te[9] = - b * c;
+                te[1] = af + be * sinY;
+                te[5] = ae - bf * sinY;
+                te[9] = - sinX * cosY;
 
-                te[2] = bf - ae * d;
-                te[6] = be + af * d;
-                te[10] = a * c;
+                te[2] = bf - ae * sinY;
+                te[6] = be + af * sinY;
+                te[10] = cosX * cosY;
 
             } else if (order === RotationOrder.YXZ)
             {
-                var ce = c * e, cf = c * f, de = d * e, df = d * f;
+                var ce = cosY * cosZ, cf = cosY * sinZ, de = sinY * cosZ, df = sinY * sinZ;
 
-                te[0] = ce + df * b;
-                te[4] = de * b - cf;
-                te[8] = a * d;
+                te[0] = ce + df * sinX;
+                te[4] = de * sinX - cf;
+                te[8] = cosX * sinY;
 
-                te[1] = a * f;
-                te[5] = a * e;
-                te[9] = - b;
+                te[1] = cosX * sinZ;
+                te[5] = cosX * cosZ;
+                te[9] = - sinX;
 
-                te[2] = cf * b - de;
-                te[6] = df + ce * b;
-                te[10] = a * c;
+                te[2] = cf * sinX - de;
+                te[6] = df + ce * sinX;
+                te[10] = cosX * cosY;
 
             } else if (order === RotationOrder.ZXY)
             {
-                var ce = c * e, cf = c * f, de = d * e, df = d * f;
+                var ce = cosY * cosZ, cf = cosY * sinZ, de = sinY * cosZ, df = sinY * sinZ;
 
-                te[0] = ce - df * b;
-                te[4] = - a * f;
-                te[8] = de + cf * b;
+                te[0] = ce - df * sinX;
+                te[4] = - cosX * sinZ;
+                te[8] = de + cf * sinX;
 
-                te[1] = cf + de * b;
-                te[5] = a * e;
-                te[9] = df - ce * b;
+                te[1] = cf + de * sinX;
+                te[5] = cosX * cosZ;
+                te[9] = df - ce * sinX;
 
-                te[2] = - a * d;
-                te[6] = b;
-                te[10] = a * c;
+                te[2] = - cosX * sinY;
+                te[6] = sinX;
+                te[10] = cosX * cosY;
 
             } else if (order === RotationOrder.ZYX)
             {
-                var ae = a * e, af = a * f, be = b * e, bf = b * f;
+                var ae = cosX * cosZ, af = cosX * sinZ, be = sinX * cosZ, bf = sinX * sinZ;
 
-                te[0] = c * e;
-                te[4] = be * d - af;
-                te[8] = ae * d + bf;
+                te[0] = cosY * cosZ;
+                te[4] = be * sinY - af;
+                te[8] = ae * sinY + bf;
 
-                te[1] = c * f;
-                te[5] = bf * d + ae;
-                te[9] = af * d - be;
+                te[1] = cosY * sinZ;
+                te[5] = bf * sinY + ae;
+                te[9] = af * sinY - be;
 
-                te[2] = - d;
-                te[6] = b * c;
-                te[10] = a * c;
+                te[2] = - sinY;
+                te[6] = sinX * cosY;
+                te[10] = cosX * cosY;
 
             } else if (order === RotationOrder.YZX)
             {
-                var ac = a * c, ad = a * d, bc = b * c, bd = b * d;
+                var ac = cosX * cosY, ad = cosX * sinY, bc = sinX * cosY, bd = sinX * sinY;
 
-                te[0] = c * e;
-                te[4] = bd - ac * f;
-                te[8] = bc * f + ad;
+                te[0] = cosY * cosZ;
+                te[4] = bd - ac * sinZ;
+                te[8] = bc * sinZ + ad;
 
-                te[1] = f;
-                te[5] = a * e;
-                te[9] = - b * e;
+                te[1] = sinZ;
+                te[5] = cosX * cosZ;
+                te[9] = - sinX * cosZ;
 
-                te[2] = - d * e;
-                te[6] = ad * f + bc;
-                te[10] = ac - bd * f;
+                te[2] = - sinY * cosZ;
+                te[6] = ad * sinZ + bc;
+                te[10] = ac - bd * sinZ;
 
             } else if (order === RotationOrder.XZY)
             {
-                var ac = a * c, ad = a * d, bc = b * c, bd = b * d;
+                var ac = cosX * cosY, ad = cosX * sinY, bc = sinX * cosY, bd = sinX * sinY;
 
-                te[0] = c * e;
-                te[4] = - f;
-                te[8] = d * e;
+                te[0] = cosY * cosZ;
+                te[4] = - sinZ;
+                te[8] = sinY * cosZ;
 
-                te[1] = ac * f + bd;
-                te[5] = a * e;
-                te[9] = ad * f - bc;
+                te[1] = ac * sinZ + bd;
+                te[5] = cosX * cosZ;
+                te[9] = ad * sinZ - bc;
 
-                te[2] = bc * f - ad;
-                te[6] = b * e;
-                te[10] = bd * f + ac;
+                te[2] = bc * sinZ - ad;
+                te[6] = sinX * cosZ;
+                te[10] = bd * sinZ + ac;
 
             } else
             {
