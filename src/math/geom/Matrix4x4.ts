@@ -1126,7 +1126,7 @@ namespace feng3d
          * @param target    目标位置
          * @param upAxis    向上朝向
          */
-        lookAt(target: Vector3, upAxis?: Vector3): void
+        lookAt(target: Vector3, upAxis?: Vector3)
         {
             //获取位移，缩放，在变换过程位移与缩放不变
             var vec = this.decompose();
@@ -1183,6 +1183,7 @@ namespace feng3d
             this.rawData[13] = position.y;
             this.rawData[14] = position.z;
             this.rawData[15] = 1;
+            return this;
         }
 
         /**

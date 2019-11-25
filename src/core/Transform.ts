@@ -671,58 +671,9 @@ namespace feng3d
 
         lookAt(target: Vector3, upAxis?: Vector3)
         {
-            var xAxis = new Vector3();
-            var yAxis = new Vector3();
-            var zAxis = new Vector3();
-            var raw: number[];
-            upAxis = upAxis || Vector3.Y_AXIS;
-            if (!this._matrix3d)
-            {
-                this.updateMatrix3D();
-            }
-            zAxis.x = target.x - this._x;
-            zAxis.y = target.y - this._y;
-            zAxis.z = target.z - this._z;
-            zAxis.normalize();
-            xAxis.x = upAxis.y * zAxis.z - upAxis.z * zAxis.y;
-            xAxis.y = upAxis.z * zAxis.x - upAxis.x * zAxis.z;
-            xAxis.z = upAxis.x * zAxis.y - upAxis.y * zAxis.x;
-            xAxis.normalize();
-            if (xAxis.length < .05)
-            {
-                xAxis.x = upAxis.y;
-                xAxis.y = upAxis.x;
-                xAxis.z = 0;
-                xAxis.normalize();
-            }
-            yAxis.x = zAxis.y * xAxis.z - zAxis.z * xAxis.y;
-            yAxis.y = zAxis.z * xAxis.x - zAxis.x * xAxis.z;
-            yAxis.z = zAxis.x * xAxis.y - zAxis.y * xAxis.x;
-            raw = Matrix4x4.RAW_DATA_CONTAINER;
-            raw[0] = this._sx * xAxis.x;
-            raw[1] = this._sx * xAxis.y;
-            raw[2] = this._sx * xAxis.z;
-            raw[3] = 0;
-            raw[4] = this._sy * yAxis.x;
-            raw[5] = this._sy * yAxis.y;
-            raw[6] = this._sy * yAxis.z;
-            raw[7] = 0;
-            raw[8] = this._sz * zAxis.x;
-            raw[9] = this._sz * zAxis.y;
-            raw[10] = this._sz * zAxis.z;
-            raw[11] = 0;
-            raw[12] = this._x;
-            raw[13] = this._y;
-            raw[14] = this._z;
-            raw[15] = 1;
-            this._matrix3d.copyRawDataFrom(raw);
-            this.matrix3d = this.matrix3d;
-            if (zAxis.z < 0)
-            {
-                this.ry = (180 - this.ry);
-                this.rx -= 180;
-                this.rz -= 180;
-            }
+            var mat = this.matrix3d.clone();
+            mat.lookAt(target, upAxis);
+            this.matrix3d = mat;
             this.invalidateSceneTransform();
         }
 

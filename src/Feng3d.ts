@@ -15,12 +15,12 @@ namespace feng3d
     export var coordinateSystem = CoordinateSystem.LEFT_HANDED;
 
     /**
-     * 引擎中使用的旋转顺序。默认 XYZ。
+     * 引擎中使用的旋转顺序。
      * 
-     * unity ZXY
-     * playcanvas XYZ
-     * three.js ZYX
+     * unity YXZ
+     * playcanvas ZYX
+     * three.js XYZ
      */
-    export var rotationOrder = RotationOrder.ZYX;
-    // export var rotationOrder = RotationOrder.ZXY;
+    // export var rotationOrder = RotationOrder.ZYX;
+    export var rotationOrder = RotationOrder.YXZ;
 }

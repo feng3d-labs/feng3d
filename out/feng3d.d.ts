@@ -5710,7 +5710,7 @@ declare namespace feng3d {
          * @param target    目标位置
          * @param upAxis    向上朝向
          */
-        lookAt(target: Vector3, upAxis?: Vector3): void;
+        lookAt(target: Vector3, upAxis?: Vector3): this;
         /**
          * 获取XYZ轴中最大缩放值
          */
@@ -18369,11 +18369,11 @@ declare namespace feng3d {
      */
     var coordinateSystem: CoordinateSystem;
     /**
-     * 引擎中使用的旋转顺序。默认 XYZ。
+     * 引擎中使用的旋转顺序。
      *
-     * unity ZXY
-     * playcanvas XYZ
-     * three.js ZYX
+     * unity YXZ
+     * playcanvas ZYX
+     * three.js XYZ
      */
     var rotationOrder: RotationOrder;
 }
