@@ -1114,14 +1114,11 @@ namespace feng3d
             var swap: number;
             for (var i = 0; i < 4; i++)
             {
-                for (var j = 0; j < 4; j++)
+                for (var j = 0; j < i; j++)
                 {
-                    if (i > j)
-                    {
-                        swap = this.rawData[i * 4 + j];
-                        this.rawData[i * 4 + j] = this.rawData[j * 4 + i];
-                        this.rawData[j * 4 + i] = swap;
-                    }
+                    swap = this.rawData[i * 4 + j];
+                    this.rawData[i * 4 + j] = this.rawData[j * 4 + i];
+                    this.rawData[j * 4 + i] = swap;
                 }
             }
             return this;
