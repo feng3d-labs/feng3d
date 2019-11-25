@@ -785,7 +785,7 @@ namespace feng3d
         {
             this._parent = value;
             this.updateScene();
-            this.transform["invalidateSceneTransform"]();
+            this.transform["_invalidateSceneTransform"]();
         }
 
         private updateScene()

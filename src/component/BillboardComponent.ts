@@ -34,7 +34,7 @@ namespace feng3d
 
         private invalidHoldSizeMatrix()
         {
-            if (this._gameObject) this.transform["invalidateSceneTransform"]();
+            if (this._gameObject) this.transform["_invalidateSceneTransform"]();
         }
 
         private updateLocalToWorldMatrix()

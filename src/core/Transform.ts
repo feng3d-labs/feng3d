@@ -35,8 +35,6 @@ namespace feng3d
 
         get single() { return true; }
 
-        private renderAtomic = new RenderAtomic();
-
 		/**
 		 * 创建一个实体，该类为虚类
 		 */
@@ -44,8 +42,18 @@ namespace feng3d
         {
             super();
 
-            this.renderAtomic.uniforms.u_modelMatrix = () => this.localToWorldMatrix;
-            this.renderAtomic.uniforms.u_ITModelMatrix = () => this.ITlocalToWorldMatrix;
+            watcher.watch(this._position, "x", this._positionChanged, this);
+            watcher.watch(this._position, "y", this._positionChanged, this);
+            watcher.watch(this._position, "z", this._positionChanged, this);
+            watcher.watch(this._rotation, "x", this._rotationChanged, this);
+            watcher.watch(this._rotation, "y", this._rotationChanged, this);
+            watcher.watch(this._rotation, "z", this._rotationChanged, this);
+            watcher.watch(this._scale, "x", this._scaleChanged, this);
+            watcher.watch(this._scale, "y", this._scaleChanged, this);
+            watcher.watch(this._scale, "z", this._scaleChanged, this);
+
+            this._renderAtomic.uniforms.u_modelMatrix = () => this.localToWorldMatrix;
+            this._renderAtomic.uniforms.u_ITModelMatrix = () => this.ITlocalToWorldMatrix;
         }
 
         get scenePosition()
@@ -59,13 +67,308 @@ namespace feng3d
         }
 
         /**
+         * X轴坐标。
+         */
+        @serialize
+        @oav()
+        get x() { return this._position.x; }
+        set x(v) { this._position.x = v; }
+
+        /**
+         * Y轴坐标。
+         */
+        @serialize
+        @oav()
+        get y() { return this._position.y; }
+        set y(v) { this._position.y = v; }
+
+        /**
+         * Z轴坐标。
+         */
+        @serialize
+        @oav()
+        get z() { return this._position.z; }
+        set z(v) { this._position.z = v; }
+
+        /**
+         * X轴旋转角度。
+         */
+        @serialize
+        @oav()
+        get rx() { return this._rotation.x; }
+        set rx(v) { this._rotation.x = v; }
+
+        /**
+         * Y轴旋转角度。
+         */
+        @serialize
+        @oav()
+        get ry() { return this._rotation.y; }
+        set ry(v) { this._rotation.y = v; }
+
+        /**
+         * Z轴旋转角度。
+         */
+        @serialize
+        @oav()
+        get rz() { return this._rotation.z; }
+        set rz(v) { this._rotation.z = v; }
+
+        /**
+         * X轴缩放。
+         */
+        @serialize
+        @oav()
+        get sx() { return this._scale.x; }
+        set sx(v) { this._scale.x = v; }
+
+        /**
+         * Y轴缩放。
+         */
+        @serialize
+        @oav()
+        get sy() { return this._scale.y; }
+        set sy(v) { this._scale.y = v; }
+
+        /**
+         * Z轴缩放。
+         */
+        @serialize
+        @oav()
+        get sz() { return this._scale.z; }
+        set sz(v) { this._scale.z = v; }
+
+        /**
+         * 自身位移
+         */
+        get position() { return this._position; }
+        set position(v) { this._position.copy(v); }
+
+        /**
+         * 自身旋转
+         */
+        get rotation() { return this._rotation; }
+        set rotation(v) { this._rotation.copy(v); }
+
+        /**
+         * 自身四元素旋转
+         */
+        get orientation()
+        {
+            this._orientation.fromMatrix(this.matrix3d);
+            return this._orientation;
+        }
+
+        set orientation(value)
+        {
+            var angles = value.toEulerAngles();
+            angles.scaleNumber(Math.RAD2DEG);
+            this.rotation = angles;
+        }
+
+        /**
+         * 自身缩放
+         */
+        get scale() { return this._scale; }
+        set scale(v) { this._scale.copy(v); }
+
+        /**
+         * 自身变换矩阵
+         */
+        get matrix3d(): Matrix4x4
+        {
+            return this._updateMatrix3D();
+        }
+
+        set matrix3d(v: Matrix4x4)
+        {
+            v.decompose(this._position, this._rotation, this._scale);
+            this._matrix3d.copyRawDataFrom(v.rawData);
+            this._matrix3dInvalid = false;
+        }
+
+        /**
+         * 自身旋转矩阵
+         */
+        get rotationMatrix()
+        {
+            if (this._rotationMatrix3dInvalid)
+            {
+                this._rotationMatrix3d.setRotation(this._rotation);
+                this._rotationMatrix3dInvalid = false;
+            }
+            return this._rotationMatrix3d;
+        }
+
+        /**
+         * 向前向量
+         */
+        get forwardVector() { return this.matrix3d.forward; }
+
+        /**
+         * 向右向量
+         */
+        get rightVector() { return this.matrix3d.right; }
+
+        /**
+         * 向上向量
+         */
+        get upVector() { return this.matrix3d.up; }
+
+        /**
+         * 向后向量
+         */
+        get backVector()
+        {
+            this.matrix3d.back
+
+            var director: Vector3 = this.matrix3d.forward;
+            director.negate();
+            return director;
+        }
+
+        get leftVector(): Vector3
+        {
+            var director: Vector3 = this.matrix3d.left;
+            director.negate();
+            return director;
+        }
+
+        get downVector(): Vector3
+        {
+            var director: Vector3 = this.matrix3d.up;
+            director.negate();
+            return director;
+        }
+
+        moveForward(distance: number)
+        {
+            this.translateLocal(Vector3.Z_AXIS, distance);
+        }
+
+        moveBackward(distance: number)
+        {
+            this.translateLocal(Vector3.Z_AXIS, -distance);
+        }
+
+        moveLeft(distance: number)
+        {
+            this.translateLocal(Vector3.X_AXIS, -distance);
+        }
+
+        moveRight(distance: number)
+        {
+            this.translateLocal(Vector3.X_AXIS, distance);
+        }
+
+        moveUp(distance: number)
+        {
+            this.translateLocal(Vector3.Y_AXIS, distance);
+        }
+
+        moveDown(distance: number)
+        {
+            this.translateLocal(Vector3.Y_AXIS, -distance);
+        }
+
+        translate(axis: Vector3, distance: number)
+        {
+            var x = <any>axis.x, y = <any>axis.y, z = <any>axis.z;
+            var len = distance / Math.sqrt(x * x + y * y + z * z);
+            this.x += x * len;
+            this.y += y * len;
+            this.z += z * len;
+        }
+
+        translateLocal(axis: Vector3, distance: number)
+        {
+            var x = <any>axis.x, y = <any>axis.y, z = <any>axis.z;
+            var len = distance / Math.sqrt(x * x + y * y + z * z);
+            var matrix3d = this.matrix3d.clone();
+            matrix3d.prependTranslation(x * len, y * len, z * len);
+            var p = matrix3d.getPosition();
+            this.x = p.x;
+            this.y = p.y;
+            this.z = p.z;
+            this._invalidateSceneTransform();
+        }
+
+        pitch(angle: number)
+        {
+            this.rotate(Vector3.X_AXIS, angle);
+        }
+
+        yaw(angle: number)
+        {
+            this.rotate(Vector3.Y_AXIS, angle);
+        }
+
+        roll(angle: number)
+        {
+            this.rotate(Vector3.Z_AXIS, angle);
+        }
+
+        rotateTo(ax: number, ay: number, az: number)
+        {
+            this._rotation.init(ax, ay, az);
+        }
+
+        /**
+         * 绕指定轴旋转，不受位移与缩放影响
+         * @param    axis               旋转轴
+         * @param    angle              旋转角度
+         * @param    pivotPoint         旋转中心点
+         * 
+         */
+        rotate(axis: Vector3, angle: number, pivotPoint?: Vector3): void
+        {
+            //转换位移
+            var positionMatrix3d = Matrix4x4.fromPosition(this.position.x, this.position.y, this.position.z);
+            positionMatrix3d.appendRotation(axis, angle, pivotPoint);
+            this.position = positionMatrix3d.getPosition();
+            //转换旋转
+            var rotationMatrix3d = Matrix4x4.fromRotation(this.rx, this.ry, this.rz);
+            rotationMatrix3d.appendRotation(axis, angle, pivotPoint);
+            var newrotation = rotationMatrix3d.decompose()[1];
+            var v = Math.round((newrotation.x - this.rx) / 180);
+            if (v % 2 != 0)
+            {
+                newrotation.x += 180;
+                newrotation.y = 180 - newrotation.y;
+                newrotation.z += 180;
+            }
+            //
+            var toRound = (a: number, b: number, c = 360) =>
+            {
+                return Math.round((b - a) / c) * c + a;
+            }
+            newrotation.x = toRound(newrotation.x, this.rx);
+            newrotation.y = toRound(newrotation.y, this.ry);
+            newrotation.z = toRound(newrotation.z, this.rz);
+            this.rotation = newrotation;
+            this._invalidateSceneTransform();
+        }
+
+        /**
+         * 看向目标位置
+         * 
+         * @param target    目标位置
+         * @param upAxis    向上朝向
+         */
+        lookAt(target: Vector3, upAxis?: Vector3)
+        {
+            this._updateMatrix3D();
+            this._matrix3d.lookAt(target, upAxis);
+            this._matrix3d.decompose(this._position, this._rotation, this._scale);
+            this._matrix3dInvalid = false;
+        }
+
+        /**
          * 将一个点从局部空间变换到世界空间的矩阵。
          */
         get localToWorldMatrix(): Matrix4x4
         {
-            if (!this._localToWorldMatrix)
-                this._localToWorldMatrix = this.updateLocalToWorldMatrix();
-            return this._localToWorldMatrix;
+            return this._updateLocalToWorldMatrix();
         }
 
         set localToWorldMatrix(value: Matrix4x4)
@@ -80,12 +383,7 @@ namespace feng3d
          */
         get ITlocalToWorldMatrix()
         {
-            if (!this._ITlocalToWorldMatrix)
-            {
-                this._ITlocalToWorldMatrix = this.localToWorldMatrix.clone();
-                this._ITlocalToWorldMatrix.invert().transpose();
-            }
-            return this._ITlocalToWorldMatrix;
+            return this._updateITlocalToWorldMatrix();
         }
 
         /**
@@ -93,20 +391,12 @@ namespace feng3d
          */
         get worldToLocalMatrix(): Matrix4x4
         {
-            if (!this._worldToLocalMatrix)
-                this._worldToLocalMatrix = this.localToWorldMatrix.clone().invert();
-            return this._worldToLocalMatrix;
+            return this._updateWorldToLocalMatrix();
         }
 
         get localToWorldRotationMatrix()
         {
-            if (!this._localToWorldRotationMatrix)
-            {
-                this._localToWorldRotationMatrix = this.rotationMatrix.clone();
-                if (this.parent)
-                    this._localToWorldRotationMatrix.append(this.parent.localToWorldRotationMatrix);
-            }
-            return this._localToWorldRotationMatrix;
+            return this._upDateLocalToWorldRotationMatrix();
         }
 
         get worldToLocalRotationMatrix()
@@ -190,575 +480,141 @@ namespace feng3d
 
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera)
         {
-            Object.assign(renderAtomic.uniforms, this.renderAtomic.uniforms);
+            Object.assign(renderAtomic.uniforms, this._renderAtomic.uniforms);
         }
 
-        dispose()
+        private readonly _position = new Vector3();
+        private readonly _rotation = new Vector3();
+        private readonly _orientation = new Quaternion();
+        private readonly _scale = new Vector3(1, 1, 1);
+
+        protected _smallestNumber = 0.0000000000000000000001;
+        protected readonly _matrix3d = new Matrix4x4();
+        protected _matrix3dInvalid = false;
+
+        protected readonly _rotationMatrix3d = new Matrix4x4();
+        protected _rotationMatrix3dInvalid = false;
+
+        protected readonly _localToWorldMatrix = new Matrix4x4();
+        protected _localToWorldMatrixInvalid = false;
+
+        protected readonly _ITlocalToWorldMatrix = new Matrix4x4();
+        protected _ITlocalToWorldMatrixInvalid = false;
+
+        protected readonly _worldToLocalMatrix = new Matrix4x4();
+        protected _worldToLocalMatrixInvalid = false;
+
+        protected readonly _localToWorldRotationMatrix = new Matrix4x4();
+        protected _localToWorldRotationMatrixInvalid = false;
+
+        private _renderAtomic = new RenderAtomic();
+
+        private _positionChanged(object: Vector3, property: string, oldvalue: number)
         {
-            super.dispose();
+            if (!Math.equals(object[property], oldvalue))
+                this._invalidateTransform();
         }
 
-        //------------------------------------------
-        // Protected Properties
-        //------------------------------------------
-
-
-        //------------------------------------------
-        // Protected Functions
-        //------------------------------------------
-        protected updateLocalToWorldMatrix()
+        private _rotationChanged(object: Vector3, property: string, oldvalue: number)
         {
-            this._localToWorldMatrix = this.matrix3d.clone();
-            if (this.parent)
-                this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
-            this.dispatch("updateLocalToWorldMatrix");
-            debuger && console.assert(!isNaN(this._localToWorldMatrix.rawData[0]));
-            return this._localToWorldMatrix;
-        }
-
-        //------------------------------------------
-        // Private Properties
-        //------------------------------------------
-
-
-        //------------------------------------------
-        // Private Methods
-        //------------------------------------------
-        protected invalidateSceneTransform()
-        {
-            if (!this._localToWorldMatrix)
-                return;
-            this._localToWorldMatrix = null;
-            this._ITlocalToWorldMatrix = null;
-            this._worldToLocalMatrix = null;
-            this.dispatch("scenetransformChanged", this);
-            //
-            for (var i = 0, n = this.gameObject.numChildren; i < n; i++)
+            if (!Math.equals(object[property], oldvalue))
             {
-                this.gameObject.getChildAt(i).transform.invalidateSceneTransform();
+                this._invalidateTransform();
+                this._rotationMatrix3dInvalid = true;
             }
         }
 
-        //------------------------------------------
-        // Variables
-        //------------------------------------------
-        @serialize
-        @oav()
-        get x(): number
+        private _scaleChanged(object: Vector3, property: string, oldvalue: number)
         {
-            return this._x;
+            if (!Math.equals(object[property], oldvalue))
+                this._invalidateTransform();
         }
 
-        set x(val: number)
+        private _invalidateTransform()
         {
-            val = Number(val.toFixed(fixedNum));
-            debuger && console.
-                assert(!isNaN(val));
-            if (this._x == val)
-                return;
-            this._x = val;
-            this.invalidatePosition();
+            if (!this._matrix3dInvalid)
+                this._matrix3dInvalid = true;
+
+            this.dispatch("transformChanged", this);
+            this._invalidateSceneTransform();
         }
 
-        @serialize
-        @oav()
-        get y(): number
+        private _invalidateSceneTransform()
         {
-            return this._y;
+            if (this._localToWorldMatrixInvalid) return;
+
+            this._localToWorldMatrixInvalid = true;
+            this._worldToLocalMatrixInvalid = true;
+            this._ITlocalToWorldMatrixInvalid = true;
+            this._localToWorldRotationMatrixInvalid = true;
+
+            this.dispatch("scenetransformChanged", this);
+            //
+            if (this.gameObject)
+            {
+                for (var i = 0, n = this.gameObject.numChildren; i < n; i++)
+                {
+                    this.gameObject.getChildAt(i).transform._invalidateSceneTransform();
+                }
+            }
         }
 
-        set y(val: number)
+        private _updateMatrix3D()
         {
-            val = Number(val.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(val));
-            if (this._y == val)
-                return;
-            this._y = val;
-            this.invalidatePosition();
-        }
-
-        @serialize
-        @oav()
-        get z(): number
-        {
-            return this._z;
-        }
-
-        set z(val: number)
-        {
-            val = Number(val.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(val));
-            if (this._z == val)
-                return;
-            this._z = val;
-            this.invalidatePosition();
-        }
-
-        @serialize
-        @oav()
-        get rx(): number
-        {
-            return this._rx;
-        }
-
-        set rx(val: number)
-        {
-            val = Number(val.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(val));
-            if (this.rx == val)
-                return;
-            this._rx = val;
-            this.invalidateRotation();
-        }
-
-        @serialize
-        @oav()
-        get ry(): number
-        {
-            return this._ry;
-        }
-
-        set ry(val: number)
-        {
-            val = Number(val.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(val));
-            if (this.ry == val)
-                return;
-            this._ry = val;
-            this.invalidateRotation();
-        }
-
-        @serialize
-        @oav()
-        get rz(): number
-        {
-            return this._rz;
-        }
-
-        set rz(val: number)
-        {
-            val = Number(val.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(val));
-            if (this.rz == val)
-                return;
-            this._rz = val;
-            this.invalidateRotation();
-        }
-
-        @serialize
-        @oav()
-        get sx(): number
-        {
-            return this._sx;
-        }
-
-        set sx(val: number)
-        {
-            val = Number(val.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(val) && val != 0);
-            if (this._sx == val)
-                return;
-            this._sx = val;
-            this.invalidateScale();
-        }
-
-        @serialize
-        @oav()
-        get sy(): number
-        {
-            return this._sy;
-        }
-
-        set sy(val: number)
-        {
-            val = Number(val.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(val) && val != 0);
-            if (this._sy == val)
-                return;
-            this._sy = val;
-            this.invalidateScale();
-        }
-
-        @serialize
-        @oav()
-        get sz(): number
-        {
-            return this._sz;
-        }
-
-        set sz(val: number)
-        {
-            val = Number(val.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(val) && val != 0);
-            if (this._sz == val)
-                return;
-            this._sz = val;
-            this.invalidateScale();
-        }
-
-        /**
-         * @private
-         */
-        get matrix3d(): Matrix4x4
-        {
-            if (!this._matrix3d)
-                this.updateMatrix3D();
+            if (this._matrix3dInvalid)
+            {
+                this._matrix3d.recompose(this._position, this._rotation, this._scale);
+                this._matrix3dInvalid = false;
+            }
             return this._matrix3d;
         }
 
-        set matrix3d(val: Matrix4x4)
+        private _updateLocalToWorldMatrix()
         {
-            var raw = Matrix4x4.RAW_DATA_CONTAINER;
-            val.copyRawDataTo(raw);
-            if (!raw[0])
+            if (this._localToWorldMatrixInvalid)
             {
-                raw[0] = this._smallestNumber;
-                val.copyRawDataFrom(raw);
+                this._localToWorldMatrix.copyFrom(this.matrix3d);
+                if (this.parent)
+                    this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
+                this._localToWorldMatrixInvalid = false;
+                this.dispatch("updateLocalToWorldMatrix");
+                debuger && console.assert(!isNaN(this._localToWorldMatrix.rawData[0]));
             }
-            val.decompose(elements[0], elements[1], elements[2]);
-            this.position = elements[0];
-            this.rotation = elements[1];
-            this.scale = elements[2];
+            return this._localToWorldMatrix;
         }
 
-        /**
-         * 旋转矩阵
-         */
-        get rotationMatrix()
+        private _updateWorldToLocalMatrix()
         {
-            if (!this._rotationMatrix3d)
-                this._rotationMatrix3d = Matrix4x4.fromRotation(this._rx, this._ry, this._rz);
-            return this._rotationMatrix3d;
-        }
-
-        /**
-         * 返回保存位置数据的Vector3D对象
-         */
-        get position(): Vector3
-        {
-            this._position.init(this._x, this._y, this._z);
-            return this._position;
-        }
-
-        set position({ x = 1, y = 1, z = 1 })
-        {
-            x = Number(x.toFixed(fixedNum));
-            y = Number(y.toFixed(fixedNum));
-            z = Number(z.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(x));
-            debuger && console.assert(!isNaN(y));
-            debuger && console.assert(!isNaN(z));
-
-            if (this._x != x || this._y != y || this._z != z)
+            if (this._worldToLocalMatrixInvalid)
             {
-                this._x = x;
-                this._y = y;
-                this._z = z;
-                this.invalidatePosition();
+                this._worldToLocalMatrix.copyFrom(this.localToWorldMatrix).invert();
+                this._worldToLocalMatrixInvalid = false;
             }
+            return this._worldToLocalMatrix;
         }
 
-        get rotation()
+        private _updateITlocalToWorldMatrix()
         {
-            this._rotation.init(this._rx, this._ry, this._rz);
-            return this._rotation;
-        }
-
-        set rotation({ x = 0, y = 0, z = 0 })
-        {
-            x = Number(x.toFixed(fixedNum));
-            y = Number(y.toFixed(fixedNum));
-            z = Number(z.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(x));
-            debuger && console.assert(!isNaN(y));
-            debuger && console.assert(!isNaN(z));
-            if (this._rx != x || this._ry != y || this._rz != z)
+            if (this._ITlocalToWorldMatrixInvalid)
             {
-                this._rx = x;
-                this._ry = y;
-                this._rz = z;
-                this.invalidateRotation();
+                this._ITlocalToWorldMatrix.copyFrom(this.localToWorldMatrix)
+                this._ITlocalToWorldMatrix.invert().transpose();
+                this._ITlocalToWorldMatrixInvalid = false;
             }
+            return this._ITlocalToWorldMatrix;
         }
 
-        /**
-         * 四元素旋转
-         */
-        get orientation()
+        private _upDateLocalToWorldRotationMatrix()
         {
-            this._orientation.fromMatrix(this.matrix3d);
-            return this._orientation;
-        }
-
-        set orientation(value)
-        {
-            var angles = value.toEulerAngles();
-            angles.scaleNumber(Math.RAD2DEG);
-            this.rotation = angles;
-        }
-
-        get scale()
-        {
-            this._scale.init(this._sx, this._sy, this._sz);
-            return this._scale;
-        }
-
-        set scale({ x = 1, y = 1, z = 1 })
-        {
-            x = Number(x.toFixed(fixedNum));
-            y = Number(y.toFixed(fixedNum));
-            z = Number(z.toFixed(fixedNum));
-            debuger && console.assert(!isNaN(x) && x != 0);
-            debuger && console.assert(!isNaN(y) && y != 0);
-            debuger && console.assert(!isNaN(z) && z != 0);
-            if (this._sx != x || this._sy != y || this._sz != z)
+            if (this._localToWorldRotationMatrixInvalid)
             {
-                this._sx = x;
-                this._sy = y;
-                this._sz = z;
-                this.invalidateScale();
+                this._localToWorldRotationMatrix.copyFrom(this.rotationMatrix);
+                if (this.parent)
+                    this._localToWorldRotationMatrix.append(this.parent.localToWorldRotationMatrix);
+
+                this._localToWorldRotationMatrixInvalid = false;
             }
-        }
-
-        get forwardVector(): Vector3
-        {
-            return this.matrix3d.forward;
-        }
-
-        get rightVector(): Vector3
-        {
-            return this.matrix3d.right;
-        }
-
-        get upVector(): Vector3
-        {
-            return this.matrix3d.up;
-        }
-
-        get backVector(): Vector3
-        {
-            var director: Vector3 = this.matrix3d.forward;
-            director.negate();
-            return director;
-        }
-
-        get leftVector(): Vector3
-        {
-            var director: Vector3 = this.matrix3d.left;
-            director.negate();
-            return director;
-        }
-
-        get downVector(): Vector3
-        {
-            var director: Vector3 = this.matrix3d.up;
-            director.negate();
-            return director;
-        }
-
-        moveForward(distance: number)
-        {
-            this.translateLocal(Vector3.Z_AXIS, distance);
-        }
-
-        moveBackward(distance: number)
-        {
-            this.translateLocal(Vector3.Z_AXIS, -distance);
-        }
-
-        moveLeft(distance: number)
-        {
-            this.translateLocal(Vector3.X_AXIS, -distance);
-        }
-
-        moveRight(distance: number)
-        {
-            this.translateLocal(Vector3.X_AXIS, distance);
-        }
-
-        moveUp(distance: number)
-        {
-            this.translateLocal(Vector3.Y_AXIS, distance);
-        }
-
-        moveDown(distance: number)
-        {
-            this.translateLocal(Vector3.Y_AXIS, -distance);
-        }
-
-        translate(axis: Vector3, distance: number)
-        {
-            var x = <any>axis.x, y = <any>axis.y, z = <any>axis.z;
-            var len = distance / Math.sqrt(x * x + y * y + z * z);
-            this._x += x * len;
-            this._y += y * len;
-            this._z += z * len;
-            this.invalidatePosition();
-        }
-
-        translateLocal(axis: Vector3, distance: number)
-        {
-            var x = <any>axis.x, y = <any>axis.y, z = <any>axis.z;
-            var len = distance / Math.sqrt(x * x + y * y + z * z);
-            var matrix3d = this.matrix3d.clone();
-            matrix3d.prependTranslation(x * len, y * len, z * len);
-            var p = matrix3d.getPosition();
-            this._x = p.x;
-            this._y = p.y;
-            this._z = p.z;
-            this.invalidatePosition();
-            this.invalidateSceneTransform();
-        }
-
-        pitch(angle: number)
-        {
-            this.rotate(Vector3.X_AXIS, angle);
-        }
-
-        yaw(angle: number)
-        {
-            this.rotate(Vector3.Y_AXIS, angle);
-        }
-
-        roll(angle: number)
-        {
-            this.rotate(Vector3.Z_AXIS, angle);
-        }
-
-        rotateTo(ax: number, ay: number, az: number)
-        {
-            this._rx = ax;
-            this._ry = ay;
-            this._rz = az;
-            this.invalidateRotation();
-        }
-
-        /**
-         * 绕指定轴旋转，不受位移与缩放影响
-         * @param    axis               旋转轴
-         * @param    angle              旋转角度
-         * @param    pivotPoint         旋转中心点
-         * 
-         */
-        rotate(axis: Vector3, angle: number, pivotPoint?: Vector3): void
-        {
-            //转换位移
-            var positionMatrix3d = Matrix4x4.fromPosition(this.position.x, this.position.y, this.position.z);
-            positionMatrix3d.appendRotation(axis, angle, pivotPoint);
-            this.position = positionMatrix3d.getPosition();
-            //转换旋转
-            var rotationMatrix3d = Matrix4x4.fromRotation(this.rx, this.ry, this.rz);
-            rotationMatrix3d.appendRotation(axis, angle, pivotPoint);
-            var newrotation = rotationMatrix3d.decompose()[1];
-            var v = Math.round((newrotation.x - this.rx) / 180);
-            if (v % 2 != 0)
-            {
-                newrotation.x += 180;
-                newrotation.y = 180 - newrotation.y;
-                newrotation.z += 180;
-            }
-            //
-            var toRound = (a: number, b: number, c = 360) =>
-            {
-                return Math.round((b - a) / c) * c + a;
-            }
-            newrotation.x = toRound(newrotation.x, this.rx);
-            newrotation.y = toRound(newrotation.y, this.ry);
-            newrotation.z = toRound(newrotation.z, this.rz);
-            this.rotation = newrotation;
-            this.invalidateSceneTransform();
-        }
-
-        lookAt(target: Vector3, upAxis?: Vector3)
-        {
-            var mat = this.matrix3d.clone();
-            mat.lookAt(target, upAxis);
-            this.matrix3d = mat;
-            this.invalidateSceneTransform();
-        }
-
-        disposeAsset()
-        {
-            this.dispose();
-        }
-
-        invalidateTransform()
-        {
-            if (!this._matrix3d)
-                return;
-            this._matrix3d = <any>null;
-            this.dispatch("transformChanged", this);
-            this.invalidateSceneTransform();
-        }
-
-        //------------------------------------------
-        // Protected Properties
-        //------------------------------------------
-
-        //------------------------------------------
-        // Protected Functions
-        //------------------------------------------
-        protected updateMatrix3D()
-        {
-            tempComponents[0].init(this._x, this._y, this._z);
-            tempComponents[1].init(this._rx, this._ry, this._rz);
-            tempComponents[2].init(this._sx, this._sy, this._sz);
-
-            this._matrix3d = new Matrix4x4().recompose(tempComponents[0], tempComponents[1], tempComponents[2]);
-        }
-
-        //------------------------------------------
-        // Private Properties
-        //------------------------------------------
-        private _position = new Vector3();
-        private _rotation = new Vector3();
-        private _orientation = new Quaternion();
-        private _scale = new Vector3(1, 1, 1);
-
-        protected _smallestNumber = 0.0000000000000000000001;
-        protected _x = 0;
-        protected _y = 0;
-        protected _z = 0;
-        protected _rx = 0;
-        protected _ry = 0;
-        protected _rz = 0;
-        protected _sx = 1;
-        protected _sy = 1;
-        protected _sz = 1;
-        protected _matrix3d: Matrix4x4;
-        protected _rotationMatrix3d: Matrix4x4 | null;
-        protected _localToWorldMatrix: Matrix4x4 | null;
-        protected _ITlocalToWorldMatrix: Matrix4x4 | null;
-        protected _worldToLocalMatrix: Matrix4x4 | null;
-        protected _localToWorldRotationMatrix: Matrix4x4 | null;
-
-        //------------------------------------------
-        // Private Methods
-        //------------------------------------------
-        private invalidateRotation()
-        {
-            if (!this._rotation)
-                return;
-            this._rotationMatrix3d = null;
-            this._localToWorldRotationMatrix = null;
-            this.invalidateTransform();
-        }
-
-        private invalidateScale()
-        {
-            if (!this._scale)
-                return;
-            this.invalidateTransform();
-        }
-
-        private invalidatePosition()
-        {
-            if (!this._position)
-                return;
-            this.invalidateTransform();
+            return this._localToWorldRotationMatrix;
         }
     }
-
-    var tempComponents = [new Vector3(), new Vector3(), new Vector3()];
-    var elements = [new Vector3(), new Vector3(), new Vector3()];
 }

@@ -11558,13 +11558,131 @@ declare namespace feng3d {
     class Transform extends Component {
         __class__: "feng3d.Transform";
         get single(): boolean;
-        private renderAtomic;
         /**
          * 创建一个实体，该类为虚类
          */
         constructor();
         get scenePosition(): Vector3;
         get parent(): Transform;
+        /**
+         * X轴坐标。
+         */
+        get x(): number;
+        set x(v: number);
+        /**
+         * Y轴坐标。
+         */
+        get y(): number;
+        set y(v: number);
+        /**
+         * Z轴坐标。
+         */
+        get z(): number;
+        set z(v: number);
+        /**
+         * X轴旋转角度。
+         */
+        get rx(): number;
+        set rx(v: number);
+        /**
+         * Y轴旋转角度。
+         */
+        get ry(): number;
+        set ry(v: number);
+        /**
+         * Z轴旋转角度。
+         */
+        get rz(): number;
+        set rz(v: number);
+        /**
+         * X轴缩放。
+         */
+        get sx(): number;
+        set sx(v: number);
+        /**
+         * Y轴缩放。
+         */
+        get sy(): number;
+        set sy(v: number);
+        /**
+         * Z轴缩放。
+         */
+        get sz(): number;
+        set sz(v: number);
+        /**
+         * 自身位移
+         */
+        get position(): Vector3;
+        set position(v: Vector3);
+        /**
+         * 自身旋转
+         */
+        get rotation(): Vector3;
+        set rotation(v: Vector3);
+        /**
+         * 自身四元素旋转
+         */
+        get orientation(): Quaternion;
+        set orientation(value: Quaternion);
+        /**
+         * 自身缩放
+         */
+        get scale(): Vector3;
+        set scale(v: Vector3);
+        /**
+         * 自身变换矩阵
+         */
+        get matrix3d(): Matrix4x4;
+        set matrix3d(v: Matrix4x4);
+        /**
+         * 自身旋转矩阵
+         */
+        get rotationMatrix(): Matrix4x4;
+        /**
+         * 向前向量
+         */
+        get forwardVector(): Vector3;
+        /**
+         * 向右向量
+         */
+        get rightVector(): Vector3;
+        /**
+         * 向上向量
+         */
+        get upVector(): Vector3;
+        /**
+         * 向后向量
+         */
+        get backVector(): Vector3;
+        get leftVector(): Vector3;
+        get downVector(): Vector3;
+        moveForward(distance: number): void;
+        moveBackward(distance: number): void;
+        moveLeft(distance: number): void;
+        moveRight(distance: number): void;
+        moveUp(distance: number): void;
+        moveDown(distance: number): void;
+        translate(axis: Vector3, distance: number): void;
+        translateLocal(axis: Vector3, distance: number): void;
+        pitch(angle: number): void;
+        yaw(angle: number): void;
+        roll(angle: number): void;
+        rotateTo(ax: number, ay: number, az: number): void;
+        /**
+         * 绕指定轴旋转，不受位移与缩放影响
+         * @param    axis               旋转轴
+         * @param    angle              旋转角度
+         * @param    pivotPoint         旋转中心点
+         *
+         */
+        rotate(axis: Vector3, angle: number, pivotPoint?: Vector3): void;
+        /**
+         * 看向目标位置
+         *
+         * @param target    目标位置
+         * @param upAxis    向上朝向
+         */
+        lookAt(target: Vector3, upAxis?: Vector3): void;
         /**
          * 将一个点从局部空间变换到世界空间的矩阵。
          */
@@ -11605,103 +11723,34 @@ declare namespace feng3d {
          */
         inverseTransformVector(vector: Vector3): Vector3;
         beforeRender(gl: GL, renderAtomic: RenderAtomic, scene3d: Scene3D, camera: Camera): void;
-        dispose(): void;
-        protected updateLocalToWorldMatrix(): Matrix4x4;
-        protected invalidateSceneTransform(): void;
-        get x(): number;
-        set x(val: number);
-        get y(): number;
-        set y(val: number);
-        get z(): number;
-        set z(val: number);
-        get rx(): number;
-        set rx(val: number);
-        get ry(): number;
-        set ry(val: number);
-        get rz(): number;
-        set rz(val: number);
-        get sx(): number;
-        set sx(val: number);
-        get sy(): number;
-        set sy(val: number);
-        get sz(): number;
-        set sz(val: number);
-        /**
-         * @private
-         */
-        get matrix3d(): Matrix4x4;
-        set matrix3d(val: Matrix4x4);
-        /**
-         * 旋转矩阵
-         */
-        get rotationMatrix(): Matrix4x4;
-        /**
-         * 返回保存位置数据的Vector3D对象
-         */
-        get position(): Vector3;
-        set position({ x, y, z }: Vector3);
-        get rotation(): Vector3;
-        set rotation({ x, y, z }: Vector3);
-        /**
-         * 四元素旋转
-         */
-        get orientation(): Quaternion;
-        set orientation(value: Quaternion);
-        get scale(): Vector3;
-        set scale({ x, y, z }: Vector3);
-        get forwardVector(): Vector3;
-        get rightVector(): Vector3;
-        get upVector(): Vector3;
-        get backVector(): Vector3;
-        get leftVector(): Vector3;
-        get downVector(): Vector3;
-        moveForward(distance: number): void;
-        moveBackward(distance: number): void;
-        moveLeft(distance: number): void;
-        moveRight(distance: number): void;
-        moveUp(distance: number): void;
-        moveDown(distance: number): void;
-        translate(axis: Vector3, distance: number): void;
-        translateLocal(axis: Vector3, distance: number): void;
-        pitch(angle: number): void;
-        yaw(angle: number): void;
-        roll(angle: number): void;
-        rotateTo(ax: number, ay: number, az: number): void;
-        /**
-         * 绕指定轴旋转，不受位移与缩放影响
-         * @param    axis               旋转轴
-         * @param    angle              旋转角度
-         * @param    pivotPoint         旋转中心点
-         *
-         */
-        rotate(axis: Vector3, angle: number, pivotPoint?: Vector3): void;
-        lookAt(target: Vector3, upAxis?: Vector3): void;
-        disposeAsset(): void;
-        invalidateTransform(): void;
-        protected updateMatrix3D(): void;
-        private _position;
-        private _rotation;
-        private _orientation;
-        private _scale;
+        private readonly _position;
+        private readonly _rotation;
+        private readonly _orientation;
+        private readonly _scale;
         protected _smallestNumber: number;
-        protected _x: number;
-        protected _y: number;
-        protected _z: number;
-        protected _rx: number;
-        protected _ry: number;
-        protected _rz: number;
-        protected _sx: number;
-        protected _sy: number;
-        protected _sz: number;
-        protected _matrix3d: Matrix4x4;
-        protected _rotationMatrix3d: Matrix4x4 | null;
-        protected _localToWorldMatrix: Matrix4x4 | null;
-        protected _ITlocalToWorldMatrix: Matrix4x4 | null;
-        protected _worldToLocalMatrix: Matrix4x4 | null;
-        protected _localToWorldRotationMatrix: Matrix4x4 | null;
-        private invalidateRotation;
-        private invalidateScale;
-        private invalidatePosition;
+        protected readonly _matrix3d: Matrix4x4;
+        protected _matrix3dInvalid: boolean;
+        protected readonly _rotationMatrix3d: Matrix4x4;
+        protected _rotationMatrix3dInvalid: boolean;
+        protected readonly _localToWorldMatrix: Matrix4x4;
+        protected _localToWorldMatrixInvalid: boolean;
+        protected readonly _ITlocalToWorldMatrix: Matrix4x4;
+        protected _ITlocalToWorldMatrixInvalid: boolean;
+        protected readonly _worldToLocalMatrix: Matrix4x4;
+        protected _worldToLocalMatrixInvalid: boolean;
+        protected readonly _localToWorldRotationMatrix: Matrix4x4;
+        protected _localToWorldRotationMatrixInvalid: boolean;
+        private _renderAtomic;
+        private _positionChanged;
+        private _rotationChanged;
+        private _scaleChanged;
+        private _invalidateTransform;
+        private _invalidateSceneTransform;
+        private _updateMatrix3D;
+        private _updateLocalToWorldMatrix;
+        private _updateWorldToLocalMatrix;
+        private _updateITlocalToWorldMatrix;
+        private _upDateLocalToWorldRotationMatrix;
     }
 }
 declare namespace feng3d {

@@ -61,7 +61,7 @@ namespace feng3d
 
         private invalidateSceneTransform()
         {
-            if (this._gameObject) this.transform["invalidateSceneTransform"]();
+            if (this._gameObject) this.transform["_invalidateSceneTransform"]();
         }
 
         private updateLocalToWorldMatrix()
