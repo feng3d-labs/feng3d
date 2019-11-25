@@ -306,7 +306,7 @@ namespace feng3d
                 var mat0 = Matrix4x4.fromRotation(particle.rotation.x, particle.rotation.y, particle.rotation.z);
                 mat0.append(mat);
 
-                particle.rotation = mat0.rotation;
+                particle.rotation = mat0.getRotation();
             }
             var length = particle.velocity.length;
             if (this.randomDirectionAmount > 0)

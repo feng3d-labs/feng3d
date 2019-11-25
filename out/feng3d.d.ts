@@ -5411,12 +5411,32 @@ declare namespace feng3d {
          * @param value 位移
          */
         setPosition(value: Vector3): this;
+        /**
+         * 获取欧拉旋转角度。
+         *
+         * @param rotation 欧拉旋转角度。
+         * @param order   绕轴旋转的顺序。
+         */
+        getRotation(rotation?: Vector3, order?: RotationOrder): Vector3;
+        /**
+         * 设置欧拉旋转角度。
+         *
+         * @param rotation 欧拉旋转角度。
+         * @param order 绕轴旋转的顺序。
+         */
+        setRotation(rotation: Vector3, order?: RotationOrder): this;
+        /**
+         * 获取缩放值。
+         *
+         * @param scale 用于存储缩放值的向量。
+         */
         getScale(scale?: Vector3): Vector3;
         /**
-         * 旋转角度
+         * 获取缩放值。
+         *
+         * @param scale 缩放值。
          */
-        get rotation(): Vector3;
-        set rotation(v: Vector3);
+        setScale(scale: Vector3): this;
         /**
          * 一个用于确定矩阵是否可逆的数字。如果值为0则不可逆。
          */
@@ -5480,13 +5500,6 @@ declare namespace feng3d {
          * @param   order   绕轴旋转的顺序。
          */
         fromRotation(rx: number, ry: number, rz: number, order?: RotationOrder): this;
-        /**
-         * 获取欧拉旋转角度。
-         *
-         * @param rotation
-         * @param order   绕轴旋转的顺序。
-         */
-        getRotation(rotation?: Vector3, order?: RotationOrder): Vector3;
         /**
          * 从四元素初始化矩阵。
          *

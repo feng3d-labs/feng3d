@@ -11421,30 +11421,70 @@ var feng3d;
             this.rawData[14] = value.z;
             return this;
         };
+        /**
+         * 获取欧拉旋转角度。
+         *
+         * @param rotation 欧拉旋转角度。
+         * @param order   绕轴旋转的顺序。
+         */
+        Matrix4x4.prototype.getRotation = function (rotation, order) {
+            if (rotation === void 0) { rotation = new feng3d.Vector3(); }
+            if (order === void 0) { order = feng3d.rotationOrder; }
+            this.decompose(new feng3d.Vector3(), rotation, new feng3d.Vector3(), order);
+            return rotation;
+        };
+        /**
+         * 设置欧拉旋转角度。
+         *
+         * @param rotation 欧拉旋转角度。
+         * @param order 绕轴旋转的顺序。
+         */
+        Matrix4x4.prototype.setRotation = function (rotation, order) {
+            if (order === void 0) { order = feng3d.rotationOrder; }
+            var p = new feng3d.Vector3();
+            var r = new feng3d.Vector3();
+            var s = new feng3d.Vector3();
+            this.decompose(p, r, s, order);
+            r.copy(rotation);
+            this.recompose(p, r, s);
+            return this;
+        };
+        /**
+         * 获取缩放值。
+         *
+         * @param scale 用于存储缩放值的向量。
+         */
         Matrix4x4.prototype.getScale = function (scale) {
             if (scale === void 0) { scale = new feng3d.Vector3; }
+            var rawData = this.rawData;
             var v = new feng3d.Vector3();
-            scale.x = v.init(this.rawData[0], this.rawData[1], this.rawData[2]).length;
-            scale.y = v.init(this.rawData[4], this.rawData[5], this.rawData[6]).length;
-            scale.z = v.init(this.rawData[8], this.rawData[9], this.rawData[10]).length;
+            scale.x = v.init(rawData[0], rawData[1], rawData[2]).length;
+            scale.y = v.init(rawData[4], rawData[5], rawData[6]).length;
+            scale.z = v.init(rawData[8], rawData[9], rawData[10]).length;
             return scale;
         };
-        Object.defineProperty(Matrix4x4.prototype, "rotation", {
-            /**
-             * 旋转角度
-             */
-            get: function () {
-                var rotation = this.decompose()[1];
-                return rotation;
-            },
-            set: function (v) {
-                var comps = this.decompose();
-                comps[1].copy(v);
-                this.recompose(comps[0], comps[1], comps[2]);
-            },
-            enumerable: true,
-            configurable: true
-        });
+        /**
+         * 获取缩放值。
+         *
+         * @param scale 缩放值。
+         */
+        Matrix4x4.prototype.setScale = function (scale) {
+            var oldS = this.getScale();
+            var te = this.rawData;
+            var sx = scale.x / oldS.x;
+            var sy = scale.y / oldS.y;
+            var sz = scale.z / oldS.z;
+            te[0] *= sx;
+            te[1] *= sx;
+            te[2] *= sx;
+            te[4] *= sy;
+            te[5] *= sy;
+            te[6] *= sy;
+            te[8] *= sz;
+            te[9] *= sz;
+            te[10] *= sz;
+            return this;
+        };
         Object.defineProperty(Matrix4x4.prototype, "determinant", {
             /**
              * 一个用于确定矩阵是否可逆的数字。如果值为0则不可逆。
@@ -11574,18 +11614,6 @@ var feng3d;
             if (order === void 0) { order = feng3d.rotationOrder; }
             this.recompose(new feng3d.Vector3(), new feng3d.Vector3(rx, ry, rz), new feng3d.Vector3(1, 1, 1), order);
             return this;
-        };
-        /**
-         * 获取欧拉旋转角度。
-         *
-         * @param rotation
-         * @param order   绕轴旋转的顺序。
-         */
-        Matrix4x4.prototype.getRotation = function (rotation, order) {
-            if (rotation === void 0) { rotation = new feng3d.Vector3(); }
-            if (order === void 0) { order = feng3d.rotationOrder; }
-            this.decompose(new feng3d.Vector3(), rotation, new feng3d.Vector3(), order);
-            return rotation;
         };
         /**
          * 从四元素初始化矩阵。
@@ -36099,7 +36127,7 @@ var feng3d;
                 mat.lookAt(dir, feng3d.Vector3.Y_AXIS);
                 var mat0 = feng3d.Matrix4x4.fromRotation(particle.rotation.x, particle.rotation.y, particle.rotation.z);
                 mat0.append(mat);
-                particle.rotation = mat0.rotation;
+                particle.rotation = mat0.getRotation();
             }
             var length = particle.velocity.length;
             if (this.randomDirectionAmount > 0) {

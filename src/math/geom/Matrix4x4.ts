@@ -80,29 +80,75 @@ namespace feng3d
             return this;
         }
 
+        /**
+         * 获取欧拉旋转角度。
+         * 
+         * @param rotation 欧拉旋转角度。
+         * @param order   绕轴旋转的顺序。
+         */
+        getRotation(rotation = new Vector3(), order = feng3d.rotationOrder)
+        {
+            this.decompose(new Vector3(), rotation, new Vector3(), order);
+            return rotation;
+        }
+
+        /**
+         * 设置欧拉旋转角度。
+         * 
+         * @param rotation 欧拉旋转角度。
+         * @param order 绕轴旋转的顺序。
+         */
+        setRotation(rotation: Vector3, order = feng3d.rotationOrder)
+        {
+            var p = new Vector3();
+            var r = new Vector3();
+            var s = new Vector3();
+            this.decompose(p, r, s, order);
+            r.copy(rotation);
+            this.recompose(p, r, s);
+            return this;
+        }
+
+        /**
+         * 获取缩放值。
+         * 
+         * @param scale 用于存储缩放值的向量。
+         */
         getScale(scale = new Vector3)
         {
+            var rawData = this.rawData;
             var v = new Vector3();
-            scale.x = v.init(this.rawData[0], this.rawData[1], this.rawData[2]).length;
-            scale.y = v.init(this.rawData[4], this.rawData[5], this.rawData[6]).length;
-            scale.z = v.init(this.rawData[8], this.rawData[9], this.rawData[10]).length;
+            scale.x = v.init(rawData[0], rawData[1], rawData[2]).length;
+            scale.y = v.init(rawData[4], rawData[5], rawData[6]).length;
+            scale.z = v.init(rawData[8], rawData[9], rawData[10]).length;
             return scale;
         }
 
         /**
-         * 旋转角度
+         * 获取缩放值。
+         * 
+         * @param scale 缩放值。
          */
-        get rotation()
+        setScale(scale: Vector3)
         {
-            var rotation = this.decompose()[1];
-            return rotation;
-        }
+            var oldS = this.getScale();
 
-        set rotation(v)
-        {
-            var comps = this.decompose();
-            comps[1].copy(v);
-            this.recompose(comps[0], comps[1], comps[2]);
+            var te = this.rawData;
+            var sx = scale.x / oldS.x;
+            var sy = scale.y / oldS.y;
+            var sz = scale.z / oldS.z;
+
+            te[0] *= sx;
+            te[1] *= sx;
+            te[2] *= sx;
+            te[4] *= sy;
+            te[5] *= sy;
+            te[6] *= sy;
+            te[8] *= sz;
+            te[9] *= sz;
+            te[10] *= sz;
+
+            return this;
         }
 
         /**
@@ -242,18 +288,6 @@ namespace feng3d
         {
             this.recompose(new Vector3(), new Vector3(rx, ry, rz), new Vector3(1, 1, 1), order);
             return this;
-        }
-
-        /**
-         * 获取欧拉旋转角度。
-         * 
-         * @param rotation 
-         * @param order   绕轴旋转的顺序。
-         */
-        getRotation(rotation = new Vector3(), order = feng3d.rotationOrder)
-        {
-            this.decompose(new Vector3(), rotation, new Vector3(), order);
-            return rotation;
         }
 
         /**
