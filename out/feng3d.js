@@ -23537,7 +23537,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var fixedNum = 6;
     /**
      * 变换
      *

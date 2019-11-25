@@ -17,8 +17,6 @@ namespace feng3d
         scenetransformChanged: Transform;
     }
 
-    var fixedNum = 6;
-
     export interface ComponentMap { Transfrom: Transform; }
 
 	/**
