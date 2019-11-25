@@ -201,6 +201,7 @@ namespace feng3d
         {
             particle[_TextureSheetAnimation_frameOverTime] = Math.random();
             particle[_TextureSheetAnimation_startFrame] = Math.random();
+            particle[_TextureSheetAnimation_randomRow] = Math.random();
         }
 
         /**
@@ -209,12 +210,13 @@ namespace feng3d
          */
         updateParticleState(particle: Particle)
         {
+            particle.tilingOffset.init(1, 1, 0, 0);
+            particle.flipUV.init(0, 0);
             if (!this.enabled) return;
 
             var segmentsX = this.tiles.x;
             var segmentsY = this.tiles.y;
             var step = this.tiles.clone().reciprocal();
-            var total = segmentsX * segmentsY;
             var uvPos = new Vector2();
             var frameOverTime = this.frameOverTime.getValue(particle.rateAtLifeTime, particle[_TextureSheetAnimation_frameOverTime]);
             var frameIndex = this.startFrame.getValue(particle.rateAtLifeTime, particle[_TextureSheetAnimation_startFrame]);
@@ -223,15 +225,15 @@ namespace feng3d
 
             if (this.animation == ParticleSystemAnimationType.WholeSheet)
             {
-                frameIndex += Math.floor(frameOverTime * total * cycleCount);
+                frameIndex = Math.round(frameIndex + frameOverTime * segmentsX * segmentsY * cycleCount);
                 uvPos.init(frameIndex % segmentsX, Math.floor(frameIndex / segmentsX) % segmentsY).scale(step);
 
             } else if (this.animation == ParticleSystemAnimationType.SingleRow)
             {
-                frameIndex += Math.floor(frameOverTime * segmentsX * cycleCount);
+                frameIndex = Math.round(frameIndex + frameOverTime * segmentsX * cycleCount);
                 if (this.useRandomRow)
                 {
-                    rowIndex = Math.floor(segmentsY * Math.random());
+                    rowIndex = Math.round(segmentsY * particle[_TextureSheetAnimation_randomRow]);
                 }
                 uvPos.init(frameIndex % segmentsX, rowIndex).scale(step);
             }
@@ -244,4 +246,5 @@ namespace feng3d
 
     var _TextureSheetAnimation_frameOverTime = "_TextureSheetAnimation_rateAtLifeTime";
     var _TextureSheetAnimation_startFrame = "_TextureSheetAnimation_startFrame";
+    var _TextureSheetAnimation_randomRow = "_TextureSheetAnimation_randomRow";
 }

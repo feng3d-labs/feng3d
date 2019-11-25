@@ -12,12 +12,12 @@ namespace feng3d
          * 
          * 从左到右，从上到下动画整个纹理表。
          */
-        WholeSheet,
+        WholeSheet = 0,
         /**
          * Animate a single row in the sheet from left to right.
          * 
          * 从左到右移动工作表中的一行。
          */
-        SingleRow,
+        SingleRow = 1,
     }
 }

@@ -37499,31 +37499,33 @@ var feng3d;
         ParticleTextureSheetAnimationModule.prototype.initParticleState = function (particle) {
             particle[_TextureSheetAnimation_frameOverTime] = Math.random();
             particle[_TextureSheetAnimation_startFrame] = Math.random();
+            particle[_TextureSheetAnimation_randomRow] = Math.random();
         };
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
         ParticleTextureSheetAnimationModule.prototype.updateParticleState = function (particle) {
+            particle.tilingOffset.init(1, 1, 0, 0);
+            particle.flipUV.init(0, 0);
             if (!this.enabled)
                 return;
             var segmentsX = this.tiles.x;
             var segmentsY = this.tiles.y;
             var step = this.tiles.clone().reciprocal();
-            var total = segmentsX * segmentsY;
             var uvPos = new feng3d.Vector2();
             var frameOverTime = this.frameOverTime.getValue(particle.rateAtLifeTime, particle[_TextureSheetAnimation_frameOverTime]);
             var frameIndex = this.startFrame.getValue(particle.rateAtLifeTime, particle[_TextureSheetAnimation_startFrame]);
             var rowIndex = this.rowIndex;
             var cycleCount = this.cycleCount;
             if (this.animation == feng3d.ParticleSystemAnimationType.WholeSheet) {
-                frameIndex += Math.floor(frameOverTime * total * cycleCount);
+                frameIndex = Math.round(frameIndex + frameOverTime * segmentsX * segmentsY * cycleCount);
                 uvPos.init(frameIndex % segmentsX, Math.floor(frameIndex / segmentsX) % segmentsY).scale(step);
             }
             else if (this.animation == feng3d.ParticleSystemAnimationType.SingleRow) {
-                frameIndex += Math.floor(frameOverTime * segmentsX * cycleCount);
+                frameIndex = Math.round(frameIndex + frameOverTime * segmentsX * cycleCount);
                 if (this.useRandomRow) {
-                    rowIndex = Math.floor(segmentsY * Math.random());
+                    rowIndex = Math.round(segmentsY * particle[_TextureSheetAnimation_randomRow]);
                 }
                 uvPos.init(frameIndex % segmentsX, rowIndex).scale(step);
             }
@@ -37589,6 +37591,7 @@ var feng3d;
     feng3d.ParticleTextureSheetAnimationModule = ParticleTextureSheetAnimationModule;
     var _TextureSheetAnimation_frameOverTime = "_TextureSheetAnimation_rateAtLifeTime";
     var _TextureSheetAnimation_startFrame = "_TextureSheetAnimation_startFrame";
+    var _TextureSheetAnimation_randomRow = "_TextureSheetAnimation_randomRow";
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
