@@ -4540,6 +4540,7 @@ declare namespace feng3d {
      * 四维向量
      */
     class Vector4 {
+        __class__: "feng3d.Vector4";
         static fromArray(array: ArrayLike<number>, offset?: number): Vector4;
         static fromVector3(vector3: Vector3, w?: number): Vector4;
         static random(): Vector4;
@@ -9858,6 +9859,23 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
+     * 决定给WebGLRenderingContext.colorMask何种参数。
+     */
+    enum ColorMask {
+        NONE = 0,
+        R = 1,
+        G = 2,
+        B = 4,
+        A = 8,
+        RGB = 7,
+        /**
+         *
+         */
+        RGBA = 15
+    }
+}
+declare namespace feng3d {
+    /**
      * 正面方向枚举
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/frontFace
      */
@@ -10543,6 +10561,12 @@ declare namespace feng3d {
          * 是否开启深度标记
          */
         depthMask: boolean;
+        /**
+         * 控制那些颜色分量是否可以被写入到帧缓冲器。
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/colorMask
+         */
+        colorMask: ColorMask;
         /**
          * 绘制在画布上的区域
          */
@@ -15066,7 +15090,7 @@ declare namespace feng3d {
         /**
          * @todo
          */
-        u_softParticlesFactor: number;
+        _InvFade: number;
     }
 }
 declare namespace feng3d {

@@ -152,6 +152,7 @@
         "src/render/gl/enums/BlendEquation.ts",
         "src/render/gl/enums/BlendFactor.ts",
         "src/render/gl/enums/CullFace.ts",
+        "src/render/gl/enums/ColorMask.ts",
         "src/render/gl/enums/FrontFace.ts",
         "src/render/gl/enums/TextureFormat.ts",
         "src/render/gl/enums/TextureDataType.ts",

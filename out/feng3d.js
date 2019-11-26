@@ -9724,6 +9724,7 @@ var feng3d;
             if (y === void 0) { y = 0; }
             if (z === void 0) { z = 0; }
             if (w === void 0) { w = 0; }
+            this.__class__ = "feng3d.Vector4";
             /**
             * Vector4 对象中的第一个元素。默认值为 0
             */
@@ -20427,6 +20428,25 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * 决定给WebGLRenderingContext.colorMask何种参数。
+     */
+    var ColorMask;
+    (function (ColorMask) {
+        ColorMask[ColorMask["NONE"] = 0] = "NONE";
+        ColorMask[ColorMask["R"] = 1] = "R";
+        ColorMask[ColorMask["G"] = 2] = "G";
+        ColorMask[ColorMask["B"] = 4] = "B";
+        ColorMask[ColorMask["A"] = 8] = "A";
+        ColorMask[ColorMask["RGB"] = 7] = "RGB";
+        /**
+         *
+         */
+        ColorMask[ColorMask["RGBA"] = 15] = "RGBA";
+    })(ColorMask = feng3d.ColorMask || (feng3d.ColorMask = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * 正面方向枚举
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/frontFace
      */
@@ -21233,6 +21253,12 @@ var feng3d;
              */
             this.depthMask = true;
             /**
+             * 控制那些颜色分量是否可以被写入到帧缓冲器。
+             *
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/colorMask
+             */
+            this.colorMask = feng3d.ColorMask.RGBA;
+            /**
              * 绘制在画布上的区域
              */
             // @oav({ tooltip: "绘制在画布上的区域" })
@@ -21284,6 +21310,10 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ tooltip: "是否开启深度标记" })
         ], RenderParams.prototype, "depthMask", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVEnum", tooltip: "深度检测方法", componentParam: { enumClass: feng3d.ColorMask } })
+        ], RenderParams.prototype, "colorMask", void 0);
         __decorate([
             feng3d.serialize
         ], RenderParams.prototype, "viewRect", void 0);
@@ -22525,6 +22555,8 @@ var feng3d;
                 var depthFunc = gl[shaderParams.depthFunc];
                 var viewRect = shaderParams.viewRect;
                 var useViewRect = shaderParams.useViewRect;
+                var colorMask = shaderParams.colorMask;
+                var colorMaskB = [feng3d.ColorMask.R, feng3d.ColorMask.G, feng3d.ColorMask.B, feng3d.ColorMask.A].map(function (v) { return !!(colorMask & v); });
                 if (!useViewRect) {
                     viewRect = new feng3d.Rectangle(0, 0, gl.canvas.width, gl.canvas.height);
                 }
@@ -22552,6 +22584,7 @@ var feng3d;
                 else
                     gl.disable(gl.DEPTH_TEST);
                 gl.depthMask(depthMask);
+                gl.colorMask(colorMaskB[0], colorMaskB[1], colorMaskB[2], colorMaskB[3]);
                 gl.viewport(viewRect.x, viewRect.y, viewRect.width, viewRect.height);
             }
             /**
@@ -33235,7 +33268,7 @@ var feng3d;
             /**
              * @todo
              */
-            this.u_softParticlesFactor = 1.0;
+            this._InvFade = 1.0;
         }
         __decorate([
             feng3d.serialize,
@@ -33252,12 +33285,12 @@ var feng3d;
         __decorate([
             feng3d.serialize,
             feng3d.oav()
-        ], ParticlesAdditiveUniforms.prototype, "u_softParticlesFactor", void 0);
+        ], ParticlesAdditiveUniforms.prototype, "_InvFade", void 0);
         return ParticlesAdditiveUniforms;
     }());
     feng3d.ParticlesAdditiveUniforms = ParticlesAdditiveUniforms;
     feng3d.shaderConfig.shaders["Particles_Additive"].cls = ParticlesAdditiveUniforms;
-    feng3d.shaderConfig.shaders["Particles_Additive"].renderParams = { enableBlend: true, sfactor: feng3d.BlendFactor.SRC_ALPHA, dfactor: feng3d.BlendFactor.ONE, depthMask: false };
+    feng3d.shaderConfig.shaders["Particles_Additive"].renderParams = { enableBlend: true, sfactor: feng3d.BlendFactor.SRC_ALPHA, dfactor: feng3d.BlendFactor.ONE, depthMask: false, cullFace: feng3d.CullFace.NONE, };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

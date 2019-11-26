@@ -120,6 +120,9 @@ namespace feng3d
                 var depthFunc = gl[shaderParams.depthFunc];
                 var viewRect = shaderParams.viewRect;
                 var useViewRect = shaderParams.useViewRect;
+                var colorMask = shaderParams.colorMask;
+                var colorMaskB = [ColorMask.R, ColorMask.G, ColorMask.B, ColorMask.A].map(v => !!(colorMask & v));
+
                 if (!useViewRect)
                 {
                     viewRect = new Rectangle(0, 0, gl.canvas.width, gl.canvas.height);
@@ -154,6 +157,8 @@ namespace feng3d
                 else
                     gl.disable(gl.DEPTH_TEST);
                 gl.depthMask(depthMask);
+
+                gl.colorMask(colorMaskB[0], colorMaskB[1], colorMaskB[2], colorMaskB[3]);
 
                 gl.viewport(viewRect.x, viewRect.y, viewRect.width, viewRect.height);
             }

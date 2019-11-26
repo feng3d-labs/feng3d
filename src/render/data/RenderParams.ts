@@ -75,6 +75,15 @@ namespace feng3d
         depthMask = true;
 
         /**
+         * 控制那些颜色分量是否可以被写入到帧缓冲器。
+         * 
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/colorMask
+         */
+        @serialize
+        @oav({ component: "OAVEnum", tooltip: "深度检测方法", componentParam: { enumClass: ColorMask } })
+        colorMask = ColorMask.RGBA;
+
+        /**
          * 绘制在画布上的区域
          */
         // @oav({ tooltip: "绘制在画布上的区域" })

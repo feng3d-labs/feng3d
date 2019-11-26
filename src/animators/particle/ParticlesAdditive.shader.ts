@@ -1,7 +1,7 @@
 namespace feng3d
 {
     export interface UniformsMap { Particles_Additive: ParticlesAdditiveUniforms }
-    
+
     /**
      * UnityShader "Particles/Additive"
      */
@@ -32,9 +32,9 @@ namespace feng3d
          */
         @serialize
         @oav()
-        u_softParticlesFactor = 1.0;
+        _InvFade = 1.0;
     }
 
     shaderConfig.shaders["Particles_Additive"].cls = ParticlesAdditiveUniforms;
-    shaderConfig.shaders["Particles_Additive"].renderParams = { enableBlend: true, sfactor: BlendFactor.SRC_ALPHA, dfactor: BlendFactor.ONE, depthMask: false };
+    shaderConfig.shaders["Particles_Additive"].renderParams = { enableBlend: true, sfactor: BlendFactor.SRC_ALPHA, dfactor: BlendFactor.ONE, depthMask: false, cullFace: CullFace.NONE, };
 }
