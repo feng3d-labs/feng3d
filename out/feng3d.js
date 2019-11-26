@@ -23564,7 +23564,6 @@ var feng3d;
             _this._rotation = new feng3d.Vector3();
             _this._orientation = new feng3d.Quaternion();
             _this._scale = new feng3d.Vector3(1, 1, 1);
-            _this._smallestNumber = 0.0000000000000000000001;
             _this._matrix3d = new feng3d.Matrix4x4();
             _this._matrix3dInvalid = false;
             _this._rotationMatrix3d = new feng3d.Matrix4x4();

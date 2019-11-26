@@ -486,7 +486,6 @@ namespace feng3d
         private readonly _orientation = new Quaternion();
         private readonly _scale = new Vector3(1, 1, 1);
 
-        protected _smallestNumber = 0.0000000000000000000001;
         protected readonly _matrix3d = new Matrix4x4();
         protected _matrix3dInvalid = false;
 
