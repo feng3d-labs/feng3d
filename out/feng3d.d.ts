@@ -359,7 +359,7 @@ declare namespace feng3d {
          * @param funcName 被扩展函数名称
          * @param extendFunc 在函数执行后执行的扩展函数
          */
-        extendFunction<T, K extends feng3d.FunctionPropertyNames<T>, V extends T[K]>(object: T, funcName: K, extendFunc: (this: T, r: ReturnType<V>, ...ps: Parameters<V>) => ReturnType<V>): void;
+        extendFunction<T, K extends FunctionPropertyNames<T>, V extends T[K]>(object: T, funcName: K, extendFunc: (this: T, r: ReturnType<V>, ...ps: Parameters<V>) => ReturnType<V>): void;
         /**
          * 包装函数
          *
