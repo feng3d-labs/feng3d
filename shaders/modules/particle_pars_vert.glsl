@@ -92,7 +92,7 @@
                 float te6 = sinX;
                 float te10 = cosX * cosY;
             #endif
-            #if RotationOrder == RotationOrder.ZYX
+            #if RotationOrder == RotationOrder_ZYX
                 float ae = cosX * cosZ;
                 float af = cosX * sinZ;
                 float be = sinX * cosZ;
@@ -110,7 +110,7 @@
                 float te6 = sinX * cosY;
                 float te10 = cosX * cosY;
             #endif
-            #if RotationOrder == RotationOrder.YZX
+            #if RotationOrder == RotationOrder_YZX
                 float ac = cosX * cosY;
                 float ad = cosX * sinY;
                 float bc = sinX * cosY;
@@ -128,7 +128,7 @@
                 float te6 = ad * sinZ + bc;
                 float te10 = ac - bd * sinZ;
             #endif
-            #if RotationOrder == RotationOrder.XZY
+            #if RotationOrder == RotationOrder_XZY
                 float ac = cosX * cosY;
                 float ad = cosX * sinY;
                 float bc = sinX * cosY;
