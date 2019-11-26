@@ -3577,27 +3577,34 @@ declare namespace feng3d {
      */
     enum RotationOrder {
         /**
-         * 依次按 ZYZ 轴旋转。
+         * 依次按 ZYX 轴旋转。
          *
-         * feng3d默认旋转顺序。
-         *
-         * playcanvas默认旋转顺序。
+         * three.js默认旋转顺序。
          */
         XYZ = 0,
         /**
-         * 依次按 YXZ轴旋转。
-         *
-         * unity默认旋转顺序。
+         * 依次按 YXZ 轴旋转。
          */
         ZXY = 1,
         /**
          * 依次按 XYZ 轴旋转。
          *
-         * three.js默认旋转顺序。
+         * playcanvas默认旋转顺序。
          */
         ZYX = 2,
+        /**
+         * 依次按 ZXY 轴旋转。
+         *
+         * unity默认旋转顺序。
+         */
         YXZ = 3,
+        /**
+         * 依次按 XZY 轴旋转。
+         */
         YZX = 4,
+        /**
+         * 依次按 YZX 轴旋转。
+         */
         XZY = 5
     }
 }
@@ -11042,6 +11049,10 @@ declare namespace feng3d {
          * 骨骼关节数量
          */
         NUM_SKELETONJOINT: number;
+        /**
+         *
+         */
+        RotationOrder: number;
         /**
          * 是否有漫反射贴图
          */

@@ -363,7 +363,7 @@ var feng3d;
             "normal_vert": "vec3 normal = a_normal;",
             "particle_frag": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    finalColor = particleAnimation(finalColor);\r\n#endif",
             "particle_pars_frag": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    varying vec4 v_particle_color;\r\n\r\n    vec4 particleAnimation(vec4 color) {\r\n\r\n        color.xyz = color.xyz * v_particle_color.xyz;\r\n        color.xyz = color.xyz * v_particle_color.www;\r\n        return color;\r\n    }\r\n#endif",
-            "particle_pars_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    //\r\n    attribute vec3 a_particle_position;\r\n    attribute vec3 a_particle_scale;\r\n    attribute vec3 a_particle_rotation;\r\n    attribute vec4 a_particle_color;\r\n\r\n    #ifdef ENABLED_PARTICLE_SYSTEM_textureSheetAnimation\r\n        attribute vec4 a_particle_tilingOffset;\r\n        attribute vec2 a_particle_flipUV;\r\n    #endif\r\n\r\n    uniform mat3 u_particle_billboardMatrix;\r\n\r\n    varying vec4 v_particle_color;\r\n\r\n    mat3 makeParticleRotationMatrix(vec3 rotation)\r\n    {\r\n        float DEG2RAD = 3.1415926 / 180.0;\r\n        \r\n        float rx = rotation.x * DEG2RAD;\r\n        float ry = rotation.y * DEG2RAD;\r\n        float rz = rotation.z * DEG2RAD;\r\n\r\n        float sinX = sin(rx);\r\n        float cosX = cos(rx);\r\n        float sinY = sin(ry);\r\n        float cosY = cos(ry);\r\n        float sinZ = sin(rz);\r\n        float cosZ = cos(rz);\r\n\r\n        mat3 tmp;\r\n        // XYZ\r\n        // float ae = cosX * cosZ;\r\n        // float af = cosX * sinZ;\r\n        // float be = sinX * cosZ;\r\n        // float bf = sinX * sinZ;\r\n\r\n        // tmp[0] = vec3(cosY * cosZ, - cosY * sinZ, sinY);\r\n        // tmp[1] = vec3(af + be * sinY, ae - bf * sinY, - sinX * cosY);\r\n        // tmp[2] = vec3(bf - ae * sinY, be + af * sinY, cosX * cosY);\r\n\r\n        // YXZ\r\n        float ce = cosY * cosZ;\r\n        float cf = cosY * sinZ;\r\n        float de = sinY * cosZ;\r\n        float df = sinY * sinZ;\r\n\r\n        tmp[0] = vec3(ce + df * sinX, cosX * sinZ, cf * sinX - de);\r\n        tmp[1] = vec3(de * sinX - cf, cosX * cosZ, df + ce * sinX);\r\n        tmp[2] = vec3(cosX * sinY, - sinX, cosX * cosY);\r\n        \r\n        return tmp;\r\n    }\r\n\r\n    vec4 particleAnimation(vec4 position) \r\n    {\r\n        // 计算缩放\r\n        position.xyz = position.xyz * a_particle_scale;\r\n\r\n        // 计算旋转\r\n        mat3 rMat = makeParticleRotationMatrix(a_particle_rotation);\r\n        position.xyz = rMat * position.xyz;\r\n        position.xyz = u_particle_billboardMatrix * position.xyz;\r\n\r\n        // 位移\r\n        position.xyz = position.xyz + a_particle_position;\r\n\r\n        // 颜色\r\n        v_particle_color = a_particle_color;\r\n\r\n        #ifdef ENABLED_PARTICLE_SYSTEM_textureSheetAnimation\r\n            if(a_particle_flipUV.x > 0.5) v_uv.x = 1.0 - v_uv.x;\r\n            if(a_particle_flipUV.y > 0.5) v_uv.y = 1.0 - v_uv.y;\r\n            v_uv = v_uv * a_particle_tilingOffset.xy + a_particle_tilingOffset.zw;\r\n        #endif\r\n        \r\n        return position;\r\n    }\r\n#endif",
+            "particle_pars_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    //\r\n    attribute vec3 a_particle_position;\r\n    attribute vec3 a_particle_scale;\r\n    attribute vec3 a_particle_rotation;\r\n    attribute vec4 a_particle_color;\r\n\r\n    #ifdef ENABLED_PARTICLE_SYSTEM_textureSheetAnimation\r\n        attribute vec4 a_particle_tilingOffset;\r\n        attribute vec2 a_particle_flipUV;\r\n    #endif\r\n\r\n    uniform mat3 u_particle_billboardMatrix;\r\n\r\n    varying vec4 v_particle_color;\r\n\r\n    #define RotationOrder_XYZ 0\r\n    #define RotationOrder_ZXY 1\r\n    #define RotationOrder_ZYX 2\r\n    #define RotationOrder_YXZ 3\r\n    #define RotationOrder_YZX 4\r\n    #define RotationOrder_XZY 5\r\n\r\n    mat3 makeParticleRotationMatrix(vec3 rotation)\r\n    {\r\n        float DEG2RAD = 3.1415926 / 180.0;\r\n        \r\n        float rx = rotation.x * DEG2RAD;\r\n        float ry = rotation.y * DEG2RAD;\r\n        float rz = rotation.z * DEG2RAD;\r\n\r\n        float sinX = sin(rx);\r\n        float cosX = cos(rx);\r\n        float sinY = sin(ry);\r\n        float cosY = cos(ry);\r\n        float sinZ = sin(rz);\r\n        float cosZ = cos(rz);\r\n\r\n        mat3 tmp;\r\n        #ifdef RotationOrder\r\n            #if RotationOrder == RotationOrder_XYZ\r\n                float ae = cosX * cosZ;\r\n                float af = cosX * sinZ;\r\n                float be = sinX * cosZ;\r\n                float bf = sinX * sinZ;\r\n\r\n                float te0 = cosY * cosZ;\r\n                float te4 = - cosY * sinZ;\r\n                float te8 = sinY;\r\n\r\n                float te1 = af + be * sinY;\r\n                float te5 = ae - bf * sinY;\r\n                float te9 = - sinX * cosY;\r\n\r\n                float te2 = bf - ae * sinY;\r\n                float te6 = be + af * sinY;\r\n                float te10 = cosX * cosY;\r\n            #endif\r\n            #if RotationOrder == RotationOrder_YXZ\r\n                float ce = cosY * cosZ;\r\n                float cf = cosY * sinZ;\r\n                float de = sinY * cosZ;\r\n                float df = sinY * sinZ;\r\n\r\n                float te0 = ce + df * sinX;\r\n                float te4 = de * sinX - cf;\r\n                float te8 = cosX * sinY;\r\n\r\n                float te1 = cosX * sinZ;\r\n                float te5 = cosX * cosZ;\r\n                float te9 = - sinX;\r\n\r\n                float te2 = cf * sinX - de;\r\n                float te6 = df + ce * sinX;\r\n                float te10 = cosX * cosY;\r\n            #endif\r\n            #if RotationOrder == RotationOrder_ZXY\r\n                float ce = cosY * cosZ;\r\n                float cf = cosY * sinZ;\r\n                float de = sinY * cosZ;\r\n                float df = sinY * sinZ;\r\n\r\n                float te0 = ce - df * sinX;\r\n                float te4 = - cosX * sinZ;\r\n                float te8 = de + cf * sinX;\r\n\r\n                float te1 = cf + de * sinX;\r\n                float te5 = cosX * cosZ;\r\n                float te9 = df - ce * sinX;\r\n\r\n                float te2 = - cosX * sinY;\r\n                float te6 = sinX;\r\n                float te10 = cosX * cosY;\r\n            #endif\r\n            #if RotationOrder == RotationOrder.ZYX\r\n                float ae = cosX * cosZ;\r\n                float af = cosX * sinZ;\r\n                float be = sinX * cosZ;\r\n                float bf = sinX * sinZ;\r\n\r\n                float te0 = cosY * cosZ;\r\n                float te4 = be * sinY - af;\r\n                float te8 = ae * sinY + bf;\r\n\r\n                float te1 = cosY * sinZ;\r\n                float te5 = bf * sinY + ae;\r\n                float te9 = af * sinY - be;\r\n\r\n                float te2 = - sinY;\r\n                float te6 = sinX * cosY;\r\n                float te10 = cosX * cosY;\r\n            #endif\r\n            #if RotationOrder == RotationOrder.YZX\r\n                float ac = cosX * cosY;\r\n                float ad = cosX * sinY;\r\n                float bc = sinX * cosY;\r\n                float bd = sinX * sinY;\r\n\r\n                float te0 = cosY * cosZ;\r\n                float te4 = bd - ac * sinZ;\r\n                float te8 = bc * sinZ + ad;\r\n\r\n                float te1 = sinZ;\r\n                float te5 = cosX * cosZ;\r\n                float te9 = - sinX * cosZ;\r\n\r\n                float te2 = - sinY * cosZ;\r\n                float te6 = ad * sinZ + bc;\r\n                float te10 = ac - bd * sinZ;\r\n            #endif\r\n            #if RotationOrder == RotationOrder.XZY\r\n                float ac = cosX * cosY;\r\n                float ad = cosX * sinY;\r\n                float bc = sinX * cosY;\r\n                float bd = sinX * sinY;\r\n\r\n                float te0 = cosY * cosZ;\r\n                float te4 = - sinZ;\r\n                float te8 = sinY * cosZ;\r\n\r\n                float te1 = ac * sinZ + bd;\r\n                float te5 = cosX * cosZ;\r\n                float te9 = ad * sinZ - bc;\r\n\r\n                float te2 = bc * sinZ - ad;\r\n                float te6 = sinX * cosZ;\r\n                float te10 = bd * sinZ + ac;\r\n            #endif\r\n        #else\r\n            // YXZ\r\n            float ce = cosY * cosZ;\r\n            float cf = cosY * sinZ;\r\n            float de = sinY * cosZ;\r\n            float df = sinY * sinZ;\r\n\r\n            float te0 = ce + df * sinX;\r\n            float te4 = de * sinX - cf;\r\n            float te8 = cosX * sinY;\r\n\r\n            float te1 = cosX * sinZ;\r\n            float te5 = cosX * cosZ;\r\n            float te9 = - sinX;\r\n\r\n            float te2 = cf * sinX - de;\r\n            float te6 = df + ce * sinX;\r\n            float te10 = cosX * cosY;\r\n        #endif\r\n        \r\n        tmp[0] = vec3(te0, te1, te2);\r\n        tmp[1] = vec3(te4, te5, te6);\r\n        tmp[2] = vec3(te8, te9, te10);\r\n        \r\n        return tmp;\r\n    }\r\n\r\n    vec4 particleAnimation(vec4 position) \r\n    {\r\n        // 计算缩放\r\n        position.xyz = position.xyz * a_particle_scale;\r\n\r\n        // 计算旋转\r\n        mat3 rMat = makeParticleRotationMatrix(a_particle_rotation);\r\n        position.xyz = rMat * position.xyz;\r\n        position.xyz = u_particle_billboardMatrix * position.xyz;\r\n\r\n        // 位移\r\n        position.xyz = position.xyz + a_particle_position;\r\n\r\n        // 颜色\r\n        v_particle_color = a_particle_color;\r\n\r\n        #ifdef ENABLED_PARTICLE_SYSTEM_textureSheetAnimation\r\n            if(a_particle_flipUV.x > 0.5) v_uv.x = 1.0 - v_uv.x;\r\n            if(a_particle_flipUV.y > 0.5) v_uv.y = 1.0 - v_uv.y;\r\n            v_uv = v_uv * a_particle_tilingOffset.xy + a_particle_tilingOffset.zw;\r\n        #endif\r\n        \r\n        return position;\r\n    }\r\n#endif",
             "particle_vert": "#ifdef HAS_PARTICLE_ANIMATOR\r\n    position = particleAnimation(position);\r\n#endif",
             "pointsize_pars_vert": "#ifdef IS_POINTS_MODE\r\n    uniform float u_PointSize;\r\n#endif",
             "pointsize_vert": "#ifdef IS_POINTS_MODE\r\n    gl_PointSize = u_PointSize;\r\n#endif",
@@ -8165,27 +8165,34 @@ var feng3d;
     var RotationOrder;
     (function (RotationOrder) {
         /**
-         * 依次按 ZYZ 轴旋转。
+         * 依次按 ZYX 轴旋转。
          *
-         * feng3d默认旋转顺序。
-         *
-         * playcanvas默认旋转顺序。
+         * three.js默认旋转顺序。
          */
         RotationOrder[RotationOrder["XYZ"] = 0] = "XYZ";
         /**
-         * 依次按 YXZ轴旋转。
-         *
-         * unity默认旋转顺序。
+         * 依次按 YXZ 轴旋转。
          */
         RotationOrder[RotationOrder["ZXY"] = 1] = "ZXY";
         /**
          * 依次按 XYZ 轴旋转。
          *
-         * three.js默认旋转顺序。
+         * playcanvas默认旋转顺序。
          */
         RotationOrder[RotationOrder["ZYX"] = 2] = "ZYX";
+        /**
+         * 依次按 ZXY 轴旋转。
+         *
+         * unity默认旋转顺序。
+         */
         RotationOrder[RotationOrder["YXZ"] = 3] = "YXZ";
+        /**
+         * 依次按 XZY 轴旋转。
+         */
         RotationOrder[RotationOrder["YZX"] = 4] = "YZX";
+        /**
+         * 依次按 YZX 轴旋转。
+         */
         RotationOrder[RotationOrder["XZY"] = 5] = "XZY";
     })(RotationOrder = feng3d.RotationOrder || (feng3d.RotationOrder = {}));
 })(feng3d || (feng3d = {}));
@@ -22438,6 +22445,7 @@ var feng3d;
                     return;
                 var shaderMacro = renderAtomic1.getShaderMacro();
                 var shader = renderAtomic1.getShader();
+                shaderMacro.RotationOrder = feng3d.rotationOrder;
                 shader.shaderMacro = shaderMacro;
                 var shaderResult = shader.activeShaderProgram(gl);
                 if (!shaderResult)
@@ -41909,7 +41917,6 @@ var feng3d;
      * playcanvas ZYX
      * three.js XYZ
      */
-    // export var rotationOrder = RotationOrder.ZYX;
     feng3d.rotationOrder = feng3d.RotationOrder.YXZ;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map

@@ -55,7 +55,10 @@ namespace feng3d
          * 骨骼关节数量
          */
         NUM_SKELETONJOINT: number;
-
+        /**
+         * 
+         */
+        RotationOrder: number;
         /**
          * 是否有漫反射贴图
          */

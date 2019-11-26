@@ -21,6 +21,5 @@ namespace feng3d
      * playcanvas ZYX
      * three.js XYZ
      */
-    // export var rotationOrder = RotationOrder.ZYX;
     export var rotationOrder = RotationOrder.YXZ;
 }
