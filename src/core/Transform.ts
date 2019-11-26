@@ -54,7 +54,10 @@ namespace feng3d
             this._renderAtomic.uniforms.u_ITModelMatrix = () => this.ITlocalToWorldMatrix;
         }
 
-        get scenePosition()
+        /**
+         * 世界坐标
+         */
+        get worldPosition()
         {
             return this.localToWorldMatrix.getPosition();
         }

@@ -19,7 +19,7 @@ namespace feng3d
          */
         get position()
         {
-            return this.shadowCamera.transform.scenePosition;
+            return this.shadowCamera.transform.worldPosition;
         }
 
         constructor()

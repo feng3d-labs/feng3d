@@ -39,8 +39,8 @@ namespace feng3d
 
             if (1) return;
             //
-            var mirrorWorldPosition = this.transform.scenePosition;
-            var cameraWorldPosition = camera.transform.scenePosition;
+            var mirrorWorldPosition = this.transform.worldPosition;
+            var cameraWorldPosition = camera.transform.worldPosition;
 
             var rotationMatrix = this.transform.rotationMatrix;
 
@@ -96,7 +96,7 @@ namespace feng3d
             projectionMatrix.rawData[10] = clipPlane.z + 1.0 - clipBias;
             projectionMatrix.rawData[14] = clipPlane.w;
 
-            var eye = camera.transform.scenePosition;
+            var eye = camera.transform.worldPosition;
 
             // 
             var frameBufferObject = this.frameBufferObject;

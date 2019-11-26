@@ -605,7 +605,7 @@ namespace feng3d
         get worldBounds()
         {
             var model = this.getComponent(Model);
-            var box = model ? model.selfWorldBounds : new AABB(this.transform.scenePosition, this.transform.scenePosition);
+            var box = model ? model.selfWorldBounds : new AABB(this.transform.worldPosition, this.transform.worldPosition);
             this.children.forEach(element =>
             {
                 var ebox = element.worldBounds;

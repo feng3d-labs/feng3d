@@ -43,7 +43,7 @@ namespace feng3d
             if (_localToWorldMatrix && this.camera)
             {
                 var camera = this.camera;
-                var cameraPos = camera.transform.scenePosition;
+                var cameraPos = camera.transform.worldPosition;
                 var yAxis = camera.transform.localToWorldMatrix.up;
                 _localToWorldMatrix.lookAt(cameraPos, yAxis);
             }

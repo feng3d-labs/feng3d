@@ -67,12 +67,12 @@ namespace feng3d
                 return this._blenditems;
 
             var models = this.activeModels;
-            var camerapos = this.camera.transform.scenePosition;
+            var camerapos = this.camera.transform.worldPosition;
 
             var blenditems = this._blenditems = models.filter((item) =>
             {
                 return item.material.renderParams.enableBlend;
-            }).sort((b, a) => a.transform.scenePosition.subTo(camerapos).lengthSquared - b.transform.scenePosition.subTo(camerapos).lengthSquared);
+            }).sort((b, a) => a.transform.worldPosition.subTo(camerapos).lengthSquared - b.transform.worldPosition.subTo(camerapos).lengthSquared);
 
             return blenditems;
         }
@@ -86,12 +86,12 @@ namespace feng3d
                 return this._unblenditems;
 
             var models = this.activeModels;
-            var camerapos = this.camera.transform.scenePosition;
+            var camerapos = this.camera.transform.worldPosition;
 
             var unblenditems = this._unblenditems = models.filter((item) =>
             {
                 return !item.material.renderParams.enableBlend;
-            }).sort((a, b) => a.transform.scenePosition.subTo(camerapos).lengthSquared - b.transform.scenePosition.subTo(camerapos).lengthSquared);
+            }).sort((a, b) => a.transform.worldPosition.subTo(camerapos).lengthSquared - b.transform.worldPosition.subTo(camerapos).lengthSquared);
 
             return unblenditems;
         }

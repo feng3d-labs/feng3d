@@ -22730,7 +22730,7 @@ var feng3d;
             uniforms.u_viewProjection = camera.viewProjection;
             uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix;
             uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
-            uniforms.u_cameraPos = camera.transform.scenePosition;
+            uniforms.u_cameraPos = camera.transform.worldPosition;
             uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
             uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
             uniforms.u_sceneAmbientColor = scene3d.ambientColor;
@@ -22877,7 +22877,7 @@ var feng3d;
             renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
             renderAtomic.uniforms.u_viewMatrix = shadowCamera.transform.worldToLocalMatrix;
             renderAtomic.uniforms.u_cameraMatrix = shadowCamera.transform.localToWorldMatrix;
-            renderAtomic.uniforms.u_cameraPos = shadowCamera.transform.scenePosition;
+            renderAtomic.uniforms.u_cameraPos = shadowCamera.transform.worldPosition;
             //
             renderAtomic.uniforms.u_lightType = light.lightType;
             renderAtomic.uniforms.u_lightPosition = light.position;
@@ -22938,7 +22938,7 @@ var feng3d;
                 renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
                 renderAtomic.uniforms.u_viewMatrix = shadowCamera.transform.worldToLocalMatrix;
                 renderAtomic.uniforms.u_cameraMatrix = shadowCamera.transform.localToWorldMatrix;
-                renderAtomic.uniforms.u_cameraPos = shadowCamera.transform.scenePosition;
+                renderAtomic.uniforms.u_cameraPos = shadowCamera.transform.worldPosition;
                 //
                 renderAtomic.uniforms.u_lightType = light.lightType;
                 renderAtomic.uniforms.u_lightPosition = light.position;
@@ -22972,10 +22972,10 @@ var feng3d;
             renderAtomic.uniforms.u_viewProjection = shadowCamera.viewProjection;
             renderAtomic.uniforms.u_viewMatrix = shadowCamera.transform.worldToLocalMatrix;
             renderAtomic.uniforms.u_cameraMatrix = shadowCamera.transform.localToWorldMatrix;
-            renderAtomic.uniforms.u_cameraPos = shadowCamera.transform.scenePosition;
+            renderAtomic.uniforms.u_cameraPos = shadowCamera.transform.worldPosition;
             //
             renderAtomic.uniforms.u_lightType = light.lightType;
-            renderAtomic.uniforms.u_lightPosition = shadowCamera.transform.scenePosition;
+            renderAtomic.uniforms.u_lightPosition = shadowCamera.transform.worldPosition;
             renderAtomic.uniforms.u_shadowCameraNear = light.shadowCameraNear;
             renderAtomic.uniforms.u_shadowCameraFar = light.shadowCameraFar;
             //
@@ -23098,7 +23098,7 @@ var feng3d;
             uniforms.u_viewProjection = camera.viewProjection;
             uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix;
             uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
-            uniforms.u_cameraPos = camera.transform.scenePosition;
+            uniforms.u_cameraPos = camera.transform.worldPosition;
             uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
             uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
             //
@@ -23460,7 +23460,7 @@ var feng3d;
             this.renderAtomic.uniforms.u_viewProjection = camera.viewProjection;
             this.renderAtomic.uniforms.u_viewMatrix = camera.transform.worldToLocalMatrix;
             this.renderAtomic.uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
-            this.renderAtomic.uniforms.u_cameraPos = camera.transform.scenePosition;
+            this.renderAtomic.uniforms.u_cameraPos = camera.transform.worldPosition;
             this.renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
             gl.renderer.draw(this.renderAtomic);
         };
@@ -23595,7 +23595,10 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Transform.prototype, "scenePosition", {
+        Object.defineProperty(Transform.prototype, "worldPosition", {
+            /**
+             * 世界坐标
+             */
             get: function () {
                 return this.localToWorldMatrix.getPosition();
             },
@@ -24616,7 +24619,7 @@ var feng3d;
              */
             get: function () {
                 var model = this.getComponent(feng3d.Model);
-                var box = model ? model.selfWorldBounds : new feng3d.AABB(this.transform.scenePosition, this.transform.scenePosition);
+                var box = model ? model.selfWorldBounds : new feng3d.AABB(this.transform.worldPosition, this.transform.worldPosition);
                 this.children.forEach(function (element) {
                     var ebox = element.worldBounds;
                     box.union(ebox);
@@ -25095,7 +25098,7 @@ var feng3d;
                     });
                     return include;
                 }
-                var p = _this.project(t.scenePosition);
+                var p = _this.project(t.worldPosition);
                 return rect.contains(p.x, p.y);
             }).map(function (t) { return t.gameObject; });
             return gs;
@@ -25194,7 +25197,7 @@ var feng3d;
         };
         HoldSizeComponent.prototype.getDepthScale = function (camera) {
             var cameraTranform = camera.transform.localToWorldMatrix;
-            var distance = this.transform.scenePosition.subTo(cameraTranform.getPosition());
+            var distance = this.transform.worldPosition.subTo(cameraTranform.getPosition());
             if (distance.length == 0)
                 distance.x = 1;
             var depth = distance.dot(cameraTranform.forward);
@@ -25255,7 +25258,7 @@ var feng3d;
             var _localToWorldMatrix = this.transform["_localToWorldMatrix"];
             if (_localToWorldMatrix && this.camera) {
                 var camera = this.camera;
-                var cameraPos = camera.transform.scenePosition;
+                var cameraPos = camera.transform.worldPosition;
                 var yAxis = camera.transform.localToWorldMatrix.up;
                 _localToWorldMatrix.lookAt(cameraPos, yAxis);
             }
@@ -26056,10 +26059,10 @@ var feng3d;
                 if (this._blenditems)
                     return this._blenditems;
                 var models = this.activeModels;
-                var camerapos = this.camera.transform.scenePosition;
+                var camerapos = this.camera.transform.worldPosition;
                 var blenditems = this._blenditems = models.filter(function (item) {
                     return item.material.renderParams.enableBlend;
-                }).sort(function (b, a) { return a.transform.scenePosition.subTo(camerapos).lengthSquared - b.transform.scenePosition.subTo(camerapos).lengthSquared; });
+                }).sort(function (b, a) { return a.transform.worldPosition.subTo(camerapos).lengthSquared - b.transform.worldPosition.subTo(camerapos).lengthSquared; });
                 return blenditems;
             },
             enumerable: true,
@@ -26073,10 +26076,10 @@ var feng3d;
                 if (this._unblenditems)
                     return this._unblenditems;
                 var models = this.activeModels;
-                var camerapos = this.camera.transform.scenePosition;
+                var camerapos = this.camera.transform.worldPosition;
                 var unblenditems = this._unblenditems = models.filter(function (item) {
                     return !item.material.renderParams.enableBlend;
-                }).sort(function (a, b) { return a.transform.scenePosition.subTo(camerapos).lengthSquared - b.transform.scenePosition.subTo(camerapos).lengthSquared; });
+                }).sort(function (a, b) { return a.transform.worldPosition.subTo(camerapos).lengthSquared - b.transform.worldPosition.subTo(camerapos).lengthSquared; });
                 return unblenditems;
             },
             enumerable: true,
@@ -30885,7 +30888,7 @@ var feng3d;
              * 光源位置
              */
             get: function () {
-                return this.transform.scenePosition;
+                return this.transform.worldPosition;
             },
             enumerable: true,
             configurable: true
@@ -30956,7 +30959,7 @@ var feng3d;
                 textureMaterial.renderParams.dfactor = feng3d.BlendFactor.ZERO;
             }
             var depth = viewCamera.lens.near * 2;
-            gameObject.transform.position = viewCamera.transform.scenePosition.addTo(viewCamera.transform.localToWorldMatrix.forward.scaleNumberTo(depth));
+            gameObject.transform.position = viewCamera.transform.worldPosition.addTo(viewCamera.transform.localToWorldMatrix.forward.scaleNumberTo(depth));
             var billboardComponent = gameObject.getComponent(feng3d.BillboardComponent);
             billboardComponent.camera = viewCamera;
             if (this.debugShadowMap) {
@@ -31006,7 +31009,7 @@ var feng3d;
              * 光源位置
              */
             get: function () {
-                return this.shadowCamera.transform.scenePosition;
+                return this.shadowCamera.transform.worldPosition;
             },
             enumerable: true,
             configurable: true
@@ -31586,9 +31589,9 @@ var feng3d;
             else if (this._lookAtObject) {
                 if (this._targetObject.transform.parent && this._lookAtObject.transform.parent) {
                     if (this._targetObject.transform.parent != this._lookAtObject.transform.parent) {
-                        this._pos.x = this._lookAtObject.transform.scenePosition.x;
-                        this._pos.y = this._lookAtObject.transform.scenePosition.y;
-                        this._pos.z = this._lookAtObject.transform.scenePosition.z;
+                        this._pos.x = this._lookAtObject.transform.worldPosition.x;
+                        this._pos.y = this._lookAtObject.transform.worldPosition.y;
+                        this._pos.z = this._lookAtObject.transform.worldPosition.z;
                         this._targetObject.transform.parent.worldToLocalMatrix.transformVector(this._pos, this._pos);
                     }
                     else {
@@ -31596,9 +31599,9 @@ var feng3d;
                     }
                 }
                 else if (this._lookAtObject.scene) {
-                    this._pos.x = this._lookAtObject.transform.scenePosition.x;
-                    this._pos.y = this._lookAtObject.transform.scenePosition.y;
-                    this._pos.z = this._lookAtObject.transform.scenePosition.z;
+                    this._pos.x = this._lookAtObject.transform.worldPosition.x;
+                    this._pos.y = this._lookAtObject.transform.worldPosition.y;
+                    this._pos.z = this._lookAtObject.transform.worldPosition.z;
                 }
                 else {
                     this._pos.copy(this._lookAtObject.transform.position);
@@ -32419,8 +32422,8 @@ var feng3d;
             if (1)
                 return;
             //
-            var mirrorWorldPosition = this.transform.scenePosition;
-            var cameraWorldPosition = camera.transform.scenePosition;
+            var mirrorWorldPosition = this.transform.worldPosition;
+            var cameraWorldPosition = camera.transform.worldPosition;
             var rotationMatrix = this.transform.rotationMatrix;
             var normal = rotationMatrix.forward;
             var view = mirrorWorldPosition.subTo(cameraWorldPosition);
@@ -32459,7 +32462,7 @@ var feng3d;
             projectionMatrix.rawData[6] = clipPlane.y;
             projectionMatrix.rawData[10] = clipPlane.z + 1.0 - clipBias;
             projectionMatrix.rawData[14] = clipPlane.w;
-            var eye = camera.transform.scenePosition;
+            var eye = camera.transform.worldPosition;
             // 
             var frameBufferObject = this.frameBufferObject;
             frameBufferObject.active(gl);

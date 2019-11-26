@@ -37,7 +37,7 @@ namespace feng3d
          */
         get position()
         {
-            return this.transform.scenePosition;
+            return this.transform.worldPosition;
         }
 
         /**
@@ -131,7 +131,7 @@ namespace feng3d
             }
 
             var depth = viewCamera.lens.near * 2;
-            gameObject.transform.position = viewCamera.transform.scenePosition.addTo(viewCamera.transform.localToWorldMatrix.forward.scaleNumberTo(depth));
+            gameObject.transform.position = viewCamera.transform.worldPosition.addTo(viewCamera.transform.localToWorldMatrix.forward.scaleNumberTo(depth));
             var billboardComponent = gameObject.getComponent(BillboardComponent);
             billboardComponent.camera = viewCamera;
 

@@ -216,9 +216,9 @@ namespace feng3d
                 {
                     if (this._targetObject.transform.parent != this._lookAtObject.transform.parent)
                     {
-                        this._pos.x = this._lookAtObject.transform.scenePosition.x;
-                        this._pos.y = this._lookAtObject.transform.scenePosition.y;
-                        this._pos.z = this._lookAtObject.transform.scenePosition.z;
+                        this._pos.x = this._lookAtObject.transform.worldPosition.x;
+                        this._pos.y = this._lookAtObject.transform.worldPosition.y;
+                        this._pos.z = this._lookAtObject.transform.worldPosition.z;
                         this._targetObject.transform.parent.worldToLocalMatrix.transformVector(this._pos, this._pos);
                     }
                     else
@@ -228,9 +228,9 @@ namespace feng3d
                 }
                 else if (this._lookAtObject.scene)
                 {
-                    this._pos.x = this._lookAtObject.transform.scenePosition.x;
-                    this._pos.y = this._lookAtObject.transform.scenePosition.y;
-                    this._pos.z = this._lookAtObject.transform.scenePosition.z;
+                    this._pos.x = this._lookAtObject.transform.worldPosition.x;
+                    this._pos.y = this._lookAtObject.transform.worldPosition.y;
+                    this._pos.z = this._lookAtObject.transform.worldPosition.z;
                 }
                 else
                 {

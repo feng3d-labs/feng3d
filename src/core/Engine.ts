@@ -283,7 +283,7 @@ namespace feng3d
                     })
                     return include;
                 }
-                var p = this.project(t.scenePosition);
+                var p = this.project(t.worldPosition);
                 return rect.contains(p.x, p.y);
             }).map(t => t.gameObject);
             return gs;

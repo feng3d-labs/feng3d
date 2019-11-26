@@ -11573,7 +11573,10 @@ declare namespace feng3d {
          * 创建一个实体，该类为虚类
          */
         constructor();
-        get scenePosition(): Vector3;
+        /**
+         * 世界坐标
+         */
+        get worldPosition(): Vector3;
         get parent(): Transform;
         /**
          * X轴坐标。

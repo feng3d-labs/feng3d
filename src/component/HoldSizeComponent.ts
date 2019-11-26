@@ -81,7 +81,7 @@ namespace feng3d
         private getDepthScale(camera: Camera)
         {
             var cameraTranform = camera.transform.localToWorldMatrix;
-            var distance = this.transform.scenePosition.subTo(cameraTranform.getPosition());
+            var distance = this.transform.worldPosition.subTo(cameraTranform.getPosition());
             if (distance.length == 0)
                 distance.x = 1;
             var depth = distance.dot(cameraTranform.forward);
