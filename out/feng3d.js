@@ -25039,6 +25039,7 @@ var feng3d;
             this.scene.mouseRay3D = this.getMouseRay3D();
             this.scene.camera = this.camera;
             // 默认渲染
+            this.gl.colorMask(true, true, true, true);
             this.gl.clearColor(this.scene.background.r, this.scene.background.g, this.scene.background.b, this.scene.background.a);
             this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
             this.gl.enable(this.gl.DEPTH_TEST);
@@ -33290,7 +33291,7 @@ var feng3d;
     }());
     feng3d.ParticlesAdditiveUniforms = ParticlesAdditiveUniforms;
     feng3d.shaderConfig.shaders["Particles_Additive"].cls = ParticlesAdditiveUniforms;
-    feng3d.shaderConfig.shaders["Particles_Additive"].renderParams = { enableBlend: true, sfactor: feng3d.BlendFactor.SRC_ALPHA, dfactor: feng3d.BlendFactor.ONE, depthMask: false, cullFace: feng3d.CullFace.NONE, };
+    feng3d.shaderConfig.shaders["Particles_Additive"].renderParams = { enableBlend: true, sfactor: feng3d.BlendFactor.SRC_ALPHA, dfactor: feng3d.BlendFactor.ONE, depthMask: false, cullFace: feng3d.CullFace.NONE, colorMask: feng3d.ColorMask.RGB };
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
