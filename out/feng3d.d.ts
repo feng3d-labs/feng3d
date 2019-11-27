@@ -10358,10 +10358,6 @@ declare namespace feng3d {
          */
         u_metalic: number;
         /**
-         * 粒子时间
-         */
-        u_particleTime: number;
-        /**
          * 粒子公告牌矩阵
          */
         u_particle_billboardMatrix: Matrix3x3;

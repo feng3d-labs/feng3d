@@ -33614,6 +33614,17 @@ var feng3d;
             //
             renderAtomic.shaderMacro.HAS_PARTICLE_ANIMATOR = true;
             renderAtomic.shaderMacro.ENABLED_PARTICLE_SYSTEM_textureSheetAnimation = this.textureSheetAnimation.enabled;
+            // 计算公告牌矩阵
+            var isbillboard = !this.shape.alignToDirection && this.geometry == feng3d.Geometry.billboard;
+            var billboardMatrix = new feng3d.Matrix3x3();
+            if (isbillboard) {
+                var cameraMatrix = camera.transform.localToWorldMatrix.clone();
+                var localCameraForward = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.forward);
+                var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
+                var matrix4x4 = new feng3d.Matrix4x4();
+                matrix4x4.lookAt(localCameraForward, localCameraUp);
+                billboardMatrix.formMatrix4x4(matrix4x4);
+            }
             var positions = [];
             var scales = [];
             var rotations = [];
@@ -33629,16 +33640,7 @@ var feng3d;
                 tilingOffsets.push(particle.tilingOffset.x, particle.tilingOffset.y, particle.tilingOffset.z, particle.tilingOffset.w);
                 flipUVs.push(particle.flipUV.x, particle.flipUV.y);
             }
-            // 计算公告牌矩阵
-            var billboardMatrix = new feng3d.Matrix3x3();
-            if (!this.shape.alignToDirection && this.geometry == feng3d.Geometry.billboard) {
-                var cameraMatrix = camera.transform.localToWorldMatrix.clone();
-                var localCameraForward = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.forward);
-                var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
-                var matrix4x4 = new feng3d.Matrix4x4();
-                matrix4x4.lookAt(localCameraForward, localCameraUp);
-                billboardMatrix.formMatrix4x4(matrix4x4);
-                //
+            if (isbillboard) {
                 for (var i = 0, n = rotations.length; i < n; i += 3) {
                     rotations[i + 2] = -rotations[i + 2];
                 }
@@ -33651,7 +33653,6 @@ var feng3d;
             this._attributes.a_particle_tilingOffset.data = tilingOffsets;
             this._attributes.a_particle_flipUV.data = flipUVs;
             //
-            renderAtomic.uniforms.u_particleTime = this._realTime;
             renderAtomic.uniforms.u_particle_billboardMatrix = billboardMatrix;
             for (var key in this._attributes) {
                 renderAtomic.attributes[key] = this._attributes[key];

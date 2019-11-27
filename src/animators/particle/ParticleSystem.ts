@@ -308,6 +308,20 @@ namespace feng3d
 
             renderAtomic.shaderMacro.ENABLED_PARTICLE_SYSTEM_textureSheetAnimation = this.textureSheetAnimation.enabled;
 
+            // 计算公告牌矩阵
+            var isbillboard = !this.shape.alignToDirection && this.geometry == Geometry.billboard;
+            var billboardMatrix = new Matrix3x3();
+            if (isbillboard)
+            {
+                var cameraMatrix = camera.transform.localToWorldMatrix.clone();
+                var localCameraForward = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.forward);
+                var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
+
+                var matrix4x4 = new Matrix4x4();
+                matrix4x4.lookAt(localCameraForward, localCameraUp);
+                billboardMatrix.formMatrix4x4(matrix4x4);
+            }
+
             var positions: number[] = [];
             var scales: number[] = [];
             var rotations: number[] = [];
@@ -326,19 +340,8 @@ namespace feng3d
                 flipUVs.push(particle.flipUV.x, particle.flipUV.y);
             }
 
-            // 计算公告牌矩阵
-            var billboardMatrix = new Matrix3x3();
-            if (!this.shape.alignToDirection && this.geometry == Geometry.billboard)
+            if (isbillboard)
             {
-                var cameraMatrix = camera.transform.localToWorldMatrix.clone();
-                var localCameraForward = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.forward);
-                var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
-
-                var matrix4x4 = new Matrix4x4();
-                matrix4x4.lookAt(localCameraForward, localCameraUp);
-                billboardMatrix.formMatrix4x4(matrix4x4);
-
-                //
                 for (var i = 0, n = rotations.length; i < n; i += 3)
                 {
                     rotations[i + 2] = -rotations[i + 2];
@@ -354,7 +357,6 @@ namespace feng3d
             this._attributes.a_particle_flipUV.data = flipUVs;
 
             //
-            renderAtomic.uniforms.u_particleTime = this._realTime;
             renderAtomic.uniforms.u_particle_billboardMatrix = billboardMatrix;
 
             for (const key in this._attributes)
