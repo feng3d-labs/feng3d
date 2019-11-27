@@ -115,7 +115,7 @@ namespace feng3d
          */
         toVector3(v3 = new Vector3())
         {
-            v3.init(this.x, this.y, this.z);
+            v3.set(this.x, this.y, this.z);
             return v3;
         }
 

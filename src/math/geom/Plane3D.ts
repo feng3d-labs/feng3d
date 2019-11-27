@@ -98,7 +98,7 @@ namespace feng3d
          */
         getNormal(vout = new Vector3())
         {
-            return vout.init(this.a, this.b, this.c);
+            return vout.set(this.a, this.b, this.c);
         }
 
 		/**

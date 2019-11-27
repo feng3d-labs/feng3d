@@ -129,7 +129,7 @@ namespace feng3d
         {
             var preAngularVelocity: Vector3 = particle[_RotationOverLifetime_preAngularVelocity];
             particle.angularVelocity.sub(preAngularVelocity);
-            preAngularVelocity.init(0, 0, 0);
+            preAngularVelocity.set(0, 0, 0);
             if (!this.enabled) return;
 
             var v = this.angularVelocity.getValue(particle.rateAtLifeTime, particle[_RotationOverLifetime_rate]);

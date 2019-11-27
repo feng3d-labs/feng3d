@@ -119,7 +119,7 @@ namespace feng3d
         /**
          * 将 Vector3 的成员设置为指定值
          */
-        init(x: number, y: number, z: number)
+        set(x: number, y: number, z: number)
         {
             this.x = x;
             this.y = y;
@@ -249,7 +249,7 @@ namespace feng3d
          */
         cross(a: Vector3): Vector3
         {
-            return this.init(this.y * a.z - this.z * a.y, this.z * a.x - this.x * a.z, this.x * a.y - this.y * a.x);
+            return this.set(this.y * a.z - this.z * a.y, this.z * a.x - this.x * a.z, this.x * a.y - this.y * a.x);
         }
 
         /**
@@ -286,23 +286,23 @@ namespace feng3d
             {
                 var n = new Vector3();
                 var inorm = 1 / norm;
-                n.init(this.x * inorm, this.y * inorm, this.z * inorm);
+                n.set(this.x * inorm, this.y * inorm, this.z * inorm);
                 var randVec = new Vector3();
                 if (Math.abs(n.x) < 0.9)
                 {
-                    randVec.init(1, 0, 0);
+                    randVec.set(1, 0, 0);
                     n.crossTo(randVec, t1);
                 } else
                 {
-                    randVec.init(0, 1, 0);
+                    randVec.set(0, 1, 0);
                     n.crossTo(randVec, t1);
                 }
                 n.crossTo(t1, t2);
             } else
             {
                 // The normal length is zero, make something up
-                t1.init(1, 0, 0);
-                t2.init(0, 1, 0);
+                t1.set(1, 0, 0);
+                t2.set(0, 1, 0);
             }
         }
 

@@ -9010,7 +9010,7 @@ var feng3d;
         /**
          * 将 Vector3 的成员设置为指定值
          */
-        Vector3.prototype.init = function (x, y, z) {
+        Vector3.prototype.set = function (x, y, z) {
             this.x = x;
             this.y = y;
             this.z = z;
@@ -9125,7 +9125,7 @@ var feng3d;
          * @param a 向量
          */
         Vector3.prototype.cross = function (a) {
-            return this.init(this.y * a.z - this.z * a.y, this.z * a.x - this.x * a.z, this.x * a.y - this.y * a.x);
+            return this.set(this.y * a.z - this.z * a.y, this.z * a.x - this.x * a.z, this.x * a.y - this.y * a.x);
         };
         /**
          * 叉乘向量
@@ -9155,22 +9155,22 @@ var feng3d;
             if (norm > 0.0) {
                 var n = new Vector3();
                 var inorm = 1 / norm;
-                n.init(this.x * inorm, this.y * inorm, this.z * inorm);
+                n.set(this.x * inorm, this.y * inorm, this.z * inorm);
                 var randVec = new Vector3();
                 if (Math.abs(n.x) < 0.9) {
-                    randVec.init(1, 0, 0);
+                    randVec.set(1, 0, 0);
                     n.crossTo(randVec, t1);
                 }
                 else {
-                    randVec.init(0, 1, 0);
+                    randVec.set(0, 1, 0);
                     n.crossTo(randVec, t1);
                 }
                 n.crossTo(t1, t2);
             }
             else {
                 // The normal length is zero, make something up
-                t1.init(1, 0, 0);
-                t2.init(0, 1, 0);
+                t1.set(1, 0, 0);
+                t2.set(0, 1, 0);
             }
         };
         /**
@@ -9803,7 +9803,7 @@ var feng3d;
          */
         Vector4.prototype.toVector3 = function (v3) {
             if (v3 === void 0) { v3 = new feng3d.Vector3(); }
-            v3.init(this.x, this.y, this.z);
+            v3.set(this.x, this.y, this.z);
             return v3;
         };
         /**
@@ -10710,7 +10710,7 @@ var feng3d;
                 vector3D.z = this.ty;
             }
             else {
-                vector3D.init(0, 0, 1);
+                vector3D.set(0, 0, 1);
             }
         };
         /**
@@ -11466,9 +11466,9 @@ var feng3d;
             if (scale === void 0) { scale = new feng3d.Vector3; }
             var rawData = this.rawData;
             var v = new feng3d.Vector3();
-            scale.x = v.init(rawData[0], rawData[1], rawData[2]).length;
-            scale.y = v.init(rawData[4], rawData[5], rawData[6]).length;
-            scale.z = v.init(rawData[8], rawData[9], rawData[10]).length;
+            scale.x = v.set(rawData[0], rawData[1], rawData[2]).length;
+            scale.y = v.set(rawData[4], rawData[5], rawData[6]).length;
+            scale.z = v.set(rawData[8], rawData[9], rawData[10]).length;
             return scale;
         };
         /**
@@ -12294,7 +12294,7 @@ var feng3d;
         Matrix4x4.prototype.transformVectors = function (vin, vout) {
             var vec = new feng3d.Vector3();
             for (var i = 0; i < vin.length; i += 3) {
-                vec.init(vin[i], vin[i + 1], vin[i + 2]);
+                vec.set(vin[i], vin[i + 1], vin[i + 2]);
                 vec = this.transformVector(vec);
                 vout[i] = vec.x;
                 vout[i + 1] = vec.y;
@@ -13547,9 +13547,9 @@ var feng3d;
          * @param positions 顶点数据
          */
         Triangle3D.prototype.fromPositions = function (positions) {
-            this.p0.init(positions[0], positions[1], positions[2]);
-            this.p1.init(positions[3], positions[4], positions[5]);
-            this.p2.init(positions[6], positions[7], positions[8]);
+            this.p0.set(positions[0], positions[1], positions[2]);
+            this.p1.set(positions[3], positions[4], positions[5]);
+            this.p2.set(positions[6], positions[7], positions[8]);
             return this;
         };
         /**
@@ -13789,7 +13789,7 @@ var feng3d;
                 for (var y = aabb.min.y; y <= aabb.max.y; y++) {
                     for (var z = aabb.min.z; z <= aabb.max.z; z++) {
                         // 判定是否在三角形上
-                        var onTri = this.onWithPoint(point.init(x, y, z), 0.5);
+                        var onTri = this.onWithPoint(point.set(x, y, z), 0.5);
                         if (onTri) {
                             result.push(x, y, z);
                         }
@@ -13832,7 +13832,7 @@ var feng3d;
             var result = [];
             ps.forEach(function (v, i) {
                 if (i % 3 == 0) {
-                    vec.init(ps[i], ps[i + 1], ps[i + 2]).scale(voxelSize).add(origin);
+                    vec.set(ps[i], ps[i + 1], ps[i + 2]).scale(voxelSize).add(origin);
                     result.push({ xi: ps[i], yi: ps[i + 1], zi: ps[i + 2], xv: vec.x, yv: vec.y, zv: vec.z });
                 }
             });
@@ -13967,8 +13967,8 @@ var feng3d;
                 if (z > maxZ)
                     maxZ = z;
             }
-            this.min.init(minX, minY, minZ);
-            this.max.init(maxX, maxY, maxZ);
+            this.min.set(minX, minY, minZ);
+            this.max.set(maxX, maxY, maxZ);
             return this;
         };
         /**
@@ -14492,7 +14492,7 @@ var feng3d;
             box.formPositions(positions).getCenter(center);
             var maxRadiusSq = 0;
             for (var i = 0, n = positions.length; i < n; i += 3) {
-                maxRadiusSq = Math.max(maxRadiusSq, center.distanceSquared(v.init(positions[i], positions[i + 1], positions[i + 2])));
+                maxRadiusSq = Math.max(maxRadiusSq, center.distanceSquared(v.set(positions[i], positions[i + 1], positions[i + 2])));
             }
             this.radius = Math.sqrt(maxRadiusSq);
             return this;
@@ -14668,7 +14668,7 @@ var feng3d;
          */
         Plane3D.prototype.getNormal = function (vout) {
             if (vout === void 0) { vout = new feng3d.Vector3(); }
-            return vout.init(this.a, this.b, this.c);
+            return vout.set(this.a, this.b, this.c);
         };
         /**
          * 通过3顶点定义一个平面
@@ -23903,7 +23903,7 @@ var feng3d;
             this.rotate(feng3d.Vector3.Z_AXIS, angle);
         };
         Transform.prototype.rotateTo = function (ax, ay, az) {
-            this._rotation.init(ax, ay, az);
+            this._rotation.set(ax, ay, az);
         };
         /**
          * 绕指定轴旋转，不受位移与缩放影响
@@ -35561,15 +35561,15 @@ var feng3d;
             particle[_Main_preGravity] = new feng3d.Vector3();
             //
             var birthRateAtDuration = particle.birthRateAtDuration;
-            particle.position.init(0, 0, 0);
-            particle.velocity.init(0, 0, this.startSpeed.getValue(birthRateAtDuration));
-            particle.acceleration.init(0, 0, 0);
+            particle.position.set(0, 0, 0);
+            particle.velocity.set(0, 0, this.startSpeed.getValue(birthRateAtDuration));
+            particle.acceleration.set(0, 0, 0);
             if (this.useStartSize3D) {
                 particle.startSize.copy(this.startSize3D.getValue(birthRateAtDuration));
             }
             else {
                 var startSize = this.startSize.getValue(birthRateAtDuration);
-                particle.startSize.init(startSize, startSize, startSize);
+                particle.startSize.set(startSize, startSize, startSize);
             }
             //
             if (this.useStartRotation3D) {
@@ -35577,9 +35577,9 @@ var feng3d;
             }
             else {
                 var startRotation = this.startRotation.getValue(birthRateAtDuration);
-                particle.rotation.init(0, 0, startRotation);
+                particle.rotation.set(0, 0, startRotation);
             }
-            particle.angularVelocity.init(0, 0, 0);
+            particle.angularVelocity.set(0, 0, 0);
             //
             particle.startColor.copy(this.startColor.getValue(birthRateAtDuration));
         };
@@ -36432,7 +36432,7 @@ var feng3d;
         ParticleVelocityOverLifetimeModule.prototype.updateParticleState = function (particle) {
             var preVelocity = particle[_VelocityOverLifetime_preVelocity];
             particle.velocity.sub(preVelocity);
-            preVelocity.init(0, 0, 0);
+            preVelocity.set(0, 0, 0);
             if (!this.enabled)
                 return;
             var velocity = this.velocity.getValue(particle.rateAtLifeTime, particle[_VelocityOverLifetime_rate]);
@@ -36881,7 +36881,7 @@ var feng3d;
         ParticleForceOverLifetimeModule.prototype.updateParticleState = function (particle) {
             var preForce = particle[_ForceOverLifetime_preForce];
             particle.acceleration.sub(preForce);
-            preForce.init(0, 0, 0);
+            preForce.set(0, 0, 0);
             if (!this.enabled)
                 return;
             var force = this.force.getValue(particle.rateAtLifeTime, particle[_ForceOverLifetime_rate]);
@@ -37265,7 +37265,7 @@ var feng3d;
         ParticleRotationOverLifetimeModule.prototype.updateParticleState = function (particle) {
             var preAngularVelocity = particle[_RotationOverLifetime_preAngularVelocity];
             particle.angularVelocity.sub(preAngularVelocity);
-            preAngularVelocity.init(0, 0, 0);
+            preAngularVelocity.set(0, 0, 0);
             if (!this.enabled)
                 return;
             var v = this.angularVelocity.getValue(particle.rateAtLifeTime, particle[_RotationOverLifetime_rate]);

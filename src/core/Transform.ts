@@ -311,7 +311,7 @@ namespace feng3d
 
         rotateTo(ax: number, ay: number, az: number)
         {
-            this._rotation.init(ax, ay, az);
+            this._rotation.set(ax, ay, az);
         }
 
         /**

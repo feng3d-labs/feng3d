@@ -4202,7 +4202,7 @@ declare namespace feng3d {
         /**
          * 将 Vector3 的成员设置为指定值
          */
-        init(x: number, y: number, z: number): this;
+        set(x: number, y: number, z: number): this;
         /**
          * 把所有分量都设为零
          */

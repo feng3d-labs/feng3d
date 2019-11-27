@@ -118,9 +118,9 @@ namespace feng3d
         {
             var rawData = this.rawData;
             var v = new Vector3();
-            scale.x = v.init(rawData[0], rawData[1], rawData[2]).length;
-            scale.y = v.init(rawData[4], rawData[5], rawData[6]).length;
-            scale.z = v.init(rawData[8], rawData[9], rawData[10]).length;
+            scale.x = v.set(rawData[0], rawData[1], rawData[2]).length;
+            scale.y = v.set(rawData[4], rawData[5], rawData[6]).length;
+            scale.z = v.set(rawData[8], rawData[9], rawData[10]).length;
             return scale;
         }
 
@@ -1051,7 +1051,7 @@ namespace feng3d
             var vec = new Vector3();
             for (var i = 0; i < vin.length; i += 3)
             {
-                vec.init(vin[i], vin[i + 1], vin[i + 2]);
+                vec.set(vin[i], vin[i + 1], vin[i + 2]);
                 vec = this.transformVector(vec);
                 vout[i] = vec.x;
                 vout[i + 1] = vec.y;

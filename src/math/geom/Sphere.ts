@@ -123,7 +123,7 @@ namespace feng3d
             var maxRadiusSq = 0;
             for (var i = 0, n = positions.length; i < n; i += 3)
             {
-                maxRadiusSq = Math.max(maxRadiusSq, center.distanceSquared(v.init(positions[i], positions[i + 1], positions[i + 2])));
+                maxRadiusSq = Math.max(maxRadiusSq, center.distanceSquared(v.set(positions[i], positions[i + 1], positions[i + 2])));
             }
             this.radius = Math.sqrt(maxRadiusSq);
             return this;

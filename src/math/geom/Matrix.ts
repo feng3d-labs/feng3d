@@ -357,7 +357,7 @@ namespace feng3d
                 vector3D.z = this.ty;
             } else
             {
-                vector3D.init(0, 0, 1);
+                vector3D.set(0, 0, 1);
             }
         }
 

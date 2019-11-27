@@ -130,8 +130,8 @@ namespace feng3d
                 if (z > maxZ) maxZ = z;
             }
 
-            this.min.init(minX, minY, minZ);
-            this.max.init(maxX, maxY, maxZ);
+            this.min.set(minX, minY, minZ);
+            this.max.set(maxX, maxY, maxZ);
             return this;
         }
 

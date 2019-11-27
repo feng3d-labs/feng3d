@@ -157,9 +157,9 @@ namespace feng3d
          */
         fromPositions(positions: number[])
         {
-            this.p0.init(positions[0], positions[1], positions[2]);
-            this.p1.init(positions[3], positions[4], positions[5]);
-            this.p2.init(positions[6], positions[7], positions[8]);
+            this.p0.set(positions[0], positions[1], positions[2]);
+            this.p1.set(positions[3], positions[4], positions[5]);
+            this.p2.set(positions[6], positions[7], positions[8]);
             return this;
         }
 
@@ -440,7 +440,7 @@ namespace feng3d
                     for (let z = aabb.min.z; z <= aabb.max.z; z++)
                     {
                         // 判定是否在三角形上
-                        var onTri = this.onWithPoint(point.init(x, y, z), 0.5);
+                        var onTri = this.onWithPoint(point.set(x, y, z), 0.5);
                         if (onTri)
                         {
                             result.push(x, y, z);
@@ -490,7 +490,7 @@ namespace feng3d
             {
                 if (i % 3 == 0)
                 {
-                    vec.init(ps[i], ps[i + 1], ps[i + 2]).scale(voxelSize).add(origin);
+                    vec.set(ps[i], ps[i + 1], ps[i + 2]).scale(voxelSize).add(origin);
                     result.push({ xi: ps[i], yi: ps[i + 1], zi: ps[i + 2], xv: vec.x, yv: vec.y, zv: vec.z });
                 }
             });
