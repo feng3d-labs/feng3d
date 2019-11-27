@@ -4233,6 +4233,13 @@ declare namespace feng3d {
          */
         addTo(a: Vector3, vout?: Vector3): Vector3;
         /**
+         * Scale a vector and add it to this vector. Save the result in "target". (target = this + vector * scalar)
+         * @param scalar
+         * @param vector
+         * @param  target The vector to save the result in.
+         */
+        addScaledVector(scalar: number, vector: Vector3, target?: Vector3): Vector3;
+        /**
          * 乘以向量
          * @param a 向量
          */
@@ -4342,7 +4349,7 @@ declare namespace feng3d {
         /**
          * 通过将当前 Vector3 对象的 x、y 和 z 元素与指定的 Vector3 对象的 x、y 和 z 元素进行比较，确定这两个对象是否相等。
          */
-        equals(object: Vector3, precision?: number): boolean;
+        equals(v: Vector3, precision?: number): boolean;
         /**
          * 负向量
          * (a,b,c)->(-a,-b,-c)

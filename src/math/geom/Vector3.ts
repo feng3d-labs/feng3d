@@ -198,6 +198,20 @@ namespace feng3d
         }
 
         /**
+         * Scale a vector and add it to this vector. Save the result in "target". (target = this + vector * scalar)
+         * @param scalar
+         * @param vector
+         * @param  target The vector to save the result in.
+         */
+        addScaledVector(scalar: number, vector: Vector3, target = new Vector3())
+        {
+            target.x = this.x + scalar * vector.x;
+            target.y = this.y + scalar * vector.y;
+            target.z = this.z + scalar * vector.z;
+            return target;
+        }
+
+        /**
          * 乘以向量
          * @param a 向量
          */
@@ -445,13 +459,13 @@ namespace feng3d
         /**
          * 通过将当前 Vector3 对象的 x、y 和 z 元素与指定的 Vector3 对象的 x、y 和 z 元素进行比较，确定这两个对象是否相等。
          */
-        equals(object: Vector3, precision = Math.PRECISION)
+        equals(v: Vector3, precision = Math.PRECISION)
         {
-            if (!Math.equals(this.x - object.x, 0, precision))
+            if (!Math.equals(this.x - v.x, 0, precision))
                 return false;
-            if (!Math.equals(this.y - object.y, 0, precision))
+            if (!Math.equals(this.y - v.y, 0, precision))
                 return false;
-            if (!Math.equals(this.z - object.z, 0, precision))
+            if (!Math.equals(this.z - v.z, 0, precision))
                 return false;
             return true;
         }
@@ -511,6 +525,13 @@ namespace feng3d
                 this.x *= invLength;
                 this.y *= invLength;
                 this.z *= invLength;
+            } else
+            {
+                console.warn(`无法 normalize`);
+                // Make something up
+                this.x = 0;
+                this.y = 0;
+                this.z = 0;
             }
             return this;
         }

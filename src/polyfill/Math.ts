@@ -166,7 +166,7 @@ interface Math
 
 Math.DEG2RAD = Math.PI / 180;
 Math.RAD2DEG = 180 / Math.PI;
-Math.PRECISION = 0.000001;
+Math.PRECISION = 1e-6;
 
 /**
  * 获取唯一标识符

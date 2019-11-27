@@ -7481,7 +7481,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 Math.DEG2RAD = Math.PI / 180;
 Math.RAD2DEG = 180 / Math.PI;
-Math.PRECISION = 0.000001;
+Math.PRECISION = 1e-6;
 /**
  * 获取唯一标识符
  * @see http://www.broofa.com/Tools/Math.uuid.htm
@@ -9079,6 +9079,19 @@ var feng3d;
             return vout.copy(this).add(a);
         };
         /**
+         * Scale a vector and add it to this vector. Save the result in "target". (target = this + vector * scalar)
+         * @param scalar
+         * @param vector
+         * @param  target The vector to save the result in.
+         */
+        Vector3.prototype.addScaledVector = function (scalar, vector, target) {
+            if (target === void 0) { target = new Vector3(); }
+            target.x = this.x + scalar * vector.x;
+            target.y = this.y + scalar * vector.y;
+            target.z = this.z + scalar * vector.z;
+            return target;
+        };
+        /**
          * 乘以向量
          * @param a 向量
          */
@@ -9293,13 +9306,13 @@ var feng3d;
         /**
          * 通过将当前 Vector3 对象的 x、y 和 z 元素与指定的 Vector3 对象的 x、y 和 z 元素进行比较，确定这两个对象是否相等。
          */
-        Vector3.prototype.equals = function (object, precision) {
+        Vector3.prototype.equals = function (v, precision) {
             if (precision === void 0) { precision = Math.PRECISION; }
-            if (!Math.equals(this.x - object.x, 0, precision))
+            if (!Math.equals(this.x - v.x, 0, precision))
                 return false;
-            if (!Math.equals(this.y - object.y, 0, precision))
+            if (!Math.equals(this.y - v.y, 0, precision))
                 return false;
-            if (!Math.equals(this.z - object.z, 0, precision))
+            if (!Math.equals(this.z - v.z, 0, precision))
                 return false;
             return true;
         };
@@ -9351,6 +9364,13 @@ var feng3d;
                 this.x *= invLength;
                 this.y *= invLength;
                 this.z *= invLength;
+            }
+            else {
+                console.warn("\u65E0\u6CD5 normalize");
+                // Make something up
+                this.x = 0;
+                this.y = 0;
+                this.z = 0;
             }
             return this;
         };
