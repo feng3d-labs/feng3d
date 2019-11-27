@@ -175,6 +175,11 @@ namespace feng3d
             return this.startSize3D.xCurve;
         }
 
+        set startSizeX(v)
+        {
+            this.startSize3D.xCurve = v;
+        }
+
         /**
          * Start rotation multiplier along the X axis.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
@@ -202,6 +207,11 @@ namespace feng3d
             return this.startSize3D.yCurve;
         }
 
+        set startSizeY(v)
+        {
+            this.startSize3D.yCurve = v;
+        }
+
         /**
          * Start rotation multiplier along the Y axis.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
@@ -227,6 +237,11 @@ namespace feng3d
         get startSizeZ()
         {
             return this.startSize3D.zCurve;
+        }
+
+        set startSizeZ(v)
+        {
+            this.startSize3D.zCurve = v;
         }
 
         /**
@@ -308,6 +323,11 @@ namespace feng3d
             return this.startRotation3D.xCurve;
         }
 
+        set startRotationX(v)
+        {
+            this.startRotation3D.xCurve = v;
+        }
+
         /**
          * Start rotation multiplier around the X axis.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
@@ -335,6 +355,11 @@ namespace feng3d
             return this.startRotation3D.yCurve;
         }
 
+        set startRotationY(v)
+        {
+            this.startRotation3D.yCurve = v;
+        }
+
         /**
          * Start rotation multiplier around the Y axis.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
@@ -360,6 +385,11 @@ namespace feng3d
         get startRotationZ()
         {
             return this.startRotation3D.zCurve;
+        }
+
+        set startRotationZ(v)
+        {
+            this.startRotation3D.zCurve = v;
         }
 
         /**

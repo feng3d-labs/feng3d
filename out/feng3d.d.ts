@@ -16077,6 +16077,7 @@ declare namespace feng3d {
          * 发射时沿X轴的粒子的初始大小。
          */
         get startSizeX(): MinMaxCurve;
+        set startSizeX(v: MinMaxCurve);
         /**
          * Start rotation multiplier along the X axis.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
@@ -16092,6 +16093,7 @@ declare namespace feng3d {
          * 发射时沿Y轴的粒子的初始大小。
          */
         get startSizeY(): MinMaxCurve;
+        set startSizeY(v: MinMaxCurve);
         /**
          * Start rotation multiplier along the Y axis.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
@@ -16107,6 +16109,7 @@ declare namespace feng3d {
          * 发射时沿Z轴的粒子的初始大小。
          */
         get startSizeZ(): MinMaxCurve;
+        set startSizeZ(v: MinMaxCurve);
         /**
          * Start rotation multiplier along the Z axis.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall size multiplier.
@@ -16148,6 +16151,7 @@ declare namespace feng3d {
          * 发射时粒子围绕X轴的初始旋转。
          */
         get startRotationX(): MinMaxCurve;
+        set startRotationX(v: MinMaxCurve);
         /**
          * Start rotation multiplier around the X axis.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
@@ -16163,6 +16167,7 @@ declare namespace feng3d {
          * 发射时粒子围绕Y轴的初始旋转。
          */
         get startRotationY(): MinMaxCurve;
+        set startRotationY(v: MinMaxCurve);
         /**
          * Start rotation multiplier around the Y axis.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.
@@ -16178,6 +16183,7 @@ declare namespace feng3d {
          * 发射时粒子围绕Z轴的初始旋转。
          */
         get startRotationZ(): MinMaxCurve;
+        set startRotationZ(v: MinMaxCurve);
         /**
          * Start rotation multiplier around the Z axis.
          * This method is more efficient than accessing the whole curve, if you only want to change the overall rotation multiplier.

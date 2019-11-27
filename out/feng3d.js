@@ -35338,6 +35338,9 @@ var feng3d;
             get: function () {
                 return this.startSize3D.xCurve;
             },
+            set: function (v) {
+                this.startSize3D.xCurve = v;
+            },
             enumerable: true,
             configurable: true
         });
@@ -35367,6 +35370,9 @@ var feng3d;
             get: function () {
                 return this.startSize3D.yCurve;
             },
+            set: function (v) {
+                this.startSize3D.yCurve = v;
+            },
             enumerable: true,
             configurable: true
         });
@@ -35395,6 +35401,9 @@ var feng3d;
              */
             get: function () {
                 return this.startSize3D.zCurve;
+            },
+            set: function (v) {
+                this.startSize3D.zCurve = v;
             },
             enumerable: true,
             configurable: true
@@ -35457,6 +35466,9 @@ var feng3d;
             get: function () {
                 return this.startRotation3D.xCurve;
             },
+            set: function (v) {
+                this.startRotation3D.xCurve = v;
+            },
             enumerable: true,
             configurable: true
         });
@@ -35486,6 +35498,9 @@ var feng3d;
             get: function () {
                 return this.startRotation3D.yCurve;
             },
+            set: function (v) {
+                this.startRotation3D.yCurve = v;
+            },
             enumerable: true,
             configurable: true
         });
@@ -35514,6 +35529,9 @@ var feng3d;
              */
             get: function () {
                 return this.startRotation3D.zCurve;
+            },
+            set: function (v) {
+                this.startRotation3D.zCurve = v;
             },
             enumerable: true,
             configurable: true
