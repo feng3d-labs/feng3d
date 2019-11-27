@@ -15714,7 +15714,11 @@ var feng3d;
         };
         /**
          * 获取单调区间列表
-         * @returns {} {ts: 区间结点插值度列表,vs: 区间结点值列表}
+         *
+         * @param ps
+         * @param numSamples
+         * @param precision
+         * @returns ts: 区间结点插值度列表,vs: 区间结点值列表
          */
         BezierCurve.prototype.getMonotoneIntervals = function (ps, numSamples, precision) {
             if (numSamples === void 0) { numSamples = 10; }
@@ -36302,7 +36306,6 @@ var feng3d;
              *
              * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
              */
-            // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
             _this.space = feng3d.ParticleSystemSimulationSpace1.Local;
             return _this;
         }
@@ -36429,6 +36432,9 @@ var feng3d;
             feng3d.oav({ tooltip: "基于寿命的粒子速度控制曲线。" })
         ], ParticleVelocityOverLifetimeModule.prototype, "velocity", void 0);
         __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
+            ,
             feng3d.oav({ tooltip: "指定速度是在局部空间(与变换一起旋转)还是在世界空间。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace1 } })
         ], ParticleVelocityOverLifetimeModule.prototype, "space", void 0);
         return ParticleVelocityOverLifetimeModule;
@@ -36741,7 +36747,6 @@ var feng3d;
              *
              * 这些力是作用于局部空间还是世界空间
              */
-            // @oav({ tooltip: "Are the forces being applied in local or world space?", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
             _this.space = feng3d.ParticleSystemSimulationSpace1.Local;
             /**
              * When randomly selecting values between two curves or constants, this flag will cause a new random force to be chosen on each frame.
@@ -36750,7 +36755,6 @@ var feng3d;
              *
              * @todo
              */
-            // @oav({ tooltip: "When randomly selecting values between two curves or constants, this flag will cause a new random force to be chosen on each frame." })
             _this.randomized = false;
             return _this;
         }
@@ -36874,9 +36878,15 @@ var feng3d;
             feng3d.oav({ tooltip: "作用在粒子上的力" })
         ], ParticleForceOverLifetimeModule.prototype, "force", void 0);
         __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Are the forces being applied in local or world space?", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
+            ,
             feng3d.oav({ tooltip: "这些力是作用于局部空间还是世界空间?", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace1 } })
         ], ParticleForceOverLifetimeModule.prototype, "space", void 0);
         __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "When randomly selecting values between two curves or constants, this flag will cause a new random force to be chosen on each frame." })
+            ,
             feng3d.oav({ tooltip: "当在两条曲线或常数之间随机选择值时，此标志将导致在每一帧上选择一个新的随机力。" })
         ], ParticleForceOverLifetimeModule.prototype, "randomized", void 0);
         return ParticleForceOverLifetimeModule;

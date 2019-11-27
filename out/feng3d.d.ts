@@ -7338,7 +7338,11 @@ declare namespace feng3d {
         };
         /**
          * 获取单调区间列表
-         * @returns {} {ts: 区间结点插值度列表,vs: 区间结点值列表}
+         *
+         * @param ps
+         * @param numSamples
+         * @param precision
+         * @returns ts: 区间结点插值度列表,vs: 区间结点值列表
          */
         getMonotoneIntervals(ps: number[], numSamples?: number, precision?: number): {
             ts: number[];
