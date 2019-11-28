@@ -33678,8 +33678,12 @@ var feng3d;
             var billboardMatrix = new feng3d.Matrix3x3();
             if (isbillboard) {
                 var cameraMatrix = camera.transform.localToWorldMatrix.clone();
-                var localCameraForward = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.forward);
-                var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
+                var localCameraForward = cameraMatrix.forward;
+                var localCameraUp = cameraMatrix.up;
+                if (this.main.simulationSpace == feng3d.ParticleSystemSimulationSpace.Local) {
+                    localCameraForward = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(localCameraForward);
+                    localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(localCameraUp);
+                }
                 var matrix4x4 = new feng3d.Matrix4x4();
                 matrix4x4.lookAt(localCameraForward, localCameraUp);
                 billboardMatrix.formMatrix4x4(matrix4x4);

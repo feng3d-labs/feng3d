@@ -340,9 +340,13 @@ namespace feng3d
             if (isbillboard)
             {
                 var cameraMatrix = camera.transform.localToWorldMatrix.clone();
-                var localCameraForward = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.forward);
-                var localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(cameraMatrix.up);
-
+                var localCameraForward = cameraMatrix.forward;
+                var localCameraUp = cameraMatrix.up;
+                if (this.main.simulationSpace == ParticleSystemSimulationSpace.Local)
+                {
+                    localCameraForward = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(localCameraForward);
+                    localCameraUp = this.gameObject.transform.worldToLocalRotationMatrix.transformVector(localCameraUp);
+                }
                 var matrix4x4 = new Matrix4x4();
                 matrix4x4.lookAt(localCameraForward, localCameraUp);
                 billboardMatrix.formMatrix4x4(matrix4x4);
