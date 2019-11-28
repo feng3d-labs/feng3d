@@ -9,7 +9,7 @@ namespace feng3d
     export class ParticleVelocityOverLifetimeModule extends ParticleModule
     {
         __class__: "feng3d.ParticleVelocityOverLifetimeModule" = "feng3d.ParticleVelocityOverLifetimeModule";
-        
+
         /**
          * Curve to control particle speed based on lifetime.
          * 
@@ -19,7 +19,7 @@ namespace feng3d
         // @oav({ tooltip: "Curve to control particle speed based on lifetime." })
         @oav({ tooltip: "基于寿命的粒子速度控制曲线。" })
         velocity = new MinMaxCurveVector3();
-        
+
         /**
          * Specifies if the velocities are in local space (rotated with the transform) or world space.
          * 
@@ -127,7 +127,7 @@ namespace feng3d
         initParticleState(particle: Particle)
         {
             particle[_VelocityOverLifetime_rate] = Math.random();
-            particle[_VelocityOverLifetime_preVelocity] = new Vector3();
+            particle[_VelocityOverLifetime_preVelocity] = { value: new Vector3(), space: this.space };
         }
 
         /**
@@ -136,20 +136,43 @@ namespace feng3d
          */
         updateParticleState(particle: Particle)
         {
-            var preVelocity: Vector3 = particle[_VelocityOverLifetime_preVelocity];
-            particle.velocity.sub(preVelocity);
-            preVelocity.set(0, 0, 0);
+            var preVelocityObj: { value: Vector3, space: ParticleSystemSimulationSpace } = particle[_VelocityOverLifetime_preVelocity];
+            var preVelocity = preVelocityObj.value;
+
+            if (preVelocity.lengthSquared != 0)
+            {
+                if (this.particleSystem.main.simulationSpace != preVelocityObj.space)
+                {
+                    if (preVelocityObj.space == ParticleSystemSimulationSpace.World)
+                    {
+                        this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(preVelocity, preVelocity);
+                    } else
+                    {
+                        this.particleSystem.transform.localToWorldMatrix.deltaTransformVector(preVelocity, preVelocity);
+                    }
+                }
+                particle.velocity.sub(preVelocity);
+                preVelocity.set(0, 0, 0);
+            }
+
             if (!this.enabled) return;
 
             var velocity = this.velocity.getValue(particle.rateAtLifeTime, particle[_VelocityOverLifetime_rate]);
-            if (this.space == ParticleSystemSimulationSpace.World)
+            if (this.space != this.particleSystem.main.simulationSpace)
             {
-                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(velocity, velocity);
+                if (this.space == ParticleSystemSimulationSpace.World)
+                {
+                    this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(velocity, velocity);
+                } else
+                {
+                    this.particleSystem.transform.localToWorldMatrix.deltaTransformVector(velocity, velocity);
+                }
             }
 
             //
             particle.velocity.add(velocity);
             preVelocity.copy(velocity);
+            preVelocityObj.space = this.particleSystem.main.simulationSpace;
         }
     }
 

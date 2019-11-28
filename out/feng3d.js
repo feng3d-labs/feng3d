@@ -36485,25 +36485,42 @@ var feng3d;
          */
         ParticleVelocityOverLifetimeModule.prototype.initParticleState = function (particle) {
             particle[_VelocityOverLifetime_rate] = Math.random();
-            particle[_VelocityOverLifetime_preVelocity] = new feng3d.Vector3();
+            particle[_VelocityOverLifetime_preVelocity] = { value: new feng3d.Vector3(), space: this.space };
         };
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
         ParticleVelocityOverLifetimeModule.prototype.updateParticleState = function (particle) {
-            var preVelocity = particle[_VelocityOverLifetime_preVelocity];
-            particle.velocity.sub(preVelocity);
-            preVelocity.set(0, 0, 0);
+            var preVelocityObj = particle[_VelocityOverLifetime_preVelocity];
+            var preVelocity = preVelocityObj.value;
+            if (preVelocity.lengthSquared != 0) {
+                if (this.particleSystem.main.simulationSpace != preVelocityObj.space) {
+                    if (preVelocityObj.space == feng3d.ParticleSystemSimulationSpace.World) {
+                        this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(preVelocity, preVelocity);
+                    }
+                    else {
+                        this.particleSystem.transform.localToWorldMatrix.deltaTransformVector(preVelocity, preVelocity);
+                    }
+                }
+                particle.velocity.sub(preVelocity);
+                preVelocity.set(0, 0, 0);
+            }
             if (!this.enabled)
                 return;
             var velocity = this.velocity.getValue(particle.rateAtLifeTime, particle[_VelocityOverLifetime_rate]);
-            if (this.space == feng3d.ParticleSystemSimulationSpace.World) {
-                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(velocity, velocity);
+            if (this.space != this.particleSystem.main.simulationSpace) {
+                if (this.space == feng3d.ParticleSystemSimulationSpace.World) {
+                    this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(velocity, velocity);
+                }
+                else {
+                    this.particleSystem.transform.localToWorldMatrix.deltaTransformVector(velocity, velocity);
+                }
             }
             //
             particle.velocity.add(velocity);
             preVelocity.copy(velocity);
+            preVelocityObj.space = this.particleSystem.main.simulationSpace;
         };
         __decorate([
             feng3d.serialize
