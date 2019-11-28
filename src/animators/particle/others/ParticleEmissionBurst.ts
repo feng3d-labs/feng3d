@@ -51,29 +51,6 @@ namespace feng3d
         }
 
         /**
-         * How many times to play the burst. (0 means infinitely).
-         * 爆发次数。(0意味着无限)。
-         * 
-         * @todo
-         */
-        @serialize
-        // @oav({ tooltip: "How many times to play the burst. (0 means infinitely)." })
-        @oav({ tooltip: "爆发次数。(0意味着无限)。" })
-        cycleCount = 1;
-
-        /**
-         * How often to repeat the burst, in seconds.
-         * 
-         * 多久重复一次，以秒为单位。
-         * 
-         * @todo
-         */
-        @serialize
-        // @oav({ tooltip: "How often to repeat the burst, in seconds." })
-        @oav({ tooltip: "多久重复一次，以秒为单位。" })
-        repeatInterval = 0.01;
-
-        /**
          * 喷发被触发的几率。
          */
         @serialize

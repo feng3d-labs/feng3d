@@ -15317,21 +15317,6 @@ declare namespace feng3d {
         get maxCount(): number;
         set maxCount(v: number);
         /**
-         * How many times to play the burst. (0 means infinitely).
-         * 爆发次数。(0意味着无限)。
-         *
-         * @todo
-         */
-        cycleCount: number;
-        /**
-         * How often to repeat the burst, in seconds.
-         *
-         * 多久重复一次，以秒为单位。
-         *
-         * @todo
-         */
-        repeatInterval: number;
-        /**
          * 喷发被触发的几率。
          */
         probability: number;

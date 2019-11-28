@@ -33934,21 +33934,6 @@ var feng3d;
              */
             this.count = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 30, constantMin: 30, constantMax: 30 });
             /**
-             * How many times to play the burst. (0 means infinitely).
-             * 爆发次数。(0意味着无限)。
-             *
-             * @todo
-             */
-            this.cycleCount = 1;
-            /**
-             * How often to repeat the burst, in seconds.
-             *
-             * 多久重复一次，以秒为单位。
-             *
-             * @todo
-             */
-            this.repeatInterval = 0.01;
-            /**
              * 喷发被触发的几率。
              */
             this.probability = 1.0;
@@ -34012,18 +33997,6 @@ var feng3d;
             ,
             feng3d.oav({ tooltip: "要发射的粒子数。" })
         ], ParticleEmissionBurst.prototype, "count", void 0);
-        __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "How many times to play the burst. (0 means infinitely)." })
-            ,
-            feng3d.oav({ tooltip: "爆发次数。(0意味着无限)。" })
-        ], ParticleEmissionBurst.prototype, "cycleCount", void 0);
-        __decorate([
-            feng3d.serialize
-            // @oav({ tooltip: "How often to repeat the burst, in seconds." })
-            ,
-            feng3d.oav({ tooltip: "多久重复一次，以秒为单位。" })
-        ], ParticleEmissionBurst.prototype, "repeatInterval", void 0);
         __decorate([
             feng3d.serialize
             // @oav({ tooltip: "The chance that the burst will trigger." })
@@ -34177,14 +34150,6 @@ var feng3d;
          * 模拟世界空间中的粒子。
          */
         ParticleSystemSimulationSpace[ParticleSystemSimulationSpace["World"] = 1] = "World";
-        /**
-         * Simulate particles relative to a custom transform component, defined by ParticleMainModule.customSimulationSpace.
-         *
-         * 模拟粒子相对于自定义变换组件，该组件由ParticleMainModule.customSimulationSpace定义。
-         *
-         * 没弄懂是怎么回事
-         */
-        // Custom = 2
     })(ParticleSystemSimulationSpace = feng3d.ParticleSystemSimulationSpace || (feng3d.ParticleSystemSimulationSpace = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
