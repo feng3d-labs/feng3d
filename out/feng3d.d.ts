@@ -15284,6 +15284,11 @@ declare namespace feng3d {
          * @param particle 粒子
          */
         private _updateParticleState;
+        /**
+         * 上次移动发射的位置
+         */
+        private _preRateOverDistancePos;
+        private _isRateOverDistance;
     }
 }
 declare namespace feng3d {
@@ -16314,8 +16319,6 @@ declare namespace feng3d {
          *
          * 产生新粒子的速度，通过距离。
          * 新粒子只有在发射器移动时才会被发射出来。
-         *
-         * @todo
          */
         rateOverDistance: MinMaxCurve;
         /**

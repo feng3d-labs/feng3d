@@ -33417,6 +33417,11 @@ var feng3d;
                 a_particle_flipUV: new feng3d.Attribute("a_particle_flipUV", [], 2, 1),
             };
             _this._modules = [];
+            /**
+             * 上次移动发射的位置
+             */
+            _this._preRateOverDistancePos = new feng3d.Vector3();
+            _this._isRateOverDistance = false;
             _this.main = new feng3d.ParticleMainModule();
             _this.emission = new feng3d.ParticleEmissionModule();
             _this.shape = new feng3d.ParticleShapeModule();
@@ -33775,6 +33780,19 @@ var feng3d;
                         emits.push({ time: cycleStartTime + burst.time, num: burst.count.getValue(rateAtDuration) });
                     }
                 }
+            }
+            // 处理移动发射粒子
+            if (this.main.simulationSpace == feng3d.ParticleSystemSimulationSpace.World) {
+                var worldPos = this.transform.worldPosition;
+                if (this._isRateOverDistance) {
+                    var overDistance = worldPos.distance(this._preRateOverDistancePos);
+                    this.emission.rateOverDistance.getValue(rateAtDuration);
+                }
+                this._preRateOverDistancePos.copy(worldPos);
+                this._isRateOverDistance = true;
+            }
+            else {
+                this._isRateOverDistance = false;
             }
             emits.sort(function (a, b) { return a.time - b.time; });
             ;
@@ -35801,8 +35819,6 @@ var feng3d;
              *
              * 产生新粒子的速度，通过距离。
              * 新粒子只有在发射器移动时才会被发射出来。
-             *
-             * @todo
              */
             // @oav({ tooltip: "The rate at which new particles are spawned, over distance." })
             _this.rateOverDistance = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constant: 0, constantMin: 0, constantMax: 1 });

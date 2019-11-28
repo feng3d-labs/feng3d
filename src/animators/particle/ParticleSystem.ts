@@ -496,6 +496,24 @@ namespace feng3d
                     }
                 }
             }
+            // 处理移动发射粒子
+            if (this.main.simulationSpace == ParticleSystemSimulationSpace.World)
+            {
+                var worldPos = this.transform.worldPosition;
+                if (this._isRateOverDistance)
+                {
+                    var overDistance = worldPos.distance(this._preRateOverDistancePos);
+                    this.emission.rateOverDistance.getValue(rateAtDuration);
+
+                    
+                }
+                this._preRateOverDistancePos.copy(worldPos);
+
+                this._isRateOverDistance = true;
+            } else
+            {
+                this._isRateOverDistance = false;
+            }
 
             emits.sort((a, b) => { return a.time - b.time });;
 
@@ -575,6 +593,12 @@ namespace feng3d
             this._modules.forEach(v => { v.updateParticleState(particle) });
             particle.updateState(preTime, this._realTime);
         }
+
+        /**
+         * 上次移动发射的位置
+         */
+        private _preRateOverDistancePos = new Vector3();
+        private _isRateOverDistance = false;
     }
 
     AssetData.addAssetData("Billboard-Geometry", Geometry.billboard = serialization.setValue(new QuadGeometry(), { name: "Billboard-Geometry", assetId: "Billboard-Geometry", hideFlags: HideFlags.NotEditable }));

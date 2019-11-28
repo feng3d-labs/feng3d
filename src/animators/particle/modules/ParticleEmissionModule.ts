@@ -39,8 +39,6 @@ namespace feng3d
          * 
          * 产生新粒子的速度，通过距离。
          * 新粒子只有在发射器移动时才会被发射出来。
-         * 
-         * @todo
          */
         // @oav({ tooltip: "The rate at which new particles are spawned, over distance." })
         @oav({ tooltip: "产生新粒子的速度，通过距离。" })
