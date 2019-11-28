@@ -385,6 +385,12 @@ namespace feng3d
             //
             renderAtomic.uniforms.u_particle_billboardMatrix = billboardMatrix;
 
+            if (this.main.simulationSpace == ParticleSystemSimulationSpace.World)
+            {
+                renderAtomic.uniforms.u_modelMatrix = () => new Matrix4x4();
+                renderAtomic.uniforms.u_ITModelMatrix = () => new Matrix4x4();
+            }
+
             for (const key in this._attributes)
             {
                 renderAtomic.attributes[key] = this._attributes[key];
@@ -464,6 +470,24 @@ namespace feng3d
             // 单粒子发射周期
             var step = 1 / this.emission.rateOverTime.getValue(rateAtDuration);
             var bursts = this.emission.bursts;
+            // 处理移动发射粒子
+            if (this.main.simulationSpace == ParticleSystemSimulationSpace.World)
+            {
+                var worldPos = this.transform.worldPosition;
+                if (this._isRateOverDistance)
+                {
+                    var overDistance = worldPos.distance(this._preRateOverDistancePos);
+                    this.emission.rateOverDistance.getValue(rateAtDuration);
+
+
+                }
+                this._preRateOverDistancePos.copy(worldPos);
+
+                this._isRateOverDistance = true;
+            } else
+            {
+                this._isRateOverDistance = false;
+            }
 
             // 遍历所有发射周期
             var cycleStartIndex = Math.floor(preRealTime / duration);
@@ -495,24 +519,6 @@ namespace feng3d
                         emits.push({ time: cycleStartTime + burst.time, num: burst.count.getValue(rateAtDuration) });
                     }
                 }
-            }
-            // 处理移动发射粒子
-            if (this.main.simulationSpace == ParticleSystemSimulationSpace.World)
-            {
-                var worldPos = this.transform.worldPosition;
-                if (this._isRateOverDistance)
-                {
-                    var overDistance = worldPos.distance(this._preRateOverDistancePos);
-                    this.emission.rateOverDistance.getValue(rateAtDuration);
-
-                    
-                }
-                this._preRateOverDistancePos.copy(worldPos);
-
-                this._isRateOverDistance = true;
-            } else
-            {
-                this._isRateOverDistance = false;
             }
 
             emits.sort((a, b) => { return a.time - b.time });;

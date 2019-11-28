@@ -15733,10 +15733,13 @@ declare namespace feng3d {
         protected _module: ParticleShapeModule;
         constructor(module: ParticleShapeModule);
         /**
-         * 初始化粒子状态
-         * @param particle 粒子
+         * 计算粒子的发射位置与方向
+         *
+         * @param particle
+         * @param position
+         * @param dir
          */
-        initParticleState(particle: Particle): void;
+        calcParticlePosDir(particle: Particle, position: Vector3, dir: Vector3): void;
     }
 }
 declare namespace feng3d {
@@ -15757,7 +15760,10 @@ declare namespace feng3d {
          * 初始化粒子状态
          * @param particle 粒子
          */
-        initParticleState(particle: Particle): void;
+        calcParticlePosDir(particle: Particle): {
+            position: Vector3;
+            dir: Vector3;
+        };
     }
     /**
      * 从半球体的体积中发出。
@@ -15769,10 +15775,13 @@ declare namespace feng3d {
          */
         emitFromShell: boolean;
         /**
-         * 初始化粒子状态
-         * @param particle 粒子
+         * 计算粒子的发射位置与方向
+         *
+         * @param particle
+         * @param position
+         * @param dir
          */
-        initParticleState(particle: Particle): void;
+        calcParticlePosDir(particle: Particle, position: Vector3, dir: Vector3): void;
     }
 }
 declare namespace feng3d {
@@ -15826,10 +15835,13 @@ declare namespace feng3d {
          */
         emitFrom: ParticleSystemShapeConeEmitFrom;
         /**
-         * 初始化粒子状态
-         * @param particle 粒子
+         * 计算粒子的发射位置与方向
+         *
+         * @param particle
+         * @param position
+         * @param dir
          */
-        initParticleState(particle: Particle): void;
+        calcParticlePosDir(particle: Particle, position: Vector3, dir: Vector3): void;
     }
 }
 declare namespace feng3d {
@@ -15871,10 +15883,13 @@ declare namespace feng3d {
          */
         emitFrom: ParticleSystemShapeBoxEmitFrom;
         /**
-         * 初始化粒子状态
-         * @param particle 粒子
+         * 计算粒子的发射位置与方向
+         *
+         * @param particle
+         * @param position
+         * @param dir
          */
-        initParticleState(particle: Particle): void;
+        calcParticlePosDir(particle: Particle, position: Vector3, dir: Vector3): void;
     }
 }
 declare namespace feng3d {
@@ -15911,10 +15926,13 @@ declare namespace feng3d {
          */
         emitFromEdge: boolean;
         /**
-         * 初始化粒子状态
-         * @param particle 粒子
+         * 计算粒子的发射位置与方向
+         *
+         * @param particle
+         * @param position
+         * @param dir
          */
-        initParticleState(particle: Particle): void;
+        calcParticlePosDir(particle: Particle, position: Vector3, dir: Vector3): void;
     }
 }
 declare namespace feng3d {
@@ -15949,10 +15967,13 @@ declare namespace feng3d {
         get radiusSpeed(): MinMaxCurve;
         set radiusSpeed(v: MinMaxCurve);
         /**
-         * 初始化粒子状态
-         * @param particle 粒子
+         * 计算粒子的发射位置与方向
+         *
+         * @param particle
+         * @param position
+         * @param dir
          */
-        initParticleState(particle: Particle): void;
+        calcParticlePosDir(particle: Particle, position: Vector3, dir: Vector3): void;
     }
 }
 declare namespace feng3d {

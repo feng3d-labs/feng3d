@@ -29,10 +29,8 @@ namespace feng3d
          * 初始化粒子状态
          * @param particle 粒子
          */
-        initParticleState(particle: Particle)
+        calcParticlePosDir(particle: Particle)
         {
-            var speed = particle.velocity.length;
-
             // 计算位置
             var dir = Vector3.random().scaleNumber(2).subNumber(1).normalize();
 
@@ -41,11 +39,7 @@ namespace feng3d
             {
                 p.scaleNumber(Math.random());
             }
-
-            particle.position.copy(p);
-
-            // 计算速度
-            particle.velocity.copy(dir).scaleNumber(speed);
+            return { position: p, dir: dir };
         }
     }
 
@@ -64,26 +58,23 @@ namespace feng3d
         emitFromShell = false;
 
         /**
-         * 初始化粒子状态
-         * @param particle 粒子
+         * 计算粒子的发射位置与方向
+         * 
+         * @param particle 
+         * @param position 
+         * @param dir 
          */
-        initParticleState(particle: Particle)
+        calcParticlePosDir(particle: Particle, position: Vector3, dir: Vector3)
         {
-            var speed = particle.velocity.length;
-
             // 计算位置
-            var dir = Vector3.random().scaleNumber(2).subNumber(1).normalize();
+            dir.copy(Vector3.random()).scaleNumber(2).subNumber(1).normalize();
             dir.z = Math.abs(dir.z);
 
-            var p = dir.scaleNumberTo(this.radius);
+            position.copy(dir).scaleNumber(this.radius);
             if (!this.emitFromShell)
             {
-                p.scaleNumber(Math.random());
+                position.scaleNumber(Math.random());
             }
-            particle.position.copy(p);
-
-            // 计算速度
-            particle.velocity.copy(dir).scaleNumber(speed);
         }
     }
 }

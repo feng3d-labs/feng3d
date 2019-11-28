@@ -295,13 +295,35 @@ namespace feng3d
          */
         initParticleState(particle: Particle)
         {
-            if (!this.enabled) return;
-            this.activeShape.initParticleState(particle);
+            var startSpeed = this.particleSystem.main.startSpeed.getValue(particle.birthRateAtDuration);
+            //
+            var position = _temp_position.set(0, 0, 0);
+            var dir = _temp_dir.set(0, 0, 1);
+            //
+            if (this.enabled)
+            {
+                this.activeShape.calcParticlePosDir(particle, position, dir);
+            }
+
+            dir.scaleNumber(startSpeed);
+            if (this.particleSystem.main.simulationSpace == ParticleSystemSimulationSpace.World)
+            {
+                var localToWorldMatrix = this.particleSystem.transform.localToWorldMatrix;
+
+                localToWorldMatrix.transformVector(position, position);
+                localToWorldMatrix.deltaTransformVector(dir, dir);
+            }
+            particle.position.add(position);
+            particle.velocity.add(dir);
+
+            if (!this.enabled)
+                return;
+
+            //
             if (this.alignToDirection)
             {
-                var dir = particle.velocity;
                 var mat = new Matrix4x4();
-                mat.lookAt(dir, Vector3.Y_AXIS);
+                mat.lookAt(particle.velocity, Vector3.Y_AXIS);
 
                 var mat0 = Matrix4x4.fromRotation(particle.rotation.x, particle.rotation.y, particle.rotation.z);
                 mat0.append(mat);
@@ -319,6 +341,7 @@ namespace feng3d
                 var velocity = particle.position.clone().normalize(length);
                 particle.velocity.lerpNumber(velocity, this.sphericalDirectionAmount).normalize(length);
             }
+
         }
 
         private _onShapeTypeChanged()
@@ -487,5 +510,6 @@ namespace feng3d
         }
     }
 
-
+    var _temp_position = new Vector3(0, 0, 0);
+    var _temp_dir = new Vector3(0, 0, 1);
 }

@@ -33713,6 +33713,10 @@ var feng3d;
             this._attributes.a_particle_flipUV.data = flipUVs;
             //
             renderAtomic.uniforms.u_particle_billboardMatrix = billboardMatrix;
+            if (this.main.simulationSpace == feng3d.ParticleSystemSimulationSpace.World) {
+                renderAtomic.uniforms.u_modelMatrix = function () { return new feng3d.Matrix4x4(); };
+                renderAtomic.uniforms.u_ITModelMatrix = function () { return new feng3d.Matrix4x4(); };
+            }
             for (var key in this._attributes) {
                 renderAtomic.attributes[key] = this._attributes[key];
             }
@@ -33757,6 +33761,19 @@ var feng3d;
             // 单粒子发射周期
             var step = 1 / this.emission.rateOverTime.getValue(rateAtDuration);
             var bursts = this.emission.bursts;
+            // 处理移动发射粒子
+            if (this.main.simulationSpace == feng3d.ParticleSystemSimulationSpace.World) {
+                var worldPos = this.transform.worldPosition;
+                if (this._isRateOverDistance) {
+                    var overDistance = worldPos.distance(this._preRateOverDistancePos);
+                    this.emission.rateOverDistance.getValue(rateAtDuration);
+                }
+                this._preRateOverDistancePos.copy(worldPos);
+                this._isRateOverDistance = true;
+            }
+            else {
+                this._isRateOverDistance = false;
+            }
             // 遍历所有发射周期
             var cycleStartIndex = Math.floor(preRealTime / duration);
             var cycleEndIndex = Math.ceil(realEmitTime / duration);
@@ -33780,19 +33797,6 @@ var feng3d;
                         emits.push({ time: cycleStartTime + burst.time, num: burst.count.getValue(rateAtDuration) });
                     }
                 }
-            }
-            // 处理移动发射粒子
-            if (this.main.simulationSpace == feng3d.ParticleSystemSimulationSpace.World) {
-                var worldPos = this.transform.worldPosition;
-                if (this._isRateOverDistance) {
-                    var overDistance = worldPos.distance(this._preRateOverDistancePos);
-                    this.emission.rateOverDistance.getValue(rateAtDuration);
-                }
-                this._preRateOverDistancePos.copy(worldPos);
-                this._isRateOverDistance = true;
-            }
-            else {
-                this._isRateOverDistance = false;
             }
             emits.sort(function (a, b) { return a.time - b.time; });
             ;
@@ -34431,10 +34435,13 @@ var feng3d;
             this._module = module;
         }
         /**
-         * 初始化粒子状态
-         * @param particle 粒子
+         * 计算粒子的发射位置与方向
+         *
+         * @param particle
+         * @param position
+         * @param dir
          */
-        ParticleSystemShape.prototype.initParticleState = function (particle) {
+        ParticleSystemShape.prototype.calcParticlePosDir = function (particle, position, dir) {
         };
         return ParticleSystemShape;
     }());
@@ -34472,17 +34479,14 @@ var feng3d;
          * 初始化粒子状态
          * @param particle 粒子
          */
-        ParticleSystemShapeSphere.prototype.initParticleState = function (particle) {
-            var speed = particle.velocity.length;
+        ParticleSystemShapeSphere.prototype.calcParticlePosDir = function (particle) {
             // 计算位置
             var dir = feng3d.Vector3.random().scaleNumber(2).subNumber(1).normalize();
             var p = dir.scaleNumberTo(this.radius);
             if (!this.emitFromShell) {
                 p.scaleNumber(Math.random());
             }
-            particle.position.copy(p);
-            // 计算速度
-            particle.velocity.copy(dir).scaleNumber(speed);
+            return { position: p, dir: dir };
         };
         __decorate([
             feng3d.oav({ tooltip: "球体半径" })
@@ -34508,21 +34512,20 @@ var feng3d;
             return _this;
         }
         /**
-         * 初始化粒子状态
-         * @param particle 粒子
+         * 计算粒子的发射位置与方向
+         *
+         * @param particle
+         * @param position
+         * @param dir
          */
-        ParticleSystemShapeHemisphere.prototype.initParticleState = function (particle) {
-            var speed = particle.velocity.length;
+        ParticleSystemShapeHemisphere.prototype.calcParticlePosDir = function (particle, position, dir) {
             // 计算位置
-            var dir = feng3d.Vector3.random().scaleNumber(2).subNumber(1).normalize();
+            dir.copy(feng3d.Vector3.random()).scaleNumber(2).subNumber(1).normalize();
             dir.z = Math.abs(dir.z);
-            var p = dir.scaleNumberTo(this.radius);
+            position.copy(dir).scaleNumber(this.radius);
             if (!this.emitFromShell) {
-                p.scaleNumber(Math.random());
+                position.scaleNumber(Math.random());
             }
-            particle.position.copy(p);
-            // 计算速度
-            particle.velocity.copy(dir).scaleNumber(speed);
         };
         __decorate([
             feng3d.oav({ tooltip: "球体半径" })
@@ -34649,11 +34652,13 @@ var feng3d;
             configurable: true
         });
         /**
-         * 初始化粒子状态
-         * @param particle 粒子
+         * 计算粒子的发射位置与方向
+         *
+         * @param particle
+         * @param position
+         * @param dir
          */
-        ParticleSystemShapeCone.prototype.initParticleState = function (particle) {
-            var speed = particle.velocity.length;
+        ParticleSystemShapeCone.prototype.calcParticlePosDir = function (particle, position, dir) {
             var radius = this.radius;
             var angle = this.angle;
             var arc = this.arc;
@@ -34693,15 +34698,14 @@ var feng3d;
             // 顶面位置
             var topPos = basePos.scaleNumberTo(radius + this.length * Math.tan(Math.degToRad(angle))).scaleNumber(radiusRate);
             topPos.z = this.length;
-            // 计算速度
-            particle.velocity.copy(topPos.subTo(bottomPos).normalize(speed));
+            // 计算方向
+            dir.copy(topPos).sub(bottomPos).normalize();
             // 计算位置
-            var position = bottomPos.clone();
+            position.copy(bottomPos);
             if (this.emitFrom == feng3d.ParticleSystemShapeConeEmitFrom.Volume || this.emitFrom == feng3d.ParticleSystemShapeConeEmitFrom.VolumeShell) {
                 // 上下点进行插值
                 position.lerpNumber(topPos, Math.random());
             }
-            particle.position.copy(position);
         };
         __decorate([
             feng3d.oav({ tooltip: "圆锥的角度。" })
@@ -34801,44 +34805,44 @@ var feng3d;
             configurable: true
         });
         /**
-         * 初始化粒子状态
-         * @param particle 粒子
+         * 计算粒子的发射位置与方向
+         *
+         * @param particle
+         * @param position
+         * @param dir
          */
-        ParticleSystemShapeBox.prototype.initParticleState = function (particle) {
-            var speed = particle.velocity.length;
+        ParticleSystemShapeBox.prototype.calcParticlePosDir = function (particle, position, dir) {
             // 计算位置
-            var p = new feng3d.Vector3(this.boxX, this.boxY, this.boxZ).multiply(feng3d.Vector3.random().scaleNumber(2).subNumber(1));
+            position.set(this.boxX, this.boxY, this.boxZ).multiply(feng3d.Vector3.random().scaleNumber(2).subNumber(1));
             if (this.emitFrom == ParticleSystemShapeBoxEmitFrom.Shell) {
-                var max = Math.max(Math.abs(p.x), Math.abs(p.y), Math.abs(p.z));
-                if (Math.abs(p.x) == max) {
-                    p.x = p.x < 0 ? -1 : 1;
+                var max = Math.max(Math.abs(position.x), Math.abs(position.y), Math.abs(position.z));
+                if (Math.abs(position.x) == max) {
+                    position.x = position.x < 0 ? -1 : 1;
                 }
-                else if (Math.abs(p.y) == max) {
-                    p.y = p.y < 0 ? -1 : 1;
+                else if (Math.abs(position.y) == max) {
+                    position.y = position.y < 0 ? -1 : 1;
                 }
-                else if (Math.abs(p.z) == max) {
-                    p.z = p.z < 0 ? -1 : 1;
+                else if (Math.abs(position.z) == max) {
+                    position.z = position.z < 0 ? -1 : 1;
                 }
             }
             else if (this.emitFrom == ParticleSystemShapeBoxEmitFrom.Edge) {
-                var min = Math.min(Math.abs(p.x), Math.abs(p.y), Math.abs(p.z));
-                if (Math.abs(p.x) == min) {
-                    p.y = p.y < 0 ? -1 : 1;
-                    p.z = p.z < 0 ? -1 : 1;
+                var min = Math.min(Math.abs(position.x), Math.abs(position.y), Math.abs(position.z));
+                if (Math.abs(position.x) == min) {
+                    position.y = position.y < 0 ? -1 : 1;
+                    position.z = position.z < 0 ? -1 : 1;
                 }
-                else if (Math.abs(p.y) == min) {
-                    p.x = p.x < 0 ? -1 : 1;
-                    p.z = p.z < 0 ? -1 : 1;
+                else if (Math.abs(position.y) == min) {
+                    position.x = position.x < 0 ? -1 : 1;
+                    position.z = position.z < 0 ? -1 : 1;
                 }
-                else if (Math.abs(p.z) == min) {
-                    p.x = p.x < 0 ? -1 : 1;
-                    p.y = p.y < 0 ? -1 : 1;
+                else if (Math.abs(position.z) == min) {
+                    position.x = position.x < 0 ? -1 : 1;
+                    position.y = position.y < 0 ? -1 : 1;
                 }
             }
-            particle.position.copy(p);
-            // 计算速度
-            var dir = new feng3d.Vector3(0, 0, 1);
-            particle.velocity.copy(dir).scaleNumber(speed);
+            // 
+            dir.set(0, 0, 1);
         };
         __decorate([
             feng3d.oav({ tooltip: "盒子X方向缩放。" })
@@ -34937,11 +34941,13 @@ var feng3d;
             configurable: true
         });
         /**
-         * 初始化粒子状态
-         * @param particle 粒子
+         * 计算粒子的发射位置与方向
+         *
+         * @param particle
+         * @param position
+         * @param dir
          */
-        ParticleSystemShapeCircle.prototype.initParticleState = function (particle) {
-            var speed = particle.velocity.length;
+        ParticleSystemShapeCircle.prototype.calcParticlePosDir = function (particle, position, dir) {
             var radius = this.radius;
             var arc = this.arc;
             // 在圆心的方向
@@ -34960,23 +34966,16 @@ var feng3d;
                     radiusAngle = arc - radiusAngle;
                 }
             }
-            // else if (this.arcMode == ParticleSystemShapeMultiModeValue.BurstSpread)
-            // {
-            // }
             if (this.arcSpread > 0) {
                 radiusAngle = Math.floor(radiusAngle / arc / this.arcSpread) * arc * this.arcSpread;
             }
             radiusAngle = Math.degToRad(radiusAngle);
             // 计算位置
-            var dir = new feng3d.Vector3(Math.cos(radiusAngle), Math.sin(radiusAngle), 0);
-            var p = dir.scaleNumberTo(radius);
+            dir.set(Math.cos(radiusAngle), Math.sin(radiusAngle), 0);
+            dir.scaleNumberTo(radius, position);
             if (!this.emitFromEdge) {
-                p.scaleNumber(Math.random());
+                position.scaleNumber(Math.random());
             }
-            //
-            particle.position.copy(p);
-            // 计算速度
-            particle.velocity.copy(dir).scaleNumber(speed);
         };
         __decorate([
             feng3d.oav({ tooltip: "半径" })
@@ -35069,11 +35068,13 @@ var feng3d;
             configurable: true
         });
         /**
-         * 初始化粒子状态
-         * @param particle 粒子
+         * 计算粒子的发射位置与方向
+         *
+         * @param particle
+         * @param position
+         * @param dir
          */
-        ParticleSystemShapeEdge.prototype.initParticleState = function (particle) {
-            var speed = particle.velocity.length;
+        ParticleSystemShapeEdge.prototype.calcParticlePosDir = function (particle, position, dir) {
             var arc = 360 * this.radius;
             // 在圆心的方向
             var radiusAngle = 0;
@@ -35091,20 +35092,13 @@ var feng3d;
                     radiusAngle = arc - radiusAngle;
                 }
             }
-            // else if (this.arcMode == ParticleSystemShapeMultiModeValue.BurstSpread)
-            // {
-            // }
             if (this.radiusSpread > 0) {
                 radiusAngle = Math.floor(radiusAngle / arc / this.radiusSpread) * arc * this.radiusSpread;
             }
             radiusAngle = radiusAngle / arc;
-            // 计算位置
-            var dir = new feng3d.Vector3(0, 1, 0);
-            var p = new feng3d.Vector3(this.radius * (radiusAngle * 2 - 1), 0, 0);
-            //
-            particle.position.copy(p);
-            // 计算速度
-            particle.velocity.copy(dir).scaleNumber(speed);
+            // 
+            dir.set(0, 1, 0);
+            position.set(this.radius * (radiusAngle * 2 - 1), 0, 0);
         };
         __decorate([
             feng3d.oav({ tooltip: "边长的一半。" })
@@ -35586,7 +35580,7 @@ var feng3d;
             //
             var birthRateAtDuration = particle.birthRateAtDuration;
             particle.position.set(0, 0, 0);
-            particle.velocity.set(0, 0, this.startSpeed.getValue(birthRateAtDuration));
+            particle.velocity.set(0, 0, 0);
             particle.acceleration.set(0, 0, 0);
             if (this.useStartSize3D) {
                 particle.startSize.copy(this.startSize3D.getValue(birthRateAtDuration));
@@ -36074,13 +36068,28 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleShapeModule.prototype.initParticleState = function (particle) {
+            var startSpeed = this.particleSystem.main.startSpeed.getValue(particle.birthRateAtDuration);
+            //
+            var position = _temp_position.set(0, 0, 0);
+            var dir = _temp_dir.set(0, 0, 1);
+            //
+            if (this.enabled) {
+                this.activeShape.calcParticlePosDir(particle, position, dir);
+            }
+            dir.scaleNumber(startSpeed);
+            if (this.particleSystem.main.simulationSpace == feng3d.ParticleSystemSimulationSpace.World) {
+                var localToWorldMatrix = this.particleSystem.transform.localToWorldMatrix;
+                localToWorldMatrix.transformVector(position, position);
+                localToWorldMatrix.deltaTransformVector(dir, dir);
+            }
+            particle.position.add(position);
+            particle.velocity.add(dir);
             if (!this.enabled)
                 return;
-            this.activeShape.initParticleState(particle);
+            //
             if (this.alignToDirection) {
-                var dir = particle.velocity;
                 var mat = new feng3d.Matrix4x4();
-                mat.lookAt(dir, feng3d.Vector3.Y_AXIS);
+                mat.lookAt(particle.velocity, feng3d.Vector3.Y_AXIS);
                 var mat0 = feng3d.Matrix4x4.fromRotation(particle.rotation.x, particle.rotation.y, particle.rotation.z);
                 mat0.append(mat);
                 particle.rotation = mat0.getRotation();
@@ -36315,6 +36324,8 @@ var feng3d;
         return ParticleShapeModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleShapeModule = ParticleShapeModule;
+    var _temp_position = new feng3d.Vector3(0, 0, 0);
+    var _temp_dir = new feng3d.Vector3(0, 0, 1);
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

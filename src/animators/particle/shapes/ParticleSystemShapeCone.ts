@@ -119,12 +119,14 @@ namespace feng3d
         emitFrom = ParticleSystemShapeConeEmitFrom.Base;
 
         /**
-         * 初始化粒子状态
-         * @param particle 粒子
+         * 计算粒子的发射位置与方向
+         * 
+         * @param particle 
+         * @param position 
+         * @param dir 
          */
-        initParticleState(particle: Particle)
+        calcParticlePosDir(particle: Particle, position: Vector3, dir: Vector3)
         {
-            var speed = particle.velocity.length;
             var radius = this.radius;
             var angle = this.angle;
             var arc = this.arc;
@@ -168,16 +170,16 @@ namespace feng3d
             // 顶面位置
             var topPos = basePos.scaleNumberTo(radius + this.length * Math.tan(Math.degToRad(angle))).scaleNumber(radiusRate);
             topPos.z = this.length;
-            // 计算速度
-            particle.velocity.copy(topPos.subTo(bottomPos).normalize(speed));
+
+            // 计算方向
+            dir.copy(topPos).sub(bottomPos).normalize();
             // 计算位置
-            var position = bottomPos.clone();
+            position.copy(bottomPos);
             if (this.emitFrom == ParticleSystemShapeConeEmitFrom.Volume || this.emitFrom == ParticleSystemShapeConeEmitFrom.VolumeShell)
             {
                 // 上下点进行插值
                 position.lerpNumber(topPos, Math.random());
             }
-            particle.position.copy(position);
         }
     }
 }

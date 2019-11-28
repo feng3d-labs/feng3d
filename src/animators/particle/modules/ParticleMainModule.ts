@@ -503,7 +503,7 @@ namespace feng3d
             var birthRateAtDuration = particle.birthRateAtDuration;
 
             particle.position.set(0, 0, 0);
-            particle.velocity.set(0, 0, this.startSpeed.getValue(birthRateAtDuration));
+            particle.velocity.set(0, 0, 0);
             particle.acceleration.set(0, 0, 0);
             if (this.useStartSize3D)
             {

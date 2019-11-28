@@ -13,10 +13,13 @@ namespace feng3d
         }
 
         /**
-         * 初始化粒子状态
-         * @param particle 粒子
+         * 计算粒子的发射位置与方向
+         * 
+         * @param particle 
+         * @param position 
+         * @param dir 
          */
-        initParticleState(particle: Particle)
+        calcParticlePosDir(particle: Particle, position: Vector3, dir: Vector3)
         {
 
         }

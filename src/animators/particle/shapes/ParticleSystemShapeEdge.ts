@@ -68,12 +68,14 @@ namespace feng3d
         }
 
         /**
-         * 初始化粒子状态
-         * @param particle 粒子
+         * 计算粒子的发射位置与方向
+         * 
+         * @param particle 
+         * @param position 
+         * @param dir 
          */
-        initParticleState(particle: Particle)
+        calcParticlePosDir(particle: Particle, position: Vector3, dir: Vector3)
         {
-            var speed = particle.velocity.length;
             var arc = 360 * this.radius;
             // 在圆心的方向
             var radiusAngle = 0;
@@ -93,24 +95,16 @@ namespace feng3d
                     radiusAngle = arc - radiusAngle;
                 }
             }
-            // else if (this.arcMode == ParticleSystemShapeMultiModeValue.BurstSpread)
-            // {
-            // }
             if (this.radiusSpread > 0)
             {
                 radiusAngle = Math.floor(radiusAngle / arc / this.radiusSpread) * arc * this.radiusSpread;
             }
             radiusAngle = radiusAngle / arc;
 
-            // 计算位置
-            var dir = new Vector3(0, 1, 0);
-            var p = new Vector3(this.radius * (radiusAngle * 2 - 1), 0, 0);
+            // 
+            dir.set(0, 1, 0);
+            position.set(this.radius * (radiusAngle * 2 - 1), 0, 0);
 
-            //
-            particle.position.copy(p);
-
-            // 计算速度
-            particle.velocity.copy(dir).scaleNumber(speed);
         }
     }
 }
