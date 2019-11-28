@@ -294,7 +294,6 @@
         "src/animators/particle/enums/ParticleSystemAnimationType.ts",
         "src/animators/particle/enums/UVChannelFlags.ts",
         "src/animators/particle/enums/ParticleSystemSimulationSpace.ts",
-        "src/animators/particle/enums/ParticleSystemSimulationSpace1.ts",
         "src/animators/particle/enums/ParticleSystemScalingMode.ts",
         "src/animators/particle/enums/ParticleSystemShapeType.ts",
         "src/animators/particle/enums/ParticleSystemShapeType1.ts",

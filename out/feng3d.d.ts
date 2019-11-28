@@ -15478,21 +15478,6 @@ declare namespace feng3d {
          *
          * 模拟世界空间中的粒子。
          */
-        World = 1,
-        /**
-         * Simulate particles relative to a custom transform component, defined by ParticleMainModule.customSimulationSpace.
-         *
-         * 模拟粒子相对于自定义变换组件，该组件由ParticleMainModule.customSimulationSpace定义。
-         */
-        Custom = 2
-    }
-}
-declare namespace feng3d {
-    /**
-     * 粒子模拟空间
-     */
-    enum ParticleSystemSimulationSpace1 {
-        Local = 0,
         World = 1
     }
 }
@@ -16250,14 +16235,6 @@ declare namespace feng3d {
          */
         simulationSpace: ParticleSystemSimulationSpace;
         /**
-         * Simulate particles relative to a custom transform component.
-         *
-         * 模拟相对于自定义转换组件的粒子。
-         *
-         * @todo
-         */
-        customSimulationSpace: Transform;
-        /**
          * Override the default playback speed of the Particle System.
          *
          * 重写粒子系统的默认播放速度。
@@ -16587,7 +16564,7 @@ declare namespace feng3d {
          *
          * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
          */
-        space: ParticleSystemSimulationSpace1;
+        space: ParticleSystemSimulationSpace;
         /**
          * Curve to control particle speed based on lifetime, on the X axis.
          *
@@ -16673,7 +16650,7 @@ declare namespace feng3d {
          *
          * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
          */
-        space: ParticleSystemSimulationSpace1;
+        space: ParticleSystemSimulationSpace;
         /**
          * Controls how much the velocity that exceeds the velocity limit should be dampened.
          *
@@ -16795,7 +16772,7 @@ declare namespace feng3d {
          *
          * 这些力是作用于局部空间还是世界空间
          */
-        space: ParticleSystemSimulationSpace1;
+        space: ParticleSystemSimulationSpace;
         /**
          * When randomly selecting values between two curves or constants, this flag will cause a new random force to be chosen on each frame.
          *

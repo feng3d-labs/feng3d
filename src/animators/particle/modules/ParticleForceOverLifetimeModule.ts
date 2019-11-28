@@ -21,9 +21,9 @@ namespace feng3d
          * 这些力是作用于局部空间还是世界空间
          */
         @serialize
-        // @oav({ tooltip: "Are the forces being applied in local or world space?", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
-        @oav({ tooltip: "这些力是作用于局部空间还是世界空间?", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
-        space = ParticleSystemSimulationSpace1.Local;
+        // @oav({ tooltip: "Are the forces being applied in local or world space?", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
+        @oav({ tooltip: "这些力是作用于局部空间还是世界空间?", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
+        space = ParticleSystemSimulationSpace.Local;
         
         /**
          * When randomly selecting values between two curves or constants, this flag will cause a new random force to be chosen on each frame.
@@ -149,7 +149,7 @@ namespace feng3d
             if (!this.enabled) return;
 
             var force = this.force.getValue(particle.rateAtLifeTime, particle[_ForceOverLifetime_rate]);
-            if (this.space == ParticleSystemSimulationSpace1.World)
+            if (this.space == ParticleSystemSimulationSpace.World)
             {
                 this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(force, force);
             }

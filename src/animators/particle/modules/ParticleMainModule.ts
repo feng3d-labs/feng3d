@@ -452,18 +452,6 @@ namespace feng3d
         simulationSpace = ParticleSystemSimulationSpace.Local;
 
         /**
-         * Simulate particles relative to a custom transform component.
-         * 
-         * 模拟相对于自定义转换组件的粒子。
-         * 
-         * @todo
-         */
-        @serialize
-        // @oav({ tooltip: "Simulate particles relative to a custom transform component." })
-        @oav({ tooltip: "模拟相对于自定义转换组件的粒子。" })
-        customSimulationSpace: Transform;
-
-        /**
          * Override the default playback speed of the Particle System.
          * 
          * 重写粒子系统的默认播放速度。

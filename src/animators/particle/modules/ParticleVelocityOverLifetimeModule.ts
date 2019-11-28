@@ -26,9 +26,9 @@ namespace feng3d
          * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
          */
         @serialize
-        // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
-        @oav({ tooltip: "指定速度是在局部空间(与变换一起旋转)还是在世界空间。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
-        space = ParticleSystemSimulationSpace1.Local;
+        // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
+        @oav({ tooltip: "指定速度是在局部空间(与变换一起旋转)还是在世界空间。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
+        space = ParticleSystemSimulationSpace.Local;
 
         /**
          * Curve to control particle speed based on lifetime, on the X axis.
@@ -142,7 +142,7 @@ namespace feng3d
             if (!this.enabled) return;
 
             var velocity = this.velocity.getValue(particle.rateAtLifeTime, particle[_VelocityOverLifetime_rate]);
-            if (this.space == ParticleSystemSimulationSpace1.World)
+            if (this.space == ParticleSystemSimulationSpace.World)
             {
                 this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(velocity, velocity);
             }

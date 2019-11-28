@@ -44,10 +44,10 @@ namespace feng3d
          * 
          * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
          */
-        // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
+        // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
         @serialize
-        @oav({ tooltip: "指定速度是在局部空间(与变换一起旋转)还是在世界空间。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
-        space = ParticleSystemSimulationSpace1.Local;
+        @oav({ tooltip: "指定速度是在局部空间(与变换一起旋转)还是在世界空间。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
+        space = ParticleSystemSimulationSpace.Local;
 
         /**
          * Controls how much the velocity that exceeds the velocity limit should be dampened.
@@ -55,7 +55,7 @@ namespace feng3d
          * 控制多少速度，超过速度限制应该被抑制。
          */
         @serialize
-        // @oav({ tooltip: "Controls how much the velocity that exceeds the velocity limit should be dampened.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
+        // @oav({ tooltip: "Controls how much the velocity that exceeds the velocity limit should be dampened.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
         @oav({ tooltip: "控制多少速度，超过速度限制应该被抑制。" })
         dampen = 1;
 
@@ -186,7 +186,7 @@ namespace feng3d
             var limit3D = this.limit3D.getValue(particle.rateAtLifeTime, particle[_LimitVelocityOverLifetime_rate]);
             var limit = this.limit.getValue(particle.rateAtLifeTime, particle[_LimitVelocityOverLifetime_rate]);
             var pVelocity = particle.velocity.clone();
-            if (this.space == ParticleSystemSimulationSpace1.World)
+            if (this.space == ParticleSystemSimulationSpace.World)
             {
                 this.particleSystem.transform.localToWorldMatrix.deltaTransformVector(pVelocity, pVelocity)
                 if (this.separateAxes)

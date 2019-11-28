@@ -34181,20 +34181,11 @@ var feng3d;
          * Simulate particles relative to a custom transform component, defined by ParticleMainModule.customSimulationSpace.
          *
          * 模拟粒子相对于自定义变换组件，该组件由ParticleMainModule.customSimulationSpace定义。
+         *
+         * 没弄懂是怎么回事
          */
-        ParticleSystemSimulationSpace[ParticleSystemSimulationSpace["Custom"] = 2] = "Custom";
+        // Custom = 2
     })(ParticleSystemSimulationSpace = feng3d.ParticleSystemSimulationSpace || (feng3d.ParticleSystemSimulationSpace = {}));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 粒子模拟空间
-     */
-    var ParticleSystemSimulationSpace1;
-    (function (ParticleSystemSimulationSpace1) {
-        ParticleSystemSimulationSpace1[ParticleSystemSimulationSpace1["Local"] = 0] = "Local";
-        ParticleSystemSimulationSpace1[ParticleSystemSimulationSpace1["World"] = 1] = "World";
-    })(ParticleSystemSimulationSpace1 = feng3d.ParticleSystemSimulationSpace1 || (feng3d.ParticleSystemSimulationSpace1 = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -35766,12 +35757,6 @@ var feng3d;
         ], ParticleMainModule.prototype, "simulationSpace", void 0);
         __decorate([
             feng3d.serialize
-            // @oav({ tooltip: "Simulate particles relative to a custom transform component." })
-            ,
-            feng3d.oav({ tooltip: "模拟相对于自定义转换组件的粒子。" })
-        ], ParticleMainModule.prototype, "customSimulationSpace", void 0);
-        __decorate([
-            feng3d.serialize
             // @oav({ tooltip: "Override the default playback speed of the Particle System." })
             ,
             feng3d.oav({ tooltip: "重写粒子系统的默认播放速度。" })
@@ -36390,7 +36375,7 @@ var feng3d;
              *
              * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
              */
-            _this.space = feng3d.ParticleSystemSimulationSpace1.Local;
+            _this.space = feng3d.ParticleSystemSimulationSpace.Local;
             return _this;
         }
         Object.defineProperty(ParticleVelocityOverLifetimeModule.prototype, "x", {
@@ -36502,7 +36487,7 @@ var feng3d;
             if (!this.enabled)
                 return;
             var velocity = this.velocity.getValue(particle.rateAtLifeTime, particle[_VelocityOverLifetime_rate]);
-            if (this.space == feng3d.ParticleSystemSimulationSpace1.World) {
+            if (this.space == feng3d.ParticleSystemSimulationSpace.World) {
                 this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(velocity, velocity);
             }
             //
@@ -36517,9 +36502,9 @@ var feng3d;
         ], ParticleVelocityOverLifetimeModule.prototype, "velocity", void 0);
         __decorate([
             feng3d.serialize
-            // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
+            // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
             ,
-            feng3d.oav({ tooltip: "指定速度是在局部空间(与变换一起旋转)还是在世界空间。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace1 } })
+            feng3d.oav({ tooltip: "指定速度是在局部空间(与变换一起旋转)还是在世界空间。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace } })
         ], ParticleVelocityOverLifetimeModule.prototype, "space", void 0);
         return ParticleVelocityOverLifetimeModule;
     }(feng3d.ParticleModule));
@@ -36562,8 +36547,8 @@ var feng3d;
              *
              * 指定速度是在局部空间(与变换一起旋转)还是在世界空间。
              */
-            // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
-            _this.space = feng3d.ParticleSystemSimulationSpace1.Local;
+            // @oav({ tooltip: "Specifies if the velocities are in local space (rotated with the transform) or world space.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
+            _this.space = feng3d.ParticleSystemSimulationSpace.Local;
             /**
              * Controls how much the velocity that exceeds the velocity limit should be dampened.
              *
@@ -36696,7 +36681,7 @@ var feng3d;
             var limit3D = this.limit3D.getValue(particle.rateAtLifeTime, particle[_LimitVelocityOverLifetime_rate]);
             var limit = this.limit.getValue(particle.rateAtLifeTime, particle[_LimitVelocityOverLifetime_rate]);
             var pVelocity = particle.velocity.clone();
-            if (this.space == feng3d.ParticleSystemSimulationSpace1.World) {
+            if (this.space == feng3d.ParticleSystemSimulationSpace.World) {
                 this.particleSystem.transform.localToWorldMatrix.deltaTransformVector(pVelocity, pVelocity);
                 if (this.separateAxes) {
                     pVelocity.clamp(limit3D.negateTo(), limit3D);
@@ -36738,11 +36723,11 @@ var feng3d;
         ], ParticleLimitVelocityOverLifetimeModule.prototype, "limit3D", void 0);
         __decorate([
             feng3d.serialize,
-            feng3d.oav({ tooltip: "指定速度是在局部空间(与变换一起旋转)还是在世界空间。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace1 } })
+            feng3d.oav({ tooltip: "指定速度是在局部空间(与变换一起旋转)还是在世界空间。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace } })
         ], ParticleLimitVelocityOverLifetimeModule.prototype, "space", void 0);
         __decorate([
             feng3d.serialize
-            // @oav({ tooltip: "Controls how much the velocity that exceeds the velocity limit should be dampened.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
+            // @oav({ tooltip: "Controls how much the velocity that exceeds the velocity limit should be dampened.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
             ,
             feng3d.oav({ tooltip: "控制多少速度，超过速度限制应该被抑制。" })
         ], ParticleLimitVelocityOverLifetimeModule.prototype, "dampen", void 0);
@@ -36831,7 +36816,7 @@ var feng3d;
              *
              * 这些力是作用于局部空间还是世界空间
              */
-            _this.space = feng3d.ParticleSystemSimulationSpace1.Local;
+            _this.space = feng3d.ParticleSystemSimulationSpace.Local;
             /**
              * When randomly selecting values between two curves or constants, this flag will cause a new random force to be chosen on each frame.
              *
@@ -36951,7 +36936,7 @@ var feng3d;
             if (!this.enabled)
                 return;
             var force = this.force.getValue(particle.rateAtLifeTime, particle[_ForceOverLifetime_rate]);
-            if (this.space == feng3d.ParticleSystemSimulationSpace1.World) {
+            if (this.space == feng3d.ParticleSystemSimulationSpace.World) {
                 this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(force, force);
             }
             particle.acceleration.add(force);
@@ -36963,9 +36948,9 @@ var feng3d;
         ], ParticleForceOverLifetimeModule.prototype, "force", void 0);
         __decorate([
             feng3d.serialize
-            // @oav({ tooltip: "Are the forces being applied in local or world space?", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace1 } })
+            // @oav({ tooltip: "Are the forces being applied in local or world space?", component: "OAVEnum", componentParam: { enumClass: ParticleSystemSimulationSpace } })
             ,
-            feng3d.oav({ tooltip: "这些力是作用于局部空间还是世界空间?", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace1 } })
+            feng3d.oav({ tooltip: "这些力是作用于局部空间还是世界空间?", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemSimulationSpace } })
         ], ParticleForceOverLifetimeModule.prototype, "space", void 0);
         __decorate([
             feng3d.serialize
