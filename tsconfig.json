@@ -302,6 +302,7 @@
         //
         "src/animators/particle/shapes/ParticleSystemShape.ts",
         "src/animators/particle/shapes/ParticleSystemShapeSphere.ts",
+        "src/animators/particle/shapes/ParticleSystemShapeHemisphere.ts",
         "src/animators/particle/shapes/ParticleSystemShapeCone.ts",
         "src/animators/particle/shapes/ParticleSystemShapeBox.ts",
         "src/animators/particle/shapes/ParticleSystemShapeCircle.ts",

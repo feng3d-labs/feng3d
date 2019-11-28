@@ -1,23 +1,13 @@
 namespace feng3d
 {
-    /**
-     * 从球体的体积中发射。
-     */
-    export class ParticleSystemShapeSphere extends ParticleSystemShape
-    {
-        /**
-         * 球体半径
-         */
-        @oav({ tooltip: "球体半径" })
-        get radius()
-        {
-            return this._module.radius;
-        }
 
-        set radius(v)
-        {
-            this._module.radius = v;
-        }
+    /**
+     * 从半球体的体积中发出。
+     */
+    export class ParticleSystemShapeHemisphere extends ParticleSystemShape
+    {
+        @oav({ tooltip: "球体半径" })
+        radius = 1;
 
         /**
          * 是否从球面发射
@@ -36,6 +26,7 @@ namespace feng3d
         {
             // 计算位置
             dir.copy(Vector3.random()).scaleNumber(2).subNumber(1).normalize();
+            dir.z = Math.abs(dir.z);
 
             position.copy(dir).scaleNumber(this.radius);
             if (!this.emitFromShell)
@@ -44,5 +35,4 @@ namespace feng3d
             }
         }
     }
-
 }

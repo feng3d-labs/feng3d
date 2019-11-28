@@ -34476,17 +34476,19 @@ var feng3d;
             configurable: true
         });
         /**
-         * 初始化粒子状态
-         * @param particle 粒子
+         * 计算粒子的发射位置与方向
+         *
+         * @param particle
+         * @param position
+         * @param dir
          */
-        ParticleSystemShapeSphere.prototype.calcParticlePosDir = function (particle) {
+        ParticleSystemShapeSphere.prototype.calcParticlePosDir = function (particle, position, dir) {
             // 计算位置
-            var dir = feng3d.Vector3.random().scaleNumber(2).subNumber(1).normalize();
-            var p = dir.scaleNumberTo(this.radius);
+            dir.copy(feng3d.Vector3.random()).scaleNumber(2).subNumber(1).normalize();
+            position.copy(dir).scaleNumber(this.radius);
             if (!this.emitFromShell) {
-                p.scaleNumber(Math.random());
+                position.scaleNumber(Math.random());
             }
-            return { position: p, dir: dir };
         };
         __decorate([
             feng3d.oav({ tooltip: "球体半径" })
@@ -34497,6 +34499,9 @@ var feng3d;
         return ParticleSystemShapeSphere;
     }(feng3d.ParticleSystemShape));
     feng3d.ParticleSystemShapeSphere = ParticleSystemShapeSphere;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 从半球体的体积中发出。
      */

@@ -15757,14 +15757,16 @@ declare namespace feng3d {
          */
         emitFromShell: boolean;
         /**
-         * 初始化粒子状态
-         * @param particle 粒子
+         * 计算粒子的发射位置与方向
+         *
+         * @param particle
+         * @param position
+         * @param dir
          */
-        calcParticlePosDir(particle: Particle): {
-            position: Vector3;
-            dir: Vector3;
-        };
+        calcParticlePosDir(particle: Particle, position: Vector3, dir: Vector3): void;
     }
+}
+declare namespace feng3d {
     /**
      * 从半球体的体积中发出。
      */
