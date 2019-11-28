@@ -33373,7 +33373,9 @@ var feng3d;
             _this.__class__ = "feng3d.ParticleSystem";
             _this._isPlaying = false;
             /**
-             * 粒子时间
+             * Playback position in seconds.
+             *
+             * 回放位置(秒)
              */
             _this.time = 0;
             _this.geometry = feng3d.Geometry.billboard;
@@ -33432,10 +33434,48 @@ var feng3d;
         }
         Object.defineProperty(ParticleSystem.prototype, "isPlaying", {
             /**
-             * 是否正在播放
+             * Is the particle system playing right now ?
+             *
+             * 粒子系统正在运行吗?
              */
             get: function () {
                 return this._isPlaying;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "isStopped", {
+            /**
+             * Is the particle system stopped right now ?
+             *
+             * 粒子系统现在停止了吗?
+             */
+            get: function () {
+                return !this._isPlaying && this.time == 0;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "isPaused", {
+            /**
+             * Is the particle system paused right now ?
+             *
+             * 粒子系统现在暂停了吗?
+             */
+            get: function () {
+                return !this._isPlaying && this.time != 0;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "particleCount", {
+            /**
+             * The current number of particles (Read Only).
+             *
+             * 当前粒子数(只读)。
+             */
+            get: function () {
+                return this._activeParticles.length;
             },
             enumerable: true,
             configurable: true
@@ -33539,16 +33579,6 @@ var feng3d;
                 this._modules.replace(this._textureSheetAnimation, v);
                 v.particleSystem = this;
                 this._textureSheetAnimation = v;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ParticleSystem.prototype, "numActiveParticles", {
-            /**
-             * 活跃粒子数量
-             */
-            get: function () {
-                return this._activeParticles.length;
             },
             enumerable: true,
             configurable: true
@@ -33784,7 +33814,7 @@ var feng3d;
             for (var i = this._activeParticles.length - 1; i >= 0; i--) {
                 var particle = this._activeParticles[i];
                 particle.rateAtLifeTime = (this._realTime - particle.birthTime) / particle.lifetime;
-                if (particle.rateAtLifeTime > 1) {
+                if (particle.rateAtLifeTime < 0 || particle.rateAtLifeTime > 1) {
                     this._activeParticles.splice(i, 1);
                     this._particlePool.push(particle);
                 }

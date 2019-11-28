@@ -15136,12 +15136,34 @@ declare namespace feng3d {
     class ParticleSystem extends Model {
         __class__: "feng3d.ParticleSystem";
         /**
-         * 是否正在播放
+         * Is the particle system playing right now ?
+         *
+         * 粒子系统正在运行吗?
          */
         get isPlaying(): boolean;
         private _isPlaying;
         /**
-         * 粒子时间
+         * Is the particle system stopped right now ?
+         *
+         * 粒子系统现在停止了吗?
+         */
+        get isStopped(): boolean;
+        /**
+         * Is the particle system paused right now ?
+         *
+         * 粒子系统现在暂停了吗?
+         */
+        get isPaused(): boolean;
+        /**
+         * The current number of particles (Read Only).
+         *
+         * 当前粒子数(只读)。
+         */
+        get particleCount(): number;
+        /**
+         * Playback position in seconds.
+         *
+         * 回放位置(秒)
          */
         time: number;
         get main(): ParticleMainModule;
@@ -15181,10 +15203,6 @@ declare namespace feng3d {
         material: Material;
         castShadows: boolean;
         receiveShadows: boolean;
-        /**
-         * 活跃粒子数量
-         */
-        get numActiveParticles(): number;
         get single(): boolean;
         /**
          * Start delay in seconds.

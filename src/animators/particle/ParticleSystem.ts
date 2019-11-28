@@ -18,7 +18,9 @@ namespace feng3d
         __class__: "feng3d.ParticleSystem" = "feng3d.ParticleSystem";
 
         /**
-         * 是否正在播放
+         * Is the particle system playing right now ?
+         * 
+         * 粒子系统正在运行吗?
          */
         get isPlaying()
         {
@@ -27,7 +29,39 @@ namespace feng3d
         private _isPlaying = false;
 
         /**
-         * 粒子时间
+         * Is the particle system stopped right now ?
+         * 
+         * 粒子系统现在停止了吗?
+         */
+        get isStopped()
+        {
+            return !this._isPlaying && this.time == 0;
+        }
+
+        /**
+         * Is the particle system paused right now ?
+         * 
+         * 粒子系统现在暂停了吗?
+         */
+        get isPaused()
+        {
+            return !this._isPlaying && this.time != 0;
+        }
+
+        /**
+         * The current number of particles (Read Only).
+         * 
+         * 当前粒子数(只读)。
+         */
+        get particleCount()
+        {
+            return this._activeParticles.length;
+        }
+
+        /**
+         * Playback position in seconds.
+         * 
+         * 回放位置(秒)
          */
         time = 0;
 
@@ -158,14 +192,6 @@ namespace feng3d
         @oav({ block: "Renderer" })
         @serialize
         receiveShadows = true;
-
-        /**
-         * 活跃粒子数量
-         */
-        get numActiveParticles()
-        {
-            return this._activeParticles.length;
-        }
 
         get single() { return true; }
 
@@ -518,7 +544,7 @@ namespace feng3d
             {
                 var particle = this._activeParticles[i];
                 particle.rateAtLifeTime = (this._realTime - particle.birthTime) / particle.lifetime;
-                if (particle.rateAtLifeTime > 1)
+                if (particle.rateAtLifeTime < 0 || particle.rateAtLifeTime > 1)
                 {
                     this._activeParticles.splice(i, 1);
                     this._particlePool.push(particle);
