@@ -491,6 +491,11 @@ namespace feng3d
         @oav({ tooltip: "发射粒子的最大数量。" })
         maxParticles = 1000;
 
+        constructor()
+        {
+            super();
+        }
+
         /**
          * 初始化粒子状态
          * @param particle 粒子

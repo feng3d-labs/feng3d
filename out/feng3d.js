@@ -33488,9 +33488,13 @@ var feng3d;
         Object.defineProperty(ParticleSystem.prototype, "main", {
             get: function () { return this._main; },
             set: function (v) {
+                if (this._main) {
+                    feng3d.watcher.unwatch(this._main, "simulationSpace", this._simulationSpaceChanged, this);
+                }
                 this._modules.replace(this._main, v);
                 v.particleSystem = this;
                 this._main = v;
+                feng3d.watcher.watch(this._main, "simulationSpace", this._simulationSpaceChanged, this);
             },
             enumerable: true,
             configurable: true
@@ -33865,6 +33869,28 @@ var feng3d;
             //
             this._modules.forEach(function (v) { v.updateParticleState(particle); });
             particle.updateState(preTime, this._realTime);
+        };
+        ParticleSystem.prototype._simulationSpaceChanged = function () {
+            if (!this.transform)
+                return;
+            if (this._activeParticles.length == 0)
+                return;
+            if (this._main.simulationSpace == feng3d.ParticleSystemSimulationSpace.Local) {
+                var worldToLocalMatrix = this.transform.worldToLocalMatrix;
+                this._activeParticles.forEach(function (p) {
+                    worldToLocalMatrix.transformVector(p.position, p.position);
+                    worldToLocalMatrix.deltaTransformVector(p.velocity, p.velocity);
+                    worldToLocalMatrix.deltaTransformVector(p.acceleration, p.acceleration);
+                });
+            }
+            else {
+                var localToWorldMatrix = this.transform.localToWorldMatrix;
+                this._activeParticles.forEach(function (p) {
+                    localToWorldMatrix.transformVector(p.position, p.position);
+                    localToWorldMatrix.deltaTransformVector(p.velocity, p.velocity);
+                    localToWorldMatrix.deltaTransformVector(p.acceleration, p.acceleration);
+                });
+            }
         };
         __decorate([
             feng3d.serialize,
@@ -35168,7 +35194,7 @@ var feng3d;
     var ParticleMainModule = /** @class */ (function (_super) {
         __extends(ParticleMainModule, _super);
         function ParticleMainModule() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.call(this) || this;
             _this.__class__ = "feng3d.ParticleMainModule";
             _this.enabled = true;
             /**

@@ -15284,6 +15284,7 @@ declare namespace feng3d {
          * @param particle 粒子
          */
         private _updateParticleState;
+        private _simulationSpaceChanged;
         /**
          * 上次移动发射的位置
          */
@@ -16266,6 +16267,7 @@ declare namespace feng3d {
          * 发射粒子的最大数量。
          */
         maxParticles: number;
+        constructor();
         /**
          * 初始化粒子状态
          * @param particle 粒子

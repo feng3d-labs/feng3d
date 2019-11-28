@@ -70,9 +70,14 @@ namespace feng3d
         get main() { return this._main; }
         set main(v)
         {
+            if (this._main)
+            {
+                watcher.unwatch(this._main, "simulationSpace", this._simulationSpaceChanged, this);
+            }
             this._modules.replace(this._main, v);
             v.particleSystem = this;
             this._main = v;
+            watcher.watch(this._main, "simulationSpace", this._simulationSpaceChanged, this);
         }
         private _main: ParticleMainModule;
 
@@ -602,6 +607,32 @@ namespace feng3d
             //
             this._modules.forEach(v => { v.updateParticleState(particle) });
             particle.updateState(preTime, this._realTime);
+        }
+
+        private _simulationSpaceChanged()
+        {
+            if (!this.transform) return;
+            if (this._activeParticles.length == 0) return;
+
+            if (this._main.simulationSpace == ParticleSystemSimulationSpace.Local)
+            {
+                var worldToLocalMatrix = this.transform.worldToLocalMatrix;
+                this._activeParticles.forEach(p =>
+                {
+                    worldToLocalMatrix.transformVector(p.position, p.position);
+                    worldToLocalMatrix.deltaTransformVector(p.velocity, p.velocity);
+                    worldToLocalMatrix.deltaTransformVector(p.acceleration, p.acceleration);
+                });
+            } else
+            {
+                var localToWorldMatrix = this.transform.localToWorldMatrix;
+                this._activeParticles.forEach(p =>
+                {
+                    localToWorldMatrix.transformVector(p.position, p.position);
+                    localToWorldMatrix.deltaTransformVector(p.velocity, p.velocity);
+                    localToWorldMatrix.deltaTransformVector(p.acceleration, p.acceleration);
+                });
+            }
         }
 
         /**
