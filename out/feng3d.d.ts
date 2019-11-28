@@ -4238,7 +4238,7 @@ declare namespace feng3d {
          * @param vector
          * @param  target The vector to save the result in.
          */
-        addScaledVector(scalar: number, vector: Vector3, target?: Vector3): Vector3;
+        addScaledVectorTo(scalar: number, vector: Vector3, target?: Vector3): Vector3;
         /**
          * 乘以向量
          * @param a 向量

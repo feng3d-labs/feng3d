@@ -203,7 +203,7 @@ namespace feng3d
          * @param vector
          * @param  target The vector to save the result in.
          */
-        addScaledVector(scalar: number, vector: Vector3, target = new Vector3())
+        addScaledVectorTo(scalar: number, vector: Vector3, target = new Vector3())
         {
             target.x = this.x + scalar * vector.x;
             target.y = this.y + scalar * vector.y;

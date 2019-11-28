@@ -9084,7 +9084,7 @@ var feng3d;
          * @param vector
          * @param  target The vector to save the result in.
          */
-        Vector3.prototype.addScaledVector = function (scalar, vector, target) {
+        Vector3.prototype.addScaledVectorTo = function (scalar, vector, target) {
             if (target === void 0) { target = new Vector3(); }
             target.x = this.x + scalar * vector.x;
             target.y = this.y + scalar * vector.y;
@@ -36718,6 +36718,7 @@ var feng3d;
             mat.invert();
             // 还原到原空间
             mat.deltaTransformVector(pVelocity, pVelocity);
+            // 
             particle.velocity.lerpNumber(pVelocity, this.dampen);
         };
         __decorate([
