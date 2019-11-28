@@ -186,29 +186,34 @@ namespace feng3d
             var limit3D = this.limit3D.getValue(particle.rateAtLifeTime, particle[_LimitVelocityOverLifetime_rate]);
             var limit = this.limit.getValue(particle.rateAtLifeTime, particle[_LimitVelocityOverLifetime_rate]);
             var pVelocity = particle.velocity.clone();
-            if (this.space == ParticleSystemSimulationSpace.World)
+
+            // 计算变换矩阵
+            var mat = new Matrix4x4();
+            //
+            if (this.space != this.particleSystem.main.simulationSpace)
             {
-                this.particleSystem.transform.localToWorldMatrix.deltaTransformVector(pVelocity, pVelocity)
-                if (this.separateAxes)
+                if (this.space == ParticleSystemSimulationSpace.World)
                 {
-                    pVelocity.clamp(limit3D.negateTo(), limit3D);
+                    mat.copyFrom(this.particleSystem.transform.localToWorldMatrix);
                 } else
                 {
-                    if (pVelocity.lengthSquared > limit * limit)
-                        pVelocity.normalize(limit);
-                }
-                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(pVelocity, pVelocity);
-            } else
-            {
-                if (this.separateAxes)
-                {
-                    pVelocity.clamp(limit3D.negateTo(), limit3D);
-                } else
-                {
-                    if (pVelocity.lengthSquared > limit * limit)
-                        pVelocity.normalize(limit);
+                    mat.copyFrom(this.particleSystem.transform.worldToLocalMatrix);
                 }
             }
+            // 变换到现在空间进行限速
+            mat.deltaTransformVector(pVelocity, pVelocity)
+            if (this.separateAxes)
+            {
+                pVelocity.clamp(limit3D.negateTo(), limit3D);
+            } else
+            {
+                if (pVelocity.lengthSquared > limit * limit)
+                    pVelocity.normalize(limit);
+            }
+            mat.invert();
+            // 还原到原空间
+            mat.deltaTransformVector(pVelocity, pVelocity);
+            // 
             particle.velocity.lerpNumber(pVelocity, this.dampen);
         }
     }

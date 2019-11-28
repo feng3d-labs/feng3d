@@ -33879,16 +33879,12 @@ var feng3d;
                 var worldToLocalMatrix = this.transform.worldToLocalMatrix;
                 this._activeParticles.forEach(function (p) {
                     worldToLocalMatrix.transformVector(p.position, p.position);
-                    worldToLocalMatrix.deltaTransformVector(p.velocity, p.velocity);
-                    worldToLocalMatrix.deltaTransformVector(p.acceleration, p.acceleration);
                 });
             }
             else {
                 var localToWorldMatrix = this.transform.localToWorldMatrix;
                 this._activeParticles.forEach(function (p) {
                     localToWorldMatrix.transformVector(p.position, p.position);
-                    localToWorldMatrix.deltaTransformVector(p.velocity, p.velocity);
-                    localToWorldMatrix.deltaTransformVector(p.acceleration, p.acceleration);
                 });
             }
         };
@@ -35645,7 +35641,9 @@ var feng3d;
             // 计算重力加速度影响速度
             var gravity = new feng3d.Vector3(0, -this.gravityModifier.getValue(this.particleSystem.rateAtDuration) * 9.8, 0);
             // 本地加速度
-            this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(gravity, gravity);
+            if (this.simulationSpace == feng3d.ParticleSystemSimulationSpace.Local) {
+                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(gravity, gravity);
+            }
             //
             particle.acceleration.sub(preGravity).add(gravity);
             preGravity.copy(gravity);
@@ -36485,27 +36483,16 @@ var feng3d;
          */
         ParticleVelocityOverLifetimeModule.prototype.initParticleState = function (particle) {
             particle[_VelocityOverLifetime_rate] = Math.random();
-            particle[_VelocityOverLifetime_preVelocity] = { value: new feng3d.Vector3(), space: this.space };
+            particle[_VelocityOverLifetime_preVelocity] = new feng3d.Vector3();
         };
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
         ParticleVelocityOverLifetimeModule.prototype.updateParticleState = function (particle) {
-            var preVelocityObj = particle[_VelocityOverLifetime_preVelocity];
-            var preVelocity = preVelocityObj.value;
-            if (preVelocity.lengthSquared != 0) {
-                if (this.particleSystem.main.simulationSpace != preVelocityObj.space) {
-                    if (preVelocityObj.space == feng3d.ParticleSystemSimulationSpace.World) {
-                        this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(preVelocity, preVelocity);
-                    }
-                    else {
-                        this.particleSystem.transform.localToWorldMatrix.deltaTransformVector(preVelocity, preVelocity);
-                    }
-                }
-                particle.velocity.sub(preVelocity);
-                preVelocity.set(0, 0, 0);
-            }
+            var preVelocity = particle[_VelocityOverLifetime_preVelocity];
+            particle.velocity.sub(preVelocity);
+            preVelocity.set(0, 0, 0);
             if (!this.enabled)
                 return;
             var velocity = this.velocity.getValue(particle.rateAtLifeTime, particle[_VelocityOverLifetime_rate]);
@@ -36520,7 +36507,6 @@ var feng3d;
             //
             particle.velocity.add(velocity);
             preVelocity.copy(velocity);
-            preVelocityObj.space = this.particleSystem.main.simulationSpace;
         };
         __decorate([
             feng3d.serialize
@@ -36709,26 +36695,29 @@ var feng3d;
             var limit3D = this.limit3D.getValue(particle.rateAtLifeTime, particle[_LimitVelocityOverLifetime_rate]);
             var limit = this.limit.getValue(particle.rateAtLifeTime, particle[_LimitVelocityOverLifetime_rate]);
             var pVelocity = particle.velocity.clone();
-            if (this.space == feng3d.ParticleSystemSimulationSpace.World) {
-                this.particleSystem.transform.localToWorldMatrix.deltaTransformVector(pVelocity, pVelocity);
-                if (this.separateAxes) {
-                    pVelocity.clamp(limit3D.negateTo(), limit3D);
+            // 计算变换矩阵
+            var mat = new feng3d.Matrix4x4();
+            //
+            if (this.space != this.particleSystem.main.simulationSpace) {
+                if (this.space == feng3d.ParticleSystemSimulationSpace.World) {
+                    mat.copyFrom(this.particleSystem.transform.localToWorldMatrix);
                 }
                 else {
-                    if (pVelocity.lengthSquared > limit * limit)
-                        pVelocity.normalize(limit);
+                    mat.copyFrom(this.particleSystem.transform.worldToLocalMatrix);
                 }
-                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(pVelocity, pVelocity);
+            }
+            // 变换到现在空间进行限速
+            mat.deltaTransformVector(pVelocity, pVelocity);
+            if (this.separateAxes) {
+                pVelocity.clamp(limit3D.negateTo(), limit3D);
             }
             else {
-                if (this.separateAxes) {
-                    pVelocity.clamp(limit3D.negateTo(), limit3D);
-                }
-                else {
-                    if (pVelocity.lengthSquared > limit * limit)
-                        pVelocity.normalize(limit);
-                }
+                if (pVelocity.lengthSquared > limit * limit)
+                    pVelocity.normalize(limit);
             }
+            mat.invert();
+            // 还原到原空间
+            mat.deltaTransformVector(pVelocity, pVelocity);
             particle.velocity.lerpNumber(pVelocity, this.dampen);
         };
         __decorate([
@@ -36964,8 +36953,13 @@ var feng3d;
             if (!this.enabled)
                 return;
             var force = this.force.getValue(particle.rateAtLifeTime, particle[_ForceOverLifetime_rate]);
-            if (this.space == feng3d.ParticleSystemSimulationSpace.World) {
-                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(force, force);
+            if (this.space != this.particleSystem.main.simulationSpace) {
+                if (this.space == feng3d.ParticleSystemSimulationSpace.World) {
+                    this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(force, force);
+                }
+                else {
+                    this.particleSystem.transform.localToWorldMatrix.deltaTransformVector(force, force);
+                }
             }
             particle.acceleration.add(force);
             preForce.copy(force);

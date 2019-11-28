@@ -543,7 +543,10 @@ namespace feng3d
             // 计算重力加速度影响速度
             var gravity = new Vector3(0, -this.gravityModifier.getValue(this.particleSystem.rateAtDuration) * 9.8, 0);
             // 本地加速度
-            this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(gravity, gravity);
+            if (this.simulationSpace == ParticleSystemSimulationSpace.Local)
+            {
+                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(gravity, gravity);
+            }
             //
             particle.acceleration.sub(preGravity).add(gravity);
             preGravity.copy(gravity);

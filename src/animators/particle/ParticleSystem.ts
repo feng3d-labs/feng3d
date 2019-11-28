@@ -620,8 +620,6 @@ namespace feng3d
                 this._activeParticles.forEach(p =>
                 {
                     worldToLocalMatrix.transformVector(p.position, p.position);
-                    worldToLocalMatrix.deltaTransformVector(p.velocity, p.velocity);
-                    worldToLocalMatrix.deltaTransformVector(p.acceleration, p.acceleration);
                 });
             } else
             {
@@ -629,8 +627,6 @@ namespace feng3d
                 this._activeParticles.forEach(p =>
                 {
                     localToWorldMatrix.transformVector(p.position, p.position);
-                    localToWorldMatrix.deltaTransformVector(p.velocity, p.velocity);
-                    localToWorldMatrix.deltaTransformVector(p.acceleration, p.acceleration);
                 });
             }
         }
