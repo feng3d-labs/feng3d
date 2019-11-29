@@ -15324,9 +15324,12 @@ declare namespace feng3d {
         /**
          * 上次移动发射的位置
          */
-        private _preRateOverDistancePos;
+        private _preworldPos;
         private _isRateOverDistance;
         private _leftRateOverDistance;
+        worldPos: Vector3;
+        moveVec: Vector3;
+        speed: Vector3;
     }
 }
 declare namespace feng3d {
@@ -16342,7 +16345,7 @@ declare namespace feng3d {
          * New particles will only be emitted when the emitter moves.
          *
          * 产生新粒子的速度，通过距离。
-         * 新粒子只有在发射器移动时才会被发射出来。
+         * 新粒子只有世界空间模拟且发射器移动时才会被发射出来。
          */
         rateOverDistance: MinMaxCurve;
         /**
@@ -16771,7 +16774,7 @@ declare namespace feng3d {
     /**
      * The Inherit Velocity Module controls how the velocity of the emitter is transferred to the particles as they are emitted.
      *
-     * 遗传速度模块控制发射体的速度在粒子发射时如何传递到粒子上。
+     * 遗传速度模块控制发射体的速度在粒子发射时如何传递到粒子上。（只有粒子系统在世界空间中模拟时生效）
      */
     class InheritVelocityModule extends ParticleModule {
         /**
@@ -16800,6 +16803,16 @@ declare namespace feng3d {
          */
         get curveMultiplier(): number;
         set curveMultiplier(v: number);
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle): void;
     }
 }
 declare namespace feng3d {

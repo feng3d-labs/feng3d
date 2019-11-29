@@ -232,6 +232,12 @@ namespace feng3d
 
             this.time = this.time + this.main.simulationSpeed * interval / 1000;
             this._realTime = this.time - this.startDelay;
+            // 粒子系统位置
+            this.worldPos.copy(this.transform.worldPosition);
+            // 粒子系统位移
+            this.moveVec.copy(this.worldPos).sub(this._preworldPos);
+            // 粒子系统速度
+            this.speed.copy(this.moveVec).divideNumber(this.main.simulationSpeed * interval / 1000);
 
             this._updateActiveParticlesState();
 
@@ -248,6 +254,7 @@ namespace feng3d
             this._emit();
 
             this._preRealTime = this._realTime;
+            this._preworldPos.copy(this.worldPos);
 
             // 判断非循环的效果是否播放结束
             if (!this.main.loop && this._activeParticles.length == 0 && this._realTime > this.main.duration)
@@ -482,19 +489,17 @@ namespace feng3d
             // 处理移动发射粒子
             if (this.main.simulationSpace == ParticleSystemSimulationSpace.World)
             {
-                var worldPos = this.transform.worldPosition;
                 if (this._isRateOverDistance)
                 {
-                    // 粒子系统位移
-                    var moveVec = worldPos.subTo(this._preRateOverDistancePos);
+                    var moveVec = this.moveVec;
+                    var worldPos = this.worldPos;
                     // 本次移动距离
-                    var overDistance = moveVec.length;
-                    if (overDistance > 0)
+                    if (moveVec.lengthSquared > 0)
                     {
                         // 移动方向
-                        var moveDir = moveVec.normalize();
+                        var moveDir = moveVec.clone().normalize();
                         // 剩余移动量
-                        var leftRateOverDistance = this._leftRateOverDistance + overDistance;
+                        var leftRateOverDistance = this._leftRateOverDistance + moveVec.length;
                         // 发射频率
                         var rateOverDistance = this.emission.rateOverDistance.getValue(rateAtDuration);
                         // 发射间隔距离
@@ -502,12 +507,12 @@ namespace feng3d
                         // 发射间隔位移
                         var invRateOverDistanceVec = moveDir.scaleNumberTo(1 / rateOverDistance);
                         // 上次发射位置
-                        var lastRateOverDistance = worldPos.addTo(moveDir.negateTo().scaleNumber(this._leftRateOverDistance));
+                        var lastRateOverDistance = this._preworldPos.addTo(moveDir.negateTo().scaleNumber(this._leftRateOverDistance));
                         // 发射位置列表
                         var emitPosArr: Vector3[] = [];
                         while (invRateOverDistance < leftRateOverDistance)
                         {
-                            emitPosArr.push(lastRateOverDistance.addTo(invRateOverDistanceVec));
+                            emitPosArr.push(lastRateOverDistance.add(invRateOverDistanceVec).clone());
                             leftRateOverDistance -= invRateOverDistance;
                         }
                         this._leftRateOverDistance = leftRateOverDistance;
@@ -517,7 +522,6 @@ namespace feng3d
                         });
                     }
                 }
-                this._preRateOverDistancePos.copy(worldPos);
                 this._isRateOverDistance = true;
             } else
             {
@@ -791,9 +795,13 @@ namespace feng3d
         /**
          * 上次移动发射的位置
          */
-        private _preRateOverDistancePos = new Vector3();
+        private _preworldPos = new Vector3();
         private _isRateOverDistance = false;
         private _leftRateOverDistance = 0;
+        //
+        worldPos = new Vector3();
+        moveVec = new Vector3();
+        speed = new Vector3;
     }
 
     AssetData.addAssetData("Billboard-Geometry", Geometry.billboard = serialization.setValue(new QuadGeometry(), { name: "Billboard-Geometry", assetId: "Billboard-Geometry", hideFlags: HideFlags.NotEditable }));

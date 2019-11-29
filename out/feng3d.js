@@ -33424,9 +33424,13 @@ var feng3d;
             /**
              * 上次移动发射的位置
              */
-            _this._preRateOverDistancePos = new feng3d.Vector3();
+            _this._preworldPos = new feng3d.Vector3();
             _this._isRateOverDistance = false;
             _this._leftRateOverDistance = 0;
+            //
+            _this.worldPos = new feng3d.Vector3();
+            _this.moveVec = new feng3d.Vector3();
+            _this.speed = new feng3d.Vector3;
             _this.main = new feng3d.ParticleMainModule();
             _this.emission = new feng3d.ParticleEmissionModule();
             _this.shape = new feng3d.ParticleShapeModule();
@@ -33607,6 +33611,12 @@ var feng3d;
                 return;
             this.time = this.time + this.main.simulationSpeed * interval / 1000;
             this._realTime = this.time - this.startDelay;
+            // 粒子系统位置
+            this.worldPos.copy(this.transform.worldPosition);
+            // 粒子系统位移
+            this.moveVec.copy(this.worldPos).sub(this._preworldPos);
+            // 粒子系统速度
+            this.speed.copy(this.moveVec).divideNumber(this.main.simulationSpeed * interval / 1000);
             this._updateActiveParticlesState();
             // 完成一个循环
             if (this.main.loop && Math.floor(this._preRealTime / this.main.duration) < Math.floor(this._realTime / this.main.duration)) {
@@ -33617,6 +33627,7 @@ var feng3d;
             }
             this._emit();
             this._preRealTime = this._realTime;
+            this._preworldPos.copy(this.worldPos);
             // 判断非循环的效果是否播放结束
             if (!this.main.loop && this._activeParticles.length == 0 && this._realTime > this.main.duration) {
                 this.stop();
@@ -33776,17 +33787,15 @@ var feng3d;
             var bursts = this.emission.bursts;
             // 处理移动发射粒子
             if (this.main.simulationSpace == feng3d.ParticleSystemSimulationSpace.World) {
-                var worldPos = this.transform.worldPosition;
                 if (this._isRateOverDistance) {
-                    // 粒子系统位移
-                    var moveVec = worldPos.subTo(this._preRateOverDistancePos);
+                    var moveVec = this.moveVec;
+                    var worldPos = this.worldPos;
                     // 本次移动距离
-                    var overDistance = moveVec.length;
-                    if (overDistance > 0) {
+                    if (moveVec.lengthSquared > 0) {
                         // 移动方向
-                        var moveDir = moveVec.normalize();
+                        var moveDir = moveVec.clone().normalize();
                         // 剩余移动量
-                        var leftRateOverDistance = this._leftRateOverDistance + overDistance;
+                        var leftRateOverDistance = this._leftRateOverDistance + moveVec.length;
                         // 发射频率
                         var rateOverDistance = this.emission.rateOverDistance.getValue(rateAtDuration);
                         // 发射间隔距离
@@ -33794,11 +33803,11 @@ var feng3d;
                         // 发射间隔位移
                         var invRateOverDistanceVec = moveDir.scaleNumberTo(1 / rateOverDistance);
                         // 上次发射位置
-                        var lastRateOverDistance = worldPos.addTo(moveDir.negateTo().scaleNumber(this._leftRateOverDistance));
+                        var lastRateOverDistance = this._preworldPos.addTo(moveDir.negateTo().scaleNumber(this._leftRateOverDistance));
                         // 发射位置列表
                         var emitPosArr = [];
                         while (invRateOverDistance < leftRateOverDistance) {
-                            emitPosArr.push(lastRateOverDistance.addTo(invRateOverDistanceVec));
+                            emitPosArr.push(lastRateOverDistance.add(invRateOverDistanceVec).clone());
                             leftRateOverDistance -= invRateOverDistance;
                         }
                         this._leftRateOverDistance = leftRateOverDistance;
@@ -33807,7 +33816,6 @@ var feng3d;
                         });
                     }
                 }
-                this._preRateOverDistancePos.copy(worldPos);
                 this._isRateOverDistance = true;
             }
             else {
@@ -35925,7 +35933,7 @@ var feng3d;
              * New particles will only be emitted when the emitter moves.
              *
              * 产生新粒子的速度，通过距离。
-             * 新粒子只有在发射器移动时才会被发射出来。
+             * 新粒子只有世界空间模拟且发射器移动时才会被发射出来。
              */
             // @oav({ tooltip: "The rate at which new particles are spawned, over distance." })
             _this.rateOverDistance = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { between0And1: true, constant: 0, constantMin: 0, constantMax: 1 });
@@ -36017,7 +36025,7 @@ var feng3d;
             feng3d.oav({ tooltip: "随着时间的推移，新粒子产生的速度。" })
         ], ParticleEmissionModule.prototype, "rateOverTime", void 0);
         __decorate([
-            feng3d.oav({ tooltip: "产生新粒子的速度，通过距离。" })
+            feng3d.oav({ tooltip: "产生新粒子的速度，通过距离。新粒子只有世界空间模拟且发射器移动时才会被发射出来。" })
         ], ParticleEmissionModule.prototype, "rateOverDistance", void 0);
         __decorate([
             feng3d.serialize,
@@ -36876,7 +36884,7 @@ var feng3d;
     /**
      * The Inherit Velocity Module controls how the velocity of the emitter is transferred to the particles as they are emitted.
      *
-     * 遗传速度模块控制发射体的速度在粒子发射时如何传递到粒子上。
+     * 遗传速度模块控制发射体的速度在粒子发射时如何传递到粒子上。（只有粒子系统在世界空间中模拟时生效）
      */
     var InheritVelocityModule = /** @class */ (function (_super) {
         __extends(InheritVelocityModule, _super);
@@ -36926,6 +36934,26 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        InheritVelocityModule.prototype.initParticleState = function (particle) {
+            if (this.particleSystem.main.simulationSpace == feng3d.ParticleSystemSimulationSpace.Local)
+                return;
+        };
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        InheritVelocityModule.prototype.updateParticleState = function (particle) {
+            if (this.particleSystem.main.simulationSpace == feng3d.ParticleSystemSimulationSpace.Local)
+                return;
+            // this.particleSystem.removeParticleAcceleration(particle, _ForceOverLifetime_preForce);
+            // if (!this.enabled) return;
+            // var force = this.force.getValue(particle.rateAtLifeTime, particle[_ForceOverLifetime_rate]);
+            // this.particleSystem.addParticleAcceleration(particle, force, this.space, _ForceOverLifetime_preForce);
+        };
         return InheritVelocityModule;
     }(feng3d.ParticleModule));
     feng3d.InheritVelocityModule = InheritVelocityModule;
