@@ -9074,9 +9074,10 @@ var feng3d;
          */
         Vector3.prototype.addTo = function (a, vout) {
             if (vout === void 0) { vout = new Vector3(); }
-            if (a == vout)
-                a = a.clone();
-            return vout.copy(this).add(a);
+            vout.x = this.x + a.x;
+            vout.y = this.y + a.y;
+            vout.z = this.z + a.z;
+            return vout;
         };
         /**
          * Scale a vector and add it to this vector. Save the result in "target". (target = this + vector * scalar)
@@ -9108,9 +9109,10 @@ var feng3d;
          */
         Vector3.prototype.multiplyTo = function (a, vout) {
             if (vout === void 0) { vout = new Vector3(); }
-            if (a == vout)
-                a = a.clone();
-            return vout.copy(this).multiply(a);
+            vout.x = this.x * a.x;
+            vout.y = this.y * a.y;
+            vout.z = this.z * a.z;
+            return vout;
         };
         /**
          * 除以向量
@@ -9129,9 +9131,10 @@ var feng3d;
          */
         Vector3.prototype.divideTo = function (a, vout) {
             if (vout === void 0) { vout = new Vector3(); }
-            if (a == vout)
-                a = a.clone();
-            return vout.copy(this).divide(a);
+            vout.x = this.x / a.x;
+            vout.y = this.y / a.y;
+            vout.z = this.z / a.z;
+            return vout;
         };
         /**
          * 叉乘向量
@@ -9147,9 +9150,8 @@ var feng3d;
          */
         Vector3.prototype.crossTo = function (a, vout) {
             if (vout === void 0) { vout = new Vector3(); }
-            if (a == vout)
-                a = a.clone();
-            return vout.copy(this).cross(a);
+            vout.set(this.y * a.z - this.z * a.y, this.z * a.x - this.x * a.z, this.x * a.y - this.y * a.x);
+            return vout;
         };
         /**
          * 如果当前 Vector3 对象和作为参数指定的 Vector3 对象均为单位顶点，此方法将返回这两个顶点之间所成角的余弦值。
@@ -9228,7 +9230,10 @@ var feng3d;
          */
         Vector3.prototype.addNumberTo = function (n, vout) {
             if (vout === void 0) { vout = new Vector3(); }
-            return vout.copy(this).addNumber(n);
+            vout.x = this.x + n;
+            vout.y = this.y + n;
+            vout.z = this.z + n;
+            return vout;
         };
         /**
          * 减去标量
@@ -9246,7 +9251,10 @@ var feng3d;
          */
         Vector3.prototype.subNumberTo = function (n, vout) {
             if (vout === void 0) { vout = new Vector3(); }
-            return vout.copy(this).subNumber(n);
+            vout.x = this.x - n;
+            vout.y = this.y - n;
+            vout.z = this.z - n;
+            return vout;
         };
         /**
          * 乘以标量
@@ -9265,7 +9273,10 @@ var feng3d;
          */
         Vector3.prototype.multiplyNumberTo = function (n, vout) {
             if (vout === void 0) { vout = new Vector3(); }
-            return vout.copy(this).multiplyNumber(n);
+            vout.x = this.x * n;
+            vout.y = this.y * n;
+            vout.z = this.z * n;
+            return vout;
         };
         /**
          * 除以标量
@@ -9284,7 +9295,10 @@ var feng3d;
          */
         Vector3.prototype.divideNumberTo = function (n, vout) {
             if (vout === void 0) { vout = new Vector3(); }
-            return vout.copy(this).divideNumber(n);
+            vout.x = this.x / n;
+            vout.y = this.y / n;
+            vout.z = this.z / n;
+            return vout;
         };
         /**
          * 返回一个新 Vector3 对象，它是与当前 Vector3 对象完全相同的副本。
@@ -9332,7 +9346,10 @@ var feng3d;
          */
         Vector3.prototype.negateTo = function (vout) {
             if (vout === void 0) { vout = new Vector3(); }
-            return vout.copy(this).negate();
+            vout.x = -this.x;
+            vout.y = -this.y;
+            vout.z = -this.z;
+            return vout;
         };
         /**
          * 倒向量
@@ -9350,7 +9367,10 @@ var feng3d;
          */
         Vector3.prototype.inverseTo = function (vout) {
             if (vout === void 0) { vout = new Vector3(); }
-            return vout.copy(this).inverse();
+            vout.x = 1 / this.x;
+            vout.y = 1 / this.y;
+            vout.z = 1 / this.z;
+            return vout;
         };
         /**
          * 通过将最前面的三个元素（x、y、z）除以矢量的长度可将 Vector3 对象转换为单位矢量。
@@ -9408,7 +9428,10 @@ var feng3d;
          */
         Vector3.prototype.scaleNumberTo = function (s, vout) {
             if (vout === void 0) { vout = new Vector3(); }
-            return vout.copy(this).scaleNumber(s);
+            vout.x = this.x * s;
+            vout.y = this.y * s;
+            vout.z = this.z * s;
+            return vout;
         };
         /**
          * 缩放
@@ -9426,9 +9449,10 @@ var feng3d;
          */
         Vector3.prototype.scaleTo = function (s, vout) {
             if (vout === void 0) { vout = new Vector3(); }
-            if (s == vout)
-                s = s.clone();
-            return vout.copy(this).scale(s);
+            vout.x = this.x * s.x;
+            vout.y = this.y * s.y;
+            vout.z = this.z * s.z;
+            return vout;
         };
         /**
          * 减去向量
@@ -9448,9 +9472,10 @@ var feng3d;
          */
         Vector3.prototype.subTo = function (a, vout) {
             if (vout === void 0) { vout = new Vector3(); }
-            if (a == vout)
-                a = a.clone();
-            return vout.copy(this).sub(a);
+            vout.x = this.x - a.x;
+            vout.y = this.y - a.y;
+            vout.z = this.z - a.z;
+            return vout;
         };
         /**
          * 插值到指定向量
@@ -9472,9 +9497,10 @@ var feng3d;
          */
         Vector3.prototype.lerpTo = function (v, alpha, vout) {
             if (vout === void 0) { vout = new Vector3(); }
-            if (v == vout)
-                v = v.clone();
-            return vout.copy(this).lerp(v, alpha);
+            vout.x = this.x + (v.x - this.x) * alpha.x;
+            vout.y = this.y + (v.y - this.y) * alpha.y;
+            vout.z = this.z + (v.z - this.z) * alpha.z;
+            return vout;
         };
         /**
          * 插值到指定向量
@@ -9496,9 +9522,10 @@ var feng3d;
          */
         Vector3.prototype.lerpNumberTo = function (v, alpha, vout) {
             if (vout === void 0) { vout = new Vector3(); }
-            if (v == vout)
-                v = v.clone();
-            return vout.copy(this).lerpNumber(v, alpha);
+            vout.x = this.x + (v.x - this.x) * alpha;
+            vout.y = this.y + (v.y - this.y) * alpha;
+            vout.z = this.z + (v.z - this.z) * alpha;
+            return vout;
         };
         /**
          * 小于指定点

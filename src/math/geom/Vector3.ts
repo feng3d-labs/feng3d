@@ -193,8 +193,10 @@ namespace feng3d
          */
         addTo(a: Vector3, vout = new Vector3())
         {
-            if (a == vout) a = a.clone();
-            return vout.copy(this).add(a);
+            vout.x = this.x + a.x;
+            vout.y = this.y + a.y;
+            vout.z = this.z + a.z;
+            return vout;
         }
 
         /**
@@ -230,8 +232,10 @@ namespace feng3d
          */
         multiplyTo(a: Vector3, vout = new Vector3())
         {
-            if (a == vout) a = a.clone();
-            return vout.copy(this).multiply(a);
+            vout.x = this.x * a.x;
+            vout.y = this.y * a.y;
+            vout.z = this.z * a.z;
+            return vout;
         }
 
         /**
@@ -253,8 +257,10 @@ namespace feng3d
          */
         divideTo(a: Vector3, vout = new Vector3())
         {
-            if (a == vout) a = a.clone();
-            return vout.copy(this).divide(a);
+            vout.x = this.x / a.x;
+            vout.y = this.y / a.y;
+            vout.z = this.z / a.z;
+            return vout;
         }
 
         /**
@@ -271,10 +277,10 @@ namespace feng3d
          * @param a 向量
          * @param vout 输出向量
          */
-        crossTo(a: Vector3, vout = new Vector3()): Vector3
+        crossTo(a: Vector3, vout = new Vector3())
         {
-            if (a == vout) a = a.clone();
-            return vout.copy(this).cross(a);
+            vout.set(this.y * a.z - this.z * a.y, this.z * a.x - this.x * a.z, this.x * a.y - this.y * a.x);
+            return vout;
         }
 
         /**
@@ -367,7 +373,10 @@ namespace feng3d
          */
         addNumberTo(n: number, vout = new Vector3())
         {
-            return vout.copy(this).addNumber(n);
+            vout.x = this.x + n;
+            vout.y = this.y + n;
+            vout.z = this.z + n;
+            return vout;
         }
 
         /**
@@ -388,7 +397,10 @@ namespace feng3d
          */
         subNumberTo(n: number, vout = new Vector3())
         {
-            return vout.copy(this).subNumber(n);
+            vout.x = this.x - n;
+            vout.y = this.y - n;
+            vout.z = this.z - n;
+            return vout;
         }
 
         /**
@@ -410,7 +422,10 @@ namespace feng3d
          */
         multiplyNumberTo(n: number, vout = new Vector3())
         {
-            return vout.copy(this).multiplyNumber(n);
+            vout.x = this.x * n;
+            vout.y = this.y * n;
+            vout.z = this.z * n;
+            return vout;
         }
 
         /**
@@ -432,7 +447,10 @@ namespace feng3d
          */
         divideNumberTo(n: number, vout = new Vector3())
         {
-            return vout.copy(this).divideNumber(n);
+            vout.x = this.x / n;
+            vout.y = this.y / n;
+            vout.z = this.z / n;
+            return vout;
         }
 
         /**
@@ -488,7 +506,10 @@ namespace feng3d
          */
         negateTo(vout = new Vector3())
         {
-            return vout.copy(this).negate();
+            vout.x = -this.x;
+            vout.y = -this.y;
+            vout.z = -this.z;
+            return vout;
         }
 
         /**
@@ -509,7 +530,10 @@ namespace feng3d
          */
         inverseTo(vout = new Vector3())
         {
-            return vout.copy(this).inverse();
+            vout.x = 1 / this.x;
+            vout.y = 1 / this.y;
+            vout.z = 1 / this.z;
+            return vout;
         }
 
         /**
@@ -574,7 +598,10 @@ namespace feng3d
          */
         scaleNumberTo(s: number, vout = new Vector3())
         {
-            return vout.copy(this).scaleNumber(s);
+            vout.x = this.x * s;
+            vout.y = this.y * s;
+            vout.z = this.z * s;
+            return vout;
         }
 
         /**
@@ -595,8 +622,10 @@ namespace feng3d
          */
         scaleTo(s: Vector3, vout = new Vector3())
         {
-            if (s == vout) s = s.clone();
-            return vout.copy(this).scale(s);
+            vout.x = this.x * s.x;
+            vout.y = this.y * s.y;
+            vout.z = this.z * s.z;
+            return vout;
         }
 
         /**
@@ -619,8 +648,10 @@ namespace feng3d
          */
         subTo(a: Vector3, vout = new Vector3())
         {
-            if (a == vout) a = a.clone();
-            return vout.copy(this).sub(a);
+            vout.x = this.x - a.x;
+            vout.y = this.y - a.y;
+            vout.z = this.z - a.z;
+            return vout;
         }
 
         /**
@@ -645,8 +676,10 @@ namespace feng3d
          */
         lerpTo(v: Vector3, alpha: Vector3, vout = new Vector3())
         {
-            if (v == vout) v = v.clone();
-            return vout.copy(this).lerp(v, alpha);
+            vout.x = this.x + (v.x - this.x) * alpha.x;
+            vout.y = this.y + (v.y - this.y) * alpha.y;
+            vout.z = this.z + (v.z - this.z) * alpha.z;
+            return vout;
         }
 
         /**
@@ -671,8 +704,10 @@ namespace feng3d
          */
         lerpNumberTo(v: Vector3, alpha: number, vout = new Vector3())
         {
-            if (v == vout) v = v.clone();
-            return vout.copy(this).lerpNumber(v, alpha);
+            vout.x = this.x + (v.x - this.x) * alpha;
+            vout.y = this.y + (v.y - this.y) * alpha;
+            vout.z = this.z + (v.z - this.z) * alpha;
+            return vout;
         }
 
         /**
