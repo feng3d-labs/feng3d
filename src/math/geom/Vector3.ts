@@ -527,7 +527,6 @@ namespace feng3d
                 this.z *= invLength;
             } else
             {
-                console.warn(`无法 normalize`);
                 // Make something up
                 this.x = 0;
                 this.y = 0;

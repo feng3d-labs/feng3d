@@ -9366,7 +9366,6 @@ var feng3d;
                 this.z *= invLength;
             }
             else {
-                console.warn("\u65E0\u6CD5 normalize");
                 // Make something up
                 this.x = 0;
                 this.y = 0;
@@ -12247,6 +12246,8 @@ var feng3d;
          */
         Quaternion.prototype.slerpTo = function (qb, t, out) {
             if (out === void 0) { out = new Quaternion(); }
+            if (qb == out)
+                qb = qb.clone();
             return out.copy(this).slerp(qb, t);
         };
         /**

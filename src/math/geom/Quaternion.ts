@@ -320,6 +320,7 @@ namespace feng3d
 		 */
         slerpTo(qb: Quaternion, t: number, out = new Quaternion())
         {
+            if (qb == out) qb = qb.clone();
             return out.copy(this).slerp(qb, t);
         }
 
