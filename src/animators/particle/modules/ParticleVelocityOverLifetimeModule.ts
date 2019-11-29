@@ -127,7 +127,6 @@ namespace feng3d
         initParticleState(particle: Particle)
         {
             particle[_VelocityOverLifetime_rate] = Math.random();
-            particle[_VelocityOverLifetime_preVelocity] = new Vector3();
         }
 
         /**
@@ -136,29 +135,11 @@ namespace feng3d
          */
         updateParticleState(particle: Particle)
         {
-            var preVelocity: Vector3 = particle[_VelocityOverLifetime_preVelocity];
-
-            particle.velocity.sub(preVelocity);
-            preVelocity.set(0, 0, 0);
+            this.particleSystem.removeParticleVelocity(particle, _VelocityOverLifetime_preVelocity);
             if (!this.enabled) return;
 
             var velocity = this.velocity.getValue(particle.rateAtLifeTime, particle[_VelocityOverLifetime_rate]);
-            particle.addVelocity("VelocityOverLifetime", velocity, this.space);
-
-            if (this.space != this.particleSystem.main.simulationSpace)
-            {
-                if (this.space == ParticleSystemSimulationSpace.World)
-                {
-                    this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(velocity, velocity);
-                } else
-                {
-                    this.particleSystem.transform.localToWorldMatrix.deltaTransformVector(velocity, velocity);
-                }
-            }
-
-            //
-            particle.velocity.add(velocity);
-            preVelocity.copy(velocity);
+            this.particleSystem.addParticleVelocity(particle, velocity, this.space, _VelocityOverLifetime_preVelocity);
         }
     }
 

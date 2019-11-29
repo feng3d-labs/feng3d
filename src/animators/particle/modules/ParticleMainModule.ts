@@ -502,8 +502,6 @@ namespace feng3d
          */
         initParticleState(particle: Particle)
         {
-            particle[_Main_preGravity] = new Vector3();
-
             //
             var birthRateAtDuration = particle.birthRateAtDuration;
 
@@ -539,17 +537,19 @@ namespace feng3d
          */
         updateParticleState(particle: Particle)
         {
-            var preGravity: Vector3 = particle[_Main_preGravity];
+            // var preGravity: Vector3 = particle[_Main_preGravity];
+            // this.particleSystem.removeParticleAcceleration(particle, _Main_preGravity);
             // 计算重力加速度影响速度
-            var gravity = new Vector3(0, -this.gravityModifier.getValue(this.particleSystem.rateAtDuration) * 9.8, 0);
+            var gravity = world_gravity.scaleNumberTo(this.gravityModifier.getValue(this.particleSystem.rateAtDuration));
+            this.particleSystem.addParticleAcceleration(particle, gravity, ParticleSystemSimulationSpace.World, _Main_preGravity);
             // 本地加速度
-            if (this.simulationSpace == ParticleSystemSimulationSpace.Local)
-            {
-                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(gravity, gravity);
-            }
+            // if (this.simulationSpace == ParticleSystemSimulationSpace.Local)
+            // {
+            //     this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(gravity, gravity);
+            // }
             //
-            particle.acceleration.sub(preGravity).add(gravity);
-            preGravity.copy(gravity);
+            // particle.acceleration.sub(preGravity).add(gravity);
+            // preGravity.copy(gravity);
 
             //
             particle.size.copy(particle.startSize);
@@ -557,5 +557,6 @@ namespace feng3d
         }
     }
 
+    var world_gravity = new Vector3(0, -9.8, 0);
     var _Main_preGravity = "_Main_preGravity";
 }

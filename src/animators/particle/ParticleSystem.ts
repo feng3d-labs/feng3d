@@ -555,6 +555,7 @@ namespace feng3d
                 if (rateAtLifeTime < 1)
                 {
                     var particle = this._particlePool.pop() || new Particle();
+                    particle.cache = {};
                     particle.birthTime = birthTime;
                     particle.lifetime = lifetime;
                     particle.rateAtLifeTime = rateAtLifeTime;
@@ -620,6 +621,8 @@ namespace feng3d
                 this._activeParticles.forEach(p =>
                 {
                     worldToLocalMatrix.transformVector(p.position, p.position);
+                    worldToLocalMatrix.deltaTransformVector(p.velocity, p.velocity);
+                    worldToLocalMatrix.deltaTransformVector(p.acceleration, p.acceleration);
                 });
             } else
             {
@@ -627,7 +630,129 @@ namespace feng3d
                 this._activeParticles.forEach(p =>
                 {
                     localToWorldMatrix.transformVector(p.position, p.position);
+                    localToWorldMatrix.deltaTransformVector(p.velocity, p.velocity);
+                    localToWorldMatrix.deltaTransformVector(p.acceleration, p.acceleration);
                 });
+            }
+        }
+
+        /**
+         * 给指定粒子添加指定空间的速度。
+         * 
+         * @param particle 粒子。
+         * @param velocity 速度。
+         * @param space 速度所在空间。
+         * @param name  速度名称。如果不为 undefined 时保存，调用 removeParticleVelocity 可以移除该部分速度。
+         */
+        addParticleVelocity(particle: Particle, velocity: Vector3, space: ParticleSystemSimulationSpace, name?: string)
+        {
+            if (name != undefined)
+            {
+                this.removeParticleVelocity(particle, name);
+                particle.cache[name] = { value: velocity.clone(), space: space };
+            }
+
+            if (space != this.main.simulationSpace)
+            {
+                if (space == ParticleSystemSimulationSpace.World)
+                {
+                    this.transform.worldToLocalMatrix.deltaTransformVector(velocity, velocity);
+                } else
+                {
+                    this.transform.localToWorldMatrix.deltaTransformVector(velocity, velocity);
+                }
+            }
+            //
+            particle.velocity.add(velocity);
+        }
+
+        /**
+         * 移除指定粒子上的速度
+         * 
+         * @param particle 粒子。
+         * @param name 速度名称。
+         */
+        removeParticleVelocity(particle: Particle, name: string)
+        {
+            var obj: { value: Vector3, space: ParticleSystemSimulationSpace } = particle.cache[name];
+            if (obj)
+            {
+                delete particle.cache[name];
+
+                var space = obj.space;
+                var value = obj.value;
+                if (space != this.main.simulationSpace)
+                {
+                    if (space == ParticleSystemSimulationSpace.World)
+                    {
+                        this.transform.worldToLocalMatrix.deltaTransformVector(value, value);
+                    } else
+                    {
+                        this.transform.localToWorldMatrix.deltaTransformVector(value, value);
+                    }
+                }
+                //
+                particle.velocity.sub(value);
+            }
+        }
+
+        /**
+         * 给指定粒子添加指定空间的速度。
+         * 
+         * @param particle 粒子。
+         * @param acceleration 加速度。
+         * @param space 加速度所在空间。
+         * @param name  加速度名称。如果不为 undefined 时保存，调用 removeParticleVelocity 可以移除该部分速度。
+         */
+        addParticleAcceleration(particle: Particle, acceleration: Vector3, space: ParticleSystemSimulationSpace, name?: string)
+        {
+            if (name != undefined)
+            {
+                this.removeParticleAcceleration(particle, name);
+                particle.cache[name] = { value: acceleration.clone(), space: space };
+            }
+
+            if (space != this.main.simulationSpace)
+            {
+                if (space == ParticleSystemSimulationSpace.World)
+                {
+                    this.transform.worldToLocalMatrix.deltaTransformVector(acceleration, acceleration);
+                } else
+                {
+                    this.transform.localToWorldMatrix.deltaTransformVector(acceleration, acceleration);
+                }
+            }
+            //
+            particle.acceleration.add(acceleration);
+        }
+
+        /**
+         * 移除指定粒子上的加速度
+         * 
+         * @param particle 粒子。
+         * @param name 加速度名称。
+         */
+        removeParticleAcceleration(particle: Particle, name: string)
+        {
+            var obj: { value: Vector3, space: ParticleSystemSimulationSpace } = particle.cache[name];
+            if (obj)
+            {
+                delete particle.cache[name];
+
+                var space = obj.space;
+                var value = obj.value;
+                if (space != this.main.simulationSpace)
+                {
+                    if (space == ParticleSystemSimulationSpace.World)
+                    {
+                        this.transform.worldToLocalMatrix.deltaTransformVector(value, value);
+                    } else
+                    {
+                        this.transform.localToWorldMatrix.deltaTransformVector(value, value);
+                    }
+                }
+                //
+                particle.acceleration.sub(value);
             }
         }
 

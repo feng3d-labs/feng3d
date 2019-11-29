@@ -33169,7 +33169,6 @@ var feng3d;
              * 速度
              */
             this.velocity = new feng3d.Vector3();
-            this._partialVelocity = {};
             /**
              * 加速度
              */
@@ -33206,20 +33205,11 @@ var feng3d;
              * 在粒子上翻转UV坐标，使它们呈现水平镜像。
              */
             this.flipUV = new feng3d.Vector2();
+            /**
+             * 缓存，用于存储计算时临时数据
+             */
+            this.cache = {};
         }
-        /**
-         * 添加速度分量
-         *
-         * @param name 速度的名称
-         * @param velocity 速度
-         * @param space 速度所在空间
-         */
-        Particle.prototype.addVelocity = function (name, velocity, space) {
-            this._partialVelocity[name] = { value: velocity, space: space };
-        };
-        Particle.prototype.removeVelocity = function (name) {
-            delete this._partialVelocity[name];
-        };
         /**
          * 更新状态
          */
@@ -33840,6 +33830,7 @@ var feng3d;
                 var rateAtLifeTime = (this._realTime - birthTime) / lifetime;
                 if (rateAtLifeTime < 1) {
                     var particle = this._particlePool.pop() || new feng3d.Particle();
+                    particle.cache = {};
                     particle.birthTime = birthTime;
                     particle.lifetime = lifetime;
                     particle.rateAtLifeTime = rateAtLifeTime;
@@ -33893,13 +33884,113 @@ var feng3d;
                 var worldToLocalMatrix = this.transform.worldToLocalMatrix;
                 this._activeParticles.forEach(function (p) {
                     worldToLocalMatrix.transformVector(p.position, p.position);
+                    worldToLocalMatrix.deltaTransformVector(p.velocity, p.velocity);
+                    worldToLocalMatrix.deltaTransformVector(p.acceleration, p.acceleration);
                 });
             }
             else {
                 var localToWorldMatrix = this.transform.localToWorldMatrix;
                 this._activeParticles.forEach(function (p) {
                     localToWorldMatrix.transformVector(p.position, p.position);
+                    localToWorldMatrix.deltaTransformVector(p.velocity, p.velocity);
+                    localToWorldMatrix.deltaTransformVector(p.acceleration, p.acceleration);
                 });
+            }
+        };
+        /**
+         * 给指定粒子添加指定空间的速度。
+         *
+         * @param particle 粒子。
+         * @param velocity 速度。
+         * @param space 速度所在空间。
+         * @param name  速度名称。如果不为 undefined 时保存，调用 removeParticleVelocity 可以移除该部分速度。
+         */
+        ParticleSystem.prototype.addParticleVelocity = function (particle, velocity, space, name) {
+            if (name != undefined) {
+                this.removeParticleVelocity(particle, name);
+                particle.cache[name] = { value: velocity.clone(), space: space };
+            }
+            if (space != this.main.simulationSpace) {
+                if (space == feng3d.ParticleSystemSimulationSpace.World) {
+                    this.transform.worldToLocalMatrix.deltaTransformVector(velocity, velocity);
+                }
+                else {
+                    this.transform.localToWorldMatrix.deltaTransformVector(velocity, velocity);
+                }
+            }
+            //
+            particle.velocity.add(velocity);
+        };
+        /**
+         * 移除指定粒子上的速度
+         *
+         * @param particle 粒子。
+         * @param name 速度名称。
+         */
+        ParticleSystem.prototype.removeParticleVelocity = function (particle, name) {
+            var obj = particle.cache[name];
+            if (obj) {
+                delete particle.cache[name];
+                var space = obj.space;
+                var value = obj.value;
+                if (space != this.main.simulationSpace) {
+                    if (space == feng3d.ParticleSystemSimulationSpace.World) {
+                        this.transform.worldToLocalMatrix.deltaTransformVector(value, value);
+                    }
+                    else {
+                        this.transform.localToWorldMatrix.deltaTransformVector(value, value);
+                    }
+                }
+                //
+                particle.velocity.sub(value);
+            }
+        };
+        /**
+         * 给指定粒子添加指定空间的速度。
+         *
+         * @param particle 粒子。
+         * @param acceleration 加速度。
+         * @param space 加速度所在空间。
+         * @param name  加速度名称。如果不为 undefined 时保存，调用 removeParticleVelocity 可以移除该部分速度。
+         */
+        ParticleSystem.prototype.addParticleAcceleration = function (particle, acceleration, space, name) {
+            if (name != undefined) {
+                this.removeParticleAcceleration(particle, name);
+                particle.cache[name] = { value: acceleration.clone(), space: space };
+            }
+            if (space != this.main.simulationSpace) {
+                if (space == feng3d.ParticleSystemSimulationSpace.World) {
+                    this.transform.worldToLocalMatrix.deltaTransformVector(acceleration, acceleration);
+                }
+                else {
+                    this.transform.localToWorldMatrix.deltaTransformVector(acceleration, acceleration);
+                }
+            }
+            //
+            particle.acceleration.add(acceleration);
+        };
+        /**
+         * 移除指定粒子上的加速度
+         *
+         * @param particle 粒子。
+         * @param name 加速度名称。
+         */
+        ParticleSystem.prototype.removeParticleAcceleration = function (particle, name) {
+            var obj = particle.cache[name];
+            if (obj) {
+                delete particle.cache[name];
+                var space = obj.space;
+                var value = obj.value;
+                if (space != this.main.simulationSpace) {
+                    if (space == feng3d.ParticleSystemSimulationSpace.World) {
+                        this.transform.worldToLocalMatrix.deltaTransformVector(value, value);
+                    }
+                    else {
+                        this.transform.localToWorldMatrix.deltaTransformVector(value, value);
+                    }
+                }
+                //
+                particle.acceleration.sub(value);
             }
         };
         __decorate([
@@ -35621,7 +35712,6 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleMainModule.prototype.initParticleState = function (particle) {
-            particle[_Main_preGravity] = new feng3d.Vector3();
             //
             var birthRateAtDuration = particle.birthRateAtDuration;
             particle.position.set(0, 0, 0);
@@ -35651,16 +35741,19 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleMainModule.prototype.updateParticleState = function (particle) {
-            var preGravity = particle[_Main_preGravity];
+            // var preGravity: Vector3 = particle[_Main_preGravity];
+            // this.particleSystem.removeParticleAcceleration(particle, _Main_preGravity);
             // 计算重力加速度影响速度
-            var gravity = new feng3d.Vector3(0, -this.gravityModifier.getValue(this.particleSystem.rateAtDuration) * 9.8, 0);
+            var gravity = world_gravity.scaleNumberTo(this.gravityModifier.getValue(this.particleSystem.rateAtDuration));
+            this.particleSystem.addParticleAcceleration(particle, gravity, feng3d.ParticleSystemSimulationSpace.World, _Main_preGravity);
             // 本地加速度
-            if (this.simulationSpace == feng3d.ParticleSystemSimulationSpace.Local) {
-                this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(gravity, gravity);
-            }
+            // if (this.simulationSpace == ParticleSystemSimulationSpace.Local)
+            // {
+            //     this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(gravity, gravity);
+            // }
             //
-            particle.acceleration.sub(preGravity).add(gravity);
-            preGravity.copy(gravity);
+            // particle.acceleration.sub(preGravity).add(gravity);
+            // preGravity.copy(gravity);
             //
             particle.size.copy(particle.startSize);
             particle.color.copy(particle.startColor);
@@ -35788,6 +35881,7 @@ var feng3d;
         return ParticleMainModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleMainModule = ParticleMainModule;
+    var world_gravity = new feng3d.Vector3(0, -9.8, 0);
     var _Main_preGravity = "_Main_preGravity";
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -36497,31 +36591,17 @@ var feng3d;
          */
         ParticleVelocityOverLifetimeModule.prototype.initParticleState = function (particle) {
             particle[_VelocityOverLifetime_rate] = Math.random();
-            particle[_VelocityOverLifetime_preVelocity] = new feng3d.Vector3();
         };
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
         ParticleVelocityOverLifetimeModule.prototype.updateParticleState = function (particle) {
-            var preVelocity = particle[_VelocityOverLifetime_preVelocity];
-            particle.velocity.sub(preVelocity);
-            preVelocity.set(0, 0, 0);
+            this.particleSystem.removeParticleVelocity(particle, _VelocityOverLifetime_preVelocity);
             if (!this.enabled)
                 return;
             var velocity = this.velocity.getValue(particle.rateAtLifeTime, particle[_VelocityOverLifetime_rate]);
-            particle.addVelocity("VelocityOverLifetime", velocity, this.space);
-            if (this.space != this.particleSystem.main.simulationSpace) {
-                if (this.space == feng3d.ParticleSystemSimulationSpace.World) {
-                    this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(velocity, velocity);
-                }
-                else {
-                    this.particleSystem.transform.localToWorldMatrix.deltaTransformVector(velocity, velocity);
-                }
-            }
-            //
-            particle.velocity.add(velocity);
-            preVelocity.copy(velocity);
+            this.particleSystem.addParticleVelocity(particle, velocity, this.space, _VelocityOverLifetime_preVelocity);
         };
         __decorate([
             feng3d.serialize
@@ -36956,29 +37036,17 @@ var feng3d;
          */
         ParticleForceOverLifetimeModule.prototype.initParticleState = function (particle) {
             particle[_ForceOverLifetime_rate] = Math.random();
-            particle[_ForceOverLifetime_preForce] = new feng3d.Vector3();
         };
         /**
          * 更新粒子状态
          * @param particle 粒子
          */
         ParticleForceOverLifetimeModule.prototype.updateParticleState = function (particle) {
-            var preForce = particle[_ForceOverLifetime_preForce];
-            particle.acceleration.sub(preForce);
-            preForce.set(0, 0, 0);
+            this.particleSystem.removeParticleAcceleration(particle, _ForceOverLifetime_preForce);
             if (!this.enabled)
                 return;
             var force = this.force.getValue(particle.rateAtLifeTime, particle[_ForceOverLifetime_rate]);
-            if (this.space != this.particleSystem.main.simulationSpace) {
-                if (this.space == feng3d.ParticleSystemSimulationSpace.World) {
-                    this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(force, force);
-                }
-                else {
-                    this.particleSystem.transform.localToWorldMatrix.deltaTransformVector(force, force);
-                }
-            }
-            particle.acceleration.add(force);
-            preForce.copy(force);
+            this.particleSystem.addParticleAcceleration(particle, force, this.space, _ForceOverLifetime_preForce);
         };
         __decorate([
             feng3d.serialize,

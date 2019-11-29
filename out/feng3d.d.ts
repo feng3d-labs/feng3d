@@ -15003,16 +15003,6 @@ declare namespace feng3d {
          */
         velocity: Vector3;
         /**
-         * 添加速度分量
-         *
-         * @param name 速度的名称
-         * @param velocity 速度
-         * @param space 速度所在空间
-         */
-        addVelocity(name: string, velocity: Vector3, space: ParticleSystemSimulationSpace): void;
-        removeVelocity(name: string): void;
-        private _partialVelocity;
-        /**
          * 加速度
          */
         acceleration: Vector3;
@@ -15056,6 +15046,10 @@ declare namespace feng3d {
          * 此时粒子在生命周期的位置（在更新状态前被更新）
          */
         rateAtLifeTime: number;
+        /**
+         * 缓存，用于存储计算时临时数据
+         */
+        cache: {};
         /**
          * 更新状态
          */
@@ -15295,6 +15289,38 @@ declare namespace feng3d {
          */
         private _updateParticleState;
         private _simulationSpaceChanged;
+        /**
+         * 给指定粒子添加指定空间的速度。
+         *
+         * @param particle 粒子。
+         * @param velocity 速度。
+         * @param space 速度所在空间。
+         * @param name  速度名称。如果不为 undefined 时保存，调用 removeParticleVelocity 可以移除该部分速度。
+         */
+        addParticleVelocity(particle: Particle, velocity: Vector3, space: ParticleSystemSimulationSpace, name?: string): void;
+        /**
+         * 移除指定粒子上的速度
+         *
+         * @param particle 粒子。
+         * @param name 速度名称。
+         */
+        removeParticleVelocity(particle: Particle, name: string): void;
+        /**
+         * 给指定粒子添加指定空间的速度。
+         *
+         * @param particle 粒子。
+         * @param acceleration 加速度。
+         * @param space 加速度所在空间。
+         * @param name  加速度名称。如果不为 undefined 时保存，调用 removeParticleVelocity 可以移除该部分速度。
+         */
+        addParticleAcceleration(particle: Particle, acceleration: Vector3, space: ParticleSystemSimulationSpace, name?: string): void;
+        /**
+         * 移除指定粒子上的加速度
+         *
+         * @param particle 粒子。
+         * @param name 加速度名称。
+         */
+        removeParticleAcceleration(particle: Particle, name: string): void;
         /**
          * 上次移动发射的位置
          */
