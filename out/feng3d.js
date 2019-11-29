@@ -33169,6 +33169,7 @@ var feng3d;
              * 速度
              */
             this.velocity = new feng3d.Vector3();
+            this._partialVelocity = {};
             /**
              * 加速度
              */
@@ -33206,6 +33207,19 @@ var feng3d;
              */
             this.flipUV = new feng3d.Vector2();
         }
+        /**
+         * 添加速度分量
+         *
+         * @param name 速度的名称
+         * @param velocity 速度
+         * @param space 速度所在空间
+         */
+        Particle.prototype.addVelocity = function (name, velocity, space) {
+            this._partialVelocity[name] = { value: velocity, space: space };
+        };
+        Particle.prototype.removeVelocity = function (name) {
+            delete this._partialVelocity[name];
+        };
         /**
          * 更新状态
          */
@@ -36496,6 +36510,7 @@ var feng3d;
             if (!this.enabled)
                 return;
             var velocity = this.velocity.getValue(particle.rateAtLifeTime, particle[_VelocityOverLifetime_rate]);
+            particle.addVelocity("VelocityOverLifetime", velocity, this.space);
             if (this.space != this.particleSystem.main.simulationSpace) {
                 if (this.space == feng3d.ParticleSystemSimulationSpace.World) {
                     this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(velocity, velocity);

@@ -143,6 +143,8 @@ namespace feng3d
             if (!this.enabled) return;
 
             var velocity = this.velocity.getValue(particle.rateAtLifeTime, particle[_VelocityOverLifetime_rate]);
+            particle.addVelocity("VelocityOverLifetime", velocity, this.space);
+
             if (this.space != this.particleSystem.main.simulationSpace)
             {
                 if (this.space == ParticleSystemSimulationSpace.World)

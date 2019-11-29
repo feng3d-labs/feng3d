@@ -27,6 +27,24 @@ namespace feng3d
 		velocity = new Vector3();
 
 		/**
+		 * 添加速度分量
+		 * 
+		 * @param name 速度的名称
+		 * @param velocity 速度
+		 * @param space 速度所在空间
+		 */
+		addVelocity(name: string, velocity: Vector3, space: ParticleSystemSimulationSpace)
+		{
+			this._partialVelocity[name] = { value: velocity, space: space };
+		}
+
+		removeVelocity(name: string)
+		{
+			delete this._partialVelocity[name];
+		}
+		private _partialVelocity: { [name: string]: { value: Vector3, space: ParticleSystemSimulationSpace } } = {};
+
+		/**
 		 * 加速度
 		 */
 		acceleration = new Vector3();

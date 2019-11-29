@@ -15003,6 +15003,16 @@ declare namespace feng3d {
          */
         velocity: Vector3;
         /**
+         * 添加速度分量
+         *
+         * @param name 速度的名称
+         * @param velocity 速度
+         * @param space 速度所在空间
+         */
+        addVelocity(name: string, velocity: Vector3, space: ParticleSystemSimulationSpace): void;
+        removeVelocity(name: string): void;
+        private _partialVelocity;
+        /**
          * 加速度
          */
         acceleration: Vector3;
