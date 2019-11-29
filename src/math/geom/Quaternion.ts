@@ -580,5 +580,151 @@ namespace feng3d
             this.w = q.w;
             return this;
         }
+
+        /**
+         * Multiply the quaternion by a vector
+         * @param v
+         * @param target Optional
+         */
+        vmult(v: Vector3, target = new Vector3())
+        {
+            var x = v.x,
+                y = v.y,
+                z = v.z;
+
+            var qx = this.x,
+                qy = this.y,
+                qz = this.z,
+                qw = this.w;
+
+            // q*v
+            var ix = qw * x + qy * z - qz * y,
+                iy = qw * y + qz * x - qx * z,
+                iz = qw * z + qx * y - qy * x,
+                iw = -qx * x - qy * y - qz * z;
+
+            target.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+            target.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+            target.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+
+            return target;
+        }
+
+        /**
+         * Convert the quaternion to euler angle representation. Order: YZX, as this page describes: http://www.euclideanspace.com/maths/standards/index.htm
+         * @param target
+         * @param order Three-character string e.g. "YZX", which also is default.
+         */
+        toEuler(target: Vector3, order = "YZX")
+        {
+            var heading, attitude, bank;
+            var x = this.x, y = this.y, z = this.z, w = this.w;
+
+            switch (order)
+            {
+                case "YZX":
+                    var test = x * y + z * w;
+                    if (test > 0.499)
+                    { // singularity at north pole
+                        heading = 2 * Math.atan2(x, w);
+                        attitude = Math.PI / 2;
+                        bank = 0;
+                    }
+                    if (test < -0.499)
+                    { // singularity at south pole
+                        heading = -2 * Math.atan2(x, w);
+                        attitude = - Math.PI / 2;
+                        bank = 0;
+                    }
+                    if (isNaN(heading))
+                    {
+                        var sqx = x * x;
+                        var sqy = y * y;
+                        var sqz = z * z;
+                        heading = Math.atan2(2 * y * w - 2 * x * z, 1 - 2 * sqy - 2 * sqz); // Heading
+                        attitude = Math.asin(2 * test); // attitude
+                        bank = Math.atan2(2 * x * w - 2 * y * z, 1 - 2 * sqx - 2 * sqz); // bank
+                    }
+                    break;
+                default:
+                    throw new Error("Euler order " + order + " not supported yet.");
+            }
+
+            target.y = heading;
+            target.z = attitude;
+            target.x = bank;
+        }
+
+
+        /**
+         * See http://www.mathworks.com/matlabcentral/fileexchange/20696-function-to-convert-between-dcm-euler-angles-quaternions-and-euler-vectors/content/SpinCalc.m
+         * @param x
+         * @param y
+         * @param z
+         * @param order The order to apply angles: 'XYZ' or 'YXZ' or any other combination
+         */
+        setFromEuler(x: number, y: number, z: number, order = "XYZ")
+        {
+            var c1 = Math.cos(x / 2);
+            var c2 = Math.cos(y / 2);
+            var c3 = Math.cos(z / 2);
+            var s1 = Math.sin(x / 2);
+            var s2 = Math.sin(y / 2);
+            var s3 = Math.sin(z / 2);
+
+            if (order === 'XYZ')
+            {
+
+                this.x = s1 * c2 * c3 + c1 * s2 * s3;
+                this.y = c1 * s2 * c3 - s1 * c2 * s3;
+                this.z = c1 * c2 * s3 + s1 * s2 * c3;
+                this.w = c1 * c2 * c3 - s1 * s2 * s3;
+
+            } else if (order === 'YXZ')
+            {
+
+                this.x = s1 * c2 * c3 + c1 * s2 * s3;
+                this.y = c1 * s2 * c3 - s1 * c2 * s3;
+                this.z = c1 * c2 * s3 - s1 * s2 * c3;
+                this.w = c1 * c2 * c3 + s1 * s2 * s3;
+
+            } else if (order === 'ZXY')
+            {
+
+                this.x = s1 * c2 * c3 - c1 * s2 * s3;
+                this.y = c1 * s2 * c3 + s1 * c2 * s3;
+                this.z = c1 * c2 * s3 + s1 * s2 * c3;
+                this.w = c1 * c2 * c3 - s1 * s2 * s3;
+
+            } else if (order === 'ZYX')
+            {
+
+                this.x = s1 * c2 * c3 - c1 * s2 * s3;
+                this.y = c1 * s2 * c3 + s1 * c2 * s3;
+                this.z = c1 * c2 * s3 - s1 * s2 * c3;
+                this.w = c1 * c2 * c3 + s1 * s2 * s3;
+
+            } else if (order === 'YZX')
+            {
+
+                this.x = s1 * c2 * c3 + c1 * s2 * s3;
+                this.y = c1 * s2 * c3 + s1 * c2 * s3;
+                this.z = c1 * c2 * s3 - s1 * s2 * c3;
+                this.w = c1 * c2 * c3 - s1 * s2 * s3;
+
+            } else if (order === 'XZY')
+            {
+
+                this.x = s1 * c2 * c3 - c1 * s2 * s3;
+                this.y = c1 * s2 * c3 - s1 * c2 * s3;
+                this.z = c1 * c2 * s3 + s1 * s2 * c3;
+                this.w = c1 * c2 * c3 + s1 * s2 * s3;
+
+            }
+
+            return this;
+        }
+
+
     }
 }
