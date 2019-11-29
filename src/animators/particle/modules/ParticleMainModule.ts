@@ -505,7 +505,6 @@ namespace feng3d
             //
             var birthRateAtDuration = particle.birthRateAtDuration;
 
-            particle.position.set(0, 0, 0);
             particle.velocity.set(0, 0, 0);
             particle.acceleration.set(0, 0, 0);
             if (this.useStartSize3D)
@@ -537,19 +536,9 @@ namespace feng3d
          */
         updateParticleState(particle: Particle)
         {
-            // var preGravity: Vector3 = particle[_Main_preGravity];
-            // this.particleSystem.removeParticleAcceleration(particle, _Main_preGravity);
-            // 计算重力加速度影响速度
+            // 加速度
             var gravity = world_gravity.scaleNumberTo(this.gravityModifier.getValue(this.particleSystem.rateAtDuration));
             this.particleSystem.addParticleAcceleration(particle, gravity, ParticleSystemSimulationSpace.World, _Main_preGravity);
-            // 本地加速度
-            // if (this.simulationSpace == ParticleSystemSimulationSpace.Local)
-            // {
-            //     this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(gravity, gravity);
-            // }
-            //
-            // particle.acceleration.sub(preGravity).add(gravity);
-            // preGravity.copy(gravity);
 
             //
             particle.size.copy(particle.startSize);

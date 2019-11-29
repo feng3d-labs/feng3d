@@ -33426,6 +33426,7 @@ var feng3d;
              */
             _this._preRateOverDistancePos = new feng3d.Vector3();
             _this._isRateOverDistance = false;
+            _this._leftRateOverDistance = 0;
             _this.main = new feng3d.ParticleMainModule();
             _this.emission = new feng3d.ParticleEmissionModule();
             _this.shape = new feng3d.ParticleShapeModule();
@@ -33777,14 +33778,41 @@ var feng3d;
             if (this.main.simulationSpace == feng3d.ParticleSystemSimulationSpace.World) {
                 var worldPos = this.transform.worldPosition;
                 if (this._isRateOverDistance) {
-                    var overDistance = worldPos.distance(this._preRateOverDistancePos);
-                    this.emission.rateOverDistance.getValue(rateAtDuration);
+                    // 粒子系统位移
+                    var moveVec = worldPos.subTo(this._preRateOverDistancePos);
+                    // 本次移动距离
+                    var overDistance = moveVec.length;
+                    if (overDistance > 0) {
+                        // 移动方向
+                        var moveDir = moveVec.normalize();
+                        // 剩余移动量
+                        var leftRateOverDistance = this._leftRateOverDistance + overDistance;
+                        // 发射频率
+                        var rateOverDistance = this.emission.rateOverDistance.getValue(rateAtDuration);
+                        // 发射间隔距离
+                        var invRateOverDistance = 1 / rateOverDistance;
+                        // 发射间隔位移
+                        var invRateOverDistanceVec = moveDir.scaleNumberTo(1 / rateOverDistance);
+                        // 上次发射位置
+                        var lastRateOverDistance = worldPos.addTo(moveDir.negateTo().scaleNumber(this._leftRateOverDistance));
+                        // 发射位置列表
+                        var emitPosArr = [];
+                        while (invRateOverDistance < leftRateOverDistance) {
+                            emitPosArr.push(lastRateOverDistance.addTo(invRateOverDistanceVec));
+                            leftRateOverDistance -= invRateOverDistance;
+                        }
+                        this._leftRateOverDistance = leftRateOverDistance;
+                        emitPosArr.forEach(function (p) {
+                            emits.push({ time: _this.time, num: 1, position: p.sub(worldPos) });
+                        });
+                    }
                 }
                 this._preRateOverDistancePos.copy(worldPos);
                 this._isRateOverDistance = true;
             }
             else {
                 this._isRateOverDistance = false;
+                this._leftRateOverDistance = 0;
             }
             // 遍历所有发射周期
             var cycleStartIndex = Math.floor(preRealTime / duration);
@@ -33813,7 +33841,7 @@ var feng3d;
             emits.sort(function (a, b) { return a.time - b.time; });
             ;
             emits.forEach(function (v) {
-                _this._emitParticles(v.time, v.num, rateAtDuration);
+                _this._emitParticles(v);
             });
         };
         /**
@@ -33821,7 +33849,11 @@ var feng3d;
          * @param birthTime 发射时间
          * @param num 发射数量
          */
-        ParticleSystem.prototype._emitParticles = function (birthTime, num, rateAtDuration) {
+        ParticleSystem.prototype._emitParticles = function (v) {
+            var rateAtDuration = this.rateAtDuration;
+            var num = v.num;
+            var birthTime = v.time;
+            var position = v.position || new feng3d.Vector3();
             for (var i = 0; i < num; i++) {
                 if (this._activeParticles.length >= this.main.maxParticles)
                     return;
@@ -33831,6 +33863,7 @@ var feng3d;
                 if (rateAtLifeTime < 1) {
                     var particle = this._particlePool.pop() || new feng3d.Particle();
                     particle.cache = {};
+                    particle.position.copy(position);
                     particle.birthTime = birthTime;
                     particle.lifetime = lifetime;
                     particle.rateAtLifeTime = rateAtLifeTime;
@@ -35714,7 +35747,6 @@ var feng3d;
         ParticleMainModule.prototype.initParticleState = function (particle) {
             //
             var birthRateAtDuration = particle.birthRateAtDuration;
-            particle.position.set(0, 0, 0);
             particle.velocity.set(0, 0, 0);
             particle.acceleration.set(0, 0, 0);
             if (this.useStartSize3D) {
@@ -35741,19 +35773,9 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleMainModule.prototype.updateParticleState = function (particle) {
-            // var preGravity: Vector3 = particle[_Main_preGravity];
-            // this.particleSystem.removeParticleAcceleration(particle, _Main_preGravity);
-            // 计算重力加速度影响速度
+            // 加速度
             var gravity = world_gravity.scaleNumberTo(this.gravityModifier.getValue(this.particleSystem.rateAtDuration));
             this.particleSystem.addParticleAcceleration(particle, gravity, feng3d.ParticleSystemSimulationSpace.World, _Main_preGravity);
-            // 本地加速度
-            // if (this.simulationSpace == ParticleSystemSimulationSpace.Local)
-            // {
-            //     this.particleSystem.transform.worldToLocalMatrix.deltaTransformVector(gravity, gravity);
-            // }
-            //
-            // particle.acceleration.sub(preGravity).add(gravity);
-            // preGravity.copy(gravity);
             //
             particle.size.copy(particle.startSize);
             particle.color.copy(particle.startColor);

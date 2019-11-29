@@ -475,7 +475,7 @@ namespace feng3d
             if (!loop) realEmitTime = Math.min(realEmitTime, duration);
 
             // 
-            var emits: { time: number, num: number }[] = [];
+            var emits: { time: number, num: number, position?: Vector3 }[] = [];
             // 单粒子发射周期
             var step = 1 / this.emission.rateOverTime.getValue(rateAtDuration);
             var bursts = this.emission.bursts;
@@ -485,17 +485,44 @@ namespace feng3d
                 var worldPos = this.transform.worldPosition;
                 if (this._isRateOverDistance)
                 {
-                    var overDistance = worldPos.distance(this._preRateOverDistancePos);
-                    this.emission.rateOverDistance.getValue(rateAtDuration);
-
-
+                    // 粒子系统位移
+                    var moveVec = worldPos.subTo(this._preRateOverDistancePos);
+                    // 本次移动距离
+                    var overDistance = moveVec.length;
+                    if (overDistance > 0)
+                    {
+                        // 移动方向
+                        var moveDir = moveVec.normalize();
+                        // 剩余移动量
+                        var leftRateOverDistance = this._leftRateOverDistance + overDistance;
+                        // 发射频率
+                        var rateOverDistance = this.emission.rateOverDistance.getValue(rateAtDuration);
+                        // 发射间隔距离
+                        var invRateOverDistance = 1 / rateOverDistance;
+                        // 发射间隔位移
+                        var invRateOverDistanceVec = moveDir.scaleNumberTo(1 / rateOverDistance);
+                        // 上次发射位置
+                        var lastRateOverDistance = worldPos.addTo(moveDir.negateTo().scaleNumber(this._leftRateOverDistance));
+                        // 发射位置列表
+                        var emitPosArr: Vector3[] = [];
+                        while (invRateOverDistance < leftRateOverDistance)
+                        {
+                            emitPosArr.push(lastRateOverDistance.addTo(invRateOverDistanceVec));
+                            leftRateOverDistance -= invRateOverDistance;
+                        }
+                        this._leftRateOverDistance = leftRateOverDistance;
+                        emitPosArr.forEach(p =>
+                        {
+                            emits.push({ time: this.time, num: 1, position: p.sub(worldPos) });
+                        });
+                    }
                 }
                 this._preRateOverDistancePos.copy(worldPos);
-
                 this._isRateOverDistance = true;
             } else
             {
                 this._isRateOverDistance = false;
+                this._leftRateOverDistance = 0;
             }
 
             // 遍历所有发射周期
@@ -534,7 +561,7 @@ namespace feng3d
 
             emits.forEach(v =>
             {
-                this._emitParticles(v.time, v.num, rateAtDuration);
+                this._emitParticles(v);
             });
         }
 
@@ -543,8 +570,12 @@ namespace feng3d
          * @param birthTime 发射时间
          * @param num 发射数量
          */
-        private _emitParticles(birthTime: number, num: number, rateAtDuration: number)
+        private _emitParticles(v: { time: number; num: number; position?: Vector3; })
         {
+            var rateAtDuration = this.rateAtDuration;
+            var num = v.num;
+            var birthTime = v.time;
+            var position = v.position || new Vector3();
             for (let i = 0; i < num; i++)
             {
                 if (this._activeParticles.length >= this.main.maxParticles) return;
@@ -556,6 +587,7 @@ namespace feng3d
                 {
                     var particle = this._particlePool.pop() || new Particle();
                     particle.cache = {};
+                    particle.position.copy(position);
                     particle.birthTime = birthTime;
                     particle.lifetime = lifetime;
                     particle.rateAtLifeTime = rateAtLifeTime;
@@ -761,6 +793,7 @@ namespace feng3d
          */
         private _preRateOverDistancePos = new Vector3();
         private _isRateOverDistance = false;
+        private _leftRateOverDistance = 0;
     }
 
     AssetData.addAssetData("Billboard-Geometry", Geometry.billboard = serialization.setValue(new QuadGeometry(), { name: "Billboard-Geometry", assetId: "Billboard-Geometry", hideFlags: HideFlags.NotEditable }));

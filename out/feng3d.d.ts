@@ -15326,6 +15326,7 @@ declare namespace feng3d {
          */
         private _preRateOverDistancePos;
         private _isRateOverDistance;
+        private _leftRateOverDistance;
     }
 }
 declare namespace feng3d {
