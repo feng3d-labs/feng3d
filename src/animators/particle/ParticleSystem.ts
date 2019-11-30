@@ -215,6 +215,20 @@ namespace feng3d
         private _rotationOverLifetime: ParticleRotationOverLifetimeModule;
 
         /**
+         * 旋转角度随速度变化模块
+         */
+        @serialize
+        @oav({ block: "rotationBySpeed", component: "OAVObjectView" })
+        get rotationBySpeed() { return this._rotationBySpeed; }
+        set rotationBySpeed(v)
+        {
+            this._modules.replace(this._rotationBySpeed, v);
+            v.particleSystem = this;
+            this._rotationBySpeed = v;
+        }
+        private _rotationBySpeed: ParticleRotationBySpeedModule;
+
+        /**
          * 粒子系统纹理表动画模块。
          */
         @serialize
@@ -258,15 +272,16 @@ namespace feng3d
             this.emission = new ParticleEmissionModule();
             this.shape = new ParticleShapeModule();
             this.velocityOverLifetime = new ParticleVelocityOverLifetimeModule();
-            this.forceOverLifetime = new ParticleForceOverLifetimeModule();
             this.inheritVelocity = new InheritVelocityModule();
+            this.forceOverLifetime = new ParticleForceOverLifetimeModule();
+            this.limitVelocityOverLifetime = new ParticleLimitVelocityOverLifetimeModule();
             this.colorOverLifetime = new ParticleColorOverLifetimeModule();
             this.colorBySpeed = new ParticleColorBySpeedModule();
             this.sizeOverLifetime = new ParticleSizeOverLifetimeModule();
             this.sizeBySpeed = new ParticleSizeBySpeedModule();
             this.rotationOverLifetime = new ParticleRotationOverLifetimeModule();
+            this.rotationBySpeed = new ParticleRotationBySpeedModule();
             this.textureSheetAnimation = new ParticleTextureSheetAnimationModule();
-            this.limitVelocityOverLifetime = new ParticleLimitVelocityOverLifetimeModule();
 
             this.main.enabled = true;
             this.emission.enabled = true;

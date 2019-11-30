@@ -46,9 +46,9 @@ namespace feng3d
         size3D = serialization.setValue(new MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 } });
 
         /**
-         * Apply the color gradient between these minimum and maximum speeds.
+         * Apply the size curve between these minimum and maximum speeds.
          * 
-         * 在这些最小和最大速度之间应用颜色渐变。
+         * 在这些最小和最大速度之间应用尺寸变化。
          */
         @serialize
         @oav({ tooltip: "在这些最小和最大速度之间应用颜色渐变。" })

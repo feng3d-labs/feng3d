@@ -33015,15 +33015,16 @@ var feng3d;
             _this.emission = new feng3d.ParticleEmissionModule();
             _this.shape = new feng3d.ParticleShapeModule();
             _this.velocityOverLifetime = new feng3d.ParticleVelocityOverLifetimeModule();
-            _this.forceOverLifetime = new feng3d.ParticleForceOverLifetimeModule();
             _this.inheritVelocity = new feng3d.InheritVelocityModule();
+            _this.forceOverLifetime = new feng3d.ParticleForceOverLifetimeModule();
+            _this.limitVelocityOverLifetime = new feng3d.ParticleLimitVelocityOverLifetimeModule();
             _this.colorOverLifetime = new feng3d.ParticleColorOverLifetimeModule();
             _this.colorBySpeed = new feng3d.ParticleColorBySpeedModule();
             _this.sizeOverLifetime = new feng3d.ParticleSizeOverLifetimeModule();
             _this.sizeBySpeed = new feng3d.ParticleSizeBySpeedModule();
             _this.rotationOverLifetime = new feng3d.ParticleRotationOverLifetimeModule();
+            _this.rotationBySpeed = new feng3d.ParticleRotationBySpeedModule();
             _this.textureSheetAnimation = new feng3d.ParticleTextureSheetAnimationModule();
-            _this.limitVelocityOverLifetime = new feng3d.ParticleLimitVelocityOverLifetimeModule();
             _this.main.enabled = true;
             _this.emission.enabled = true;
             _this.shape.enabled = true;
@@ -33208,6 +33209,19 @@ var feng3d;
                 this._modules.replace(this._rotationOverLifetime, v);
                 v.particleSystem = this;
                 this._rotationOverLifetime = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "rotationBySpeed", {
+            /**
+             * 旋转角度随速度变化模块
+             */
+            get: function () { return this._rotationBySpeed; },
+            set: function (v) {
+                this._modules.replace(this._rotationBySpeed, v);
+                v.particleSystem = this;
+                this._rotationBySpeed = v;
             },
             enumerable: true,
             configurable: true
@@ -33708,6 +33722,10 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ block: "rotationOverLifetime", component: "OAVObjectView" })
         ], ParticleSystem.prototype, "rotationOverLifetime", null);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "rotationBySpeed", component: "OAVObjectView" })
+        ], ParticleSystem.prototype, "rotationBySpeed", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ tooltip: "粒子系统纹理表动画模块。", block: "textureSheetAnimation", component: "OAVObjectView" })
@@ -36590,6 +36608,8 @@ var feng3d;
          * @param particle 粒子
          */
         InheritVelocityModule.prototype.updateParticleState = function (particle) {
+            if (!this.enabled)
+                return;
             if (this.particleSystem.main.simulationSpace == feng3d.ParticleSystemSimulationSpace.Local)
                 return;
             if (this.mode != feng3d.ParticleSystemInheritVelocityMode.Current)
@@ -37080,9 +37100,9 @@ var feng3d;
              */
             _this.size3D = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 } });
             /**
-             * Apply the color gradient between these minimum and maximum speeds.
+             * Apply the size curve between these minimum and maximum speeds.
              *
-             * 在这些最小和最大速度之间应用颜色渐变。
+             * 在这些最小和最大速度之间应用尺寸变化。
              */
             _this.range = new feng3d.Vector2(0, 1);
             return _this;
@@ -37404,6 +37424,169 @@ var feng3d;
     feng3d.ParticleRotationOverLifetimeModule = ParticleRotationOverLifetimeModule;
     var _RotationOverLifetime_rate = "_RotationOverLifetime_rate";
     var _RotationOverLifetime_preAngularVelocity = "_RotationOverLifetime_preAngularVelocity";
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 粒子系统 旋转角度随速度变化模块
+     */
+    var ParticleRotationBySpeedModule = /** @class */ (function (_super) {
+        __extends(ParticleRotationBySpeedModule, _super);
+        function ParticleRotationBySpeedModule() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * Set the rotation by speed on each axis separately.
+             * 在每个轴上分别设置随速度变化的旋转。
+             */
+            _this.separateAxes = false;
+            /**
+             * 角速度，随速度变化的旋转。
+             */
+            _this.angularVelocity = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 }, yCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 }, zCurve: { constant: 45, constantMin: 45, constantMax: 45, curveMultiplier: 45 } });
+            /**
+             * Apply the rotation curve between these minimum and maximum speeds.
+             *
+             * 在这些最小和最大速度之间应用旋转曲线。
+             */
+            _this.range = new feng3d.Vector2(0, 1);
+            return _this;
+        }
+        Object.defineProperty(ParticleRotationBySpeedModule.prototype, "x", {
+            /**
+             * Rotation by speed curve for the X axis.
+             *
+             * X轴的旋转随速度变化曲线。
+             */
+            get: function () {
+                return this.angularVelocity.xCurve;
+            },
+            set: function (v) {
+                this.angularVelocity.xCurve = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleRotationBySpeedModule.prototype, "xMultiplier", {
+            /**
+             * Rotation multiplier around the X axis.
+             *
+             * 绕X轴旋转乘法器
+             */
+            get: function () {
+                return this.x.curveMultiplier;
+            },
+            set: function (v) {
+                this.x.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleRotationBySpeedModule.prototype, "y", {
+            /**
+             * Rotation by speed curve for the Y axis.
+             *
+             * Y轴的旋转随速度变化曲线。
+             */
+            get: function () {
+                return this.angularVelocity.yCurve;
+            },
+            set: function (v) {
+                this.angularVelocity.yCurve = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleRotationBySpeedModule.prototype, "yMultiplier", {
+            /**
+             * Rotation multiplier around the Y axis.
+             *
+             * 绕Y轴旋转乘法器
+             */
+            get: function () {
+                return this.y.curveMultiplier;
+            },
+            set: function (v) {
+                this.y.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleRotationBySpeedModule.prototype, "z", {
+            /**
+             * Rotation by speed curve for the Z axis.
+             *
+             * Z轴的旋转随速度变化曲线。
+             */
+            get: function () {
+                return this.angularVelocity.zCurve;
+            },
+            set: function (v) {
+                this.angularVelocity.zCurve = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleRotationBySpeedModule.prototype, "zMultiplier", {
+            /**
+             * Rotation multiplier around the Z axis.
+             *
+             * 绕Z轴旋转乘法器
+             */
+            get: function () {
+                return this.z.curveMultiplier;
+            },
+            set: function (v) {
+                this.z.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        ParticleRotationBySpeedModule.prototype.initParticleState = function (particle) {
+            particle[_RotationBySpeed_rate] = Math.random();
+            particle[_RotationBySpeed_preAngularVelocity] = new feng3d.Vector3();
+        };
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticleRotationBySpeedModule.prototype.updateParticleState = function (particle) {
+            var preAngularVelocity = particle[_RotationBySpeed_preAngularVelocity];
+            particle.angularVelocity.sub(preAngularVelocity);
+            preAngularVelocity.set(0, 0, 0);
+            if (!this.enabled)
+                return;
+            var velocity = particle.velocity.length;
+            var rate = Math.clamp((velocity - this.range.x) / (this.range.y - this.range.x), 0, 1);
+            var v = this.angularVelocity.getValue(rate, particle[_RotationBySpeed_rate]);
+            if (!this.separateAxes) {
+                v.x = v.y = 0;
+            }
+            particle.angularVelocity.add(v);
+            preAngularVelocity.copy(v);
+        };
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Set the rotation by speed on each axis separately." })
+            ,
+            feng3d.oav({ tooltip: "在每个轴上分别设置随速度变化的旋转。" })
+        ], ParticleRotationBySpeedModule.prototype, "separateAxes", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "角速度，随速度变化的旋转。" })
+        ], ParticleRotationBySpeedModule.prototype, "angularVelocity", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "在这些最小和最大速度之间应用旋转曲线。" })
+        ], ParticleRotationBySpeedModule.prototype, "range", void 0);
+        return ParticleRotationBySpeedModule;
+    }(feng3d.ParticleModule));
+    feng3d.ParticleRotationBySpeedModule = ParticleRotationBySpeedModule;
+    var _RotationBySpeed_rate = "_RotationBySpeed_rate";
+    var _RotationBySpeed_preAngularVelocity = "_RotationBySpeed_preAngularVelocity";
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

@@ -320,6 +320,7 @@
         "src/animators/particle/modules/ParticleSizeOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticleSizeBySpeedModule.ts",
         "src/animators/particle/modules/ParticleRotationOverLifetimeModule.ts",
+        "src/animators/particle/modules/ParticleRotationBySpeedModule.ts",
         "src/animators/particle/modules/ParticleTextureSheetAnimationModule.ts",
         //骨骼动画
         "src/animators/skeleton/Skeleton.ts",

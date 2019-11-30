@@ -14905,6 +14905,12 @@ declare namespace feng3d {
         set rotationOverLifetime(v: ParticleRotationOverLifetimeModule);
         private _rotationOverLifetime;
         /**
+         * 旋转角度随速度变化模块
+         */
+        get rotationBySpeed(): ParticleRotationBySpeedModule;
+        set rotationBySpeed(v: ParticleRotationBySpeedModule);
+        private _rotationBySpeed;
+        /**
          * 粒子系统纹理表动画模块。
          */
         get textureSheetAnimation(): ParticleTextureSheetAnimationModule;
@@ -16767,9 +16773,9 @@ declare namespace feng3d {
          */
         size3D: MinMaxCurveVector3;
         /**
-         * Apply the color gradient between these minimum and maximum speeds.
+         * Apply the size curve between these minimum and maximum speeds.
          *
-         * 在这些最小和最大速度之间应用颜色渐变。
+         * 在这些最小和最大速度之间应用尺寸变化。
          */
         range: Vector2;
         /**
@@ -16879,6 +16885,80 @@ declare namespace feng3d {
          * Rotation over lifetime curve for the Z axis.
          *
          * Z轴的旋转寿命曲线。
+         */
+        get z(): MinMaxCurve;
+        set z(v: MinMaxCurve);
+        /**
+         * Rotation multiplier around the Z axis.
+         *
+         * 绕Z轴旋转乘法器
+         */
+        get zMultiplier(): number;
+        set zMultiplier(v: number);
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 粒子系统 旋转角度随速度变化模块
+     */
+    class ParticleRotationBySpeedModule extends ParticleModule {
+        /**
+         * Set the rotation by speed on each axis separately.
+         * 在每个轴上分别设置随速度变化的旋转。
+         */
+        separateAxes: boolean;
+        /**
+         * 角速度，随速度变化的旋转。
+         */
+        angularVelocity: MinMaxCurveVector3;
+        /**
+         * Apply the rotation curve between these minimum and maximum speeds.
+         *
+         * 在这些最小和最大速度之间应用旋转曲线。
+         */
+        range: Vector2;
+        /**
+         * Rotation by speed curve for the X axis.
+         *
+         * X轴的旋转随速度变化曲线。
+         */
+        get x(): MinMaxCurve;
+        set x(v: MinMaxCurve);
+        /**
+         * Rotation multiplier around the X axis.
+         *
+         * 绕X轴旋转乘法器
+         */
+        get xMultiplier(): number;
+        set xMultiplier(v: number);
+        /**
+         * Rotation by speed curve for the Y axis.
+         *
+         * Y轴的旋转随速度变化曲线。
+         */
+        get y(): MinMaxCurve;
+        set y(v: MinMaxCurve);
+        /**
+         * Rotation multiplier around the Y axis.
+         *
+         * 绕Y轴旋转乘法器
+         */
+        get yMultiplier(): number;
+        set yMultiplier(v: number);
+        /**
+         * Rotation by speed curve for the Z axis.
+         *
+         * Z轴的旋转随速度变化曲线。
          */
         get z(): MinMaxCurve;
         set z(v: MinMaxCurve);
