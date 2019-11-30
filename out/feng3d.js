@@ -33020,6 +33020,7 @@ var feng3d;
             _this.colorOverLifetime = new feng3d.ParticleColorOverLifetimeModule();
             _this.colorBySpeed = new feng3d.ParticleColorBySpeedModule();
             _this.sizeOverLifetime = new feng3d.ParticleSizeOverLifetimeModule();
+            _this.sizeBySpeed = new feng3d.ParticleSizeBySpeedModule();
             _this.rotationOverLifetime = new feng3d.ParticleRotationOverLifetimeModule();
             _this.textureSheetAnimation = new feng3d.ParticleTextureSheetAnimationModule();
             _this.limitVelocityOverLifetime = new feng3d.ParticleLimitVelocityOverLifetimeModule();
@@ -33184,6 +33185,19 @@ var feng3d;
                 this._modules.replace(this._sizeOverLifetime, v);
                 v.particleSystem = this;
                 this._sizeOverLifetime = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "sizeBySpeed", {
+            /**
+             * 缩放随速度变化模块
+             */
+            get: function () { return this._sizeBySpeed; },
+            set: function (v) {
+                this._modules.replace(this._sizeBySpeed, v);
+                v.particleSystem = this;
+                this._sizeBySpeed = v;
             },
             enumerable: true,
             configurable: true
@@ -33686,6 +33700,10 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ block: "sizeOverLifetime", component: "OAVObjectView" })
         ], ParticleSystem.prototype, "sizeOverLifetime", null);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "SizeBySpeed", component: "OAVObjectView" })
+        ], ParticleSystem.prototype, "sizeBySpeed", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "rotationOverLifetime", component: "OAVObjectView" })
@@ -36558,6 +36576,8 @@ var feng3d;
          */
         InheritVelocityModule.prototype.initParticleState = function (particle) {
             particle[_InheritVelocity_rate] = Math.random();
+            if (!this.enabled)
+                return;
             if (this.particleSystem.main.simulationSpace == feng3d.ParticleSystemSimulationSpace.Local)
                 return;
             if (this.mode != feng3d.ParticleSystemInheritVelocityMode.Initial)
@@ -36782,6 +36802,7 @@ var feng3d;
          * @param particle 粒子
          */
         ParticleColorBySpeedModule.prototype.initParticleState = function (particle) {
+            particle[_ColorBySpeed_rate] = Math.random();
         };
         /**
          * 更新粒子状态
@@ -36792,7 +36813,7 @@ var feng3d;
                 return;
             var velocity = particle.velocity.length;
             var rate = Math.clamp((velocity - this.range.x) / (this.range.y - this.range.x), 0, 1);
-            var color = this.color.getValue(rate);
+            var color = this.color.getValue(rate, particle[_ColorBySpeed_rate]);
             particle.color.multiply(color);
         };
         __decorate([
@@ -36806,6 +36827,7 @@ var feng3d;
         return ParticleColorBySpeedModule;
     }(feng3d.ParticleModule));
     feng3d.ParticleColorBySpeedModule = ParticleColorBySpeedModule;
+    var _ColorBySpeed_rate = "_ColorBySpeed_rate";
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -37033,6 +37055,204 @@ var feng3d;
     }(feng3d.ParticleModule));
     feng3d.ParticleSizeOverLifetimeModule = ParticleSizeOverLifetimeModule;
     var _SizeOverLifetime_rate = "_SizeOverLifetime_rate";
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Script interface for the Size By Speed module.
+     *
+     * 粒子系统 缩放随速度变化模块
+     */
+    var ParticleSizeBySpeedModule = /** @class */ (function (_super) {
+        __extends(ParticleSizeBySpeedModule, _super);
+        function ParticleSizeBySpeedModule() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * Set the size over speed on each axis separately.
+             *
+             * 在每个轴上分别设置生命周期内的大小。
+             */
+            _this.separateAxes = false;
+            /**
+             * Curve to control particle size based on speed.
+             *
+             * 基于寿命的粒度控制曲线。
+             */
+            _this.size3D = feng3d.serialization.setValue(new feng3d.MinMaxCurveVector3(), { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 } });
+            /**
+             * Apply the color gradient between these minimum and maximum speeds.
+             *
+             * 在这些最小和最大速度之间应用颜色渐变。
+             */
+            _this.range = new feng3d.Vector2(0, 1);
+            return _this;
+        }
+        Object.defineProperty(ParticleSizeBySpeedModule.prototype, "size", {
+            /**
+             * Curve to control particle size based on speed.
+             *
+             * 基于速度的粒度控制曲线。
+             */
+            // @oav({ tooltip: "Curve to control particle size based on speed." })
+            get: function () {
+                return this.size3D.xCurve;
+            },
+            set: function (v) {
+                this.size3D.xCurve = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSizeBySpeedModule.prototype, "sizeMultiplier", {
+            /**
+             * Size multiplier.
+             *
+             * 尺寸的乘数。
+             */
+            get: function () {
+                return this.size.curveMultiplier;
+            },
+            set: function (v) {
+                this.size.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSizeBySpeedModule.prototype, "x", {
+            /**
+             * Size over speed curve for the X axis.
+             *
+             * X轴的尺寸随生命周期变化曲线。
+             */
+            get: function () {
+                return this.size3D.xCurve;
+            },
+            set: function (v) {
+                this.size3D.xCurve;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSizeBySpeedModule.prototype, "xMultiplier", {
+            /**
+             * X axis size multiplier.
+             *
+             * X轴尺寸的乘数。
+             */
+            get: function () {
+                return this.x.curveMultiplier;
+            },
+            set: function (v) {
+                this.x.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSizeBySpeedModule.prototype, "y", {
+            /**
+             * Size over speed curve for the Y axis.
+             *
+             * Y轴的尺寸随生命周期变化曲线。
+             */
+            get: function () {
+                return this.size3D.yCurve;
+            },
+            set: function (v) {
+                this.size3D.yCurve;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSizeBySpeedModule.prototype, "yMultiplier", {
+            /**
+             * Y axis size multiplier.
+             *
+             * Y轴尺寸的乘数。
+             */
+            get: function () {
+                return this.y.curveMultiplier;
+            },
+            set: function (v) {
+                this.y.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSizeBySpeedModule.prototype, "z", {
+            /**
+             * Size over speed curve for the Z axis.
+             *
+             * Z轴的尺寸随生命周期变化曲线。
+             */
+            get: function () {
+                return this.size3D.zCurve;
+            },
+            set: function (v) {
+                this.size3D.zCurve;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSizeBySpeedModule.prototype, "zMultiplier", {
+            /**
+             * Z axis size multiplier.
+             *
+             * Z轴尺寸的乘数。
+             */
+            get: function () {
+                return this.z.curveMultiplier;
+            },
+            set: function (v) {
+                this.z.curveMultiplier = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        ParticleSizeBySpeedModule.prototype.initParticleState = function (particle) {
+            particle[_SizeBySpeed_rate] = Math.random();
+        };
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticleSizeBySpeedModule.prototype.updateParticleState = function (particle) {
+            if (!this.enabled)
+                return;
+            var velocity = particle.velocity.length;
+            var rate = Math.clamp((velocity - this.range.x) / (this.range.y - this.range.x), 0, 1);
+            var size = this.size3D.getValue(rate, particle[_SizeBySpeed_rate]);
+            if (!this.separateAxes) {
+                size.y = size.z = size.x;
+            }
+            particle.size.multiply(size);
+        };
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Set the size over speed on each axis separately." })
+            ,
+            feng3d.oav({ tooltip: "在每个轴上分别设置生命周期内的大小。" })
+        ], ParticleSizeBySpeedModule.prototype, "separateAxes", void 0);
+        __decorate([
+            feng3d.oav({ tooltip: "基于速度的粒度控制曲线。" })
+        ], ParticleSizeBySpeedModule.prototype, "size", null);
+        __decorate([
+            feng3d.serialize
+            // @oav({ tooltip: "Curve to control particle size based on speed." })
+            ,
+            feng3d.oav({ tooltip: "基于寿命的粒度控制曲线。" })
+        ], ParticleSizeBySpeedModule.prototype, "size3D", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "在这些最小和最大速度之间应用颜色渐变。" })
+        ], ParticleSizeBySpeedModule.prototype, "range", void 0);
+        return ParticleSizeBySpeedModule;
+    }(feng3d.ParticleModule));
+    feng3d.ParticleSizeBySpeedModule = ParticleSizeBySpeedModule;
+    var _SizeBySpeed_rate = "_SizeBySpeed_rate";
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

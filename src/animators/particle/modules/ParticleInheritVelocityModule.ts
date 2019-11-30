@@ -62,7 +62,8 @@ namespace feng3d
         initParticleState(particle: Particle)
         {
             particle[_InheritVelocity_rate] = Math.random();
-
+            
+            if (!this.enabled) return;
             if (this.particleSystem.main.simulationSpace == ParticleSystemSimulationSpace.Local) return;
             if (this.mode != ParticleSystemInheritVelocityMode.Initial) return;
 
@@ -76,6 +77,7 @@ namespace feng3d
          */
         updateParticleState(particle: Particle)
         {
+            if (!this.enabled) return;
             if (this.particleSystem.main.simulationSpace == ParticleSystemSimulationSpace.Local) return;
             if (this.mode != ParticleSystemInheritVelocityMode.Current) return;
 

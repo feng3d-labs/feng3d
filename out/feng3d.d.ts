@@ -14895,6 +14895,12 @@ declare namespace feng3d {
         get sizeOverLifetime(): ParticleSizeOverLifetimeModule;
         set sizeOverLifetime(v: ParticleSizeOverLifetimeModule);
         private _sizeOverLifetime;
+        /**
+         * 缩放随速度变化模块
+         */
+        get sizeBySpeed(): ParticleSizeBySpeedModule;
+        set sizeBySpeed(v: ParticleSizeBySpeedModule);
+        private _sizeBySpeed;
         get rotationOverLifetime(): ParticleRotationOverLifetimeModule;
         set rotationOverLifetime(v: ParticleRotationOverLifetimeModule);
         private _rotationOverLifetime;
@@ -16710,6 +16716,99 @@ declare namespace feng3d {
         set yMultiplier(v: number);
         /**
          * Size over lifetime curve for the Z axis.
+         *
+         * Z轴的尺寸随生命周期变化曲线。
+         */
+        get z(): MinMaxCurve;
+        set z(v: MinMaxCurve);
+        /**
+         * Z axis size multiplier.
+         *
+         * Z轴尺寸的乘数。
+         */
+        get zMultiplier(): number;
+        set zMultiplier(v: number);
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * Script interface for the Size By Speed module.
+     *
+     * 粒子系统 缩放随速度变化模块
+     */
+    class ParticleSizeBySpeedModule extends ParticleModule {
+        /**
+         * Set the size over speed on each axis separately.
+         *
+         * 在每个轴上分别设置生命周期内的大小。
+         */
+        separateAxes: boolean;
+        /**
+         * Curve to control particle size based on speed.
+         *
+         * 基于速度的粒度控制曲线。
+         */
+        get size(): MinMaxCurve;
+        set size(v: MinMaxCurve);
+        /**
+         * Curve to control particle size based on speed.
+         *
+         * 基于寿命的粒度控制曲线。
+         */
+        size3D: MinMaxCurveVector3;
+        /**
+         * Apply the color gradient between these minimum and maximum speeds.
+         *
+         * 在这些最小和最大速度之间应用颜色渐变。
+         */
+        range: Vector2;
+        /**
+         * Size multiplier.
+         *
+         * 尺寸的乘数。
+         */
+        get sizeMultiplier(): number;
+        set sizeMultiplier(v: number);
+        /**
+         * Size over speed curve for the X axis.
+         *
+         * X轴的尺寸随生命周期变化曲线。
+         */
+        get x(): MinMaxCurve;
+        set x(v: MinMaxCurve);
+        /**
+         * X axis size multiplier.
+         *
+         * X轴尺寸的乘数。
+         */
+        get xMultiplier(): number;
+        set xMultiplier(v: number);
+        /**
+         * Size over speed curve for the Y axis.
+         *
+         * Y轴的尺寸随生命周期变化曲线。
+         */
+        get y(): MinMaxCurve;
+        set y(v: MinMaxCurve);
+        /**
+         * Y axis size multiplier.
+         *
+         * Y轴尺寸的乘数。
+         */
+        get yMultiplier(): number;
+        set yMultiplier(v: number);
+        /**
+         * Size over speed curve for the Z axis.
          *
          * Z轴的尺寸随生命周期变化曲线。
          */

@@ -31,6 +31,7 @@ namespace feng3d
          */
         initParticleState(particle: Particle)
         {
+            particle[_ColorBySpeed_rate] = Math.random();
         }
 
         /**
@@ -43,10 +44,10 @@ namespace feng3d
 
             var velocity = particle.velocity.length;
             var rate = Math.clamp((velocity - this.range.x) / (this.range.y - this.range.x), 0, 1);
-            var color = this.color.getValue(rate);
+            var color = this.color.getValue(rate, particle[_ColorBySpeed_rate]);
             particle.color.multiply(color);
         }
 
     }
-
+    var _ColorBySpeed_rate = "_ColorBySpeed_rate";
 }
