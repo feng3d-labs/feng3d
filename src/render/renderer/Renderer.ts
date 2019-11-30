@@ -282,7 +282,7 @@ namespace feng3d
                     var arrayType = gl[indexBuffer.type];
                     if (indexBuffer.count == 0)
                     {
-                        console.warn(`顶点索引为0，不进行渲染！`);
+                        // console.warn(`顶点索引为0，不进行渲染！`);
                         return;
                     }
                     if (instanceCount > 1)

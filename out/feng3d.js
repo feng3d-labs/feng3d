@@ -22291,7 +22291,7 @@ var feng3d;
                     indexBuffer.active(gl);
                     var arrayType = gl[indexBuffer.type];
                     if (indexBuffer.count == 0) {
-                        console.warn("\u9876\u70B9\u7D22\u5F15\u4E3A0\uFF0C\u4E0D\u8FDB\u884C\u6E32\u67D3\uFF01");
+                        // console.warn(`顶点索引为0，不进行渲染！`);
                         return;
                     }
                     if (instanceCount > 1) {
@@ -26774,6 +26774,17 @@ var feng3d;
             configurable: true
         });
         /**
+         * 添加线段
+         *
+         * @param segment 线段
+         */
+        SegmentGeometry.prototype.addSegment = function (segment) {
+            var s = new Segment();
+            feng3d.serialization.setValue(s, segment);
+            this.segments.push(s);
+            this.invalidateGeometry();
+        };
+        /**
          * 更新几何体
          */
         SegmentGeometry.prototype.buildGeometry = function () {
@@ -26798,11 +26809,36 @@ var feng3d;
         };
         __decorate([
             feng3d.serialize,
-            feng3d.oav()
+            feng3d.oav({ component: "OAVArray", tooltip: "在指定时间进行额外发射指定数量的粒子", componentParam: { defaultItem: function () { return new Segment(); } } })
         ], SegmentGeometry.prototype, "segments", null);
         return SegmentGeometry;
     }(feng3d.Geometry));
     feng3d.SegmentGeometry = SegmentGeometry;
+    /**
+     * 线段
+     */
+    var Segment = /** @class */ (function () {
+        function Segment() {
+            /**
+             * 起点坐标
+             */
+            this.start = new feng3d.Vector3();
+            /**
+             * 终点坐标
+             */
+            this.end = new feng3d.Vector3();
+            /**
+             * 起点颜色
+             */
+            this.startColor = new feng3d.Color4();
+            /**
+             * 终点颜色
+             */
+            this.endColor = new feng3d.Color4();
+        }
+        return Segment;
+    }());
+    feng3d.Segment = Segment;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -30156,6 +30192,29 @@ var feng3d;
         Material.prototype.onRenderParamsChanged = function () {
             this.renderAtomic.renderParams = this.renderParams;
         };
+        /**
+         * 设置默认材质
+         *
+         * 资源名称与材质名称相同，且无法在检查器界面中编辑。
+         *
+         * @param name 材质名称
+         * @param material 材质数据
+         */
+        Material.setDefaultMaterial = function (name, material) {
+            var newMaterial = this._defaultMaterials[name] = new Material();
+            feng3d.serialization.setValue(newMaterial, material);
+            feng3d.serialization.setValue(newMaterial, { name: name, assetId: name, hideFlags: feng3d.HideFlags.NotEditable });
+            feng3d.AssetData.addAssetData(name, newMaterial);
+        };
+        /**
+         * 获取材质
+         *
+         * @param name 材质名称
+         */
+        Material.getDefaultMaterial = function (name) {
+            return this._defaultMaterials[name];
+        };
+        Material._defaultMaterials = {};
         __decorate([
             feng3d.oav({ component: "OAVFeng3dPreView" })
         ], Material.prototype, "preview", void 0);
@@ -30178,102 +30237,6 @@ var feng3d;
         return Material;
     }(feng3d.AssetData));
     feng3d.Material = Material;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var PointUniforms = /** @class */ (function () {
-        function PointUniforms() {
-            this.__class__ = "feng3d.PointUniforms";
-            /**
-             * 颜色
-             */
-            this.u_color = new feng3d.Color4();
-            /**
-             * 点绘制时点的尺寸
-             */
-            this.u_PointSize = 1;
-        }
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav()
-        ], PointUniforms.prototype, "u_color", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav()
-        ], PointUniforms.prototype, "u_PointSize", void 0);
-        return PointUniforms;
-    }());
-    feng3d.PointUniforms = PointUniforms;
-    feng3d.shaderConfig.shaders["point"].cls = PointUniforms;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var ColorUniforms = /** @class */ (function () {
-        function ColorUniforms() {
-            this.__class__ = "feng3d.ColorUniforms";
-            /**
-             * 颜色
-             */
-            this.u_diffuseInput = new feng3d.Color4();
-        }
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav()
-        ], ColorUniforms.prototype, "u_diffuseInput", void 0);
-        return ColorUniforms;
-    }());
-    feng3d.ColorUniforms = ColorUniforms;
-    feng3d.shaderConfig.shaders["color"].cls = ColorUniforms;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 线段材质
-     * 目前webgl不支持修改线条宽度，参考：https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
-     */
-    var SegmentUniforms = /** @class */ (function () {
-        function SegmentUniforms() {
-            this.__class__ = "feng3d.SegmentUniforms";
-            /**
-             * 颜色
-             */
-            this.u_segmentColor = new feng3d.Color4();
-        }
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav()
-        ], SegmentUniforms.prototype, "u_segmentColor", void 0);
-        return SegmentUniforms;
-    }());
-    feng3d.SegmentUniforms = SegmentUniforms;
-    feng3d.shaderConfig.shaders["segment"].cls = SegmentUniforms;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var TextureUniforms = /** @class */ (function () {
-        function TextureUniforms() {
-            this.__class__ = "feng3d.TextureUniforms";
-            /**
-             * 颜色
-             */
-            this.u_color = new feng3d.Color4();
-            /**
-             * 纹理数据
-             */
-            this.s_texture = feng3d.Texture2D.default;
-        }
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav()
-        ], TextureUniforms.prototype, "u_color", void 0);
-        __decorate([
-            feng3d.oav(),
-            feng3d.serialize
-        ], TextureUniforms.prototype, "s_texture", void 0);
-        return TextureUniforms;
-    }());
-    feng3d.TextureUniforms = TextureUniforms;
-    feng3d.shaderConfig.shaders["texture"].cls = TextureUniforms;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -30432,6 +30395,104 @@ var feng3d;
     feng3d.StandardUniforms = StandardUniforms;
     feng3d.shaderConfig.shaders["standard"].cls = StandardUniforms;
     feng3d.AssetData.addAssetData("Default-Material", feng3d.Material.default = feng3d.serialization.setValue(new feng3d.Material(), { name: "Default-Material", assetId: "Default-Material", hideFlags: feng3d.HideFlags.NotEditable }));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var PointUniforms = /** @class */ (function () {
+        function PointUniforms() {
+            this.__class__ = "feng3d.PointUniforms";
+            /**
+             * 颜色
+             */
+            this.u_color = new feng3d.Color4();
+            /**
+             * 点绘制时点的尺寸
+             */
+            this.u_PointSize = 1;
+        }
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], PointUniforms.prototype, "u_color", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], PointUniforms.prototype, "u_PointSize", void 0);
+        return PointUniforms;
+    }());
+    feng3d.PointUniforms = PointUniforms;
+    feng3d.shaderConfig.shaders["point"].cls = PointUniforms;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var ColorUniforms = /** @class */ (function () {
+        function ColorUniforms() {
+            this.__class__ = "feng3d.ColorUniforms";
+            /**
+             * 颜色
+             */
+            this.u_diffuseInput = new feng3d.Color4();
+        }
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], ColorUniforms.prototype, "u_diffuseInput", void 0);
+        return ColorUniforms;
+    }());
+    feng3d.ColorUniforms = ColorUniforms;
+    feng3d.shaderConfig.shaders["color"].cls = ColorUniforms;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    var TextureUniforms = /** @class */ (function () {
+        function TextureUniforms() {
+            this.__class__ = "feng3d.TextureUniforms";
+            /**
+             * 颜色
+             */
+            this.u_color = new feng3d.Color4();
+            /**
+             * 纹理数据
+             */
+            this.s_texture = feng3d.Texture2D.default;
+        }
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], TextureUniforms.prototype, "u_color", void 0);
+        __decorate([
+            feng3d.oav(),
+            feng3d.serialize
+        ], TextureUniforms.prototype, "s_texture", void 0);
+        return TextureUniforms;
+    }());
+    feng3d.TextureUniforms = TextureUniforms;
+    feng3d.shaderConfig.shaders["texture"].cls = TextureUniforms;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 线段材质
+     * 目前webgl不支持修改线条宽度，参考：https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
+     */
+    var SegmentUniforms = /** @class */ (function () {
+        function SegmentUniforms() {
+            this.__class__ = "feng3d.SegmentUniforms";
+            /**
+             * 颜色
+             */
+            this.u_segmentColor = new feng3d.Color4();
+        }
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav()
+        ], SegmentUniforms.prototype, "u_segmentColor", void 0);
+        return SegmentUniforms;
+    }());
+    feng3d.SegmentUniforms = SegmentUniforms;
+    feng3d.shaderConfig.shaders["segment"].cls = SegmentUniforms;
+    feng3d.shaderConfig.shaders["segment"].renderParams = { renderMode: feng3d.RenderMode.LINES };
+    feng3d.Material.setDefaultMaterial("Default-SegmentMaterial", { shaderName: "segment", renderParams: { renderMode: feng3d.RenderMode.LINES } });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

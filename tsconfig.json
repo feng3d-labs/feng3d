@@ -246,11 +246,11 @@
         "src/textures/TextureCube.ts",
         // 材质
         "src/materials/Material.ts",
+        "src/materials/StandardMaterial.ts",
         "src/materials/PointMaterial.ts",
         "src/materials/ColorMaterial.ts",
-        "src/materials/SegmentMaterial.ts",
         "src/materials/TextureMaterial.ts",
-        "src/materials/StandardMaterial.ts",
+        "src/materials/SegmentMaterial.ts",
         // 灯光
         "src/light/shadow/ShadowType.ts",
         "src/light/LightType.ts",

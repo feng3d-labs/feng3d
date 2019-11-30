@@ -19,4 +19,12 @@ namespace feng3d
     }
 
     shaderConfig.shaders["segment"].cls = SegmentUniforms;
+    shaderConfig.shaders["segment"].renderParams = { renderMode: feng3d.RenderMode.LINES };
+
+    export interface DefaultMaterial
+    {
+        "Default-SegmentMaterial": Material;
+    }
+
+    Material.setDefaultMaterial("Default-SegmentMaterial", { shaderName: "segment", renderParams: { renderMode: feng3d.RenderMode.LINES } });
 }

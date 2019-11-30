@@ -12709,6 +12709,12 @@ declare namespace feng3d {
         get segments(): Segment[];
         set segments(v: Segment[]);
         private _segments;
+        /**
+         * 添加线段
+         *
+         * @param segment 线段
+         */
+        addSegment(segment: Partial<Segment>): void;
         constructor();
         /**
          * 更新几何体
@@ -12717,25 +12723,24 @@ declare namespace feng3d {
     }
     /**
      * 线段
-
      */
-    interface Segment {
+    class Segment {
         /**
          * 起点坐标
          */
-        start?: Vector3;
+        start: Vector3;
         /**
          * 终点坐标
          */
-        end?: Vector3;
+        end: Vector3;
         /**
          * 起点颜色
          */
-        startColor?: Color4;
+        startColor: Color4;
         /**
-         * 线段厚度
+         * 终点颜色
          */
-        endColor?: Color4;
+        endColor: Color4;
     }
 }
 declare namespace feng3d {
@@ -13798,66 +13803,31 @@ declare namespace feng3d {
          * 粒子材质
          */
         static particle: Material;
-    }
-}
-declare namespace feng3d {
-    interface UniformsMap {
-        point: PointUniforms;
-    }
-    class PointUniforms {
-        __class__: "feng3d.PointUniforms";
         /**
-         * 颜色
+         * 线段材质
          */
-        u_color: Color4;
+        static segment: Material;
         /**
-         * 点绘制时点的尺寸
+         * 设置默认材质
+         *
+         * 资源名称与材质名称相同，且无法在检查器界面中编辑。
+         *
+         * @param name 材质名称
+         * @param material 材质数据
          */
-        u_PointSize: number;
-    }
-}
-declare namespace feng3d {
-    interface UniformsMap {
-        color: ColorUniforms;
-    }
-    class ColorUniforms {
-        __class__: "feng3d.ColorUniforms";
+        static setDefaultMaterial<K extends keyof DefaultMaterial>(name: K, material: gPartial<Material>): void;
         /**
-         * 颜色
+         * 获取材质
+         *
+         * @param name 材质名称
          */
-        u_diffuseInput: Color4;
-    }
-}
-declare namespace feng3d {
-    interface UniformsMap {
-        segment: SegmentUniforms;
+        static getDefaultMaterial<K extends keyof DefaultMaterial>(name: K): DefaultMaterial[K];
+        private static _defaultMaterials;
     }
     /**
-     * 线段材质
-     * 目前webgl不支持修改线条宽度，参考：https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
+     * 默认材质
      */
-    class SegmentUniforms {
-        __class__: "feng3d.SegmentUniforms";
-        /**
-         * 颜色
-         */
-        u_segmentColor: Color4;
-    }
-}
-declare namespace feng3d {
-    interface UniformsMap {
-        texture: TextureUniforms;
-    }
-    class TextureUniforms {
-        __class__: "feng3d.TextureUniforms";
-        /**
-         * 颜色
-         */
-        u_color: Color4;
-        /**
-         * 纹理数据
-         */
-        s_texture: Texture2D;
+    interface DefaultMaterial {
     }
 }
 declare namespace feng3d {
@@ -13943,6 +13913,69 @@ declare namespace feng3d {
          * 雾模式
          */
         u_fogMode: FogMode;
+    }
+}
+declare namespace feng3d {
+    interface UniformsMap {
+        point: PointUniforms;
+    }
+    class PointUniforms {
+        __class__: "feng3d.PointUniforms";
+        /**
+         * 颜色
+         */
+        u_color: Color4;
+        /**
+         * 点绘制时点的尺寸
+         */
+        u_PointSize: number;
+    }
+}
+declare namespace feng3d {
+    interface UniformsMap {
+        color: ColorUniforms;
+    }
+    class ColorUniforms {
+        __class__: "feng3d.ColorUniforms";
+        /**
+         * 颜色
+         */
+        u_diffuseInput: Color4;
+    }
+}
+declare namespace feng3d {
+    interface UniformsMap {
+        texture: TextureUniforms;
+    }
+    class TextureUniforms {
+        __class__: "feng3d.TextureUniforms";
+        /**
+         * 颜色
+         */
+        u_color: Color4;
+        /**
+         * 纹理数据
+         */
+        s_texture: Texture2D;
+    }
+}
+declare namespace feng3d {
+    interface UniformsMap {
+        segment: SegmentUniforms;
+    }
+    /**
+     * 线段材质
+     * 目前webgl不支持修改线条宽度，参考：https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
+     */
+    class SegmentUniforms {
+        __class__: "feng3d.SegmentUniforms";
+        /**
+         * 颜色
+         */
+        u_segmentColor: Color4;
+    }
+    interface DefaultMaterial {
+        "Default-SegmentMaterial": Material;
     }
 }
 declare namespace feng3d {

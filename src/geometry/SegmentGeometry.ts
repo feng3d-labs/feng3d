@@ -15,7 +15,7 @@ namespace feng3d
          * 修改数组内数据时需要手动调用 invalidateGeometry();
 		 */
         @serialize
-        @oav()
+        @oav({ component: "OAVArray", tooltip: "在指定时间进行额外发射指定数量的粒子", componentParam: { defaultItem: () => { return new Segment(); } } })
         get segments()
         {
             return this._segments;
@@ -27,6 +27,19 @@ namespace feng3d
             this.invalidateGeometry();
         }
         private _segments: Segment[] = [];
+
+        /**
+         * 添加线段
+         * 
+         * @param segment 线段
+         */
+        addSegment(segment: Partial<Segment>)
+        {
+            var s = new Segment();
+            serialization.setValue(s, segment);
+            this.segments.push(s);
+            this.invalidateGeometry();
+        }
 
         constructor()
         {
@@ -65,25 +78,24 @@ namespace feng3d
 
     /**
      * 线段
-
      */
-    export interface Segment
+    export class Segment
     {
         /**
          * 起点坐标
          */
-        start?: Vector3;
+        start = new Vector3();
         /**
          * 终点坐标
          */
-        end?: Vector3;
+        end = new Vector3();
         /**
          * 起点颜色
          */
-        startColor?: Color4;
+        startColor = new Color4();
         /**
-         * 线段厚度
+         * 终点颜色
          */
-        endColor?: Color4;
+        endColor = new Color4();
     }
 }

@@ -200,5 +200,44 @@ namespace feng3d
          * 粒子材质
          */
         static particle: Material;
+
+        /**
+         * 线段材质
+         */
+        static segment: Material;
+
+        /**
+         * 设置默认材质
+         * 
+         * 资源名称与材质名称相同，且无法在检查器界面中编辑。
+         * 
+         * @param name 材质名称
+         * @param material 材质数据
+         */
+        static setDefaultMaterial<K extends keyof DefaultMaterial>(name: K, material: gPartial<Material>)
+        {
+            var newMaterial = this._defaultMaterials[<any>name] = new Material();
+            serialization.setValue(newMaterial, material);
+            serialization.setValue(newMaterial, { name: name, assetId: name, hideFlags: HideFlags.NotEditable });
+            AssetData.addAssetData(name, newMaterial);
+        }
+
+        /**
+         * 获取材质
+         * 
+         * @param name 材质名称
+         */
+        static getDefaultMaterial<K extends keyof DefaultMaterial>(name: K)
+        {
+            return this._defaultMaterials[name];
+        }
+        private static _defaultMaterials: DefaultMaterial = <any>{};
+    }
+
+    /**
+     * 默认材质
+     */
+    export interface DefaultMaterial
+    {
     }
 }
