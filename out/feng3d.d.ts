@@ -13795,7 +13795,7 @@ declare namespace feng3d {
          * @param name 材质名称
          * @param material 材质数据
          */
-        static setDefaultMaterial<K extends keyof DefaultMaterial>(name: K, material: gPartial<Material>): void;
+        static setDefault<K extends keyof DefaultMaterial>(name: K, material: gPartial<Material>): void;
         /**
          * 获取材质
          *

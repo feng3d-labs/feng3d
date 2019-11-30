@@ -30241,7 +30241,7 @@ var feng3d;
          * @param name 材质名称
          * @param material 材质数据
          */
-        Material.setDefaultMaterial = function (name, material) {
+        Material.setDefault = function (name, material) {
             var newMaterial = this._defaultMaterials[name] = new Material();
             feng3d.serialization.setValue(newMaterial, material);
             feng3d.serialization.setValue(newMaterial, { name: name, assetId: name, hideFlags: feng3d.HideFlags.NotEditable });
@@ -30435,7 +30435,7 @@ var feng3d;
     }());
     feng3d.StandardUniforms = StandardUniforms;
     feng3d.shaderConfig.shaders["standard"].cls = StandardUniforms;
-    feng3d.Material.setDefaultMaterial("Default-Material", { shaderName: "standard" });
+    feng3d.Material.setDefault("Default-Material", { shaderName: "standard" });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -30533,7 +30533,7 @@ var feng3d;
     feng3d.SegmentUniforms = SegmentUniforms;
     feng3d.shaderConfig.shaders["segment"].cls = SegmentUniforms;
     feng3d.shaderConfig.shaders["segment"].renderParams = { renderMode: feng3d.RenderMode.LINES, enableBlend: true };
-    feng3d.Material.setDefaultMaterial("Segment-Material", { shaderName: "segment" });
+    feng3d.Material.setDefault("Segment-Material", { shaderName: "segment" });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -32271,7 +32271,7 @@ var feng3d;
     }());
     feng3d.WaterUniforms = WaterUniforms;
     feng3d.shaderConfig.shaders["water"].cls = WaterUniforms;
-    feng3d.Material.setDefaultMaterial("Water-Material", { shaderName: "water" });
+    feng3d.Material.setDefault("Water-Material", { shaderName: "water" });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -32631,7 +32631,7 @@ var feng3d;
     }(feng3d.StandardUniforms));
     feng3d.TerrainUniforms = TerrainUniforms;
     feng3d.shaderConfig.shaders["terrain"].cls = TerrainUniforms;
-    feng3d.Material.setDefaultMaterial("Terrain-Material", { shaderName: "terrain" });
+    feng3d.Material.setDefault("Terrain-Material", { shaderName: "terrain" });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -32951,7 +32951,7 @@ var feng3d;
     feng3d.ParticlesAdditiveUniforms = ParticlesAdditiveUniforms;
     feng3d.shaderConfig.shaders["Particles_Additive"].cls = ParticlesAdditiveUniforms;
     feng3d.shaderConfig.shaders["Particles_Additive"].renderParams = { enableBlend: true, sfactor: feng3d.BlendFactor.SRC_ALPHA, dfactor: feng3d.BlendFactor.ONE, depthMask: false, cullFace: feng3d.CullFace.NONE, colorMask: feng3d.ColorMask.RGB };
-    feng3d.Material.setDefaultMaterial("Particle-Material", { shaderName: "Particles_Additive" });
+    feng3d.Material.setDefault("Particle-Material", { shaderName: "Particles_Additive" });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

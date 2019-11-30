@@ -34,5 +34,5 @@ namespace feng3d
         "Terrain-Material": Material;
     }
 
-    Material.setDefaultMaterial("Terrain-Material", { shaderName: "terrain" });
+    Material.setDefault("Terrain-Material", { shaderName: "terrain" });
 }

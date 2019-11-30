@@ -26,5 +26,5 @@ namespace feng3d
         "Segment-Material": Material;
     }
 
-    Material.setDefaultMaterial("Segment-Material", { shaderName: "segment" });
+    Material.setDefault("Segment-Material", { shaderName: "segment" });
 }

@@ -42,5 +42,5 @@ namespace feng3d
     {
         "Particle-Material": Material;
     }
-    Material.setDefaultMaterial("Particle-Material", { shaderName: "Particles_Additive" });
+    Material.setDefault("Particle-Material", { shaderName: "Particles_Additive" });
 }

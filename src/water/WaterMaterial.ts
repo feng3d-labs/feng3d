@@ -53,5 +53,5 @@ namespace feng3d
         "Water-Material": Material;
     }
 
-    Material.setDefaultMaterial("Water-Material", { shaderName: "water" });
+    Material.setDefault("Water-Material", { shaderName: "water" });
 }

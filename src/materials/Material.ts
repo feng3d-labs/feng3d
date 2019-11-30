@@ -189,7 +189,7 @@ namespace feng3d
          * @param name 材质名称
          * @param material 材质数据
          */
-        static setDefaultMaterial<K extends keyof DefaultMaterial>(name: K, material: gPartial<Material>)
+        static setDefault<K extends keyof DefaultMaterial>(name: K, material: gPartial<Material>)
         {
             var newMaterial = this._defaultMaterials[<any>name] = new Material();
             serialization.setValue(newMaterial, material);
@@ -202,7 +202,7 @@ namespace feng3d
          * 
          * @param name 材质名称
          */
-        static getDefaultMaterial<K extends keyof DefaultMaterial>(name: K)
+        static getDefault<K extends keyof DefaultMaterial>(name: K)
         {
             return this._defaultMaterials[name];
         }

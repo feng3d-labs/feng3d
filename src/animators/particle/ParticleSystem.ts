@@ -246,7 +246,7 @@ namespace feng3d
         geometry = Geometry.getDefault("Billboard-Geometry");
 
         @oav({ block: "Renderer" })
-        material = Material.getDefaultMaterial("Particle-Material");
+        material = Material.getDefault("Particle-Material");
 
         @oav({ block: "Renderer" })
         @serialize

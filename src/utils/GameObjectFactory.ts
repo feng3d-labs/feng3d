@@ -83,7 +83,7 @@ namespace feng3d
         {
             var g = serialization.setValue(new GameObject(), {
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: new SegmentGeometry(), material: Material.getDefaultMaterial("Segment-Material") },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: new SegmentGeometry(), material: Material.getDefault("Segment-Material") },]
             });
             return g;
         }

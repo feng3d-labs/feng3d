@@ -143,5 +143,5 @@ namespace feng3d
         "Default-Material": Material;
     }
 
-    Material.setDefaultMaterial("Default-Material", { shaderName: "standard" });
+    Material.setDefault("Default-Material", { shaderName: "standard" });
 }
