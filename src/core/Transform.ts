@@ -139,7 +139,7 @@ namespace feng3d
         /**
          * 本地旋转
          */
-        @oav({ tooltip: "本地旋转" })
+        @oav({ tooltip: "本地旋转", component: "OAVVector3", componentParam: { step: 0.001, stepScale: 30, stepDownup: 1 } })
         get rotation() { return this._rotation; }
         set rotation(v) { this._rotation.copy(v); }
 

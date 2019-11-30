@@ -1037,11 +1037,36 @@ declare namespace feng3d {
             component: "OAVAccordionObjectView";
             componentParam: Object;
         };
-        OAVVector3: {
-            component: "OAVVector3";
-            componentParam: {
-                label: string;
-            };
+        OAVVector3: OAVVector3Param;
+    }
+    /**
+     * OAVVector3 组件参数
+     */
+    interface OAVVector3Param {
+        component: "OAVVector3";
+        componentParam: {
+            label?: string;
+            /**
+             * 步长，精度
+             */
+            step?: number;
+            /**
+             * 键盘上下方向键步长
+             */
+            stepDownup?: number;
+            /**
+             * 移动一个像素时增加的步长数量
+             */
+            stepScale?: number;
+            /**
+             * 最小值
+             */
+            minValue?: number;
+            /**
+             * 最小值
+             */
+            maxValue?: number;
+            editable?: boolean;
         };
     }
     /**
