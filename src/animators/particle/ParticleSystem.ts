@@ -243,7 +243,7 @@ namespace feng3d
         private _textureSheetAnimation: ParticleTextureSheetAnimationModule;
 
         @oav({ block: "Renderer" })
-        geometry = Geometry.billboard;
+        geometry = Geometry.getDefault("Billboard-Geometry");
 
         @oav({ block: "Renderer" })
         material = Material.getDefaultMaterial("Particle-Material");
@@ -409,7 +409,7 @@ namespace feng3d
             renderAtomic.shaderMacro.ENABLED_PARTICLE_SYSTEM_textureSheetAnimation = this.textureSheetAnimation.enabled;
 
             // 计算公告牌矩阵
-            var isbillboard = !this.shape.alignToDirection && this.geometry == Geometry.billboard;
+            var isbillboard = !this.shape.alignToDirection && this.geometry == Geometry.getDefault("Billboard-Geometry");
             var billboardMatrix = new Matrix3x3();
             if (isbillboard)
             {
@@ -866,5 +866,9 @@ namespace feng3d
         speed = new Vector3;
     }
 
-    AssetData.addAssetData("Billboard-Geometry", Geometry.billboard = serialization.setValue(new QuadGeometry(), { name: "Billboard-Geometry", assetId: "Billboard-Geometry", hideFlags: HideFlags.NotEditable }));
+    export interface DefaultGeometry
+    {
+        "Billboard-Geometry": QuadGeometry;
+    }
+    Geometry.setDefault("Billboard-Geometry", new QuadGeometry());
 }

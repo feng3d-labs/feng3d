@@ -12348,50 +12348,6 @@ declare namespace feng3d {
      * 几何体
      */
     class Geometry extends AssetData {
-        /**
-         * 立（长）方体几何体
-         */
-        static cube: CubeGeometry;
-        /**
-         * 胶囊体几何体
-         */
-        static capsule: CapsuleGeometry;
-        /**
-         * 圆锥体
-         */
-        static cone: ConeGeometry;
-        /**
-         * 圆柱体几何体
-         */
-        static cylinder: CylinderGeometry;
-        /**
-         * 平面几何体
-         */
-        static plane: PlaneGeometry;
-        /**
-         * 平面几何体
-         */
-        static quad: QuadGeometry;
-        /**
-         * 球体几何体
-         */
-        static sphere: SphereGeometry;
-        /**
-         * 圆环几何体
-         */
-        static torus: TorusGeometry;
-        /**
-         * 点几何体
-         */
-        static point: PointGeometry;
-        /**
-         * 默认地形几何体
-         */
-        static terrain: TerrainGeometry;
-        /**
-         * 公告牌
-         */
-        static billboard: QuadGeometry;
         private preview;
         name: string;
         /**
@@ -12538,6 +12494,25 @@ declare namespace feng3d {
         private _geometryInvalid;
         private _useFaceWeights;
         private _bounding;
+        /**
+         * 设置默认几何体
+         *
+         * @param name 默认几何体名称
+         * @param geometry 默认几何体
+         */
+        static setDefault<K extends keyof DefaultGeometry>(name: K, geometry: DefaultGeometry[K], param?: gPartial<DefaultGeometry[K]>): void;
+        /**
+         * 获取默认几何体
+         *
+         * @param name 默认几何体名称
+         */
+        static getDefault<K extends keyof DefaultGeometry>(name: K): DefaultGeometry[K];
+        private static _defaultGeometry;
+    }
+    /**
+     * 默认几何体
+     */
+    interface DefaultGeometry {
     }
 }
 declare namespace feng3d {
@@ -12702,6 +12677,7 @@ declare namespace feng3d {
      */
     class SegmentGeometry extends Geometry {
         __class__: "feng3d.SegmentGeometry";
+        name: string;
         /**
          * 线段列表
          * 修改数组内数据时需要手动调用 invalidateGeometry();
@@ -13032,6 +13008,9 @@ declare namespace feng3d {
         __class__: "feng3d.QuadGeometry";
         constructor();
     }
+    interface DefaultGeometry {
+        Quad: QuadGeometry;
+    }
 }
 declare namespace feng3d {
     interface GeometryMap {
@@ -13113,6 +13092,9 @@ declare namespace feng3d {
          * @param this.segmentsH 纵向分割数
          */
         private buildUVs;
+    }
+    interface DefaultGeometry {
+        Plane: PlaneGeometry;
     }
 }
 declare namespace feng3d {
@@ -13208,6 +13190,9 @@ declare namespace feng3d {
          */
         private buildUVs;
     }
+    interface DefaultGeometry {
+        Cube: CubeGeometry;
+    }
 }
 declare namespace feng3d {
     interface GeometryMap {
@@ -13265,6 +13250,9 @@ declare namespace feng3d {
          * @param this.segmentsH 纵向分割数
          */
         private buildUVs;
+    }
+    interface DefaultGeometry {
+        Sphere: SphereGeometry;
     }
 }
 declare namespace feng3d {
@@ -13329,6 +13317,9 @@ declare namespace feng3d {
          * @param segmentsH 纵向分割数
          */
         private buildUVs;
+    }
+    interface DefaultGeometry {
+        Capsule: CapsuleGeometry;
     }
 }
 declare namespace feng3d {
@@ -13414,6 +13405,9 @@ declare namespace feng3d {
          */
         private buildUVs;
     }
+    interface DefaultGeometry {
+        Cylinder: CylinderGeometry;
+    }
 }
 declare namespace feng3d {
     /**
@@ -13435,6 +13429,9 @@ declare namespace feng3d {
          * 侧面是否封口 private
          */
         surfaceClosed: boolean;
+    }
+    interface DefaultGeometry {
+        Cone: ConeGeometry;
     }
 }
 declare namespace feng3d {
@@ -13507,6 +13504,9 @@ declare namespace feng3d {
          * @inheritDoc
          */
         protected buildUVs(): void;
+    }
+    interface DefaultGeometry {
+        Torus: TorusGeometry;
     }
 }
 declare namespace feng3d {
@@ -14643,6 +14643,9 @@ declare namespace feng3d {
          */
         private getPixel;
     }
+    interface DefaultGeometry {
+        "Terrain-Geometry": TerrainGeometry;
+    }
 }
 declare namespace feng3d {
     interface UniformsMap {
@@ -15075,6 +15078,9 @@ declare namespace feng3d {
         worldPos: Vector3;
         moveVec: Vector3;
         speed: Vector3;
+    }
+    interface DefaultGeometry {
+        "Billboard-Geometry": QuadGeometry;
     }
 }
 declare namespace feng3d {

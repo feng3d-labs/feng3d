@@ -10,6 +10,8 @@ namespace feng3d
 
         __class__: "feng3d.SegmentGeometry" = "feng3d.SegmentGeometry";
 
+        name = "Segment";
+
 		/**
 		 * 线段列表
          * 修改数组内数据时需要手动调用 invalidateGeometry();

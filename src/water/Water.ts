@@ -10,7 +10,7 @@ namespace feng3d
     {
         __class__: "feng3d.Water" = "feng3d.Water";
 
-        geometry = Geometry.plane;
+        geometry = Geometry.getDefault("Plane");
 
         material = Material.getDefaultMaterial("Water-Material");
 

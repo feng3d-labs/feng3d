@@ -29,10 +29,10 @@ namespace feng3d
             {
                 this._geometry.on("boundsInvalid", this.onBoundsInvalid, this);
             }
-            this.geometry = this.geometry || Geometry.cube;
+            this.geometry = this.geometry || Geometry.getDefault("Cube");
             this.onBoundsInvalid();
         }
-        private _geometry: Geometrys = Geometry.cube;
+        private _geometry: Geometrys = Geometry.getDefault("Cube");
 
         /**
          * 材质

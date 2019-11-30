@@ -25044,7 +25044,7 @@ var feng3d;
         __extends(Model, _super);
         function Model() {
             var _this = _super.call(this) || this;
-            _this._geometry = feng3d.Geometry.cube;
+            _this._geometry = feng3d.Geometry.getDefault("Cube");
             _this._material = feng3d.Material.getDefaultMaterial("Default-Material");
             _this.castShadows = true;
             _this.receiveShadows = true;
@@ -25073,7 +25073,7 @@ var feng3d;
                 if (this._geometry) {
                     this._geometry.on("boundsInvalid", this.onBoundsInvalid, this);
                 }
-                this.geometry = this.geometry || feng3d.Geometry.cube;
+                this.geometry = this.geometry || feng3d.Geometry.getDefault("Cube");
                 this.onBoundsInvalid();
             },
             enumerable: true,
@@ -26063,6 +26063,28 @@ var feng3d;
             renderAtomic.shaderMacro.SCALEU = this.scaleU;
             renderAtomic.shaderMacro.SCALEV = this.scaleV;
         };
+        /**
+         * 设置默认几何体
+         *
+         * @param name 默认几何体名称
+         * @param geometry 默认几何体
+         */
+        Geometry.setDefault = function (name, geometry, param) {
+            this._defaultGeometry[name] = geometry;
+            if (param)
+                feng3d.serialization.setValue(geometry, param);
+            feng3d.serialization.setValue(geometry, { name: name, assetId: name, hideFlags: feng3d.HideFlags.NotEditable });
+            feng3d.AssetData.addAssetData(name, geometry);
+        };
+        /**
+         * 获取默认几何体
+         *
+         * @param name 默认几何体名称
+         */
+        Geometry.getDefault = function (name) {
+            return this._defaultGeometry[name];
+        };
+        Geometry._defaultGeometry = {};
         __decorate([
             feng3d.oav({ component: "OAVFeng3dPreView" })
         ], Geometry.prototype, "preview", void 0);
@@ -26744,7 +26766,6 @@ var feng3d;
         return PointGeometry;
     }(feng3d.Geometry));
     feng3d.PointGeometry = PointGeometry;
-    feng3d.AssetData.addAssetData("PointGeometry", feng3d.Geometry.point = feng3d.serialization.setValue(new PointGeometry(), { name: "PointGeometry", assetId: "PointGeometry", points: [], hideFlags: feng3d.HideFlags.NotEditable }));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -26756,6 +26777,7 @@ var feng3d;
         function SegmentGeometry() {
             var _this = _super.call(this) || this;
             _this.__class__ = "feng3d.SegmentGeometry";
+            _this.name = "Segment";
             _this._segments = [];
             return _this;
         }
@@ -27511,7 +27533,7 @@ var feng3d;
         return QuadGeometry;
     }(feng3d.Geometry));
     feng3d.QuadGeometry = QuadGeometry;
-    feng3d.AssetData.addAssetData("Quad", feng3d.Geometry.quad = feng3d.serialization.setValue(new QuadGeometry(), { name: "Quad", assetId: "Quad", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.Geometry.setDefault("Quad", new QuadGeometry());
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -27788,7 +27810,7 @@ var feng3d;
         return PlaneGeometry;
     }(feng3d.Geometry));
     feng3d.PlaneGeometry = PlaneGeometry;
-    feng3d.AssetData.addAssetData("Plane", feng3d.Geometry.plane = feng3d.serialization.setValue(new PlaneGeometry(), { name: "Plane", assetId: "Plane", width: 10, height: 10, hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.Geometry.setDefault("Plane", new PlaneGeometry(), { width: 10, height: 10 });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -28297,7 +28319,7 @@ var feng3d;
         return CubeGeometry;
     }(feng3d.Geometry));
     feng3d.CubeGeometry = CubeGeometry;
-    feng3d.AssetData.addAssetData("Cube", feng3d.Geometry.cube = feng3d.serialization.setValue(new CubeGeometry(), { name: "Cube", assetId: "Cube", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.Geometry.setDefault("Cube", new CubeGeometry());
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -28532,7 +28554,7 @@ var feng3d;
         return SphereGeometry;
     }(feng3d.Geometry));
     feng3d.SphereGeometry = SphereGeometry;
-    feng3d.AssetData.addAssetData("Sphere", feng3d.Geometry.sphere = feng3d.serialization.setValue(new SphereGeometry(), { name: "Sphere", assetId: "Sphere", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.Geometry.setDefault("Sphere", new SphereGeometry());
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -28788,7 +28810,7 @@ var feng3d;
         return CapsuleGeometry;
     }(feng3d.Geometry));
     feng3d.CapsuleGeometry = CapsuleGeometry;
-    feng3d.AssetData.addAssetData("Capsule", feng3d.Geometry.capsule = feng3d.serialization.setValue(new CapsuleGeometry(), { name: "Capsule", assetId: "Capsule", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.Geometry.setDefault("Capsule", new CapsuleGeometry());
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -29251,7 +29273,7 @@ var feng3d;
         return CylinderGeometry;
     }(feng3d.Geometry));
     feng3d.CylinderGeometry = CylinderGeometry;
-    feng3d.AssetData.addAssetData("Cylinder", feng3d.Geometry.cylinder = feng3d.serialization.setValue(new CylinderGeometry(), { name: "Cylinder", assetId: "Cylinder", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.Geometry.setDefault("Cylinder", new CylinderGeometry());
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -29282,7 +29304,7 @@ var feng3d;
         return ConeGeometry;
     }(feng3d.CylinderGeometry));
     feng3d.ConeGeometry = ConeGeometry;
-    feng3d.AssetData.addAssetData("Cone", feng3d.Geometry.cone = feng3d.serialization.setValue(new ConeGeometry(), { name: "Cone", assetId: "Cone", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.Geometry.setDefault("Cone", new ConeGeometry());
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -29537,7 +29559,7 @@ var feng3d;
         return TorusGeometry;
     }(feng3d.Geometry));
     feng3d.TorusGeometry = TorusGeometry;
-    feng3d.AssetData.addAssetData("Torus", feng3d.Geometry.torus = feng3d.serialization.setValue(new TorusGeometry(), { name: "Torus", assetId: "Torus", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.Geometry.setDefault("Torus", new TorusGeometry());
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -32114,7 +32136,7 @@ var feng3d;
         function Water() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.Water";
-            _this.geometry = feng3d.Geometry.plane;
+            _this.geometry = feng3d.Geometry.getDefault("Plane");
             _this.material = feng3d.Material.getDefaultMaterial("Water-Material");
             /**
              * 帧缓冲对象，用于处理水面反射
@@ -32569,7 +32591,7 @@ var feng3d;
      * 默认高度图
      */
     var defaultHeightMap = new feng3d.ImageUtil(1024, 1024, new feng3d.Color4(0, 0, 0, 0)).imageData;
-    feng3d.AssetData.addAssetData("Terrain-Geometry", feng3d.Geometry.terrain = feng3d.serialization.setValue(new TerrainGeometry(), { name: "Terrain-Geometry", assetId: "Terrain-Geometry", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.Geometry.setDefault("Terrain-Geometry", new TerrainGeometry());
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -32794,7 +32816,7 @@ var feng3d;
         function Terrain() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.Terrain";
-            _this.geometry = feng3d.Geometry.terrain;
+            _this.geometry = feng3d.Geometry.getDefault("Terrain-Geometry");
             _this.material = feng3d.Material.getDefaultMaterial("Terrain-Material");
             return _this;
         }
@@ -32992,7 +33014,7 @@ var feng3d;
              * 回放位置(秒)
              */
             _this.time = 0;
-            _this.geometry = feng3d.Geometry.billboard;
+            _this.geometry = feng3d.Geometry.getDefault("Billboard-Geometry");
             _this.material = feng3d.Material.getDefaultMaterial("Particle-Material");
             _this.castShadows = true;
             _this.receiveShadows = true;
@@ -33362,7 +33384,7 @@ var feng3d;
             renderAtomic.shaderMacro.HAS_PARTICLE_ANIMATOR = true;
             renderAtomic.shaderMacro.ENABLED_PARTICLE_SYSTEM_textureSheetAnimation = this.textureSheetAnimation.enabled;
             // 计算公告牌矩阵
-            var isbillboard = !this.shape.alignToDirection && this.geometry == feng3d.Geometry.billboard;
+            var isbillboard = !this.shape.alignToDirection && this.geometry == feng3d.Geometry.getDefault("Billboard-Geometry");
             var billboardMatrix = new feng3d.Matrix3x3();
             if (isbillboard) {
                 var cameraMatrix = camera.transform.localToWorldMatrix.clone();
@@ -33777,7 +33799,7 @@ var feng3d;
         return ParticleSystem;
     }(feng3d.Model));
     feng3d.ParticleSystem = ParticleSystem;
-    feng3d.AssetData.addAssetData("Billboard-Geometry", feng3d.Geometry.billboard = feng3d.serialization.setValue(new feng3d.QuadGeometry(), { name: "Billboard-Geometry", assetId: "Billboard-Geometry", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.Geometry.setDefault("Billboard-Geometry", new feng3d.QuadGeometry());
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -41958,7 +41980,7 @@ var feng3d;
             if (name === void 0) { name = "Cube"; }
             var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.cube },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cube") },]
             });
             return g;
         };
@@ -41966,7 +41988,7 @@ var feng3d;
             if (name === void 0) { name = "Plane"; }
             var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.plane },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Plane") },]
             });
             return g;
         };
@@ -41974,7 +41996,7 @@ var feng3d;
             if (name === void 0) { name = "Quad"; }
             var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.quad },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Quad") },]
             });
             return g;
         };
@@ -41982,7 +42004,7 @@ var feng3d;
             if (name === void 0) { name = "Cylinder"; }
             var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.cylinder },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cylinder") },]
             });
             return g;
         };
@@ -41990,21 +42012,21 @@ var feng3d;
             if (name === void 0) { name = "Cone"; }
             return feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.cone },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cone") },]
             });
         };
         GameObjectFactory.prototype.createTorus = function (name) {
             if (name === void 0) { name = "Torus"; }
             return feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.torus },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Torus") },]
             });
         };
         GameObjectFactory.prototype.createSphere = function (name) {
             if (name === void 0) { name = "Sphere"; }
             var sphere = feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.sphere },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Sphere") },]
             });
             return sphere;
         };
@@ -42012,7 +42034,7 @@ var feng3d;
             if (name === void 0) { name = "Capsule"; }
             var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.capsule },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Capsule") },]
             });
             return g;
         };

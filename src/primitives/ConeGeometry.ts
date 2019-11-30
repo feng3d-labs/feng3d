@@ -26,5 +26,9 @@ namespace feng3d
 		surfaceClosed = true;
 	}
 
-	AssetData.addAssetData("Cone", Geometry.cone = serialization.setValue(new ConeGeometry(), { name: "Cone", assetId: "Cone", hideFlags: HideFlags.NotEditable }));
+    export interface DefaultGeometry
+    {
+        Cone: ConeGeometry;
+    }
+	Geometry.setDefault("Cone", new ConeGeometry());
 }

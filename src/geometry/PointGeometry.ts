@@ -74,6 +74,4 @@ namespace feng3d
         normal?: Vector3;
         uv?: Vector2;
     }
-
-    AssetData.addAssetData("PointGeometry", Geometry.point = serialization.setValue(new PointGeometry(), { name: "PointGeometry", assetId: "PointGeometry", points: [], hideFlags: HideFlags.NotEditable }));
 }

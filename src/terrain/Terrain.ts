@@ -16,7 +16,7 @@ namespace feng3d
          */
         assign: TerrainData;
 
-        geometry = Geometry.terrain;
+        geometry = Geometry.getDefault("Terrain-Geometry");
 
         material = Material.getDefaultMaterial("Terrain-Material");
     }

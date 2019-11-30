@@ -27,61 +27,6 @@ namespace feng3d
     export class Geometry extends AssetData
     {
 
-        /**
-         * 立（长）方体几何体
-         */
-        static cube: CubeGeometry;
-
-        /**
-         * 胶囊体几何体
-         */
-        static capsule: CapsuleGeometry;
-
-        /**
-         * 圆锥体
-         */
-        static cone: ConeGeometry;
-
-        /**
-         * 圆柱体几何体
-         */
-        static cylinder: CylinderGeometry;
-
-        /**
-         * 平面几何体
-         */
-        static plane: PlaneGeometry;
-
-        /**
-         * 平面几何体
-         */
-        static quad: QuadGeometry;
-
-        /**
-         * 球体几何体
-         */
-        static sphere: SphereGeometry;
-
-        /**
-         * 圆环几何体
-         */
-        static torus: TorusGeometry;
-
-        /**
-         * 点几何体
-         */
-        static point: PointGeometry
-
-        /**
-         * 默认地形几何体
-         */
-        static terrain: TerrainGeometry;
-
-        /**
-         * 公告牌
-         */
-        static billboard: QuadGeometry;
-
         @oav({ component: "OAVFeng3dPreView" })
         private preview = "";
 
@@ -472,5 +417,37 @@ namespace feng3d
         private _useFaceWeights = false;
 
         private _bounding: AABB;
+
+        /**
+         * 设置默认几何体
+         * 
+         * @param name 默认几何体名称
+         * @param geometry 默认几何体
+         */
+        static setDefault<K extends keyof DefaultGeometry>(name: K, geometry: DefaultGeometry[K], param?: gPartial<DefaultGeometry[K]>)
+        {
+            this._defaultGeometry[name] = geometry;
+            if (param) serialization.setValue(geometry, param);
+            serialization.setValue(geometry, { name: name, assetId: name, hideFlags: HideFlags.NotEditable });
+            AssetData.addAssetData(name, geometry);
+        }
+
+        /**
+         * 获取默认几何体
+         * 
+         * @param name 默认几何体名称
+         */
+        static getDefault<K extends keyof DefaultGeometry>(name: K)
+        {
+            return this._defaultGeometry[name];
+        }
+        private static _defaultGeometry: DefaultGeometry = <any>{};
+    }
+
+    /**
+     * 默认几何体
+     */
+    export interface DefaultGeometry
+    {
     }
 }

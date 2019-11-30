@@ -256,5 +256,9 @@ namespace feng3d
         }
     }
 
-    AssetData.addAssetData("Sphere", Geometry.sphere = serialization.setValue(new SphereGeometry(), { name: "Sphere", assetId: "Sphere", hideFlags: HideFlags.NotEditable }));
+    export interface DefaultGeometry
+    {
+        Sphere: SphereGeometry;
+    }
+	Geometry.setDefault("Sphere", new SphereGeometry());
 }

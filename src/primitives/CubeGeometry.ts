@@ -582,5 +582,10 @@ namespace feng3d
         }
     }
 
-    AssetData.addAssetData("Cube", Geometry.cube = serialization.setValue(new CubeGeometry(), { name: "Cube", assetId: "Cube", hideFlags: HideFlags.NotEditable }));
+    export interface DefaultGeometry
+    {
+        Cube: CubeGeometry;
+    }
+
+    Geometry.setDefault("Cube", new CubeGeometry());
 }

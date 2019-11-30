@@ -270,5 +270,10 @@ namespace feng3d
         }
 
     }
-    AssetData.addAssetData("Capsule", Geometry.capsule = serialization.setValue(new CapsuleGeometry(), { name: "Capsule", assetId: "Capsule", hideFlags: HideFlags.NotEditable }));
+
+    export interface DefaultGeometry
+    {
+        Capsule: CapsuleGeometry;
+    }
+    Geometry.setDefault("Capsule", new CapsuleGeometry());
 }

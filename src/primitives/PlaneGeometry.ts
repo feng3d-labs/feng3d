@@ -294,5 +294,10 @@ namespace feng3d
         }
     }
 
-    AssetData.addAssetData("Plane", Geometry.plane = serialization.setValue(new PlaneGeometry(), { name: "Plane", assetId: "Plane", width: 10, height: 10, hideFlags: HideFlags.NotEditable }));
+    export interface DefaultGeometry
+    {
+        Plane: PlaneGeometry;
+    }
+
+    Geometry.setDefault("Plane", new PlaneGeometry(), { width: 10, height: 10 });
 }

@@ -23,5 +23,9 @@ namespace feng3d
         }
     }
 
-    AssetData.addAssetData("Quad", Geometry.quad = serialization.setValue(new QuadGeometry(), { name: "Quad", assetId: "Quad", hideFlags: HideFlags.NotEditable }));
+    export interface DefaultGeometry
+    {
+        Quad: QuadGeometry;
+    }
+	Geometry.setDefault("Quad", new QuadGeometry());
 }

@@ -514,5 +514,10 @@ namespace feng3d
         }
     }
 
-    AssetData.addAssetData("Cylinder", Geometry.cylinder = serialization.setValue(new CylinderGeometry(), { name: "Cylinder", assetId: "Cylinder", hideFlags: HideFlags.NotEditable }));
+    export interface DefaultGeometry
+    {
+        Cylinder: CylinderGeometry;
+    }
+
+    Geometry.setDefault("Cylinder", new CylinderGeometry());
 }

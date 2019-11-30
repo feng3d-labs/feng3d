@@ -13,7 +13,7 @@ namespace feng3d
         {
             var g = serialization.setValue(new GameObject(), {
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.cube },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Cube") },]
             });
             return g;
         }
@@ -22,7 +22,7 @@ namespace feng3d
         {
             var g = serialization.setValue(new GameObject(), {
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.plane },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Plane") },]
             });
             return g;
         }
@@ -31,7 +31,7 @@ namespace feng3d
         {
             var g = serialization.setValue(new GameObject(), {
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.quad },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Quad") },]
             });
             return g;
         }
@@ -40,7 +40,7 @@ namespace feng3d
         {
             var g = serialization.setValue(new GameObject(), {
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.cylinder },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Cylinder") },]
             });
             return g;
         }
@@ -49,7 +49,7 @@ namespace feng3d
         {
             return serialization.setValue(new GameObject(), {
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.cone },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Cone") },]
             });
         }
 
@@ -57,7 +57,7 @@ namespace feng3d
         {
             return serialization.setValue(new GameObject(), {
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.torus },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Torus") },]
             });
         }
 
@@ -65,7 +65,7 @@ namespace feng3d
         {
             var sphere = serialization.setValue(new GameObject(), {
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.sphere },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Sphere") },]
             });
             return sphere;
         }
@@ -74,7 +74,7 @@ namespace feng3d
         {
             var g = serialization.setValue(new GameObject(), {
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.capsule },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Capsule") },]
             });
             return g;
         }
