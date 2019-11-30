@@ -30491,8 +30491,8 @@ var feng3d;
     }());
     feng3d.SegmentUniforms = SegmentUniforms;
     feng3d.shaderConfig.shaders["segment"].cls = SegmentUniforms;
-    feng3d.shaderConfig.shaders["segment"].renderParams = { renderMode: feng3d.RenderMode.LINES };
-    feng3d.Material.setDefaultMaterial("Default-SegmentMaterial", { shaderName: "segment", renderParams: { renderMode: feng3d.RenderMode.LINES } });
+    feng3d.shaderConfig.shaders["segment"].renderParams = { renderMode: feng3d.RenderMode.LINES, enableBlend: true };
+    feng3d.Material.setDefaultMaterial("Default-SegmentMaterial", { shaderName: "segment" });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
