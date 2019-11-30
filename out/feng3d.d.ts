@@ -13801,7 +13801,7 @@ declare namespace feng3d {
          *
          * @param name 材质名称
          */
-        static getDefaultMaterial<K extends keyof DefaultMaterial>(name: K): DefaultMaterial[K];
+        static getDefault<K extends keyof DefaultMaterial>(name: K): DefaultMaterial[K];
         private static _defaultMaterials;
     }
     /**

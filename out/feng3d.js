@@ -25045,7 +25045,7 @@ var feng3d;
         function Model() {
             var _this = _super.call(this) || this;
             _this._geometry = feng3d.Geometry.getDefault("Cube");
-            _this._material = feng3d.Material.getDefaultMaterial("Default-Material");
+            _this._material = feng3d.Material.getDefault("Default-Material");
             _this.castShadows = true;
             _this.receiveShadows = true;
             _this._lightPicker = new feng3d.LightPicker(_this);
@@ -25088,7 +25088,7 @@ var feng3d;
             },
             set: function (v) {
                 this._material = v;
-                this._material = this._material || feng3d.Material.getDefaultMaterial("Default-Material");
+                this._material = this._material || feng3d.Material.getDefault("Default-Material");
             },
             enumerable: true,
             configurable: true
@@ -30252,7 +30252,7 @@ var feng3d;
          *
          * @param name 材质名称
          */
-        Material.getDefaultMaterial = function (name) {
+        Material.getDefault = function (name) {
             return this._defaultMaterials[name];
         };
         Material._defaultMaterials = {};
@@ -32137,7 +32137,7 @@ var feng3d;
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.Water";
             _this.geometry = feng3d.Geometry.getDefault("Plane");
-            _this.material = feng3d.Material.getDefaultMaterial("Water-Material");
+            _this.material = feng3d.Material.getDefault("Water-Material");
             /**
              * 帧缓冲对象，用于处理水面反射
              */
@@ -32817,7 +32817,7 @@ var feng3d;
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.Terrain";
             _this.geometry = feng3d.Geometry.getDefault("Terrain-Geometry");
-            _this.material = feng3d.Material.getDefaultMaterial("Terrain-Material");
+            _this.material = feng3d.Material.getDefault("Terrain-Material");
             return _this;
         }
         return Terrain;
@@ -33015,7 +33015,7 @@ var feng3d;
              */
             _this.time = 0;
             _this.geometry = feng3d.Geometry.getDefault("Billboard-Geometry");
-            _this.material = feng3d.Material.getDefaultMaterial("Particle-Material");
+            _this.material = feng3d.Material.getDefault("Particle-Material");
             _this.castShadows = true;
             _this.receiveShadows = true;
             /**
@@ -42042,7 +42042,7 @@ var feng3d;
             if (name === void 0) { name = "Segment"; }
             var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: new feng3d.SegmentGeometry(), material: feng3d.Material.getDefaultMaterial("Segment-Material") },]
+                components: [{ __class__: "feng3d.MeshModel", geometry: new feng3d.SegmentGeometry(), material: feng3d.Material.getDefault("Segment-Material") },]
             });
             return g;
         };
