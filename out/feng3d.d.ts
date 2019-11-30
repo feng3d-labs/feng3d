@@ -3911,6 +3911,13 @@ declare namespace feng3d {
          */
         multiplyTo(v: Color4, vout?: Color4): Color4;
         /**
+         * 乘以指定常量
+         *
+         * @param scale 缩放常量
+         * @return 返回自身
+         */
+        multiplyNumber(scale: number): this;
+        /**
          * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
          */
         equals(object: Color4, precision?: number): boolean;
@@ -14879,6 +14886,12 @@ declare namespace feng3d {
         get colorOverLifetime(): ParticleColorOverLifetimeModule;
         set colorOverLifetime(v: ParticleColorOverLifetimeModule);
         private _colorOverLifetime;
+        /**
+         * 颜色随速度变化模块。
+         */
+        get colorBySpeed(): ParticleColorBySpeedModule;
+        set colorBySpeed(v: ParticleColorBySpeedModule);
+        private _colorBySpeed;
         get sizeOverLifetime(): ParticleSizeOverLifetimeModule;
         set sizeOverLifetime(v: ParticleSizeOverLifetimeModule);
         private _sizeOverLifetime;
@@ -16571,6 +16584,37 @@ declare namespace feng3d {
          */
         get zMultiplier(): number;
         set zMultiplier(v: number);
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        initParticleState(particle: Particle): void;
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        updateParticleState(particle: Particle): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * the Color By Speed module.
+     *
+     * 颜色随速度变化模块。
+     */
+    class ParticleColorBySpeedModule extends ParticleModule {
+        /**
+         * The gradient controlling the particle colors.
+         *
+         * 控制粒子颜色的梯度。
+         */
+        color: MinMaxGradient;
+        /**
+         * Apply the color gradient between these minimum and maximum speeds.
+         *
+         * 在这些最小和最大速度之间应用颜色渐变。
+         */
+        range: Vector2;
         /**
          * 初始化粒子状态
          * @param particle 粒子

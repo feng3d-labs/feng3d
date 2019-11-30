@@ -8528,6 +8528,19 @@ var feng3d;
             return vout.copy(this).multiply(v);
         };
         /**
+         * 乘以指定常量
+         *
+         * @param scale 缩放常量
+         * @return 返回自身
+         */
+        Color4.prototype.multiplyNumber = function (scale) {
+            this.r *= scale;
+            this.g *= scale;
+            this.b *= scale;
+            this.a *= scale;
+            return this;
+        };
+        /**
          * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
          */
         Color4.prototype.equals = function (object, precision) {
@@ -33005,6 +33018,7 @@ var feng3d;
             _this.forceOverLifetime = new feng3d.ParticleForceOverLifetimeModule();
             _this.inheritVelocity = new feng3d.InheritVelocityModule();
             _this.colorOverLifetime = new feng3d.ParticleColorOverLifetimeModule();
+            _this.colorBySpeed = new feng3d.ParticleColorBySpeedModule();
             _this.sizeOverLifetime = new feng3d.ParticleSizeOverLifetimeModule();
             _this.rotationOverLifetime = new feng3d.ParticleRotationOverLifetimeModule();
             _this.textureSheetAnimation = new feng3d.ParticleTextureSheetAnimationModule();
@@ -33147,6 +33161,19 @@ var feng3d;
                 this._modules.replace(this._colorOverLifetime, v);
                 v.particleSystem = this;
                 this._colorOverLifetime = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "colorBySpeed", {
+            /**
+             * 颜色随速度变化模块。
+             */
+            get: function () { return this._colorBySpeed; },
+            set: function (v) {
+                this._modules.replace(this._colorBySpeed, v);
+                v.particleSystem = this;
+                this._colorBySpeed = v;
             },
             enumerable: true,
             configurable: true
@@ -33651,6 +33678,10 @@ var feng3d;
             feng3d.serialize,
             feng3d.oav({ block: "colorOverLifetime", component: "OAVObjectView" })
         ], ParticleSystem.prototype, "colorOverLifetime", null);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ block: "colorBySpeed", component: "OAVObjectView" })
+        ], ParticleSystem.prototype, "colorBySpeed", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "sizeOverLifetime", component: "OAVObjectView" })
@@ -36720,6 +36751,61 @@ var feng3d;
     feng3d.ParticleForceOverLifetimeModule = ParticleForceOverLifetimeModule;
     var _ForceOverLifetime_rate = "_ForceOverLifetime_rate";
     var _ForceOverLifetime_preForce = "_ForceOverLifetime_preVelocity";
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * the Color By Speed module.
+     *
+     * 颜色随速度变化模块。
+     */
+    var ParticleColorBySpeedModule = /** @class */ (function (_super) {
+        __extends(ParticleColorBySpeedModule, _super);
+        function ParticleColorBySpeedModule() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * The gradient controlling the particle colors.
+             *
+             * 控制粒子颜色的梯度。
+             */
+            _this.color = new feng3d.MinMaxGradient();
+            /**
+             * Apply the color gradient between these minimum and maximum speeds.
+             *
+             * 在这些最小和最大速度之间应用颜色渐变。
+             */
+            _this.range = new feng3d.Vector2(0, 1);
+            return _this;
+        }
+        /**
+         * 初始化粒子状态
+         * @param particle 粒子
+         */
+        ParticleColorBySpeedModule.prototype.initParticleState = function (particle) {
+        };
+        /**
+         * 更新粒子状态
+         * @param particle 粒子
+         */
+        ParticleColorBySpeedModule.prototype.updateParticleState = function (particle) {
+            if (!this.enabled)
+                return;
+            var velocity = particle.velocity.length;
+            var rate = Math.clamp((velocity - this.range.x) / (this.range.y - this.range.x), 0, 1);
+            var color = this.color.getValue(rate);
+            particle.color.multiply(color);
+        };
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "控制粒子颜色的梯度。" })
+        ], ParticleColorBySpeedModule.prototype, "color", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "在这些最小和最大速度之间应用颜色渐变。" })
+        ], ParticleColorBySpeedModule.prototype, "range", void 0);
+        return ParticleColorBySpeedModule;
+    }(feng3d.ParticleModule));
+    feng3d.ParticleColorBySpeedModule = ParticleColorBySpeedModule;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

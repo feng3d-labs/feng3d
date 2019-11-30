@@ -164,6 +164,20 @@ namespace feng3d
         }
         private _colorOverLifetime: ParticleColorOverLifetimeModule;
 
+        /**
+         * 颜色随速度变化模块。
+         */
+        @serialize
+        @oav({ block: "colorBySpeed", component: "OAVObjectView" })
+        get colorBySpeed() { return this._colorBySpeed; }
+        set colorBySpeed(v)
+        {
+            this._modules.replace(this._colorBySpeed, v);
+            v.particleSystem = this;
+            this._colorBySpeed = v;
+        }
+        private _colorBySpeed: ParticleColorBySpeedModule;
+
         @serialize
         @oav({ block: "sizeOverLifetime", component: "OAVObjectView" })
         get sizeOverLifetime() { return this._sizeOverLifetime; }
@@ -233,6 +247,7 @@ namespace feng3d
             this.forceOverLifetime = new ParticleForceOverLifetimeModule();
             this.inheritVelocity = new InheritVelocityModule();
             this.colorOverLifetime = new ParticleColorOverLifetimeModule();
+            this.colorBySpeed = new ParticleColorBySpeedModule();
             this.sizeOverLifetime = new ParticleSizeOverLifetimeModule();
             this.rotationOverLifetime = new ParticleRotationOverLifetimeModule();
             this.textureSheetAnimation = new ParticleTextureSheetAnimationModule();

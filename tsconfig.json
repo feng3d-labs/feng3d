@@ -315,6 +315,7 @@
         "src/animators/particle/modules/ParticleLimitVelocityOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticleInheritVelocityModule.ts",
         "src/animators/particle/modules/ParticleForceOverLifetimeModule.ts",
+        "src/animators/particle/modules/ParticleColorBySpeedModule.ts",
         "src/animators/particle/modules/ParticleColorOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticleSizeOverLifetimeModule.ts",
         "src/animators/particle/modules/ParticleRotationOverLifetimeModule.ts",

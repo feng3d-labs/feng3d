@@ -156,6 +156,21 @@ namespace feng3d
         }
 
         /**
+         * 乘以指定常量
+         * 
+         * @param scale 缩放常量
+         * @return 返回自身
+         */
+        multiplyNumber(scale: number)
+        {
+            this.r *= scale;
+            this.g *= scale;
+            this.b *= scale;
+            this.a *= scale;
+            return this;
+        }
+
+        /**
          * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
          */
         equals(object: Color4, precision = Math.PRECISION)
