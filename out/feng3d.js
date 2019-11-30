@@ -25045,7 +25045,7 @@ var feng3d;
         function Model() {
             var _this = _super.call(this) || this;
             _this._geometry = feng3d.Geometry.cube;
-            _this._material = feng3d.Material.default;
+            _this._material = feng3d.Material.getDefaultMaterial("Default-Material");
             _this.castShadows = true;
             _this.receiveShadows = true;
             _this._lightPicker = new feng3d.LightPicker(_this);
@@ -25088,7 +25088,7 @@ var feng3d;
             },
             set: function (v) {
                 this._material = v;
-                this._material = this._material || feng3d.Material.default;
+                this._material = this._material || feng3d.Material.getDefaultMaterial("Default-Material");
             },
             enumerable: true,
             configurable: true
@@ -25853,7 +25853,7 @@ var feng3d;
             configurable: true
         });
         /**
-         * 几何体变脏
+         * 标记需要更新几何体，在更改几何体数据后需要调用该函数。
          */
         Geometry.prototype.invalidateGeometry = function () {
             this._geometryInvalid = true;
@@ -26072,6 +26072,9 @@ var feng3d;
         __decorate([
             feng3d.oav({ component: "OAVMultiText", priority: 10 })
         ], Geometry.prototype, "geometryInfo", null);
+        __decorate([
+            feng3d.oav({ tooltip: "标记需要更新几何体，在更改几何体数据后需要调用该函数。" })
+        ], Geometry.prototype, "invalidateGeometry", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav()
@@ -26836,6 +26839,22 @@ var feng3d;
              */
             this.endColor = new feng3d.Color4();
         }
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "起点坐标" })
+        ], Segment.prototype, "start", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "终点坐标" })
+        ], Segment.prototype, "end", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "起点颜色" })
+        ], Segment.prototype, "startColor", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "终点颜色" })
+        ], Segment.prototype, "endColor", void 0);
         return Segment;
     }());
     feng3d.Segment = Segment;
@@ -30394,7 +30413,7 @@ var feng3d;
     }());
     feng3d.StandardUniforms = StandardUniforms;
     feng3d.shaderConfig.shaders["standard"].cls = StandardUniforms;
-    feng3d.AssetData.addAssetData("Default-Material", feng3d.Material.default = feng3d.serialization.setValue(new feng3d.Material(), { name: "Default-Material", assetId: "Default-Material", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.Material.setDefaultMaterial("Default-Material", { shaderName: "standard" });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -30492,7 +30511,7 @@ var feng3d;
     feng3d.SegmentUniforms = SegmentUniforms;
     feng3d.shaderConfig.shaders["segment"].cls = SegmentUniforms;
     feng3d.shaderConfig.shaders["segment"].renderParams = { renderMode: feng3d.RenderMode.LINES, enableBlend: true };
-    feng3d.Material.setDefaultMaterial("Default-SegmentMaterial", { shaderName: "segment" });
+    feng3d.Material.setDefaultMaterial("Segment-Material", { shaderName: "segment" });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -32096,7 +32115,7 @@ var feng3d;
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.Water";
             _this.geometry = feng3d.Geometry.plane;
-            _this.material = feng3d.Material.water;
+            _this.material = feng3d.Material.getDefaultMaterial("Water-Material");
             /**
              * 帧缓冲对象，用于处理水面反射
              */
@@ -32230,7 +32249,7 @@ var feng3d;
     }());
     feng3d.WaterUniforms = WaterUniforms;
     feng3d.shaderConfig.shaders["water"].cls = WaterUniforms;
-    feng3d.AssetData.addAssetData("Water-Material", feng3d.Material.water = feng3d.serialization.setValue(new feng3d.Material(), { name: "Water-Material", assetId: "Water-Material", shaderName: "water", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.Material.setDefaultMaterial("Water-Material", { shaderName: "water" });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -32590,7 +32609,7 @@ var feng3d;
     }(feng3d.StandardUniforms));
     feng3d.TerrainUniforms = TerrainUniforms;
     feng3d.shaderConfig.shaders["terrain"].cls = TerrainUniforms;
-    feng3d.AssetData.addAssetData("Terrain-Material", feng3d.Material.terrain = feng3d.serialization.setValue(new feng3d.Material(), { name: "Terrain-Material", assetId: "Terrain-Material", shaderName: "terrain", hideFlags: feng3d.HideFlags.NotEditable }));
+    feng3d.Material.setDefaultMaterial("Terrain-Material", { shaderName: "terrain" });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -32776,7 +32795,7 @@ var feng3d;
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.__class__ = "feng3d.Terrain";
             _this.geometry = feng3d.Geometry.terrain;
-            _this.material = feng3d.Material.terrain;
+            _this.material = feng3d.Material.getDefaultMaterial("Terrain-Material");
             return _this;
         }
         return Terrain;
@@ -32869,53 +32888,6 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var ParticleUniforms = /** @class */ (function () {
-        function ParticleUniforms() {
-            this.__class__ = "feng3d.ParticleUniforms";
-            /**
-             * 点绘制时点的尺寸
-             */
-            this.u_PointSize = 1;
-            /**
-             * 漫反射纹理
-             */
-            this.s_diffuse = feng3d.Texture2D.defaultParticle;
-            /**
-             * 基本颜色
-             */
-            this.u_diffuse = new feng3d.Color4(1, 1, 1, 1);
-            /**
-             * 透明阈值，透明度小于该值的像素被片段着色器丢弃
-             */
-            this.u_alphaThreshold = 0;
-        }
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav()
-        ], ParticleUniforms.prototype, "u_PointSize", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ block: "diffuse" })
-        ], ParticleUniforms.prototype, "s_diffuse", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ block: "diffuse" })
-        ], ParticleUniforms.prototype, "u_diffuse", void 0);
-        __decorate([
-            feng3d.serialize,
-            feng3d.oav({ block: "diffuse" })
-        ], ParticleUniforms.prototype, "u_alphaThreshold", void 0);
-        return ParticleUniforms;
-    }());
-    feng3d.ParticleUniforms = ParticleUniforms;
-    feng3d.shaderConfig.shaders["particle"].cls = ParticleUniforms;
-    feng3d.shaderConfig.shaders["particle"].renderParams = { enableBlend: true, depthMask: false, sfactor: feng3d.BlendFactor.ONE, dfactor: feng3d.BlendFactor.ONE_MINUS_SRC_COLOR };
-    feng3d.Material.particle = feng3d.AssetData.addAssetData("Particle-Material", feng3d.serialization.setValue(feng3d.Material.create("particle"), {
-        name: "Particle-Material", assetId: "Particle-Material", hideFlags: feng3d.HideFlags.NotEditable,
-    }));
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     /**
      * UnityShader "Particles/Additive"
      */
@@ -32957,6 +32929,7 @@ var feng3d;
     feng3d.ParticlesAdditiveUniforms = ParticlesAdditiveUniforms;
     feng3d.shaderConfig.shaders["Particles_Additive"].cls = ParticlesAdditiveUniforms;
     feng3d.shaderConfig.shaders["Particles_Additive"].renderParams = { enableBlend: true, sfactor: feng3d.BlendFactor.SRC_ALPHA, dfactor: feng3d.BlendFactor.ONE, depthMask: false, cullFace: feng3d.CullFace.NONE, colorMask: feng3d.ColorMask.RGB };
+    feng3d.Material.setDefaultMaterial("Particle-Material", { shaderName: "Particles_Additive" });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -33020,7 +32993,7 @@ var feng3d;
              */
             _this.time = 0;
             _this.geometry = feng3d.Geometry.billboard;
-            _this.material = feng3d.Material.particle;
+            _this.material = feng3d.Material.getDefaultMaterial("Particle-Material");
             _this.castShadows = true;
             _this.receiveShadows = true;
             /**
@@ -42040,6 +42013,14 @@ var feng3d;
             var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
                 name: name,
                 components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.capsule },]
+            });
+            return g;
+        };
+        GameObjectFactory.prototype.createSegment = function (name) {
+            if (name === void 0) { name = "Segment"; }
+            var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
+                name: name,
+                components: [{ __class__: "feng3d.MeshModel", geometry: new feng3d.SegmentGeometry(), material: feng3d.Material.getDefaultMaterial("Segment-Material") },]
             });
             return g;
         };

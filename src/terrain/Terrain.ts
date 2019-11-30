@@ -18,6 +18,6 @@ namespace feng3d
 
         geometry = Geometry.terrain;
 
-        material = Material.terrain;
+        material = Material.getDefaultMaterial("Terrain-Material");
     }
 }

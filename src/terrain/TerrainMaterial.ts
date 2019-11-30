@@ -29,5 +29,10 @@ namespace feng3d
 
     shaderConfig.shaders["terrain"].cls = TerrainUniforms;
 
-    AssetData.addAssetData("Terrain-Material", Material.terrain = serialization.setValue(new Material(), { name: "Terrain-Material", assetId: "Terrain-Material", shaderName: "terrain", hideFlags: HideFlags.NotEditable }));
+    export interface DefaultMaterial
+    {
+        "Terrain-Material": Material;
+    }
+
+    Material.setDefaultMaterial("Terrain-Material", { shaderName: "terrain" });
 }

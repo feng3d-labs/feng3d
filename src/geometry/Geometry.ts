@@ -188,8 +188,9 @@ namespace feng3d
         }
 
         /**
-         * 几何体变脏
+         * 标记需要更新几何体，在更改几何体数据后需要调用该函数。
          */
+        @oav({ tooltip: "标记需要更新几何体，在更改几何体数据后需要调用该函数。" })
         invalidateGeometry()
         {
             this._geometryInvalid = true;

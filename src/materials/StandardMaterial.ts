@@ -138,5 +138,10 @@ namespace feng3d
 
     shaderConfig.shaders["standard"].cls = StandardUniforms;
 
-    AssetData.addAssetData("Default-Material", Material.default = serialization.setValue(new Material(), { name: "Default-Material", assetId: "Default-Material", hideFlags: HideFlags.NotEditable }));
+    export interface DefaultMaterial
+    {
+        "Default-Material": Material;
+    }
+
+    Material.setDefaultMaterial("Default-Material", { shaderName: "standard" });
 }

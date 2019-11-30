@@ -12,7 +12,7 @@ namespace feng3d
 
         geometry = Geometry.plane;
 
-        material = Material.water;
+        material = Material.getDefaultMaterial("Water-Material");
 
         /**
          * 帧缓冲对象，用于处理水面反射

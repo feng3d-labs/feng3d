@@ -12436,7 +12436,7 @@ declare namespace feng3d {
          */
         constructor();
         /**
-         * 几何体变脏
+         * 标记需要更新几何体，在更改几何体数据后需要调用该函数。
          */
         invalidateGeometry(): void;
         /**
@@ -13757,15 +13757,15 @@ declare namespace feng3d {
         /**
          * shader名称
          */
-        get shaderName(): "standard" | "color" | "texture" | "point" | "segment" | "water" | "terrain" | "particle" | "Particles_Additive";
-        set shaderName(v: "standard" | "color" | "texture" | "point" | "segment" | "water" | "terrain" | "particle" | "Particles_Additive");
+        get shaderName(): "standard" | "color" | "point" | "texture" | "segment" | "water" | "terrain" | "Particles_Additive";
+        set shaderName(v: "standard" | "color" | "point" | "texture" | "segment" | "water" | "terrain" | "Particles_Additive");
         private _shaderName;
         name: string;
         /**
          * Uniform数据
          */
-        get uniforms(): StandardUniforms | ColorUniforms | TextureUniforms | PointUniforms | SegmentUniforms | WaterUniforms | TerrainUniforms | ParticleUniforms | ParticlesAdditiveUniforms;
-        set uniforms(v: StandardUniforms | ColorUniforms | TextureUniforms | PointUniforms | SegmentUniforms | WaterUniforms | TerrainUniforms | ParticleUniforms | ParticlesAdditiveUniforms);
+        get uniforms(): StandardUniforms | ColorUniforms | PointUniforms | TextureUniforms | SegmentUniforms | WaterUniforms | TerrainUniforms | ParticlesAdditiveUniforms;
+        set uniforms(v: StandardUniforms | ColorUniforms | PointUniforms | TextureUniforms | SegmentUniforms | WaterUniforms | TerrainUniforms | ParticlesAdditiveUniforms);
         private _uniforms;
         /**
          * 渲染参数
@@ -13787,26 +13787,6 @@ declare namespace feng3d {
         private onShaderChanged;
         private onUniformsChanged;
         private onRenderParamsChanged;
-        /**
-         * 默认材质
-         */
-        static default: Material;
-        /**
-         * 默认水材质
-         */
-        static water: Material;
-        /**
-         * 默认地形材质
-         */
-        static terrain: Material;
-        /**
-         * 粒子材质
-         */
-        static particle: Material;
-        /**
-         * 线段材质
-         */
-        static segment: Material;
         /**
          * 设置默认材质
          *
@@ -13914,6 +13894,9 @@ declare namespace feng3d {
          */
         u_fogMode: FogMode;
     }
+    interface DefaultMaterial {
+        "Default-Material": Material;
+    }
 }
 declare namespace feng3d {
     interface UniformsMap {
@@ -13975,7 +13958,7 @@ declare namespace feng3d {
         u_segmentColor: Color4;
     }
     interface DefaultMaterial {
-        "Default-SegmentMaterial": Material;
+        "Segment-Material": Material;
     }
 }
 declare namespace feng3d {
@@ -14574,6 +14557,9 @@ declare namespace feng3d {
         u_sunColor: Color3;
         u_sunDirection: Vector3;
     }
+    interface DefaultMaterial {
+        "Water-Material": Material;
+    }
 }
 declare namespace feng3d {
     interface GeometryMap {
@@ -14669,6 +14655,9 @@ declare namespace feng3d {
         s_splatTexture3: Texture2D;
         s_blendTexture: Texture2D;
         u_splatRepeats: Vector4;
+    }
+    interface DefaultMaterial {
+        "Terrain-Material": Material;
     }
 }
 declare namespace feng3d {
@@ -14809,30 +14798,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     interface UniformsMap {
-        particle: ParticleUniforms;
-    }
-    class ParticleUniforms {
-        __class__: "feng3d.ParticleUniforms";
-        /**
-         * 点绘制时点的尺寸
-         */
-        u_PointSize: number;
-        /**
-         * 漫反射纹理
-         */
-        s_diffuse: Texture2D;
-        /**
-         * 基本颜色
-         */
-        u_diffuse: Color4;
-        /**
-         * 透明阈值，透明度小于该值的像素被片段着色器丢弃
-         */
-        u_alphaThreshold: number;
-    }
-}
-declare namespace feng3d {
-    interface UniformsMap {
         Particles_Additive: ParticlesAdditiveUniforms;
     }
     /**
@@ -14853,6 +14818,12 @@ declare namespace feng3d {
          * @todo
          */
         _InvFade: number;
+    }
+    /**
+     * 默认材质
+     */
+    interface DefaultMaterial {
+        "Particle-Material": Material;
     }
 }
 declare namespace feng3d {
@@ -18319,6 +18290,7 @@ declare namespace feng3d {
         createTorus(name?: string): GameObject;
         createSphere(name?: string): GameObject;
         createCapsule(name?: string): GameObject;
+        createSegment(name?: string): GameObject;
         createTerrain(name?: string): GameObject;
         createCamera(name?: string): GameObject;
         createPointLight(name?: string): GameObject;

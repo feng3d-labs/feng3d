@@ -182,31 +182,6 @@ namespace feng3d
         }
 
         /**
-         * 默认材质
-         */
-        static default: Material;
-
-        /**
-         * 默认水材质
-         */
-        static water: Material;
-
-        /**
-         * 默认地形材质
-         */
-        static terrain: Material;
-
-        /**
-         * 粒子材质
-         */
-        static particle: Material;
-
-        /**
-         * 线段材质
-         */
-        static segment: Material;
-
-        /**
          * 设置默认材质
          * 
          * 资源名称与材质名称相同，且无法在检查器界面中编辑。

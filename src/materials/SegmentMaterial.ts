@@ -23,8 +23,8 @@ namespace feng3d
 
     export interface DefaultMaterial
     {
-        "Default-SegmentMaterial": Material;
+        "Segment-Material": Material;
     }
 
-    Material.setDefaultMaterial("Default-SegmentMaterial", { shaderName: "segment" });
+    Material.setDefaultMaterial("Segment-Material", { shaderName: "segment" });
 }

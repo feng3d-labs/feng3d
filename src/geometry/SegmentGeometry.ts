@@ -84,18 +84,29 @@ namespace feng3d
         /**
          * 起点坐标
          */
+        @serialize
+        @oav({ tooltip: "起点坐标" })
         start = new Vector3();
+
         /**
          * 终点坐标
          */
+        @serialize
+        @oav({ tooltip: "终点坐标" })
         end = new Vector3();
+
         /**
          * 起点颜色
          */
+        @serialize
+        @oav({ tooltip: "起点颜色" })
         startColor = new Color4();
+
         /**
          * 终点颜色
          */
+        @serialize
+        @oav({ tooltip: "终点颜色" })
         endColor = new Color4();
     }
 }

@@ -46,9 +46,9 @@ namespace feng3d
         set material(v)
         {
             this._material = v;
-            this._material = this._material || Material.default;
+            this._material = this._material || Material.getDefaultMaterial("Default-Material");
         }
-        private _material: Material = Material.default;
+        private _material = Material.getDefaultMaterial("Default-Material");
 
         @oav({ tooltip: "是否投射阴影" })
         @serialize
