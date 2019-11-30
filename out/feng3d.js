@@ -23332,7 +23332,7 @@ var feng3d;
         });
         Object.defineProperty(Transform.prototype, "position", {
             /**
-             * 自身位移
+             * 本地位移
              */
             get: function () { return this._position; },
             set: function (v) { this._position.copy(v); },
@@ -23341,7 +23341,7 @@ var feng3d;
         });
         Object.defineProperty(Transform.prototype, "rotation", {
             /**
-             * 自身旋转
+             * 本地旋转
              */
             get: function () { return this._rotation; },
             set: function (v) { this._rotation.copy(v); },
@@ -23350,7 +23350,7 @@ var feng3d;
         });
         Object.defineProperty(Transform.prototype, "orientation", {
             /**
-             * 自身四元素旋转
+             * 本地四元素旋转
              */
             get: function () {
                 this._orientation.fromMatrix(this.matrix3d);
@@ -23366,7 +23366,7 @@ var feng3d;
         });
         Object.defineProperty(Transform.prototype, "scale", {
             /**
-             * 自身缩放
+             * 本地缩放
              */
             get: function () { return this._scale; },
             set: function (v) { this._scale.copy(v); },
@@ -23375,7 +23375,7 @@ var feng3d;
         });
         Object.defineProperty(Transform.prototype, "matrix3d", {
             /**
-             * 自身变换矩阵
+             * 本地变换矩阵
              */
             get: function () {
                 return this._updateMatrix3D();
@@ -23390,7 +23390,7 @@ var feng3d;
         });
         Object.defineProperty(Transform.prototype, "rotationMatrix", {
             /**
-             * 自身旋转矩阵
+             * 本地旋转矩阵
              */
             get: function () {
                 if (this._rotationMatrix3dInvalid) {
@@ -23742,44 +23742,41 @@ var feng3d;
             return this._localToWorldRotationMatrix;
         };
         __decorate([
-            feng3d.serialize,
-            feng3d.oav()
+            feng3d.serialize
         ], Transform.prototype, "x", null);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav()
+            feng3d.serialize
         ], Transform.prototype, "y", null);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav()
+            feng3d.serialize
         ], Transform.prototype, "z", null);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav()
+            feng3d.serialize
         ], Transform.prototype, "rx", null);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav()
+            feng3d.serialize
         ], Transform.prototype, "ry", null);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav()
+            feng3d.serialize
         ], Transform.prototype, "rz", null);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav()
+            feng3d.serialize
         ], Transform.prototype, "sx", null);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav()
+            feng3d.serialize
         ], Transform.prototype, "sy", null);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav()
+            feng3d.serialize
         ], Transform.prototype, "sz", null);
-        Transform = __decorate([
-            feng3d.ov({ component: "OVTransform" })
-        ], Transform);
+        __decorate([
+            feng3d.oav({ tooltip: "本地位移" })
+        ], Transform.prototype, "position", null);
+        __decorate([
+            feng3d.oav({ tooltip: "本地旋转" })
+        ], Transform.prototype, "rotation", null);
+        __decorate([
+            feng3d.oav({ tooltip: "本地缩放" })
+        ], Transform.prototype, "scale", null);
         return Transform;
     }(feng3d.Component));
     feng3d.Transform = Transform;
@@ -24481,8 +24478,7 @@ var feng3d;
             feng3d.serialize
         ], GameObject.prototype, "mouseEnabled", void 0);
         __decorate([
-            feng3d.serialize,
-            feng3d.oav()
+            feng3d.serialize
         ], GameObject.prototype, "navigationArea", void 0);
         __decorate([
             feng3d.serialize

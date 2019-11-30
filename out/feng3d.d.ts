@@ -1037,6 +1037,12 @@ declare namespace feng3d {
             component: "OAVAccordionObjectView";
             componentParam: Object;
         };
+        OAVVector3: {
+            component: "OAVVector3";
+            componentParam: {
+                label: string;
+            };
+        };
     }
     /**
      * OAVDefault 组件参数
@@ -11342,32 +11348,32 @@ declare namespace feng3d {
         get sz(): number;
         set sz(v: number);
         /**
-         * 自身位移
+         * 本地位移
          */
         get position(): Vector3;
         set position(v: Vector3);
         /**
-         * 自身旋转
+         * 本地旋转
          */
         get rotation(): Vector3;
         set rotation(v: Vector3);
         /**
-         * 自身四元素旋转
+         * 本地四元素旋转
          */
         get orientation(): Quaternion;
         set orientation(value: Quaternion);
         /**
-         * 自身缩放
+         * 本地缩放
          */
         get scale(): Vector3;
         set scale(v: Vector3);
         /**
-         * 自身变换矩阵
+         * 本地变换矩阵
          */
         get matrix3d(): Matrix4x4;
         set matrix3d(v: Matrix4x4);
         /**
-         * 自身旋转矩阵
+         * 本地旋转矩阵
          */
         get rotationMatrix(): Matrix4x4;
         /**

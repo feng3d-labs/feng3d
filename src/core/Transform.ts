@@ -26,7 +26,6 @@ namespace feng3d
      * 
 	 * 场景中的每个对象都有一个变换。它用于存储和操作对象的位置、旋转和缩放。每个转换都可以有一个父元素，它允许您分层应用位置、旋转和缩放
 	 */
-    @ov({ component: "OVTransform" })
     export class Transform extends Component
     {
         __class__: "feng3d.Transform" = "feng3d.Transform";
@@ -71,7 +70,6 @@ namespace feng3d
          * X轴坐标。
          */
         @serialize
-        @oav()
         get x() { return this._position.x; }
         set x(v) { this._position.x = v; }
 
@@ -79,7 +77,6 @@ namespace feng3d
          * Y轴坐标。
          */
         @serialize
-        @oav()
         get y() { return this._position.y; }
         set y(v) { this._position.y = v; }
 
@@ -87,7 +84,6 @@ namespace feng3d
          * Z轴坐标。
          */
         @serialize
-        @oav()
         get z() { return this._position.z; }
         set z(v) { this._position.z = v; }
 
@@ -95,7 +91,6 @@ namespace feng3d
          * X轴旋转角度。
          */
         @serialize
-        @oav()
         get rx() { return this._rotation.x; }
         set rx(v) { this._rotation.x = v; }
 
@@ -103,7 +98,6 @@ namespace feng3d
          * Y轴旋转角度。
          */
         @serialize
-        @oav()
         get ry() { return this._rotation.y; }
         set ry(v) { this._rotation.y = v; }
 
@@ -111,7 +105,6 @@ namespace feng3d
          * Z轴旋转角度。
          */
         @serialize
-        @oav()
         get rz() { return this._rotation.z; }
         set rz(v) { this._rotation.z = v; }
 
@@ -119,7 +112,6 @@ namespace feng3d
          * X轴缩放。
          */
         @serialize
-        @oav()
         get sx() { return this._scale.x; }
         set sx(v) { this._scale.x = v; }
 
@@ -127,7 +119,6 @@ namespace feng3d
          * Y轴缩放。
          */
         @serialize
-        @oav()
         get sy() { return this._scale.y; }
         set sy(v) { this._scale.y = v; }
 
@@ -135,24 +126,25 @@ namespace feng3d
          * Z轴缩放。
          */
         @serialize
-        @oav()
         get sz() { return this._scale.z; }
         set sz(v) { this._scale.z = v; }
 
         /**
-         * 自身位移
+         * 本地位移
          */
+        @oav({ tooltip: "本地位移" })
         get position() { return this._position; }
         set position(v) { this._position.copy(v); }
 
         /**
-         * 自身旋转
+         * 本地旋转
          */
+        @oav({ tooltip: "本地旋转" })
         get rotation() { return this._rotation; }
         set rotation(v) { this._rotation.copy(v); }
 
         /**
-         * 自身四元素旋转
+         * 本地四元素旋转
          */
         get orientation()
         {
@@ -168,13 +160,14 @@ namespace feng3d
         }
 
         /**
-         * 自身缩放
+         * 本地缩放
          */
+        @oav({ tooltip: "本地缩放" })
         get scale() { return this._scale; }
         set scale(v) { this._scale.copy(v); }
 
         /**
-         * 自身变换矩阵
+         * 本地变换矩阵
          */
         get matrix3d(): Matrix4x4
         {
@@ -189,7 +182,7 @@ namespace feng3d
         }
 
         /**
-         * 自身旋转矩阵
+         * 本地旋转矩阵
          */
         get rotationMatrix()
         {
