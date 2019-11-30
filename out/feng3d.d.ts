@@ -14819,9 +14819,6 @@ declare namespace feng3d {
          */
         _InvFade: number;
     }
-    /**
-     * 默认材质
-     */
     interface DefaultMaterial {
         "Particle-Material": Material;
     }
