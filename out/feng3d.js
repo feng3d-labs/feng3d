@@ -9080,6 +9080,18 @@ var feng3d;
             return vout;
         };
         /**
+         * Scale a vector and add it to this vector. Save the result in "this". (this = this + vector * scalar)
+         * @param scalar
+         * @param vector
+         * @param  target The vector to save the result in.
+         */
+        Vector3.prototype.addScaledVector = function (scalar, vector) {
+            this.x = this.x + scalar * vector.x;
+            this.y = this.y + scalar * vector.y;
+            this.z = this.z + scalar * vector.z;
+            return this;
+        };
+        /**
          * Scale a vector and add it to this vector. Save the result in "target". (target = this + vector * scalar)
          * @param scalar
          * @param vector
@@ -32991,6 +33003,7 @@ var feng3d;
             _this.shape = new feng3d.ParticleShapeModule();
             _this.velocityOverLifetime = new feng3d.ParticleVelocityOverLifetimeModule();
             _this.forceOverLifetime = new feng3d.ParticleForceOverLifetimeModule();
+            _this.inheritVelocity = new feng3d.InheritVelocityModule();
             _this.colorOverLifetime = new feng3d.ParticleColorOverLifetimeModule();
             _this.sizeOverLifetime = new feng3d.ParticleSizeOverLifetimeModule();
             _this.rotationOverLifetime = new feng3d.ParticleRotationOverLifetimeModule();
@@ -33099,6 +33112,21 @@ var feng3d;
                 this._modules.replace(this._limitVelocityOverLifetime, v);
                 v.particleSystem = this;
                 this._limitVelocityOverLifetime = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "inheritVelocity", {
+            /**
+             * Script interface for the Particle System velocity inheritance module.
+             *
+             * 粒子系统速度继承模块。
+             */
+            get: function () { return this._inheritVelocity; },
+            set: function (v) {
+                this._modules.replace(this._inheritVelocity, v);
+                v.particleSystem = this;
+                this._inheritVelocity = v;
             },
             enumerable: true,
             configurable: true
@@ -33611,6 +33639,10 @@ var feng3d;
             ,
             feng3d.oav({ tooltip: "基于时间轴限制速度模块。", block: "limitVelocityOverLifetime", component: "OAVObjectView" })
         ], ParticleSystem.prototype, "limitVelocityOverLifetime", null);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "粒子系统速度继承模块。", block: "inheritVelocity", component: "OAVObjectView" })
+        ], ParticleSystem.prototype, "inheritVelocity", null);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ block: "forceOverLifetime", component: "OAVObjectView" })
@@ -36494,8 +36526,13 @@ var feng3d;
          * @param particle 粒子
          */
         InheritVelocityModule.prototype.initParticleState = function (particle) {
+            particle[_InheritVelocity_rate] = Math.random();
             if (this.particleSystem.main.simulationSpace == feng3d.ParticleSystemSimulationSpace.Local)
                 return;
+            if (this.mode != feng3d.ParticleSystemInheritVelocityMode.Initial)
+                return;
+            var multiplier = this.multiplier.getValue(particle.rateAtLifeTime, particle[_InheritVelocity_rate]);
+            particle.velocity.addScaledVector(multiplier, this.particleSystem.speed);
         };
         /**
          * 更新粒子状态
@@ -36504,14 +36541,23 @@ var feng3d;
         InheritVelocityModule.prototype.updateParticleState = function (particle) {
             if (this.particleSystem.main.simulationSpace == feng3d.ParticleSystemSimulationSpace.Local)
                 return;
-            // this.particleSystem.removeParticleAcceleration(particle, _ForceOverLifetime_preForce);
-            // if (!this.enabled) return;
-            // var force = this.force.getValue(particle.rateAtLifeTime, particle[_ForceOverLifetime_rate]);
-            // this.particleSystem.addParticleAcceleration(particle, force, this.space, _ForceOverLifetime_preForce);
+            if (this.mode != feng3d.ParticleSystemInheritVelocityMode.Current)
+                return;
+            var multiplier = this.multiplier.getValue(particle.rateAtLifeTime, particle[_InheritVelocity_rate]);
+            particle.position.addScaledVector(multiplier, this.particleSystem.moveVec);
         };
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "如何将发射体速度应用于粒子。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemInheritVelocityMode } })
+        ], InheritVelocityModule.prototype, "mode", void 0);
+        __decorate([
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "曲线，用来定义在粒子的生命周期内应用了多少发射速度。" })
+        ], InheritVelocityModule.prototype, "multiplier", void 0);
         return InheritVelocityModule;
     }(feng3d.ParticleModule));
     feng3d.InheritVelocityModule = InheritVelocityModule;
+    var _InheritVelocity_rate = "_InheritVelocity_rate";
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

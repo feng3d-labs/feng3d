@@ -12,6 +12,8 @@ namespace feng3d
          * 
          * 如何将发射体速度应用于粒子。
          */
+        @serialize
+        @oav({ tooltip: "如何将发射体速度应用于粒子。", component: "OAVEnum", componentParam: { enumClass: ParticleSystemInheritVelocityMode } })
         mode = ParticleSystemInheritVelocityMode.Initial;
 
         /**
@@ -19,6 +21,8 @@ namespace feng3d
          * 
          * 曲线，用来定义在粒子的生命周期内应用了多少发射速度。
          */
+        @serialize
+        @oav({ tooltip: "曲线，用来定义在粒子的生命周期内应用了多少发射速度。" })
         multiplier = serialization.setValue(new MinMaxCurve(), { constant: 1, constantMin: 1, constantMax: 1 });
 
         /**
@@ -57,8 +61,13 @@ namespace feng3d
          */
         initParticleState(particle: Particle)
         {
-            if (this.particleSystem.main.simulationSpace == ParticleSystemSimulationSpace.Local) return;
+            particle[_InheritVelocity_rate] = Math.random();
 
+            if (this.particleSystem.main.simulationSpace == ParticleSystemSimulationSpace.Local) return;
+            if (this.mode != ParticleSystemInheritVelocityMode.Initial) return;
+
+            var multiplier = this.multiplier.getValue(particle.rateAtLifeTime, particle[_InheritVelocity_rate]);
+            particle.velocity.addScaledVector(multiplier, this.particleSystem.speed);
         }
 
         /**
@@ -68,12 +77,11 @@ namespace feng3d
         updateParticleState(particle: Particle)
         {
             if (this.particleSystem.main.simulationSpace == ParticleSystemSimulationSpace.Local) return;
+            if (this.mode != ParticleSystemInheritVelocityMode.Current) return;
 
-            // this.particleSystem.removeParticleAcceleration(particle, _ForceOverLifetime_preForce);
-            // if (!this.enabled) return;
-
-            // var force = this.force.getValue(particle.rateAtLifeTime, particle[_ForceOverLifetime_rate]);
-            // this.particleSystem.addParticleAcceleration(particle, force, this.space, _ForceOverLifetime_preForce);
+            var multiplier = this.multiplier.getValue(particle.rateAtLifeTime, particle[_InheritVelocity_rate]);
+            particle.position.addScaledVector(multiplier, this.particleSystem.moveVec);
         }
     }
+    var _InheritVelocity_rate = "_InheritVelocity_rate";
 }

@@ -126,6 +126,22 @@ namespace feng3d
         }
         private _limitVelocityOverLifetime: ParticleLimitVelocityOverLifetimeModule;
 
+        /**
+         * Script interface for the Particle System velocity inheritance module.
+         * 
+         * 粒子系统速度继承模块。
+         */
+        @serialize
+        @oav({ tooltip: "粒子系统速度继承模块。", block: "inheritVelocity", component: "OAVObjectView" })
+        get inheritVelocity() { return this._inheritVelocity; }
+        set inheritVelocity(v)
+        {
+            this._modules.replace(this._inheritVelocity, v);
+            v.particleSystem = this;
+            this._inheritVelocity = v;
+        }
+        private _inheritVelocity: InheritVelocityModule;
+
         @serialize
         @oav({ block: "forceOverLifetime", component: "OAVObjectView" })
         get forceOverLifetime() { return this._forceOverLifetime; }
@@ -215,6 +231,7 @@ namespace feng3d
             this.shape = new ParticleShapeModule();
             this.velocityOverLifetime = new ParticleVelocityOverLifetimeModule();
             this.forceOverLifetime = new ParticleForceOverLifetimeModule();
+            this.inheritVelocity = new InheritVelocityModule();
             this.colorOverLifetime = new ParticleColorOverLifetimeModule();
             this.sizeOverLifetime = new ParticleSizeOverLifetimeModule();
             this.rotationOverLifetime = new ParticleRotationOverLifetimeModule();

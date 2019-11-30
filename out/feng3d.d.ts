@@ -4233,6 +4233,13 @@ declare namespace feng3d {
          */
         addTo(a: Vector3, vout?: Vector3): Vector3;
         /**
+         * Scale a vector and add it to this vector. Save the result in "this". (this = this + vector * scalar)
+         * @param scalar
+         * @param vector
+         * @param  target The vector to save the result in.
+         */
+        addScaledVector(scalar: number, vector: Vector3): this;
+        /**
          * Scale a vector and add it to this vector. Save the result in "target". (target = this + vector * scalar)
          * @param scalar
          * @param vector
@@ -14858,6 +14865,14 @@ declare namespace feng3d {
         get limitVelocityOverLifetime(): ParticleLimitVelocityOverLifetimeModule;
         set limitVelocityOverLifetime(v: ParticleLimitVelocityOverLifetimeModule);
         private _limitVelocityOverLifetime;
+        /**
+         * Script interface for the Particle System velocity inheritance module.
+         *
+         * 粒子系统速度继承模块。
+         */
+        get inheritVelocity(): InheritVelocityModule;
+        set inheritVelocity(v: InheritVelocityModule);
+        private _inheritVelocity;
         get forceOverLifetime(): ParticleForceOverLifetimeModule;
         set forceOverLifetime(v: ParticleForceOverLifetimeModule);
         private _forceOverLifetime;

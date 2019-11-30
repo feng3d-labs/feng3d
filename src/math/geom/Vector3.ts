@@ -200,6 +200,20 @@ namespace feng3d
         }
 
         /**
+         * Scale a vector and add it to this vector. Save the result in "this". (this = this + vector * scalar)
+         * @param scalar
+         * @param vector
+         * @param  target The vector to save the result in.
+         */
+        addScaledVector(scalar: number, vector: Vector3)
+        {
+            this.x = this.x + scalar * vector.x;
+            this.y = this.y + scalar * vector.y;
+            this.z = this.z + scalar * vector.z;
+            return this;
+        }
+
+        /**
          * Scale a vector and add it to this vector. Save the result in "target". (target = this + vector * scalar)
          * @param scalar
          * @param vector
