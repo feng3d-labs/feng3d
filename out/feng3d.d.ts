@@ -11834,11 +11834,37 @@ declare namespace feng3d {
          * @param index			插入的位置
          */
         private addComponentAt;
+        /**
+         * 创建游戏对象
+         *
+         * @param param 游戏对象参数
+         */
         static create(param?: gPartial<GameObject>): GameObject;
+        /**
+         * 创建指定类型的游戏对象。
+         *
+         * @param type 游戏对象类型。
+         * @param param 游戏对象参数。
+         */
         static createPrimitive<K extends keyof PrimitiveGameObject>(type: K, param?: gPartial<GameObject>): GameObject;
     }
     interface PrimitiveGameObject {
         Cube: GameObject;
+        Plane: GameObject;
+        Quad: GameObject;
+        Cylinder: GameObject;
+        Cone: GameObject;
+        Torus: GameObject;
+        Sphere: GameObject;
+        Capsule: GameObject;
+        Segment: GameObject;
+        Terrain: GameObject;
+        Camera: GameObject;
+        "Point light": GameObject;
+        "Directional light": GameObject;
+        "Spot light": GameObject;
+        "Particle System": GameObject;
+        "Water": GameObject;
     }
 }
 interface HTMLCanvasElement {
@@ -12060,8 +12086,8 @@ declare namespace feng3d {
         /**
          * 几何体
          */
-        get geometry(): CubeGeometry | QuadGeometry | PlaneGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | TerrainGeometry | CustomGeometry | PointGeometry | SegmentGeometry | ParametricGeometry;
-        set geometry(v: CubeGeometry | QuadGeometry | PlaneGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | TerrainGeometry | CustomGeometry | PointGeometry | SegmentGeometry | ParametricGeometry);
+        get geometry(): CubeGeometry | PlaneGeometry | QuadGeometry | CylinderGeometry | TorusGeometry | SphereGeometry | CapsuleGeometry | TerrainGeometry | CustomGeometry | PointGeometry | SegmentGeometry | ParametricGeometry;
+        set geometry(v: CubeGeometry | PlaneGeometry | QuadGeometry | CylinderGeometry | TorusGeometry | SphereGeometry | CapsuleGeometry | TerrainGeometry | CustomGeometry | PointGeometry | SegmentGeometry | ParametricGeometry);
         private _geometry;
         /**
          * 材质
@@ -18278,26 +18304,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     class UIImage extends Model {
         source: any;
-    }
-}
-declare namespace feng3d {
-    var gameObjectFactory: GameObjectFactory;
-    class GameObjectFactory {
-        createPlane(name?: string): GameObject;
-        createQuad(name?: string): GameObject;
-        createCylinder(name?: string): GameObject;
-        createCone(name?: string): GameObject;
-        createTorus(name?: string): GameObject;
-        createSphere(name?: string): GameObject;
-        createCapsule(name?: string): GameObject;
-        createSegment(name?: string): GameObject;
-        createTerrain(name?: string): GameObject;
-        createCamera(name?: string): GameObject;
-        createPointLight(name?: string): GameObject;
-        createDirectionalLight(name?: string): GameObject;
-        createSpotLight(name?: string): GameObject;
-        createParticle(name?: string): GameObject;
-        createWater(name?: string): GameObject;
     }
 }
 declare namespace feng3d {

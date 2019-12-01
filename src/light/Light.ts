@@ -113,7 +113,7 @@ namespace feng3d
             var gameObject = this.debugShadowMapObject;
             if (!gameObject)
             {
-                gameObject = this.debugShadowMapObject = gameObjectFactory.createPlane("debugShadowMapObject");
+                gameObject = this.debugShadowMapObject = GameObject.createPrimitive("Plane", { name: "debugShadowMapObject" });
                 gameObject.hideFlags = feng3d.HideFlags.Hide | feng3d.HideFlags.DontSave;
                 gameObject.mouseEnabled = false;
                 gameObject.addComponent(BillboardComponent);

@@ -298,7 +298,7 @@ namespace feng3d
             scene.background.setTo(0.2784, 0.2784, 0.2784);
             scene.ambientColor.setTo(0.4, 0.4, 0.4);
 
-            var camera = feng3d.gameObjectFactory.createCamera("Main Camera");
+            var camera = feng3d.GameObject.createPrimitive("Camera", { name: "Main Camera" });
             camera.addComponent(feng3d.AudioListener);
             camera.transform.position = new feng3d.Vector3(0, 1, -10);
             scene.gameObject.addChild(camera);

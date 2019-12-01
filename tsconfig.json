@@ -367,8 +367,6 @@
         //
         "src/ui/Image.ts",
         //
-        "src/utils/GameObjectFactory.ts",
-        //
         "src/core/Mouse3DManager.ts",
         "src/Feng3d.ts",
     ]

@@ -24459,19 +24459,70 @@ var feng3d;
             //派发添加组件事件
             this.dispatch("addComponent", component, true);
         };
+        /**
+         * 创建游戏对象
+         *
+         * @param param 游戏对象参数
+         */
         GameObject.create = function (param) {
             var g = feng3d.serialization.setValue(new GameObject(), param);
             return g;
         };
+        /**
+         * 创建指定类型的游戏对象。
+         *
+         * @param type 游戏对象类型。
+         * @param param 游戏对象参数。
+         */
         GameObject.createPrimitive = function (type, param) {
             var g = new GameObject();
-            switch (type) {
-                case "Cube":
-                    feng3d.serialization.setValue(g, {
-                        name: type,
-                        components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cube") },]
-                    });
-                    break;
+            if (type == "Cube") {
+                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cube") },] });
+            }
+            else if (type == "Plane") {
+                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Plane") },] });
+            }
+            else if (type == "Quad") {
+                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Quad") },] });
+            }
+            else if (type == "Cylinder") {
+                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cylinder") },] });
+            }
+            else if (type == "Cone") {
+                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cone") },] });
+            }
+            else if (type == "Torus") {
+                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Torus") },] });
+            }
+            else if (type == "Sphere") {
+                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Sphere") },] });
+            }
+            else if (type == "Capsule") {
+                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Capsule") },] });
+            }
+            else if (type == "Segment") {
+                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: new feng3d.SegmentGeometry(), material: feng3d.Material.getDefault("Segment-Material") },] });
+            }
+            else if (type == "Terrain") {
+                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.Terrain" },] });
+            }
+            else if (type == "Camera") {
+                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.Camera" },] });
+            }
+            else if (type == "Point light") {
+                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.PointLight" },] });
+            }
+            else if (type == "Directional light") {
+                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.DirectionalLight" },] });
+            }
+            else if (type == "Spot light") {
+                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.SpotLight" },] });
+            }
+            else if (type == "Water") {
+                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.Water" },] });
+            }
+            else if (type == "Particle System") {
+                feng3d.serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.Transform", rx: -90 }, { __class__: "feng3d.ParticleSystem" },], });
             }
             feng3d.serialization.setValue(g, param);
             return g;
@@ -24756,7 +24807,7 @@ var feng3d;
             var scene = feng3d.serialization.setValue(new feng3d.GameObject(), { name: "Untitled" }).addComponent(feng3d.Scene3D);
             scene.background.setTo(0.2784, 0.2784, 0.2784);
             scene.ambientColor.setTo(0.4, 0.4, 0.4);
-            var camera = feng3d.gameObjectFactory.createCamera("Main Camera");
+            var camera = feng3d.GameObject.createPrimitive("Camera", { name: "Main Camera" });
             camera.addComponent(feng3d.AudioListener);
             camera.transform.position = new feng3d.Vector3(0, 1, -10);
             scene.gameObject.addChild(camera);
@@ -30694,7 +30745,7 @@ var feng3d;
         Light.prototype.updateDebugShadowMap = function (scene3d, viewCamera) {
             var gameObject = this.debugShadowMapObject;
             if (!gameObject) {
-                gameObject = this.debugShadowMapObject = feng3d.gameObjectFactory.createPlane("debugShadowMapObject");
+                gameObject = this.debugShadowMapObject = feng3d.GameObject.createPrimitive("Plane", { name: "debugShadowMapObject" });
                 gameObject.hideFlags = feng3d.HideFlags.Hide | feng3d.HideFlags.DontSave;
                 gameObject.mouseEnabled = false;
                 gameObject.addComponent(feng3d.BillboardComponent);
@@ -41981,135 +42032,6 @@ var feng3d;
         return UIImage;
     }(feng3d.Model));
     feng3d.UIImage = UIImage;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    var GameObjectFactory = /** @class */ (function () {
-        function GameObjectFactory() {
-        }
-        // createCube(name = "Cube")
-        // {
-        //     var g = serialization.setValue(new GameObject(), {
-        //         name: name,
-        //         components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Cube") },]
-        //     });
-        //     return g;
-        // }
-        GameObjectFactory.prototype.createPlane = function (name) {
-            if (name === void 0) { name = "Plane"; }
-            var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
-                name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Plane") },]
-            });
-            return g;
-        };
-        GameObjectFactory.prototype.createQuad = function (name) {
-            if (name === void 0) { name = "Quad"; }
-            var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
-                name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Quad") },]
-            });
-            return g;
-        };
-        GameObjectFactory.prototype.createCylinder = function (name) {
-            if (name === void 0) { name = "Cylinder"; }
-            var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
-                name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cylinder") },]
-            });
-            return g;
-        };
-        GameObjectFactory.prototype.createCone = function (name) {
-            if (name === void 0) { name = "Cone"; }
-            return feng3d.serialization.setValue(new feng3d.GameObject(), {
-                name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cone") },]
-            });
-        };
-        GameObjectFactory.prototype.createTorus = function (name) {
-            if (name === void 0) { name = "Torus"; }
-            return feng3d.serialization.setValue(new feng3d.GameObject(), {
-                name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Torus") },]
-            });
-        };
-        GameObjectFactory.prototype.createSphere = function (name) {
-            if (name === void 0) { name = "Sphere"; }
-            var sphere = feng3d.serialization.setValue(new feng3d.GameObject(), {
-                name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Sphere") },]
-            });
-            return sphere;
-        };
-        GameObjectFactory.prototype.createCapsule = function (name) {
-            if (name === void 0) { name = "Capsule"; }
-            var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
-                name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Capsule") },]
-            });
-            return g;
-        };
-        GameObjectFactory.prototype.createSegment = function (name) {
-            if (name === void 0) { name = "Segment"; }
-            var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
-                name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: new feng3d.SegmentGeometry(), material: feng3d.Material.getDefault("Segment-Material") },]
-            });
-            return g;
-        };
-        GameObjectFactory.prototype.createTerrain = function (name) {
-            if (name === void 0) { name = "Terrain"; }
-            return feng3d.serialization.setValue(new feng3d.GameObject(), {
-                name: name,
-                components: [{ __class__: "feng3d.Terrain" },]
-            });
-        };
-        GameObjectFactory.prototype.createCamera = function (name) {
-            if (name === void 0) { name = "Camera"; }
-            return feng3d.serialization.setValue(new feng3d.GameObject(), {
-                name: name,
-                components: [{ __class__: "feng3d.Camera" },]
-            });
-        };
-        GameObjectFactory.prototype.createPointLight = function (name) {
-            if (name === void 0) { name = "Point light"; }
-            return feng3d.serialization.setValue(new feng3d.GameObject(), {
-                name: name,
-                components: [{ __class__: "feng3d.PointLight" },]
-            });
-        };
-        GameObjectFactory.prototype.createDirectionalLight = function (name) {
-            if (name === void 0) { name = "Directional light"; }
-            return feng3d.serialization.setValue(new feng3d.GameObject(), {
-                name: name,
-                components: [{ __class__: "feng3d.DirectionalLight" },]
-            });
-        };
-        GameObjectFactory.prototype.createSpotLight = function (name) {
-            if (name === void 0) { name = "Spotlight"; }
-            return feng3d.serialization.setValue(new feng3d.GameObject(), {
-                name: name,
-                components: [{ __class__: "feng3d.SpotLight" },]
-            });
-        };
-        GameObjectFactory.prototype.createParticle = function (name) {
-            if (name === void 0) { name = "Particle System"; }
-            return feng3d.serialization.setValue(new feng3d.GameObject(), {
-                name: name,
-                components: [{ __class__: "feng3d.Transform", rx: -90 }, { __class__: "feng3d.ParticleSystem" },],
-            });
-        };
-        GameObjectFactory.prototype.createWater = function (name) {
-            if (name === void 0) { name = "Water"; }
-            return feng3d.serialization.setValue(new feng3d.GameObject(), {
-                name: name,
-                components: [{ __class__: "feng3d.Water" },],
-            });
-        };
-        return GameObjectFactory;
-    }());
-    feng3d.GameObjectFactory = GameObjectFactory;
-    feng3d.gameObjectFactory = new GameObjectFactory();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

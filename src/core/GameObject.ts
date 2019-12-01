@@ -849,24 +849,76 @@ namespace feng3d
             this.dispatch("addComponent", component, true);
         }
 
+        /**
+         * 创建游戏对象
+         * 
+         * @param param 游戏对象参数
+         */
         static create(param?: gPartial<GameObject>)
         {
             var g = serialization.setValue(new GameObject(), param);
             return g;
         }
 
+        /**
+         * 创建指定类型的游戏对象。
+         * 
+         * @param type 游戏对象类型。
+         * @param param 游戏对象参数。
+         */
         static createPrimitive<K extends keyof PrimitiveGameObject>(type: K, param?: gPartial<GameObject>)
         {
             var g = new GameObject();
-            switch (type)
+            if (type == "Cube")
             {
-                case "Cube":
-                    serialization.setValue(g, {
-                        name: type,
-                        components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Cube") },]
-                    });
-                    break;
+                serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Cube") },] });
+            } else if (type == "Plane")
+            {
+                serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Plane") },] });
+            } else if (type == "Quad")
+            {
+                serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Quad") },] });
+            } else if (type == "Cylinder")
+            {
+                serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Cylinder") },] });
+            } else if (type == "Cone")
+            {
+                serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Cone") },] });
+            } else if (type == "Torus")
+            {
+                serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Torus") },] });
+            } else if (type == "Sphere")
+            {
+                serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Sphere") },] });
+            } else if (type == "Capsule")
+            {
+                serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Capsule") },] });
+            } else if (type == "Segment")
+            {
+                serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.MeshModel", geometry: new SegmentGeometry(), material: Material.getDefault("Segment-Material") },] });
+            } else if (type == "Terrain")
+            {
+                serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.Terrain" },] });
+            } else if (type == "Camera")
+            {
+                serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.Camera" },] });
+            } else if (type == "Point light")
+            {
+                serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.PointLight" },] });
+            } else if (type == "Directional light")
+            {
+                serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.DirectionalLight" },] });
+            } else if (type == "Spot light")
+            {
+                serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.SpotLight" },] });
+            } else if (type == "Water")
+            {
+                serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.Water" },] });
+            } else if (type == "Particle System")
+            {
+                serialization.setValue(g, { name: type, components: [{ __class__: "feng3d.Transform", rx: -90 }, { __class__: "feng3d.ParticleSystem" },], });
             }
+
             serialization.setValue(g, param);
             return g;
         }
@@ -875,5 +927,20 @@ namespace feng3d
     export interface PrimitiveGameObject
     {
         Cube: GameObject;
+        Plane: GameObject;
+        Quad: GameObject;
+        Cylinder: GameObject;
+        Cone: GameObject;
+        Torus: GameObject;
+        Sphere: GameObject;
+        Capsule: GameObject;
+        Segment: GameObject;
+        Terrain: GameObject;
+        Camera: GameObject;
+        "Point light": GameObject;
+        "Directional light": GameObject;
+        "Spot light": GameObject;
+        "Particle System": GameObject;
+        "Water": GameObject;
     }
 }
