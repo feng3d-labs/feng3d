@@ -50,11 +50,6 @@ namespace feng3d
         off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): void;
     }
 
-    export interface GameObjectUserData
-    {
-
-    }
-
     /**
      * 游戏对象，场景唯一存在的对象类型
      */
@@ -103,11 +98,6 @@ namespace feng3d
          */
         @serialize
         navigationArea = -1;
-
-        /**
-         * 用户自定义数据
-         */
-        userData: GameObjectUserData = {};
 
         //------------------------------------------
         // Variables
@@ -858,5 +848,32 @@ namespace feng3d
             //派发添加组件事件
             this.dispatch("addComponent", component, true);
         }
+
+        static create(param?: gPartial<GameObject>)
+        {
+            var g = serialization.setValue(new GameObject(), param);
+            return g;
+        }
+
+        static createPrimitive<K extends keyof PrimitiveGameObject>(type: K, param?: gPartial<GameObject>)
+        {
+            var g = new GameObject();
+            switch (type)
+            {
+                case "Cube":
+                    serialization.setValue(g, {
+                        name: type,
+                        components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Cube") },]
+                    });
+                    break;
+            }
+            serialization.setValue(g, param);
+            return g;
+        }
+    }
+
+    export interface PrimitiveGameObject
+    {
+        Cube: GameObject;
     }
 }

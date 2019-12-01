@@ -11558,8 +11558,6 @@ declare namespace feng3d {
         on<K extends keyof GameObjectEventMap>(type: K, listener: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any, priority?: number, once?: boolean): void;
         off<K extends keyof GameObjectEventMap>(type?: K, listener?: (event: Event<GameObjectEventMap[K]>) => any, thisObject?: any): void;
     }
-    interface GameObjectUserData {
-    }
     /**
      * 游戏对象，场景唯一存在的对象类型
      */
@@ -11591,10 +11589,6 @@ declare namespace feng3d {
          * 模型生成的导航网格类型
          */
         navigationArea: number;
-        /**
-         * 用户自定义数据
-         */
-        userData: GameObjectUserData;
         /**
          * 变换
          */
@@ -11840,6 +11834,11 @@ declare namespace feng3d {
          * @param index			插入的位置
          */
         private addComponentAt;
+        static create(param?: gPartial<GameObject>): GameObject;
+        static createPrimitive<K extends keyof PrimitiveGameObject>(type: K, param?: gPartial<GameObject>): GameObject;
+    }
+    interface PrimitiveGameObject {
+        Cube: GameObject;
     }
 }
 interface HTMLCanvasElement {
@@ -12061,8 +12060,8 @@ declare namespace feng3d {
         /**
          * 几何体
          */
-        get geometry(): CustomGeometry | PointGeometry | SegmentGeometry | QuadGeometry | PlaneGeometry | CubeGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | ParametricGeometry | TerrainGeometry;
-        set geometry(v: CustomGeometry | PointGeometry | SegmentGeometry | QuadGeometry | PlaneGeometry | CubeGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | ParametricGeometry | TerrainGeometry);
+        get geometry(): CubeGeometry | QuadGeometry | PlaneGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | TerrainGeometry | CustomGeometry | PointGeometry | SegmentGeometry | ParametricGeometry;
+        set geometry(v: CubeGeometry | QuadGeometry | PlaneGeometry | SphereGeometry | CapsuleGeometry | CylinderGeometry | TorusGeometry | TerrainGeometry | CustomGeometry | PointGeometry | SegmentGeometry | ParametricGeometry);
         private _geometry;
         /**
          * 材质
@@ -18284,8 +18283,6 @@ declare namespace feng3d {
 declare namespace feng3d {
     var gameObjectFactory: GameObjectFactory;
     class GameObjectFactory {
-        createGameObject(name?: string): GameObject;
-        createCube(name?: string): GameObject;
         createPlane(name?: string): GameObject;
         createQuad(name?: string): GameObject;
         createCylinder(name?: string): GameObject;

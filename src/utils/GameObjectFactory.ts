@@ -4,19 +4,14 @@ namespace feng3d
 
     export class GameObjectFactory
     {
-        createGameObject(name = "GameObject")
-        {
-            return serialization.setValue(new GameObject(), { name: name });
-        }
-
-        createCube(name = "Cube")
-        {
-            var g = serialization.setValue(new GameObject(), {
-                name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Cube") },]
-            });
-            return g;
-        }
+        // createCube(name = "Cube")
+        // {
+        //     var g = serialization.setValue(new GameObject(), {
+        //         name: name,
+        //         components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Cube") },]
+        //     });
+        //     return g;
+        // }
 
         createPlane(name = "Plane")
         {

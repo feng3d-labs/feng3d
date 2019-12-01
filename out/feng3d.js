@@ -1040,6 +1040,8 @@ var feng3d;
          * @param source 数据对象 可由Object与Array以及自定义类型组合
          */
         Serialization.prototype.setValue = function (target, source) {
+            if (Object.isBaseType(source) || target == source)
+                return;
             var handlers = this.setValueHandlers.sort(function (a, b) { return b.priority - a.priority; }).map(function (v) { return v.handler; });
             propertyHandler({ __root__: target }, { __root__: source }, __root__, handlers, this);
             return target;
@@ -23811,10 +23813,6 @@ var feng3d;
              * 模型生成的导航网格类型
              */
             _this.navigationArea = -1;
-            /**
-             * 用户自定义数据
-             */
-            _this.userData = {};
             //------------------------------------------
             // Protected Properties
             //------------------------------------------
@@ -24460,6 +24458,23 @@ var feng3d;
             component.init();
             //派发添加组件事件
             this.dispatch("addComponent", component, true);
+        };
+        GameObject.create = function (param) {
+            var g = feng3d.serialization.setValue(new GameObject(), param);
+            return g;
+        };
+        GameObject.createPrimitive = function (type, param) {
+            var g = new GameObject();
+            switch (type) {
+                case "Cube":
+                    feng3d.serialization.setValue(g, {
+                        name: type,
+                        components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cube") },]
+                    });
+                    break;
+            }
+            feng3d.serialization.setValue(g, param);
+            return g;
         };
         __decorate([
             feng3d.serialize
@@ -41972,18 +41987,14 @@ var feng3d;
     var GameObjectFactory = /** @class */ (function () {
         function GameObjectFactory() {
         }
-        GameObjectFactory.prototype.createGameObject = function (name) {
-            if (name === void 0) { name = "GameObject"; }
-            return feng3d.serialization.setValue(new feng3d.GameObject(), { name: name });
-        };
-        GameObjectFactory.prototype.createCube = function (name) {
-            if (name === void 0) { name = "Cube"; }
-            var g = feng3d.serialization.setValue(new feng3d.GameObject(), {
-                name: name,
-                components: [{ __class__: "feng3d.MeshModel", geometry: feng3d.Geometry.getDefault("Cube") },]
-            });
-            return g;
-        };
+        // createCube(name = "Cube")
+        // {
+        //     var g = serialization.setValue(new GameObject(), {
+        //         name: name,
+        //         components: [{ __class__: "feng3d.MeshModel", geometry: Geometry.getDefault("Cube") },]
+        //     });
+        //     return g;
+        // }
         GameObjectFactory.prototype.createPlane = function (name) {
             if (name === void 0) { name = "Plane"; }
             var g = feng3d.serialization.setValue(new feng3d.GameObject(), {

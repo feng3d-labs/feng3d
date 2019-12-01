@@ -195,6 +195,7 @@ namespace feng3d
          */
         setValue<T>(target: T, source: gPartial<T>)
         {
+            if (Object.isBaseType(source) || target == source) return;
             var handlers = this.setValueHandlers.sort((a, b) => b.priority - a.priority).map(v => v.handler);
             propertyHandler({ __root__: target }, { __root__: source }, __root__, handlers, this);
             return target;
