@@ -194,7 +194,7 @@ namespace feng3d
                     // 删除父子资源关系
                     if (this.parentAsset)
                     {
-                        this.parentAsset.childrenAssets.delete(this);
+                        Array.delete(this.parentAsset.childrenAssets, this);
                         this.parentAsset = null;
                     }
                     // 删除映射

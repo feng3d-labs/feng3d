@@ -1,48 +1,52 @@
-interface Array<T>
+interface ArrayConstructor
 {
     /**
      * 使数组变得唯一，不存在两个相等的元素
      * 
+     * @param array 被操作数组
      * @param compare 比较函数
      */
-    unique(compare?: (a: T, b: T) => boolean): this;
+    unique<T>(array: T[], compare?: (a: T, b: T) => boolean): T[];
 
     /**
      * 删除元素
      * 
+     * @param array 被操作数组
      * @param item 被删除元素
      * @returns 被删除元素在数组中的位置
      */
-    delete(item: T): number;
+    delete<T>(array: T[], item: T): number;
 
     /**
      * 连接一个或多个数组到自身
      * 
-      * @param items 要添加到数组末尾的其他项。
-      * @returns 返回自身
-      */
-    concatToSelf(...items: (T | ConcatArray<T>)[]): this;
+     * @param array 被操作数组
+     * @param items 要添加到数组末尾的其他项。
+     * @returns 返回自身
+     */
+    concatToSelf<T>(array: T[], ...items: (T | ConcatArray<T>)[]): T[];
 
     /**
-     * 比较两个数组是否相等
+     * 比较两个数组中元素是否相同
      * 
+     * @param array 被操作数组
      * @param arr 用于比较的数组
      */
-    equal(arr: ArrayLike<T>): boolean;
+    equal<T>(array: T[], arr: ArrayLike<T>): boolean;
 
     /**
      * 使用b元素替换数组中第一个a元素。
      * 
+     * @param array 被操作数组
      * @param a 被替换的元素
      * @param b 用于替换的元素
      * @param isAdd 当数组中没有找到a元素时，是否需要把b元素添加到数组尾部。默认值为true。
      */
-    replace(a: T, b: T, isAdd?: boolean): this;
+    replace<T>(array: T[], a: T, b: T, isAdd?: boolean): T[];
 }
 
-Array.prototype.equal = function (arr: ArrayLike<any>)
+Array.equal = function (self, arr)
 {
-    var self: any[] = this;
     if (self.length != arr.length) return false;
     var keys = Object.keys(arr);
     for (let i = 0, n = keys.length; i < n; i++)
@@ -53,18 +57,16 @@ Array.prototype.equal = function (arr: ArrayLike<any>)
     return true;
 }
 
-Array.prototype.concatToSelf = function (...items)
+Array.concatToSelf = function (self, ...items)
 {
-    var self: any[] = this;
     var arr = [];
     items.forEach(v => arr = arr.concat(v));
     arr.forEach(v => self.push(v));
     return self;
 }
 
-Array.prototype.unique = function (compare = (a, b) => a == b)
+Array.unique = function (arr, compare = (a, b) => a == b)
 {
-    var arr: any[] = this;
     var keys = Object.keys(arr);
     var ids = keys.map(v => Number(v)).filter(v => !isNaN(v));
     var deleteMap: { [id: number]: true } = {};
@@ -86,20 +88,18 @@ Array.prototype.unique = function (compare = (a, b) => a == b)
         if (deleteMap[id]) arr.splice(id, 1);
     }
 
-    return this;
+    return arr;
 }
 
-Array.prototype.delete = function (item): number
+Array.delete = function (arr, item)
 {
-    var arr: any[] = this;
     var index = arr.indexOf(item);
     if (index != -1) arr.splice(index, 1);
     return index;
 }
 
-Array.prototype.replace = function (a, b, isAdd = true)
+Array.replace = function (arr, a, b, isAdd = true)
 {
-    var arr: any[] = this;
     var isreplace = false;
     for (let i = 0; i < arr.length; i++)
     {
@@ -111,6 +111,6 @@ Array.prototype.replace = function (a, b, isAdd = true)
         }
     }
     if (!isreplace && isAdd) arr.push(b);
-    return this;
+    return arr;
 }
 

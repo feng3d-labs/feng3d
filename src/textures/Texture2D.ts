@@ -106,13 +106,13 @@ namespace feng3d
                 {
                     this._pixels = img;
                     this.invalidate();
-                    this._loadings.delete(v.url);
+                    Array.delete(this._loadings, v.url);
                     this.onItemLoadCompleted();
                 }, null,
                     (e) =>
                     {
                         console.error(e);
-                        this._loadings.delete(v.url);
+                        Array.delete(this._loadings, v.url);
                         this.onItemLoadCompleted();
                     });
             }

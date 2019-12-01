@@ -278,41 +278,46 @@ interface MapConstructor {
     getKeys<K, V>(map: Map<K, V>): K[];
     getValues<K, V>(map: Map<K, V>): V[];
 }
-interface Array<T> {
+interface ArrayConstructor {
     /**
      * 使数组变得唯一，不存在两个相等的元素
      *
+     * @param array 被操作数组
      * @param compare 比较函数
      */
-    unique(compare?: (a: T, b: T) => boolean): this;
+    unique<T>(array: T[], compare?: (a: T, b: T) => boolean): T[];
     /**
      * 删除元素
      *
+     * @param array 被操作数组
      * @param item 被删除元素
      * @returns 被删除元素在数组中的位置
      */
-    delete(item: T): number;
+    delete<T>(array: T[], item: T): number;
     /**
      * 连接一个或多个数组到自身
      *
-      * @param items 要添加到数组末尾的其他项。
-      * @returns 返回自身
-      */
-    concatToSelf(...items: (T | ConcatArray<T>)[]): this;
+     * @param array 被操作数组
+     * @param items 要添加到数组末尾的其他项。
+     * @returns 返回自身
+     */
+    concatToSelf<T>(array: T[], ...items: (T | ConcatArray<T>)[]): T[];
     /**
-     * 比较两个数组是否相等
+     * 比较两个数组中元素是否相同
      *
+     * @param array 被操作数组
      * @param arr 用于比较的数组
      */
-    equal(arr: ArrayLike<T>): boolean;
+    equal<T>(array: T[], arr: ArrayLike<T>): boolean;
     /**
      * 使用b元素替换数组中第一个a元素。
      *
+     * @param array 被操作数组
      * @param a 被替换的元素
      * @param b 用于替换的元素
      * @param isAdd 当数组中没有找到a元素时，是否需要把b元素添加到数组尾部。默认值为true。
      */
-    replace(a: T, b: T, isAdd?: boolean): this;
+    replace<T>(array: T[], a: T, b: T, isAdd?: boolean): T[];
 }
 declare namespace feng3d {
     /**

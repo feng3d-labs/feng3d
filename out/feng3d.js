@@ -494,7 +494,7 @@ Object.equalDeep = function (a, b) {
     //
     var akeys = Object.keys(a);
     var bkeys = Object.keys(b);
-    if (!akeys.equal(bkeys))
+    if (!Array.equal(akeys, bkeys))
         return false;
     if (Array.isArray(a) && Array.isArray(b))
         return a.length == b.length;
@@ -569,8 +569,7 @@ Map.getValues = function (map) {
     });
     return values;
 };
-Array.prototype.equal = function (arr) {
-    var self = this;
+Array.equal = function (self, arr) {
     if (self.length != arr.length)
         return false;
     var keys = Object.keys(arr);
@@ -581,20 +580,18 @@ Array.prototype.equal = function (arr) {
     }
     return true;
 };
-Array.prototype.concatToSelf = function () {
+Array.concatToSelf = function (self) {
     var items = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        items[_i] = arguments[_i];
+    for (var _i = 1; _i < arguments.length; _i++) {
+        items[_i - 1] = arguments[_i];
     }
-    var self = this;
     var arr = [];
     items.forEach(function (v) { return arr = arr.concat(v); });
     arr.forEach(function (v) { return self.push(v); });
     return self;
 };
-Array.prototype.unique = function (compare) {
+Array.unique = function (arr, compare) {
     if (compare === void 0) { compare = function (a, b) { return a == b; }; }
-    var arr = this;
     var keys = Object.keys(arr);
     var ids = keys.map(function (v) { return Number(v); }).filter(function (v) { return !isNaN(v); });
     var deleteMap = {};
@@ -615,18 +612,16 @@ Array.prototype.unique = function (compare) {
         if (deleteMap[id])
             arr.splice(id, 1);
     }
-    return this;
+    return arr;
 };
-Array.prototype.delete = function (item) {
-    var arr = this;
+Array.delete = function (arr, item) {
     var index = arr.indexOf(item);
     if (index != -1)
         arr.splice(index, 1);
     return index;
 };
-Array.prototype.replace = function (a, b, isAdd) {
+Array.replace = function (arr, a, b, isAdd) {
     if (isAdd === void 0) { isAdd = true; }
-    var arr = this;
     var isreplace = false;
     for (var i = 0; i < arr.length; i++) {
         if (arr[i] == a) {
@@ -637,7 +632,7 @@ Array.prototype.replace = function (a, b, isAdd) {
     }
     if (!isreplace && isAdd)
         arr.push(b);
-    return this;
+    return arr;
 };
 var feng3d;
 (function (feng3d) {
@@ -739,11 +734,11 @@ var feng3d;
             }
             var funcs = info.funcs;
             if (beforeFunc) {
-                funcs.delete(beforeFunc);
+                Array.delete(funcs, beforeFunc);
                 funcs.unshift(beforeFunc);
             }
             if (afterFunc) {
-                funcs.delete(afterFunc);
+                Array.delete(funcs, afterFunc);
                 funcs.push(afterFunc);
             }
         };
@@ -766,7 +761,7 @@ var feng3d;
                 info.funcs = [info.original];
             }
             else {
-                info.funcs.delete(wrapFunc);
+                Array.delete(info.funcs, wrapFunc);
             }
             if (info.funcs.length == 1) {
                 delete object[funcName];
@@ -1068,8 +1063,8 @@ var feng3d;
         }
         var serializePropertys = object[SERIALIZE_KEY];
         if (serializePropertys)
-            serializableMembers.concatToSelf(serializePropertys);
-        serializableMembers.unique();
+            Array.concatToSelf(serializableMembers, serializePropertys);
+        Array.unique(serializableMembers);
         return serializableMembers;
     }
     feng3d.serialization = new Serialization();
@@ -2200,7 +2195,7 @@ var feng3d;
         }
         needTickerFuncItems.reverse();
         // 相同的函数只执行一个
-        needTickerFuncItems.unique(function (a, b) { return (a.func == b.func && a.thisObject == b.thisObject); });
+        Array.unique(needTickerFuncItems, function (a, b) { return (a.func == b.func && a.thisObject == b.thisObject); });
         needTickerFuncItems.forEach(function (v) {
             // try
             // {
@@ -18575,7 +18570,7 @@ var feng3d;
                 _this.deleteFile(function (err) {
                     // 删除父子资源关系
                     if (_this.parentAsset) {
-                        _this.parentAsset.childrenAssets.delete(_this);
+                        Array.delete(_this.parentAsset.childrenAssets, _this);
                         _this.parentAsset = null;
                     }
                     // 删除映射
@@ -18964,7 +18959,7 @@ var feng3d;
             // 获取所包含的资源列表
             var assetids = this.getAssetsWithObject(object);
             // 不需要加载本资源，移除自身资源
-            assetids.delete(object.assetId);
+            Array.delete(assetids, object.assetId);
             // 加载包含的资源数据
             this.readAssetDatas(assetids, function (err, result) {
                 // 创建资源数据实例
@@ -29782,11 +29777,11 @@ var feng3d;
                     feng3d.loader.loadImage(v.url, function (img) {
                         _this._pixels = img;
                         _this.invalidate();
-                        _this._loadings.delete(v.url);
+                        Array.delete(_this._loadings, v.url);
                         _this.onItemLoadCompleted();
                     }, null, function (e) {
                         console.error(e);
-                        _this._loadings.delete(v.url);
+                        Array.delete(_this._loadings, v.url);
                         _this.onItemLoadCompleted();
                     });
                 }
@@ -30100,7 +30095,7 @@ var feng3d;
                     _this._pixels[index] = texture.image;
                     _this.invalidate();
                 }
-                _this._loading.delete(texture);
+                Array.delete(_this._loading, texture);
                 _this._onItemLoadCompleted();
             });
         };
@@ -30120,7 +30115,7 @@ var feng3d;
                     _this._pixels[index] = img;
                     _this.invalidate();
                 }
-                _this._loading.delete(imagepath);
+                Array.delete(_this._loading, imagepath);
                 _this._onItemLoadCompleted();
             });
         };
@@ -33202,7 +33197,7 @@ var feng3d;
                 if (this._main) {
                     feng3d.watcher.unwatch(this._main, "simulationSpace", this._simulationSpaceChanged, this);
                 }
-                this._modules.replace(this._main, v);
+                Array.replace(this._modules, this._main, v);
                 v.particleSystem = this;
                 this._main = v;
                 feng3d.watcher.watch(this._main, "simulationSpace", this._simulationSpaceChanged, this);
@@ -33213,7 +33208,7 @@ var feng3d;
         Object.defineProperty(ParticleSystem.prototype, "emission", {
             get: function () { return this._emission; },
             set: function (v) {
-                this._modules.replace(this._emission, v);
+                Array.replace(this._modules, this._emission, v);
                 v.particleSystem = this;
                 this._emission = v;
             },
@@ -33223,7 +33218,7 @@ var feng3d;
         Object.defineProperty(ParticleSystem.prototype, "shape", {
             get: function () { return this._shape; },
             set: function (v) {
-                this._modules.replace(this._shape, v);
+                Array.replace(this._modules, this._shape, v);
                 v.particleSystem = this;
                 this._shape = v;
             },
@@ -33233,7 +33228,7 @@ var feng3d;
         Object.defineProperty(ParticleSystem.prototype, "velocityOverLifetime", {
             get: function () { return this._velocityOverLifetime; },
             set: function (v) {
-                this._modules.replace(this._velocityOverLifetime, v);
+                Array.replace(this._modules, this._velocityOverLifetime, v);
                 v.particleSystem = this;
                 this._velocityOverLifetime = v;
             },
@@ -33243,7 +33238,7 @@ var feng3d;
         Object.defineProperty(ParticleSystem.prototype, "limitVelocityOverLifetime", {
             get: function () { return this._limitVelocityOverLifetime; },
             set: function (v) {
-                this._modules.replace(this._limitVelocityOverLifetime, v);
+                Array.replace(this._modules, this._limitVelocityOverLifetime, v);
                 v.particleSystem = this;
                 this._limitVelocityOverLifetime = v;
             },
@@ -33258,7 +33253,7 @@ var feng3d;
              */
             get: function () { return this._inheritVelocity; },
             set: function (v) {
-                this._modules.replace(this._inheritVelocity, v);
+                Array.replace(this._modules, this._inheritVelocity, v);
                 v.particleSystem = this;
                 this._inheritVelocity = v;
             },
@@ -33268,7 +33263,7 @@ var feng3d;
         Object.defineProperty(ParticleSystem.prototype, "forceOverLifetime", {
             get: function () { return this._forceOverLifetime; },
             set: function (v) {
-                this._modules.replace(this._forceOverLifetime, v);
+                Array.replace(this._modules, this._forceOverLifetime, v);
                 v.particleSystem = this;
                 this._forceOverLifetime = v;
             },
@@ -33278,7 +33273,7 @@ var feng3d;
         Object.defineProperty(ParticleSystem.prototype, "colorOverLifetime", {
             get: function () { return this._colorOverLifetime; },
             set: function (v) {
-                this._modules.replace(this._colorOverLifetime, v);
+                Array.replace(this._modules, this._colorOverLifetime, v);
                 v.particleSystem = this;
                 this._colorOverLifetime = v;
             },
@@ -33291,7 +33286,7 @@ var feng3d;
              */
             get: function () { return this._colorBySpeed; },
             set: function (v) {
-                this._modules.replace(this._colorBySpeed, v);
+                Array.replace(this._modules, this._colorBySpeed, v);
                 v.particleSystem = this;
                 this._colorBySpeed = v;
             },
@@ -33301,7 +33296,7 @@ var feng3d;
         Object.defineProperty(ParticleSystem.prototype, "sizeOverLifetime", {
             get: function () { return this._sizeOverLifetime; },
             set: function (v) {
-                this._modules.replace(this._sizeOverLifetime, v);
+                Array.replace(this._modules, this._sizeOverLifetime, v);
                 v.particleSystem = this;
                 this._sizeOverLifetime = v;
             },
@@ -33314,7 +33309,7 @@ var feng3d;
              */
             get: function () { return this._sizeBySpeed; },
             set: function (v) {
-                this._modules.replace(this._sizeBySpeed, v);
+                Array.replace(this._modules, this._sizeBySpeed, v);
                 v.particleSystem = this;
                 this._sizeBySpeed = v;
             },
@@ -33324,7 +33319,7 @@ var feng3d;
         Object.defineProperty(ParticleSystem.prototype, "rotationOverLifetime", {
             get: function () { return this._rotationOverLifetime; },
             set: function (v) {
-                this._modules.replace(this._rotationOverLifetime, v);
+                Array.replace(this._modules, this._rotationOverLifetime, v);
                 v.particleSystem = this;
                 this._rotationOverLifetime = v;
             },
@@ -33337,7 +33332,7 @@ var feng3d;
              */
             get: function () { return this._rotationBySpeed; },
             set: function (v) {
-                this._modules.replace(this._rotationBySpeed, v);
+                Array.replace(this._modules, this._rotationBySpeed, v);
                 v.particleSystem = this;
                 this._rotationBySpeed = v;
             },
@@ -33350,7 +33345,7 @@ var feng3d;
              */
             get: function () { return this._textureSheetAnimation; },
             set: function (v) {
-                this._modules.replace(this._textureSheetAnimation, v);
+                Array.replace(this._modules, this._textureSheetAnimation, v);
                 v.particleSystem = this;
                 this._textureSheetAnimation = v;
             },
