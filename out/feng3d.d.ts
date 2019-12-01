@@ -274,9 +274,9 @@ interface ObjectConstructor {
      */
     assignDeepDefaultHandlers: AssignDeepHandler[];
 }
-interface Map<K, V> {
-    getKeys(): K[];
-    getValues(): V[];
+interface MapConstructor {
+    getKeys<K, V>(map: Map<K, V>): K[];
+    getValues<K, V>(map: Map<K, V>): V[];
 }
 interface Array<T> {
     /**

@@ -1,24 +1,24 @@
-// 补充 Map
-interface Map<K, V>
+interface MapConstructor
 {
-    getKeys(): K[];
-    getValues(): V[];
+    getKeys<K, V>(map: Map<K, V>): K[];
+    getValues<K, V>(map: Map<K, V>): V[];
 }
 
-Map.prototype.getKeys = function ()
+Map.getKeys = function (map)
 {
     var keys: any[] = [];
-    this.forEach((v, k) =>
+    map.forEach((v, k) =>
     {
         keys.push(k);
     });
     return keys;
+
 }
 
-Map.prototype.getValues = function ()
+Map.getValues = function (map)
 {
     var values: any[] = [];
-    this.forEach((v, k) =>
+    map.forEach((v, k) =>
     {
         values.push(v);
     });

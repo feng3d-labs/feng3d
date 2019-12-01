@@ -555,16 +555,16 @@ Object.assignDeepDefaultHandlers = [
         }
     },
 ];
-Map.prototype.getKeys = function () {
+Map.getKeys = function (map) {
     var keys = [];
-    this.forEach(function (v, k) {
+    map.forEach(function (v, k) {
         keys.push(k);
     });
     return keys;
 };
-Map.prototype.getValues = function () {
+Map.getValues = function (map) {
     var values = [];
-    this.forEach(function (v, k) {
+    map.forEach(function (v, k) {
         values.push(v);
     });
     return values;
@@ -16763,7 +16763,7 @@ var feng3d;
          * 获取所有已加载资源数据
          */
         AssetData.getAllLoadedAssetDatas = function () {
-            return this.assetMap.getKeys();
+            return Map.getKeys(this.assetMap);
         };
         /**
          * 资源属性标记名称
