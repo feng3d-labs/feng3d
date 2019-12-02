@@ -33128,7 +33128,7 @@ var feng3d;
             _this.emission = new feng3d.ParticleEmissionModule();
             _this.shape = new feng3d.ParticleShapeModule();
             _this.velocityOverLifetime = new feng3d.ParticleVelocityOverLifetimeModule();
-            _this.inheritVelocity = new feng3d.InheritVelocityModule();
+            _this.inheritVelocity = new feng3d.ParticleInheritVelocityModule();
             _this.forceOverLifetime = new feng3d.ParticleForceOverLifetimeModule();
             _this.limitVelocityOverLifetime = new feng3d.ParticleLimitVelocityOverLifetimeModule();
             _this.colorOverLifetime = new feng3d.ParticleColorOverLifetimeModule();
@@ -36653,9 +36653,9 @@ var feng3d;
      *
      * 遗传速度模块控制发射体的速度在粒子发射时如何传递到粒子上。（只有粒子系统在世界空间中模拟时生效）
      */
-    var InheritVelocityModule = /** @class */ (function (_super) {
-        __extends(InheritVelocityModule, _super);
-        function InheritVelocityModule() {
+    var ParticleInheritVelocityModule = /** @class */ (function (_super) {
+        __extends(ParticleInheritVelocityModule, _super);
+        function ParticleInheritVelocityModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             /**
              * How to apply emitter velocity to particles.
@@ -36671,7 +36671,7 @@ var feng3d;
             _this.multiplier = feng3d.serialization.setValue(new feng3d.MinMaxCurve(), { constant: 1, constantMin: 1, constantMax: 1 });
             return _this;
         }
-        Object.defineProperty(InheritVelocityModule.prototype, "curve", {
+        Object.defineProperty(ParticleInheritVelocityModule.prototype, "curve", {
             /**
              * Curve to define how much emitter velocity is applied during the lifetime of a particle.
              *
@@ -36686,7 +36686,7 @@ var feng3d;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(InheritVelocityModule.prototype, "curveMultiplier", {
+        Object.defineProperty(ParticleInheritVelocityModule.prototype, "curveMultiplier", {
             /**
              * Change the curve multiplier.
              *
@@ -36705,7 +36705,7 @@ var feng3d;
          * 初始化粒子状态
          * @param particle 粒子
          */
-        InheritVelocityModule.prototype.initParticleState = function (particle) {
+        ParticleInheritVelocityModule.prototype.initParticleState = function (particle) {
             particle[_InheritVelocity_rate] = Math.random();
             if (!this.enabled)
                 return;
@@ -36720,7 +36720,7 @@ var feng3d;
          * 更新粒子状态
          * @param particle 粒子
          */
-        InheritVelocityModule.prototype.updateParticleState = function (particle) {
+        ParticleInheritVelocityModule.prototype.updateParticleState = function (particle) {
             if (!this.enabled)
                 return;
             if (this.particleSystem.main.simulationSpace == feng3d.ParticleSystemSimulationSpace.Local)
@@ -36733,14 +36733,14 @@ var feng3d;
         __decorate([
             feng3d.serialize,
             feng3d.oav({ tooltip: "如何将发射体速度应用于粒子。", component: "OAVEnum", componentParam: { enumClass: feng3d.ParticleSystemInheritVelocityMode } })
-        ], InheritVelocityModule.prototype, "mode", void 0);
+        ], ParticleInheritVelocityModule.prototype, "mode", void 0);
         __decorate([
             feng3d.serialize,
             feng3d.oav({ tooltip: "曲线，用来定义在粒子的生命周期内应用了多少发射速度。" })
-        ], InheritVelocityModule.prototype, "multiplier", void 0);
-        return InheritVelocityModule;
+        ], ParticleInheritVelocityModule.prototype, "multiplier", void 0);
+        return ParticleInheritVelocityModule;
     }(feng3d.ParticleModule));
-    feng3d.InheritVelocityModule = InheritVelocityModule;
+    feng3d.ParticleInheritVelocityModule = ParticleInheritVelocityModule;
     var _InheritVelocity_rate = "_InheritVelocity_rate";
 })(feng3d || (feng3d = {}));
 var feng3d;

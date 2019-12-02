@@ -140,7 +140,7 @@ namespace feng3d
             v.particleSystem = this;
             this._inheritVelocity = v;
         }
-        private _inheritVelocity: InheritVelocityModule;
+        private _inheritVelocity: ParticleInheritVelocityModule;
 
         @serialize
         @oav({ block: "forceOverLifetime", component: "OAVObjectView" })
@@ -272,7 +272,7 @@ namespace feng3d
             this.emission = new ParticleEmissionModule();
             this.shape = new ParticleShapeModule();
             this.velocityOverLifetime = new ParticleVelocityOverLifetimeModule();
-            this.inheritVelocity = new InheritVelocityModule();
+            this.inheritVelocity = new ParticleInheritVelocityModule();
             this.forceOverLifetime = new ParticleForceOverLifetimeModule();
             this.limitVelocityOverLifetime = new ParticleLimitVelocityOverLifetimeModule();
             this.colorOverLifetime = new ParticleColorOverLifetimeModule();

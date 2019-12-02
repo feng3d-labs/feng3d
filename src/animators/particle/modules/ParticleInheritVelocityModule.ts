@@ -5,7 +5,7 @@ namespace feng3d
      * 
      * 遗传速度模块控制发射体的速度在粒子发射时如何传递到粒子上。（只有粒子系统在世界空间中模拟时生效）
      */
-    export class InheritVelocityModule extends ParticleModule
+    export class ParticleInheritVelocityModule extends ParticleModule
     {
         /**
          * How to apply emitter velocity to particles.

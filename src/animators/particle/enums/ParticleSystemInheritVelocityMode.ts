@@ -12,13 +12,13 @@ namespace feng3d
          * 
          * 每个粒子在最初发射时都继承了发射体在帧上的速度。
          */
-        Initial,
+        Initial = 0,
 
         /**
          * Each particle's velocity is set to the emitter's current velocity value, every frame.
          * 
          * 每一帧，每个粒子的速度都设定为发射器的当前速度值。
          */
-        Current,
+        Current = 1,
     }
 }
