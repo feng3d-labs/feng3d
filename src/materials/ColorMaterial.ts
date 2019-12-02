@@ -4,7 +4,7 @@ namespace feng3d
 
     export class ColorUniforms
     {
-        __class__: "feng3d.ColorUniforms" = "feng3d.ColorUniforms";
+        __class__: "feng3d.ColorUniforms";
         /** 
          * 颜色
          */

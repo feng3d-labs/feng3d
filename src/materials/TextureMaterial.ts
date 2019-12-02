@@ -4,7 +4,7 @@ namespace feng3d
     export interface UniformsMap { texture: TextureUniforms }
     export class TextureUniforms
     {
-        __class__: "feng3d.TextureUniforms" = "feng3d.TextureUniforms";
+        __class__: "feng3d.TextureUniforms";
         /** 
          * 颜色
          */

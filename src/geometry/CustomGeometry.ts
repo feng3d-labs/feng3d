@@ -4,7 +4,7 @@ namespace feng3d
     
     export class CustomGeometry extends Geometry
     {
-        __class__: "feng3d.CustomGeometry" = "feng3d.CustomGeometry";
+        __class__: "feng3d.CustomGeometry";
         
         /**
          * 顶点索引缓冲

@@ -7,7 +7,7 @@ namespace feng3d
      */
     export class ParticlesAdditiveUniforms
     {
-        __class__: "feng3d.ParticlesAdditiveUniforms" = "feng3d.ParticlesAdditiveUniforms";
+        __class__: "feng3d.ParticlesAdditiveUniforms" ;
 
         @serialize
         @oav()

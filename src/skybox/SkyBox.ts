@@ -7,7 +7,7 @@ namespace feng3d
      */
     export class SkyBox extends Component
     {
-        __class__: "feng3d.SkyBox" = "feng3d.SkyBox";
+        __class__: "feng3d.SkyBox";
 
         @serialize
         @oav({ component: "OAVPick", componentParam: { accepttype: "texturecube", datatype: "texturecube" } })

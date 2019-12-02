@@ -15,7 +15,7 @@ namespace feng3d
 
     export class StandardUniforms
     {
-        __class__: "feng3d.StandardUniforms" | "feng3d.TerrainUniforms" | "feng3d.ParticleUniforms" = "feng3d.StandardUniforms";
+        __class__: "feng3d.StandardUniforms" | "feng3d.TerrainUniforms" | "feng3d.ParticleUniforms";
         /**
          * 点绘制时点的尺寸
          */

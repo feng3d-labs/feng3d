@@ -5,7 +5,7 @@ namespace feng3d
      */
     export class Vector4
     {
-        __class__: "feng3d.Vector4" = "feng3d.Vector4";
+        __class__: "feng3d.Vector4";
 
         static fromArray(array: ArrayLike<number>, offset = 0)
         {

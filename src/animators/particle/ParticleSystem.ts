@@ -15,7 +15,7 @@ namespace feng3d
      */
     export class ParticleSystem extends Model
     {
-        __class__: "feng3d.ParticleSystem" = "feng3d.ParticleSystem";
+        __class__: "feng3d.ParticleSystem";
 
         /**
          * Is the particle system playing right now ?

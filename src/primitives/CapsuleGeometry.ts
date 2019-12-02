@@ -8,7 +8,7 @@ namespace feng3d
     export class CapsuleGeometry extends Geometry
     {
 
-        __class__: "feng3d.CapsuleGeometry" = "feng3d.CapsuleGeometry";
+        __class__: "feng3d.CapsuleGeometry";
 
         /**
          * 胶囊体半径

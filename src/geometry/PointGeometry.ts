@@ -9,7 +9,7 @@ namespace feng3d
     export class PointGeometry extends Geometry
     {
 
-        __class__: "feng3d.PointGeometry" = "feng3d.PointGeometry";
+        __class__: "feng3d.PointGeometry";
 
         /**
          * 点数据列表

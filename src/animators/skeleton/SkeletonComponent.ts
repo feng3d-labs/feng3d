@@ -5,7 +5,7 @@ namespace feng3d
     export class SkeletonComponent extends Component
     {
 
-        __class__: "feng3d.SkeletonComponent" = "feng3d.SkeletonComponent";
+        __class__: "feng3d.SkeletonComponent";
 
         /** 骨骼关节数据列表 */
         @serialize

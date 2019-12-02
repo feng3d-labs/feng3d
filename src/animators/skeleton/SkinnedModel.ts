@@ -4,7 +4,7 @@ namespace feng3d
 
     export class SkinnedModel extends Model
     {
-        __class__: "feng3d.SkinnedModel" = "feng3d.SkinnedModel";
+        __class__: "feng3d.SkinnedModel";
 
         get single() { return true; }
 

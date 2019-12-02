@@ -24,7 +24,7 @@ namespace feng3d
      */
     export class TextureCube extends TextureInfo
     {
-        __class__: "feng3d.TextureCube" = "feng3d.TextureCube";
+        __class__: "feng3d.TextureCube";
 
         assetType = AssetType.texturecube;
 

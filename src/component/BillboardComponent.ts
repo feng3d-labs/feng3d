@@ -5,7 +5,7 @@ namespace feng3d
 
     export class BillboardComponent extends Component
     {
-        __class__: "feng3d.BillboardComponent" = "feng3d.BillboardComponent";
+        __class__: "feng3d.BillboardComponent";
 
         /**
          * 相机

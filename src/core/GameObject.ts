@@ -56,7 +56,7 @@ namespace feng3d
     export class GameObject extends AssetData implements IDisposable
     {
 
-        __class__: "feng3d.GameObject" = "feng3d.GameObject";
+        __class__: "feng3d.GameObject";
 
         assetType = AssetType.gameobject;
 

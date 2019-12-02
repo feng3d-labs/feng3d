@@ -9,7 +9,7 @@ namespace feng3d
     export class WireframeComponent extends Component
     {
 
-        __class__: "feng3d.WireframeComponent" = "feng3d.WireframeComponent";
+        __class__: "feng3d.WireframeComponent";
 
         @oav()
         color = new Color4(125 / 255, 176 / 255, 250 / 255);

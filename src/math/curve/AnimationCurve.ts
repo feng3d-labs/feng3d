@@ -8,7 +8,7 @@ namespace feng3d
      */
     export class AnimationCurve
     {
-        __class__: "feng3d.AnimationCurve" = "feng3d.AnimationCurve";
+        __class__: "feng3d.AnimationCurve";
 
         /**
          * 最大tan值，超出该值后将会变成分段

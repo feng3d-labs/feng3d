@@ -55,7 +55,7 @@ namespace feng3d
      */
     export class Texture2D extends TextureInfo
     {
-        __class__: "feng3d.Texture2D" = "feng3d.Texture2D";
+        __class__: "feng3d.Texture2D";
 
         assetType = AssetType.texture;
 

@@ -4,7 +4,7 @@ namespace feng3d
 
     export class WaterUniforms
     {
-        __class__: "feng3d.WaterUniforms" = "feng3d.WaterUniforms";
+        __class__: "feng3d.WaterUniforms";
 
         @serialize
         @oav({ tooltip: "透明度" })

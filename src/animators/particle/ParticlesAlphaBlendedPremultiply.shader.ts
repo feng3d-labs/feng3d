@@ -5,7 +5,7 @@ namespace feng3d
      */
     export class ParticlesAlphaBlendedPremultiplyUniforms
     {
-        __class__: "feng3d.ParticlesAlphaBlendedPremultiplyUniforms" = "feng3d.ParticlesAlphaBlendedPremultiplyUniforms";
+        __class__: "feng3d.ParticlesAlphaBlendedPremultiplyUniforms";
 
         /**
          * 粒子贴图

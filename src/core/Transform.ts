@@ -28,7 +28,7 @@ namespace feng3d
 	 */
     export class Transform extends Component
     {
-        __class__: "feng3d.Transform" = "feng3d.Transform";
+        __class__: "feng3d.Transform";
 
         get single() { return true; }
 

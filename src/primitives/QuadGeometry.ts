@@ -7,7 +7,7 @@ namespace feng3d
      */
     export class QuadGeometry extends Geometry
     {
-        __class__: "feng3d.QuadGeometry" = "feng3d.QuadGeometry";
+        __class__: "feng3d.QuadGeometry";
 
         constructor()
         {

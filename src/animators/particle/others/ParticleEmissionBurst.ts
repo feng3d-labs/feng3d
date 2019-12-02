@@ -2,7 +2,7 @@ namespace feng3d
 {
     export class ParticleEmissionBurst
     {
-        __class__: "feng3d.ParticleEmissionBurst" = "feng3d.ParticleEmissionBurst";
+        __class__: "feng3d.ParticleEmissionBurst";
 
         /**
          * The time that each burst occurs.

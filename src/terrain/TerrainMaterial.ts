@@ -4,7 +4,7 @@ namespace feng3d
 
     export class TerrainUniforms extends StandardUniforms
     {
-        __class__: "feng3d.TerrainUniforms" = "feng3d.TerrainUniforms";
+        __class__: "feng3d.TerrainUniforms";
 
         @serialize
         @oav({ block: "terrain" })

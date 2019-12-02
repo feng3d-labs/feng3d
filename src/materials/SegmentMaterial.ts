@@ -8,7 +8,7 @@ namespace feng3d
      */
     export class SegmentUniforms
     {
-        __class__: "feng3d.SegmentUniforms" = "feng3d.SegmentUniforms";
+        __class__: "feng3d.SegmentUniforms";
 
         /** 
          * 颜色

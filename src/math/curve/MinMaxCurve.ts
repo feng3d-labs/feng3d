@@ -5,7 +5,7 @@ namespace feng3d
      */
     export class MinMaxCurve
     {
-        __class__: "feng3d.MinMaxCurve" = "feng3d.MinMaxCurve";
+        __class__: "feng3d.MinMaxCurve";
 
         /**
          * 模式

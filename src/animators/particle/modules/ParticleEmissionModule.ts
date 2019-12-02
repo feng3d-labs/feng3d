@@ -5,7 +5,7 @@ namespace feng3d
      */
     export class ParticleEmissionModule extends ParticleModule
     {
-        __class__: "feng3d.ParticleEmissionModule" = "feng3d.ParticleEmissionModule";
+        __class__: "feng3d.ParticleEmissionModule";
 
         /**
          * 随着时间的推移，新粒子产生的速度。

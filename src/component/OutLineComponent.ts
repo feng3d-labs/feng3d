@@ -4,7 +4,7 @@ namespace feng3d
 
     export class OutLineComponent extends Component
     {
-        __class__: "feng3d.OutLineComponent" = "feng3d.OutLineComponent";
+        __class__: "feng3d.OutLineComponent";
 
         @oav()
         @serialize

@@ -9,7 +9,7 @@ namespace feng3d
      */
     export class Material extends AssetData
     {
-        __class__: "feng3d.Material" = "feng3d.Material";
+        __class__: "feng3d.Material";
 
         static create<K extends keyof UniformsMap>(shaderName: K, uniforms?: gPartial<UniformsMap[K]>, renderParams?: gPartial<RenderParams>)
         {

@@ -5,7 +5,7 @@ namespace feng3d
      */
     export class ParticleMainModule extends ParticleModule
     {
-        __class__: "feng3d.ParticleMainModule" = "feng3d.ParticleMainModule";
+        __class__: "feng3d.ParticleMainModule";
 
         @oav({ exclude: true })
         enabled = true;

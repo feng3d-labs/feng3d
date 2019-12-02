@@ -9,7 +9,7 @@ namespace feng3d
     // @ov({ component: "OVTerrain" })
     export class Terrain extends Model
     {
-        __class__: "feng3d.Terrain" = "feng3d.Terrain";
+        __class__: "feng3d.Terrain";
 
         /**
          * 地形资源

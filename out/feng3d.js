@@ -8208,7 +8208,6 @@ var feng3d;
             if (r === void 0) { r = 1; }
             if (g === void 0) { g = 1; }
             if (b === void 0) { b = 1; }
-            this.__class__ = "feng3d.Color3";
             /**
              * 红[0,1]
              */
@@ -8414,7 +8413,6 @@ var feng3d;
             if (g === void 0) { g = 1; }
             if (b === void 0) { b = 1; }
             if (a === void 0) { a = 1; }
-            this.__class__ = "feng3d.Color4";
             /**
              * 红[0,1]
              */
@@ -8623,7 +8621,6 @@ var feng3d;
         function Vector2(x, y) {
             if (x === void 0) { x = 0; }
             if (y === void 0) { y = 0; }
-            this.__class__ = "feng3d.Vector2";
             this.x = x;
             this.y = y;
         }
@@ -9791,7 +9788,6 @@ var feng3d;
             if (y === void 0) { y = 0; }
             if (z === void 0) { z = 0; }
             if (w === void 0) { w = 0; }
-            this.__class__ = "feng3d.Vector4";
             /**
             * Vector4 对象中的第一个元素。默认值为 0
             */
@@ -14716,7 +14712,6 @@ var feng3d;
      */
     var Gradient = /** @class */ (function () {
         function Gradient() {
-            this.__class__ = "feng3d.Gradient";
             /**
              * 渐变模式
              */
@@ -14872,7 +14867,6 @@ var feng3d;
      */
     var MinMaxGradient = /** @class */ (function () {
         function MinMaxGradient() {
-            this.__class__ = "feng3d.MinMaxGradient";
             /**
              * Set the mode that the min-max gradient will use to evaluate colors.
              *
@@ -15523,7 +15517,6 @@ var feng3d;
      */
     var AnimationCurve = /** @class */ (function () {
         function AnimationCurve() {
-            this.__class__ = "feng3d.AnimationCurve";
             /**
              * 最大tan值，超出该值后将会变成分段
              */
@@ -15785,7 +15778,6 @@ var feng3d;
      */
     var MinMaxCurve = /** @class */ (function () {
         function MinMaxCurve() {
-            this.__class__ = "feng3d.MinMaxCurve";
             /**
              * 模式
              */
@@ -16720,9 +16712,10 @@ var feng3d;
         AssetData.isAssetData = function (asset) {
             if (!asset || asset.assetId == undefined)
                 return false;
+            if (asset instanceof AssetData)
+                return true;
             if (feng3d.classUtils.getDefaultInstanceByName(asset[feng3d.CLASS_KEY]) instanceof AssetData)
                 return true;
-            return false;
         };
         /**
          * 序列化
@@ -22900,7 +22893,6 @@ var feng3d;
         __extends(Graphics, _super);
         function Graphics() {
             var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.Graphics";
             _this.canvas = document.createElement("canvas");
             _this.canvas.width = _this.width;
             _this.canvas.height = _this.height;
@@ -23010,7 +23002,6 @@ var feng3d;
         __extends(SkyBox, _super);
         function SkyBox() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.SkyBox";
             _this.s_skyboxTexture = feng3d.TextureCube.default;
             return _this;
         }
@@ -23192,7 +23183,6 @@ var feng3d;
          */
         function Transform() {
             var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.Transform";
             _this._position = new feng3d.Vector3();
             _this._rotation = new feng3d.Vector3();
             _this._orientation = new feng3d.Quaternion();
@@ -23792,7 +23782,6 @@ var feng3d;
          */
         function GameObject() {
             var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.GameObject";
             _this.assetType = feng3d.AssetType.gameobject;
             _this.renderAtomic = new feng3d.RenderAtomic();
             /**
@@ -24824,7 +24813,6 @@ var feng3d;
         __extends(HoldSizeComponent, _super);
         function HoldSizeComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.HoldSizeComponent";
             _this._holdSize = 1;
             return _this;
         }
@@ -24915,9 +24903,7 @@ var feng3d;
     var BillboardComponent = /** @class */ (function (_super) {
         __extends(BillboardComponent, _super);
         function BillboardComponent() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.BillboardComponent";
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         Object.defineProperty(BillboardComponent.prototype, "camera", {
             /**
@@ -24978,7 +24964,6 @@ var feng3d;
         __extends(WireframeComponent, _super);
         function WireframeComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.WireframeComponent";
             _this.color = new feng3d.Color4(125 / 255, 176 / 255, 250 / 255);
             return _this;
         }
@@ -24998,7 +24983,6 @@ var feng3d;
         __extends(CartoonComponent, _super);
         function CartoonComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.CartoonComponent";
             _this.outlineSize = 1;
             _this.outlineColor = new feng3d.Color4(0.2, 0.2, 0.2, 1.0);
             _this.outlineMorphFactor = 0.0;
@@ -25071,7 +25055,6 @@ var feng3d;
         __extends(OutLineComponent, _super);
         function OutLineComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.OutLineComponent";
             _this.size = 1;
             _this.color = new feng3d.Color4(0.2, 0.2, 0.2, 1.0);
             _this.outlineMorphFactor = 0.0;
@@ -25289,9 +25272,7 @@ var feng3d;
     var MeshModel = /** @class */ (function (_super) {
         __extends(MeshModel, _super);
         function MeshModel() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.MeshModel";
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         return MeshModel;
     }(feng3d.Model));
@@ -25457,7 +25438,6 @@ var feng3d;
         __extends(Scene3D, _super);
         function Scene3D() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.Scene3D";
             /**
              * 背景颜色
              */
@@ -26174,9 +26154,7 @@ var feng3d;
     var CustomGeometry = /** @class */ (function (_super) {
         __extends(CustomGeometry, _super);
         function CustomGeometry() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.CustomGeometry";
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         Object.defineProperty(CustomGeometry.prototype, "indicesBase", {
             /**
@@ -26769,7 +26747,6 @@ var feng3d;
         __extends(PointGeometry, _super);
         function PointGeometry() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.PointGeometry";
             _this._points = [];
             return _this;
         }
@@ -26836,7 +26813,6 @@ var feng3d;
         __extends(SegmentGeometry, _super);
         function SegmentGeometry() {
             var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.SegmentGeometry";
             _this.name = "Segment";
             _this._segments = [];
             return _this;
@@ -27367,7 +27343,6 @@ var feng3d;
         __extends(Camera, _super);
         function Camera() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.Camera";
             _this._projection = feng3d.Projection.Perspective;
             _this._viewProjection = new feng3d.Matrix4x4();
             _this._viewProjectionInvalid = true;
@@ -27581,7 +27556,6 @@ var feng3d;
         __extends(QuadGeometry, _super);
         function QuadGeometry() {
             var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.QuadGeometry";
             var size = 0.5;
             _this.positions = [-size, size, 0, size, size, 0, size, -size, 0, -size, -size, 0];
             _this.uvs = [0, 0, 1, 0, 1, 1, 0, 1];
@@ -27604,7 +27578,6 @@ var feng3d;
         __extends(PlaneGeometry, _super);
         function PlaneGeometry() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.PlaneGeometry";
             _this._width = 1;
             _this._height = 1;
             _this._segmentsW = 1;
@@ -27881,7 +27854,6 @@ var feng3d;
         __extends(CubeGeometry, _super);
         function CubeGeometry() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.CubeGeometry";
             _this.name = "Cube";
             _this._width = 1;
             _this._height = 1;
@@ -28391,7 +28363,6 @@ var feng3d;
         __extends(SphereGeometry, _super);
         function SphereGeometry() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.SphereGeometry";
             _this._radius = 0.5;
             _this._segmentsW = 16;
             _this._segmentsH = 12;
@@ -28625,7 +28596,6 @@ var feng3d;
         __extends(CapsuleGeometry, _super);
         function CapsuleGeometry() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.CapsuleGeometry";
             _this._radius = 0.5;
             _this._height = 1;
             _this._segmentsW = 16;
@@ -28882,7 +28852,6 @@ var feng3d;
         __extends(CylinderGeometry, _super);
         function CylinderGeometry() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.CylinderGeometry";
             _this._topRadius = 0.5;
             _this._bottomRadius = 0.5;
             _this._height = 2;
@@ -29723,7 +29692,6 @@ var feng3d;
         __extends(Texture2D, _super);
         function Texture2D() {
             var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.Texture2D";
             _this.assetType = feng3d.AssetType.texture;
             /**
              * 当贴图数据未加载好等情况时代替使用
@@ -29985,7 +29953,6 @@ var feng3d;
         __extends(TextureCube, _super);
         function TextureCube() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.TextureCube";
             _this.assetType = feng3d.AssetType.texturecube;
             _this.OAVCubeMap = "";
             _this.noPixels = [feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white, feng3d.ImageDatas.white];
@@ -30154,7 +30121,6 @@ var feng3d;
         __extends(Material, _super);
         function Material() {
             var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.Material";
             //
             _this.renderAtomic = new feng3d.RenderAtomic();
             _this.preview = "";
@@ -30353,7 +30319,6 @@ var feng3d;
     })(FogMode = feng3d.FogMode || (feng3d.FogMode = {}));
     var StandardUniforms = /** @class */ (function () {
         function StandardUniforms() {
-            this.__class__ = "feng3d.StandardUniforms";
             /**
              * 点绘制时点的尺寸
              */
@@ -30501,7 +30466,6 @@ var feng3d;
 (function (feng3d) {
     var PointUniforms = /** @class */ (function () {
         function PointUniforms() {
-            this.__class__ = "feng3d.PointUniforms";
             /**
              * 颜色
              */
@@ -30528,7 +30492,6 @@ var feng3d;
 (function (feng3d) {
     var ColorUniforms = /** @class */ (function () {
         function ColorUniforms() {
-            this.__class__ = "feng3d.ColorUniforms";
             /**
              * 颜色
              */
@@ -30547,7 +30510,6 @@ var feng3d;
 (function (feng3d) {
     var TextureUniforms = /** @class */ (function () {
         function TextureUniforms() {
-            this.__class__ = "feng3d.TextureUniforms";
             /**
              * 颜色
              */
@@ -30578,7 +30540,6 @@ var feng3d;
      */
     var SegmentUniforms = /** @class */ (function () {
         function SegmentUniforms() {
-            this.__class__ = "feng3d.SegmentUniforms";
             /**
              * 颜色
              */
@@ -30796,7 +30757,6 @@ var feng3d;
         __extends(DirectionalLight, _super);
         function DirectionalLight() {
             var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.DirectionalLight";
             _this.lightType = feng3d.LightType.Directional;
             return _this;
         }
@@ -30849,7 +30809,6 @@ var feng3d;
         __extends(PointLight, _super);
         function PointLight() {
             var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.PointLight";
             _this.lightType = feng3d.LightType.Point;
             _this._range = 10;
             _this.shadowCamera.lens = new feng3d.PerspectiveLens(90, 1, 0.1, _this.range);
@@ -32195,7 +32154,6 @@ var feng3d;
         __extends(Water, _super);
         function Water() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.Water";
             _this.geometry = feng3d.Geometry.getDefault("Plane");
             _this.material = feng3d.Material.getDefault("Water-Material");
             /**
@@ -32282,7 +32240,6 @@ var feng3d;
 (function (feng3d) {
     var WaterUniforms = /** @class */ (function () {
         function WaterUniforms() {
-            this.__class__ = "feng3d.WaterUniforms";
             this.u_alpha = 1.0;
             /**
              * 水体运动时间，默认自动递增
@@ -32659,7 +32616,6 @@ var feng3d;
         __extends(TerrainUniforms, _super);
         function TerrainUniforms() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.TerrainUniforms";
             _this.s_splatTexture1 = feng3d.Texture2D.default;
             _this.s_splatTexture2 = feng3d.Texture2D.default;
             _this.s_splatTexture3 = feng3d.Texture2D.default;
@@ -32875,7 +32831,6 @@ var feng3d;
         __extends(Terrain, _super);
         function Terrain() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.Terrain";
             _this.geometry = feng3d.Geometry.getDefault("Terrain-Geometry");
             _this.material = feng3d.Material.getDefault("Terrain-Material");
             return _this;
@@ -32975,7 +32930,6 @@ var feng3d;
      */
     var ParticlesAdditiveUniforms = /** @class */ (function () {
         function ParticlesAdditiveUniforms() {
-            this.__class__ = "feng3d.ParticlesAdditiveUniforms";
             this._TintColor = new feng3d.Color4(0.5, 0.5, 0.5, 0.5);
             /**
              * 粒子贴图
@@ -33020,7 +32974,6 @@ var feng3d;
      */
     var ParticlesAlphaBlendedPremultiplyUniforms = /** @class */ (function () {
         function ParticlesAlphaBlendedPremultiplyUniforms() {
-            this.__class__ = "feng3d.ParticlesAlphaBlendedPremultiplyUniforms";
             /**
              * 粒子贴图
              */
@@ -33066,7 +33019,6 @@ var feng3d;
         __extends(ParticleSystem, _super);
         function ParticleSystem() {
             var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.ParticleSystem";
             _this._isPlaying = false;
             /**
              * Playback position in seconds.
@@ -33865,7 +33817,6 @@ var feng3d;
 (function (feng3d) {
     var ParticleEmissionBurst = /** @class */ (function () {
         function ParticleEmissionBurst() {
-            this.__class__ = "feng3d.ParticleEmissionBurst";
             /**
              * The time that each burst occurs.
              * 每次爆炸发生的时间。
@@ -35103,7 +35054,6 @@ var feng3d;
         __extends(ParticleMainModule, _super);
         function ParticleMainModule() {
             var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.ParticleMainModule";
             _this.enabled = true;
             /**
              * 粒子系统的持续时间(秒)。
@@ -35689,7 +35639,6 @@ var feng3d;
         __extends(ParticleEmissionModule, _super);
         function ParticleEmissionModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.ParticleEmissionModule";
             /**
              * 随着时间的推移，新粒子产生的速度。
              */
@@ -35811,7 +35760,6 @@ var feng3d;
         __extends(ParticleShapeModule, _super);
         function ParticleShapeModule() {
             var _this = _super.call(this) || this;
-            _this.__class__ = "feng3d.ParticleShapeModule";
             /**
              * Align particles based on their initial direction of travel.
              * 根据粒子的初始运动方向排列粒子。
@@ -36276,7 +36224,6 @@ var feng3d;
         __extends(ParticleVelocityOverLifetimeModule, _super);
         function ParticleVelocityOverLifetimeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.ParticleVelocityOverLifetimeModule";
             /**
              * Curve to control particle speed based on lifetime.
              *
@@ -36428,7 +36375,6 @@ var feng3d;
         __extends(ParticleLimitVelocityOverLifetimeModule, _super);
         function ParticleLimitVelocityOverLifetimeModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.ParticleLimitVelocityOverLifetimeModule";
             /**
              * Set the size over lifetime on each axis separately.
              *
@@ -38014,7 +37960,6 @@ var feng3d;
         __extends(SkeletonComponent, _super);
         function SkeletonComponent() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.SkeletonComponent";
             /** 骨骼关节数据列表 */
             _this.joints = [];
             //
@@ -38154,7 +38099,6 @@ var feng3d;
         __extends(SkinnedModel, _super);
         function SkinnedModel() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.__class__ = "feng3d.SkinnedModel";
             _this.cacheU_skeletonGlobalMatriices = {};
             return _this;
         }

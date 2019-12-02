@@ -12,7 +12,7 @@ namespace feng3d
 	 */
     export class Camera extends Component
     {
-        __class__: "feng3d.Camera" = "feng3d.Camera";
+        __class__: "feng3d.Camera";
 
         get single() { return true; }
 

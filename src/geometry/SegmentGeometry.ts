@@ -8,7 +8,7 @@ namespace feng3d
     export class SegmentGeometry extends Geometry
     {
 
-        __class__: "feng3d.SegmentGeometry" = "feng3d.SegmentGeometry";
+        __class__: "feng3d.SegmentGeometry";
 
         name = "Segment";
 

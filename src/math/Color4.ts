@@ -6,7 +6,7 @@ namespace feng3d
     export class Color4
     {
 
-        __class__: "feng3d.Color4" = "feng3d.Color4";
+        __class__: "feng3d.Color4";
 
         static WHITE = new Color4();
         static BLACK = new Color4(0, 0, 0);

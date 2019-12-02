@@ -5,7 +5,7 @@ namespace feng3d
      */
     export class Graphics extends Component 
     {
-        __class__: "feng3d.Graphics" = "feng3d.Graphics";
+        __class__: "feng3d.Graphics";
 
         private image: HTMLImageElement
         private context2D: CanvasRenderingContext2D;

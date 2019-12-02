@@ -18,7 +18,7 @@ namespace feng3d
     export class Scene3D extends Component
     {
 
-        __class__: "feng3d.Scene3D" = "feng3d.Scene3D";
+        __class__: "feng3d.Scene3D";
 
         /**
          * 背景颜色

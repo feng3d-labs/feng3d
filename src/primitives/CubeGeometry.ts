@@ -8,7 +8,7 @@ namespace feng3d
      */
     export class CubeGeometry extends Geometry
     {
-        __class__: "feng3d.CubeGeometry" = "feng3d.CubeGeometry";
+        __class__: "feng3d.CubeGeometry";
 
         name = "Cube";
 
