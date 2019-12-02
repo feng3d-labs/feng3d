@@ -7,6 +7,8 @@ namespace feng3d
      */
     export class ParticleInheritVelocityModule extends ParticleModule
     {
+        "__class__": "feng3d.ParticleInheritVelocityModule" = "feng3d.ParticleInheritVelocityModule";
+
         /**
          * How to apply emitter velocity to particles.
          * 
@@ -62,7 +64,7 @@ namespace feng3d
         initParticleState(particle: Particle)
         {
             particle[_InheritVelocity_rate] = Math.random();
-            
+
             if (!this.enabled) return;
             if (this.particleSystem.main.simulationSpace == ParticleSystemSimulationSpace.Local) return;
             if (this.mode != ParticleSystemInheritVelocityMode.Initial) return;

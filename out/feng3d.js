@@ -8624,6 +8624,7 @@ var feng3d;
         function Vector2(x, y) {
             if (x === void 0) { x = 0; }
             if (y === void 0) { y = 0; }
+            this.__class__ = "feng3d.Vector2";
             this.x = x;
             this.y = y;
         }
@@ -36657,6 +36658,7 @@ var feng3d;
         __extends(ParticleInheritVelocityModule, _super);
         function ParticleInheritVelocityModule() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this["__class__"] = "feng3d.ParticleInheritVelocityModule";
             /**
              * How to apply emitter velocity to particles.
              *

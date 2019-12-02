@@ -3975,6 +3975,7 @@ declare namespace feng3d {
      * Point 对象表示二维坐标系统中的某个位置，其中 x 表示水平轴，y 表示垂直轴。
      */
     class Vector2 {
+        __class__: "feng3d.Vector2";
         /**
          * 原点
          */
@@ -16558,6 +16559,7 @@ declare namespace feng3d {
      * 遗传速度模块控制发射体的速度在粒子发射时如何传递到粒子上。（只有粒子系统在世界空间中模拟时生效）
      */
     class ParticleInheritVelocityModule extends ParticleModule {
+        "__class__": "feng3d.ParticleInheritVelocityModule";
         /**
          * How to apply emitter velocity to particles.
          *

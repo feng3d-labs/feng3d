@@ -8,6 +8,8 @@ namespace feng3d
      */
     export class Vector2
     {
+        __class__: "feng3d.Vector2" = "feng3d.Vector2";
+
         /**
          * 原点
          */
