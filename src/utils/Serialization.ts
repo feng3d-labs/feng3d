@@ -211,8 +211,6 @@ namespace feng3d
         }
     }
 
-    export var CLASS_KEY = "__class__";
-
     var SERIALIZE_KEY = "_serialize__";
 
     /**

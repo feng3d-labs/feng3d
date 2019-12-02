@@ -580,7 +580,6 @@ declare namespace feng3d {
          */
         clone<T>(target: T): T;
     }
-    export var CLASS_KEY: string;
     export interface SerializationTempInfo {
         loadingNum?: number;
         onLoaded?: () => void;
@@ -1352,6 +1351,7 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    var CLASS_KEY: string;
     /**
      * 类工具
      */

@@ -1051,7 +1051,6 @@ var feng3d;
         return Serialization;
     }());
     feng3d.Serialization = Serialization;
-    feng3d.CLASS_KEY = "__class__";
     var SERIALIZE_KEY = "_serialize__";
     /**
      * 获取序列化属性列表
@@ -2477,7 +2476,7 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var CLASS_KEY = "__class__";
+    feng3d.CLASS_KEY = "__class__";
     /**
      * 类工具
      */
@@ -2495,8 +2494,8 @@ var feng3d;
             if (value == null)
                 return "null";
             var prototype = value.prototype ? value.prototype : Object.getPrototypeOf(value);
-            if (prototype.hasOwnProperty(CLASS_KEY))
-                return prototype[CLASS_KEY];
+            if (prototype.hasOwnProperty(feng3d.CLASS_KEY))
+                return prototype[feng3d.CLASS_KEY];
             var className = prototype.constructor.name;
             if (_global[className] == prototype.constructor)
                 return className;
@@ -2599,7 +2598,7 @@ var feng3d;
      */
     function registerClass(classDefinition, className) {
         var prototype = classDefinition.prototype;
-        Object.defineProperty(prototype, CLASS_KEY, { value: className, writable: true });
+        Object.defineProperty(prototype, feng3d.CLASS_KEY, { value: className, writable: true, enumerable: false });
     }
 })(feng3d || (feng3d = {}));
 var feng3d;
@@ -8949,7 +8948,6 @@ var feng3d;
             if (x === void 0) { x = 0; }
             if (y === void 0) { y = 0; }
             if (z === void 0) { z = 0; }
-            this.__class__ = "feng3d.Vector3";
             /**
             * Vector3 对象中的第一个元素，例如，三维空间中某个点的 x 坐标。默认值为 0
             */

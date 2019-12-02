@@ -5,8 +5,7 @@ namespace feng3d
      */
     export class Vector3
     {
-
-        __class__: "feng3d.Vector3" = "feng3d.Vector3";
+        __class__: "feng3d.Vector3";
 
         /**
         * 定义为 Vector3 对象的 x 轴，坐标为 (1,0,0)。
