@@ -9811,10 +9811,6 @@ declare namespace feng3d {
          */
         contextId: string;
         /**
-         * GL 扩展
-         */
-        extensions: GLExtension;
-        /**
          * 渲染器
          */
         renderer: Renderer;
@@ -9834,44 +9830,11 @@ declare namespace feng3d {
         static getGL(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes): GL;
         private static _toolGL;
         static getToolGL(): GL;
-    }
-}
-declare namespace feng3d {
-    /**
-     * GL扩展
-     */
-    class GLExtension {
-        aNGLEInstancedArrays: ANGLE_instanced_arrays;
-        eXTBlendMinMax: EXT_blend_minmax;
-        eXTColorBufferHalfFloat: any;
-        eXTFragDepth: EXT_frag_depth;
-        eXTsRGB: EXT_sRGB;
-        eXTShaderTextureLOD: EXT_shader_texture_lod;
-        eXTTextureFilterAnisotropic: EXT_texture_filter_anisotropic;
-        oESElementIndexUint: OES_element_index_uint;
-        oESStandardDerivatives: OES_standard_derivatives;
-        oESTextureFloat: OES_texture_float;
-        oESTextureFloatLinear: OES_texture_float_linear;
-        oESTextureHalfFloat: OES_texture_half_float;
-        oESTextureHalfFloatLinear: OES_texture_half_float_linear;
-        oESVertexArrayObject: OES_vertex_array_object;
-        webGLColorBufferFloat: WEBGL_color_buffer_float;
-        webGLCompressedTextureATC: any;
-        webGLCompressedTextureETC1: any;
-        webGLCompressedTexturePVRTC: any;
-        webGLCompressedTextureS3TC: WEBGL_compressed_texture_s3tc;
-        webGLDebugRendererInfo: WEBGL_debug_renderer_info;
-        webGLDebugShaders: WEBGL_debug_shaders;
-        webGLDepthTexture: WEBGL_depth_texture;
-        webGLDrawBuffers: WEBGL_draw_buffers;
-        webGLLoseContext: any;
-        constructor(gl: GL);
-        private initExtensions;
         /**
          * 缓存GL查询
          * @param gl GL实例
          */
-        private cacheGLQuery;
+        private static cacheGLQuery;
     }
 }
 declare namespace feng3d {

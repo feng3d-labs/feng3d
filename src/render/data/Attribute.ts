@@ -160,9 +160,9 @@ namespace feng3d
             {
                 var gl2: WebGL2RenderingContext = <any>gl;
                 gl2.vertexAttribDivisor(location, this.divisor);
-            } else if (!!gl.extensions.aNGLEInstancedArrays)
+            } else if (gl.getExtension("ANGLE_instanced_arrays"))
             {
-                gl.extensions.aNGLEInstancedArrays.vertexAttribDivisorANGLE(location, this.divisor);
+                gl.getExtension("ANGLE_instanced_arrays").vertexAttribDivisorANGLE(location, this.divisor);
             } else
             {
                 console.warn(`浏览器 不支持 vertexAttribDivisor ！`);

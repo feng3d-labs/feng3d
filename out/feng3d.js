@@ -20460,7 +20460,7 @@ var feng3d;
             //
             gl.capabilities = new feng3d.WebGLCapabilities(gl);
             //
-            new feng3d.GLExtension(gl);
+            this.cacheGLQuery(gl);
             new feng3d.Renderer(gl);
             gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
             gl.clearDepth(1.0); // Clear everything
@@ -20476,64 +20476,11 @@ var feng3d;
             }
             return this._toolGL;
         };
-        GL.glList = [];
-        return GL;
-    }());
-    feng3d.GL = GL;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * GL扩展
-     */
-    var GLExtension = /** @class */ (function () {
-        function GLExtension(gl) {
-            feng3d.debuger && console.assert(!gl.extensions, gl + " " + gl.extensions + " \u5B58\u5728\uFF01");
-            gl.extensions = this;
-            this.initExtensions(gl);
-            this.cacheGLQuery(gl);
-        }
-        GLExtension.prototype.initExtensions = function (gl) {
-            this.aNGLEInstancedArrays = gl.getExtension("ANGLE_instanced_arrays");
-            this.eXTBlendMinMax = gl.getExtension("EXT_blend_minmax");
-            this.eXTColorBufferHalfFloat = gl.getExtension("EXT_color_buffer_half_float");
-            this.eXTFragDepth = gl.getExtension("EXT_frag_depth");
-            this.eXTsRGB = gl.getExtension("EXT_sRGB");
-            this.eXTShaderTextureLOD = gl.getExtension("EXT_shader_texture_lod");
-            this.eXTTextureFilterAnisotropic = gl.getExtension("EXT_texture_filter_anisotropic");
-            this.oESElementIndexUint = gl.getExtension("OES_element_index_uint");
-            this.oESStandardDerivatives = gl.getExtension("OES_standard_derivatives");
-            this.oESTextureFloat = gl.getExtension("OES_texture_float");
-            this.oESTextureFloatLinear = gl.getExtension("OES_texture_float_linear");
-            this.oESTextureHalfFloat = gl.getExtension("OES_texture_half_float");
-            this.oESTextureHalfFloatLinear = gl.getExtension("OES_texture_half_float_linear");
-            this.oESVertexArrayObject = gl.getExtension("OES_vertex_array_object");
-            this.webGLColorBufferFloat = gl.getExtension("WEBGL_color_buffer_float");
-            this.webGLCompressedTextureATC = gl.getExtension("WEBGL_compressed_texture_atc");
-            this.webGLCompressedTextureETC1 = gl.getExtension("WEBGL_compressed_texture_etc1");
-            this.webGLCompressedTexturePVRTC = gl.getExtension("WEBGL_compressed_texture_pvrtc");
-            this.webGLCompressedTextureS3TC = gl.getExtension("WEBGL_compressed_texture_s3tc");
-            this.webGLDebugRendererInfo = gl.getExtension("WEBGL_debug_renderer_info");
-            this.webGLDebugShaders = gl.getExtension("WEBGL_debug_shaders");
-            this.webGLDepthTexture = gl.getExtension("WEBGL_depth_texture");
-            this.webGLDrawBuffers = gl.getExtension("WEBGL_draw_buffers");
-            this.webGLLoseContext = gl.getExtension("WEBGL_lose_context");
-            // Prefixed versions appearing in the wild as per September 2015
-            this.eXTTextureFilterAnisotropic = this.eXTTextureFilterAnisotropic || gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic");
-            this.webGLCompressedTextureATC = this.webGLCompressedTextureATC || gl.getExtension("WEBKIT_WEBGL_compressed_texture_atc");
-            this.webGLCompressedTexturePVRTC = this.webGLCompressedTexturePVRTC || gl.getExtension("WEBKIT_WEBGL_compressed_texture_pvrtc");
-            this.webGLCompressedTextureS3TC = this.webGLCompressedTextureS3TC || gl.getExtension("WEBKIT_WEBGL_compressed_texture_s3tc");
-            this.webGLDepthTexture = this.webGLDepthTexture || gl.getExtension("WEBKIT_WEBGL_depth_texture");
-            this.webGLLoseContext = this.webGLLoseContext || gl.getExtension("WEBKIT_WEBGL_lose_context");
-            this.webGLCompressedTextureS3TC = this.webGLCompressedTextureS3TC || gl.getExtension("MOZ_WEBGL_compressed_texture_s3tc");
-            this.webGLDepthTexture = this.webGLDepthTexture || gl.getExtension("MOZ_WEBGL_depth_texture");
-            this.webGLLoseContext = this.webGLLoseContext || gl.getExtension("MOZ_WEBGL_lose_context");
-        };
         /**
          * 缓存GL查询
          * @param gl GL实例
          */
-        GLExtension.prototype.cacheGLQuery = function (gl) {
+        GL.cacheGLQuery = function (gl) {
             var extensions = {};
             var oldGetExtension = gl.getExtension;
             gl.getExtension = function (name) {
@@ -20548,9 +20495,10 @@ var feng3d;
                 return parameters[pname];
             };
         };
-        return GLExtension;
+        GL.glList = [];
+        return GL;
     }());
-    feng3d.GLExtension = GLExtension;
+    feng3d.GL = GL;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -21188,8 +21136,8 @@ var feng3d;
                 var gl2 = gl;
                 gl2.vertexAttribDivisor(location, this.divisor);
             }
-            else if (!!gl.extensions.aNGLEInstancedArrays) {
-                gl.extensions.aNGLEInstancedArrays.vertexAttribDivisorANGLE(location, this.divisor);
+            else if (gl.getExtension("ANGLE_instanced_arrays")) {
+                gl.getExtension("ANGLE_instanced_arrays").vertexAttribDivisorANGLE(location, this.divisor);
             }
             else {
                 console.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 vertexAttribDivisor \uFF01");
@@ -21533,16 +21481,18 @@ var feng3d;
             gl.texParameteri(textureType, gl.TEXTURE_WRAP_T, wrapT);
             //
             if (this.anisotropy) {
-                var eXTTextureFilterAnisotropic = gl.extensions.eXTTextureFilterAnisotropic;
-                if (eXTTextureFilterAnisotropic) {
-                    if (this.anisotropy > gl.maxAnisotropy) {
-                        this.anisotropy = gl.maxAnisotropy;
+                var ext = gl.getExtension("EXT_texture_filter_anisotropic");
+                if (ext) {
+                    var maxAnisotropy = gl.getParameter(gl.getExtension("EXT_texture_filter_anisotropic").MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+                    var anisotropy = this.anisotropy;
+                    if (this.anisotropy > maxAnisotropy) {
+                        anisotropy = maxAnisotropy;
                         console.warn(this.anisotropy + " \u8D85\u51FA maxAnisotropy \u7684\u6700\u5927\u503C " + gl.maxAnisotropy + " \uFF01,\u4F7F\u7528\u6700\u5927\u503C\u66FF\u6362\u3002");
                     }
-                    gl.texParameterf(textureType, eXTTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, this.anisotropy);
+                    gl.texParameterf(textureType, ext.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
                 }
                 else {
-                    feng3d.debuger && alert("浏览器不支持各向异性过滤（anisotropy）特性！");
+                    feng3d.debuger && console.warn("浏览器不支持各向异性过滤（anisotropy）特性！");
                 }
             }
             return texture;
@@ -22288,8 +22238,8 @@ var feng3d;
                             var gl2 = gl;
                             gl2.drawElementsInstanced(renderMode, indexBuffer.count, arrayType, indexBuffer.offset, instanceCount);
                         }
-                        else if (!!gl.extensions.aNGLEInstancedArrays) {
-                            gl.extensions.aNGLEInstancedArrays.drawElementsInstancedANGLE(renderMode, indexBuffer.count, arrayType, indexBuffer.offset, instanceCount);
+                        else if (!!gl.getExtension("ANGLE_instanced_arrays")) {
+                            gl.getExtension("ANGLE_instanced_arrays").drawElementsInstancedANGLE(renderMode, indexBuffer.count, arrayType, indexBuffer.offset, instanceCount);
                         }
                         else {
                             console.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 drawElementsInstanced \uFF01");
@@ -22318,8 +22268,8 @@ var feng3d;
                             var gl2 = gl;
                             gl2.drawArraysInstanced(renderMode, 0, vertexNum, instanceCount);
                         }
-                        else if (!!gl.extensions.aNGLEInstancedArrays) {
-                            gl.extensions.aNGLEInstancedArrays.drawArraysInstancedANGLE(renderMode, 0, vertexNum, instanceCount);
+                        else if (gl.getExtension("ANGLE_instanced_arrays")) {
+                            gl.getExtension("ANGLE_instanced_arrays").drawArraysInstancedANGLE(renderMode, 0, vertexNum, instanceCount);
                         }
                         else {
                             console.warn("\u6D4F\u89C8\u5668 \u4E0D\u652F\u6301 drawArraysInstanced \uFF01");

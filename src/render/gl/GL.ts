@@ -18,11 +18,6 @@ namespace feng3d
         contextId: string;
 
         /**
-         * GL 扩展
-         */
-        extensions: GLExtension;
-
-        /**
          * 渲染器
          */
         renderer: Renderer;
@@ -67,7 +62,7 @@ namespace feng3d
             //
             gl.capabilities = new WebGLCapabilities(gl);
             //
-            new GLExtension(gl);
+            this.cacheGLQuery(gl);
             new Renderer(gl);
             gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
             gl.clearDepth(1.0);                 // Clear everything
@@ -86,6 +81,29 @@ namespace feng3d
                 this._toolGL = this.getGL(canvas);
             }
             return this._toolGL;
+        }
+
+        /**
+         * 缓存GL查询
+         * @param gl GL实例
+         */
+        private static cacheGLQuery(gl: GL)
+        {
+            var extensions = {};
+            var oldGetExtension = gl.getExtension;
+            gl.getExtension = function (name: string)
+            {
+                extensions[name] = extensions[name] || oldGetExtension.apply(gl, arguments);
+                return extensions[name];
+            }
+            //
+            var oldGetParameter = gl.getParameter;
+            var parameters = {};
+            gl.getParameter = function (pname: number)
+            {
+                parameters[pname] = parameters[pname] || oldGetParameter.apply(gl, arguments)
+                return parameters[pname];
+            }
         }
     }
 }

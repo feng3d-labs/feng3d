@@ -291,9 +291,9 @@ namespace feng3d
                         {
                             var gl2: WebGL2RenderingContext = <any>gl;
                             gl2.drawElementsInstanced(renderMode, indexBuffer.count, arrayType, indexBuffer.offset, instanceCount);
-                        } else if (!!gl.extensions.aNGLEInstancedArrays)
+                        } else if (!!gl.getExtension("ANGLE_instanced_arrays"))
                         {
-                            gl.extensions.aNGLEInstancedArrays.drawElementsInstancedANGLE(renderMode, indexBuffer.count, arrayType, indexBuffer.offset, instanceCount);
+                            gl.getExtension("ANGLE_instanced_arrays").drawElementsInstancedANGLE(renderMode, indexBuffer.count, arrayType, indexBuffer.offset, instanceCount);
                         } else
                         {
                             console.warn(`浏览器 不支持 drawElementsInstanced ！`);
@@ -328,9 +328,9 @@ namespace feng3d
                         {
                             var gl2: WebGL2RenderingContext = <any>gl;
                             gl2.drawArraysInstanced(renderMode, 0, vertexNum, instanceCount);
-                        } else if (!!gl.extensions.aNGLEInstancedArrays)
+                        } else if (gl.getExtension("ANGLE_instanced_arrays"))
                         {
-                            gl.extensions.aNGLEInstancedArrays.drawArraysInstancedANGLE(renderMode, 0, vertexNum, instanceCount);
+                            gl.getExtension("ANGLE_instanced_arrays").drawArraysInstancedANGLE(renderMode, 0, vertexNum, instanceCount);
                         } else
                         {
                             console.warn(`浏览器 不支持 drawArraysInstanced ！`);
