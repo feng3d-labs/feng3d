@@ -364,6 +364,9 @@
         "src/assets/loader/MD5Loader.ts",
         "src/assets/loader/MDLLoader.ts",
         //
+        "src/ui/enums/UIRenderMode.ts",
+        //
+        "src/ui/Canvas.ts",
         "src/ui/Image.ts",
         //
         "src/core/Mouse3DManager.ts",
