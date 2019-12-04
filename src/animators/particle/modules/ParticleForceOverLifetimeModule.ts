@@ -150,5 +150,5 @@ namespace feng3d
         }
     }
     var _ForceOverLifetime_rate = "_ForceOverLifetime_rate";
-    var _ForceOverLifetime_preForce = "_ForceOverLifetime_preVelocity";
+    var _ForceOverLifetime_preForce = "_ForceOverLifetime_preForce";
 }
