@@ -36799,7 +36799,7 @@ var feng3d;
     }(feng3d.ParticleModule));
     feng3d.ParticleForceOverLifetimeModule = ParticleForceOverLifetimeModule;
     var _ForceOverLifetime_rate = "_ForceOverLifetime_rate";
-    var _ForceOverLifetime_preForce = "_ForceOverLifetime_preVelocity";
+    var _ForceOverLifetime_preForce = "_ForceOverLifetime_preForce";
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -41913,13 +41913,91 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    /**
+     * UIRenderMode for the Canvas.
+     *
+     * Canvas的渲染模式
+     */
+    var UIRenderMode;
+    (function (UIRenderMode) {
+        /**
+         * Render at the end of the Scene using a 2D Canvas.
+         *
+         * 在场景的最后使用2D画布渲染。
+         */
+        UIRenderMode[UIRenderMode["ScreenSpaceOverlay"] = 0] = "ScreenSpaceOverlay";
+        /**
+         * Render using the Camera configured on the Canvas.
+         *
+         * 使用在画布上配置的摄像机进行渲染。
+         */
+        UIRenderMode[UIRenderMode["ScreenSpaceCamera"] = 1] = "ScreenSpaceCamera";
+        /**
+         * Render using any Camera in the Scene that can render the layer.
+         *
+         * 使用场景中任何可以渲染图层的相机渲染。
+         */
+        UIRenderMode[UIRenderMode["WorldSpace"] = 2] = "WorldSpace";
+    })(UIRenderMode = feng3d.UIRenderMode || (feng3d.UIRenderMode = {}));
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Position, size, anchor and pivot information for a rectangle.
+     *
+     * 矩形的位置、大小、锚点和枢轴信息。
+     */
+    var RectTransform = /** @class */ (function (_super) {
+        __extends(RectTransform, _super);
+        function RectTransform() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return RectTransform;
+    }(feng3d.Transform));
+    feng3d.RectTransform = RectTransform;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * Element that can be used for screen rendering.
+     *
+     * 能够被用于屏幕渲染的元素
+     */
+    var Canvas = /** @class */ (function (_super) {
+        __extends(Canvas, _super);
+        function Canvas() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * Is the Canvas in World or Overlay mode?
+             *
+             * 画布是在世界或覆盖模式?
+             */
+            _this.renderMode = feng3d.UIRenderMode.ScreenSpaceOverlay;
+            return _this;
+        }
+        return Canvas;
+    }(feng3d.Behaviour));
+    feng3d.Canvas = Canvas;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 图片组件
+     */
     var UIImage = /** @class */ (function (_super) {
         __extends(UIImage, _super);
         function UIImage() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            /**
+             * Tinting color for this Image.
+             *
+             * 为该图像着色。
+             */
+            _this.color = new feng3d.Color4();
+            return _this;
         }
         return UIImage;
-    }(feng3d.Model));
+    }(feng3d.Behaviour));
     feng3d.UIImage = UIImage;
 })(feng3d || (feng3d = {}));
 var feng3d;

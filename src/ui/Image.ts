@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 图片组件
      */
-    export class Image extends Behaviour
+    export class UIImage extends Behaviour
     {
         /**
          * The source texture of the Image element.
