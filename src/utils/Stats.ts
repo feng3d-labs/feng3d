@@ -3,7 +3,7 @@
  */
 interface Performance
 {
-    memory;
+    memory: any;
 }
 
 namespace feng3d
