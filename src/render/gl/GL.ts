@@ -97,7 +97,7 @@ namespace feng3d
          */
         static getGL(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes)
         {
-            var contextIds = ["webgl2", "webgl"];
+            var contextIds = ["webgl2", "webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
             // var contextIds = ["webgl"];
             var gl: GL = <any>null;
             for (var i = 0; i < contextIds.length; ++i)

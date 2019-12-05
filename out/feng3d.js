@@ -20473,7 +20473,7 @@ var feng3d;
          * @param contextAttributes
          */
         GL.getGL = function (canvas, contextAttributes) {
-            var contextIds = ["webgl2", "webgl"];
+            var contextIds = ["webgl2", "webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
             // var contextIds = ["webgl"];
             var gl = null;
             for (var i = 0; i < contextIds.length; ++i) {

@@ -40,7 +40,7 @@ namespace feng3d
             this.wrap(gl);
         }
 
-        private initExtensions(gl: feng3d.GL)
+        private initExtensions(gl: GL)
         {
             this.ANGLE_instanced_arrays = gl.getExtension("ANGLE_instanced_arrays");
             this.EXT_blend_minmax = gl.getExtension("EXT_blend_minmax");

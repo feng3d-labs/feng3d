@@ -158,7 +158,7 @@
         "src/render/gl/enums/TextureMinFilter.ts",
         "src/render/gl/enums/TextureMagFilter.ts",
         "src/render/gl/enums/TextureWrap.ts",
-        "src/render/gl/enums/AttributeDataType.ts",
+        "src/render/gl/enums/GLArrayType.ts",
         "src/render/gl/enums/AttributeUsage.ts",
         "src/render/gl/enums/DepthFunc.ts",
         "src/render/gl/GL.ts",
