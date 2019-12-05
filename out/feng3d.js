@@ -20473,8 +20473,8 @@ var feng3d;
          * @param contextAttributes
          */
         GL.getGL = function (canvas, contextAttributes) {
-            var contextIds = ["webgl2", "webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
-            // var contextIds = ["webgl"];
+            // var contextIds = ["webgl2", "webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
+            var contextIds = ["webgl"];
             var gl = null;
             for (var i = 0; i < contextIds.length; ++i) {
                 try {
@@ -22100,6 +22100,7 @@ var feng3d;
     var Renderer = /** @class */ (function () {
         function Renderer(gl) {
             feng3d.debuger && console.assert(!gl.render, gl + " " + gl.render + " \u5B58\u5728\uFF01");
+            var preActiveAttributes = [];
             gl.render = function (renderAtomic1) {
                 var instanceCount = renderAtomic1.getInstanceCount();
                 if (instanceCount == 0)
@@ -22222,20 +22223,28 @@ var feng3d;
              * 激活属性
              */
             function activeAttributes(renderAtomic, attributeInfos) {
+                var activeAttributes = [];
                 for (var name in attributeInfos) {
                     var activeInfo = attributeInfos[name];
                     var buffer = renderAtomic.attributes[name];
                     buffer.active(gl, activeInfo.location);
+                    activeAttributes.push(activeInfo.location);
+                    Array.delete(preActiveAttributes, activeInfo.location);
                 }
+                preActiveAttributes.forEach(function (location) {
+                    gl.disableVertexAttribArray(location);
+                });
+                preActiveAttributes = activeAttributes;
             }
             /**
              * 激活属性
              */
             function disableAttributes(attributeInfos) {
-                for (var name in attributeInfos) {
-                    var activeInfo = attributeInfos[name];
-                    gl.disableVertexAttribArray(activeInfo.location);
-                }
+                // for (var name in attributeInfos)
+                // {
+                //     var activeInfo = attributeInfos[name];
+                //     gl.disableVertexAttribArray(activeInfo.location);
+                // }
             }
             /**
              * 激活常量
