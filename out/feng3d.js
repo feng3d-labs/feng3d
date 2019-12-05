@@ -21226,6 +21226,12 @@ var feng3d;
             configurable: true
         });
         /**
+         * 使数据失效
+         */
+        Attribute.prototype.invalidate = function () {
+            this._invalid = true;
+        };
+        /**
          *
          * @param gl
          * @param location A GLuint specifying the index of the vertex attribute that is to be modified.
@@ -21243,9 +21249,6 @@ var feng3d;
                 gl.vertexAttribDivisor(location, this.divisor);
             }
         };
-        Attribute.prototype.invalidate = function () {
-            this._invalid = true;
-        };
         /**
          * 获取缓冲
          */
@@ -21259,7 +21262,7 @@ var feng3d;
                 }
                 buffer = newbuffer;
                 gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.data), gl[this.usage]);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.data), this.divisor > 0 ? gl.DYNAMIC_DRAW : gl[this.usage]);
                 this._indexBufferMap.set(gl, buffer);
             }
             return buffer;

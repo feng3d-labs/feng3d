@@ -10654,12 +10654,15 @@ declare namespace feng3d {
         private _indexBufferMap;
         constructor(name: string, data: number[], size?: number, divisor?: number);
         /**
+         * 使数据失效
+         */
+        invalidate(): void;
+        /**
          *
          * @param gl
          * @param location A GLuint specifying the index of the vertex attribute that is to be modified.
          */
         active(gl: GL, location: number): void;
-        private invalidate;
         /**
          * 获取缓冲
          */
