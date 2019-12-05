@@ -9828,6 +9828,9 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+    /**
+     * 扩展（封装，包装）WebGL
+     */
     interface GL extends WebGLRenderingContext {
         /**
          * The WebGL2RenderingContext.vertexAttribDivisor() method of the WebGL 2 API modifies the rate at which generic vertex attributes advance when rendering multiple instances of primitives with gl.drawArraysInstanced() and gl.drawElementsInstanced().
@@ -9878,10 +9881,6 @@ declare namespace feng3d {
          */
         texParameterfAnisotropy(target: GLenum, anisotropy: GLfloat): void;
         /**
-         *
-         */
-        MAX_SAMPLES: number;
-        /**
          * 上下文属性
          */
         contextAttributes: WebGLContextAttributes | undefined;
@@ -9898,9 +9897,8 @@ declare namespace feng3d {
          */
         renderer: Renderer;
         /**
-         * 纹理各向异性过滤最大值
+         * WEBGL 支持能力
          */
-        maxAnisotropy: number;
         capabilities: GLCapabilities;
     }
     class GL {
@@ -9954,8 +9952,9 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * WEBGL 功能
+     * WEBGL 支持功能
      *
+     * @see https://webglreport.com
      * @see http://html5test.com
      */
     class GLCapabilities {
@@ -9963,18 +9962,61 @@ declare namespace feng3d {
          * 是否为 WebGL2
          */
         isWebGL2: boolean;
+        /**
+         * 纹理各向异性过滤最大值
+         */
+        maxAnisotropy: number;
+        /**
+         * 支持最大纹理数量
+         */
         maxTextures: number;
+        /**
+         * 支持最大顶点纹理数量
+         */
         maxVertexTextures: number;
+        /**
+         * 支持最大纹理尺寸
+         */
         maxTextureSize: number;
+        /**
+         * 支持最大立方体贴图尺寸
+         */
         maxCubemapSize: number;
+        /**
+         * 支持属性数量
+         */
         maxAttributes: number;
+        /**
+         * 顶点着色器支持最大 Uniform 数量
+         */
         maxVertexUniforms: number;
+        /**
+         * 支持最大shader之间传递的变量数
+         */
         maxVaryings: number;
+        /**
+         * 片段着色器支持最大 Uniform 数量
+         */
         maxFragmentUniforms: number;
+        /**
+         * 是否支持顶点纹理
+         */
         vertexTextures: boolean;
+        /**
+         * 是否支持浮点类型片段着色器纹理
+         */
         floatFragmentTextures: boolean;
+        /**
+         * 是否支持浮点类型顶点着色器纹理
+         */
         floatVertexTextures: boolean;
+        /**
+         * Shader中支持浮点类型的最高精度
+         */
         maxPrecision: "highp" | "mediump" | "lowp";
+        /**
+         *
+         */
         maxSamples: number;
         constructor(gl: GL);
     }

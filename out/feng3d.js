@@ -20473,8 +20473,8 @@ var feng3d;
          * @param contextAttributes
          */
         GL.getGL = function (canvas, contextAttributes) {
-            // var names = ["webgl2", "webgl"];
-            var contextIds = ["webgl"];
+            var contextIds = ["webgl2", "webgl"];
+            // var contextIds = ["webgl"];
             var gl = null;
             for (var i = 0; i < contextIds.length; ++i) {
                 try {
@@ -20488,9 +20488,10 @@ var feng3d;
             if (!gl)
                 throw "无法初始化WEBGL";
             //
-            gl.capabilities = new feng3d.GLCapabilities(gl);
-            //
             new feng3d.GLExtension(gl);
+            //
+            new feng3d.GLCapabilities(gl);
+            //
             new feng3d.Renderer(gl);
             gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
             gl.clearDepth(1.0); // Clear everything
@@ -20555,20 +20556,14 @@ var feng3d;
             };
         };
         GLExtension.prototype.wrap = function (gl) {
-            if (gl.extensions.EXT_texture_filter_anisotropic) {
-                gl.maxAnisotropy = gl.getParameter(gl.extensions.EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
-            }
-            else {
-                gl.maxAnisotropy = 0;
-            }
             if (!gl.texParameterfAnisotropy) {
                 gl.texParameterfAnisotropy = function (target, anisotropy) {
                     if (anisotropy <= 0)
                         return;
                     if (gl.extensions.EXT_texture_filter_anisotropic) {
-                        if (anisotropy > gl.maxAnisotropy) {
-                            anisotropy = gl.maxAnisotropy;
-                            console.warn(anisotropy + " \u8D85\u51FA maxAnisotropy \u7684\u6700\u5927\u503C " + gl.maxAnisotropy + " \uFF01,\u4F7F\u7528\u6700\u5927\u503C\u66FF\u6362\u3002");
+                        if (anisotropy > gl.capabilities.maxAnisotropy) {
+                            anisotropy = gl.capabilities.maxAnisotropy;
+                            console.warn(anisotropy + " \u8D85\u51FA maxAnisotropy \u7684\u6700\u5927\u503C " + gl.capabilities.maxAnisotropy + " \uFF01,\u4F7F\u7528\u6700\u5927\u503C\u66FF\u6362\u3002");
                         }
                         gl.texParameterf(target, gl.extensions.EXT_texture_filter_anisotropic.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
                     }
@@ -20616,12 +20611,14 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * WEBGL 功能
+     * WEBGL 支持功能
      *
+     * @see https://webglreport.com
      * @see http://html5test.com
      */
     var GLCapabilities = /** @class */ (function () {
         function GLCapabilities(gl) {
+            gl.capabilities = this;
             function getMaxPrecision(precision) {
                 if (precision === 'highp') {
                     if (gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT).precision > 0 &&
@@ -20638,7 +20635,18 @@ var feng3d;
                 }
                 return 'lowp';
             }
-            this.isWebGL2 = (typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext);
+            this.isWebGL2 = false;
+            var gl2 = null;
+            if (typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext) {
+                gl2 = gl;
+                this.isWebGL2 = true;
+            }
+            if (gl.extensions.EXT_texture_filter_anisotropic) {
+                this.maxAnisotropy = gl.getParameter(gl.extensions.EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+            }
+            else {
+                this.maxAnisotropy = 0;
+            }
             this.maxPrecision = getMaxPrecision('highp');
             this.maxTextures = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
             this.maxVertexTextures = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
@@ -20651,7 +20659,7 @@ var feng3d;
             this.vertexTextures = this.maxVertexTextures > 0;
             this.floatFragmentTextures = this.isWebGL2 || !!gl.getExtension('OES_texture_float');
             this.floatVertexTextures = this.vertexTextures && this.floatFragmentTextures;
-            this.maxSamples = this.isWebGL2 ? gl.getParameter(gl.MAX_SAMPLES) : 0;
+            this.maxSamples = this.isWebGL2 ? gl.getParameter(gl2.MAX_SAMPLES) : 0;
         }
         return GLCapabilities;
     }());

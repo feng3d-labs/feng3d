@@ -1,6 +1,9 @@
 namespace feng3d
 {
 
+    /**
+     * 扩展（封装，包装）WebGL
+     */
     export interface GL extends WebGLRenderingContext
     {
         /**
@@ -56,11 +59,6 @@ namespace feng3d
         texParameterfAnisotropy(target: GLenum, anisotropy: GLfloat): void;
 
         /**
-         * 
-         */
-        MAX_SAMPLES: number;
-
-        /**
          * 上下文属性
          */
         contextAttributes: WebGLContextAttributes | undefined;
@@ -81,10 +79,8 @@ namespace feng3d
         renderer: Renderer;
 
         /**
-         * 纹理各向异性过滤最大值
+         * WEBGL 支持能力
          */
-        maxAnisotropy: number;
-
         capabilities: GLCapabilities;
     }
 
@@ -99,8 +95,8 @@ namespace feng3d
          */
         static getGL(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes)
         {
-            // var names = ["webgl2", "webgl"];
-            var contextIds = ["webgl"];
+            var contextIds = ["webgl2", "webgl"];
+            // var contextIds = ["webgl"];
             var gl: GL = <any>null;
             for (var i = 0; i < contextIds.length; ++i)
             {
@@ -115,9 +111,10 @@ namespace feng3d
             if (!gl)
                 throw "无法初始化WEBGL";
             //
-            gl.capabilities = new GLCapabilities(gl);
-            //
             new GLExtension(gl);
+            //
+            new GLCapabilities(gl);
+            //
             new Renderer(gl);
             gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
             gl.clearDepth(1.0);                 // Clear everything

@@ -84,13 +84,6 @@ namespace feng3d
 
         private wrap(gl: GL)
         {
-            if (gl.extensions.EXT_texture_filter_anisotropic)
-            {
-                gl.maxAnisotropy = gl.getParameter(gl.extensions.EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
-            } else
-            {
-                gl.maxAnisotropy = 0;
-            }
             if (!gl.texParameterfAnisotropy)
             {
                 gl.texParameterfAnisotropy = (target, anisotropy) =>
@@ -99,10 +92,10 @@ namespace feng3d
 
                     if (gl.extensions.EXT_texture_filter_anisotropic)
                     {
-                        if (anisotropy > gl.maxAnisotropy)
+                        if (anisotropy > gl.capabilities.maxAnisotropy)
                         {
-                            anisotropy = gl.maxAnisotropy;
-                            console.warn(`${anisotropy} 超出 maxAnisotropy 的最大值 ${gl.maxAnisotropy} ！,使用最大值替换。`);
+                            anisotropy = gl.capabilities.maxAnisotropy;
+                            console.warn(`${anisotropy} 超出 maxAnisotropy 的最大值 ${gl.capabilities.maxAnisotropy} ！,使用最大值替换。`);
                         }
                         gl.texParameterf(target, gl.extensions.EXT_texture_filter_anisotropic.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
                     } else
@@ -152,8 +145,6 @@ namespace feng3d
                     }
                 }
             }
-
-
         }
     }
 }
