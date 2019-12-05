@@ -21190,14 +21190,15 @@ var feng3d;
              * @see https://developer.mozilla.org/en-US/docs/Web/API/ANGLE_instanced_arrays/vertexAttribDivisorANGLE
              */
             this.divisor = 0;
-            /**
-             * A GLenum specifying the intended usage pattern of the data store for optimization purposes.
-             *
-             * 为优化目的指定数据存储的预期使用模式的GLenum。
-             *
-             * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
-             */
-            this.usage = feng3d.AttributeUsage.STATIC_DRAW;
+            // /**
+            //  * A GLenum specifying the intended usage pattern of the data store for optimization purposes. 
+            //  * 
+            //  * 为优化目的指定数据存储的预期使用模式的GLenum。
+            //  * 
+            //  * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
+            //  */
+            // @serialize
+            // usage = AttributeUsage.STATIC_DRAW;
             /**
              * 是否失效
              */
@@ -21262,7 +21263,7 @@ var feng3d;
                 }
                 buffer = newbuffer;
                 gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.data), this.divisor > 0 ? gl.DYNAMIC_DRAW : gl[this.usage]);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.data), gl.STATIC_DRAW);
                 this._indexBufferMap.set(gl, buffer);
             }
             return buffer;
@@ -21288,9 +21289,6 @@ var feng3d;
         __decorate([
             feng3d.serialize
         ], Attribute.prototype, "divisor", void 0);
-        __decorate([
-            feng3d.serialize
-        ], Attribute.prototype, "usage", void 0);
         return Attribute;
     }());
     feng3d.Attribute = Attribute;

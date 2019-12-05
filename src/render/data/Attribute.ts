@@ -117,15 +117,15 @@ namespace feng3d
         @serialize
         divisor = 0;
 
-        /**
-         * A GLenum specifying the intended usage pattern of the data store for optimization purposes. 
-         * 
-         * 为优化目的指定数据存储的预期使用模式的GLenum。
-         * 
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
-         */
-        @serialize
-        usage = AttributeUsage.STATIC_DRAW;
+        // /**
+        //  * A GLenum specifying the intended usage pattern of the data store for optimization purposes. 
+        //  * 
+        //  * 为优化目的指定数据存储的预期使用模式的GLenum。
+        //  * 
+        //  * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
+        //  */
+        // @serialize
+        // usage = AttributeUsage.STATIC_DRAW;
 
         /**
          * 是否失效
@@ -194,7 +194,7 @@ namespace feng3d
                 }
                 buffer = newbuffer;
                 gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.data), this.divisor > 0 ? gl.DYNAMIC_DRAW : gl[this.usage]);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.data), gl.STATIC_DRAW);
                 this._indexBufferMap.set(gl, buffer);
             }
             return buffer;

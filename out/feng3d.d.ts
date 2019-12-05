@@ -10637,14 +10637,6 @@ declare namespace feng3d {
          */
         divisor: number;
         /**
-         * A GLenum specifying the intended usage pattern of the data store for optimization purposes.
-         *
-         * 为优化目的指定数据存储的预期使用模式的GLenum。
-         *
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
-         */
-        usage: AttributeUsage;
-        /**
          * 是否失效
          */
         private _invalid;
