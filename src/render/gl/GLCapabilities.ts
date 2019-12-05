@@ -2,22 +2,32 @@ namespace feng3d
 {
     /**
      * WEBGL 功能
+     * 
+     * @see http://html5test.com
      */
-    export class WebGLCapabilities
+    export class GLCapabilities
     {
-        logarithmicDepthBuffer: boolean;
-        maxTextures: any;
-        maxVertexTextures: any;
-        maxTextureSize: any;
-        maxCubemapSize: any;
-        maxAttributes: any;
-        maxVertexUniforms: any;
-        maxVaryings: any;
-        maxFragmentUniforms: any;
+        /**
+         * 是否为 WebGL2
+         */
+        isWebGL2: boolean;
+
+        maxTextures: number;
+        maxVertexTextures: number;
+        maxTextureSize: number;
+        maxCubemapSize: number;
+        maxAttributes: number;
+        maxVertexUniforms: number;
+        maxVaryings: number;
+        maxFragmentUniforms: number;
+
         vertexTextures: boolean;
         floatFragmentTextures: boolean;
         floatVertexTextures: boolean;
-        maxPrecision: string;
+
+        maxPrecision: "highp" | "mediump" | "lowp";
+
+        maxSamples: number;
 
         constructor(gl: GL)
         {
@@ -43,6 +53,8 @@ namespace feng3d
                 return 'lowp';
             }
 
+            this.isWebGL2 = (typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext);
+
             this.maxPrecision = getMaxPrecision('highp');
 
             this.maxTextures = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
@@ -56,8 +68,10 @@ namespace feng3d
             this.maxFragmentUniforms = gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS);
 
             this.vertexTextures = this.maxVertexTextures > 0;
-            this.floatFragmentTextures = !!gl.getExtension('OES_texture_float');
+            this.floatFragmentTextures = this.isWebGL2 || !!gl.getExtension('OES_texture_float');
             this.floatVertexTextures = this.vertexTextures && this.floatFragmentTextures;
+
+            this.maxSamples = this.isWebGL2 ? gl.getParameter(gl.MAX_SAMPLES) : 0;
         }
 
     }

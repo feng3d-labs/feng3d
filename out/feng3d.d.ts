@@ -9878,9 +9878,9 @@ declare namespace feng3d {
          */
         texParameterfAnisotropy(target: GLenum, anisotropy: GLfloat): void;
         /**
-         * 是否为 WebGL2
+         *
          */
-        webgl2: boolean;
+        MAX_SAMPLES: number;
         /**
          * 上下文属性
          */
@@ -9901,7 +9901,7 @@ declare namespace feng3d {
          * 纹理各向异性过滤最大值
          */
         maxAnisotropy: number;
-        capabilities: WebGLCapabilities;
+        capabilities: GLCapabilities;
     }
     class GL {
         static glList: GL[];
@@ -9919,29 +9919,29 @@ declare namespace feng3d {
      */
     class GLExtension {
         ANGLE_instanced_arrays: ANGLE_instanced_arrays;
-        eXTBlendMinMax: EXT_blend_minmax;
-        eXTColorBufferHalfFloat: any;
-        eXTFragDepth: EXT_frag_depth;
-        eXTsRGB: EXT_sRGB;
-        eXTShaderTextureLOD: EXT_shader_texture_lod;
+        EXT_blend_minmax: EXT_blend_minmax;
+        EXT_color_buffer_half_float: any;
+        EXT_frag_depth: EXT_frag_depth;
+        EXT_sRGB: EXT_sRGB;
+        EXT_shader_texture_lod: EXT_shader_texture_lod;
         EXT_texture_filter_anisotropic: EXT_texture_filter_anisotropic;
-        oESElementIndexUint: OES_element_index_uint;
-        oESStandardDerivatives: OES_standard_derivatives;
-        oESTextureFloat: OES_texture_float;
-        oESTextureFloatLinear: OES_texture_float_linear;
-        oESTextureHalfFloat: OES_texture_half_float;
-        oESTextureHalfFloatLinear: OES_texture_half_float_linear;
-        oESVertexArrayObject: OES_vertex_array_object;
-        webGLColorBufferFloat: WEBGL_color_buffer_float;
-        webGLCompressedTextureATC: any;
-        webGLCompressedTextureETC1: any;
-        webGLCompressedTexturePVRTC: any;
-        webGLCompressedTextureS3TC: WEBGL_compressed_texture_s3tc;
-        webGLDebugRendererInfo: WEBGL_debug_renderer_info;
-        webGLDebugShaders: WEBGL_debug_shaders;
-        webGLDepthTexture: WEBGL_depth_texture;
-        webGLDrawBuffers: WEBGL_draw_buffers;
-        webGLLoseContext: any;
+        OES_element_index_uint: OES_element_index_uint;
+        OES_standard_derivatives: OES_standard_derivatives;
+        OES_texture_float: OES_texture_float;
+        OES_texture_float_linear: OES_texture_float_linear;
+        OES_texture_half_float: OES_texture_half_float;
+        OES_texture_half_float_linear: OES_texture_half_float_linear;
+        OES_vertex_array_object: OES_vertex_array_object;
+        WEBGL_color_buffer_float: WEBGL_color_buffer_float;
+        WEBGL_compressed_texture_atc: any;
+        WEBGL_compressed_texture_etc1: any;
+        WEBGL_compressed_texture_pvrtc: any;
+        WEBGL_compressed_texture_s3tc: WEBGL_compressed_texture_s3tc;
+        WEBGL_debug_renderer_info: WEBGL_debug_renderer_info;
+        WEBGL_debug_shaders: WEBGL_debug_shaders;
+        WEBGL_depth_texture: WEBGL_depth_texture;
+        WEBGL_draw_buffers: WEBGL_draw_buffers;
+        WEBGL_lose_context: any;
         constructor(gl: GL);
         private initExtensions;
         /**
@@ -9955,21 +9955,27 @@ declare namespace feng3d {
 declare namespace feng3d {
     /**
      * WEBGL 功能
+     *
+     * @see http://html5test.com
      */
-    class WebGLCapabilities {
-        logarithmicDepthBuffer: boolean;
-        maxTextures: any;
-        maxVertexTextures: any;
-        maxTextureSize: any;
-        maxCubemapSize: any;
-        maxAttributes: any;
-        maxVertexUniforms: any;
-        maxVaryings: any;
-        maxFragmentUniforms: any;
+    class GLCapabilities {
+        /**
+         * 是否为 WebGL2
+         */
+        isWebGL2: boolean;
+        maxTextures: number;
+        maxVertexTextures: number;
+        maxTextureSize: number;
+        maxCubemapSize: number;
+        maxAttributes: number;
+        maxVertexUniforms: number;
+        maxVaryings: number;
+        maxFragmentUniforms: number;
         vertexTextures: boolean;
         floatFragmentTextures: boolean;
         floatVertexTextures: boolean;
-        maxPrecision: string;
+        maxPrecision: "highp" | "mediump" | "lowp";
+        maxSamples: number;
         constructor(gl: GL);
     }
 }

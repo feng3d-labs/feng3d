@@ -56,9 +56,9 @@ namespace feng3d
         texParameterfAnisotropy(target: GLenum, anisotropy: GLfloat): void;
 
         /**
-         * 是否为 WebGL2
+         * 
          */
-        webgl2: boolean;
+        MAX_SAMPLES: number;
 
         /**
          * 上下文属性
@@ -85,7 +85,7 @@ namespace feng3d
          */
         maxAnisotropy: number;
 
-        capabilities: WebGLCapabilities;
+        capabilities: GLCapabilities;
     }
 
     export class GL
@@ -115,10 +115,7 @@ namespace feng3d
             if (!gl)
                 throw "无法初始化WEBGL";
             //
-            if (typeof WebGL2RenderingContext !== "undefined" && gl instanceof WebGL2RenderingContext)
-                gl.webgl2 = true;
-            //
-            gl.capabilities = new WebGLCapabilities(gl);
+            gl.capabilities = new GLCapabilities(gl);
             //
             new GLExtension(gl);
             new Renderer(gl);
