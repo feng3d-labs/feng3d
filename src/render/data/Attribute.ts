@@ -50,8 +50,7 @@ namespace feng3d
 
 	/**
 	 * 属性渲染数据
-
-     * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer}
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer
 	 */
     export class Attribute
     {
