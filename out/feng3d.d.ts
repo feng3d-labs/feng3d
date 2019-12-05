@@ -9969,6 +9969,7 @@ declare namespace feng3d {
         vertexTextures: boolean;
         floatFragmentTextures: boolean;
         floatVertexTextures: boolean;
+        maxPrecision: string;
         constructor(gl: GL);
     }
 }

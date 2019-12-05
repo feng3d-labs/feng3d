@@ -17,99 +17,47 @@ namespace feng3d
         vertexTextures: boolean;
         floatFragmentTextures: boolean;
         floatVertexTextures: boolean;
+        maxPrecision: string;
 
         constructor(gl: GL)
         {
-            var maxAnisotropy;
-
-            function getMaxAnisotropy()
-            {
-
-                if (maxAnisotropy !== undefined) return maxAnisotropy;
-
-                var extension = gl.getExtension('EXT_texture_filter_anisotropic');
-
-                if (extension !== null)
-                {
-
-                    maxAnisotropy = gl.getParameter(extension.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
-
-                } else
-                {
-
-                    maxAnisotropy = 0;
-
-                }
-
-                return maxAnisotropy;
-
-            }
-
             function getMaxPrecision(precision)
             {
-
                 if (precision === 'highp')
                 {
-
                     if (gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT).precision > 0 &&
                         gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT).precision > 0)
                     {
-
                         return 'highp';
-
                     }
-
                     precision = 'mediump';
-
                 }
-
                 if (precision === 'mediump')
                 {
-
                     if (gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_FLOAT).precision > 0 &&
                         gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT).precision > 0)
                     {
-
                         return 'mediump';
-
                     }
-
                 }
-
                 return 'lowp';
-
             }
 
-            var maxPrecision = getMaxPrecision('highp');
+            this.maxPrecision = getMaxPrecision('highp');
 
-            var maxTextures = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
-            var maxVertexTextures = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
-            var maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-            var maxCubemapSize = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE);
+            this.maxTextures = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
+            this.maxVertexTextures = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
+            this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+            this.maxCubemapSize = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE);
 
-            var maxAttributes = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);
-            var maxVertexUniforms = gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS);
-            var maxVaryings = gl.getParameter(gl.MAX_VARYING_VECTORS);
-            var maxFragmentUniforms = gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS);
+            this.maxAttributes = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);
+            this.maxVertexUniforms = gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS);
+            this.maxVaryings = gl.getParameter(gl.MAX_VARYING_VECTORS);
+            this.maxFragmentUniforms = gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS);
 
-            var vertexTextures = maxVertexTextures > 0;
-            var floatFragmentTextures = !!gl.getExtension('OES_texture_float');
-            var floatVertexTextures = vertexTextures && floatFragmentTextures;
-
-            this.maxTextures = maxTextures;
-            this.maxVertexTextures = maxVertexTextures;
-            this.maxTextureSize = maxTextureSize;
-            this.maxCubemapSize = maxCubemapSize;
-
-            this.maxAttributes = maxAttributes;
-            this.maxVertexUniforms = maxVertexUniforms;
-            this.maxVaryings = maxVaryings;
-            this.maxFragmentUniforms = maxFragmentUniforms;
-
-            this.vertexTextures = vertexTextures;
-            this.floatFragmentTextures = floatFragmentTextures;
-            this.floatVertexTextures = floatVertexTextures;
-
+            this.vertexTextures = this.maxVertexTextures > 0;
+            this.floatFragmentTextures = !!gl.getExtension('OES_texture_float');
+            this.floatVertexTextures = this.vertexTextures && this.floatFragmentTextures;
         }
 
     }
