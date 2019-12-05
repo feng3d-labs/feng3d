@@ -22100,9 +22100,8 @@ var feng3d;
      */
     var Renderer = /** @class */ (function () {
         function Renderer(gl) {
-            feng3d.debuger && console.assert(!gl.renderer, gl + " " + gl.renderer + " \u5B58\u5728\uFF01");
-            gl.renderer = this;
-            this.draw = function (renderAtomic1) {
+            feng3d.debuger && console.assert(!gl.render, gl + " " + gl.render + " \u5B58\u5728\uFF01");
+            gl.render = function (renderAtomic1) {
                 var instanceCount = renderAtomic1.getInstanceCount();
                 if (instanceCount == 0)
                     return;
@@ -22389,7 +22388,7 @@ var feng3d;
                     renderAtomic.uniforms[key] = uniforms[key];
                 }
                 model.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
-                gl.renderer.draw(renderAtomic);
+                gl.render(renderAtomic);
             });
         };
         return ForwardRenderer;
@@ -22644,7 +22643,7 @@ var feng3d;
             this.renderAtomic.renderParams.cullFace = renderAtomic.renderParams.cullFace;
             // 使用shadowShader
             this.renderAtomic.shader = renderAtomic.shadowShader;
-            gl.renderer.draw(this.renderAtomic);
+            gl.render(this.renderAtomic);
             this.renderAtomic.shader = null;
         };
         return ShadowRenderer;
@@ -22690,7 +22689,7 @@ var feng3d;
                     var renderAtomic = model.gameObject.renderAtomic;
                     model.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
                     this.renderAtomic.next = renderAtomic;
-                    gl.renderer.draw(this.renderAtomic);
+                    gl.render(this.renderAtomic);
                 }
             }
         };
@@ -22767,7 +22766,7 @@ var feng3d;
             this.renderAtomic.uniforms.u_wireframeColor = wireframeColor;
             //
             this.renderAtomic.shader = renderAtomic.wireframeShader;
-            gl.renderer.draw(this.renderAtomic);
+            gl.render(this.renderAtomic);
             this.renderAtomic.shader = null;
             //
         };
@@ -23108,7 +23107,7 @@ var feng3d;
             this.renderAtomic.uniforms.u_cameraMatrix = camera.transform.localToWorldMatrix;
             this.renderAtomic.uniforms.u_cameraPos = camera.transform.worldPosition;
             this.renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
-            gl.renderer.draw(this.renderAtomic);
+            gl.render(this.renderAtomic);
         };
         return SkyBoxRenderer;
     }());

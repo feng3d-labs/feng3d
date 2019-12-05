@@ -41,7 +41,7 @@ namespace feng3d
 
                     this.renderAtomic.next = renderAtomic;
 
-                    gl.renderer.draw(this.renderAtomic);
+                    gl.render(this.renderAtomic);
                 }
             }
         }

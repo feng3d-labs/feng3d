@@ -93,7 +93,7 @@ namespace feng3d
 
             //
             this.renderAtomic.shader = renderAtomic.wireframeShader;
-            gl.renderer.draw(this.renderAtomic);
+            gl.render(this.renderAtomic);
             this.renderAtomic.shader = null;
             //
         }

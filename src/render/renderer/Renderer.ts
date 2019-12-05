@@ -14,11 +14,9 @@ namespace feng3d
 
         constructor(gl: GL)
         {
-            debuger && console.assert(!gl.renderer, `${gl} ${gl.renderer} 存在！`);
+            debuger && console.assert(!gl.render, `${gl} ${gl.render} 存在！`);
 
-            gl.renderer = this;
-
-            this.draw = (renderAtomic1: RenderAtomic) =>
+            gl.render = (renderAtomic1: RenderAtomic) =>
             {
                 var instanceCount = renderAtomic1.getInstanceCount();
                 if (instanceCount == 0) return;

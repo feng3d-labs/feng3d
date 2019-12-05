@@ -44,7 +44,7 @@ namespace feng3d
 
                 model.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
 
-                gl.renderer.draw(renderAtomic);
+                gl.render(renderAtomic);
             });
         }
     }

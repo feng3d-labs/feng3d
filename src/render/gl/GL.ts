@@ -74,9 +74,11 @@ namespace feng3d
         extensions: GLExtension;
 
         /**
-         * 渲染器
+         * 渲染
+         * 
+         * @param renderAtomic 渲染数据
          */
-        renderer: Renderer;
+        render(renderAtomic: RenderAtomic): void;
 
         /**
          * WEBGL 支持能力

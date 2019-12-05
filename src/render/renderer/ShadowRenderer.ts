@@ -215,7 +215,7 @@ namespace feng3d
 
             // 使用shadowShader
             this.renderAtomic.shader = renderAtomic.shadowShader;
-            gl.renderer.draw(this.renderAtomic);
+            gl.render(this.renderAtomic);
             this.renderAtomic.shader = null;
         }
     }

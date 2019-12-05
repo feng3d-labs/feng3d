@@ -83,7 +83,7 @@ namespace feng3d
             this.renderAtomic.uniforms.u_cameraPos = camera.transform.worldPosition;
             this.renderAtomic.uniforms.u_skyBoxSize = camera.lens.far / Math.sqrt(3);
 
-            gl.renderer.draw(this.renderAtomic);
+            gl.render(this.renderAtomic);
         }
     }
 
