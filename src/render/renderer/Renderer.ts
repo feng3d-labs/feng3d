@@ -287,17 +287,7 @@ namespace feng3d
                     }
                     if (instanceCount > 1)
                     {
-                        if (gl.webgl2)
-                        {
-                            var gl2: WebGL2RenderingContext = <any>gl;
-                            gl2.drawElementsInstanced(renderMode, indexBuffer.count, arrayType, indexBuffer.offset, instanceCount);
-                        } else if (!!gl.getExtension("ANGLE_instanced_arrays"))
-                        {
-                            gl.getExtension("ANGLE_instanced_arrays").drawElementsInstancedANGLE(renderMode, indexBuffer.count, arrayType, indexBuffer.offset, instanceCount);
-                        } else
-                        {
-                            console.warn(`浏览器 不支持 drawElementsInstanced ！`);
-                        }
+                        gl.drawElementsInstanced(renderMode, indexBuffer.count, arrayType, indexBuffer.offset, instanceCount);
                     } else
                     {
                         gl.drawElements(renderMode, indexBuffer.count, arrayType, indexBuffer.offset);
@@ -324,17 +314,7 @@ namespace feng3d
                     }
                     if (instanceCount > 1)
                     {
-                        if (gl.webgl2)
-                        {
-                            var gl2: WebGL2RenderingContext = <any>gl;
-                            gl2.drawArraysInstanced(renderMode, 0, vertexNum, instanceCount);
-                        } else if (gl.getExtension("ANGLE_instanced_arrays"))
-                        {
-                            gl.getExtension("ANGLE_instanced_arrays").drawArraysInstancedANGLE(renderMode, 0, vertexNum, instanceCount);
-                        } else
-                        {
-                            console.warn(`浏览器 不支持 drawArraysInstanced ！`);
-                        }
+                        gl.drawArraysInstanced(renderMode, 0, vertexNum, instanceCount);
                     }
                     else
                     {

@@ -119,6 +119,16 @@ namespace feng3d
         divisor = 0;
 
         /**
+         * A GLenum specifying the intended usage pattern of the data store for optimization purposes. 
+         * 
+         * 为优化目的指定数据存储的预期使用模式的GLenum。
+         * 
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
+         */
+        @serialize
+        usage = AttributeUsage.STATIC_DRAW;
+
+        /**
          * 是否失效
          */
         private _invalid = true;
@@ -149,24 +159,16 @@ namespace feng3d
                 this._invalid = false;
             }
 
-            var type = gl[this.type];
-
             gl.enableVertexAttribArray(location);
             var buffer = this.getBuffer(gl);
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-            gl.vertexAttribPointer(location, this.size, type, this.normalized, this.stride, this.offset);
+            gl.vertexAttribPointer(location, this.size, gl[this.type], this.normalized, this.stride, this.offset);
 
-            if (gl.webgl2)
+            if (this.divisor > 0)
             {
-                var gl2: WebGL2RenderingContext = <any>gl;
-                gl2.vertexAttribDivisor(location, this.divisor);
-            } else if (gl.getExtension("ANGLE_instanced_arrays"))
-            {
-                gl.getExtension("ANGLE_instanced_arrays").vertexAttribDivisorANGLE(location, this.divisor);
-            } else
-            {
-                console.warn(`浏览器 不支持 vertexAttribDivisor ！`);
+                gl.vertexAttribDivisor(location, this.divisor);
             }
+
         }
 
         private invalidate()
@@ -190,7 +192,7 @@ namespace feng3d
                 }
                 buffer = newbuffer;
                 gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.data), gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.data), gl[this.usage]);
                 this._indexBufferMap.set(gl, buffer);
             }
             return buffer;
