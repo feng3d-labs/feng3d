@@ -11,58 +11,6 @@ namespace feng3d
     export class Utils
     {
         /**
-         * 初始化数组
-         * @param arraylike 类数组
-         */
-        arrayFrom<T>(arraylike: ArrayLike<T>)
-        {
-            var arr: T[] = [];
-            for (let i = 0; i < arraylike.length; i++)
-            {
-                arr[i] = arraylike[i];
-            }
-            return arr;
-        }
-        /**
-         * 使数组元素变得唯一,除去相同值
-         * @param equalFn 比较函数
-         */
-        arrayUnique<T>(arr: T[], equal = (a: T, b: T) => (a == b))
-        {
-            for (let i = arr.length - 1; i >= 0; i--)
-            {
-                for (let j = 0; j < i; j++)
-                {
-                    if (equal(arr[i], arr[j]))
-                    {
-                        arr.splice(i, 1);
-                        break;
-                    }
-                }
-            }
-            return this;
-        }
-
-        /**
-         * 数组元素是否唯一
-         * @param equalFn 比较函数
-         */
-        arrayIsUnique<T>(array: T[], equalFn = (a: T, b: T) => (a == b))
-        {
-            for (let i = array.length - 1; i >= 0; i--)
-            {
-                for (let j = 0; j < i; j++)
-                {
-                    if (equalFn(array[i], array[j]))
-                    {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-
-        /**
          * 创建数组
          * @param length 长度
          * @param itemFunc 创建元素方法

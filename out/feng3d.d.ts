@@ -585,6 +585,13 @@ interface ArrayConstructor {
      */
     unique<T>(array: T[], compare?: (a: T, b: T) => boolean): T[];
     /**
+     * 判断数组是否唯一
+     *
+     * @param array 被检查数组
+     * @param compare 比较函数
+     */
+    isUnique<T>(array: T[], compare?: (a: T, b: T) => boolean): boolean;
+    /**
      * 删除元素
      *
      * @param array 被操作数组
@@ -2311,21 +2318,6 @@ declare namespace feng3d {
      * 工具
      */
     class Utils {
-        /**
-         * 初始化数组
-         * @param arraylike 类数组
-         */
-        arrayFrom<T>(arraylike: ArrayLike<T>): T[];
-        /**
-         * 使数组元素变得唯一,除去相同值
-         * @param equalFn 比较函数
-         */
-        arrayUnique<T>(arr: T[], equal?: (a: T, b: T) => boolean): this;
-        /**
-         * 数组元素是否唯一
-         * @param equalFn 比较函数
-         */
-        arrayIsUnique<T>(array: T[], equalFn?: (a: T, b: T) => boolean): boolean;
         /**
          * 创建数组
          * @param length 长度

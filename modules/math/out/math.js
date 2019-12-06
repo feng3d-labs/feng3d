@@ -453,6 +453,14 @@ var feng3d;
          */
         CoordinateSystem[CoordinateSystem["RIGHT_HANDED"] = 1] = "RIGHT_HANDED";
     })(CoordinateSystem = feng3d.CoordinateSystem || (feng3d.CoordinateSystem = {}));
+    /**
+     * 引擎中使用的坐标系统，默认左手坐标系统。
+     *
+     * three.js 右手坐标系统。
+     * playcanvas 右手坐标系统。
+     * unity    左手坐标系统。
+     */
+    feng3d.coordinateSystem = CoordinateSystem.LEFT_HANDED;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -494,6 +502,14 @@ var feng3d;
          */
         RotationOrder[RotationOrder["XZY"] = 5] = "XZY";
     })(RotationOrder = feng3d.RotationOrder || (feng3d.RotationOrder = {}));
+    /**
+     * 引擎中使用的旋转顺序。
+     *
+     * unity YXZ
+     * playcanvas ZYX
+     * three.js XYZ
+     */
+    feng3d.defaultRotationOrder = RotationOrder.YXZ;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -657,16 +673,16 @@ var feng3d;
         Color3.WHITE = new Color3();
         Color3.BLACK = new Color3(0, 0, 0);
         __decorate([
-            oav(),
-            serialize
+            feng3d.oav(),
+            feng3d.serialize
         ], Color3.prototype, "r", void 0);
         __decorate([
-            oav(),
-            serialize
+            feng3d.oav(),
+            feng3d.serialize
         ], Color3.prototype, "g", void 0);
         __decorate([
-            oav(),
-            serialize
+            feng3d.oav(),
+            feng3d.serialize
         ], Color3.prototype, "b", void 0);
         return Color3;
     }());
@@ -889,20 +905,20 @@ var feng3d;
         Color4.WHITE = new Color4();
         Color4.BLACK = new Color4(0, 0, 0);
         __decorate([
-            oav(),
-            serialize
+            feng3d.oav(),
+            feng3d.serialize
         ], Color4.prototype, "r", void 0);
         __decorate([
-            oav(),
-            serialize
+            feng3d.oav(),
+            feng3d.serialize
         ], Color4.prototype, "g", void 0);
         __decorate([
-            oav(),
-            serialize
+            feng3d.oav(),
+            feng3d.serialize
         ], Color4.prototype, "b", void 0);
         __decorate([
-            oav(),
-            serialize
+            feng3d.oav(),
+            feng3d.serialize
         ], Color4.prototype, "a", void 0);
         return Color4;
     }());
@@ -1221,12 +1237,12 @@ var feng3d;
          */
         Vector2.ZERO = new Vector2();
         __decorate([
-            oav(),
-            serialize
+            feng3d.oav(),
+            feng3d.serialize
         ], Vector2.prototype, "x", void 0);
         __decorate([
-            oav(),
-            serialize
+            feng3d.oav(),
+            feng3d.serialize
         ], Vector2.prototype, "y", void 0);
         return Vector2;
     }());
@@ -2058,16 +2074,16 @@ var feng3d;
          */
         Vector3.ONE = Object.freeze(new Vector3(1, 1, 1));
         __decorate([
-            serialize,
-            oav()
+            feng3d.serialize,
+            feng3d.oav()
         ], Vector3.prototype, "x", void 0);
         __decorate([
-            serialize,
-            oav()
+            feng3d.serialize,
+            feng3d.oav()
         ], Vector3.prototype, "y", void 0);
         __decorate([
-            serialize,
-            oav()
+            feng3d.serialize,
+            feng3d.oav()
         ], Vector3.prototype, "z", void 0);
         return Vector3;
     }());
@@ -2390,20 +2406,20 @@ var feng3d;
             return "<" + this.x + ", " + this.y + ", " + this.z + ", " + this.w + ">";
         };
         __decorate([
-            serialize,
-            oav()
+            feng3d.serialize,
+            feng3d.oav()
         ], Vector4.prototype, "x", void 0);
         __decorate([
-            serialize,
-            oav()
+            feng3d.serialize,
+            feng3d.oav()
         ], Vector4.prototype, "y", void 0);
         __decorate([
-            serialize,
-            oav()
+            feng3d.serialize,
+            feng3d.oav()
         ], Vector4.prototype, "z", void 0);
         __decorate([
-            serialize,
-            oav()
+            feng3d.serialize,
+            feng3d.oav()
         ], Vector4.prototype, "w", void 0);
         return Vector4;
     }());
@@ -3189,7 +3205,7 @@ var feng3d;
          * @param order 旋转顺序。
          */
         Matrix4x4.recompose = function (position, rotation, scale, order) {
-            if (order === void 0) { order = feng3d.rotationOrder; }
+            if (order === void 0) { order = feng3d.defaultRotationOrder; }
             return new Matrix4x4().recompose(position, rotation, scale, order);
         };
         /**
@@ -3223,7 +3239,7 @@ var feng3d;
          */
         Matrix4x4.prototype.getRotation = function (rotation, order) {
             if (rotation === void 0) { rotation = new feng3d.Vector3(); }
-            if (order === void 0) { order = feng3d.rotationOrder; }
+            if (order === void 0) { order = feng3d.defaultRotationOrder; }
             this.decompose(new feng3d.Vector3(), rotation, new feng3d.Vector3(), order);
             return rotation;
         };
@@ -3234,7 +3250,7 @@ var feng3d;
          * @param order 绕轴旋转的顺序。
          */
         Matrix4x4.prototype.setRotation = function (rotation, order) {
-            if (order === void 0) { order = feng3d.rotationOrder; }
+            if (order === void 0) { order = feng3d.defaultRotationOrder; }
             var p = new feng3d.Vector3();
             var r = new feng3d.Vector3();
             var s = new feng3d.Vector3();
@@ -3385,7 +3401,7 @@ var feng3d;
          * @param   order   绕轴旋转的顺序。
          */
         Matrix4x4.fromRotation = function (rx, ry, rz, order) {
-            if (order === void 0) { order = feng3d.rotationOrder; }
+            if (order === void 0) { order = feng3d.defaultRotationOrder; }
             return new Matrix4x4().fromRotation(rx, ry, rz, order);
         };
         /**
@@ -3405,7 +3421,7 @@ var feng3d;
          * @param   order   绕轴旋转的顺序。
          */
         Matrix4x4.prototype.fromRotation = function (rx, ry, rz, order) {
-            if (order === void 0) { order = feng3d.rotationOrder; }
+            if (order === void 0) { order = feng3d.defaultRotationOrder; }
             this.recompose(new feng3d.Vector3(), new feng3d.Vector3(rx, ry, rz), new feng3d.Vector3(1, 1, 1), order);
             return this;
         };
@@ -3477,7 +3493,7 @@ var feng3d;
             this.rawData[13] = m141 * m212 + m142 * m222 + m143 * m232 + m144 * m242;
             this.rawData[14] = m141 * m213 + m142 * m223 + m143 * m233 + m144 * m243;
             this.rawData[15] = m141 * m214 + m142 * m224 + m143 * m234 + m144 * m244;
-            debuger && console.assert(this.rawData[0] !== NaN && this.rawData[4] !== NaN && this.rawData[8] !== NaN && this.rawData[12] !== NaN);
+            console.assert(this.rawData[0] !== NaN && this.rawData[4] !== NaN && this.rawData[8] !== NaN && this.rawData[12] !== NaN);
             return this;
         };
         /**
@@ -3657,7 +3673,7 @@ var feng3d;
          * @param order 旋转顺序。
          */
         Matrix4x4.prototype.recompose = function (position, rotation, scale, order) {
-            if (order === void 0) { order = rotationOrder; }
+            if (order === void 0) { order = feng3d.defaultRotationOrder; }
             this.identity();
             var te = this.rawData;
             //
@@ -3778,7 +3794,7 @@ var feng3d;
             if (position === void 0) { position = new feng3d.Vector3(); }
             if (rotation === void 0) { rotation = new feng3d.Vector3(); }
             if (scale === void 0) { scale = new feng3d.Vector3(); }
-            if (order === void 0) { order = feng3d.rotationOrder; }
+            if (order === void 0) { order = feng3d.defaultRotationOrder; }
             var clamp = Math.clamp;
             //
             var rawData = this.rawData;
@@ -4312,7 +4328,7 @@ var feng3d;
             0, 0, 0, 1 //
         ];
         __decorate([
-            serialize
+            feng3d.serialize
         ], Matrix4x4.prototype, "rawData", void 0);
         return Matrix4x4;
     }());
@@ -4920,16 +4936,16 @@ var feng3d;
             return this;
         };
         __decorate([
-            serialize
+            feng3d.serialize
         ], Quaternion.prototype, "x", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], Quaternion.prototype, "y", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], Quaternion.prototype, "z", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], Quaternion.prototype, "w", void 0);
         return Quaternion;
     }());
@@ -6808,7 +6824,7 @@ var feng3d;
          */
         TriangleGeometry.prototype.getPoints = function () {
             var ps = this.triangles.reduce(function (v, t) { return v.concat(t.getPoints()); }, []);
-            utils.arrayUnique(ps, function (a, b) { return a.equals(b); });
+            Array.unique(ps, function (a, b) { return a.equals(b); });
             return ps;
         };
         /**
@@ -6932,11 +6948,11 @@ var feng3d;
                 ps.push(r);
             });
             // 清除相同的线段
-            utils.arrayUnique(ss, function (a, b) { return a.equals(b); });
+            Array.unique(ss, function (a, b) { return a.equals(b); });
             // 删除在相交线段上的交点
             ps = ps.filter(function (p) { return ss.every(function (s) { return !s.onWithPoint(p); }); });
             // 清除相同点
-            utils.arrayUnique(ps, function (a, b) { return a.equals(b); });
+            Array.unique(ps, function (a, b) { return a.equals(b); });
             if (ss.length + ps.length == 0)
                 return null;
             return { segments: ss, points: ps };
@@ -7112,13 +7128,13 @@ var feng3d;
             return new feng3d.Color3();
         };
         __decorate([
-            serialize
+            feng3d.serialize
         ], Gradient.prototype, "mode", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], Gradient.prototype, "alphaKeys", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], Gradient.prototype, "colorKeys", void 0);
         return Gradient;
     }());
@@ -7238,25 +7254,25 @@ var feng3d;
             return this.color;
         };
         __decorate([
-            serialize
+            feng3d.serialize
         ], MinMaxGradient.prototype, "mode", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], MinMaxGradient.prototype, "color", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], MinMaxGradient.prototype, "colorMin", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], MinMaxGradient.prototype, "colorMax", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], MinMaxGradient.prototype, "gradient", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], MinMaxGradient.prototype, "gradientMin", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], MinMaxGradient.prototype, "gradientMax", void 0);
         return MinMaxGradient;
     }());
@@ -7966,7 +7982,7 @@ var feng3d;
             }
             if (keys.length == 0)
                 return { time: t, value: 0, inTangent: 0, outTangent: 0 };
-            debuger && console.assert(isfind);
+            console.assert(isfind);
             return { time: t, value: value, inTangent: tangent, outTangent: tangent };
         };
         /**
@@ -8029,13 +8045,13 @@ var feng3d;
             return results;
         };
         __decorate([
-            serialize
+            feng3d.serialize
         ], AnimationCurve.prototype, "preWrapMode", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], AnimationCurve.prototype, "postWrapMode", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], AnimationCurve.prototype, "keys", void 0);
         return AnimationCurve;
     }());
@@ -8151,31 +8167,31 @@ var feng3d;
             return this.constant;
         };
         __decorate([
-            serialize
+            feng3d.serialize
         ], MinMaxCurve.prototype, "mode", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], MinMaxCurve.prototype, "constant", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], MinMaxCurve.prototype, "constantMin", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], MinMaxCurve.prototype, "constantMax", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], MinMaxCurve.prototype, "curve", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], MinMaxCurve.prototype, "curveMin", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], MinMaxCurve.prototype, "curveMax", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], MinMaxCurve.prototype, "curveMultiplier", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], MinMaxCurve.prototype, "between0And1", void 0);
         return MinMaxCurve;
     }());
@@ -8207,13 +8223,13 @@ var feng3d;
             return new feng3d.Vector3(this.xCurve.getValue(time, randomBetween), this.yCurve.getValue(time, randomBetween), this.zCurve.getValue(time, randomBetween));
         };
         __decorate([
-            serialize
+            feng3d.serialize
         ], MinMaxCurveVector3.prototype, "xCurve", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], MinMaxCurveVector3.prototype, "yCurve", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], MinMaxCurveVector3.prototype, "zCurve", void 0);
         return MinMaxCurveVector3;
     }());

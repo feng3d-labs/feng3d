@@ -1084,6 +1084,20 @@ Array.unique = function (arr, compare) {
     }
     return arr;
 };
+/**
+ * 数组元素是否唯一
+ * @param equalFn 比较函数
+ */
+Array.isUnique = function (array, compare) {
+    for (var i = array.length - 1; i >= 0; i--) {
+        for (var j = 0; j < i; j++) {
+            if (compare(array[i], array[j])) {
+                return false;
+            }
+        }
+    }
+    return true;
+};
 Array.delete = function (arr, item) {
     var index = arr.indexOf(item);
     if (index != -1)
@@ -5393,48 +5407,6 @@ var feng3d;
     var Utils = /** @class */ (function () {
         function Utils() {
         }
-        /**
-         * 初始化数组
-         * @param arraylike 类数组
-         */
-        Utils.prototype.arrayFrom = function (arraylike) {
-            var arr = [];
-            for (var i = 0; i < arraylike.length; i++) {
-                arr[i] = arraylike[i];
-            }
-            return arr;
-        };
-        /**
-         * 使数组元素变得唯一,除去相同值
-         * @param equalFn 比较函数
-         */
-        Utils.prototype.arrayUnique = function (arr, equal) {
-            if (equal === void 0) { equal = function (a, b) { return (a == b); }; }
-            for (var i = arr.length - 1; i >= 0; i--) {
-                for (var j = 0; j < i; j++) {
-                    if (equal(arr[i], arr[j])) {
-                        arr.splice(i, 1);
-                        break;
-                    }
-                }
-            }
-            return this;
-        };
-        /**
-         * 数组元素是否唯一
-         * @param equalFn 比较函数
-         */
-        Utils.prototype.arrayIsUnique = function (array, equalFn) {
-            if (equalFn === void 0) { equalFn = function (a, b) { return (a == b); }; }
-            for (var i = array.length - 1; i >= 0; i--) {
-                for (var j = 0; j < i; j++) {
-                    if (equalFn(array[i], array[j])) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        };
         /**
          * 创建数组
          * @param length 长度
@@ -14771,7 +14743,7 @@ var feng3d;
          */
         TriangleGeometry.prototype.getPoints = function () {
             var ps = this.triangles.reduce(function (v, t) { return v.concat(t.getPoints()); }, []);
-            feng3d.utils.arrayUnique(ps, function (a, b) { return a.equals(b); });
+            Array.unique(ps, function (a, b) { return a.equals(b); });
             return ps;
         };
         /**
@@ -14895,11 +14867,11 @@ var feng3d;
                 ps.push(r);
             });
             // 清除相同的线段
-            feng3d.utils.arrayUnique(ss, function (a, b) { return a.equals(b); });
+            Array.unique(ss, function (a, b) { return a.equals(b); });
             // 删除在相交线段上的交点
             ps = ps.filter(function (p) { return ss.every(function (s) { return !s.onWithPoint(p); }); });
             // 清除相同点
-            feng3d.utils.arrayUnique(ps, function (a, b) { return a.equals(b); });
+            Array.unique(ps, function (a, b) { return a.equals(b); });
             if (ss.length + ps.length == 0)
                 return null;
             return { segments: ss, points: ps };

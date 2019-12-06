@@ -350,6 +350,20 @@ Array.unique = function (arr, compare) {
     }
     return arr;
 };
+/**
+ * 数组元素是否唯一
+ * @param equalFn 比较函数
+ */
+Array.isUnique = function (array, compare) {
+    for (var i = array.length - 1; i >= 0; i--) {
+        for (var j = 0; j < i; j++) {
+            if (compare(array[i], array[j])) {
+                return false;
+            }
+        }
+    }
+    return true;
+};
 Array.delete = function (arr, item) {
     var index = arr.indexOf(item);
     if (index != -1)

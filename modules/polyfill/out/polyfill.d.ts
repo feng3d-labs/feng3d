@@ -252,6 +252,13 @@ interface ArrayConstructor {
      */
     unique<T>(array: T[], compare?: (a: T, b: T) => boolean): T[];
     /**
+     * 判断数组是否唯一
+     *
+     * @param array 被检查数组
+     * @param compare 比较函数
+     */
+    isUnique<T>(array: T[], compare?: (a: T, b: T) => boolean): boolean;
+    /**
      * 删除元素
      *
      * @param array 被操作数组

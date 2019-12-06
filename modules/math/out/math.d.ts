@@ -189,6 +189,14 @@ declare namespace feng3d {
          */
         RIGHT_HANDED = 1
     }
+    /**
+     * 引擎中使用的坐标系统，默认左手坐标系统。
+     *
+     * three.js 右手坐标系统。
+     * playcanvas 右手坐标系统。
+     * unity    左手坐标系统。
+     */
+    var coordinateSystem: CoordinateSystem;
 }
 declare namespace feng3d {
     /**
@@ -228,6 +236,14 @@ declare namespace feng3d {
          */
         XZY = 5
     }
+    /**
+     * 引擎中使用的旋转顺序。
+     *
+     * unity YXZ
+     * playcanvas ZYX
+     * three.js XYZ
+     */
+    var defaultRotationOrder: RotationOrder;
 }
 declare namespace feng3d {
     /**
@@ -292,7 +308,7 @@ declare namespace feng3d {
         /**
          * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
          */
-        equals(object: Color3, precision?: any): boolean;
+        equals(object: Color3, precision?: number): boolean;
         /**
          * 拷贝
          */
@@ -541,7 +557,7 @@ declare namespace feng3d {
         /**
          * 通过将当前 Color3 对象的 r、g 和 b 元素与指定的 Color3 对象的 r、g 和 b 元素进行比较，确定这两个对象是否相等。
          */
-        equals(object: Color4, precision?: any): boolean;
+        equals(object: Color4, precision?: number): boolean;
         /**
          * 拷贝
          */
@@ -922,14 +938,14 @@ declare namespace feng3d {
          *
          * @param precision
          */
-        almostZero(precision?: any): boolean;
+        almostZero(precision?: number): boolean;
         /**
          * 检查这个向量是否与另一个向量反平行。
          *
          * @param  v
          * @param  precision 设置为零以进行精确比较
          */
-        isAntiparallelTo(v: Vector3, precision?: any): boolean;
+        isAntiparallelTo(v: Vector3, precision?: number): boolean;
         /**
          * 加上标量
          * @param n 标量
@@ -985,7 +1001,7 @@ declare namespace feng3d {
         /**
          * 通过将当前 Vector3 对象的 x、y 和 z 元素与指定的 Vector3 对象的 x、y 和 z 元素进行比较，确定这两个对象是否相等。
          */
-        equals(v: Vector3, precision?: any): boolean;
+        equals(v: Vector3, precision?: number): boolean;
         /**
          * 负向量
          * (a,b,c)->(-a,-b,-c)
@@ -1159,7 +1175,7 @@ declare namespace feng3d {
          * 与指定向量是否平行
          * @param v 向量
          */
-        isParallel(v: Vector3, precision?: any): any;
+        isParallel(v: Vector3, precision?: number): boolean;
         /**
          * 从向量中得到叉乘矩阵a_cross，使得a x b = a_cross * b = c
          * @see http://www8.cs.umu.se/kurser/TDBD24/VT06/lectures/Lecture6.pdf
@@ -1310,7 +1326,7 @@ declare namespace feng3d {
          * @param precision 允许误差
          * @return 相等返回true，否则false
          */
-        equals(v: Vector4, precision?: any): boolean;
+        equals(v: Vector4, precision?: number): boolean;
         /**
          * 负向量
          * @return 返回自身
@@ -1698,7 +1714,7 @@ declare namespace feng3d {
          * @param scale 缩放。
          * @param order 旋转顺序。
          */
-        static recompose(position: Vector3, rotation: Vector3, scale: Vector3, order?: any): Matrix4x4;
+        static recompose(position: Vector3, rotation: Vector3, scale: Vector3, order?: RotationOrder): Matrix4x4;
         /**
          * 一个由 16 个数字组成的矢量，其中，每四个元素可以是 4x4 矩阵的一列。
          */
@@ -1721,14 +1737,14 @@ declare namespace feng3d {
          * @param rotation 欧拉旋转角度。
          * @param order   绕轴旋转的顺序。
          */
-        getRotation(rotation?: Vector3, order?: any): Vector3;
+        getRotation(rotation?: Vector3, order?: RotationOrder): Vector3;
         /**
          * 设置欧拉旋转角度。
          *
          * @param rotation 欧拉旋转角度。
          * @param order 绕轴旋转的顺序。
          */
-        setRotation(rotation: Vector3, order?: any): this;
+        setRotation(rotation: Vector3, order?: RotationOrder): this;
         /**
          * 获取缩放值。
          *
@@ -1788,7 +1804,7 @@ declare namespace feng3d {
          * @param   rz      用于沿 z 轴旋转对象的角度。
          * @param   order   绕轴旋转的顺序。
          */
-        static fromRotation(rx: number, ry: number, rz: number, order?: any): Matrix4x4;
+        static fromRotation(rx: number, ry: number, rz: number, order?: RotationOrder): Matrix4x4;
         /**
          * 从四元素初始化矩阵。
          *
@@ -1803,7 +1819,7 @@ declare namespace feng3d {
          * @param   rz      用于沿 z 轴旋转对象的角度。
          * @param   order   绕轴旋转的顺序。
          */
-        fromRotation(rx: number, ry: number, rz: number, order?: any): this;
+        fromRotation(rx: number, ry: number, rz: number, order?: RotationOrder): this;
         /**
          * 从四元素初始化矩阵。
          *
@@ -1915,7 +1931,7 @@ declare namespace feng3d {
          * @param scale 缩放。
          * @param order 旋转顺序。
          */
-        recompose(position: Vector3, rotation: Vector3, scale: Vector3, order?: any): this;
+        recompose(position: Vector3, rotation: Vector3, scale: Vector3, order?: RotationOrder): this;
         /**
          * 把矩阵分解为位移旋转缩放。
          *
@@ -1924,7 +1940,7 @@ declare namespace feng3d {
          * @param scale 缩放。
          * @param order 旋转顺序。
          */
-        decompose(position?: Vector3, rotation?: Vector3, scale?: Vector3, order?: any): Vector3[];
+        decompose(position?: Vector3, rotation?: Vector3, scale?: Vector3, order?: RotationOrder): Vector3[];
         /**
          * 使用不含平移元素的转换矩阵将 Vector3 对象从一个空间坐标转换到另一个空间坐标。
          * @param   v   一个容纳要转换的坐标的 Vector3 对象。
@@ -2008,7 +2024,7 @@ declare namespace feng3d {
         /**
          * 比较矩阵是否相等
          */
-        equals(matrix3D: Matrix4x4, precision?: any): boolean;
+        equals(matrix3D: Matrix4x4, precision?: number): boolean;
         /**
          * 看向目标位置
          * @param target    目标位置
@@ -2367,7 +2383,7 @@ declare namespace feng3d {
          * @param point 点
          * @param precision 精度
          */
-        onWithPoint(point: Vector3, precision?: any): boolean;
+        onWithPoint(point: Vector3, precision?: number): boolean;
         /**
          * 与直线相交
          * @param line3D 直线
@@ -2384,7 +2400,7 @@ declare namespace feng3d {
          * @param precision 允许误差
          * @return 相等返回true，否则false
          */
-        equals(line: Line3D, precision?: any): boolean;
+        equals(line: Line3D, precision?: number): boolean;
         /**
          * 拷贝
          * @param line 直线
@@ -2433,7 +2449,7 @@ declare namespace feng3d {
          * 判定点是否在线段上
          * @param point
          */
-        onWithPoint(point: Vector3, precision?: any): any;
+        onWithPoint(point: Vector3, precision?: number): boolean;
         /**
          * 判定点是否投影在线段上
          * @param point
@@ -2608,7 +2624,7 @@ declare namespace feng3d {
          * @param p 点
          * @param precision 精度，如果距离小于精度则判定为在三角形上
          */
-        onWithPoint(p: Vector3, precision?: any): boolean;
+        onWithPoint(p: Vector3, precision?: number): boolean;
         /**
          * 获取指定点分别占三个点的混合值
          */
@@ -3092,24 +3108,24 @@ declare namespace feng3d {
          * 点是否在平面上
          * @param p 点
          */
-        onWithPoint(p: Vector3): any;
+        onWithPoint(p: Vector3): boolean;
         /**
          * 顶点分类
          * <p>把顶点分为后面、前面、相交三类</p>
          * @param p			顶点
          * @return			顶点类型 PlaneClassification.BACK,PlaneClassification.FRONT,PlaneClassification.INTERSECT
          */
-        classifyPoint(p: Vector3, precision?: any): PlaneClassification;
+        classifyPoint(p: Vector3, precision?: number): PlaneClassification;
         /**
          * 判定与直线是否平行
          * @param line3D
          */
-        parallelWithLine3D(line3D: Line3D, precision?: any): boolean;
+        parallelWithLine3D(line3D: Line3D, precision?: number): boolean;
         /**
          * 判定与平面是否平行
          * @param plane3D
          */
-        parallelWithPlane3D(plane3D: Plane3D, precision?: any): boolean;
+        parallelWithPlane3D(plane3D: Plane3D, precision?: number): boolean;
         /**
          * 获取与直线交点
          */
@@ -3345,7 +3361,7 @@ declare namespace feng3d {
          * 获取透明度
          * @param time 时间
          */
-        getAlpha(time: number): any;
+        getAlpha(time: number): number;
         /**
          * 获取透明度
          * @param time 时间
@@ -3950,7 +3966,7 @@ declare namespace feng3d {
          * 获取值
          * @param time 时间
          */
-        getValue(time: number, randomBetween?: number): any;
+        getValue(time: number, randomBetween?: number): number;
     }
 }
 declare namespace feng3d {

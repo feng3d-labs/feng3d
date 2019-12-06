@@ -9,6 +9,14 @@ interface ArrayConstructor
     unique<T>(array: T[], compare?: (a: T, b: T) => boolean): T[];
 
     /**
+     * 判断数组是否唯一
+     * 
+     * @param array 被检查数组
+     * @param compare 比较函数
+     */
+    isUnique<T>(array: T[], compare?: (a: T, b: T) => boolean): boolean;
+
+    /**
      * 删除元素
      * 
      * @param array 被操作数组
@@ -89,6 +97,26 @@ Array.unique = function (arr, compare = (a, b) => a == b)
     }
 
     return arr;
+}
+
+
+/**
+ * 数组元素是否唯一
+ * @param equalFn 比较函数
+ */
+Array.isUnique = function (array, compare)
+{
+    for (let i = array.length - 1; i >= 0; i--)
+    {
+        for (let j = 0; j < i; j++)
+        {
+            if (compare(array[i], array[j]))
+            {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 Array.delete = function (arr, item)
