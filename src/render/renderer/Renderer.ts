@@ -16,6 +16,8 @@ namespace feng3d
         {
             debuger && console.assert(!gl.render, `${gl} ${gl.render} 存在！`);
 
+            var preActiveAttributes: number[] = [];
+
             gl.render = (renderAtomic1: RenderAtomic) =>
             {
                 var instanceCount = renderAtomic1.getInstanceCount();
@@ -166,12 +168,20 @@ namespace feng3d
              */
             function activeAttributes(renderAtomic: RenderAtomicData, attributeInfos: { [name: string]: AttributeInfo })
             {
+                var activeAttributes: number[] = [];
                 for (var name in attributeInfos)
                 {
                     var activeInfo = attributeInfos[name];
                     var buffer: Attribute = renderAtomic.attributes[name];
                     buffer.active(gl, activeInfo.location);
+                    activeAttributes.push(activeInfo.location);
+                    Array.delete(preActiveAttributes, activeInfo.location);
                 }
+                preActiveAttributes.forEach(location =>
+                {
+                    gl.disableVertexAttribArray(location);
+                });
+                preActiveAttributes = activeAttributes;
             }
 
             /**
@@ -179,11 +189,11 @@ namespace feng3d
              */
             function disableAttributes(attributeInfos: { [name: string]: AttributeInfo })
             {
-                for (var name in attributeInfos)
-                {
-                    var activeInfo = attributeInfos[name];
-                    gl.disableVertexAttribArray(activeInfo.location);
-                }
+                // for (var name in attributeInfos)
+                // {
+                //     var activeInfo = attributeInfos[name];
+                //     gl.disableVertexAttribArray(activeInfo.location);
+                // }
             }
 
             /**
