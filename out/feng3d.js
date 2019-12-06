@@ -21978,7 +21978,6 @@ var feng3d;
     var ShaderLib = /** @class */ (function () {
         function ShaderLib() {
             this._shaderCache = {};
-            feng3d.globalDispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
         }
         Object.defineProperty(ShaderLib.prototype, "shaderConfig", {
             get: function () {
@@ -22028,26 +22027,22 @@ var feng3d;
             }
             return shaderCode;
         };
-        ShaderLib.prototype.onShaderChanged = function () {
-            this._shaderCache = {};
-        };
         /**
          * 获取shader列表
          */
         ShaderLib.prototype.getShaderNames = function () {
             return Object.keys(this.shaderConfig.shaders);
         };
+        /**
+         * 清除缓存
+         */
+        ShaderLib.prototype.clearCache = function () {
+            this._shaderCache = {};
+        };
         return ShaderLib;
     }());
     feng3d.ShaderLib = ShaderLib;
     feng3d.shaderlib = new ShaderLib();
-    //ShaderLib1
-    var ShaderLib1 = /** @class */ (function () {
-        function ShaderLib1() {
-        }
-        return ShaderLib1;
-    }());
-    feng3d.ShaderLib1 = ShaderLib1;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -22245,6 +22240,7 @@ var feng3d;
                             gl.uniform3f(location, data.r, data.g, data.b);
                         }
                         else if (data instanceof feng3d.Vector3) {
+                            data.toArray();
                             gl.uniform3f(location, data.x, data.y, data.z);
                         }
                         else {
@@ -22321,6 +22317,12 @@ var feng3d;
         return Renderer;
     }());
     feng3d.Renderer = Renderer;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    feng3d.globalDispatcher.on("asset.shaderChanged", function () {
+        feng3d.shaderlib.clearCache();
+    });
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

@@ -244,6 +244,7 @@ namespace feng3d
                             gl.uniform3f(location, data.r, data.g, data.b);
                         } else if (data instanceof Vector3)
                         {
+                            data.toArray();
                             gl.uniform3f(location, data.x, data.y, data.z);
                         } else
                         {

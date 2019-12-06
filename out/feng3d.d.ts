@@ -11043,7 +11043,6 @@ declare namespace feng3d {
         set shaderConfig(v: ShaderConfig);
         private _shaderConfig;
         private _shaderCache;
-        constructor();
         /**
          * 获取shaderCode
          */
@@ -11057,13 +11056,14 @@ declare namespace feng3d {
          * 展开 include
          */
         uninclude(shaderCode: string): string;
-        private onShaderChanged;
         /**
          * 获取shader列表
          */
         getShaderNames(): string[];
-    }
-    class ShaderLib1 {
+        /**
+         * 清除缓存
+         */
+        clearCache(): void;
     }
 }
 declare namespace feng3d {
@@ -11079,6 +11079,8 @@ declare namespace feng3d {
         readonly draw: (renderAtomic: RenderAtomic) => void;
         constructor(gl: GL);
     }
+}
+declare namespace feng3d {
 }
 declare namespace feng3d {
     /**

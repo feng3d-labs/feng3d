@@ -52,11 +52,6 @@ namespace feng3d
 
         private _shaderCache: { [shaderName: string]: { vertex: string, fragment: string, vertexMacroVariables: string[], fragmentMacroVariables: string[] } } = {};
 
-        constructor()
-        {
-            globalDispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
-        }
-
         /**
          * 获取shaderCode
          */
@@ -102,11 +97,6 @@ namespace feng3d
             return shaderCode;
         }
 
-        private onShaderChanged()
-        {
-            this._shaderCache = {};
-        }
-
         /**
          * 获取shader列表
          */
@@ -114,13 +104,15 @@ namespace feng3d
         {
             return Object.keys(this.shaderConfig.shaders);
         }
+
+        /**
+         * 清除缓存
+         */
+        clearCache()
+        {
+            this._shaderCache = {};
+        }
     }
 
     shaderlib = new ShaderLib();
-
-    //ShaderLib1
-    export class ShaderLib1
-    {
-
-    }
 }
