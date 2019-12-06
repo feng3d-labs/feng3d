@@ -16258,7 +16258,7 @@ var feng3d;
         return EventDispatcher;
     }());
     feng3d.EventDispatcher = EventDispatcher;
-    feng3d.dispatcher = new EventDispatcher();
+    feng3d.globalDispatcher = new EventDispatcher();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -18160,7 +18160,7 @@ var feng3d;
         IndexedDBFS.prototype.deleteFile = function (path, callback) {
             // 删除文件
             feng3d._indexedDB.objectStoreDelete(this.DBname, this.projectname, path, callback);
-            feng3d.dispatcher.dispatch("fs.delete", path);
+            feng3d.globalDispatcher.dispatch("fs.delete", path);
         };
         /**
          * 写文件
@@ -18170,7 +18170,7 @@ var feng3d;
          */
         IndexedDBFS.prototype.writeArrayBuffer = function (path, data, callback) {
             feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
-            feng3d.dispatcher.dispatch("fs.write", path);
+            feng3d.globalDispatcher.dispatch("fs.write", path);
         };
         /**
          * 写文件
@@ -18180,7 +18180,7 @@ var feng3d;
          */
         IndexedDBFS.prototype.writeString = function (path, data, callback) {
             feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, data, callback);
-            feng3d.dispatcher.dispatch("fs.write", path);
+            feng3d.globalDispatcher.dispatch("fs.write", path);
         };
         /**
          * 写文件
@@ -18190,7 +18190,7 @@ var feng3d;
          */
         IndexedDBFS.prototype.writeObject = function (path, object, callback) {
             feng3d._indexedDB.objectStorePut(this.DBname, this.projectname, path, object, callback);
-            feng3d.dispatcher.dispatch("fs.write", path);
+            feng3d.globalDispatcher.dispatch("fs.write", path);
         };
         /**
          * 写图片
@@ -18202,7 +18202,7 @@ var feng3d;
             var _this = this;
             feng3d.dataTransform.imageToArrayBuffer(image, function (arraybuffer) {
                 _this.writeArrayBuffer(path, arraybuffer, callback);
-                feng3d.dispatcher.dispatch("fs.write", path);
+                feng3d.globalDispatcher.dispatch("fs.write", path);
             });
         };
         /**
@@ -20680,7 +20680,7 @@ var feng3d;
             this.macroValues = {};
             this.macroInvalid = true;
             this.shaderName = shaderName;
-            feng3d.dispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
+            feng3d.globalDispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
         }
         /**
          * 激活渲染程序
@@ -22013,7 +22013,7 @@ var feng3d;
     var ShaderLib = /** @class */ (function () {
         function ShaderLib() {
             this._shaderCache = {};
-            feng3d.dispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
+            feng3d.globalDispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
         }
         Object.defineProperty(ShaderLib.prototype, "shaderConfig", {
             get: function () {
@@ -25341,7 +25341,7 @@ var feng3d;
         });
         ScriptComponent.prototype.init = function () {
             _super.prototype.init.call(this);
-            feng3d.dispatcher.on("asset.scriptChanged", this.invalidateScriptInstance, this);
+            feng3d.globalDispatcher.on("asset.scriptChanged", this.invalidateScriptInstance, this);
         };
         ScriptComponent.prototype.updateScriptInstance = function () {
             var oldInstance = this._scriptInstance;
@@ -25390,7 +25390,7 @@ var feng3d;
                 this._scriptInstance = null;
             }
             _super.prototype.dispose.call(this);
-            feng3d.dispatcher.off("asset.scriptChanged", this.invalidateScriptInstance, this);
+            feng3d.globalDispatcher.off("asset.scriptChanged", this.invalidateScriptInstance, this);
         };
         __decorate([
             feng3d.serialize,
@@ -30147,7 +30147,7 @@ var feng3d;
             _this.renderAtomic = new feng3d.RenderAtomic();
             _this.preview = "";
             _this.name = "";
-            feng3d.dispatcher.on("asset.shaderChanged", _this.onShaderChanged, _this);
+            feng3d.globalDispatcher.on("asset.shaderChanged", _this.onShaderChanged, _this);
             _this.shaderName = "standard";
             _this.uniforms = new feng3d.StandardUniforms();
             _this.renderParams = new feng3d.RenderParams();
@@ -40065,9 +40065,9 @@ var feng3d;
                         // image += ".JPG";
                         material.material = model.material = feng3d.serialization.setValue(new feng3d.Material(), { name: image, renderParams: { cullFace: feng3d.CullFace.FRONT } });
                         // }
-                        feng3d.dispatcher.dispatch("asset.parsed", material.material);
+                        feng3d.globalDispatcher.dispatch("asset.parsed", material.material);
                     }
-                    feng3d.dispatcher.dispatch("asset.parsed", geometry);
+                    feng3d.globalDispatcher.dispatch("asset.parsed", geometry);
                     model.geometry = geometry;
                     model.skinSkeleton = skinSkeleton;
                     container.addChild(mesh);
@@ -40175,7 +40175,7 @@ var feng3d;
                 war3Model.bones.forEach(function (bone) {
                     bone.buildAnimationclip(animationclip, __chache__, sequence.interval.start, sequence.interval.end);
                 });
-                feng3d.dispatcher.dispatch("asset.parsed", animationclip);
+                feng3d.globalDispatcher.dispatch("asset.parsed", animationclip);
                 animationclips.push(animationclip);
             }
             return animationclips;
@@ -41435,7 +41435,7 @@ var feng3d;
                         u_specular: { r: materialInfo.ks[0], g: materialInfo.ks[1], b: materialInfo.ks[2], },
                     },
                 });
-                feng3d.dispatcher.dispatch("asset.parsed", material);
+                feng3d.globalDispatcher.dispatch("asset.parsed", material);
             }
             completed && completed(null, materials);
         };
@@ -41467,7 +41467,7 @@ var feng3d;
                 var gameObject = createSubObj(objData, obj, materials);
                 object.addChild(gameObject);
             }
-            feng3d.dispatcher.dispatch("asset.parsed", object);
+            feng3d.globalDispatcher.dispatch("asset.parsed", object);
             completed && completed(object);
         };
         return OBJConverter;
@@ -41515,7 +41515,7 @@ var feng3d;
             geometry.setVAData("a_normal", normals, 3);
         if (uvs.length > 0)
             geometry.setVAData("a_uv", uvs, 2);
-        feng3d.dispatcher.dispatch("asset.parsed", geometry);
+        feng3d.globalDispatcher.dispatch("asset.parsed", geometry);
         return gameObject;
         function translateVertexData(face, vertexIndex, vertices, uvs, indices, normals, obj) {
             var index;
@@ -41589,7 +41589,7 @@ var feng3d;
                 skinnedModel.skinSkeleton = skinSkeleton;
                 gameObject.addChild(skeletonGameObject);
             }
-            feng3d.dispatcher.dispatch("asset.parsed", gameObject);
+            feng3d.globalDispatcher.dispatch("asset.parsed", gameObject);
             completed && completed(gameObject);
         };
         /**
@@ -41771,7 +41771,7 @@ var feng3d;
             for (var i = 0; i < md5AnimData.numFrames; ++i) {
                 translatePose(md5AnimData, md5AnimData.frame[i], animationClip);
             }
-            feng3d.dispatcher.dispatch("asset.parsed", animationClip);
+            feng3d.globalDispatcher.dispatch("asset.parsed", animationClip);
             completed && completed(animationClip);
             /**
              * 将一个关键帧数据转换为SkeletonPose
@@ -41973,7 +41973,7 @@ var feng3d;
                 feng3d.war3.mdlParser.parse(content, function (war3Model) {
                     var showMesh = war3Model.getMesh();
                     var gameObject = feng3d.serialization.setValue(new feng3d.GameObject(), { name: feng3d.pathUtils.getName(mdlurl), children: [showMesh] });
-                    feng3d.dispatcher.dispatch("asset.parsed", gameObject);
+                    feng3d.globalDispatcher.dispatch("asset.parsed", gameObject);
                     callback && callback(gameObject);
                 });
             });

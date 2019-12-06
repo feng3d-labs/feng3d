@@ -42,7 +42,7 @@ namespace feng3d
         init()
         {
             super.init();
-            feng3d.dispatcher.on("asset.scriptChanged", this.invalidateScriptInstance, this);
+            feng3d.globalDispatcher.on("asset.scriptChanged", this.invalidateScriptInstance, this);
         }
 
         private updateScriptInstance()
@@ -106,7 +106,7 @@ namespace feng3d
             }
             super.dispose();
 
-            feng3d.dispatcher.off("asset.scriptChanged", this.invalidateScriptInstance, this);
+            feng3d.globalDispatcher.off("asset.scriptChanged", this.invalidateScriptInstance, this);
         }
     }
 }

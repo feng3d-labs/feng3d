@@ -3,7 +3,7 @@ namespace feng3d
     /**
      * 全局事件
      */
-    export var dispatcher: IEventDispatcher<GlobalEvents>;
+    export var globalDispatcher: IEventDispatcher<GlobalEvents>;
 
     export interface GlobalEvents
     {
@@ -157,5 +157,5 @@ namespace feng3d
             event["handelEventBubbles"](this, e);
         }
     }
-    dispatcher = new EventDispatcher();
+    globalDispatcher = new EventDispatcher();
 }

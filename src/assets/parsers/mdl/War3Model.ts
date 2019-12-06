@@ -83,10 +83,10 @@ namespace feng3d.war3
 					material.material = model.material = serialization.setValue(new feng3d.Material(), { name: image, renderParams: { cullFace: CullFace.FRONT } });
 					// }
 
-					dispatcher.dispatch("asset.parsed", material.material);
+					globalDispatcher.dispatch("asset.parsed", material.material);
 				}
 
-				dispatcher.dispatch("asset.parsed", geometry);
+				globalDispatcher.dispatch("asset.parsed", geometry);
 
 				model.geometry = geometry;
 				model.skinSkeleton = skinSkeleton;
@@ -227,7 +227,7 @@ namespace feng3d.war3
 				bone.buildAnimationclip(animationclip, __chache__, sequence.interval.start, sequence.interval.end);
 			});
 
-			dispatcher.dispatch("asset.parsed", animationclip);
+			globalDispatcher.dispatch("asset.parsed", animationclip);
 
 			animationclips.push(animationclip);
 		}

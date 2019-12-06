@@ -112,6 +112,7 @@
         "src/event/EventDispatcher.ts",
         "src/event/EventProxy.ts",
         "src/event/WindowEventProxy.ts",
+        "src/event/WindowEventProxy.ts",
         //
         "src/utils/Task.ts",
         //

@@ -7566,7 +7566,7 @@ declare namespace feng3d {
     /**
      * 全局事件
      */
-    var dispatcher: IEventDispatcher<GlobalEvents>;
+    var globalDispatcher: IEventDispatcher<GlobalEvents>;
     interface GlobalEvents {
         /**
          * shader资源发生变化

@@ -14,7 +14,7 @@ namespace feng3d
         constructor(shaderName: string)
         {
             this.shaderName = shaderName;
-            dispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
+            globalDispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
         }
 
         /**

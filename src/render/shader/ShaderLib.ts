@@ -54,7 +54,7 @@ namespace feng3d
 
         constructor()
         {
-            dispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
+            globalDispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
         }
 
         /**
