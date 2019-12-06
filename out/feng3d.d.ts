@@ -531,6 +531,47 @@ interface ObjectConstructor {
      */
     assignDeepDefaultHandlers: AssignDeepHandler[];
 }
+declare namespace feng3d {
+    var CLASS_KEY: string;
+    /**
+     * 类工具
+     */
+    var classUtils: ClassUtils;
+    /**
+     * 类工具
+     */
+    class ClassUtils {
+        /**
+         * 返回对象的完全限定类名。
+         * @param value 需要完全限定类名称的对象，可以将任何 JavaScript 值传递给此方法，包括所有可用的 JavaScript 类型、对象实例、原始类型
+         * （如number)和类对象
+         * @returns 包含完全限定类名称的字符串。
+         */
+        getQualifiedClassName(value: any): string;
+        /**
+         * 返回 name 参数指定的类的类对象引用。
+         * @param name 类的名称。
+         */
+        getDefinitionByName(name: string, readCache?: boolean): any;
+        private defaultInstMap;
+        /**
+         * 获取默认实例
+         *
+         * @param name 类名称
+         */
+        getDefaultInstanceByName(name: string): any;
+        /**
+         * 获取实例
+         *
+         * @param name 类名称
+         */
+        getInstanceByName(name: string): any;
+        /**
+         * 新增反射对象所在的命名空间，使得getQualifiedClassName能够得到正确的结果
+         */
+        addClassNameSpace(namespace: string): void;
+    }
+}
 interface MapConstructor {
     getKeys<K, V>(map: Map<K, V>): K[];
     getValues<K, V>(map: Map<K, V>): V[];
@@ -1769,47 +1810,6 @@ declare namespace feng3d {
         arrayBufferToObject(arrayBuffer: ArrayBuffer, callback: (object: Object) => void): void;
         stringToUint8Array(str: string): Uint8Array;
         uint8ArrayToString(arr: Uint8Array, callback: (str: string) => void): void;
-    }
-}
-declare namespace feng3d {
-    var CLASS_KEY: string;
-    /**
-     * 类工具
-     */
-    var classUtils: ClassUtils;
-    /**
-     * 类工具
-     */
-    class ClassUtils {
-        /**
-         * 返回对象的完全限定类名。
-         * @param value 需要完全限定类名称的对象，可以将任何 JavaScript 值传递给此方法，包括所有可用的 JavaScript 类型、对象实例、原始类型
-         * （如number)和类对象
-         * @returns 包含完全限定类名称的字符串。
-         */
-        getQualifiedClassName(value: any): string;
-        /**
-         * 返回 name 参数指定的类的类对象引用。
-         * @param name 类的名称。
-         */
-        getDefinitionByName(name: string, readCache?: boolean): any;
-        private defaultInstMap;
-        /**
-         * 获取默认实例
-         *
-         * @param name 类名称
-         */
-        getDefaultInstanceByName(name: string): any;
-        /**
-         * 获取实例
-         *
-         * @param name 类名称
-         */
-        getInstanceByName(name: string): any;
-        /**
-         * 新增反射对象所在的命名空间，使得getQualifiedClassName能够得到正确的结果
-         */
-        addClassNameSpace(namespace: string): void;
     }
 }
 declare namespace feng3d {

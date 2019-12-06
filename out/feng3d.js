@@ -898,6 +898,133 @@ Object.assignDeepDefaultHandlers = [
         }
     },
 ];
+var feng3d;
+(function (feng3d) {
+    feng3d.CLASS_KEY = "__class__";
+    /**
+     * 类工具
+     */
+    var ClassUtils = /** @class */ (function () {
+        function ClassUtils() {
+            this.defaultInstMap = {};
+        }
+        /**
+         * 返回对象的完全限定类名。
+         * @param value 需要完全限定类名称的对象，可以将任何 JavaScript 值传递给此方法，包括所有可用的 JavaScript 类型、对象实例、原始类型
+         * （如number)和类对象
+         * @returns 包含完全限定类名称的字符串。
+         */
+        ClassUtils.prototype.getQualifiedClassName = function (value) {
+            if (value == null)
+                return "null";
+            var prototype = value.prototype ? value.prototype : Object.getPrototypeOf(value);
+            if (prototype.hasOwnProperty(feng3d.CLASS_KEY))
+                return prototype[feng3d.CLASS_KEY];
+            var className = prototype.constructor.name;
+            if (_global[className] == prototype.constructor)
+                return className;
+            //在可能的命名空间内查找
+            for (var i = 0; i < _classNameSpaces.length; i++) {
+                var tryClassName = _classNameSpaces[i] + "." + className;
+                if (this.getDefinitionByName(tryClassName) == prototype.constructor) {
+                    className = tryClassName;
+                    registerClass(prototype.constructor, className);
+                    return className;
+                }
+            }
+            // console.warn(`未在给出的命名空间 ${_classNameSpaces} 内找到 ${value} 的定义`);
+            return className;
+        };
+        /**
+         * 返回 name 参数指定的类的类对象引用。
+         * @param name 类的名称。
+         */
+        ClassUtils.prototype.getDefinitionByName = function (name, readCache) {
+            if (readCache === void 0) { readCache = true; }
+            if (name == "null")
+                return null;
+            if (!name)
+                return null;
+            if (_global[name])
+                return _global[name];
+            if (readCache && _definitionCache[name])
+                return _definitionCache[name];
+            var paths = name.split(".");
+            var length = paths.length;
+            var definition = _global;
+            for (var i = 0; i < length; i++) {
+                var path = paths[i];
+                definition = definition[path];
+                if (!definition) {
+                    return null;
+                }
+            }
+            _definitionCache[name] = definition;
+            return definition;
+        };
+        /**
+         * 获取默认实例
+         *
+         * @param name 类名称
+         */
+        ClassUtils.prototype.getDefaultInstanceByName = function (name) {
+            var defaultInst = this.defaultInstMap[name];
+            if (defaultInst)
+                return defaultInst;
+            //
+            var cls = this.getDefinitionByName(name);
+            if (!cls)
+                return undefined;
+            defaultInst = this.defaultInstMap[name] = new cls();
+            // 冻结对象，防止被修改
+            Object.freeze(defaultInst);
+            return defaultInst;
+        };
+        /**
+         * 获取实例
+         *
+         * @param name 类名称
+         */
+        ClassUtils.prototype.getInstanceByName = function (name) {
+            var cls = this.getDefinitionByName(name);
+            console.assert(cls);
+            if (!cls)
+                return undefined;
+            return new cls();
+        };
+        /**
+         * 新增反射对象所在的命名空间，使得getQualifiedClassName能够得到正确的结果
+         */
+        ClassUtils.prototype.addClassNameSpace = function (namespace) {
+            if (_classNameSpaces.indexOf(namespace) == -1) {
+                _classNameSpaces.push(namespace);
+            }
+        };
+        return ClassUtils;
+    }());
+    feng3d.ClassUtils = ClassUtils;
+    ;
+    feng3d.classUtils = new ClassUtils();
+    var _definitionCache = {};
+    var _global;
+    var global;
+    if (typeof window != "undefined") {
+        _global = window;
+    }
+    else if (typeof global != "undefined") {
+        _global = global;
+    }
+    var _classNameSpaces = ["feng3d"];
+    /**
+     * 为一个类定义注册完全限定类名
+     * @param classDefinition 类定义
+     * @param className 完全限定类名
+     */
+    function registerClass(classDefinition, className) {
+        var prototype = classDefinition.prototype;
+        Object.defineProperty(prototype, feng3d.CLASS_KEY, { value: className, writable: true, enumerable: false });
+    }
+})(feng3d || (feng3d = {}));
 Map.getKeys = function (map) {
     var keys = [];
     map.forEach(function (v, k) {
@@ -3055,133 +3182,6 @@ var feng3d;
     }());
     feng3d.DataTransform = DataTransform;
     feng3d.dataTransform = new DataTransform();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    feng3d.CLASS_KEY = "__class__";
-    /**
-     * 类工具
-     */
-    var ClassUtils = /** @class */ (function () {
-        function ClassUtils() {
-            this.defaultInstMap = {};
-        }
-        /**
-         * 返回对象的完全限定类名。
-         * @param value 需要完全限定类名称的对象，可以将任何 JavaScript 值传递给此方法，包括所有可用的 JavaScript 类型、对象实例、原始类型
-         * （如number)和类对象
-         * @returns 包含完全限定类名称的字符串。
-         */
-        ClassUtils.prototype.getQualifiedClassName = function (value) {
-            if (value == null)
-                return "null";
-            var prototype = value.prototype ? value.prototype : Object.getPrototypeOf(value);
-            if (prototype.hasOwnProperty(feng3d.CLASS_KEY))
-                return prototype[feng3d.CLASS_KEY];
-            var className = prototype.constructor.name;
-            if (_global[className] == prototype.constructor)
-                return className;
-            //在可能的命名空间内查找
-            for (var i = 0; i < _classNameSpaces.length; i++) {
-                var tryClassName = _classNameSpaces[i] + "." + className;
-                if (this.getDefinitionByName(tryClassName) == prototype.constructor) {
-                    className = tryClassName;
-                    registerClass(prototype.constructor, className);
-                    return className;
-                }
-            }
-            // console.warn(`未在给出的命名空间 ${_classNameSpaces} 内找到 ${value} 的定义`);
-            return className;
-        };
-        /**
-         * 返回 name 参数指定的类的类对象引用。
-         * @param name 类的名称。
-         */
-        ClassUtils.prototype.getDefinitionByName = function (name, readCache) {
-            if (readCache === void 0) { readCache = true; }
-            if (name == "null")
-                return null;
-            if (!name)
-                return null;
-            if (_global[name])
-                return _global[name];
-            if (readCache && _definitionCache[name])
-                return _definitionCache[name];
-            var paths = name.split(".");
-            var length = paths.length;
-            var definition = _global;
-            for (var i = 0; i < length; i++) {
-                var path = paths[i];
-                definition = definition[path];
-                if (!definition) {
-                    return null;
-                }
-            }
-            _definitionCache[name] = definition;
-            return definition;
-        };
-        /**
-         * 获取默认实例
-         *
-         * @param name 类名称
-         */
-        ClassUtils.prototype.getDefaultInstanceByName = function (name) {
-            var defaultInst = this.defaultInstMap[name];
-            if (defaultInst)
-                return defaultInst;
-            //
-            var cls = this.getDefinitionByName(name);
-            if (!cls)
-                return undefined;
-            defaultInst = this.defaultInstMap[name] = new cls();
-            // 冻结对象，防止被修改
-            Object.freeze(defaultInst);
-            return defaultInst;
-        };
-        /**
-         * 获取实例
-         *
-         * @param name 类名称
-         */
-        ClassUtils.prototype.getInstanceByName = function (name) {
-            var cls = this.getDefinitionByName(name);
-            console.assert(cls);
-            if (!cls)
-                return undefined;
-            return new cls();
-        };
-        /**
-         * 新增反射对象所在的命名空间，使得getQualifiedClassName能够得到正确的结果
-         */
-        ClassUtils.prototype.addClassNameSpace = function (namespace) {
-            if (_classNameSpaces.indexOf(namespace) == -1) {
-                _classNameSpaces.push(namespace);
-            }
-        };
-        return ClassUtils;
-    }());
-    feng3d.ClassUtils = ClassUtils;
-    ;
-    feng3d.classUtils = new ClassUtils();
-    var _definitionCache = {};
-    var _global;
-    var global;
-    if (typeof window != "undefined") {
-        _global = window;
-    }
-    else if (typeof global != "undefined") {
-        _global = global;
-    }
-    var _classNameSpaces = ["feng3d"];
-    /**
-     * 为一个类定义注册完全限定类名
-     * @param classDefinition 类定义
-     * @param className 完全限定类名
-     */
-    function registerClass(classDefinition, className) {
-        var prototype = classDefinition.prototype;
-        Object.defineProperty(prototype, feng3d.CLASS_KEY, { value: className, writable: true, enumerable: false });
-    }
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

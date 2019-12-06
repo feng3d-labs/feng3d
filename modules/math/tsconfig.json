@@ -8,8 +8,12 @@
         "composite": true,
         "experimentalDecorators": true,
         "outFile": "out/math.js",
+        "lib": [
+            "ES2015",
+            "DOM",
+        ],
     },
-    "files": [ //注：如果有继承关系的，父类必须排在子类前面
+    "files": [
         // 函数方程
         "src/EquationSolving.ts",
         "src/HighFunction.ts",
@@ -51,5 +55,13 @@
         "src/curve/MinMaxCurveMode.ts",
         "src/curve/MinMaxCurve.ts",
         "src/curve/MinMaxCurveVector3.ts",
+    ],
+    "references": [
+        {
+            "path": "../polyfill"
+        },
+        {
+            "path": "../watcher"
+        }
     ]
 }

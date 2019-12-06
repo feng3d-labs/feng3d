@@ -13,7 +13,7 @@
         ],
         "outFile": "out/feng3d.js",
     },
-    "files": [ //注：如果有继承关系的，父类必须排在子类前面
+    "files": [ 
         // 事件模块
         "modules/events/src/FEvent.ts",
         "modules/events/src/EventDispatcher.ts",
@@ -24,6 +24,7 @@
         // Polyfill
         "modules/polyfill/src/Types.ts",
         "modules/polyfill/src/Object.ts",
+        "modules/polyfill/src/ClassUtils.ts",
         "modules/polyfill/src/Map.ts",
         "modules/polyfill/src/Array.ts",
         "modules/polyfill/src/Math.ts",
@@ -32,14 +33,13 @@
         "src/utils/Uuid.ts",
         "src/utils/debug.ts",
         //
-        "src/utils/Serialization.ts",
+        "modules/serialization/src/Serialization.ts",
         //
         "src/utils/ObjectView.ts",
         "src/utils/ObjectViewDefinitions.ts",
         //
         "src/utils/Ticker.ts",
         "src/utils/DataTransform.ts",
-        "src/utils/ClassUtils.ts",
         "src/utils/ImageUtil.ts",
         "src/utils/Stats.ts",
         "src/utils/PathUtils.ts",
