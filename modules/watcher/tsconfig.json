@@ -1,17 +1,24 @@
 {
     "compilerOptions": {
-        "target": "es5",
+        "target": "ES5",
         "noImplicitAny": false,
         "sourceMap": true,
         "declarationMap": true,
         "declaration": true,
         "composite": true,
-        // "strict": true,
         "experimentalDecorators": true,
         "outFile": "out/watcher.js",
-        // "outDir": "debug",
+        "lib": [
+            "ES2015",
+            "DOM",
+        ],
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
         "src/Watcher.ts",
+    ],
+    "references": [
+        {
+            "path": "../polyfill"
+        }
     ]
 }

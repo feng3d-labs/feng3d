@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "es5",
+        "target": "ES5",
         "noImplicitAny": false,
         "sourceMap": true,
         "declarationMap": true,
@@ -9,7 +9,7 @@
         "experimentalDecorators": true,
         "outFile": "out/evnet.js",
         "lib": [
-            "es2015",
+            "ES2015",
         ],
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
