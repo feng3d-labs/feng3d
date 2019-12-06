@@ -585,7 +585,7 @@ namespace feng3d
          * @param scale 缩放。
          * @param order 旋转顺序。
          */
-        recompose(position: Vector3, rotation: Vector3, scale: Vector3, order = feng3d.rotationOrder)
+        recompose(position: Vector3, rotation: Vector3, scale: Vector3, order = rotationOrder)
         {
             this.identity();
             var te = this.rawData;

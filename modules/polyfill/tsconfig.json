@@ -7,14 +7,12 @@
         "declaration": true,
         "composite": true,
         "experimentalDecorators": true,
-        "lib": [
-            "es2015",
-        ],
-        "outFile": "out/evnet.js",
+        "outFile": "out/polyfill.js",
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
-        // 事件模块
-        "src/FEvent.ts",
-        "src/EventDispatcher.ts",
+        "src/Types.ts",
+        "src/Object.ts",
+        "src/Map.ts",
+        "src/Array.ts",
     ]
 }

@@ -6,15 +6,12 @@
         "declarationMap": true,
         "declaration": true,
         "composite": true,
+        // "strict": true,
         "experimentalDecorators": true,
-        "lib": [
-            "es2015",
-        ],
-        "outFile": "out/evnet.js",
+        "outFile": "out/watcher.js",
+        // "outDir": "debug",
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
-        // 事件模块
-        "src/FEvent.ts",
-        "src/EventDispatcher.ts",
+        "src/Watcher.ts",
     ]
 }

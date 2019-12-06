@@ -20,14 +20,15 @@
         "modules/events/src/FEvent.ts",
         "modules/events/src/EventDispatcher.ts",
         //
-        "src/utils/Watcher.ts",
+        "modules/watcher/src/Watcher.ts",
         // 自动生成文件
         "src/autofiles/ShaderConfig.ts",
         // Polyfill
-        "src/polyfill/Types.ts",
-        "src/polyfill/Object.ts",
-        "src/polyfill/Map.ts",
-        "src/polyfill/Array.ts",
+        "modules/polyfill/src/Types.ts",
+        "modules/polyfill/src/Object.ts",
+        "modules/polyfill/src/Map.ts",
+        "modules/polyfill/src/Array.ts",
+        "modules/polyfill/src/Math.ts",
         //基础工具
         "src/utils/FunctionWarp.ts",
         "src/utils/Uuid.ts",
@@ -68,7 +69,6 @@
         "src/ds/BinarySearchTree.ts",
         "src/ds/AvlTree.ts",
         // 数学相关程序
-        "src/polyfill/Math.ts",
         // 函数方程
         "modules/math/src/EquationSolving.ts",
         "modules/math/src/HighFunction.ts",
