@@ -16,6 +16,9 @@
         // "outDir": "debug",
     },
     "files": [ //注：如果有继承关系的，父类必须排在子类前面
+        // 事件模块
+        "modules/events/src/FEvent.ts",
+        "modules/events/src/EventDispatcher.ts",
         //
         "src/utils/Watcher.ts",
         // 自动生成文件
@@ -108,8 +111,6 @@
         "src/math/curve/MinMaxCurve.ts",
         "src/math/curve/MinMaxCurveVector3.ts",
         // 事件
-        "src/event/FEvent.ts",
-        "src/event/EventDispatcher.ts",
         "src/event/EventProxy.ts",
         "src/event/WindowEventProxy.ts",
         "src/event/GlobalDispatcher.ts",
