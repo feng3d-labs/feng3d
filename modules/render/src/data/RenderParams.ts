@@ -88,7 +88,7 @@ namespace feng3d
          */
         // @oav({ tooltip: "绘制在画布上的区域" })
         @serialize
-        viewRect = new Rectangle(0, 0, 100, 100);
+        viewRect: { x: number, y: number, width: number, height: number } = { x: 0, y: 0, width: 100, height: 100 };
 
         /**
          * 是否使用 viewRect
@@ -101,5 +101,11 @@ namespace feng3d
         {
             Object.assign(this, raw);
         }
+    }
+
+    export interface RenderParams
+    {
+        // @oav()
+        viewRect: { x: number, y: number, width: number, height: number }
     }
 }

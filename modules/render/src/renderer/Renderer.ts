@@ -124,7 +124,7 @@ namespace feng3d
 
                 if (!useViewRect)
                 {
-                    viewRect = new Rectangle(0, 0, gl.canvas.width, gl.canvas.height);
+                    viewRect = { x: 0, y: 0, width: gl.canvas.width, height: gl.canvas.height };
                 }
 
                 if (cullfaceEnum != CullFace.NONE)

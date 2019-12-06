@@ -20924,7 +20924,7 @@ var feng3d;
              * 绘制在画布上的区域
              */
             // @oav({ tooltip: "绘制在画布上的区域" })
-            this.viewRect = new feng3d.Rectangle(0, 0, 100, 100);
+            this.viewRect = { x: 0, y: 0, width: 100, height: 100 };
             /**
              * 是否使用 viewRect
              */
@@ -22056,7 +22056,7 @@ var feng3d;
                 var colorMask = shaderParams.colorMask;
                 var colorMaskB = [feng3d.ColorMask.R, feng3d.ColorMask.G, feng3d.ColorMask.B, feng3d.ColorMask.A].map(function (v) { return !!(colorMask & v); });
                 if (!useViewRect) {
-                    viewRect = new feng3d.Rectangle(0, 0, gl.canvas.width, gl.canvas.height);
+                    viewRect = { x: 0, y: 0, width: gl.canvas.width, height: gl.canvas.height };
                 }
                 if (cullfaceEnum != feng3d.CullFace.NONE) {
                     gl.enable(gl.CULL_FACE);

@@ -522,6 +522,22 @@ namespace feng3d
 	 */
 	export interface OAVComponentParamMap
 	{
+		OAVEnum: OAVEnumParam;
+	}
+
+	/**
+	 * OAVEnum 组件参数
+	 */
+	export interface OAVEnumParam 
+	{
+		component: "OAVEnum";
+
+		componentParam: {
+            /**
+             * 枚举类型
+             */
+			enumClass: any,
+		}
 	}
 
 	export interface OBVComponentParamMap
