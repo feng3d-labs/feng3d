@@ -24,14 +24,14 @@ namespace feng3d
         {
             this.updateShaderCode();
 
-            //渲染程序
-            if (this.map.has(gl))
-                return this.map.get(gl);
+            var shaderKey = this.vertex + this.fragment;
+            var result = gl.cache.compileShaderResults[shaderKey];
+            if (result) return result;
 
+            //渲染程序
             try
             {
-                var result = this.compileShaderProgram(gl, this.vertex, this.fragment);
-                this.map.set(gl, result);
+                result = gl.cache.compileShaderResults[shaderKey] = this.compileShaderProgram(gl, this.vertex, this.fragment);
             } catch (error)
             {
                 console.error(`${this.shaderName} 编译失败！\n${error}`)
@@ -84,7 +84,6 @@ namespace feng3d
 
             if (this.macroInvalid)
             {
-                this.clear();
                 var vMacroCode = this.getMacroCode(result.vertexMacroVariables, this.macroValues);
                 this.vertex = vMacroCode + result.vertex;
                 var fMacroCode = this.getMacroCode(result.fragmentMacroVariables, this.macroValues);
@@ -156,7 +155,7 @@ namespace feng3d
             return program;
         }
 
-        private compileShaderProgram(gl: GL, vshader: string, fshader: string)
+        private compileShaderProgram(gl: GL, vshader: string, fshader: string): CompileShaderResult
         {
             // 创建着色器程序
             // 编译顶点着色器
@@ -219,18 +218,6 @@ namespace feng3d
             return { program: shaderProgram, vertex: vertexShader, fragment: fragmentShader, attributes: attributes, uniforms: uniforms };
         }
 
-        private map = new Map<GL, {
-            program: WebGLProgram, vertex: WebGLShader, fragment: WebGLShader
-            /**
-             * 属性信息列表
-             */
-            attributes: { [name: string]: AttributeInfo };
-            /**
-             * uniform信息列表
-             */
-            uniforms: { [name: string]: UniformInfo };
-        }>();
-
         private getMacroCode(variables: string[], valueObj: Object)
         {
             var macroHeader = "";
@@ -247,17 +234,19 @@ namespace feng3d
             });
             return macroHeader + "\n";
         }
+    }
 
-        private clear()
-        {
-            this.map.forEach((value, gl) =>
-            {
-                gl.deleteProgram(value.program);
-                gl.deleteShader(value.vertex);
-                gl.deleteShader(value.fragment);
-            });
-            this.map.clear();
-        }
+    export interface CompileShaderResult
+    {
+        program: WebGLProgram, vertex: WebGLShader, fragment: WebGLShader
+        /**
+         * 属性信息列表
+         */
+        attributes: { [name: string]: AttributeInfo };
+        /**
+         * uniform信息列表
+         */
+        uniforms: { [name: string]: UniformInfo };
     }
 
     /**

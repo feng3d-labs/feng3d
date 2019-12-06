@@ -20487,6 +20487,7 @@ var feng3d;
             }
             if (!gl)
                 throw "无法初始化WEBGL";
+            gl.cache = { compileShaderResults: {} };
             //
             new feng3d.GLExtension(gl);
             //
@@ -20678,7 +20679,6 @@ var feng3d;
             this.shaderMacro = {};
             this.macroValues = {};
             this.macroInvalid = true;
-            this.map = new Map();
             this.shaderName = shaderName;
             feng3d.dispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
         }
@@ -20687,12 +20687,13 @@ var feng3d;
          */
         Shader.prototype.activeShaderProgram = function (gl) {
             this.updateShaderCode();
+            var shaderKey = this.vertex + this.fragment;
+            var result = gl.cache.compileShaderResults[shaderKey];
+            if (result)
+                return result;
             //渲染程序
-            if (this.map.has(gl))
-                return this.map.get(gl);
             try {
-                var result = this.compileShaderProgram(gl, this.vertex, this.fragment);
-                this.map.set(gl, result);
+                result = gl.cache.compileShaderResults[shaderKey] = this.compileShaderProgram(gl, this.vertex, this.fragment);
             }
             catch (error) {
                 console.error(this.shaderName + " \u7F16\u8BD1\u5931\u8D25\uFF01\n" + error);
@@ -20719,7 +20720,6 @@ var feng3d;
                 }
             }
             if (this.macroInvalid) {
-                this.clear();
                 var vMacroCode = this.getMacroCode(result.vertexMacroVariables, this.macroValues);
                 this.vertex = vMacroCode + result.vertex;
                 var fMacroCode = this.getMacroCode(result.fragmentMacroVariables, this.macroValues);
@@ -20836,14 +20836,6 @@ var feng3d;
                 }
             });
             return macroHeader + "\n";
-        };
-        Shader.prototype.clear = function () {
-            this.map.forEach(function (value, gl) {
-                gl.deleteProgram(value.program);
-                gl.deleteShader(value.vertex);
-                gl.deleteShader(value.fragment);
-            });
-            this.map.clear();
         };
         return Shader;
     }());

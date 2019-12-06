@@ -84,6 +84,16 @@ namespace feng3d
          * WEBGL 支持能力
          */
         capabilities: GLCapabilities;
+
+        /**
+         * 缓存
+         */
+        cache: GLCache;
+    }
+
+    export interface GLCache
+    {
+        compileShaderResults: { [key: string]: CompileShaderResult }
     }
 
     export class GL
@@ -112,6 +122,7 @@ namespace feng3d
             }
             if (!gl)
                 throw "无法初始化WEBGL";
+            gl.cache = { compileShaderResults: {} };
             //
             new GLExtension(gl);
             //

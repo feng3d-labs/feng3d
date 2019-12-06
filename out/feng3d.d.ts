@@ -9902,6 +9902,15 @@ declare namespace feng3d {
          * WEBGL 支持能力
          */
         capabilities: GLCapabilities;
+        /**
+         * 缓存
+         */
+        cache: GLCache;
+    }
+    interface GLCache {
+        compileShaderResults: {
+            [key: string]: CompileShaderResult;
+        };
     }
     class GL {
         static glList: GL[];
@@ -10292,23 +10301,7 @@ declare namespace feng3d {
         /**
          * 激活渲染程序
          */
-        activeShaderProgram(gl: GL): {
-            program: WebGLProgram;
-            vertex: WebGLShader;
-            fragment: WebGLShader;
-            /**
-             * 属性信息列表
-             */
-            attributes: {
-                [name: string]: AttributeInfo;
-            };
-            /**
-             * uniform信息列表
-             */
-            uniforms: {
-                [name: string]: UniformInfo;
-            };
-        };
+        activeShaderProgram(gl: GL): CompileShaderResult;
         /**
          * 着色器名称
          */
@@ -10338,9 +10331,24 @@ declare namespace feng3d {
         private compileShaderCode;
         private createLinkProgram;
         private compileShaderProgram;
-        private map;
         private getMacroCode;
-        private clear;
+    }
+    interface CompileShaderResult {
+        program: WebGLProgram;
+        vertex: WebGLShader;
+        fragment: WebGLShader;
+        /**
+         * 属性信息列表
+         */
+        attributes: {
+            [name: string]: AttributeInfo;
+        };
+        /**
+         * uniform信息列表
+         */
+        uniforms: {
+            [name: string]: UniformInfo;
+        };
     }
     /**
      * WebGL渲染程序有效信息
