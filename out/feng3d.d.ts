@@ -10108,9 +10108,6 @@ declare namespace feng3d {
          * 片段着色器代码
          */
         private fragment;
-        private macroValues;
-        private macroInvalid;
-        private onShaderChanged;
         /**
          * 更新渲染代码
          */

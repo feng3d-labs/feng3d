@@ -14,7 +14,6 @@ namespace feng3d
         constructor(shaderName: string)
         {
             this.shaderName = shaderName;
-            globalDispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
         }
 
         /**
@@ -53,15 +52,6 @@ namespace feng3d
          */
         private fragment: string
 
-        private macroValues = {};
-
-        private macroInvalid = true;
-
-        private onShaderChanged()
-        {
-            this.macroInvalid = true;
-        }
-
         /**
          * 更新渲染代码
          */
@@ -70,26 +60,10 @@ namespace feng3d
             // 获取着色器代码
             var result = shaderlib.getShader(this.shaderName);
 
-            var macroVariables = result.vertexMacroVariables.concat(result.fragmentMacroVariables);
-            for (let i = 0; i < macroVariables.length; i++)
-            {
-                const macroVariable = macroVariables[i];
-                var value = this.shaderMacro[macroVariable];
-                if (this.macroValues[macroVariable] != value)
-                {
-                    this.macroValues[macroVariable] = value;
-                    this.macroInvalid = true;
-                }
-            }
-
-            if (this.macroInvalid)
-            {
-                var vMacroCode = this.getMacroCode(result.vertexMacroVariables, this.macroValues);
-                this.vertex = vMacroCode + result.vertex;
-                var fMacroCode = this.getMacroCode(result.fragmentMacroVariables, this.macroValues);
-                this.fragment = fMacroCode + result.fragment;
-                this.macroInvalid = false;
-            }
+            var vMacroCode = this.getMacroCode(result.vertexMacroVariables, this.shaderMacro);
+            this.vertex = vMacroCode + result.vertex;
+            var fMacroCode = this.getMacroCode(result.fragmentMacroVariables, this.shaderMacro);
+            this.fragment = fMacroCode + result.fragment;
         }
 
         /**
