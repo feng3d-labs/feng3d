@@ -51,7 +51,7 @@ namespace feng3d
         {
             items.forEach(item =>
             {
-                var insert = utils.binarySearchInsert(this.items, item, this._compare);
+                var insert = Array.binarySearchInsert(this.items, item, this._compare);
                 this.items.splice(insert, 0, item);
             });
             return this.items.length;

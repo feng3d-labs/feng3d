@@ -623,6 +623,32 @@ interface ArrayConstructor {
      * @param isAdd 当数组中没有找到a元素时，是否需要把b元素添加到数组尾部。默认值为true。
      */
     replace<T>(array: T[], a: T, b: T, isAdd?: boolean): T[];
+    /**
+     * 创建数组
+     * @param length 长度
+     * @param itemFunc 创建元素方法
+     */
+    create<T>(length: number, itemFunc: (index: number) => T): T[];
+    /**
+     * 二分查找,如果有多个则返回第一个
+     * @param   array   数组
+     * @param	target	寻找的目标
+     * @param	compare	比较函数
+     * @param   start   起始位置
+     * @param   end     结束位置
+     * @return          查找到目标时返回所在位置，否则返回-1
+     */
+    binarySearch<T>(array: T[], target: T, compare: (a: T, b: T) => number, start?: number, end?: number): number;
+    /**
+     * 二分查找插入位置,如果有多个则返回第一个
+     * @param   array   数组
+     * @param	target	寻找的目标
+     * @param	compare	比较函数
+     * @param   start   起始位置
+     * @param   end     结束位置
+     * @return          目标所在位置（如果该位置上不是目标对象，则该索引为该目标可插入的位置）
+     */
+    binarySearchInsert<T>(array: T[], target: T, compare: (a: T, b: T) => number, start?: number, end?: number): number;
 }
 interface Math {
     /**
@@ -2318,32 +2344,6 @@ declare namespace feng3d {
      * 工具
      */
     class Utils {
-        /**
-         * 创建数组
-         * @param length 长度
-         * @param itemFunc 创建元素方法
-         */
-        createArray<T>(length: number, itemFunc: (index: number) => T): T[];
-        /**
-         * 二分查找,如果有多个则返回第一个
-         * @param   array   数组
-         * @param	target	寻找的目标
-         * @param	compare	比较函数
-         * @param   start   起始位置
-         * @param   end     结束位置
-         * @return          查找到目标时返回所在位置，否则返回-1
-         */
-        binarySearch<T>(array: T[], target: T, compare: (a: T, b: T) => number, start?: number, end?: number): number;
-        /**
-         * 二分查找插入位置,如果有多个则返回第一个
-         * @param   array   数组
-         * @param	target	寻找的目标
-         * @param	compare	比较函数
-         * @param   start   起始位置
-         * @param   end     结束位置
-         * @return          目标所在位置（如果该位置上不是目标对象，则该索引为该目标可插入的位置）
-         */
-        binarySearchInsert<T>(array: T[], target: T, compare: (a: T, b: T) => number, start?: number, end?: number): number;
     }
 }
 declare namespace feng3d {

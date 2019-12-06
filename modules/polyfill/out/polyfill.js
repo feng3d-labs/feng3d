@@ -384,6 +384,38 @@ Array.replace = function (arr, a, b, isAdd) {
         arr.push(b);
     return arr;
 };
+Array.create = function (length, itemFunc) {
+    var arr = [];
+    for (var i = 0; i < length; i++) {
+        arr[i] = itemFunc(i);
+    }
+    return arr;
+};
+Array.binarySearch = function (array, target, compare, start, end) {
+    var insert = Array.binarySearchInsert(array, target, compare, start, end);
+    if (array[insert] == target)
+        return insert;
+    return -1;
+};
+Array.binarySearchInsert = function (array, target, compare, start, end) {
+    if (start === undefined)
+        start = 0;
+    if (end === undefined)
+        end = array.length;
+    if (start == end)
+        return start;
+    if (compare(array[start], target) == 0) {
+        return start;
+    }
+    var middle = ~~((start + end) / 2);
+    if (compare(array[middle], target) < 0) {
+        start = middle + 1;
+    }
+    else {
+        end = middle;
+    }
+    return Array.binarySearchInsert(array, target, compare, start, end);
+};
 Math.DEG2RAD = Math.PI / 180;
 Math.RAD2DEG = 180 / Math.PI;
 Math.PRECISION = 1e-6;
