@@ -24,21 +24,9 @@ namespace feng3d
                 if (instanceCount == 0) return;
                 var shaderMacro = renderAtomic1.getShaderMacro();
                 var shader = renderAtomic1.getShader();
-                shaderMacro.RotationOrder = defaultRotationOrder;
                 shader.shaderMacro = shaderMacro;
                 var shaderResult = shader.activeShaderProgram(gl);
                 if (!shaderResult) return;
-
-                //
-                renderAtomic1.uniforms.u_mvMatrix = () =>
-                {
-                    return lazy.getvalue(renderAtomic1.uniforms.u_modelMatrix).clone().append(lazy.getvalue(renderAtomic1.uniforms.u_viewMatrix))
-                };
-                renderAtomic1.uniforms.u_ITMVMatrix = () =>
-                {
-                    return lazy.getvalue(renderAtomic1.uniforms.u_mvMatrix).clone().invert().transpose()
-                };
-
                 //
                 var renderAtomic: RenderAtomicData = checkRenderData(renderAtomic1);
                 if (!renderAtomic) return;

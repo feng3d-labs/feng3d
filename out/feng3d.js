@@ -21956,18 +21956,10 @@ var feng3d;
                     return;
                 var shaderMacro = renderAtomic1.getShaderMacro();
                 var shader = renderAtomic1.getShader();
-                shaderMacro.RotationOrder = feng3d.defaultRotationOrder;
                 shader.shaderMacro = shaderMacro;
                 var shaderResult = shader.activeShaderProgram(gl);
                 if (!shaderResult)
                     return;
-                //
-                renderAtomic1.uniforms.u_mvMatrix = function () {
-                    return feng3d.lazy.getvalue(renderAtomic1.uniforms.u_modelMatrix).clone().append(feng3d.lazy.getvalue(renderAtomic1.uniforms.u_viewMatrix));
-                };
-                renderAtomic1.uniforms.u_ITMVMatrix = function () {
-                    return feng3d.lazy.getvalue(renderAtomic1.uniforms.u_mvMatrix).clone().invert().transpose();
-                };
                 //
                 var renderAtomic = checkRenderData(renderAtomic1);
                 if (!renderAtomic)
@@ -22373,6 +22365,14 @@ var feng3d;
                 for (var key in uniforms) {
                     renderAtomic.uniforms[key] = uniforms[key];
                 }
+                //
+                renderAtomic.uniforms.u_mvMatrix = function () {
+                    return feng3d.lazy.getvalue(renderAtomic.uniforms.u_modelMatrix).clone().append(feng3d.lazy.getvalue(renderAtomic.uniforms.u_viewMatrix));
+                };
+                renderAtomic.uniforms.u_ITMVMatrix = function () {
+                    return feng3d.lazy.getvalue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose();
+                };
+                renderAtomic.shaderMacro.RotationOrder = feng3d.defaultRotationOrder;
                 model.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
                 gl.render(renderAtomic);
             });

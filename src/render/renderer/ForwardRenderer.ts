@@ -32,6 +32,7 @@ namespace feng3d
             uniforms.u_scaleByDepth = camera.getScaleByDepth(1);
             uniforms.u_sceneAmbientColor = scene3d.ambientColor;
 
+
             unblenditems.concat(blenditems).forEach(model =>
             {
                 //绘制
@@ -41,6 +42,17 @@ namespace feng3d
                 {
                     renderAtomic.uniforms[key] = uniforms[key];
                 }
+                //
+                renderAtomic.uniforms.u_mvMatrix = () =>
+                {
+                    return lazy.getvalue(renderAtomic.uniforms.u_modelMatrix).clone().append(lazy.getvalue(renderAtomic.uniforms.u_viewMatrix))
+                };
+                renderAtomic.uniforms.u_ITMVMatrix = () =>
+                {
+                    return lazy.getvalue(renderAtomic.uniforms.u_mvMatrix).clone().invert().transpose()
+                };
+
+                renderAtomic.shaderMacro.RotationOrder = defaultRotationOrder;
 
                 model.gameObject.beforeRender(gl, renderAtomic, scene3d, camera);
 
