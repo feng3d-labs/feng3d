@@ -16258,7 +16258,6 @@ var feng3d;
         return EventDispatcher;
     }());
     feng3d.EventDispatcher = EventDispatcher;
-    feng3d.globalDispatcher = new EventDispatcher();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -16430,6 +16429,13 @@ var feng3d;
     feng3d.WindowEventProxy = WindowEventProxy;
     if (typeof window != "undefined")
         feng3d.windowEventProxy = new WindowEventProxy(window);
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 全局事件
+     */
+    feng3d.globalDispatcher = new feng3d.EventDispatcher();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {

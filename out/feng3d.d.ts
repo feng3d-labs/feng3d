@@ -7563,38 +7563,6 @@ declare namespace feng3d {
     export {};
 }
 declare namespace feng3d {
-    /**
-     * 全局事件
-     */
-    var globalDispatcher: IEventDispatcher<GlobalEvents>;
-    interface GlobalEvents {
-        /**
-         * shader资源发生变化
-         */
-        "asset.shaderChanged": any;
-        /**
-         * 脚本发生变化
-         */
-        "asset.scriptChanged": any;
-        /**
-         * 图片资源发生变化
-         */
-        "asset.imageAssetChanged": {
-            url: string;
-        };
-        /**
-         * 解析出资源
-         */
-        "asset.parsed": any;
-        /**
-         * 删除文件
-         */
-        "fs.delete": string;
-        /**
-         * 写文件
-         */
-        "fs.write": string;
-    }
     interface IEventDispatcher<T> {
         once<K extends keyof T>(type: K, listener: (event: Event<T[K]>) => void, thisObject?: any, priority?: number): void;
         dispatch<K extends keyof T>(type: K, data?: T[K], bubbles?: boolean): Event<T[K]>;
@@ -7757,6 +7725,43 @@ declare namespace feng3d {
      * 键盘鼠标输入
      */
     var windowEventProxy: IEventProxy<WindowEventMap> & EventProxy;
+}
+declare namespace feng3d {
+    /**
+     * 全局事件
+     */
+    var globalDispatcher: IEventDispatcher<GlobalEvents>;
+    /**
+     * 事件列表
+     */
+    interface GlobalEvents {
+        /**
+         * shader资源发生变化
+         */
+        "asset.shaderChanged": any;
+        /**
+         * 脚本发生变化
+         */
+        "asset.scriptChanged": any;
+        /**
+         * 图片资源发生变化
+         */
+        "asset.imageAssetChanged": {
+            url: string;
+        };
+        /**
+         * 解析出资源
+         */
+        "asset.parsed": any;
+        /**
+         * 删除文件
+         */
+        "fs.delete": string;
+        /**
+         * 写文件
+         */
+        "fs.write": string;
+    }
 }
 declare namespace feng3d {
     /**
