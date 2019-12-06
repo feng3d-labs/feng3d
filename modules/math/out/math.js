@@ -4313,6 +4313,19 @@ var feng3d;
             return this;
         };
         /**
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         */
+        Matrix4x4.prototype.toArray = function (array, offset) {
+            if (array === void 0) { array = []; }
+            if (offset === void 0) { offset = 0; }
+            this.rawData.forEach(function (v, i) {
+                array[offset + i] = v;
+            });
+            return array;
+        };
+        /**
          * 以字符串返回矩阵的值
          */
         Matrix4x4.prototype.toString = function () {

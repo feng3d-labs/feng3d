@@ -1272,6 +1272,20 @@ namespace feng3d
         }
 
         /**
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         */
+        toArray(array: number[] = [], offset = 0)
+        {
+            this.rawData.forEach((v, i) =>
+            {
+                array[offset + i] = v;
+            });
+            return array;
+        }
+
+        /**
          * 以字符串返回矩阵的值
          */
         toString(): string

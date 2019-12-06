@@ -181,6 +181,7 @@
         //
         "modules/render/src/renderer/Renderer.ts",
         //
+        "src/render/data/Uniform.ts",
         "src/render/shader/ShaderLib.ts",
         "src/render/FrameBufferObject.ts",
         //

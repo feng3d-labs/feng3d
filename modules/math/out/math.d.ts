@@ -2074,6 +2074,12 @@ declare namespace feng3d {
          */
         setPerspective(left: number, right: number, top: number, bottom: number, near: number, far: number): this;
         /**
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         */
+        toArray(array?: number[], offset?: number): number[];
+        /**
          * 以字符串返回矩阵的值
          */
         toString(): string;
