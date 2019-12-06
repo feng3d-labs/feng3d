@@ -321,6 +321,12 @@ declare namespace feng3d {
          */
         toString(): string;
         /**
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         */
+        toArray(array?: number[], offset?: number): number[];
+        /**
          * [0,15]数值转为16进制字符串
          * param i  [0,15]数值
          */
@@ -568,6 +574,15 @@ declare namespace feng3d {
         toString(): string;
         toColor3(color?: Color3): Color3;
         toVector4(vector4?: Vector4): Vector4;
+        /**
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         */
+        toArray(array?: number[], offset?: number): number[];
+        /**
+         * 克隆
+         */
         clone(): Color4;
     }
 }
@@ -768,9 +783,12 @@ declare namespace feng3d {
          */
         toString(): string;
         /**
-         * 返回包含 x 和 y 坐标值的数组
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         * @return 返回数组
          */
-        toArray(): number[];
+        toArray(array?: number[], offset?: number): number[];
     }
 }
 declare namespace feng3d {
@@ -1676,6 +1694,12 @@ declare namespace feng3d {
          */
         transposeTo(target?: Matrix3x3): Matrix3x3;
         formMatrix4x4(matrix4x4: Matrix4x4): this;
+        /**
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         */
+        toArray(array?: number[], offset?: number): number[];
     }
 }
 declare namespace feng3d {

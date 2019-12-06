@@ -223,6 +223,23 @@ namespace feng3d
             return vector4;
         }
 
+        /**
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         */
+        toArray(array: number[] = [], offset = 0)
+        {
+            array[offset] = this.r;
+            array[offset + 1] = this.g;
+            array[offset + 2] = this.b;
+            array[offset + 3] = this.a;
+            return array;
+        }
+
+        /**
+         * 克隆
+         */
         clone()
         {
             return new Color4(this.r, this.g, this.b, this.a);

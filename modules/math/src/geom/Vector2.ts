@@ -375,11 +375,16 @@ namespace feng3d
         }
 
         /**
-         * 返回包含 x 和 y 坐标值的数组
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         * @return 返回数组
          */
-        toArray()
+        toArray(array: number[] = [], offset = 0)
         {
-            return [this.x, this.y];
+            array[offset] = this.x;
+            array[offset + 1] = this.y;
+            return array;
         }
     }
 }

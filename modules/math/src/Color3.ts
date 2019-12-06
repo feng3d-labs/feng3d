@@ -189,6 +189,19 @@ namespace feng3d
         }
 
         /**
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         */
+        toArray(array: number[] = [], offset = 0)
+        {
+            array[offset] = this.r;
+            array[offset + 1] = this.g;
+            array[offset + 2] = this.b;
+            return array;
+        }
+
+        /**
          * [0,15]数值转为16进制字符串
          * param i  [0,15]数值
          */

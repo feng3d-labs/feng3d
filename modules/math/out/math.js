@@ -660,6 +660,19 @@ var feng3d;
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + "}";
         };
         /**
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         */
+        Color3.prototype.toArray = function (array, offset) {
+            if (array === void 0) { array = []; }
+            if (offset === void 0) { offset = 0; }
+            array[offset] = this.r;
+            array[offset + 1] = this.g;
+            array[offset + 2] = this.b;
+            return array;
+        };
+        /**
          * [0,15]数值转为16进制字符串
          * param i  [0,15]数值
          */
@@ -899,6 +912,23 @@ var feng3d;
             vector4.w = this.a;
             return vector4;
         };
+        /**
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         */
+        Color4.prototype.toArray = function (array, offset) {
+            if (array === void 0) { array = []; }
+            if (offset === void 0) { offset = 0; }
+            array[offset] = this.r;
+            array[offset + 1] = this.g;
+            array[offset + 2] = this.b;
+            array[offset + 3] = this.a;
+            return array;
+        };
+        /**
+         * 克隆
+         */
         Color4.prototype.clone = function () {
             return new Color4(this.r, this.g, this.b, this.a);
         };
@@ -1227,10 +1257,17 @@ var feng3d;
             return "(x=" + this.x + ", y=" + this.y + ")";
         };
         /**
-         * 返回包含 x 和 y 坐标值的数组
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         * @return 返回数组
          */
-        Vector2.prototype.toArray = function () {
-            return [this.x, this.y];
+        Vector2.prototype.toArray = function (array, offset) {
+            if (array === void 0) { array = []; }
+            if (offset === void 0) { offset = 0; }
+            array[offset] = this.x;
+            array[offset + 1] = this.y;
+            return array;
         };
         /**
          * 原点
@@ -3154,6 +3191,19 @@ var feng3d;
             arr3[7] = arr4[9];
             arr3[8] = arr4[10];
             return this;
+        };
+        /**
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         */
+        Matrix3x3.prototype.toArray = function (array, offset) {
+            if (array === void 0) { array = []; }
+            if (offset === void 0) { offset = 0; }
+            this.elements.forEach(function (v, i) {
+                array[offset + i] = v;
+            });
+            return array;
         };
         return Matrix3x3;
     }());

@@ -207,6 +207,8 @@ namespace feng3d
              */
             function setContext3DUniform(activeInfo: UniformInfo, data)
             {
+                var vec: number[] = data;
+                if (data.toArray) vec = data.toArray();
                 var location = activeInfo.location;
                 switch (activeInfo.type)
                 {
@@ -214,41 +216,22 @@ namespace feng3d
                         gl.uniform1i(location, data);
                         break;
                     case gl.FLOAT_MAT3:
-                        gl.uniformMatrix3fv(location, false, (<Matrix3x3>data).elements);
+                        gl.uniformMatrix3fv(location, false, vec);
                         break;
                     case gl.FLOAT_MAT4:
-                        gl.uniformMatrix4fv(location, false, (<Matrix4x4>data).rawData);
+                        gl.uniformMatrix4fv(location, false, vec);
                         break;
                     case gl.FLOAT:
                         gl.uniform1f(location, data);
                         break;
                     case gl.FLOAT_VEC2:
-                        gl.uniform2f(location, data.x, data.y);
+                        gl.uniform2f(location, vec[0], vec[1]);
                         break;
                     case gl.FLOAT_VEC3:
-                        if (data instanceof Color3)
-                        {
-                            gl.uniform3f(location, data.r, data.g, data.b);
-                        } else if (data instanceof Vector3)
-                        {
-                            data.toArray();
-                            gl.uniform3f(location, data.x, data.y, data.z);
-                        } else
-                        {
-                            console.error(`无法处理 uniform数据 ${activeInfo.name} ${data}`);
-                        }
+                        gl.uniform3f(location, vec[0], vec[1], vec[2]);
                         break;
                     case gl.FLOAT_VEC4:
-                        if (data instanceof Color4)
-                        {
-                            gl.uniform4f(location, data.r, data.g, data.b, data.a);
-                        } else if (data instanceof Vector4)
-                        {
-                            gl.uniform4f(location, data.x, data.y, data.z, data.w);
-                        } else
-                        {
-                            console.error(`无法处理 uniform数据 ${activeInfo.name} ${data}`);
-                        }
+                        gl.uniform4f(location, vec[0], vec[1], vec[2], vec[3]);
                         break;
                     case gl.SAMPLER_2D:
                     case gl.SAMPLER_CUBE:

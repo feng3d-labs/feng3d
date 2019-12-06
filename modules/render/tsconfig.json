@@ -57,6 +57,9 @@
         },
         {
             "path": "../serialization"
-        }
+        },
+        {
+            "path": "../objectview"
+        },
     ]
 }

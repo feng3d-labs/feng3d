@@ -483,5 +483,19 @@ namespace feng3d
 
             return this;
         }
+
+        /**
+         * 转换为数组
+         * @param array 数组
+         * @param offset 偏移
+         */
+        toArray(array: number[] = [], offset = 0)
+        {
+            this.elements.forEach((v, i) =>
+            {
+                array[offset + i] = v;
+            });
+            return array;
+        }
     }
 }
