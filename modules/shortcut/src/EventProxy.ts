@@ -110,7 +110,7 @@ namespace feng3d
          * 处理鼠标按下时同时出发 "mousemove" 事件bug
          */
         private handleMouseMoveBug = true;
-        private mousedownposition: feng3d.Vector2;
+        private mousedownposition: { x: number, y: number };
         /**
 		 * 键盘按下事件
 		 */
@@ -136,14 +136,13 @@ namespace feng3d
                 {
                     if (event.type == "mousedown")
                     {
-                        this.mousedownposition = new feng3d.Vector2(event.clientX, event.clientY);
+                        this.mousedownposition = { x: event.clientX, y: event.clientY };
                     }
                     if (event.type == "mousemove")
                     {
                         if (this.mousedownposition)
                         {
-                            var position = new feng3d.Vector2(event.clientX, event.clientY);
-                            if (position.equals(this.mousedownposition))
+                            if (this.mousedownposition.x == event.clientX && this.mousedownposition.y == event.clientY)
                             {
                                 // console.log(`由于系统原因，触发mousedown同时触发了mousemove，此处屏蔽mousemove事件派发！`);
                                 return;

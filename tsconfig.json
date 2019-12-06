@@ -108,8 +108,8 @@
         "modules/math/src/curve/MinMaxCurve.ts",
         "modules/math/src/curve/MinMaxCurveVector3.ts",
         // 事件
-        "src/event/EventProxy.ts",
-        "src/event/WindowEventProxy.ts",
+        "modules/shortcut/src/EventProxy.ts",
+        "modules/shortcut/src/WindowEventProxy.ts",
         "src/event/GlobalDispatcher.ts",
         //
         "src/utils/Task.ts",
@@ -134,12 +134,12 @@
         "src/assets/rs/ReadRS.ts",
         "src/assets/rs/ReadWriteRS.ts",
         // 快捷键
-        "src/shortcut/Keyboard.ts",
-        "src/shortcut/handle/KeyCapture.ts",
-        "src/shortcut/handle/KeyState.ts",
-        "src/shortcut/handle/ShortCutCapture.ts",
-        "src/shortcut/handle/ShortCutEvent.ts",
-        "src/shortcut/ShortCut.ts",
+        "modules/shortcut/src/Keyboard.ts",
+        "modules/shortcut/src/handle/KeyCapture.ts",
+        "modules/shortcut/src/handle/KeyState.ts",
+        "modules/shortcut/src/handle/ShortCutCapture.ts",
+        "modules/shortcut/src/handle/ShortCutEvent.ts",
+        "modules/shortcut/src/ShortCut.ts",
         // 加载模块
         "src/net/Loader.ts",
         "src/net/LoaderEvent.ts",

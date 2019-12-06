@@ -1,0 +1,32 @@
+{
+    "compilerOptions": {
+        "target": "ES5",
+        "noImplicitAny": false,
+        "sourceMap": true,
+        "declarationMap": true,
+        "declaration": true,
+        "composite": true,
+        "experimentalDecorators": true,
+        "outFile": "out/shortcut.js",
+        "lib": [
+            "ES2015",
+            "DOM",
+        ],
+    },
+    "files": [
+        "src/EventProxy.ts",
+        "src/WindowEventProxy.ts",
+        //
+        "src/Keyboard.ts",
+        "src/handle/KeyCapture.ts",
+        "src/handle/KeyState.ts",
+        "src/handle/ShortCutCapture.ts",
+        "src/handle/ShortCutEvent.ts",
+        "src/ShortCut.ts",
+    ],
+    "references": [
+        {
+            "path": "../events"
+        }
+    ]
+}
