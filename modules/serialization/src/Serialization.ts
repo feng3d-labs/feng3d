@@ -282,38 +282,6 @@ namespace feng3d
                 return false;
             }
         },
-        // 处理 Feng3dObject
-        {
-            priority: 0,
-            handler: function (target, source, property)
-            {
-                var spv = source[property];
-                if (spv instanceof Feng3dObject && (spv.hideFlags & HideFlags.DontSave))
-                {
-                    return true;
-                }
-                return false;
-            }
-        },
-        // 处理资源
-        {
-            priority: 0,
-            handler: function (target, source, property)
-            {
-                var spv = source[property];
-                if (AssetData.isAssetData(spv))
-                {
-                    // 此处需要反序列化资源完整数据
-                    if (property == __root__)
-                    {
-                        return false;
-                    }
-                    target[property] = AssetData.serialize(<any>spv);
-                    return true;
-                }
-                return false;
-            }
-        },
         // 自定义序列化函数
         {
             priority: 0,
@@ -459,31 +427,6 @@ namespace feng3d
                 if (!Object.isObject(spv) && !Array.isArray(spv))
                 {
                     target[property] = spv;
-                    return true;
-                }
-                return false;
-            }
-        },
-        // 处理资源
-        {
-            priority: 0,
-            handler: function (target, source, property, handlers, serialization)
-            {
-                var tpv = target[property];
-                var spv = source[property];
-                if (AssetData.isAssetData(spv))
-                {
-                    // 此处需要反序列化资源完整数据
-                    if (property == __root__)
-                    {
-                        return false;
-                    }
-                    target[property] = AssetData.deserialize(spv);
-                    return true;
-                }
-                if (AssetData.isAssetData(tpv))
-                {
-                    target[property] = serialization.deserialize(spv);
                     return true;
                 }
                 return false;
@@ -661,25 +604,6 @@ namespace feng3d
                 return false;
             }
         },
-        // 资源
-        {
-            priority: 0,
-            handler: function (target, source, property, different, handlers, serialization)
-            {
-                let tpv = target[property];
-                if (AssetData.isAssetData(tpv))
-                {
-                    // 此处需要反序列化资源完整数据
-                    if (property == __root__)
-                    {
-                        return false;
-                    }
-                    different[property] = AssetData.serialize(tpv);
-                    return true;
-                }
-                return false;
-            }
-        },
         // 默认处理
         {
             priority: -10000,
@@ -781,41 +705,6 @@ namespace feng3d
                 if (!Object.isObject(spv))
                 {
                     target[property] = serialization.deserialize(spv);
-                    return true;
-                }
-                return false;
-            }
-        },
-        // 处理资源
-        {
-            priority: 0,
-            handler: function (target, source, property, handlers, serialization)
-            {
-                var tpv = target[property];
-                var spv = source[property];
-                if (AssetData.isAssetData(spv))
-                {
-                    // 此处需要反序列化资源完整数据
-                    if (property == __root__)
-                    {
-                        return false;
-                    }
-
-                    target[property] = AssetData.deserialize(spv);
-                    return true;
-                }
-                if (AssetData.isAssetData(tpv))
-                {
-                    if (spv.__class__ == null)
-                    {
-                        var className = classUtils.getQualifiedClassName(tpv);
-                        var inst = classUtils.getInstanceByName(className)
-                        serialization.setValue(inst, spv);
-                        target[property] = inst;
-                    } else
-                    {
-                        target[property] = serialization.deserialize(spv);
-                    }
                     return true;
                 }
                 return false;

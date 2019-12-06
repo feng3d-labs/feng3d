@@ -76,4 +76,22 @@ namespace feng3d
         private static objectLib: { [guid: string]: Feng3dObject };
     }
     Object.defineProperty(Feng3dObject, "objectLib", { value: {} });
+
+    serialization.serializeHandlers.push(
+        // 处理 Feng3dObject
+        {
+            priority: 0,
+            handler: function (target, source, property)
+            {
+                var spv = source[property];
+                if (spv instanceof Feng3dObject && (spv.hideFlags & HideFlags.DontSave))
+                {
+                    return true;
+                }
+                return false;
+            }
+        },
+    );
+
+    
 }
