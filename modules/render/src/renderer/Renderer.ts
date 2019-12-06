@@ -47,8 +47,7 @@ namespace feng3d
                 activeShaderParams(renderAtomic.renderParams);
                 activeAttributes(renderAtomic, shaderResult.attributes);
                 activeUniforms(renderAtomic, shaderResult.uniforms);
-                dodraw(renderAtomic, gl[renderAtomic.renderParams.renderMode]);
-                disableAttributes(shaderResult.attributes);
+                draw(renderAtomic, gl[renderAtomic.renderParams.renderMode]);
             }
 
             function checkRenderData(renderAtomic: RenderAtomic)
@@ -185,18 +184,6 @@ namespace feng3d
             }
 
             /**
-             * 激活属性
-             */
-            function disableAttributes(attributeInfos: { [name: string]: AttributeInfo })
-            {
-                // for (var name in attributeInfos)
-                // {
-                //     var activeInfo = attributeInfos[name];
-                //     gl.disableVertexAttribArray(activeInfo.location);
-                // }
-            }
-
-            /**
              * 激活常量
              */
             function activeUniforms(renderAtomic: RenderAtomicData, uniformInfos: { [name: string]: UniformInfo })
@@ -279,7 +266,7 @@ namespace feng3d
 
             /**
              */
-            function dodraw(renderAtomic: RenderAtomicData, renderMode: number)
+            function draw(renderAtomic: RenderAtomicData, renderMode: number)
             {
                 var instanceCount = ~~lazy.getvalue(renderAtomic.instanceCount);
 

@@ -171,11 +171,7 @@ namespace feng3d
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
             gl.vertexAttribPointer(location, this.size, gl[this.type], this.normalized, this.stride, this.offset);
 
-            if (this.divisor > 0)
-            {
-                gl.vertexAttribDivisor(location, this.divisor);
-            }
-
+            gl.vertexAttribDivisor(location, this.divisor);
         }
 
         /**

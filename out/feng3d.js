@@ -21203,9 +21203,7 @@ var feng3d;
             var buffer = this.getBuffer(gl);
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
             gl.vertexAttribPointer(location, this.size, gl[this.type], this.normalized, this.stride, this.offset);
-            if (this.divisor > 0) {
-                gl.vertexAttribDivisor(location, this.divisor);
-            }
+            gl.vertexAttribDivisor(location, this.divisor);
         };
         /**
          * 获取缓冲
@@ -21934,8 +21932,7 @@ var feng3d;
                 activeShaderParams(renderAtomic.renderParams);
                 activeAttributes(renderAtomic, shaderResult.attributes);
                 activeUniforms(renderAtomic, shaderResult.uniforms);
-                dodraw(renderAtomic, gl[renderAtomic.renderParams.renderMode]);
-                disableAttributes(shaderResult.attributes);
+                draw(renderAtomic, gl[renderAtomic.renderParams.renderMode]);
             };
             function checkRenderData(renderAtomic) {
                 var shader = renderAtomic.getShader();
@@ -22043,16 +22040,6 @@ var feng3d;
                 preActiveAttributes = activeAttributes;
             }
             /**
-             * 激活属性
-             */
-            function disableAttributes(attributeInfos) {
-                // for (var name in attributeInfos)
-                // {
-                //     var activeInfo = attributeInfos[name];
-                //     gl.disableVertexAttribArray(activeInfo.location);
-                // }
-            }
-            /**
              * 激活常量
              */
             function activeUniforms(renderAtomic, uniformInfos) {
@@ -22126,7 +22113,7 @@ var feng3d;
             }
             /**
              */
-            function dodraw(renderAtomic, renderMode) {
+            function draw(renderAtomic, renderMode) {
                 var instanceCount = ~~feng3d.lazy.getvalue(renderAtomic.instanceCount);
                 var indexBuffer = renderAtomic.indexBuffer;
                 var vertexNum = 0;
