@@ -35,7 +35,7 @@
         //
         "modules/serialization/src/Serialization.ts",
         //
-        "src/utils/ObjectView.ts",
+        "modules/objectview/src/ObjectView.ts",
         "src/utils/ObjectViewDefinitions.ts",
         //
         "src/utils/Ticker.ts",

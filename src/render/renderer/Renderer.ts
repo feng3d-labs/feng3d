@@ -24,7 +24,7 @@ namespace feng3d
                 if (instanceCount == 0) return;
                 var shaderMacro = renderAtomic1.getShaderMacro();
                 var shader = renderAtomic1.getShader();
-                shaderMacro.RotationOrder = feng3d.rotationOrder;
+                shaderMacro.RotationOrder = defaultRotationOrder;
                 shader.shaderMacro = shaderMacro;
                 var shaderResult = shader.activeShaderProgram(gl);
                 if (!shaderResult) return;

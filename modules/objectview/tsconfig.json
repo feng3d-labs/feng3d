@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "target": "ES5",
+        "noImplicitAny": false,
+        "sourceMap": true,
+        "declarationMap": true,
+        "declaration": true,
+        "composite": true,
+        "experimentalDecorators": true,
+        "outFile": "out/objectview.js",
+        "lib": [
+            "ES2015",
+            "DOM",
+        ],
+    },
+    "files": [ 
+        "src/ObjectView.ts",
+    ],
+    "references": [
+        {
+            "path": "../polyfill"
+        }
+    ]
+}

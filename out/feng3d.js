@@ -2154,7 +2154,7 @@ var feng3d;
                 var tpv = target[property];
                 var spv = source[property];
                 if (Array.isArray(spv)) {
-                    feng3d.debuger && console.assert(!!tpv);
+                    console.assert(!!tpv);
                     var keys = Object.keys(spv);
                     keys.forEach(function (key) {
                         propertyHandler(tpv, spv, key, handlers, serialization);
@@ -2185,7 +2185,7 @@ var feng3d;
                 var tpv = target[property];
                 var spv = source[property];
                 if (Object.isObject(spv) && spv[feng3d.CLASS_KEY] == undefined) {
-                    feng3d.debuger && console.assert(!!tpv);
+                    console.assert(!!tpv);
                     var keys = Object.keys(spv);
                     keys.forEach(function (key) {
                         propertyHandler(tpv, spv, key, handlers, serialization);
@@ -2347,7 +2347,7 @@ var feng3d;
                 }
             }
             var cls = this.OVComponent[classConfig.component];
-            feng3d.debuger && console.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + classConfig.component + " \u5BF9\u5E94\u7684\u5BF9\u8C61\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + classConfig.component + " \u4E2D\u4F7F\u7528@OVComponent()\u6807\u8BB0");
+            console.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + classConfig.component + " \u5BF9\u5E94\u7684\u5BF9\u8C61\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + classConfig.component + " \u4E2D\u4F7F\u7528@OVComponent()\u6807\u8BB0");
             var view = new cls(classConfig);
             return view;
         };
@@ -2374,7 +2374,7 @@ var feng3d;
                 attributeViewInfo.component = this.defaultObjectAttributeViewClass;
             }
             var cls = this.OAVComponent[attributeViewInfo.component];
-            feng3d.debuger && console.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + attributeViewInfo.component + " \u5BF9\u5E94\u7684\u5C5E\u6027\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + attributeViewInfo.component + " \u4E2D\u4F7F\u7528@OVAComponent()\u6807\u8BB0");
+            console.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + attributeViewInfo.component + " \u5BF9\u5E94\u7684\u5C5E\u6027\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + attributeViewInfo.component + " \u4E2D\u4F7F\u7528@OVAComponent()\u6807\u8BB0");
             var view = new cls(attributeViewInfo);
             return view;
         };
@@ -2393,7 +2393,7 @@ var feng3d;
                 blockViewInfo.component = this.defaultObjectAttributeBlockView;
             }
             var cls = this.OBVComponent[blockViewInfo.component];
-            feng3d.debuger && console.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + blockViewInfo.component + " \u5BF9\u5E94\u7684\u5757\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + blockViewInfo.component + " \u4E2D\u4F7F\u7528@OVBComponent()\u6807\u8BB0");
+            console.assert(cls != null, "\u6CA1\u6709\u5B9A\u4E49 " + blockViewInfo.component + " \u5BF9\u5E94\u7684\u5757\u754C\u9762\u7C7B\uFF0C\u9700\u8981\u5728 " + blockViewInfo.component + " \u4E2D\u4F7F\u7528@OVBComponent()\u6807\u8BB0");
             var view = new cls(blockViewInfo);
             return view;
         };
@@ -8400,6 +8400,14 @@ var feng3d;
          */
         CoordinateSystem[CoordinateSystem["RIGHT_HANDED"] = 1] = "RIGHT_HANDED";
     })(CoordinateSystem = feng3d.CoordinateSystem || (feng3d.CoordinateSystem = {}));
+    /**
+     * 引擎中使用的坐标系统，默认左手坐标系统。
+     *
+     * three.js 右手坐标系统。
+     * playcanvas 右手坐标系统。
+     * unity    左手坐标系统。
+     */
+    feng3d.coordinateSystem = CoordinateSystem.LEFT_HANDED;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -8441,6 +8449,14 @@ var feng3d;
          */
         RotationOrder[RotationOrder["XZY"] = 5] = "XZY";
     })(RotationOrder = feng3d.RotationOrder || (feng3d.RotationOrder = {}));
+    /**
+     * 引擎中使用的旋转顺序。
+     *
+     * unity YXZ
+     * playcanvas ZYX
+     * three.js XYZ
+     */
+    feng3d.defaultRotationOrder = RotationOrder.YXZ;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -11136,7 +11152,7 @@ var feng3d;
          * @param order 旋转顺序。
          */
         Matrix4x4.recompose = function (position, rotation, scale, order) {
-            if (order === void 0) { order = feng3d.rotationOrder; }
+            if (order === void 0) { order = feng3d.defaultRotationOrder; }
             return new Matrix4x4().recompose(position, rotation, scale, order);
         };
         /**
@@ -11170,7 +11186,7 @@ var feng3d;
          */
         Matrix4x4.prototype.getRotation = function (rotation, order) {
             if (rotation === void 0) { rotation = new feng3d.Vector3(); }
-            if (order === void 0) { order = feng3d.rotationOrder; }
+            if (order === void 0) { order = feng3d.defaultRotationOrder; }
             this.decompose(new feng3d.Vector3(), rotation, new feng3d.Vector3(), order);
             return rotation;
         };
@@ -11181,7 +11197,7 @@ var feng3d;
          * @param order 绕轴旋转的顺序。
          */
         Matrix4x4.prototype.setRotation = function (rotation, order) {
-            if (order === void 0) { order = feng3d.rotationOrder; }
+            if (order === void 0) { order = feng3d.defaultRotationOrder; }
             var p = new feng3d.Vector3();
             var r = new feng3d.Vector3();
             var s = new feng3d.Vector3();
@@ -11332,7 +11348,7 @@ var feng3d;
          * @param   order   绕轴旋转的顺序。
          */
         Matrix4x4.fromRotation = function (rx, ry, rz, order) {
-            if (order === void 0) { order = feng3d.rotationOrder; }
+            if (order === void 0) { order = feng3d.defaultRotationOrder; }
             return new Matrix4x4().fromRotation(rx, ry, rz, order);
         };
         /**
@@ -11352,7 +11368,7 @@ var feng3d;
          * @param   order   绕轴旋转的顺序。
          */
         Matrix4x4.prototype.fromRotation = function (rx, ry, rz, order) {
-            if (order === void 0) { order = feng3d.rotationOrder; }
+            if (order === void 0) { order = feng3d.defaultRotationOrder; }
             this.recompose(new feng3d.Vector3(), new feng3d.Vector3(rx, ry, rz), new feng3d.Vector3(1, 1, 1), order);
             return this;
         };
@@ -11424,7 +11440,7 @@ var feng3d;
             this.rawData[13] = m141 * m212 + m142 * m222 + m143 * m232 + m144 * m242;
             this.rawData[14] = m141 * m213 + m142 * m223 + m143 * m233 + m144 * m243;
             this.rawData[15] = m141 * m214 + m142 * m224 + m143 * m234 + m144 * m244;
-            feng3d.debuger && console.assert(this.rawData[0] !== NaN && this.rawData[4] !== NaN && this.rawData[8] !== NaN && this.rawData[12] !== NaN);
+            console.assert(this.rawData[0] !== NaN && this.rawData[4] !== NaN && this.rawData[8] !== NaN && this.rawData[12] !== NaN);
             return this;
         };
         /**
@@ -11604,7 +11620,7 @@ var feng3d;
          * @param order 旋转顺序。
          */
         Matrix4x4.prototype.recompose = function (position, rotation, scale, order) {
-            if (order === void 0) { order = feng3d.rotationOrder; }
+            if (order === void 0) { order = feng3d.defaultRotationOrder; }
             this.identity();
             var te = this.rawData;
             //
@@ -11725,7 +11741,7 @@ var feng3d;
             if (position === void 0) { position = new feng3d.Vector3(); }
             if (rotation === void 0) { rotation = new feng3d.Vector3(); }
             if (scale === void 0) { scale = new feng3d.Vector3(); }
-            if (order === void 0) { order = feng3d.rotationOrder; }
+            if (order === void 0) { order = feng3d.defaultRotationOrder; }
             var clamp = Math.clamp;
             //
             var rawData = this.rawData;
@@ -15913,7 +15929,7 @@ var feng3d;
             }
             if (keys.length == 0)
                 return { time: t, value: 0, inTangent: 0, outTangent: 0 };
-            feng3d.debuger && console.assert(isfind);
+            console.assert(isfind);
             return { time: t, value: value, inTangent: tangent, outTangent: tangent };
         };
         /**
@@ -22114,7 +22130,7 @@ var feng3d;
                     return;
                 var shaderMacro = renderAtomic1.getShaderMacro();
                 var shader = renderAtomic1.getShader();
-                shaderMacro.RotationOrder = feng3d.rotationOrder;
+                shaderMacro.RotationOrder = feng3d.defaultRotationOrder;
                 shader.shaderMacro = shaderMacro;
                 var shaderResult = shader.activeShaderProgram(gl);
                 if (!shaderResult)
@@ -42325,6 +42341,6 @@ var feng3d;
      * playcanvas ZYX
      * three.js XYZ
      */
-    feng3d.rotationOrder = feng3d.RotationOrder.YXZ;
+    feng3d.defaultRotationOrder = feng3d.RotationOrder.YXZ;
 })(feng3d || (feng3d = {}));
 //# sourceMappingURL=feng3d.js.map

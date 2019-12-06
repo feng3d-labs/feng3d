@@ -3861,6 +3861,14 @@ declare namespace feng3d {
          */
         RIGHT_HANDED = 1
     }
+    /**
+     * 引擎中使用的坐标系统，默认左手坐标系统。
+     *
+     * three.js 右手坐标系统。
+     * playcanvas 右手坐标系统。
+     * unity    左手坐标系统。
+     */
+    var coordinateSystem: CoordinateSystem;
 }
 declare namespace feng3d {
     /**
@@ -3900,6 +3908,14 @@ declare namespace feng3d {
          */
         XZY = 5
     }
+    /**
+     * 引擎中使用的旋转顺序。
+     *
+     * unity YXZ
+     * playcanvas ZYX
+     * three.js XYZ
+     */
+    var defaultRotationOrder: RotationOrder;
 }
 declare namespace feng3d {
     /**
@@ -18703,21 +18719,5 @@ declare namespace feng3d {
      * 版本号
      */
     var version: string;
-    /**
-     * 引擎中使用的坐标系统，默认左手坐标系统。
-     *
-     * three.js 右手坐标系统。
-     * playcanvas 右手坐标系统。
-     * unity    左手坐标系统。
-     */
-    var coordinateSystem: CoordinateSystem;
-    /**
-     * 引擎中使用的旋转顺序。
-     *
-     * unity YXZ
-     * playcanvas ZYX
-     * three.js XYZ
-     */
-    var rotationOrder: RotationOrder;
 }
 //# sourceMappingURL=feng3d.d.ts.map

@@ -186,7 +186,7 @@ namespace feng3d
 			}
 
 			var cls = this.OVComponent[classConfig.component];
-			debuger && console.assert(cls != null, `没有定义 ${classConfig.component} 对应的对象界面类，需要在 ${classConfig.component} 中使用@OVComponent()标记`);
+			console.assert(cls != null, `没有定义 ${classConfig.component} 对应的对象界面类，需要在 ${classConfig.component} 中使用@OVComponent()标记`);
 			var view = new cls(classConfig)
 			return view;
 		}
@@ -219,7 +219,7 @@ namespace feng3d
 			}
 
 			var cls = this.OAVComponent[attributeViewInfo.component];
-			debuger && console.assert(cls != null, `没有定义 ${attributeViewInfo.component} 对应的属性界面类，需要在 ${attributeViewInfo.component} 中使用@OVAComponent()标记`);
+			console.assert(cls != null, `没有定义 ${attributeViewInfo.component} 对应的属性界面类，需要在 ${attributeViewInfo.component} 中使用@OVAComponent()标记`);
 			var view = new cls(attributeViewInfo);
 			return view;
 		}
@@ -241,7 +241,7 @@ namespace feng3d
 			}
 
 			var cls = this.OBVComponent[blockViewInfo.component];
-			debuger && console.assert(cls != null, `没有定义 ${blockViewInfo.component} 对应的块界面类，需要在 ${blockViewInfo.component} 中使用@OVBComponent()标记`);
+			console.assert(cls != null, `没有定义 ${blockViewInfo.component} 对应的块界面类，需要在 ${blockViewInfo.component} 中使用@OVBComponent()标记`);
 			var view = new cls(blockViewInfo);
 			return view;
 		}

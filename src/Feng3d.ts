@@ -12,7 +12,7 @@ namespace feng3d
      * playcanvas 右手坐标系统。
      * unity    左手坐标系统。
      */
-    export var coordinateSystem = CoordinateSystem.LEFT_HANDED;
+    coordinateSystem = CoordinateSystem.LEFT_HANDED;
 
     /**
      * 引擎中使用的旋转顺序。
@@ -21,5 +21,5 @@ namespace feng3d
      * playcanvas ZYX
      * three.js XYZ
      */
-    export var rotationOrder = RotationOrder.YXZ;
+    defaultRotationOrder = RotationOrder.YXZ;
 }

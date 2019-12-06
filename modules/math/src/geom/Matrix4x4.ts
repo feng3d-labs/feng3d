@@ -43,7 +43,7 @@ namespace feng3d
          * @param scale 缩放。
          * @param order 旋转顺序。
          */
-        static recompose(position: Vector3, rotation: Vector3, scale: Vector3, order = feng3d.rotationOrder)
+        static recompose(position: Vector3, rotation: Vector3, scale: Vector3, order = defaultRotationOrder)
         {
             return new Matrix4x4().recompose(position, rotation, scale, order);
         }
@@ -86,7 +86,7 @@ namespace feng3d
          * @param rotation 欧拉旋转角度。
          * @param order   绕轴旋转的顺序。
          */
-        getRotation(rotation = new Vector3(), order = feng3d.rotationOrder)
+        getRotation(rotation = new Vector3(), order = defaultRotationOrder)
         {
             this.decompose(new Vector3(), rotation, new Vector3(), order);
             return rotation;
@@ -98,7 +98,7 @@ namespace feng3d
          * @param rotation 欧拉旋转角度。
          * @param order 绕轴旋转的顺序。
          */
-        setRotation(rotation: Vector3, order = feng3d.rotationOrder)
+        setRotation(rotation: Vector3, order = defaultRotationOrder)
         {
             var p = new Vector3();
             var r = new Vector3();
@@ -261,7 +261,7 @@ namespace feng3d
          * @param   rz      用于沿 z 轴旋转对象的角度。  
          * @param   order   绕轴旋转的顺序。
          */
-        static fromRotation(rx: number, ry: number, rz: number, order = feng3d.rotationOrder): Matrix4x4
+        static fromRotation(rx: number, ry: number, rz: number, order = defaultRotationOrder): Matrix4x4
         {
             return new Matrix4x4().fromRotation(rx, ry, rz, order);
         }
@@ -284,7 +284,7 @@ namespace feng3d
          * @param   rz      用于沿 z 轴旋转对象的角度。  
          * @param   order   绕轴旋转的顺序。
          */
-        fromRotation(rx: number, ry: number, rz: number, order = feng3d.rotationOrder)
+        fromRotation(rx: number, ry: number, rz: number, order = defaultRotationOrder)
         {
             this.recompose(new Vector3(), new Vector3(rx, ry, rz), new Vector3(1, 1, 1), order);
             return this;
@@ -371,7 +371,7 @@ namespace feng3d
             this.rawData[14] = m141 * m213 + m142 * m223 + m143 * m233 + m144 * m243;
             this.rawData[15] = m141 * m214 + m142 * m224 + m143 * m234 + m144 * m244;
 
-            debuger && console.assert(this.rawData[0] !== NaN && this.rawData[4] !== NaN && this.rawData[8] !== NaN && this.rawData[12] !== NaN);
+            console.assert(this.rawData[0] !== NaN && this.rawData[4] !== NaN && this.rawData[8] !== NaN && this.rawData[12] !== NaN);
 
             return this;
         }
@@ -585,7 +585,7 @@ namespace feng3d
          * @param scale 缩放。
          * @param order 旋转顺序。
          */
-        recompose(position: Vector3, rotation: Vector3, scale: Vector3, order = rotationOrder)
+        recompose(position: Vector3, rotation: Vector3, scale: Vector3, order = defaultRotationOrder)
         {
             this.identity();
             var te = this.rawData;
@@ -731,7 +731,7 @@ namespace feng3d
          * @param scale 缩放。
          * @param order 旋转顺序。
          */
-        decompose(position = new Vector3(), rotation = new Vector3(), scale = new Vector3(), order = feng3d.rotationOrder)
+        decompose(position = new Vector3(), rotation = new Vector3(), scale = new Vector3(), order = defaultRotationOrder)
         {
             var clamp = Math.clamp;
             //

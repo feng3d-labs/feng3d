@@ -179,7 +179,7 @@ namespace feng3d
 
             if (keys.length == 0) return { time: t, value: 0, inTangent: 0, outTangent: 0 };
 
-            debuger && console.assert(isfind);
+            console.assert(isfind);
             return { time: t, value: value, inTangent: tangent, outTangent: tangent };
         }
 

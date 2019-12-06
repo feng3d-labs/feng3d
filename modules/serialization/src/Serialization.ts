@@ -683,7 +683,7 @@ namespace feng3d
                 var spv = source[property];
                 if (Array.isArray(spv))
                 {
-                    debuger && console.assert(!!tpv);
+                    console.assert(!!tpv);
                     var keys = Object.keys(spv);
                     keys.forEach(key =>
                     {
@@ -719,7 +719,7 @@ namespace feng3d
                 var spv = source[property];
                 if (Object.isObject(spv) && spv[CLASS_KEY] == undefined)
                 {
-                    debuger && console.assert(!!tpv);
+                    console.assert(!!tpv);
                     var keys = Object.keys(spv);
                     keys.forEach(key =>
                     {

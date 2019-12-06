@@ -182,7 +182,7 @@ var feng3d;
             var spv = source[property];
             if (spv && typeof spv == "function") {
                 var object = {};
-                object[CLASS_KEY] = "function";
+                object[feng3d.CLASS_KEY] = "function";
                 object.data = spv.toString();
                 target[property] = object;
                 return true;
@@ -201,33 +201,6 @@ var feng3d;
             return false;
         }
     }, 
-    // 处理 Feng3dObject
-    {
-        priority: 0,
-        handler: function (target, source, property) {
-            var spv = source[property];
-            if (spv instanceof Feng3dObject && (spv.hideFlags & HideFlags.DontSave)) {
-                return true;
-            }
-            return false;
-        }
-    }, 
-    // 处理资源
-    {
-        priority: 0,
-        handler: function (target, source, property) {
-            var spv = source[property];
-            if (AssetData.isAssetData(spv)) {
-                // 此处需要反序列化资源完整数据
-                if (property == __root__) {
-                    return false;
-                }
-                target[property] = AssetData.serialize(spv);
-                return true;
-            }
-            return false;
-        }
-    }, 
     // 自定义序列化函数
     {
         priority: 0,
@@ -235,7 +208,7 @@ var feng3d;
             var spv = source[property];
             if (spv && spv["serialize"]) {
                 var object = {};
-                object[CLASS_KEY] = classUtils.getQualifiedClassName(spv);
+                object[feng3d.CLASS_KEY] = feng3d.classUtils.getQualifiedClassName(spv);
                 spv["serialize"](object);
                 target[property] = object;
                 return true;
@@ -285,18 +258,18 @@ var feng3d;
             var spv = source[property];
             if (!serialization.omitDefault) {
                 var object_2 = {};
-                var className = classUtils.getQualifiedClassName(spv);
+                var className = feng3d.classUtils.getQualifiedClassName(spv);
                 var keys = getSerializableMembers(spv);
                 keys.forEach(function (key) {
                     propertyHandler(object_2, spv, key, handlers, serialization);
                 });
-                object_2[CLASS_KEY] = className;
+                object_2[feng3d.CLASS_KEY] = className;
                 target[property] = object_2;
                 return true;
             }
             // 执行默认忽略默认值
             if (tpv == null || tpv.constructor != spv.constructor) {
-                var className = classUtils.getQualifiedClassName(spv);
+                var className = feng3d.classUtils.getQualifiedClassName(spv);
                 // 获取或创建对象默认实例，把默认实例保存在构造函数上省去使用map保存。
                 var inst = spv.constructor.inst;
                 if (!inst)
@@ -305,7 +278,7 @@ var feng3d;
                 if (!(inst instanceof spv.constructor))
                     inst = spv.constructor.inst = new spv.constructor();
                 var diff = serialization.different(spv, inst);
-                diff[CLASS_KEY] = className;
+                diff[feng3d.CLASS_KEY] = className;
                 target[property] = diff;
             }
             else {
@@ -335,7 +308,7 @@ var feng3d;
         priority: 0,
         handler: function (target, source, property) {
             var spv = source[property];
-            if (spv && spv[CLASS_KEY] == "function") {
+            if (spv && spv[feng3d.CLASS_KEY] == "function") {
                 target[property] = eval("(" + spv.data + ")");
                 return true;
             }
@@ -349,27 +322,6 @@ var feng3d;
             var spv = source[property];
             if (!Object.isObject(spv) && !Array.isArray(spv)) {
                 target[property] = spv;
-                return true;
-            }
-            return false;
-        }
-    }, 
-    // 处理资源
-    {
-        priority: 0,
-        handler: function (target, source, property, handlers, serialization) {
-            var tpv = target[property];
-            var spv = source[property];
-            if (AssetData.isAssetData(spv)) {
-                // 此处需要反序列化资源完整数据
-                if (property == __root__) {
-                    return false;
-                }
-                target[property] = AssetData.deserialize(spv);
-                return true;
-            }
-            if (AssetData.isAssetData(tpv)) {
-                target[property] = serialization.deserialize(spv);
                 return true;
             }
             return false;
@@ -398,7 +350,7 @@ var feng3d;
         handler: function (target, source, property, handlers, serialization) {
             var tpv = target[property];
             var spv = source[property];
-            if (Object.isObject(spv) && spv[CLASS_KEY] == null) {
+            if (Object.isObject(spv) && spv[feng3d.CLASS_KEY] == null) {
                 var obj = {};
                 if (tpv)
                     obj = tpv;
@@ -419,7 +371,7 @@ var feng3d;
         handler: function (target, source, property) {
             var tpv = target[property];
             var spv = source[property];
-            var inst = classUtils.getInstanceByName(spv[CLASS_KEY]);
+            var inst = feng3d.classUtils.getInstanceByName(spv[feng3d.CLASS_KEY]);
             //处理自定义反序列化对象
             if (inst && inst["deserialize"]) {
                 if (tpv && tpv.constructor == inst.constructor) {
@@ -438,7 +390,7 @@ var feng3d;
         handler: function (target, source, property, handlers, serialization) {
             var tpv = target[property];
             var spv = source[property];
-            var inst = classUtils.getInstanceByName(spv[CLASS_KEY]);
+            var inst = feng3d.classUtils.getInstanceByName(spv[feng3d.CLASS_KEY]);
             if (inst) {
                 if (tpv && tpv.constructor == inst.constructor) {
                     inst = tpv;
@@ -446,7 +398,7 @@ var feng3d;
                 //默认反序列
                 var keys = Object.keys(spv);
                 keys.forEach(function (key) {
-                    if (key != CLASS_KEY)
+                    if (key != feng3d.CLASS_KEY)
                         propertyHandler(inst, spv, key, handlers, serialization);
                 });
                 target[property] = inst;
@@ -522,22 +474,6 @@ var feng3d;
                 return false;
             }
         },
-        // 资源
-        {
-            priority: 0,
-            handler: function (target, source, property, different, handlers, serialization) {
-                var tpv = target[property];
-                if (AssetData.isAssetData(tpv)) {
-                    // 此处需要反序列化资源完整数据
-                    if (property == __root__) {
-                        return false;
-                    }
-                    different[property] = AssetData.serialize(tpv);
-                    return true;
-                }
-                return false;
-            }
-        },
         // 默认处理
         {
             priority: -10000,
@@ -604,7 +540,7 @@ var feng3d;
                 var tpv = target[property];
                 var spv = source[property];
                 if (Array.isArray(spv)) {
-                    debuger && console.assert(!!tpv);
+                    console.assert(!!tpv);
                     var keys = Object.keys(spv);
                     keys.forEach(function (key) {
                         propertyHandler(tpv, spv, key, handlers, serialization);
@@ -628,43 +564,14 @@ var feng3d;
                 return false;
             }
         },
-        // 处理资源
-        {
-            priority: 0,
-            handler: function (target, source, property, handlers, serialization) {
-                var tpv = target[property];
-                var spv = source[property];
-                if (AssetData.isAssetData(spv)) {
-                    // 此处需要反序列化资源完整数据
-                    if (property == __root__) {
-                        return false;
-                    }
-                    target[property] = AssetData.deserialize(spv);
-                    return true;
-                }
-                if (AssetData.isAssetData(tpv)) {
-                    if (spv.__class__ == null) {
-                        var className = classUtils.getQualifiedClassName(tpv);
-                        var inst = classUtils.getInstanceByName(className);
-                        serialization.setValue(inst, spv);
-                        target[property] = inst;
-                    }
-                    else {
-                        target[property] = serialization.deserialize(spv);
-                    }
-                    return true;
-                }
-                return false;
-            }
-        },
         // 处理 Object 基础类型数据
         {
             priority: 0,
             handler: function (target, source, property, handlers, serialization) {
                 var tpv = target[property];
                 var spv = source[property];
-                if (Object.isObject(spv) && spv[CLASS_KEY] == undefined) {
-                    debuger && console.assert(!!tpv);
+                if (Object.isObject(spv) && spv[feng3d.CLASS_KEY] == undefined) {
+                    console.assert(!!tpv);
                     var keys = Object.keys(spv);
                     keys.forEach(function (key) {
                         propertyHandler(tpv, spv, key, handlers, serialization);
@@ -681,9 +588,9 @@ var feng3d;
             handler: function (target, source, property, handlers, serialization) {
                 var tpv = target[property];
                 var spv = source[property];
-                var targetClassName = classUtils.getQualifiedClassName(target[property]);
+                var targetClassName = feng3d.classUtils.getQualifiedClassName(target[property]);
                 // 相同对象类型
-                if (targetClassName == spv[CLASS_KEY]) {
+                if (targetClassName == spv[feng3d.CLASS_KEY]) {
                     var keys = Object.keys(spv);
                     keys.forEach(function (key) {
                         propertyHandler(tpv, spv, key, handlers, serialization);

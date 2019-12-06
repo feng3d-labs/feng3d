@@ -61,7 +61,10 @@
             "path": "../polyfill"
         },
         {
-            "path": "../watcher"
-        }
+            "path": "../serialization"
+        },
+        {
+            "path": "../objectview"
+        },
     ]
 }

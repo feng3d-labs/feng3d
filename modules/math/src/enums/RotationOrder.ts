@@ -38,4 +38,13 @@ namespace feng3d
          */
         XZY = 5,
     }
+    
+    /**
+     * 引擎中使用的旋转顺序。
+     * 
+     * unity YXZ
+     * playcanvas ZYX
+     * three.js XYZ
+     */
+    export var defaultRotationOrder = RotationOrder.YXZ;
 }
