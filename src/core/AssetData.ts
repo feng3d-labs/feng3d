@@ -33,7 +33,7 @@ namespace feng3d
         {
             if (this._assetId == v) return;
 
-            if (this._assetId != undefined) { debuger && console.error(`不允许修改 assetId`); return; }
+            if (this._assetId != undefined) { console.error(`不允许修改 assetId`); return; }
 
             this._assetId = v;
         }
@@ -69,14 +69,14 @@ namespace feng3d
         static deleteAssetData(data: AssetData)
         {
             if (!data) return;
-            debuger && console.assert(this.assetMap.has(data));
+            console.assert(this.assetMap.has(data));
             var assetId = this.assetMap.get(data);
             this._delete(assetId, data);
         }
 
         static deleteAssetDataById(assetId: string)
         {
-            debuger && console.assert(this.idAssetMap.has(assetId));
+            console.assert(this.idAssetMap.has(assetId));
             var data = this.idAssetMap.get(assetId);
             this._delete(assetId, data);
         }
@@ -125,7 +125,7 @@ namespace feng3d
         static deserialize(object: any)
         {
             var result = this.getLoadedAssetData(object.assetId);
-            debuger && console.assert(!!result, `资源 ${object.assetId} 未加载，请使用 ReadRS.deserializeWithAssets 进行序列化包含加载的资源对象。`)
+            console.assert(!!result, `资源 ${object.assetId} 未加载，请使用 ReadRS.deserializeWithAssets 进行序列化包含加载的资源对象。`)
             return result;
         }
 

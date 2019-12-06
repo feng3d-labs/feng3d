@@ -571,7 +571,7 @@ namespace feng3d
                     this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
                 this._localToWorldMatrixInvalid = false;
                 this.dispatch("updateLocalToWorldMatrix");
-                debuger && console.assert(!isNaN(this._localToWorldMatrix.rawData[0]));
+                console.assert(!isNaN(this._localToWorldMatrix.rawData[0]));
             }
             return this._localToWorldMatrix;
         }

@@ -10813,47 +10813,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    /**
-     * 帧缓冲对象
-
-     */
-    class FrameBufferObject {
-        get OFFSCREEN_WIDTH(): number;
-        set OFFSCREEN_WIDTH(v: number);
-        private _OFFSCREEN_WIDTH;
-        get OFFSCREEN_HEIGHT(): number;
-        set OFFSCREEN_HEIGHT(v: number);
-        private _OFFSCREEN_HEIGHT;
-        get frameBuffer(): FrameBuffer;
-        set frameBuffer(v: FrameBuffer);
-        private _frameBuffer;
-        get texture(): RenderTargetTexture2D;
-        set texture(v: RenderTargetTexture2D);
-        private _texture;
-        get depthBuffer(): RenderBuffer;
-        set depthBuffer(v: RenderBuffer);
-        private _depthBuffer;
-        constructor(width?: number, height?: number);
-        active(gl: GL): {
-            framebuffer: WebGLFramebuffer;
-            texture: WebGLTexture;
-            depthBuffer: WebGLRenderbuffer;
-        };
-        deactive(gl: GL): void;
-        /**
-         * 是否失效
-         */
-        private _invalid;
-        /**
-         * 使失效
-         */
-        protected invalidate(): void;
-        private _map;
-        private invalidateSize;
-        private clear;
-    }
-}
-declare namespace feng3d {
     class RenderBuffer {
         get OFFSCREEN_WIDTH(): number;
         set OFFSCREEN_WIDTH(v: number);
@@ -11081,6 +11040,47 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
+}
+declare namespace feng3d {
+    /**
+     * 帧缓冲对象
+
+     */
+    class FrameBufferObject {
+        get OFFSCREEN_WIDTH(): number;
+        set OFFSCREEN_WIDTH(v: number);
+        private _OFFSCREEN_WIDTH;
+        get OFFSCREEN_HEIGHT(): number;
+        set OFFSCREEN_HEIGHT(v: number);
+        private _OFFSCREEN_HEIGHT;
+        get frameBuffer(): FrameBuffer;
+        set frameBuffer(v: FrameBuffer);
+        private _frameBuffer;
+        get texture(): RenderTargetTexture2D;
+        set texture(v: RenderTargetTexture2D);
+        private _texture;
+        get depthBuffer(): RenderBuffer;
+        set depthBuffer(v: RenderBuffer);
+        private _depthBuffer;
+        constructor(width?: number, height?: number);
+        active(gl: GL): {
+            framebuffer: WebGLFramebuffer;
+            texture: WebGLTexture;
+            depthBuffer: WebGLRenderbuffer;
+        };
+        deactive(gl: GL): void;
+        /**
+         * 是否失效
+         */
+        private _invalid;
+        /**
+         * 使失效
+         */
+        protected invalidate(): void;
+        private _map;
+        private invalidateSize;
+        private clear;
+    }
 }
 declare namespace feng3d {
     /**

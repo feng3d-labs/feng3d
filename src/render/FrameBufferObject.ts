@@ -101,7 +101,7 @@ namespace feng3d
                 var e = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
                 if (gl.FRAMEBUFFER_COMPLETE !== e)
                 {
-                    debuger && alert('Frame buffer object is incomplete: ' + e.toString());
+                    alert('Frame buffer object is incomplete: ' + e.toString());
                     return null;
                 }
 

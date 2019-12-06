@@ -173,7 +173,6 @@
         "modules/render/src/data/TextureInfo.ts",
         "modules/render/src/data/FrameBuffer.ts",
         //
-        "modules/render/src/FrameBufferObject.ts",
         "modules/render/src/RenderBuffer.ts",
         //
         "modules/render/src/shader/ShaderMacroUtils.ts",
@@ -183,6 +182,7 @@
         "modules/render/src/renderer/Renderer.ts",
         //
         "src/render/shader/ShaderLib.ts",
+        "src/render/FrameBufferObject.ts",
         //
         "src/render/renderer/ForwardRenderer.ts",
         "src/render/renderer/DepthRenderer.ts",

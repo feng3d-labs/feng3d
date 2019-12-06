@@ -31,7 +31,7 @@ namespace feng3d
             super();
             Object.defineProperty(this, "uuid", { value: Math.uuid() });
             Object.defineProperty(this, "disposed", { value: false, configurable: true });
-            debuger && console.assert(!Feng3dObject.objectLib[this.uuid], `唯一标识符存在重复！？`);
+            console.assert(!Feng3dObject.objectLib[this.uuid], `唯一标识符存在重复！？`);
             Feng3dObject.objectLib[this.uuid] = this;
         }
 

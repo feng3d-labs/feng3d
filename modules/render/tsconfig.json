@@ -43,7 +43,6 @@
         "src/data/TextureInfo.ts",
         "src/data/FrameBuffer.ts",
         //
-        "src/FrameBufferObject.ts",
         "src/RenderBuffer.ts",
         //
         "src/shader/ShaderMacroUtils.ts",

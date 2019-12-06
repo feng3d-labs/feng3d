@@ -14,7 +14,7 @@ namespace feng3d
 
         constructor(gl: GL)
         {
-            debuger && console.assert(!gl.render, `${gl} ${gl.render} 存在！`);
+            console.assert(!gl.render, `${gl} ${gl.render} 存在！`);
 
             var preActiveAttributes: number[] = [];
 

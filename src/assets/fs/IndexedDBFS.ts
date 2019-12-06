@@ -123,7 +123,7 @@ namespace feng3d
                     callback(null, data);
                 } else
                 {
-                    debuger && console.assert(typeof data == "string");
+                    console.assert(typeof data == "string");
                     var obj = JSON.parse(data);
                     callback(null, obj);
                 }

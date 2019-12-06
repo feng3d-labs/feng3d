@@ -52,7 +52,7 @@ namespace feng3d
                 this.rs.deserializeWithAssets(object, (data: AssetData) =>
                 {
                     this.data = data;
-                    debuger && console.assert(this.data.assetId == this.assetId);
+                    console.assert(this.data.assetId == this.assetId);
                     callback && callback(err);
                 });
             });

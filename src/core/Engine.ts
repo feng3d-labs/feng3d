@@ -98,7 +98,7 @@ namespace feng3d
                 canvas.style.height = "100%";
                 document.body.appendChild(canvas);
             }
-            debuger && console.assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
+            console.assert(canvas instanceof HTMLCanvasElement, `canvas参数必须为 HTMLCanvasElement 类型！`);
 
             this.canvas = canvas;
 

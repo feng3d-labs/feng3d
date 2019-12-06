@@ -3195,7 +3195,7 @@ var feng3d;
             canvasImg.width = image.width;
             canvasImg.height = image.height;
             var ctxt = canvasImg.getContext('2d');
-            feng3d.debuger && console.assert(!!ctxt);
+            console.assert(!!ctxt);
             ctxt.drawImage(image, 0, 0);
             this.imageData = ctxt.getImageData(0, 0, image.width, image.height); //读取整张图片的像素。
             return this;
@@ -3642,7 +3642,7 @@ var feng3d;
          * @param path 路径
          */
         PathUtils.prototype.getName = function (path) {
-            feng3d.debuger && console.assert(path != undefined);
+            console.assert(path != undefined);
             var name = this.getNameWithExtension(path);
             if (this.isDirectory(path))
                 return name;
@@ -3654,7 +3654,7 @@ var feng3d;
          * @param path 路径
          */
         PathUtils.prototype.getNameWithExtension = function (path) {
-            feng3d.debuger && console.assert(path != undefined);
+            console.assert(path != undefined);
             var paths = path.split("/");
             var name = paths.pop();
             if (name == "")
@@ -3666,7 +3666,7 @@ var feng3d;
          * @param path 路径
          */
         PathUtils.prototype.getExtension = function (path) {
-            feng3d.debuger && console.assert(path != undefined);
+            console.assert(path != undefined);
             var name = this.getNameWithExtension(path);
             var index = name.indexOf(".");
             if (index == -1)
@@ -3678,7 +3678,7 @@ var feng3d;
          * @param path 路径
          */
         PathUtils.prototype.getParentPath = function (path) {
-            feng3d.debuger && console.assert(path != undefined);
+            console.assert(path != undefined);
             var paths = path.split("/");
             if (this.isDirectory(path))
                 paths.pop();
@@ -3692,8 +3692,8 @@ var feng3d;
          * @param childName 子文件名称
          */
         PathUtils.prototype.getChildFilePath = function (parentPath, childName) {
-            feng3d.debuger && console.assert(parentPath != undefined);
-            feng3d.debuger && console.assert(childName != undefined);
+            console.assert(parentPath != undefined);
+            console.assert(childName != undefined);
             if (parentPath.charAt(parentPath.length - 1) != "/")
                 parentPath += "/";
             return parentPath + childName;
@@ -3783,7 +3783,7 @@ var feng3d;
         __extends(ERR_INVALID_ARG_TYPE, _super);
         function ERR_INVALID_ARG_TYPE(name, expected, actual) {
             var _this = this;
-            feng3d.debuger && assert(typeof name === 'string', "'name' must be a string");
+            assert(typeof name === 'string', "'name' must be a string");
             // determiner: 'must be' or 'must not be'
             var determiner;
             if (typeof expected === 'string' && expected.startsWith('not ')) {
@@ -3810,10 +3810,10 @@ var feng3d;
         return ERR_INVALID_ARG_TYPE;
     }(TypeError));
     function oneOf(expected, thing) {
-        feng3d.debuger && assert(typeof thing === 'string', '`thing` has to be of type string');
+        assert(typeof thing === 'string', '`thing` has to be of type string');
         if (Array.isArray(expected)) {
             var len = expected.length;
-            feng3d.debuger && assert(len > 0, 'At least one expected value needs to be specified');
+            assert(len > 0, 'At least one expected value needs to be specified');
             expected = expected.map(function (i) { return String(i); });
             if (len > 2) {
                 return "one of " + thing + " " + expected.slice(0, len - 1).join(', ') + ", or " +
@@ -16446,7 +16446,7 @@ var feng3d;
             _this.hideFlags = feng3d.HideFlags.None;
             Object.defineProperty(_this, "uuid", { value: Math.uuid() });
             Object.defineProperty(_this, "disposed", { value: false, configurable: true });
-            feng3d.debuger && console.assert(!Feng3dObject.objectLib[_this.uuid], "\u552F\u4E00\u6807\u8BC6\u7B26\u5B58\u5728\u91CD\u590D\uFF01\uFF1F");
+            console.assert(!Feng3dObject.objectLib[_this.uuid], "\u552F\u4E00\u6807\u8BC6\u7B26\u5B58\u5728\u91CD\u590D\uFF01\uFF1F");
             Feng3dObject.objectLib[_this.uuid] = _this;
             return _this;
         }
@@ -16536,7 +16536,7 @@ var feng3d;
                 if (this._assetId == v)
                     return;
                 if (this._assetId != undefined) {
-                    feng3d.debuger && console.error("\u4E0D\u5141\u8BB8\u4FEE\u6539 assetId");
+                    console.error("\u4E0D\u5141\u8BB8\u4FEE\u6539 assetId");
                     return;
                 }
                 this._assetId = v;
@@ -16567,12 +16567,12 @@ var feng3d;
         AssetData.deleteAssetData = function (data) {
             if (!data)
                 return;
-            feng3d.debuger && console.assert(this.assetMap.has(data));
+            console.assert(this.assetMap.has(data));
             var assetId = this.assetMap.get(data);
             this._delete(assetId, data);
         };
         AssetData.deleteAssetDataById = function (assetId) {
-            feng3d.debuger && console.assert(this.idAssetMap.has(assetId));
+            console.assert(this.idAssetMap.has(assetId));
             var data = this.idAssetMap.get(assetId);
             this._delete(assetId, data);
         };
@@ -16611,7 +16611,7 @@ var feng3d;
          */
         AssetData.deserialize = function (object) {
             var result = this.getLoadedAssetData(object.assetId);
-            feng3d.debuger && console.assert(!!result, "\u8D44\u6E90 " + object.assetId + " \u672A\u52A0\u8F7D\uFF0C\u8BF7\u4F7F\u7528 ReadRS.deserializeWithAssets \u8FDB\u884C\u5E8F\u5217\u5316\u5305\u542B\u52A0\u8F7D\u7684\u8D44\u6E90\u5BF9\u8C61\u3002");
+            console.assert(!!result, "\u8D44\u6E90 " + object.assetId + " \u672A\u52A0\u8F7D\uFF0C\u8BF7\u4F7F\u7528 ReadRS.deserializeWithAssets \u8FDB\u884C\u5E8F\u5217\u5316\u5305\u542B\u52A0\u8F7D\u7684\u8D44\u6E90\u5BF9\u8C61\u3002");
             return result;
         };
         /**
@@ -17178,7 +17178,7 @@ var feng3d;
                 this._dbStatus[dbname] = { status: DBStatus.unOpen, onsuccessCallbacks: [], onupgradeneededCallbacks: [] };
             this._dbStatus[dbname].onsuccessCallbacks.push(callback);
             if (upgrade) {
-                feng3d.debuger && console.assert(!!onupgrade);
+                console.assert(!!onupgrade);
                 this._dbStatus[dbname].onupgradeneededCallbacks.push(onupgrade);
             }
             if (this._dbStatus[dbname].status == DBStatus.opening || this._dbStatus[dbname].status == DBStatus.upgrading)
@@ -18027,7 +18027,7 @@ var feng3d;
                     callback(null, data);
                 }
                 else {
-                    feng3d.debuger && console.assert(typeof data == "string");
+                    console.assert(typeof data == "string");
                     var obj = JSON.parse(data);
                     callback(null, obj);
                 }
@@ -18411,7 +18411,7 @@ var feng3d;
              * 文件后缀
              */
             get: function () {
-                feng3d.debuger && console.assert(!!this.assetPath);
+                console.assert(!!this.assetPath);
                 var ext = feng3d.pathUtils.getExtension(this.assetPath);
                 return ext;
             },
@@ -18425,7 +18425,7 @@ var feng3d;
              * 不包含后缀
              */
             get: function () {
-                feng3d.debuger && console.assert(!!this.assetPath);
+                console.assert(!!this.assetPath);
                 var fn = feng3d.pathUtils.getName(this.assetPath);
                 return fn;
             },
@@ -18447,7 +18447,7 @@ var feng3d;
             if (!this.isLoaded) {
                 if (callback) {
                     this.read(function (err) {
-                        feng3d.debuger && console.assert(!err);
+                        console.assert(!err);
                         _this.getAssetData(callback);
                     });
                 }
@@ -18769,7 +18769,7 @@ var feng3d;
             // 计算路径
             if (extenson == "")
                 extenson = cls["extenson"];
-            feng3d.debuger && console.assert(extenson != undefined, "\u5BF9\u8C61 " + cls + " \u6CA1\u6709\u8BBE\u7F6E extenson \u503C\uFF0C\u53C2\u8003 FolderAsset.extenson");
+            console.assert(extenson != undefined, "\u5BF9\u8C61 " + cls + " \u6CA1\u6709\u8BBE\u7F6E extenson \u503C\uFF0C\u53C2\u8003 FolderAsset.extenson");
             var path = fileName + extenson;
             if (asset.parentAsset)
                 path = asset.parentAsset.assetPath + "/" + path;
@@ -18841,13 +18841,13 @@ var feng3d;
             var result = [];
             var fns = assetids.map(function (v) { return function (callback) {
                 feng3d.rs.readAssetData(v, function (err, data) {
-                    feng3d.debuger && console.assert(!!data);
+                    console.assert(!!data);
                     result.push(data);
                     callback();
                 });
             }; });
             feng3d.task.parallel(fns)(function () {
-                feng3d.debuger && console.assert(assetids.length == result.filter(function (v) { return v != null; }).length);
+                console.assert(assetids.length == result.filter(function (v) { return v != null; }).length);
                 callback(null, result);
             });
         };
@@ -19710,7 +19710,7 @@ var feng3d;
                 onCompleted && onCompleted(image);
             };
             image.onerror = function (event) {
-                feng3d.debuger && console.error("Error while trying to load texture: " + url);
+                console.error("Error while trying to load texture: " + url);
                 //
                 image.src = "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
                 //
@@ -20478,7 +20478,7 @@ var feng3d;
      */
     var GLExtension = /** @class */ (function () {
         function GLExtension(gl) {
-            feng3d.debuger && console.assert(!gl.extensions, gl + " " + gl.extensions + " \u5B58\u5728\uFF01");
+            console.assert(!gl.extensions, gl + " " + gl.extensions + " \u5B58\u5728\uFF01");
             gl.extensions = this;
             this.initExtensions(gl);
             this.cacheGLQuery(gl);
@@ -20534,7 +20534,7 @@ var feng3d;
                         gl.texParameterf(target, gl.extensions.EXT_texture_filter_anisotropic.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
                     }
                     else {
-                        feng3d.debuger && console.warn("浏览器不支持各向异性过滤（anisotropy）特性！");
+                        console.warn("浏览器不支持各向异性过滤（anisotropy）特性！");
                     }
                 };
             }
@@ -20768,7 +20768,7 @@ var feng3d;
                 var name = activeInfo.name;
                 var names = [name];
                 if (activeInfo.size > 1) {
-                    feng3d.debuger && console.assert(name.substr(-3, 3) == "[0]");
+                    console.assert(name.substr(-3, 3) == "[0]");
                     var baseName = name.substring(0, name.length - 3);
                     for (var j = 1; j < activeInfo.size; j++) {
                         names[j] = baseName + ("[" + j + "]");
@@ -21675,7 +21675,7 @@ var feng3d;
             if (!framebuffer) {
                 framebuffer = gl.createFramebuffer();
                 if (!framebuffer) {
-                    feng3d.debuger && alert('Failed to create frame buffer object');
+                    alert('Failed to create frame buffer object');
                     return null;
                 }
                 this._framebufferMap.set(gl, framebuffer);
@@ -21694,153 +21694,6 @@ var feng3d;
         return FrameBuffer;
     }());
     feng3d.FrameBuffer = FrameBuffer;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 帧缓冲对象
-
-     */
-    var FrameBufferObject = /** @class */ (function () {
-        function FrameBufferObject(width, height) {
-            if (width === void 0) { width = 1024; }
-            if (height === void 0) { height = 1024; }
-            this._OFFSCREEN_WIDTH = 1024;
-            this._OFFSCREEN_HEIGHT = 1024;
-            /**
-             * 是否失效
-             */
-            this._invalid = true;
-            this._map = new Map();
-            this.frameBuffer = new feng3d.FrameBuffer();
-            this.texture = new feng3d.RenderTargetTexture2D();
-            this.depthBuffer = new feng3d.RenderBuffer();
-            this.OFFSCREEN_WIDTH = width;
-            this.OFFSCREEN_HEIGHT = height;
-        }
-        Object.defineProperty(FrameBufferObject.prototype, "OFFSCREEN_WIDTH", {
-            get: function () {
-                return this._OFFSCREEN_WIDTH;
-            },
-            set: function (v) {
-                if (this._OFFSCREEN_WIDTH == v)
-                    return;
-                this._OFFSCREEN_WIDTH = v;
-                this.invalidateSize();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FrameBufferObject.prototype, "OFFSCREEN_HEIGHT", {
-            get: function () {
-                return this._OFFSCREEN_HEIGHT;
-            },
-            set: function (v) {
-                if (this._OFFSCREEN_HEIGHT == v)
-                    return;
-                this._OFFSCREEN_HEIGHT = v;
-                this.invalidateSize();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FrameBufferObject.prototype, "frameBuffer", {
-            get: function () {
-                return this._frameBuffer;
-            },
-            set: function (v) {
-                if (this._frameBuffer == v)
-                    return;
-                this._frameBuffer = v;
-                this.invalidate();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FrameBufferObject.prototype, "texture", {
-            get: function () {
-                return this._texture;
-            },
-            set: function (v) {
-                if (this._texture == v)
-                    return;
-                this._texture = v;
-                this.invalidate();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FrameBufferObject.prototype, "depthBuffer", {
-            get: function () {
-                return this._depthBuffer;
-            },
-            set: function (v) {
-                if (this._depthBuffer == v)
-                    return;
-                this._depthBuffer = v;
-                this.invalidate();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        FrameBufferObject.prototype.active = function (gl) {
-            if (this._invalid) {
-                this._invalid = false;
-                this.clear();
-            }
-            var obj = this._map.get(gl);
-            if (!obj) {
-                var framebuffer = this.frameBuffer.active(gl);
-                var texture = this.texture.active(gl);
-                var depthBuffer = this.depthBuffer.active(gl);
-                // 绑定帧缓冲区对象
-                gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-                // 设置颜色关联对象
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-                // 设置深度关联对象
-                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
-                // 检查Framebuffer状态
-                var e = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-                if (gl.FRAMEBUFFER_COMPLETE !== e) {
-                    feng3d.debuger && alert('Frame buffer object is incomplete: ' + e.toString());
-                    return null;
-                }
-                gl.bindTexture(gl.TEXTURE_2D, null);
-                gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-                obj = { framebuffer: framebuffer, texture: texture, depthBuffer: depthBuffer };
-                this._map.set(gl, obj);
-            }
-            else {
-                gl.bindFramebuffer(gl.FRAMEBUFFER, obj.framebuffer);
-            }
-            return obj;
-        };
-        FrameBufferObject.prototype.deactive = function (gl) {
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        };
-        /**
-         * 使失效
-         */
-        FrameBufferObject.prototype.invalidate = function () {
-            this._invalid = true;
-        };
-        FrameBufferObject.prototype.invalidateSize = function () {
-            if (this.texture) {
-                this.texture.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
-                this.texture.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
-            }
-            if (this.depthBuffer) {
-                this.depthBuffer.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
-                this.depthBuffer.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
-            }
-            this._invalid = true;
-        };
-        FrameBufferObject.prototype.clear = function () {
-            this._map.clear();
-        };
-        return FrameBufferObject;
-    }());
-    feng3d.FrameBufferObject = FrameBufferObject;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -21900,7 +21753,7 @@ var feng3d;
                 // Create a renderbuffer object and Set its size and parameters
                 depthBuffer = gl.createRenderbuffer(); // Create a renderbuffer object
                 if (!depthBuffer) {
-                    feng3d.debuger && alert('Failed to create renderbuffer object');
+                    alert('Failed to create renderbuffer object');
                     return;
                 }
                 this._depthBufferMap.set(gl, depthBuffer);
@@ -22052,7 +21905,7 @@ var feng3d;
      */
     var Renderer = /** @class */ (function () {
         function Renderer(gl) {
-            feng3d.debuger && console.assert(!gl.render, gl + " " + gl.render + " \u5B58\u5728\uFF01");
+            console.assert(!gl.render, gl + " " + gl.render + " \u5B58\u5728\uFF01");
             var preActiveAttributes = [];
             gl.render = function (renderAtomic1) {
                 var instanceCount = renderAtomic1.getInstanceCount();
@@ -22323,6 +22176,153 @@ var feng3d;
     feng3d.globalDispatcher.on("asset.shaderChanged", function () {
         feng3d.shaderlib.clearCache();
     });
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 帧缓冲对象
+
+     */
+    var FrameBufferObject = /** @class */ (function () {
+        function FrameBufferObject(width, height) {
+            if (width === void 0) { width = 1024; }
+            if (height === void 0) { height = 1024; }
+            this._OFFSCREEN_WIDTH = 1024;
+            this._OFFSCREEN_HEIGHT = 1024;
+            /**
+             * 是否失效
+             */
+            this._invalid = true;
+            this._map = new Map();
+            this.frameBuffer = new feng3d.FrameBuffer();
+            this.texture = new feng3d.RenderTargetTexture2D();
+            this.depthBuffer = new feng3d.RenderBuffer();
+            this.OFFSCREEN_WIDTH = width;
+            this.OFFSCREEN_HEIGHT = height;
+        }
+        Object.defineProperty(FrameBufferObject.prototype, "OFFSCREEN_WIDTH", {
+            get: function () {
+                return this._OFFSCREEN_WIDTH;
+            },
+            set: function (v) {
+                if (this._OFFSCREEN_WIDTH == v)
+                    return;
+                this._OFFSCREEN_WIDTH = v;
+                this.invalidateSize();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FrameBufferObject.prototype, "OFFSCREEN_HEIGHT", {
+            get: function () {
+                return this._OFFSCREEN_HEIGHT;
+            },
+            set: function (v) {
+                if (this._OFFSCREEN_HEIGHT == v)
+                    return;
+                this._OFFSCREEN_HEIGHT = v;
+                this.invalidateSize();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FrameBufferObject.prototype, "frameBuffer", {
+            get: function () {
+                return this._frameBuffer;
+            },
+            set: function (v) {
+                if (this._frameBuffer == v)
+                    return;
+                this._frameBuffer = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FrameBufferObject.prototype, "texture", {
+            get: function () {
+                return this._texture;
+            },
+            set: function (v) {
+                if (this._texture == v)
+                    return;
+                this._texture = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FrameBufferObject.prototype, "depthBuffer", {
+            get: function () {
+                return this._depthBuffer;
+            },
+            set: function (v) {
+                if (this._depthBuffer == v)
+                    return;
+                this._depthBuffer = v;
+                this.invalidate();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        FrameBufferObject.prototype.active = function (gl) {
+            if (this._invalid) {
+                this._invalid = false;
+                this.clear();
+            }
+            var obj = this._map.get(gl);
+            if (!obj) {
+                var framebuffer = this.frameBuffer.active(gl);
+                var texture = this.texture.active(gl);
+                var depthBuffer = this.depthBuffer.active(gl);
+                // 绑定帧缓冲区对象
+                gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+                // 设置颜色关联对象
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+                // 设置深度关联对象
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+                // 检查Framebuffer状态
+                var e = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+                if (gl.FRAMEBUFFER_COMPLETE !== e) {
+                    alert('Frame buffer object is incomplete: ' + e.toString());
+                    return null;
+                }
+                gl.bindTexture(gl.TEXTURE_2D, null);
+                gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+                obj = { framebuffer: framebuffer, texture: texture, depthBuffer: depthBuffer };
+                this._map.set(gl, obj);
+            }
+            else {
+                gl.bindFramebuffer(gl.FRAMEBUFFER, obj.framebuffer);
+            }
+            return obj;
+        };
+        FrameBufferObject.prototype.deactive = function (gl) {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        };
+        /**
+         * 使失效
+         */
+        FrameBufferObject.prototype.invalidate = function () {
+            this._invalid = true;
+        };
+        FrameBufferObject.prototype.invalidateSize = function () {
+            if (this.texture) {
+                this.texture.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
+                this.texture.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
+            }
+            if (this.depthBuffer) {
+                this.depthBuffer.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
+                this.depthBuffer.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
+            }
+            this._invalid = true;
+        };
+        FrameBufferObject.prototype.clear = function () {
+            this._map.clear();
+        };
+        return FrameBufferObject;
+    }());
+    feng3d.FrameBufferObject = FrameBufferObject;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -23688,7 +23688,7 @@ var feng3d;
                     this._localToWorldMatrix.append(this.parent.localToWorldMatrix);
                 this._localToWorldMatrixInvalid = false;
                 this.dispatch("updateLocalToWorldMatrix");
-                feng3d.debuger && console.assert(!isNaN(this._localToWorldMatrix.rawData[0]));
+                console.assert(!isNaN(this._localToWorldMatrix.rawData[0]));
             }
             return this._localToWorldMatrix;
         };
@@ -24025,7 +24025,7 @@ var feng3d;
          * @return				子组件
          */
         GameObject.prototype.getComponentAt = function (index) {
-            feng3d.debuger && console.assert(index < this.numComponents, "给出索引超出范围");
+            console.assert(index < this.numComponents, "给出索引超出范围");
             return this._components[index];
         };
         /**
@@ -24135,9 +24135,9 @@ var feng3d;
          * @param index				位置索引
          */
         GameObject.prototype.setComponentIndex = function (component, index) {
-            feng3d.debuger && console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
+            console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
             var oldIndex = this._components.indexOf(component);
-            feng3d.debuger && console.assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
+            console.assert(oldIndex >= 0 && oldIndex < this.numComponents, "子组件不在容器内");
             this._components.splice(oldIndex, 1);
             this._components.splice(index, 0, component);
         };
@@ -24157,7 +24157,7 @@ var feng3d;
          * @param component 被移除组件
          */
         GameObject.prototype.removeComponent = function (component) {
-            feng3d.debuger && console.assert(this.hasComponent(component), "只能移除在容器中的组件");
+            console.assert(this.hasComponent(component), "只能移除在容器中的组件");
             var index = this.getComponentIndex(component);
             this.removeComponentAt(index);
         };
@@ -24167,7 +24167,7 @@ var feng3d;
          * @return				    组件在容器的索引位置
          */
         GameObject.prototype.getComponentIndex = function (component) {
-            feng3d.debuger && console.assert(this._components.indexOf(component) != -1, "组件不在容器中");
+            console.assert(this._components.indexOf(component) != -1, "组件不在容器中");
             var index = this._components.indexOf(component);
             return index;
         };
@@ -24176,7 +24176,7 @@ var feng3d;
          * @param index		要删除的 Component 的子索引。
          */
         GameObject.prototype.removeComponentAt = function (index) {
-            feng3d.debuger && console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
+            console.assert(index >= 0 && index < this.numComponents, "给出索引超出范围");
             var component = this._components.splice(index, 1)[0];
             //派发移除组件事件
             this.dispatch("removeComponent", component, true);
@@ -24189,8 +24189,8 @@ var feng3d;
          * @param index2		第二个子组件的索引位置
          */
         GameObject.prototype.swapComponentsAt = function (index1, index2) {
-            feng3d.debuger && console.assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
-            feng3d.debuger && console.assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
+            console.assert(index1 >= 0 && index1 < this.numComponents, "第一个子组件的索引位置超出范围");
+            console.assert(index2 >= 0 && index2 < this.numComponents, "第二个子组件的索引位置超出范围");
             var temp = this._components[index1];
             this._components[index1] = this._components[index2];
             this._components[index2] = temp;
@@ -24201,8 +24201,8 @@ var feng3d;
          * @param b		第二个子组件
          */
         GameObject.prototype.swapComponents = function (a, b) {
-            feng3d.debuger && console.assert(this.hasComponent(a), "第一个子组件不在容器中");
-            feng3d.debuger && console.assert(this.hasComponent(b), "第二个子组件不在容器中");
+            console.assert(this.hasComponent(a), "第一个子组件不在容器中");
+            console.assert(this.hasComponent(b), "第二个子组件不在容器中");
             this.swapComponentsAt(this.getComponentIndex(a), this.getComponentIndex(b));
         };
         /**
@@ -24416,7 +24416,7 @@ var feng3d;
         GameObject.prototype.addComponentAt = function (component, index) {
             if (component == null)
                 return;
-            feng3d.debuger && console.assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
+            console.assert(index >= 0 && index <= this.numComponents, "给出索引超出范围");
             if (this.hasComponent(component)) {
                 index = Math.min(index, this._components.length - 1);
                 this.setComponentIndex(component, index);
@@ -24555,7 +24555,7 @@ var feng3d;
                 canvas.style.height = "100%";
                 document.body.appendChild(canvas);
             }
-            feng3d.debuger && console.assert(canvas instanceof HTMLCanvasElement, "canvas\u53C2\u6570\u5FC5\u987B\u4E3A HTMLCanvasElement \u7C7B\u578B\uFF01");
+            console.assert(canvas instanceof HTMLCanvasElement, "canvas\u53C2\u6570\u5FC5\u987B\u4E3A HTMLCanvasElement \u7C7B\u578B\uFF01");
             _this.canvas = canvas;
             canvas.addEventListener("webglcontextlost", function (event) {
                 event.preventDefault();
@@ -24863,7 +24863,7 @@ var feng3d;
                 var vec = _localToWorldMatrix.decompose();
                 vec[2].scaleNumber(depthScale * this.holdSize);
                 _localToWorldMatrix.recompose(vec[0], vec[1], vec[2]);
-                feng3d.debuger && console.assert(!isNaN(_localToWorldMatrix.rawData[0]));
+                console.assert(!isNaN(_localToWorldMatrix.rawData[0]));
             }
         };
         HoldSizeComponent.prototype.getDepthScale = function (camera) {
@@ -27096,7 +27096,7 @@ var feng3d;
          * 投影矩阵失效
          */
         LensBase.prototype.invalidate = function () {
-            feng3d.debuger && console.assert(!isNaN(this.aspect));
+            console.assert(!isNaN(this.aspect));
             this._matrixInvalid = true;
             this._invertMatrixInvalid = true;
             this._viewBoxInvalid = true;
@@ -38657,7 +38657,7 @@ var feng3d;
             this.rs.fs.readObject(this.assetPath, function (err, object) {
                 _this.rs.deserializeWithAssets(object, function (data) {
                     _this.data = data;
-                    feng3d.debuger && console.assert(_this.data.assetId == _this.assetId);
+                    console.assert(_this.data.assetId == _this.assetId);
                     callback && callback(err);
                 });
             });
@@ -38707,7 +38707,7 @@ var feng3d;
             }
             // 获取脚本类名称
             var result = feng3d.regExps.classReg.exec(this.textContent);
-            feng3d.debuger && console.assert(result != null, "\u5728\u811A\u672C " + this.assetPath + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
+            console.assert(result != null, "\u5728\u811A\u672C " + this.assetPath + " \u4E2D\u6CA1\u6709\u627E\u5230 \u811A\u672C\u7C7B\u5B9A\u4E49");
             var script = result[3];
             if (result[5]) {
                 this.parentScriptName = result[5].split(".").pop();
@@ -38715,7 +38715,7 @@ var feng3d;
             // 获取导出类命名空间
             if (result[1]) {
                 result = feng3d.regExps.namespace.exec(this.textContent);
-                feng3d.debuger && console.assert(result != null, "\u83B7\u53D6\u811A\u672C " + this.assetPath + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
+                console.assert(result != null, "\u83B7\u53D6\u811A\u672C " + this.assetPath + " \u547D\u540D\u7A7A\u95F4\u5931\u8D25");
                 script = result[1] + "." + script;
             }
             this.scriptName = script;
@@ -41543,7 +41543,7 @@ var feng3d;
             gameObject.transform.rx = -90;
             //顶点最大关节关联数
             var _maxJointCount = this.calculateMaxJointCount(md5MeshData);
-            feng3d.debuger && console.assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
+            console.assert(_maxJointCount <= 8, "顶点最大关节关联数最多支持8个");
             var skeletonjoints = this.createSkeleton(md5MeshData.joints);
             var skeletonComponent = gameObject.addComponent(feng3d.SkeletonComponent);
             skeletonComponent.joints = skeletonjoints;

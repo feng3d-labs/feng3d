@@ -138,7 +138,7 @@ namespace feng3d
             }
             // 计算路径
             if (extenson == "") extenson = cls["extenson"];
-            debuger && console.assert(extenson != undefined, `对象 ${cls} 没有设置 extenson 值，参考 FolderAsset.extenson`);
+            console.assert(extenson != undefined, `对象 ${cls} 没有设置 extenson 值，参考 FolderAsset.extenson`);
             var path = fileName + extenson;
             if (asset.parentAsset) path = asset.parentAsset.assetPath + "/" + path;
             asset.assetPath = path;
@@ -226,14 +226,14 @@ namespace feng3d
             {
                 rs.readAssetData(v, (err, data) =>
                 {
-                    debuger && console.assert(!!data);
+                    console.assert(!!data);
                     result.push(data);
                     callback();
                 });
             });
             task.parallel(fns)(() =>
             {
-                debuger && console.assert(assetids.length == result.filter(v => v != null).length);
+                console.assert(assetids.length == result.filter(v => v != null).length);
                 callback(null, result);
             });
         }

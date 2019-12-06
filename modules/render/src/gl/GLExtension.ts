@@ -32,7 +32,7 @@ namespace feng3d
 
         constructor(gl: GL)
         {
-            debuger && console.assert(!gl.extensions, `${gl} ${gl.extensions} 存在！`);
+            console.assert(!gl.extensions, `${gl} ${gl.extensions} 存在！`);
             gl.extensions = this;
 
             this.initExtensions(gl);
@@ -100,7 +100,7 @@ namespace feng3d
                         gl.texParameterf(target, gl.extensions.EXT_texture_filter_anisotropic.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
                     } else
                     {
-                        debuger && console.warn("浏览器不支持各向异性过滤（anisotropy）特性！");
+                        console.warn("浏览器不支持各向异性过滤（anisotropy）特性！");
                     }
                 }
             }
