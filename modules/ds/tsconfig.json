@@ -1,0 +1,41 @@
+{
+    "compilerOptions": {
+        "target": "ES5",
+        "noImplicitAny": false,
+        "sourceMap": true,
+        "declarationMap": true,
+        "declaration": true,
+        "composite": true,
+        "experimentalDecorators": true,
+        "outFile": "out/ds.js",
+        "lib": [
+            "ES2015",
+            "DOM",
+        ],
+    },
+    "files": [ 
+        "src/utils/Comparator.ts",
+        "src/LinkedList.ts",
+        "src/DoublyLinkedList.ts",
+        "src/Queue.ts",
+        "src/Stack.ts",
+        "src/Heap.ts",
+        "src/MaxHeap.ts",
+        "src/MinHeap.ts",
+        "src/HashTable.ts",
+        "src/PriorityQueue.ts",
+        "src/PriorityQueue1.ts",
+        "src/BloomFilter.ts",
+        "src/DisjointSet.ts",
+        "src/Graph.ts",
+        "src/BinaryTreeNode.ts",
+        "src/BinarySearchTreeNode.ts",
+        "src/BinarySearchTree.ts",
+        "src/AvlTree.ts",
+    ],
+    "references": [
+        {
+            "path": "../polyfill"
+        }
+    ]
+}

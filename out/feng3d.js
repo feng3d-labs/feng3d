@@ -5434,19 +5434,6 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
-     * 工具
-     */
-    var Utils = /** @class */ (function () {
-        function Utils() {
-        }
-        return Utils;
-    }());
-    feng3d.Utils = Utils;
-    feng3d.utils = new Utils();
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
      * 链表
      *
      * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/linked-list/LinkedList.js

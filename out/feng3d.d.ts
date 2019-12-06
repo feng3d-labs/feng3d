@@ -2337,17 +2337,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 工具
-     */
-    var utils: Utils;
-    /**
-     * 工具
-     */
-    class Utils {
-    }
-}
-declare namespace feng3d {
-    /**
      * 链表
      *
      * @see https://github.com/trekhleb/javascript-algorithms/blob/master/src/data-structures/linked-list/LinkedList.js
