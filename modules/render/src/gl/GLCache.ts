@@ -9,8 +9,14 @@ namespace feng3d
 
         private _gl: GL;
 
+        /**
+         * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+         */
         textures = new Map<Texture, WebGLTexture>();
-        
+
+        /**
+         * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+         */
         attributes = new Map<Attribute, WebGLBuffer>();
 
         constructor(gl: GL)

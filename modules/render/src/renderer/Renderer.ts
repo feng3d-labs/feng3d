@@ -226,7 +226,7 @@ namespace feng3d
                         var textureInfo = <Texture>data;
                         //激活纹理编号
                         gl.activeTexture(gl["TEXTURE" + activeInfo.textureID]);
-                        TextureUtil.active(gl, textureInfo);
+                        Texture.active(gl, textureInfo);
                         //设置纹理所在采样编号
                         gl.uniform1i(location, activeInfo.textureID);
                         break;

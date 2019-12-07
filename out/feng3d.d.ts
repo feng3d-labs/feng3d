@@ -9970,7 +9970,13 @@ declare namespace feng3d {
             [key: string]: CompileShaderResult;
         };
         private _gl;
+        /**
+         * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+         */
         textures: Map<Texture, WebGLTexture>;
+        /**
+         * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+         */
         attributes: Map<Attribute, WebGLBuffer>;
         constructor(gl: GL);
     }
@@ -10536,9 +10542,7 @@ declare namespace feng3d {
          */
         invalid: boolean;
     }
-}
-declare namespace feng3d {
-    class TextureUtil {
+    class Texture {
         static active(gl: GL, data: Texture): WebGLTexture;
         /**
          * 获取顶点属性缓冲
@@ -10552,6 +10556,8 @@ declare namespace feng3d {
          */
         static clear(data: Texture): void;
     }
+}
+declare namespace feng3d {
 }
 declare namespace feng3d {
     class FrameBuffer {

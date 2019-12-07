@@ -691,7 +691,13 @@ var feng3d;
     var GLCache = /** @class */ (function () {
         function GLCache(gl) {
             this.compileShaderResults = {};
+            /**
+             * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+             */
             this.textures = new Map();
+            /**
+             * 此处用于缓存，需要获取有效数据请调用 Attribute.getBuffer
+             */
             this.attributes = new Map();
             gl.cache = this;
             this._gl = gl;
@@ -1459,10 +1465,10 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    var TextureUtil = /** @class */ (function () {
-        function TextureUtil() {
+    var Texture = /** @class */ (function () {
+        function Texture() {
         }
-        TextureUtil.active = function (gl, data) {
+        Texture.active = function (gl, data) {
             var texture = this.getTexture(gl, data);
             var textureType = gl[data.textureType];
             //绑定纹理
@@ -1480,7 +1486,7 @@ var feng3d;
          * 获取顶点属性缓冲
          * @param data  数据
          */
-        TextureUtil.getTexture = function (gl, data) {
+        Texture.getTexture = function (gl, data) {
             if (data.invalid) {
                 this.clear(data);
                 data.invalid = false;
@@ -1542,7 +1548,7 @@ var feng3d;
          *
          * @param data
          */
-        TextureUtil.clear = function (data) {
+        Texture.clear = function (data) {
             feng3d.GL.glList.forEach(function (gl) {
                 var tex = gl.cache.textures.get(data);
                 if (tex) {
@@ -1551,9 +1557,9 @@ var feng3d;
                 }
             });
         };
-        return TextureUtil;
+        return Texture;
     }());
-    feng3d.TextureUtil = TextureUtil;
+    feng3d.Texture = Texture;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -1983,7 +1989,7 @@ var feng3d;
                         var textureInfo = data;
                         //激活纹理编号
                         gl.activeTexture(gl["TEXTURE" + activeInfo.textureID]);
-                        feng3d.TextureUtil.active(gl, textureInfo);
+                        feng3d.Texture.active(gl, textureInfo);
                         //设置纹理所在采样编号
                         gl.uniform1i(location, activeInfo.textureID);
                         break;
