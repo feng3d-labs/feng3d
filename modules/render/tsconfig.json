@@ -40,6 +40,7 @@
         "src/data/RenderAtomic.ts",
         "src/data/Index.ts",
         "src/data/Attribute.ts",
+        "src/data/Texture.ts",
         "src/data/TextureInfo.ts",
         "src/data/FrameBuffer.ts",
         //

@@ -170,6 +170,7 @@
         "modules/render/src/data/RenderAtomic.ts",
         "modules/render/src/data/Index.ts",
         "modules/render/src/data/Attribute.ts",
+        "modules/render/src/data/Texture.ts",
         "modules/render/src/data/TextureInfo.ts",
         "modules/render/src/data/FrameBuffer.ts",
         //

@@ -3,12 +3,12 @@ namespace feng3d
     /**
      * 纹理信息
      */
-    export abstract class TextureInfo extends AssetData
+    export abstract class TextureInfo extends AssetData implements Texture
     {
         /**
          * 纹理类型
          */
-        protected _textureType: TextureType;
+        textureType: TextureType;
 
         /**
          * 格式
@@ -52,7 +52,7 @@ namespace feng3d
         @oav()
         get generateMipmap()
         {
-            return this._generateMipmap;
+            return this._generateMipmap && this._isPowerOfTwo;
         }
         set generateMipmap(v)
         {
@@ -108,13 +108,35 @@ namespace feng3d
          */
         @serialize
         @oav({ component: "OAVEnum", componentParam: { enumClass: TextureWrap } })
-        wrapS = TextureWrap.REPEAT;
+        get wrapS()
+        {
+            if (!this._isPowerOfTwo)
+                return TextureWrap.CLAMP_TO_EDGE;
+            return this._wrapS;
+        }
+        set wrapS(v)
+        {
+            this._wrapS = v;
+        }
+        private _wrapS = TextureWrap.REPEAT;
+
         /**
          * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式，这是OpenGL的基本概念，我将在下面讲一下，目前你不用担心它的使用。当您不设置的时候，它会取默认值，所以，我们这里暂时不理睬他。
          */
         @serialize
         @oav({ component: "OAVEnum", componentParam: { enumClass: TextureWrap } })
-        wrapT = TextureWrap.REPEAT;
+        get wrapT()
+        {
+            if (!this._isPowerOfTwo)
+                return TextureWrap.CLAMP_TO_EDGE;
+            return this._wrapT;
+        }
+        set wrapT(v)
+        {
+            this._wrapT = v;
+        }
+        private _wrapT = TextureWrap.REPEAT;
+
         /**
          * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
          */
@@ -125,7 +147,7 @@ namespace feng3d
         /**
          * 需要使用的贴图数据
          */
-        protected _pixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[];
+        protected _pixels: TexImageSource | TexImageSource[];
 
         /**
          * 当贴图数据未加载好等情况时代替使用
@@ -135,12 +157,12 @@ namespace feng3d
         /**
          * 当前使用的贴图数据
          */
-        protected _activePixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[];
+        protected _activePixels: TexImageSource | TexImageSource[];
 
         /**
          * 是否为渲染目标纹理
          */
-        protected _isRenderTarget = false;
+        isRenderTarget = false;
 
         protected get OFFSCREEN_WIDTH()
         {
@@ -182,7 +204,7 @@ namespace feng3d
          */
         private isPowerOfTwo(pixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[])
         {
-            if (this._isRenderTarget)
+            if (this.isRenderTarget)
             {
                 if (this.OFFSCREEN_WIDTH == 0 || !Math.isPowerOfTwo(this.OFFSCREEN_WIDTH))
                     return false;
@@ -209,7 +231,7 @@ namespace feng3d
          */
         getSize()
         {
-            if (this._isRenderTarget)
+            if (this.isRenderTarget)
             {
                 return new Vector2(this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
             }
@@ -226,7 +248,7 @@ namespace feng3d
         /**
          * 判断数据是否满足渲染需求
          */
-        private checkRenderData(pixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap) | (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[])
+        private checkRenderData(pixels: TexImageSource | TexImageSource[])
         {
             if (!pixels) return false;
             if (!Array.isArray(pixels))
@@ -311,99 +333,6 @@ namespace feng3d
 
                 this._isPowerOfTwo = this.isPowerOfTwo(this._activePixels);
             }
-
-            var texture = this.getTexture(gl);
-            var textureType = gl[this._textureType];
-            var minFilter = gl[this.minFilter];
-            var magFilter = gl[this.magFilter];
-            var wrapS = gl[this.wrapS];
-            var wrapT = gl[this.wrapT];
-
-            if (!this._isPowerOfTwo)
-            {
-                wrapS = gl.CLAMP_TO_EDGE;
-                wrapT = gl.CLAMP_TO_EDGE;
-            }
-
-            //绑定纹理
-            gl.bindTexture(textureType, texture);
-            //设置纹理参数
-            gl.texParameteri(textureType, gl.TEXTURE_MIN_FILTER, minFilter);
-            gl.texParameteri(textureType, gl.TEXTURE_MAG_FILTER, magFilter);
-            gl.texParameteri(textureType, gl.TEXTURE_WRAP_S, wrapS);
-            gl.texParameteri(textureType, gl.TEXTURE_WRAP_T, wrapT);
-
-            //
-            gl.texParameterfAnisotropy(textureType, this.anisotropy);
-            return texture;
-        }
-
-        /**
-         * 获取顶点属性缓冲
-         * @param data  数据 
-         */
-        getTexture(gl: GL)
-        {
-            var texture = this._textureMap.get(gl);
-            if (!texture)
-            {
-                var newtexture = gl.createTexture();   // Create a texture object
-                if (!newtexture)
-                {
-                    console.error("createTexture 失败！");
-                    throw "";
-                }
-                texture = newtexture;
-                var textureType = gl[this._textureType];
-                var format = gl[this.format];
-                var type = gl[this.type];
-
-                //设置图片y轴方向
-                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, this.flipY ? 1 : 0);
-                gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this.premulAlpha ? 1 : 0);
-                //绑定纹理
-                gl.bindTexture(textureType, texture);
-                //设置纹理图片
-                switch (textureType)
-                {
-                    case gl.TEXTURE_CUBE_MAP:
-                        var pixels: (ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap)[] = <any>this._activePixels;
-                        var faces = [
-                            gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
-                            gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
-                        ];
-                        for (var i = 0; i < faces.length; i++)
-                        {
-                            if (this._isRenderTarget)
-                            {
-                                gl.texImage2D(faces[i], 0, format, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT, 0, format, type, null);
-                            } else
-                            {
-                                gl.texImage2D(faces[i], 0, format, format, type, this._activePixels[i]);
-                            }
-                        }
-                        break;
-                    case gl.TEXTURE_2D:
-                        var _pixel: ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap = <any>this._activePixels;
-                        var textureType = gl[this._textureType];
-                        if (this._isRenderTarget)
-                        {
-                            gl.texImage2D(textureType, 0, format, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT, 0, format, type, null);
-                        } else
-                        {
-                            gl.texImage2D(textureType, 0, format, format, type, _pixel);
-                        }
-                        break;
-                    default:
-                        throw "";
-                }
-                if (this.generateMipmap && this._isPowerOfTwo)
-                {
-                    gl.generateMipmap(textureType);
-                }
-                this._textureMap.set(gl, texture);
-            }
-            return texture;
         }
 
         /**

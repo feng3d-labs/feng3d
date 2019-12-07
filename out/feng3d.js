@@ -21295,6 +21295,18 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    var TextureUtil = /** @class */ (function () {
+        function TextureUtil() {
+        }
+        TextureUtil.active = function (gl, texture) {
+            throw new Error("Method not implemented.");
+        };
+        return TextureUtil;
+    }());
+    feng3d.TextureUtil = TextureUtil;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
      * 纹理信息
      */
@@ -21567,7 +21579,7 @@ var feng3d;
                 this._isPowerOfTwo = this.isPowerOfTwo(this._activePixels);
             }
             var texture = this.getTexture(gl);
-            var textureType = gl[this._textureType];
+            var textureType = gl[this.textureType];
             var minFilter = gl[this.minFilter];
             var magFilter = gl[this.magFilter];
             var wrapS = gl[this.wrapS];
@@ -21600,7 +21612,7 @@ var feng3d;
                     throw "";
                 }
                 texture = newtexture;
-                var textureType = gl[this._textureType];
+                var textureType = gl[this.textureType];
                 var format = gl[this.format];
                 var type = gl[this.type];
                 //设置图片y轴方向
@@ -21627,7 +21639,7 @@ var feng3d;
                         break;
                     case gl.TEXTURE_2D:
                         var _pixel = this._activePixels;
-                        var textureType = gl[this._textureType];
+                        var textureType = gl[this.textureType];
                         if (this._isRenderTarget) {
                             gl.texImage2D(textureType, 0, format, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT, 0, format, type, null);
                         }
@@ -22127,6 +22139,7 @@ var feng3d;
                         //激活纹理编号
                         gl.activeTexture(gl["TEXTURE" + activeInfo.textureID]);
                         textureInfo.active(gl);
+                        feng3d.TextureUtil.active(gl, textureInfo);
                         //设置纹理所在采样编号
                         gl.uniform1i(location, activeInfo.textureID);
                         break;
