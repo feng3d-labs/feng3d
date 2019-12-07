@@ -13,7 +13,7 @@
         ],
         "outFile": "out/feng3d.js",
     },
-    "files": [ 
+    "files": [
         // 事件模块
         "modules/events/src/FEvent.ts",
         "modules/events/src/EventDispatcher.ts",
@@ -42,7 +42,6 @@
         "src/utils/DataTransform.ts",
         "src/utils/ImageUtil.ts",
         "src/utils/Stats.ts",
-        "src/utils/PathUtils.ts",
         "src/utils/Path.ts",
         "src/utils/RegExps.ts",
         "src/utils/Pool.ts",
@@ -117,18 +116,22 @@
         "src/core/Feng3dObject.ts",
         "src/core/AssetData.ts",
         //
-        "src/assets/fs/base/load.ts",
-        "src/assets/fs/base/_IndexedDB.ts",
-        "src/assets/fs/FSType.ts",
-        "src/assets/fs/IReadFS.ts",
-        "src/assets/fs/ReadFS.ts",
-        "src/assets/fs/IReadWriteFS.ts",
-        "src/assets/fs/ReadWriteFS.ts",
+        "modules/fs/src/PathUtils.ts",
+        //
+        "modules/fs/src/base/Loader.ts",
+        "modules/fs/src/base/LoaderDataFormat.ts",
+        "modules/fs/src/base/_IndexedDB.ts",
+        //
+        "modules/fs/src/FSType.ts",
+        "modules/fs/src/IReadFS.ts",
+        "modules/fs/src/ReadFS.ts",
+        "modules/fs/src/IReadWriteFS.ts",
+        "modules/fs/src/ReadWriteFS.ts",
+        //
+        "modules/fs/src/IndexedDBFS.ts",
+        "modules/fs/src/HttpFS.ts",
+        //
         "src/assets/AssetMeta.ts",
-        //
-        "src/assets/fs/IndexedDBFS.ts",
-        "src/assets/fs/HttpFS.ts",
-        //
         "src/assets/AssetType.ts",
         "src/assets/FileAsset.ts",
         "src/assets/rs/ReadRS.ts",
@@ -141,9 +144,7 @@
         "modules/shortcut/src/handle/ShortCutEvent.ts",
         "modules/shortcut/src/ShortCut.ts",
         // 加载模块
-        "src/net/Loader.ts",
-        "src/net/LoaderEvent.ts",
-        "src/net/LoaderDataFormat.ts",
+        "src/net/load.ts",
         //
         "modules/render/src/gl/enums/RenderMode.ts",
         "modules/render/src/gl/enums/TextureType.ts",

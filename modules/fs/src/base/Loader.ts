@@ -59,7 +59,7 @@ namespace feng3d
     interface LoadItem
     {
         url: string;
-        dataFormat: string;
+        dataFormat: LoaderDataFormat;
         onCompleted?: (content: string | ArrayBuffer) => void;
         onProgress?: (loaded: number, total: number) => void;
         onError?: (ev: Error) => void;

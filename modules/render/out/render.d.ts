@@ -1072,8 +1072,6 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-}
-declare namespace feng3d {
     class FrameBuffer {
         protected _framebufferMap: Map<GL, WebGLFramebuffer>;
         /**

@@ -305,6 +305,20 @@ Map.getValues = function (map) {
     });
     return values;
 };
+if (!Array.prototype.includes) {
+    Object.defineProperty(Array.prototype, "includes", {
+        configurable: true,
+        enumerable: false,
+        value: function (searchElement, fromIndex) {
+            for (var i = fromIndex, n = this.length; i < n; i++) {
+                if (searchElement == this[i])
+                    return true;
+            }
+            return false;
+        },
+        writable: true,
+    });
+}
 Array.equal = function (self, arr) {
     if (self.length != arr.length)
         return false;
@@ -355,6 +369,7 @@ Array.unique = function (arr, compare) {
  * @param equalFn 比较函数
  */
 Array.isUnique = function (array, compare) {
+    if (compare === void 0) { compare = function (a, b) { return a == b; }; }
     for (var i = array.length - 1; i >= 0; i--) {
         for (var j = 0; j < i; j++) {
             if (compare(array[i], array[j])) {

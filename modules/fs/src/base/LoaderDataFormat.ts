@@ -1,24 +1,21 @@
 namespace feng3d
 {
-
     /**
      * 加载数据类型
-
      */
-    export class LoaderDataFormat
+    export enum LoaderDataFormat
     {
-
         /**
          * 以原始二进制数据形式接收下载的数据。
          */
-        static BINARY = "binary";
+        BINARY = "binary",
         /**
          * 以文本形式接收已下载的数据。
          */
-        static TEXT = "text";
+        TEXT = "text",
         /**
          * 图片数据
          */
-        static IMAGE = "image";
+        IMAGE = "image",
     }
 }

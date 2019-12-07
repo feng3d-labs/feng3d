@@ -82,6 +82,33 @@ interface ArrayConstructor
     binarySearchInsert<T>(array: T[], target: T, compare: (a: T, b: T) => number, start?: number, end?: number): number;
 }
 
+interface Array<T>
+{
+    /**
+     * Determines whether an array includes a certain element, returning true or false as appropriate.
+     * @param searchElement The element to search for.
+     * @param fromIndex The position in this array at which to begin searching for searchElement.
+     */
+    includes(searchElement: T, fromIndex?: number): boolean;
+}
+
+if (!Array.prototype.includes)
+{
+    Object.defineProperty(Array.prototype, "includes", {
+        configurable: true,
+        enumerable: false,
+        value: function (searchElement: any, fromIndex: number)
+        {
+            for (let i = fromIndex, n = this.length; i < n; i++)
+            {
+                if (searchElement == this[i]) return true;
+            }
+            return false;
+        },
+        writable: true,
+    })
+}
+
 Array.equal = function (self, arr)
 {
     if (self.length != arr.length) return false;
@@ -128,12 +155,11 @@ Array.unique = function (arr, compare = (a, b) => a == b)
     return arr;
 }
 
-
 /**
  * 数组元素是否唯一
  * @param equalFn 比较函数
  */
-Array.isUnique = function (array, compare)
+Array.isUnique = function (array, compare = (a, b) => a == b)
 {
     for (let i = array.length - 1; i >= 0; i--)
     {

@@ -420,6 +420,4 @@ declare namespace feng3d {
         editable?: boolean;
     };
 }
-declare namespace feng3d {
-}
 //# sourceMappingURL=objectview.d.ts.map

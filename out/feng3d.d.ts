@@ -650,6 +650,14 @@ interface ArrayConstructor {
      */
     binarySearchInsert<T>(array: T[], target: T, compare: (a: T, b: T) => number, start?: number, end?: number): number;
 }
+interface Array<T> {
+    /**
+     * Determines whether an array includes a certain element, returning true or false as appropriate.
+     * @param searchElement The element to search for.
+     * @param fromIndex The position in this array at which to begin searching for searchElement.
+     */
+    includes(searchElement: T, fromIndex?: number): boolean;
+}
 interface Math {
     /**
      * 角度转弧度因子
@@ -2016,72 +2024,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 路径工具
-     */
-    var pathUtils: PathUtils;
-    /**
-     * 路径工具
-     */
-    class PathUtils {
-        /**
-         * 标准化文件夹路径
-         * @param path
-         */
-        normalizeDir(path: string): string;
-        /**
-         * 是否为HTTP地址
-         *
-         * @param path 地址
-         */
-        isHttpURL(path: string): any;
-        /**
-         * 获取不带后缀名称
-         * @param path 路径
-         */
-        getName(path: string): string;
-        /**
-         * 获取带后缀名称
-         * @param path 路径
-         */
-        getNameWithExtension(path: string): string;
-        /**
-         * 获取后缀
-         * @param path 路径
-         */
-        getExtension(path: string): string;
-        /**
-         * 父路径
-         * @param path 路径
-         */
-        getParentPath(path: string): string;
-        /**
-         * 获取子文件（非文件夹）路径
-         *
-         * @param parentPath 父文件夹路径
-         * @param childName 子文件名称
-         */
-        getChildFilePath(parentPath: string, childName: string): string;
-        /**
-         * 获取子文件夹路径
-         *
-         * @param parentPath 父文件夹路径
-         * @param childFolderName 子文件夹名称
-         */
-        getChildFolderPath(parentPath: string, childFolderName: string): string;
-        /**
-         * 是否文件夹
-         * @param path 路径
-         */
-        isDirectory(path: string): boolean;
-        /**
-         * 获取目录深度
-         * @param path 路径
-         */
-        getDirDepth(path: string): number;
-    }
-}
-declare namespace feng3d {
-    /**
      * 路径
      *
      * 从nodeJs的path移植
@@ -2089,7 +2031,7 @@ declare namespace feng3d {
      * @see http://nodejs.cn/api/path.html
      * @see https://github.com/nodejs/node/blob/master/lib/path.js
      */
-    export var path: Path;
+    var path: Path;
     /**
      * 路径
      */
@@ -2218,7 +2160,6 @@ declare namespace feng3d {
          */
         name?: string;
     }
-    export {};
 }
 declare namespace feng3d {
     /**
@@ -7988,52 +7929,115 @@ declare namespace feng3d {
     }
 }
 declare namespace feng3d {
-    export var loadjs: {
-        load: typeof load;
-        ready: typeof ready;
-    };
     /**
-     * 加载文件
-     * @param params.paths          加载路径
-     * @param params.bundleId       加载包编号
-     * @param params.success        成功回调
-     * @param params.error          错误回调
-     * @param params.async          是否异步加载
-     * @param params.numRetries     加载失败尝试次数
-     * @param params.before         加载前回调
-     * @param params.onitemload     单条文件加载完成回调
+     * 路径工具
      */
-    function load(params: {
-        paths: string | string[] | {
-            url: string;
-            type: string;
-        } | {
-            url: string;
-            type: string;
-        }[];
-        bundleId?: string;
-        success?: () => void;
-        error?: (pathsNotFound?: string[]) => void;
-        async?: boolean;
-        numRetries?: number;
-        before?: (path: {
-            url: string;
-            type: string;
-        }, e: any) => boolean;
-        onitemload?: (url: string, content: string) => void;
-    }): void;
+    var pathUtils: PathUtils;
     /**
-     * 准备依赖包
-     * @param params.depends        依赖包编号
-     * @param params.success        成功回调
-     * @param params.error          错误回调
+     * 路径工具
      */
-    function ready(params: {
-        depends: string | string[];
-        success?: () => void;
-        error?: (pathsNotFound?: string[]) => void;
-    }): void;
-    export {};
+    class PathUtils {
+        /**
+         * 标准化文件夹路径
+         * @param path
+         */
+        normalizeDir(path: string): string;
+        /**
+         * 是否为HTTP地址
+         *
+         * @param path 地址
+         */
+        isHttpURL(path: string): any;
+        /**
+         * 获取不带后缀名称
+         * @param path 路径
+         */
+        getName(path: string): string;
+        /**
+         * 获取带后缀名称
+         * @param path 路径
+         */
+        getNameWithExtension(path: string): string;
+        /**
+         * 获取后缀
+         * @param path 路径
+         */
+        getExtension(path: string): string;
+        /**
+         * 父路径
+         * @param path 路径
+         */
+        getParentPath(path: string): string;
+        /**
+         * 获取子文件（非文件夹）路径
+         *
+         * @param parentPath 父文件夹路径
+         * @param childName 子文件名称
+         */
+        getChildFilePath(parentPath: string, childName: string): string;
+        /**
+         * 获取子文件夹路径
+         *
+         * @param parentPath 父文件夹路径
+         * @param childFolderName 子文件夹名称
+         */
+        getChildFolderPath(parentPath: string, childFolderName: string): string;
+        /**
+         * 是否文件夹
+         * @param path 路径
+         */
+        isDirectory(path: string): boolean;
+        /**
+         * 获取目录深度
+         * @param path 路径
+         */
+        getDirDepth(path: string): number;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 加载类
+     */
+    var loader: Loader;
+    /**
+     * 加载类
+     */
+    class Loader {
+        /**
+         * 加载文本
+         * @param url   路径
+         */
+        loadText(url: string, onCompleted?: (content: string) => void, onRequestProgress?: () => void, onError?: (e: Error) => void): void;
+        /**
+         * 加载二进制
+         * @param url   路径
+         */
+        loadBinary(url: string, onCompleted?: (content: ArrayBuffer) => void, onRequestProgress?: () => void, onError?: (e: Error) => void): void;
+        /**
+         * 加载图片
+         * @param url   路径
+         */
+        loadImage(url: string, onCompleted?: (content: HTMLImageElement) => void, onRequestProgress?: () => void, onError?: (e: Error) => void): void;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 加载数据类型
+     */
+    enum LoaderDataFormat {
+        /**
+         * 以原始二进制数据形式接收下载的数据。
+         */
+        BINARY = "binary",
+        /**
+         * 以文本形式接收已下载的数据。
+         */
+        TEXT = "text",
+        /**
+         * 图片数据
+         */
+        IMAGE = "image"
+    }
 }
 declare namespace feng3d {
     /**
@@ -8520,29 +8524,6 @@ declare namespace feng3d {
 }
 declare namespace feng3d {
     /**
-     * 资源元标签
-     */
-    interface AssetMeta {
-        /**
-         * 资源编号
-         */
-        guid: string;
-        /**
-         * 修改时间（单位为ms）
-         */
-        mtimeMs: number;
-        /**
-         * 创建时间（单位为ms）
-         */
-        birthtimeMs: number;
-        /**
-         * 资源类型，由具体对象类型决定；AssetExtension.folder 时为文件夹
-         */
-        assetType: AssetType;
-    }
-}
-declare namespace feng3d {
-    /**
      * 索引数据文件系统
      */
     var indexedDBFS: IndexedDBFS;
@@ -8711,6 +8692,29 @@ declare namespace feng3d {
          * @param callback 回调函数
          */
         getAbsolutePath(path: string): string;
+    }
+}
+declare namespace feng3d {
+    /**
+     * 资源元标签
+     */
+    interface AssetMeta {
+        /**
+         * 资源编号
+         */
+        guid: string;
+        /**
+         * 修改时间（单位为ms）
+         */
+        mtimeMs: number;
+        /**
+         * 创建时间（单位为ms）
+         */
+        birthtimeMs: number;
+        /**
+         * 资源类型，由具体对象类型决定；AssetExtension.folder 时为文件夹
+         */
+        assetType: AssetType;
     }
 }
 declare namespace feng3d {
@@ -9437,52 +9441,52 @@ Event.on(shortCut,<any>"run", function(e:Event):void
     }
 }
 declare namespace feng3d {
+    export var loadjs: {
+        load: typeof load;
+        ready: typeof ready;
+    };
     /**
-     * 加载类
+     * 加载文件
+     * @param params.paths          加载路径
+     * @param params.bundleId       加载包编号
+     * @param params.success        成功回调
+     * @param params.error          错误回调
+     * @param params.async          是否异步加载
+     * @param params.numRetries     加载失败尝试次数
+     * @param params.before         加载前回调
+     * @param params.onitemload     单条文件加载完成回调
      */
-    var loader: Loader;
+    function load(params: {
+        paths: string | string[] | {
+            url: string;
+            type: string;
+        } | {
+            url: string;
+            type: string;
+        }[];
+        bundleId?: string;
+        success?: () => void;
+        error?: (pathsNotFound?: string[]) => void;
+        async?: boolean;
+        numRetries?: number;
+        before?: (path: {
+            url: string;
+            type: string;
+        }, e: any) => boolean;
+        onitemload?: (url: string, content: string) => void;
+    }): void;
     /**
-     * 加载类
+     * 准备依赖包
+     * @param params.depends        依赖包编号
+     * @param params.success        成功回调
+     * @param params.error          错误回调
      */
-    class Loader {
-        /**
-         * 加载文本
-         * @param url   路径
-         */
-        loadText(url: string, onCompleted?: (content: string) => void, onRequestProgress?: () => void, onError?: (e: Error) => void): void;
-        /**
-         * 加载二进制
-         * @param url   路径
-         */
-        loadBinary(url: string, onCompleted?: (content: ArrayBuffer) => void, onRequestProgress?: () => void, onError?: (e: Error) => void): void;
-        /**
-         * 加载图片
-         * @param url   路径
-         */
-        loadImage(url: string, onCompleted?: (content: HTMLImageElement) => void, onRequestProgress?: () => void, onError?: (e: Error) => void): void;
-    }
-}
-declare namespace feng3d {
-}
-declare namespace feng3d {
-    /**
-     * 加载数据类型
-
-     */
-    class LoaderDataFormat {
-        /**
-         * 以原始二进制数据形式接收下载的数据。
-         */
-        static BINARY: string;
-        /**
-         * 以文本形式接收已下载的数据。
-         */
-        static TEXT: string;
-        /**
-         * 图片数据
-         */
-        static IMAGE: string;
-    }
+    function ready(params: {
+        depends: string | string[];
+        success?: () => void;
+        error?: (pathsNotFound?: string[]) => void;
+    }): void;
+    export {};
 }
 declare namespace feng3d {
     /**
@@ -10556,8 +10560,6 @@ declare namespace feng3d {
          */
         static clear(data: Texture): void;
     }
-}
-declare namespace feng3d {
 }
 declare namespace feng3d {
     class FrameBuffer {

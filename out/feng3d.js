@@ -1039,6 +1039,20 @@ Map.getValues = function (map) {
     });
     return values;
 };
+if (!Array.prototype.includes) {
+    Object.defineProperty(Array.prototype, "includes", {
+        configurable: true,
+        enumerable: false,
+        value: function (searchElement, fromIndex) {
+            for (var i = fromIndex, n = this.length; i < n; i++) {
+                if (searchElement == this[i])
+                    return true;
+            }
+            return false;
+        },
+        writable: true,
+    });
+}
 Array.equal = function (self, arr) {
     if (self.length != arr.length)
         return false;
@@ -1089,6 +1103,7 @@ Array.unique = function (arr, compare) {
  * @param equalFn 比较函数
  */
 Array.isUnique = function (array, compare) {
+    if (compare === void 0) { compare = function (a, b) { return a == b; }; }
     for (var i = array.length - 1; i >= 0; i--) {
         for (var j = 0; j < i; j++) {
             if (compare(array[i], array[j])) {
@@ -3609,129 +3624,6 @@ var feng3d;
         return StatsPanel;
     }());
     feng3d.StatsPanel = StatsPanel;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 路径工具
-     */
-    var PathUtils = /** @class */ (function () {
-        function PathUtils() {
-        }
-        /**
-         * 标准化文件夹路径
-         * @param path
-         */
-        PathUtils.prototype.normalizeDir = function (path) {
-            if (path[path.length - 1] == "/")
-                path = path.substr(0, path.length - 1);
-            return path;
-        };
-        /**
-         * 是否为HTTP地址
-         *
-         * @param path 地址
-         */
-        PathUtils.prototype.isHttpURL = function (path) {
-            if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1)
-                return true;
-            return false;
-        };
-        /**
-         * 获取不带后缀名称
-         * @param path 路径
-         */
-        PathUtils.prototype.getName = function (path) {
-            console.assert(path != undefined);
-            var name = this.getNameWithExtension(path);
-            if (this.isDirectory(path))
-                return name;
-            name = name.split(".").shift();
-            return name;
-        };
-        /**
-         * 获取带后缀名称
-         * @param path 路径
-         */
-        PathUtils.prototype.getNameWithExtension = function (path) {
-            console.assert(path != undefined);
-            var paths = path.split("/");
-            var name = paths.pop();
-            if (name == "")
-                name = paths.pop();
-            return name;
-        };
-        /**
-         * 获取后缀
-         * @param path 路径
-         */
-        PathUtils.prototype.getExtension = function (path) {
-            console.assert(path != undefined);
-            var name = this.getNameWithExtension(path);
-            var index = name.indexOf(".");
-            if (index == -1)
-                return "";
-            return name.substr(index);
-        };
-        /**
-         * 父路径
-         * @param path 路径
-         */
-        PathUtils.prototype.getParentPath = function (path) {
-            console.assert(path != undefined);
-            var paths = path.split("/");
-            if (this.isDirectory(path))
-                paths.pop();
-            paths.pop();
-            return paths.join("/");
-        };
-        /**
-         * 获取子文件（非文件夹）路径
-         *
-         * @param parentPath 父文件夹路径
-         * @param childName 子文件名称
-         */
-        PathUtils.prototype.getChildFilePath = function (parentPath, childName) {
-            console.assert(parentPath != undefined);
-            console.assert(childName != undefined);
-            if (parentPath.charAt(parentPath.length - 1) != "/")
-                parentPath += "/";
-            return parentPath + childName;
-        };
-        /**
-         * 获取子文件夹路径
-         *
-         * @param parentPath 父文件夹路径
-         * @param childFolderName 子文件夹名称
-         */
-        PathUtils.prototype.getChildFolderPath = function (parentPath, childFolderName) {
-            if (parentPath.charAt(parentPath.length - 1) != "/")
-                parentPath += "/";
-            if (childFolderName.charAt(childFolderName.length - 1) != "/")
-                childFolderName += "/";
-            return parentPath + childFolderName;
-        };
-        /**
-         * 是否文件夹
-         * @param path 路径
-         */
-        PathUtils.prototype.isDirectory = function (path) {
-            return path.split("/").pop() == "";
-        };
-        /**
-         * 获取目录深度
-         * @param path 路径
-         */
-        PathUtils.prototype.getDirDepth = function (path) {
-            var length = path.split("/").length;
-            if (this.isDirectory(path))
-                length--;
-            return length - 1;
-        };
-        return PathUtils;
-    }());
-    feng3d.PathUtils = PathUtils;
-    feng3d.pathUtils = new PathUtils();
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -16804,389 +16696,235 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    feng3d.loadjs = {
-        load: load,
-        ready: ready,
-    };
     /**
-     * 加载文件
-     * @param params.paths          加载路径
-     * @param params.bundleId       加载包编号
-     * @param params.success        成功回调
-     * @param params.error          错误回调
-     * @param params.async          是否异步加载
-     * @param params.numRetries     加载失败尝试次数
-     * @param params.before         加载前回调
-     * @param params.onitemload     单条文件加载完成回调
+     * 路径工具
      */
-    function load(params) {
-        // throw error if bundle is already defined
-        if (params.bundleId) {
-            if (params.bundleId in bundleIdCache) {
-                throw "LoadJS";
-            }
-            else {
-                bundleIdCache[params.bundleId] = true;
-            }
+    var PathUtils = /** @class */ (function () {
+        function PathUtils() {
         }
-        var paths = getPaths(params.paths);
-        // load scripts
-        loadFiles(paths, function (pathsNotFound) {
-            // success and error callbacks
-            if (pathsNotFound.length)
-                (params.error || devnull)(pathsNotFound);
-            else
-                (params.success || devnull)();
-            // publish bundle load event
-            publish(params.bundleId, pathsNotFound);
-        }, params);
-    }
-    /**
-     * 准备依赖包
-     * @param params.depends        依赖包编号
-     * @param params.success        成功回调
-     * @param params.error          错误回调
-     */
-    function ready(params) {
-        // subscribe to bundle load event
-        subscribe(params.depends, function (depsNotFound) {
-            // execute callbacks
-            if (depsNotFound.length)
-                (params.error || devnull)(depsNotFound);
-            else
-                (params.success || devnull)();
-        });
-    }
-    /**
-     * 完成下载包
-     * @param bundleId 下载包编号
-     */
-    function done(bundleId) {
-        publish(bundleId, []);
-    }
-    /**
-     * 重置下载包依赖状态
-     */
-    function reset() {
-        bundleIdCache = {};
-        bundleResultCache = {};
-        bundleCallbackQueue = {};
-    }
-    /**
-     * 是否定义下载包
-     * @param {string} bundleId 包编号
-     */
-    function isDefined(bundleId) {
-        return bundleId in bundleIdCache;
-    }
-    var devnull = function () { }, bundleIdCache = {}, bundleResultCache = {}, bundleCallbackQueue = {};
-    /**
-     * 订阅包加载事件
-     * @param bundleIds              包编号
-     * @param callbackFn             完成回调
-     */
-    function subscribe(bundleIds, callbackFn) {
-        var depsNotFound = [];
-        // listify
-        if (bundleIds instanceof String) {
-            bundleIds = [bundleIds];
-        }
-        // define callback function
-        var numWaiting = bundleIds.length;
-        var fn = function (bundleId, pathsNotFound) {
-            if (pathsNotFound.length)
-                depsNotFound.push(bundleId);
-            numWaiting--;
-            if (!numWaiting)
-                callbackFn(depsNotFound);
+        /**
+         * 标准化文件夹路径
+         * @param path
+         */
+        PathUtils.prototype.normalizeDir = function (path) {
+            if (path[path.length - 1] == "/")
+                path = path.substr(0, path.length - 1);
+            return path;
         };
-        // register callback
-        var i = bundleIds.length;
-        while (i--) {
-            var bundleId = bundleIds[i];
-            // execute callback if in result cache
-            var r = bundleResultCache[bundleId];
-            if (r) {
-                fn(bundleId, r);
-                continue;
-            }
-            // add to callback queue
-            var q = bundleCallbackQueue[bundleId] = bundleCallbackQueue[bundleId] || [];
-            q.push(fn);
+        /**
+         * 是否为HTTP地址
+         *
+         * @param path 地址
+         */
+        PathUtils.prototype.isHttpURL = function (path) {
+            if (path.indexOf("http://") != -1 || path.indexOf("https://") != -1 || path.indexOf("file:///") != -1)
+                return true;
+            return false;
+        };
+        /**
+         * 获取不带后缀名称
+         * @param path 路径
+         */
+        PathUtils.prototype.getName = function (path) {
+            console.assert(path != undefined);
+            var name = this.getNameWithExtension(path);
+            if (this.isDirectory(path))
+                return name;
+            name = name.split(".").shift();
+            return name;
+        };
+        /**
+         * 获取带后缀名称
+         * @param path 路径
+         */
+        PathUtils.prototype.getNameWithExtension = function (path) {
+            console.assert(path != undefined);
+            var paths = path.split("/");
+            var name = paths.pop();
+            if (name == "")
+                name = paths.pop();
+            return name;
+        };
+        /**
+         * 获取后缀
+         * @param path 路径
+         */
+        PathUtils.prototype.getExtension = function (path) {
+            console.assert(path != undefined);
+            var name = this.getNameWithExtension(path);
+            var index = name.indexOf(".");
+            if (index == -1)
+                return "";
+            return name.substr(index);
+        };
+        /**
+         * 父路径
+         * @param path 路径
+         */
+        PathUtils.prototype.getParentPath = function (path) {
+            console.assert(path != undefined);
+            var paths = path.split("/");
+            if (this.isDirectory(path))
+                paths.pop();
+            paths.pop();
+            return paths.join("/");
+        };
+        /**
+         * 获取子文件（非文件夹）路径
+         *
+         * @param parentPath 父文件夹路径
+         * @param childName 子文件名称
+         */
+        PathUtils.prototype.getChildFilePath = function (parentPath, childName) {
+            console.assert(parentPath != undefined);
+            console.assert(childName != undefined);
+            if (parentPath.charAt(parentPath.length - 1) != "/")
+                parentPath += "/";
+            return parentPath + childName;
+        };
+        /**
+         * 获取子文件夹路径
+         *
+         * @param parentPath 父文件夹路径
+         * @param childFolderName 子文件夹名称
+         */
+        PathUtils.prototype.getChildFolderPath = function (parentPath, childFolderName) {
+            if (parentPath.charAt(parentPath.length - 1) != "/")
+                parentPath += "/";
+            if (childFolderName.charAt(childFolderName.length - 1) != "/")
+                childFolderName += "/";
+            return parentPath + childFolderName;
+        };
+        /**
+         * 是否文件夹
+         * @param path 路径
+         */
+        PathUtils.prototype.isDirectory = function (path) {
+            return path.split("/").pop() == "";
+        };
+        /**
+         * 获取目录深度
+         * @param path 路径
+         */
+        PathUtils.prototype.getDirDepth = function (path) {
+            var length = path.split("/").length;
+            if (this.isDirectory(path))
+                length--;
+            return length - 1;
+        };
+        return PathUtils;
+    }());
+    feng3d.PathUtils = PathUtils;
+    feng3d.pathUtils = new PathUtils();
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
+     * 加载类
+     */
+    var Loader = /** @class */ (function () {
+        function Loader() {
         }
-    }
-    /**
-     * 派发加载包完成事件
-     * @param bundleId                  加载包编号
-     * @param pathsNotFound             加载失败包
-     */
-    function publish(bundleId, pathsNotFound) {
-        // exit if id isn't defined
-        if (!bundleId)
-            return;
-        var q = bundleCallbackQueue[bundleId];
-        // cache result
-        bundleResultCache[bundleId] = pathsNotFound;
-        // exit if queue is empty
-        if (!q)
-            return;
-        // empty callback queue
-        while (q.length) {
-            q[0](bundleId, pathsNotFound);
-            q.splice(0, 1);
-        }
-    }
-    /**
-     * 加载单个文件
-     * @param path                          文件路径
-     * @param callbackFn                    加载完成回调
-     * @param args                          加载参数
-     * @param args.async                    是否异步加载
-     * @param args.numRetries               尝试加载次数
-     * @param args.before                   加载前回调
-     * @param numTries                      当前尝试次数
-     */
-    function loadFile(path, callbackFn, args, numTries) {
-        var loaderFun = loaders[path.type] || loadTxt;
-        loaderFun(path, callbackFn, args, numTries);
-    }
-    /**
-     * 加载单个Image文件
-     * @param path                          文件路径
-     * @param callbackFn                    加载完成回调
-     * @param args                          加载参数
-     * @param args.async                    是否异步加载
-     * @param args.numRetries               尝试加载次数
-     * @param args.before                   加载前回调
-     * @param numTries                      当前尝试次数
-     */
-    function loadImage(path, callbackFn, args, numTries) {
-        if (numTries === void 0) { numTries = 0; }
-        var image = new Image();
-        image.crossOrigin = "Anonymous";
-        image.onerror = image.onload = function (ev) {
-            var result = ev.type;
-            // handle retries in case of load failure
-            if (result == 'error') {
-                // increment counter
-                numTries = ~~numTries + 1;
-                // exit function and try again
-                args.numRetries = args.numRetries || 0;
-                if (numTries < ~~args.numRetries + 1) {
-                    return loadImage(path, callbackFn, args, numTries);
-                }
+        /**
+         * 加载文本
+         * @param url   路径
+         */
+        Loader.prototype.loadText = function (url, onCompleted, onRequestProgress, onError) {
+            xmlHttpRequestLoad({ url: url, dataFormat: feng3d.LoaderDataFormat.TEXT, onCompleted: onCompleted, onProgress: onRequestProgress, onError: onError });
+        };
+        /**
+         * 加载二进制
+         * @param url   路径
+         */
+        Loader.prototype.loadBinary = function (url, onCompleted, onRequestProgress, onError) {
+            xmlHttpRequestLoad({ url: url, dataFormat: feng3d.LoaderDataFormat.BINARY, onCompleted: onCompleted, onProgress: onRequestProgress, onError: onError });
+        };
+        /**
+         * 加载图片
+         * @param url   路径
+         */
+        Loader.prototype.loadImage = function (url, onCompleted, onRequestProgress, onError) {
+            var image = new Image();
+            image.crossOrigin = "Anonymous";
+            image.onload = function (event) {
+                onCompleted && onCompleted(image);
+            };
+            image.onerror = function (event) {
+                console.error("Error while trying to load texture: " + url);
+                //
                 image.src = "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
-            }
-            // execute callback
-            callbackFn(path, result, ev.defaultPrevented, image);
+                //
+                var err = new Error(url + " 加载失败！");
+                onError && onError(err);
+            };
+            image.src = url;
         };
-        //
-        var beforeCallbackFn = args.before || (function () { return true; });
-        if (beforeCallbackFn(path, image) !== false)
-            image.src = path.url;
+        return Loader;
+    }());
+    feng3d.Loader = Loader;
+    feng3d.loader = new Loader();
+    /**
+     * 使用XMLHttpRequest加载
+     * @param url           加载路径
+     * @param dataFormat    数据类型
+     */
+    function xmlHttpRequestLoad(loadItem) {
+        var request = new XMLHttpRequest();
+        request.open('Get', loadItem.url, true);
+        request.setRequestHeader("Access-Control-Allow-Origin", "*");
+        request.responseType = loadItem.dataFormat == feng3d.LoaderDataFormat.BINARY ? "arraybuffer" : "";
+        request.onreadystatechange = onRequestReadystatechange(request, loadItem);
+        request.onprogress = onRequestProgress(request, loadItem);
+        request.send();
     }
     /**
-     * 加载单个txt文件
-     * @param path                          文件路径
-     * @param callbackFn                    加载完成回调
-     * @param args                          加载参数
-     * @param args.async                    是否异步加载
-     * @param args.numRetries               尝试加载次数
-     * @param args.before                   加载前回调
-     * @param numTries                      当前尝试次数
+     * 请求进度回调
      */
-    function loadTxt(path, callbackFn, args, numTries) {
-        if (numTries === void 0) { numTries = 0; }
-        var request = new XMLHttpRequest();
-        request.onreadystatechange = function (ev) {
-            var result = ev.type;
+    function onRequestProgress(request, loadItem) {
+        return function (event) {
+            loadItem.onProgress && loadItem.onProgress(event.loaded, event.total);
+        };
+    }
+    /**
+     * 请求状态变化回调
+     */
+    function onRequestReadystatechange(request, loadItem) {
+        return function (ev) {
             if (request.readyState == 4) { // 4 = "loaded"
                 request.onreadystatechange = null;
-                // handle retries in case of load failure
-                if (request.status < 200 || request.status > 300) {
-                    // increment counter
-                    numTries = ~~numTries + 1;
-                    // exit function and try again
-                    args.numRetries = args.numRetries || 0;
-                    if (numTries < ~~args.numRetries + 1) {
-                        return loadTxt(path, callbackFn, args, numTries);
-                    }
+                if (request.status >= 200 && request.status < 300) {
+                    var content = loadItem.dataFormat == feng3d.LoaderDataFormat.TEXT ? request.responseText : request.response;
+                    loadItem.onCompleted && loadItem.onCompleted(content);
                 }
-                // execute callback
-                callbackFn(path, result, ev.defaultPrevented, request.responseText);
+                else {
+                    var err = new Error(loadItem.url + " 加载失败！");
+                    loadItem.onError && loadItem.onError(err);
+                    loadItem.onCompleted && loadItem.onCompleted(null);
+                }
             }
         };
-        request.open('Get', path.url, true);
-        //
-        var beforeCallbackFn = args.before || (function () { return true; });
-        if (beforeCallbackFn(path, request) !== false)
-            request.send();
     }
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
     /**
-     * 加载单个js或者css文件
-     * @param path                          文件路径
-     * @param callbackFn                    加载完成回调
-     * @param args                          加载参数
-     * @param args.async                    是否异步加载
-     * @param args.numRetries               尝试加载次数
-     * @param args.before                   加载前回调
-     * @param numTries                      当前尝试次数
+     * 加载数据类型
      */
-    function loadJsCss(path, callbackFn, args, numTries) {
-        if (numTries === void 0) { numTries = 0; }
-        var doc = document, isCss, e;
-        if (/(^css!|\.css$)/.test(path.url)) {
-            isCss = true;
-            // css
-            e = doc.createElement('link');
-            e.rel = 'stylesheet';
-            e.href = path.url.replace(/^css!/, ''); // remove "css!" prefix
-        }
-        else {
-            // javascript
-            e = doc.createElement('script');
-            e.src = path.url;
-            e.async = !!args.async;
-        }
-        e.onload = e.onerror = e.onbeforeload = function (ev) {
-            var result = ev.type;
-            // Note: The following code isolates IE using `hideFocus` and treats empty
-            // stylesheets as failures to get around lack of onerror support
-            if (isCss && 'hideFocus' in e) {
-                try {
-                    if (!e.sheet.cssText.length)
-                        result = 'error';
-                }
-                catch (x) {
-                    // sheets objects created from load errors don't allow access to
-                    // `cssText`
-                    result = 'error';
-                }
-            }
-            // handle retries in case of load failure
-            if (result == 'error') {
-                // increment counter
-                numTries = ~~numTries + 1;
-                // exit function and try again
-                args.numRetries = args.numRetries || 0;
-                if (numTries < ~~args.numRetries + 1) {
-                    return loadJsCss(path, callbackFn, args, numTries);
-                }
-            }
-            // execute callback
-            callbackFn(path, result, ev.defaultPrevented, e);
-        };
-        // add to document (unless callback returns `false`)
-        var beforeCallbackFn = args.before || (function () { return true; });
-        if (beforeCallbackFn(path, e) !== false)
-            doc.head.appendChild(e);
-    }
-    /**
-     * 加载多文件
-     * @param paths         文件路径
-     * @param callbackFn    加载完成回调
-     */
-    function loadFiles(paths, callbackFn, args) {
-        var notLoadFiles = paths.concat();
-        var loadingFiles = [];
-        var pathsNotFound = [];
-        // define callback function
-        var fn = function (path, result, defaultPrevented, content) {
-            // handle error
-            if (result == 'error')
-                pathsNotFound.push(path.url);
-            // handle beforeload event. If defaultPrevented then that means the load
-            // will be blocked (ex. Ghostery/ABP on Safari)
-            if (result[0] == 'b') {
-                if (defaultPrevented)
-                    pathsNotFound.push(path.url);
-                else
-                    return;
-            }
-            var index = loadingFiles.indexOf(path);
-            loadingFiles.splice(index, 1);
-            args.onitemload && args.onitemload(path.url, content);
-            if (loadingFiles.length == 0 && notLoadFiles.length == 0)
-                callbackFn(pathsNotFound);
-            if (notLoadFiles.length) {
-                var file = notLoadFiles[0];
-                notLoadFiles.shift();
-                loadingFiles.push(file);
-                loadFile(file, fn, args);
-            }
-        };
-        // load scripts
-        var file;
-        if (!!args.async) {
-            for (var i = 0, x = notLoadFiles.length; i < x; i++) {
-                file = notLoadFiles[i];
-                loadingFiles.push(file);
-                loadFile(file, fn, args);
-            }
-            notLoadFiles.length = 0;
-        }
-        else {
-            file = notLoadFiles[0];
-            notLoadFiles.shift();
-            loadingFiles.push(file);
-            loadFile(file, fn, args);
-        }
-    }
-    /**
-     * 获取路径以及类型
-     * @param pathUrls 路径
-     */
-    function getPaths(pathUrls) {
-        var paths = [];
-        if (typeof pathUrls == "string") {
-            pathUrls = [pathUrls];
-        }
-        if (!Array.isArray(pathUrls)) {
-            pathUrls = [pathUrls];
-        }
-        for (var i = 0; i < pathUrls.length; i++) {
-            var pathurl = pathUrls[i];
-            if (typeof pathurl == "string") {
-                paths[i] = { url: pathurl, type: getPathType(pathurl) };
-            }
-            else {
-                paths[i] = pathurl;
-            }
-        }
-        return paths;
-    }
-    /**
-     * 获取路径类型
-     * @param path 路径
-     */
-    function getPathType(path) {
-        var type = "txt";
-        for (var i = 0; i < typeRegExps.length; i++) {
-            var element = typeRegExps[i];
-            if (element.reg.test(path))
-                type = element.type;
-        }
-        return type;
-    }
-    /**
-     * 资源类型
-     */
-    var types = { js: "js", css: "css", txt: "txt", image: "image" };
-    /**
-     * 加载函数
-     */
-    var loaders = {
-        txt: loadTxt,
-        js: loadJsCss,
-        css: loadJsCss,
-        image: loadImage,
-    };
-    var typeRegExps = [
-        { reg: /(^css!|\.css$)/i, type: types.css },
-        { reg: /(\.js\b)/i, type: types.js },
-        { reg: /(\.png\b)/i, type: types.image },
-        { reg: /(\.jpg\b)/i, type: types.image },
-    ];
+    var LoaderDataFormat;
+    (function (LoaderDataFormat) {
+        /**
+         * 以原始二进制数据形式接收下载的数据。
+         */
+        LoaderDataFormat["BINARY"] = "binary";
+        /**
+         * 以文本形式接收已下载的数据。
+         */
+        LoaderDataFormat["TEXT"] = "text";
+        /**
+         * 图片数据
+         */
+        LoaderDataFormat["IMAGE"] = "image";
+    })(LoaderDataFormat = feng3d.LoaderDataFormat || (feng3d.LoaderDataFormat = {}));
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -19742,116 +19480,389 @@ Event.on(shortCut,<any>"run", function(e:Event):void
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
+    feng3d.loadjs = {
+        load: load,
+        ready: ready,
+    };
     /**
-     * 加载类
+     * 加载文件
+     * @param params.paths          加载路径
+     * @param params.bundleId       加载包编号
+     * @param params.success        成功回调
+     * @param params.error          错误回调
+     * @param params.async          是否异步加载
+     * @param params.numRetries     加载失败尝试次数
+     * @param params.before         加载前回调
+     * @param params.onitemload     单条文件加载完成回调
      */
-    var Loader = /** @class */ (function () {
-        function Loader() {
+    function load(params) {
+        // throw error if bundle is already defined
+        if (params.bundleId) {
+            if (params.bundleId in bundleIdCache) {
+                throw "LoadJS";
+            }
+            else {
+                bundleIdCache[params.bundleId] = true;
+            }
         }
-        /**
-         * 加载文本
-         * @param url   路径
-         */
-        Loader.prototype.loadText = function (url, onCompleted, onRequestProgress, onError) {
-            xmlHttpRequestLoad({ url: url, dataFormat: feng3d.LoaderDataFormat.TEXT, onCompleted: onCompleted, onProgress: onRequestProgress, onError: onError });
+        var paths = getPaths(params.paths);
+        // load scripts
+        loadFiles(paths, function (pathsNotFound) {
+            // success and error callbacks
+            if (pathsNotFound.length)
+                (params.error || devnull)(pathsNotFound);
+            else
+                (params.success || devnull)();
+            // publish bundle load event
+            publish(params.bundleId, pathsNotFound);
+        }, params);
+    }
+    /**
+     * 准备依赖包
+     * @param params.depends        依赖包编号
+     * @param params.success        成功回调
+     * @param params.error          错误回调
+     */
+    function ready(params) {
+        // subscribe to bundle load event
+        subscribe(params.depends, function (depsNotFound) {
+            // execute callbacks
+            if (depsNotFound.length)
+                (params.error || devnull)(depsNotFound);
+            else
+                (params.success || devnull)();
+        });
+    }
+    /**
+     * 完成下载包
+     * @param bundleId 下载包编号
+     */
+    function done(bundleId) {
+        publish(bundleId, []);
+    }
+    /**
+     * 重置下载包依赖状态
+     */
+    function reset() {
+        bundleIdCache = {};
+        bundleResultCache = {};
+        bundleCallbackQueue = {};
+    }
+    /**
+     * 是否定义下载包
+     * @param {string} bundleId 包编号
+     */
+    function isDefined(bundleId) {
+        return bundleId in bundleIdCache;
+    }
+    var devnull = function () { }, bundleIdCache = {}, bundleResultCache = {}, bundleCallbackQueue = {};
+    /**
+     * 订阅包加载事件
+     * @param bundleIds              包编号
+     * @param callbackFn             完成回调
+     */
+    function subscribe(bundleIds, callbackFn) {
+        var depsNotFound = [];
+        // listify
+        if (bundleIds instanceof String) {
+            bundleIds = [bundleIds];
+        }
+        // define callback function
+        var numWaiting = bundleIds.length;
+        var fn = function (bundleId, pathsNotFound) {
+            if (pathsNotFound.length)
+                depsNotFound.push(bundleId);
+            numWaiting--;
+            if (!numWaiting)
+                callbackFn(depsNotFound);
         };
-        /**
-         * 加载二进制
-         * @param url   路径
-         */
-        Loader.prototype.loadBinary = function (url, onCompleted, onRequestProgress, onError) {
-            xmlHttpRequestLoad({ url: url, dataFormat: feng3d.LoaderDataFormat.BINARY, onCompleted: onCompleted, onProgress: onRequestProgress, onError: onError });
-        };
-        /**
-         * 加载图片
-         * @param url   路径
-         */
-        Loader.prototype.loadImage = function (url, onCompleted, onRequestProgress, onError) {
-            var image = new Image();
-            image.crossOrigin = "Anonymous";
-            image.onload = function (event) {
-                onCompleted && onCompleted(image);
-            };
-            image.onerror = function (event) {
-                console.error("Error while trying to load texture: " + url);
-                //
+        // register callback
+        var i = bundleIds.length;
+        while (i--) {
+            var bundleId = bundleIds[i];
+            // execute callback if in result cache
+            var r = bundleResultCache[bundleId];
+            if (r) {
+                fn(bundleId, r);
+                continue;
+            }
+            // add to callback queue
+            var q = bundleCallbackQueue[bundleId] = bundleCallbackQueue[bundleId] || [];
+            q.push(fn);
+        }
+    }
+    /**
+     * 派发加载包完成事件
+     * @param bundleId                  加载包编号
+     * @param pathsNotFound             加载失败包
+     */
+    function publish(bundleId, pathsNotFound) {
+        // exit if id isn't defined
+        if (!bundleId)
+            return;
+        var q = bundleCallbackQueue[bundleId];
+        // cache result
+        bundleResultCache[bundleId] = pathsNotFound;
+        // exit if queue is empty
+        if (!q)
+            return;
+        // empty callback queue
+        while (q.length) {
+            q[0](bundleId, pathsNotFound);
+            q.splice(0, 1);
+        }
+    }
+    /**
+     * 加载单个文件
+     * @param path                          文件路径
+     * @param callbackFn                    加载完成回调
+     * @param args                          加载参数
+     * @param args.async                    是否异步加载
+     * @param args.numRetries               尝试加载次数
+     * @param args.before                   加载前回调
+     * @param numTries                      当前尝试次数
+     */
+    function loadFile(path, callbackFn, args, numTries) {
+        var loaderFun = loaders[path.type] || loadTxt;
+        loaderFun(path, callbackFn, args, numTries);
+    }
+    /**
+     * 加载单个Image文件
+     * @param path                          文件路径
+     * @param callbackFn                    加载完成回调
+     * @param args                          加载参数
+     * @param args.async                    是否异步加载
+     * @param args.numRetries               尝试加载次数
+     * @param args.before                   加载前回调
+     * @param numTries                      当前尝试次数
+     */
+    function loadImage(path, callbackFn, args, numTries) {
+        if (numTries === void 0) { numTries = 0; }
+        var image = new Image();
+        image.crossOrigin = "Anonymous";
+        image.onerror = image.onload = function (ev) {
+            var result = ev.type;
+            // handle retries in case of load failure
+            if (result == 'error') {
+                // increment counter
+                numTries = ~~numTries + 1;
+                // exit function and try again
+                args.numRetries = args.numRetries || 0;
+                if (numTries < ~~args.numRetries + 1) {
+                    return loadImage(path, callbackFn, args, numTries);
+                }
                 image.src = "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
-                //
-                var err = new Error(url + " 加载失败！");
-                onError && onError(err);
-            };
-            image.src = url;
+            }
+            // execute callback
+            callbackFn(path, result, ev.defaultPrevented, image);
         };
-        return Loader;
-    }());
-    feng3d.Loader = Loader;
-    feng3d.loader = new Loader();
+        //
+        var beforeCallbackFn = args.before || (function () { return true; });
+        if (beforeCallbackFn(path, image) !== false)
+            image.src = path.url;
+    }
     /**
-     * 使用XMLHttpRequest加载
-     * @param url           加载路径
-     * @param dataFormat    数据类型
+     * 加载单个txt文件
+     * @param path                          文件路径
+     * @param callbackFn                    加载完成回调
+     * @param args                          加载参数
+     * @param args.async                    是否异步加载
+     * @param args.numRetries               尝试加载次数
+     * @param args.before                   加载前回调
+     * @param numTries                      当前尝试次数
      */
-    function xmlHttpRequestLoad(loadItem) {
+    function loadTxt(path, callbackFn, args, numTries) {
+        if (numTries === void 0) { numTries = 0; }
         var request = new XMLHttpRequest();
-        request.open('Get', loadItem.url, true);
-        request.setRequestHeader("Access-Control-Allow-Origin", "*");
-        request.responseType = loadItem.dataFormat == feng3d.LoaderDataFormat.BINARY ? "arraybuffer" : "";
-        request.onreadystatechange = onRequestReadystatechange(request, loadItem);
-        request.onprogress = onRequestProgress(request, loadItem);
-        request.send();
-    }
-    /**
-     * 请求进度回调
-     */
-    function onRequestProgress(request, loadItem) {
-        return function (event) {
-            loadItem.onProgress && loadItem.onProgress(event.loaded, event.total);
-        };
-    }
-    /**
-     * 请求状态变化回调
-     */
-    function onRequestReadystatechange(request, loadItem) {
-        return function (ev) {
+        request.onreadystatechange = function (ev) {
+            var result = ev.type;
             if (request.readyState == 4) { // 4 = "loaded"
                 request.onreadystatechange = null;
-                if (request.status >= 200 && request.status < 300) {
-                    var content = loadItem.dataFormat == feng3d.LoaderDataFormat.TEXT ? request.responseText : request.response;
-                    loadItem.onCompleted && loadItem.onCompleted(content);
+                // handle retries in case of load failure
+                if (request.status < 200 || request.status > 300) {
+                    // increment counter
+                    numTries = ~~numTries + 1;
+                    // exit function and try again
+                    args.numRetries = args.numRetries || 0;
+                    if (numTries < ~~args.numRetries + 1) {
+                        return loadTxt(path, callbackFn, args, numTries);
+                    }
                 }
-                else {
-                    var err = new Error(loadItem.url + " 加载失败！");
-                    loadItem.onError && loadItem.onError(err);
-                    loadItem.onCompleted && loadItem.onCompleted(null);
-                }
+                // execute callback
+                callbackFn(path, result, ev.defaultPrevented, request.responseText);
             }
         };
+        request.open('Get', path.url, true);
+        //
+        var beforeCallbackFn = args.before || (function () { return true; });
+        if (beforeCallbackFn(path, request) !== false)
+            request.send();
     }
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
     /**
-     * 加载数据类型
-
+     * 加载单个js或者css文件
+     * @param path                          文件路径
+     * @param callbackFn                    加载完成回调
+     * @param args                          加载参数
+     * @param args.async                    是否异步加载
+     * @param args.numRetries               尝试加载次数
+     * @param args.before                   加载前回调
+     * @param numTries                      当前尝试次数
      */
-    var LoaderDataFormat = /** @class */ (function () {
-        function LoaderDataFormat() {
+    function loadJsCss(path, callbackFn, args, numTries) {
+        if (numTries === void 0) { numTries = 0; }
+        var doc = document, isCss, e;
+        if (/(^css!|\.css$)/.test(path.url)) {
+            isCss = true;
+            // css
+            e = doc.createElement('link');
+            e.rel = 'stylesheet';
+            e.href = path.url.replace(/^css!/, ''); // remove "css!" prefix
         }
-        /**
-         * 以原始二进制数据形式接收下载的数据。
-         */
-        LoaderDataFormat.BINARY = "binary";
-        /**
-         * 以文本形式接收已下载的数据。
-         */
-        LoaderDataFormat.TEXT = "text";
-        /**
-         * 图片数据
-         */
-        LoaderDataFormat.IMAGE = "image";
-        return LoaderDataFormat;
-    }());
-    feng3d.LoaderDataFormat = LoaderDataFormat;
+        else {
+            // javascript
+            e = doc.createElement('script');
+            e.src = path.url;
+            e.async = !!args.async;
+        }
+        e.onload = e.onerror = e.onbeforeload = function (ev) {
+            var result = ev.type;
+            // Note: The following code isolates IE using `hideFocus` and treats empty
+            // stylesheets as failures to get around lack of onerror support
+            if (isCss && 'hideFocus' in e) {
+                try {
+                    if (!e.sheet.cssText.length)
+                        result = 'error';
+                }
+                catch (x) {
+                    // sheets objects created from load errors don't allow access to
+                    // `cssText`
+                    result = 'error';
+                }
+            }
+            // handle retries in case of load failure
+            if (result == 'error') {
+                // increment counter
+                numTries = ~~numTries + 1;
+                // exit function and try again
+                args.numRetries = args.numRetries || 0;
+                if (numTries < ~~args.numRetries + 1) {
+                    return loadJsCss(path, callbackFn, args, numTries);
+                }
+            }
+            // execute callback
+            callbackFn(path, result, ev.defaultPrevented, e);
+        };
+        // add to document (unless callback returns `false`)
+        var beforeCallbackFn = args.before || (function () { return true; });
+        if (beforeCallbackFn(path, e) !== false)
+            doc.head.appendChild(e);
+    }
+    /**
+     * 加载多文件
+     * @param paths         文件路径
+     * @param callbackFn    加载完成回调
+     */
+    function loadFiles(paths, callbackFn, args) {
+        var notLoadFiles = paths.concat();
+        var loadingFiles = [];
+        var pathsNotFound = [];
+        // define callback function
+        var fn = function (path, result, defaultPrevented, content) {
+            // handle error
+            if (result == 'error')
+                pathsNotFound.push(path.url);
+            // handle beforeload event. If defaultPrevented then that means the load
+            // will be blocked (ex. Ghostery/ABP on Safari)
+            if (result[0] == 'b') {
+                if (defaultPrevented)
+                    pathsNotFound.push(path.url);
+                else
+                    return;
+            }
+            var index = loadingFiles.indexOf(path);
+            loadingFiles.splice(index, 1);
+            args.onitemload && args.onitemload(path.url, content);
+            if (loadingFiles.length == 0 && notLoadFiles.length == 0)
+                callbackFn(pathsNotFound);
+            if (notLoadFiles.length) {
+                var file = notLoadFiles[0];
+                notLoadFiles.shift();
+                loadingFiles.push(file);
+                loadFile(file, fn, args);
+            }
+        };
+        // load scripts
+        var file;
+        if (!!args.async) {
+            for (var i = 0, x = notLoadFiles.length; i < x; i++) {
+                file = notLoadFiles[i];
+                loadingFiles.push(file);
+                loadFile(file, fn, args);
+            }
+            notLoadFiles.length = 0;
+        }
+        else {
+            file = notLoadFiles[0];
+            notLoadFiles.shift();
+            loadingFiles.push(file);
+            loadFile(file, fn, args);
+        }
+    }
+    /**
+     * 获取路径以及类型
+     * @param pathUrls 路径
+     */
+    function getPaths(pathUrls) {
+        var paths = [];
+        if (typeof pathUrls == "string") {
+            pathUrls = [pathUrls];
+        }
+        if (!Array.isArray(pathUrls)) {
+            pathUrls = [pathUrls];
+        }
+        for (var i = 0; i < pathUrls.length; i++) {
+            var pathurl = pathUrls[i];
+            if (typeof pathurl == "string") {
+                paths[i] = { url: pathurl, type: getPathType(pathurl) };
+            }
+            else {
+                paths[i] = pathurl;
+            }
+        }
+        return paths;
+    }
+    /**
+     * 获取路径类型
+     * @param path 路径
+     */
+    function getPathType(path) {
+        var type = "txt";
+        for (var i = 0; i < typeRegExps.length; i++) {
+            var element = typeRegExps[i];
+            if (element.reg.test(path))
+                type = element.type;
+        }
+        return type;
+    }
+    /**
+     * 资源类型
+     */
+    var types = { js: "js", css: "css", txt: "txt", image: "image" };
+    /**
+     * 加载函数
+     */
+    var loaders = {
+        txt: loadTxt,
+        js: loadJsCss,
+        css: loadJsCss,
+        image: loadImage,
+    };
+    var typeRegExps = [
+        { reg: /(^css!|\.css$)/i, type: types.css },
+        { reg: /(\.js\b)/i, type: types.js },
+        { reg: /(\.png\b)/i, type: types.image },
+        { reg: /(\.jpg\b)/i, type: types.image },
+    ];
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
