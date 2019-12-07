@@ -10535,7 +10535,13 @@ declare namespace feng3d {
         isRenderTarget: boolean;
         OFFSCREEN_WIDTH: number;
         OFFSCREEN_HEIGHT: number;
+        /**
+         * 是否失效，值为true时重新创建 WebGLTexture
+         */
+        invalid: boolean;
     }
+}
+declare namespace feng3d {
     class TextureUtil {
         static active(gl: GL, data: Texture): WebGLTexture;
         /**
@@ -11104,6 +11110,7 @@ declare namespace feng3d {
          * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
          */
         anisotropy: number;
+        invalid: boolean;
         /**
          * 需要使用的贴图数据
          */

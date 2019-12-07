@@ -144,6 +144,8 @@ namespace feng3d
         @oav()
         anisotropy = 0;
 
+        invalid = true;
+
         /**
          * 需要使用的贴图数据
          */
@@ -262,7 +264,7 @@ namespace feng3d
          */
         invalidate()
         {
-            TextureUtil.clear(this);
+            this.invalid = true;
         }
 
         get activePixels()

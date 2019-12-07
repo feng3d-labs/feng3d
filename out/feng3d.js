@@ -21332,6 +21332,10 @@ var feng3d;
          * @param data  数据
          */
         TextureUtil.getTexture = function (gl, data) {
+            if (data.invalid) {
+                this.clear(data);
+                data.invalid = false;
+            }
             var texture = gl.cache.textures.get(data);
             if (!texture) {
                 texture = gl.createTexture(); // Create a texture object
@@ -21907,6 +21911,7 @@ var feng3d;
              * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
              */
             _this.anisotropy = 0;
+            _this.invalid = true;
             /**
              * 是否为渲染目标纹理
              */
@@ -22122,7 +22127,7 @@ var feng3d;
          * 使纹理失效
          */
         TextureInfo.prototype.invalidate = function () {
-            feng3d.TextureUtil.clear(this);
+            this.invalid = true;
         };
         Object.defineProperty(TextureInfo.prototype, "activePixels", {
             get: function () {

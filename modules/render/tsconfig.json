@@ -42,6 +42,7 @@
         "src/data/Index.ts",
         "src/data/Attribute.ts",
         "src/data/Texture.ts",
+        "src/data/TextureUtil.ts",
         "src/data/FrameBuffer.ts",
         //
         "src/RenderBuffer.ts",

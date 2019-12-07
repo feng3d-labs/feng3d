@@ -172,6 +172,7 @@
         "modules/render/src/data/Index.ts",
         "modules/render/src/data/Attribute.ts",
         "modules/render/src/data/Texture.ts",
+        "modules/render/src/data/TextureUtil.ts",
         "modules/render/src/data/FrameBuffer.ts",
         //
         "modules/render/src/RenderBuffer.ts",
