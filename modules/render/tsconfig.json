@@ -7,7 +7,7 @@
         "declaration": true,
         "composite": true,
         "experimentalDecorators": true,
-        "outFile": "out/polyfill.js",
+        "outFile": "out/render.js",
         "lib": [
             "ES2015",
             "DOM",

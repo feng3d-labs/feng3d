@@ -4,26 +4,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 var feng3d;
 (function (feng3d) {
     /**
      * 渲染模式
      * A GLenum specifying the type primitive to render. Possible values are:
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
-
      */
     var RenderMode;
     (function (RenderMode) {
@@ -679,13 +665,12 @@ var feng3d;
             }
             if (!gl)
                 throw "无法初始化WEBGL";
-            gl.cache = { compileShaderResults: {} };
             //
+            new feng3d.GLCache(gl);
             new feng3d.GLExtension(gl);
-            //
             new feng3d.GLCapabilities(gl);
-            //
             new feng3d.Renderer(gl);
+            //
             gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
             gl.clearDepth(1.0); // Clear everything
             gl.enable(gl.DEPTH_TEST); // Enable depth testing
@@ -701,11 +686,27 @@ var feng3d;
 var feng3d;
 (function (feng3d) {
     /**
+     * GL 缓存
+     */
+    var GLCache = /** @class */ (function () {
+        function GLCache(gl) {
+            this.compileShaderResults = {};
+            this.textures = new Map();
+            gl.cache = this;
+            this._gl = gl;
+        }
+        return GLCache;
+    }());
+    feng3d.GLCache = GLCache;
+})(feng3d || (feng3d = {}));
+var feng3d;
+(function (feng3d) {
+    /**
      * GL扩展
      */
     var GLExtension = /** @class */ (function () {
         function GLExtension(gl) {
-            debuger && console.assert(!gl.extensions, gl + " " + gl.extensions + " \u5B58\u5728\uFF01");
+            console.assert(!gl.extensions, gl + " " + gl.extensions + " \u5B58\u5728\uFF01");
             gl.extensions = this;
             this.initExtensions(gl);
             this.cacheGLQuery(gl);
@@ -761,7 +762,7 @@ var feng3d;
                         gl.texParameterf(target, gl.extensions.EXT_texture_filter_anisotropic.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
                     }
                     else {
-                        debuger && console.warn("浏览器不支持各向异性过滤（anisotropy）特性！");
+                        console.warn("浏览器不支持各向异性过滤（anisotropy）特性！");
                     }
                 };
             }
@@ -869,10 +870,7 @@ var feng3d;
              * shader 中的 宏
              */
             this.shaderMacro = {};
-            this.macroValues = {};
-            this.macroInvalid = true;
             this.shaderName = shaderName;
-            globalDispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
         }
         /**
          * 激活渲染程序
@@ -893,31 +891,16 @@ var feng3d;
             }
             return result;
         };
-        Shader.prototype.onShaderChanged = function () {
-            this.macroInvalid = true;
-        };
         /**
          * 更新渲染代码
          */
         Shader.prototype.updateShaderCode = function () {
             // 获取着色器代码
             var result = feng3d.shaderlib.getShader(this.shaderName);
-            var macroVariables = result.vertexMacroVariables.concat(result.fragmentMacroVariables);
-            for (var i = 0; i < macroVariables.length; i++) {
-                var macroVariable = macroVariables[i];
-                var value = this.shaderMacro[macroVariable];
-                if (this.macroValues[macroVariable] != value) {
-                    this.macroValues[macroVariable] = value;
-                    this.macroInvalid = true;
-                }
-            }
-            if (this.macroInvalid) {
-                var vMacroCode = this.getMacroCode(result.vertexMacroVariables, this.macroValues);
-                this.vertex = vMacroCode + result.vertex;
-                var fMacroCode = this.getMacroCode(result.fragmentMacroVariables, this.macroValues);
-                this.fragment = fMacroCode + result.fragment;
-                this.macroInvalid = false;
-            }
+            var vMacroCode = this.getMacroCode(result.vertexMacroVariables, this.shaderMacro);
+            this.vertex = vMacroCode + result.vertex;
+            var fMacroCode = this.getMacroCode(result.fragmentMacroVariables, this.shaderMacro);
+            this.fragment = fMacroCode + result.fragment;
         };
         /**
          * 编译着色器代码
@@ -995,7 +978,7 @@ var feng3d;
                 var name = activeInfo.name;
                 var names = [name];
                 if (activeInfo.size > 1) {
-                    debuger && console.assert(name.substr(-3, 3) == "[0]");
+                    console.assert(name.substr(-3, 3) == "[0]");
                     var baseName = name.substring(0, name.length - 3);
                     for (var j = 1; j < activeInfo.size; j++) {
                         names[j] = baseName + ("[" + j + "]");
@@ -1088,7 +1071,7 @@ var feng3d;
              * 绘制在画布上的区域
              */
             // @oav({ tooltip: "绘制在画布上的区域" })
-            this.viewRect = new Rectangle(0, 0, 100, 100);
+            this.viewRect = { x: 0, y: 0, width: 100, height: 100 };
             /**
              * 是否使用 viewRect
              */
@@ -1097,54 +1080,54 @@ var feng3d;
             Object.assign(this, raw);
         }
         __decorate([
-            serialize,
-            oav({ component: "OAVEnum", tooltip: "渲染模式，默认RenderMode.TRIANGLES", componentParam: { enumClass: feng3d.RenderMode } })
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVEnum", tooltip: "渲染模式，默认RenderMode.TRIANGLES", componentParam: { enumClass: feng3d.RenderMode } })
         ], RenderParams.prototype, "renderMode", void 0);
         __decorate([
-            serialize,
-            oav({ component: "OAVEnum", tooltip: "剔除面", componentParam: { enumClass: feng3d.CullFace } })
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVEnum", tooltip: "剔除面", componentParam: { enumClass: feng3d.CullFace } })
         ], RenderParams.prototype, "cullFace", void 0);
         __decorate([
-            serialize,
-            oav({ component: "OAVEnum", tooltip: "正面方向，默认FrontFace.CW 顺时针为正面", componentParam: { enumClass: feng3d.FrontFace } })
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVEnum", tooltip: "正面方向，默认FrontFace.CW 顺时针为正面", componentParam: { enumClass: feng3d.FrontFace } })
         ], RenderParams.prototype, "frontFace", void 0);
         __decorate([
-            serialize,
-            oav({ tooltip: "是否开启混合" })
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "是否开启混合" })
         ], RenderParams.prototype, "enableBlend", void 0);
         __decorate([
-            serialize,
-            oav({ component: "OAVEnum", tooltip: "混合方式，默认BlendEquation.FUNC_ADD", componentParam: { enumClass: feng3d.BlendEquation } })
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVEnum", tooltip: "混合方式，默认BlendEquation.FUNC_ADD", componentParam: { enumClass: feng3d.BlendEquation } })
         ], RenderParams.prototype, "blendEquation", void 0);
         __decorate([
-            serialize,
-            oav({ component: "OAVEnum", tooltip: "源混合因子，默认BlendFactor.SRC_ALPHA", componentParam: { enumClass: feng3d.BlendFactor } })
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVEnum", tooltip: "源混合因子，默认BlendFactor.SRC_ALPHA", componentParam: { enumClass: feng3d.BlendFactor } })
         ], RenderParams.prototype, "sfactor", void 0);
         __decorate([
-            serialize,
-            oav({ component: "OAVEnum", tooltip: "目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA", componentParam: { enumClass: feng3d.BlendFactor } })
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVEnum", tooltip: "目标混合因子，默认BlendFactor.ONE_MINUS_SRC_ALPHA", componentParam: { enumClass: feng3d.BlendFactor } })
         ], RenderParams.prototype, "dfactor", void 0);
         __decorate([
-            serialize,
-            oav({ tooltip: "是否开启深度检查" })
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "是否开启深度检查" })
         ], RenderParams.prototype, "depthtest", void 0);
         __decorate([
-            serialize,
-            oav({ component: "OAVEnum", tooltip: "深度检测方法", componentParam: { enumClass: feng3d.DepthFunc } })
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVEnum", tooltip: "深度检测方法", componentParam: { enumClass: feng3d.DepthFunc } })
         ], RenderParams.prototype, "depthFunc", void 0);
         __decorate([
-            serialize,
-            oav({ tooltip: "是否开启深度标记" })
+            feng3d.serialize,
+            feng3d.oav({ tooltip: "是否开启深度标记" })
         ], RenderParams.prototype, "depthMask", void 0);
         __decorate([
-            serialize,
-            oav({ component: "OAVEnum", tooltip: "深度检测方法", componentParam: { enumClass: feng3d.ColorMask } })
+            feng3d.serialize,
+            feng3d.oav({ component: "OAVEnum", tooltip: "深度检测方法", componentParam: { enumClass: feng3d.ColorMask } })
         ], RenderParams.prototype, "colorMask", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], RenderParams.prototype, "viewRect", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], RenderParams.prototype, "useViewRect", void 0);
         return RenderParams;
     }());
@@ -1198,12 +1181,12 @@ var feng3d;
         };
         RenderAtomic.prototype.getUniformByKey = function (key) {
             if (this.uniforms[key] != undefined)
-                return lazy.getvalue(this.uniforms[key]);
+                return feng3d.lazy.getvalue(this.uniforms[key]);
             return (this.next && this.next.getUniformByKey(key));
         };
         RenderAtomic.prototype.getInstanceCount = function () {
             if (this.instanceCount != undefined)
-                return lazy.getvalue(this.instanceCount);
+                return feng3d.lazy.getvalue(this.instanceCount);
             return this.next && this.next.getInstanceCount();
         };
         RenderAtomic.prototype.getShader = function () {
@@ -1430,9 +1413,7 @@ var feng3d;
             var buffer = this.getBuffer(gl);
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
             gl.vertexAttribPointer(location, this.size, gl[this.type], this.normalized, this.stride, this.offset);
-            if (this.divisor > 0) {
-                gl.vertexAttribDivisor(location, this.divisor);
-            }
+            gl.vertexAttribDivisor(location, this.divisor);
         };
         /**
          * 获取缓冲
@@ -1462,16 +1443,16 @@ var feng3d;
             this._indexBufferMap.clear();
         };
         __decorate([
-            serialize
+            feng3d.serialize
         ], Attribute.prototype, "name", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], Attribute.prototype, "data", null);
         __decorate([
-            serialize
+            feng3d.serialize
         ], Attribute.prototype, "size", void 0);
         __decorate([
-            serialize
+            feng3d.serialize
         ], Attribute.prototype, "divisor", void 0);
         return Attribute;
     }());
@@ -1479,341 +1460,70 @@ var feng3d;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
-    /**
-     * 纹理信息
-     */
-    var TextureInfo = /** @class */ (function (_super) {
-        __extends(TextureInfo, _super);
-        function TextureInfo() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this._format = feng3d.TextureFormat.RGB;
-            _this._type = feng3d.TextureDataType.UNSIGNED_BYTE;
-            _this._generateMipmap = false;
-            _this._flipY = false;
-            _this._premulAlpha = false;
-            _this.minFilter = feng3d.TextureMinFilter.LINEAR;
-            _this.magFilter = feng3d.TextureMagFilter.LINEAR;
-            /**
-             * 表示x轴的纹理的回环方式，就是当纹理的宽度小于需要贴图的平面的宽度的时候，平面剩下的部分应该p以何种方式贴图的问题。
-             */
-            _this.wrapS = feng3d.TextureWrap.REPEAT;
-            /**
-             * 表示y轴的纹理回环方式。 magFilter和minFilter表示过滤的方式，这是OpenGL的基本概念，我将在下面讲一下，目前你不用担心它的使用。当您不设置的时候，它会取默认值，所以，我们这里暂时不理睬他。
-             */
-            _this.wrapT = feng3d.TextureWrap.REPEAT;
-            /**
-             * 各向异性过滤。使用各向异性过滤能够使纹理的效果更好，但是会消耗更多的内存、CPU、GPU时间。默认为0。
-             */
-            _this.anisotropy = 0;
-            /**
-             * 是否为渲染目标纹理
-             */
-            _this._isRenderTarget = false;
-            _this._OFFSCREEN_WIDTH = 1024;
-            _this._OFFSCREEN_HEIGHT = 1024;
-            /**
-             * 纹理缓冲
-             */
-            _this._textureMap = new Map();
-            /**
-             * 是否失效
-             */
-            _this._invalid = true;
-            _this._isPowerOfTwo = false;
-            return _this;
+    var TextureUtil = /** @class */ (function () {
+        function TextureUtil() {
         }
-        Object.defineProperty(TextureInfo.prototype, "format", {
-            /**
-             * 格式
-             */
-            get: function () {
-                return this._format;
-            },
-            set: function (v) {
-                if (this._format == v)
-                    return;
-                this._format = v;
-                this.invalidate();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TextureInfo.prototype, "type", {
-            /**
-             * 数据类型
-             */
-            get: function () {
-                return this._type;
-            },
-            set: function (v) {
-                if (this._type == v)
-                    return;
-                this._type = v;
-                this.invalidate();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TextureInfo.prototype, "generateMipmap", {
-            /**
-             * 是否生成mipmap
-             */
-            get: function () {
-                return this._generateMipmap;
-            },
-            set: function (v) {
-                if (this._generateMipmap == v)
-                    return;
-                this._generateMipmap = v;
-                this.invalidate();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TextureInfo.prototype, "flipY", {
-            /**
-             * 对图像进行Y轴反转。默认值为false
-             */
-            get: function () {
-                return this._flipY;
-            },
-            set: function (v) {
-                if (this._flipY == v)
-                    return;
-                this._flipY = v;
-                this.invalidate();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TextureInfo.prototype, "premulAlpha", {
-            /**
-             * 将图像RGB颜色值得每一个分量乘以A。默认为false
-             */
-            get: function () {
-                return this._premulAlpha;
-            },
-            set: function (v) {
-                if (this._premulAlpha == v)
-                    return;
-                this._premulAlpha = v;
-                this.invalidate();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TextureInfo.prototype, "OFFSCREEN_WIDTH", {
-            get: function () {
-                return this._OFFSCREEN_WIDTH;
-            },
-            set: function (v) {
-                if (this._OFFSCREEN_WIDTH == v)
-                    return;
-                this._OFFSCREEN_WIDTH = v;
-                this.invalidate();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TextureInfo.prototype, "OFFSCREEN_HEIGHT", {
-            get: function () {
-                return this._OFFSCREEN_HEIGHT;
-            },
-            set: function (v) {
-                if (this._OFFSCREEN_HEIGHT == v)
-                    return;
-                this._OFFSCREEN_HEIGHT = v;
-                this.invalidate();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 是否为2的幂贴图
-         */
-        TextureInfo.prototype.isPowerOfTwo = function (pixels) {
-            if (this._isRenderTarget) {
-                if (this.OFFSCREEN_WIDTH == 0 || !Math.isPowerOfTwo(this.OFFSCREEN_WIDTH))
-                    return false;
-                if (this.OFFSCREEN_HEIGHT == 0 || !Math.isPowerOfTwo(this.OFFSCREEN_HEIGHT))
-                    return false;
-                return true;
-            }
-            if (!pixels)
-                return false;
-            if (!Array.isArray(pixels))
-                pixels = [pixels];
-            for (var i = 0; i < pixels.length; i++) {
-                var element = pixels[i];
-                if (element.width == 0 || !Math.isPowerOfTwo(element.width))
-                    return false;
-                if (element.height == 0 || !Math.isPowerOfTwo(element.height))
-                    return false;
-            }
-            return true;
-        };
-        /**
-         * 纹理尺寸
-         */
-        TextureInfo.prototype.getSize = function () {
-            if (this._isRenderTarget) {
-                return new Vector2(this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
-            }
-            var pixels = this._activePixels;
-            if (!pixels)
-                new Vector2(1, 1);
-            if (!Array.isArray(pixels))
-                pixels = [pixels];
-            if (pixels.length == 0)
-                return new Vector2(1, 1);
-            var pixel = pixels[0];
-            return new Vector2(pixel.width, pixel.height);
-        };
-        /**
-         * 判断数据是否满足渲染需求
-         */
-        TextureInfo.prototype.checkRenderData = function (pixels) {
-            if (!pixels)
-                return false;
-            if (!Array.isArray(pixels))
-                pixels = [pixels];
-            if (pixels.length == 0)
-                return false;
-            for (var i = 0; i < pixels.length; i++) {
-                var element = pixels[i];
-                if (!element)
-                    return false;
-                if (element.width == 0)
-                    return false;
-                if (element.height == 0)
-                    return false;
-            }
-            return true;
-        };
-        /**
-         * 使纹理失效
-         */
-        TextureInfo.prototype.invalidate = function () {
-            this._invalid = true;
-        };
-        Object.defineProperty(TextureInfo.prototype, "activePixels", {
-            get: function () {
-                this.updateActivePixels();
-                return this._activePixels;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(TextureInfo.prototype, "dataURL", {
-            /**
-             *
-             */
-            get: function () {
-                this.updateActivePixels();
-                if (!this._dataURL) {
-                    if (this._activePixels instanceof ImageData)
-                        this._dataURL = dataTransform.imageDataToDataURL(this._activePixels);
-                    else if (this._activePixels instanceof HTMLImageElement)
-                        this._dataURL = dataTransform.imageToDataURL(this._activePixels);
-                    else if (this._activePixels instanceof HTMLCanvasElement)
-                        this._dataURL = dataTransform.canvasToDataURL(this._activePixels);
-                }
-                return this._dataURL;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        TextureInfo.prototype.updateActivePixels = function () {
-            var old = this._activePixels;
-            if (this.checkRenderData(this._pixels)) {
-                this._activePixels = this._pixels;
-            }
-            else {
-                if (Array.isArray(this.noPixels)) {
-                    this._activePixels = this.noPixels.map(function (v) { return imageDatas[v]; });
-                }
-                else {
-                    this._activePixels = imageDatas[this.noPixels];
-                }
-            }
-            if (old != this._activePixels)
-                this._dataURL = null;
-        };
-        /**
-         * 激活纹理
-         * @param gl
-         */
-        TextureInfo.prototype.active = function (gl) {
-            if (this._invalid) {
-                this.clear();
-                this._invalid = false;
-                this.updateActivePixels();
-                this._isPowerOfTwo = this.isPowerOfTwo(this._activePixels);
-            }
-            var texture = this.getTexture(gl);
-            var textureType = gl[this._textureType];
-            var minFilter = gl[this.minFilter];
-            var magFilter = gl[this.magFilter];
-            var wrapS = gl[this.wrapS];
-            var wrapT = gl[this.wrapT];
-            if (!this._isPowerOfTwo) {
-                wrapS = gl.CLAMP_TO_EDGE;
-                wrapT = gl.CLAMP_TO_EDGE;
-            }
+        TextureUtil.active = function (gl, data) {
+            var texture = this.getTexture(gl, data);
+            var textureType = gl[data.textureType];
             //绑定纹理
             gl.bindTexture(textureType, texture);
             //设置纹理参数
-            gl.texParameteri(textureType, gl.TEXTURE_MIN_FILTER, minFilter);
-            gl.texParameteri(textureType, gl.TEXTURE_MAG_FILTER, magFilter);
-            gl.texParameteri(textureType, gl.TEXTURE_WRAP_S, wrapS);
-            gl.texParameteri(textureType, gl.TEXTURE_WRAP_T, wrapT);
+            gl.texParameteri(textureType, gl.TEXTURE_MIN_FILTER, gl[data.minFilter]);
+            gl.texParameteri(textureType, gl.TEXTURE_MAG_FILTER, gl[data.magFilter]);
+            gl.texParameteri(textureType, gl.TEXTURE_WRAP_S, gl[data.wrapS]);
+            gl.texParameteri(textureType, gl.TEXTURE_WRAP_T, gl[data.wrapT]);
             //
-            gl.texParameterfAnisotropy(textureType, this.anisotropy);
+            gl.texParameterfAnisotropy(textureType, data.anisotropy);
             return texture;
         };
         /**
          * 获取顶点属性缓冲
          * @param data  数据
          */
-        TextureInfo.prototype.getTexture = function (gl) {
-            var texture = this._textureMap.get(gl);
+        TextureUtil.getTexture = function (gl, data) {
+            if (data.invalid) {
+                this.clear(data);
+                data.invalid = false;
+            }
+            var texture = gl.cache.textures.get(data);
             if (!texture) {
-                var newtexture = gl.createTexture(); // Create a texture object
-                if (!newtexture) {
+                texture = gl.createTexture(); // Create a texture object
+                if (!texture) {
                     console.error("createTexture 失败！");
                     throw "";
                 }
-                texture = newtexture;
-                var textureType = gl[this._textureType];
-                var format = gl[this.format];
-                var type = gl[this.type];
+                gl.cache.textures.set(data, texture);
+                //
+                var textureType = gl[data.textureType];
+                var format = gl[data.format];
+                var type = gl[data.type];
                 //设置图片y轴方向
-                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, this.flipY ? 1 : 0);
-                gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this.premulAlpha ? 1 : 0);
+                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, data.flipY ? 1 : 0);
+                gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, data.premulAlpha ? 1 : 0);
                 //绑定纹理
                 gl.bindTexture(textureType, texture);
                 //设置纹理图片
                 switch (textureType) {
                     case gl.TEXTURE_CUBE_MAP:
-                        var pixels = this._activePixels;
+                        var pixels = data.activePixels;
                         var faces = [
                             gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
                             gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
                         ];
                         for (var i = 0; i < faces.length; i++) {
-                            if (this._isRenderTarget) {
-                                gl.texImage2D(faces[i], 0, format, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT, 0, format, type, null);
+                            if (data.isRenderTarget) {
+                                gl.texImage2D(faces[i], 0, format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, format, type, null);
                             }
                             else {
-                                gl.texImage2D(faces[i], 0, format, format, type, this._activePixels[i]);
+                                gl.texImage2D(faces[i], 0, format, format, type, pixels[i]);
                             }
                         }
                         break;
                     case gl.TEXTURE_2D:
-                        var _pixel = this._activePixels;
-                        var textureType = gl[this._textureType];
-                        if (this._isRenderTarget) {
-                            gl.texImage2D(textureType, 0, format, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT, 0, format, type, null);
+                        var _pixel = data.activePixels;
+                        if (data.isRenderTarget) {
+                            gl.texImage2D(textureType, 0, format, data.OFFSCREEN_WIDTH, data.OFFSCREEN_HEIGHT, 0, format, type, null);
                         }
                         else {
                             gl.texImage2D(textureType, 0, format, format, type, _pixel);
@@ -1822,65 +1532,29 @@ var feng3d;
                     default:
                         throw "";
                 }
-                if (this.generateMipmap && this._isPowerOfTwo) {
+                if (data.generateMipmap) {
                     gl.generateMipmap(textureType);
                 }
-                this._textureMap.set(gl, texture);
             }
             return texture;
         };
         /**
-         * 清理纹理
+         * 清除纹理
+         *
+         * @param data
          */
-        TextureInfo.prototype.clear = function () {
-            this._textureMap.forEach(function (v, k) {
-                k.deleteTexture(v);
+        TextureUtil.clear = function (data) {
+            feng3d.GL.glList.forEach(function (gl) {
+                var tex = gl.cache.textures.get(data);
+                if (tex) {
+                    gl.deleteTexture(tex);
+                    gl.cache.textures.delete(data);
+                }
             });
-            this._textureMap.clear();
         };
-        __decorate([
-            serialize,
-            oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.TextureFormat } })
-        ], TextureInfo.prototype, "format", null);
-        __decorate([
-            serialize,
-            oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.TextureDataType } })
-        ], TextureInfo.prototype, "type", null);
-        __decorate([
-            serialize,
-            oav()
-        ], TextureInfo.prototype, "generateMipmap", null);
-        __decorate([
-            serialize,
-            oav()
-        ], TextureInfo.prototype, "flipY", null);
-        __decorate([
-            serialize,
-            oav()
-        ], TextureInfo.prototype, "premulAlpha", null);
-        __decorate([
-            serialize,
-            oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.TextureMinFilter } })
-        ], TextureInfo.prototype, "minFilter", void 0);
-        __decorate([
-            serialize,
-            oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.TextureMagFilter } })
-        ], TextureInfo.prototype, "magFilter", void 0);
-        __decorate([
-            serialize,
-            oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.TextureWrap } })
-        ], TextureInfo.prototype, "wrapS", void 0);
-        __decorate([
-            serialize,
-            oav({ component: "OAVEnum", componentParam: { enumClass: feng3d.TextureWrap } })
-        ], TextureInfo.prototype, "wrapT", void 0);
-        __decorate([
-            serialize,
-            oav()
-        ], TextureInfo.prototype, "anisotropy", void 0);
-        return TextureInfo;
-    }(AssetData));
-    feng3d.TextureInfo = TextureInfo;
+        return TextureUtil;
+    }());
+    feng3d.TextureUtil = TextureUtil;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -1902,7 +1576,7 @@ var feng3d;
             if (!framebuffer) {
                 framebuffer = gl.createFramebuffer();
                 if (!framebuffer) {
-                    debuger && alert('Failed to create frame buffer object');
+                    alert('Failed to create frame buffer object');
                     return null;
                 }
                 this._framebufferMap.set(gl, framebuffer);
@@ -1921,153 +1595,6 @@ var feng3d;
         return FrameBuffer;
     }());
     feng3d.FrameBuffer = FrameBuffer;
-})(feng3d || (feng3d = {}));
-var feng3d;
-(function (feng3d) {
-    /**
-     * 帧缓冲对象
-
-     */
-    var FrameBufferObject = /** @class */ (function () {
-        function FrameBufferObject(width, height) {
-            if (width === void 0) { width = 1024; }
-            if (height === void 0) { height = 1024; }
-            this._OFFSCREEN_WIDTH = 1024;
-            this._OFFSCREEN_HEIGHT = 1024;
-            /**
-             * 是否失效
-             */
-            this._invalid = true;
-            this._map = new Map();
-            this.frameBuffer = new feng3d.FrameBuffer();
-            this.texture = new RenderTargetTexture2D();
-            this.depthBuffer = new feng3d.RenderBuffer();
-            this.OFFSCREEN_WIDTH = width;
-            this.OFFSCREEN_HEIGHT = height;
-        }
-        Object.defineProperty(FrameBufferObject.prototype, "OFFSCREEN_WIDTH", {
-            get: function () {
-                return this._OFFSCREEN_WIDTH;
-            },
-            set: function (v) {
-                if (this._OFFSCREEN_WIDTH == v)
-                    return;
-                this._OFFSCREEN_WIDTH = v;
-                this.invalidateSize();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FrameBufferObject.prototype, "OFFSCREEN_HEIGHT", {
-            get: function () {
-                return this._OFFSCREEN_HEIGHT;
-            },
-            set: function (v) {
-                if (this._OFFSCREEN_HEIGHT == v)
-                    return;
-                this._OFFSCREEN_HEIGHT = v;
-                this.invalidateSize();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FrameBufferObject.prototype, "frameBuffer", {
-            get: function () {
-                return this._frameBuffer;
-            },
-            set: function (v) {
-                if (this._frameBuffer == v)
-                    return;
-                this._frameBuffer = v;
-                this.invalidate();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FrameBufferObject.prototype, "texture", {
-            get: function () {
-                return this._texture;
-            },
-            set: function (v) {
-                if (this._texture == v)
-                    return;
-                this._texture = v;
-                this.invalidate();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FrameBufferObject.prototype, "depthBuffer", {
-            get: function () {
-                return this._depthBuffer;
-            },
-            set: function (v) {
-                if (this._depthBuffer == v)
-                    return;
-                this._depthBuffer = v;
-                this.invalidate();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        FrameBufferObject.prototype.active = function (gl) {
-            if (this._invalid) {
-                this._invalid = false;
-                this.clear();
-            }
-            var obj = this._map.get(gl);
-            if (!obj) {
-                var framebuffer = this.frameBuffer.active(gl);
-                var texture = this.texture.active(gl);
-                var depthBuffer = this.depthBuffer.active(gl);
-                // 绑定帧缓冲区对象
-                gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-                // 设置颜色关联对象
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-                // 设置深度关联对象
-                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
-                // 检查Framebuffer状态
-                var e = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-                if (gl.FRAMEBUFFER_COMPLETE !== e) {
-                    debuger && alert('Frame buffer object is incomplete: ' + e.toString());
-                    return null;
-                }
-                gl.bindTexture(gl.TEXTURE_2D, null);
-                gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-                obj = { framebuffer: framebuffer, texture: texture, depthBuffer: depthBuffer };
-                this._map.set(gl, obj);
-            }
-            else {
-                gl.bindFramebuffer(gl.FRAMEBUFFER, obj.framebuffer);
-            }
-            return obj;
-        };
-        FrameBufferObject.prototype.deactive = function (gl) {
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        };
-        /**
-         * 使失效
-         */
-        FrameBufferObject.prototype.invalidate = function () {
-            this._invalid = true;
-        };
-        FrameBufferObject.prototype.invalidateSize = function () {
-            if (this.texture) {
-                this.texture.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
-                this.texture.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
-            }
-            if (this.depthBuffer) {
-                this.depthBuffer.OFFSCREEN_WIDTH = this.OFFSCREEN_WIDTH;
-                this.depthBuffer.OFFSCREEN_HEIGHT = this.OFFSCREEN_HEIGHT;
-            }
-            this._invalid = true;
-        };
-        FrameBufferObject.prototype.clear = function () {
-            this._map.clear();
-        };
-        return FrameBufferObject;
-    }());
-    feng3d.FrameBufferObject = FrameBufferObject;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -2127,7 +1654,7 @@ var feng3d;
                 // Create a renderbuffer object and Set its size and parameters
                 depthBuffer = gl.createRenderbuffer(); // Create a renderbuffer object
                 if (!depthBuffer) {
-                    debuger && alert('Failed to create renderbuffer object');
+                    alert('Failed to create renderbuffer object');
                     return;
                 }
                 this._depthBufferMap.set(gl, depthBuffer);
@@ -2205,7 +1732,6 @@ var feng3d;
     var ShaderLib = /** @class */ (function () {
         function ShaderLib() {
             this._shaderCache = {};
-            globalDispatcher.on("asset.shaderChanged", this.onShaderChanged, this);
         }
         Object.defineProperty(ShaderLib.prototype, "shaderConfig", {
             get: function () {
@@ -2255,26 +1781,22 @@ var feng3d;
             }
             return shaderCode;
         };
-        ShaderLib.prototype.onShaderChanged = function () {
-            this._shaderCache = {};
-        };
         /**
          * 获取shader列表
          */
         ShaderLib.prototype.getShaderNames = function () {
             return Object.keys(this.shaderConfig.shaders);
         };
+        /**
+         * 清除缓存
+         */
+        ShaderLib.prototype.clearCache = function () {
+            this._shaderCache = {};
+        };
         return ShaderLib;
     }());
     feng3d.ShaderLib = ShaderLib;
     feng3d.shaderlib = new ShaderLib();
-    //ShaderLib1
-    var ShaderLib1 = /** @class */ (function () {
-        function ShaderLib1() {
-        }
-        return ShaderLib1;
-    }());
-    feng3d.ShaderLib1 = ShaderLib1;
 })(feng3d || (feng3d = {}));
 var feng3d;
 (function (feng3d) {
@@ -2284,7 +1806,7 @@ var feng3d;
      */
     var Renderer = /** @class */ (function () {
         function Renderer(gl) {
-            debuger && console.assert(!gl.render, gl + " " + gl.render + " \u5B58\u5728\uFF01");
+            console.assert(!gl.render, gl + " " + gl.render + " \u5B58\u5728\uFF01");
             var preActiveAttributes = [];
             gl.render = function (renderAtomic1) {
                 var instanceCount = renderAtomic1.getInstanceCount();
@@ -2292,18 +1814,10 @@ var feng3d;
                     return;
                 var shaderMacro = renderAtomic1.getShaderMacro();
                 var shader = renderAtomic1.getShader();
-                shaderMacro.RotationOrder = defaultRotationOrder;
                 shader.shaderMacro = shaderMacro;
                 var shaderResult = shader.activeShaderProgram(gl);
                 if (!shaderResult)
                     return;
-                //
-                renderAtomic1.uniforms.u_mvMatrix = function () {
-                    return lazy.getvalue(renderAtomic1.uniforms.u_modelMatrix).clone().append(lazy.getvalue(renderAtomic1.uniforms.u_viewMatrix));
-                };
-                renderAtomic1.uniforms.u_ITMVMatrix = function () {
-                    return lazy.getvalue(renderAtomic1.uniforms.u_mvMatrix).clone().invert().transpose();
-                };
                 //
                 var renderAtomic = checkRenderData(renderAtomic1);
                 if (!renderAtomic)
@@ -2313,8 +1827,7 @@ var feng3d;
                 activeShaderParams(renderAtomic.renderParams);
                 activeAttributes(renderAtomic, shaderResult.attributes);
                 activeUniforms(renderAtomic, shaderResult.uniforms);
-                dodraw(renderAtomic, gl[renderAtomic.renderParams.renderMode]);
-                disableAttributes(shaderResult.attributes);
+                draw(renderAtomic, gl[renderAtomic.renderParams.renderMode]);
             };
             function checkRenderData(renderAtomic) {
                 var shader = renderAtomic.getShader();
@@ -2375,7 +1888,7 @@ var feng3d;
                 var colorMask = shaderParams.colorMask;
                 var colorMaskB = [feng3d.ColorMask.R, feng3d.ColorMask.G, feng3d.ColorMask.B, feng3d.ColorMask.A].map(function (v) { return !!(colorMask & v); });
                 if (!useViewRect) {
-                    viewRect = new Rectangle(0, 0, gl.canvas.width, gl.canvas.height);
+                    viewRect = { x: 0, y: 0, width: gl.canvas.width, height: gl.canvas.height };
                 }
                 if (cullfaceEnum != feng3d.CullFace.NONE) {
                     gl.enable(gl.CULL_FACE);
@@ -2422,16 +1935,6 @@ var feng3d;
                 preActiveAttributes = activeAttributes;
             }
             /**
-             * 激活属性
-             */
-            function disableAttributes(attributeInfos) {
-                // for (var name in attributeInfos)
-                // {
-                //     var activeInfo = attributeInfos[name];
-                //     gl.disableVertexAttribArray(activeInfo.location);
-                // }
-            }
-            /**
              * 激活常量
              */
             function activeUniforms(renderAtomic, uniformInfos) {
@@ -2450,51 +1953,38 @@ var feng3d;
              * 设置环境Uniform数据
              */
             function setContext3DUniform(activeInfo, data) {
+                var vec = data;
+                if (data.toArray)
+                    vec = data.toArray();
                 var location = activeInfo.location;
                 switch (activeInfo.type) {
                     case gl.INT:
                         gl.uniform1i(location, data);
                         break;
                     case gl.FLOAT_MAT3:
-                        gl.uniformMatrix3fv(location, false, data.elements);
+                        gl.uniformMatrix3fv(location, false, vec);
                         break;
                     case gl.FLOAT_MAT4:
-                        gl.uniformMatrix4fv(location, false, data.rawData);
+                        gl.uniformMatrix4fv(location, false, vec);
                         break;
                     case gl.FLOAT:
                         gl.uniform1f(location, data);
                         break;
                     case gl.FLOAT_VEC2:
-                        gl.uniform2f(location, data.x, data.y);
+                        gl.uniform2f(location, vec[0], vec[1]);
                         break;
                     case gl.FLOAT_VEC3:
-                        if (data instanceof Color3) {
-                            gl.uniform3f(location, data.r, data.g, data.b);
-                        }
-                        else if (data instanceof Vector3) {
-                            gl.uniform3f(location, data.x, data.y, data.z);
-                        }
-                        else {
-                            console.error("\u65E0\u6CD5\u5904\u7406 uniform\u6570\u636E " + activeInfo.name + " " + data);
-                        }
+                        gl.uniform3f(location, vec[0], vec[1], vec[2]);
                         break;
                     case gl.FLOAT_VEC4:
-                        if (data instanceof Color4) {
-                            gl.uniform4f(location, data.r, data.g, data.b, data.a);
-                        }
-                        else if (data instanceof Vector4) {
-                            gl.uniform4f(location, data.x, data.y, data.z, data.w);
-                        }
-                        else {
-                            console.error("\u65E0\u6CD5\u5904\u7406 uniform\u6570\u636E " + activeInfo.name + " " + data);
-                        }
+                        gl.uniform4f(location, vec[0], vec[1], vec[2], vec[3]);
                         break;
                     case gl.SAMPLER_2D:
                     case gl.SAMPLER_CUBE:
                         var textureInfo = data;
                         //激活纹理编号
                         gl.activeTexture(gl["TEXTURE" + activeInfo.textureID]);
-                        textureInfo.active(gl);
+                        feng3d.TextureUtil.active(gl, textureInfo);
                         //设置纹理所在采样编号
                         gl.uniform1i(location, activeInfo.textureID);
                         break;
@@ -2504,8 +1994,8 @@ var feng3d;
             }
             /**
              */
-            function dodraw(renderAtomic, renderMode) {
-                var instanceCount = ~~lazy.getvalue(renderAtomic.instanceCount);
+            function draw(renderAtomic, renderMode) {
+                var instanceCount = ~~feng3d.lazy.getvalue(renderAtomic.instanceCount);
                 var indexBuffer = renderAtomic.indexBuffer;
                 var vertexNum = 0;
                 if (indexBuffer) {
@@ -2549,4 +2039,4 @@ var feng3d;
     }());
     feng3d.Renderer = Renderer;
 })(feng3d || (feng3d = {}));
-//# sourceMappingURL=polyfill.js.map
+//# sourceMappingURL=render.js.map

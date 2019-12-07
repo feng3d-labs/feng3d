@@ -4,7 +4,6 @@ namespace feng3d
      * 渲染模式
      * A GLenum specifying the type primitive to render. Possible values are:
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
-
      */
     export enum RenderMode
     {
