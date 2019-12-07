@@ -16727,7 +16727,7 @@ var feng3d;
          */
         PathUtils.prototype.getName = function (path) {
             console.assert(path != undefined);
-            var name = this.getNameWithExtension(path);
+            var name = this.basename(path);
             if (this.isDirectory(path))
                 return name;
             name = name.split(".").shift();
@@ -16737,7 +16737,7 @@ var feng3d;
          * 获取带后缀名称
          * @param path 路径
          */
-        PathUtils.prototype.getNameWithExtension = function (path) {
+        PathUtils.prototype.basename = function (path) {
             console.assert(path != undefined);
             var paths = path.split("/");
             var name = paths.pop();
@@ -16749,9 +16749,9 @@ var feng3d;
          * 获取后缀
          * @param path 路径
          */
-        PathUtils.prototype.getExtension = function (path) {
+        PathUtils.prototype.extname = function (path) {
             console.assert(path != undefined);
-            var name = this.getNameWithExtension(path);
+            var name = this.basename(path);
             var index = name.indexOf(".");
             if (index == -1)
                 return "";
@@ -16761,7 +16761,7 @@ var feng3d;
          * 父路径
          * @param path 路径
          */
-        PathUtils.prototype.getParentPath = function (path) {
+        PathUtils.prototype.dirname = function (path) {
             console.assert(path != undefined);
             var paths = path.split("/");
             if (this.isDirectory(path))
@@ -17418,7 +17418,7 @@ var feng3d;
          */
         ReadWriteFS.prototype.writeFile = function (path, arraybuffer, callback) {
             var _this = this;
-            var ext = feng3d.pathUtils.getExtension(path);
+            var ext = feng3d.pathUtils.extname(path);
             ext = ext.split(".").pop();
             var fileTypedic = { "meta": "txt", "json": "object", "jpg": "arraybuffer", "png": "arraybuffer", "mp3": "arraybuffer", "js": "txt", "ts": "txt", "map": "txt", "html": "txt" };
             var type = fileTypedic[ext];
@@ -17456,7 +17456,7 @@ var feng3d;
         ReadWriteFS.prototype.writeArrayBuffer = function (path, arraybuffer, callback) {
             var _this = this;
             // 如果所属文件夹不存在则新建
-            var dirpath = feng3d.pathUtils.getParentPath(path);
+            var dirpath = feng3d.pathUtils.dirname(path);
             this.mkdir(dirpath, function (err) {
                 if (err) {
                     callback && callback(err);
@@ -17474,7 +17474,7 @@ var feng3d;
         ReadWriteFS.prototype.writeString = function (path, str, callback) {
             var _this = this;
             // 如果所属文件夹不存在则新建
-            var dirpath = feng3d.pathUtils.getParentPath(path);
+            var dirpath = feng3d.pathUtils.dirname(path);
             this.mkdir(dirpath, function (err) {
                 if (err) {
                     callback && callback(err);
@@ -17492,7 +17492,7 @@ var feng3d;
         ReadWriteFS.prototype.writeObject = function (path, object, callback) {
             var _this = this;
             // 如果所属文件夹不存在则新建
-            var dirpath = feng3d.pathUtils.getParentPath(path);
+            var dirpath = feng3d.pathUtils.dirname(path);
             this.mkdir(dirpath, function (err) {
                 if (err) {
                     callback && callback(err);
@@ -17510,7 +17510,7 @@ var feng3d;
         ReadWriteFS.prototype.writeImage = function (path, image, callback) {
             var _this = this;
             // 如果所属文件夹不存在则新建
-            var dirpath = feng3d.pathUtils.getParentPath(path);
+            var dirpath = feng3d.pathUtils.dirname(path);
             this.mkdir(dirpath, function (err) {
                 if (err) {
                     callback && callback(err);
@@ -18213,7 +18213,7 @@ var feng3d;
              */
             get: function () {
                 console.assert(!!this.assetPath);
-                var ext = feng3d.pathUtils.getExtension(this.assetPath);
+                var ext = feng3d.pathUtils.extname(this.assetPath);
                 return ext;
             },
             enumerable: true,
@@ -18556,7 +18556,7 @@ var feng3d;
             asset.initAsset();
             feng3d.AssetData.addAssetData(asset.assetId, asset.data);
             //
-            var extenson = feng3d.pathUtils.getExtension(fileName);
+            var extenson = feng3d.pathUtils.extname(fileName);
             fileName = feng3d.pathUtils.getName(fileName);
             // 设置默认名称
             fileName = fileName || "new " + asset.assetType;

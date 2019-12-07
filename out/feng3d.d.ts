@@ -7957,17 +7957,17 @@ declare namespace feng3d {
          * 获取带后缀名称
          * @param path 路径
          */
-        getNameWithExtension(path: string): string;
+        basename(path: string): string;
         /**
          * 获取后缀
          * @param path 路径
          */
-        getExtension(path: string): string;
+        extname(path: string): string;
         /**
          * 父路径
          * @param path 路径
          */
-        getParentPath(path: string): string;
+        dirname(path: string): string;
         /**
          * 获取子文件（非文件夹）路径
          *

@@ -38,7 +38,7 @@ namespace feng3d
         getName(path: string)
         {
             console.assert(path != undefined);
-            var name = this.getNameWithExtension(path);
+            var name = this.basename(path);
             if (this.isDirectory(path))
                 return name;
             name = name.split(".").shift();
@@ -49,7 +49,7 @@ namespace feng3d
          * 获取带后缀名称
          * @param path 路径
          */
-        getNameWithExtension(path: string)
+        basename(path: string)
         {
             console.assert(path != undefined);
             var paths = path.split("/");
@@ -63,10 +63,10 @@ namespace feng3d
          * 获取后缀
          * @param path 路径
          */
-        getExtension(path: string)
+        extname(path: string)
         {
             console.assert(path != undefined);
-            var name = this.getNameWithExtension(path);
+            var name = this.basename(path);
             var index = name.indexOf(".");
             if (index == -1) return "";
             return name.substr(index);
@@ -76,7 +76,7 @@ namespace feng3d
          * 父路径
          * @param path 路径
          */
-        getParentPath(path: string)
+        dirname(path: string)
         {
             console.assert(path != undefined);
             var paths = path.split("/");

@@ -79,7 +79,7 @@ namespace feng3d
          */
         writeFile(path: string, arraybuffer: ArrayBuffer, callback?: (err: Error) => void)
         {
-            var ext = feng3d.pathUtils.getExtension(path);
+            var ext = feng3d.pathUtils.extname(path);
             ext = ext.split(".").pop();
             var fileTypedic = { "meta": "txt", "json": "object", "jpg": "arraybuffer", "png": "arraybuffer", "mp3": "arraybuffer", "js": "txt", "ts": "txt", "map": "txt", "html": "txt" };
             var type = fileTypedic[ext];
@@ -125,7 +125,7 @@ namespace feng3d
         writeArrayBuffer(path: string, arraybuffer: ArrayBuffer, callback?: (err: Error) => void)
         {
             // 如果所属文件夹不存在则新建
-            var dirpath = pathUtils.getParentPath(path);
+            var dirpath = pathUtils.dirname(path);
             this.mkdir(dirpath, (err) =>
             {
                 if (err)
@@ -146,7 +146,7 @@ namespace feng3d
         writeString(path: string, str: string, callback?: (err: Error) => void)
         {
             // 如果所属文件夹不存在则新建
-            var dirpath = pathUtils.getParentPath(path);
+            var dirpath = pathUtils.dirname(path);
             this.mkdir(dirpath, (err) =>
             {
                 if (err)
@@ -167,7 +167,7 @@ namespace feng3d
         writeObject(path: string, object: Object, callback?: (err: Error) => void)
         {
             // 如果所属文件夹不存在则新建
-            var dirpath = pathUtils.getParentPath(path);
+            var dirpath = pathUtils.dirname(path);
             this.mkdir(dirpath, (err) =>
             {
                 if (err)
@@ -188,7 +188,7 @@ namespace feng3d
         writeImage(path: string, image: HTMLImageElement, callback?: (err: Error) => void)
         {
             // 如果所属文件夹不存在则新建
-            var dirpath = pathUtils.getParentPath(path);
+            var dirpath = pathUtils.dirname(path);
             this.mkdir(dirpath, (err) =>
             {
                 if (err)

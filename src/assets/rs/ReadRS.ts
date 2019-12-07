@@ -123,7 +123,7 @@ namespace feng3d
             AssetData.addAssetData(asset.assetId, asset.data);
 
             //
-            var extenson = pathUtils.getExtension(fileName);
+            var extenson = pathUtils.extname(fileName);
             fileName = pathUtils.getName(fileName);
 
             // 设置默认名称

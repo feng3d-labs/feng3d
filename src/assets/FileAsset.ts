@@ -46,7 +46,7 @@ namespace feng3d
         get extenson()
         {
             console.assert(!!this.assetPath);
-            var ext = pathUtils.getExtension(this.assetPath);
+            var ext = pathUtils.extname(this.assetPath);
             return ext;
         }
 
